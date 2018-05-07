@@ -1,0 +1,121 @@
+{
+  "globals": {
+    "jQuery": true,
+    "$": true,
+    "moment": true,
+    "_.": true
+  },
+  "env": {
+    "browser": true,
+    "es6": true,
+    "node": true
+  },
+  "extends": [
+    "eslint:recommended"
+  ],
+  "parserOptions": {
+    "ecmaVersion": 6,
+    "sourceType": "module",
+    "ecmaFeatures": {
+      "experimentalObjectRestSpread": true,
+      "experimentalDecorators": true,
+      "jsx": true
+    }
+  },
+  "ecmaFeatures": {
+    "blockBindings": true,
+    "modules": true,
+    "superInFunctions": true
+  },
+  "rules": {
+    "no-unused-vars": [
+      "warn",
+      {
+        "vars": "local",
+        "args": "after-used",
+        "ignoreRestSiblings": true,
+        "varsIgnorePattern": "^_$"
+      }
+    ],
+    "space-before-blocks": [
+      "error",
+      "always"
+    ],
+    "indent": [
+      "error",
+      2,
+      {
+        "SwitchCase": 1
+      }
+    ],
+    "linebreak-style": [
+      "error",
+      "unix"
+    ],
+    "quotes": [
+      "error",
+      "single",
+      {
+        "allowTemplateLiterals": true
+      }
+    ],
+    "semi": [
+      "error",
+      "always"
+    ],
+    "no-debugger": [
+      "warn"
+    ],
+    "comma-dangle": [
+      "warn",
+      {
+        "arrays": "never",
+        "objects": "never",
+        "imports": "never",
+        "exports": "never",
+        "functions": "ignore"
+      }
+    ],
+    "no-empty": [
+      "warn"
+    ],
+    "no-constant-condition": [
+      "warn"
+    ],
+    "valid-typeof": [
+      "warn"
+    ],
+    "no-redeclare": [
+      "warn",
+      {
+        "builtinGlobals": true
+      }
+    ],
+    "no-undef": "off",
+    "space-unary-ops": [
+      "warn",
+      {
+        "words": true,
+        "nonwords": false
+      }
+    ],
+    "no-multi-spaces": "warn",
+    "arrow-spacing": [
+      "warn",
+      {
+        "before": true,
+        "after": true
+      }
+    ],
+    "no-console": [
+      0,
+      {
+        "allow": [
+          "log",
+          "warn",
+          "error"
+        ]
+      }
+    ]
+  }
+}
