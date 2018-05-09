@@ -2,6 +2,7 @@ import {NextFunction, Request, Response} from 'express';
 import * as jwt from 'jsonwebtoken';
 import {IRequest} from '../../interfaces/global';
 import User from '../models/user.model';
+// import * as randToken from 'rand-token';
 
 class JWTController {
 
