@@ -2,6 +2,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 const jwt = require("jsonwebtoken");
 const user_model_1 = require("../models/user.model");
+// import * as randToken from 'rand-token';
 class JWTController {
     constructor() {
         this.login = this.login.bind(this);

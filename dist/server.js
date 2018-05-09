@@ -10,9 +10,10 @@ const MONGODB_PASSWD = process.env.MONGODB_PASSWD || 'osacontrol';
 const MONGODB_HOST = process.env.MONGODB_HOST || 'localhost';
 const MONGODB_PORT = process.env.MONGODB_PORT || 27017;
 const MONGODB_NAME = process.env.MONGODB_NAME || 'osa';
+const MONGODB_URI = process.env.MONGODB_URI || null;
 // Mongoose connect
 const mongoDB = `mongodb://${MONGODB_USER}:${MONGODB_PASSWD}@${MONGODB_HOST}:${MONGODB_PORT}/${MONGODB_NAME}`;
-mongoose.connect(mongoDB, (err) => {
+mongoose.connect(MONGODB_URI ? MONGODB_URI : mongoDB, (err) => {
     if (err) {
         throw err;
     }
