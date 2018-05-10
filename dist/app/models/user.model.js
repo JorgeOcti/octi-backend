@@ -8,10 +8,7 @@ const userSchema = new mongoose.Schema({
         type: String,
         unique: true
     },
-    email: {
-        type: String,
-        unique: true
-    },
+    email: String,
     password: String,
     hash_password: String,
     passwordResetToken: String,
@@ -33,7 +30,7 @@ userSchema.pre('save', function save(next) {
         if (err) {
             return next(err);
         }
-        bcrypt.hash(user.password, salt, undefined, (err, hash) => {
+        bcrypt.hash(user.password, salt, () => { }, (err, hash) => {
             if (err) {
                 return next(err);
             }

@@ -5,17 +5,12 @@ const mongoose = require("mongoose");
 const app_1 = require("./app");
 const logger_1 = require("./services/logger");
 // Mongoose setting
-const MONGODB_USER = process.env.MONGODB_USER || 'osacontrol';
-const MONGODB_PASSWD = process.env.MONGODB_PASSWD || 'osacontrol';
-const MONGODB_HOST = process.env.MONGODB_HOST || 'localhost';
-const MONGODB_PORT = process.env.MONGODB_PORT || 27017;
-const MONGODB_NAME = process.env.MONGODB_NAME || 'osa';
-const MONGODB_URI = process.env.MONGODB_URI || null;
+const MONGODB_URI = process.env.MONGODB_URI || '';
 // Mongoose connect
-const mongoDB = `mongodb://${MONGODB_USER}:${MONGODB_PASSWD}@${MONGODB_HOST}:${MONGODB_PORT}/${MONGODB_NAME}`;
-mongoose.connect(MONGODB_URI ? MONGODB_URI : mongoDB, (err) => {
+mongoose.connect(MONGODB_URI, { useMongoClient: true }, (err) => {
     if (err) {
-        throw err;
+        console.log('Unable to connect to the mongodb instance. Error: ', err);
+        // throw err;
     }
     /* istanbul ignore if */
     if (app_1.default.get('env') !== 'testing') {
