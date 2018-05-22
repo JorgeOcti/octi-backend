@@ -5,7 +5,7 @@ import * as dotenv from 'dotenv';
 import * as express from 'express';
 import * as session from 'express-session';
 import * as fileStreamRotator from 'file-stream-rotator';
-// import * as git from 'git-rev-sync';
+import * as git from 'git-rev-sync';
 import * as lusca from 'lusca';
 import * as morgan from 'morgan';
 import * as multer from 'multer';
@@ -18,13 +18,13 @@ import User from './app/models/user.model';
 
 // Import routes
 import appRouter from './app/router';
+import formRouter from './form/router';
 
 // Configure sentry
 (global as any).__rootdir__ = __dirname || process.cwd();
 const root = (global as any).__rootdir__;
 const LocalStrategy = passportLocal.Strategy;
-// const gitCommit = git.long();
-const gitCommit = '1212121212';
+const gitCommit = git.long();
 
 /* istanbul ignore next */
 Raven.config('https://2a51f5b0d78a4a0f9f52d673a1bf92ff:002cc5d2f5f743ed8b7986db910871e2@sentry.gonzalomunoz.io/11', {
@@ -161,6 +161,7 @@ app.use(Raven.requestHandler());
 
 // Routes
 app.use('/api/v1', appRouter);
+app.use('/api/v1/forms', formRouter);
 
 // The error handler must be before any other error middleware
 app.use(Raven.errorHandler());
@@ -193,6 +194,11 @@ app.use((err: IResponseError, req: express.Request, res: express.Response, next:
   });
   next();
 });
+
+// import FormModel from './form/models/form.model';
+// const from = new FormModel({
+//
+// });
 
 /*const setting = new Setting({
   name: 'Default',

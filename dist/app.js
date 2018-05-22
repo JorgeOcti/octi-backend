@@ -7,7 +7,7 @@ const dotenv = require("dotenv");
 const express = require("express");
 const session = require("express-session");
 const fileStreamRotator = require("file-stream-rotator");
-// import * as git from 'git-rev-sync';
+const git = require("git-rev-sync");
 const lusca = require("lusca");
 const morgan = require("morgan");
 const multer = require("multer");
@@ -19,12 +19,12 @@ const responseTime = require("response-time");
 const user_model_1 = require("./app/models/user.model");
 // Import routes
 const router_1 = require("./app/router");
+const router_2 = require("./form/router");
 // Configure sentry
 global.__rootdir__ = __dirname || process.cwd();
 const root = global.__rootdir__;
 const LocalStrategy = passportLocal.Strategy;
-// const gitCommit = git.long();
-const gitCommit = '1212121212';
+const gitCommit = git.long();
 /* istanbul ignore next */
 Raven.config('https://2a51f5b0d78a4a0f9f52d673a1bf92ff:002cc5d2f5f743ed8b7986db910871e2@sentry.gonzalomunoz.io/11', {
     release: gitCommit,
@@ -144,6 +144,7 @@ if (app.get('env') !== 'testing') {
 app.use(Raven.requestHandler());
 // Routes
 app.use('/api/v1', router_1.default);
+app.use('/api/v1/forms', router_2.default);
 // The error handler must be before any other error middleware
 app.use(Raven.errorHandler());
 app.use((req, res, next) => {
@@ -165,6 +166,10 @@ app.use((err, req, res, next) => {
     });
     next();
 });
+// import FormModel from './form/models/form.model';
+// const from = new FormModel({
+//
+// });
 /*const setting = new Setting({
   name: 'Default',
   contain: [{
