@@ -1,0 +1,97 @@
+import {Request, Response} from 'express';
+import FormModel, {IFormModel} from '../models/form.model';
+import ScaleModel, {IScaleModel} from '../models/scale.model';
+
+class FormController {
+
+  constructor() {
+    this.list = this.list.bind(this);
+    this.detail = this.detail.bind(this);
+  }
+
+  public async list(req: Request, res: Response) {
+    try {
+      const forms = await this.getForms();
+      res.json({
+        data: forms,
+        status: 200
+      });
+    } catch (e) {
+      res.status(400).json({
+        error: 'Ha ocurrido un error',
+        status: 400
+      });
+    }
+  }
+
+  public async detail(req: Request, res: Response) {
+    const {id} = req.params;
+    try {
+      const form = await this.getForm(id);
+      const scalesIds: any[] = [];
+      form.sections.forEach((section) => {
+        section.questions.forEach((question) => {
+          scalesIds.push(question.scale);
+        });
+      });
+
+      const scales = await this.getScales(scalesIds);
+
+      res.json({
+        data: {
+          form,
+          scales
+        },
+        status: 200
+      });
+
+    } catch (e) {
+      res.status(400).json({
+        error: 'No se encontro formularío',
+        status: 400
+      });
+    }
+  }
+
+  private getScales(ids: any[]): Promise<IScaleModel[]> {
+    return new Promise((resolve, reject) => {
+      ScaleModel.find({_id: {$in: ids}}).exec((err, scales) => {
+        if (err) {
+          return reject(err);
+        }
+        return resolve(scales);
+      });
+    });
+  }
+
+  private getForm(id: string): Promise<IFormModel> {
+    return new Promise((resolve, reject) => {
+      FormModel
+        .findById(id)
+        .exec((err, form) => {
+          if (err) {
+            return reject(err);
+          }
+          if (form) {
+            return resolve(form);
+          }
+          return reject('No se encontro formularío');
+        });
+    });
+  }
+
+  private getForms() {
+    return new Promise((resolve, reject) => {
+      FormModel
+        .find({}, {_id: 1, name: 1})
+        .exec((err, forms) => {
+          if (err) {
+            return reject(err);
+          }
+          return resolve(forms);
+        });
+    });
+  }
+}
+
+export default new FormController();
