@@ -58,11 +58,12 @@ class FormController {
                 .find({
                 _id: { $in: ids }
             }, {
-                updatedAt: false,
-                createdAt: false,
-                active: false,
-                minValue: false,
-                maxValue: false
+                'updatedAt': false,
+                'createdAt': false,
+                'active': false,
+                'minValue': false,
+                'maxValue': false,
+                'choices.na': false
             })
                 .exec((err, scales) => {
                 if (err) {
