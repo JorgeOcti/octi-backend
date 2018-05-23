@@ -95,7 +95,8 @@ class FormController {
           'active': false,
           'minValue': false,
           'maxValue': false,
-          'choices.na': false
+          'choices.na': false,
+          '__v': false
         })
         .exec((err, scales) => {
           if (err) {
@@ -114,7 +115,8 @@ class FormController {
           'createdAt': false,
           'active': false,
           'sections.shortName': false,
-          'sections.questions.shortName': false
+          'sections.questions.shortName': false,
+          '__v': false
         })
         .exec((err, form) => {
           if (err) {
