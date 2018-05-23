@@ -82,9 +82,11 @@ class FormController {
     return new Promise((resolve, reject) => {
       FormModel
         .findById(id, {
-          updatedAt: false,
-          createdAt: false,
-          active: false
+          'updatedAt': false,
+          'createdAt': false,
+          'active': false,
+          'sections.shortName': false,
+          'sections.questions.shortName': false
         })
         .exec((err, form) => {
           if (err) {
