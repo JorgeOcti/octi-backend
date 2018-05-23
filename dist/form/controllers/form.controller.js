@@ -8,6 +8,7 @@ class FormController {
         this.detail = this.detail.bind(this);
     }
     async list(req, res) {
+        // debugger;
         try {
             const forms = await this.getForms();
             res.json({
@@ -53,7 +54,17 @@ class FormController {
     }
     getScales(ids) {
         return new Promise((resolve, reject) => {
-            scale_model_1.default.find({ _id: { $in: ids } }).exec((err, scales) => {
+            scale_model_1.default
+                .find({
+                _id: { $in: ids }
+            }, {
+                updatedAt: false,
+                createdAt: false,
+                active: false,
+                minValue: false,
+                maxValue: false
+            })
+                .exec((err, scales) => {
                 if (err) {
                     return reject(err);
                 }
@@ -64,7 +75,11 @@ class FormController {
     getForm(id) {
         return new Promise((resolve, reject) => {
             form_model_1.default
-                .findById(id)
+                .findById(id, {
+                updatedAt: false,
+                createdAt: false,
+                active: false
+            })
                 .exec((err, form) => {
                 if (err) {
                     return reject(err);

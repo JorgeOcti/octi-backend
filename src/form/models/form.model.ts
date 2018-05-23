@@ -15,19 +15,20 @@ export interface IFormQuestionModel extends mongoose.Types.Subdocument {
 }
 
 const formQuestionsSchema = new mongoose.Schema({
-  question: String,
-  shortName: String,
+  question: {type: String, required: true, trim: true},
+  shortName: {type: String, trim: true},
 
   scale: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'Scale'
+    ref: 'Scale',
+    required: true
   },
 
-  risk: String,
-  observe: String,
+  risk: {type: String, trim: true},
+  observe: {type: String, trim: true},
 
-  weight: Number,
-  order: Number
+  weight: { type: Number, required: true },
+  order: { type: Number, required: true }
 });
 
 export interface IFormSectionModel extends mongoose.Types.Subdocument {
@@ -41,13 +42,13 @@ export interface IFormSectionModel extends mongoose.Types.Subdocument {
 }
 
 const formSectionsSchema = new mongoose.Schema({
-  name: String,
-  shortName: String,
+  name: { type: String, required: true, trim: true},
+  shortName: {type: String, trim: true},
 
   questions: [formQuestionsSchema],
 
-  weight: Number,
-  order: Number
+  weight: { type: Number, required: true },
+  order: { type: Number, required: true }
 });
 
 export interface IFormModel extends mongoose.Document {
@@ -55,17 +56,17 @@ export interface IFormModel extends mongoose.Document {
   description: string;
 
   sections: mongoose.Types.Array<IFormSectionModel>;
-
+  url?: string;
   active: boolean;
 }
 
 const formSchema = new mongoose.Schema({
-  name: String,
-  description: String,
+  name: { type: String, required: true, trim: true},
+  description: {type: String, trim: true},
 
   sections: [formSectionsSchema],
 
-  active: Boolean
+  active: { type: Boolean, default: true }
 }, {
   timestamps: true
 });

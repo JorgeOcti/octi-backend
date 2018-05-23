@@ -2,19 +2,20 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 const mongoose = require("mongoose");
 const choiceSchema = new mongoose.Schema({
-    choice: String,
-    value: Number,
-    requireImage: Boolean,
-    requireText: Boolean,
-    order: Number
+    choice: { type: String, required: true, trim: true },
+    value: { type: Number, required: true },
+    requireImage: { type: Boolean, default: false },
+    requireComment: { type: Boolean, default: false },
+    na: { type: Boolean, default: false },
+    order: { type: Number, required: true }
 });
 // }, {_id: false});
 exports.scaleSchema = new mongoose.Schema({
     name: String,
-    minValue: Number,
-    maxValue: Number,
+    minValue: { type: Number, required: true },
+    maxValue: { type: Number, required: true },
     choices: [choiceSchema],
-    active: Boolean
+    active: { type: Boolean, default: true }
 }, {
     timestamps: true
 });

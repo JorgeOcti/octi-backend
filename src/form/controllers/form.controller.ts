@@ -10,6 +10,7 @@ class FormController {
   }
 
   public async list(req: Request, res: Response) {
+    // debugger;
     try {
       const forms = await this.getForms();
       res.json({
@@ -58,19 +59,33 @@ class FormController {
 
   private getScales(ids: any[]): Promise<IScaleModel[]> {
     return new Promise((resolve, reject) => {
-      ScaleModel.find({_id: {$in: ids}}).exec((err, scales) => {
-        if (err) {
-          return reject(err);
-        }
-        return resolve(scales);
-      });
+      ScaleModel
+        .find({
+            _id: {$in: ids}
+          }, {
+            updatedAt: false,
+            createdAt: false,
+            active: false,
+            minValue: false,
+            maxValue: false
+          })
+        .exec((err, scales) => {
+          if (err) {
+            return reject(err);
+          }
+          return resolve(scales);
+        });
     });
   }
 
   private getForm(id: string): Promise<IFormModel> {
     return new Promise((resolve, reject) => {
       FormModel
-        .findById(id)
+        .findById(id, {
+          updatedAt: false,
+          createdAt: false,
+          active: false
+        })
         .exec((err, form) => {
           if (err) {
             return reject(err);
@@ -83,11 +98,11 @@ class FormController {
     });
   }
 
-  private getForms() {
+  private getForms(): Promise<IFormModel[]> {
     return new Promise((resolve, reject) => {
       FormModel
         .find({}, {_id: 1, name: 1})
-        .exec((err, forms) => {
+        .exec((err, forms: IFormModel[]) => {
           if (err) {
             return reject(err);
           }

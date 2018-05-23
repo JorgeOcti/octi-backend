@@ -2,29 +2,30 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 const mongoose = require("mongoose");
 const formQuestionsSchema = new mongoose.Schema({
-    question: String,
-    shortName: String,
+    question: { type: String, required: true, trim: true },
+    shortName: { type: String, trim: true },
     scale: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: 'Scale'
+        ref: 'Scale',
+        required: true
     },
-    risk: String,
-    observe: String,
-    weight: Number,
-    order: Number
+    risk: { type: String, trim: true },
+    observe: { type: String, trim: true },
+    weight: { type: Number, required: true },
+    order: { type: Number, required: true }
 });
 const formSectionsSchema = new mongoose.Schema({
-    name: String,
-    shortName: String,
+    name: { type: String, required: true, trim: true },
+    shortName: { type: String, trim: true },
     questions: [formQuestionsSchema],
-    weight: Number,
-    order: Number
+    weight: { type: Number, required: true },
+    order: { type: Number, required: true }
 });
 const formSchema = new mongoose.Schema({
-    name: String,
-    description: String,
+    name: { type: String, required: true, trim: true },
+    description: { type: String, trim: true },
     sections: [formSectionsSchema],
-    active: Boolean
+    active: { type: Boolean, default: true }
 }, {
     timestamps: true
 });

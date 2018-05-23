@@ -70,6 +70,8 @@ app.set('port', process.env.PORT || 3000);
 app.locals.secretKey = process.env.SECRET_KEY;
 // Remove x-powered-by
 app.disable('x-powered-by');
+// strict routing
+app.set('strict routing', true);
 // For parsing application/json
 app.use(bodyParser.json());
 // for parsing application/xwww-
