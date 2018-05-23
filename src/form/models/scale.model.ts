@@ -3,8 +3,10 @@ import * as mongoose from 'mongoose';
 export interface IChoicesModel extends mongoose.Types.Subdocument {
   choice: string;
   value: number;
+  backgroundColor: string;
   requireImage: boolean;
   requireComment: boolean;
+  na: boolean;
   order: number;
 }
 
@@ -19,6 +21,7 @@ export interface IScaleModel extends mongoose.Document {
 const choiceSchema = new mongoose.Schema({
   choice: { type: String, required: true, trim: true },
   value: { type: Number, required: true },
+  backgroundColor: { type: String, default: '#ffffff'},
   requireImage: {type: Boolean, default: false},
   requireComment: {type: Boolean, default: false},
   na: {type: Boolean, default: false},
