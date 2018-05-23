@@ -1,4 +1,5 @@
 import {Request, Response} from 'express';
+import redisClient from '../../services/redis';
 import FormModel, {IFormModel} from '../models/form.model';
 import ScaleModel, {IScaleModel} from '../models/scale.model';
 
@@ -27,34 +28,45 @@ class FormController {
 
   public async detail(req: Request, res: Response) {
     const {id} = req.params;
-    try {
-      const form = await this.getForm(id);
-      const scalesIds: any[] = [];
-      form.sections.forEach((section) => {
-        section.questions.forEach((question) => {
-          const scaleID = question.scale.toString();
-          if (!scalesIds.includes(scaleID)) {
-            scalesIds.push(scaleID);
-          }
+    redisClient.get(id, async (error, result) => {
+      if (result) {
+        // the result exists in our cache - return it to our user immediately
+        res.json({
+          data: {...JSON.parse(result)},
+          status: 200
         });
-      });
+      } else {
+        try {
+          const form = await this.getForm(id);
+          const scalesIds: any[] = [];
+          form.sections.forEach((section) => {
+            section.questions.forEach((question) => {
+              const scaleID = question.scale.toString();
+              if (!scalesIds.includes(scaleID)) {
+                scalesIds.push(scaleID);
+              }
+            });
+          });
 
-      const scales = await this.getScales(scalesIds);
+          const scales = await this.getScales(scalesIds);
 
-      res.json({
-        data: {
-          form,
-          scales
-        },
-        status: 200
-      });
+          redisClient.setex(id, 30, JSON.stringify({form, scales}));
+          res.json({
+            data: {
+              form,
+              scales
+            },
+            status: 200
+          });
 
-    } catch (e) {
-      res.status(400).json({
-        error: 'No se encontro formularío',
-        status: 400
-      });
-    }
+        } catch (e) {
+          res.status(400).json({
+            error: 'No se encontro formularío',
+            status: 400
+          });
+        }
+      }
+    });
   }
 
   private getScales(ids: any[]): Promise<IScaleModel[]> {

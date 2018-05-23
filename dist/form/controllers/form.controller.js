@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+const redis_1 = require("../../services/redis");
 const form_model_1 = require("../models/form.model");
 const scale_model_1 = require("../models/scale.model");
 class FormController {
@@ -25,32 +26,44 @@ class FormController {
     }
     async detail(req, res) {
         const { id } = req.params;
-        try {
-            const form = await this.getForm(id);
-            const scalesIds = [];
-            form.sections.forEach((section) => {
-                section.questions.forEach((question) => {
-                    const scaleID = question.scale.toString();
-                    if (!scalesIds.includes(scaleID)) {
-                        scalesIds.push(scaleID);
-                    }
+        redis_1.default.get(id, async (error, result) => {
+            if (result) {
+                // the result exists in our cache - return it to our user immediately
+                res.json({
+                    data: { ...JSON.parse(result) },
+                    status: 200
                 });
-            });
-            const scales = await this.getScales(scalesIds);
-            res.json({
-                data: {
-                    form,
-                    scales
-                },
-                status: 200
-            });
-        }
-        catch (e) {
-            res.status(400).json({
-                error: 'No se encontro formularío',
-                status: 400
-            });
-        }
+            }
+            else {
+                try {
+                    const form = await this.getForm(id);
+                    const scalesIds = [];
+                    form.sections.forEach((section) => {
+                        section.questions.forEach((question) => {
+                            const scaleID = question.scale.toString();
+                            if (!scalesIds.includes(scaleID)) {
+                                scalesIds.push(scaleID);
+                            }
+                        });
+                    });
+                    const scales = await this.getScales(scalesIds);
+                    redis_1.default.setex(id, 30, JSON.stringify({ form, scales }));
+                    res.json({
+                        data: {
+                            form,
+                            scales
+                        },
+                        status: 200
+                    });
+                }
+                catch (e) {
+                    res.status(400).json({
+                        error: 'No se encontro formularío',
+                        status: 400
+                    });
+                }
+            }
+        });
     }
     getScales(ids) {
         return new Promise((resolve, reject) => {
