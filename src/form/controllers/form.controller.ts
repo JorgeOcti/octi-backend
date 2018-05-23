@@ -11,26 +11,40 @@ class FormController {
   }
 
   public async list(req: Request, res: Response) {
-    // debugger;
-    try {
-      const forms = await this.getForms();
-      res.json({
-        data: forms,
-        status: 200
-      });
-    } catch (e) {
-      res.status(400).json({
-        error: 'Ha ocurrido un error',
-        status: 400
-      });
-    }
+    const keyCache = `list-form`;
+    redisClient.get(keyCache, async (error, result) => {
+      // the result exists in our cache - return it to our user immediately
+      if (result) {
+        res.json({
+          data: {...JSON.parse(result)},
+          status: 200
+        });
+      } else {
+        try {
+          // get forms from db
+          const forms = await this.getForms();
+          // set cache
+          redisClient.setex(keyCache, 30, JSON.stringify({forms}));
+          res.json({
+            data: forms,
+            status: 200
+          });
+        } catch (e) {
+          res.status(400).json({
+            error: 'Ha ocurrido un error',
+            status: 400
+          });
+        }
+      }
+    });
   }
 
   public async detail(req: Request, res: Response) {
     const {id} = req.params;
-    redisClient.get(id, async (error, result) => {
+    const keyCache = `detail-form-${id}`;
+    redisClient.get(keyCache, async (error, result) => {
+      // the result exists in our cache - return it to our user immediately
       if (result) {
-        // the result exists in our cache - return it to our user immediately
         res.json({
           data: {...JSON.parse(result)},
           status: 200
@@ -38,6 +52,7 @@ class FormController {
       } else {
         try {
           const form = await this.getForm(id);
+          // generate array of scale ids
           const scalesIds: any[] = [];
           form.sections.forEach((section) => {
             section.questions.forEach((question) => {
@@ -47,10 +62,10 @@ class FormController {
               }
             });
           });
-
+          // get scales from db
           const scales = await this.getScales(scalesIds);
-
-          redisClient.setex(id, 30, JSON.stringify({form, scales}));
+          // set cache
+          redisClient.setex(keyCache, 30, JSON.stringify({form, scales}));
           res.json({
             data: {
               form,
@@ -73,15 +88,15 @@ class FormController {
     return new Promise((resolve, reject) => {
       ScaleModel
         .find({
-            _id: {$in: ids}
-          }, {
-            'updatedAt': false,
-            'createdAt': false,
-            'active': false,
-            'minValue': false,
-            'maxValue': false,
-            'choices.na': false
-          })
+          _id: {$in: ids}
+        }, {
+          'updatedAt': false,
+          'createdAt': false,
+          'active': false,
+          'minValue': false,
+          'maxValue': false,
+          'choices.na': false
+        })
         .exec((err, scales) => {
           if (err) {
             return reject(err);

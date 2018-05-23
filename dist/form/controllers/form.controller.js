@@ -9,26 +9,41 @@ class FormController {
         this.detail = this.detail.bind(this);
     }
     async list(req, res) {
-        // debugger;
-        try {
-            const forms = await this.getForms();
-            res.json({
-                data: forms,
-                status: 200
-            });
-        }
-        catch (e) {
-            res.status(400).json({
-                error: 'Ha ocurrido un error',
-                status: 400
-            });
-        }
+        const keyCache = `list-form`;
+        redis_1.default.get(keyCache, async (error, result) => {
+            // the result exists in our cache - return it to our user immediately
+            if (result) {
+                res.json({
+                    data: { ...JSON.parse(result) },
+                    status: 200
+                });
+            }
+            else {
+                try {
+                    // get forms from db
+                    const forms = await this.getForms();
+                    // set cache
+                    redis_1.default.setex(keyCache, 30, JSON.stringify({ forms }));
+                    res.json({
+                        data: forms,
+                        status: 200
+                    });
+                }
+                catch (e) {
+                    res.status(400).json({
+                        error: 'Ha ocurrido un error',
+                        status: 400
+                    });
+                }
+            }
+        });
     }
     async detail(req, res) {
         const { id } = req.params;
-        redis_1.default.get(id, async (error, result) => {
+        const keyCache = `detail-form-${id}`;
+        redis_1.default.get(keyCache, async (error, result) => {
+            // the result exists in our cache - return it to our user immediately
             if (result) {
-                // the result exists in our cache - return it to our user immediately
                 res.json({
                     data: { ...JSON.parse(result) },
                     status: 200
@@ -37,6 +52,7 @@ class FormController {
             else {
                 try {
                     const form = await this.getForm(id);
+                    // generate array of scale ids
                     const scalesIds = [];
                     form.sections.forEach((section) => {
                         section.questions.forEach((question) => {
@@ -46,8 +62,10 @@ class FormController {
                             }
                         });
                     });
+                    // get scales from db
                     const scales = await this.getScales(scalesIds);
-                    redis_1.default.setex(id, 30, JSON.stringify({ form, scales }));
+                    // set cache
+                    redis_1.default.setex(keyCache, 30, JSON.stringify({ form, scales }));
                     res.json({
                         data: {
                             form,

@@ -12,7 +12,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "bcrypt-nodejs": "0.0.3",
+    "bcrypt": "^2.0.1",
     "bluebird": "^3.5.1",
     "body-parser": "^1.18.2",
     "chai": "^4.1.2",
@@ -46,7 +46,7 @@
   },
   "devDependencies": {
     "@types/axios": "^0.14.0",
-    "@types/bcrypt-nodejs": "0.0.30",
+    "@types/bcrypt": "^2.0.0",
     "@types/bluebird": "^3.5.20",
     "@types/body-parser": "^1.17.0",
     "@types/chai": "^4.1.3",

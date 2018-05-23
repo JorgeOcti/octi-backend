@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-const bcrypt = require("bcrypt-nodejs");
+const bcrypt = require("bcrypt");
 const mongoose = require("mongoose");
 const passportLocalMongoose = require("passport-local-mongoose");
 const userSchema = new mongoose.Schema({
@@ -8,7 +8,7 @@ const userSchema = new mongoose.Schema({
         type: String,
         unique: true
     },
-    email: String,
+    email: { type: String, unique: true, index: true },
     password: String,
     hash_password: String,
     passwordResetToken: String,
@@ -30,7 +30,7 @@ userSchema.pre('save', function save(next) {
         if (err) {
             return next(err);
         }
-        bcrypt.hash(user.password, salt, () => { }, (err, hash) => {
+        bcrypt.hash(user.password, salt, (err, hash) => {
             if (err) {
                 return next(err);
             }

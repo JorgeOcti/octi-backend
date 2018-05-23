@@ -1,3 +1,9 @@
 import * as redis from 'redis';
 
-export default redis.createClient();
+const client = redis.createClient();
+
+client.on('error', (err) => {
+  console.log('Redis Error ' + err);
+});
+
+export default client;

@@ -1,4 +1,4 @@
-import * as bcrypt from 'bcrypt-nodejs';
+import * as bcrypt from 'bcrypt';
 import * as mongoose from 'mongoose';
 import * as passportLocalMongoose from 'passport-local-mongoose';
 
@@ -20,7 +20,7 @@ const userSchema = new mongoose.Schema({
     type: String,
     unique: true
   },
-  email: String,
+  email: {type: String, unique: true, index: true},
   password: String,
   hash_password:  String,
   passwordResetToken: String,
@@ -42,7 +42,7 @@ userSchema.pre('save', function save(next) {
   if (!user.isModified('password')) { return next(); }
   bcrypt.genSalt(10, (err, salt) => {
     if (err) { return next(err); }
-    bcrypt.hash(user.password, salt, () => {}, (err: mongoose.Error, hash) => {
+    bcrypt.hash(user.password, salt, (err: mongoose.Error, hash) => {
       if (err) { return next(err); }
       user.password = hash;
       next();
