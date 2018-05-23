@@ -27,7 +27,7 @@ const LocalStrategy = passportLocal.Strategy;
 const gitCommit = git.long();
 
 /* istanbul ignore next */
-Raven.config('https://2a51f5b0d78a4a0f9f52d673a1bf92ff:002cc5d2f5f743ed8b7986db910871e2@sentry.gonzalomunoz.io/11', {
+Raven.config(process.env.SENTRY_DNS, {
   release: gitCommit,
   tags: {
     git_commit: gitCommit,
@@ -93,7 +93,7 @@ app.use(cookieParser());
 app.use(session({
   resave: true,
   saveUninitialized: true,
-  secret: 'MksAAmmDXGvk3oMgZUieiL.DnGfDHjjwnTs'
+  secret: (process.env.SECRET_KEY as string)
   // store: new redisStore({
   //   host: 'localhost',
   //   port: 6379,
@@ -194,30 +194,5 @@ app.use((err: IResponseError, req: express.Request, res: express.Response, next:
   });
   next();
 });
-
-// import FormModel from './form/models/form.model';
-// const from = new FormModel({
-//
-// });
-
-/*const setting = new Setting({
-  name: 'Default',
-  contain: [{
-    text: '@stage.osacontrol.com',
-    domain: 'https://stage.osacontrol.com'
-  }],
-  equal: [{
-    text: 'gmunoz+local@osacontrol.com',
-    domain: 'http://localhost:8080'
-  }],
-  active: true
-});
-
-setting.save((err, result) => {
-  if (err) {
-    throw err;
-  }
-  console.log(JSON.stringify(result));
-});*/
 
 export default app;

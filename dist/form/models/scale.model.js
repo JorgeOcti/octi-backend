@@ -7,7 +7,8 @@ const choiceSchema = new mongoose.Schema({
     requireImage: Boolean,
     requireText: Boolean,
     order: Number
-}, { _id: false });
+});
+// }, {_id: false});
 exports.scaleSchema = new mongoose.Schema({
     name: String,
     minValue: Number,

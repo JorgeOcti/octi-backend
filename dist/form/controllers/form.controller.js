@@ -29,7 +29,10 @@ class FormController {
             const scalesIds = [];
             form.sections.forEach((section) => {
                 section.questions.forEach((question) => {
-                    scalesIds.push(question.scale);
+                    const scaleID = question.scale.toString();
+                    if (!scalesIds.includes(scaleID)) {
+                        scalesIds.push(scaleID);
+                    }
                 });
             });
             const scales = await this.getScales(scalesIds);

@@ -22,7 +22,8 @@ const choiceSchema = new mongoose.Schema({
   requireImage: Boolean,
   requireText: Boolean,
   order: Number
-}, {_id: false});
+});
+// }, {_id: false});
 
 export const scaleSchema = new mongoose.Schema({
   name: String,
