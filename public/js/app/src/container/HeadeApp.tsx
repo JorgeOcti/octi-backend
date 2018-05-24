@@ -4,9 +4,9 @@ import * as React from 'react';
 const HeaderApp: React.StatelessComponent<{}> = () => {
   return (
     <header className="main-header">
-      <a className="logo" href="/static/theme/index2.html">
+      <a className="logo" href="/">
         <span className="logo-mini"><b>A</b>LT</span>
-        <span className="logo-lg"><b>Admin</b>LTE</span>
+        <span className="logo-lg"><b>OSA</b>Andes</span>
       </a>
       <nav className="navbar navbar-static-top">
         <a className="sidebar-toggle hidden-md hidden-lg" href="#" data-toggle="push-menu" role="button">

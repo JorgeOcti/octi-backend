@@ -3,7 +3,7 @@ import AppContainer from "../../container/AppContainer";
 
 class TestDetailView extends React.Component {
 
-  componentDidMount(){
+  componentWillMount(){
     document.title = 'OSA Andes | test 1'
   }
 

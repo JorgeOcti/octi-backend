@@ -33,7 +33,7 @@ class MenuApp extends React.Component<IPropsType, {}> {
                 return (
                   <li className={`treeview ${menu.id === cMenu ? 'active menu-open' : ''}`} key={menu.id}>
                     <a href="#">
-                      <i className="fa fa-dashboard"/> <span>{menu.text}</span>
+                      <i className={`fa ${menu.icon}`}/> <span>{menu.text}</span>
                       <span className="pull-right-container">
                       <i className="fa fa-angle-left pull-right"/>
                     </span>

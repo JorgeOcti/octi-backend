@@ -15,7 +15,7 @@ const BreadcrumbApp: React.StatelessComponent<IPropsType> = (props) => {
     const subMenu = menu.items.find((item: any) => item.id === props.cSubMenu);
     return (
       <ol className="breadcrumb">
-        <li><Link to={menu.url}><i className="fa fa-dashboard" />{menu.text}</Link></li>
+        <li><Link to={menu.url}><i className={`fa ${menu.icon}`} />{menu.text}</Link></li>
         {
           props.cAction && props.cAction.length?
             subMenu?<li><Link to={subMenu.url}>{subMenu.text}</Link></li>: null:

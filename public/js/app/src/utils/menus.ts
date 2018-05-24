@@ -20,11 +20,12 @@ menus.push({
     }
   ]
 });
+
 // Users
 menus.push({
   id: '2',
   text: 'User',
-  icon: 'fa-dashboard',
+  icon: 'fa-users',
   url: '/2/',
   items: [
     {
@@ -37,6 +38,28 @@ menus.push({
       id: '2.2',
       icon: 'fa-circle-o',
       text: 'User v2',
+      url: '/'
+    }
+  ]
+});
+
+// Report
+menus.push({
+  id: '3',
+  text: 'Setting',
+  icon: 'fa-cog',
+  url: '/',
+  items: [
+    {
+      id: '2.1',
+      icon: 'fa-circle-o',
+      text: 'Setting v1',
+      url: '/'
+    },
+    {
+      id: '2.2',
+      icon: 'fa-circle-o',
+      text: 'Setting v2',
       url: '/'
     }
   ]
