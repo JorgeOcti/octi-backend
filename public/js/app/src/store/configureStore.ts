@@ -22,21 +22,21 @@ const configureStore = () => {
   } else {
     middlewares.push(ThunkMiddleware);
     middlewares.push(createDebounce());
-    Raven.config(window.sentry_dns !== 'False' ? window.sentry_dns : 'https://fc4ef58ac7cc44b88c76d2a24948a8ca@sentry.gonzalomunoz.io/2').install();
-    Raven.setUserContext({
-        id: window.user.id,
-        name: window.user.name,
-        teamID: window.user.teamID,
-        teamName: window.user.teamName,
-        email: window.user.email
-    });
-    Raven.setTagsContext({
-        environment: process.env.NODE_ENV
-    });
-    Raven.setExtraContext({
-        app: 'Soporte'
-    });
-    middlewares.push(createRavenMiddleware(Raven));
+    // Raven.config(window.sentry_dns !== 'False' ? window.sentry_dns : 'https://fc4ef58ac7cc44b88c76d2a24948a8ca@sentry.gonzalomunoz.io/2').install();
+    // Raven.setUserContext({
+    //     id: window.user.id,
+    //     name: window.user.name,
+    //     teamID: window.user.teamID,
+    //     teamName: window.user.teamName,
+    //     email: window.user.email
+    // });
+    // Raven.setTagsContext({
+    //     environment: process.env.NODE_ENV
+    // });
+    // Raven.setExtraContext({
+    //     app: 'Soporte'
+    // });
+    // middlewares.push(createRavenMiddleware(Raven));
     enhancers = applyMiddleware(...middlewares);
   }
 
