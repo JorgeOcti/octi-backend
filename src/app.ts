@@ -73,6 +73,7 @@ app.use(responseTime());
 // template engine
 const viewDirectory = path.join(__dirname, '../views');
 app.set('view engine', 'pug');
+app.set('view cache', true);
 app.set('views', viewDirectory);
 
 // Set environment variables

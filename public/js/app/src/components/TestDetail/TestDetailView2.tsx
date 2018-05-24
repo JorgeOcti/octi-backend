@@ -26,6 +26,9 @@ class TestDetailView2 extends React.Component {
                 con software de autoedición, como por ejemplo Aldus PageMaker, el cual incluye versiones de Lorem Ipsum.</p>
             </div>
             <div className="box-footer">Footer</div>
+            <div className="overlay">
+              <i className="fa fa-spinner fa-spin" style={{color:'#464646'}} />
+            </div>
           </div>
         </section>
       </AppContainer>
