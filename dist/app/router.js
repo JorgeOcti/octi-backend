@@ -6,6 +6,7 @@ const jwt_controller_1 = require("./controllers/jwt.controller");
 const appRouter = express.Router();
 exports.appRouter = appRouter;
 appRouter.get('/', app_controller_1.default.index);
+appRouter.get('/2/', app_controller_1.default.index);
 const jwtRouter = express.Router();
 exports.jwtRouter = jwtRouter;
 jwtRouter.post('/login/', jwt_controller_1.default.login);

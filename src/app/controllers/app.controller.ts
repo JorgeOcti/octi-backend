@@ -9,6 +9,7 @@ class AppController {
   public index(req: Request, res: Response) {
     res.render('app/index', { title: 'Hey', message: 'Hello there!'});
   }
+
 }
 
 export default new AppController();

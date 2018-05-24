@@ -23,6 +23,7 @@
     "views",
     "logs",
     "node_modules",
-    "dist"
+    "dist",
+    "public",
   ]
 }

@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "dev": "nodemon --inspect dist/server.js",
+    "dev": "nodemon --inspect dist/server.js --ignore 'public/**/*.*'",
     "watch-ts": "tsc -w",
     "test": "mocha --recursive --require ts-node/register \"src/tests/**/*.ts\" --timeout 5000 --exit",
     "test-with-coverage": "nyc --reporter=html --reporter=text mocha dist/tests --timeout 5000 --exit"
@@ -81,5 +81,8 @@
     "source-map-support": "^0.5.6",
     "ts-node": "^6.0.3",
     "typescript": "^2.8.3"
+  },
+  "nodemonConfig": {
+    "ignore": ["src/*.*", "coverage/*.*", ".nyc_output/*.*", "public/*.*"]
   }
 }
