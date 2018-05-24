@@ -64,6 +64,10 @@ app.use(compression());
 app.use(lusca.xframe('SAMEORIGIN'));
 app.use(lusca.xssProtection(true));
 app.use(responseTime());
+// template engine
+const viewDirectory = path.join(__dirname, '../views');
+app.set('view engine', 'pug');
+app.set('views', viewDirectory);
 // Set environment variables
 app.set('env', process.env.ENV || 'development');
 app.set('port', process.env.PORT || 3000);
@@ -145,7 +149,10 @@ if (app.get('env') !== 'testing') {
 // The request handler must be the first middleware on the app
 app.use(Raven.requestHandler());
 // Routes
-app.use('/api/v1', router_1.default);
+const staticDirectory = path.join(__dirname, '../public');
+app.use('/static', express.static(staticDirectory));
+app.use('/', router_1.appRouter);
+app.use('/api/v1', router_1.jwtRouter);
 app.use('/api/v1/forms', router_2.default);
 // The error handler must be before any other error middleware
 app.use(Raven.errorHandler());

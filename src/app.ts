@@ -17,7 +17,7 @@ import * as responseTime from 'response-time';
 import User from './app/models/user.model';
 
 // Import routes
-import appRouter from './app/router';
+import {appRouter, jwtRouter} from './app/router';
 import formRouter from './form/router';
 
 // Configure sentry
@@ -69,6 +69,11 @@ app.use(compression());
 app.use(lusca.xframe('SAMEORIGIN'));
 app.use(lusca.xssProtection(true));
 app.use(responseTime());
+
+// template engine
+const viewDirectory = path.join(__dirname, '../views');
+app.set('view engine', 'pug');
+app.set('views', viewDirectory);
 
 // Set environment variables
 app.set('env', process.env.ENV || 'development');
@@ -163,7 +168,11 @@ if (app.get('env') !== 'testing') {
 app.use(Raven.requestHandler());
 
 // Routes
-app.use('/api/v1', appRouter);
+const staticDirectory = path.join(__dirname, '../public');
+app.use('/static', express.static(staticDirectory));
+
+app.use('/', appRouter);
+app.use('/api/v1', jwtRouter);
 app.use('/api/v1/forms', formRouter);
 
 // The error handler must be before any other error middleware

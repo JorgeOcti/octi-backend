@@ -10,14 +10,6 @@ export interface IChoicesModel extends mongoose.Types.Subdocument {
   order: number;
 }
 
-export interface IScaleModel extends mongoose.Document {
-  name: string;
-  minValue: number;
-  maxValue: number;
-  choices: mongoose.Types.Array<IChoicesModel>;
-  active: boolean;
-}
-
 const choiceSchema = new mongoose.Schema({
   choice: { type: String, required: true, trim: true },
   value: { type: Number, required: true },
@@ -28,6 +20,14 @@ const choiceSchema = new mongoose.Schema({
   order: { type: Number, required: true }
 });
 // }, {_id: false});
+
+export interface IScaleModel extends mongoose.Document {
+  name: string;
+  minValue: number;
+  maxValue: number;
+  choices: mongoose.Types.Array<IChoicesModel>;
+  active: boolean;
+}
 
 export const scaleSchema = new mongoose.Schema({
   name: String,

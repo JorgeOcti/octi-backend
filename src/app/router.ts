@@ -1,9 +1,16 @@
 import * as express from 'express';
+import AppController from './controllers/app.controller';
 import JWTController from './controllers/jwt.controller';
 
-const router = express.Router();
-router.post('/login/', JWTController.login);
-router.post('/test/', JWTController.isJWTAuthenticated, JWTController.test);
-router.post('/create/', JWTController.createUser);
+const appRouter = express.Router();
+appRouter.get('/', AppController.index);
 
-export default router;
+const jwtRouter = express.Router();
+jwtRouter.post('/login/', JWTController.login);
+jwtRouter.post('/test/', JWTController.isJWTAuthenticated, JWTController.test);
+jwtRouter.post('/create/', JWTController.createUser);
+
+export {
+  appRouter,
+  jwtRouter
+};

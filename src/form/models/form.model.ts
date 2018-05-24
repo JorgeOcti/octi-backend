@@ -51,6 +51,14 @@ const formSectionsSchema = new mongoose.Schema({
   order: { type: Number, required: true }
 });
 
+// formSectionsSchema.set('toJSON', {
+//   transform: (doc: any, ret: any, options: any) => {
+//     ret.id = ret._id;
+//     delete ret._id;
+//     delete ret.__v;
+//   }
+// });
+
 export interface IFormModel extends mongoose.Document {
   name: string;
   description: string;
@@ -70,6 +78,14 @@ const formSchema = new mongoose.Schema({
 }, {
   timestamps: true
 });
+
+// formSchema.set('toJSON', {
+//   transform: (doc: any, ret: any, options: any) => {
+//     ret.id = ret._id;
+//     delete ret._id;
+//     delete ret.__v;
+//   }
+// });
 
 const Form = mongoose.model<IFormModel>('Form', formSchema);
 

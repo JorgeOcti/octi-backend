@@ -10,7 +10,6 @@ const choiceSchema = new mongoose.Schema({
     na: { type: Boolean, default: false },
     order: { type: Number, required: true }
 });
-// }, {_id: false});
 exports.scaleSchema = new mongoose.Schema({
     name: String,
     minValue: { type: Number, required: true },
