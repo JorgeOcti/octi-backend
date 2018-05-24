@@ -20,6 +20,8 @@
     "./src/**/*"
   ],
   "exclude": [
+    "views",
+    "logs",
     "node_modules",
     "dist"
   ]
