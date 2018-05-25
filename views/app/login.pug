@@ -3,10 +3,10 @@ extends ../layout
 block head
   title OSA Andes | Login
   style
-    | body {background: linear-gradient(to left, #096e9f, #033a67); color: #FFF; height: auto}
+    | head{overflow-y: hidden; overflow-x: hidden} body {background: linear-gradient(to left, #096e9f, #033a67); color: #FFF; height: auto; overflow-y: hidden;overflow-x: hidden}
 
 block content
-  body(style={'overflow-y':'hidden'})
+  body
     #login-container
       .row
         .col-md-4
