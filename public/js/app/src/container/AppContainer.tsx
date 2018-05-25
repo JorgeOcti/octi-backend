@@ -37,7 +37,7 @@ class AppContainer extends React.Component<IPropsType, IStateType> {
       <React.Fragment>
         <HeaderApp />
         <MenuApp cMenu={cMenu} cSubMenu={cSubMenu} />
-        <div className="content-wrapper" style={{minHeight:`${window.innerHeight-101}px`}}>
+        <div className="content-wrapper" style={{minHeight:`${window.innerHeight-51}px`}}>
           <section className="content-header">
             <h1>{this.props.title}</h1>
             <BreadcrumbApp cMenu={cMenu} cSubMenu={cSubMenu} cAction={cAction}/>
