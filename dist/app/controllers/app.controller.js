@@ -17,16 +17,13 @@ class AppController {
     processLogin(req, res, next) {
         passport.authenticate('local', (err, user, info) => {
             if (err) {
-                console.log('err');
                 return next(err); // will generate a 500 error
             }
             if (!user) {
-                console.log('!user');
-                return res.render('app/login', { error: 'Usuario no encontrado' });
+                return res.render('app/login', { error: 'Usuario o contraseña incorrecta.' });
             }
             req.login(user, loginErr => {
                 if (loginErr) {
-                    console.log('loginErr', loginErr);
                     return next(loginErr);
                 }
                 else {

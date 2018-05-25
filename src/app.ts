@@ -106,8 +106,8 @@ app.use('/static', express.static(staticDirectory));
 
 app.use(cookieParser());
 app.use(session({
-  resave: true,
-  saveUninitialized: true,
+  resave: false,
+  saveUninitialized: false,
   secret: (process.env.SECRET_KEY as string),
   store: new redisStore({
     host: 'localhost',

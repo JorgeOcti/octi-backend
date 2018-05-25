@@ -13,6 +13,7 @@ class AppController {
   public index(req: Request, res: Response) {
     res.render('app/index', { title: 'Hey', message: 'Hello there!'});
   }
+
   public login(req: Request, res: Response, error:any) {
     res.render('app/login');
   }
@@ -20,16 +21,13 @@ class AppController {
   public processLogin(req: Request, res: Response, next: NextFunction) {
     passport.authenticate('local', (err, user, info) => {
       if (err) {
-        console.log('err');
         return next(err); // will generate a 500 error
       }
       if (!user) {
-        console.log('!user');
-        return res.render('app/login', {error: 'Usuario no encontrado'});
+        return res.render('app/login', {error: 'Usuario o contraseña incorrecta.'});
       }
       req.login(user, loginErr => {
         if (loginErr) {
-          console.log('loginErr', loginErr);
           return next(loginErr);
         } else {
           user.last_login = Date.now();

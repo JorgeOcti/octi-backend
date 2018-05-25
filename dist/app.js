@@ -91,8 +91,8 @@ const staticDirectory = path.join(__dirname, '../public');
 app.use('/static', express.static(staticDirectory));
 app.use(cookieParser());
 app.use(session({
-    resave: true,
-    saveUninitialized: true,
+    resave: false,
+    saveUninitialized: false,
     secret: process.env.SECRET_KEY,
     store: new redisStore({
         host: 'localhost',

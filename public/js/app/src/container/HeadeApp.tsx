@@ -66,7 +66,7 @@ const HeaderApp: React.StatelessComponent<{}> = () => {
                 <li className="user-header">
                   <img className="img-circle" src="/static/theme/dist/img/user2-160x160.jpg" alt="User Image" />
                   <p>{`${window.user.name || ''} ${window.user.lastName || ''}${!window.user.name && ! window.user.lastName?'Unknown User':''}`}
-                    <small>Member since Nov. 2012</small>
+                    <small>{window.user.email || '' }</small>
                   </p>
                 </li>
                 {/*<li className="user-body">*/}
