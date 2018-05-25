@@ -3,10 +3,13 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const redis_1 = require("../../services/redis");
 const form_model_1 = require("../models/form.model");
 const scale_model_1 = require("../models/scale.model");
+const participant_model_1 = require("../models/participant.model");
+const bson_1 = require("bson");
 class FormController {
     constructor() {
         this.list = this.list.bind(this);
         this.detail = this.detail.bind(this);
+        this.complete = this.complete.bind(this);
     }
     async list(req, res) {
         const keyCache = `list-form`;
@@ -37,6 +40,88 @@ class FormController {
                 }
             }
         });
+    }
+    async complete(req, res) {
+        const { id } = req.params;
+        const { answers } = req.body;
+        console.log('answers', answers);
+        // if (!answers){
+        //   return res.status(400).json({
+        //     error: 'Debes enviar las respuestas',
+        //     status: 400
+        //   });
+        // }
+        try {
+            const form = await this.getFormWithScale(id);
+            if (form) {
+                const newParticipant = new participant_model_1.default({
+                    name: form.name,
+                    description: form.description,
+                    user: new bson_1.ObjectID('5b058195983880f860332f8e'),
+                    active: form.active,
+                });
+                console.log(newParticipant);
+                for (const section of form.sections) {
+                    // console.log('\n\nsection', JSON.stringify(section));
+                    const newAnswers = [];
+                    for (const question of section.questions) {
+                        // console.log('\n\nquestion', JSON.stringify(question));
+                        // const newScale: any = {
+                        //
+                        // }
+                        newAnswers.push({
+                            _id: question._id,
+                            question: question.question,
+                            shortName: question.shortName,
+                            scale: question.scale,
+                            risk: question.risk,
+                            observe: question.observe,
+                            qualification: 0,
+                            weight: question.weight,
+                            order: question.order,
+                        });
+                    }
+                    newParticipant.sections.push({
+                        _id: section._id,
+                        name: section.name,
+                        shortName: section.shortName,
+                        answers: newAnswers,
+                        qualification: 0,
+                        weight: section.weight,
+                        order: section.order,
+                    });
+                }
+                // console.log(JSON.stringify(newParticipant));
+                try {
+                    await newParticipant.save();
+                    return res.json({
+                        data: {
+                            id,
+                            answers
+                        },
+                        status: 200
+                    });
+                }
+                catch (e) {
+                    return res.status(400).json({
+                        error: e,
+                        status: 400
+                    });
+                }
+            }
+            else {
+                return res.status(400).json({
+                    error: 'No se ha encontrado el formularío',
+                    status: 400
+                });
+            }
+        }
+        catch (e) {
+            return res.status(400).json({
+                error: e,
+                status: 400
+            });
+        }
     }
     async detail(req, res) {
         const { id } = req.params;
@@ -102,6 +187,22 @@ class FormController {
                     return reject(err);
                 }
                 return resolve(scales);
+            });
+        });
+    }
+    getFormWithScale(id) {
+        return new Promise((resolve, reject) => {
+            form_model_1.default
+                .findById(id)
+                .populate('sections.questions.scale')
+                .exec((err, form) => {
+                if (err) {
+                    return reject(err);
+                }
+                if (form) {
+                    return resolve(form);
+                }
+                return reject('No se encontro formularío');
             });
         });
     }
