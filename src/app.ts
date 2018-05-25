@@ -4,6 +4,8 @@ import * as cookieParser from 'cookie-parser';
 import * as dotenv from 'dotenv';
 import * as express from 'express';
 import * as session from 'express-session';
+import * as connectRedis from 'connect-redis';
+import redisClient from './services/redis';
 import * as fileStreamRotator from 'file-stream-rotator';
 import * as git from 'git-rev-sync';
 import * as lusca from 'lusca';
@@ -25,6 +27,7 @@ import formRouter from './form/router';
 const root = (global as any).__rootdir__;
 const LocalStrategy = passportLocal.Strategy;
 const gitCommit = git.long();
+const redisStore = connectRedis(session);
 
 /* istanbul ignore next */
 Raven.config(process.env.SENTRY_DNS, {
@@ -73,7 +76,7 @@ app.use(responseTime());
 // template engine
 const viewDirectory = path.join(__dirname, '../views');
 app.set('view engine', 'pug');
-app.set('view cache', true);
+app.set('view cache', false);
 app.set('views', viewDirectory);
 
 // Set environment variables
@@ -98,23 +101,53 @@ app.use(bodyParser.urlencoded({ extended: true }));
 const upload = multer();
 app.use(upload.single());
 
+const staticDirectory = path.join(__dirname, '../public');
+app.use('/static', express.static(staticDirectory));
+
 app.use(cookieParser());
 app.use(session({
   resave: true,
   saveUninitialized: true,
-  secret: (process.env.SECRET_KEY as string)
-  // store: new redisStore({
-  //   host: 'localhost',
-  //   port: 6379,
-  //   client: redisClient,
-  //   ttl: 260
-  // })
+  secret: (process.env.SECRET_KEY as string),
+  store: new redisStore({
+    host: 'localhost',
+    port: 6379,
+    client: redisClient,
+    ttl: 260
+  })
 }));
 
 // passport
 app.use(passport.initialize());
 app.use(passport.session());
 
+// passport.use(new LocalStrategy((User as any).authenticate()));
+
+/**
+ * Sign in using Email and Password.
+ */
+
+passport.use(new LocalStrategy({ usernameField: 'username' }, (username, password, done) => {
+  User.findOne({ username: username.toLowerCase() }, (err, user: any) => {
+    if (err) { return done(err); }
+    if (!user) {
+      return done(undefined, false, { message: `username ${username} not found.` });
+    }
+    user.comparePassword(password, (err: Error, isMatch: boolean) => {
+      if (err) { return done(err); }
+      if (isMatch) {
+        return done(undefined, user);
+      }
+      return done(undefined, false, { message: 'Invalid email or password.' });
+    });
+  });
+}));
+
+passport.serializeUser((User as any).serializeUser());
+passport.deserializeUser((User as any).deserializeUser());
+
+
+/*
 passport.serializeUser<any, any>((user, done) => {
   done(undefined, user.id);
 });
@@ -126,25 +159,9 @@ passport.deserializeUser((id, done) => {
     }
   });
 });
+*/
 
-/**
- * Sign in using Email and Password.
- */
-passport.use(new LocalStrategy({ usernameField: 'email' }, (email, password, done) => {
-  User.findOne({ email: email.toLowerCase() }, (err, user: any) => {
-    if (err) { return done(err); }
-    if (!user) {
-      return done(undefined, false, { message: `Email ${email} not found.` });
-    }
-    user.comparePassword(password, (err: Error, isMatch: boolean) => {
-      if (err) { return done(err); }
-      if (isMatch) {
-        return done(undefined, user);
-      }
-      return done(undefined, false, { message: 'Invalid email or password.' });
-    });
-  });
-}));
+
 
 // Logger app
 const logDirectory = path.join(__dirname, '../logs');
@@ -169,9 +186,6 @@ if (app.get('env') !== 'testing') {
 app.use(Raven.requestHandler());
 
 // Routes
-const staticDirectory = path.join(__dirname, '../public');
-app.use('/static', express.static(staticDirectory));
-
 app.use('/', appRouter);
 app.use('/api/v1', jwtRouter);
 app.use('/api/v1/forms', formRouter);

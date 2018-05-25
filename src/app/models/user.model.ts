@@ -5,6 +5,8 @@ import * as passportLocalMongoose from 'passport-local-mongoose';
 export interface IUserModel extends mongoose.Document {
   username: string;
   email: string;
+  name: string;
+  lastName: string;
   password: string;
   hash_password: string;
   passwordResetToken: string;
@@ -13,12 +15,19 @@ export interface IUserModel extends mongoose.Document {
 
   comparePassword: (candidatePassword: string, cb: (err: any, isMatch: any) => {}) => void;
   comparePasswordSync: (candidatePassword: string) => void;
+
 }
 
 const userSchema = new mongoose.Schema({
   username: {
     type: String,
     unique: true
+  },
+  name: {
+    type: String,
+  },
+  lastName: {
+    type: String,
   },
   email: {type: String, unique: true, index: true},
   password: String,

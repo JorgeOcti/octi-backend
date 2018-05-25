@@ -43,9 +43,9 @@ module.exports = {// entry: process.env.NODE_ENV === 'production'?['babel-polyfi
   externals: {
     _: '_',
     $: 'jQuery',
-    // react: 'React',
-    // 'react-dom': 'ReactDOM',
-    'moment': 'moment'
+    react: 'React',
+    'react-dom': 'ReactDOM',
+    moment: 'moment'
   },
   devServer: {
     contentBase: sourcePath,

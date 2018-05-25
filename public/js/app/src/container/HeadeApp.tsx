@@ -1,5 +1,8 @@
 // import * as PropTypes from 'prop-types';
 import * as React from 'react';
+import {IWindow} from "../interfaces/window";
+
+declare let window: IWindow;
 
 const HeaderApp: React.StatelessComponent<{}> = () => {
   return (
@@ -57,12 +60,12 @@ const HeaderApp: React.StatelessComponent<{}> = () => {
             <li className="dropdown user user-menu">
               <a className="dropdown-toggle" href="#" data-toggle="dropdown">
                 <img className="user-image" src="/static/theme/dist/img/user2-160x160.jpg" alt="User Image" />
-                <span className="hidden-xs">Alexander Pierce</span>
+                <span className="hidden-xs">{`${window.user.name} ${window.user.lastName}`}</span>
               </a>
               <ul className="dropdown-menu">
                 <li className="user-header">
                   <img className="img-circle" src="/static/theme/dist/img/user2-160x160.jpg" alt="User Image" />
-                  <p>Alexander Pierce - Web Developer
+                  <p>{`${window.user.name} ${window.user.lastName}`}
                     <small>Member since Nov. 2012</small>
                   </p>
                 </li>
@@ -75,7 +78,7 @@ const HeaderApp: React.StatelessComponent<{}> = () => {
                 {/*</li>*/}
                 <li className="user-footer">
                   {/*<div className="pull-left"><a className="btn btn-default btn-flat" href="#">Profile</a></div>*/}
-                  <div className="pull-right"><a className="btn btn-default btn-flat" href="#">Sign out</a></div>
+                  <div className="pull-right"><a className="btn btn-default btn-flat" href="/account/logout/">Sign out</a></div>
                 </li>
               </ul>
             </li>

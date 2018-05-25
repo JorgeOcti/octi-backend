@@ -1,0 +1,34 @@
+extends ../layout
+
+block head
+  title OSA Andes | Login
+  style
+    | body {background: linear-gradient(to left, #096e9f, #033a67); color: #FFF; height: auto}
+
+block content
+  body
+    #login-container
+      .row
+        .col-md-4
+        .col-md-4
+          .login
+            p.text-center
+              img(src='https://osacontrol.com/assets/img/logo-osa.1613ea2c74e8.png', class='text-center logo')
+            if error
+              p.text-center.text-red=error
+            form(role='form', action='/account/login/', method="post")
+              .form-group
+                .input-group
+                  .input-group-addon
+                    i.fa.fa-user
+                  input#username.form-control(type='text', placeholder='Username', name='username', autocomplete='off')
+              .form-group
+                .input-group
+                  .input-group-addon
+                    i.fa.fa-lock
+                  input#password.form-control(type='password', placeholder='Password', name='password', autocomplete='off')
+              .form-group
+                button.btn.btn-block.btn-primary(type='submit', style='margin-right:3px')='Login'
+        .col-md-4
+
+block js

@@ -11,16 +11,7 @@ interface IURL {
 interface IUser {
   id: string;
   name: string;
-  first_name: string;
-  last_name: string;
-  teamID: number;
-  teamName: string;
-  roleID: string;
-  roleName: string;
-  venueName: string;
-  venueID: string;
-  departmentName: string;
-  departmentID: string;
+  lastName: string;
   email: string;
 }
 

@@ -4,4 +4,13 @@ block head
   title OSA Andes
 
 block content
-  #app.wrapper
+  body.hold-transition.skin-purple.sidebar-mini
+    #app.wrapper
+
+block js
+  //- AdminLTE App
+  script(src='/static/theme/dist/js/adminlte.min.js')
+  //- React App
+  script(src='/static/js/app/dist/main.js')
+  script.
+    window.user = {id: '!{`${user.id}`}', name: '!{`${user.name}`}', lastName: '!{`${user.lastName}`}', email: '!{`${user.email}`}'}

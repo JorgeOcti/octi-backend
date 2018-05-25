@@ -6,6 +6,8 @@ const cookieParser = require("cookie-parser");
 const dotenv = require("dotenv");
 const express = require("express");
 const session = require("express-session");
+const connectRedis = require("connect-redis");
+const redis_1 = require("./services/redis");
 const fileStreamRotator = require("file-stream-rotator");
 const git = require("git-rev-sync");
 const lusca = require("lusca");
@@ -25,6 +27,7 @@ global.__rootdir__ = __dirname || process.cwd();
 const root = global.__rootdir__;
 const LocalStrategy = passportLocal.Strategy;
 const gitCommit = git.long();
+const redisStore = connectRedis(session);
 /* istanbul ignore next */
 Raven.config(process.env.SENTRY_DNS, {
     release: gitCommit,
@@ -67,7 +70,7 @@ app.use(responseTime());
 // template engine
 const viewDirectory = path.join(__dirname, '../views');
 app.set('view engine', 'pug');
-app.set('view cache', true);
+app.set('view cache', false);
 app.set('views', viewDirectory);
 // Set environment variables
 app.set('env', process.env.ENV || 'development');
@@ -84,41 +87,34 @@ app.use(bodyParser.urlencoded({ extended: true }));
 // For parsing multipart/form-data
 const upload = multer();
 app.use(upload.single());
+const staticDirectory = path.join(__dirname, '../public');
+app.use('/static', express.static(staticDirectory));
 app.use(cookieParser());
 app.use(session({
     resave: true,
     saveUninitialized: true,
-    secret: process.env.SECRET_KEY
-    // store: new redisStore({
-    //   host: 'localhost',
-    //   port: 6379,
-    //   client: redisClient,
-    //   ttl: 260
-    // })
+    secret: process.env.SECRET_KEY,
+    store: new redisStore({
+        host: 'localhost',
+        port: 6379,
+        client: redis_1.default,
+        ttl: 260
+    })
 }));
 // passport
 app.use(passport.initialize());
 app.use(passport.session());
-passport.serializeUser((user, done) => {
-    done(undefined, user.id);
-});
-passport.deserializeUser((id, done) => {
-    user_model_1.default.findById(id, (err, user) => {
-        if (user) {
-            done(err, user);
-        }
-    });
-});
+// passport.use(new LocalStrategy((User as any).authenticate()));
 /**
  * Sign in using Email and Password.
  */
-passport.use(new LocalStrategy({ usernameField: 'email' }, (email, password, done) => {
-    user_model_1.default.findOne({ email: email.toLowerCase() }, (err, user) => {
+passport.use(new LocalStrategy({ usernameField: 'username' }, (username, password, done) => {
+    user_model_1.default.findOne({ username: username.toLowerCase() }, (err, user) => {
         if (err) {
             return done(err);
         }
         if (!user) {
-            return done(undefined, false, { message: `Email ${email} not found.` });
+            return done(undefined, false, { message: `username ${username} not found.` });
         }
         user.comparePassword(password, (err, isMatch) => {
             if (err) {
@@ -131,6 +127,21 @@ passport.use(new LocalStrategy({ usernameField: 'email' }, (email, password, don
         });
     });
 }));
+passport.serializeUser(user_model_1.default.serializeUser());
+passport.deserializeUser(user_model_1.default.deserializeUser());
+/*
+passport.serializeUser<any, any>((user, done) => {
+  done(undefined, user.id);
+});
+
+passport.deserializeUser((id, done) => {
+  User.findById(id, (err, user) => {
+    if (user) {
+      done(err, user);
+    }
+  });
+});
+*/
 // Logger app
 const logDirectory = path.join(__dirname, '../logs');
 exports.accessLogStream = fileStreamRotator.getStream({
@@ -150,8 +161,6 @@ if (app.get('env') !== 'testing') {
 // The request handler must be the first middleware on the app
 app.use(Raven.requestHandler());
 // Routes
-const staticDirectory = path.join(__dirname, '../public');
-app.use('/static', express.static(staticDirectory));
 app.use('/', router_1.appRouter);
 app.use('/api/v1', router_1.jwtRouter);
 app.use('/api/v1/forms', router_2.default);
