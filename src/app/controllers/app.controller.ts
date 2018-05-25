@@ -21,32 +21,42 @@ class AppController {
   }
 
   public login(req: Request, res: Response, error:any) {
-    res.render('app/login');
+    if (req.user){
+      return res.redirect('/');
+    }
+    else{
+      return res.render('app/login');
+    }
   }
 
   public processLogin(req: Request, res: Response, next: NextFunction) {
-    passport.authenticate('local', (err, user, info) => {
-      if (err) {
-        return next(err); // will generate a 500 error
-      }
-      if (!user) {
-        return res.render('app/login', {error: 'Usuario o contraseña incorrecta.'});
-      }
-      req.login(user, loginErr => {
-        if (loginErr) {
-          return next(loginErr);
-        } else {
-          user.last_login = Date.now();
-          user.save(function (err: any) {
-            if (err) {
-              console.log(err); // handle errors!
-            } else {
-              return res.redirect('/');
-            }
-          });
+    if (req.user){
+      return res.redirect('/');
+    }
+    else{
+      passport.authenticate('local', (err, user, info) => {
+        if (err) {
+          return next(err); // will generate a 500 error
         }
-      });
-    })(req, res, next);
+        if (!user) {
+          return res.render('app/login', {error: 'Usuario o contraseña incorrecta.'});
+        }
+        req.login(user, loginErr => {
+          if (loginErr) {
+            return next(loginErr);
+          } else {
+            user.last_login = Date.now();
+            user.save(function (err: any) {
+              if (err) {
+                console.log(err); // handle errors!
+              } else {
+                return res.redirect('/');
+              }
+            });
+          }
+        });
+      })(req, res, next);
+    }
   }
 
   public logout(req: Request, res: Response) {

@@ -17,33 +17,43 @@ class AppController {
         res.send(`User-Agent: *\nDisallow: /`);
     }
     login(req, res, error) {
-        res.render('app/login');
+        if (req.user) {
+            return res.redirect('/');
+        }
+        else {
+            return res.render('app/login');
+        }
     }
     processLogin(req, res, next) {
-        passport.authenticate('local', (err, user, info) => {
-            if (err) {
-                return next(err); // will generate a 500 error
-            }
-            if (!user) {
-                return res.render('app/login', { error: 'Usuario o contraseña incorrecta.' });
-            }
-            req.login(user, loginErr => {
-                if (loginErr) {
-                    return next(loginErr);
+        if (req.user) {
+            return res.redirect('/');
+        }
+        else {
+            passport.authenticate('local', (err, user, info) => {
+                if (err) {
+                    return next(err); // will generate a 500 error
                 }
-                else {
-                    user.last_login = Date.now();
-                    user.save(function (err) {
-                        if (err) {
-                            console.log(err); // handle errors!
-                        }
-                        else {
-                            return res.redirect('/');
-                        }
-                    });
+                if (!user) {
+                    return res.render('app/login', { error: 'Usuario o contraseña incorrecta.' });
                 }
-            });
-        })(req, res, next);
+                req.login(user, loginErr => {
+                    if (loginErr) {
+                        return next(loginErr);
+                    }
+                    else {
+                        user.last_login = Date.now();
+                        user.save(function (err) {
+                            if (err) {
+                                console.log(err); // handle errors!
+                            }
+                            else {
+                                return res.redirect('/');
+                            }
+                        });
+                    }
+                });
+            })(req, res, next);
+        }
     }
     logout(req, res) {
         req.logout();
