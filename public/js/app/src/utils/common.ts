@@ -24,28 +24,28 @@ interface IMixpanelProps {
 export function reactTrackMixpanel(event: string, props: IMixpanelProps): void {
   if (typeof(window.mixpanel) === 'object') {
     mixpanel.register({
-      team: window.user.teamName,
-      team_id: window.user.teamID,
-      role: window.user.roleID,
-      role_id: window.user.roleName,
-      venue: window.user.venueName,
-      venue_id: window.user.venueID,
-      department: window.user.departmentName,
-      department_id: window.user.departmentID
+      // team: window.user.teamName,
+      // team_id: window.user.teamID,
+      // role: window.user.roleID,
+      // role_id: window.user.roleName,
+      // venue: window.user.venueName,
+      // venue_id: window.user.venueID,
+      // department: window.user.departmentName,
+      // department_id: window.user.departmentID
     });
     mixpanel.identify(window.user.id);
     mixpanel.people.set({
-      $first_name: window.user.first_name,
-      $last_name: window.user.last_name,
-      $email: window.user.email,
-      team: window.user.teamName,
-      team_id: window.user.teamID,
-      role: window.user.roleID,
-      role_id: window.user.roleName,
-      venue: window.user.venueName,
-      venue_id: window.user.venueID,
-      department: window.user.departmentName,
-      department_id: window.user.departmentID
+      // $first_name: window.user.first_name,
+      // $last_name: window.user.last_name,
+      // $email: window.user.email,
+      // team: window.user.teamName,
+      // team_id: window.user.teamID,
+      // role: window.user.roleID,
+      // role_id: window.user.roleName,
+      // venue: window.user.venueName,
+      // venue_id: window.user.venueID,
+      // department: window.user.departmentName,
+      // department_id: window.user.departmentID
     });
     window.mixpanel.track(event, props);
   }
