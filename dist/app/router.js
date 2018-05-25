@@ -6,6 +6,7 @@ const jwt_controller_1 = require("./controllers/jwt.controller");
 const middlewares_1 = require("../middlewares/middlewares");
 const appRouter = express.Router();
 exports.appRouter = appRouter;
+appRouter.get('/robots.txt', app_controller_1.default.robots);
 appRouter.get('/', middlewares_1.default.isLoggedIn, app_controller_1.default.index);
 appRouter.get('/2/', middlewares_1.default.isLoggedIn, app_controller_1.default.index);
 appRouter.get('/account/login/', app_controller_1.default.login);

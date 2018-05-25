@@ -4,12 +4,17 @@ const passport = require("passport");
 class AppController {
     constructor() {
         this.index = this.index.bind(this);
+        this.robots = this.robots.bind(this);
         this.login = this.login.bind(this);
         this.processLogin = this.processLogin.bind(this);
         this.logout = this.logout.bind(this);
     }
     index(req, res) {
         res.render('app/index', { title: 'Hey', message: 'Hello there!' });
+    }
+    robots(req, res) {
+        res.setHeader('content-type', 'text/plain; charset=utf-8');
+        res.send(`User-Agent: *\nDisallow: /`);
     }
     login(req, res, error) {
         res.render('app/login');

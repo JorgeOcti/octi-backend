@@ -4,6 +4,7 @@ import JWTController from './controllers/jwt.controller';
 import Middlewares from '../middlewares/middlewares';
 
 const appRouter = express.Router();
+appRouter.get('/robots.txt', AppController.robots);
 appRouter.get('/', Middlewares.isLoggedIn, AppController.index);
 appRouter.get('/2/', Middlewares.isLoggedIn, AppController.index);
 
