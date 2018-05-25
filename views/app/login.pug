@@ -1,11 +1,28 @@
-extends ../layout
+doctype html
+html
+  head
+    meta(charset='utf-8')
+    link(rel='shortcut icon', href='https://www.osa-app.cl/img-osa/logo/favicon-osa.ico')
+    meta(http-equiv='X-UA-Compatible', content='IE=edge')
+    //- Tell the browser to be responsive to screen width
+    meta(content='width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no', name='viewport')
+    //- Bootstrap 3.3.7
+    link(rel='stylesheet', href='/static/theme/bower_components/bootstrap/dist/css/bootstrap.min.css')
+    //- Font Awesome
+    link(rel='stylesheet', href='/static/theme/bower_components/font-awesome/css/font-awesome.min.css')
+    //- AdminLTE Skin
+    link(rel='stylesheet', href='/static/theme/dist/css/skins/_all-skins.min.css')
+    //- Google Font
+    link(rel='stylesheet', href='https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,600,700,300italic,400italic,600italic')
+    <!--[if lt IE 9]>
+    script(src='https://oss.maxcdn.com/html5shiv/3.7.3/html5shiv.min.js')
+    script(src='https://oss.maxcdn.com/respond/1.4.2/respond.min.js')
+    <![endif]-->
+    link(rel='stylesheet', href='/static/css/style.css')
+    title OSA Andes | Login
+    style.
+      html,body{overflow-y:hidden;overflow-x:hidden}body{background:linear-gradient(to left, #096e9f, #033a67);color:#FFF;}
 
-block head
-  title OSA Andes | Login
-  style
-    | head,body{overflow-y:hidden;overflow-x:hidden}body{background:linear-gradient(to left, #096e9f, #033a67);color:#FFF;}
-
-block content
   body
     #login-container
       .row
@@ -34,5 +51,10 @@ block content
         .col-md-4
     #login-footer.text-center
       | Copyright (c) 2018 OSA SPA. All rights reserved.
-
-block js
+    .js
+      //- polyfill.io
+      script(src='https://cdn.polyfill.io/v2/polyfill.min.js')
+      //- jQuery 3
+      script(src='/static/theme/bower_components/jquery/dist/jquery.min.js')
+      //- Bootstrap 3.3.7
+      script(src='/static/theme/bower_components/bootstrap/dist/js/bootstrap.min.js')
