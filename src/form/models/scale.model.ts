@@ -20,6 +20,13 @@ const choiceSchema = new mongoose.Schema({
   order: {type: Number, required: true}
 });
 
+/*
+  "backgroundColor": "red",
+  "backgroundColor": "green",
+  "backgroundColor": "blue",
+  "backgroundColor": "yellow",
+* */
+
 // }, {_id: false});
 
 export interface IScaleModel extends mongoose.Document {

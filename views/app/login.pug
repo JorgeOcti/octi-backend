@@ -28,7 +28,7 @@ html
         .col-md-4
           .login
             p.text-center
-              img(src='https://osacontrol.com/assets/img/logo-osa.1613ea2c74e8.png', class='text-center logo')
+              img(src=`/static${getVersionedPath('/images/logo-white-osa.svg')}`, class='text-center logo')
             if error
               p.text-center.text-red=error
             form(role='form', action='/account/login/', method="post")
