@@ -11,14 +11,15 @@ export interface IChoicesModel extends mongoose.Types.Subdocument {
 }
 
 const choiceSchema = new mongoose.Schema({
-  choice: { type: String, required: true, trim: true },
-  value: { type: Number, required: true },
-  backgroundColor: { type: String, default: '#ffffff'},
+  choice: {type: String, required: true, trim: true},
+  value: {type: Number, required: true},
+  backgroundColor: {type: String, default: '#ffffff'},
   requireImage: {type: Boolean, default: false},
   requireComment: {type: Boolean, default: false},
   na: {type: Boolean, default: false},
-  order: { type: Number, required: true }
+  order: {type: Number, required: true}
 });
+
 // }, {_id: false});
 
 export interface IScaleModel extends mongoose.Document {
@@ -31,8 +32,8 @@ export interface IScaleModel extends mongoose.Document {
 
 export const scaleSchema = new mongoose.Schema({
   name: String,
-  minValue: { type: Number, required: true },
-  maxValue: { type: Number, required: true },
+  minValue: {type: Number, required: true},
+  maxValue: {type: Number, required: true},
   choices: [choiceSchema],
   active: {type: Boolean, default: true}
 }, {

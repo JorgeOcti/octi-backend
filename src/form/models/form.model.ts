@@ -27,8 +27,8 @@ const formQuestionsSchema = new mongoose.Schema({
   risk: {type: String, trim: true},
   observe: {type: String, trim: true},
 
-  weight: { type: Number, required: true },
-  order: { type: Number, required: true }
+  weight: {type: Number, required: true},
+  order: {type: Number, required: true}
 });
 
 export interface IFormSectionModel extends mongoose.Types.Subdocument {
@@ -42,13 +42,13 @@ export interface IFormSectionModel extends mongoose.Types.Subdocument {
 }
 
 const formSectionsSchema = new mongoose.Schema({
-  name: { type: String, required: true, trim: true},
+  name: {type: String, required: true, trim: true},
   shortName: {type: String, trim: true},
 
   questions: [formQuestionsSchema],
 
-  weight: { type: Number, required: true },
-  order: { type: Number, required: true }
+  weight: {type: Number, required: true},
+  order: {type: Number, required: true}
 });
 
 // formSectionsSchema.set('toJSON', {
@@ -69,12 +69,12 @@ export interface IFormModel extends mongoose.Document {
 }
 
 const formSchema = new mongoose.Schema({
-  name: { type: String, required: true, trim: true},
+  name: {type: String, required: true, trim: true},
   description: {type: String, trim: true},
 
   sections: [formSectionsSchema],
 
-  active: { type: Boolean, default: true }
+  active: {type: Boolean, default: true}
 }, {
   timestamps: true
 });

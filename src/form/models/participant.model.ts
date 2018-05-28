@@ -11,13 +11,13 @@ export interface IParticipantChoicesModel extends mongoose.Types.Subdocument {
 }
 
 const participantChoiceSchema = new mongoose.Schema({
-  choice: { type: String, required: true, trim: true },
-  value: { type: Number, required: true },
-  backgroundColor: { type: String, default: '#ffffff'},
+  choice: {type: String, required: true, trim: true},
+  value: {type: Number, required: true},
+  backgroundColor: {type: String, default: '#ffffff'},
   requireImage: {type: Boolean, default: false},
   requireComment: {type: Boolean, default: false},
   na: {type: Boolean, default: false},
-  order: { type: Number, required: true }
+  order: {type: Number, required: true}
 });
 
 export interface IScaleModel extends mongoose.Document {
@@ -30,8 +30,8 @@ export interface IScaleModel extends mongoose.Document {
 
 export const scaleSchema = new mongoose.Schema({
   name: String,
-  minValue: { type: Number, required: true },
-  maxValue: { type: Number, required: true },
+  minValue: {type: Number, required: true},
+  maxValue: {type: Number, required: true},
   choices: [participantChoiceSchema],
   active: {type: Boolean, default: true}
 });
@@ -63,10 +63,10 @@ const participantAnswersSchema = new mongoose.Schema({
 
   answer: {type: mongoose.Schema.Types.ObjectId},
   comment: {type: String},
-  qualification: { type: Number},
+  qualification: {type: Number},
 
-  weight: { type: Number, required: true },
-  order: { type: Number, required: true }
+  weight: {type: Number, required: true},
+  order: {type: Number, required: true}
 });
 
 export interface IParticipantSectionModel extends mongoose.Types.Subdocument {
@@ -82,14 +82,14 @@ export interface IParticipantSectionModel extends mongoose.Types.Subdocument {
 
 const participantSectionsSchema = new mongoose.Schema({
   section_id: {type: mongoose.Schema.Types.ObjectId},
-  name: { type: String, required: true, trim: true},
+  name: {type: String, required: true, trim: true},
   shortName: {type: String, trim: true},
 
   answers: [participantAnswersSchema],
 
-  qualification: { type: Number},
-  weight: { type: Number, required: true },
-  order: { type: Number, required: true }
+  qualification: {type: Number},
+  weight: {type: Number, required: true},
+  order: {type: Number, required: true}
 });
 
 export interface IParticipantModel extends mongoose.Document {
@@ -104,21 +104,21 @@ export interface IParticipantModel extends mongoose.Document {
 }
 
 const participantSchema = new mongoose.Schema({
-  name: { type: String, required: true, trim: true},
-  form:{
+  name: {type: String, required: true, trim: true},
+  form: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Form',
   },
-  user:{
+  user: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
   },
-  vim: { type: String},
+  vim: {type: String},
   description: {type: String, trim: true},
 
   sections: [participantSectionsSchema],
 
-  active: { type: Boolean, default: true }
+  active: {type: Boolean, default: true}
 }, {
   timestamps: true
 });
