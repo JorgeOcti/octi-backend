@@ -12,34 +12,19 @@ class FormController {
         this.complete = this.complete.bind(this);
     }
     async list(req, res) {
-        const keyCache = `list-form`;
-        redis_1.default.get(keyCache, async (error, result) => {
-            // the result exists in our cache - return it to our user immediately
-            if (result) {
-                res.json({
-                    data: { ...JSON.parse(result) },
-                    status: 200
-                });
-            }
-            else {
-                try {
-                    // get forms from db
-                    const forms = await this.getForms();
-                    // set cache
-                    redis_1.default.setex(keyCache, 30, JSON.stringify({ forms }));
-                    res.json({
-                        data: forms,
-                        status: 200
-                    });
-                }
-                catch (e) {
-                    res.status(400).json({
-                        error: 'Ha ocurrido un error',
-                        status: 400
-                    });
-                }
-            }
-        });
+        try {
+            const forms = await this.getForms();
+            res.json({
+                data: forms,
+                status: 200
+            });
+        }
+        catch (e) {
+            res.status(400).json({
+                error: 'Ha ocurrido un error',
+                status: 400
+            });
+        }
     }
     async complete(req, res) {
         const { id } = req.params;
@@ -134,68 +119,64 @@ class FormController {
     }
     async detail(req, res) {
         const { id } = req.params;
-        const keyCache = `detail-form-${id}`;
-        redis_1.default.get(keyCache, async (error, result) => {
-            // the result exists in our cache - return it to our user immediately
-            if (result) {
-                res.json({
-                    data: { ...JSON.parse(result) },
-                    status: 200
+        try {
+            const form = await this.getForm(id);
+            // generate array of scale ids
+            const scalesIds = [];
+            form.sections.forEach((section) => {
+                section.questions.forEach((question) => {
+                    const scaleID = question.scale.toString();
+                    if (!scalesIds.includes(scaleID)) {
+                        scalesIds.push(scaleID);
+                    }
                 });
-            }
-            else {
-                try {
-                    const form = await this.getForm(id);
-                    // generate array of scale ids
-                    const scalesIds = [];
-                    form.sections.forEach((section) => {
-                        section.questions.forEach((question) => {
-                            const scaleID = question.scale.toString();
-                            if (!scalesIds.includes(scaleID)) {
-                                scalesIds.push(scaleID);
-                            }
-                        });
-                    });
-                    // get scales from db
-                    const scales = await this.getScales(scalesIds);
-                    // set cache
-                    redis_1.default.setex(keyCache, 30, JSON.stringify({ form, scales }));
-                    res.json({
-                        data: {
-                            form,
-                            scales
-                        },
-                        status: 200
-                    });
-                }
-                catch (e) {
-                    res.status(400).json({
-                        error: 'No se encontro formularío',
-                        status: 400
-                    });
-                }
-            }
-        });
+            });
+            // get scales from db
+            const scales = await this.getScales(scalesIds);
+            res.json({
+                data: {
+                    form,
+                    scales
+                },
+                status: 200
+            });
+        }
+        catch (e) {
+            res.status(400).json({
+                error: 'No se encontro formularío  400',
+                status: 400
+            });
+        }
     }
     getScales(ids) {
+        const keyCache = `scales-${ids.toString()}`;
         return new Promise((resolve, reject) => {
-            scale_model_1.default
-                .find({
-                _id: { $in: ids }
-            }, {
-                'updatedAt': false,
-                'createdAt': false,
-                'active': false,
-                'minValue': false,
-                'maxValue': false,
-                'choices.na': false,
-                '__v': false
-            })
-                .exec((err, scales) => {
-                if (err) {
-                    return reject(err);
+            redis_1.default.get(keyCache, async (error, result) => {
+                if (result) {
+                    resolve(JSON.parse(result));
                 }
-                return resolve(scales);
+                else {
+                    scale_model_1.default
+                        .find({
+                        _id: { $in: ids }
+                    }, {
+                        'updatedAt': false,
+                        'createdAt': false,
+                        'active': false,
+                        'minValue': false,
+                        'maxValue': false,
+                        'choices.na': false,
+                        '__v': false
+                    })
+                        .lean()
+                        .exec((err, scales) => {
+                        if (err) {
+                            return reject(err);
+                        }
+                        redis_1.default.setex(keyCache, 30, JSON.stringify(scales));
+                        return resolve(scales);
+                    });
+                }
             });
         });
     }
@@ -216,36 +197,59 @@ class FormController {
         });
     }
     getForm(id) {
+        const keyCache = `form-${id}`;
         return new Promise((resolve, reject) => {
-            form_model_1.default
-                .findById(id, {
-                'updatedAt': false,
-                'createdAt': false,
-                'active': false,
-                'sections.shortName': false,
-                'sections.questions.shortName': false,
-                '__v': false
-            })
-                .exec((err, form) => {
-                if (err) {
-                    return reject(err);
+            redis_1.default.get(keyCache, async (error, result) => {
+                if (result) {
+                    resolve(JSON.parse(result));
                 }
-                if (form) {
-                    return resolve(form);
+                else {
+                    form_model_1.default
+                        .findById(id, {
+                        'updatedAt': false,
+                        'createdAt': false,
+                        'active': false,
+                        'sections.shortName': false,
+                        'sections.questions.shortName': false,
+                        '__v': false
+                    })
+                        .lean()
+                        .exec((err, form) => {
+                        if (err) {
+                            return reject(err);
+                        }
+                        if (form) {
+                            redis_1.default.setex(keyCache, 30, JSON.stringify(form));
+                            return resolve(form);
+                        }
+                        return reject('No se encontro formularío');
+                    });
                 }
-                return reject('No se encontro formularío');
             });
         });
     }
     getForms() {
+        const keyCache = `forms`;
         return new Promise((resolve, reject) => {
-            form_model_1.default
-                .find({}, { _id: 1, name: 1 })
-                .exec((err, forms) => {
-                if (err) {
-                    return reject(err);
+            redis_1.default.get(keyCache, async (error, result) => {
+                if (result) {
+                    resolve(JSON.parse(result));
                 }
-                return resolve(forms);
+                else {
+                    form_model_1.default
+                        .find({}, {
+                        _id: 1,
+                        name: 1
+                    })
+                        .lean()
+                        .exec((err, forms) => {
+                        if (err) {
+                            return reject(err);
+                        }
+                        redis_1.default.setex(keyCache, 30, JSON.stringify(forms));
+                        return resolve(forms);
+                    });
+                }
             });
         });
     }
