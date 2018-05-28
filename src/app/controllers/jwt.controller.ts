@@ -45,9 +45,17 @@ class JWTController {
     if (req.body.username === null || req.body.username === undefined || req.body.password === null || req.body.password === undefined) {
       res.status(401).json({message: 'Authentication failed. Invalid user or password.'});
     } else {
-      User.findOne({
-        email: req.body.username
-      },  (err, user: any) => {
+      User
+        .findOne({
+          email: req.body.username
+        }, {
+          name: true,
+          username: true,
+          lastName: true,
+          password: true,
+          active: true,
+        })
+        .exec((err, user: any) => {
         if (err) {
           throw err;
         }
@@ -64,7 +72,13 @@ class JWTController {
         } else {
           res.json({
             data: {
-              token: jwt.sign({_id: user._id, username: user.email}, req.app.locals.secretKey, {expiresIn: '24h'})
+              token: jwt.sign({_id: user._id, username: user.email}, req.app.locals.secretKey, {expiresIn: '24h'}),
+              user: {
+                _id: user._id,
+                name: user.name,
+                lastName: user.lastName,
+                username: user.username
+              }
             },
             status: 200
           });

@@ -57,11 +57,14 @@ class FormController {
                     user: req.user ? new bson_1.ObjectID(req.user._id) : new bson_1.ObjectID('5b058195983880f860332f8e'),
                     active: form.active,
                 });
+                // var sum sections
                 let sumSectionWeigths = 0;
                 let sumSectionQualifications = 0;
                 for (const section of form.sections) {
+                    // var sum questions
                     let sumWeigths = 0;
                     let sumQualifications = 0;
+                    // array of answers
                     const newAnswers = [];
                     for (const question of section.questions) {
                         // calculate qualification and set vars of the answer
