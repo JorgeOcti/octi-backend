@@ -116,7 +116,8 @@ class FormController {
           });
         }
         // calculate participant qualification
-        newParticipant.qualification = sumSectionQualifications ? sumSectionQualifications / sumSectionWeigths : 0;
+        const formQualification = sumSectionQualifications ? sumSectionQualifications / sumSectionWeigths : 0;
+        newParticipant.qualification = formQualification;
         try {
           // save the participant
           await newParticipant.save();
@@ -124,7 +125,8 @@ class FormController {
             data: {
               id,
               answers,
-              vin
+              vin,
+              qualification: formQualification
             },
             status: 200
           });
