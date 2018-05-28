@@ -43,7 +43,7 @@ class FormController {
     }
     async complete(req, res) {
         const { id } = req.params;
-        const { answers } = req.body;
+        const { answers, vim } = req.body;
         console.log('answers', answers);
         // if (!answers){
         //   return res.status(400).json({
@@ -56,6 +56,8 @@ class FormController {
             if (form) {
                 const newParticipant = new participant_model_1.default({
                     name: form.name,
+                    form: form._id,
+                    vim: vim ? vim : '',
                     description: form.description,
                     user: req.user ? new bson_1.ObjectID(req.user._id) : new bson_1.ObjectID('5b058195983880f860332f8e'),
                     active: form.active,
@@ -97,7 +99,8 @@ class FormController {
                     return res.json({
                         data: {
                             id,
-                            answers
+                            answers,
+                            vim
                         },
                         status: 200
                     });

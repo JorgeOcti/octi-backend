@@ -57,6 +57,7 @@ class FormController {
       if (form) {
         const newParticipant = new ParticipantModel({
           name: form.name,
+          form: form._id,
           vim: vim ? vim : '',
           description: form.description,
           user: req.user? new ObjectID(req.user._id) : new ObjectID('5b058195983880f860332f8e'),
@@ -99,7 +100,8 @@ class FormController {
           return res.json({
             data: {
               id,
-              answers
+              answers,
+              vim
             },
             status: 200
           });

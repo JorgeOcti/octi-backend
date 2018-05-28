@@ -40,6 +40,10 @@ const participantSectionsSchema = new mongoose.Schema({
 });
 const participantSchema = new mongoose.Schema({
     name: { type: String, required: true, trim: true },
+    form: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Form',
+    },
     user: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User',
