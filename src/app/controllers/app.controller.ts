@@ -61,7 +61,7 @@ class AppController {
 
   public logout(req: Request, res: Response) {
     req.logout();
-    res.redirect('/');
+    res.redirect('/account/login/');
   }
 
 }
