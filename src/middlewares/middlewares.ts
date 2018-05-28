@@ -1,9 +1,12 @@
 import {Request, Response, NextFunction} from "express";
+import * as jwt from "jsonwebtoken";
+import {IRequest} from "../interfaces/global";
 
 class Middlewares {
 
   constructor() {
-    this.isLoggedIn = this.isLoggedIn.bind(this)
+    this.isLoggedIn = this.isLoggedIn.bind(this);
+    this.isJWTAuthenticated = this.isJWTAuthenticated.bind(this);
   }
 
   public isLoggedIn(req: Request, res: Response, next: NextFunction) {
@@ -21,6 +24,28 @@ class Middlewares {
       res.redirect('/account/login/');
     }
     // if they aren't redirect them to the home page
+  }
+
+  public isJWTAuthenticated(req: IRequest, res: Response, next: NextFunction) {
+    if (req.headers && req.headers.authorization && req.headers.authorization.split(' ')[0] === 'JWT') {
+
+      jwt.verify(req.headers.authorization.split(' ')[1], req.app.locals.secretKey, (err: any, decode: any) => {
+        if (err) {
+          res.status(400).json({
+            error: err.message,
+            status: 400
+          });
+        }
+        req.user = decode;
+        next();
+      });
+    } else {
+      // res.status(403).json({
+      //   error: 'Forbidden',
+      //   status: 403
+      // });
+      next();
+    }
   }
 }
 

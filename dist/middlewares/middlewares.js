@@ -1,8 +1,10 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+const jwt = require("jsonwebtoken");
 class Middlewares {
     constructor() {
         this.isLoggedIn = this.isLoggedIn.bind(this);
+        this.isJWTAuthenticated = this.isJWTAuthenticated.bind(this);
     }
     isLoggedIn(req, res, next) {
         // if user is authenticated in the session, carry on
@@ -19,6 +21,27 @@ class Middlewares {
             res.redirect('/account/login/');
         }
         // if they aren't redirect them to the home page
+    }
+    isJWTAuthenticated(req, res, next) {
+        if (req.headers && req.headers.authorization && req.headers.authorization.split(' ')[0] === 'JWT') {
+            jwt.verify(req.headers.authorization.split(' ')[1], req.app.locals.secretKey, (err, decode) => {
+                if (err) {
+                    res.status(400).json({
+                        error: err.message,
+                        status: 400
+                    });
+                }
+                req.user = decode;
+                next();
+            });
+        }
+        else {
+            // res.status(403).json({
+            //   error: 'Forbidden',
+            //   status: 403
+            // });
+            next();
+        }
     }
 }
 exports.default = new Middlewares();

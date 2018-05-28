@@ -57,7 +57,7 @@ class FormController {
                 const newParticipant = new participant_model_1.default({
                     name: form.name,
                     description: form.description,
-                    user: new bson_1.ObjectID('5b058195983880f860332f8e'),
+                    user: req.user ? new bson_1.ObjectID(req.user._id) : new bson_1.ObjectID('5b058195983880f860332f8e'),
                     active: form.active,
                 });
                 console.log(newParticipant);

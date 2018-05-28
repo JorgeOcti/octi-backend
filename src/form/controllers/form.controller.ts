@@ -58,7 +58,7 @@ class FormController {
         const newParticipant = new ParticipantModel({
           name: form.name,
           description: form.description,
-          user: new ObjectID('5b058195983880f860332f8e'),
+          user: req.user? new ObjectID(req.user._id) : new ObjectID('5b058195983880f860332f8e'),
           active: form.active,
         });
         console.log(newParticipant);

@@ -25,7 +25,7 @@ class AppController {
       return res.redirect('/');
     }
     else{
-      return res.render('app/login');
+      return res.render('app/login', {local: res.locals});
     }
   }
 

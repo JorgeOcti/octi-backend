@@ -19,6 +19,7 @@ const path = require("path");
 const Raven = require("raven");
 const responseTime = require("response-time");
 const user_model_1 = require("./app/models/user.model");
+// import * as Staticify from 'staticify';
 // Import routes
 const router_1 = require("./app/router");
 const router_2 = require("./form/router");
@@ -89,6 +90,11 @@ const upload = multer();
 app.use(upload.single());
 const staticDirectory = path.join(__dirname, '../public');
 app.use('/static', express.static(staticDirectory));
+// const staticify = Staticify(staticDirectory);
+// app.use(staticify.middleware);
+//
+// app.locals.getVersionedPath = staticify.getVersionedPath;
+// app.helpers({getVersionedPath: staticify.getVersionedPath})
 app.use(cookieParser());
 app.use(session({
     resave: false,

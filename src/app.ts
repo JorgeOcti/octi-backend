@@ -17,6 +17,7 @@ import * as path from 'path';
 import * as Raven from 'raven';
 import * as responseTime from 'response-time';
 import User from './app/models/user.model';
+// import * as Staticify from 'staticify';
 
 // Import routes
 import {appRouter, jwtRouter} from './app/router';
@@ -103,6 +104,11 @@ app.use(upload.single());
 
 const staticDirectory = path.join(__dirname, '../public');
 app.use('/static', express.static(staticDirectory));
+// const staticify = Staticify(staticDirectory);
+// app.use(staticify.middleware);
+//
+// app.locals.getVersionedPath = staticify.getVersionedPath;
+// app.helpers({getVersionedPath: staticify.getVersionedPath})
 
 app.use(cookieParser());
 app.use(session({
