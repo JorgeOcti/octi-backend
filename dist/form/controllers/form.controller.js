@@ -45,12 +45,18 @@ class FormController {
         const { id } = req.params;
         const { answers, vim } = req.body;
         console.log('answers', answers);
-        // if (!answers){
-        //   return res.status(400).json({
-        //     error: 'Debes enviar las respuestas',
-        //     status: 400
-        //   });
-        // }
+        if (!answers) {
+            return res.status(400).json({
+                error: 'Debes enviar las respuestas',
+                status: 400
+            });
+        }
+        if (!vim) {
+            return res.status(400).json({
+                error: 'Debes enviar el vim',
+                status: 400
+            });
+        }
         try {
             const form = await this.getFormWithScale(id);
             if (form) {
