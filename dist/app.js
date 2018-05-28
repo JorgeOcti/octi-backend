@@ -89,6 +89,7 @@ app.use(bodyParser.urlencoded({ extended: true }));
 // For parsing multipart/form-data
 const upload = multer();
 app.use(upload.single());
+// static files
 const staticDirectory = path.join(__dirname, '../public');
 app.use(middlewares_1.default.cleanStaticFiles);
 app.use('/static', express.static(staticDirectory, { maxAge: '30 days' }));

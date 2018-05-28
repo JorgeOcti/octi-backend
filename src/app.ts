@@ -21,7 +21,10 @@ import Middlewares from './middlewares/middlewares'
 import * as Staticify from 'staticify';
 
 // Import routes
-import {appRouter, jwtRouter} from './app/router';
+import {
+  appRouter,
+  jwtRouter
+} from './app/router';
 import formRouter from './form/router';
 
 // Configure sentry
@@ -103,6 +106,7 @@ app.use(bodyParser.urlencoded({ extended: true }));
 const upload = multer();
 app.use(upload.single());
 
+// static files
 const staticDirectory = path.join(__dirname, '../public');
 app.use(Middlewares.cleanStaticFiles);
 app.use('/static', express.static(staticDirectory, { maxAge: '30 days' }));
@@ -154,7 +158,6 @@ passport.use(new LocalStrategy({ usernameField: 'username' }, (username, passwor
 passport.serializeUser((User as any).serializeUser());
 passport.deserializeUser((User as any).deserializeUser());
 
-
 /*
 passport.serializeUser<any, any>((user, done) => {
   done(undefined, user.id);
@@ -168,8 +171,6 @@ passport.deserializeUser((id, done) => {
   });
 });
 */
-
-
 
 // Logger app
 const logDirectory = path.join(__dirname, '../logs');

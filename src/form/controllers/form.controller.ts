@@ -30,7 +30,7 @@ class FormController {
 
   public async complete(req: Request, res: Response) {
     const {id} = req.params;
-    const {answers, vim} = req.body;
+    const {answers, vin} = req.body;
     console.log('answers', answers);
     // validate answers in body
     if (!answers){
@@ -39,10 +39,10 @@ class FormController {
         status: 400
       });
     }
-    // validate vim in body
-    if (!vim){
+    // validate vin in body
+    if (!vin){
       return res.status(400).json({
-        error: 'Debes enviar el vim',
+        error: 'Debes enviar el vin',
         status: 400
       });
     }
@@ -53,7 +53,7 @@ class FormController {
         const newParticipant = new ParticipantModel({
           name: form.name,
           form: form._id,
-          vim: vim ? vim : '',
+          vin: vin ? vin : '',
           description: form.description,
           user: req.user? new ObjectID(req.user._id) : new ObjectID('5b058195983880f860332f8e'),
           active: form.active,
@@ -114,7 +114,7 @@ class FormController {
             data: {
               id,
               answers,
-              vim
+              vin
             },
             status: 200
           });
