@@ -62,8 +62,6 @@ class FormController {
         let sumSectionWeigths = 0;
         let sumSectionQualifications = 0;
         for (const section of form.sections) {
-          // const questionQualifications =[];
-          // const questionWeigths =[];
           let sumWeigths = 0;
           let sumQualifications = 0;
           const newAnswers: any[] = [];
@@ -81,8 +79,7 @@ class FormController {
             if (choice) {
               qualification = (100 / question.scale.maxValue) * choice.value;
             }
-            // questionQualifications.push(qualification);
-            // questionWeigths.push(question.weight);
+
             sumQualifications +=  (qualification * question.weight);
             sumWeigths += question.weight;
             // generate answer
