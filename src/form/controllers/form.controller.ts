@@ -31,6 +31,7 @@ class FormController {
   public async complete(req: Request, res: Response) {
     const {id} = req.params;
     const {answers, vin} = req.body;
+    // debugger;
     console.log('answers', answers);
     // validate answers in body
     if (!answers){
