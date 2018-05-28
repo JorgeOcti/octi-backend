@@ -59,6 +59,8 @@ class FormController {
           user: req.user? new ObjectID(req.user._id) : new ObjectID('5b058195983880f860332f8e'),
           active: form.active,
         });
+        let sumSectionWeigths = 0;
+        let sumSectionQualifications = 0;
         for (const section of form.sections) {
           // const questionQualifications =[];
           // const questionWeigths =[];
@@ -97,17 +99,24 @@ class FormController {
               order: question.order,
             })
           }
+          // calculate section qualification
+          const sectionQualification = sumQualifications ? sumQualifications / sumWeigths : 0;
+          sumSectionQualifications += (sectionQualification * section.weight);
+          sumSectionWeigths += section.weight;
+
           // generate answer section
           newParticipant.sections.push({
             _id: section._id,
             name: section.name,
             shortName: section.shortName,
             answers: newAnswers,
-            qualification: sumQualifications ? sumQualifications / sumWeigths : 0,
+            qualification: sectionQualification,
             weight: section.weight,
             order: section.order,
-          })
+          });
         }
+        // calculate participant qualification
+        newParticipant.qualification = sumSectionQualifications ? sumSectionQualifications / sumSectionWeigths : 0;
         try {
           // save the participant
           await newParticipant.save();

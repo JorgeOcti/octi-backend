@@ -99,7 +99,8 @@ export interface IParticipantModel extends mongoose.Document {
   description: string;
 
   sections: mongoose.Types.Array<IParticipantSectionModel>;
-  url?: string;
+
+  qualification: number;
   active: boolean;
 }
 
@@ -120,6 +121,7 @@ const participantSchema = new mongoose.Schema({
 
   sections: [participantSectionsSchema],
 
+  qualification: {type: Number, default: 0},
   active: {type: Boolean, default: true}
 }, {
   timestamps: true

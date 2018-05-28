@@ -51,6 +51,7 @@ const participantSchema = new mongoose.Schema({
     vin: { type: String },
     description: { type: String, trim: true },
     sections: [participantSectionsSchema],
+    qualification: { type: Number, default: 0 },
     active: { type: Boolean, default: true }
 }, {
     timestamps: true
