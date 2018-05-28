@@ -30,12 +30,14 @@ class FormController {
         const { id } = req.params;
         const { answers, vim } = req.body;
         console.log('answers', answers);
+        // validate answers in body
         if (!answers) {
             return res.status(400).json({
                 error: 'Debes enviar las respuestas',
                 status: 400
             });
         }
+        // validate vim in body
         if (!vim) {
             return res.status(400).json({
                 error: 'Debes enviar el vim',
@@ -45,6 +47,7 @@ class FormController {
         try {
             const form = await this.getFormWithScale(id);
             if (form) {
+                // inicialize participant
                 const newParticipant = new participant_model_1.default({
                     name: form.name,
                     form: form._id,
@@ -53,15 +56,30 @@ class FormController {
                     user: req.user ? new bson_1.ObjectID(req.user._id) : new bson_1.ObjectID('5b058195983880f860332f8e'),
                     active: form.active,
                 });
-                console.log(newParticipant);
                 for (const section of form.sections) {
-                    // console.log('\n\nsection', JSON.stringify(section));
+                    // const questionQualifications =[];
+                    // const questionWeigths =[];
+                    let sumWeigths = 0;
+                    let sumQualifications = 0;
                     const newAnswers = [];
                     for (const question of section.questions) {
-                        // console.log('\n\nquestion', JSON.stringify(question));
-                        // const newScale: any = {
-                        //
-                        // }
+                        // calculate qualification and set vars of the answer
+                        const questionID = question._id.toString();
+                        // get answer selected
+                        const answer = answers.hasOwnProperty(questionID) ? answers[questionID] : null;
+                        // find choice selected
+                        const choice = question.scale.choices.find((choice) => {
+                            return answer ? choice._id.toString() === answer.value : false;
+                        });
+                        let qualification = 0;
+                        if (choice) {
+                            qualification = (100 / question.scale.maxValue) * choice.value;
+                        }
+                        // questionQualifications.push(qualification);
+                        // questionWeigths.push(question.weight);
+                        sumQualifications = sumQualifications + (qualification * question.weight);
+                        sumWeigths = sumWeigths + question.weight;
+                        // generate answer
                         newAnswers.push({
                             _id: question._id,
                             question: question.question,
@@ -69,23 +87,26 @@ class FormController {
                             scale: question.scale,
                             risk: question.risk,
                             observe: question.observe,
-                            qualification: 0,
+                            answer: answer ? new bson_1.ObjectID(answer.value) : null,
+                            qualification,
                             weight: question.weight,
                             order: question.order,
                         });
                     }
+                    // generate answer section
                     newParticipant.sections.push({
                         _id: section._id,
                         name: section.name,
                         shortName: section.shortName,
                         answers: newAnswers,
-                        qualification: 0,
+                        qualification: sumQualifications ? sumQualifications / sumWeigths : 0,
                         weight: section.weight,
                         order: section.order,
                     });
                 }
                 // console.log(JSON.stringify(newParticipant));
                 try {
+                    // save participant
                     await newParticipant.save();
                     return res.json({
                         data: {
