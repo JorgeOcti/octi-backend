@@ -17,7 +17,8 @@ import * as path from 'path';
 import * as Raven from 'raven';
 import * as responseTime from 'response-time';
 import User from './app/models/user.model';
-// import * as Staticify from 'staticify';
+import Middlewares from './middlewares/middlewares'
+import * as Staticify from 'staticify';
 
 // Import routes
 import {appRouter, jwtRouter} from './app/router';
@@ -103,11 +104,12 @@ const upload = multer();
 app.use(upload.single());
 
 const staticDirectory = path.join(__dirname, '../public');
-app.use('/static', express.static(staticDirectory));
-// const staticify = Staticify(staticDirectory);
-// app.use(staticify.middleware);
+app.use(Middlewares.cleanStaticFiles);
+app.use('/static', express.static(staticDirectory, { maxAge: '30 days' }));
+const staticify = Staticify(staticDirectory);
+app.use(staticify.middleware);
 //
-// app.locals.getVersionedPath = staticify.getVersionedPath;
+app.locals.getVersionedPath = staticify.getVersionedPath;
 // app.helpers({getVersionedPath: staticify.getVersionedPath})
 
 app.use(cookieParser());

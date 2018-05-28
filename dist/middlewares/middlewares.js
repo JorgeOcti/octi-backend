@@ -43,6 +43,10 @@ class Middlewares {
             next();
         }
     }
+    cleanStaticFiles(req, res, next) {
+        req.url = req.url.replace(/\/([^\/]+)\.[0-9a-f]+\.(css|js|jpg|png|gif|svg)$/, '/$1.$2');
+        next();
+    }
 }
 exports.default = new Middlewares();
 //# sourceMappingURL=middlewares.js.map

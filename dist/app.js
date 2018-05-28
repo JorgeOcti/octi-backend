@@ -19,7 +19,8 @@ const path = require("path");
 const Raven = require("raven");
 const responseTime = require("response-time");
 const user_model_1 = require("./app/models/user.model");
-// import * as Staticify from 'staticify';
+const middlewares_1 = require("./middlewares/middlewares");
+const Staticify = require("staticify");
 // Import routes
 const router_1 = require("./app/router");
 const router_2 = require("./form/router");
@@ -89,11 +90,12 @@ app.use(bodyParser.urlencoded({ extended: true }));
 const upload = multer();
 app.use(upload.single());
 const staticDirectory = path.join(__dirname, '../public');
-app.use('/static', express.static(staticDirectory));
-// const staticify = Staticify(staticDirectory);
-// app.use(staticify.middleware);
+app.use(middlewares_1.default.cleanStaticFiles);
+app.use('/static', express.static(staticDirectory, { maxAge: '30 days' }));
+const staticify = Staticify(staticDirectory);
+app.use(staticify.middleware);
 //
-// app.locals.getVersionedPath = staticify.getVersionedPath;
+app.locals.getVersionedPath = staticify.getVersionedPath;
 // app.helpers({getVersionedPath: staticify.getVersionedPath})
 app.use(cookieParser());
 app.use(session({
