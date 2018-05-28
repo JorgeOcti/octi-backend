@@ -44,7 +44,7 @@ class FormController {
 
   public async complete(req: Request, res: Response) {
     const {id} = req.params;
-    const {answers} = req.body;
+    const {answers, vim} = req.body;
     console.log('answers', answers);
     // if (!answers){
     //   return res.status(400).json({
@@ -57,6 +57,7 @@ class FormController {
       if (form) {
         const newParticipant = new ParticipantModel({
           name: form.name,
+          vim: vim ? vim : '',
           description: form.description,
           user: req.user? new ObjectID(req.user._id) : new ObjectID('5b058195983880f860332f8e'),
           active: form.active,
