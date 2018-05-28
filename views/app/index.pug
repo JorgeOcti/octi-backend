@@ -9,7 +9,7 @@ block content
 
 block js
   //- AdminLTE App
-  script(src='/static/theme/dist/js/adminlte.min.js')
+  script(src=`/static${getVersionedPath('/theme/dist/js/adminlte.min.js')}`)
   //- React App
   script(src=`/static${getVersionedPath('/js/app/dist/main.js')}`)
   script.
