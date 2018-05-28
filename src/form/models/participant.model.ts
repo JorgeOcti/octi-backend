@@ -109,11 +109,13 @@ const participantSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Form',
   },
+
   user: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
   },
   vim: {type: String},
+
   description: {type: String, trim: true},
 
   sections: [participantSectionsSchema],

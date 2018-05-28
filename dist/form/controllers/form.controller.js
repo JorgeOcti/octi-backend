@@ -47,7 +47,7 @@ class FormController {
         try {
             const form = await this.getFormWithScale(id);
             if (form) {
-                // inicialize participant
+                // initialize participant
                 const newParticipant = new participant_model_1.default({
                     name: form.name,
                     form: form._id,
@@ -65,20 +65,21 @@ class FormController {
                     for (const question of section.questions) {
                         // calculate qualification and set vars of the answer
                         const questionID = question._id.toString();
-                        // get answer selected
+                        // get selected answer
                         const answer = answers.hasOwnProperty(questionID) ? answers[questionID] : null;
                         // find choice selected
                         const choice = question.scale.choices.find((choice) => {
                             return answer ? choice._id.toString() === answer.value : false;
                         });
+                        // calculate qualification
                         let qualification = 0;
                         if (choice) {
                             qualification = (100 / question.scale.maxValue) * choice.value;
                         }
                         // questionQualifications.push(qualification);
                         // questionWeigths.push(question.weight);
-                        sumQualifications = sumQualifications + (qualification * question.weight);
-                        sumWeigths = sumWeigths + question.weight;
+                        sumQualifications += (qualification * question.weight);
+                        sumWeigths += question.weight;
                         // generate answer
                         newAnswers.push({
                             _id: question._id,
@@ -104,9 +105,8 @@ class FormController {
                         order: section.order,
                     });
                 }
-                // console.log(JSON.stringify(newParticipant));
                 try {
-                    // save participant
+                    // save the participant
                     await newParticipant.save();
                     return res.json({
                         data: {
@@ -118,6 +118,7 @@ class FormController {
                     });
                 }
                 catch (e) {
+                    // return error, if the form could not be recorded
                     return res.status(400).json({
                         error: e,
                         status: 400
@@ -125,6 +126,7 @@ class FormController {
                 }
             }
             else {
+                // return error, if the form could not find
                 return res.status(400).json({
                     error: 'No se ha encontrado el formularío',
                     status: 400
