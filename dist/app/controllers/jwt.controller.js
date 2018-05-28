@@ -56,9 +56,9 @@ class JWTController {
                     });
                 }
                 else if (!user.active) {
-                    res.status(403).json({
-                        error: 'Forbidden',
-                        status: 403
+                    res.status(401).json({
+                        error: 'User is inactive',
+                        status: 401
                     });
                 }
                 else {
