@@ -10,7 +10,7 @@ menus.push({
       id: '1.1',
       icon: 'fa-circle-o',
       text: 'Dashboard v1',
-      url: '/2/',
+      url: '/',
     },
     {
       id: '1.2',
@@ -21,40 +21,18 @@ menus.push({
   ]
 });
 
-// Users
-menus.push({
-  id: '2',
-  text: 'User',
-  icon: 'fa-users',
-  url: '/2/',
-  items: [
-    {
-      id: '2.1',
-      icon: 'fa-circle-o',
-      text: 'User v1',
-      url: '/2/'
-    },
-    {
-      id: '2.2',
-      icon: 'fa-circle-o',
-      text: 'User v2',
-      url: '/'
-    }
-  ]
-});
-
 // Report
 menus.push({
-  id: '3',
+  id: '2',
   text: 'Setting',
   icon: 'fa-cog',
-  url: '/',
+  url: '/users/',
   items: [
     {
       id: '2.1',
       icon: 'fa-circle-o',
-      text: 'Setting v1',
-      url: '/'
+      text: 'Usuarios',
+      url: '/users/'
     },
     {
       id: '2.2',

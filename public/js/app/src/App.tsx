@@ -6,6 +6,7 @@ import configureStore from './store/configureStore';
 import history from './utils/history';
 import TestDetailView from "./components/TestDetail/TestDetailView";
 import TestDetailView2 from "./components/TestDetail/TestDetailView2";
+import UsersListView from "./components/Users/UsersListView";
 
 const store = configureStore();
 
@@ -21,6 +22,7 @@ const App = () => (
             <Switch>
                 <Route exact path="/" component={ TestDetailView }/>
                 <Route exact path="/2/" component={ TestDetailView2 }/>
+                <Route exact path="/users/" component={ UsersListView }/>
                 {/*<Route exact path="/ticket/create/" component={ TicketCreateView }/>*/}
                 {/*<Route exact path="/ticket/:ticket/" component={ TicketDetailView }/>*/}
                 <Route component={ NoMatch }/>

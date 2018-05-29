@@ -48,9 +48,9 @@ export default class ApiService {
     }
   }
 
-  public getTickets(page: number, last?: number): AxiosPromise {
+  public getUsers(): AxiosPromise {
     return this.instance.get(
-      `${window.urls.tickets}?page=${page}${last ? `&last=${last}` : ''}`
+      `/api/admin/users/`
     );
   }
 

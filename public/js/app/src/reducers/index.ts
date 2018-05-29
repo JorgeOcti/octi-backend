@@ -1,8 +1,8 @@
 import { combineReducers } from 'redux';
-// import { ticket } from './ticket';
+import { users } from './users';
 // import { tickets } from './tickets';
 
 export default combineReducers({
-  // tickets,
+  users,
   // ticket
 });

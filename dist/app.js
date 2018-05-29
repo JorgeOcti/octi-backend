@@ -101,13 +101,15 @@ app.locals.getVersionedPath = staticify.getVersionedPath;
 app.use(cookieParser());
 app.use(session({
     resave: false,
-    saveUninitialized: false,
+    saveUninitialized: true,
     secret: process.env.SECRET_KEY,
+    cookie: {
+        maxAge: 3600000 * 48
+    },
     store: new redisStore({
         host: 'localhost',
         port: 6379,
-        client: redis_1.default,
-        ttl: 260
+        client: redis_1.default
     })
 }));
 // passport

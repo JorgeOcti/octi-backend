@@ -32,14 +32,14 @@ class AppContainer extends React.Component<IPropsType, IStateType> {
 
 
   render() {
-    const {cMenu, cSubMenu, cAction} = this.props;
+    const {title, cMenu, cSubMenu, cAction} = this.props;
     return (
       <React.Fragment>
         <HeaderApp />
         <MenuApp cMenu={cMenu} cSubMenu={cSubMenu} />
         <div className="content-wrapper" style={{minHeight:`${window.innerHeight-51}px`}}>
           <section className="content-header">
-            <h1>{this.props.title}</h1>
+            <h1>{title}&nbsp;</h1>
             <BreadcrumbApp cMenu={cMenu} cSubMenu={cSubMenu} cAction={cAction}/>
           </section>
           {this.props.children}
