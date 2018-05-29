@@ -21,11 +21,26 @@ const userSchema = new mongoose.Schema({
     hash_password: String,
     passwordResetToken: String,
     passwordResetExpires: Date,
+    lastLogin: Date,
     active: Boolean
 }, {
     timestamps: true
 });
 userSchema.plugin(passportLocalMongoose);
+// userSchema.plugin(mongooseCrate, {
+//   storage: new S3({
+//     key: 'REDACTED',
+//     secret: 'REDACTED',
+//     bucket: 'REDACTED',
+//     acl: 'public-read', // defaults to public-read
+//     region: 'eu-west-1', // defaults to us-standard
+//     // where the file is stored in the bucket - defaults to this function
+//     path: (attachment) => `/${path.basename(attachment.path)}`
+//   }),
+//   fields: {
+//     file: {}
+//   }
+// });
 /**
  * Password hash middleware.
  */

@@ -2,7 +2,7 @@ import {NextFunction, Request, Response} from 'express';
 import * as jwt from 'jsonwebtoken';
 import {IRequest} from '../../interfaces/global';
 import User from '../models/user.model';
-// import * as randToken from 'rand-token';
+// import * as moment  from "moment-timezone";
 
 class JWTController {
 
@@ -53,37 +53,46 @@ class JWTController {
           username: true,
           lastName: true,
           password: true,
+          updatedAt: true,
           active: true,
         })
         .exec((err, user: any) => {
-        if (err) {
-          throw err;
-        }
-        if (!user || !user.comparePasswordSync(req.body.password)) {
-          res.status(401).json({
-            error: 'Authentication failed. Invalid user or password.',
-            status: 401
-          });
-        } else if (!user.active) {
-          res.status(401).json({
-            error: 'User is inactive',
-            status: 401
-          });
-        } else {
-          res.json({
-            data: {
-              token: jwt.sign({_id: user._id, username: user.email}, req.app.locals.secretKey, {expiresIn: '24h'}),
-              user: {
-                _id: user._id,
-                name: user.name,
-                lastName: user.lastName,
-                username: user.username
+          if (err) {
+            throw err;
+          }
+          if (!user || !user.comparePasswordSync(req.body.password)) {
+            res.status(401).json({
+              error: 'Authentication failed. Invalid user or password.',
+              status: 401
+            });
+          } else if (!user.active) {
+            res.status(401).json({
+              error: 'User is inactive',
+              status: 401
+            });
+          } else {
+            user.lastLogin = Date.now();
+            user.save(function (err: any) {
+              if (err) {
+                console.log(err); // handle errors!
+              } else {
+                res.json({
+                  data: {
+                    token: jwt.sign({_id: user._id, username: user.email}, req.app.locals.secretKey, {expiresIn: '24h'}),
+                    user: {
+                      _id: user._id,
+                      name: user.name,
+                      lastName: user.lastName,
+                      username: user.username,
+                      // updatedAt: moment(user.updatedAt).tz("America/Santiago").format()
+                    }
+                  },
+                  status: 200
+                });
               }
-            },
-            status: 200
-          });
-        }
-      });
+            });
+          }
+        });
     }
   }
 

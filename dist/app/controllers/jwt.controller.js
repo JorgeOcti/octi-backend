@@ -2,7 +2,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 const jwt = require("jsonwebtoken");
 const user_model_1 = require("../models/user.model");
-// import * as randToken from 'rand-token';
+// import * as moment  from "moment-timezone";
 class JWTController {
     constructor() {
         this.login = this.login.bind(this);
@@ -51,6 +51,7 @@ class JWTController {
                 username: true,
                 lastName: true,
                 password: true,
+                updatedAt: true,
                 active: true,
             })
                 .exec((err, user) => {
@@ -70,17 +71,25 @@ class JWTController {
                     });
                 }
                 else {
-                    res.json({
-                        data: {
-                            token: jwt.sign({ _id: user._id, username: user.email }, req.app.locals.secretKey, { expiresIn: '24h' }),
-                            user: {
-                                _id: user._id,
-                                name: user.name,
-                                lastName: user.lastName,
-                                username: user.username
-                            }
-                        },
-                        status: 200
+                    user.lastLogin = Date.now();
+                    user.save(function (err) {
+                        if (err) {
+                            console.log(err); // handle errors!
+                        }
+                        else {
+                            res.json({
+                                data: {
+                                    token: jwt.sign({ _id: user._id, username: user.email }, req.app.locals.secretKey, { expiresIn: '24h' }),
+                                    user: {
+                                        _id: user._id,
+                                        name: user.name,
+                                        lastName: user.lastName,
+                                        username: user.username,
+                                    }
+                                },
+                                status: 200
+                            });
+                        }
                     });
                 }
             });

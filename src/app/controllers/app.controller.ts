@@ -12,6 +12,7 @@ class AppController {
   }
 
   public index(req: Request, res: Response) {
+     // console.log(`${JSON.stringify(req.session.cookie)}--${req.session.cookie.maxAge / 1000}s `);
     res.render('app/index', { title: 'Hey', message: 'Hello there!'});
   }
 
@@ -45,7 +46,7 @@ class AppController {
           if (loginErr) {
             return next(loginErr);
           } else {
-            user.last_login = Date.now();
+            user.lastLogin = Date.now();
             user.save(function (err: any) {
               if (err) {
                 console.log(err); // handle errors!
