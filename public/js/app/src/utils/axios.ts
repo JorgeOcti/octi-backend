@@ -20,16 +20,16 @@ export default class ApiService {
 
   constructor() {
     let headers: IHeaders = {};
-    if (window.token) {
-      headers = {
-        Authorization: `Bearer ${window.token}`
-      };
-    } else {
-      headers = {
-        'X-CSRFToken': window.getCookie('csrftoken')
-      };
-    }
-    headers['Content-Type'] = 'application/json';
+    // if (window.token) {
+    //   headers = {
+    //     Authorization: `Bearer ${window.token}`
+    //   };
+    // } else {
+    //   headers = {
+    //     'X-CSRFToken': window.getCookie('csrftoken')
+    //   };
+    // }
+    // headers['Content-Type'] = 'application/json';
     this.instance = Axios.create({
       headers
     });

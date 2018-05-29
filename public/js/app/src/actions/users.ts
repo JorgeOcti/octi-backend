@@ -3,41 +3,49 @@ import {Dispatch} from "redux";
 import ApiService from "../utils/axios";
 
 export interface IUsersState {
-  text: string;
-  done: boolean;
+  users: any;
   loading: boolean;
 }
 
 interface IIsLoading {
   type: 'IS_LOADING';
-  loading: boolean;
+  payload:{
+    loading: boolean;
+  }
 }
 
 export function isLoadingAction(loading: boolean): IIsLoading {
   return {
     type: 'IS_LOADING',
-    loading
+    payload: {
+      loading
+    }
   }
 }
 
-interface AddTodo {
-  type: "ADD_TODO";
-  text: string;
+interface ILoadUsers {
+  type: 'LOAD_USERS';
+  payload: {
+    users: any;
+  }
 }
 
-interface ToggleTodo {
-  type: "TOGGLE_TODO";
-  index: number;
+export function loadUserAction(users: any): ILoadUsers {
+  return {
+    type: 'LOAD_USERS',
+    payload: {
+      users
+    }
+  }
 }
 
 export function getUsersAction() {
-  return (dispatch: Dispatch<any, any>) => {
+  return (dispatch: Dispatch<UserReduxAction>) => {
     const api: ApiService = new ApiService();
     dispatch(isLoadingAction(true));
     api.getUsers()
       .then((response: AxiosResponse) => {
-        console.log(response);
-        // dispatch(getTeamsDataSuccessAction(response.data.data));
+        dispatch(loadUserAction(response.data.users));
         dispatch(isLoadingAction(false));
       })
       .catch((err: AxiosError) => {
@@ -48,4 +56,4 @@ export function getUsersAction() {
 }
 
 
-export type ReduxAction = IIsLoading | AddTodo | ToggleTodo;
+export type UserReduxAction = IIsLoading | ILoadUsers;

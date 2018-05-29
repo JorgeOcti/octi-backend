@@ -13,7 +13,10 @@ class AdminController {
         try {
             const users = await this.getUsers();
             this.getUsers();
-            res.json(users);
+            res.json({
+                users,
+                status: 200
+            });
         }
         catch (e) {
             res.status(400).json({
@@ -25,7 +28,7 @@ class AdminController {
     getUsers() {
         return new Promise((resolve, reject) => {
             user_model_1.default
-                .find({})
+                .find({}, { password: false })
                 .exec((err, users) => {
                 if (err) {
                     return reject(err);

@@ -1,13 +1,47 @@
+import * as PropTypes from 'prop-types';
+import * as Raven from 'raven-js';
 import * as React from 'react';
+import {ErrorInfo} from 'react';
+import {connect} from 'react-redux';
+import {RouteComponentProps} from 'react-router';
+import {Dispatch} from 'redux';
 import AppContainer from "../../container/AppContainer";
+import {IUsersState, UserReduxAction, getUsersAction} from "../../actions/users";
 
-class UsersListView extends React.Component {
+interface IPropsType extends RouteComponentProps<{ ticket: string }> {
+  dispatch: Dispatch<UserReduxAction>;
+  users: IUsersState;
+
+  getUsersAction(): UserReduxAction;
+}
+
+interface IStateType {
+  error: Error | null;
+  comment: string;
+}
+
+class UsersListView extends React.Component<IPropsType, IStateType> {
+
+  static propTypes = {
+    users: PropTypes.object.isRequired,
+    dispatch: PropTypes.func.isRequired,
+    getUsersAction: PropTypes.func.isRequired,
+  };
+
+  public componentDidCatch(error: Error, errorInfo: ErrorInfo) {
+    this.setState({error});
+    Raven.captureException(error, {
+      extra: errorInfo
+    });
+  }
 
   componentWillMount(){
-    document.title = 'OSA Andes | Listado de usuarios'
+    document.title = 'OSA Andes | Listado de usuarios';
+    this.props.getUsersAction();
   }
 
   render() {
+    const {loading, users} = this.props.users;
     return (
       <AppContainer title='' cMenu='2' cSubMenu='2.1' cAction='Listado'>
         <section className="content">
@@ -30,44 +64,24 @@ class UsersListView extends React.Component {
                     <th>Firstname</th>
                     <th>Lastname</th>
                     <th>Email</th>
+                    <th style={{width:'10px'}} />
+                    <th style={{width:'10px'}} />
                   </tr>
                 </thead>
                 <tbody>
-                  <tr>
-                    <td>John</td>
-                    <td>Doe</td>
-                    <td>john@example.com</td>
-                  </tr>
-                  <tr>
-                    <td>Mary</td>
-                    <td>Moe</td>
-                    <td>mary@example.com</td>
-                  </tr>
-                  <tr>
-                    <td>July</td>
-                    <td>Dooley</td>
-                    <td>july@example.com</td>
-                  </tr>
-                  <tr>
-                    <td>July</td>
-                    <td>Dooley</td>
-                    <td>july@example.com</td>
-                  </tr>
-                  <tr>
-                    <td>July</td>
-                    <td>Dooley</td>
-                    <td>july@example.com</td>
-                  </tr>
-                  <tr>
-                    <td>July</td>
-                    <td>Dooley</td>
-                    <td>july@example.com</td>
-                  </tr>
-                  <tr>
-                    <td>July</td>
-                    <td>Dooley</td>
-                    <td>july@example.com</td>
-                  </tr>
+                  {
+                    users.map((user:any)=>{
+                      return (
+                        <tr key={user._id}>
+                          <td>{user.name}</td>
+                          <td>{user.lastName}</td>
+                          <td>{user.email}</td>
+                          <td className="text-blue pointer"><i className="fa fa-pencil" /></td>
+                          <td className="text-red pointer"><i className="fa fa-minus-circle" /></td>
+                        </tr>
+                      )
+                    })
+                  }
                 </tbody>
               </table>
             </div>
@@ -77,9 +91,9 @@ class UsersListView extends React.Component {
                   <li className="page-item disabled">
                     <a className="page-link" href="#">Previous</a>
                   </li>
-                  <li className="page-item"><a className="page-link" href="#">1</a></li>
-                  <li className="page-item active">
-                    <a className="page-link" href="#">2 <span className="sr-only">(current)</span></a>
+                  <li className="page-item active"><a className="page-link" href="#">1</a></li>
+                  <li className="page-item">
+                    <a className="page-link" href="#">2</a>
                   </li>
                   <li className="page-item"><a className="page-link" href="#">3</a></li>
                   <li className="page-item">
@@ -88,6 +102,12 @@ class UsersListView extends React.Component {
                 </ul>
               </nav>
             </div>
+            {
+              loading &&
+              <div className="overlay">
+                <i className="fa fa-spinner fa-spin" style={{color: '#464646'}}/>
+              </div>
+            }
           </div>
         </section>
       </AppContainer>
@@ -95,4 +115,18 @@ class UsersListView extends React.Component {
   }
 }
 
-export default UsersListView;
+const mapStateToProps = (state: { users: IUsersState }) => {
+  return {
+    users: state.users
+  };
+};
+
+const mapDispatchToProps = (dispatch: any) => {
+  return {
+    dispatch,
+    getUsersAction: () => dispatch(getUsersAction())
+  };
+};
+
+export default connect<{}, {}, IPropsType>(mapStateToProps, mapDispatchToProps)(UsersListView);
+

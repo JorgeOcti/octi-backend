@@ -11,7 +11,7 @@ import ApiService from '../utils/axios';
 export function getTeamsDataAction() {
   // return (dispatch: Dispatch<{}>, getState: () => ITicketsState) => {
   // return (dispatch: Dispatch<any, ITicketState>) => {
-  return (dispatch: Dispatch<any, any>) => {
+  return (dispatch: Dispatch<any>) => {
     const api: ApiService = new ApiService();
     // dispatch(isLoadingAction(true));
     api.getTeams()

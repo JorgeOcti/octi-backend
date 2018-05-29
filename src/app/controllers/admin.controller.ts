@@ -15,7 +15,10 @@ class AdminController {
     try {
       const users = await this.getUsers();
       this.getUsers();
-      res.json(users);
+      res.json({
+        users,
+        status: 200
+      });
     } catch (e) {
       res.status(400).json({
         error: 'Hemos tenido un error al obtener los usuarios',
@@ -27,7 +30,7 @@ class AdminController {
   private getUsers(){
     return new Promise((resolve, reject) => {
       User
-        .find({})
+        .find({}, {password:false})
         .exec((err, users) => {
           if (err) {
             return reject(err);

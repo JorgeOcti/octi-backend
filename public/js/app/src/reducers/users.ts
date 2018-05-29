@@ -1,23 +1,22 @@
-import {IUsersState, ReduxAction} from "../actions/users";
+import {IUsersState, UserReduxAction} from "../actions/users";
 
 const initialState: IUsersState = {
-  text: '',
   loading: true,
-  done: true
+  users: [],
 };
 
-export function users(state = initialState, action: ReduxAction): IUsersState {
+export function users(state = initialState, action: UserReduxAction): IUsersState {
   switch (action.type) {
     case 'IS_LOADING':
       return {
         ...state,
-        loading: action.loading
+        loading: action.payload.loading
       };
-    case "ADD_TODO":
+    case 'LOAD_USERS':
       return {
-        ...state
+        ...state,
+        users: action.payload.users
       };
-
     default:
       return state;
   }
