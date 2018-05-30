@@ -256,7 +256,7 @@ class FormController {
                 return reject(err);
               }
               if (form) {
-                redisClient.setex(keyCache, 30, JSON.stringify(form));
+                redisClient.setex(keyCache, 60 * 2, JSON.stringify(form));
                 return resolve(form);
               }
               return reject('No se encontro formularío');
@@ -283,7 +283,7 @@ class FormController {
               if (err) {
                 return reject(err);
               }
-              redisClient.setex(keyCache, 30, JSON.stringify(forms));
+              redisClient.setex(keyCache, 60 * 2, JSON.stringify(forms));
               return resolve(forms);
             });
         }

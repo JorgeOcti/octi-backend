@@ -4,7 +4,7 @@ menus.push({
   id: '1',
   text: 'Dashboard',
   icon: 'fa-dashboard',
-  url: '/users/',
+  url: '/',
   items: [
     {
       id: '1.1',
@@ -26,7 +26,7 @@ menus.push({
   id: '2',
   text: 'Setting',
   icon: 'fa-cog',
-  url: '/',
+  url: '/users/',
   items: [
     {
       id: '2.1',

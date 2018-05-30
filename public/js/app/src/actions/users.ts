@@ -132,9 +132,9 @@ export function deleteUserAction(id: string) {
         console.log(response.data)
       })
       .catch((err: AxiosError) => {
+        // if the request is canceled
         if (Axios.isCancel(err)) {
-          dispatch(isLoadingAction(false));
-          console.log('Request canceled', err.message);
+          dispatch(isLoadingAction(true));
         } else {
           dispatch(isLoadingAction(false));
         }

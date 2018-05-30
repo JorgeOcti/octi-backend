@@ -42,6 +42,11 @@ class UsersListView extends React.Component<IPropsType, IStateType> {
     this.changePage = this.changePage.bind(this);
   }
 
+  componentWillMount(){
+    document.title = 'OSA Andes | Listado de usuarios';
+    this.props.getUsersAction();
+  }
+
   public componentDidCatch(error: Error, errorInfo: ErrorInfo) {
     this.setState({error});
     Raven.captureException(error, {
@@ -51,12 +56,13 @@ class UsersListView extends React.Component<IPropsType, IStateType> {
 
   public componentWillUnmount(){
     // cancel request if component is inmounted
-    if(this.props.users.source){
+    if (this.props.users.source) {
       this.props.users.source.cancel('Operation canceled by the user.');
     }
   }
 
   deleteUser(user: any) {
+    // swet alert
     swal({
       title: "¿Estás seguro?",
       text: `Vas a eliminar el usuario ${user.name || ''} ${user.lastName || ''}`,
@@ -68,11 +74,6 @@ class UsersListView extends React.Component<IPropsType, IStateType> {
         this.props.deleteUserAction(user._id);
       }
     });
-  }
-
-  componentWillMount(){
-    document.title = 'OSA Andes | Listado de usuarios';
-    this.props.getUsersAction();
   }
 
   changePage(page:number){
