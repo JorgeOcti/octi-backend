@@ -234,6 +234,7 @@ class FormController {
         return new Promise((resolve, reject) => {
             redis_1.default.get(keyCache, async (error, result) => {
                 if (result) {
+                    console.log(`cache: ${keyCache}`);
                     resolve(JSON.parse(result));
                 }
                 else {
@@ -252,7 +253,7 @@ class FormController {
                             return reject(err);
                         }
                         if (form) {
-                            redis_1.default.setex(keyCache, 30, JSON.stringify(form));
+                            redis_1.default.setex(keyCache, 60 * 2, JSON.stringify(form));
                             return resolve(form);
                         }
                         return reject('No se encontro formularío');
@@ -266,6 +267,7 @@ class FormController {
         return new Promise((resolve, reject) => {
             redis_1.default.get(keyCache, async (error, result) => {
                 if (result) {
+                    console.log(`cache: ${keyCache}`);
                     resolve(JSON.parse(result));
                 }
                 else {
@@ -279,7 +281,7 @@ class FormController {
                         if (err) {
                             return reject(err);
                         }
-                        redis_1.default.setex(keyCache, 30, JSON.stringify(forms));
+                        redis_1.default.setex(keyCache, 60 * 2, JSON.stringify(forms));
                         return resolve(forms);
                     });
                 }
