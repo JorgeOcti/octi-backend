@@ -5,10 +5,15 @@ import ApiService from "../utils/axios";
 export interface IUsersState {
   users: any;
   loading: boolean;
+  pagination: {
+    count: number;
+    page: number;
+    pages: number;
+  }
 }
 
 interface IIsLoading {
-  type: 'IS_LOADING';
+  type: '/USERS/IS_LOADING';
   payload:{
     loading: boolean;
   }
@@ -16,36 +21,61 @@ interface IIsLoading {
 
 export function isLoadingAction(loading: boolean): IIsLoading {
   return {
-    type: 'IS_LOADING',
+    type: '/USERS/IS_LOADING',
     payload: {
       loading
     }
   }
 }
 
-interface ILoadUsers {
-  type: 'LOAD_USERS';
-  payload: {
-    users: any;
+interface IChangePage {
+  type: '/USERS/CHANGE_PAGE';
+  payload:{
+    page: number;
   }
 }
 
-export function loadUserAction(users: any): ILoadUsers {
+export function changePageAction(page: number): IChangePage {
   return {
-    type: 'LOAD_USERS',
+    type: '/USERS/CHANGE_PAGE',
     payload: {
-      users
+      page
     }
   }
 }
 
-export function getUsersAction() {
-  return (dispatch: Dispatch<UserReduxAction>) => {
+interface ILoadUsers {
+  type: '/USERS/LOAD_USERS';
+  payload: {
+    users: any;
+    count: number;
+    pages: number
+  }
+}
+
+export function loadUserAction(users: any, count:number, pages: number): ILoadUsers {
+  return {
+    type: '/USERS/LOAD_USERS',
+    payload: {
+      users,
+      count,
+      pages
+    }
+  }
+}
+
+export function getUsersAction(nextPage?: number) {
+  return (dispatch: Dispatch<UserReduxAction>, getState: () => {users: IUsersState}) => {
     const api: ApiService = new ApiService();
+    const state = getState();
+    const page = nextPage ? nextPage : state.users.pagination.page;
+    if(nextPage){
+      dispatch(changePageAction(nextPage));
+    }
     dispatch(isLoadingAction(true));
-    api.getUsers()
+    api.getUsers(page)
       .then((response: AxiosResponse) => {
-        dispatch(loadUserAction(response.data.users));
+        dispatch(loadUserAction(response.data.results, response.data.count, response.data.pages));
         dispatch(isLoadingAction(false));
       })
       .catch((err: AxiosError) => {
@@ -56,4 +86,4 @@ export function getUsersAction() {
 }
 
 
-export type UserReduxAction = IIsLoading | ILoadUsers;
+export type UserReduxAction = IIsLoading | ILoadUsers | IChangePage;

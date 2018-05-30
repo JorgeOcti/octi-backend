@@ -2,6 +2,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 const bcrypt = require("bcrypt");
 const mongoose = require("mongoose");
+const mongoosePaginate = require("mongoose-paginate");
 const passportLocalMongoose = require("passport-local-mongoose");
 const userSchema = new mongoose.Schema({
     username: {
@@ -27,6 +28,8 @@ const userSchema = new mongoose.Schema({
     timestamps: true
 });
 userSchema.plugin(passportLocalMongoose);
+// https://www.npmjs.com/package/mongoose-paginate
+userSchema.plugin(mongoosePaginate);
 // userSchema.plugin(mongooseCrate, {
 //   storage: new S3({
 //     key: 'REDACTED',

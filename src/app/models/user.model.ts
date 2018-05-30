@@ -1,5 +1,6 @@
 import * as bcrypt from 'bcrypt';
 import * as mongoose from 'mongoose';
+import * as mongoosePaginate from 'mongoose-paginate';
 import * as passportLocalMongoose from 'passport-local-mongoose';
 // import mongooseCrate  from 'mongoose-crate';
 // import S3 from 'mongoose-crate-s3';
@@ -47,6 +48,8 @@ const userSchema = new mongoose.Schema({
 });
 
 userSchema.plugin(passportLocalMongoose);
+// https://www.npmjs.com/package/mongoose-paginate
+userSchema.plugin(mongoosePaginate);
 // userSchema.plugin(mongooseCrate, {
 //   storage: new S3({
 //     key: 'REDACTED',

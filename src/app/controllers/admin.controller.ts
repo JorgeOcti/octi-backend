@@ -1,5 +1,7 @@
 import {Request, Response} from 'express';
-import User from '../models/user.model';
+import User, {IUserModel} from '../models/user.model';
+import {PaginateOptions, PaginateResult} from 'mongoose';
+
 class AdminController {
 
   constructor() {
@@ -12,12 +14,33 @@ class AdminController {
   }
 
   public async apiUsers(req: Request, res: Response) {
+    const {page, pageSize} = req.query;
+    // options
+    const options: PaginateOptions = {
+      select: {
+        password: false
+      },
+      page: parseInt(page ? page : 1),
+      limit: parseInt(pageSize ? pageSize : 30),
+    };
     try {
-      const users = await this.getUsers();
-      res.json({
-        users,
-        status: 200
-      });
+      const users = await this.getUsers(options);
+      // validate exist page
+      if (options.page && users.pages && users.pages < options.page) {
+        res.status(400).json({
+          error: 'La página solicitada no existe.',
+          status: 200,
+        });
+      } else {
+        res.json({
+          count: users.total,
+          pages: users.pages,
+          hasPrevious: options.page && users.pages && users.pages <= options.page,
+          hasNext: options.page && users.pages && users.pages > options.page,
+          results: users.docs,
+          status: 200,
+        });
+      }
     } catch (e) {
       res.status(400).json({
         error: 'Hemos tenido un error al obtener los usuarios',
@@ -26,20 +49,16 @@ class AdminController {
     }
   }
 
-  private getUsers(){
+  private getUsers(options: PaginateOptions): Promise<PaginateResult<IUserModel>> {
     return new Promise((resolve, reject) => {
-      User
-        .find({}, {password:false})
-        .exec((err, users) => {
-          if (err) {
-            return reject(err);
-          }
-          return resolve(users);
-        })
+      User.paginate({}, options, (err, result) => {
+        if (err) {
+          return reject(err);
+        }
+        return resolve(result);
+      });
     });
   }
-
-
 }
 
 export default new AdminController();

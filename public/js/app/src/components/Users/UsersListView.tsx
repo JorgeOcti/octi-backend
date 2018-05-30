@@ -12,7 +12,7 @@ interface IPropsType extends RouteComponentProps<{ ticket: string }> {
   dispatch: Dispatch<UserReduxAction>;
   users: IUsersState;
 
-  getUsersAction(): UserReduxAction;
+  getUsersAction(page?: number): UserReduxAction;
 }
 
 interface IStateType {
@@ -28,6 +28,11 @@ class UsersListView extends React.Component<IPropsType, IStateType> {
     getUsersAction: PropTypes.func.isRequired,
   };
 
+  constructor(props: IPropsType) {
+    super(props);
+    this.changePage = this.changePage.bind(this);
+  }
+
   public componentDidCatch(error: Error, errorInfo: ErrorInfo) {
     this.setState({error});
     Raven.captureException(error, {
@@ -40,24 +45,28 @@ class UsersListView extends React.Component<IPropsType, IStateType> {
     this.props.getUsersAction();
   }
 
+  changePage(page:number){
+    this.props.getUsersAction(page);
+  }
+
   render() {
-    const {loading, users} = this.props.users;
+    const {loading, users, pagination} = this.props.users;
     return (
       <AppContainer title='' cMenu='2' cSubMenu='2.1' cAction='Listado'>
         <section className="content">
           <div className="box">
-            <div className="box-header with-border"><h3 className="box-title">Usuarios</h3>
+            <div className="box-header with-border"><h3 className="box-title">Usuarios <small>{pagination.count}</small></h3>
               <div className="box-tools pull-right">
                 <button className="btn btn-sm btn-success">Agregar</button>
               </div>
             </div>
             <div className="box-body">
-              <div className="pull-right">
-                <div className="input-group text-right max-width-300">
-                  <input type="text" className="form-control" placeholder="Buscar"/>
-                  <span className="input-group-addon input-group-primary"><i className="fa fa-search" /></span>
-                </div>
-              </div>
+              {/*<div className="pull-right">*/}
+                {/*<div className="input-group text-right max-width-300">*/}
+                  {/*<input type="text" className="form-control" placeholder="Buscar"/>*/}
+                  {/*<span className="input-group-addon input-group-primary"><i className="fa fa-search" /></span>*/}
+                {/*</div>*/}
+              {/*</div>*/}
               <table className="table table-striped">
                 <thead>
                   <tr>
@@ -86,21 +95,26 @@ class UsersListView extends React.Component<IPropsType, IStateType> {
               </table>
             </div>
             <div className="box-footer text-right">
-              <nav aria-label="...">
                 <ul className="pagination">
-                  <li className="page-item disabled">
-                    <a className="page-link" href="#">Previous</a>
-                  </li>
-                  <li className="page-item active"><a className="page-link" href="#">1</a></li>
-                  <li className="page-item">
-                    <a className="page-link" href="#">2</a>
-                  </li>
-                  <li className="page-item"><a className="page-link" href="#">3</a></li>
-                  <li className="page-item">
-                    <a className="page-link" href="#">Next</a>
-                  </li>
+                  {/*<li className="page-item disabled">*/}
+                    {/*<a className="page-link" href="#">Previous</a>*/}
+                  {/*</li>*/}
+                  {
+                    new Array(pagination.pages).fill(1).map((item, index) => {
+                      const idPagination = index + 1;
+                      return (
+                        <li className={`page-item ${idPagination === pagination.page ? 'active' : ''}`} key={idPagination}>
+                          <a className="page-link" href="javascript:void(0)"
+                             onClick={idPagination !== pagination.page ? () => this.changePage(idPagination) : () => {}}
+                          >{idPagination}</a>
+                        </li>
+                      )
+                    })
+                  }
+                  {/*<li className="page-item">*/}
+                    {/*<a className="page-link" href="#">Next</a>*/}
+                  {/*</li>*/}
                 </ul>
-              </nav>
             </div>
             {
               loading &&
@@ -125,7 +139,7 @@ const mapStateToProps = (state: { users: IUsersState }) => {
 const mapDispatchToProps = (dispatch: any ) => {
   return {
     dispatch,
-    getUsersAction: () => dispatch(getUsersAction())
+    getUsersAction: (page?: number) => dispatch(getUsersAction(page))
   };
 };
 

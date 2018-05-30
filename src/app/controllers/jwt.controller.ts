@@ -13,10 +13,12 @@ class JWTController {
   }
 
   public createUser(req: Request, res: Response) {
-    const {username, password} = req.body;
+    const {username, password, name, lastName} = req.body;
     if (username && username.length && password && password.length) {
       const newUser = new User({
         username,
+        name,
+        lastName,
         email: username,
         password,
         active: true

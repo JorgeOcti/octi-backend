@@ -48,9 +48,9 @@ export default class ApiService {
     }
   }
 
-  public getUsers(): AxiosPromise {
+  public getUsers(page?:number): AxiosPromise {
     return this.instance.get(
-      `/api/admin/users/`
+      `/api/admin/users/${page ? `?page=${page}` : ''}`
     );
   }
 
