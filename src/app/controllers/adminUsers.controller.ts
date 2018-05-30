@@ -2,7 +2,7 @@ import {Request, Response} from 'express';
 import User, {IUserModel} from '../models/user.model';
 import {PaginateOptions, PaginateResult} from 'mongoose';
 
-class AdminController {
+class AdminUsersController {
 
   constructor() {
     this.users = this.users.bind(this);
@@ -84,4 +84,4 @@ class AdminController {
   }
 }
 
-export default new AdminController();
+export default new AdminUsersController();

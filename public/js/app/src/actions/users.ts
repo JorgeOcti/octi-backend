@@ -1,10 +1,11 @@
-import {AxiosError, AxiosResponse} from "axios";
+import {default as Axios, AxiosError, AxiosResponse, CancelTokenSource} from "axios";
 import {Dispatch} from "redux";
 import ApiService from "../utils/axios";
 
 export interface IUsersState {
   users: any;
   loading: boolean;
+  source: CancelTokenSource | null;
   pagination: {
     count: number;
     page: number;
@@ -16,6 +17,22 @@ interface IIsLoading {
   type: '/USERS/IS_LOADING';
   payload:{
     loading: boolean;
+  }
+}
+
+interface ICancelRequest {
+  type: '/USERS/CANCEL_REQUEST';
+  payload: {
+    source: CancelTokenSource;
+  }
+}
+
+export function cancelRequestAction(source: CancelTokenSource): ICancelRequest {
+  return {
+    type: '/USERS/CANCEL_REQUEST',
+    payload: {
+      source,
+    }
   }
 }
 
@@ -67,6 +84,7 @@ export function loadUserAction(users: any, count:number, pages: number): ILoadUs
 export function getUsersAction(nextPage?: number) {
   return (dispatch: Dispatch<UserReduxAction>, getState: () => {users: IUsersState}) => {
     const api: ApiService = new ApiService();
+    dispatch(cancelRequestAction(api.getSource()));
     const state = getState();
     const page = nextPage ? nextPage : state.users.pagination.page;
     if(nextPage){
@@ -104,6 +122,7 @@ export function removeUserAction(id: string): IDeleteUser {
 export function deleteUserAction(id: string) {
   return (dispatch: Dispatch<UserReduxAction>) => {
     const api: ApiService = new ApiService();
+    dispatch(cancelRequestAction(api.getSource()));
     api.deleteUser(id)
       .then((response: AxiosResponse) => {
         dispatch(removeUserAction(id));
@@ -113,10 +132,15 @@ export function deleteUserAction(id: string) {
         console.log(response.data)
       })
       .catch((err: AxiosError) => {
-        dispatch(isLoadingAction(false));
+        if (Axios.isCancel(err)) {
+          dispatch(isLoadingAction(false));
+          console.log('Request canceled', err.message);
+        } else {
+          dispatch(isLoadingAction(false));
+        }
       });
   }
 }
 
 
-export type UserReduxAction = IIsLoading | ILoadUsers | IChangePage | IDeleteUser;
+export type UserReduxAction = IIsLoading | ILoadUsers | IChangePage | IDeleteUser | ICancelRequest;

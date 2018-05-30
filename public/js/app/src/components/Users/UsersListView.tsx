@@ -49,6 +49,13 @@ class UsersListView extends React.Component<IPropsType, IStateType> {
     });
   }
 
+  public componentWillUnmount(){
+    // cancel request if component is inmounted
+    if(this.props.users.source){
+      this.props.users.source.cancel('Operation canceled by the user.');
+    }
+  }
+
   deleteUser(user: any) {
     swal({
       title: "¿Estás seguro?",
@@ -127,11 +134,10 @@ class UsersListView extends React.Component<IPropsType, IStateType> {
                   {
                     new Array(pagination.pages).fill(1).map((item, index) => {
                       const idPagination = index + 1;
+                      const onClick = idPagination !== pagination.page ? () => this.changePage(idPagination) : () => {};
                       return (
                         <li className={`page-item ${idPagination === pagination.page ? 'active' : ''}`} key={idPagination}>
-                          <a className="page-link" href="javascript:void(0)"
-                             onClick={idPagination !== pagination.page ? () => this.changePage(idPagination) : () => {}}
-                          >{idPagination}</a>
+                          <a className="page-link" href="javascript:void(0)" onClick={onClick}>{idPagination}</a>
                         </li>
                       )
                     })

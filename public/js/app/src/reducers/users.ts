@@ -3,6 +3,7 @@ import {IUsersState, UserReduxAction} from "../actions/users";
 const initialState: IUsersState = {
   loading: true,
   users: [],
+  source: null,
   pagination: {
     count: 0,
     page: 1,
@@ -26,6 +27,11 @@ export function users(state = initialState, action: UserReduxAction): IUsersStat
           pages: action.payload.pages,
           count: action.payload.count
         }
+      };
+    case '/USERS/CANCEL_REQUEST':
+      return {
+        ...state,
+        source: action.payload.source
       };
     case '/USERS/DELETE_USER':
       return {

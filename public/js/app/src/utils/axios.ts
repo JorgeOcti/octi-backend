@@ -1,7 +1,9 @@
 import Axios, {
   AxiosError,
   AxiosInstance,
-  AxiosPromise
+  AxiosPromise,
+  CancelTokenSource,
+  CancelTokenStatic
 } from 'axios';
 import * as Raven from 'raven-js';
 import {IWindow} from '../interfaces/window';
@@ -16,7 +18,9 @@ export interface IHeaders {
 }
 
 export default class ApiService {
-  public instance: AxiosInstance;
+  private instance: AxiosInstance;
+  private CancelToken: CancelTokenStatic;
+  private source: CancelTokenSource;
 
   constructor() {
     let headers: IHeaders = {};
@@ -30,9 +34,11 @@ export default class ApiService {
     //   };
     // }
     // headers['Content-Type'] = 'application/json';
+
     this.instance = Axios.create({
       headers
     });
+    this.CancelToken = Axios.CancelToken;
   }
 
   public errorHandler(err: AxiosError): void {
@@ -51,7 +57,9 @@ export default class ApiService {
   public getUsers(page?:number): AxiosPromise {
     return this.instance.get(
       `/api/admin/users/${page ? `?page=${page}` : ''}`
-    );
+      , {
+        cancelToken: this.source.token
+      });
   }
 
   public deleteUser(id: string): AxiosPromise {
@@ -92,6 +100,11 @@ export default class ApiService {
 
   public getTeams(): AxiosPromise {
     return this.instance.get(window.urls.ticketsTeams);
+  }
+
+  public getSource(): CancelTokenSource {
+    this.source = this.CancelToken.source();
+    return this.source;
   }
 
 }
