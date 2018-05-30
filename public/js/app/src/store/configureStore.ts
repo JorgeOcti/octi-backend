@@ -1,14 +1,14 @@
-import * as createRavenMiddleware from 'raven-for-redux';
-import * as Raven from 'raven-js';
+// import * as createRavenMiddleware from 'raven-for-redux';
+// import * as Raven from 'raven-js';
 import {applyMiddleware, createStore} from 'redux';
 import createDebounce from 'redux-debounced';
 import {composeWithDevTools} from 'redux-devtools-extension';
 import LogerMiddleware from 'redux-logger';
 import ThunkMiddleware from 'redux-thunk';
-import {IWindow} from '../interfaces/window';
+// import {IWindow} from '../interfaces/window';
 import rootReducer from '../reducers/';
 
-declare let window: IWindow;
+// declare let window: IWindow;
 
 const configureStore = () => {
   let enhancers: any;

@@ -53,9 +53,9 @@ class UsersListView extends React.Component<IPropsType, IStateType> {
             </div>
             <div className="box-body">
               <div className="pull-right">
-                <div className="input-group text-right" style={{maxWidth: '300px'}}>
+                <div className="input-group text-right max-width-300">
                   <input type="text" className="form-control" placeholder="Buscar"/>
-                  <span className="input-group-addon" style={{backgroundColor:'#337ab7', color:'#FFF', borderColor:'#337ab7'}}><i className="fa fa-search" /></span>
+                  <span className="input-group-addon input-group-primary"><i className="fa fa-search" /></span>
                 </div>
               </div>
               <table className="table table-striped">
@@ -64,8 +64,8 @@ class UsersListView extends React.Component<IPropsType, IStateType> {
                     <th>Firstname</th>
                     <th>Lastname</th>
                     <th>Email</th>
-                    <th style={{width:'10px'}} />
-                    <th style={{width:'10px'}} />
+                    <th className="width-10" />
+                    <th className="width-10" />
                   </tr>
                 </thead>
                 <tbody>
@@ -104,9 +104,9 @@ class UsersListView extends React.Component<IPropsType, IStateType> {
             </div>
             {
               loading &&
-              <div className="overlay">
-                <i className="fa fa-spinner fa-spin" style={{color: '#464646'}}/>
-              </div>
+                <div className="overlay">
+                  <i className="fa fa-spinner fa-spin text-purple"/>
+                </div>
             }
           </div>
         </section>
@@ -121,7 +121,8 @@ const mapStateToProps = (state: { users: IUsersState }) => {
   };
 };
 
-const mapDispatchToProps = (dispatch: any) => {
+// const mapDispatchToProps = (dispatch: Dispatch<UserReduxAction> ) => {
+const mapDispatchToProps = (dispatch: any ) => {
   return {
     dispatch,
     getUsersAction: () => dispatch(getUsersAction())

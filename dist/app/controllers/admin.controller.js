@@ -12,7 +12,6 @@ class AdminController {
     async apiUsers(req, res) {
         try {
             const users = await this.getUsers();
-            this.getUsers();
             res.json({
                 users,
                 status: 200
