@@ -5,6 +5,7 @@ class AdminController {
     constructor() {
         this.users = this.users.bind(this);
         this.apiUsers = this.apiUsers.bind(this);
+        this.apiDeleteUser = this.apiDeleteUser.bind(this);
     }
     async users(req, res) {
         res.render('app/index');
@@ -15,6 +16,9 @@ class AdminController {
         const options = {
             select: {
                 password: false
+            },
+            sort: {
+                createdAt: -1
             },
             page: parseInt(page ? page : 1),
             limit: parseInt(pageSize ? pageSize : 30),
@@ -40,11 +44,31 @@ class AdminController {
             }
         }
         catch (e) {
-            res.status(400).json({
-                error: 'Hemos tenido un error al obtener los usuarios',
-                status: 400
-            });
+            if (e)
+                res.status(500).send(e);
         }
+    }
+    apiDeleteUser(req, res) {
+        const { id } = req.params;
+        user_model_1.default.findByIdAndRemove(id, (err, user) => {
+            // As always, handle any potential errors:
+            if (err)
+                res.status(500).send(err);
+            if (user) {
+                const response = {
+                    message: "Usuario eliminado satisfactoriamente.",
+                    id: user._id
+                };
+                res.status(200).send(response);
+            }
+            else {
+                const response = {
+                    message: "Este usuario ya fue eliminado.",
+                    id: id
+                };
+                res.status(200).send(response);
+            }
+        });
     }
     getUsers(options) {
         return new Promise((resolve, reject) => {

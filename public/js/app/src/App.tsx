@@ -7,6 +7,7 @@ import history from './utils/history';
 import TestDetailView from "./components/TestDetail/TestDetailView";
 import TestDetailView2 from "./components/TestDetail/TestDetailView2";
 import UsersListView from "./components/Users/UsersListView";
+import * as moment from 'moment';
 
 const store = configureStore();
 
@@ -31,6 +32,7 @@ const App = () => (
     </Provider>
 );
 $(function() {
+  moment.locale('es');
   ReactDOM.render(
       <App />,
       document.querySelector('#app')

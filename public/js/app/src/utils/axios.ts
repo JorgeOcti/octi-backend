@@ -54,6 +54,12 @@ export default class ApiService {
     );
   }
 
+  public deleteUser(id: string): AxiosPromise {
+    return this.instance.delete(
+      `/api/admin/users/${id}/`
+    );
+  }
+
   public getTicket(ticket: number): AxiosPromise {
     return this.instance.get(
       `${window.urls.tickets}${ticket}/`

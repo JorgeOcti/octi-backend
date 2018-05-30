@@ -45,6 +45,9 @@ module.exports = {// entry: process.env.NODE_ENV === 'production'?['babel-polyfi
     $: 'jQuery',
     react: 'React',
     'react-dom': 'ReactDOM',
+    sweetalert: {
+      root: "swal"
+    },
     moment: 'moment'
   },
   devServer: {

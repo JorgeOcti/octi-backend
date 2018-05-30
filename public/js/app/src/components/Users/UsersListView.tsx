@@ -1,18 +1,27 @@
+///<reference path="../../../node_modules/sweetalert/typings/sweetalert.d.ts"/>
 import * as PropTypes from 'prop-types';
 import * as Raven from 'raven-js';
 import * as React from 'react';
+import * as moment from 'moment';
 import {ErrorInfo} from 'react';
 import {connect} from 'react-redux';
 import {RouteComponentProps} from 'react-router';
 import {Dispatch} from 'redux';
 import AppContainer from "../../container/AppContainer";
-import {IUsersState, UserReduxAction, getUsersAction} from "../../actions/users";
+import {
+  IUsersState,
+  UserReduxAction,
+  getUsersAction,
+  deleteUserAction
+} from "../../actions/users";
+
 
 interface IPropsType extends RouteComponentProps<{ ticket: string }> {
   dispatch: Dispatch<UserReduxAction>;
   users: IUsersState;
 
   getUsersAction(page?: number): UserReduxAction;
+  deleteUserAction(id?: string): UserReduxAction;
 }
 
 interface IStateType {
@@ -37,6 +46,20 @@ class UsersListView extends React.Component<IPropsType, IStateType> {
     this.setState({error});
     Raven.captureException(error, {
       extra: errorInfo
+    });
+  }
+
+  deleteUser(user: any) {
+    swal({
+      title: "¿Estás seguro?",
+      text: `Vas a eliminar el usuario ${user.name || ''} ${user.lastName || ''}`,
+      icon: "warning",
+      dangerMode: true,
+      buttons: (true as any),
+    }).then((willDelete) => {
+      if (willDelete) {
+        this.props.deleteUserAction(user._id);
+      }
     });
   }
 
@@ -70,23 +93,25 @@ class UsersListView extends React.Component<IPropsType, IStateType> {
               <table className="table table-striped">
                 <thead>
                   <tr>
-                    <th>Firstname</th>
-                    <th>Lastname</th>
-                    <th>Email</th>
+                    <th>Nombre</th>
+                    <th>Apellido</th>
+                    <th className="hidden-xs">Email</th>
+                    <th className="hidden-xs">Modificado</th>
                     <th className="width-10" />
                     <th className="width-10" />
                   </tr>
                 </thead>
                 <tbody>
                   {
-                    users.map((user:any)=>{
+                    users.map((user: any) => {
                       return (
                         <tr key={user._id}>
                           <td>{user.name}</td>
                           <td>{user.lastName}</td>
-                          <td>{user.email}</td>
-                          <td className="text-blue pointer"><i className="fa fa-pencil" /></td>
-                          <td className="text-red pointer"><i className="fa fa-minus-circle" /></td>
+                          <td className="hidden-xs">{user.email}</td>
+                          <td className="hidden-xs">{moment(user.updatedAt).format('LLL')}</td>
+                          <td className="text-blue pointer"><i className="fa fa-pencil"/></td>
+                          <td className="text-red pointer" onClick={() => this.deleteUser(user)}><i className="fa fa-minus-circle"/></td>
                         </tr>
                       )
                     })
@@ -139,7 +164,8 @@ const mapStateToProps = (state: { users: IUsersState }) => {
 const mapDispatchToProps = (dispatch: any ) => {
   return {
     dispatch,
-    getUsersAction: (page?: number) => dispatch(getUsersAction(page))
+    getUsersAction: (page?: number) => dispatch(getUsersAction(page)),
+    deleteUserAction: (id: string) => dispatch(deleteUserAction(id))
   };
 };
 

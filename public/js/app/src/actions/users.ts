@@ -85,5 +85,38 @@ export function getUsersAction(nextPage?: number) {
   };
 }
 
+interface IDeleteUser {
+  type: '/USERS/DELETE_USER';
+  payload: {
+    id: string;
+  }
+}
 
-export type UserReduxAction = IIsLoading | ILoadUsers | IChangePage;
+export function removeUserAction(id: string): IDeleteUser {
+  return {
+    type: '/USERS/DELETE_USER',
+    payload: {
+      id,
+    }
+  }
+}
+
+export function deleteUserAction(id: string) {
+  return (dispatch: Dispatch<UserReduxAction>) => {
+    const api: ApiService = new ApiService();
+    api.deleteUser(id)
+      .then((response: AxiosResponse) => {
+        dispatch(removeUserAction(id));
+        swal(response.data.message, {
+          icon: "success"
+        });
+        console.log(response.data)
+      })
+      .catch((err: AxiosError) => {
+        dispatch(isLoadingAction(false));
+      });
+  }
+}
+
+
+export type UserReduxAction = IIsLoading | ILoadUsers | IChangePage | IDeleteUser;

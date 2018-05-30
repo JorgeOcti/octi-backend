@@ -27,6 +27,11 @@ export function users(state = initialState, action: UserReduxAction): IUsersStat
           count: action.payload.count
         }
       };
+    case '/USERS/DELETE_USER':
+      return {
+        ...state,
+        users: state.users.filter((user: any) => user._id !== action.payload.id)
+      };
     case '/USERS/CHANGE_PAGE':
       return {
         ...state,

@@ -9,8 +9,9 @@ appRouter.get('/robots.txt', AppController.robots);
 appRouter.get('/', Middlewares.isLoggedIn, AppController.index);
 appRouter.get('/2/', Middlewares.isLoggedIn, AppController.index);
 
-appRouter.get('/api/admin/users/', Middlewares.isLoggedIn, AdminController.apiUsers);
 appRouter.get('/users/', Middlewares.isLoggedIn, AdminController.users);
+appRouter.delete('/api/admin/users/:id/', Middlewares.isLoggedIn, AdminController.apiDeleteUser);
+appRouter.get('/api/admin/users/', Middlewares.isLoggedIn, AdminController.apiUsers);
 
 appRouter.get('/account/login/', AppController.login);
 appRouter.post('/account/login/', AppController.processLogin);
