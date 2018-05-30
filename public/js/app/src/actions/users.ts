@@ -84,13 +84,13 @@ export function loadUserAction(users: any, count:number, pages: number): ILoadUs
 export function getUsersAction(nextPage?: number) {
   return (dispatch: Dispatch<UserReduxAction>, getState: () => {users: IUsersState}) => {
     const api: ApiService = new ApiService();
+    dispatch(isLoadingAction(true));
     dispatch(cancelRequestAction(api.getSource()));
     const state = getState();
     const page = nextPage ? nextPage : state.users.pagination.page;
     if(nextPage){
       dispatch(changePageAction(nextPage));
     }
-    dispatch(isLoadingAction(true));
     api.getUsers(page)
       .then((response: AxiosResponse) => {
         dispatch(loadUserAction(response.data.results, response.data.count, response.data.pages));
@@ -122,14 +122,17 @@ export function removeUserAction(id: string): IDeleteUser {
 export function deleteUserAction(id: string) {
   return (dispatch: Dispatch<UserReduxAction>) => {
     const api: ApiService = new ApiService();
-    dispatch(cancelRequestAction(api.getSource()));
     api.deleteUser(id)
       .then((response: AxiosResponse) => {
-        dispatch(removeUserAction(id));
+        // effect when removing user
+        $(`#user-${id}`)
+          .addClass('deleted-item');
+        setTimeout(()=>{
+          dispatch(removeUserAction(id));
+        }, 500);
         swal(response.data.message, {
           icon: "success"
         });
-        console.log(response.data)
       })
       .catch((err: AxiosError) => {
         // if the request is canceled
@@ -137,6 +140,7 @@ export function deleteUserAction(id: string) {
           dispatch(isLoadingAction(true));
         } else {
           dispatch(isLoadingAction(false));
+          api.errorHandler(err);
         }
       });
   }

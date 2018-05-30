@@ -43,6 +43,7 @@ class UsersListView extends React.Component<IPropsType, IStateType> {
   }
 
   componentWillMount(){
+    // set the title of the page
     document.title = 'OSA Andes | Listado de usuarios';
     this.props.getUsersAction();
   }
@@ -62,13 +63,18 @@ class UsersListView extends React.Component<IPropsType, IStateType> {
   }
 
   deleteUser(user: any) {
-    // swet alert
+    // ask if you are sure that you are going to delete the user?
     swal({
-      title: "¿Estás seguro?",
+      title: '¿Estás seguro?',
       text: `Vas a eliminar el usuario ${user.name || ''} ${user.lastName || ''}`,
-      icon: "warning",
+      icon: 'warning',
       dangerMode: true,
-      buttons: (true as any),
+      buttons: {
+        cancel: 'Cancelar' as any,
+        confirm: {
+          text: 'Sí'
+        },
+      }
     }).then((willDelete) => {
       if (willDelete) {
         this.props.deleteUserAction(user._id);
@@ -77,6 +83,7 @@ class UsersListView extends React.Component<IPropsType, IStateType> {
   }
 
   changePage(page:number){
+    // change the page
     this.props.getUsersAction(page);
   }
 
@@ -92,12 +99,12 @@ class UsersListView extends React.Component<IPropsType, IStateType> {
               </div>
             </div>
             <div className="box-body">
-              {/*<div className="pull-right">*/}
-                {/*<div className="input-group text-right max-width-300">*/}
-                  {/*<input type="text" className="form-control" placeholder="Buscar"/>*/}
-                  {/*<span className="input-group-addon input-group-primary"><i className="fa fa-search" /></span>*/}
-                {/*</div>*/}
-              {/*</div>*/}
+              <div className="pull-right">
+                <div className="input-group text-right max-width-300">
+                  <input type="text" className="form-control" placeholder="Buscar"/>
+                  <span className="input-group-addon input-group-primary"><i className="fa fa-search" /></span>
+                </div>
+              </div>
               <table className="table table-striped">
                 <thead>
                   <tr>
@@ -113,7 +120,7 @@ class UsersListView extends React.Component<IPropsType, IStateType> {
                   {
                     users.map((user: any) => {
                       return (
-                        <tr key={user._id}>
+                        <tr key={user._id} id={`user-${user._id}`}>
                           <td>{user.name}</td>
                           <td>{user.lastName}</td>
                           <td className="hidden-xs">{user.email}</td>

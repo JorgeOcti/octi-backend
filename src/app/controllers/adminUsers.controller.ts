@@ -16,7 +16,7 @@ class AdminUsersController {
 
   public async apiUsers(req: Request, res: Response) {
     const {page, pageSize} = req.query;
-    // options
+    // paginate options
     const options: PaginateOptions = {
       select: {
         password: false
@@ -25,7 +25,7 @@ class AdminUsersController {
         createdAt: -1
       },
       page: parseInt(page ? page : 1),
-      limit: parseInt(pageSize ? pageSize : 30),
+      limit: parseInt(pageSize ? pageSize : 20),
     };
     try {
       const users = await this.getUsers(options);
