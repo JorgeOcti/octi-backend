@@ -19,6 +19,7 @@ appRouter.get('/account/logout/', app_controller_1.default.logout);
 const jwtRouter = express.Router();
 exports.jwtRouter = jwtRouter;
 jwtRouter.post('/login/', jwt_controller_1.default.login);
+jwtRouter.post('/token/', jwt_controller_1.default.token);
 jwtRouter.post('/test/', jwt_controller_1.default.isJWTAuthenticated, jwt_controller_1.default.test);
 jwtRouter.post('/create/', jwt_controller_1.default.createUser);
 //# sourceMappingURL=router.js.map

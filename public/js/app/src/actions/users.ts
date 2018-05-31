@@ -125,14 +125,14 @@ export function deleteUserAction(id: string) {
     api.deleteUser(id)
       .then((response: AxiosResponse) => {
         // effect when removing user
-        $(`#user-${id}`)
-          .addClass('deleted-item');
-        setTimeout(()=>{
-          dispatch(removeUserAction(id));
-        }, 500);
         swal(response.data.message, {
           icon: "success"
         });
+        $(`#user-${id}`)
+          .addClass('deleted-item');
+        setTimeout(() => {
+          dispatch(removeUserAction(id));
+        }, 500);
       })
       .catch((err: AxiosError) => {
         // if the request is canceled

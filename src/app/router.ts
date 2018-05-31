@@ -19,6 +19,7 @@ appRouter.get('/account/logout/', AppController.logout);
 
 const jwtRouter = express.Router();
 jwtRouter.post('/login/', JWTController.login);
+jwtRouter.post('/token/', JWTController.token);
 jwtRouter.post('/test/', JWTController.isJWTAuthenticated, JWTController.test);
 jwtRouter.post('/create/', JWTController.createUser);
 

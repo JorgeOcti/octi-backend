@@ -6,6 +6,7 @@ const user_model_1 = require("../models/user.model");
 class JWTController {
     constructor() {
         this.login = this.login.bind(this);
+        this.token = this.token.bind(this);
         this.createUser = this.createUser.bind(this);
         this.isJWTAuthenticated = this.isJWTAuthenticated.bind(this);
     }
@@ -51,6 +52,7 @@ class JWTController {
             }, {
                 name: true,
                 username: true,
+                email: true,
                 lastName: true,
                 password: true,
                 updatedAt: true,
@@ -58,7 +60,7 @@ class JWTController {
             })
                 .exec((err, user) => {
                 if (err) {
-                    throw err;
+                    res.status(500).send(err);
                 }
                 if (!user || !user.comparePasswordSync(req.body.password)) {
                     res.status(401).json({
@@ -76,12 +78,22 @@ class JWTController {
                     user.lastLogin = Date.now();
                     user.save(function (err) {
                         if (err) {
-                            console.log(err); // handle errors!
+                            res.status(500).send(err);
                         }
                         else {
+                            const userInfo = {
+                                _id: user._id,
+                                username: user.username,
+                                email: user.email
+                            };
                             res.json({
                                 data: {
-                                    token: jwt.sign({ _id: user._id, username: user.email }, req.app.locals.secretKey, { expiresIn: '24h' }),
+                                    token: jwt.sign(userInfo, req.app.locals.secretKey, {
+                                        expiresIn: '30 days'
+                                    }),
+                                    refreshToken: jwt.sign(userInfo, req.app.locals.secretKey, {
+                                        expiresIn: '60 days'
+                                    }),
                                     user: {
                                         _id: user._id,
                                         name: user.name,
@@ -90,6 +102,69 @@ class JWTController {
                                     }
                                 },
                                 status: 200
+                            });
+                        }
+                    });
+                }
+            });
+        }
+    }
+    token(req, res) {
+        const { refreshToken } = req.body;
+        if (!refreshToken) {
+            res.status(400).json({
+                error: 'refresh token is required',
+                status: 400
+            });
+        }
+        else {
+            jwt.verify(refreshToken, req.app.locals.secretKey, (err, decode) => {
+                if (err) {
+                    res.status(400).json(err);
+                }
+                else {
+                    user_model_1.default
+                        .findById(decode._id)
+                        .exec((err, user) => {
+                        if (err) {
+                            res.status(500).json(err);
+                        }
+                        else if (!user.active) {
+                            res.status(401).json({
+                                error: 'User is inactive',
+                                status: 401
+                            });
+                        }
+                        else {
+                            user.lastLogin = Date.now();
+                            user.save(function (err) {
+                                if (err) {
+                                    res.status(500).send(err);
+                                }
+                                else {
+                                    const userInfo = {
+                                        _id: user._id,
+                                        username: user.username,
+                                        email: user.email
+                                    };
+                                    res.json({
+                                        data: {
+                                            token: jwt.sign(userInfo, req.app.locals.secretKey, {
+                                                expiresIn: '30 days'
+                                            }),
+                                            refreshToken: jwt.sign(userInfo, req.app.locals.secretKey, {
+                                                expiresIn: '60 days'
+                                            }),
+                                            user: {
+                                                _id: user._id,
+                                                name: user.name,
+                                                lastName: user.lastName,
+                                                username: user.username,
+                                            }
+                                        },
+                                        status: 200
+                                    });
+                                }
                             });
                         }
                     });

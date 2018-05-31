@@ -8,6 +8,7 @@ class JWTController {
 
   constructor() {
     this.login = this.login.bind(this);
+    this.token = this.token.bind(this);
     this.createUser = this.createUser.bind(this);
     this.isJWTAuthenticated = this.isJWTAuthenticated.bind(this);
   }
@@ -53,6 +54,7 @@ class JWTController {
         }, {
           name: true,
           username: true,
+          email: true,
           lastName: true,
           password: true,
           updatedAt: true,
@@ -60,7 +62,7 @@ class JWTController {
         })
         .exec((err, user: any) => {
           if (err) {
-            throw err;
+            res.status(500).send(err);
           }
           if (!user || !user.comparePasswordSync(req.body.password)) {
             res.status(401).json({
@@ -76,11 +78,21 @@ class JWTController {
             user.lastLogin = Date.now();
             user.save(function (err: any) {
               if (err) {
-                console.log(err); // handle errors!
+                res.status(500).send(err);
               } else {
+                const userInfo = {
+                  _id: user._id,
+                  username: user.username,
+                  email: user.email
+                };
                 res.json({
                   data: {
-                    token: jwt.sign({_id: user._id, username: user.email}, req.app.locals.secretKey, {expiresIn: '24h'}),
+                    token: jwt.sign(userInfo, req.app.locals.secretKey, {
+                      expiresIn: '30 days'
+                    }),
+                    refreshToken: jwt.sign(userInfo, req.app.locals.secretKey, {
+                      expiresIn: '60 days'
+                    }),
                     user: {
                       _id: user._id,
                       name: user.name,
@@ -98,15 +110,80 @@ class JWTController {
     }
   }
 
+  public token(req: Request, res: Response){
+    const {refreshToken} = req.body;
+    if(!refreshToken){
+      res.status(400).json({
+        error: 'refresh token is required',
+        status: 400
+      });
+    } else{
+      jwt.verify(refreshToken, req.app.locals.secretKey, (err: any, decode: any)=>{
+        if (err) {
+          res.status(401).json({
+            error: err.message,
+            status: 401
+          });
+        }
+        else{
+          User
+            .findById(decode._id)
+            .exec((err, user: any) => {
+              if (err) {
+                res.status(500).json(err);
+              }
+              else if (!user.active) {
+                res.status(401).json({
+                  error: 'User is inactive',
+                  status: 401
+                });
+              } else {
+                user.lastLogin = Date.now();
+                user.save(function (err: any) {
+                  if (err) {
+                    res.status(500).send(err);
+                  } else {
+                    const userInfo = {
+                      _id: user._id,
+                      username: user.username,
+                      email: user.email
+                    };
+                    res.json({
+                      data: {
+                        token: jwt.sign(userInfo, req.app.locals.secretKey, {
+                          expiresIn: '30 days'
+                        }),
+                        refreshToken: jwt.sign(userInfo, req.app.locals.secretKey, {
+                          expiresIn: '60 days'
+                        }),
+                        user: {
+                          _id: user._id,
+                          name: user.name,
+                          lastName: user.lastName,
+                          username: user.username,
+                        }
+                      },
+                      status: 200
+                    });
+                  }
+                });
+              }
+            });
+        }
+      })
+
+    }
+  }
+
   public isJWTAuthenticated(req: IRequest, res: Response, next: NextFunction) {
     console.log('test');
     if (req.headers && req.headers.authorization && req.headers.authorization.split(' ')[0] === 'JWT') {
 
       jwt.verify(req.headers.authorization.split(' ')[1], req.app.locals.secretKey, (err: any, decode: any) => {
         if (err) {
-          res.status(400).json({
+          res.status(401).json({
             error: err.message,
-            status: 400
+            status: 401
           });
         }
         req.user = decode;
