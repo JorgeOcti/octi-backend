@@ -25,7 +25,7 @@ const configureStore = () => {
     // Raven.config(window.sentry_dns !== 'False' ? window.sentry_dns : 'https://fc4ef58ac7cc44b88c76d2a24948a8ca@sentry.gonzalomunoz.io/2').install();
     // Raven.setUserContext({
     //     id: window.user.id,
-    //     name: window.user.name,
+    //     name: window.user.firstName,
     //     teamID: window.user.teamID,
     //     teamName: window.user.teamName,
     //     email: window.user.email

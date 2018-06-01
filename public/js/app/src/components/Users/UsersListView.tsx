@@ -15,6 +15,9 @@ import {
   deleteUserAction
 } from "../../actions/users";
 
+// backend interfaces
+import {IUser} from "../../../../../../src/interfaces/user";
+
 
 interface IPropsType extends RouteComponentProps<{ ticket: string }> {
   dispatch: Dispatch<UserReduxAction>;
@@ -62,11 +65,11 @@ class UsersListView extends React.Component<IPropsType, IStateType> {
     }
   }
 
-  deleteUser(user: any) {
+  deleteUser(user: IUser) {
     // ask if you are sure that you are going to delete the user?
     swal({
       title: '¿Estás seguro?',
-      text: `Vas a eliminar el usuario ${user.name || ''} ${user.lastName || ''}`,
+      text: `Vas a eliminar el usuario ${user.firstName || ''} ${user.lastName || ''}`,
       icon: 'warning',
       dangerMode: true,
       buttons: {
@@ -121,7 +124,7 @@ class UsersListView extends React.Component<IPropsType, IStateType> {
                     users.map((user: any) => {
                       return (
                         <tr key={user._id} id={`user-${user._id}`}>
-                          <td>{user.name}</td>
+                          <td>{user.firstName}</td>
                           <td>{user.lastName}</td>
                           <td className="hidden-xs">{user.email}</td>
                           <td className="hidden-xs">{moment(user.updatedAt).format('LLL')}</td>

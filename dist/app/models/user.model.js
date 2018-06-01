@@ -9,10 +9,6 @@ const userSchema = new mongoose.Schema({
         type: String,
         unique: true
     },
-    name: {
-        type: String,
-        default: ''
-    },
     firstName: {
         type: String,
         default: ''

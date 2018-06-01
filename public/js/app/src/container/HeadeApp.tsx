@@ -60,12 +60,12 @@ const HeaderApp: React.StatelessComponent<{}> = () => {
             <li className="dropdown user user-menu">
               <a className="dropdown-toggle" href="#" data-toggle="dropdown">
                 <img className="user-image" src="/static/images/icon_circular.png" alt="User Image" />
-                <span className="hidden-xs">{`${window.user.name || ''} ${window.user.lastName || ''}${!window.user.name && ! window.user.lastName?'Unknown User':''}`}</span>
+                <span className="hidden-xs">{`${window.user.firstName || ''} ${window.user.lastName || ''}${!window.user.firstName && ! window.user.lastName?'Unknown User':''}`}</span>
               </a>
               <ul className="dropdown-menu">
                 <li className="user-header">
                   <img className="img-circle" src="/static/images/icon_circular.png" alt="User Image" />
-                  <p>{`${window.user.name || ''} ${window.user.lastName || ''}${!window.user.name && ! window.user.lastName?'Unknown User':''}`}
+                  <p>{`${window.user.firstName || ''} ${window.user.firstName || ''}${!window.user.firstName && ! window.user.lastName?'Unknown User':''}`}
                     <small>{window.user.email || '' }</small>
                   </p>
                 </li>

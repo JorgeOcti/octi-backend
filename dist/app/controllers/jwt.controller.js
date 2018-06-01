@@ -50,7 +50,7 @@ class JWTController {
                 .findOne({
                 email: req.body.username
             }, {
-                name: true,
+                firstName: true,
                 username: true,
                 email: true,
                 lastName: true,
@@ -96,7 +96,7 @@ class JWTController {
                                     }),
                                     user: {
                                         _id: user._id,
-                                        name: user.name,
+                                        name: user.firstName,
                                         lastName: user.lastName,
                                         username: user.username,
                                     }
@@ -160,7 +160,7 @@ class JWTController {
                                             }),
                                             user: {
                                                 _id: user._id,
-                                                name: user.name,
+                                                name: user.firstName,
                                                 lastName: user.lastName,
                                                 username: user.username,
                                             }
