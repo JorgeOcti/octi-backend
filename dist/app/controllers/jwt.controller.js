@@ -11,11 +11,11 @@ class JWTController {
         this.isJWTAuthenticated = this.isJWTAuthenticated.bind(this);
     }
     createUser(req, res) {
-        const { username, password, name, lastName } = req.body;
+        const { username, password, firstName, lastName } = req.body;
         if (username && username.length && password && password.length) {
             const newUser = new user_model_1.default({
                 username,
-                name,
+                firstName,
                 lastName,
                 email: username,
                 password,
