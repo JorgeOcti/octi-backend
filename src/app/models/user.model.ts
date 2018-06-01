@@ -9,6 +9,7 @@ import {IUser} from "../../interfaces/user";
 export interface IUserModel extends IUser, mongoose.Document {
   comparePassword: (candidatePassword: string, cb: (err: any, isMatch: any) => {}) => void;
   comparePasswordSync: (candidatePassword: string) => void;
+  fullName: () => string;
 }
 
 const userSchema = new mongoose.Schema({
@@ -17,6 +18,10 @@ const userSchema = new mongoose.Schema({
     unique: true
   },
   name: {
+    type: String,
+    default: ''
+  },
+  firstName: {
     type: String,
     default: ''
   },
@@ -57,6 +62,11 @@ userSchema.plugin(mongoosePaginate);
 /**
  * Password hash middleware.
  */
+
+userSchema.methods.fullName = function(): string {
+  return (this.firstName.trim() + " " + this.lastName.trim());
+};
+
 userSchema.pre('save', function save(next) {
   const user = this;
 

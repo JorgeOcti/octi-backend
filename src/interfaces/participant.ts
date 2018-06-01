@@ -7,7 +7,7 @@ import {
 } from "../form/models/participant.model";
 
 export interface IParticipantChoices {
-   choice: string;
+  choice: string;
   value: number;
   backgroundColor: string;
   requireImage: boolean;
@@ -15,6 +15,7 @@ export interface IParticipantChoices {
   na: boolean;
   order: number;
 }
+
 export interface IParticipantScale {
   name: string;
   minValue: number;

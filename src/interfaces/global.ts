@@ -17,6 +17,15 @@ export interface IResponseData {
   status: number;
 }
 
+export interface IResponsePaginateData<S> {
+  status: number;
+  count?: number;
+  pages?: number;
+  hasPrevious?: boolean;
+  hasNext?: boolean;
+  results: S;
+}
+
 export interface IRequest extends Request {
   user: any;
 }

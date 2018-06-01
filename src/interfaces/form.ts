@@ -8,7 +8,7 @@ import {
 } from "../form/models/scale.model";
 
 export interface IFormQuestion {
-   question: string;
+  question: string;
   shortName: string;
 
   scale: IScaleModel;

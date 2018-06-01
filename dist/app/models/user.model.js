@@ -13,6 +13,10 @@ const userSchema = new mongoose.Schema({
         type: String,
         default: ''
     },
+    firstName: {
+        type: String,
+        default: ''
+    },
     lastName: {
         type: String,
         default: ''
@@ -47,6 +51,9 @@ userSchema.plugin(mongoosePaginate);
 /**
  * Password hash middleware.
  */
+userSchema.methods.fullName = function () {
+    return (this.firstName.trim() + " " + this.lastName.trim());
+};
 userSchema.pre('save', function save(next) {
     const user = this;
     if (!user.isModified('password')) {
