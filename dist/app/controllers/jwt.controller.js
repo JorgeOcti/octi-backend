@@ -75,10 +75,10 @@ class JWTController {
                     });
                 }
                 else {
-                    user.lastLogin = Date.now();
+                    user.lastLogin = new Date();
                     user.save(function (err) {
                         if (err) {
-                            res.status(500).send(err);
+                            res.status(500).json(err);
                         }
                         else {
                             const userInfo = {
@@ -120,7 +120,10 @@ class JWTController {
         else {
             jwt.verify(refreshToken, req.app.locals.secretKey, (err, decode) => {
                 if (err) {
-                    res.status(400).json(err);
+                    res.status(401).json({
+                        error: err.message,
+                        status: 401
+                    });
                 }
                 else {
                     user_model_1.default
@@ -136,10 +139,10 @@ class JWTController {
                             });
                         }
                         else {
-                            user.lastLogin = Date.now();
+                            user.lastLogin = new Date();
                             user.save(function (err) {
                                 if (err) {
-                                    res.status(500).send(err);
+                                    res.status(500).json(err);
                                 }
                                 else {
                                     const userInfo = {
@@ -177,9 +180,9 @@ class JWTController {
         if (req.headers && req.headers.authorization && req.headers.authorization.split(' ')[0] === 'JWT') {
             jwt.verify(req.headers.authorization.split(' ')[1], req.app.locals.secretKey, (err, decode) => {
                 if (err) {
-                    res.status(400).json({
+                    res.status(401).json({
                         error: err.message,
-                        status: 400
+                        status: 401
                     });
                 }
                 req.user = decode;

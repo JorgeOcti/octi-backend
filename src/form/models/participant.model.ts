@@ -1,15 +1,7 @@
 import * as mongoose from 'mongoose';
+import {IParticipant, IParticipantAnswer, IParticipantChoices, IParticipantScale, IParticipantSection} from "../../interfaces/participant";
 
-export interface IParticipantChoicesModel extends mongoose.Types.Subdocument {
-  choice: string;
-  value: number;
-  backgroundColor: string;
-  requireImage: boolean;
-  requireComment: boolean;
-  na: boolean;
-  order: number;
-}
-
+export interface IParticipantChoicesModel extends IParticipantChoices, mongoose.Types.Subdocument {}
 const participantChoiceSchema = new mongoose.Schema({
   choice: {type: String, required: true, trim: true},
   value: {type: Number, required: true},
@@ -20,14 +12,7 @@ const participantChoiceSchema = new mongoose.Schema({
   order: {type: Number, required: true}
 });
 
-export interface IScaleModel extends mongoose.Document {
-  name: string;
-  minValue: number;
-  maxValue: number;
-  choices: mongoose.Types.Array<IParticipantChoicesModel>;
-  active: boolean;
-}
-
+export interface IScaleParticipantModel extends IParticipantScale, mongoose.Document {}
 export const scaleSchema = new mongoose.Schema({
   name: String,
   minValue: {type: Number, required: true},
@@ -36,22 +21,7 @@ export const scaleSchema = new mongoose.Schema({
   active: {type: Boolean, default: true}
 });
 
-export interface IParticipantAnswerModel extends mongoose.Types.Subdocument {
-  question: string;
-  shortName: string;
-
-  scale: IScaleModel;
-  answer: string;
-  qualification: number;
-  comment: string;
-
-  risk: string;
-  observe: string;
-
-  weight: number;
-  order: number;
-}
-
+export interface IParticipantAnswerModel extends IParticipantAnswer, mongoose.Types.Subdocument {}
 const participantAnswersSchema = new mongoose.Schema({
   question: {type: String, required: true, trim: true},
   shortName: {type: String, trim: true},
@@ -69,17 +39,7 @@ const participantAnswersSchema = new mongoose.Schema({
   order: {type: Number, required: true}
 });
 
-export interface IParticipantSectionModel extends mongoose.Types.Subdocument {
-  name: string;
-  shortName: string;
-
-  answers: mongoose.Types.Array<IParticipantAnswerModel>;
-
-  qualification: number;
-  weight: number;
-  order: number;
-}
-
+export interface IParticipantSectionModel extends IParticipantSection, mongoose.Types.Subdocument {}
 const participantSectionsSchema = new mongoose.Schema({
   section_id: {type: mongoose.Schema.Types.ObjectId},
   name: {type: String, required: true, trim: true},
@@ -92,18 +52,7 @@ const participantSectionsSchema = new mongoose.Schema({
   order: {type: Number, required: true}
 });
 
-export interface IParticipantModel extends mongoose.Document {
-  name: string;
-  user: string;
-
-  description: string;
-
-  sections: mongoose.Types.Array<IParticipantSectionModel>;
-
-  qualification: number;
-  active: boolean;
-}
-
+export interface IParticipantModel extends IParticipant, mongoose.Document {}
 const participantSchema = new mongoose.Schema({
   name: {type: String, required: true, trim: true},
   form: {

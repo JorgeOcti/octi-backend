@@ -26,9 +26,9 @@ class Middlewares {
         if (req.headers && req.headers.authorization && req.headers.authorization.split(' ')[0] === 'JWT') {
             jwt.verify(req.headers.authorization.split(' ')[1], req.app.locals.secretKey, (err, decode) => {
                 if (err) {
-                    res.status(400).json({
+                    res.status(401).json({
                         error: err.message,
-                        status: 400
+                        status: 401
                     });
                 }
                 req.user = decode;

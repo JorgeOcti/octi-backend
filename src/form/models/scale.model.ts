@@ -1,14 +1,7 @@
 import * as mongoose from 'mongoose';
+import {IChoices, IScale} from "../../interfaces/scale";
 
-export interface IChoicesModel extends mongoose.Types.Subdocument {
-  choice: string;
-  value: number;
-  backgroundColor: string;
-  requireImage: boolean;
-  requireComment: boolean;
-  na: boolean;
-  order: number;
-}
+export interface IChoicesModel extends IChoices, mongoose.Types.Subdocument {}
 
 const choiceSchema = new mongoose.Schema({
   choice: {type: String, required: true, trim: true},
@@ -20,23 +13,7 @@ const choiceSchema = new mongoose.Schema({
   order: {type: Number, required: true}
 });
 
-/*
-  "backgroundColor": "red",
-  "backgroundColor": "green",
-  "backgroundColor": "blue",
-  "backgroundColor": "yellow",
-* */
-
-// }, {_id: false});
-
-export interface IScaleModel extends mongoose.Document {
-  name: string;
-  minValue: number;
-  maxValue: number;
-  choices: mongoose.Types.Array<IChoicesModel>;
-  active: boolean;
-}
-
+export interface IScaleModel extends IScale, mongoose.Document {}
 export const scaleSchema = new mongoose.Schema({
   name: String,
   minValue: {type: Number, required: true},

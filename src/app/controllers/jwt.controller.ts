@@ -1,7 +1,7 @@
 import {NextFunction, Request, Response} from 'express';
 import * as jwt from 'jsonwebtoken';
 import {IRequest} from '../../interfaces/global';
-import User from '../models/user.model';
+import User, {IUserModel} from '../models/user.model';
 // import * as moment  from "moment-timezone";
 
 class JWTController {
@@ -60,7 +60,7 @@ class JWTController {
           updatedAt: true,
           active: true,
         })
-        .exec((err, user: any) => {
+        .exec((err, user: IUserModel) => {
           if (err) {
             res.status(500).send(err);
           }
@@ -75,10 +75,10 @@ class JWTController {
               status: 401
             });
           } else {
-            user.lastLogin = Date.now();
+            user.lastLogin = new Date();
             user.save(function (err: any) {
               if (err) {
-                res.status(500).send(err);
+                res.status(500).json(err);
               } else {
                 const userInfo = {
                   _id: user._id,
@@ -128,7 +128,7 @@ class JWTController {
         else{
           User
             .findById(decode._id)
-            .exec((err, user: any) => {
+            .exec((err, user: IUserModel) => {
               if (err) {
                 res.status(500).json(err);
               }
@@ -138,10 +138,10 @@ class JWTController {
                   status: 401
                 });
               } else {
-                user.lastLogin = Date.now();
+                user.lastLogin = new Date();
                 user.save(function (err: any) {
                   if (err) {
-                    res.status(500).send(err);
+                    res.status(500).json(err);
                   } else {
                     const userInfo = {
                       _id: user._id,
@@ -161,6 +161,7 @@ class JWTController {
                           name: user.name,
                           lastName: user.lastName,
                           username: user.username,
+                          // updatedAt: moment(user.updatedAt).tz("America/Santiago").format()
                         }
                       },
                       status: 200

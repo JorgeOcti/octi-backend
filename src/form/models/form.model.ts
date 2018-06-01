@@ -1,19 +1,7 @@
 import * as mongoose from 'mongoose';
-import {IScaleModel} from './scale.model';
+import {IForm, IFormQuestion, IFormSection} from "../../interfaces/form";
 
-export interface IFormQuestionModel extends mongoose.Types.Subdocument {
-  question: string;
-  shortName: string;
-
-  scale: IScaleModel;
-
-  risk: string;
-  observe: string;
-
-  weight: number;
-  order: number;
-}
-
+export interface IFormQuestionModel extends IFormQuestion, mongoose.Types.Subdocument {}
 const formQuestionsSchema = new mongoose.Schema({
   question: {type: String, required: true, trim: true},
   shortName: {type: String, trim: true},
@@ -31,16 +19,7 @@ const formQuestionsSchema = new mongoose.Schema({
   order: {type: Number, required: true}
 });
 
-export interface IFormSectionModel extends mongoose.Types.Subdocument {
-  name: string;
-  shortName: string;
-
-  questions: mongoose.Types.Array<IFormQuestionModel>;
-
-  weight: number;
-  order: number;
-}
-
+export interface IFormSectionModel extends IFormSection, mongoose.Types.Subdocument {}
 const formSectionsSchema = new mongoose.Schema({
   name: {type: String, required: true, trim: true},
   shortName: {type: String, trim: true},
@@ -51,23 +30,7 @@ const formSectionsSchema = new mongoose.Schema({
   order: {type: Number, required: true}
 });
 
-// formSectionsSchema.set('toJSON', {
-//   transform: (doc: any, ret: any, options: any) => {
-//     ret.id = ret._id;
-//     delete ret._id;
-//     delete ret.__v;
-//   }
-// });
-
-export interface IFormModel extends mongoose.Document {
-  name: string;
-  description: string;
-
-  sections: mongoose.Types.Array<IFormSectionModel>;
-  url?: string;
-  active: boolean;
-}
-
+export interface IFormModel extends IForm, mongoose.Document {}
 const formSchema = new mongoose.Schema({
   name: {type: String, required: true, trim: true},
   description: {type: String, trim: true},

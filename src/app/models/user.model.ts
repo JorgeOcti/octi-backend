@@ -2,24 +2,13 @@ import * as bcrypt from 'bcrypt';
 import * as mongoose from 'mongoose';
 import * as mongoosePaginate from 'mongoose-paginate';
 import * as passportLocalMongoose from 'passport-local-mongoose';
+import {IUser} from "../../interfaces/user";
 // import mongooseCrate  from 'mongoose-crate';
 // import S3 from 'mongoose-crate-s3';
 
-export interface IUserModel extends mongoose.Document {
-  username: string;
-  email: string;
-  name: string;
-  lastName: string;
-  password: string;
-  hash_password: string;
-  passwordResetToken: string;
-  passwordResetExpires: Date;
-  lastLogin: Date;
-  active: boolean;
-
+export interface IUserModel extends IUser, mongoose.Document {
   comparePassword: (candidatePassword: string, cb: (err: any, isMatch: any) => {}) => void;
   comparePasswordSync: (candidatePassword: string) => void;
-
 }
 
 const userSchema = new mongoose.Schema({
