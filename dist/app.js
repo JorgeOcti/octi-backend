@@ -6,8 +6,10 @@ const cookieParser = require("cookie-parser");
 const dotenv = require("dotenv");
 const express = require("express");
 const session = require("express-session");
+const connectRedis = require("connect-redis");
+const redis_1 = require("./services/redis");
 const fileStreamRotator = require("file-stream-rotator");
-// import * as git from 'git-rev-sync';
+const git = require("git-rev-sync");
 const lusca = require("lusca");
 const morgan = require("morgan");
 const multer = require("multer");
@@ -17,16 +19,19 @@ const path = require("path");
 const Raven = require("raven");
 const responseTime = require("response-time");
 const user_model_1 = require("./app/models/user.model");
+const middlewares_1 = require("./middlewares/middlewares");
+const Staticify = require("staticify");
 // Import routes
 const router_1 = require("./app/router");
+const router_2 = require("./form/router");
 // Configure sentry
 global.__rootdir__ = __dirname || process.cwd();
 const root = global.__rootdir__;
 const LocalStrategy = passportLocal.Strategy;
-// const gitCommit = git.long();
-const gitCommit = '1212121212';
+const gitCommit = git.long();
+const redisStore = connectRedis(session);
 /* istanbul ignore next */
-Raven.config('https://2a51f5b0d78a4a0f9f52d673a1bf92ff:002cc5d2f5f743ed8b7986db910871e2@sentry.gonzalomunoz.io/11', {
+Raven.config(process.env.SENTRY_DNS, {
     release: gitCommit,
     tags: {
         git_commit: gitCommit,
@@ -64,12 +69,19 @@ app.use(compression());
 app.use(lusca.xframe('SAMEORIGIN'));
 app.use(lusca.xssProtection(true));
 app.use(responseTime());
+// template engine
+const viewDirectory = path.join(__dirname, '../views');
+app.set('view engine', 'pug');
+app.set('view cache', false);
+app.set('views', viewDirectory);
 // Set environment variables
 app.set('env', process.env.ENV || 'development');
 app.set('port', process.env.PORT || 3000);
 app.locals.secretKey = process.env.SECRET_KEY;
 // Remove x-powered-by
 app.disable('x-powered-by');
+// strict routing
+app.set('strict routing', true);
 // For parsing application/json
 app.use(bodyParser.json());
 // for parsing application/xwww-
@@ -77,41 +89,43 @@ app.use(bodyParser.urlencoded({ extended: true }));
 // For parsing multipart/form-data
 const upload = multer();
 app.use(upload.single());
+// static files
+const staticDirectory = path.join(__dirname, '../public');
+app.use(middlewares_1.default.cleanStaticFiles);
+app.use('/static', express.static(staticDirectory, { maxAge: '30 days' }));
+const staticify = Staticify(staticDirectory);
+app.use(staticify.middleware);
+//
+app.locals.getVersionedPath = staticify.getVersionedPath;
+// app.helpers({getVersionedPath: staticify.getVersionedPath})
 app.use(cookieParser());
 app.use(session({
-    resave: true,
+    resave: false,
     saveUninitialized: true,
-    secret: 'MksAAmmDXGvk3oMgZUieiL.DnGfDHjjwnTs'
-    // store: new redisStore({
-    //   host: 'localhost',
-    //   port: 6379,
-    //   client: redisClient,
-    //   ttl: 260
-    // })
+    secret: process.env.SECRET_KEY,
+    cookie: {
+        maxAge: 3600000 * 48
+    },
+    store: new redisStore({
+        host: 'localhost',
+        port: 6379,
+        client: redis_1.default
+    })
 }));
 // passport
 app.use(passport.initialize());
 app.use(passport.session());
-passport.serializeUser((user, done) => {
-    done(undefined, user.id);
-});
-passport.deserializeUser((id, done) => {
-    user_model_1.default.findById(id, (err, user) => {
-        if (user) {
-            done(err, user);
-        }
-    });
-});
+// passport.use(new LocalStrategy((User as any).authenticate()));
 /**
  * Sign in using Email and Password.
  */
-passport.use(new LocalStrategy({ usernameField: 'email' }, (email, password, done) => {
-    user_model_1.default.findOne({ email: email.toLowerCase() }, (err, user) => {
+passport.use(new LocalStrategy({ usernameField: 'username' }, (username, password, done) => {
+    user_model_1.default.findOne({ username: username.toLowerCase() }, (err, user) => {
         if (err) {
             return done(err);
         }
         if (!user) {
-            return done(undefined, false, { message: `Email ${email} not found.` });
+            return done(undefined, false, { message: `username ${username} not found.` });
         }
         user.comparePassword(password, (err, isMatch) => {
             if (err) {
@@ -124,6 +138,21 @@ passport.use(new LocalStrategy({ usernameField: 'email' }, (email, password, don
         });
     });
 }));
+passport.serializeUser(user_model_1.default.serializeUser());
+passport.deserializeUser(user_model_1.default.deserializeUser());
+/*
+passport.serializeUser<any, any>((user, done) => {
+  done(undefined, user.id);
+});
+
+passport.deserializeUser((id, done) => {
+  User.findById(id, (err, user) => {
+    if (user) {
+      done(err, user);
+    }
+  });
+});
+*/
 // Logger app
 const logDirectory = path.join(__dirname, '../logs');
 exports.accessLogStream = fileStreamRotator.getStream({
@@ -143,7 +172,9 @@ if (app.get('env') !== 'testing') {
 // The request handler must be the first middleware on the app
 app.use(Raven.requestHandler());
 // Routes
-app.use('/api/v1', router_1.default);
+app.use('/', router_1.appRouter);
+app.use('/api/v1', router_1.jwtRouter);
+app.use('/api/v1/forms', router_2.default);
 // The error handler must be before any other error middleware
 app.use(Raven.errorHandler());
 app.use((req, res, next) => {
@@ -165,24 +196,5 @@ app.use((err, req, res, next) => {
     });
     next();
 });
-/*const setting = new Setting({
-  name: 'Default',
-  contain: [{
-    text: '@stage.osacontrol.com',
-    domain: 'https://stage.osacontrol.com'
-  }],
-  equal: [{
-    text: 'gmunoz+local@osacontrol.com',
-    domain: 'http://localhost:8080'
-  }],
-  active: true
-});
-
-setting.save((err, result) => {
-  if (err) {
-    throw err;
-  }
-  console.log(JSON.stringify(result));
-});*/
 exports.default = app;
 //# sourceMappingURL=app.js.map

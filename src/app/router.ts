@@ -1,9 +1,29 @@
 import * as express from 'express';
+import AppController from './controllers/app.controller';
+import AdminUsersController from './controllers/adminUsers.controller';
 import JWTController from './controllers/jwt.controller';
+import Middlewares from '../middlewares/middlewares';
 
-const router = express.Router();
-router.post('/login/', JWTController.login);
-router.post('/test/', JWTController.isJWTAuthenticated, JWTController.test);
-router.post('/create/', JWTController.createUser);
+const appRouter = express.Router();
+appRouter.get('/robots.txt', AppController.robots);
+appRouter.get('/', Middlewares.isLoggedIn, AppController.index);
+appRouter.get('/2/', Middlewares.isLoggedIn, AppController.index);
 
-export default router;
+appRouter.get('/users/', Middlewares.isLoggedIn, AdminUsersController.users);
+appRouter.delete('/api/admin/users/:id/', Middlewares.isLoggedIn, AdminUsersController.apiDeleteUser);
+appRouter.get('/api/admin/users/', Middlewares.isLoggedIn, AdminUsersController.apiUsers);
+
+appRouter.get('/account/login/', AppController.login);
+appRouter.post('/account/login/', AppController.processLogin);
+appRouter.get('/account/logout/', AppController.logout);
+
+const jwtRouter = express.Router();
+jwtRouter.post('/login/', JWTController.login);
+jwtRouter.post('/token/', JWTController.token);
+jwtRouter.post('/test/', JWTController.isJWTAuthenticated, JWTController.test);
+jwtRouter.post('/create/', JWTController.createUser);
+
+export {
+  appRouter,
+  jwtRouter
+};

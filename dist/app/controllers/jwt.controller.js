@@ -2,17 +2,21 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 const jwt = require("jsonwebtoken");
 const user_model_1 = require("../models/user.model");
+// import * as moment  from "moment-timezone";
 class JWTController {
     constructor() {
         this.login = this.login.bind(this);
+        this.token = this.token.bind(this);
         this.createUser = this.createUser.bind(this);
         this.isJWTAuthenticated = this.isJWTAuthenticated.bind(this);
     }
     createUser(req, res) {
-        const { username, password } = req.body;
+        const { username, password, name, lastName } = req.body;
         if (username && username.length && password && password.length) {
             const newUser = new user_model_1.default({
                 username,
+                name,
+                lastName,
                 email: username,
                 password,
                 active: true
@@ -42,11 +46,21 @@ class JWTController {
             res.status(401).json({ message: 'Authentication failed. Invalid user or password.' });
         }
         else {
-            user_model_1.default.findOne({
+            user_model_1.default
+                .findOne({
                 email: req.body.username
-            }, (err, user) => {
+            }, {
+                firstName: true,
+                username: true,
+                email: true,
+                lastName: true,
+                password: true,
+                updatedAt: true,
+                active: true,
+            })
+                .exec((err, user) => {
                 if (err) {
-                    throw err;
+                    res.status(500).send(err);
                 }
                 if (!user || !user.comparePasswordSync(req.body.password)) {
                     res.status(401).json({
@@ -55,17 +69,107 @@ class JWTController {
                     });
                 }
                 else if (!user.active) {
-                    res.status(403).json({
-                        error: 'Forbidden',
-                        status: 403
+                    res.status(401).json({
+                        error: 'User is inactive',
+                        status: 401
                     });
                 }
                 else {
-                    res.json({
-                        data: {
-                            token: jwt.sign({ _id: user._id, username: user.email }, req.app.locals.secretKey, { expiresIn: '24h' })
-                        },
-                        status: 200
+                    user.lastLogin = new Date();
+                    user.save(function (err) {
+                        if (err) {
+                            res.status(500).json(err);
+                        }
+                        else {
+                            const userInfo = {
+                                _id: user._id,
+                                username: user.username,
+                                email: user.email
+                            };
+                            res.json({
+                                data: {
+                                    token: jwt.sign(userInfo, req.app.locals.secretKey, {
+                                        expiresIn: '30 days'
+                                    }),
+                                    refreshToken: jwt.sign(userInfo, req.app.locals.secretKey, {
+                                        expiresIn: '60 days'
+                                    }),
+                                    user: {
+                                        _id: user._id,
+                                        name: user.firstName,
+                                        lastName: user.lastName,
+                                        username: user.username,
+                                    }
+                                },
+                                status: 200
+                            });
+                        }
+                    });
+                }
+            });
+        }
+    }
+    token(req, res) {
+        const { refreshToken } = req.body;
+        if (!refreshToken) {
+            res.status(400).json({
+                error: 'refresh token is required',
+                status: 400
+            });
+        }
+        else {
+            jwt.verify(refreshToken, req.app.locals.secretKey, (err, decode) => {
+                if (err) {
+                    res.status(401).json({
+                        error: err.message,
+                        status: 401
+                    });
+                }
+                else {
+                    user_model_1.default
+                        .findById(decode._id)
+                        .exec((err, user) => {
+                        if (err) {
+                            res.status(500).json(err);
+                        }
+                        else if (!user.active) {
+                            res.status(401).json({
+                                error: 'User is inactive',
+                                status: 401
+                            });
+                        }
+                        else {
+                            user.lastLogin = new Date();
+                            user.save(function (err) {
+                                if (err) {
+                                    res.status(500).json(err);
+                                }
+                                else {
+                                    const userInfo = {
+                                        _id: user._id,
+                                        username: user.username,
+                                        email: user.email
+                                    };
+                                    res.json({
+                                        data: {
+                                            token: jwt.sign(userInfo, req.app.locals.secretKey, {
+                                                expiresIn: '30 days'
+                                            }),
+                                            refreshToken: jwt.sign(userInfo, req.app.locals.secretKey, {
+                                                expiresIn: '60 days'
+                                            }),
+                                            user: {
+                                                _id: user._id,
+                                                name: user.firstName,
+                                                lastName: user.lastName,
+                                                username: user.username,
+                                            }
+                                        },
+                                        status: 200
+                                    });
+                                }
+                            });
+                        }
                     });
                 }
             });
@@ -76,9 +180,9 @@ class JWTController {
         if (req.headers && req.headers.authorization && req.headers.authorization.split(' ')[0] === 'JWT') {
             jwt.verify(req.headers.authorization.split(' ')[1], req.app.locals.secretKey, (err, decode) => {
                 if (err) {
-                    res.status(400).json({
+                    res.status(401).json({
                         error: err.message,
-                        status: 400
+                        status: 401
                     });
                 }
                 req.user = decode;

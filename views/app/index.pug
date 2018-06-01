@@ -1,0 +1,16 @@
+extends ../layout
+
+block head
+  title OSA Andes
+
+block content
+  body.skin-purple.fixed.sidebar-mini.sidebar-mini-expand-feature
+   #app.wrapper
+
+block js
+  //- AdminLTE App
+  script(src=`/static${getVersionedPath('/theme/dist/js/adminlte.min.js')}`)
+  //- React App
+  script(src=`/static${getVersionedPath('/js/app/dist/main.js')}`)
+  script.
+    window.user = {id: '!{`${user.id}`}', firstName: '!{`${user.firstName}`}', lastName: '!{`${user.lastName}`}', email: '!{`${user.email}`}'}

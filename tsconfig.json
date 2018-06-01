@@ -11,6 +11,8 @@
      /* Strict Type-Checking Options */
     "noImplicitReturns": true,
     "noImplicitAny": true,
+    "noImplicitThis": false,
+    "strictNullChecks": true,
     /* Additional Checks */
     "noUnusedLocals": true
   },
@@ -18,7 +20,10 @@
     "./src/**/*"
   ],
   "exclude": [
+    "views",
+    "logs",
     "node_modules",
-    "dist"
+    "dist",
+    "public",
   ]
 }

@@ -1,29 +1,55 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-const bcrypt = require("bcrypt-nodejs");
+const bcrypt = require("bcrypt");
 const mongoose = require("mongoose");
+const mongoosePaginate = require("mongoose-paginate");
 const passportLocalMongoose = require("passport-local-mongoose");
 const userSchema = new mongoose.Schema({
     username: {
         type: String,
         unique: true
     },
-    email: {
+    firstName: {
         type: String,
-        unique: true
+        default: ''
     },
+    lastName: {
+        type: String,
+        default: ''
+    },
+    email: { type: String, unique: true, index: true },
     password: String,
     hash_password: String,
     passwordResetToken: String,
     passwordResetExpires: Date,
+    lastLogin: Date,
     active: Boolean
 }, {
     timestamps: true
 });
 userSchema.plugin(passportLocalMongoose);
+// https://www.npmjs.com/package/mongoose-paginate
+userSchema.plugin(mongoosePaginate);
+// userSchema.plugin(mongooseCrate, {
+//   storage: new S3({
+//     key: 'REDACTED',
+//     secret: 'REDACTED',
+//     bucket: 'REDACTED',
+//     acl: 'public-read', // defaults to public-read
+//     region: 'eu-west-1', // defaults to us-standard
+//     // where the file is stored in the bucket - defaults to this function
+//     path: (attachment) => `/${path.basename(attachment.path)}`
+//   }),
+//   fields: {
+//     file: {}
+//   }
+// });
 /**
  * Password hash middleware.
  */
+userSchema.methods.fullName = function () {
+    return (this.firstName.trim() + " " + this.lastName.trim());
+};
 userSchema.pre('save', function save(next) {
     const user = this;
     if (!user.isModified('password')) {
@@ -33,7 +59,7 @@ userSchema.pre('save', function save(next) {
         if (err) {
             return next(err);
         }
-        bcrypt.hash(user.password, salt, undefined, (err, hash) => {
+        bcrypt.hash(user.password, salt, (err, hash) => {
             if (err) {
                 return next(err);
             }
