@@ -11,12 +11,17 @@ import AppContainer from "../../container/AppContainer";
 import {
   IUsersState,
   UserReduxAction,
+  changeTempUserAction,
   getUsersAction,
-  deleteUserAction
+  deleteUserAction,
+  AddUserAction,
+  ITempUser
 } from "../../actions/users";
-
+import {loadDataAction, ModalReduxAction} from "../../actions/modal";
+import ModalView from "../Modal/ModalView";
 // backend interfaces
 import {IUser} from "../../../../../../src/interfaces/user";
+import {statusFooterButttonsModal} from "../../utils/common";
 
 
 interface IPropsType extends RouteComponentProps<{ ticket: string }> {
@@ -25,11 +30,13 @@ interface IPropsType extends RouteComponentProps<{ ticket: string }> {
 
   getUsersAction(page?: number): UserReduxAction;
   deleteUserAction(id?: string): UserReduxAction;
+  changeTempUserAction(user: ITempUser): UserReduxAction;
+  loadDataAction(title: string, body: JSX.Element, footer: JSX.Element): ModalReduxAction;
+  AddUserAction(): UserReduxAction;
 }
 
 interface IStateType {
   error: Error | null;
-  comment: string;
 }
 
 class UsersListView extends React.Component<IPropsType, IStateType> {
@@ -43,9 +50,14 @@ class UsersListView extends React.Component<IPropsType, IStateType> {
   constructor(props: IPropsType) {
     super(props);
     this.changePage = this.changePage.bind(this);
+    this.changeTempUser = this.changeTempUser.bind(this);
+    this.addUser = this.addUser.bind(this);
+    this.processAddUser = this.processAddUser.bind(this);
+    this.editUser = this.editUser.bind(this);
+    this.processEditUser = this.processEditUser.bind(this);
   }
 
-  componentWillMount(){
+  public componentWillMount(){
     // set the title of the page
     document.title = 'OSA Andes | Listado de usuarios';
     this.props.getUsersAction();
@@ -65,7 +77,108 @@ class UsersListView extends React.Component<IPropsType, IStateType> {
     }
   }
 
-  deleteUser(user: IUser) {
+  private addUser(): void {
+    const {changeTempUser} = this;
+     this.props.changeTempUserAction({
+       _id:'',
+       firstName:'',
+       lastName:'',
+       email:''
+     });
+    this.props.loadDataAction(
+      'Agregar Usuario',
+      <div className={'row'}>
+        <div className="col-md-12">
+          <div className="form-group">
+            <label>Nombres</label>
+            <input type="text" name="fistName" className="form-control" maxLength={50} onChange={(e:React.ChangeEvent<HTMLInputElement>) => changeTempUser({firstName: e.target.value})}
+            />
+          </div>
+        </div>
+        <div className="col-md-12">
+          <div className="form-group">
+            <label>Apellidos</label>
+            <input type="text" name="lastName"  className="form-control" maxLength={50} onChange={(e:React.ChangeEvent<HTMLInputElement>) => changeTempUser({lastName: e.target.value})}
+            />
+          </div>
+        </div>
+        <div className="col-md-12">
+          <div className="form-group">
+            <label>Email</label>
+            <input type="email" name="email"  className="form-control" maxLength={80} onChange={(e:React.ChangeEvent<HTMLInputElement>) => changeTempUser({email: e.target.value})}
+            />
+          </div>
+        </div>
+      </div>,
+      <React.Fragment>
+        <button type="button" className="btn btn-default" data-dismiss="modal">Cancelar</button>
+        <button type="button" className="btn btn-primary" onClick={this.processAddUser}>Grabar</button>
+      </React.Fragment>
+    )
+  }
+
+  private processAddUser(): void{
+    const {firstName, lastName, email} = this.props.users.tempUser;
+    // debugger;
+    if (!firstName || !firstName.trim().length) {
+      swal('Agregar usuario', 'El campo nombres es requerido', 'error');
+    } else if (!lastName || !lastName.trim().length) {
+      swal('Agregar usuario', 'El campo apellidos es requerido', 'error');
+    } else if (!email || !email.trim().length) {
+      swal('Agregar usuario', 'El campo email es requerido', 'error');
+    } else {
+      statusFooterButttonsModal(true);
+      this.props.AddUserAction();
+      console.log('Usuario Procesado')
+    }
+  }
+
+  private editUser(user:IUser){
+    this.changeTempUser(user);
+    this.props.loadDataAction(
+      'Editar Usuario',
+      <div className={'row'}>
+        <div className="col-md-12">
+          <div className="form-group">
+            <label>Nombres</label>
+            <input type="text" className="form-control" maxLength={50} defaultValue={user.firstName} />
+          </div>
+        </div>
+        <div className="col-md-12">
+          <div className="form-group">
+            <label>Apellidos</label>
+            <input type="text" className="form-control" maxLength={50} defaultValue={user.lastName}/>
+          </div>
+        </div>
+        <div className="col-md-12">
+          <div className="form-group">
+            <label>Email</label>
+            <input type="text" className="form-control" maxLength={100} defaultValue={user.email} />
+          </div>
+        </div>
+      </div>,
+      <React.Fragment>
+        <button type="button" className="btn btn-default" data-dismiss="modal">Cancelar</button>
+        <button type="button" className="btn btn-primary" onClick={this.processEditUser}>Editar</button>
+      </React.Fragment>
+    )
+  }
+
+  private processEditUser(){
+    console.log('Usuario Procesado')
+  }
+
+  private changeTempUser({_id, firstName, lastName, email}: ITempUser) {
+    const tempUser: ITempUser = {
+      _id: _id ? _id : this.props.users.tempUser._id,
+      firstName: firstName ? firstName : this.props.users.tempUser.firstName,
+      lastName: lastName ? lastName : this.props.users.tempUser.lastName,
+      email: email ? email : this.props.users.tempUser.email,
+    };
+    this.props.changeTempUserAction(tempUser);
+  }
+
+  private deleteUser(user: IUser) {
     // ask if you are sure that you are going to delete the user?
     swal({
       title: '¿Estás seguro?',
@@ -85,12 +198,12 @@ class UsersListView extends React.Component<IPropsType, IStateType> {
     });
   }
 
-  changePage(page:number){
+  private changePage(page:number){
     // change the page
     this.props.getUsersAction(page);
   }
 
-  render() {
+  public render(): React.ReactElement<IPropsType> {
     const {loading, users, pagination} = this.props.users;
     return (
       <AppContainer title='' cMenu='2' cSubMenu='2.1' cAction='Listado'>
@@ -98,16 +211,16 @@ class UsersListView extends React.Component<IPropsType, IStateType> {
           <div className="box">
             <div className="box-header with-border"><h3 className="box-title">Usuarios <small>{pagination.count}</small></h3>
               <div className="box-tools pull-right">
-                <button className="btn btn-sm btn-success">Agregar</button>
+                <button className="btn btn-sm btn-success" onClick={this.addUser}>Agregar</button>
               </div>
             </div>
             <div className="box-body">
-              <div className="pull-right">
-                <div className="input-group text-right max-width-300">
-                  <input type="text" className="form-control" placeholder="Buscar"/>
-                  <span className="input-group-addon input-group-primary"><i className="fa fa-search" /></span>
-                </div>
-              </div>
+              {/*<div className="pull-right">*/}
+                {/*<div className="input-group text-right max-width-300">*/}
+                  {/*<input type="text" className="form-control" placeholder="Buscar"/>*/}
+                  {/*<span className="input-group-addon input-group-primary"><i className="fa fa-search" /></span>*/}
+                {/*</div>*/}
+              {/*</div>*/}
               <table className="table table-striped">
                 <thead>
                   <tr>
@@ -121,14 +234,14 @@ class UsersListView extends React.Component<IPropsType, IStateType> {
                 </thead>
                 <tbody>
                   {
-                    users.map((user: any) => {
+                    users.map((user: IUser) => {
                       return (
                         <tr key={user._id} id={`user-${user._id}`}>
                           <td>{user.firstName}</td>
                           <td>{user.lastName}</td>
                           <td className="hidden-xs">{user.email}</td>
                           <td className="hidden-xs">{moment(user.updatedAt).format('LLL')}</td>
-                          <td className="text-blue pointer"><i className="fa fa-pencil"/></td>
+                          <td className="text-blue pointer" onClick={() => this.editUser(user)}><i className="fa fa-pencil"/></td>
                           <td className="text-red pointer" onClick={() => this.deleteUser(user)}><i className="fa fa-minus-circle"/></td>
                         </tr>
                       )
@@ -165,6 +278,7 @@ class UsersListView extends React.Component<IPropsType, IStateType> {
                 </div>
             }
           </div>
+          <ModalView />
         </section>
       </AppContainer>
     );
@@ -182,7 +296,10 @@ const mapDispatchToProps = (dispatch: any ) => {
   return {
     dispatch,
     getUsersAction: (page?: number) => dispatch(getUsersAction(page)),
-    deleteUserAction: (id: string) => dispatch(deleteUserAction(id))
+    deleteUserAction: (id: string) => dispatch(deleteUserAction(id)),
+    changeTempUserAction: (user: ITempUser) => dispatch(changeTempUserAction(user)),
+    AddUserAction: () => dispatch(AddUserAction()),
+    loadDataAction: (title: string, body: JSX.Element, footer: JSX.Element) => dispatch(loadDataAction(title, body, footer))
   };
 };
 

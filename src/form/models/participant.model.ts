@@ -58,11 +58,13 @@ const participantSchema = new mongoose.Schema({
   form: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Form',
+    index: true
   },
 
   user: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
+    index: true
   },
   vin: {type: String},
 
@@ -75,6 +77,8 @@ const participantSchema = new mongoose.Schema({
 }, {
   timestamps: true
 });
+
+participantSchema.index({ form: 1, user: 1 });
 
 const Participant = mongoose.model<IParticipantModel>('Participant', participantSchema);
 

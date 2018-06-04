@@ -9,9 +9,12 @@ appRouter.get('/robots.txt', AppController.robots);
 appRouter.get('/', Middlewares.isLoggedIn, AppController.index);
 appRouter.get('/2/', Middlewares.isLoggedIn, AppController.index);
 
+// admin user
 appRouter.get('/users/', Middlewares.isLoggedIn, AdminUsersController.users);
-appRouter.delete('/api/admin/users/:id/', Middlewares.isLoggedIn, AdminUsersController.apiDeleteUser);
+
 appRouter.get('/api/admin/users/', Middlewares.isLoggedIn, AdminUsersController.apiUsers);
+appRouter.post('/api/admin/users/', Middlewares.isLoggedIn, AdminUsersController.apiAddUser);
+appRouter.delete('/api/admin/users/:id/', Middlewares.isLoggedIn, AdminUsersController.apiDeleteUser);
 
 appRouter.get('/account/login/', AppController.login);
 appRouter.post('/account/login/', AppController.processLogin);

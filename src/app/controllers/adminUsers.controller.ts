@@ -7,11 +7,49 @@ class AdminUsersController {
   constructor() {
     this.users = this.users.bind(this);
     this.apiUsers = this.apiUsers.bind(this);
+    this.apiAddUser = this.apiAddUser.bind(this);
     this.apiDeleteUser = this.apiDeleteUser.bind(this);
   }
 
   public async users(req: Request, res: Response) {
     res.render('app/index');
+  }
+
+  public async apiAddUser(req: Request, res: Response) {
+    const {firstName, lastName, email} = req.body;
+    if(!firstName || !firstName.length || !lastName || !lastName.length || !email || !email.length){
+      res.status(400).json({
+        message: 'firstName, lastName and email are required',
+        status: 400
+      });
+    }
+    try {
+      const existUser = await User.find({$or: [{email: email}, {username: email}]});
+      if (existUser.length) {
+        res.status(400).json({
+          message: 'Usuario ya existe con este email.',
+          status: 400
+        });
+      }
+      else{
+        const password = Math.random().toString(36).slice(-8);
+        let newUser = await new User({
+          firstName,
+          lastName,
+          username: email,
+          password,
+          email
+        }).save();
+        newUser = newUser.toObject();
+        delete newUser.password;
+        res.status(201).json({
+          message: 'Usuario agregado satisfactoriamente.',
+          user: newUser
+        });
+      }
+    } catch (e) {
+      res.status(500).json(e);
+    }
   }
 
   public async apiUsers(req: Request, res: Response) {
@@ -46,7 +84,7 @@ class AdminUsersController {
         });
       }
     } catch (e) {
-      if (e) res.status(500).send(e);
+      if (e) res.status(500).json(e);
     }
   }
 
@@ -71,6 +109,7 @@ class AdminUsersController {
       }
     })
   }
+
 
   private getUsers(options: PaginateOptions): Promise<PaginateResult<IUserModel>> {
     return new Promise((resolve, reject) => {

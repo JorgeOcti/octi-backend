@@ -21,6 +21,14 @@ interface IMixpanelProps {
   [index: string]: any;
 }
 
+export function statusFooterButttonsModal(status:boolean){
+  $('.modal-footer button').attr({disabled: status});
+}
+
+export function showModal(show: boolean) {
+  ($('#andesModal') as any).modal(show ? 'show' : 'hide');
+}
+
 export function reactTrackMixpanel(event: string, props: IMixpanelProps): void {
   if (typeof(window.mixpanel) === 'object') {
     mixpanel.register({

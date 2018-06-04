@@ -31,6 +31,12 @@ const App = () => (
         </BrowserRouter>
     </Provider>
 );
+
+// clear state of the modeal on hidden
+$('body').on('hidden.bs.modal', '#andesModal', function (e) {
+  store.dispatch({type: '/MODAL/CLEAR'});
+});
+
 $(function() {
   moment.locale('es');
   ReactDOM.render(

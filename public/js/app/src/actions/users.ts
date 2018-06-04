@@ -1,22 +1,19 @@
 import {default as Axios, AxiosError, AxiosResponse, CancelTokenSource} from "axios";
 import {Dispatch} from "redux";
 import ApiService from "../utils/axios";
+import {IUser} from "../../../../../src/interfaces/user";
+import set = Reflect.set;
+import {showModal, statusFooterButttonsModal} from "../utils/common";
 
 export interface IUsersState {
-  users: any;
+  users: IUser[];
   loading: boolean;
+  tempUser: ITempUser,
   source: CancelTokenSource | null;
   pagination: {
     count: number;
     page: number;
     pages: number;
-  }
-}
-
-interface IIsLoading {
-  type: '/USERS/IS_LOADING';
-  payload:{
-    loading: boolean;
   }
 }
 
@@ -36,6 +33,12 @@ export function cancelRequestAction(source: CancelTokenSource): ICancelRequest {
   }
 }
 
+interface IIsLoading {
+  type: '/USERS/IS_LOADING';
+  payload:{
+    loading: boolean;
+  }
+}
 export function isLoadingAction(loading: boolean): IIsLoading {
   return {
     type: '/USERS/IS_LOADING',
@@ -61,6 +64,39 @@ export function changePageAction(page: number): IChangePage {
   }
 }
 
+export interface ITempUser {
+  _id?: string;
+  firstName?: string;
+  lastName?: string;
+  email?: string;
+}
+
+interface IChangeTempUser {
+  type: '/USERS/CHANGE_TEMP_USER';
+  payload: {
+    user: ITempUser;
+  },
+  meta: {
+    debounce: {
+      time: number
+    }
+  }
+}
+
+export function changeTempUserAction(user: ITempUser): IChangeTempUser {
+  return {
+    type: '/USERS/CHANGE_TEMP_USER',
+    payload: {
+      user
+    },
+    meta: {
+      debounce: {
+        time: 100
+      }
+    }
+  }
+}
+
 interface ILoadUsers {
   type: '/USERS/LOAD_USERS';
   payload: {
@@ -80,6 +116,31 @@ export function loadUserAction(users: any, count:number, pages: number): ILoadUs
     }
   }
 }
+
+export function AddUserAction() {
+  return (dispatch: Dispatch<UserReduxAction>, getState: () => {users: IUsersState}) => {
+    dispatch(isLoadingAction(true));
+    const state = getState();
+    const {tempUser} = state.users;
+    const api: ApiService = new ApiService();
+    api.addUser(tempUser)
+      .then((response: AxiosResponse) => {
+        statusFooterButttonsModal(false);
+        showModal(false);
+        dispatch(getUsersAction(1) as any);
+        swal(response.data.message, {
+          icon: "success"
+        });
+      })
+      .catch((err: AxiosError) => {
+        statusFooterButttonsModal(false);
+
+        dispatch(isLoadingAction(false));
+        api.errorHandler(err);
+      });
+  };
+}
+
 
 export function getUsersAction(nextPage?: number) {
   return (dispatch: Dispatch<UserReduxAction>, getState: () => {users: IUsersState}) => {
@@ -147,4 +208,4 @@ export function deleteUserAction(id: string) {
 }
 
 
-export type UserReduxAction = IIsLoading | ILoadUsers | IChangePage | IDeleteUser | ICancelRequest;
+export type UserReduxAction = IIsLoading | ILoadUsers | IChangePage | IDeleteUser | ICancelRequest | IChangeTempUser;

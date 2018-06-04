@@ -5,10 +5,48 @@ class AdminUsersController {
     constructor() {
         this.users = this.users.bind(this);
         this.apiUsers = this.apiUsers.bind(this);
+        this.apiAddUser = this.apiAddUser.bind(this);
         this.apiDeleteUser = this.apiDeleteUser.bind(this);
     }
     async users(req, res) {
         res.render('app/index');
+    }
+    async apiAddUser(req, res) {
+        const { firstName, lastName, email } = req.body;
+        if (!firstName || !firstName.length || !lastName || !lastName.length || !email || !email.length) {
+            res.status(400).json({
+                message: 'firstName, lastName and email are required',
+                status: 400
+            });
+        }
+        try {
+            const existUser = await user_model_1.default.find({ $or: [{ email: email }, { username: email }] });
+            if (existUser.length) {
+                res.status(400).json({
+                    message: 'Usuario ya existe con este email.',
+                    status: 400
+                });
+            }
+            else {
+                const password = Math.random().toString(36).slice(-8);
+                let newUser = await new user_model_1.default({
+                    firstName,
+                    lastName,
+                    username: email,
+                    password,
+                    email
+                }).save();
+                newUser = newUser.toObject();
+                delete newUser.password;
+                res.status(201).json({
+                    message: 'Usuario agregado satisfactoriamente.',
+                    user: newUser
+                });
+            }
+        }
+        catch (e) {
+            res.status(500).json(e);
+        }
     }
     async apiUsers(req, res) {
         const { page, pageSize } = req.query;
@@ -45,7 +83,7 @@ class AdminUsersController {
         }
         catch (e) {
             if (e)
-                res.status(500).send(e);
+                res.status(500).json(e);
         }
     }
     apiDeleteUser(req, res) {

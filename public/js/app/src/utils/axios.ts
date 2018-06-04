@@ -1,3 +1,4 @@
+///<reference path="../../node_modules/sweetalert/typings/sweetalert.d.ts"/>
 import Axios, {
   AxiosError,
   AxiosInstance,
@@ -7,6 +8,7 @@ import Axios, {
 } from 'axios';
 import * as Raven from 'raven-js';
 import {IWindow} from '../interfaces/window';
+import {ITempUser} from "../actions/users";
 
 declare let window: IWindow;
 
@@ -42,10 +44,12 @@ export default class ApiService {
   }
 
   public errorHandler(err: AxiosError): void {
-    const ingnoreStatus = [403, 404];
     if (err.response) {
-      if (!ingnoreStatus.includes(err.response.status)) {
+      if([500].includes(err.response.status)){
         Raven.captureException(JSON.stringify(err.response));
+        swal('Up ha ocurrido un error', err.response.data.message ? err.response.data.message : err.response.data.errmsg, 'error');
+      } else{
+        swal('Up ha ocurrido un error', err.response.data.message ? err.response.data.message : err.response.data.errmsg, 'error');
       }
     } else if (err.request) {
       Raven.captureException(JSON.stringify(err.request));
@@ -60,6 +64,13 @@ export default class ApiService {
       , {
         cancelToken: this.source.token
       });
+  }
+
+  public addUser(user: ITempUser): AxiosPromise {
+    delete user._id;
+    return this.instance.post(
+      `/api/admin/users/`
+      , user);
   }
 
   public deleteUser(id: string): AxiosPromise {
