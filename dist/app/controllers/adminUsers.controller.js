@@ -25,6 +25,14 @@ class AdminUsersController {
             });
         }
         try {
+            // validate email not duplicate
+            const countUser = await user_model_1.default.count({ email: email, _id: { $ne: id } });
+            if (countUser) {
+                res.status(400).json({
+                    message: 'Usuario ya existe con este email.',
+                    status: 400
+                });
+            }
             let user = await user_model_1.default.findByIdAndUpdate(id, req.body, { new: true });
             // prevent return password
             if (user) {
