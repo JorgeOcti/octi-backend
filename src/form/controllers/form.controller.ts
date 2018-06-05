@@ -33,6 +33,12 @@ class FormController {
     const {answers, vin} = req.body;
     // debugger;
     console.log('answers', answers);
+    console.log('req.user ', req.user);
+    if(req.user && req.user._id === '5b11ac77ed920d50fadbafcb'){
+      return res.status(418).json({
+        data: {}
+      });
+    }
     // validate answers in body
     if (!answers){
       return res.status(400).json({

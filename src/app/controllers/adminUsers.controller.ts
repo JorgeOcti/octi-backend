@@ -36,27 +36,27 @@ class AdminUsersController {
           message: 'Usuario ya existe con este email.',
           status: 400
         });
-      }
-      let user = await User.findByIdAndUpdate(id, req.body, {new: true});
-      // prevent return password
-      if (user) {
-        user = user.toObject();
-        if (user) delete user.password;
-        const response = {
-          message: "Usuario editado satisfactoriamente.",
-          user
-        };
-        // setTimeout(() => {
-        //   res.status(200).json(response);
-        // }, 4000)
-        res.status(200).json(response);
-      }
-      else {
-        const response = {
-          message: "Usuario no encontardo",
-          id: id
-        };
-        res.status(200).json(response);
+      } else {
+        let user = await User.findByIdAndUpdate(id, req.body, {new: true});
+        // prevent return password
+        if (user) {
+          user = user.toObject();
+          if (user) delete user.password;
+          const response = {
+            message: "Usuario editado satisfactoriamente.",
+            user
+          };
+          // setTimeout(() => {
+          //   res.status(200).json(response);
+          // }, 4000)
+          res.status(200).json(response);
+        } else {
+          const response = {
+            message: "Usuario no encontardo",
+            id: id
+          };
+          res.status(200).json(response);
+        }
       }
     } catch (e) {
       console.log(e);
