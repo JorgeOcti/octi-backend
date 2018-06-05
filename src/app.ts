@@ -206,7 +206,7 @@ app.use('/api/v1/forms', formRouter);
 
 /* queues */
 EmailQueue.run();
-kue.app.listen(4000);
+kue.app.listen(3031);
 
 // The error handler must be before any other error middleware
 app.use(Raven.errorHandler());
