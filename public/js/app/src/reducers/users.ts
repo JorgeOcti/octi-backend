@@ -30,6 +30,11 @@ export function users(state = initialState, action: UserReduxAction): IUsersStat
         ...state,
         tempUser: action.payload.user
       };
+    case '/USERS/CHANGE_USER':
+      return {
+        ...state,
+        users: state.users.map((user) => (user._id === action.payload.user._id ? action.payload.user : user))
+      };
     case '/USERS/LOAD_USERS':
       return {
         ...state,

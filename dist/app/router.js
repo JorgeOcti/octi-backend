@@ -14,6 +14,7 @@ appRouter.get('/2/', middlewares_1.default.isLoggedIn, app_controller_1.default.
 appRouter.get('/users/', middlewares_1.default.isLoggedIn, adminUsers_controller_1.default.users);
 appRouter.get('/api/admin/users/', middlewares_1.default.isLoggedIn, adminUsers_controller_1.default.apiUsers);
 appRouter.post('/api/admin/users/', middlewares_1.default.isLoggedIn, adminUsers_controller_1.default.apiAddUser);
+appRouter.patch('/api/admin/users/:id/', middlewares_1.default.isLoggedIn, adminUsers_controller_1.default.apiEditUser);
 appRouter.delete('/api/admin/users/:id/', middlewares_1.default.isLoggedIn, adminUsers_controller_1.default.apiDeleteUser);
 appRouter.get('/account/login/', app_controller_1.default.login);
 appRouter.post('/account/login/', app_controller_1.default.processLogin);

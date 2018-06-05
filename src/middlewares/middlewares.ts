@@ -40,10 +40,10 @@ class Middlewares {
         next();
       });
     } else {
-      // res.status(403).json({
-      //   error: 'Forbidden',
-      //   status: 403
-      // });
+      res.status(401).json({
+        error: 'Debes estar autenticado para este recurso.',
+        status: 401
+      });
       next();
     }
   }

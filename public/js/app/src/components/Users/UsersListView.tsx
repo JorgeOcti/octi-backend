@@ -13,8 +13,9 @@ import {
   UserReduxAction,
   changeTempUserAction,
   getUsersAction,
+  addUserAction,
+  editUserAction,
   deleteUserAction,
-  AddUserAction,
   ITempUser
 } from "../../actions/users";
 import {loadDataAction, ModalReduxAction} from "../../actions/modal";
@@ -31,6 +32,7 @@ interface IPropsType extends RouteComponentProps<{ ticket: string }> {
   getUsersAction(page?: number): UserReduxAction;
   deleteUserAction(id?: string): UserReduxAction;
   changeTempUserAction(user: ITempUser): UserReduxAction;
+  editUserAction(): UserReduxAction;
   loadDataAction(title: string, body: JSX.Element, footer: JSX.Element): ModalReduxAction;
   AddUserAction(): UserReduxAction;
 }
@@ -79,12 +81,12 @@ class UsersListView extends React.Component<IPropsType, IStateType> {
 
   private addUser(): void {
     const {changeTempUser} = this;
-     this.props.changeTempUserAction({
-       _id:'',
-       firstName:'',
-       lastName:'',
-       email:''
-     });
+    this.props.changeTempUserAction({
+      _id: '',
+      firstName: '',
+      lastName: '',
+      email: ''
+    });
     this.props.loadDataAction(
       'Agregar Usuario',
       <div className={'row'}>
@@ -129,31 +131,31 @@ class UsersListView extends React.Component<IPropsType, IStateType> {
     } else {
       statusFooterButttonsModal(true);
       this.props.AddUserAction();
-      console.log('Usuario Procesado')
     }
   }
 
   private editUser(user:IUser){
-    this.changeTempUser(user);
+    const {changeTempUser} = this;
+    changeTempUser(user);
     this.props.loadDataAction(
       'Editar Usuario',
       <div className={'row'}>
         <div className="col-md-12">
           <div className="form-group">
             <label>Nombres</label>
-            <input type="text" className="form-control" maxLength={50} defaultValue={user.firstName} />
+            <input type="text" className="form-control" maxLength={50} defaultValue={user.firstName} onChange={(e:React.ChangeEvent<HTMLInputElement>) => changeTempUser({firstName: e.target.value})}/>
           </div>
         </div>
         <div className="col-md-12">
           <div className="form-group">
             <label>Apellidos</label>
-            <input type="text" className="form-control" maxLength={50} defaultValue={user.lastName}/>
+            <input type="text" className="form-control" maxLength={50} defaultValue={user.lastName} onChange={(e:React.ChangeEvent<HTMLInputElement>) => changeTempUser({lastName: e.target.value})}/>
           </div>
         </div>
         <div className="col-md-12">
           <div className="form-group">
             <label>Email</label>
-            <input type="text" className="form-control" maxLength={100} defaultValue={user.email} />
+            <input type="text" className="form-control" maxLength={100} defaultValue={user.email}  onChange={(e:React.ChangeEvent<HTMLInputElement>) => changeTempUser({email: e.target.value})}/>
           </div>
         </div>
       </div>,
@@ -165,7 +167,19 @@ class UsersListView extends React.Component<IPropsType, IStateType> {
   }
 
   private processEditUser(){
-    console.log('Usuario Procesado')
+    const {firstName, lastName, email} = this.props.users.tempUser;
+    // debugger;
+    if (!firstName || !firstName.trim().length) {
+      swal('Agregar usuario', 'El campo nombres es requerido', 'error');
+    } else if (!lastName || !lastName.trim().length) {
+      swal('Agregar usuario', 'El campo apellidos es requerido', 'error');
+    } else if (!email || !email.trim().length) {
+      swal('Agregar usuario', 'El campo email es requerido', 'error');
+    } else {
+      statusFooterButttonsModal(true);
+      this.props.editUserAction();
+      console.log('Usuario Procesado' )
+    }
   }
 
   private changeTempUser({_id, firstName, lastName, email}: ITempUser) {
@@ -298,7 +312,8 @@ const mapDispatchToProps = (dispatch: any ) => {
     getUsersAction: (page?: number) => dispatch(getUsersAction(page)),
     deleteUserAction: (id: string) => dispatch(deleteUserAction(id)),
     changeTempUserAction: (user: ITempUser) => dispatch(changeTempUserAction(user)),
-    AddUserAction: () => dispatch(AddUserAction()),
+    AddUserAction: () => dispatch(addUserAction()),
+    editUserAction: () => dispatch(editUserAction()),
     loadDataAction: (title: string, body: JSX.Element, footer: JSX.Element) => dispatch(loadDataAction(title, body, footer))
   };
 };

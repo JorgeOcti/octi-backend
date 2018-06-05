@@ -10,11 +10,50 @@ class AdminUsersController {
     this.users = this.users.bind(this);
     this.apiUsers = this.apiUsers.bind(this);
     this.apiAddUser = this.apiAddUser.bind(this);
+    this.apiEditUser = this.apiEditUser.bind(this);
     this.apiDeleteUser = this.apiDeleteUser.bind(this);
   }
 
   public async users(req: Request, res: Response) {
     res.render('app/index');
+  }
+
+  public async apiEditUser(req: Request, res: Response) {
+    const {id} = req.params;
+    const {firstName, lastName, email} = req.body;
+    // validate fields required
+    if(!firstName || !firstName.length || !lastName || !lastName.length || !email || !email.length){
+      res.status(400).json({
+        message: 'firstName, lastName and email are required',
+        status: 400
+      });
+    }
+    try {
+      let user = await User.findByIdAndUpdate(id, req.body, {new: true});
+      // prevent return password
+      if (user) {
+        user = user.toObject();
+        if (user) delete user.password;
+        const response = {
+          message: "Usuario editado satisfactoriamente.",
+          user
+        };
+        // setTimeout(() => {
+        //   res.status(200).json(response);
+        // }, 4000)
+        res.status(200).json(response);
+      }
+      else {
+        const response = {
+          message: "Usuario no encontardo",
+          id: id
+        };
+        res.status(200).json(response);
+      }
+    } catch (e) {
+      console.log(e);
+      res.status(500).json(e);
+    }
   }
 
   public async apiAddUser(req: Request, res: Response) {
@@ -120,26 +159,27 @@ class AdminUsersController {
     }
   }
 
-  public apiDeleteUser(req: Request, res: Response) {
+  public async apiDeleteUser(req: Request, res: Response) {
     const {id} = req.params;
-    User.findByIdAndRemove(id, (err, user) => {
-      // As always, handle any potential errors:
-      if (err) res.status(500).send(err);
+    try {
+      const user = await User.findByIdAndRemove(id);
       if (user) {
         const response = {
           message: "Usuario eliminado satisfactoriamente.",
           id: user._id
         };
-        res.status(200).send(response);
+        res.status(200).json(response);
       }
       else {
         const response = {
           message: "Este usuario ya fue eliminado.",
           id: id
         };
-        res.status(200).send(response);
+        res.status(200).json(response);
       }
-    })
+    } catch (e) {
+      res.status(500).json(e);
+    }
   }
 
 

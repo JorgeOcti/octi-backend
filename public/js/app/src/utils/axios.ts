@@ -73,6 +73,12 @@ export default class ApiService {
       , user);
   }
 
+  public editUser(user: ITempUser): AxiosPromise {
+    return this.instance.patch(
+      `/api/admin/users/${user._id}`
+      , user);
+  }
+
   public deleteUser(id: string): AxiosPromise {
     return this.instance.delete(
       `/api/admin/users/${id}/`

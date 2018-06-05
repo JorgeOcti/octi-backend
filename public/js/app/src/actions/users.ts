@@ -2,7 +2,6 @@ import {default as Axios, AxiosError, AxiosResponse, CancelTokenSource} from "ax
 import {Dispatch} from "redux";
 import ApiService from "../utils/axios";
 import {IUser} from "../../../../../src/interfaces/user";
-import set = Reflect.set;
 import {showModal, statusFooterButttonsModal} from "../utils/common";
 
 export interface IUsersState {
@@ -117,7 +116,51 @@ export function loadUserAction(users: any, count:number, pages: number): ILoadUs
   }
 }
 
-export function AddUserAction() {
+interface IChangeUser {
+  type: '/USERS/CHANGE_USER';
+  payload: {
+    user: IUser;
+  }
+}
+
+export function changeUserAction(user: IUser): IChangeUser {
+  return {
+    type: '/USERS/CHANGE_USER',
+    payload: {
+      user
+    }
+  }
+}
+
+export function editUserAction() {
+  return (dispatch: Dispatch<UserReduxAction>, getState: () => {users: IUsersState}) => {
+    // dispatch(isLoadingAction(true));
+    const state = getState();
+    const {tempUser} = state.users;
+    const api: ApiService = new ApiService();
+    api.editUser(tempUser)
+      .then((response: AxiosResponse) => {
+        statusFooterButttonsModal(false);
+        showModal(false);
+        dispatch(changeUserAction(response.data.user));
+        $(`#user-${tempUser._id}`).addClass('editing-item');
+        swal(response.data.message, {
+          icon: "success"
+        });
+        setTimeout(() => {
+          $(`#user-${tempUser._id}`).removeClass('editing-item');
+        }, 2000)
+      })
+      .catch((err: AxiosError) => {
+        statusFooterButttonsModal(false);
+        $(`#user-${tempUser._id}`).removeClass('editing-item');
+        dispatch(isLoadingAction(false));
+        api.errorHandler(err);
+      });
+  };
+}
+
+export function addUserAction() {
   return (dispatch: Dispatch<UserReduxAction>, getState: () => {users: IUsersState}) => {
     dispatch(isLoadingAction(true));
     const state = getState();
@@ -208,4 +251,4 @@ export function deleteUserAction(id: string) {
 }
 
 
-export type UserReduxAction = IIsLoading | ILoadUsers | IChangePage | IDeleteUser | ICancelRequest | IChangeTempUser;
+export type UserReduxAction = IIsLoading | ILoadUsers | IChangePage | IDeleteUser | ICancelRequest | IChangeTempUser | IChangeUser;
