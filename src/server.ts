@@ -1,7 +1,7 @@
 import * as bluebird from 'bluebird';
 import * as mongoose from 'mongoose';
 import app from './app';
-import logger from './services/logger';
+import logger from './services/logger.service';
 
 // Mongoose setting
 const MONGODB_URI: string = process.env.MONGODB_URI || '';

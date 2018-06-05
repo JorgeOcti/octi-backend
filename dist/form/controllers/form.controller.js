@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-const redis_1 = require("../../services/redis");
+const redis_service_1 = require("../../services/redis.service");
 const form_model_1 = require("../models/form.model");
 const scale_model_1 = require("../models/scale.model");
 const participant_model_1 = require("../models/participant.model");
@@ -184,7 +184,7 @@ class FormController {
     getScales(ids) {
         const keyCache = `scales-${ids.toString()}`;
         return new Promise((resolve, reject) => {
-            redis_1.default.get(keyCache, async (error, result) => {
+            redis_service_1.default.get(keyCache, async (error, result) => {
                 if (result) {
                     resolve(JSON.parse(result));
                 }
@@ -206,7 +206,7 @@ class FormController {
                         if (err) {
                             return reject(err);
                         }
-                        redis_1.default.setex(keyCache, 30, JSON.stringify(scales));
+                        redis_service_1.default.setex(keyCache, 30, JSON.stringify(scales));
                         return resolve(scales);
                     });
                 }
@@ -232,7 +232,7 @@ class FormController {
     getForm(id) {
         const keyCache = `form-${id}`;
         return new Promise((resolve, reject) => {
-            redis_1.default.get(keyCache, async (error, result) => {
+            redis_service_1.default.get(keyCache, async (error, result) => {
                 if (result) {
                     console.log(`cache: ${keyCache}`);
                     resolve(JSON.parse(result));
@@ -253,7 +253,7 @@ class FormController {
                             return reject(err);
                         }
                         if (form) {
-                            redis_1.default.setex(keyCache, 60 * 2, JSON.stringify(form));
+                            redis_service_1.default.setex(keyCache, 60 * 2, JSON.stringify(form));
                             return resolve(form);
                         }
                         return reject('No se encontro formularío');
@@ -265,7 +265,7 @@ class FormController {
     getForms() {
         const keyCache = `forms`;
         return new Promise((resolve, reject) => {
-            redis_1.default.get(keyCache, async (error, result) => {
+            redis_service_1.default.get(keyCache, async (error, result) => {
                 if (result) {
                     console.log(`cache: ${keyCache}`);
                     resolve(JSON.parse(result));
@@ -281,7 +281,7 @@ class FormController {
                         if (err) {
                             return reject(err);
                         }
-                        redis_1.default.setex(keyCache, 60 * 2, JSON.stringify(forms));
+                        redis_service_1.default.setex(keyCache, 60 * 2, JSON.stringify(forms));
                         return resolve(forms);
                     });
                 }

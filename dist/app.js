@@ -5,9 +5,10 @@ const compression = require("compression");
 const cookieParser = require("cookie-parser");
 const dotenv = require("dotenv");
 const express = require("express");
+const kue = require("kue");
 const session = require("express-session");
 const connectRedis = require("connect-redis");
-const redis_1 = require("./services/redis");
+const redis_service_1 = require("./services/redis.service");
 const fileStreamRotator = require("file-stream-rotator");
 const git = require("git-rev-sync");
 const lusca = require("lusca");
@@ -21,10 +22,16 @@ const responseTime = require("response-time");
 const user_model_1 = require("./app/models/user.model");
 const middlewares_1 = require("./middlewares/middlewares");
 const Staticify = require("staticify");
+const email_task_1 = require("./app/tasks/email.task");
 // Import routes
 const router_1 = require("./app/router");
 const router_2 = require("./form/router");
+// import {QueueServices} from "./services/queue.services";
 // Configure sentry
+// Load environment variables from .env file, where API keys and passwords are configured
+dotenv.config({
+    path: path.join(__dirname, '../.env')
+});
 global.__rootdir__ = __dirname || process.cwd();
 const root = global.__rootdir__;
 const LocalStrategy = passportLocal.Strategy;
@@ -58,10 +65,6 @@ Raven.config(process.env.SENTRY_DNS, {
         return data;
     }
 }).install();
-// Load environment variables from .env file, where API keys and passwords are configured
-dotenv.config({
-    path: path.join(__dirname, '../.env')
-});
 // Create Express server
 const app = express();
 // Middlewares
@@ -109,7 +112,7 @@ app.use(session({
     store: new redisStore({
         host: 'localhost',
         port: 6379,
-        client: redis_1.default
+        client: redis_service_1.default
     })
 }));
 // passport
@@ -175,6 +178,9 @@ app.use(Raven.requestHandler());
 app.use('/', router_1.appRouter);
 app.use('/api/v1', router_1.jwtRouter);
 app.use('/api/v1/forms', router_2.default);
+/* queues */
+email_task_1.default.run();
+kue.app.listen(4000);
 // The error handler must be before any other error middleware
 app.use(Raven.errorHandler());
 app.use((req, res, next) => {

@@ -1,6 +1,8 @@
 import {Request, Response} from 'express';
 import User, {IUserModel} from '../models/user.model';
 import {PaginateOptions, PaginateResult} from 'mongoose';
+import * as kue from 'kue';
+const queue = kue.createQueue();
 
 class AdminUsersController {
 
@@ -17,6 +19,7 @@ class AdminUsersController {
 
   public async apiAddUser(req: Request, res: Response) {
     const {firstName, lastName, email} = req.body;
+    // validate fields required
     if(!firstName || !firstName.length || !lastName || !lastName.length || !email || !email.length){
       res.status(400).json({
         message: 'firstName, lastName and email are required',
@@ -24,6 +27,7 @@ class AdminUsersController {
       });
     }
     try {
+      // validate existe user
       const existUser = await User.find({$or: [{email: email}, {username: email}]});
       if (existUser.length) {
         res.status(400).json({
@@ -32,7 +36,9 @@ class AdminUsersController {
         });
       }
       else{
+        // generate password
         const password = Math.random().toString(36).slice(-8);
+        // create user
         let newUser = await new User({
           firstName,
           lastName,
@@ -40,6 +46,22 @@ class AdminUsersController {
           password,
           email
         }).save();
+
+        // send welcome email
+        const fullname: string = newUser.fullName();
+        queue.create('email', {
+          title: `Welcome email for ${fullname}`,
+          to: `"${fullname}"<${newUser.email}>`,
+          subject: `${fullname} bienvenido a OSA Andes`,
+          text: `${fullname} bienvenido a OSA Andes`,
+          view: 'account/welcome',
+          context: {
+            fullname,
+            password
+          }
+        }).priority('high').attempts(5).save();
+
+        // prevent return password
         newUser = newUser.toObject();
         delete newUser.password;
         res.status(201).json({

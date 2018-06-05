@@ -1,5 +1,5 @@
 import Axios, {AxiosError, AxiosInstance} from 'axios';
-import logger from '../services/logger';
+import logger from './logger.service';
 
 export interface IHeaders {
   'X-CSRFToken'?: string;

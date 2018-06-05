@@ -1,5 +1,5 @@
 import {Request, Response} from 'express';
-import redisClient from '../../services/redis';
+import redisClient from '../../services/redis.service';
 import FormModel, {IFormModel} from '../models/form.model';
 import ScaleModel, {IScaleModel} from '../models/scale.model';
 import ParticipantModel from '../models/participant.model';

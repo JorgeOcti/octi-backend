@@ -1,6 +1,8 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 const user_model_1 = require("../models/user.model");
+const kue = require("kue");
+const queue = kue.createQueue();
 class AdminUsersController {
     constructor() {
         this.users = this.users.bind(this);
@@ -13,6 +15,7 @@ class AdminUsersController {
     }
     async apiAddUser(req, res) {
         const { firstName, lastName, email } = req.body;
+        // validate fields required
         if (!firstName || !firstName.length || !lastName || !lastName.length || !email || !email.length) {
             res.status(400).json({
                 message: 'firstName, lastName and email are required',
@@ -20,6 +23,7 @@ class AdminUsersController {
             });
         }
         try {
+            // validate existe user
             const existUser = await user_model_1.default.find({ $or: [{ email: email }, { username: email }] });
             if (existUser.length) {
                 res.status(400).json({
@@ -28,7 +32,9 @@ class AdminUsersController {
                 });
             }
             else {
+                // generate password
                 const password = Math.random().toString(36).slice(-8);
+                // create user
                 let newUser = await new user_model_1.default({
                     firstName,
                     lastName,
@@ -36,6 +42,20 @@ class AdminUsersController {
                     password,
                     email
                 }).save();
+                // send welcome email
+                const fullname = newUser.fullName();
+                queue.create('email', {
+                    title: `Welcome email for ${fullname}`,
+                    to: `"${fullname}"<${newUser.email}>`,
+                    subject: `${fullname} bienvenido a OSA Andes`,
+                    text: `${fullname} bienvenido a OSA Andes`,
+                    view: 'account/welcome',
+                    context: {
+                        fullname,
+                        password
+                    }
+                }).priority('high').attempts(5).save();
+                // prevent return password
                 newUser = newUser.toObject();
                 delete newUser.password;
                 res.status(201).json({

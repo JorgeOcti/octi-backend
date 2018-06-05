@@ -3,9 +3,10 @@ import * as compression from 'compression';
 import * as cookieParser from 'cookie-parser';
 import * as dotenv from 'dotenv';
 import * as express from 'express';
+import * as kue from 'kue';
 import * as session from 'express-session';
 import * as connectRedis from 'connect-redis';
-import redisClient from './services/redis';
+import redisClient from './services/redis.service';
 import * as fileStreamRotator from 'file-stream-rotator';
 import * as git from 'git-rev-sync';
 import * as lusca from 'lusca';
@@ -19,6 +20,7 @@ import * as responseTime from 'response-time';
 import User from './app/models/user.model';
 import Middlewares from './middlewares/middlewares'
 import * as Staticify from 'staticify';
+import EmailQueue from './app/tasks/email.task';
 
 // Import routes
 import {
@@ -26,8 +28,13 @@ import {
   jwtRouter
 } from './app/router';
 import formRouter from './form/router';
+// import {QueueServices} from "./services/queue.services";
 
 // Configure sentry
+// Load environment variables from .env file, where API keys and passwords are configured
+dotenv.config({
+  path: path.join(__dirname, '../.env')
+});
 (global as any).__rootdir__ = __dirname || process.cwd();
 const root = (global as any).__rootdir__;
 const LocalStrategy = passportLocal.Strategy;
@@ -64,10 +71,6 @@ Raven.config(process.env.SENTRY_DNS, {
     return data;
   }}).install();
 
-// Load environment variables from .env file, where API keys and passwords are configured
-dotenv.config({
-  path: path.join(__dirname, '../.env')
-});
 
 // Create Express server
 const app = express();
@@ -200,6 +203,10 @@ app.use(Raven.requestHandler());
 app.use('/', appRouter);
 app.use('/api/v1', jwtRouter);
 app.use('/api/v1/forms', formRouter);
+
+/* queues */
+EmailQueue.run();
+kue.app.listen(4000);
 
 // The error handler must be before any other error middleware
 app.use(Raven.errorHandler());
