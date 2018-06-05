@@ -45,13 +45,23 @@ class AdminUsersController {
                 // send welcome email
                 const fullname = newUser.fullName();
                 queue.create('email', {
+                    from: '',
                     title: `Welcome email for ${fullname}`,
                     to: `"${fullname}"<${newUser.email}>`,
-                    subject: `${fullname} bienvenido a OSA Andes`,
-                    text: `${fullname} bienvenido a OSA Andes`,
+                    subject: `${fullname} bienvenido(a) a OSA Andes`,
+                    text: `${fullname} bienvenido(a) a OSA Andes
+          {Empresa} te da la bienvenida a usar OSA Andes. bla bla bla......
+
+          Tus Datos para acceder a la aplicación son:
+          Usuario: ${newUser.email}
+          Contraseña ${password}
+          En caso de dudas o consultas puedes contactarte asoporte@osacontrol.com o a nuestro twitter@TaskforceOSA.
+          
+          © 2018 OSA SpA. All rights reserved.`,
                     view: 'account/welcome',
                     context: {
                         fullname,
+                        username: newUser.email,
                         password
                     }
                 }).priority('high').attempts(5).save();

@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "dev": "nodemon --inspect dist/server.js --ignore 'public/**/*.*'",
+    "dev": "nodemon --inspect dist/server.js --ignore 'public/**/*.*' --ignore 'email-templates/**/*.*'",
     "watch-ts": "tsc -w",
     "test": "mocha --recursive --require ts-node/register \"src/tests/**/*.ts\" --timeout 5000 --exit",
     "test-with-coverage": "nyc --reporter=html --reporter=text mocha dist/tests --timeout 5000 --exit"
@@ -102,7 +102,8 @@
       "src/*.*",
       "coverage/*.*",
       ".nyc_output/*.*",
-      "public/*.*"
+      "public/*.*",
+      "email-templates/*.*"
     ]
   }
 }

@@ -4,9 +4,10 @@ import * as pug from 'pug';
 import * as path from 'path';
 import nodemailerTransporter from '../../services/aws-ses.service';
 import {compileTemplate} from "pug";
+import * as Mail from "nodemailer/lib/mailer";
 
 class EmailQueue {
-  public queue: Queue;
+  private queue: Queue;
 
   constructor() {
     this.queue = kue.createQueue();
@@ -18,30 +19,28 @@ class EmailQueue {
     this.queue.process('email', this.processEmail);
   }
 
-  public generateHTML(view: string, context: any): string {
-    const templatePath = path.join(__dirname, '../../../views/') + 'emails/' + view + '.pug';
+  private generateHTML(view: string, context: any): string {
+    const templatePath: string = path.join(__dirname, '../../../views/') + 'emails/' + view + '.pug';
     const pugCompile: compileTemplate = pug.compileFile(templatePath);
-
-    console.log('templatePath', templatePath);
     return pugCompile(context);
   }
 
-  public processEmail(job?: Job, done?: (error?: Error | null, data?: object) => void) {
+  private processEmail(job?: Job, done?: (error?: Error | null, data?: object) => void) {
     if (job && done) {
+
       console.log('---------------------------');
       console.log(JSON.stringify(job));
       console.log('---------------------------');
 
       // generate email
-      let mail: any = {};
-      mail.from = '"OSA Andes"<no-reply-andes@osacontrol.com>';
-      mail.to = job.data.to;
-      mail.subject =job.data.subject;
-      mail.text = job.data.text;
-      mail.html = this.generateHTML(job.data.view, job.data.context);
-
-      // add atachments if exist
-      mail.attachments = job.data.attachments || [];
+      const mail: Mail.Options = {
+        from: `"${job.data.from && job.data.from.length ? job.data.from : 'OSA Andes'}"<no-reply-andes@osacontrol.com>`,
+        to: job.data.to,
+        subject: job.data.subject,
+        text: job.data.text,
+        html: this.generateHTML(job.data.view, job.data.context),
+        attachments: job.data.attachments || []
+      };
 
       // send mail with defined transport object
       nodemailerTransporter.sendMail(mail, (error, info) => {

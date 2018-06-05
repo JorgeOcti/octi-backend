@@ -16,7 +16,6 @@ class EmailQueue {
     generateHTML(view, context) {
         const templatePath = path.join(__dirname, '../../../views/') + 'emails/' + view + '.pug';
         const pugCompile = pug.compileFile(templatePath);
-        console.log('templatePath', templatePath);
         return pugCompile(context);
     }
     processEmail(job, done) {
@@ -25,14 +24,14 @@ class EmailQueue {
             console.log(JSON.stringify(job));
             console.log('---------------------------');
             // generate email
-            let mail = {};
-            mail.from = '"OSA Andes"<no-reply-andes@osacontrol.com>';
-            mail.to = job.data.to;
-            mail.subject = job.data.subject;
-            mail.text = job.data.text;
-            mail.html = this.generateHTML(job.data.view, job.data.context);
-            // add atachments if exist
-            mail.attachments = job.data.attachments || [];
+            const mail = {
+                from: `"${job.data.from && job.data.from.length ? job.data.from : 'OSA Andes'}"<no-reply-andes@osacontrol.com>`,
+                to: job.data.to,
+                subject: job.data.subject,
+                text: job.data.text,
+                html: this.generateHTML(job.data.view, job.data.context),
+                attachments: job.data.attachments || []
+            };
             // send mail with defined transport object
             aws_ses_service_1.default.sendMail(mail, (error, info) => {
                 if (error) {
