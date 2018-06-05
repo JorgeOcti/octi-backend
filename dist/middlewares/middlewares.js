@@ -18,9 +18,9 @@ class Middlewares {
             return next();
         }
         else {
+            // if they aren't redirect them to the login page
             res.redirect('/account/login/');
         }
-        // if they aren't redirect them to the home page
     }
     isJWTAuthenticated(req, res, next) {
         if (req.headers && req.headers.authorization && req.headers.authorization.split(' ')[0] === 'JWT') {
@@ -31,8 +31,10 @@ class Middlewares {
                         status: 401
                     });
                 }
-                req.user = decode;
-                next();
+                else {
+                    req.user = decode;
+                    next();
+                }
             });
         }
         else {
@@ -40,7 +42,6 @@ class Middlewares {
                 error: 'Debes estar autenticado para este recurso.',
                 status: 401
             });
-            next();
         }
     }
     cleanStaticFiles(req, res, next) {

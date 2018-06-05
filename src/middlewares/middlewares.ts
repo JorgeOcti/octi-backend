@@ -19,32 +19,30 @@ class Middlewares {
         res.locals.user = null;
       }
       return next();
-    }
-    else {
+    } else {
+      // if they aren't redirect them to the login page
       res.redirect('/account/login/');
     }
-    // if they aren't redirect them to the home page
   }
 
   public isJWTAuthenticated(req: IRequest, res: Response, next: NextFunction) {
     if (req.headers && req.headers.authorization && req.headers.authorization.split(' ')[0] === 'JWT') {
-
       jwt.verify(req.headers.authorization.split(' ')[1], req.app.locals.secretKey, (err: any, decode: any) => {
         if (err) {
           res.status(401).json({
             error: err.message,
             status: 401
           });
+        } else {
+          req.user = decode;
+          next();
         }
-        req.user = decode;
-        next();
       });
     } else {
       res.status(401).json({
         error: 'Debes estar autenticado para este recurso.',
         status: 401
       });
-      next();
     }
   }
 
