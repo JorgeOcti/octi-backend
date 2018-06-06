@@ -3,6 +3,7 @@ import redisClient from '../../services/redis.service';
 import FormModel, {IFormModel} from '../models/form.model';
 import ScaleModel, {IScaleModel} from '../models/scale.model';
 import ParticipantModel from '../models/participant.model';
+import UserModel from '../../app/models/user.model';
 import {ObjectID} from 'bson';
 
 class FormController {
@@ -11,6 +12,7 @@ class FormController {
     this.list = this.list.bind(this);
     this.detail = this.detail.bind(this);
     this.complete = this.complete.bind(this);
+    this.changePreferred = this.changePreferred.bind(this);
   }
 
   public async list(req: Request, res: Response) {
@@ -28,17 +30,47 @@ class FormController {
     }
   }
 
+  public async changePreferred(req: Request, res: Response) {
+    let {form} = req.body;
+    try {
+      if (req.user) {
+        const user = await UserModel.findOne({_id: req.user._id, active: true});
+        // validate exist user
+        if (user) {
+          form = await FormModel.findById(form);
+          // validate exist form
+          if (form) {
+            user.preferred = form;
+            await user.save();
+            res.status(200).json({
+              message: 'Se ha actualizado',
+              status: 200
+            });
+          } else {
+            res.status(400).json({
+              message: 'Formualrio no encontrado',
+              status: 400
+            });
+          }
+        } else {
+          res.status(400).json({
+            message: 'Usuario no encontrado',
+            status: 400
+          });
+        }
+      }
+    } catch (e) {
+      res.status(400).json({
+        error: 'Ha ocurrido un error',
+        status: 400
+      });
+    }
+  }
+
   public async complete(req: Request, res: Response) {
     const {id} = req.params;
     const {answers, vin} = req.body;
-    // debugger;
-    console.log('answers', answers);
-    console.log('req.user ', req.user);
-    if(req.user && req.user._id === '5b11ac77ed920d50fadbafcb'){
-      return res.status(418).json({
-        data: {}
-      });
-    }
+
     // validate answers in body
     if (!answers){
       return res.status(400).json({

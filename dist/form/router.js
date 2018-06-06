@@ -6,6 +6,7 @@ const middlewares_1 = require("../middlewares/middlewares");
 const router = express.Router();
 // list form avaibles
 router.get('/', middlewares_1.default.isJWTAuthenticated, form_controller_1.default.list);
+router.put('/preferred/', middlewares_1.default.isJWTAuthenticated, form_controller_1.default.changePreferred);
 // detail information of the form
 router.get('/:id/', middlewares_1.default.isJWTAuthenticated, form_controller_1.default.detail);
 // answer form

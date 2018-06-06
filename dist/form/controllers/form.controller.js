@@ -4,12 +4,14 @@ const redis_service_1 = require("../../services/redis.service");
 const form_model_1 = require("../models/form.model");
 const scale_model_1 = require("../models/scale.model");
 const participant_model_1 = require("../models/participant.model");
+const user_model_1 = require("../../app/models/user.model");
 const bson_1 = require("bson");
 class FormController {
     constructor() {
         this.list = this.list.bind(this);
         this.detail = this.detail.bind(this);
         this.complete = this.complete.bind(this);
+        this.changePreferred = this.changePreferred.bind(this);
     }
     async list(req, res) {
         try {
@@ -26,17 +28,48 @@ class FormController {
             });
         }
     }
+    async changePreferred(req, res) {
+        let { form } = req.body;
+        try {
+            if (req.user) {
+                const user = await user_model_1.default.findOne({ _id: req.user._id, active: true });
+                // validate exist user
+                if (user) {
+                    form = await form_model_1.default.findById(form);
+                    // validate exist form
+                    if (form) {
+                        user.preferred = form;
+                        await user.save();
+                        res.status(200).json({
+                            message: 'Se ha actualizado',
+                            status: 200
+                        });
+                    }
+                    else {
+                        res.status(400).json({
+                            message: 'Formualrio no encontrado',
+                            status: 400
+                        });
+                    }
+                }
+                else {
+                    res.status(400).json({
+                        message: 'Usuario no encontrado',
+                        status: 400
+                    });
+                }
+            }
+        }
+        catch (e) {
+            res.status(400).json({
+                error: 'Ha ocurrido un error',
+                status: 400
+            });
+        }
+    }
     async complete(req, res) {
         const { id } = req.params;
         const { answers, vin } = req.body;
-        // debugger;
-        console.log('answers', answers);
-        console.log('req.user ', req.user);
-        if (req.user && req.user._id === '5b11ac77ed920d50fadbafcb') {
-            return res.status(418).json({
-                data: {}
-            });
-        }
         // validate answers in body
         if (!answers) {
             return res.status(400).json({

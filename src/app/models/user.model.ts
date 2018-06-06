@@ -33,6 +33,11 @@ const userSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Venue'
   },
+  preferred: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Form',
+    default: null
+  },
   email: {type: String, unique: true, index: true},
   password: String,
   hash_password:  String,

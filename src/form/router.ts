@@ -7,6 +7,8 @@ const router = express.Router();
 // list form avaibles
 router.get('/', Middlewares.isJWTAuthenticated, FormController.list);
 
+router.put('/preferred/', Middlewares.isJWTAuthenticated, FormController.changePreferred);
+
 // detail information of the form
 router.get('/:id/', Middlewares.isJWTAuthenticated, FormController.detail);
 

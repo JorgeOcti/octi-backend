@@ -148,7 +148,7 @@ class AdminUsersController {
         select: ['name', 'active']
         // , match: {color: 'black'}
         // , options: {sort: {createdAt: -1}}
-      },],
+      }],
       sort: {
         createdAt: -1
       },

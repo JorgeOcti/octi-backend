@@ -58,6 +58,7 @@ class JWTController {
           lastName: true,
           password: true,
           updatedAt: true,
+          preferred: true,
           active: true,
         })
         .populate([{
@@ -91,6 +92,7 @@ class JWTController {
                   _id: user._id,
                   username: user.username,
                   email: user.email,
+                  preferred: user.preferred,
                   venue: {
                     _id: user.venue ? user.venue._id : null,
                     name: user.venue ? user.venue.name : null
@@ -165,6 +167,7 @@ class JWTController {
                       _id: user._id,
                       username: user.username,
                       email: user.email,
+                      preferred: user.preferred,
                       venue: {
                         _id: user.venue ? user.venue._id : null,
                         name: user.venue ? user.venue.name : null
