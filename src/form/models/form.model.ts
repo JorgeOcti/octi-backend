@@ -1,5 +1,5 @@
 import * as mongoose from 'mongoose';
-import {IForm, IFormQuestion, IFormSection} from "../../interfaces/form";
+import {IForm, IFormQuestion, IFormSection} from "../../interfaces/form.interface";
 
 export interface IFormQuestionModel extends IFormQuestion, mongoose.Types.Subdocument {}
 const formQuestionsSchema = new mongoose.Schema({

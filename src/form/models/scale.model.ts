@@ -1,5 +1,5 @@
 import * as mongoose from 'mongoose';
-import {IChoices, IScale} from "../../interfaces/scale";
+import {IChoices, IScale} from "../../interfaces/scale.interface";
 
 export interface IChoicesModel extends IChoices, mongoose.Types.Subdocument {}
 

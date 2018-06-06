@@ -23,9 +23,9 @@ appRouter.delete('/api/admin/users/:id/', middlewares_1.default.isLoggedIn, admi
 appRouter.get('/account/login/', app_controller_1.default.login);
 appRouter.post('/account/login/', app_controller_1.default.processLogin);
 appRouter.get('/account/logout/', app_controller_1.default.logout);
+// JWT API
 const jwtRouter = express.Router();
 exports.jwtRouter = jwtRouter;
-// JWT login
 jwtRouter.post('/login/', jwt_controller_1.default.login);
 jwtRouter.post('/token/', jwt_controller_1.default.token);
 jwtRouter.post('/test/', middlewares_1.default.isJWTAuthenticated, jwt_controller_1.default.test);

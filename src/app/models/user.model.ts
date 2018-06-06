@@ -2,7 +2,7 @@ import * as bcrypt from 'bcrypt';
 import * as mongoose from 'mongoose';
 import * as mongoosePaginate from 'mongoose-paginate';
 import * as passportLocalMongoose from 'passport-local-mongoose';
-import {IUser} from "../../interfaces/user";
+import {IUser} from "../../interfaces/user.interface";
 // import mongooseCrate  from 'mongoose-crate';
 // import S3 from 'mongoose-crate-s3';
 
@@ -24,6 +24,11 @@ const userSchema = new mongoose.Schema({
   lastName: {
     type: String,
     default: ''
+  },
+  company: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Company',
+    index: true
   },
   email: {type: String, unique: true, index: true},
   password: String,
@@ -87,7 +92,6 @@ userSchema.methods.comparePasswordSync = function(candidatePassword: string) {
   return bcrypt.compareSync(candidatePassword, this.password);
 };
 
-// const User = mongoose.model('User', userSchema);
 const User = mongoose.model<IUserModel>('User', userSchema);
 
 export default User;

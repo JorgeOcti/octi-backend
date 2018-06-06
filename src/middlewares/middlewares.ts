@@ -1,6 +1,6 @@
 import {Request, Response, NextFunction} from "express";
 import * as jwt from "jsonwebtoken";
-import {IRequest} from "../interfaces/global";
+import {IRequest} from "../interfaces/global.interface";
 
 class Middlewares {
 

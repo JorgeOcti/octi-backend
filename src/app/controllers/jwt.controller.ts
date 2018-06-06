@@ -1,6 +1,6 @@
 import {NextFunction, Request, Response} from 'express';
 import * as jwt from 'jsonwebtoken';
-import {IRequest} from '../../interfaces/global';
+import {IRequest} from '../../interfaces/global.interface';
 import User, {IUserModel} from '../models/user.model';
 // import * as moment  from "moment-timezone";
 

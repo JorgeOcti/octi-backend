@@ -1,5 +1,5 @@
 import {IUsersState, UserReduxAction} from "../actions/users";
-import {IUser} from "../../../../../src/interfaces/user";
+import {IUser} from "../../../../../src/interfaces/user.interface";
 
 const initialState: IUsersState = {
   loading: true,

@@ -24,8 +24,8 @@ appRouter.get('/account/login/', AppController.login);
 appRouter.post('/account/login/', AppController.processLogin);
 appRouter.get('/account/logout/', AppController.logout);
 
+// JWT API
 const jwtRouter = express.Router();
-// JWT login
 jwtRouter.post('/login/', JWTController.login);
 jwtRouter.post('/token/', JWTController.token);
 jwtRouter.post('/test/', Middlewares.isJWTAuthenticated, JWTController.test);

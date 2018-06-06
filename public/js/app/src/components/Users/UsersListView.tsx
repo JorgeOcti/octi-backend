@@ -21,7 +21,7 @@ import {
 import {loadDataAction, ModalReduxAction} from "../../actions/modal";
 import ModalView from "../Modal/ModalView";
 // backend interfaces
-import {IUser} from "../../../../../../src/interfaces/user";
+import {IUser} from "../../../../../../src/interfaces/user.interface";
 import {statusFooterButttonsModal} from "../../utils/common";
 
 
