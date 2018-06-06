@@ -58,6 +58,13 @@ class JWTController {
                 updatedAt: true,
                 active: true,
             })
+                .populate([{
+                    path: 'venue',
+                    select: ['name']
+                }, {
+                    path: 'company',
+                    select: ['name']
+                }])
                 .exec((err, user) => {
                 if (err) {
                     res.status(500).send(err);
@@ -84,7 +91,15 @@ class JWTController {
                             const userInfo = {
                                 _id: user._id,
                                 username: user.username,
-                                email: user.email
+                                email: user.email,
+                                venue: {
+                                    _id: user.venue ? user.venue._id : null,
+                                    name: user.venue ? user.venue.name : null
+                                },
+                                company: {
+                                    _id: user.company ? user.company._id : null,
+                                    name: user.company ? user.company.name : null
+                                }
                             };
                             res.json({
                                 data: {
@@ -97,12 +112,7 @@ class JWTController {
                                     refreshToken: jwt.sign(userInfo, req.app.locals.secretKey, {
                                         expiresIn: '60 days'
                                     }),
-                                    user: {
-                                        _id: user._id,
-                                        name: user.firstName,
-                                        lastName: user.lastName,
-                                        username: user.username,
-                                    }
+                                    user: userInfo
                                 },
                                 status: 200
                             });
@@ -131,6 +141,13 @@ class JWTController {
                 else {
                     user_model_1.default
                         .findById(decode._id)
+                        .populate([{
+                            path: 'venue',
+                            select: ['name']
+                        }, {
+                            path: 'company',
+                            select: ['name']
+                        }])
                         .exec((err, user) => {
                         if (err) {
                             res.status(500).json(err);
@@ -151,7 +168,15 @@ class JWTController {
                                     const userInfo = {
                                         _id: user._id,
                                         username: user.username,
-                                        email: user.email
+                                        email: user.email,
+                                        venue: {
+                                            _id: user.venue ? user.venue._id : null,
+                                            name: user.venue ? user.venue.name : null
+                                        },
+                                        company: {
+                                            _id: user.company ? user.company._id : null,
+                                            name: user.company ? user.company.name : null
+                                        }
                                     };
                                     res.json({
                                         data: {
@@ -161,12 +186,7 @@ class JWTController {
                                             refreshToken: jwt.sign(userInfo, req.app.locals.secretKey, {
                                                 expiresIn: '60 days'
                                             }),
-                                            user: {
-                                                _id: user._id,
-                                                name: user.firstName,
-                                                lastName: user.lastName,
-                                                username: user.username,
-                                            }
+                                            user: userInfo
                                         },
                                         status: 200
                                     });

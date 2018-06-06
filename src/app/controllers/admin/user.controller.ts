@@ -134,13 +134,6 @@ class AdminUsersController {
   public async apiUsers(req: Request, res: Response) {
     const {page, pageSize} = req.query;
     // paginate options
-    // populate: [
-    // {
-    //   path: 'company',
-      // select: ['name', 'active']
-      // , match: {color: 'black'}
-      // , options: {sort: {createdAt: -1}}
-    // }],
     const options: PaginateOptions = {
       select: {
         password: false
