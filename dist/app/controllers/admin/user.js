@@ -234,4 +234,4 @@ class AdminUsersController {
     }
 }
 exports.default = new AdminUsersController();
-//# sourceMappingURL=adminUsers.controller.js.map
+//# sourceMappingURL=user.js.map

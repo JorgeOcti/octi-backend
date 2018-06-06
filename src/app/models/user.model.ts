@@ -27,8 +27,11 @@ const userSchema = new mongoose.Schema({
   },
   company: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'Company',
-    index: true
+    ref: 'Company'
+  },
+  venue: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Venue'
   },
   email: {type: String, unique: true, index: true},
   password: String,

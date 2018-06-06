@@ -1,26 +1,17 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-const user_model_1 = require("../models/user.model");
+const user_model_1 = require("../../models/user.model");
 const kue = require("kue");
 const queue = kue.createQueue();
-const company_model_1 = require("../models/company.model");
-const venue_model_1 = require("../models/venue.model");
 class AdminUsersController {
     constructor() {
-        this.users = this.users.bind(this);
+        this.index = this.index.bind(this);
         this.apiUsers = this.apiUsers.bind(this);
         this.apiAddUser = this.apiAddUser.bind(this);
         this.apiEditUser = this.apiEditUser.bind(this);
         this.apiDeleteUser = this.apiDeleteUser.bind(this);
     }
-    async users(req, res) {
-        const company = await company_model_1.default.findOne({});
-        const venue = await venue_model_1.default.findOne({});
-        // const venue = await new Venue({
-        //   name: 'Lo boza',
-        //   company: company
-        // }).save();
-        // const t = await User.update({}, {$set: {company: company ? company._id : null}}, { multi: true });
+    async index(req, res) {
         res.render('app/index');
     }
     async apiEditUser(req, res) {
@@ -234,4 +225,4 @@ class AdminUsersController {
     }
 }
 exports.default = new AdminUsersController();
-//# sourceMappingURL=adminUsers.controller.js.map
+//# sourceMappingURL=user.controller.js.map

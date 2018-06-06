@@ -1,1 +1,0 @@
-{"version":3,"file":"mongoose-create.js","sourceRoot":"","sources":["../../src/types/mongoose-create.ts"],"names":[],"mappings":"","sourcesContent":["declare module 'mongoose-create' {\n  const _: () => void;\n  export = _;\n}\n"]}

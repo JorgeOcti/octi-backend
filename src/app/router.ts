@@ -1,6 +1,8 @@
 import * as express from 'express';
 import AppController from './controllers/app.controller';
-import AdminUsersController from './controllers/adminUsers.controller';
+import AdminUsersController from './controllers/admin/user.controller';
+import AdminCompaniesController from './controllers/admin/companies.controller';
+import AdminVenuesController from './controllers/admin/venues.controller';
 import JWTController from './controllers/jwt.controller';
 import Middlewares from '../middlewares/middlewares';
 
@@ -12,12 +14,18 @@ appRouter.get('/', Middlewares.isLoggedIn, AppController.index);
 appRouter.get('/2/', Middlewares.isLoggedIn, AppController.index);
 
 // admin user
-appRouter.get('/users/', Middlewares.isLoggedIn, AdminUsersController.users);
+appRouter.get('/users/', Middlewares.isLoggedIn, AdminUsersController.index);
 // api admin users
 appRouter.get('/api/admin/users/', Middlewares.isLoggedIn, AdminUsersController.apiUsers);
 appRouter.post('/api/admin/users/', Middlewares.isLoggedIn, AdminUsersController.apiAddUser);
 appRouter.patch('/api/admin/users/:id/', Middlewares.isLoggedIn, AdminUsersController.apiEditUser);
 appRouter.delete('/api/admin/users/:id/', Middlewares.isLoggedIn, AdminUsersController.apiDeleteUser);
+
+// admin companies
+appRouter.get('/companies/', Middlewares.isLoggedIn, AdminCompaniesController.index);
+
+// venue companies
+appRouter.get('/venues/', Middlewares.isLoggedIn, AdminVenuesController.index);
 
 // web login
 appRouter.get('/account/login/', AppController.login);

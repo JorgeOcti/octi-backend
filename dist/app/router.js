@@ -2,7 +2,9 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 const express = require("express");
 const app_controller_1 = require("./controllers/app.controller");
-const adminUsers_controller_1 = require("./controllers/adminUsers.controller");
+const user_controller_1 = require("./controllers/admin/user.controller");
+const companies_controller_1 = require("./controllers/admin/companies.controller");
+const venues_controller_1 = require("./controllers/admin/venues.controller");
 const jwt_controller_1 = require("./controllers/jwt.controller");
 const middlewares_1 = require("../middlewares/middlewares");
 const appRouter = express.Router();
@@ -13,12 +15,16 @@ appRouter.get('/robots.txt', app_controller_1.default.robots);
 appRouter.get('/', middlewares_1.default.isLoggedIn, app_controller_1.default.index);
 appRouter.get('/2/', middlewares_1.default.isLoggedIn, app_controller_1.default.index);
 // admin user
-appRouter.get('/users/', middlewares_1.default.isLoggedIn, adminUsers_controller_1.default.users);
+appRouter.get('/users/', middlewares_1.default.isLoggedIn, user_controller_1.default.index);
 // api admin users
-appRouter.get('/api/admin/users/', middlewares_1.default.isLoggedIn, adminUsers_controller_1.default.apiUsers);
-appRouter.post('/api/admin/users/', middlewares_1.default.isLoggedIn, adminUsers_controller_1.default.apiAddUser);
-appRouter.patch('/api/admin/users/:id/', middlewares_1.default.isLoggedIn, adminUsers_controller_1.default.apiEditUser);
-appRouter.delete('/api/admin/users/:id/', middlewares_1.default.isLoggedIn, adminUsers_controller_1.default.apiDeleteUser);
+appRouter.get('/api/admin/users/', middlewares_1.default.isLoggedIn, user_controller_1.default.apiUsers);
+appRouter.post('/api/admin/users/', middlewares_1.default.isLoggedIn, user_controller_1.default.apiAddUser);
+appRouter.patch('/api/admin/users/:id/', middlewares_1.default.isLoggedIn, user_controller_1.default.apiEditUser);
+appRouter.delete('/api/admin/users/:id/', middlewares_1.default.isLoggedIn, user_controller_1.default.apiDeleteUser);
+// admin companies
+appRouter.get('/companies/', middlewares_1.default.isLoggedIn, companies_controller_1.default.index);
+// venue companies
+appRouter.get('/venues/', middlewares_1.default.isLoggedIn, venues_controller_1.default.index);
 // web login
 appRouter.get('/account/login/', app_controller_1.default.login);
 appRouter.post('/account/login/', app_controller_1.default.processLogin);

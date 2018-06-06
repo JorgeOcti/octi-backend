@@ -17,6 +17,14 @@ const userSchema = new mongoose.Schema({
         type: String,
         default: ''
     },
+    company: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Company'
+    },
+    venue: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Venue'
+    },
     email: { type: String, unique: true, index: true },
     password: String,
     hash_password: String,
@@ -76,7 +84,6 @@ userSchema.methods.comparePassword = function (candidatePassword, cb) {
 userSchema.methods.comparePasswordSync = function (candidatePassword) {
     return bcrypt.compareSync(candidatePassword, this.password);
 };
-// const User = mongoose.model('User', userSchema);
 const User = mongoose.model('User', userSchema);
 exports.default = User;
 //# sourceMappingURL=user.model.js.map
