@@ -84,7 +84,7 @@ class FormController {
             const form = await this.getFormWithScale(id, company);
             if (form) {
                 // initialize participant
-                const car = await car_model_1.default.findOneOrCreate({ vin }, { vin });
+                const car = await car_model_1.default.findOneOrCreate({ vin }, { vin, company });
                 const newParticipant = new participant_model_1.default({
                     name: form.name,
                     company,

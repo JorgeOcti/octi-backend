@@ -1,21 +1,22 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-const venue_model_1 = require("../../models/venue.model");
-class AdminVenuesController {
+const car_model_1 = require("../models/car.model");
+class AdminCompaniesController {
     constructor() {
-        this.index = this.index.bind(this);
-        this.getVenues = this.getVenues.bind(this);
-        this.apiVenues = this.apiVenues.bind(this);
+        this.vinDashboard = this.vinDashboard.bind(this);
+        this.apiCars = this.apiCars.bind(this);
+        this.getCars = this.getCars.bind(this);
     }
-    index(req, res) {
+    vinDashboard(req, res) {
+        res.render('app/index');
     }
-    async apiVenues(req, res) {
+    async apiCars(req, res) {
         const company = req.user.company;
         const { page, pageSize } = req.query;
         // paginate options
         const options = {
             select: {
-                name: true
+                vin: true
             },
             sort: {
                 createdAt: -1
@@ -24,9 +25,9 @@ class AdminVenuesController {
             limit: parseInt(pageSize ? pageSize : 20),
         };
         try {
-            const venues = await this.getVenues(company, options);
+            const cars = await this.getCars(company, options);
             // validate exist page
-            if (options.page && venues.pages && venues.pages < options.page) {
+            if (options.page && cars.pages && cars.pages < options.page) {
                 res.status(400).json({
                     error: 'La página solicitada no existe.',
                     status: 200,
@@ -34,11 +35,11 @@ class AdminVenuesController {
             }
             else {
                 res.json({
-                    count: venues.total,
-                    pages: venues.pages,
-                    hasPrevious: options.page && options.page > 1 && venues.pages && venues.pages >= options.page,
-                    hasNext: options.page && venues.pages && venues.pages > options.page,
-                    results: venues.docs,
+                    count: cars.total,
+                    pages: cars.pages,
+                    hasPrevious: options.page && options.page > 1 && cars.pages && cars.pages >= options.page,
+                    hasNext: options.page && cars.pages && cars.pages > options.page,
+                    results: cars.docs,
                     status: 200,
                 });
             }
@@ -48,9 +49,9 @@ class AdminVenuesController {
                 res.status(500).json(e);
         }
     }
-    getVenues(company, options) {
+    getCars(company, options) {
         return new Promise((resolve, reject) => {
-            venue_model_1.default.paginate({ company }, options, (err, result) => {
+            car_model_1.default.paginate({ company }, options, (err, result) => {
                 if (err) {
                     return reject(err);
                 }
@@ -59,5 +60,5 @@ class AdminVenuesController {
         });
     }
 }
-exports.default = new AdminVenuesController();
-//# sourceMappingURL=venues.controller.js.map
+exports.default = new AdminCompaniesController();
+//# sourceMappingURL=car.controller.js.map

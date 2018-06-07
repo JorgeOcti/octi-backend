@@ -20,6 +20,9 @@ class AdminVenuesController {
     const {page, pageSize} = req.query;
     // paginate options
     const options: PaginateOptions = {
+      select:{
+        name: true
+      },
       sort: {
         createdAt: -1
       },
@@ -38,7 +41,7 @@ class AdminVenuesController {
         res.json({
           count: venues.total,
           pages: venues.pages,
-          hasPrevious: options.page && venues.pages && venues.pages <= options.page,
+          hasPrevious: options.page && options.page > 1 && venues.pages && venues.pages >= options.page,
           hasNext: options.page && venues.pages && venues.pages > options.page,
           results: venues.docs,
           status: 200,

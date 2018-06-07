@@ -1,5 +1,7 @@
 import * as mongoose from 'mongoose';
 import {ICar} from "../../interfaces/car.interface";
+import * as mongoosePaginate from "mongoose-paginate";
+import {PaginateModel} from "mongoose";
 
 export interface ICarModel extends ICar, mongoose.Document {}
 
@@ -8,6 +10,10 @@ const carSchema = new mongoose.Schema({
     type: String,
     trim: true,
     required: true
+  },
+  company: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Company'
   }
 }, {
   timestamps: true
@@ -27,7 +33,9 @@ carSchema.statics.findOneOrCreate = function (condition: any, create: any): Prom
   });
 };
 
-export type CarSchema = mongoose.Model<ICarModel> & {
+mongoose.plugin(mongoosePaginate);
+
+export type CarSchema = mongoose.Model<ICarModel> & PaginateModel<ICarModel> & {
   findOneOrCreate(condition: any, create: any): Promise<ICarModel>
 }
 

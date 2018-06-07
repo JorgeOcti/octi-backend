@@ -1,11 +1,16 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 const mongoose = require("mongoose");
+const mongoosePaginate = require("mongoose-paginate");
 const carSchema = new mongoose.Schema({
     vin: {
         type: String,
         trim: true,
         required: true
+    },
+    company: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Company'
     }
 }, {
     timestamps: true
@@ -26,6 +31,7 @@ carSchema.statics.findOneOrCreate = function (condition, create) {
         });
     });
 };
+mongoose.plugin(mongoosePaginate);
 const Car = mongoose.model('Car', carSchema);
 exports.default = Car;
 //# sourceMappingURL=car.model.js.map

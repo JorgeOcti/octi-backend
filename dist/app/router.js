@@ -2,6 +2,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 const express = require("express");
 const app_controller_1 = require("./controllers/app.controller");
+const car_controller_1 = require("./controllers/car.controller");
 const user_controller_1 = require("./controllers/admin/user.controller");
 const companies_controller_1 = require("./controllers/admin/companies.controller");
 const venues_controller_1 = require("./controllers/admin/venues.controller");
@@ -12,7 +13,9 @@ exports.appRouter = appRouter;
 // robots.txt
 appRouter.get('/robots.txt', app_controller_1.default.robots);
 // DashBoard Principal
-appRouter.get('/', middlewares_1.default.isLoggedIn, app_controller_1.default.index);
+appRouter.get('/', middlewares_1.default.isLoggedIn, car_controller_1.default.vinDashboard);
+// api cars
+appRouter.get('/api/admin/cars/', middlewares_1.default.isLoggedIn, car_controller_1.default.apiCars);
 appRouter.get('/2/', middlewares_1.default.isLoggedIn, app_controller_1.default.index);
 // admin user
 appRouter.get('/users/', middlewares_1.default.isLoggedIn, user_controller_1.default.index);

@@ -20,18 +20,14 @@ class AdminUsersController {
         // paginate options
         const options = {
             select: {
-                password: false
+                firstName: true,
+                lastName: true,
+                email: true,
+                updatedAt: true
             },
             populate: [{
-                    path: 'company',
-                    select: ['name', 'active']
-                    // , match: {color: 'black'}
-                    // , options: {sort: {createdAt: -1}}
-                }, {
                     path: 'venue',
                     select: ['name', 'active']
-                    // , match: {color: 'black'}
-                    // , options: {sort: {createdAt: -1}}
                 }],
             sort: {
                 createdAt: -1
@@ -52,7 +48,7 @@ class AdminUsersController {
                 res.json({
                     count: users.total,
                     pages: users.pages,
-                    hasPrevious: options.page && users.pages && users.pages <= options.page,
+                    hasPrevious: options.page && options.page > 1 && users.pages && users.pages >= options.page,
                     hasNext: options.page && users.pages && users.pages > options.page,
                     results: users.docs,
                     status: 200,
@@ -166,9 +162,6 @@ class AdminUsersController {
                 }, { new: true })
                     .populate([{
                         path: 'venue',
-                        select: ['name', 'active']
-                    }, {
-                        path: 'company',
                         select: ['name', 'active']
                     }]);
                 if (user) {

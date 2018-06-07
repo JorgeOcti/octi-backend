@@ -1,5 +1,6 @@
 import * as express from 'express';
 import AppController from './controllers/app.controller';
+import CarController from './controllers/car.controller';
 import AdminUsersController from './controllers/admin/user.controller';
 import AdminCompaniesController from './controllers/admin/companies.controller';
 import AdminVenuesController from './controllers/admin/venues.controller';
@@ -9,8 +10,13 @@ import Middlewares from '../middlewares/middlewares';
 const appRouter = express.Router();
 // robots.txt
 appRouter.get('/robots.txt', AppController.robots);
+
 // DashBoard Principal
-appRouter.get('/', Middlewares.isLoggedIn, AppController.index);
+appRouter.get('/', Middlewares.isLoggedIn, CarController.vinDashboard);
+
+// api cars
+appRouter.get('/api/admin/cars/', Middlewares.isLoggedIn, CarController.apiCars);
+
 appRouter.get('/2/', Middlewares.isLoggedIn, AppController.index);
 
 // admin user
