@@ -65,7 +65,7 @@ class DashboardVinView extends React.Component<IPropsType, IStateType> {
                         <tr key={car._id} id={`car-${car._id}`}>
                           <td>{car.vin}</td>
                           <td>{`${car.lastForm.user ? `${car.lastForm.user.firstName} ${car.lastForm.user.lastName}` : ''}`}</td>
-                          <td>{moment(car.lastForm.createdAt).format('LLL')}</td>
+                          <td className="hidden-xs">{moment(car.lastForm.createdAt).format('LLL')}</td>
                           {/*<td className="hidden-xs">{user.venue.name}</td>*/}
                           {/*<td className="hidden-xs">{user.email}</td>*/}
                           {/*<td className="hidden-xs">{moment(user.updatedAt).format('LLL')}</td>*/}
