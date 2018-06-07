@@ -6,6 +6,7 @@ export interface ICompanyModel extends ICompany, mongoose.Document {}
 const companySchema = new mongoose.Schema({
   name: {
     type: String,
+    trim: true,
     required: true
   },
   active: {

@@ -22,14 +22,25 @@ const formSectionsSchema = new mongoose.Schema({
     order: { type: Number, required: true }
 });
 const formSchema = new mongoose.Schema({
-    name: { type: String, required: true, trim: true },
+    name: {
+        type: String,
+        required: true,
+        trim: true
+    },
     company: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: 'Company'
+        ref: 'Company',
+        required: true
     },
-    description: { type: String, trim: true },
+    description: {
+        type: String,
+        trim: true
+    },
     sections: [formSectionsSchema],
-    active: { type: Boolean, default: true }
+    active: {
+        type: Boolean,
+        default: true
+    }
 }, {
     timestamps: true
 });

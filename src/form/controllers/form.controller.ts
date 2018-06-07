@@ -92,10 +92,11 @@ class FormController {
         // initialize participant
         const newParticipant = new ParticipantModel({
           name: form.name,
+          company,
           form: form._id,
           vin: vin ? vin : '',
           description: form.description,
-          user: req.user? new ObjectID(req.user._id) : new ObjectID('5b058195983880f860332f8e'),
+          user: req.user._id,
           active: form.active,
         });
         // var sum sections

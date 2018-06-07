@@ -45,12 +45,20 @@ const participantSchema = new mongoose.Schema({
         ref: 'Form',
         index: true
     },
+    company: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Company',
+        required: true
+    },
     user: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User',
         index: true
     },
-    vin: { type: String },
+    vin: {
+        type: String,
+        trim: true
+    },
     description: { type: String, trim: true },
     sections: [participantSectionsSchema],
     qualification: { type: Number, default: 0 },

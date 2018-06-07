@@ -4,6 +4,7 @@ const mongoose = require("mongoose");
 const companySchema = new mongoose.Schema({
     name: {
         type: String,
+        trim: true,
         required: true
     },
     active: {

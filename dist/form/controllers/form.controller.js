@@ -33,33 +33,31 @@ class FormController {
         let { form } = req.body;
         const company = req.user.company;
         try {
-            if (req.user) {
-                const user = await user_model_1.default.findOne({ _id: req.user._id, company, active: true });
-                // validate exist user
-                if (user) {
-                    form = await form_model_1.default.findOne({ _id: form, company });
-                    // validate exist form
-                    if (form) {
-                        user.preferred = form;
-                        await user.save();
-                        res.status(200).json({
-                            message: 'Se ha actualizado',
-                            status: 200
-                        });
-                    }
-                    else {
-                        res.status(400).json({
-                            message: 'Formualrio no encontrado',
-                            status: 400
-                        });
-                    }
+            const user = await user_model_1.default.findOne({ _id: req.user._id, company, active: true });
+            // validate exist user
+            if (user) {
+                form = await form_model_1.default.findOne({ _id: form, company });
+                // validate exist form
+                if (form) {
+                    user.preferred = form;
+                    await user.save();
+                    res.status(200).json({
+                        message: 'Se ha actualizado',
+                        status: 200
+                    });
                 }
                 else {
                     res.status(400).json({
-                        message: 'Usuario no encontrado',
+                        message: 'Formualrio no encontrado',
                         status: 400
                     });
                 }
+            }
+            else {
+                res.status(400).json({
+                    message: 'Usuario no encontrado',
+                    status: 400
+                });
             }
         }
         catch (e) {
@@ -93,10 +91,11 @@ class FormController {
                 // initialize participant
                 const newParticipant = new participant_model_1.default({
                     name: form.name,
+                    company,
                     form: form._id,
                     vin: vin ? vin : '',
                     description: form.description,
-                    user: req.user ? new bson_1.ObjectID(req.user._id) : new bson_1.ObjectID('5b058195983880f860332f8e'),
+                    user: req.user._id,
                     active: form.active,
                 });
                 // var sum sections

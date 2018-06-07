@@ -14,12 +14,22 @@ exports.scaleSchema = new mongoose.Schema({
     name: String,
     company: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: 'Company'
+        ref: 'Company',
+        require: true
     },
-    minValue: { type: Number, required: true },
-    maxValue: { type: Number, required: true },
+    minValue: {
+        type: Number,
+        required: true
+    },
+    maxValue: {
+        type: Number,
+        required: true
+    },
     choices: [choiceSchema],
-    active: { type: Boolean, default: true }
+    active: {
+        type: Boolean,
+        default: true
+    }
 }, {
     timestamps: true
 });

@@ -11,26 +11,33 @@ const userSchema = new mongoose.Schema({
     },
     firstName: {
         type: String,
-        default: ''
+        default: null
     },
     lastName: {
         type: String,
-        default: ''
+        default: null
     },
     company: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: 'Company'
+        ref: 'Company',
+        required: true
     },
     venue: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: 'Venue'
+        ref: 'Venue',
+        required: true
     },
     preferred: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Form',
         default: null
     },
-    email: { type: String, unique: true, index: true },
+    email: {
+        type: String,
+        trim: true,
+        unique: true,
+        index: true
+    },
     password: String,
     hash_password: String,
     passwordResetToken: String,
