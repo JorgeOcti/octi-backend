@@ -1,11 +1,13 @@
-import {IUsersState, UserReduxAction} from "../actions/users";
+import {
+  IUsersState,
+  UserReduxAction
+} from "../actions/users";
 import {IUser} from "../../../../../src/interfaces/user.interface";
 
 const initialState: IUsersState = {
-  loading: true,
   users: [],
   venues: [],
-  source: null,
+  loading: true,
   tempUser: {
     _id:'',
     firstName: '',
@@ -13,6 +15,7 @@ const initialState: IUsersState = {
     email: '',
     venue:''
   },
+  source: null,
   pagination: {
     count: 0,
     page: 1,
