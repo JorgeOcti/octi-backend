@@ -242,6 +242,7 @@ class FormController {
               'updatedAt': false,
               'createdAt': false,
               'active': false,
+              'company': false,
               'minValue': false,
               'maxValue': false,
               'choices.na': false,
