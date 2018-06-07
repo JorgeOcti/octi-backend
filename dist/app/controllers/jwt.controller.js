@@ -2,7 +2,8 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 const jwt = require("jsonwebtoken");
 const user_model_1 = require("../models/user.model");
-// import * as moment  from "moment-timezone";
+const participant_model_1 = require("../../form/models/participant.model");
+const moment = require("moment-timezone");
 class JWTController {
     constructor() {
         this.login = this.login.bind(this);
@@ -103,20 +104,31 @@ class JWTController {
                                     name: user.company ? user.company.name : null
                                 }
                             };
-                            res.json({
-                                data: {
-                                    token: jwt.sign(userInfo, req.app.locals.secretKey, {
-                                        expiresIn: '30 days'
-                                    }),
-                                    // token: jwt.sign(userInfo, req.app.locals.secretKey, {
-                                    //   expiresIn: '60 seconds'
-                                    // }),
-                                    refreshToken: jwt.sign(userInfo, req.app.locals.secretKey, {
-                                        expiresIn: '60 days'
-                                    }),
-                                    user: userInfo
-                                },
-                                status: 200
+                            const today = moment().startOf('day');
+                            const tomorrow = moment(today).add(1, 'days');
+                            participant_model_1.default.count({
+                                user,
+                                createdAt: {
+                                    $gte: today.toDate(),
+                                    $lt: tomorrow.toDate()
+                                }
+                            }, (err, count) => {
+                                res.json({
+                                    data: {
+                                        token: jwt.sign(userInfo, req.app.locals.secretKey, {
+                                            expiresIn: '30 days'
+                                        }),
+                                        // token: jwt.sign(userInfo, req.app.locals.secretKey, {
+                                        //   expiresIn: '60 seconds'
+                                        // }),
+                                        refreshToken: jwt.sign(userInfo, req.app.locals.secretKey, {
+                                            expiresIn: '60 days'
+                                        }),
+                                        user: userInfo,
+                                        count
+                                    },
+                                    status: 200
+                                });
                             });
                         }
                     });

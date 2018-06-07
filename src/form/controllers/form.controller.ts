@@ -7,7 +7,7 @@ import UserModel from '../../app/models/user.model';
 import CarModel from '../../app/models/car.model';
 import {ObjectID} from 'bson';
 import {IRequest} from "../../interfaces/global.interface";
-import moment = require("moment");
+import * as moment  from "moment-timezone";
 
 class FormController {
 

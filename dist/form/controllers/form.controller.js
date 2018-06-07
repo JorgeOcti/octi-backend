@@ -7,7 +7,7 @@ const participant_model_1 = require("../models/participant.model");
 const user_model_1 = require("../../app/models/user.model");
 const car_model_1 = require("../../app/models/car.model");
 const bson_1 = require("bson");
-const moment = require("moment");
+const moment = require("moment-timezone");
 class FormController {
     constructor() {
         this.list = this.list.bind(this);

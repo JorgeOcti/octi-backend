@@ -2,7 +2,8 @@ import {NextFunction, Request, Response} from 'express';
 import * as jwt from 'jsonwebtoken';
 import {IRequest} from '../../interfaces/global.interface';
 import User, {IUserModel} from '../models/user.model';
-// import * as moment  from "moment-timezone";
+import ParticipantModel from "../../form/models/participant.model";
+import * as moment  from "moment-timezone";
 
 class JWTController {
 
@@ -102,20 +103,31 @@ class JWTController {
                     name: user.company ? user.company.name : null
                   }
                 };
-                res.json({
-                  data: {
-                    token: jwt.sign(userInfo, req.app.locals.secretKey, {
-                      expiresIn: '30 days'
-                    }),
-                    // token: jwt.sign(userInfo, req.app.locals.secretKey, {
-                    //   expiresIn: '60 seconds'
-                    // }),
-                    refreshToken: jwt.sign(userInfo, req.app.locals.secretKey, {
-                      expiresIn: '60 days'
-                    }),
-                    user: userInfo
-                  },
-                  status: 200
+                const today = moment().startOf('day');
+                const tomorrow = moment(today).add(1, 'days');
+                ParticipantModel.count({
+                  user,
+                  createdAt: {
+                    $gte: today.toDate(),
+                    $lt: tomorrow.toDate()
+                  }
+                },(err, count)=>{
+                  res.json({
+                    data: {
+                      token: jwt.sign(userInfo, req.app.locals.secretKey, {
+                        expiresIn: '30 days'
+                      }),
+                      // token: jwt.sign(userInfo, req.app.locals.secretKey, {
+                      //   expiresIn: '60 seconds'
+                      // }),
+                      refreshToken: jwt.sign(userInfo, req.app.locals.secretKey, {
+                        expiresIn: '60 days'
+                      }),
+                      user: userInfo,
+                      count
+                    },
+                    status: 200
+                  });
                 });
               }
             });
