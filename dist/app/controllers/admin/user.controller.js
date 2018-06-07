@@ -14,69 +14,54 @@ class AdminUsersController {
     async index(req, res) {
         res.render('app/index');
     }
-    async apiEditUser(req, res) {
-        const { id } = req.params;
+    async apiUsers(req, res) {
+        const { page, pageSize } = req.query;
         const company = req.user.company;
-        const { firstName, lastName, email, venue } = req.body;
-        // validate fields required
-        if (!firstName || !firstName.length || !lastName || !lastName.length || !email || !email.length || !venue || !venue.length) {
-            res.status(400).json({
-                message: 'firstName, lastName, email and venue are required',
-                status: 400
-            });
-        }
+        // paginate options
+        const options = {
+            select: {
+                password: false
+            },
+            populate: [{
+                    path: 'company',
+                    select: ['name', 'active']
+                    // , match: {color: 'black'}
+                    // , options: {sort: {createdAt: -1}}
+                }, {
+                    path: 'venue',
+                    select: ['name', 'active']
+                    // , match: {color: 'black'}
+                    // , options: {sort: {createdAt: -1}}
+                }],
+            sort: {
+                createdAt: -1
+            },
+            page: parseInt(page ? page : 1),
+            limit: parseInt(pageSize ? pageSize : 20),
+        };
         try {
-            // validate email not duplicate
-            const countUser = await user_model_1.default.count({ email: email, _id: { $ne: id } });
-            if (countUser) {
+            const users = await this.getUsers(company, options);
+            // validate exist page
+            if (options.page && users.pages && users.pages < options.page) {
                 res.status(400).json({
-                    message: 'Usuario ya existe con este email.',
-                    status: 400
+                    error: 'La página solicitada no existe.',
+                    status: 200,
                 });
             }
             else {
-                let user = await user_model_1.default
-                    .findOneAndUpdate({
-                    _id: id, company
-                }, {
-                    firstName,
-                    lastName,
-                    email,
-                    venue
-                }, { new: true })
-                    .populate([{
-                        path: 'venue',
-                        select: ['name', 'active']
-                    }, {
-                        path: 'company',
-                        select: ['name', 'active']
-                    }]);
-                if (user) {
-                    // prevent return password
-                    user = user.toObject();
-                    if (user)
-                        delete user.password;
-                    const response = {
-                        message: "Usuario editado satisfactoriamente.",
-                        user
-                    };
-                    // setTimeout(() => {
-                    //   res.status(200).json(response);
-                    // }, 4000)
-                    res.status(200).json(response);
-                }
-                else {
-                    const response = {
-                        message: "Usuario no encontardo",
-                        id: id
-                    };
-                    res.status(200).json(response);
-                }
+                res.json({
+                    count: users.total,
+                    pages: users.pages,
+                    hasPrevious: options.page && users.pages && users.pages <= options.page,
+                    hasNext: options.page && users.pages && users.pages > options.page,
+                    results: users.docs,
+                    status: 200,
+                });
             }
         }
         catch (e) {
-            console.log(e);
-            res.status(500).json(e);
+            if (e)
+                res.status(500).json(e);
         }
     }
     async apiAddUser(req, res) {
@@ -85,7 +70,7 @@ class AdminUsersController {
         // validate fields required
         if (!firstName || !firstName.length || !lastName || !lastName.length || !email || !email.length || !venue || !venue.length) {
             res.status(400).json({
-                message: 'firstName, lastName and email are required',
+                message: 'firstName, lastName, email and venue are required',
                 status: 400
             });
         }
@@ -149,54 +134,66 @@ class AdminUsersController {
             res.status(500).json(e);
         }
     }
-    async apiUsers(req, res) {
-        const { page, pageSize } = req.query;
+    async apiEditUser(req, res) {
+        const { id } = req.params;
         const company = req.user.company;
-        // paginate options
-        const options = {
-            select: {
-                password: false
-            },
-            populate: [{
-                    path: 'company',
-                    select: ['name', 'active']
-                    // , match: {color: 'black'}
-                    // , options: {sort: {createdAt: -1}}
-                }, {
-                    path: 'venue',
-                    select: ['name', 'active']
-                    // , match: {color: 'black'}
-                    // , options: {sort: {createdAt: -1}}
-                }],
-            sort: {
-                createdAt: -1
-            },
-            page: parseInt(page ? page : 1),
-            limit: parseInt(pageSize ? pageSize : 20),
-        };
+        const { firstName, lastName, email, venue } = req.body;
+        // validate fields required
+        if (!firstName || !firstName.length || !lastName || !lastName.length || !email || !email.length || !venue || !venue.length) {
+            res.status(400).json({
+                message: 'firstName, lastName, email and venue are required',
+                status: 400
+            });
+        }
         try {
-            const users = await this.getUsers(company, options);
-            // validate exist page
-            if (options.page && users.pages && users.pages < options.page) {
+            // validate email not duplicate
+            const countUser = await user_model_1.default.count({ email: email, _id: { $ne: id } });
+            if (countUser) {
                 res.status(400).json({
-                    error: 'La página solicitada no existe.',
-                    status: 200,
+                    message: 'Usuario ya existe con este email.',
+                    status: 400
                 });
             }
             else {
-                res.json({
-                    count: users.total,
-                    pages: users.pages,
-                    hasPrevious: options.page && users.pages && users.pages <= options.page,
-                    hasNext: options.page && users.pages && users.pages > options.page,
-                    results: users.docs,
-                    status: 200,
-                });
+                let user = await user_model_1.default
+                    .findOneAndUpdate({
+                    _id: id, company
+                }, {
+                    firstName,
+                    lastName,
+                    email,
+                    venue
+                }, { new: true })
+                    .populate([{
+                        path: 'venue',
+                        select: ['name', 'active']
+                    }, {
+                        path: 'company',
+                        select: ['name', 'active']
+                    }]);
+                if (user) {
+                    // prevent return password
+                    user = user.toObject();
+                    if (user)
+                        delete user.password;
+                    const response = {
+                        message: "Usuario editado satisfactoriamente.",
+                        user
+                    };
+                    res.status(200).json(response);
+                }
+                else {
+                    const response = {
+                        message: "Usuario no encontardo",
+                        id: id
+                    };
+                    res.status(200).json(response);
+                }
             }
         }
         catch (e) {
-            if (e)
-                res.status(500).json(e);
+            console.log(e);
+            res.status(500).json(e);
         }
     }
     async apiDeleteUser(req, res) {

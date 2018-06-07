@@ -32,37 +32,33 @@ class FormController {
     }
   }
 
-  public async changePreferred(req: IRequest, res: Response) {
-    let {form} = req.body;
+  public async detail(req: IRequest, res: Response) {
+    const {id} = req.params;
     const company = req.user.company;
     try {
-      const user = await UserModel.findOne({_id: req.user._id, company,  active: true});
-      // validate exist user
-      if (user) {
-        form = await FormModel.findOne({_id: form, company});
-        // validate exist form
-        if (form) {
-          user.preferred = form;
-          await user.save();
-          res.status(200).json({
-            message: 'Se ha actualizado',
-            status: 200
-          });
-        } else {
-          res.status(400).json({
-            message: 'Formualrio no encontrado',
-            status: 400
-          });
-        }
-      } else {
-        res.status(400).json({
-          message: 'Usuario no encontrado',
-          status: 400
+      const form = await this.getForm(id, company);
+      // generate array of scale ids
+      const scalesIds: any[] = [];
+      form.sections.forEach((section) => {
+        section.questions.forEach((question) => {
+          const scaleID = question.scale.toString();
+          if (!scalesIds.includes(scaleID)) {
+            scalesIds.push(scaleID);
+          }
         });
-      }
+      });
+      // get scales from db
+      const scales = await this.getScales(scalesIds, company);
+      res.json({
+        data: {
+          form,
+          scales
+        },
+        status: 200
+      });
     } catch (e) {
       res.status(400).json({
-        error: 'Ha ocurrido un error',
+        error: 'No se encontro formularío  400',
         status: 400
       });
     }
@@ -193,87 +189,67 @@ class FormController {
     }
   }
 
-  public async detail(req: IRequest, res: Response) {
-    const {id} = req.params;
+  public async changePreferred(req: IRequest, res: Response) {
+    let {form} = req.body;
     const company = req.user.company;
     try {
-      const form = await this.getForm(id, company);
-      // generate array of scale ids
-      const scalesIds: any[] = [];
-      form.sections.forEach((section) => {
-        section.questions.forEach((question) => {
-          const scaleID = question.scale.toString();
-          if (!scalesIds.includes(scaleID)) {
-            scalesIds.push(scaleID);
-          }
+      const user = await UserModel.findOne({_id: req.user._id, company,  active: true});
+      // validate exist user
+      if (user) {
+        form = await FormModel.findOne({_id: form, company});
+        // validate exist form
+        if (form) {
+          user.preferred = form;
+          await user.save();
+          res.status(200).json({
+            message: 'Se ha actualizado',
+            status: 200
+          });
+        } else {
+          res.status(400).json({
+            message: 'Formualrio no encontrado',
+            status: 400
+          });
+        }
+      } else {
+        res.status(400).json({
+          message: 'Usuario no encontrado',
+          status: 400
         });
-      });
-      // get scales from db
-      const scales = await this.getScales(scalesIds, company);
-      res.json({
-        data: {
-          form,
-          scales
-        },
-        status: 200
-      });
-
+      }
     } catch (e) {
       res.status(400).json({
-        error: 'No se encontro formularío  400',
+        error: 'Ha ocurrido un error',
         status: 400
       });
     }
   }
 
-  private getScales(ids: any[], company: ObjectID): Promise<IScaleModel[]> {
-    const keyCache = `scales-${ids.toString()}`;
+  private getForms(company: ObjectID): Promise<IFormModel[]> {
+    const keyCache = `forms`;
     return new Promise((resolve, reject) => {
       redisClient.get(keyCache, async (error, result) => {
-        if (result) {
+        if(result){
+          console.log(`cache: ${keyCache}`);
           resolve(JSON.parse(result));
         } else {
-          ScaleModel
+          FormModel
             .find({
-              _id: {$in: ids},
               company
             }, {
-              'updatedAt': false,
-              'createdAt': false,
-              'active': false,
-              'company': false,
-              'minValue': false,
-              'maxValue': false,
-              'choices.na': false,
-              '__v': false
+              _id: 1,
+              name: 1
             })
             .lean()
-            .exec((err, scales: IScaleModel[]) => {
+            .exec((err, forms: IFormModel[]) => {
               if (err) {
                 return reject(err);
               }
-              redisClient.setex(keyCache, 30, JSON.stringify(scales));
-              return resolve(scales);
+              redisClient.setex(keyCache, 60 * 2, JSON.stringify(forms));
+              return resolve(forms);
             });
         }
       });
-    });
-  }
-
-  private getFormWithScale(id: string, company: ObjectID): Promise<IFormModel> {
-    return new Promise((resolve, reject) => {
-      FormModel
-        .findOne({_id: id, company})
-        .populate('sections.questions.scale')
-        .exec((err, form) => {
-          if (err) {
-            return reject(err);
-          }
-          if (form) {
-            return resolve(form);
-          }
-          return reject('No se encontro formularío');
-        });
     });
   }
 
@@ -311,33 +287,57 @@ class FormController {
     });
   }
 
-  private getForms(company: ObjectID): Promise<IFormModel[]> {
-    const keyCache = `forms`;
+  private getFormWithScale(id: string, company: ObjectID): Promise<IFormModel> {
+    return new Promise((resolve, reject) => {
+      FormModel
+        .findOne({_id: id, company})
+        .populate('sections.questions.scale')
+        .exec((err, form) => {
+          if (err) {
+            return reject(err);
+          }
+          if (form) {
+            return resolve(form);
+          }
+          return reject('No se encontro formularío');
+        });
+    });
+  }
+
+  private getScales(ids: any[], company: ObjectID): Promise<IScaleModel[]> {
+    const keyCache = `scales-${ids.toString()}`;
     return new Promise((resolve, reject) => {
       redisClient.get(keyCache, async (error, result) => {
-        if(result){
-          console.log(`cache: ${keyCache}`);
+        if (result) {
           resolve(JSON.parse(result));
         } else {
-          FormModel
+          ScaleModel
             .find({
+              _id: {$in: ids},
               company
             }, {
-              _id: 1,
-              name: 1
+              'updatedAt': false,
+              'createdAt': false,
+              'active': false,
+              'company': false,
+              'minValue': false,
+              'maxValue': false,
+              'choices.na': false,
+              '__v': false
             })
             .lean()
-            .exec((err, forms: IFormModel[]) => {
+            .exec((err, scales: IScaleModel[]) => {
               if (err) {
                 return reject(err);
               }
-              redisClient.setex(keyCache, 60 * 2, JSON.stringify(forms));
-              return resolve(forms);
+              redisClient.setex(keyCache, 30, JSON.stringify(scales));
+              return resolve(scales);
             });
         }
       });
     });
   }
+
 }
 
 export default new FormController();
