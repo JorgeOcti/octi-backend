@@ -20,66 +20,51 @@ class AdminUsersController {
     res.render('app/index');
   }
 
-  public async apiEditUser(req: IRequest, res: Response) {
-    const {id} = req.params;
+  public async apiUsers(req: IRequest, res: Response) {
+    const {page, pageSize} = req.query;
     const company = req.user.company;
-    const {firstName, lastName, email, venue} = req.body;
-    // validate fields required
-    if(!firstName || !firstName.length || !lastName || !lastName.length || !email || !email.length || !venue || !venue.length){
-      res.status(400).json({
-        message: 'firstName, lastName, email and venue are required',
-        status: 400
-      });
-    }
+    // paginate options
+    const options: PaginateOptions = {
+      select: {
+        password: false
+      },
+      populate: [{
+        path: 'company',
+        select: ['name', 'active']
+        // , match: {color: 'black'}
+        // , options: {sort: {createdAt: -1}}
+      }, {
+        path: 'venue',
+        select: ['name', 'active']
+        // , match: {color: 'black'}
+        // , options: {sort: {createdAt: -1}}
+      }],
+      sort: {
+        createdAt: -1
+      },
+      page: parseInt(page ? page : 1),
+      limit: parseInt(pageSize ? pageSize : 20),
+    };
     try {
-      // validate email not duplicate
-      const countUser = await User.count({email: email, _id: {$ne: id}});
-      if (countUser) {
+      const users = await this.getUsers(company, options);
+      // validate exist page
+      if (options.page && users.pages && users.pages < options.page) {
         res.status(400).json({
-          message: 'Usuario ya existe con este email.',
-          status: 400
+          error: 'La página solicitada no existe.',
+          status: 200,
         });
       } else {
-        let user = await User
-          .findOneAndUpdate({
-            _id: id, company
-          }, {
-            firstName,
-            lastName,
-            email,
-            venue
-          }, {new: true})
-          .populate([{
-            path: 'venue',
-            select: ['name', 'active']
-          }, {
-            path: 'company',
-            select: ['name', 'active']
-          }]);
-        if (user) {
-          // prevent return password
-          user = user.toObject();
-          if (user) delete user.password;
-
-          const response = {
-            message: "Usuario editado satisfactoriamente.",
-            user
-          };
-          // setTimeout(() => {
-          //   res.status(200).json(response);
-          // }, 4000)
-          res.status(200).json(response);
-        } else {
-          const response = {
-            message: "Usuario no encontardo",
-            id: id
-          };
-          res.status(200).json(response);
-        }
+        res.json({
+          count: users.total,
+          pages: users.pages,
+          hasPrevious: options.page && users.pages && users.pages <= options.page,
+          hasNext: options.page && users.pages && users.pages > options.page,
+          results: users.docs,
+          status: 200,
+        });
       }
     } catch (e) {
-      console.log(e);
-      res.status(500).json(e);
+      if (e) res.status(500).json(e);
     }
   }
 
@@ -89,7 +74,7 @@ class AdminUsersController {
     // validate fields required
     if(!firstName || !firstName.length || !lastName || !lastName.length || !email || !email.length|| !venue || !venue.length){
       res.status(400).json({
-        message: 'firstName, lastName and email are required',
+        message: 'firstName, lastName, email and venue are required',
         status: 400
       });
     }
@@ -156,51 +141,63 @@ class AdminUsersController {
     }
   }
 
-  public async apiUsers(req: IRequest, res: Response) {
-    const {page, pageSize} = req.query;
+  public async apiEditUser(req: IRequest, res: Response) {
+    const {id} = req.params;
     const company = req.user.company;
-    // paginate options
-    const options: PaginateOptions = {
-      select: {
-        password: false
-      },
-      populate: [{
-        path: 'company',
-        select: ['name', 'active']
-        // , match: {color: 'black'}
-        // , options: {sort: {createdAt: -1}}
-      }, {
-        path: 'venue',
-        select: ['name', 'active']
-        // , match: {color: 'black'}
-        // , options: {sort: {createdAt: -1}}
-      }],
-      sort: {
-        createdAt: -1
-      },
-      page: parseInt(page ? page : 1),
-      limit: parseInt(pageSize ? pageSize : 20),
-    };
+    const {firstName, lastName, email, venue} = req.body;
+    // validate fields required
+    if(!firstName || !firstName.length || !lastName || !lastName.length || !email || !email.length || !venue || !venue.length){
+      res.status(400).json({
+        message: 'firstName, lastName, email and venue are required',
+        status: 400
+      });
+    }
     try {
-      const users = await this.getUsers(company, options);
-      // validate exist page
-      if (options.page && users.pages && users.pages < options.page) {
+      // validate email not duplicate
+      const countUser = await User.count({email: email, _id: {$ne: id}});
+      if (countUser) {
         res.status(400).json({
-          error: 'La página solicitada no existe.',
-          status: 200,
+          message: 'Usuario ya existe con este email.',
+          status: 400
         });
       } else {
-        res.json({
-          count: users.total,
-          pages: users.pages,
-          hasPrevious: options.page && users.pages && users.pages <= options.page,
-          hasNext: options.page && users.pages && users.pages > options.page,
-          results: users.docs,
-          status: 200,
-        });
+        let user = await User
+          .findOneAndUpdate({
+            _id: id, company
+          }, {
+            firstName,
+            lastName,
+            email,
+            venue
+          }, {new: true})
+          .populate([{
+            path: 'venue',
+            select: ['name', 'active']
+          }, {
+            path: 'company',
+            select: ['name', 'active']
+          }]);
+        if (user) {
+          // prevent return password
+          user = user.toObject();
+          if (user) delete user.password;
+
+          const response = {
+            message: "Usuario editado satisfactoriamente.",
+            user
+          };
+          res.status(200).json(response);
+        } else {
+          const response = {
+            message: "Usuario no encontardo",
+            id: id
+          };
+          res.status(200).json(response);
+        }
       }
     } catch (e) {
-      if (e) res.status(500).json(e);
+      console.log(e);
+      res.status(500).json(e);
     }
   }
 
@@ -227,7 +224,6 @@ class AdminUsersController {
       res.status(500).json(e);
     }
   }
-
 
   private getUsers(company: ObjectID, options: PaginateOptions): Promise<PaginateResult<IUserModel>> {
     return new Promise((resolve, reject) => {
