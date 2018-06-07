@@ -1,10 +1,11 @@
-import {Request, Response} from 'express';
+import {Response} from 'express';
 import redisClient from '../../services/redis.service';
 import FormModel, {IFormModel} from '../models/form.model';
 import ScaleModel, {IScaleModel} from '../models/scale.model';
 import ParticipantModel from '../models/participant.model';
 import UserModel from '../../app/models/user.model';
 import {ObjectID} from 'bson';
+import {IRequest} from "../../interfaces/global.interface";
 
 class FormController {
 
@@ -15,9 +16,10 @@ class FormController {
     this.changePreferred = this.changePreferred.bind(this);
   }
 
-  public async list(req: Request, res: Response) {
+  public async list(req: IRequest, res: Response) {
+    const company = req.user.company;
     try {
-      const forms = await this.getForms();
+      const forms = await this.getForms(company);
       res.json({
         data: forms,
         status: 200
@@ -30,14 +32,15 @@ class FormController {
     }
   }
 
-  public async changePreferred(req: Request, res: Response) {
+  public async changePreferred(req: IRequest, res: Response) {
     let {form} = req.body;
+    const company = req.user.company;
     try {
       if (req.user) {
-        const user = await UserModel.findOne({_id: req.user._id, active: true});
+        const user = await UserModel.findOne({_id: req.user._id, company,  active: true});
         // validate exist user
         if (user) {
-          form = await FormModel.findById(form);
+          form = await FormModel.findOne({_id: form, company});
           // validate exist form
           if (form) {
             user.preferred = form;
@@ -67,10 +70,10 @@ class FormController {
     }
   }
 
-  public async complete(req: Request, res: Response) {
+  public async complete(req: IRequest, res: Response) {
     const {id} = req.params;
     const {answers, vin} = req.body;
-
+    const company = req.user.company;
     // validate answers in body
     if (!answers){
       return res.status(400).json({
@@ -86,7 +89,7 @@ class FormController {
       });
     }
     try {
-      const form = await this.getFormWithScale(id);
+      const form = await this.getFormWithScale(id, company);
       if (form) {
         // initialize participant
         const newParticipant = new ParticipantModel({
@@ -191,10 +194,11 @@ class FormController {
     }
   }
 
-  public async detail(req: Request, res: Response) {
+  public async detail(req: IRequest, res: Response) {
     const {id} = req.params;
+    const company = req.user.company;
     try {
-      const form = await this.getForm(id);
+      const form = await this.getForm(id, company);
       // generate array of scale ids
       const scalesIds: any[] = [];
       form.sections.forEach((section) => {
@@ -206,7 +210,7 @@ class FormController {
         });
       });
       // get scales from db
-      const scales = await this.getScales(scalesIds);
+      const scales = await this.getScales(scalesIds, company);
       res.json({
         data: {
           form,
@@ -223,7 +227,7 @@ class FormController {
     }
   }
 
-  private getScales(ids: any[]): Promise<IScaleModel[]> {
+  private getScales(ids: any[], company: ObjectID): Promise<IScaleModel[]> {
     const keyCache = `scales-${ids.toString()}`;
     return new Promise((resolve, reject) => {
       redisClient.get(keyCache, async (error, result) => {
@@ -232,7 +236,8 @@ class FormController {
         } else {
           ScaleModel
             .find({
-              _id: {$in: ids}
+              _id: {$in: ids},
+              company
             }, {
               'updatedAt': false,
               'createdAt': false,
@@ -255,10 +260,10 @@ class FormController {
     });
   }
 
-  private getFormWithScale(id: string): Promise<IFormModel> {
+  private getFormWithScale(id: string, company: ObjectID): Promise<IFormModel> {
     return new Promise((resolve, reject) => {
       FormModel
-        .findById(id)
+        .findOne({_id: id, company})
         .populate('sections.questions.scale')
         .exec((err, form) => {
           if (err) {
@@ -272,7 +277,7 @@ class FormController {
     });
   }
 
-  private getForm(id: string): Promise<IFormModel> {
+  private getForm(id: string, company: ObjectID): Promise<IFormModel> {
     const keyCache = `form-${id}`;
     return new Promise((resolve, reject) => {
       redisClient.get(keyCache, async (error, result) => {
@@ -281,7 +286,7 @@ class FormController {
           resolve(JSON.parse(result));
         } else {
           FormModel
-            .findById(id, {
+            .findOne({_id: id, company}, {
               'company': false,
               'updatedAt': false,
               'createdAt': false,
@@ -306,7 +311,7 @@ class FormController {
     });
   }
 
-  private getForms(): Promise<IFormModel[]> {
+  private getForms(company: ObjectID): Promise<IFormModel[]> {
     const keyCache = `forms`;
     return new Promise((resolve, reject) => {
       redisClient.get(keyCache, async (error, result) => {
@@ -315,7 +320,9 @@ class FormController {
           resolve(JSON.parse(result));
         } else {
           FormModel
-            .find({}, {
+            .find({
+              company
+            }, {
               _id: 1,
               name: 1
             })

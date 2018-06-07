@@ -1,5 +1,6 @@
 import {AxiosError, AxiosResponse} from 'axios';
 import {Request} from 'express';
+import {IUser} from "./user.interface";
 
 export interface IResponseErrorData extends AxiosResponse {
   data: {
@@ -27,5 +28,5 @@ export interface IResponsePaginateData<S> {
 }
 
 export interface IRequest extends Request {
-  user: any;
+  user: IUser;
 }

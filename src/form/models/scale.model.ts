@@ -16,6 +16,10 @@ const choiceSchema = new mongoose.Schema({
 export interface IScaleModel extends IScale, mongoose.Document {}
 export const scaleSchema = new mongoose.Schema({
   name: String,
+  company: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Company'
+  },
   minValue: {type: Number, required: true},
   maxValue: {type: Number, required: true},
   choices: [choiceSchema],
