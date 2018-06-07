@@ -1,5 +1,4 @@
 import {AxiosError, AxiosResponse, CancelTokenSource, default as Axios} from "axios";
-import {IUser} from "../../../../../src/interfaces/user.interface";
 import ApiService from "../utils/axios";
 import {Dispatch} from "redux";
 import {ICar} from "../../../../../src/interfaces/car.interface";
@@ -65,7 +64,7 @@ export function getCarsAction() {
     dispatch(isLoadingAction(true));
     api.getCars()
       .then((response: AxiosResponse) => {
-        dispatch(loadCarsAction(response.data.result));
+        dispatch(loadCarsAction(response.data.results));
         dispatch(isLoadingAction(false));
       })
       .catch((err: AxiosError) => {
