@@ -279,6 +279,7 @@ class FormController {
                 else {
                     form_model_1.default
                         .findById(id, {
+                        'company': false,
                         'updatedAt': false,
                         'createdAt': false,
                         'active': false,

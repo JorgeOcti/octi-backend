@@ -23,6 +23,10 @@ const formSectionsSchema = new mongoose.Schema({
 });
 const formSchema = new mongoose.Schema({
     name: { type: String, required: true, trim: true },
+    company: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Company'
+    },
     description: { type: String, trim: true },
     sections: [formSectionsSchema],
     active: { type: Boolean, default: true }
