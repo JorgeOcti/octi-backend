@@ -6,6 +6,7 @@ import {
 import {
   IScaleModel
 } from "../form/models/scale.model";
+import {ICompany} from "./company.interface";
 
 export interface IFormQuestion {
   question: string;
@@ -32,6 +33,7 @@ export interface IFormSection {
 
 export interface IForm {
   name: string;
+  company: ICompany | any;
   description: string;
 
   sections: mongoose.Types.Array<IFormSectionModel>;

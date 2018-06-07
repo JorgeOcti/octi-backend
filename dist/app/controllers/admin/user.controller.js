@@ -35,8 +35,8 @@ class AdminUsersController {
             }
             else {
                 let user = await user_model_1.default.findByIdAndUpdate(id, req.body, { new: true });
-                // prevent return password
                 if (user) {
+                    // prevent return password
                     user = user.toObject();
                     if (user)
                         delete user.password;

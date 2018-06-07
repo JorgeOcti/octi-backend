@@ -33,6 +33,10 @@ const formSectionsSchema = new mongoose.Schema({
 export interface IFormModel extends IForm, mongoose.Document {}
 const formSchema = new mongoose.Schema({
   name: {type: String, required: true, trim: true},
+  company: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Company'
+  },
   description: {type: String, trim: true},
 
   sections: [formSectionsSchema],
