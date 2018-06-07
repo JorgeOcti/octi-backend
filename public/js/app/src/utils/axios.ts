@@ -91,6 +91,14 @@ export default class ApiService {
     );
   }
 
+  public getCars(): AxiosPromise {
+    return this.instance.get(
+      `/api/admin/cars/`,{
+        cancelToken: this.source.token
+      }
+    );
+  }
+
   public getTicket(ticket: number): AxiosPromise {
     return this.instance.get(
       `${window.urls.tickets}${ticket}/`

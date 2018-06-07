@@ -1,10 +1,35 @@
 import * as React from 'react';
 import AppContainer from "../../container/AppContainer";
+import {connect} from "react-redux";
+import {Dispatch} from "redux";
+import {RouteComponentProps} from "react-router";
+import {DashboardReduxAction, getCarsAction, IDashboardState} from "../../actions/dashboard";
+import * as PropTypes from "prop-types";
 
-class DashboardVinView extends React.Component {
+
+interface IPropsType extends RouteComponentProps<{ ticket: string }> {
+  dispatch: Dispatch<DashboardReduxAction>;
+  dashboard: IDashboardState;
+
+  getCarsAction(): void;
+}
+
+interface IStateType {
+  error: Error | null;
+}
+
+class DashboardVinView extends React.Component<IPropsType, IStateType> {
+
+  static propTypes = {
+    dashboard: PropTypes.object.isRequired,
+    dispatch: PropTypes.func.isRequired,
+    getUsersAction: PropTypes.func.isRequired,
+  };
 
   componentWillMount(){
-    document.title = 'OSA Andes | VIN'
+    // set the title of the page
+    document.title = 'OSA Andes | Listado de VINs';
+    this.props.getCarsAction();
   }
 
   render() {
@@ -25,4 +50,19 @@ class DashboardVinView extends React.Component {
   }
 }
 
-export default DashboardVinView;
+const mapStateToProps = (state: { dashboard: IDashboardState }) => {
+  return {
+    dashboard: state.dashboard
+  };
+};
+
+// const mapDispatchToProps = (dispatch: Dispatch<UserReduxAction> ) => {
+const mapDispatchToProps = (dispatch: any ) => {
+  return {
+    dispatch,
+    getCarsAction: () => dispatch(getCarsAction()),
+  };
+};
+
+export default connect<{}, {}, IPropsType>(mapStateToProps, mapDispatchToProps)(DashboardVinView);
+

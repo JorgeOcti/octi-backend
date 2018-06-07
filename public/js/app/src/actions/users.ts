@@ -237,8 +237,13 @@ export function getUsersAction(nextPage?: number) {
         dispatch(isLoadingAction(false));
       })
       .catch((err: AxiosError) => {
-        dispatch(isLoadingAction(false));
-        api.errorHandler(err);
+        // if the request is canceled
+        if (Axios.isCancel(err)) {
+          dispatch(isLoadingAction(true));
+        } else {
+          dispatch(isLoadingAction(false));
+          api.errorHandler(err);
+        }
       });
   };
 }
@@ -275,13 +280,8 @@ export function deleteUserAction(id: string) {
         }, 500);
       })
       .catch((err: AxiosError) => {
-        // if the request is canceled
-        if (Axios.isCancel(err)) {
-          dispatch(isLoadingAction(true));
-        } else {
-          dispatch(isLoadingAction(false));
-          api.errorHandler(err);
-        }
+        dispatch(isLoadingAction(false));
+        api.errorHandler(err);
       });
   }
 }
