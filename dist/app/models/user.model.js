@@ -71,7 +71,7 @@ userSchema.plugin(mongoosePaginate);
 userSchema.methods.fullName = function () {
     return (this.firstName.trim() + " " + this.lastName.trim());
 };
-userSchema.pre('save', function save(next) {
+userSchema.pre('save', function (next) {
     const user = this;
     if (!user.isModified('password')) {
         return next();

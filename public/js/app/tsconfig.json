@@ -10,7 +10,11 @@
         "moduleResolution": "node",
         "allowJs": true,
         "removeComments": true,
-        "lib": ["es6", "es7", "dom"],
+        "lib": [
+            "es6",
+            "es7",
+            "dom"
+        ],
         "target": "es5",
         "jsx": "react"
     },
@@ -23,9 +27,9 @@
         "jest"
     ],
     "include": [
-        "./src/**/*"
+        "./src/**/*.ts"
     ],
     "types": [
-     "typePatches"
-  ]
+        "typePatches"
+    ]
 }

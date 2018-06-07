@@ -6,11 +6,12 @@ import {
 } from "axios";
 import {Dispatch} from "redux";
 import ApiService from "../utils/axios";
-import {IUser} from "../../../../../src/interfaces/user.interface";
 import {
   showModal,
   statusFooterButttonsModal
 } from "../utils/common";
+
+import {IUser} from "../../../../../src/interfaces/user.interface";
 import {IVenue} from "../../../../../src/interfaces/venue.interface";
 
 export interface IUsersState {
