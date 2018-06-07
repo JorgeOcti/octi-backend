@@ -36,31 +36,29 @@ class FormController {
     let {form} = req.body;
     const company = req.user.company;
     try {
-      if (req.user) {
-        const user = await UserModel.findOne({_id: req.user._id, company,  active: true});
-        // validate exist user
-        if (user) {
-          form = await FormModel.findOne({_id: form, company});
-          // validate exist form
-          if (form) {
-            user.preferred = form;
-            await user.save();
-            res.status(200).json({
-              message: 'Se ha actualizado',
-              status: 200
-            });
-          } else {
-            res.status(400).json({
-              message: 'Formualrio no encontrado',
-              status: 400
-            });
-          }
+      const user = await UserModel.findOne({_id: req.user._id, company,  active: true});
+      // validate exist user
+      if (user) {
+        form = await FormModel.findOne({_id: form, company});
+        // validate exist form
+        if (form) {
+          user.preferred = form;
+          await user.save();
+          res.status(200).json({
+            message: 'Se ha actualizado',
+            status: 200
+          });
         } else {
           res.status(400).json({
-            message: 'Usuario no encontrado',
+            message: 'Formualrio no encontrado',
             status: 400
           });
         }
+      } else {
+        res.status(400).json({
+          message: 'Usuario no encontrado',
+          status: 400
+        });
       }
     } catch (e) {
       res.status(400).json({
