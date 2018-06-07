@@ -20,13 +20,14 @@ class AdminUsersController {
     res.render('app/index');
   }
 
-  public async apiEditUser(req: Request, res: Response) {
+  public async apiEditUser(req: IRequest, res: Response) {
     const {id} = req.params;
-    const {firstName, lastName, email} = req.body;
+    const company = req.user.company;
+    const {firstName, lastName, email, venue} = req.body;
     // validate fields required
-    if(!firstName || !firstName.length || !lastName || !lastName.length || !email || !email.length){
+    if(!firstName || !firstName.length || !lastName || !lastName.length || !email || !email.length || !venue || !venue.length){
       res.status(400).json({
-        message: 'firstName, lastName and email are required',
+        message: 'firstName, lastName, email and venue are required',
         status: 400
       });
     }
@@ -39,9 +40,24 @@ class AdminUsersController {
           status: 400
         });
       } else {
-        let user = await User.findByIdAndUpdate(id, req.body, {new: true}).populate('venue');
+        let user = await User
+          .findOneAndUpdate({
+            _id: id, company
+          }, {
+            firstName,
+            lastName,
+            email,
+            venue
+          }, {new: true})
+          .populate([{
+            path: 'venue',
+            select: ['name', 'active']
+          }, {
+            path: 'company',
+            select: ['name', 'active']
+          }]);
         if (user) {
-        // prevent return password
+          // prevent return password
           user = user.toObject();
           if (user) delete user.password;
 
@@ -116,7 +132,7 @@ class AdminUsersController {
           Tus Datos para acceder a la aplicación son:
           Usuario: ${newUser.email}
           Contraseña ${password}
-          En caso de dudas o consultas puedes contactarte asoporte@osacontrol.com o a nuestro twitter@TaskforceOSA.
+          En caso de dudas o consultas puedes contactarte asoporte@osacontrol.com o a nuestro twitter @TaskforceOSA.
           
           © 2018 OSA SpA. All rights reserved.`,
           view: 'account/welcome',
