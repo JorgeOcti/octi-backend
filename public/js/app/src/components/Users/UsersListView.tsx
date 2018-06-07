@@ -81,11 +81,13 @@ class UsersListView extends React.Component<IPropsType, IStateType> {
 
   private addUser(): void {
     const {changeTempUser} = this;
+    const {venues} = this.props.users;
     this.props.changeTempUserAction({
       _id: '',
       firstName: '',
       lastName: '',
-      email: ''
+      email: '',
+      venue: ''
     });
     this.props.loadDataAction(
       'Agregar Usuario',
@@ -100,15 +102,28 @@ class UsersListView extends React.Component<IPropsType, IStateType> {
         <div className="col-md-12">
           <div className="form-group">
             <label>Apellidos</label>
-            <input type="text" name="lastName"  className="form-control" maxLength={50} onChange={(e:React.ChangeEvent<HTMLInputElement>) => changeTempUser({lastName: e.target.value})}
+            <input type="text" name="lastName" className="form-control" maxLength={50} onChange={(e:React.ChangeEvent<HTMLInputElement>) => changeTempUser({lastName: e.target.value})}
             />
           </div>
         </div>
         <div className="col-md-12">
           <div className="form-group">
             <label>Email</label>
-            <input type="email" name="email"  className="form-control" maxLength={80} onChange={(e:React.ChangeEvent<HTMLInputElement>) => changeTempUser({email: e.target.value})}
+            <input type="email" name="email" className="form-control" maxLength={80} onChange={(e:React.ChangeEvent<HTMLInputElement>) => changeTempUser({email: e.target.value})}
             />
+          </div>
+        </div>
+        <div className="col-md-12">
+          <div className="form-group">
+            <label htmlFor="sel1">Sucursal</label>
+            <select className="form-control" name="venue" onChange={(e:React.ChangeEvent<HTMLSelectElement>) => changeTempUser({venue: e.target.value})}>
+              <option value="">Seleccione venue</option>
+              {
+                venues.map((venue) => (
+                  <option key={venue._id} value={venue._id}>{venue.name}</option>
+                ))
+              }
+            </select>
           </div>
         </div>
       </div>,
@@ -120,7 +135,7 @@ class UsersListView extends React.Component<IPropsType, IStateType> {
   }
 
   private processAddUser(): void{
-    const {firstName, lastName, email} = this.props.users.tempUser;
+    const {firstName, lastName, email, venue} = this.props.users.tempUser;
     // debugger;
     if (!firstName || !firstName.trim().length) {
       swal('Agregar usuario', 'El campo nombres es requerido', 'error');
@@ -128,6 +143,8 @@ class UsersListView extends React.Component<IPropsType, IStateType> {
       swal('Agregar usuario', 'El campo apellidos es requerido', 'error');
     } else if (!email || !email.trim().length) {
       swal('Agregar usuario', 'El campo email es requerido', 'error');
+    } else if (!venue || !venue.trim().length) {
+      swal('Agregar usuario', 'El campo sucursal es requerido', 'error');
     } else {
       statusFooterButttonsModal(true);
       this.props.AddUserAction();
@@ -136,7 +153,10 @@ class UsersListView extends React.Component<IPropsType, IStateType> {
 
   private editUser(user:IUser){
     const {changeTempUser} = this;
-    changeTempUser(user);
+    const {venues} = this.props.users;
+    const tmpUser = {...user};
+    tmpUser.venue = tmpUser.venue._id;
+    changeTempUser(tmpUser);
     this.props.loadDataAction(
       'Editar Usuario',
       <div className={'row'}>
@@ -158,6 +178,19 @@ class UsersListView extends React.Component<IPropsType, IStateType> {
             <input type="text" className="form-control" maxLength={100} defaultValue={user.email}  onChange={(e:React.ChangeEvent<HTMLInputElement>) => changeTempUser({email: e.target.value})}/>
           </div>
         </div>
+        <div className="col-md-12">
+          <div className="form-group">
+            <label htmlFor="sel1">Sucursal</label>
+            <select className="form-control" name="venue" onChange={(e:React.ChangeEvent<HTMLSelectElement>) => changeTempUser({venue: e.target.value})} defaultValue={user.venue._id}>
+              <option value="">Seleccione venue</option>
+              {
+                venues.map((venue) => (
+                  <option key={venue._id} value={venue._id}>{venue.name}</option>
+                ))
+              }
+            </select>
+          </div>
+        </div>
       </div>,
       <React.Fragment>
         <button type="button" className="btn btn-default" data-dismiss="modal">Cancelar</button>
@@ -167,7 +200,7 @@ class UsersListView extends React.Component<IPropsType, IStateType> {
   }
 
   private processEditUser(){
-    const {firstName, lastName, email} = this.props.users.tempUser;
+    const {firstName, lastName, email, venue} = this.props.users.tempUser;
     // debugger;
     if (!firstName || !firstName.trim().length) {
       swal('Agregar usuario', 'El campo nombres es requerido', 'error');
@@ -175,6 +208,8 @@ class UsersListView extends React.Component<IPropsType, IStateType> {
       swal('Agregar usuario', 'El campo apellidos es requerido', 'error');
     } else if (!email || !email.trim().length) {
       swal('Agregar usuario', 'El campo email es requerido', 'error');
+    } else if (!venue || !venue.trim().length) {
+      swal('Agregar usuario', 'El campo sucursal es requerido', 'error');
     } else {
       statusFooterButttonsModal(true);
       this.props.editUserAction();
@@ -182,12 +217,14 @@ class UsersListView extends React.Component<IPropsType, IStateType> {
     }
   }
 
-  private changeTempUser({_id, firstName, lastName, email}: ITempUser) {
+  private changeTempUser({_id, firstName, lastName, email, venue}: ITempUser) {
+    //fix tempUser
     const tempUser: ITempUser = {
       _id: _id ? _id : this.props.users.tempUser._id,
       firstName: firstName ? firstName : this.props.users.tempUser.firstName,
       lastName: lastName ? lastName : this.props.users.tempUser.lastName,
       email: email ? email : this.props.users.tempUser.email,
+      venue: venue ? venue : this.props.users.tempUser.venue
     };
     this.props.changeTempUserAction(tempUser);
   }
@@ -240,6 +277,7 @@ class UsersListView extends React.Component<IPropsType, IStateType> {
                   <tr>
                     <th>Nombre</th>
                     <th>Apellido</th>
+                    <th className="hidden-xs">Sucursal</th>
                     <th className="hidden-xs">Email</th>
                     <th className="hidden-xs">Modificado</th>
                     <th className="width-10" />
@@ -253,6 +291,7 @@ class UsersListView extends React.Component<IPropsType, IStateType> {
                         <tr key={user._id} id={`user-${user._id}`}>
                           <td>{user.firstName}</td>
                           <td>{user.lastName}</td>
+                          <td className="hidden-xs">{user.venue.name}</td>
                           <td className="hidden-xs">{user.email}</td>
                           <td className="hidden-xs">{moment(user.updatedAt).format('LLL')}</td>
                           <td className="text-blue pointer" onClick={() => this.editUser(user)}><i className="fa fa-pencil"/></td>

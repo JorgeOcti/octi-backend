@@ -3,9 +3,11 @@ import {Dispatch} from "redux";
 import ApiService from "../utils/axios";
 import {IUser} from "../../../../../src/interfaces/user.interface";
 import {showModal, statusFooterButttonsModal} from "../utils/common";
+import {IVenue} from "../../../../../src/interfaces/venue.interface";
 
 export interface IUsersState {
   users: IUser[];
+  venues: IVenue[];
   loading: boolean;
   tempUser: ITempUser,
   source: CancelTokenSource | null;
@@ -68,6 +70,7 @@ export interface ITempUser {
   firstName?: string;
   lastName?: string;
   email?: string;
+  venue?: string;
 }
 
 interface IChangeTempUser {
@@ -184,13 +187,38 @@ export function addUserAction() {
   };
 }
 
+interface ILoadVenuesUser {
+  type: '/USERS/LOAD_VENUES';
+  payload: {
+    venues: IVenue[];
+  }
+}
+
+export function loadVenuesUserAction(venues: IVenue[]): ILoadVenuesUser {
+  return {
+    type: '/USERS/LOAD_VENUES',
+    payload: {
+      venues
+    }
+  }
+}
 
 export function getUsersAction(nextPage?: number) {
   return (dispatch: Dispatch<UserReduxAction>, getState: () => {users: IUsersState}) => {
     const api: ApiService = new ApiService();
+    const state = getState();
+    // get venues only are empty
+    if(!state.users.venues.length){
+      api.getVenues()
+        .then((response: AxiosResponse) => {
+          dispatch(loadVenuesUserAction(response.data.results));
+        })
+        .catch((err: AxiosError) => {
+          api.errorHandler(err);
+        });
+    }
     dispatch(isLoadingAction(true));
     dispatch(cancelRequestAction(api.getSource()));
-    const state = getState();
     const page = nextPage ? nextPage : state.users.pagination.page;
     if(nextPage){
       dispatch(changePageAction(nextPage));
@@ -251,4 +279,4 @@ export function deleteUserAction(id: string) {
 }
 
 
-export type UserReduxAction = IIsLoading | ILoadUsers | IChangePage | IDeleteUser | ICancelRequest | IChangeTempUser | IChangeUser;
+export type UserReduxAction = IIsLoading | ILoadUsers | IChangePage | IDeleteUser | ICancelRequest | IChangeTempUser | IChangeUser | ILoadVenuesUser;

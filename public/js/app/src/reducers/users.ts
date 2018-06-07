@@ -4,18 +4,20 @@ import {IUser} from "../../../../../src/interfaces/user.interface";
 const initialState: IUsersState = {
   loading: true,
   users: [],
+  venues: [],
   source: null,
   tempUser: {
     _id:'',
     firstName: '',
     lastName: '',
-    email: ''
+    email: '',
+    venue:''
   },
   pagination: {
     count: 0,
     page: 1,
     pages: 1
-  }
+  },
 };
 
 export function users(state = initialState, action: UserReduxAction): IUsersState {
@@ -24,6 +26,11 @@ export function users(state = initialState, action: UserReduxAction): IUsersStat
       return {
         ...state,
         loading: action.payload.loading
+      };
+    case '/USERS/LOAD_VENUES':
+      return {
+        ...state,
+        venues: action.payload.venues
       };
     case '/USERS/CHANGE_TEMP_USER':
       return {

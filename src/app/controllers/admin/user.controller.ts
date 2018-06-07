@@ -39,7 +39,7 @@ class AdminUsersController {
           status: 400
         });
       } else {
-        let user = await User.findByIdAndUpdate(id, req.body, {new: true});
+        let user = await User.findByIdAndUpdate(id, req.body, {new: true}).populate('venue');
         if (user) {
         // prevent return password
           user = user.toObject();
@@ -68,10 +68,10 @@ class AdminUsersController {
   }
 
   public async apiAddUser(req: IRequest, res: Response) {
-    const {firstName, lastName, email} = req.body;
+    const {firstName, lastName, email, venue} = req.body;
     const company = req.user.company;
     // validate fields required
-    if(!firstName || !firstName.length || !lastName || !lastName.length || !email || !email.length){
+    if(!firstName || !firstName.length || !lastName || !lastName.length || !email || !email.length|| !venue || !venue.length){
       res.status(400).json({
         message: 'firstName, lastName and email are required',
         status: 400
@@ -94,13 +94,14 @@ class AdminUsersController {
           firstName,
           lastName,
           username: email,
+          venue,
           company,
           password,
           email
         }).save();
 
-        const error = await newUser.validate();
-        console.log(error);
+        // const error = await newUser.validate();
+        // console.log(error);
 
         // send welcome email
         const fullname: string = newUser.fullName();

@@ -85,6 +85,12 @@ export default class ApiService {
     );
   }
 
+  public getVenues(): AxiosPromise {
+    return this.instance.get(
+      `/api/admin/venues/`
+    );
+  }
+
   public getTicket(ticket: number): AxiosPromise {
     return this.instance.get(
       `${window.urls.tickets}${ticket}/`
