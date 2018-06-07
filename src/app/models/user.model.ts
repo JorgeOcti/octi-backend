@@ -28,12 +28,12 @@ const userSchema = new mongoose.Schema({
   company: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Company',
-    required: true
+    required: [true, 'La empresa es requerida'],
   },
   venue: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Venue',
-    required: true
+    required: [true, 'La sucursal es requerida'],
   },
   preferred: {
     type: mongoose.Schema.Types.ObjectId,
@@ -43,6 +43,7 @@ const userSchema = new mongoose.Schema({
   email: {
     type: String,
     trim: true,
+    required: [true, 'El email es requerido'],
     unique: true,
     index: true
   },

@@ -65,6 +65,7 @@ class AdminUsersController {
     }
     async apiAddUser(req, res) {
         const { firstName, lastName, email } = req.body;
+        const company = req.user.company;
         // validate fields required
         if (!firstName || !firstName.length || !lastName || !lastName.length || !email || !email.length) {
             res.status(400).json({
@@ -89,9 +90,12 @@ class AdminUsersController {
                     firstName,
                     lastName,
                     username: email,
+                    company,
                     password,
                     email
                 }).save();
+                const error = await newUser.validate();
+                console.log(error);
                 // send welcome email
                 const fullname = newUser.fullName();
                 queue.create('email', {
@@ -130,6 +134,7 @@ class AdminUsersController {
     }
     async apiUsers(req, res) {
         const { page, pageSize } = req.query;
+        const company = req.user.company;
         // paginate options
         const options = {
             select: {
@@ -153,7 +158,7 @@ class AdminUsersController {
             limit: parseInt(pageSize ? pageSize : 20),
         };
         try {
-            const users = await this.getUsers(options);
+            const users = await this.getUsers(company, options);
             // validate exist page
             if (options.page && users.pages && users.pages < options.page) {
                 res.status(400).json({
@@ -179,8 +184,9 @@ class AdminUsersController {
     }
     async apiDeleteUser(req, res) {
         const { id } = req.params;
+        const company = req.user.company;
         try {
-            const user = await user_model_1.default.findByIdAndRemove(id);
+            const user = await user_model_1.default.findOneAndRemove({ _id: id, company });
             if (user) {
                 const response = {
                     message: "Usuario eliminado satisfactoriamente.",
@@ -200,20 +206,14 @@ class AdminUsersController {
             res.status(500).json(e);
         }
     }
-    getUsers(options) {
+    getUsers(company, options) {
         return new Promise((resolve, reject) => {
-            user_model_1.default.paginate({}, options, (err, result) => {
+            user_model_1.default.paginate({ company }, options, (err, result) => {
                 if (err) {
                     return reject(err);
                 }
                 return resolve(result);
             });
-            // User.find({},(err, result) => {
-            //   if (err) {
-            //     return reject(err);
-            //   }
-            //   return resolve(result);
-            // })
         });
     }
 }

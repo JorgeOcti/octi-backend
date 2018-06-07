@@ -6,7 +6,11 @@ export interface IChoicesModel extends IChoices, mongoose.Types.Subdocument {}
 const choiceSchema = new mongoose.Schema({
   choice: {type: String, required: true, trim: true},
   value: {type: Number, required: true},
-  backgroundColor: {type: String, default: 'blue'},
+  backgroundColor: {
+    type: String,
+    enum: ['red', 'green', 'yellow', 'blue'],
+    default: 'blue'
+  },
   requireImage: {type: Boolean, default: false},
   requireComment: {type: Boolean, default: false},
   na: {type: Boolean, default: false},

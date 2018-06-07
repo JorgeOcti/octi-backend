@@ -4,7 +4,7 @@ const mongoose = require("mongoose");
 const participantChoiceSchema = new mongoose.Schema({
     choice: { type: String, required: true, trim: true },
     value: { type: Number, required: true },
-    backgroundColor: { type: String, default: '#ffffff' },
+    backgroundColor: { type: String, default: 'blue' },
     requireImage: { type: Boolean, default: false },
     requireComment: { type: Boolean, default: false },
     na: { type: Boolean, default: false },
@@ -50,6 +50,10 @@ const participantSchema = new mongoose.Schema({
         ref: 'Company',
         required: true
     },
+    description: {
+        type: String,
+        trim: true
+    },
     user: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User',
@@ -59,7 +63,6 @@ const participantSchema = new mongoose.Schema({
         type: String,
         trim: true
     },
-    description: { type: String, trim: true },
     sections: [participantSectionsSchema],
     qualification: { type: Number, default: 0 },
     active: { type: Boolean, default: true }

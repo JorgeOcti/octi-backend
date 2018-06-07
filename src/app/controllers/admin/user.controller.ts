@@ -2,6 +2,8 @@ import {Request, Response} from 'express';
 import User, {IUserModel} from '../../models/user.model';
 import {PaginateOptions, PaginateResult} from 'mongoose';
 import * as kue from 'kue';
+import {IRequest} from "../../../interfaces/global.interface";
+import {ObjectID} from "bson";
 const queue = kue.createQueue();
 
 class AdminUsersController {
@@ -65,8 +67,9 @@ class AdminUsersController {
     }
   }
 
-  public async apiAddUser(req: Request, res: Response) {
+  public async apiAddUser(req: IRequest, res: Response) {
     const {firstName, lastName, email} = req.body;
+    const company = req.user.company;
     // validate fields required
     if(!firstName || !firstName.length || !lastName || !lastName.length || !email || !email.length){
       res.status(400).json({
@@ -91,9 +94,13 @@ class AdminUsersController {
           firstName,
           lastName,
           username: email,
+          company,
           password,
           email
         }).save();
+
+        const error = await newUser.validate();
+        console.log(error);
 
         // send welcome email
         const fullname: string = newUser.fullName();
@@ -132,8 +139,9 @@ class AdminUsersController {
     }
   }
 
-  public async apiUsers(req: Request, res: Response) {
+  public async apiUsers(req: IRequest, res: Response) {
     const {page, pageSize} = req.query;
+    const company = req.user.company;
     // paginate options
     const options: PaginateOptions = {
       select: {
@@ -157,7 +165,7 @@ class AdminUsersController {
       limit: parseInt(pageSize ? pageSize : 20),
     };
     try {
-      const users = await this.getUsers(options);
+      const users = await this.getUsers(company, options);
       // validate exist page
       if (options.page && users.pages && users.pages < options.page) {
         res.status(400).json({
@@ -179,10 +187,11 @@ class AdminUsersController {
     }
   }
 
-  public async apiDeleteUser(req: Request, res: Response) {
+  public async apiDeleteUser(req: IRequest, res: Response) {
     const {id} = req.params;
+    const company = req.user.company;
     try {
-      const user = await User.findByIdAndRemove(id);
+      const user = await User.findOneAndRemove({_id: id, company});
       if (user) {
         const response = {
           message: "Usuario eliminado satisfactoriamente.",
@@ -203,20 +212,14 @@ class AdminUsersController {
   }
 
 
-  private getUsers(options: PaginateOptions): Promise<PaginateResult<IUserModel>> {
+  private getUsers(company: ObjectID, options: PaginateOptions): Promise<PaginateResult<IUserModel>> {
     return new Promise((resolve, reject) => {
-      User.paginate({}, options, (err, result) => {
+      User.paginate({company}, options, (err, result) => {
         if (err) {
           return reject(err);
         }
         return resolve(result);
       });
-      // User.find({},(err, result) => {
-      //   if (err) {
-      //     return reject(err);
-      //   }
-      //   return resolve(result);
-      // })
     });
   }
 }

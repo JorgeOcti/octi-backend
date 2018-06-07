@@ -26,6 +26,7 @@ appRouter.get('/companies/', Middlewares.isLoggedIn, AdminCompaniesController.in
 
 // venue companies
 appRouter.get('/venues/', Middlewares.isLoggedIn, AdminVenuesController.index);
+appRouter.get('/api/admin/venues/', Middlewares.isLoggedIn, AdminVenuesController.apiVenues);
 
 // web login
 appRouter.get('/account/login/', AppController.login);

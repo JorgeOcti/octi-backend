@@ -25,6 +25,7 @@ appRouter.delete('/api/admin/users/:id/', middlewares_1.default.isLoggedIn, user
 appRouter.get('/companies/', middlewares_1.default.isLoggedIn, companies_controller_1.default.index);
 // venue companies
 appRouter.get('/venues/', middlewares_1.default.isLoggedIn, venues_controller_1.default.index);
+appRouter.get('/api/admin/venues/', middlewares_1.default.isLoggedIn, venues_controller_1.default.apiVenues);
 // web login
 appRouter.get('/account/login/', app_controller_1.default.login);
 appRouter.post('/account/login/', app_controller_1.default.processLogin);
