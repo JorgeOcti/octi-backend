@@ -70,4 +70,6 @@ export interface IParticipant {
 
   qualification: number;
   active: boolean;
+  updatedAt: Date;
+  createdAt: Date;
 }

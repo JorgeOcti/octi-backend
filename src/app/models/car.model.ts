@@ -13,7 +13,13 @@ const carSchema = new mongoose.Schema({
   },
   company: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'Company'
+    ref: 'Company',
+    required: true
+  },
+  lastForm: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Participant',
+    default: null
   }
 }, {
   timestamps: true
@@ -33,7 +39,7 @@ carSchema.statics.findOneOrCreate = function (condition: any, create: any): Prom
   });
 };
 
-mongoose.plugin(mongoosePaginate);
+carSchema.plugin(mongoosePaginate);
 
 export type CarSchema = mongoose.Model<ICarModel> & PaginateModel<ICarModel> & {
   findOneOrCreate(condition: any, create: any): Promise<ICarModel>

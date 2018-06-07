@@ -160,6 +160,8 @@ class FormController {
         try {
           // save the participant
           await newParticipant.save();
+          car.lastForm = newParticipant;
+          await car.save();
           const today = moment().startOf('day');
           const tomorrow = moment(today).add(1, 'days');
           const count = await ParticipantModel.count({

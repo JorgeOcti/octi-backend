@@ -1,5 +1,6 @@
 import {Request, Response} from "express";
 import Car, {ICarModel} from '../models/car.model'
+import UserModel from '../models/user.model';
 import {ObjectID} from "bson";
 import {PaginateOptions, PaginateResult} from "mongoose";
 import {IRequest} from "../../interfaces/global.interface";
@@ -23,6 +24,10 @@ class AdminCompaniesController {
       select: {
         vin: true
       },
+      populate: [{
+        path: 'lastForm',
+        select: ['createdAt', 'user']
+      }],
       sort: {
         createdAt: -1
       },
@@ -31,6 +36,32 @@ class AdminCompaniesController {
     };
     try {
       const cars = await this.getCars(company, options);
+      const userIds: any[] = [];
+
+      for(const car of cars.docs){
+        userIds.push(car.lastForm.user);
+      }
+
+      // generate user object
+      let users: any = {};
+      for (const user of await UserModel.find({_id: {$in: userIds}}, {firstName: true, lastName: true})) {
+        users[user._id] = user;
+      }
+
+      // add user in lastForm
+      const carsWithUser = cars.docs.map((car) => {
+        if (car.lastForm.user && users.hasOwnProperty(car.lastForm.user)) {
+          car.lastForm.user = users[car.lastForm.user];
+          console.log(car.lastForm.user);
+        }
+        else {
+          car.lastForm.user = {
+            name: null
+          }
+        }
+        return car;
+      });
+
       // validate exist page
       if (options.page && cars.pages && cars.pages < options.page) {
         res.status(400).json({
@@ -43,7 +74,7 @@ class AdminCompaniesController {
           pages: cars.pages,
           hasPrevious: options.page && options.page > 1 && cars.pages && cars.pages >= options.page,
           hasNext: options.page && cars.pages && cars.pages > options.page,
-          results: cars.docs,
+          results: carsWithUser,
           status: 200,
         });
       }

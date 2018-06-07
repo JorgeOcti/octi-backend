@@ -5,6 +5,7 @@ import {Dispatch} from "redux";
 import {RouteComponentProps} from "react-router";
 import {DashboardReduxAction, getCarsAction, IDashboardState} from "../../actions/dashboard";
 import * as PropTypes from "prop-types";
+import * as moment from "moment";
 // backend interfaces
 import {ICar} from "../../../../../../src/interfaces/car.interface";
 
@@ -49,12 +50,12 @@ class DashboardVinView extends React.Component<IPropsType, IStateType> {
                 <thead>
                   <tr>
                     <th>VIN</th>
-                    {/*<th>Apellido</th>*/}
-                    {/*<th className="hidden-xs">Sucursal</th>*/}
+                    <th>Supervisor</th>
+                    <th className="hidden-xs">Último checkeo</th>
                     {/*<th className="hidden-xs">Email</th>*/}
                     {/*<th className="hidden-xs">Modificado</th>*/}
                     {/*<th className="width-10" />*/}
-                    {/*<th className="width-10" />*/}
+                    <th className="width-10" />
                   </tr>
                 </thead>
                 <tbody>
@@ -63,12 +64,13 @@ class DashboardVinView extends React.Component<IPropsType, IStateType> {
                       return (
                         <tr key={car._id} id={`car-${car._id}`}>
                           <td>{car.vin}</td>
-                          {/*<td>{user.lastName}</td>*/}
+                          <td>{`${car.lastForm.user ? `${car.lastForm.user.firstName} ${car.lastForm.user.lastName}` : ''}`}</td>
+                          <td>{moment(car.lastForm.createdAt).format('LLL')}</td>
                           {/*<td className="hidden-xs">{user.venue.name}</td>*/}
                           {/*<td className="hidden-xs">{user.email}</td>*/}
                           {/*<td className="hidden-xs">{moment(user.updatedAt).format('LLL')}</td>*/}
                           {/*<td className="text-blue pointer" onClick={() => this.editUser(user)}><i className="fa fa-pencil"/></td>*/}
-                          {/*<td className="text-red pointer" onClick={() => this.deleteUser(user)}><i className="fa fa-minus-circle"/></td>*/}
+                          <td className="text-primary pointer"><i className="fa fa-table"/></td>
                         </tr>
                       )
                     })

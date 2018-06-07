@@ -10,7 +10,13 @@ const carSchema = new mongoose.Schema({
     },
     company: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: 'Company'
+        ref: 'Company',
+        required: true
+    },
+    lastForm: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Participant',
+        default: null
     }
 }, {
     timestamps: true
@@ -31,7 +37,7 @@ carSchema.statics.findOneOrCreate = function (condition, create) {
         });
     });
 };
-mongoose.plugin(mongoosePaginate);
+carSchema.plugin(mongoosePaginate);
 const Car = mongoose.model('Car', carSchema);
 exports.default = Car;
 //# sourceMappingURL=car.model.js.map

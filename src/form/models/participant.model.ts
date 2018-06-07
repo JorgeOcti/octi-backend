@@ -1,5 +1,11 @@
 import * as mongoose from 'mongoose';
-import {IParticipant, IParticipantAnswer, IParticipantChoices, IParticipantScale, IParticipantSection} from "../../interfaces/participant.interface";
+import {
+  IParticipant,
+  IParticipantAnswer,
+  IParticipantChoices,
+  IParticipantScale,
+  IParticipantSection
+} from "../../interfaces/participant.interface";
 
 export interface IParticipantChoicesModel extends IParticipantChoices, mongoose.Types.Subdocument {}
 const participantChoiceSchema = new mongoose.Schema({

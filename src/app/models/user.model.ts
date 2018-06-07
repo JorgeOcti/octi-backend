@@ -85,7 +85,7 @@ userSchema.methods.fullName = function(): string {
 };
 
 userSchema.pre('save', function save(next) {
-  const user = this;
+  const user: any = this;
 
   if (!user.isModified('password')) { return next(); }
   bcrypt.genSalt(10, (err, salt) => {
