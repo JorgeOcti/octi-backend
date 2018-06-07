@@ -9,7 +9,7 @@ menus.push({
     {
       id: '1.1',
       icon: 'fa-circle-o',
-      text: 'Dashboard v1',
+      text: 'Listado de VINs',
       url: '/',
     },
     {

@@ -51,9 +51,8 @@ class JWTController {
                 email: req.body.username
             }, {
                 firstName: true,
-                username: true,
-                email: true,
                 lastName: true,
+                email: true,
                 password: true,
                 updatedAt: true,
                 preferred: true,
@@ -91,7 +90,8 @@ class JWTController {
                         else {
                             const userInfo = {
                                 _id: user._id,
-                                username: user.username,
+                                firstName: user.firstName,
+                                lastName: user.lastName,
                                 email: user.email,
                                 preferred: user.preferred,
                                 venue: {
@@ -169,7 +169,8 @@ class JWTController {
                                 else {
                                     const userInfo = {
                                         _id: user._id,
-                                        username: user.username,
+                                        firstName: user.firstName,
+                                        lastName: user.lastName,
                                         email: user.email,
                                         preferred: user.preferred,
                                         venue: {

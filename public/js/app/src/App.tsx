@@ -4,10 +4,10 @@ import { Provider } from 'react-redux';
 import { Route, RouteComponentProps, Router as BrowserRouter, Switch } from 'react-router-dom';
 import configureStore from './store/configureStore';
 import history from './utils/history';
-import TestDetailView from "./components/TestDetail/TestDetailView";
 import TestDetailView2 from "./components/TestDetail/TestDetailView2";
 import UsersListView from "./components/Users/UsersListView";
 import * as moment from 'moment';
+import DashboardVinView from "./components/DashboardVin/DashboardVinView";
 
 const store = configureStore();
 
@@ -21,7 +21,7 @@ const App = () => (
     <Provider store={store}>
         <BrowserRouter history={history}>
             <Switch>
-                <Route exact path="/" component={ TestDetailView }/>
+                <Route exact path="/" component={ DashboardVinView }/>
                 <Route exact path="/2/" component={ TestDetailView2 }/>
                 <Route exact path="/users/" component={ UsersListView }/>
                 {/*<Route exact path="/ticket/create/" component={ TicketCreateView }/>*/}
