@@ -7,6 +7,7 @@ import UserModel from '../../app/models/user.model';
 import CarModel from '../../app/models/car.model';
 import {ObjectID} from 'bson';
 import {IRequest} from "../../interfaces/global.interface";
+import moment = require("moment");
 
 class FormController {
 
@@ -159,10 +160,19 @@ class FormController {
         try {
           // save the participant
           await newParticipant.save();
+          const today = moment().startOf('day');
+          const tomorrow = moment(today).add(1, 'days');
+          const count = await ParticipantModel.count({
+            user: req.user,
+            createdAt: {
+              $gte: today.toDate(),
+              $lt: tomorrow.toDate()
+            }
+          });
           return res.json({
             data: {
               id,
-              answers,
+              count,
               vin,
               qualification: formQualification
             },

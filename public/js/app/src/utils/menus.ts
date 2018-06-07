@@ -2,7 +2,7 @@ const menus: any[] = [];
 // Dashboard
 menus.push({
   id: '1',
-  text: 'Dashboard',
+  text: 'Dashboards',
   icon: 'fa-dashboard',
   url: '/',
   items: [
@@ -12,19 +12,19 @@ menus.push({
       text: 'Listado de VINs',
       url: '/',
     },
-    {
-      id: '1.2',
-      icon: 'fa-circle-o',
-      text: 'Dashboard v2',
-      url: '/',
-    }
+    // {
+    //   id: '1.2',
+    //   icon: 'fa-circle-o',
+    //   text: 'Dashboard v2',
+    //   url: '/',
+    // }
   ]
 });
 
 // Report
 menus.push({
   id: '2',
-  text: 'Setting',
+  text: 'Settings',
   icon: 'fa-cog',
   url: '/users/',
   items: [
@@ -34,12 +34,12 @@ menus.push({
       text: 'Usuarios',
       url: '/users/'
     },
-    {
-      id: '2.2',
-      icon: 'fa-circle-o',
-      text: 'Setting v2',
-      url: '/'
-    }
+    // {
+    //   id: '2.2',
+    //   icon: 'fa-circle-o',
+    //   text: 'Setting v2',
+    //   url: '/'
+    // }
   ]
 });
 

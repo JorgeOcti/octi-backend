@@ -7,6 +7,7 @@ const participant_model_1 = require("../models/participant.model");
 const user_model_1 = require("../../app/models/user.model");
 const car_model_1 = require("../../app/models/car.model");
 const bson_1 = require("bson");
+const moment = require("moment");
 class FormController {
     constructor() {
         this.list = this.list.bind(this);
@@ -154,10 +155,19 @@ class FormController {
                 try {
                     // save the participant
                     await newParticipant.save();
+                    const today = moment().startOf('day');
+                    const tomorrow = moment(today).add(1, 'days');
+                    const count = await participant_model_1.default.count({
+                        user: req.user,
+                        createdAt: {
+                            $gte: today.toDate(),
+                            $lt: tomorrow.toDate()
+                        }
+                    });
                     return res.json({
                         data: {
                             id,
-                            answers,
+                            count,
                             vin,
                             qualification: formQualification
                         },
