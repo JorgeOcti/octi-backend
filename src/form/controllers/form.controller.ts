@@ -4,6 +4,7 @@ import FormModel, {IFormModel} from '../models/form.model';
 import ScaleModel, {IScaleModel} from '../models/scale.model';
 import ParticipantModel from '../models/participant.model';
 import UserModel from '../../app/models/user.model';
+import CarModel from '../../app/models/car.model';
 import {ObjectID} from 'bson';
 import {IRequest} from "../../interfaces/global.interface";
 
@@ -86,11 +87,12 @@ class FormController {
       const form = await this.getFormWithScale(id, company);
       if (form) {
         // initialize participant
+        const car = await CarModel.findOneOrCreate({vin}, {vin});
         const newParticipant = new ParticipantModel({
           name: form.name,
           company,
           form: form._id,
-          vin: vin ? vin : '',
+          car: car,
           description: form.description,
           user: req.user._id,
           active: form.active,

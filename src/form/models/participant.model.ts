@@ -55,6 +55,7 @@ const participantSectionsSchema = new mongoose.Schema({
 export interface IParticipantModel extends IParticipant, mongoose.Document {}
 const participantSchema = new mongoose.Schema({
   name: {type: String, required: true, trim: true},
+
   form: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Form',
@@ -65,21 +66,23 @@ const participantSchema = new mongoose.Schema({
     ref: 'Company',
     required: true
   },
-  description: {
-    type: String,
-    trim: true
-  },
 
   user: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
     index: true
   },
-  vin: {
+
+  car: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Car',
+    index: true
+  },
+
+  description: {
     type: String,
     trim: true
   },
-
   sections: [participantSectionsSchema],
 
   qualification: {type: Number, default: 0},

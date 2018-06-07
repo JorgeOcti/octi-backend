@@ -5,6 +5,10 @@ import {
   IParticipantSectionModel,
   IScaleParticipantModel
 } from "../form/models/participant.model";
+import {IUserModel} from "../app/models/user.model";
+import {IFormModel} from "../form/models/form.model";
+import {ICompanyModel} from "../app/models/company.model";
+import {ICarModel} from "../app/models/car.model";
 
 export interface IParticipantChoices {
   choice: string;
@@ -53,7 +57,12 @@ export interface IParticipantSection {
 
 export interface IParticipant {
   name: string;
-  user: string;
+
+  form: IFormModel;
+  company: ICompanyModel;
+
+  user: IUserModel;
+  car: ICarModel;
 
   description: string;
 

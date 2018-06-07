@@ -31,10 +31,10 @@ class AppController {
   }
 
   public processLogin(req: Request, res: Response, next: NextFunction) {
-    if (req.user){
+    if (req.user) {
       return res.redirect('/');
     }
-    else{
+    else {
       passport.authenticate('local', (err, user, info) => {
         if (err) {
           return next(err); // will generate a 500 error

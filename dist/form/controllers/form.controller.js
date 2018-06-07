@@ -5,6 +5,7 @@ const form_model_1 = require("../models/form.model");
 const scale_model_1 = require("../models/scale.model");
 const participant_model_1 = require("../models/participant.model");
 const user_model_1 = require("../../app/models/user.model");
+const car_model_1 = require("../../app/models/car.model");
 const bson_1 = require("bson");
 class FormController {
     constructor() {
@@ -29,40 +30,34 @@ class FormController {
             });
         }
     }
-    async changePreferred(req, res) {
-        let { form } = req.body;
+    async detail(req, res) {
+        const { id } = req.params;
         const company = req.user.company;
         try {
-            const user = await user_model_1.default.findOne({ _id: req.user._id, company, active: true });
-            // validate exist user
-            if (user) {
-                form = await form_model_1.default.findOne({ _id: form, company });
-                // validate exist form
-                if (form) {
-                    user.preferred = form;
-                    await user.save();
-                    res.status(200).json({
-                        message: 'Se ha actualizado',
-                        status: 200
-                    });
-                }
-                else {
-                    res.status(400).json({
-                        message: 'Formualrio no encontrado',
-                        status: 400
-                    });
-                }
-            }
-            else {
-                res.status(400).json({
-                    message: 'Usuario no encontrado',
-                    status: 400
+            const form = await this.getForm(id, company);
+            // generate array of scale ids
+            const scalesIds = [];
+            form.sections.forEach((section) => {
+                section.questions.forEach((question) => {
+                    const scaleID = question.scale.toString();
+                    if (!scalesIds.includes(scaleID)) {
+                        scalesIds.push(scaleID);
+                    }
                 });
-            }
+            });
+            // get scales from db
+            const scales = await this.getScales(scalesIds, company);
+            res.json({
+                data: {
+                    form,
+                    scales
+                },
+                status: 200
+            });
         }
         catch (e) {
             res.status(400).json({
-                error: 'Ha ocurrido un error',
+                error: 'No se encontro formularío  400',
                 status: 400
             });
         }
@@ -89,11 +84,12 @@ class FormController {
             const form = await this.getFormWithScale(id, company);
             if (form) {
                 // initialize participant
+                const car = await car_model_1.default.findOneOrCreate({ vin }, { vin });
                 const newParticipant = new participant_model_1.default({
                     name: form.name,
                     company,
                     form: form._id,
-                    vin: vin ? vin : '',
+                    car: car,
                     description: form.description,
                     user: req.user._id,
                     active: form.active,
@@ -191,85 +187,69 @@ class FormController {
             });
         }
     }
-    async detail(req, res) {
-        const { id } = req.params;
+    async changePreferred(req, res) {
+        let { form } = req.body;
         const company = req.user.company;
         try {
-            const form = await this.getForm(id, company);
-            // generate array of scale ids
-            const scalesIds = [];
-            form.sections.forEach((section) => {
-                section.questions.forEach((question) => {
-                    const scaleID = question.scale.toString();
-                    if (!scalesIds.includes(scaleID)) {
-                        scalesIds.push(scaleID);
-                    }
+            const user = await user_model_1.default.findOne({ _id: req.user._id, company, active: true });
+            // validate exist user
+            if (user) {
+                form = await form_model_1.default.findOne({ _id: form, company });
+                // validate exist form
+                if (form) {
+                    user.preferred = form;
+                    await user.save();
+                    res.status(200).json({
+                        message: 'Se ha actualizado',
+                        status: 200
+                    });
+                }
+                else {
+                    res.status(400).json({
+                        message: 'Formualrio no encontrado',
+                        status: 400
+                    });
+                }
+            }
+            else {
+                res.status(400).json({
+                    message: 'Usuario no encontrado',
+                    status: 400
                 });
-            });
-            // get scales from db
-            const scales = await this.getScales(scalesIds, company);
-            res.json({
-                data: {
-                    form,
-                    scales
-                },
-                status: 200
-            });
+            }
         }
         catch (e) {
             res.status(400).json({
-                error: 'No se encontro formularío  400',
+                error: 'Ha ocurrido un error',
                 status: 400
             });
         }
     }
-    getScales(ids, company) {
-        const keyCache = `scales-${ids.toString()}`;
+    getForms(company) {
+        const keyCache = `forms`;
         return new Promise((resolve, reject) => {
             redis_service_1.default.get(keyCache, async (error, result) => {
                 if (result) {
+                    console.log(`cache: ${keyCache}`);
                     resolve(JSON.parse(result));
                 }
                 else {
-                    scale_model_1.default
+                    form_model_1.default
                         .find({
-                        _id: { $in: ids },
                         company
                     }, {
-                        'updatedAt': false,
-                        'createdAt': false,
-                        'active': false,
-                        'company': false,
-                        'minValue': false,
-                        'maxValue': false,
-                        'choices.na': false,
-                        '__v': false
+                        _id: 1,
+                        name: 1
                     })
                         .lean()
-                        .exec((err, scales) => {
+                        .exec((err, forms) => {
                         if (err) {
                             return reject(err);
                         }
-                        redis_service_1.default.setex(keyCache, 30, JSON.stringify(scales));
-                        return resolve(scales);
+                        redis_service_1.default.setex(keyCache, 60 * 2, JSON.stringify(forms));
+                        return resolve(forms);
                     });
                 }
-            });
-        });
-    }
-    getFormWithScale(id, company) {
-        return new Promise((resolve, reject) => {
-            form_model_1.default
-                .findOne({ _id: id, company })
-                .populate('sections.questions.scale')
-                .exec((err, form) => {
-                if (err) {
-                    return reject(err);
-                }
-                if (form) {
-                    return resolve(form);
-                }
-                return reject('No se encontro formularío');
             });
         });
     }
@@ -307,29 +287,51 @@ class FormController {
             });
         });
     }
-    getForms(company) {
-        const keyCache = `forms`;
+    getFormWithScale(id, company) {
+        return new Promise((resolve, reject) => {
+            form_model_1.default
+                .findOne({ _id: id, company })
+                .populate('sections.questions.scale')
+                .exec((err, form) => {
+                if (err) {
+                    return reject(err);
+                }
+                if (form) {
+                    return resolve(form);
+                }
+                return reject('No se encontro formularío');
+            });
+        });
+    }
+    getScales(ids, company) {
+        const keyCache = `scales-${ids.toString()}`;
         return new Promise((resolve, reject) => {
             redis_service_1.default.get(keyCache, async (error, result) => {
                 if (result) {
-                    console.log(`cache: ${keyCache}`);
                     resolve(JSON.parse(result));
                 }
                 else {
-                    form_model_1.default
+                    scale_model_1.default
                         .find({
+                        _id: { $in: ids },
                         company
                     }, {
-                        _id: 1,
-                        name: 1
+                        'updatedAt': false,
+                        'createdAt': false,
+                        'active': false,
+                        'company': false,
+                        'minValue': false,
+                        'maxValue': false,
+                        'choices.na': false,
+                        '__v': false
                     })
                         .lean()
-                        .exec((err, forms) => {
+                        .exec((err, scales) => {
                         if (err) {
                             return reject(err);
                         }
-                        redis_service_1.default.setex(keyCache, 60 * 2, JSON.stringify(forms));
-                        return resolve(forms);
+                        redis_service_1.default.setex(keyCache, 30, JSON.stringify(scales));
+                        return resolve(scales);
                     });
                 }
             });

@@ -50,16 +50,17 @@ const participantSchema = new mongoose.Schema({
         ref: 'Company',
         required: true
     },
-    description: {
-        type: String,
-        trim: true
-    },
     user: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User',
         index: true
     },
-    vin: {
+    car: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Car',
+        index: true
+    },
+    description: {
         type: String,
         trim: true
     },
