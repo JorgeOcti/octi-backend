@@ -56,6 +56,7 @@ export interface IParticipantSection {
 }
 
 export interface IParticipant {
+  _id: any;
   name: string;
 
   form: IFormModel;

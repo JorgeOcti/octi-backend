@@ -1,20 +1,62 @@
 import {Request, Response} from "express";
-import Car, {ICarModel} from '../models/car.model'
+import CarModel, {ICarModel} from '../models/car.model'
 import UserModel from '../models/user.model';
 import {ObjectID} from "bson";
 import {PaginateOptions, PaginateResult} from "mongoose";
 import {IRequest} from "../../interfaces/global.interface";
+import ParticipantModel from "../../form/models/participant.model";
 
 class AdminCompaniesController {
   constructor() {
     this.vinDashboard = this.vinDashboard.bind(this);
     this.apiCars = this.apiCars.bind(this);
+    this.apiCarDetail = this.apiCarDetail.bind(this);
     this.getCars = this.getCars.bind(this);
   }
 
   public vinDashboard(req: Request, res: Response) {
     res.render('app/index');
   }
+
+  public async apiCarDetail(req: IRequest, res: Response) {
+    const company = req.user.company;
+    const {id} = req.params;
+    try {
+      const car = await CarModel
+        .findOne({
+            _id: id,
+            company
+          },
+          {
+            vin: true
+          })
+        .lean();
+      const response: any = {...car};
+      response['participants'] = await ParticipantModel
+        .find({car, company}, {
+          name: true,
+          user: true,
+          createdAt: true,
+          qualification: true
+        })
+        .sort({
+          createdAt: -1
+        })
+        .populate([{
+          path: 'user',
+          select:['firstName', 'lastName']
+        }])
+        .lean();
+      res.json({
+        data: response,
+        status: 200
+      });
+
+    } catch (e) {
+      if (e) res.status(500).json(e);
+    }
+  }
+
 
   public async apiCars(req: IRequest, res: Response) {
     const company = req.user.company;
@@ -85,7 +127,7 @@ class AdminCompaniesController {
 
   private getCars(company: ObjectID, options: PaginateOptions): Promise<PaginateResult<ICarModel>> {
     return new Promise((resolve, reject) => {
-      Car.paginate({company}, options, (err, result) => {
+      CarModel.paginate({company}, options, (err, result) => {
         if (err) {
           return reject(err);
         }

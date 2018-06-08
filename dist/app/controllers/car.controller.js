@@ -2,14 +2,54 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 const car_model_1 = require("../models/car.model");
 const user_model_1 = require("../models/user.model");
+const participant_model_1 = require("../../form/models/participant.model");
 class AdminCompaniesController {
     constructor() {
         this.vinDashboard = this.vinDashboard.bind(this);
         this.apiCars = this.apiCars.bind(this);
+        this.apiCarDetail = this.apiCarDetail.bind(this);
         this.getCars = this.getCars.bind(this);
     }
     vinDashboard(req, res) {
         res.render('app/index');
+    }
+    async apiCarDetail(req, res) {
+        const company = req.user.company;
+        const { id } = req.params;
+        try {
+            const car = await car_model_1.default
+                .findOne({
+                _id: id,
+                company
+            }, {
+                vin: true
+            })
+                .lean();
+            const response = { ...car };
+            response['participants'] = await participant_model_1.default
+                .find({ car, company }, {
+                name: true,
+                user: true,
+                createdAt: true,
+                qualification: true
+            })
+                .sort({
+                createdAt: -1
+            })
+                .populate([{
+                    path: 'user',
+                    select: ['firstName', 'lastName']
+                }])
+                .lean();
+            res.json({
+                data: response,
+                status: 200
+            });
+        }
+        catch (e) {
+            if (e)
+                res.status(500).json(e);
+        }
     }
     async apiCars(req, res) {
         const company = req.user.company;

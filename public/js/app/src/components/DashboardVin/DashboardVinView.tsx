@@ -38,7 +38,7 @@ class DashboardVinView extends React.Component<IPropsType, IStateType> {
   public render(): React.ReactElement<IPropsType> {
     const {loading, cars} = this.props.dashboard;
     return (
-      <AppContainer title='' cMenu='1' cSubMenu='1.1' cAction='List'>
+      <AppContainer title='' cMenu='1' cSubMenu='1.1'>
         <section className="content">
           <div className="box">
             <div className="box-header with-border"><h3 className="box-title">Listado de VINs</h3>
@@ -70,7 +70,9 @@ class DashboardVinView extends React.Component<IPropsType, IStateType> {
                           {/*<td className="hidden-xs">{user.email}</td>*/}
                           {/*<td className="hidden-xs">{moment(user.updatedAt).format('LLL')}</td>*/}
                           {/*<td className="text-blue pointer" onClick={() => this.editUser(user)}><i className="fa fa-pencil"/></td>*/}
-                          <td className="text-primary pointer"><i className="fa fa-table"/></td>
+                          <td className="text-primary pointer" onClick={() => this.props.history.push(`/car/${car._id}`)}>
+                            <i className="fa fa-table"/>
+                          </td>
                         </tr>
                       )
                     })

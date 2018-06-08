@@ -4,7 +4,7 @@ const initialState: IDashboardState = {
   loading: true,
   source: null,
   cars: [],
-
+  car: null
 };
 
 export function dashboard(state = initialState, action: DashboardReduxAction): IDashboardState {
@@ -18,6 +18,11 @@ export function dashboard(state = initialState, action: DashboardReduxAction): I
       return {
         ...state,
         cars: action.payload.cars
+      };
+    case '/DASHBOARD/LOAD_CAR':
+      return {
+        ...state,
+        car: action.payload.car
       };
     case '/DASHBOARD/CANCEL_REQUEST':
       return {

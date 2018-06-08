@@ -7,6 +7,7 @@ export interface IDashboardState {
   loading: boolean;
   source: CancelTokenSource | null;
   cars: any[];
+  car: ICar | null;
 }
 
 interface IIsLoading {
@@ -57,6 +58,22 @@ export function loadCarsAction(cars: ICar[]): ILoadCars {
   }
 }
 
+interface ILoadCar {
+  type: '/DASHBOARD/LOAD_CAR';
+  payload: {
+    car: ICar;
+  }
+}
+
+export function loadCarAction(car: ICar): ILoadCar {
+  return {
+    type: '/DASHBOARD/LOAD_CAR',
+    payload: {
+      car
+    }
+  }
+}
+
 export function getCarsAction() {
   return (dispatch: Dispatch<DashboardReduxAction>) => {
     const api: ApiService = new ApiService();
@@ -79,4 +96,26 @@ export function getCarsAction() {
   };
 }
 
-export type DashboardReduxAction = IIsLoading | ICancelRequest | ILoadCars;
+export function getCarAction(id: string) {
+  return (dispatch: Dispatch<DashboardReduxAction>) => {
+    const api: ApiService = new ApiService();
+    dispatch(cancelRequestAction(api.getSource()));
+    dispatch(isLoadingAction(true));
+    api.getCar(id)
+      .then((response: AxiosResponse) => {
+        dispatch(loadCarAction(response.data.data));
+        dispatch(isLoadingAction(false));
+      })
+      .catch((err: AxiosError) => {
+        // if the request is canceled
+        if (Axios.isCancel(err)) {
+          dispatch(isLoadingAction(true));
+        } else {
+          dispatch(isLoadingAction(false));
+          api.errorHandler(err);
+        }
+      });
+  };
+}
+
+export type DashboardReduxAction = IIsLoading | ICancelRequest | ILoadCars | ILoadCar ;
