@@ -1,17 +1,40 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 const car_model_1 = require("../models/car.model");
-const user_model_1 = require("../models/user.model");
-const participant_model_1 = require("../../form/models/participant.model");
+const mongoose = require("mongoose");
+// import ParticipantModel from "../../form/models/participant.model";
 class AdminCompaniesController {
     constructor() {
         this.vinDashboard = this.vinDashboard.bind(this);
+        this.vinDashboardDetail = this.vinDashboardDetail.bind(this);
         this.apiCars = this.apiCars.bind(this);
         this.apiCarDetail = this.apiCarDetail.bind(this);
         this.getCars = this.getCars.bind(this);
     }
     vinDashboard(req, res) {
         res.render('app/index');
+    }
+    async vinDashboardDetail(req, res) {
+        const { id } = req.params;
+        const company = req.user.company;
+        // validate params
+        if (!mongoose.Types.ObjectId.isValid(id)) {
+            return res.status(404).render('404');
+        }
+        try {
+            // validate car exist
+            const car = await car_model_1.default.findOne({ _id: id, company });
+            if (!car) {
+                return res.status(404).render('404');
+            }
+            else {
+                res.render('app/index');
+            }
+        }
+        catch (e) {
+            if (e)
+                res.status(500).send(e);
+        }
     }
     async apiCarDetail(req, res) {
         const company = req.user.company;
@@ -24,27 +47,31 @@ class AdminCompaniesController {
             }, {
                 vin: true
             })
-                .lean();
-            const response = { ...car };
-            response['participants'] = await participant_model_1.default
-                .find({ car, company }, {
-                name: true,
-                user: true,
-                createdAt: true,
-                qualification: true
-            })
-                .sort({
-                createdAt: -1
-            })
                 .populate([{
-                    path: 'user',
-                    select: ['firstName', 'lastName']
-                }])
-                .lean();
-            res.json({
-                data: response,
-                status: 200
-            });
+                    path: 'participants',
+                    select: ['name', 'user', 'createdAt', 'qualification'],
+                    options: {
+                        sort: {
+                            createdAt: -1
+                        }
+                    },
+                    populate: [{
+                            path: 'user',
+                            select: ['firstName', 'lastName']
+                        }]
+                }]).lean();
+            if (!car) {
+                res.status(404).json({
+                    messsage: 'Auto no encontrado.',
+                    status: 404
+                });
+            }
+            else {
+                res.json({
+                    data: car,
+                    status: 200
+                });
+            }
         }
         catch (e) {
             if (e)
@@ -61,7 +88,11 @@ class AdminCompaniesController {
             },
             populate: [{
                     path: 'lastForm',
-                    select: ['createdAt', 'user']
+                    select: ['createdAt', 'user'],
+                    populate: [{
+                            path: 'user',
+                            select: ['firstName', 'lastName']
+                        }]
                 }],
             sort: {
                 createdAt: -1
@@ -71,28 +102,6 @@ class AdminCompaniesController {
         };
         try {
             const cars = await this.getCars(company, options);
-            const userIds = [];
-            for (const car of cars.docs) {
-                userIds.push(car.lastForm.user);
-            }
-            // generate user object
-            let users = {};
-            for (const user of await user_model_1.default.find({ _id: { $in: userIds } }, { firstName: true, lastName: true })) {
-                users[user._id] = user;
-            }
-            // add user in lastForm
-            const carsWithUser = cars.docs.map((car) => {
-                if (car.lastForm.user && users.hasOwnProperty(car.lastForm.user)) {
-                    car.lastForm.user = users[car.lastForm.user];
-                    console.log(car.lastForm.user);
-                }
-                else {
-                    car.lastForm.user = {
-                        name: null
-                    };
-                }
-                return car;
-            });
             // validate exist page
             if (options.page && cars.pages && cars.pages < options.page) {
                 res.status(400).json({
@@ -106,7 +115,7 @@ class AdminCompaniesController {
                     pages: cars.pages,
                     hasPrevious: options.page && options.page > 1 && cars.pages && cars.pages >= options.page,
                     hasNext: options.page && cars.pages && cars.pages > options.page,
-                    results: carsWithUser,
+                    results: cars.docs,
                     status: 200,
                 });
             }

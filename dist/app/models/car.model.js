@@ -21,6 +21,12 @@ const carSchema = new mongoose.Schema({
 }, {
     timestamps: true
 });
+carSchema.virtual('participants', {
+    ref: 'Participant',
+    localField: '_id',
+    foreignField: 'car',
+    justOne: false
+});
 carSchema.statics.findOneOrCreate = function (condition, create) {
     const model = this;
     return new Promise((resolve, reject) => {

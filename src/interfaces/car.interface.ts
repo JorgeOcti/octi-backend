@@ -6,6 +6,7 @@ export interface ICar {
   vin: string;
   company: ICompany | any;
   lastForm: IParticipant | any;
+  participants?: IParticipant[];
   updatedAt: Date;
   createdAt: Date;
 }

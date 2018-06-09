@@ -25,6 +25,13 @@ const carSchema = new mongoose.Schema({
   timestamps: true
 });
 
+carSchema.virtual('participants', {
+  ref: 'Participant', // The model to use
+  localField: '_id', // Find field in this model
+  foreignField: 'car', // is equal to field in another model
+  justOne: false
+});
+
 carSchema.statics.findOneOrCreate = function (condition: any, create: any): Promise<ICarModel> {
   const model = this;
   return new Promise((resolve, reject) => {
