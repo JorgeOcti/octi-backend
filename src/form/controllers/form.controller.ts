@@ -28,7 +28,7 @@ class FormController {
       });
     } catch (e) {
       res.status(400).json({
-        error: 'Ha ocurrido un error',
+        message: 'Ha ocurrido un error',
         status: 400
       });
     }
@@ -60,7 +60,7 @@ class FormController {
       });
     } catch (e) {
       res.status(400).json({
-        error: 'No se encontro formularío  400',
+        message: 'No se encontro formularío',
         status: 400
       });
     }
@@ -73,14 +73,14 @@ class FormController {
     // validate answers in body
     if (!answers){
       return res.status(400).json({
-        error: 'Debes enviar las respuestas',
+        message: 'Debes enviar las respuestas',
         status: 400
       });
     }
     // validate vin in body
     if (!vin){
       return res.status(400).json({
-        error: 'Debes enviar el vin',
+        message: 'Debes enviar el vin',
         status: 400
       });
     }
@@ -183,7 +183,7 @@ class FormController {
         } catch (e) {
           // return error, if the form could not be recorded
           return res.status(400).json({
-            error: e,
+            message: e,
             status: 400
           });
         }
@@ -191,13 +191,13 @@ class FormController {
       else {
         // return error, if the form could not find
         return res.status(400).json({
-          error: 'No se ha encontrado el formularío',
+          message: 'No se ha encontrado el formularío',
           status: 400
         });
       }
     } catch (e) {
       return res.status(400).json({
-        error: e,
+        message: e,
         status: 400
       });
     }
@@ -233,7 +233,7 @@ class FormController {
       }
     } catch (e) {
       res.status(400).json({
-        error: 'Ha ocurrido un error',
+        message: 'Ha ocurrido un error',
         status: 400
       });
     }

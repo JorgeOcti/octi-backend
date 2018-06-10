@@ -222,7 +222,7 @@ class AdminCompaniesController {
             // validate exist page
             if (options.page && cars.pages && cars.pages < options.page) {
                 res.status(400).json({
-                    error: 'La página solicitada no existe.',
+                    message: 'La página solicitada no existe.',
                     status: 200,
                 });
             }
