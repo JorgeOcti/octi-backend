@@ -34,8 +34,8 @@ class AdminVenuesController {
       // validate exist page
       if (options.page && venues.pages && venues.pages < options.page) {
         res.status(400).json({
-          error: 'La página solicitada no existe.',
-          status: 200,
+          message: 'La página solicitada no existe.',
+          status: 400,
         });
       } else {
         res.json({

@@ -39,7 +39,7 @@ class JWTController {
       });
     } else {
       res.status(400).json({
-        error: 'username and password are required',
+        message: 'username and password are required',
         status: 400
       });
     }
@@ -74,12 +74,12 @@ class JWTController {
           }
           if (!user || !user.comparePasswordSync(req.body.password)) {
             res.status(401).json({
-              error: 'Authentication failed. Invalid user or password.',
+              message: 'Authentication failed. Invalid user or password.',
               status: 401
             });
           } else if (!user.active) {
             res.status(401).json({
-              error: 'User is inactive',
+              message: 'User is inactive',
               status: 401
             });
           } else {
@@ -140,14 +140,14 @@ class JWTController {
     const {refreshToken} = req.body;
     if(!refreshToken){
       res.status(400).json({
-        error: 'refresh token is required',
+        message: 'refresh token is required',
         status: 400
       });
     } else{
       jwt.verify(refreshToken, req.app.locals.secretKey, (err: any, decode: any)=>{
         if (err) {
           res.status(401).json({
-            error: err.message,
+            message: err.message,
             status: 401
           });
         } else {
@@ -166,7 +166,7 @@ class JWTController {
               }
               else if (!user.active) {
                 res.status(401).json({
-                  error: 'User is inactive',
+                  message: 'User is inactive',
                   status: 401
                 });
               } else {
@@ -219,7 +219,7 @@ class JWTController {
       jwt.verify(req.headers.authorization.split(' ')[1], req.app.locals.secretKey, (err: any, decode: any) => {
         if (err) {
           res.status(401).json({
-            error: err.message,
+            message: err.message,
             status: 401
           });
         }
@@ -228,7 +228,7 @@ class JWTController {
       });
     } else {
       res.status(403).json({
-        error: 'Forbidden',
+        message: 'Forbidden',
         status: 403
       });
       next();
