@@ -2,7 +2,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 const car_model_1 = require("../models/car.model");
 const mongoose = require("mongoose");
-// import ParticipantModel from "../../form/models/participant.model";
+const participant_model_1 = require("../../form/models/participant.model");
 class AdminCompaniesController {
     constructor() {
         this.vinDashboard = this.vinDashboard.bind(this);
@@ -10,6 +10,7 @@ class AdminCompaniesController {
         this.apiCars = this.apiCars.bind(this);
         this.apiCarDetail = this.apiCarDetail.bind(this);
         this.getCars = this.getCars.bind(this);
+        this.apiParticipantDetail = this.apiParticipantDetail.bind(this);
     }
     vinDashboard(req, res) {
         res.render('app/index');
@@ -23,7 +24,9 @@ class AdminCompaniesController {
         }
         try {
             // validate car exist
-            const car = await car_model_1.default.findOne({ _id: id, company });
+            const car = await car_model_1.default.findOne({
+                _id: id, company
+            });
             if (!car) {
                 return res.status(404).render('404');
             }
@@ -34,6 +37,43 @@ class AdminCompaniesController {
         catch (e) {
             if (e)
                 res.status(500).send(e);
+        }
+    }
+    async apiParticipantDetail(req, res) {
+        const { id } = req.params;
+        const company = req.user.company;
+        try {
+            const participant = await participant_model_1.default
+                .findOne({
+                _id: id, company
+            }, {
+                name: true,
+                user: true,
+                sections: true,
+                qualification: true,
+                createdAt: true
+            })
+                .populate([{
+                    path: 'user',
+                    select: ['firstName', 'lastName']
+                }]);
+            // validate exist participant
+            if (!participant) {
+                res.status(404).json({
+                    messsage: 'Formulario no encontrado.',
+                    status: 404
+                });
+            }
+            else {
+                res.json({
+                    data: participant,
+                    status: 200
+                });
+            }
+        }
+        catch (e) {
+            if (e)
+                res.status(500).json(e);
         }
     }
     async apiCarDetail(req, res) {
@@ -48,6 +88,7 @@ class AdminCompaniesController {
                 vin: true
             })
                 .populate([{
+                    // reverse populate
                     path: 'participants',
                     select: ['name', 'user', 'createdAt', 'qualification'],
                     options: {
@@ -55,6 +96,7 @@ class AdminCompaniesController {
                             createdAt: -1
                         }
                     },
+                    // deep populate user
                     populate: [{
                             path: 'user',
                             select: ['firstName', 'lastName']

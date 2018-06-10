@@ -14,11 +14,12 @@ exports.appRouter = appRouter;
 appRouter.get('/robots.txt', app_controller_1.default.robots);
 // DashBoard Principal
 appRouter.get('/', middlewares_1.default.isLoggedIn, car_controller_1.default.vinDashboard);
-appRouter.get('/car/:id', middlewares_1.default.isLoggedIn, car_controller_1.default.vinDashboardDetail);
+appRouter.get('/cars/:id', middlewares_1.default.isLoggedIn, car_controller_1.default.vinDashboardDetail);
 // api cars
 appRouter.get('/api/admin/cars/:id/', middlewares_1.default.isLoggedIn, car_controller_1.default.apiCarDetail);
 appRouter.get('/api/admin/cars/', middlewares_1.default.isLoggedIn, car_controller_1.default.apiCars);
-appRouter.get('/2/', middlewares_1.default.isLoggedIn, app_controller_1.default.index);
+// form detail
+appRouter.get('/api/admin/participant/:id/', middlewares_1.default.isLoggedIn, car_controller_1.default.apiParticipantDetail);
 // admin user
 appRouter.get('/users/', middlewares_1.default.isLoggedIn, user_controller_1.default.index);
 // api admin users

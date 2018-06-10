@@ -1,11 +1,10 @@
 import {Request, Response} from "express";
 import CarModel, {ICarModel} from '../models/car.model'
 import * as mongoose from 'mongoose';
-// import UserModel from '../models/user.model';
 import {ObjectID} from "bson";
 import {PaginateOptions, PaginateResult} from "mongoose";
 import {IRequest} from "../../interfaces/global.interface";
-// import ParticipantModel from "../../form/models/participant.model";
+import ParticipantModel from "../../form/models/participant.model";
 
 class AdminCompaniesController {
   constructor() {
@@ -14,6 +13,7 @@ class AdminCompaniesController {
     this.apiCars = this.apiCars.bind(this);
     this.apiCarDetail = this.apiCarDetail.bind(this);
     this.getCars = this.getCars.bind(this);
+    this.apiParticipantDetail = this.apiParticipantDetail.bind(this);
   }
 
   public vinDashboard(req: Request, res: Response) {
@@ -29,7 +29,9 @@ class AdminCompaniesController {
     }
     try {
       // validate car exist
-      const car = await CarModel.findOne({_id: id, company});
+      const car = await CarModel.findOne({
+        _id: id, company
+      });
       if (!car) {
         return res.status(404).render('404');
       } else {
@@ -37,6 +39,41 @@ class AdminCompaniesController {
       }
     } catch (e) {
       if (e) res.status(500).send(e);
+    }
+  }
+
+  public async apiParticipantDetail(req: IRequest, res: Response) {
+    const {id} = req.params;
+    const company = req.user.company;
+    try {
+      const participant = await ParticipantModel
+        .findOne({
+          _id: id, company
+        }, {
+          name: true,
+          user: true,
+          sections: true,
+          qualification: true,
+          createdAt: true
+        })
+        .populate([{
+          path: 'user',
+          select: ['firstName', 'lastName']
+        }]);
+      // validate exist participant
+      if (!participant) {
+        res.status(404).json({
+          messsage: 'Formulario no encontrado.',
+          status: 404
+        });
+      } else {
+        res.json({
+          data: participant,
+          status: 200
+        });
+      }
+    } catch (e) {
+      if (e) res.status(500).json(e);
     }
   }
 
@@ -52,6 +89,7 @@ class AdminCompaniesController {
           vin: true
         })
         .populate([{
+          // reverse populate
           path: 'participants',
           select: ['name', 'user', 'createdAt', 'qualification'],
           options:{
@@ -59,6 +97,7 @@ class AdminCompaniesController {
               createdAt: -1
             }
           },
+          // deep populate user
           populate: [{
             path: 'user',
             select: ['firstName', 'lastName']

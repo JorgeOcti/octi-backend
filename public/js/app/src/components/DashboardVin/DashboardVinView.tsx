@@ -78,7 +78,7 @@ class DashboardVinView extends React.Component<IPropsType, IStateType> {
                           <td>{car.vin}</td>
                           <td>{`${car.lastForm.user ? `${car.lastForm.user.firstName} ${car.lastForm.user.lastName}` : ''}`}</td>
                           <td className="hidden-xs">{moment(car.lastForm.createdAt).format('LLL')}</td>
-                          <td className="text-primary pointer" onClick={() => this.props.history.push(`/car/${car._id}`)}>
+                          <td className="text-primary pointer" onClick={() => this.props.history.push(`/cars/${car._id}`)}>
                             <i className="fa fa-table"/>
                           </td>
                         </tr>

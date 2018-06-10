@@ -23,7 +23,7 @@ const App = () => (
         <BrowserRouter history={history}>
             <Switch>
                 <Route exact path="/" component={ DashboardVinView }/>
-                <Route exact path="/car/:id" component={ DashboardVinDetail }/>
+                <Route exact path="/cars/:id" component={ DashboardVinDetail }/>
                 <Route exact path="/2/" component={ TestDetailView2 }/>
                 <Route exact path="/users/" component={ UsersListView }/>
                 {/*<Route exact path="/ticket/create/" component={ TicketCreateView }/>*/}

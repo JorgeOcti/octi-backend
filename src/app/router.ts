@@ -13,13 +13,14 @@ appRouter.get('/robots.txt', AppController.robots);
 
 // DashBoard Principal
 appRouter.get('/', Middlewares.isLoggedIn, CarController.vinDashboard);
-appRouter.get('/car/:id', Middlewares.isLoggedIn, CarController.vinDashboardDetail);
+appRouter.get('/cars/:id', Middlewares.isLoggedIn, CarController.vinDashboardDetail);
 
 // api cars
 appRouter.get('/api/admin/cars/:id/', Middlewares.isLoggedIn, CarController.apiCarDetail);
 appRouter.get('/api/admin/cars/', Middlewares.isLoggedIn, CarController.apiCars);
 
-appRouter.get('/2/', Middlewares.isLoggedIn, AppController.index);
+// form detail
+appRouter.get('/api/admin/participant/:id/', Middlewares.isLoggedIn, CarController.apiParticipantDetail);
 
 // admin user
 appRouter.get('/users/', Middlewares.isLoggedIn, AdminUsersController.index);
