@@ -44,6 +44,12 @@ const formSchema = new mongoose.Schema({
 }, {
     timestamps: true
 });
+formSchema.virtual('participants', {
+    ref: 'Participant',
+    localField: '_id',
+    foreignField: 'form',
+    justOne: false
+});
 // formSchema.set('toJSON', {
 //   transform: (doc: any, ret: any, options: any) => {
 //     ret.id = ret._id;

@@ -57,6 +57,13 @@ const formSchema = new mongoose.Schema({
   timestamps: true
 });
 
+formSchema.virtual('participants', {
+  ref: 'Participant', // The model to use
+  localField: '_id', // Find field in this model
+  foreignField: 'form', // is equal to field in another model
+  justOne: false
+});
+
 // formSchema.set('toJSON', {
 //   transform: (doc: any, ret: any, options: any) => {
 //     ret.id = ret._id;

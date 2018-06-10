@@ -21,6 +21,7 @@ appRouter.get('/api/admin/cars/', Middlewares.isLoggedIn, CarController.apiCars)
 
 // form detail
 appRouter.get('/api/admin/participant/:id/', Middlewares.isLoggedIn, CarController.apiParticipantDetail);
+appRouter.get('/api/admin/participants-per-date/', Middlewares.isLoggedIn, CarController.apiParticipantsPerDate);
 
 // admin user
 appRouter.get('/users/', Middlewares.isLoggedIn, AdminUsersController.index);

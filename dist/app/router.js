@@ -20,6 +20,7 @@ appRouter.get('/api/admin/cars/:id/', middlewares_1.default.isLoggedIn, car_cont
 appRouter.get('/api/admin/cars/', middlewares_1.default.isLoggedIn, car_controller_1.default.apiCars);
 // form detail
 appRouter.get('/api/admin/participant/:id/', middlewares_1.default.isLoggedIn, car_controller_1.default.apiParticipantDetail);
+appRouter.get('/api/admin/participants-per-date/', middlewares_1.default.isLoggedIn, car_controller_1.default.apiParticipantsPerDate);
 // admin user
 appRouter.get('/users/', middlewares_1.default.isLoggedIn, user_controller_1.default.index);
 // api admin users

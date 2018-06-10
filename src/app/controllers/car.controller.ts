@@ -14,6 +14,7 @@ class AdminCompaniesController {
     this.apiCarDetail = this.apiCarDetail.bind(this);
     this.getCars = this.getCars.bind(this);
     this.apiParticipantDetail = this.apiParticipantDetail.bind(this);
+    this.apiParticipantsPerDate = this.apiParticipantsPerDate.bind(this);
   }
 
   public vinDashboard(req: Request, res: Response) {
@@ -39,6 +40,79 @@ class AdminCompaniesController {
       }
     } catch (e) {
       if (e) res.status(500).send(e);
+    }
+  }
+
+  public async apiParticipantsPerDate(req: IRequest, res: Response) {
+    const company = req.user.company;
+    try {
+      const participantPerDay = await ParticipantModel
+        .aggregate([{
+          $match: {
+            company
+          }
+        }, {
+          $group: {
+            // _id: {
+            //   $dateToString: {
+            //     format: '%Y-%m-%d',
+            //     date: '$createdAt'
+            //   },
+            // },
+            _id: {
+              category: {
+                $dateToString: {
+                  format: '%Y-%m-%d',
+                  date: '$createdAt'
+                },
+              },
+              user: "$user",
+            },
+            total: {
+              $sum: 1
+            }
+          }
+        }, {
+          $lookup: {
+            from: "users",
+            localField: "_id.user",
+            foreignField: "_id",
+            as: "userInfo",
+          }
+        }, {
+          $unwind: "$userInfo"
+        }, {
+          $project: {
+            '_id.category': 1,
+            '_id.user': 1,
+            'total': 1,
+            'userInfo._id': 1,
+            'userInfo.firstName': 1,
+            'userInfo.lastName': 1,
+          }
+        }, {
+          $group: {
+            _id: "$_id.category",
+            users: {
+              $push: {
+                user: "$_id.user",
+                userInfo: "$userInfo",
+                total: "$total"
+              }
+            },
+            total: {$sum: "$total"}
+          }
+        }, {
+          $sort: {
+            _id: 1
+          }
+        }]);
+      res.json({
+          data: participantPerDay,
+          status: 200
+        });
+    } catch (e) {
+      if (e) res.status(500).json(e);
     }
   }
 
