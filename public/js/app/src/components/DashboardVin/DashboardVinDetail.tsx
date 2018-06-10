@@ -1,11 +1,13 @@
-import {DashboardReduxAction, IDashboardState, getCarAction} from "../../actions/dashboard";
+import * as Raven from 'raven-js';
 import * as React from "react";
+import {ErrorInfo} from "react";
 import {Dispatch} from "redux";
 import {RouteComponentProps} from "react-router";
 import {connect} from "react-redux";
+import {DashboardReduxAction, IDashboardState, getCarAction} from "../../actions/dashboard";
 import AppContainer from "../../container/AppContainer";
-import {IParticipant} from "../../../../../../src/interfaces/participant.interface";
 import * as moment from "moment";
+import * as PropTypes from "prop-types";
 
 interface IPropsType extends RouteComponentProps<{ id: string }> {
   dispatch: Dispatch<DashboardReduxAction>;
@@ -19,11 +21,31 @@ interface IStateType {
 
 class DashboardVinDetail extends React.Component<IPropsType, IStateType> {
 
+  static propTypes = {
+    dashboard: PropTypes.object.isRequired,
+    dispatch: PropTypes.func.isRequired,
+    getCarAction: PropTypes.func.isRequired,
+  };
+
   componentWillMount(){
     // set the title of the page
     const {id} = this.props.match.params;
     document.title = 'OSA Andes | Listado de VINs';
     this.props.getCarAction(id);
+  }
+
+  public componentDidCatch(error: Error, errorInfo: ErrorInfo) {
+    this.setState({error});
+    Raven.captureException(error, {
+      extra: errorInfo
+    });
+  }
+
+  public componentWillUnmount(){
+    // cancel request if component is inmounted
+    if (this.props.dashboard.source) {
+      this.props.dashboard.source.cancel('Operation canceled by the user.');
+    }
   }
 
   public render(): React.ReactElement<IPropsType> {
@@ -43,7 +65,7 @@ class DashboardVinDetail extends React.Component<IPropsType, IStateType> {
                     <td style={{padding:'5px'}}><strong>Último Checkeo</strong></td>
                     <td style={{padding:'5px'}}>
                       {
-                        car && `${moment(((car as any).participants[0] as IParticipant).createdAt).format('LLL')}`
+                        car && car.participants && `${moment(car.participants[0].createdAt).format('LLL')}`
                       }
                     </td>
                   </tr>
@@ -51,7 +73,7 @@ class DashboardVinDetail extends React.Component<IPropsType, IStateType> {
                     <td style={{padding:'5px'}}><strong>Por</strong></td>
                     <td style={{padding:'5px'}}>
                       {
-                        car && `${((car as any).participants[0] as IParticipant).user.firstName} ${((car as any).participants[0] as IParticipant).user.lastName}`
+                        car && car.participants && `${car.participants[0].user.firstName} ${car.participants[0].user.lastName}`
                       }
                     </td>
                   </tr>
@@ -69,7 +91,7 @@ class DashboardVinDetail extends React.Component<IPropsType, IStateType> {
                 </thead>
                 <tbody>
                 {
-                  car && ((car as any).participants as IParticipant[]).map((participant, index) => (
+                  car &&  car.participants && car.participants.map((participant) => (
                     <tr key={participant._id}>
                       <td>{moment(participant.createdAt).format('LLL')}</td>
                       <td>{participant.name}</td>

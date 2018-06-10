@@ -1,4 +1,6 @@
+import * as Raven from 'raven-js';
 import * as React from 'react';
+import {ErrorInfo} from "react";
 import AppContainer from "../../container/AppContainer";
 import {connect} from "react-redux";
 import {Dispatch} from "redux";
@@ -8,7 +10,6 @@ import * as PropTypes from "prop-types";
 import * as moment from "moment";
 // backend interfaces
 import {ICar} from "../../../../../../src/interfaces/car.interface";
-
 
 interface IPropsType extends RouteComponentProps<{ ticket: string }> {
   dispatch: Dispatch<DashboardReduxAction>;
@@ -35,6 +36,20 @@ class DashboardVinView extends React.Component<IPropsType, IStateType> {
     this.props.getCarsAction();
   }
 
+  public componentDidCatch(error: Error, errorInfo: ErrorInfo) {
+    this.setState({error});
+    Raven.captureException(error, {
+      extra: errorInfo
+    });
+  }
+
+  public componentWillUnmount(){
+    // cancel request if component is inmounted
+    if (this.props.dashboard.source) {
+      this.props.dashboard.source.cancel('Operation canceled by the user.');
+    }
+  }
+
   public render(): React.ReactElement<IPropsType> {
     const {loading, cars} = this.props.dashboard;
     return (
@@ -52,9 +67,6 @@ class DashboardVinView extends React.Component<IPropsType, IStateType> {
                     <th>VIN</th>
                     <th>Supervisor</th>
                     <th className="hidden-xs">Último checkeo</th>
-                    {/*<th className="hidden-xs">Email</th>*/}
-                    {/*<th className="hidden-xs">Modificado</th>*/}
-                    {/*<th className="width-10" />*/}
                     <th className="width-10" />
                   </tr>
                 </thead>
@@ -66,10 +78,6 @@ class DashboardVinView extends React.Component<IPropsType, IStateType> {
                           <td>{car.vin}</td>
                           <td>{`${car.lastForm.user ? `${car.lastForm.user.firstName} ${car.lastForm.user.lastName}` : ''}`}</td>
                           <td className="hidden-xs">{moment(car.lastForm.createdAt).format('LLL')}</td>
-                          {/*<td className="hidden-xs">{user.venue.name}</td>*/}
-                          {/*<td className="hidden-xs">{user.email}</td>*/}
-                          {/*<td className="hidden-xs">{moment(user.updatedAt).format('LLL')}</td>*/}
-                          {/*<td className="text-blue pointer" onClick={() => this.editUser(user)}><i className="fa fa-pencil"/></td>*/}
                           <td className="text-primary pointer" onClick={() => this.props.history.push(`/car/${car._id}`)}>
                             <i className="fa fa-table"/>
                           </td>
@@ -101,7 +109,6 @@ const mapStateToProps = (state: { dashboard: IDashboardState }) => {
   };
 };
 
-// const mapDispatchToProps = (dispatch: Dispatch<UserReduxAction> ) => {
 const mapDispatchToProps = (dispatch: any ) => {
   return {
     dispatch,
