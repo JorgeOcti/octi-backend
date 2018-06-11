@@ -52,7 +52,7 @@ class DashboardVinDetail extends React.Component<IPropsType, IStateType> {
   }
 
   public render(): React.ReactElement<IPropsType> {
-    const {loading, car} = this.props.dashboard;
+    const {loading, car, loadingParticipant} = this.props.dashboard;
     const {getParticipant} = this.props;
     return (
       <AppContainer title='' cMenu='1' cSubMenu='1.2' cAction={`Detalle`}>
@@ -103,8 +103,17 @@ class DashboardVinDetail extends React.Component<IPropsType, IStateType> {
                       <td className="middle hidden-xs">{participant.user.firstName} {participant.user.lastName}</td>
                       <td className="middle hidden-xs">{Math.round(participant.qualification)}%</td>
                       <td className="middle pointer">
-                        <button className="btn btn-xs btn-default" onClick={() => getParticipant(participant._id)}>
-                          <i className="fa fa-bar-chart" />
+                        <button
+                          className="btn btn-xs btn-default"
+                          disabled={loadingParticipant && loadingParticipant === participant._id ? true : false}
+                          onClick={loadingParticipant ? () => {} : () => getParticipant(participant._id)}
+                        >
+                          {
+                            loadingParticipant && loadingParticipant === participant._id ?
+                              <i className="fa fa-spin fa-spinner"/>
+                              :
+                              <i className="fa fa-bar-chart"/>
+                          }
                         </button>
                       </td>
                     </tr>

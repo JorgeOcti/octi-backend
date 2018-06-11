@@ -13,6 +13,7 @@ export interface IDashboardState {
   cars: any[];
   car: ICar | null;
   participantsPerDate: any[];
+  loadingParticipant: string | null;
 }
 
 interface IIsLoading {
@@ -101,14 +102,32 @@ export function getCarsAction() {
   };
 }
 
+
+interface ILoadingParticipant {
+  type: '/DASHBOARD/LOADING_PARTICIPANT';
+  payload:{
+    loadingParticipant: string | null;
+  }
+}
+
+export function loadingParticipantAction(loadingParticipant: string | null): ILoadingParticipant {
+  return {
+    type: '/DASHBOARD/LOADING_PARTICIPANT',
+    payload: {
+      loadingParticipant
+    }
+  }
+}
+
 export function getParticipant(id: string) {
   return (dispatch: Dispatch<DashboardReduxAction>) => {
     const api: ApiService = new ApiService();
     dispatch(cancelRequestAction(api.getSource()));
-    // dispatch(isLoadingAction(true));
+    dispatch(loadingParticipantAction(id));
     api.getParticipant(id)
       .then((response: AxiosResponse) => {
         console.log(response.data.data);
+        dispatch(loadingParticipantAction(null));
         dispatch(loadDataAction(
           response.data.data.name,
           <div id="form-detail">
@@ -172,11 +191,10 @@ export function getParticipant(id: string) {
         // dispatch(isLoadingAction(false));
       })
       .catch((err: AxiosError) => {
-        // if the request is canceled
         if (Axios.isCancel(err)) {
-          // dispatch(isLoadingAction(true));
+          dispatch(loadingParticipantAction(null));
         } else {
-          // dispatch(isLoadingAction(false));
+          dispatch(loadingParticipantAction(null));
           api.errorHandler(err);
         }
       });
@@ -243,4 +261,4 @@ export function getCarAction(id: string) {
   };
 }
 
-export type DashboardReduxAction = IIsLoading | ICancelRequest | ILoadCars | ILoadCar |ILoadParticipantsPerDate ;
+export type DashboardReduxAction = IIsLoading | ICancelRequest | ILoadCars | ILoadCar | ILoadParticipantsPerDate | ILoadingParticipant ;

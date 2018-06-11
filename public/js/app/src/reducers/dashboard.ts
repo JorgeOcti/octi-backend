@@ -5,7 +5,8 @@ const initialState: IDashboardState = {
   source: null,
   cars: [],
   car: null,
-  participantsPerDate: []
+  participantsPerDate: [],
+  loadingParticipant: null
 };
 
 export function dashboard(state = initialState, action: DashboardReduxAction): IDashboardState {
@@ -19,6 +20,11 @@ export function dashboard(state = initialState, action: DashboardReduxAction): I
       return {
         ...state,
         cars: action.payload.cars
+      };
+    case '/DASHBOARD/LOADING_PARTICIPANT':
+      return {
+        ...state,
+        loadingParticipant: action.payload.loadingParticipant
       };
     case '/DASHBOARD/LOAD_PARTICIPANTS_PER_DATE':
       return {
