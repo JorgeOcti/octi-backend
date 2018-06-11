@@ -33,7 +33,7 @@ class DashboardVinDetail extends React.Component<IPropsType, IStateType> {
   componentWillMount(){
     // set the title of the page
     const {id} = this.props.match.params;
-    document.title = 'OSA Andes | Listado de VINs';
+    document.title = 'OSA Andes | Detalle VIN';
     this.props.getCarAction(id);
   }
 

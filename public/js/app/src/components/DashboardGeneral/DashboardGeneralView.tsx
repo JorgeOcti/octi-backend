@@ -36,7 +36,7 @@ class DashboardGeneralView extends React.Component<IPropsType, IStateType> {
 
   componentWillMount(){
     // set the title of the page
-    document.title = 'OSA Andes | Listado de VINs';
+    document.title = 'OSA Andes | Reportes generales';
     this.props.getParticipantsPerDateAction();
     window.addEventListener('resize', this.resizeCharts, false);
   }
@@ -72,7 +72,7 @@ class DashboardGeneralView extends React.Component<IPropsType, IStateType> {
       this.participantsPerDayChart = echarts.init($participantPerDate);
       const option = {
         title: {
-          text: 'Revisiones realizados por día',
+          text: 'Revisiones realizadas por día',
           x:'center',
           textStyle: {
             align: 'center',

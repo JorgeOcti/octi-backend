@@ -127,26 +127,25 @@ export function getParticipant(id: string) {
     api.getParticipant(id)
       .then((response: AxiosResponse) => {
         console.log(response.data.data);
-        dispatch(loadingParticipantAction(null));
         dispatch(loadDataAction(
           response.data.data.name,
           <div id="form-detail">
-                <table>
-                  <tbody>
-                    <tr>
-                      <td style={{width:'40%'}}><strong>Supervisor</strong></td>
-                      <td>{response.data.data.user ? response.data.data.user.firstName : ''} {response.data.data.user ? response.data.data.user.lastName : ''}</td>
-                    </tr>
-                    <tr>
-                      <td style={{width:'40%'}}><strong>Fecha</strong></td>
-                      <td>{moment(response.data.data.createdAt).format('LLL')}</td>
-                    </tr>
-                  <tr>
-                      <td style={{width:'40%'}}><strong>Calificación</strong></td>
-                      <td>{Math.round(response.data.data.qualification)}%</td>
-                    </tr>
-                  </tbody>
-                </table>
+            <table>
+              <tbody>
+                <tr>
+                  <td style={{width:'40%'}}><strong>Supervisor</strong></td>
+                  <td>{response.data.data.user ? response.data.data.user.firstName : ''} {response.data.data.user ? response.data.data.user.lastName : ''}</td>
+                </tr>
+                <tr>
+                  <td style={{width:'40%'}}><strong>Fecha</strong></td>
+                  <td>{moment(response.data.data.createdAt).format('LLL')}</td>
+                </tr>
+              <tr>
+                  <td style={{width:'40%'}}><strong>Calificación</strong></td>
+                  <td>{Math.round(response.data.data.qualification)}%</td>
+                </tr>
+              </tbody>
+            </table>
             {
               response.data.data.sections.map((section: IParticipantSection, index: number) => {
                 return (
@@ -186,9 +185,8 @@ export function getParticipant(id: string) {
               })
             }
           </div>
-          ) as any)
-        // dispatch(loadCarsAction(response.data.data));
-        // dispatch(isLoadingAction(false));
+          ) as any);
+        dispatch(loadingParticipantAction(null));
       })
       .catch((err: AxiosError) => {
         if (Axios.isCancel(err)) {
@@ -246,6 +244,7 @@ export function getCarAction(id: string) {
     dispatch(isLoadingAction(true));
     api.getCar(id)
       .then((response: AxiosResponse) => {
+        document.title = `OSA Andes | Detalle VIN ${response.data.data.vin}`;
         dispatch(loadCarAction(response.data.data));
         dispatch(isLoadingAction(false));
       })
