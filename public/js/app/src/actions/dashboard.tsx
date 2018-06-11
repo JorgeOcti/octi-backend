@@ -141,7 +141,7 @@ export function getParticipant(id: string) {
                                     if (choice.backgroundColor === 'blue') btnClass = 'btn-primary';
                                     else if (choice.backgroundColor === 'green') btnClass = 'btn-success';
                                     else if (choice.backgroundColor === 'yellow') btnClass = 'btn-warning';
-                                    else if (choice.backgroundColor === 'yellow') btnClass = 'btn-danger';
+                                    else if (choice.backgroundColor === 'red') btnClass = 'btn-danger';
                                     return (
                                       <div className="btn-group" role="group" key={choice._id}>
                                         <button
