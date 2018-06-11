@@ -90,6 +90,11 @@ export default class ApiService {
       `/api/admin/participants-per-date/`
     );
   }
+  public getParticipant(id: string) {
+    return this.instance.get(
+      `/api/admin/participant/${id}/`
+    );
+  }
 
   public getVenues(): AxiosPromise {
     return this.instance.get(

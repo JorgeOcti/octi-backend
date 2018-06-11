@@ -99,7 +99,7 @@ class DashboardGeneralView extends React.Component<IPropsType, IStateType> {
             }
           }
         },
-        grid:{
+        grid: {
           // borderColor: '#FF0000'
         },
         series: [{

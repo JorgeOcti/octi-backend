@@ -4,15 +4,17 @@ import {ErrorInfo} from "react";
 import {Dispatch} from "redux";
 import {RouteComponentProps} from "react-router";
 import {connect} from "react-redux";
-import {DashboardReduxAction, IDashboardState, getCarAction} from "../../actions/dashboard";
+import {DashboardReduxAction, IDashboardState, getCarAction, getParticipant} from "../../actions/dashboard";
 import AppContainer from "../../container/AppContainer";
 import * as moment from "moment";
 import * as PropTypes from "prop-types";
+import ModalView from "../Modal/ModalView";
 
 interface IPropsType extends RouteComponentProps<{ id: string }> {
   dispatch: Dispatch<DashboardReduxAction>;
   dashboard: IDashboardState;
   getCarAction(id: string): void;
+  getParticipant(id: string): void;
 }
 
 interface IStateType {
@@ -25,6 +27,7 @@ class DashboardVinDetail extends React.Component<IPropsType, IStateType> {
     dashboard: PropTypes.object.isRequired,
     dispatch: PropTypes.func.isRequired,
     getCarAction: PropTypes.func.isRequired,
+    getParticipant: PropTypes.func.isRequired,
   };
 
   componentWillMount(){
@@ -50,6 +53,7 @@ class DashboardVinDetail extends React.Component<IPropsType, IStateType> {
 
   public render(): React.ReactElement<IPropsType> {
     const {loading, car} = this.props.dashboard;
+    const {getParticipant} = this.props;
     return (
       <AppContainer title='' cMenu='1' cSubMenu='1.2' cAction={`Detalle`}>
         <section className="content">
@@ -85,18 +89,24 @@ class DashboardVinDetail extends React.Component<IPropsType, IStateType> {
                   <tr>
                     <th>Fecha</th>
                     <th>Formulario</th>
-                    <th>Supervisor</th>
-                    <th>Calificación</th>
+                    <th className="hidden-xs">Supervisor</th>
+                    <th className="hidden-xs">Calificación</th>
+                    <th className="width-10"/>
                   </tr>
                 </thead>
                 <tbody>
                 {
                   car &&  car.participants && car.participants.map((participant) => (
                     <tr key={participant._id}>
-                      <td>{moment(participant.createdAt).format('LLL')}</td>
-                      <td>{participant.name}</td>
-                      <td>{participant.user.firstName} {participant.user.lastName}</td>
-                      <td>{Math.round(participant.qualification)}%</td>
+                      <td className="middle">{moment(participant.createdAt).format('LLL')}</td>
+                      <td className="middle">{participant.name}</td>
+                      <td className="middle hidden-xs">{participant.user.firstName} {participant.user.lastName}</td>
+                      <td className="middle hidden-xs">{Math.round(participant.qualification)}%</td>
+                      <td className="middle pointer">
+                        <button className="btn btn-xs btn-default" onClick={() => getParticipant(participant._id)}>
+                          <i className="fa fa-bar-chart" />
+                        </button>
+                      </td>
                     </tr>
                   ))
                 }
@@ -110,6 +120,7 @@ class DashboardVinDetail extends React.Component<IPropsType, IStateType> {
                 </div>
             }
           </div>
+          <ModalView />
         </section>
       </AppContainer>
     );
@@ -125,7 +136,8 @@ const mapStateToProps = (state: { dashboard: IDashboardState }) => {
 const mapDispatchToProps = (dispatch: any ) => {
   return {
     dispatch,
-    getCarAction: (id: string) => dispatch(getCarAction(id))
+    getCarAction: (id: string) => dispatch(getCarAction(id)),
+    getParticipant: (id: string) => dispatch(getParticipant(id))
   };
 };
 

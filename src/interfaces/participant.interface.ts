@@ -32,7 +32,7 @@ export interface IParticipantAnswer {
   question: string;
   shortName: string;
 
-  scale: IScaleParticipantModel;
+  scale: IParticipantScale;
   answer: string;
   qualification: number;
   comment: string;

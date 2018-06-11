@@ -16,7 +16,7 @@ export function modal(state = initialState, action: ModalReduxAction): IModalSta
         ...state,
         title: action.payload.title,
         body: action.payload.body,
-        footer: action.payload.footer
+        footer: action.payload.footer ? action.payload.footer : null
       };
     case '/MODAL/CLEAR':
       return initialState;
