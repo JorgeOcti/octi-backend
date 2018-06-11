@@ -55,13 +55,14 @@ class DashboardGeneralView extends React.Component<IPropsType, IStateType> {
     });
   }
 
-  componentDidUpdate(){
+  componentDidUpdate(prevProps: IPropsType, prevState: IStateType) {
     const {participantsPerDate, loading} = this.props.dashboard;
 
     const $participantPerDate = document.getElementById('participant-per-date') as HTMLDivElement;
     const categories: any[] = [];
     const totals: any[] = [];
-    if(participantsPerDate.length){
+
+    if (participantsPerDate.length) {
       participantsPerDate.forEach((day) => {
         categories.push(day._id);
         totals.push(day.total);

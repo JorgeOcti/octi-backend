@@ -12,7 +12,7 @@ const HeaderApp: React.StatelessComponent<{}> = () => {
         <span className="logo-lg"><b>OSA</b>Andes</span>
       </a>
       <nav className="navbar navbar-static-top">
-        <a className="sidebar-toggle hidden-md hidden-lg" href="#" data-toggle="push-menu" role="button">
+        <a className="sidebar-toggle hidden-sm hidden-md hidden-lg" href="#" data-toggle="push-menu" role="button">
           <span className="sr-only">Toggle navigation</span>
           <span className="icon-bar" />
           <span className="icon-bar" />
