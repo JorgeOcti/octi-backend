@@ -14,6 +14,8 @@ exports.appRouter = appRouter;
 appRouter.get('/robots.txt', app_controller_1.default.robots);
 // DashBoard Principal
 appRouter.get('/', middlewares_1.default.isLoggedIn, car_controller_1.default.vinDashboard);
+// DashBoard Cars
+appRouter.get('/cars/', middlewares_1.default.isLoggedIn, car_controller_1.default.vinDashboard);
 appRouter.get('/cars/:id', middlewares_1.default.isLoggedIn, car_controller_1.default.vinDashboardDetail);
 // api cars
 appRouter.get('/api/admin/cars/:id/', middlewares_1.default.isLoggedIn, car_controller_1.default.apiCarDetail);

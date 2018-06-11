@@ -8,6 +8,7 @@ export interface IDashboardState {
   source: CancelTokenSource | null;
   cars: any[];
   car: ICar | null;
+  participantsPerDate: any[];
 }
 
 interface IIsLoading {
@@ -96,6 +97,44 @@ export function getCarsAction() {
   };
 }
 
+interface ILoadParticipantsPerDate {
+  type: '/DASHBOARD/LOAD_PARTICIPANTS_PER_DATE';
+  payload: {
+    participantsPerDate: any;
+  }
+}
+
+export function loadParticipantsPerDateAction(participantsPerDate: any): ILoadParticipantsPerDate {
+  return {
+    type: '/DASHBOARD/LOAD_PARTICIPANTS_PER_DATE',
+    payload: {
+      participantsPerDate
+    }
+  }
+}
+
+export function getParticipantsPerDateAction() {
+  return (dispatch: Dispatch<DashboardReduxAction>) => {
+    const api: ApiService = new ApiService();
+    dispatch(cancelRequestAction(api.getSource()));
+    dispatch(isLoadingAction(true));
+    api.getParticipantsPerDate()
+      .then((response: AxiosResponse) => {
+        dispatch(loadParticipantsPerDateAction(response.data.data));
+        dispatch(isLoadingAction(false));
+      })
+      .catch((err: AxiosError) => {
+        // if the request is canceled
+        if (Axios.isCancel(err)) {
+          dispatch(isLoadingAction(true));
+        } else {
+          dispatch(isLoadingAction(false));
+          api.errorHandler(err);
+        }
+      });
+  };
+}
+
 export function getCarAction(id: string) {
   return (dispatch: Dispatch<DashboardReduxAction>) => {
     const api: ApiService = new ApiService();
@@ -118,4 +157,4 @@ export function getCarAction(id: string) {
   };
 }
 
-export type DashboardReduxAction = IIsLoading | ICancelRequest | ILoadCars | ILoadCar ;
+export type DashboardReduxAction = IIsLoading | ICancelRequest | ILoadCars | ILoadCar |ILoadParticipantsPerDate ;

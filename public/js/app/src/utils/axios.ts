@@ -85,6 +85,12 @@ export default class ApiService {
     );
   }
 
+  public getParticipantsPerDate() {
+    return this.instance.get(
+      `/api/admin/participants-per-date/`
+    );
+  }
+
   public getVenues(): AxiosPromise {
     return this.instance.get(
       `/api/admin/venues/`

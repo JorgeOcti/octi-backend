@@ -53,7 +53,7 @@ class DashboardVinView extends React.Component<IPropsType, IStateType> {
   public render(): React.ReactElement<IPropsType> {
     const {loading, cars} = this.props.dashboard;
     return (
-      <AppContainer title='' cMenu='1' cSubMenu='1.1'>
+      <AppContainer title='' cMenu='1' cSubMenu='1.2'>
         <section className="content">
           <div className="box">
             <div className="box-header with-border"><h3 className="box-title">Listado de VINs</h3>

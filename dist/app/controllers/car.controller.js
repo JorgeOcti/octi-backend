@@ -212,7 +212,7 @@ class AdminCompaniesController {
                         }]
                 }],
             sort: {
-                createdAt: -1
+                updatedAt: -1
             },
             page: parseInt(page ? page : 1),
             limit: parseInt(pageSize ? pageSize : 20),

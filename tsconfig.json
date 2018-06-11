@@ -20,11 +20,11 @@
     "./src/**/*"
   ],
   "exclude": [
-    "views",
-    "logs",
-    "node_modules",
-    "dist",
-    "public",
-    "email-templates"
+    "./views",
+    "./logs",
+    "./node_modules",
+    "./dist",
+    "./public",
+    "./email-templates"
   ]
 }

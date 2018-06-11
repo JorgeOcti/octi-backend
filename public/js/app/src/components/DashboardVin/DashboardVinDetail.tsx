@@ -51,7 +51,7 @@ class DashboardVinDetail extends React.Component<IPropsType, IStateType> {
   public render(): React.ReactElement<IPropsType> {
     const {loading, car} = this.props.dashboard;
     return (
-      <AppContainer title='' cMenu='1' cSubMenu='1.1' cAction={`Detalle`}>
+      <AppContainer title='' cMenu='1' cSubMenu='1.2' cAction={`Detalle`}>
         <section className="content">
           <div className="box">
             <div className="box-header with-border"><h3 className="box-title">Auto VIN {car ? car.vin : null}</h3>

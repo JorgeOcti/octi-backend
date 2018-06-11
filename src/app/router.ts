@@ -13,6 +13,9 @@ appRouter.get('/robots.txt', AppController.robots);
 
 // DashBoard Principal
 appRouter.get('/', Middlewares.isLoggedIn, CarController.vinDashboard);
+
+// DashBoard Cars
+appRouter.get('/cars/', Middlewares.isLoggedIn, CarController.vinDashboard);
 appRouter.get('/cars/:id', Middlewares.isLoggedIn, CarController.vinDashboardDetail);
 
 // api cars

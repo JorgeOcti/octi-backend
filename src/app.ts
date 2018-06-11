@@ -145,7 +145,7 @@ app.use(passport.session());
  */
 
 passport.use(new LocalStrategy({ usernameField: 'username' }, (username, password, done) => {
-  User.findOne({ username: username.toLowerCase() }, (err, user: any) => {
+  User.findOne({username: username.toLowerCase(), active: true}, (err, user: any) => {
     if (err) { return done(err); }
     if (!user) {
       return done(undefined, false, { message: `username ${username} not found.` });

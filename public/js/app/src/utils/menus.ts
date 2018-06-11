@@ -9,8 +9,13 @@ menus.push({
     {
       id: '1.1',
       icon: 'fa-circle-o',
-      text: 'Listado de VINs',
+      text: 'General',
       url: '/',
+    }, {
+      id: '1.2',
+      icon: 'fa-circle-o',
+      text: 'Listado de VINs',
+      url: '/cars/',
     },
     // {
     //   id: '1.2',
