@@ -122,6 +122,10 @@ export function getParticipant(id: string) {
                       <td style={{width:'40%'}}><strong>Fecha</strong></td>
                       <td>{moment(response.data.data.createdAt).format('LLL')}</td>
                     </tr>
+                  <tr>
+                      <td style={{width:'40%'}}><strong>Calificación</strong></td>
+                      <td>{Math.round(response.data.data.qualification)}%</td>
+                    </tr>
                   </tbody>
                 </table>
             {
