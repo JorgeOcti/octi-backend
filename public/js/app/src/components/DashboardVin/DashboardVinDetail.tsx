@@ -104,7 +104,7 @@ class DashboardVinDetail extends React.Component<IPropsType, IStateType> {
                       <td className="middle hidden-xs">{Math.round(participant.qualification)}%</td>
                       <td className="middle pointer">
                         <button
-                          className="btn btn-xs btn-default"
+                          className="btn btn-xs btn-primary"
                           disabled={loadingParticipant && loadingParticipant === participant._id ? true : false}
                           onClick={loadingParticipant ? () => {} : () => getParticipant(participant._id)}
                         >

@@ -79,7 +79,7 @@ class DashboardVinView extends React.Component<IPropsType, IStateType> {
                           <td className="middle">{`${car.lastForm.user ? `${car.lastForm.user.firstName} ${car.lastForm.user.lastName}` : ''}`}</td>
                           <td className="middle hidden-xs">{moment(car.lastForm.createdAt).format('LLL')}</td>
                           <td className="text-primary">
-                            <button className="btn btn-xs btn-default" onClick={() => this.props.history.push(`/cars/${car._id}`)}><i className="fa fa-bars"/></button>
+                            <button className="btn btn-xs btn-primary" onClick={() => this.props.history.push(`/cars/${car._id}`)}><i className="fa fa-bars"/></button>
                           </td>
                         </tr>
                       )
