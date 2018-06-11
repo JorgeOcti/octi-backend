@@ -116,7 +116,7 @@ export function getParticipant(id: string) {
                   <tbody>
                     <tr>
                       <td style={{width:'40%'}}><strong>Supervisor</strong></td>
-                      <td>{response.data.data.user.firstName}{response.data.data.user.lastName}</td>
+                      <td>{response.data.data.user ? response.data.data.user.firstName : ''} {response.data.data.user ? response.data.data.user.lastName : ''}</td>
                     </tr>
                     <tr>
                       <td style={{width:'40%'}}><strong>Fecha</strong></td>
