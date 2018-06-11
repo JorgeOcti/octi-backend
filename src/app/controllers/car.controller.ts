@@ -7,7 +7,9 @@ import {IRequest} from "../../interfaces/global.interface";
 import ParticipantModel from "../../form/models/participant.model";
 
 class AdminCompaniesController {
+
   constructor() {
+    this.generalDashboard = this.generalDashboard.bind(this);
     this.vinDashboard = this.vinDashboard.bind(this);
     this.vinDashboardDetail = this.vinDashboardDetail.bind(this);
     this.apiCars = this.apiCars.bind(this);
@@ -15,6 +17,10 @@ class AdminCompaniesController {
     this.getCars = this.getCars.bind(this);
     this.apiParticipantDetail = this.apiParticipantDetail.bind(this);
     this.apiParticipantsPerDate = this.apiParticipantsPerDate.bind(this);
+  }
+
+  public generalDashboard(req: Request, res: Response) {
+    res.render('app/index');
   }
 
   public vinDashboard(req: Request, res: Response) {

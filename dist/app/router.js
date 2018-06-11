@@ -13,7 +13,7 @@ exports.appRouter = appRouter;
 // robots.txt
 appRouter.get('/robots.txt', app_controller_1.default.robots);
 // DashBoard Principal
-appRouter.get('/', middlewares_1.default.isLoggedIn, car_controller_1.default.vinDashboard);
+appRouter.get('/', middlewares_1.default.isLoggedIn, car_controller_1.default.generalDashboard);
 // DashBoard Cars
 appRouter.get('/cars/', middlewares_1.default.isLoggedIn, car_controller_1.default.vinDashboard);
 appRouter.get('/cars/:id', middlewares_1.default.isLoggedIn, car_controller_1.default.vinDashboardDetail);

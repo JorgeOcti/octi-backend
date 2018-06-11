@@ -12,7 +12,7 @@ const appRouter = express.Router();
 appRouter.get('/robots.txt', AppController.robots);
 
 // DashBoard Principal
-appRouter.get('/', Middlewares.isLoggedIn, CarController.vinDashboard);
+appRouter.get('/', Middlewares.isLoggedIn, CarController.generalDashboard);
 
 // DashBoard Cars
 appRouter.get('/cars/', Middlewares.isLoggedIn, CarController.vinDashboard);

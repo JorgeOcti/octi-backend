@@ -5,6 +5,7 @@ const mongoose = require("mongoose");
 const participant_model_1 = require("../../form/models/participant.model");
 class AdminCompaniesController {
     constructor() {
+        this.generalDashboard = this.generalDashboard.bind(this);
         this.vinDashboard = this.vinDashboard.bind(this);
         this.vinDashboardDetail = this.vinDashboardDetail.bind(this);
         this.apiCars = this.apiCars.bind(this);
@@ -12,6 +13,9 @@ class AdminCompaniesController {
         this.getCars = this.getCars.bind(this);
         this.apiParticipantDetail = this.apiParticipantDetail.bind(this);
         this.apiParticipantsPerDate = this.apiParticipantsPerDate.bind(this);
+    }
+    generalDashboard(req, res) {
+        res.render('app/index');
     }
     vinDashboard(req, res) {
         res.render('app/index');

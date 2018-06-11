@@ -71,45 +71,53 @@ class DashboardGeneralView extends React.Component<IPropsType, IStateType> {
       this.participantsPerDayChart = echarts.init($participantPerDate);
       const option = {
         title: {
-          text: 'Formularios realizados por día',
+          text: 'Revisiones realizados por día',
           x:'center',
           textStyle: {
             align: 'center',
-            rich: {
-              a: {
-                // `align` is not set, then it will be right
-              }
-            }
           }
         },
-        tooltip: {},
-        legend: {
-          data: ['Sales']
+        tooltip: {
         },
         xAxis: {
           type: 'category',
           data: categories,
+          axisLine: {
+            lineStyle: {
+              color: '#9b9b9b',
+              width: 0.5
+            }
+          }
         },
         yAxis: {
-          type: 'value'
+          type: 'value',
+          axisLine: {
+            lineStyle: {
+              color: '#9b9b9b',
+              width: 0.5
+            }
+          }
+        },
+        grid:{
+          // borderColor: '#FF0000'
         },
         series: [{
           data: totals,
-          itemStyle: {
-            normal: {
-              areaStyle: {
-                type: 'default',
-                color: '#0081da',
-                opacity: 0.4
-              }
-            }
-          },
-          lineStyle: {
-            normal: {
-              color: '#006faf',
-              // opacity: 0.1
-            }
-          },
+          // itemStyle: {
+          //   normal: {
+          //     areaStyle: {
+          //       type: 'default',
+          //       color: '#0081da',
+          //       opacity: 0.4
+          //     }
+          //   }
+          // },
+          // lineStyle: {
+          //   normal: {
+          //     color: '#006faf',
+          //     // opacity: 0.1
+          //   }
+          // },
           // data: [{
           //   value: 820,
           //   name: '2018-06-05',
@@ -120,7 +128,7 @@ class DashboardGeneralView extends React.Component<IPropsType, IStateType> {
           type: 'line',
           smooth: true
         }],
-        color: ["#005a91", ]
+        color: ["#006faf", ]
       };
       console.log('option', option);
       this.participantsPerDayChart.setOption(option);
