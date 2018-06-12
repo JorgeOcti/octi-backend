@@ -78,8 +78,7 @@ class DashboardGeneralView extends React.Component<IPropsType, IStateType> {
             align: 'center',
           }
         },
-        tooltip: {
-        },
+        tooltip: {},
         xAxis: {
           type: 'category',
           data: categories,
@@ -100,6 +99,11 @@ class DashboardGeneralView extends React.Component<IPropsType, IStateType> {
           }
         },
         grid: {
+          //left
+          x: 30,
+          //right
+          x2: 10,
+
           // borderColor: '#FF0000'
         },
         series: [{
