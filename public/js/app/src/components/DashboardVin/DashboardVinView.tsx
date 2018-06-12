@@ -15,7 +15,7 @@ interface IPropsType extends RouteComponentProps<{ ticket: string }> {
   dispatch: Dispatch<DashboardReduxAction>;
   dashboard: IDashboardState;
 
-  getCarsAction(): void;
+  getCarsAction(page?: number): void;
 }
 
 interface IStateType {
@@ -50,8 +50,13 @@ class DashboardVinView extends React.Component<IPropsType, IStateType> {
     }
   }
 
+  private changePage(page:number){
+    // change the page
+    this.props.getCarsAction(page);
+  }
+
   public render(): React.ReactElement<IPropsType> {
-    const {loading, cars} = this.props.dashboard;
+    const {loading, cars, pagination} = this.props.dashboard;
     return (
       <AppContainer title='' cMenu='1' cSubMenu='1.2'>
         <section className="content">
@@ -89,7 +94,44 @@ class DashboardVinView extends React.Component<IPropsType, IStateType> {
               </table>
 
             </div>
-            {/*<div className="box-footer">Footer</div>*/}
+            <div className="box-footer text-right">
+              <ul className="pagination">
+                {/*<li className="page-item disabled">*/}
+                  {/*<a className="page-link" href="#">Previous</a>*/}
+                {/*</li>*/}
+                {
+                  new Array(pagination.pages).fill(1).map((item, index) => {
+                    const idPagination = index + 1;
+                    const onClick = idPagination !== pagination.page ? () => this.changePage(idPagination) : () => {};
+                    // if((idPagination > pagination.page - 3 && idPagination < pagination.page + 3)  || (idPagination !== 1 || idPagination !== pagination.pages)) {
+                    if((idPagination > pagination.page - 3 && idPagination < pagination.page + 3)  || (idPagination === 1 || idPagination === pagination.pages)) {
+                      return (
+                        <li className={`page-item ${idPagination === pagination.page ? 'active' : ''}`} key={idPagination}>
+                          <a className="page-link" href="javascript:void(0)" onClick={onClick}>{idPagination}</a>
+                        </li>
+                      )
+                    } else if (idPagination > pagination.page + 3 && idPagination === pagination.pages - 1) {
+                      return (
+                          <li className={`page-item disabled`} key={idPagination}>
+                            <a className="page-link" href="javascript:void(0)">...</a>
+                          </li>
+                        )
+                    }else if (idPagination < pagination.page - 3 && idPagination === 2) {
+                      return (
+                          <li className={`page-item disabled`} key={idPagination}>
+                            <a className="page-link" href="javascript:void(0)">...</a>
+                          </li>
+                        )
+                    } else {
+                      return null
+                    }
+                  })
+                }
+                {/*<li className="page-item">*/}
+                  {/*<a className="page-link" href="#">Next</a>*/}
+                {/*</li>*/}
+              </ul>
+            </div>
             {
               loading &&
                 <div className="overlay">
@@ -112,7 +154,7 @@ const mapStateToProps = (state: { dashboard: IDashboardState }) => {
 const mapDispatchToProps = (dispatch: any ) => {
   return {
     dispatch,
-    getCarsAction: () => dispatch(getCarsAction()),
+    getCarsAction: (page?: number) => dispatch(getCarsAction(page)),
   };
 };
 

@@ -3,11 +3,12 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const car_model_1 = require("../models/car.model");
 const mongoose = require("mongoose");
 const participant_model_1 = require("../../form/models/participant.model");
-class AdminCompaniesController {
+class CarController {
     constructor() {
         this.generalDashboard = this.generalDashboard.bind(this);
         this.vinDashboard = this.vinDashboard.bind(this);
         this.vinDashboardDetail = this.vinDashboardDetail.bind(this);
+        this.checkVIN = this.checkVIN.bind(this);
         this.apiCars = this.apiCars.bind(this);
         this.apiCarDetail = this.apiCarDetail.bind(this);
         this.getCars = this.getCars.bind(this);
@@ -19,6 +20,26 @@ class AdminCompaniesController {
     }
     vinDashboard(req, res) {
         res.render('app/index');
+    }
+    async checkVIN(req, res) {
+        const { vin } = req.body;
+        // const company = req.user.company;
+        if (vin) {
+            res.json({
+                data: {
+                    vin,
+                    brand: 'toyota',
+                    model: ''
+                },
+                status: 200
+            });
+        }
+        else {
+            res.status(400).json({
+                message: 'VIN no encontrado.',
+                status: 400
+            });
+        }
     }
     async vinDashboardDetail(req, res) {
         const { id } = req.params;
@@ -257,5 +278,5 @@ class AdminCompaniesController {
         });
     }
 }
-exports.default = new AdminCompaniesController();
+exports.default = new CarController();
 //# sourceMappingURL=car.controller.js.map

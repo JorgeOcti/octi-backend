@@ -6,12 +6,13 @@ import {PaginateOptions, PaginateResult} from "mongoose";
 import {IRequest} from "../../interfaces/global.interface";
 import ParticipantModel from "../../form/models/participant.model";
 
-class AdminCompaniesController {
+class CarController {
 
   constructor() {
     this.generalDashboard = this.generalDashboard.bind(this);
     this.vinDashboard = this.vinDashboard.bind(this);
     this.vinDashboardDetail = this.vinDashboardDetail.bind(this);
+    this.checkVIN = this.checkVIN.bind(this);
     this.apiCars = this.apiCars.bind(this);
     this.apiCarDetail = this.apiCarDetail.bind(this);
     this.getCars = this.getCars.bind(this);
@@ -25,6 +26,26 @@ class AdminCompaniesController {
 
   public vinDashboard(req: Request, res: Response) {
     res.render('app/index');
+  }
+
+  public async checkVIN(req: IRequest, res: Response) {
+    const {vin} = req.body;
+    // const company = req.user.company;
+    if (vin) {
+      res.json({
+        data: {
+          vin,
+          brand: 'toyota',
+          model: ''
+        },
+        status: 200
+      })
+    } else {
+      res.status(400).json({
+        message: 'VIN no encontrado.',
+        status: 400
+      })
+    }
   }
 
   public async vinDashboardDetail(req: IRequest, res: Response) {
@@ -257,4 +278,4 @@ class AdminCompaniesController {
   }
 }
 
-export default new AdminCompaniesController();
+export default new CarController();

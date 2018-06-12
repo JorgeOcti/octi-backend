@@ -1,9 +1,5 @@
 import * as mongoose from 'mongoose';
 import {
-  IFormQuestionModel,
-  IFormSectionModel
-} from "../form/models/form.model";
-import {
   IScaleModel
 } from "../form/models/scale.model";
 import {ICompany} from "./company.interface";

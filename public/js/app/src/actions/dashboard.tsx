@@ -14,6 +14,11 @@ export interface IDashboardState {
   car: ICar | null;
   participantsPerDate: any[];
   loadingParticipant: string | null;
+  pagination: {
+    count: number;
+    page: number;
+    pages: number;
+  }
 }
 
 interface IIsLoading {
@@ -52,14 +57,18 @@ interface ILoadCars {
   type: '/DASHBOARD/LOAD_CARS';
   payload: {
     cars: ICar[];
+    count: number;
+    pages: number
   }
 }
 
-export function loadCarsAction(cars: ICar[]): ILoadCars {
+export function loadCarsAction(cars: ICar[], count:number, pages: number): ILoadCars {
   return {
     type: '/DASHBOARD/LOAD_CARS',
     payload: {
-      cars
+      cars,
+      count,
+      pages
     }
   }
 }
@@ -80,14 +89,35 @@ export function loadCarAction(car: ICar): ILoadCar {
   }
 }
 
-export function getCarsAction() {
-  return (dispatch: Dispatch<DashboardReduxAction>) => {
+interface IChangePage {
+  type: '/DASHBOARD/CHANGE_PAGE';
+  payload:{
+    page: number;
+  }
+}
+
+export function changePageAction(page: number): IChangePage {
+  return {
+    type: '/DASHBOARD/CHANGE_PAGE',
+    payload: {
+      page
+    }
+  }
+}
+
+export function getCarsAction(nextPage?: number) {
+  return (dispatch: Dispatch<DashboardReduxAction>, getState: () => {dashboard: IDashboardState}) => {
     const api: ApiService = new ApiService();
+    const state = getState();
     dispatch(cancelRequestAction(api.getSource()));
     dispatch(isLoadingAction(true));
-    api.getCars()
+    const page = nextPage ? nextPage : state.dashboard.pagination.page;
+    if (nextPage) {
+      dispatch(changePageAction(nextPage));
+    }
+    api.getCars(page)
       .then((response: AxiosResponse) => {
-        dispatch(loadCarsAction(response.data.results));
+        dispatch(loadCarsAction(response.data.results, response.data.count, response.data.pages));
         dispatch(isLoadingAction(false));
       })
       .catch((err: AxiosError) => {
@@ -260,4 +290,4 @@ export function getCarAction(id: string) {
   };
 }
 
-export type DashboardReduxAction = IIsLoading | ICancelRequest | ILoadCars | ILoadCar | ILoadParticipantsPerDate | ILoadingParticipant ;
+export type DashboardReduxAction = IIsLoading | ICancelRequest | ILoadCars | ILoadCar | ILoadParticipantsPerDate | ILoadingParticipant | IChangePage;

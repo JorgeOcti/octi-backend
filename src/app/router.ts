@@ -41,6 +41,8 @@ appRouter.get('/companies/', Middlewares.isLoggedIn, AdminCompaniesController.in
 appRouter.get('/venues/', Middlewares.isLoggedIn, AdminVenuesController.index);
 appRouter.get('/api/admin/venues/', Middlewares.isLoggedIn, AdminVenuesController.apiVenues);
 
+appRouter.post('/api/v1/check-vin/', Middlewares.isJWTAuthenticated, CarController.checkVIN);
+
 // web login
 appRouter.get('/account/login/', AppController.login);
 appRouter.post('/account/login/', AppController.processLogin);

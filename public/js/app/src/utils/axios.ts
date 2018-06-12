@@ -102,9 +102,9 @@ export default class ApiService {
     );
   }
 
-  public getCars(): AxiosPromise {
+  public getCars(page?: number): AxiosPromise {
     return this.instance.get(
-      `/api/admin/cars/`,{
+      `/api/admin/cars/${page ? `?page=${page}` : ''}`, {
         cancelToken: this.source.token
       }
     );

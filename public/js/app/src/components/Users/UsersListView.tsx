@@ -304,25 +304,42 @@ class UsersListView extends React.Component<IPropsType, IStateType> {
               </table>
             </div>
             <div className="box-footer text-right">
-                <ul className="pagination">
-                  {/*<li className="page-item disabled">*/}
-                    {/*<a className="page-link" href="#">Previous</a>*/}
-                  {/*</li>*/}
-                  {
-                    new Array(pagination.pages).fill(1).map((item, index) => {
-                      const idPagination = index + 1;
-                      const onClick = idPagination !== pagination.page ? () => this.changePage(idPagination) : () => {};
+              <ul className="pagination">
+                {/*<li className="page-item disabled">*/}
+                  {/*<a className="page-link" href="#">Previous</a>*/}
+                {/*</li>*/}
+                {
+                  new Array(pagination.pages).fill(1).map((item, index) => {
+                    const idPagination = index + 1;
+                    const onClick = idPagination !== pagination.page ? () => this.changePage(idPagination) : () => {};
+                    // if((idPagination > pagination.page - 3 && idPagination < pagination.page + 3)  || (idPagination !== 1 || idPagination !== pagination.pages)) {
+                    if((idPagination > pagination.page - 3 && idPagination < pagination.page + 3)  || (idPagination === 1 || idPagination === pagination.pages)) {
                       return (
                         <li className={`page-item ${idPagination === pagination.page ? 'active' : ''}`} key={idPagination}>
                           <a className="page-link" href="javascript:void(0)" onClick={onClick}>{idPagination}</a>
                         </li>
                       )
-                    })
-                  }
-                  {/*<li className="page-item">*/}
-                    {/*<a className="page-link" href="#">Next</a>*/}
-                  {/*</li>*/}
-                </ul>
+                    } else if (idPagination > pagination.page + 3 && idPagination === pagination.pages - 1) {
+                      return (
+                          <li className={`page-item disabled`} key={idPagination}>
+                            <a className="page-link" href="javascript:void(0)">...</a>
+                          </li>
+                        )
+                    }else if (idPagination < pagination.page - 3 && idPagination === 2) {
+                      return (
+                          <li className={`page-item disabled`} key={idPagination}>
+                            <a className="page-link" href="javascript:void(0)">...</a>
+                          </li>
+                        )
+                    } else {
+                      return null
+                    }
+                  })
+                }
+                {/*<li className="page-item">*/}
+                  {/*<a className="page-link" href="#">Next</a>*/}
+                {/*</li>*/}
+              </ul>
             </div>
             {
               loading &&
