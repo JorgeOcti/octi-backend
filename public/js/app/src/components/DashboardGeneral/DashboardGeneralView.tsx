@@ -135,7 +135,6 @@ class DashboardGeneralView extends React.Component<IPropsType, IStateType> {
         }],
         color: ["#006faf", ]
       };
-      console.log('option', option);
       this.participantsPerDayChart.setOption(option);
     }
   }
