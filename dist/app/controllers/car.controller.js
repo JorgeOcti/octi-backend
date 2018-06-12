@@ -261,7 +261,8 @@ class CarController {
         // paginate options
         const options = {
             select: {
-                vin: true
+                vin: true,
+                brand: true
             },
             populate: [{
                     path: 'lastForm',
