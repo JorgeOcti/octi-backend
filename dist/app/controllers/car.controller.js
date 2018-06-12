@@ -304,7 +304,7 @@ class CarController {
     }
     getCars(company, options) {
         return new Promise((resolve, reject) => {
-            car_model_1.default.paginate({ company }, options, (err, result) => {
+            car_model_1.default.paginate({ company, lastForm: { $exists: true, $ne: null } }, options, (err, result) => {
                 if (err) {
                     return reject(err);
                 }

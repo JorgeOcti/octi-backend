@@ -300,7 +300,7 @@ class CarController {
 
   private getCars(company: ObjectID, options: PaginateOptions): Promise<PaginateResult<ICarModel>> {
     return new Promise((resolve, reject) => {
-      CarModel.paginate({company}, options, (err, result) => {
+      CarModel.paginate({company, lastForm: {$exists: true, $ne: null}}, options, (err, result) => {
         if (err) {
           return reject(err);
         }
