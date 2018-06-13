@@ -83,15 +83,7 @@ class FormController {
         }
         try {
             const car = await car_model_1.default.findOne({
-                $or: [{
-                        vin: {
-                            $eq: vin
-                        }
-                    }, {
-                        vin2: {
-                            $eq: vin
-                        }
-                    }],
+                $or: [{ vin: { $eq: vin } }, { vin2: { $eq: vin } }],
                 company
             });
             if (car) {

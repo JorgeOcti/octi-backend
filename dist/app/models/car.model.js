@@ -6,14 +6,10 @@ const carSchema = new mongoose.Schema({
     vin: {
         type: String,
         trim: true,
-        unique: true,
-        index: true
     },
     vin2: {
         type: String,
         trim: true,
-        unique: true,
-        index: true
     },
     brand: {
         type: String,

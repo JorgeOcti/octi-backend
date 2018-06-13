@@ -29,20 +29,89 @@ class CarController {
   }
 
   public async checkVIN(req: IRequest, res: Response) {
-    const {vin} = req.body;
+    let {vin, vin2} = req.body;
     const company = req.user.company;
+
+    const carBrands: any = {
+      'VF1': 'RENAULT',
+      'VF2': 'RENAULT',
+      'VF6': 'RENAULT',
+      '8A1': 'RENAULT',
+      '93Y': 'RENAULT',
+      '9FB': 'RENAULT',
+      '3BR': 'RENAULT',
+      'JC1': 'MAZDA',
+      'JMZ': 'MAZDA',
+      'JM6': 'MAZDA',
+      'JM7': 'MAZDA',
+      'PE3': 'MAZDA',
+      'MM8': 'MAZDA',
+      'MM0': 'MAZDA',
+      'MM7': 'MAZDA',
+      '1YV': 'MAZDA',
+      '3MD': 'MAZDA',
+      'JS2': 'SUZUKI',
+      'MMS': 'SUZUKI',
+      'JS3': 'SUZUKI',
+      'IJS': 'SUZUKI',
+      'TSM': 'SUZUKI',
+      'MA3': 'SUZUKI',
+      'MHY': 'SUZUKI',
+      'LJ1': 'JAC',
+      'LS4': 'CHANGAN',
+      'LSC': 'CHANGAN',
+      'LS5': 'CHANGAN',
+      'LPA': 'CHANGAN',
+      'LVR': 'CHANGAN',
+      'LVS': 'CHANGAN',
+      'LGW': 'GREAT WALL'
+    };
+
+    /*
+    {
+      $group: {
+        _id: {
+          vin: {
+            $substr: ["$vin", 0, 3]
+          },
+          brand: "$brand"
+        }
+      }
+    }
+    */
+
     if (vin) {
       try {
+        const indexBrand: string = vin.slice(0, 3);
+        vin2 = vin.substr(vin.length - 6);
+        const brand = carBrands.hasOwnProperty(indexBrand) ? carBrands[indexBrand] : null;
+        const car = await CarModel.findOneOrCreate({
+          vin,
+          company
+        }, {
+          vin,
+          vin2,
+          company,
+          brand
+        });
+        res.json({
+          data: {
+            _id: car._id,
+            vin: car.vin,
+            vin2: car.vin2,
+            brand: car.brand,
+            color: car.color,
+            denomination: car.denomination,
+          },
+          status: 200
+        })
+      } catch (e) {
+        if (e) res.status(500).send(e);
+      }
+    } else if (vin2) {
+      try {
         const car = await CarModel.findOne({
-          $or: [{
-            vin: {
-              $eq: vin
-            }
-          }, {
-            vin2: {
-              $eq: vin
-            }
-          }],
+          vin2,
           company
         }, {
           vin: true,
@@ -51,7 +120,7 @@ class CarController {
           color: true,
           denomination: true
         });
-        if(car){
+        if (car) {
           res.json({
             data: {
               _id: car._id,
@@ -219,7 +288,10 @@ class CarController {
           _id: id,
           company
         }, {
-          vin: true
+          vin: true,
+          brand: true,
+          denomination: true,
+          color: true
         })
         .populate([{
           // reverse populate
@@ -255,15 +327,18 @@ class CarController {
   public async apiCars(req: IRequest, res: Response) {
     const company = req.user.company;
     const {page, pageSize} = req.query;
+
     // paginate options
     const options: PaginateOptions = {
       select: {
         vin: true,
-        brand: true
+        brand: true,
+        denomination: true,
+        color: true
       },
       populate: [{
         path: 'lastForm',
-        select: ['createdAt', 'user'],
+        select: ['createdAt', 'user', 'qualification'],
         populate: [{
           path: 'user',
           select: ['firstName', 'lastName']

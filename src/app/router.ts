@@ -1,9 +1,10 @@
 import * as express from 'express';
 import AppController from './controllers/app.controller';
 import CarController from './controllers/car.controller';
-import AdminUsersController from './controllers/admin/user.controller';
-import AdminCompaniesController from './controllers/admin/companies.controller';
-import AdminVenuesController from './controllers/admin/venues.controller';
+import AdminUsersController from './controllers/admin/user.admin.controller';
+import UserController from './controllers/user.controller';
+import AdminCompaniesController from './controllers/admin/companies.admin.controller';
+import AdminVenuesController from './controllers/admin/venues.admin.controller';
 import JWTController from './controllers/jwt.controller';
 import Middlewares from '../middlewares/middlewares';
 
@@ -41,7 +42,11 @@ appRouter.get('/companies/', Middlewares.isLoggedIn, AdminCompaniesController.in
 appRouter.get('/venues/', Middlewares.isLoggedIn, AdminVenuesController.index);
 appRouter.get('/api/admin/venues/', Middlewares.isLoggedIn, AdminVenuesController.apiVenues);
 
+// validate vins
 appRouter.post('/api/v1/check-vin/', Middlewares.isJWTAuthenticated, CarController.checkVIN);
+
+// change password
+appRouter.post('/api/v1/change-password/', Middlewares.isJWTAuthenticated, UserController.apiChangePassword);
 
 // web login
 appRouter.get('/account/login/', AppController.login);

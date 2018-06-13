@@ -3,9 +3,10 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const express = require("express");
 const app_controller_1 = require("./controllers/app.controller");
 const car_controller_1 = require("./controllers/car.controller");
-const user_controller_1 = require("./controllers/admin/user.controller");
-const companies_controller_1 = require("./controllers/admin/companies.controller");
-const venues_controller_1 = require("./controllers/admin/venues.controller");
+const user_admin_controller_1 = require("./controllers/admin/user.admin.controller");
+const user_controller_1 = require("./controllers/user.controller");
+const companies_admin_controller_1 = require("./controllers/admin/companies.admin.controller");
+const venues_admin_controller_1 = require("./controllers/admin/venues.admin.controller");
 const jwt_controller_1 = require("./controllers/jwt.controller");
 const middlewares_1 = require("../middlewares/middlewares");
 const appRouter = express.Router();
@@ -24,18 +25,21 @@ appRouter.get('/api/admin/cars/', middlewares_1.default.isLoggedIn, car_controll
 appRouter.get('/api/admin/participant/:id/', middlewares_1.default.isLoggedIn, car_controller_1.default.apiParticipantDetail);
 appRouter.get('/api/admin/participants-per-date/', middlewares_1.default.isLoggedIn, car_controller_1.default.apiParticipantsPerDate);
 // admin user
-appRouter.get('/users/', middlewares_1.default.isLoggedIn, user_controller_1.default.index);
+appRouter.get('/users/', middlewares_1.default.isLoggedIn, user_admin_controller_1.default.index);
 // api admin users
-appRouter.get('/api/admin/users/', middlewares_1.default.isLoggedIn, user_controller_1.default.apiUsers);
-appRouter.post('/api/admin/users/', middlewares_1.default.isLoggedIn, user_controller_1.default.apiAddUser);
-appRouter.patch('/api/admin/users/:id/', middlewares_1.default.isLoggedIn, user_controller_1.default.apiEditUser);
-appRouter.delete('/api/admin/users/:id/', middlewares_1.default.isLoggedIn, user_controller_1.default.apiDeleteUser);
+appRouter.get('/api/admin/users/', middlewares_1.default.isLoggedIn, user_admin_controller_1.default.apiUsers);
+appRouter.post('/api/admin/users/', middlewares_1.default.isLoggedIn, user_admin_controller_1.default.apiAddUser);
+appRouter.patch('/api/admin/users/:id/', middlewares_1.default.isLoggedIn, user_admin_controller_1.default.apiEditUser);
+appRouter.delete('/api/admin/users/:id/', middlewares_1.default.isLoggedIn, user_admin_controller_1.default.apiDeleteUser);
 // admin companies
-appRouter.get('/companies/', middlewares_1.default.isLoggedIn, companies_controller_1.default.index);
+appRouter.get('/companies/', middlewares_1.default.isLoggedIn, companies_admin_controller_1.default.index);
 // venue companies
-appRouter.get('/venues/', middlewares_1.default.isLoggedIn, venues_controller_1.default.index);
-appRouter.get('/api/admin/venues/', middlewares_1.default.isLoggedIn, venues_controller_1.default.apiVenues);
+appRouter.get('/venues/', middlewares_1.default.isLoggedIn, venues_admin_controller_1.default.index);
+appRouter.get('/api/admin/venues/', middlewares_1.default.isLoggedIn, venues_admin_controller_1.default.apiVenues);
+// validate vins
 appRouter.post('/api/v1/check-vin/', middlewares_1.default.isJWTAuthenticated, car_controller_1.default.checkVIN);
+// change password
+appRouter.post('/api/v1/change-password/', middlewares_1.default.isJWTAuthenticated, user_controller_1.default.apiChangePassword);
 // web login
 appRouter.get('/account/login/', app_controller_1.default.login);
 appRouter.post('/account/login/', app_controller_1.default.processLogin);
