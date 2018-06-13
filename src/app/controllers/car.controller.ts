@@ -81,6 +81,7 @@ class CarController {
     */
 
     if (vin) {
+      vin = vin.replace(/[\W_]+/g," ");
       try {
         const indexBrand: string = vin.slice(0, 3);
         vin2 = vin.substr(vin.length - 6);
@@ -109,6 +110,7 @@ class CarController {
         if (e) res.status(500).send(e);
       }
     } else if (vin2) {
+      vin2 = vin2.replace(/[\W_]+/g," ");
       try {
         const car = await CarModel.findOne({
           vin2,
