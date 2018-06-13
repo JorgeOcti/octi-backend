@@ -97,6 +97,7 @@ class AdminUsersController {
                 // console.log(error);
                 // send welcome email
                 const fullname = newUser.fullName();
+                console.log(JSON.stringify(process.env));
                 queue.create('email', {
                     from: '',
                     title: `Welcome email for ${fullname}`,
