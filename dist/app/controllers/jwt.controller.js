@@ -179,32 +179,43 @@ class JWTController {
                                     res.status(500).json(err);
                                 }
                                 else {
-                                    const userInfo = {
-                                        _id: user._id,
-                                        firstName: user.firstName,
-                                        lastName: user.lastName,
-                                        email: user.email,
-                                        preferred: user.preferred,
-                                        venue: {
-                                            _id: user.venue ? user.venue._id : null,
-                                            name: user.venue ? user.venue.name : null
-                                        },
-                                        company: {
-                                            _id: user.company ? user.company._id : null,
-                                            name: user.company ? user.company.name : null
+                                    const today = moment().startOf('day');
+                                    const tomorrow = moment(today).add(1, 'days');
+                                    participant_model_1.default.count({
+                                        user,
+                                        createdAt: {
+                                            $gte: today.toDate(),
+                                            $lt: tomorrow.toDate()
                                         }
-                                    };
-                                    res.json({
-                                        data: {
-                                            token: jwt.sign(userInfo, req.app.locals.secretKey, {
-                                                expiresIn: '30 days'
-                                            }),
-                                            refreshToken: jwt.sign(userInfo, req.app.locals.secretKey, {
-                                                expiresIn: '60 days'
-                                            }),
-                                            user: userInfo
-                                        },
-                                        status: 200
+                                    }, (err, count) => {
+                                        const userInfo = {
+                                            _id: user._id,
+                                            firstName: user.firstName,
+                                            lastName: user.lastName,
+                                            email: user.email,
+                                            preferred: user.preferred,
+                                            venue: {
+                                                _id: user.venue ? user.venue._id : null,
+                                                name: user.venue ? user.venue.name : null
+                                            },
+                                            company: {
+                                                _id: user.company ? user.company._id : null,
+                                                name: user.company ? user.company.name : null
+                                            },
+                                            count
+                                        };
+                                        res.json({
+                                            data: {
+                                                token: jwt.sign(userInfo, req.app.locals.secretKey, {
+                                                    expiresIn: '30 days'
+                                                }),
+                                                refreshToken: jwt.sign(userInfo, req.app.locals.secretKey, {
+                                                    expiresIn: '60 days'
+                                                }),
+                                                user: userInfo
+                                            },
+                                            status: 200
+                                        });
                                     });
                                 }
                             });
