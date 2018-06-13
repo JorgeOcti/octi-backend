@@ -122,10 +122,10 @@ app.locals.getVersionedPath = staticify.getVersionedPath;
 app.use(cookieParser());
 app.use(session({
   resave: false,
-  saveUninitialized: true,
+  saveUninitialized: false,
   secret: (process.env.SECRET_KEY as string),
   cookie: {
-    maxAge: 3600000 * 48
+    maxAge: 2592000000 // 30 * 24 * 60 * 60 * 1000 Rememeber 'me' for 30 days
   },
   store: new redisStore({
     host: 'localhost',

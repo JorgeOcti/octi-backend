@@ -2,7 +2,7 @@ import * as nodemailer from 'nodemailer';
 import * as AWS from 'aws-sdk';
 
 AWS.config.update({
-  region: 'us-west-2'
+  region: 'us-west-2',
 });
 
 export default nodemailer.createTransport({
