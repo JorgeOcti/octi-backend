@@ -82,7 +82,7 @@ class FormController {
                 status: 400
             });
         }
-        vin = vin.replace(/[\W_]+/g, " ");
+        vin = vin.replace(/[\W_]+/g, "");
         try {
             const car = await car_model_1.default.findOne({
                 $or: [{ vin: { $eq: vin } }, { vin2: { $eq: vin } }],

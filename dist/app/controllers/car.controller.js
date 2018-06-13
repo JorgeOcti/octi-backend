@@ -71,7 +71,7 @@ class CarController {
         }
         */
         if (vin) {
-            vin = vin.replace(/[\W_]+/g, " ");
+            vin = vin.replace(/[\W_]+/g, "");
             try {
                 const indexBrand = vin.slice(0, 3);
                 vin2 = vin.substr(vin.length - 6);
@@ -103,7 +103,7 @@ class CarController {
             }
         }
         else if (vin2) {
-            vin2 = vin2.replace(/[\W_]+/g, " ");
+            vin2 = vin2.replace(/[\W_]+/g, "");
             try {
                 const car = await car_model_1.default.findOne({
                     vin2,
