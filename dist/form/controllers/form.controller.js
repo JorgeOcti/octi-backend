@@ -65,7 +65,8 @@ class FormController {
     }
     async complete(req, res) {
         const { id } = req.params;
-        const { answers, vin } = req.body;
+        let { vin } = req.body;
+        const { answers } = req.body;
         const company = req.user.company;
         // validate answers in body
         if (!answers) {
@@ -81,6 +82,7 @@ class FormController {
                 status: 400
             });
         }
+        vin = vin.replace(/[\W_]+/g, " ");
         try {
             const car = await car_model_1.default.findOne({
                 $or: [{ vin: { $eq: vin } }, { vin2: { $eq: vin } }],

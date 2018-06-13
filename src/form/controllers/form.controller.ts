@@ -68,8 +68,10 @@ class FormController {
 
   public async complete(req: IRequest, res: Response) {
     const {id} = req.params;
-    const {answers, vin} = req.body;
+    let {vin} = req.body;
+    const {answers} = req.body;
     const company = req.user.company;
+
     // validate answers in body
     if (!answers){
       return res.status(400).json({
@@ -84,6 +86,7 @@ class FormController {
         status: 400
       });
     }
+    vin = vin.replace(/[\W_]+/g," ");
     try {
       const car = await CarModel.findOne({
         $or: [{vin: {$eq: vin}}, {vin2: {$eq: vin}}],
