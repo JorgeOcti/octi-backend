@@ -11,6 +11,7 @@
   "author": "Gonzalo Muñoz Coloma",
   "license": "ISC",
   "devDependencies": {
+    "@types/echarts": "0.0.13",
     "@types/jquery": "^3.3.2",
     "@types/mixpanel": "^2.14.0",
     "@types/moment": "^2.13.0",
@@ -76,6 +77,7 @@
     "@types/redux-thunk": "^2.1.0",
     "@types/validator": "^9.4.0",
     "autoprefixer": "^8.5.2",
+    "echarts": "^4.1.0",
     "gulp": "^3.9.1",
     "gulp-postcss": "^7.0.1",
     "gulp-sass": "^4.0.1",

@@ -4,7 +4,14 @@ const initialState: IDashboardState = {
   loading: true,
   source: null,
   cars: [],
-  car: null
+  car: null,
+  participantsPerDate: [],
+  loadingParticipant: null,
+  pagination: {
+    count: 0,
+    page: 1,
+    pages: 1
+  },
 };
 
 export function dashboard(state = initialState, action: DashboardReduxAction): IDashboardState {
@@ -17,17 +24,40 @@ export function dashboard(state = initialState, action: DashboardReduxAction): I
     case '/DASHBOARD/LOAD_CARS':
       return {
         ...state,
-        cars: action.payload.cars
+        cars: action.payload.cars,
+        pagination: {
+          ...state.pagination,
+          pages: action.payload.pages,
+          count: action.payload.count
+        }
+      };
+    case '/DASHBOARD/LOADING_PARTICIPANT':
+      return {
+        ...state,
+        loadingParticipant: action.payload.loadingParticipant
+      };
+    case '/DASHBOARD/LOAD_PARTICIPANTS_PER_DATE':
+      return {
+        ...state,
+        participantsPerDate: action.payload.participantsPerDate
       };
     case '/DASHBOARD/LOAD_CAR':
       return {
         ...state,
-        car: action.payload.car
+        car: action.payload.car,
       };
     case '/DASHBOARD/CANCEL_REQUEST':
       return {
         ...state,
         source: action.payload.source
+      };
+    case '/DASHBOARD/CHANGE_PAGE':
+      return {
+        ...state,
+        pagination: {
+          ...state.pagination,
+          page: action.payload.page,
+        }
       };
     default:
       return state;

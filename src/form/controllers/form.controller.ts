@@ -85,115 +85,133 @@ class FormController {
       });
     }
     try {
-      const form = await this.getFormWithScale(id, company);
-      if (form) {
-        // initialize participant
-        const car = await CarModel.findOneOrCreate({vin}, {vin, company});
-        const newParticipant = new ParticipantModel({
-          name: form.name,
-          company,
-          form: form._id,
-          car: car,
-          description: form.description,
-          user: req.user._id,
-          active: form.active,
-        });
-        // var sum sections
-        let sumSectionWeigths = 0;
-        let sumSectionQualifications = 0;
-        for (const section of form.sections) {
-          // var sum questions
-          let sumWeigths = 0;
-          let sumQualifications = 0;
-          // array of answers
-          const newAnswers: any[] = [];
-          for (const question of section.questions) {
-            // calculate qualification and set vars of the answer
-            const questionID = question._id.toString();
-            // get selected answer
-            const answer = answers.hasOwnProperty(questionID) ? answers[questionID] : null;
-            // find choice selected
-            const choice = question.scale.choices.find((choice) => {
-              return answer ? choice._id.toString() === answer.value : false;
-            });
-            // calculate qualification
-            let qualification = 0;
-            if (choice) {
-              qualification = (100 / question.scale.maxValue) * choice.value;
-            }
-
-            sumQualifications +=  (qualification * question.weight);
-            sumWeigths += question.weight;
-            // generate answer
-            newAnswers.push({
-              _id: question._id,
-              question: question.question,
-              shortName: question.shortName,
-              scale: question.scale,
-              risk: question.risk,
-              observe: question.observe,
-              answer: answer ? new ObjectID(answer.value) : null,
-              qualification,
-              weight: question.weight,
-              order: question.order,
-            })
+      const car = await CarModel.findOne({
+        $or: [{
+          vin: {
+            $eq: vin
           }
-          // calculate section qualification
-          const sectionQualification = sumQualifications ? sumQualifications / sumWeigths : 0;
-          sumSectionQualifications += (sectionQualification * section.weight);
-          sumSectionWeigths += section.weight;
+        }, {
+          vin2: {
+            $eq: vin
+          }
+        }],
+        company
+      });
+      if(car){
+        const form = await this.getFormWithScale(id, company);
+        if (form) {
+          // initialize participant
+          const newParticipant = new ParticipantModel({
+            name: form.name,
+            company,
+            form: form._id,
+            car: car,
+            description: form.description,
+            user: req.user._id,
+            active: form.active,
+          });
+          // var sum sections
+          let sumSectionWeigths = 0;
+          let sumSectionQualifications = 0;
+          for (const section of form.sections) {
+            // var sum questions
+            let sumWeigths = 0;
+            let sumQualifications = 0;
+            // array of answers
+            const newAnswers: any[] = [];
+            for (const question of section.questions) {
+              // calculate qualification and set vars of the answer
+              const questionID = question._id.toString();
+              // get selected answer
+              const answer = answers.hasOwnProperty(questionID) ? answers[questionID] : null;
+              // find choice selected
+              const choice = question.scale.choices.find((choice) => {
+                return answer ? choice._id.toString() === answer.value : false;
+              });
+              // calculate qualification
+              let qualification = 0;
+              if (choice) {
+                qualification = (100 / question.scale.maxValue) * choice.value;
+              }
 
-          // generate answer section
-          newParticipant.sections.push({
-            _id: section._id,
-            name: section.name,
-            shortName: section.shortName,
-            answers: newAnswers,
-            qualification: sectionQualification,
-            weight: section.weight,
-            order: section.order,
-          });
-        }
-        // calculate participant qualification
-        const formQualification = sumSectionQualifications ? sumSectionQualifications / sumSectionWeigths : 0;
-        newParticipant.qualification = formQualification;
-        try {
-          // save the participant
-          await newParticipant.save();
-          car.lastForm = newParticipant;
-          await car.save();
-          const today = moment().startOf('day');
-          const tomorrow = moment(today).add(1, 'days');
-          const count = await ParticipantModel.count({
-            user: req.user,
-            createdAt: {
-              $gte: today.toDate(),
-              $lt: tomorrow.toDate()
+              sumQualifications +=  (qualification * question.weight);
+              sumWeigths += question.weight;
+              // generate answer
+              newAnswers.push({
+                _id: question._id,
+                question: question.question,
+                shortName: question.shortName,
+                scale: question.scale,
+                risk: question.risk,
+                observe: question.observe,
+                answer: answer ? new ObjectID(answer.value) : null,
+                qualification,
+                weight: question.weight,
+                order: question.order,
+              })
             }
-          });
-          return res.json({
-            data: {
-              id,
-              count,
-              vin,
-              qualification: formQualification
-            },
-            status: 200
-          });
-        } catch (e) {
-          // return error, if the form could not be recorded
+            // calculate section qualification
+            const sectionQualification = sumQualifications ? sumQualifications / sumWeigths : 0;
+            sumSectionQualifications += (sectionQualification * section.weight);
+            sumSectionWeigths += section.weight;
+
+            // generate answer section
+            newParticipant.sections.push({
+              _id: section._id,
+              name: section.name,
+              shortName: section.shortName,
+              answers: newAnswers,
+              qualification: sectionQualification,
+              weight: section.weight,
+              order: section.order,
+            });
+          }
+          // calculate participant qualification
+          const formQualification = sumSectionQualifications ? sumSectionQualifications / sumSectionWeigths : 0;
+          newParticipant.qualification = formQualification;
+          try {
+            // save the participant
+            await newParticipant.save();
+            car.lastForm = newParticipant;
+            await car.save();
+            const today = moment().startOf('day');
+            const tomorrow = moment(today).add(1, 'days');
+            const count = await ParticipantModel.count({
+              user: req.user,
+              createdAt: {
+                $gte: today.toDate(),
+                $lt: tomorrow.toDate()
+              }
+            });
+            return res.json({
+              data: {
+                id,
+                count,
+                vin,
+                qualification: formQualification
+              },
+              status: 200
+            });
+          } catch (e) {
+            // return error, if the form could not be recorded
+            return res.status(400).json({
+              message: e,
+              status: 400
+            });
+          }
+        }
+        else {
+          // return error, if the form could not find
           return res.status(400).json({
-            message: e,
+            message: 'No se ha encontrado el formularío',
             status: 400
           });
         }
-      }
-      else {
-        // return error, if the form could not find
+      } else {
         return res.status(400).json({
-          message: 'No se ha encontrado el formularío',
+          message: 'VIN no encontrado.',
           status: 400
-        });
+        })
       }
     } catch (e) {
       return res.status(400).json({

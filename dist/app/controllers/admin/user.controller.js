@@ -90,7 +90,8 @@ class AdminUsersController {
                     venue,
                     company,
                     password,
-                    email
+                    email,
+                    active: true
                 }).save();
                 // const error = await newUser.validate();
                 // console.log(error);

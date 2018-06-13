@@ -9,12 +9,32 @@ const carSchema = new mongoose.Schema({
   vin: {
     type: String,
     trim: true,
-    required: true
+    unique: true,
+    index: true
+  },
+  vin2: {
+    type: String,
+    trim: true,
+    unique: true,
+    index: true
+  },
+  brand: {
+    type: String,
+    trim: true,
+  },
+  denomination: {
+    type: String,
+    trim: true,
+  },
+  color: {
+    type: String,
+    trim: true,
   },
   company: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Company',
-    required: true
+    required: true,
+    index: true
   },
   lastForm: {
     type: mongoose.Schema.Types.ObjectId,

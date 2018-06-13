@@ -23,10 +23,6 @@ class ModalView extends React.Component<IPropsType, IStateType> {
     dispatch: PropTypes.func.isRequired
   };
 
-  componentWillMount(){
-    console.log('Hola');
-  }
-
   render() {
     const {modal} = this.props;
     return (
@@ -41,7 +37,7 @@ class ModalView extends React.Component<IPropsType, IStateType> {
               {modal ? modal.body : ''}
             </div>
             <div className="modal-footer">
-              {modal ? modal.footer : <button type="button" className="btn btn-default" data-dismiss="modal">Close</button>}
+              {modal && modal.footer ? modal.footer : <button type="button" className="btn btn-default" data-dismiss="modal">Cerrar</button>}
             </div>
           </div>
         </div>

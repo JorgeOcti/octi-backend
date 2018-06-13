@@ -13,7 +13,9 @@ exports.appRouter = appRouter;
 // robots.txt
 appRouter.get('/robots.txt', app_controller_1.default.robots);
 // DashBoard Principal
-appRouter.get('/', middlewares_1.default.isLoggedIn, car_controller_1.default.vinDashboard);
+appRouter.get('/', middlewares_1.default.isLoggedIn, car_controller_1.default.generalDashboard);
+// DashBoard Cars
+appRouter.get('/cars/', middlewares_1.default.isLoggedIn, car_controller_1.default.vinDashboard);
 appRouter.get('/cars/:id', middlewares_1.default.isLoggedIn, car_controller_1.default.vinDashboardDetail);
 // api cars
 appRouter.get('/api/admin/cars/:id/', middlewares_1.default.isLoggedIn, car_controller_1.default.apiCarDetail);
@@ -33,6 +35,7 @@ appRouter.get('/companies/', middlewares_1.default.isLoggedIn, companies_control
 // venue companies
 appRouter.get('/venues/', middlewares_1.default.isLoggedIn, venues_controller_1.default.index);
 appRouter.get('/api/admin/venues/', middlewares_1.default.isLoggedIn, venues_controller_1.default.apiVenues);
+appRouter.post('/api/v1/check-vin/', middlewares_1.default.isJWTAuthenticated, car_controller_1.default.checkVIN);
 // web login
 appRouter.get('/account/login/', app_controller_1.default.login);
 appRouter.post('/account/login/', app_controller_1.default.processLogin);

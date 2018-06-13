@@ -3,18 +3,78 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const car_model_1 = require("../models/car.model");
 const mongoose = require("mongoose");
 const participant_model_1 = require("../../form/models/participant.model");
-class AdminCompaniesController {
+class CarController {
     constructor() {
+        this.generalDashboard = this.generalDashboard.bind(this);
         this.vinDashboard = this.vinDashboard.bind(this);
         this.vinDashboardDetail = this.vinDashboardDetail.bind(this);
+        this.checkVIN = this.checkVIN.bind(this);
         this.apiCars = this.apiCars.bind(this);
         this.apiCarDetail = this.apiCarDetail.bind(this);
         this.getCars = this.getCars.bind(this);
         this.apiParticipantDetail = this.apiParticipantDetail.bind(this);
         this.apiParticipantsPerDate = this.apiParticipantsPerDate.bind(this);
     }
+    generalDashboard(req, res) {
+        res.render('app/index');
+    }
     vinDashboard(req, res) {
         res.render('app/index');
+    }
+    async checkVIN(req, res) {
+        const { vin } = req.body;
+        const company = req.user.company;
+        if (vin) {
+            try {
+                const car = await car_model_1.default.findOne({
+                    $or: [{
+                            vin: {
+                                $eq: vin
+                            }
+                        }, {
+                            vin2: {
+                                $eq: vin
+                            }
+                        }],
+                    company
+                }, {
+                    vin: true,
+                    vin2: true,
+                    brand: true,
+                    color: true,
+                    denomination: true
+                });
+                if (car) {
+                    res.json({
+                        data: {
+                            _id: car._id,
+                            vin: car.vin,
+                            vin2: car.vin2,
+                            brand: car.brand,
+                            color: car.color,
+                            denomination: car.denomination,
+                        },
+                        status: 200
+                    });
+                }
+                else {
+                    res.status(400).json({
+                        message: 'VIN no encontrado.',
+                        status: 400
+                    });
+                }
+            }
+            catch (e) {
+                if (e)
+                    res.status(500).send(e);
+            }
+        }
+        else {
+            res.status(400).json({
+                message: 'VIN no encontrado.',
+                status: 400
+            });
+        }
     }
     async vinDashboardDetail(req, res) {
         const { id } = req.params;
@@ -201,7 +261,8 @@ class AdminCompaniesController {
         // paginate options
         const options = {
             select: {
-                vin: true
+                vin: true,
+                brand: true
             },
             populate: [{
                     path: 'lastForm',
@@ -212,7 +273,7 @@ class AdminCompaniesController {
                         }]
                 }],
             sort: {
-                createdAt: -1
+                updatedAt: -1
             },
             page: parseInt(page ? page : 1),
             limit: parseInt(pageSize ? pageSize : 20),
@@ -244,7 +305,7 @@ class AdminCompaniesController {
     }
     getCars(company, options) {
         return new Promise((resolve, reject) => {
-            car_model_1.default.paginate({ company }, options, (err, result) => {
+            car_model_1.default.paginate({ company, lastForm: { $exists: true, $ne: null } }, options, (err, result) => {
                 if (err) {
                     return reject(err);
                 }
@@ -253,5 +314,5 @@ class AdminCompaniesController {
         });
     }
 }
-exports.default = new AdminCompaniesController();
+exports.default = new CarController();
 //# sourceMappingURL=car.controller.js.map

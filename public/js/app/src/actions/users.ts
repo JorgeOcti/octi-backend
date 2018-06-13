@@ -229,7 +229,7 @@ export function getUsersAction(nextPage?: number) {
     dispatch(isLoadingAction(true));
     dispatch(cancelRequestAction(api.getSource()));
     const page = nextPage ? nextPage : state.users.pagination.page;
-    if(nextPage){
+    if (nextPage) {
       dispatch(changePageAction(nextPage));
     }
     api.getUsers(page)

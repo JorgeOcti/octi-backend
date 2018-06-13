@@ -9,6 +9,7 @@ import UsersListView from "./components/Users/UsersListView";
 import * as moment from 'moment';
 import DashboardVinView from "./components/DashboardVin/DashboardVinView";
 import DashboardVinDetail from "./components/DashboardVin/DashboardVinDetail";
+import DashboardGeneralView from "./components/DashboardGeneral/DashboardGeneralView";
 
 const store = configureStore();
 
@@ -22,7 +23,8 @@ const App = () => (
     <Provider store={store}>
         <BrowserRouter history={history}>
             <Switch>
-                <Route exact path="/" component={ DashboardVinView }/>
+                <Route exact path="/" component={ DashboardGeneralView }/>
+                <Route exact path="/cars/" component={ DashboardVinView }/>
                 <Route exact path="/cars/:id" component={ DashboardVinDetail }/>
                 <Route exact path="/2/" component={ TestDetailView2 }/>
                 <Route exact path="/users/" component={ UsersListView }/>

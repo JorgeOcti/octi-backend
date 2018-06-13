@@ -6,10 +6,13 @@ import {PaginateOptions, PaginateResult} from "mongoose";
 import {IRequest} from "../../interfaces/global.interface";
 import ParticipantModel from "../../form/models/participant.model";
 
-class AdminCompaniesController {
+class CarController {
+
   constructor() {
+    this.generalDashboard = this.generalDashboard.bind(this);
     this.vinDashboard = this.vinDashboard.bind(this);
     this.vinDashboardDetail = this.vinDashboardDetail.bind(this);
+    this.checkVIN = this.checkVIN.bind(this);
     this.apiCars = this.apiCars.bind(this);
     this.apiCarDetail = this.apiCarDetail.bind(this);
     this.getCars = this.getCars.bind(this);
@@ -17,8 +20,64 @@ class AdminCompaniesController {
     this.apiParticipantsPerDate = this.apiParticipantsPerDate.bind(this);
   }
 
+  public generalDashboard(req: Request, res: Response) {
+    res.render('app/index');
+  }
+
   public vinDashboard(req: Request, res: Response) {
     res.render('app/index');
+  }
+
+  public async checkVIN(req: IRequest, res: Response) {
+    const {vin} = req.body;
+    const company = req.user.company;
+    if (vin) {
+      try {
+        const car = await CarModel.findOne({
+          $or: [{
+            vin: {
+              $eq: vin
+            }
+          }, {
+            vin2: {
+              $eq: vin
+            }
+          }],
+          company
+        }, {
+          vin: true,
+          vin2: true,
+          brand: true,
+          color: true,
+          denomination: true
+        });
+        if(car){
+          res.json({
+            data: {
+              _id: car._id,
+              vin: car.vin,
+              vin2: car.vin2,
+              brand: car.brand,
+              color: car.color,
+              denomination: car.denomination,
+            },
+            status: 200
+          })
+        } else {
+          res.status(400).json({
+            message: 'VIN no encontrado.',
+            status: 400
+          })
+        }
+      } catch (e) {
+        if (e) res.status(500).send(e);
+      }
+    } else {
+      res.status(400).json({
+        message: 'VIN no encontrado.',
+        status: 400
+      })
+    }
   }
 
   public async vinDashboardDetail(req: IRequest, res: Response) {
@@ -199,7 +258,8 @@ class AdminCompaniesController {
     // paginate options
     const options: PaginateOptions = {
       select: {
-        vin: true
+        vin: true,
+        brand: true
       },
       populate: [{
         path: 'lastForm',
@@ -210,7 +270,7 @@ class AdminCompaniesController {
         }]
       }],
       sort: {
-        createdAt: -1
+        updatedAt: -1
       },
       page: parseInt(page ? page : 1),
       limit: parseInt(pageSize ? pageSize : 20),
@@ -241,7 +301,7 @@ class AdminCompaniesController {
 
   private getCars(company: ObjectID, options: PaginateOptions): Promise<PaginateResult<ICarModel>> {
     return new Promise((resolve, reject) => {
-      CarModel.paginate({company}, options, (err, result) => {
+      CarModel.paginate({company, lastForm: {$exists: true, $ne: null}}, options, (err, result) => {
         if (err) {
           return reject(err);
         }
@@ -251,4 +311,4 @@ class AdminCompaniesController {
   }
 }
 
-export default new AdminCompaniesController();
+export default new CarController();

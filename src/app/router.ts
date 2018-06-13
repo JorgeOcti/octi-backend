@@ -12,7 +12,10 @@ const appRouter = express.Router();
 appRouter.get('/robots.txt', AppController.robots);
 
 // DashBoard Principal
-appRouter.get('/', Middlewares.isLoggedIn, CarController.vinDashboard);
+appRouter.get('/', Middlewares.isLoggedIn, CarController.generalDashboard);
+
+// DashBoard Cars
+appRouter.get('/cars/', Middlewares.isLoggedIn, CarController.vinDashboard);
 appRouter.get('/cars/:id', Middlewares.isLoggedIn, CarController.vinDashboardDetail);
 
 // api cars
@@ -37,6 +40,8 @@ appRouter.get('/companies/', Middlewares.isLoggedIn, AdminCompaniesController.in
 // venue companies
 appRouter.get('/venues/', Middlewares.isLoggedIn, AdminVenuesController.index);
 appRouter.get('/api/admin/venues/', Middlewares.isLoggedIn, AdminVenuesController.apiVenues);
+
+appRouter.post('/api/v1/check-vin/', Middlewares.isJWTAuthenticated, CarController.checkVIN);
 
 // web login
 appRouter.get('/account/login/', AppController.login);

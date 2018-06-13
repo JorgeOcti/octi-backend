@@ -8,6 +8,7 @@ import {RouteComponentProps} from "react-router";
 import {DashboardReduxAction, getCarsAction, IDashboardState} from "../../actions/dashboard";
 import * as PropTypes from "prop-types";
 import * as moment from "moment";
+import Paginator from "../Paginator";
 // backend interfaces
 import {ICar} from "../../../../../../src/interfaces/car.interface";
 
@@ -15,7 +16,7 @@ interface IPropsType extends RouteComponentProps<{ ticket: string }> {
   dispatch: Dispatch<DashboardReduxAction>;
   dashboard: IDashboardState;
 
-  getCarsAction(): void;
+  getCarsAction(page?: number): void;
 }
 
 interface IStateType {
@@ -29,6 +30,11 @@ class DashboardVinView extends React.Component<IPropsType, IStateType> {
     dispatch: PropTypes.func.isRequired,
     getCarsAction: PropTypes.func.isRequired,
   };
+
+   constructor(props: IPropsType) {
+    super(props);
+    this.changePage = this.changePage.bind(this);
+  }
 
   componentWillMount(){
     // set the title of the page
@@ -50,10 +56,15 @@ class DashboardVinView extends React.Component<IPropsType, IStateType> {
     }
   }
 
+  private changePage(page:number){
+    // change the page
+    this.props.getCarsAction(page);
+  }
+
   public render(): React.ReactElement<IPropsType> {
-    const {loading, cars} = this.props.dashboard;
+    const {loading, cars, pagination} = this.props.dashboard;
     return (
-      <AppContainer title='' cMenu='1' cSubMenu='1.1'>
+      <AppContainer title='' cMenu='1' cSubMenu='1.2'>
         <section className="content">
           <div className="box">
             <div className="box-header with-border"><h3 className="box-title">Listado de VINs</h3>
@@ -64,8 +75,9 @@ class DashboardVinView extends React.Component<IPropsType, IStateType> {
               <table className="table table-striped">
                 <thead>
                   <tr>
-                    <th>VIN</th>
-                    <th>Supervisor</th>
+                    <th className="middle">VIN</th>
+                    <th className="middle hidden-xs">Marca</th>
+                    <th className="middle">Supervisor</th>
                     <th className="hidden-xs">Último checkeo</th>
                     <th className="width-10" />
                   </tr>
@@ -75,11 +87,12 @@ class DashboardVinView extends React.Component<IPropsType, IStateType> {
                     cars.map((car: ICar) => {
                       return (
                         <tr key={car._id} id={`car-${car._id}`}>
-                          <td>{car.vin}</td>
-                          <td>{`${car.lastForm.user ? `${car.lastForm.user.firstName} ${car.lastForm.user.lastName}` : ''}`}</td>
-                          <td className="hidden-xs">{moment(car.lastForm.createdAt).format('LLL')}</td>
-                          <td className="text-primary pointer" onClick={() => this.props.history.push(`/cars/${car._id}`)}>
-                            <i className="fa fa-table"/>
+                          <td className="middle">{car.vin}</td>
+                          <td className="middle hidden-xs">{car.brand}</td>
+                          <td className="middle">{`${car.lastForm.user ? `${car.lastForm.user.firstName} ${car.lastForm.user.lastName}` : ''}`}</td>
+                          <td className="middle hidden-xs">{moment(car.lastForm.createdAt).format('LLL')}</td>
+                          <td className="text-primary">
+                            <button className="btn btn-xs btn-primary" onClick={() => this.props.history.push(`/cars/${car._id}`)}><i className="fa fa-bars"/></button>
                           </td>
                         </tr>
                       )
@@ -89,7 +102,12 @@ class DashboardVinView extends React.Component<IPropsType, IStateType> {
               </table>
 
             </div>
-            {/*<div className="box-footer">Footer</div>*/}
+            {
+              pagination.pages > 1 &&
+                <div className="box-footer text-right">
+                  <Paginator changePage={this.changePage} page={pagination.page} pages={pagination.pages} />
+                </div>
+            }
             {
               loading &&
                 <div className="overlay">
@@ -112,7 +130,7 @@ const mapStateToProps = (state: { dashboard: IDashboardState }) => {
 const mapDispatchToProps = (dispatch: any ) => {
   return {
     dispatch,
-    getCarsAction: () => dispatch(getCarsAction()),
+    getCarsAction: (page?: number) => dispatch(getCarsAction(page)),
   };
 };
 

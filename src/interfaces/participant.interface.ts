@@ -3,7 +3,6 @@ import {
   IParticipantAnswerModel,
   IParticipantChoicesModel,
   IParticipantSectionModel,
-  IScaleParticipantModel
 } from "../form/models/participant.model";
 import {IUserModel} from "../app/models/user.model";
 import {IFormModel} from "../form/models/form.model";
@@ -32,7 +31,7 @@ export interface IParticipantAnswer {
   question: string;
   shortName: string;
 
-  scale: IScaleParticipantModel;
+  scale: IParticipantScale;
   answer: string;
   qualification: number;
   comment: string;

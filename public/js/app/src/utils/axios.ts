@@ -85,15 +85,26 @@ export default class ApiService {
     );
   }
 
+  public getParticipantsPerDate() {
+    return this.instance.get(
+      `/api/admin/participants-per-date/`
+    );
+  }
+  public getParticipant(id: string) {
+    return this.instance.get(
+      `/api/admin/participant/${id}/`
+    );
+  }
+
   public getVenues(): AxiosPromise {
     return this.instance.get(
       `/api/admin/venues/`
     );
   }
 
-  public getCars(): AxiosPromise {
+  public getCars(page?: number): AxiosPromise {
     return this.instance.get(
-      `/api/admin/cars/`,{
+      `/api/admin/cars/${page ? `?page=${page}` : ''}`, {
         cancelToken: this.source.token
       }
     );

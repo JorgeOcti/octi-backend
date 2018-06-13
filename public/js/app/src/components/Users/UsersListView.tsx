@@ -20,9 +20,10 @@ import {
 } from "../../actions/users";
 import {loadDataAction, ModalReduxAction} from "../../actions/modal";
 import ModalView from "../Modal/ModalView";
+import Paginator from "../Paginator";
+import {statusFooterButttonsModal} from "../../utils/common";
 // backend interfaces
 import {IUser} from "../../../../../../src/interfaces/user.interface";
-import {statusFooterButttonsModal} from "../../utils/common";
 
 
 interface IPropsType extends RouteComponentProps<{ ticket: string }> {
@@ -303,27 +304,12 @@ class UsersListView extends React.Component<IPropsType, IStateType> {
                 </tbody>
               </table>
             </div>
-            <div className="box-footer text-right">
-                <ul className="pagination">
-                  {/*<li className="page-item disabled">*/}
-                    {/*<a className="page-link" href="#">Previous</a>*/}
-                  {/*</li>*/}
-                  {
-                    new Array(pagination.pages).fill(1).map((item, index) => {
-                      const idPagination = index + 1;
-                      const onClick = idPagination !== pagination.page ? () => this.changePage(idPagination) : () => {};
-                      return (
-                        <li className={`page-item ${idPagination === pagination.page ? 'active' : ''}`} key={idPagination}>
-                          <a className="page-link" href="javascript:void(0)" onClick={onClick}>{idPagination}</a>
-                        </li>
-                      )
-                    })
-                  }
-                  {/*<li className="page-item">*/}
-                    {/*<a className="page-link" href="#">Next</a>*/}
-                  {/*</li>*/}
-                </ul>
-            </div>
+            {
+              pagination.pages > 1 &&
+                <div className="box-footer text-right">
+                  <Paginator changePage={this.changePage} page={pagination.page} pages={pagination.pages} />
+                </div>
+            }
             {
               loading &&
                 <div className="overlay">
