@@ -28,10 +28,6 @@ class EmailQueue {
   private processEmail(job?: Job, done?: (error?: Error | null, data?: object) => void) {
     if (job && done) {
 
-      console.log('---------------------------');
-      console.log(JSON.stringify(job));
-      console.log('---------------------------');
-
       // generate email
       const mail: Mail.Options = {
         from: `"${job.data.from && job.data.from.length ? job.data.from : 'OSA Andes'}"<no-reply-andes@osacontrol.com>`,
@@ -41,6 +37,11 @@ class EmailQueue {
         html: this.generateHTML(job.data.view, job.data.context),
         attachments: job.data.attachments || []
       };
+      console.log('---------------------------');
+      console.log(JSON.stringify(mail));
+      console.log('---------------------------');
+      console.log(JSON.stringify(process.env));
+      console.log('---------------------------');
 
       // send mail with defined transport object
       nodemailerTransporter.sendMail(mail, (error, info) => {
