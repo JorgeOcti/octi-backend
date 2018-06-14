@@ -9,14 +9,12 @@ const carSchema = new mongoose.Schema({
   vin: {
     type: String,
     trim: true,
-    // unique: true,
-    // index: true
+    required: true
   },
   vin2: {
     type: String,
     trim: true,
-    // unique: true,
-    // index: true
+    required: true
   },
   brand: {
     type: String,
@@ -44,6 +42,8 @@ const carSchema = new mongoose.Schema({
 }, {
   timestamps: true
 });
+carSchema.index({company: 1, vin2: 1}, {unique: true});
+carSchema.index({company: 1, vin: 1}, {unique: true});
 
 carSchema.virtual('participants', {
   ref: 'Participant', // The model to use
