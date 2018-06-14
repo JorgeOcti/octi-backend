@@ -29,6 +29,7 @@ const userSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Company',
     required: [true, 'La empresa es requerida'],
+    index: true
   },
   venue: {
     type: mongoose.Schema.Types.ObjectId,
@@ -63,6 +64,7 @@ const userSchema = new mongoose.Schema({
 }, {
   timestamps: true
 });
+
 
 userSchema.plugin(passportLocalMongoose);
 // https://www.npmjs.com/package/mongoose-paginate

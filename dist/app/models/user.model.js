@@ -21,6 +21,7 @@ const userSchema = new mongoose.Schema({
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Company',
         required: [true, 'La empresa es requerida'],
+        index: true
     },
     venue: {
         type: mongoose.Schema.Types.ObjectId,
