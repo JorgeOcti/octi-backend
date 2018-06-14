@@ -27,16 +27,18 @@ const email_task_1 = require("./app/tasks/email.task");
 const router_1 = require("./app/router");
 const router_2 = require("./form/router");
 // import {QueueServices} from "./services/queue.services";
+// Create Express server
+const app = express();
 // Configure sentry
 // Load environment variables from .env file, where API keys and passwords are configured
-dotenv.config({
-    path: path.join(__dirname, '../.env')
-});
 global.__rootdir__ = __dirname || process.cwd();
 const root = global.__rootdir__;
 const LocalStrategy = passportLocal.Strategy;
 const gitCommit = git.long();
 const redisStore = connectRedis(session);
+dotenv.config({
+    path: path.join(__dirname, '../.env')
+});
 /* istanbul ignore next */
 Raven.config(process.env.SENTRY_DNS, {
     release: gitCommit,
@@ -65,8 +67,6 @@ Raven.config(process.env.SENTRY_DNS, {
         return data;
     }
 }).install();
-// Create Express server
-const app = express();
 // Middlewares
 app.use(compression());
 app.use(lusca.xframe('SAMEORIGIN'));

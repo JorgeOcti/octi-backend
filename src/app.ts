@@ -30,16 +30,21 @@ import {
 import formRouter from './form/router';
 // import {QueueServices} from "./services/queue.services";
 
+// Create Express server
+const app = express();
+
 // Configure sentry
 // Load environment variables from .env file, where API keys and passwords are configured
-dotenv.config({
-  path: path.join(__dirname, '../.env')
-});
+
 (global as any).__rootdir__ = __dirname || process.cwd();
 const root = (global as any).__rootdir__;
 const LocalStrategy = passportLocal.Strategy;
 const gitCommit = git.long();
 const redisStore = connectRedis(session);
+
+dotenv.config({
+  path: path.join(__dirname, '../.env')
+});
 
 /* istanbul ignore next */
 Raven.config(process.env.SENTRY_DNS, {
@@ -70,10 +75,6 @@ Raven.config(process.env.SENTRY_DNS, {
 
     return data;
   }}).install();
-
-
-// Create Express server
-const app = express();
 
 // Middlewares
 app.use(compression());
