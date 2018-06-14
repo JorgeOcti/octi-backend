@@ -331,7 +331,7 @@ class CarController {
     }
     async apiCars(req, res) {
         const company = req.user.company;
-        const { page, pageSize } = req.query;
+        const { page, pageSize, search } = req.query;
         // paginate options
         const options = {
             select: {
@@ -355,7 +355,7 @@ class CarController {
             limit: parseInt(pageSize ? pageSize : 20),
         };
         try {
-            const cars = await this.getCars(company, options);
+            const cars = await this.getCars(company, options, search);
             // validate exist page
             if (options.page && cars.pages && cars.pages < options.page) {
                 res.status(400).json({
@@ -379,9 +379,15 @@ class CarController {
                 res.status(500).json(e);
         }
     }
-    getCars(company, options) {
+    getCars(company, options, search) {
+        let filter = { company, lastForm: { $exists: true, $ne: null } };
+        if (search && search.length) {
+            const searchText = new RegExp(search, 'i');
+            // search in vin and brand
+            filter = { $and: [{ $or: [{ vin: { $regex: searchText } }, { brand: { $regex: searchText } }] }, filter] };
+        }
         return new Promise((resolve, reject) => {
-            car_model_1.default.paginate({ company, lastForm: { $exists: true, $ne: null } }, options, (err, result) => {
+            car_model_1.default.paginate(filter, options, (err, result) => {
                 if (err) {
                     return reject(err);
                 }

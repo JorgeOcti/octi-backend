@@ -21,7 +21,8 @@ mongoose.connect(MONGODB_URI, {useMongoClient: true}, (err) => {
 // mongoose.Promise = global.Promise;
 mongoose.set('debug', app.get('env') !== 'testing');
 // mongoose.set('debug', false);
-const server = app.listen(app.get('port'), () => {
+const NODE_APP_INSTANCE: number = parseInt(process.env.NODE_APP_INSTANCE as string) || 0;
+const server = app.listen(app.get('port') + NODE_APP_INSTANCE, () => {
   /* istanbul ignore if */
   if (app.get('env') !== 'testing') {
     console.log(`${logger.colors.magenta}----------------------${logger.colors.reset}`);
