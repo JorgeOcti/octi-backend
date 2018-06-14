@@ -21,7 +21,8 @@ mongoose.Promise = bluebird;
 // mongoose.Promise = global.Promise;
 mongoose.set('debug', app_1.default.get('env') !== 'testing');
 // mongoose.set('debug', false);
-const server = app_1.default.listen(app_1.default.get('port'), () => {
+const NODE_APP_INSTANCE = parseInt(process.env.NODE_APP_INSTANCE) || 0;
+const server = app_1.default.listen(app_1.default.get('port') + NODE_APP_INSTANCE, () => {
     /* istanbul ignore if */
     if (app_1.default.get('env') !== 'testing') {
         console.log(`${logger_service_1.default.colors.magenta}----------------------${logger_service_1.default.colors.reset}`);
