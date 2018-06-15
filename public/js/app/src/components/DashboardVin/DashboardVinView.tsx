@@ -37,7 +37,7 @@ class DashboardVinView extends React.Component<IPropsType, IStateType> {
   constructor(props: IPropsType) {
     super(props);
     this.changePage = this.changePage.bind(this);
-    this.socket = io();
+    this.socket = io.connect(`${location.protocol}//${location.host}`,{secure: location.protocol === 'https:', reconnection: true});
     this.socket.on('dashboard-vin-view', (data: any): void => {
       const {page} = this.props.dashboard.pagination;
       console.log(data);
