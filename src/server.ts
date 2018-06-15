@@ -2,6 +2,8 @@ import * as bluebird from 'bluebird';
 import * as mongoose from 'mongoose';
 import app from './app';
 import logger from './services/logger.service';
+import * as socketIO from 'socket.io';
+import * as socketRedis from 'socket.io-redis';
 
 // Mongoose setting
 const MONGODB_URI: string = process.env.MONGODB_URI || '';
@@ -36,5 +38,23 @@ const server = app.listen(parseInt(app.get('port')) + NODE_APP_INSTANCE, () => {
     console.log(`${logger.colors.brightBlack}Press CTRL-C to stop${logger.colors.reset}`);
   }
 });
+
+export const io = socketIO(server);
+
+io.adapter(socketRedis({ host: 'localhost', port: 6379 }));
+
+io.on( "connection", function( socket ) {
+  console.log('socket.id', socket.id);
+  console.log("A user connected");
+  socket.on('private message', function (from, msg) {
+    console.log('I received a private message by ', from, ' saying ', msg);
+  });
+
+  socket.on('disconnect', function () {
+    console.log("user disconnected");
+    // io.emit('user disconnected');
+  });
+});
+
 
 export default server;

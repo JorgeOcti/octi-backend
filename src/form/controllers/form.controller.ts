@@ -8,6 +8,7 @@ import CarModel from '../../app/models/car.model';
 import {ObjectID} from 'bson';
 import {IRequest} from "../../interfaces/global.interface";
 import * as moment  from "moment-timezone";
+import { io } from '../../server';
 
 class FormController {
 
@@ -178,6 +179,7 @@ class FormController {
                 $lt: tomorrow.toDate()
               }
             });
+            io.emit('dashboard-vin-view', { update: true });
             return res.json({
               data: {
                 id,

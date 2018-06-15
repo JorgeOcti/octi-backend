@@ -8,6 +8,7 @@ const user_model_1 = require("../../app/models/user.model");
 const car_model_1 = require("../../app/models/car.model");
 const bson_1 = require("bson");
 const moment = require("moment-timezone");
+const server_1 = require("../../server");
 class FormController {
     constructor() {
         this.list = this.list.bind(this);
@@ -172,6 +173,7 @@ class FormController {
                                 $lt: tomorrow.toDate()
                             }
                         });
+                        server_1.io.emit('dashboard-vin-view', { update: true });
                         return res.json({
                             data: {
                                 id,

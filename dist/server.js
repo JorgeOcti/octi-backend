@@ -4,6 +4,8 @@ const bluebird = require("bluebird");
 const mongoose = require("mongoose");
 const app_1 = require("./app");
 const logger_service_1 = require("./services/logger.service");
+const socketIO = require("socket.io");
+const socketRedis = require("socket.io-redis");
 // Mongoose setting
 const MONGODB_URI = process.env.MONGODB_URI || '';
 // Mongoose connect
@@ -31,6 +33,19 @@ const server = app_1.default.listen(parseInt(app_1.default.get('port')) + NODE_A
         console.log('is running at http://localhost:%s in %s mode', app_1.default.get('port'), app_1.default.get('env'));
         console.log(`${logger_service_1.default.colors.brightBlack}Press CTRL-C to stop${logger_service_1.default.colors.reset}`);
     }
+});
+exports.io = socketIO(server);
+exports.io.adapter(socketRedis({ host: 'localhost', port: 6379 }));
+exports.io.on("connection", function (socket) {
+    console.log('socket.id', socket.id);
+    console.log("A user connected");
+    socket.on('private message', function (from, msg) {
+        console.log('I received a private message by ', from, ' saying ', msg);
+    });
+    socket.on('disconnect', function () {
+        console.log("user disconnected");
+        // io.emit('user disconnected');
+    });
 });
 exports.default = server;
 //# sourceMappingURL=server.js.map

@@ -105,12 +105,12 @@ export function changePageAction(page: number): IChangePage {
   }
 }
 
-export function getCarsAction(nextPage?: number) {
+export function getCarsAction(nextPage?: number, loading: boolean = true) {
   return (dispatch: Dispatch<DashboardReduxAction>, getState: () => {dashboard: IDashboardState}) => {
     const api: ApiService = new ApiService();
     const state = getState();
     dispatch(cancelRequestAction(api.getSource()));
-    dispatch(isLoadingAction(true));
+    if (loading) dispatch(isLoadingAction(true));
     const page = nextPage ? nextPage : state.dashboard.pagination.page;
     if (nextPage) {
       dispatch(changePageAction(nextPage));
@@ -118,14 +118,14 @@ export function getCarsAction(nextPage?: number) {
     api.getCars(page)
       .then((response: AxiosResponse) => {
         dispatch(loadCarsAction(response.data.results, response.data.count, response.data.pages));
-        dispatch(isLoadingAction(false));
+        if (loading) dispatch(isLoadingAction(false));
       })
       .catch((err: AxiosError) => {
         // if the request is canceled
         if (Axios.isCancel(err)) {
-          dispatch(isLoadingAction(true));
+          if (loading) dispatch(isLoadingAction(true));
         } else {
-          dispatch(isLoadingAction(false));
+          if (loading) dispatch(isLoadingAction(false));
           api.errorHandler(err);
         }
       });

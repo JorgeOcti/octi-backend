@@ -9,6 +9,7 @@ import {DashboardReduxAction, getCarsAction, IDashboardState} from "../../action
 import * as PropTypes from "prop-types";
 import * as moment from "moment";
 import Paginator from "../Paginator";
+import * as io from 'socket.io-client';
 // backend interfaces
 import {ICar} from "../../../../../../src/interfaces/car.interface";
 
@@ -16,7 +17,7 @@ interface IPropsType extends RouteComponentProps<{ ticket: string }> {
   dispatch: Dispatch<DashboardReduxAction>;
   dashboard: IDashboardState;
 
-  getCarsAction(page?: number): void;
+  getCarsAction(page?: number, loading?: boolean): void;
 }
 
 interface IStateType {
@@ -25,15 +26,26 @@ interface IStateType {
 
 class DashboardVinView extends React.Component<IPropsType, IStateType> {
 
+  private socket: SocketIOClient.Socket;
+
   static propTypes = {
     dashboard: PropTypes.object.isRequired,
     dispatch: PropTypes.func.isRequired,
     getCarsAction: PropTypes.func.isRequired,
   };
 
-   constructor(props: IPropsType) {
+  constructor(props: IPropsType) {
     super(props);
     this.changePage = this.changePage.bind(this);
+    this.socket = io();
+    this.socket.on('dashboard-vin-view', (data: any): void => {
+      const {page} = this.props.dashboard.pagination;
+      console.log(data);
+      if(data.update){
+        console.log('CALL');
+        this.props.getCarsAction(page, false);
+      }
+    });
   }
 
   componentWillMount(){
@@ -130,7 +142,7 @@ const mapStateToProps = (state: { dashboard: IDashboardState }) => {
 const mapDispatchToProps = (dispatch: any ) => {
   return {
     dispatch,
-    getCarsAction: (page?: number) => dispatch(getCarsAction(page)),
+    getCarsAction: (page?: number, loading?: boolean) => dispatch(getCarsAction(page, loading)),
   };
 };
 
