@@ -180,6 +180,12 @@ class CarController {
                         company
                     }
                 }, {
+                    $project: {
+                        _id: 1, user: 1, form: 1, car: 1, createdAt: {
+                            $subtract: ["$createdAt", 4 * 60 * 60 * 1000]
+                        }
+                    }
+                }, {
                     $group: {
                         // _id: {
                         //   $dateToString: {
