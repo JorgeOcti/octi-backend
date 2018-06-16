@@ -44,6 +44,9 @@ class DashboardVinView extends React.Component<IPropsType, IStateType> {
         this.props.getCarsAction(page, false);
       }
     });
+    this.socket.on('test', (data: any): void => {
+      alert('test');
+    });
     this.socket.on('connect_error', (data: any): void => {
       alert('connect_error');
       alert(JSON.stringify(data));
