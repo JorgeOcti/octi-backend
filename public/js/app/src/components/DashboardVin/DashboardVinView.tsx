@@ -37,9 +37,29 @@ class DashboardVinView extends React.Component<IPropsType, IStateType> {
   constructor(props: IPropsType) {
     super(props);
     this.changePage = this.changePage.bind(this);
+    // this.socket.on('connect_error', (data: any): void => {
+    //   alert('connect_error');
+    //   alert(JSON.stringify(data));
+    // })
+    // this.socket.on('connect_timeout', (data: any): void => {
+    //   alert('connect_timeout');
+    //   alert(JSON.stringify(data));
+    // })
+    // this.socket.on('reconnect_error', (data: any): void => {
+    //   alert('reconnect_error');
+    //   alert(JSON.stringify(data));
+    // })
+  }
+
+  componentWillMount(){
+    // set the title of the page
+    document.title = 'OSA Andes | Listado de VINs';
+    this.props.getCarsAction();
+    // socket
     this.socket = io.connect(`${location.protocol}//${location.host}`,{secure: location.protocol === 'https:', reconnection: true});
     this.socket.on('dashboard-vin-view', (data: any): void => {
       const {page} = this.props.dashboard.pagination;
+      alert(JSON.stringify(data));
       if (data.update) {
         this.props.getCarsAction(page, false);
       }
@@ -47,24 +67,6 @@ class DashboardVinView extends React.Component<IPropsType, IStateType> {
     this.socket.on('test', (data: any): void => {
       alert('test');
     });
-    this.socket.on('connect_error', (data: any): void => {
-      alert('connect_error');
-      alert(JSON.stringify(data));
-    })
-    this.socket.on('connect_timeout', (data: any): void => {
-      alert('connect_timeout');
-      alert(JSON.stringify(data));
-    })
-    this.socket.on('reconnect_error', (data: any): void => {
-      alert('reconnect_error');
-      alert(JSON.stringify(data));
-    })
-  }
-
-  componentWillMount(){
-    // set the title of the page
-    document.title = 'OSA Andes | Listado de VINs';
-    this.props.getCarsAction();
   }
 
   public componentDidCatch(error: Error, errorInfo: ErrorInfo) {
