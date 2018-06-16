@@ -18,6 +18,7 @@ class FormController {
     }
     async list(req, res) {
         const company = req.user.company;
+        server_1.io.emit('test', { update: true });
         try {
             const forms = await this.getForms(company);
             res.json({
