@@ -193,7 +193,8 @@ class CarController {
               category: {
                 $dateToString: {
                   format: '%Y-%m-%d',
-                  date: '$createdAt'
+                  date: '$createdAt',
+                  timezone: 'America/Santiago'
                 },
               },
               user: "$user",
