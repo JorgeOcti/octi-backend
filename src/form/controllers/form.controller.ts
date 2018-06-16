@@ -21,7 +21,6 @@ class FormController {
 
   public async list(req: IRequest, res: Response) {
     const company = req.user.company;
-    io.emit('test', { update: true });
     try {
       const forms = await this.getForms(company);
       res.json({
