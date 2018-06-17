@@ -173,7 +173,7 @@ class FormController {
                                 $lt: tomorrow.toDate()
                             }
                         });
-                        server_1.io.emit('dashboard-vin-view', { update: true });
+                        server_1.io.emit('dashboard-vin-view', { update: true, car: car._id });
                         return res.json({
                             data: {
                                 id,

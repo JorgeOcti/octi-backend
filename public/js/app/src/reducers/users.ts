@@ -64,7 +64,11 @@ export function users(state = initialState, action: UserReduxAction): IUsersStat
     case '/USERS/DELETE_USER':
       return {
         ...state,
-        users: state.users.filter((user: IUser) => user._id !== action.payload.id)
+        users: state.users.filter((user: IUser) => user._id !== action.payload.id),
+        pagination: {
+          ...state.pagination,
+          count: state.pagination.count - 1
+        }
       };
     case '/USERS/CHANGE_PAGE':
       return {

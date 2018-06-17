@@ -22,11 +22,17 @@ interface IPropsType extends RouteComponentProps<{ ticket: string }> {
 
 interface IStateType {
   error: Error | null;
+  highlight: string | null
 }
 
 class DashboardVinView extends React.Component<IPropsType, IStateType> {
 
   private socket: SocketIOClient.Socket;
+
+  state = {
+    error: null,
+    highlight: null
+  };
 
   static propTypes = {
     dashboard: PropTypes.object.isRequired,
@@ -48,8 +54,19 @@ class DashboardVinView extends React.Component<IPropsType, IStateType> {
     this.socket = io.connect(`${location.protocol}//${location.host}`,{secure: location.protocol === 'https:', reconnection: true});
     this.socket.on('dashboard-vin-view', (data: any): void => {
       const {page} = this.props.dashboard.pagination;
+      const lastCar = data.car;
       if (data.update) {
         this.props.getCarsAction(page, false);
+        this.setState({
+          highlight: data.car
+        });
+        setTimeout(() => {
+          if(lastCar === this.state.highlight){
+            this.setState({
+              highlight: null
+            });
+          }
+        }, 3000);
       }
     });
   }
@@ -99,7 +116,10 @@ class DashboardVinView extends React.Component<IPropsType, IStateType> {
                   {
                     cars.map((car: ICar) => {
                       return (
-                        <tr key={car._id} id={`car-${car._id}`}>
+                        <tr
+                          key={car._id} id={`car-${car._id}`}
+                          className={this.state.highlight && this.state.highlight === car._id ? 'highlight-info' : ''}
+                        >
                           <td className="middle">{car.vin}</td>
                           <td className="middle hidden-xs">{car.brand}</td>
                           <td className="middle">{`${car.lastForm.user ? `${car.lastForm.user.firstName} ${car.lastForm.user.lastName}` : ''}`}</td>
