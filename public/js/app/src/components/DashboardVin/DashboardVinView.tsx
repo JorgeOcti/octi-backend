@@ -115,7 +115,7 @@ class DashboardVinView extends React.Component<IPropsType, IStateType> {
                       return (
                         <tr
                           key={car._id} id={`car-${car._id}`}
-                          className={this.state.highlight.length > 1 && this.state.highlight.includes(car._id as never) ? 'highlight-info' : ''}
+                          className={this.state.highlight.length && this.state.highlight.includes(car._id as never) ? 'highlight-info' : ''}
                         >
                           <td className="middle">{car.vin}</td>
                           <td className="middle hidden-xs">{car.brand}</td>
