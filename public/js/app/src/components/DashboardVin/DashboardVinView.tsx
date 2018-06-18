@@ -90,6 +90,7 @@ class DashboardVinView extends React.Component<IPropsType, IStateType> {
 
   public render(): React.ReactElement<IPropsType> {
     const {loading, cars, pagination} = this.props.dashboard;
+    const {highlight} = this.state;
     return (
       <AppContainer title='' cMenu='1' cSubMenu='1.2'>
         <section className="content">
@@ -115,7 +116,7 @@ class DashboardVinView extends React.Component<IPropsType, IStateType> {
                       return (
                         <tr
                           key={car._id} id={`car-${car._id}`}
-                          className={this.state.highlight.length && this.state.highlight.includes(car._id as never) ? 'highlight-info' : ''}
+                          className={highlight.length && highlight.includes(car._id as never) ? 'highlight-info' : ''}
                         >
                           <td className="middle">{car.vin}</td>
                           <td className="middle hidden-xs">{car.brand}</td>
