@@ -46,6 +46,18 @@ export function dashboard(state = initialState, action: DashboardReduxAction): I
         ...state,
         car: action.payload.car,
       };
+    case '/DASHBOARD/LOAD_PARTICIPANT_IN_CAR':
+      if (state.car && state.car.participants) {
+        return {
+          ...state,
+          car:{
+            ...state.car,
+            participants: [action.payload.participant, ...state.car.participants]
+          }
+        }
+      } else {
+        return state;
+      }
     case '/DASHBOARD/CANCEL_REQUEST':
       return {
         ...state,

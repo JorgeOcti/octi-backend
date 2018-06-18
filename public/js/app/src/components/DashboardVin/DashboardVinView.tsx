@@ -12,6 +12,9 @@ import Paginator from "../Paginator";
 import * as io from 'socket.io-client';
 // backend interfaces
 import {ICar} from "../../../../../../src/interfaces/car.interface";
+import {IWindow} from "../../interfaces/window";
+
+declare let window: IWindow;
 
 interface IPropsType extends RouteComponentProps<{ ticket: string }> {
   dispatch: Dispatch<DashboardReduxAction>;
@@ -22,7 +25,7 @@ interface IPropsType extends RouteComponentProps<{ ticket: string }> {
 
 interface IStateType {
   error: Error | null;
-  highlight: string[]
+  highlight: string[];
 }
 
 class DashboardVinView extends React.Component<IPropsType, IStateType> {
@@ -52,7 +55,8 @@ class DashboardVinView extends React.Component<IPropsType, IStateType> {
 
     // socket
     this.socket = io.connect(`${location.protocol}//${location.host}`,{secure: location.protocol === 'https:', reconnection: true});
-    this.socket.on('dashboard-vin-view', (data: any): void => {
+    this.socket.emit('join',{room:`dashboard-vin-view-${window.user.company}`});
+    this.socket.on('REFRESH', (data: any): void => {
       const {page} = this.props.dashboard.pagination;
       if (data.update) {
         this.props.getCarsAction(page, false);
@@ -87,10 +91,10 @@ class DashboardVinView extends React.Component<IPropsType, IStateType> {
 
   public componentWillUnmount(){
     // cancel request if component is inmounted
-    this.socket.disconnect();
     if (this.props.dashboard.source) {
       this.props.dashboard.source.cancel('Operation canceled by the user.');
     }
+    this.socket.disconnect();
   }
 
   private changePage(page:number){

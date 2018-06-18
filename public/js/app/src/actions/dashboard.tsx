@@ -4,7 +4,7 @@ import ApiService from "../utils/axios";
 import {Dispatch} from "redux";
 import {loadDataAction} from './modal';
 import {ICar} from "../../../../../src/interfaces/car.interface";
-import {IParticipantSection} from "../../../../../src/interfaces/participant.interface";
+import {IParticipant, IParticipantSection} from "../../../../../src/interfaces/participant.interface";
 import * as moment from "moment";
 
 export interface IDashboardState {
@@ -69,6 +69,22 @@ export function loadCarsAction(cars: ICar[], count:number, pages: number): ILoad
       cars,
       count,
       pages
+    }
+  }
+}
+
+interface ILoadParticipantInCar {
+  type: '/DASHBOARD/LOAD_PARTICIPANT_IN_CAR';
+  payload: {
+    participant: IParticipant;
+  }
+}
+
+export function loadParticipantInCarAction(participant: IParticipant): ILoadParticipantInCar {
+  return {
+    type: '/DASHBOARD/LOAD_PARTICIPANT_IN_CAR',
+    payload: {
+      participant
     }
   }
 }
@@ -290,4 +306,4 @@ export function getCarAction(id: string) {
   };
 }
 
-export type DashboardReduxAction = IIsLoading | ICancelRequest | ILoadCars | ILoadCar | ILoadParticipantsPerDate | ILoadingParticipant | IChangePage;
+export type DashboardReduxAction = IIsLoading | ICancelRequest | ILoadCars | ILoadCar | ILoadParticipantsPerDate | ILoadingParticipant | IChangePage | ILoadParticipantInCar;

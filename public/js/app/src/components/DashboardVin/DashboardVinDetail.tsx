@@ -4,24 +4,35 @@ import {ErrorInfo} from "react";
 import {Dispatch} from "redux";
 import {RouteComponentProps} from "react-router";
 import {connect} from "react-redux";
-import {DashboardReduxAction, IDashboardState, getCarAction, getParticipant} from "../../actions/dashboard";
+import {DashboardReduxAction, IDashboardState, getCarAction, getParticipant, loadParticipantInCarAction} from "../../actions/dashboard";
 import AppContainer from "../../container/AppContainer";
 import * as moment from "moment";
 import * as PropTypes from "prop-types";
 import ModalView from "../Modal/ModalView";
+import * as io from "socket.io-client";
+import {IParticipant} from "../../../../../../src/interfaces/participant.interface";
 
 interface IPropsType extends RouteComponentProps<{ id: string }> {
   dispatch: Dispatch<DashboardReduxAction>;
   dashboard: IDashboardState;
   getCarAction(id: string): void;
   getParticipant(id: string): void;
+  loadParticipantInCarAction(participant:IParticipant): void;
 }
 
 interface IStateType {
   error: Error | null;
+  highlight: string[];
 }
 
 class DashboardVinDetail extends React.Component<IPropsType, IStateType> {
+
+  private socket: SocketIOClient.Socket;
+
+  state = {
+    error: null,
+    highlight: []
+  };
 
   static propTypes = {
     dashboard: PropTypes.object.isRequired,
@@ -35,6 +46,15 @@ class DashboardVinDetail extends React.Component<IPropsType, IStateType> {
     const {id} = this.props.match.params;
     document.title = 'OSA Andes | Detalle VIN';
     this.props.getCarAction(id);
+
+    this.socket = io.connect(`${location.protocol}//${location.host}`,{secure: location.protocol === 'https:', reconnection: true});
+    this.socket.emit('join',{room:`dashboard-vin-detail-${id}`});
+    this.socket.on('ADD_PARTICIPANT', (data: any): void => {
+      this.setState({
+        highlight: [data._id, ...this.state.highlight]
+      });
+      this.props.loadParticipantInCarAction(data);
+    });
   }
 
   public componentDidCatch(error: Error, errorInfo: ErrorInfo) {
@@ -49,10 +69,12 @@ class DashboardVinDetail extends React.Component<IPropsType, IStateType> {
     if (this.props.dashboard.source) {
       this.props.dashboard.source.cancel('Operation canceled by the user.');
     }
+    this.socket.disconnect();
   }
 
   public render(): React.ReactElement<IPropsType> {
     const {loading, car, loadingParticipant} = this.props.dashboard;
+    const {highlight} = this.state;
     const {getParticipant} = this.props;
     return (
       <AppContainer title='' cMenu='1' cSubMenu='1.2' cAction={`Detalle`}>
@@ -97,7 +119,7 @@ class DashboardVinDetail extends React.Component<IPropsType, IStateType> {
                 <tbody>
                 {
                   car &&  car.participants && car.participants.map((participant) => (
-                    <tr key={participant._id}>
+                    <tr key={participant._id} className={highlight.length && highlight.includes(participant._id as never) ? 'highlight-info' : ''}>
                       <td className="middle">{moment(participant.createdAt).format('LLL')}</td>
                       <td className="middle">{participant.name}</td>
                       <td className="middle hidden-xs">{participant.user.firstName} {participant.user.lastName}</td>
@@ -142,11 +164,13 @@ const mapStateToProps = (state: { dashboard: IDashboardState }) => {
   };
 };
 
+//loadParticipantInCarAction(participant:IParticipant): void;
 const mapDispatchToProps = (dispatch: any ) => {
   return {
     dispatch,
     getCarAction: (id: string) => dispatch(getCarAction(id)),
-    getParticipant: (id: string) => dispatch(getParticipant(id))
+    getParticipant: (id: string) => dispatch(getParticipant(id)),
+    loadParticipantInCarAction: (participant:IParticipant) => dispatch(loadParticipantInCarAction(participant))
   };
 };
 

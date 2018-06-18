@@ -69,6 +69,7 @@ class FormController {
         let { vin } = req.body;
         const { answers } = req.body;
         const company = req.user.company;
+        console.log(JSON.stringify(company));
         // validate answers in body
         if (!answers) {
             return res.status(400).json({
@@ -173,7 +174,14 @@ class FormController {
                                 $lt: tomorrow.toDate()
                             }
                         });
-                        server_1.io.emit('dashboard-vin-view', { update: true, car: car._id });
+                        server_1.io.to(`dashboard-vin-view-${company._id}`).emit('REFRESH', { update: true, car: car._id });
+                        server_1.io.to(`dashboard-vin-detail-${car._id}`).emit(`ADD_PARTICIPANT`, await participant_model_1.default
+                            .findById(newParticipant._id, { name: 1, user: 1, createdAt: 1, qualification: 1 })
+                            .populate({
+                            path: 'user',
+                            select: ['firstName', 'lastName']
+                        }));
+                        console.log('ola');
                         return res.json({
                             data: {
                                 id,

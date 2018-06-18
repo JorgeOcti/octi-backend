@@ -46,8 +46,9 @@ io.adapter(socketRedis({ host: 'localhost', port: 6379 }));
 io.on( "connection", function( socket ) {
   console.log('socket.id', socket.id);
   console.log("A user connected");
-  socket.on('private message', function (from, msg) {
-    console.log('I received a private message by ', from, ' saying ', msg);
+  socket.on('join', function (data) {
+    console.log(JSON.stringify(data));
+    socket.join(data.room);
   });
 
   socket.on('disconnect', function () {
