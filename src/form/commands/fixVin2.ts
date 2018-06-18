@@ -3,7 +3,6 @@ import * as mongoose from 'mongoose';
 import * as path from "path";
 import * as dotenv from "dotenv";
 
-
 async function updateVin2() {
   dotenv.config({
     path: path.join(__dirname, '../../../.env')
@@ -17,6 +16,7 @@ async function updateVin2() {
     x.vin2 = vin2;
     x.save();
   });
+  process.exit(1);
 }
 
 updateVin2();
