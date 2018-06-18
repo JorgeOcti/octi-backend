@@ -56,9 +56,19 @@ class DashboardVinView extends React.Component<IPropsType, IStateType> {
       const {page} = this.props.dashboard.pagination;
       if (data.update) {
         this.props.getCarsAction(page, false);
-        this.setState({
-          highlight: [data.car, ...this.state.highlight]
-        });
+        if (!this.state.highlight.includes(data.car as never)) {
+          this.setState({
+            highlight: [data.car, ...this.state.highlight]
+          });
+        } else {
+          this.setState({
+            highlight: this.state.highlight.filter(e => e !== data.car)
+          }, () => {
+            this.setState({
+              highlight: [data.car, ...this.state.highlight]
+            });
+          });
+        }
         setTimeout(() => {
           this.setState({
             highlight: this.state.highlight.filter(e => e !== data.car)
