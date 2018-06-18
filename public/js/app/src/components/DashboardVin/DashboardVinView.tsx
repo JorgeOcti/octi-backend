@@ -22,11 +22,17 @@ interface IPropsType extends RouteComponentProps<{ ticket: string }> {
 
 interface IStateType {
   error: Error | null;
+  highlight: string[]
 }
 
 class DashboardVinView extends React.Component<IPropsType, IStateType> {
 
   private socket: SocketIOClient.Socket;
+
+  state = {
+    error: null,
+    highlight: []
+  };
 
   static propTypes = {
     dashboard: PropTypes.object.isRequired,
@@ -37,19 +43,39 @@ class DashboardVinView extends React.Component<IPropsType, IStateType> {
   constructor(props: IPropsType) {
     super(props);
     this.changePage = this.changePage.bind(this);
-    this.socket = io.connect(`${location.protocol}//${location.host}`,{secure: location.protocol === 'https:', reconnection: true});
-    this.socket.on('dashboard-vin-view', (data: any): void => {
-      const {page} = this.props.dashboard.pagination;
-      if (data.update) {
-        this.props.getCarsAction(page, false);
-      }
-    });
   }
 
   componentWillMount(){
     // set the title of the page
     document.title = 'OSA Andes | Listado de VINs';
     this.props.getCarsAction();
+
+    // socket
+    this.socket = io.connect(`${location.protocol}//${location.host}`,{secure: location.protocol === 'https:', reconnection: true});
+    this.socket.on('dashboard-vin-view', (data: any): void => {
+      const {page} = this.props.dashboard.pagination;
+      if (data.update) {
+        this.props.getCarsAction(page, false);
+        if (!this.state.highlight.includes(data.car as never)) {
+          this.setState({
+            highlight: [data.car, ...this.state.highlight]
+          });
+        } else {
+          this.setState({
+            highlight: this.state.highlight.filter(e => e !== data.car)
+          }, () => {
+            this.setState({
+              highlight: [data.car, ...this.state.highlight]
+            });
+          });
+        }
+        setTimeout(() => {
+          this.setState({
+            highlight: this.state.highlight.filter(e => e !== data.car)
+          });
+        }, 3000);
+      }
+    });
   }
 
   public componentDidCatch(error: Error, errorInfo: ErrorInfo) {
@@ -61,6 +87,7 @@ class DashboardVinView extends React.Component<IPropsType, IStateType> {
 
   public componentWillUnmount(){
     // cancel request if component is inmounted
+    this.socket.disconnect();
     if (this.props.dashboard.source) {
       this.props.dashboard.source.cancel('Operation canceled by the user.');
     }
@@ -73,6 +100,7 @@ class DashboardVinView extends React.Component<IPropsType, IStateType> {
 
   public render(): React.ReactElement<IPropsType> {
     const {loading, cars, pagination} = this.props.dashboard;
+    const {highlight} = this.state;
     return (
       <AppContainer title='' cMenu='1' cSubMenu='1.2'>
         <section className="content">
@@ -96,7 +124,10 @@ class DashboardVinView extends React.Component<IPropsType, IStateType> {
                   {
                     cars.map((car: ICar) => {
                       return (
-                        <tr key={car._id} id={`car-${car._id}`}>
+                        <tr
+                          key={car._id} id={`car-${car._id}`}
+                          className={highlight.length && highlight.includes(car._id as never) ? 'highlight-info' : ''}
+                        >
                           <td className="middle">{car.vin}</td>
                           <td className="middle hidden-xs">{car.brand}</td>
                           <td className="middle">{`${car.lastForm.user ? `${car.lastForm.user.firstName} ${car.lastForm.user.lastName}` : ''}`}</td>

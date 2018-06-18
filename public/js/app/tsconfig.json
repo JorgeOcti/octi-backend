@@ -1,6 +1,6 @@
 {
     "compilerOptions": {
-        "outDir": "./dist/",
+        "outDir": "dist/",
         "sourceMap": true,
         "noImplicitReturns": true,
         "noImplicitThis": true,
@@ -27,7 +27,7 @@
         "jest"
     ],
     "include": [
-        "./src/**/*.ts"
+        "src/**/*.ts"
     ],
     "types": [
         "typePatches"

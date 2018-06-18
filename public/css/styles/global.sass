@@ -31,3 +31,19 @@
   background-color: transparentize($primary, 0.4) !important
   color: $white
 
+@-webkit-keyframes info-fade
+  0%
+    background: #d9edf7
+  100%
+    //background: none
+
+
+@keyframes info-fade
+  0%
+    background: #d9edf7
+  100%
+    //background: none
+
+.highlight-info
+  animation: info-fade 2s ease-in 1
+
