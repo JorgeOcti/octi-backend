@@ -19,6 +19,29 @@
   width: 100%
   bottom: 10px
 
+#password-requirements
+  display: none
+  margin-top: 10px
+  margin-left: 10px
+  p
+    margin-bottom: 5px
+  ul
+    padding-left: 20px
+    li
+      &.error
+        color: $redErros
+      &.success
+        color: $success
+
+#password-2-requirements
+  display: none
+  margin-top: 10px
+  margin-left: 10px
+  p
+    margin-bottom: 5px
+    &.error
+      color: $redErros
+
 // mobile styles
 @media (max-width: 767px)
   #login-container

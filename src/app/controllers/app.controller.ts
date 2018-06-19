@@ -136,34 +136,39 @@ class AppController {
 
   public async recovery(req: Request, res: Response) {
     const {token} = req.params;
-    try {
-      const user = await UserModel.findOne({passwordResetToken:token});
-      console.log('user', user)
+    // close sesión
+    req.logout();
 
+    try {
+      // validate link is valid
+      const user = await UserModel
+        .findOne({
+          passwordResetToken: token
+        });
+      return res.render('app/recovery', {
+        csrfToken: req.csrfToken(),
+        user
+      });
     } catch (e) {
       console.log(e)
     }
-    return res.render('app/recovery', {csrfToken: req.csrfToken()});
   }
 
   public async processRecovery(req: Request, res: Response, next: NextFunction) {
     const {token} = req.params;
     const {password, password2} = req.body;
-    // if (req.user) {
-    //   return res.redirect( `/account/recovery/${token}`);
-    // }
+    if (req.user) {
+      return res.redirect( `/`);
+    }
     if(!password.trim().length || !password2.trim().length  || password !== password2){
       return res.redirect( `/account/recovery/${token}`);
     }
     try {
       const user = await UserModel.findOne({passwordResetToken: token});
-      console.log('user', user);
-      console.log('password', password);
-      console.log('password2', password2);
       if (user && user.active) {
-        // user.password = password;
-        // user.passwordResetToken = '';
-        // user.save()
+        user.password = password;
+        user.passwordResetToken = '';
+        user.save();
         req.login(user, loginErr => {
           if (loginErr) {
             return next(loginErr);

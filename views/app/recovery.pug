@@ -23,30 +23,56 @@ html
       | html,body{background:linear-gradient(to left, #096e9f, #033a67);overflow-y:hidden;overflow-x:hidden}body{color:#FFF;overflow-y:hidden;}
 
   body
-    #login-container
-      .row
-        .col-md-4
-        .col-md-4
-          .login
-            p.text-center
-              img(src=`/static${getVersionedPath('/images/OSA_andes_logo.svg')}`, class='text-center logo')
-            form(role='form', action='', method="post")
-              input(type='hidden', name='_csrf', value=csrfToken)
-              //- p.text-center
-              //-  | Ingresa tu correo electrónico y te enviaremos un enlace para que restaures el acceso a tu cuenta.
+    if(user)
+      #login-container
+        .row
+          .col-md-4
+          .col-md-4
+            .login
+              p.text-center
+                img(src=`/static${getVersionedPath('/images/OSA_andes_logo.svg')}`, class='text-center logo')
+              form(role='form', action='', method="post")
+                input(type='hidden', name='_csrf', value=csrfToken)
+                //- p.text-center
+                //-  | Ingresa tu correo electrónico y te enviaremos un enlace para que restaures el acceso a tu cuenta.
+                .form-group
+                  .input-group
+                    .input-group-addon
+                      i.fa.fa-lock
+                    input#password.form-control(type='password', placeholder='contraseña nueva', name='password')
+                  #password-requirements
+                    p
+                      strong La contraseña debe contener lo siguiente:
+                    ul
+                      li#has-letter Al menos una letra.
+                      li#has-number Al menos un número.
+                      li#length Mínimo 6 caracteres.
+                .form-group
+                  .input-group
+                    .input-group-addon
+                      i.fa.fa-lock
+                    input#password2.form-control(type='password', placeholder='repetir contrasela nueva', name='password2')
+                  #password-2-requirements
+                    p.error
+                      | Las contraseñas no coincide
+                .form-group
+                  button#btn-change-password.btn.btn-block.btn-primary(type='submit', style='margin-right:3px', disabled=true)='Continuar'
+          .col-md-4
+    else
+      #login-container
+        .row
+          .col-md-4
+          .col-md-4
+            .login
+              p.text-center
+                img(src=`/static${getVersionedPath('/images/OSA_andes_logo.svg')}`, class='text-center logo')
+              p.text-center
+                | Este link a expirado o ha sido utilizado.
+              p
+                | &nbsp;
               .form-group
-                .input-group
-                  .input-group-addon
-                    i.fa.fa-lock
-                  input#password.form-control(type='password', placeholder='contraseña nueva', name='password')
-              .form-group
-                .input-group
-                  .input-group-addon
-                    i.fa.fa-lock
-                  input#password2.form-control(type='password', placeholder='repetir contrasela nueva', name='password2')
-              .form-group
-                button.btn.btn-block.btn-primary(type='submit', style='margin-right:3px')='Continuar'
-        .col-md-4
+                a.btn.btn-block.btn-primary(href='/account/login/', style='margin-right:3px')='Ir a iniciar sesión'
+          .col-md-4
     #login-footer.text-center
       | Copyright (c) 2018 OSA SPA. Todos los derechos reservados.
     .js
@@ -56,3 +82,4 @@ html
       script(src=`/static${getVersionedPath('/js/vendor/jquery/jquery.min.js')}`)
       //- Bootstrap 3.3.7
       script(src=`/static${getVersionedPath('/js/vendor/bootstrap/bootstrap.min.js')}`)
+      script(src=`/static${getVersionedPath('/js/account/dist/recovery.js')}`)
