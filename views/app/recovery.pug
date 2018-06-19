@@ -17,7 +17,7 @@ html
     script(src='https://oss.maxcdn.com/respond/1.4.2/respond.min.js')
     <![endif]-->
     link(rel='stylesheet', href=`/static${getVersionedPath('/css/style.css')}`)
-    title OSA Andes | Iniciar sesión
+    title OSA Andes | Reestablecer contraseña
     //- html,body{overflow-y:hidden;overflow-x:hidden}body{background:linear-gradient(to left, #A34E69, #90354D);color:#FFF;}
     style
       | html,body{background:linear-gradient(to left, #096e9f, #033a67);overflow-y:hidden;overflow-x:hidden}body{color:#FFF;overflow-y:hidden;}
@@ -30,24 +30,22 @@ html
           .login
             p.text-center
               img(src=`/static${getVersionedPath('/images/OSA_andes_logo.svg')}`, class='text-center logo')
-            if error
-              p.text-center.text-red=error
-            form(role='form', action='/account/login/', method="post")
+            form(role='form', action='', method="post")
               input(type='hidden', name='_csrf', value=csrfToken)
-              .form-group
-                .input-group
-                  .input-group-addon
-                    i.fa.fa-user
-                  input#username.form-control(type='text', placeholder='e-mail', name='username', autocomplete='off')
+              //- p.text-center
+              //-  | Ingresa tu correo electrónico y te enviaremos un enlace para que restaures el acceso a tu cuenta.
               .form-group
                 .input-group
                   .input-group-addon
                     i.fa.fa-lock
-                  input#password.form-control(type='password', placeholder='contraseña', name='password', autocomplete='off')
-              .form-group.text-right
-                a(href='/account/forgot-password/', class='forget-password') ¿Olvidó su contraseña?
+                  input#password.form-control(type='password', placeholder='contraseña nueva', name='password')
               .form-group
-                button.btn.btn-block.btn-primary(type='submit', style='margin-right:3px')='Iniciar sesión'
+                .input-group
+                  .input-group-addon
+                    i.fa.fa-lock
+                  input#password2.form-control(type='password', placeholder='repetir contrasela nueva', name='password2')
+              .form-group
+                button.btn.btn-block.btn-primary(type='submit', style='margin-right:3px')='Continuar'
         .col-md-4
     #login-footer.text-center
       | Copyright (c) 2018 OSA SPA. Todos los derechos reservados.

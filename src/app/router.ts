@@ -1,4 +1,5 @@
 import * as express from 'express';
+import * as csrf from 'csurf';
 import AppController from './controllers/app.controller';
 import CarController from './controllers/car.controller';
 import AdminUsersController from './controllers/admin/user.admin.controller';
@@ -8,7 +9,10 @@ import AdminVenuesController from './controllers/admin/venues.admin.controller';
 import JWTController from './controllers/jwt.controller';
 import Middlewares from '../middlewares/middlewares';
 
+// setup route middlewares
 const appRouter = express.Router();
+
+const csrfProtection = csrf({ cookie: true });
 // robots.txt
 appRouter.get('/robots.txt', AppController.robots);
 
@@ -20,7 +24,7 @@ appRouter.get('/cars/', Middlewares.isLoggedIn, CarController.vinDashboard);
 appRouter.get('/cars/:id', Middlewares.isLoggedIn, CarController.vinDashboardDetail);
 
 // api cars
-appRouter.get('/api/admin/cars/:id/', Middlewares.isLoggedIn, CarController.apiCarDetail);
+appRouter.get('/api/admin/cars/:id', Middlewares.isLoggedIn, CarController.apiCarDetail);
 appRouter.get('/api/admin/cars/', Middlewares.isLoggedIn, CarController.apiCars);
 
 // form detail
@@ -49,9 +53,15 @@ appRouter.post('/api/v1/check-vin/', Middlewares.isJWTAuthenticated, CarControll
 appRouter.post('/api/v1/change-password/', Middlewares.isJWTAuthenticated, UserController.apiChangePassword);
 
 // web login
-appRouter.get('/account/login/', AppController.login);
-appRouter.get('/account/forgot-password/', AppController.forgotPassword);
-appRouter.post('/account/login/', AppController.processLogin);
+appRouter.get('/account/login/', csrfProtection, AppController.login);
+appRouter.post('/account/login/', csrfProtection, AppController.processLogin);
+
+appRouter.get('/account/forgot-password/', csrfProtection, AppController.forgotPassword);
+appRouter.post('/account/forgot-password/', csrfProtection, AppController.processForgotPassword);
+
+appRouter.get('/account/recovery/:token', csrfProtection, AppController.recovery);
+appRouter.post('/account/recovery/:token', csrfProtection, AppController.processRecovery);
+
 appRouter.get('/account/logout/', AppController.logout);
 
 // JWT API

@@ -233,11 +233,13 @@ app.use((err: IResponseError, req: express.Request, res: express.Response, next:
   res.locals.error = req.app.get('env') === 'development' ? err : {};
 
   // render the error page
-  res.status(err.status || 500);
-  res.json({
-    status: err.status,
-    error: err.message ? err.message : err.error
-  });
+  const statusCode = err.status || 500;
+  res.status(statusCode);
+  res.render(statusCode.toString());
+  // res.json({
+  //   status: err.status,
+  //   error: err.message ? err.message : err.error
+  // });
   next();
 });
 

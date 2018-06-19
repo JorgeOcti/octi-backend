@@ -195,11 +195,13 @@ app.use((err, req, res, next) => {
     res.locals.message = err.message;
     res.locals.error = req.app.get('env') === 'development' ? err : {};
     // render the error page
-    res.status(err.status || 500);
-    res.json({
-        status: err.status,
-        error: err.message ? err.message : err.error
-    });
+    const statusCode = err.status || 500;
+    res.status(statusCode);
+    res.render(statusCode.toString());
+    // res.json({
+    //   status: err.status,
+    //   error: err.message ? err.message : err.error
+    // });
     next();
 });
 exports.default = app;

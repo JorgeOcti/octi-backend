@@ -22,18 +22,18 @@ class EmailQueue {
         if (job && done) {
             // generate email
             const mail = {
-                from: `"${job.data.from && job.data.from.length ? job.data.from : 'OSA Andes'}"<no-reply-andes@osacontrol.com>`,
+                from: `"${job.data.from && job.data.from.length ? job.data.from : 'OSA Andes'}"<osa.andes@osacontrol.com>`,
                 to: job.data.to,
                 subject: job.data.subject,
                 text: job.data.text,
                 html: this.generateHTML(job.data.view, job.data.context),
                 attachments: job.data.attachments || []
             };
-            console.log('---------------------------');
-            console.log(JSON.stringify(mail));
-            console.log('---------------------------');
-            console.log(JSON.stringify(process.env));
-            console.log('---------------------------');
+            // console.log('---------------------------');
+            // console.log(JSON.stringify(mail));
+            // console.log('---------------------------');
+            // console.log(JSON.stringify(process.env));
+            // console.log('---------------------------');
             // send mail with defined transport object
             aws_ses_service_1.default.sendMail(mail, (error, info) => {
                 if (error) {
