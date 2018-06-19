@@ -7,6 +7,7 @@ class AppController {
         this.robots = this.robots.bind(this);
         this.login = this.login.bind(this);
         this.processLogin = this.processLogin.bind(this);
+        this.forgotPassword = this.forgotPassword.bind(this);
         this.logout = this.logout.bind(this);
     }
     index(req, res) {
@@ -54,6 +55,14 @@ class AppController {
                     }
                 });
             })(req, res, next);
+        }
+    }
+    forgotPassword(req, res, error) {
+        if (req.user) {
+            return res.redirect('/');
+        }
+        else {
+            return res.render('app/forgotPassword', { local: res.locals });
         }
     }
     logout(req, res) {

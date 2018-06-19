@@ -31,6 +31,7 @@ interface IStateType {
 class DashboardVinView extends React.Component<IPropsType, IStateType> {
 
   private socket: SocketIOClient.Socket;
+  protected isMount: boolean = false;
 
   state = {
     error: null,
@@ -74,12 +75,15 @@ class DashboardVinView extends React.Component<IPropsType, IStateType> {
           });
         }
         setTimeout(() => {
-          this.setState({
-            highlight: this.state.highlight.filter(e => e !== data.car)
-          });
+          if (this.isMount) {
+            this.setState({
+              highlight: this.state.highlight.filter(e => e !== data.car)
+            });
+          }
         }, 3000);
       }
     });
+    this.isMount = true;
   }
 
   public componentDidCatch(error: Error, errorInfo: ErrorInfo) {
@@ -90,6 +94,7 @@ class DashboardVinView extends React.Component<IPropsType, IStateType> {
   }
 
   public componentWillUnmount(){
+    this.isMount = false;
     // cancel request if component is inmounted
     if (this.props.dashboard.source) {
       this.props.dashboard.source.cancel('Operation canceled by the user.');

@@ -43,6 +43,15 @@ export const io = socketIO(server);
 
 io.adapter(socketRedis({ host: 'localhost', port: 6379 }));
 
+io.use((socket, next) => {
+  // let token = socket.handshake.query.token;
+  // if (isValid(token)) {
+  //   return next();
+  // }
+  // return next(new Error('authentication error'));
+  return next();
+});
+
 io.on( "connection", function( socket ) {
   console.log('socket.id', socket.id);
   console.log("A user connected");

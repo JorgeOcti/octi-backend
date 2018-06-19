@@ -36,6 +36,14 @@ const server = app_1.default.listen(parseInt(app_1.default.get('port')) + NODE_A
 });
 exports.io = socketIO(server);
 exports.io.adapter(socketRedis({ host: 'localhost', port: 6379 }));
+exports.io.use((socket, next) => {
+    // let token = socket.handshake.query.token;
+    // if (isValid(token)) {
+    //   return next();
+    // }
+    // return next(new Error('authentication error'));
+    return next();
+});
 exports.io.on("connection", function (socket) {
     console.log('socket.id', socket.id);
     console.log("A user connected");

@@ -50,6 +50,7 @@ appRouter.post('/api/v1/change-password/', Middlewares.isJWTAuthenticated, UserC
 
 // web login
 appRouter.get('/account/login/', AppController.login);
+appRouter.get('/account/forgot-password/', AppController.forgotPassword);
 appRouter.post('/account/login/', AppController.processLogin);
 appRouter.get('/account/logout/', AppController.logout);
 

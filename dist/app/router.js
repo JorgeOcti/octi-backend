@@ -42,6 +42,7 @@ appRouter.post('/api/v1/check-vin/', middlewares_1.default.isJWTAuthenticated, c
 appRouter.post('/api/v1/change-password/', middlewares_1.default.isJWTAuthenticated, user_controller_1.default.apiChangePassword);
 // web login
 appRouter.get('/account/login/', app_controller_1.default.login);
+appRouter.get('/account/forgot-password/', app_controller_1.default.forgotPassword);
 appRouter.post('/account/login/', app_controller_1.default.processLogin);
 appRouter.get('/account/logout/', app_controller_1.default.logout);
 // JWT API

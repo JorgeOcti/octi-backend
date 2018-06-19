@@ -8,6 +8,7 @@ class AppController {
     this.robots = this.robots.bind(this);
     this.login = this.login.bind(this);
     this.processLogin = this.processLogin.bind(this);
+    this.forgotPassword = this.forgotPassword.bind(this);
     this.logout = this.logout.bind(this);
   }
 
@@ -57,6 +58,15 @@ class AppController {
           }
         });
       })(req, res, next);
+    }
+  }
+
+  public forgotPassword(req: Request, res: Response, error:any) {
+    if (req.user){
+      return res.redirect('/');
+    }
+    else{
+      return res.render('app/forgotPassword', {local: res.locals});
     }
   }
 
