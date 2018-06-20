@@ -7,29 +7,36 @@ declare let window: IWindow;
 
 class HeaderApp extends React.Component<{}, {}> {
   protected channel: BroadcastChannel;
+  protected existBC: boolean = window.hasOwnProperty('BroadcastChannel');
 
   constructor(props: {}) {
     super(props);
     this.closeSesion = this.closeSesion.bind(this);
   }
 
-  private closeSesion(){
-    this.channel.postMessage({
-      close: true
-    });
+  private closeSesion() {
+    if (this.existBC) {
+      this.channel.postMessage({
+        close: true
+      });
+    }
   }
 
-  public componentDidMount(){
-    this.channel = new BroadcastChannel('andes');
-    this.channel.onmessage = function (e) {
-      if (e.data.close) {
-        location.href = '/account/logout/';
-      }
-    };
+  public componentDidMount() {
+    if (this.existBC) {
+      this.channel = new BroadcastChannel('andes');
+      this.channel.onmessage = function (e) {
+        if (e.data.close) {
+          location.href = '/account/logout/';
+        }
+      };
+    }
   }
 
-  public componentWillUnmount(){
-    this.channel.close();
+  public componentWillUnmount() {
+    if (this.existBC) {
+      this.channel.close();
+    }
   }
 
   public render() {
