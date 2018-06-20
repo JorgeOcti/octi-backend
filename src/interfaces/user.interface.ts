@@ -13,8 +13,8 @@ export interface IUser {
   email: string;
   password: string;
   hash_password: string;
-  passwordResetToken: string;
-  passwordResetExpires: Date;
+  passwordResetToken: string | undefined;
+  passwordResetExpires: Date | undefined;
   lastLogin: Date;
   active: boolean;
   updatedAt: Date;

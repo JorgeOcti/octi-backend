@@ -1,6 +1,7 @@
 import {Request, Response, NextFunction} from 'express';
 import * as passport from 'passport';
 import * as uuid from 'uuid';
+import * as isuuid from 'is-uuid';
 import redisClient from '../../services/redis.service';
 import UserModel from "../models/user.model";
 import * as kue from "kue";
@@ -53,7 +54,7 @@ class AppController {
           return next(err); // will generate a 500 error
         }
         if (!user) {
-          return res.render('app/login', {error: 'Usuario o contraseña incorrecta.'});
+          return res.render('app/login', {error: 'Usuario o contraseña incorrecta.', csrfToken: req.csrfToken()});
         }
         req.login(user, loginErr => {
           if (loginErr) {
@@ -136,9 +137,11 @@ class AppController {
 
   public async recovery(req: Request, res: Response) {
     const {token} = req.params;
+    if(!isuuid.anyNonNil(token)){
+      return res.status(404).render('404');
+    }
     // close sesión
     req.logout();
-
     try {
       // validate link is valid
       const user = await UserModel
@@ -157,6 +160,9 @@ class AppController {
   public async processRecovery(req: Request, res: Response, next: NextFunction) {
     const {token} = req.params;
     const {password, password2} = req.body;
+    if(!isuuid.anyNonNil(token)){
+      return res.status(404).render('404');
+    }
     if (req.user) {
       return res.redirect( `/`);
     }
@@ -167,7 +173,8 @@ class AppController {
       const user = await UserModel.findOne({passwordResetToken: token});
       if (user && user.active) {
         user.password = password;
-        user.passwordResetToken = '';
+        user.passwordResetToken = undefined;
+        user.passwordResetExpires = undefined;
         user.save();
         req.login(user, loginErr => {
           if (loginErr) {

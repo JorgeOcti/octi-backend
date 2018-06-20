@@ -2,6 +2,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 const passport = require("passport");
 const uuid = require("uuid");
+const isuuid = require("is-uuid");
 const redis_service_1 = require("../../services/redis.service");
 const user_model_1 = require("../models/user.model");
 const kue = require("kue");
@@ -44,7 +45,7 @@ class AppController {
                     return next(err); // will generate a 500 error
                 }
                 if (!user) {
-                    return res.render('app/login', { error: 'Usuario o contraseña incorrecta.' });
+                    return res.render('app/login', { error: 'Usuario o contraseña incorrecta.', csrfToken: req.csrfToken() });
                 }
                 req.login(user, loginErr => {
                     if (loginErr) {
@@ -126,6 +127,9 @@ class AppController {
     }
     async recovery(req, res) {
         const { token } = req.params;
+        if (!isuuid.anyNonNil(token)) {
+            return res.status(404).render('404');
+        }
         // close sesión
         req.logout();
         try {
@@ -146,6 +150,9 @@ class AppController {
     async processRecovery(req, res, next) {
         const { token } = req.params;
         const { password, password2 } = req.body;
+        if (!isuuid.anyNonNil(token)) {
+            return res.status(404).render('404');
+        }
         if (req.user) {
             return res.redirect(`/`);
         }
@@ -156,7 +163,8 @@ class AppController {
             const user = await user_model_1.default.findOne({ passwordResetToken: token });
             if (user && user.active) {
                 user.password = password;
-                user.passwordResetToken = '';
+                user.passwordResetToken = undefined;
+                user.passwordResetExpires = undefined;
                 user.save();
                 req.login(user, loginErr => {
                     if (loginErr) {
