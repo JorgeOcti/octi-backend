@@ -27,7 +27,35 @@ class EmailQueue {
                 subject: job.data.subject,
                 text: job.data.text,
                 html: this.generateHTML(job.data.view, job.data.context),
-                attachments: job.data.attachments || []
+                attachments: job.data.attachments || [],
+                list: {
+                    // List-Help: <mailto:admin@example.com?subject=help>
+                    help: 'admin@example.com?subject=help',
+                    // List-Unsubscribe: <http://example.com> (Comment)
+                    unsubscribe: {
+                        url: 'http://example.com',
+                        comment: 'Comment'
+                    },
+                    // List-Subscribe: <mailto:admin@example.com?subject=subscribe>
+                    // List-Subscribe: <http://example.com> (Subscribe)
+                    subscribe: [
+                        'admin@example.com?subject=subscribe',
+                        {
+                            url: 'http://example.com',
+                            comment: 'Subscribe'
+                        }
+                    ],
+                    // List-Post: <http://example.com/post>, <mailto:admin@example.com?subject=post> (Post)
+                    post: [
+                        [
+                            'http://example.com/post',
+                            {
+                                url: 'admin@example.com?subject=post',
+                                comment: 'Post'
+                            }
+                        ]
+                    ]
+                }
             };
             // console.log('---------------------------');
             // console.log(JSON.stringify(mail));
