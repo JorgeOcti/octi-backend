@@ -23,38 +23,17 @@ class EmailQueue {
             // generate email
             const mail = {
                 from: `"${job.data.from && job.data.from.length ? job.data.from : 'OSA Andes'}"<osa.andes@osacontrol.com>`,
+                // to: job.data.to,
                 to: job.data.to,
                 subject: job.data.subject,
                 text: job.data.text,
                 html: this.generateHTML(job.data.view, job.data.context),
                 attachments: job.data.attachments || [],
-                list: {
-                    // List-Help: <mailto:admin@example.com?subject=help>
-                    help: 'admin@example.com?subject=help',
-                    // List-Unsubscribe: <http://example.com> (Comment)
-                    unsubscribe: {
-                        url: 'http://example.com',
-                        comment: 'Comment'
-                    },
-                    // List-Subscribe: <mailto:admin@example.com?subject=subscribe>
-                    // List-Subscribe: <http://example.com> (Subscribe)
-                    subscribe: [
-                        'admin@example.com?subject=subscribe',
-                        {
-                            url: 'http://example.com',
-                            comment: 'Subscribe'
-                        }
-                    ],
-                    // List-Post: <http://example.com/post>, <mailto:admin@example.com?subject=post> (Post)
-                    post: [
-                        [
-                            'http://example.com/post',
-                            {
-                                url: 'admin@example.com?subject=post',
-                                comment: 'Post'
-                            }
-                        ]
-                    ]
+                headers: {
+                    'List-Unsubscribe': "<mailto:soporte@osacontrol.com>",
+                    'List-ID': "1000065672.xt.local",
+                    'X-Report-Abuse-To': "abuse@osacontrol.com",
+                    'X-CSA-Complaints': "whitelistcomplaints@eco.de"
                 }
             };
             // console.log('---------------------------');
