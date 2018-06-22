@@ -99,7 +99,7 @@ class DashboardVinDetail extends React.Component<IPropsType, IStateType> {
                     <td style={{padding:'5px'}}><strong>Por</strong></td>
                     <td style={{padding:'5px'}}>
                       {
-                        car && car.participants && `${car.participants[0].user.firstName} ${car.participants[0].user.lastName}`
+                        car && car.participants && car.participants[0].user ? `${car.participants[0].user.firstName} ${car.participants[0].user.lastName}` : ''
                       }
                     </td>
                   </tr>
