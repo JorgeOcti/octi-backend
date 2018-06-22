@@ -4,6 +4,7 @@ LABEL maintainer = "gmunoz@osacontrol.com"
 
 # create directories
 RUN mkdir -p /srv/app
+RUN mkdir -p /srv/logs
 RUN mkdir -p /srv/public
 RUN mkdir -p /srv/views
 
@@ -18,7 +19,7 @@ COPY ./ses-config.json ../
 COPY ./package.json ./
 
 # install node packages
-RUN npm install
+RUN npm  --unsafe-perm  install
 
 #run app
 CMD ["node", "server.js"]
