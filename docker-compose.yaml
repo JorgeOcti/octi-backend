@@ -1,0 +1,21 @@
+version: '2'
+services:
+  redis:
+    image: redis:latest
+    container_name: redis
+    networks:
+      - andesnet
+  db:
+    image: mongo:3.4-jessie
+    container_name: db
+    networks:
+      - andesnet
+  web:
+    build: .
+    networks:
+      - andesnet
+    ports:
+     - "3000"
+networks:
+  andesnet:
+    driver: bridge

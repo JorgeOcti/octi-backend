@@ -30,6 +30,7 @@ class EmailQueue {
                 html: this.generateHTML(job.data.view, job.data.context),
                 attachments: job.data.attachments || [],
                 headers: {
+                    // 'Reply-To': 'soporte@osacontrol.com',
                     'List-Unsubscribe': "<mailto:soporte@osacontrol.com?subject=Unsubscribe>",
                     'List-Subscribe': "<mailto:soporte@osacontrol.com?subject=Subscribe>",
                     'List-ID': "mail.osacontrol.com",

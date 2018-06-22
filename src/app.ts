@@ -233,9 +233,8 @@ app.use((err: IResponseError, req: express.Request, res: express.Response, next:
   res.locals.error = req.app.get('env') === 'development' ? err : {};
 
   // render the error page
-  const statusCode = err.status || 500;
-  res.status(statusCode);
-  res.render(statusCode.toString());
+  const statusCode = [403, 404, 500].includes(err.status)?err.status:500;
+  res.status(statusCode).render(statusCode.toString());
   // res.json({
   //   status: err.status,
   //   error: err.message ? err.message : err.error
