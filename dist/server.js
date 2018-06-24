@@ -5,7 +5,7 @@ const mongoose = require("mongoose");
 const app_1 = require("./app");
 const logger_service_1 = require("./services/logger.service");
 const socketIO = require("socket.io");
-const socketRedis = require("socket.io-redis");
+// import * as socketRedis from 'socket.io-redis';
 // Mongoose setting
 const MONGODB_URI = process.env.MONGODB_URI || '';
 // Mongoose connect
@@ -35,7 +35,10 @@ const server = app_1.default.listen(parseInt(app_1.default.get('port')) + NODE_A
     }
 });
 exports.io = socketIO(server);
-exports.io.adapter(socketRedis({ host: 'localhost', port: 6379 }));
+// io.adapter(socketRedis({
+//   host: process.env.REDIS_HOST ? process.env.REDIS_HOST : 'localhost',
+//   port: 6379
+// }));
 exports.io.use((socket, next) => {
     // let token = socket.handshake.query.token;
     // if (isValid(token)) {

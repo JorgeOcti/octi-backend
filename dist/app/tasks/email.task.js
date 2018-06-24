@@ -6,7 +6,12 @@ const path = require("path");
 const aws_ses_service_1 = require("../../services/aws-ses.service");
 class EmailQueue {
     constructor() {
-        this.queue = kue.createQueue();
+        this.queue = kue.createQueue({
+            redis: {
+                host: process.env.REDIS_HOST ? process.env.REDIS_HOST : 'localhost',
+                port: 6379
+            }
+        });
         this.generateHTML = this.generateHTML.bind(this);
         this.processEmail = this.processEmail.bind(this);
     }

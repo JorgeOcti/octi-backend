@@ -8,9 +8,8 @@ const express = require("express");
 const kue = require("kue");
 const session = require("express-session");
 const connectRedis = require("connect-redis");
-const redis_service_1 = require("./services/redis.service");
 const fileStreamRotator = require("file-stream-rotator");
-const git = require("git-rev-sync");
+// import * as git from 'git-rev-sync';
 const lusca = require("lusca");
 const morgan = require("morgan");
 const multer = require("multer");
@@ -34,16 +33,16 @@ const app = express();
 global.__rootdir__ = __dirname || process.cwd();
 const root = global.__rootdir__;
 const LocalStrategy = passportLocal.Strategy;
-const gitCommit = git.long();
+// const gitCommit = git.long();
 const redisStore = connectRedis(session);
 dotenv.config({
     path: path.join(__dirname, '../.env')
 });
 /* istanbul ignore next */
 Raven.config(process.env.SENTRY_DNS, {
-    release: gitCommit,
+    // release: gitCommit,
     tags: {
-        git_commit: gitCommit,
+        // git_commit: gitCommit,
         environment: process.env.ENV || 'development'
     },
     environment: process.env.ENV,
@@ -110,9 +109,8 @@ app.use(session({
         maxAge: 2592000000 // 30 * 24 * 60 * 60 * 1000 Rememeber 'me' for 30 days
     },
     store: new redisStore({
-        host: 'localhost',
-        port: 6379,
-        client: redis_service_1.default
+        host: process.env.REDIS_HOST ? process.env.REDIS_HOST : 'localhost',
+        port: 6379
     })
 }));
 // passport
@@ -195,9 +193,8 @@ app.use((err, req, res, next) => {
     res.locals.message = err.message;
     res.locals.error = req.app.get('env') === 'development' ? err : {};
     // render the error page
-    const statusCode = err.status || 500;
-    res.status(statusCode);
-    res.render(statusCode.toString());
+    const statusCode = [403, 404, 500].includes(err.status) ? err.status : 500;
+    res.status(statusCode).render(statusCode.toString());
     // res.json({
     //   status: err.status,
     //   error: err.message ? err.message : err.error

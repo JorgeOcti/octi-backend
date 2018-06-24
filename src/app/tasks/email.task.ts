@@ -10,7 +10,12 @@ class EmailQueue {
   private queue: Queue;
 
   constructor() {
-    this.queue = kue.createQueue();
+    this.queue = kue.createQueue({
+      redis: {
+        host: process.env.REDIS_HOST ? process.env.REDIS_HOST : 'localhost',
+        port: 6379
+      }
+    });
     this.generateHTML = this.generateHTML.bind(this);
     this.processEmail = this.processEmail.bind(this);
   }

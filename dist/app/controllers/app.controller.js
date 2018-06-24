@@ -7,7 +7,12 @@ const redis_service_1 = require("../../services/redis.service");
 const user_model_1 = require("../models/user.model");
 const kue = require("kue");
 const moment = require("moment");
-const queue = kue.createQueue();
+const queue = kue.createQueue({
+    redis: {
+        host: process.env.REDIS_HOST ? process.env.REDIS_HOST : 'localhost',
+        port: 6379
+    }
+});
 class AppController {
     constructor() {
         this.index = this.index.bind(this);

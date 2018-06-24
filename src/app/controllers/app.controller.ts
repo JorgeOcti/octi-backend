@@ -6,7 +6,13 @@ import redisClient from '../../services/redis.service';
 import UserModel from "../models/user.model";
 import * as kue from "kue";
 import * as moment from "moment";
-const queue = kue.createQueue();
+
+const queue = kue.createQueue({
+  redis: {
+    host: process.env.REDIS_HOST ? process.env.REDIS_HOST : 'localhost',
+    port: 6379
+  }
+});
 
 class AppController {
 

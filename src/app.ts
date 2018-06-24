@@ -6,9 +6,8 @@ import * as express from 'express';
 import * as kue from 'kue';
 import * as session from 'express-session';
 import * as connectRedis from 'connect-redis';
-import redisClient from './services/redis.service';
 import * as fileStreamRotator from 'file-stream-rotator';
-import * as git from 'git-rev-sync';
+// import * as git from 'git-rev-sync';
 import * as lusca from 'lusca';
 import * as morgan from 'morgan';
 import * as multer from 'multer';
@@ -39,7 +38,7 @@ const app = express();
 (global as any).__rootdir__ = __dirname || process.cwd();
 const root = (global as any).__rootdir__;
 const LocalStrategy = passportLocal.Strategy;
-const gitCommit = git.long();
+// const gitCommit = git.long();
 const redisStore = connectRedis(session);
 
 dotenv.config({
@@ -48,9 +47,9 @@ dotenv.config({
 
 /* istanbul ignore next */
 Raven.config(process.env.SENTRY_DNS, {
-  release: gitCommit,
+  // release: gitCommit,
   tags: {
-    git_commit: gitCommit,
+    // git_commit: gitCommit,
     environment: process.env.ENV || 'development'
   },
   environment: process.env.ENV,
@@ -128,10 +127,9 @@ app.use(session({
   cookie: {
     maxAge: 2592000000 // 30 * 24 * 60 * 60 * 1000 Rememeber 'me' for 30 days
   },
-  store: new redisStore({
-    host: 'localhost',
-    port: 6379,
-    client: redisClient
+  store: new redisStore( {
+    host: process.env.REDIS_HOST ? process.env.REDIS_HOST : 'localhost',
+    port: 6379
   })
 }));
 
