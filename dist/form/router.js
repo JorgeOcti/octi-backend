@@ -7,6 +7,7 @@ const router = express.Router();
 // list form avaibles
 router.get('/', middlewares_1.default.isJWTAuthenticated, form_controller_1.default.list);
 router.put('/preferred/', middlewares_1.default.isJWTAuthenticated, form_controller_1.default.changePreferred);
+router.post('/:id/upload-file/', middlewares_1.default.isJWTAuthenticated, form_controller_1.default.uploadFile);
 // detail information of the form
 router.get('/:id/', middlewares_1.default.isJWTAuthenticated, form_controller_1.default.detail);
 // answer form

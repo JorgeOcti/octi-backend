@@ -1,0 +1,1 @@
+{"version":3,"file":"participant-file.interdace.js","sourceRoot":"","sources":["../../src/interfaces/participant-file.interdace.ts"],"names":[],"mappings":"","sourcesContent":["export interface IParticipantFile {\n  _id: any;\n  name: string;\n  form: IFormModel;\n}\n"]}

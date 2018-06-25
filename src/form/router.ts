@@ -9,10 +9,13 @@ router.get('/', Middlewares.isJWTAuthenticated, FormController.list);
 
 router.put('/preferred/', Middlewares.isJWTAuthenticated, FormController.changePreferred);
 
+router.post('/:id/upload-file/', Middlewares.isJWTAuthenticated, FormController.uploadFile);
+
 // detail information of the form
 router.get('/:id/', Middlewares.isJWTAuthenticated, FormController.detail);
 
 // answer form
 router.post('/:id/', Middlewares.isJWTAuthenticated, FormController.complete);
+
 
 export default router;

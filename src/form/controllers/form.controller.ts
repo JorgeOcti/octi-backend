@@ -9,6 +9,7 @@ import {ObjectID} from 'bson';
 import {IRequest} from "../../interfaces/global.interface";
 import * as moment  from "moment-timezone";
 import { io } from '../../server';
+import ParticipantFile from "../models/participant-file.model";
 
 class FormController {
 
@@ -17,6 +18,7 @@ class FormController {
     this.detail = this.detail.bind(this);
     this.complete = this.complete.bind(this);
     this.changePreferred = this.changePreferred.bind(this);
+    this.uploadFile = this.uploadFile.bind(this);
   }
 
   public async list(req: IRequest, res: Response) {
@@ -228,6 +230,50 @@ class FormController {
       });
     }
   }
+
+  public async uploadFile(req: IRequest, res: Response) {
+    const {id} = req.params;
+    console.log('id', id);
+    const company = req.user.company;
+    if (req.file) {
+      let file: any = req.file;
+      try {
+        const participantFile = new ParticipantFile();
+        file.headers = {
+          'Content-Type': file.mimetype
+        };
+        file.company = company._id;
+        file.form = id;
+
+        participantFile.user = req.user._id;
+        participantFile.company = company._id;
+        participantFile.attach('file', file, async function (error: any) {
+          if (error) {
+            res.status(400).json(error);
+          } else {
+            await participantFile.save();
+            res.status(201).json({
+              data: {
+                _id: participantFile._id,
+                file: participantFile.file.url
+              },
+              status: 201
+            });
+          }
+        });
+      } catch (e) {
+        res.status(400).json(e);
+      }
+
+    } else {
+      res.status(400).json({
+        message: 'La imagen es obligatoria.',
+        status: 400
+      });
+    }
+    // ParticipantFile
+  }
+
 
   public async changePreferred(req: IRequest, res: Response) {
     let {form} = req.body;

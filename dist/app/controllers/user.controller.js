@@ -10,13 +10,15 @@ class UserController {
         const { password } = req.body;
         if (password && password.trim().length) {
             try {
-                await user_model_1.default.findByIdAndUpdate(user._id, {
-                    password
-                });
-                res.status(200).json({
-                    message: 'Contraseña cambiada satisfactoriamente.',
-                    status: 200
-                });
+                const User = await user_model_1.default.findById(user._id);
+                if (User) {
+                    User.password = password;
+                    User.save();
+                    res.status(200).json({
+                        message: 'Contraseña cambiada satisfactoriamente.',
+                        status: 200
+                    });
+                }
             }
             catch (e) {
                 res.status(400).json({

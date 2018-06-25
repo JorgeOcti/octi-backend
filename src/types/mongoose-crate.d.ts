@@ -1,4 +1,4 @@
-declare module 'mongoose-create' {
+declare module 'mongoose-crate' {
   const _: () => void;
   export = _;
 }

@@ -9,12 +9,14 @@ const car_model_1 = require("../../app/models/car.model");
 const bson_1 = require("bson");
 const moment = require("moment-timezone");
 const server_1 = require("../../server");
+const participant_file_model_1 = require("../models/participant-file.model");
 class FormController {
     constructor() {
         this.list = this.list.bind(this);
         this.detail = this.detail.bind(this);
         this.complete = this.complete.bind(this);
         this.changePreferred = this.changePreferred.bind(this);
+        this.uploadFile = this.uploadFile.bind(this);
     }
     async list(req, res) {
         const company = req.user.company;
@@ -221,6 +223,49 @@ class FormController {
                 status: 400
             });
         }
+    }
+    async uploadFile(req, res) {
+        const { id } = req.params;
+        console.log('id', id);
+        const company = req.user.company;
+        if (req.file) {
+            let file = req.file;
+            try {
+                const participantFile = new participant_file_model_1.default();
+                file.headers = {
+                    'Content-Type': file.mimetype
+                };
+                file.company = company._id;
+                file.form = id;
+                participantFile.user = req.user._id;
+                participantFile.company = company._id;
+                participantFile.attach('file', file, async function (error) {
+                    if (error) {
+                        res.status(400).json(error);
+                    }
+                    else {
+                        await participantFile.save();
+                        res.status(201).json({
+                            data: {
+                                _id: participantFile._id,
+                                file: participantFile.file.url
+                            },
+                            status: 201
+                        });
+                    }
+                });
+            }
+            catch (e) {
+                res.status(400).json(e);
+            }
+        }
+        else {
+            res.status(400).json({
+                message: 'La imagen es obligatoria.',
+                status: 400
+            });
+        }
+        // ParticipantFile
     }
     async changePreferred(req, res) {
         let { form } = req.body;

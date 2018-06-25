@@ -106,8 +106,8 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
 // For parsing multipart/form-data
-const upload = multer();
-app.use(upload.single());
+const upload = multer({dest:'/tmp/'});
+app.use(upload.single('file'));
 
 // static files
 const staticDirectory = path.join(__dirname, '../public');
