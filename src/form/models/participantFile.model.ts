@@ -4,7 +4,6 @@ import * as MongooseCrateS3 from 'mongoose-crate-s3';
 import {IParticipantFile} from "../../interfaces/participantFile.interface";
 import * as uuid from "uuid";
 
-
 const fileSchema = new mongoose.Schema({
   url: {
     type: String

@@ -53,9 +53,16 @@ $(function() {
   $('body').on('click', '.treeview-menu li', () => {
     $('body').removeClass('sidebar-open');
   });
+  // ekk-lightbox
   $(document).on('click', '[data-toggle="lightbox"]', function (event) {
     event.preventDefault();
     ($(this) as any).ekkoLightbox();
+  });
+  // fix ekk-lightbox
+  $(document).on('hidden.bs.modal', function (event) {
+    if ($('.modal:visible').length) {
+      $('body').addClass('modal-open');
+    }
   });
 });
 

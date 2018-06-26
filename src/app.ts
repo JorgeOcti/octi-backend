@@ -193,6 +193,14 @@ export const accessLogStream = fileStreamRotator.getStream({
   verbose: false
 });
 
+// export const mongooseCrateConfig: any = {
+//   key: process.env.S3_KEY || 'key',
+//   secret: process.env.S3_SECRET || 'secret',
+//   bucket: process.env.S3_BUCKET || 'bucket',
+//   acl: 'public-read', // defaults to public-read
+//   region: process.env.S3_REGION || 'region', // defaults to us-standard
+// };
+
 /* istanbul ignore if */
 if (app.get('env') !== 'testing') {
   morgan.token('remote-addr', (req: express.Request): string => {
@@ -240,6 +248,7 @@ app.use((err: IResponseError, req: express.Request, res: express.Response, next:
 
   // render the error page
   const statusCode = [403, 404, 500].includes(err.status)?err.status:500;
+  console.log('err', err);
   res.status(statusCode).render(statusCode.toString());
   // res.json({
   //   status: err.status,
