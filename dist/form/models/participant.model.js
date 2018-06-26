@@ -24,6 +24,10 @@ const participantAnswersSchema = new mongoose.Schema({
     risk: { type: String, trim: true },
     observe: { type: String, trim: true },
     answer: { type: mongoose.Schema.Types.ObjectId },
+    images: [{
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'ParticipantFile',
+        }],
     comment: { type: String },
     qualification: { type: Number },
     weight: { type: Number, required: true },

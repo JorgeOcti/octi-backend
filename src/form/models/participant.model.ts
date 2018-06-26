@@ -38,6 +38,10 @@ const participantAnswersSchema = new mongoose.Schema({
   observe: {type: String, trim: true},
 
   answer: {type: mongoose.Schema.Types.ObjectId},
+  images: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'ParticipantFile',
+  }],
   comment: {type: String},
   qualification: {type: Number},
 

@@ -21,6 +21,7 @@ html
     script(src='https://oss.maxcdn.com/respond/1.4.2/respond.min.js')
     <![endif]-->
     link(rel='stylesheet', href=`/static${getVersionedPath('/css/style.css')}`)
+    link(rel='stylesheet', href=`/static${getVersionedPath('/js/vendor/lightbox/ekko-lightbox.css')}`)
     block head
   block content
   .js
@@ -39,6 +40,8 @@ html
     script(src=`/static${getVersionedPath('/js/vendor/bootstrap/bootstrap.min.js')}`)
     //- echarts
     script(src=`/static${getVersionedPath('/js/vendor/echarts/echarts.min.js')}`)
+    //- lighbox
+    script(src=`/static${getVersionedPath('/js/vendor/lightbox/ekko-lightbox.min.js')}`)
     //- socket io
     script(src=`/socket.io/socket.io.js`)
     //- js app

@@ -1,7 +1,7 @@
 import * as mongoose from 'mongoose';
 import * as mongooseCrate from 'mongoose-crate';
 import * as MongooseCrateS3 from 'mongoose-crate-s3';
-import {IParticipantFile} from "../../interfaces/participant-file.interface";
+import {IParticipantFile} from "../../interfaces/participantFile.interface";
 import * as uuid from "uuid";
 
 
@@ -24,7 +24,7 @@ export interface IParticipantFileModel extends IParticipantFile, mongoose.Docume
   attach(condition: string, file: any, error: (err:any) => void): void
 }
 
-const participantFileSchema = new mongoose.Schema({
+export const participantFileSchema = new mongoose.Schema({
   participant: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Participant'

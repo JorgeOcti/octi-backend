@@ -89,7 +89,15 @@ app.use(bodyParser.json());
 // for parsing application/xwww-
 app.use(bodyParser.urlencoded({ extended: true }));
 // For parsing multipart/form-data
-const upload = multer({ dest: '/tmp/' });
+// const upload = multer({dest:'/tmp/'});
+const upload = multer({
+    storage: multer.diskStorage({
+        destination: '/tmp/',
+        filename: function (req, file, callback) {
+            callback(null, file.originalname);
+        }
+    })
+});
 app.use(upload.single('file'));
 // static files
 const staticDirectory = path.join(__dirname, '../public');

@@ -12,7 +12,7 @@ class UserController {
   public async apiChangePassword(req: IRequest, res: Response) {
     const user = req.user;
     const {password, newPassword} = req.body;
-    if (password && password.trim().length && newPassword && newPassword.length) {
+    if (password && password.trim().length && newPassword && newPassword.trim().length) {
       try {
         const User = await UserModel.findById(user._id);
         if(User){

@@ -9,7 +9,7 @@ import {ObjectID} from 'bson';
 import {IRequest} from "../../interfaces/global.interface";
 import * as moment  from "moment-timezone";
 import { io } from '../../server';
-import ParticipantFile from "../models/participant-file.model";
+import ParticipantFile from "../models/participantFile.model";
 
 class FormController {
 
@@ -112,6 +112,8 @@ class FormController {
           // var sum sections
           let sumSectionWeigths = 0;
           let sumSectionQualifications = 0;
+          // array images ids
+          let allImages: any = [];
           for (const section of form.sections) {
             // var sum questions
             let sumWeigths = 0;
@@ -135,6 +137,10 @@ class FormController {
 
               sumQualifications +=  (qualification * question.weight);
               sumWeigths += question.weight;
+              // concat allImages
+              if(answer && answer.images && answer.images.length){
+                allImages = [...answer.images, ...allImages]
+              }
               // generate answer
               newAnswers.push({
                 _id: question._id,
@@ -144,6 +150,8 @@ class FormController {
                 risk: question.risk,
                 observe: question.observe,
                 answer: answer ? new ObjectID(answer.value) : null,
+                // images: answer.images && answer.images.length ? await ParticipantFile.find({_id: {$in: answer.images}}, {_id:1}) : [],
+                images: answer && answer.images && answer.images.length ? answer.images.map((image: string) => (new ObjectID(image))) : [],
                 qualification,
                 weight: question.weight,
                 order: question.order,
@@ -153,7 +161,7 @@ class FormController {
             const sectionQualification = sumQualifications ? sumQualifications / sumWeigths : 0;
             sumSectionQualifications += (sectionQualification * section.weight);
             sumSectionWeigths += section.weight;
-
+            console.log('newAnswers', newAnswers);
             // generate answer section
             newParticipant.sections.push({
               _id: section._id,
@@ -171,6 +179,13 @@ class FormController {
           try {
             // save the participant
             await newParticipant.save();
+
+            // associate file to participant
+            if(allImages.length){
+              console.log('allImages', allImages)
+              await ParticipantFile.update({_id: {$in: allImages}}, {participant: newParticipant}, { multi: true })
+            }
+
             car.lastForm = newParticipant;
             await car.save();
             const today = moment().startOf('day');
@@ -203,6 +218,7 @@ class FormController {
               status: 200
             });
           } catch (e) {
+            console.log(e);
             // return error, if the form could not be recorded
             return res.status(400).json({
               message: e,
@@ -239,6 +255,7 @@ class FormController {
       let file: any = req.file;
       try {
         const participantFile = new ParticipantFile();
+        console.log('file', file);
         file.headers = {
           'Content-Type': file.mimetype
         };
@@ -255,7 +272,7 @@ class FormController {
             res.status(201).json({
               data: {
                 _id: participantFile._id,
-                file: participantFile.file.url
+                file: participantFile.file
               },
               status: 201
             });

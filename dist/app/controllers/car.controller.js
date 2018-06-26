@@ -269,6 +269,8 @@ class CarController {
                 .populate([{
                     path: 'user',
                     select: ['firstName', 'lastName']
+                }, {
+                    path: 'sections.answers.images',
                 }]);
             // validate exist participant
             if (!participant) {

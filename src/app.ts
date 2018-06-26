@@ -106,7 +106,15 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
 // For parsing multipart/form-data
-const upload = multer({dest:'/tmp/'});
+// const upload = multer({dest:'/tmp/'});
+const upload = multer({
+  storage: multer.diskStorage({
+    destination: '/tmp/',
+    filename: function (req, file, callback) {
+      callback(null, file.originalname);
+    }
+  })
+});
 app.use(upload.single('file'));
 
 // static files

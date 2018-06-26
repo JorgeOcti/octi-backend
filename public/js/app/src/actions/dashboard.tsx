@@ -6,6 +6,7 @@ import {loadDataAction} from './modal';
 import {ICar} from "../../../../../src/interfaces/car.interface";
 import {IParticipant, IParticipantSection} from "../../../../../src/interfaces/participant.interface";
 import * as moment from "moment";
+import isDivisibleBy = require("validator/lib/isDivisibleBy");
 
 export interface IDashboardState {
   loading: boolean;
@@ -172,7 +173,7 @@ export function getParticipant(id: string) {
     dispatch(loadingParticipantAction(id));
     api.getParticipant(id)
       .then((response: AxiosResponse) => {
-        console.log(response.data.data);
+        // console.log(response.data.data);
         dispatch(loadDataAction(
           response.data.data.name,
           <div id="form-detail">
@@ -204,7 +205,7 @@ export function getParticipant(id: string) {
                               <p><strong>{answer.order} {answer.question}</strong></p>
                               <div className="btn-group btn-group-justified" role="group" aria-label="...">
                                 {
-                                  answer.scale.choices.map((choice, index) => {
+                                  answer.scale.choices.map((choice) => {
                                     let btnClass = 'btn-default';
                                     if (choice.backgroundColor === 'blue') btnClass = 'btn-primary';
                                     else if (choice.backgroundColor === 'green') btnClass = 'btn-success';
@@ -222,6 +223,22 @@ export function getParticipant(id: string) {
                                   })
                                 }
                               </div>
+                              {
+                                answer.images && answer.images.length?
+                                  <div className="row" style={{marginBottom:'5px', marginTop:'20px'}}>
+                                    {
+                                      answer.images.map((image)=>{
+                                        return <div className="col-md-3 text-center" key={image._id}>
+                                          <a href={image.file.url} data-toggle="lightbox" data-gallery={answer._id}>
+                                            <img src={image.file.url} style={{height:'100px', width: '100px', objectFit: 'cover', padding:'5px'}} />
+                                          </a>
+                                          <p className={'text-ellipsis'}>{image.file.name}</p>
+                                        </div>
+                                      })
+                                    }
+                                  </div>
+                                : null
+                              }
                             </div>
                           )
                         })

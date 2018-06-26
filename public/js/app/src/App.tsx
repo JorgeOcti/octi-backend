@@ -53,5 +53,9 @@ $(function() {
   $('body').on('click', '.treeview-menu li', () => {
     $('body').removeClass('sidebar-open');
   });
+  $(document).on('click', '[data-toggle="lightbox"]', function (event) {
+    event.preventDefault();
+    ($(this) as any).ekkoLightbox();
+  });
 });
 
