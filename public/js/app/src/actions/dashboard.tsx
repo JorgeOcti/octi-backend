@@ -6,7 +6,7 @@ import {loadDataAction} from './modal';
 import {ICar} from "../../../../../src/interfaces/car.interface";
 import {IParticipant, IParticipantSection} from "../../../../../src/interfaces/participant.interface";
 import * as moment from "moment";
-import isDivisibleBy = require("validator/lib/isDivisibleBy");
+import ImageLazyLoad from "../components/ImageLazyLoad";
 
 export interface IDashboardState {
   loading: boolean;
@@ -230,7 +230,11 @@ export function getParticipant(id: string) {
                                       answer.images.map((image)=>{
                                         return <div className="col-md-3 text-center" key={image._id}>
                                           <a href={image.file.url} data-toggle="lightbox" data-gallery={answer._id}>
-                                            <img src={image.file.url} style={{height:'100px', width: '100px', objectFit: 'cover', padding:'5px'}} />
+                                            <ImageLazyLoad
+                                              url={image.file.url}
+                                              styles={{height: '100px', width: '100px', objectFit: 'cover', padding: '5px'}}
+                                              height={'100px'}
+                                            />
                                           </a>
                                           <p className={'text-ellipsis'}>{image.file.name}</p>
                                         </div>
