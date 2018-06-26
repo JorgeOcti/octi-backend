@@ -228,7 +228,7 @@ export function getParticipant(id: string) {
                                   <div className="row" style={{marginBottom:'5px', marginTop:'20px'}}>
                                     {
                                       answer.images.map((image)=>{
-                                        return <div className="col-md-3 col-sm-3 col-xs-3 text-center" key={image._id}>
+                                        return <div className="col-md-3 col-sm-4 col-xs-4 text-center" key={image._id}>
                                           <a href={image.file.url} data-toggle="lightbox" data-gallery={answer._id}>
                                             <ImageLazyLoad
                                               url={image.file.url}
