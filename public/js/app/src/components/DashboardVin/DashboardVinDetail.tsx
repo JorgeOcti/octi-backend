@@ -58,13 +58,13 @@ class DashboardVinDetail extends React.Component<IPropsType, IStateType> {
     });
     this.socket.on('connect', () => {
       this.socket.emit('join', {room: `dashboard-vin-detail-${id}`});
-      this.socket.on('ADD_PARTICIPANT', (data: any): void => {
-        this.setState({
-          highlight: [data._id, ...this.state.highlight]
-        });
-        this.props.loadParticipantInCarAction(data);
+    });
+    this.socket.on('ADD_PARTICIPANT', (data: any): void => {
+      this.setState({
+        highlight: [data._id, ...this.state.highlight]
       });
-    })
+      this.props.loadParticipantInCarAction(data);
+    });
   }
 
   public componentDidCatch(error: Error, errorInfo: ErrorInfo) {

@@ -62,32 +62,32 @@ class DashboardVinView extends React.Component<IPropsType, IStateType> {
     });
     this.socket.on('connect', () => {
       this.socket.emit('join', {room: `dashboard-vin-view-${window.user.company}`});
-      this.socket.on('REFRESH', (data: any): void => {
-        const {page} = this.props.dashboard.pagination;
-        if (data.update) {
-          this.props.getCarsAction(page, false);
-          if (!this.state.highlight.includes(data.car as never)) {
+    });
+    this.socket.on('REFRESH', (data: any): void => {
+      const {page} = this.props.dashboard.pagination;
+      if (data.update) {
+        this.props.getCarsAction(page, false);
+        if (!this.state.highlight.includes(data.car as never)) {
+          this.setState({
+            highlight: [data.car, ...this.state.highlight]
+          });
+        } else {
+          this.setState({
+            highlight: this.state.highlight.filter(e => e !== data.car)
+          }, () => {
             this.setState({
               highlight: [data.car, ...this.state.highlight]
             });
-          } else {
+          });
+        }
+        setTimeout(() => {
+          if (this.isMount) {
             this.setState({
               highlight: this.state.highlight.filter(e => e !== data.car)
-            }, () => {
-              this.setState({
-                highlight: [data.car, ...this.state.highlight]
-              });
             });
           }
-          setTimeout(() => {
-            if (this.isMount) {
-              this.setState({
-                highlight: this.state.highlight.filter(e => e !== data.car)
-              });
-            }
-          }, 3000);
-        }
-      });
+        }, 3000);
+      }
     });
     this.isMount = true;
   }
