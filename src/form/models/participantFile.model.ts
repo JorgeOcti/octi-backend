@@ -3,6 +3,7 @@ import * as mongooseCrate from 'mongoose-crate';
 import * as MongooseCrateS3 from 'mongoose-crate-s3';
 import {IParticipantFile} from "../../interfaces/participantFile.interface";
 import * as uuid from "uuid";
+import * as s3Config from '../../../s3-config.json';
 
 const fileSchema = new mongoose.Schema({
   url: {
@@ -45,11 +46,11 @@ export const participantFileSchema = new mongoose.Schema({
 
 participantFileSchema.plugin(mongooseCrate, {
   storage: new MongooseCrateS3({
-    key: 'AKIAI7N7MEN6RB7752VQ',
-    secret: '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',
-    bucket: 'media-andes-stage',
+    key: s3Config.accessKeyId,
+    secret: s3Config.secretAccessKey,
+    bucket: s3Config.bucket,
     acl: 'public-read', // defaults to public-read
-    region: 'sa-east-1', // defaults to us-standard
+    region: s3Config.region, // defaults to us-standard
     // where the file is stored in the bucket - defaults to this function
     path: (attachment) => {
       /* attachment params:

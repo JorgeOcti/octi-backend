@@ -28,8 +28,6 @@ const App = () => (
                 <Route exact path="/cars/:id" component={ DashboardVinDetail }/>
                 <Route exact path="/2/" component={ TestDetailView2 }/>
                 <Route exact path="/users/" component={ UsersListView }/>
-                {/*<Route exact path="/ticket/create/" component={ TicketCreateView }/>*/}
-                {/*<Route exact path="/ticket/:ticket/" component={ TicketDetailView }/>*/}
                 <Route component={ NoMatch }/>
             </Switch>
         </BrowserRouter>
@@ -47,7 +45,6 @@ $(function() {
       <App />,
       document.querySelector('#app')
   );
-
   ($('.sidebar-menu') as any).tree();
 
   $('body').on('click', '.treeview-menu li', () => {

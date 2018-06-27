@@ -236,7 +236,7 @@ export function getParticipant(id: string) {
                                               height={'100px'}
                                             />
                                           </a>
-                                          <p className={'text-ellipsis'}>{image.file.name}</p>
+                                          <p className={'text-ellipsis'} data-toggle="tooltip" data-placement="top" title={image.file.name}>{image.file.name}</p>
                                         </div>
                                       })
                                     }
@@ -254,6 +254,7 @@ export function getParticipant(id: string) {
           </div>
           ) as any);
         dispatch(loadingParticipantAction(null));
+        ($('[data-toggle="tooltip"]') as any).tooltip();
       })
       .catch((err: AxiosError) => {
         if (Axios.isCancel(err)) {

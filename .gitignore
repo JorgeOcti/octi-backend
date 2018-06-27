@@ -17,6 +17,9 @@ pids
 # ses config
 ses-config.json
 
+#s3 config
+s3-config.json
+
 # IDE
 .idea
 

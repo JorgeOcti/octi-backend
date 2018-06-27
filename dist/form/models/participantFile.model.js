@@ -4,6 +4,7 @@ const mongoose = require("mongoose");
 const mongooseCrate = require("mongoose-crate");
 const MongooseCrateS3 = require("mongoose-crate-s3");
 const uuid = require("uuid");
+const s3Config = require("../../../s3-config.json");
 const fileSchema = new mongoose.Schema({
     url: {
         type: String
@@ -37,11 +38,11 @@ exports.participantFileSchema = new mongoose.Schema({
 });
 exports.participantFileSchema.plugin(mongooseCrate, {
     storage: new MongooseCrateS3({
-        key: 'AKIAI7N7MEN6RB7752VQ',
-        secret: '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',
-        bucket: 'media-andes-stage',
+        key: s3Config.accessKeyId,
+        secret: s3Config.secretAccessKey,
+        bucket: s3Config.bucket,
         acl: 'public-read',
-        region: 'sa-east-1',
+        region: s3Config.region,
         // where the file is stored in the bucket - defaults to this function
         path: (attachment) => {
             /* attachment params:
