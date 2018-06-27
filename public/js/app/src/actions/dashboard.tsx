@@ -173,7 +173,6 @@ export function getParticipant(id: string) {
     dispatch(loadingParticipantAction(id));
     api.getParticipant(id)
       .then((response: AxiosResponse) => {
-        // console.log(response.data.data);
         dispatch(loadDataAction(
           response.data.data.name,
           <div id="form-detail">
@@ -206,16 +205,19 @@ export function getParticipant(id: string) {
                               <div className="btn-group btn-group-justified" role="group" aria-label="...">
                                 {
                                   answer.scale.choices.map((choice) => {
-                                    let btnClass = 'btn-default';
-                                    if (choice.backgroundColor === 'blue') btnClass = 'btn-primary';
-                                    else if (choice.backgroundColor === 'green') btnClass = 'btn-success';
-                                    else if (choice.backgroundColor === 'yellow') btnClass = 'btn-warning';
-                                    else if (choice.backgroundColor === 'red') btnClass = 'btn-danger';
+                                    const btnDefault = 'btn-default';
+                                    const optionsClass: any = {
+                                      'blue': 'btn-primary',
+                                      'green': 'btn-success',
+                                      'yellow': 'btn-warning',
+                                      'red': 'btn-danger'
+                                    };
+                                    const btnClass =  optionsClass.hasOwnProperty(choice.backgroundColor) ? optionsClass[choice.backgroundColor] : btnDefault;
                                     return (
                                       <div className="btn-group" role="group" key={choice._id}>
                                         <button
                                           type="button"
-                                          className={`btn ${choice._id === answer.answer ? btnClass : 'btn-default '}`}
+                                          className={`btn ${choice._id === answer.answer ? btnClass : btnDefault}`}
                                           disabled={true}
                                         >{choice.choice}</button>
                                       </div>
@@ -225,14 +227,13 @@ export function getParticipant(id: string) {
                               </div>
                               {
                                 answer.images && answer.images.length?
-                                  <div className="row" style={{marginBottom:'5px', marginTop:'20px'}}>
+                                  <div className="row images">
                                     {
                                       answer.images.map((image)=>{
                                         return <div className="col-md-3 col-sm-4 col-xs-4 text-center" key={image._id}>
                                           <a href={image.file.url} data-toggle="lightbox" data-gallery={answer._id}>
                                             <ImageLazyLoad
                                               url={image.file.url}
-                                              styles={{height: '100px', width: '100px', objectFit: 'cover', padding: '5px'}}
                                               height={'100px'}
                                             />
                                           </a>

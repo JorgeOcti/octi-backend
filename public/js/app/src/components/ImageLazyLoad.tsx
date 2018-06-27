@@ -4,7 +4,6 @@ import {CSSProperties} from "react";
 
 interface IPropsType {
   url: string;
-  styles: CSSProperties;
   height: string;
 }
 
@@ -31,11 +30,9 @@ class ImageLazyLoad extends React.Component<IPropsType, IStateType> {
 
   render() {
     const { loading } = this.state;
-    let { styles } = this.props;
     const { url, height } = this.props;
-    let imageStyle:CSSProperties = {};
-    if (styles) imageStyle = {...styles};
 
+    let imageStyle:CSSProperties = {};
     if (loading){
       imageStyle.display = 'none';
     }
