@@ -4,6 +4,7 @@ const bcrypt = require("bcrypt");
 const mongoose = require("mongoose");
 const mongoosePaginate = require("mongoose-paginate");
 const passportLocalMongoose = require("passport-local-mongoose");
+const jwt = require("jsonwebtoken");
 const userSchema = new mongoose.Schema({
     username: {
         type: String,
@@ -74,6 +75,17 @@ userSchema.plugin(mongoosePaginate);
  */
 userSchema.methods.fullName = function () {
     return (this.firstName.trim() + " " + this.lastName.trim());
+};
+userSchema.methods.generateToken = function () {
+    const userInfo = {
+        _id: this._id,
+        firstName: this.firstName,
+        lastName: this.lastName,
+        email: this.email,
+        company: this.company,
+        venue: this.venue
+    };
+    return jwt.sign(userInfo, process.env.SECRET_KEY || 'secretKey', { expiresIn: '7 days' });
 };
 userSchema.pre('save', function (next) {
     const user = this;

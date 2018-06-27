@@ -19,4 +19,5 @@ export interface IUser {
   active: boolean;
   updatedAt: Date;
   createdAt: Date;
+  generateToken: () => string;
 }

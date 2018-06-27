@@ -55,7 +55,7 @@ class DashboardVinView extends React.Component<IPropsType, IStateType> {
     this.props.getCarsAction();
 
     // socket
-    this.socket = io.connect(`${location.protocol}//${location.host}`,{secure: location.protocol === 'https:', reconnection: true});
+    this.socket = io.connect(`${location.protocol}//${location.host}`,{secure: location.protocol === 'https:', reconnection: true, query: {token: (window.user as any).token}});
     this.socket.emit('join',{room:`dashboard-vin-view-${window.user.company}`});
     this.socket.on('REFRESH', (data: any): void => {
       const {page} = this.props.dashboard.pagination;

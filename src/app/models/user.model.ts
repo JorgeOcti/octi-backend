@@ -3,6 +3,7 @@ import * as mongoose from 'mongoose';
 import * as mongoosePaginate from 'mongoose-paginate';
 import * as passportLocalMongoose from 'passport-local-mongoose';
 import {IUser} from "../../interfaces/user.interface";
+import * as jwt from "jsonwebtoken";
 // import mongooseCrate  from 'mongoose-crate';
 // import S3 from 'mongoose-crate-s3';
 
@@ -10,6 +11,7 @@ export interface IUserModel extends IUser, mongoose.Document {
   comparePassword: (candidatePassword: string, cb: (err: any, isMatch: any) => {}) => void;
   comparePasswordSync: (candidatePassword: string) => void;
   fullName: () => string;
+  generateToken: () => string;
 }
 
 const userSchema = new mongoose.Schema({
@@ -90,6 +92,19 @@ userSchema.plugin(mongoosePaginate);
 
 userSchema.methods.fullName = function(): string {
   return (this.firstName.trim() + " " + this.lastName.trim());
+};
+
+
+userSchema.methods.generateToken = function () {
+  const userInfo = {
+    _id: this._id,
+    firstName: this.firstName,
+    lastName: this.lastName,
+    email: this.email,
+    company: this.company,
+    venue: this.venue
+  };
+  return jwt.sign(userInfo, process.env.SECRET_KEY || 'secretKey', {expiresIn: '7 days'});
 };
 
 userSchema.pre('save', function (this: IUserModel, next) {

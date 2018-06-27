@@ -1,4 +1,4 @@
-import {Request, Response} from "express";
+import {Response} from "express";
 import CarModel, {ICarModel} from '../models/car.model'
 import * as mongoose from 'mongoose';
 import {ObjectID} from "bson";
@@ -20,12 +20,34 @@ class CarController {
     this.apiParticipantsPerDate = this.apiParticipantsPerDate.bind(this);
   }
 
-  public generalDashboard(req: Request, res: Response) {
-    res.render('app/index');
+  public async generalDashboard(req: IRequest, res: Response) {
+    res.render('app/index', {token: await req.user.generateToken()});
   }
 
-  public vinDashboard(req: Request, res: Response) {
-    res.render('app/index');
+  public async vinDashboard(req: IRequest, res: Response) {
+    res.render('app/index', {token: await req.user.generateToken()});
+  }
+
+  public async vinDashboardDetail(req: IRequest, res: Response) {
+    const {id} = req.params;
+    const company = req.user.company;
+    // validate params
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(404).render('404');
+    }
+    try {
+      // validate car exist
+      const car = await CarModel.findOne({
+        _id: id, company
+      });
+      if (!car) {
+        return res.status(404).render('404');
+      } else {
+        res.render('app/index', {token: await req.user.generateToken()});
+      }
+    } catch (e) {
+      if (e) res.status(500).send(e);
+    }
   }
 
   public async checkVIN(req: IRequest, res: Response) {
@@ -151,27 +173,6 @@ class CarController {
     }
   }
 
-  public async vinDashboardDetail(req: IRequest, res: Response) {
-    const {id} = req.params;
-    const company = req.user.company;
-    // validate params
-    if (!mongoose.Types.ObjectId.isValid(id)) {
-      return res.status(404).render('404');
-    }
-    try {
-      // validate car exist
-      const car = await CarModel.findOne({
-        _id: id, company
-      });
-      if (!car) {
-        return res.status(404).render('404');
-      } else {
-        res.render('app/index');
-      }
-    } catch (e) {
-      if (e) res.status(500).send(e);
-    }
-  }
 
   public async apiParticipantsPerDate(req: IRequest, res: Response) {
     const company = req.user.company;

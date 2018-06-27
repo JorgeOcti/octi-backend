@@ -5,6 +5,7 @@ const mongoose = require("mongoose");
 const app_1 = require("./app");
 const logger_service_1 = require("./services/logger.service");
 const socketIO = require("socket.io");
+const jwt = require("jsonwebtoken");
 // import * as socketRedis from 'socket.io-redis';
 // Mongoose setting
 const MONGODB_URI = process.env.MONGODB_URI || '';
@@ -39,23 +40,50 @@ exports.io = socketIO(server);
 //   host: process.env.REDIS_HOST ? process.env.REDIS_HOST : 'localhost',
 //   port: 6379
 // }));
-exports.io.use((socket, next) => {
-    // let token = socket.handshake.query.token;
+exports.io.use(async (socket, next) => {
+    //validate token to use socket
+    let token = socket.handshake.query.token;
+    if (token) {
+        try {
+            const user = await jwt.verify(token, process.env.SECRET_KEY || 'secretKey');
+            if (user) {
+                // socket: generate user room
+                socket.user = user;
+                socket.join(user._id);
+                return next();
+            }
+            else {
+                socket.disconnect();
+                return next(new Error('authentication error'));
+            }
+        }
+        catch (e) {
+            socket.disconnect();
+            return next(new Error('authentication error'));
+        }
+    }
+    else {
+        socket.disconnect();
+        return next(new Error('authentication error'));
+    }
+    // console.log('token', token);
     // if (isValid(token)) {
     //   return next();
     // }
     // return next(new Error('authentication error'));
-    return next();
 });
 exports.io.on("connection", function (socket) {
-    console.log('socket.id', socket.id);
+    console.log('---------------------');
     console.log("A user connected");
+    console.log('socket.id', socket.id);
+    console.log('socket.user\n', socket.user);
     socket.on('join', function (data) {
-        console.log(JSON.stringify(data));
         socket.join(data.room);
     });
     socket.on('disconnect', function () {
+        console.log('---------------------');
         console.log("user disconnected");
+        console.log('socket.user\n', socket.user);
         // io.emit('user disconnected');
     });
 });

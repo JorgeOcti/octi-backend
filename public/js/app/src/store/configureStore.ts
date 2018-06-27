@@ -3,7 +3,7 @@ import * as Raven from 'raven-js';
 import {applyMiddleware, createStore} from 'redux';
 import createDebounce from 'redux-debounced';
 import {composeWithDevTools} from 'redux-devtools-extension';
-import LogerMiddleware from 'redux-logger';
+// import LogerMiddleware from 'redux-logger';
 import ThunkMiddleware from 'redux-thunk';
 import {IWindow} from '../interfaces/window';
 import rootReducer from '../reducers/';
@@ -16,7 +16,7 @@ const configureStore = () => {
 
   if (process.env.NODE_ENV === 'development') {
     middlewares.push(ThunkMiddleware);
-    middlewares.push(LogerMiddleware);
+    // middlewares.push(LogerMiddleware);
     middlewares.push(createDebounce());
     enhancers = composeWithDevTools(applyMiddleware(...middlewares));
   } else {

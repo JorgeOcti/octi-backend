@@ -15,11 +15,35 @@ class CarController {
         this.apiParticipantDetail = this.apiParticipantDetail.bind(this);
         this.apiParticipantsPerDate = this.apiParticipantsPerDate.bind(this);
     }
-    generalDashboard(req, res) {
-        res.render('app/index');
+    async generalDashboard(req, res) {
+        res.render('app/index', { token: await req.user.generateToken() });
     }
-    vinDashboard(req, res) {
-        res.render('app/index');
+    async vinDashboard(req, res) {
+        res.render('app/index', { token: await req.user.generateToken() });
+    }
+    async vinDashboardDetail(req, res) {
+        const { id } = req.params;
+        const company = req.user.company;
+        // validate params
+        if (!mongoose.Types.ObjectId.isValid(id)) {
+            return res.status(404).render('404');
+        }
+        try {
+            // validate car exist
+            const car = await car_model_1.default.findOne({
+                _id: id, company
+            });
+            if (!car) {
+                return res.status(404).render('404');
+            }
+            else {
+                res.render('app/index', { token: await req.user.generateToken() });
+            }
+        }
+        catch (e) {
+            if (e)
+                res.status(500).send(e);
+        }
     }
     async checkVIN(req, res) {
         let { vin, vin2 } = req.body;
@@ -145,30 +169,6 @@ class CarController {
                 message: 'VIN no encontrado.',
                 status: 400
             });
-        }
-    }
-    async vinDashboardDetail(req, res) {
-        const { id } = req.params;
-        const company = req.user.company;
-        // validate params
-        if (!mongoose.Types.ObjectId.isValid(id)) {
-            return res.status(404).render('404');
-        }
-        try {
-            // validate car exist
-            const car = await car_model_1.default.findOne({
-                _id: id, company
-            });
-            if (!car) {
-                return res.status(404).render('404');
-            }
-            else {
-                res.render('app/index');
-            }
-        }
-        catch (e) {
-            if (e)
-                res.status(500).send(e);
         }
     }
     async apiParticipantsPerDate(req, res) {

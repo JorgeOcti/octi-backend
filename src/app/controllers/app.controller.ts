@@ -44,17 +44,15 @@ class AppController {
   public login(req: Request, res: Response, error:any) {
     if (req.user){
       return res.redirect('/');
-    }
-    else{
-      return res.render('app/login', { csrfToken: req.csrfToken() });
+    } else {
+      return res.render('app/login', {csrfToken: req.csrfToken()});
     }
   }
 
   public processLogin(req: Request, res: Response, next: NextFunction) {
     if (req.user) {
       return res.redirect('/');
-    }
-    else {
+    } else {
       passport.authenticate('local', (err, user, info) => {
         if (err) {
           return next(err); // will generate a 500 error

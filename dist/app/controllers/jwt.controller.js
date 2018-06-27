@@ -228,6 +228,7 @@ class JWTController {
     isJWTAuthenticated(req, res, next) {
         console.log('test');
         if (req.headers && req.headers.authorization && req.headers.authorization.split(' ')[0] === 'JWT') {
+            //process.env.SECRET_KEY
             jwt.verify(req.headers.authorization.split(' ')[1], req.app.locals.secretKey, (err, decode) => {
                 if (err) {
                     res.status(401).json({

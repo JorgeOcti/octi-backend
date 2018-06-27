@@ -47,7 +47,7 @@ class DashboardVinDetail extends React.Component<IPropsType, IStateType> {
     document.title = 'OSA Andes | Detalle VIN';
     this.props.getCarAction(id);
 
-    this.socket = io.connect(`${location.protocol}//${location.host}`,{secure: location.protocol === 'https:', reconnection: true});
+    this.socket = io.connect(`${location.protocol}//${location.host}`,{secure: location.protocol === 'https:', reconnection: true, query: {token: (window.user as any).token}});
     this.socket.emit('join',{room:`dashboard-vin-detail-${id}`});
     this.socket.on('ADD_PARTICIPANT', (data: any): void => {
       this.setState({
