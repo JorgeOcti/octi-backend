@@ -4,7 +4,7 @@ import app from './app';
 import logger from './services/logger.service';
 import * as socketIO from 'socket.io';
 import * as jwt from "jsonwebtoken";
-// import * as socketRedis from 'socket.io-redis';
+import * as socketRedis from 'socket.io-redis';
 
 // Mongoose setting
 const MONGODB_URI: string = process.env.MONGODB_URI || '';
@@ -42,10 +42,10 @@ const server = app.listen(parseInt(app.get('port')) + NODE_APP_INSTANCE, () => {
 
 export const io = socketIO(server);
 
-// io.adapter(socketRedis({
-//   host: process.env.REDIS_HOST ? process.env.REDIS_HOST : 'localhost',
-//   port: 6379
-// }));
+io.adapter(socketRedis({
+  host: process.env.REDIS_HOST ? process.env.REDIS_HOST : 'localhost',
+  port: 6379
+}));
 
 io.use( async (socket, next) => {
   //validate token to use socket

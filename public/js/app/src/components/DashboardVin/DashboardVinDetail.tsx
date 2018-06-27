@@ -11,6 +11,9 @@ import * as PropTypes from "prop-types";
 import ModalView from "../Modal/ModalView";
 import * as io from "socket.io-client";
 import {IParticipant} from "../../../../../../src/interfaces/participant.interface";
+import {IWindow} from "../../interfaces/window";
+
+declare let window: IWindow;
 
 interface IPropsType extends RouteComponentProps<{ id: string }> {
   dispatch: Dispatch<DashboardReduxAction>;
