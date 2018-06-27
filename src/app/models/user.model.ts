@@ -60,7 +60,7 @@ const userSchema = new mongoose.Schema({
   lastLogin: Date,
 
   active: {
-    type:Boolean,
+    type: Boolean,
     default: true
   }
 }, {

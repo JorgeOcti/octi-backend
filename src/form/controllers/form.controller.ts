@@ -161,7 +161,6 @@ class FormController {
             const sectionQualification = sumQualifications ? sumQualifications / sumWeigths : 0;
             sumSectionQualifications += (sectionQualification * section.weight);
             sumSectionWeigths += section.weight;
-            console.log('newAnswers', newAnswers);
             // generate answer section
             newParticipant.sections.push({
               _id: section._id,
@@ -182,7 +181,6 @@ class FormController {
 
             // associate file to participant
             if(allImages.length){
-              console.log('allImages', allImages)
               await ParticipantFile.update({_id: {$in: allImages}}, {participant: newParticipant}, { multi: true })
             }
 
@@ -207,7 +205,6 @@ class FormController {
                 select: ['firstName', 'lastName']
               })
             );
-            console.log('ola');
             return res.json({
               data: {
                 id,
@@ -249,13 +246,11 @@ class FormController {
 
   public async uploadFile(req: IRequest, res: Response) {
     const {id} = req.params;
-    console.log('id', id);
     const company = req.user.company;
     if (req.file) {
       let file: any = req.file;
       try {
         const participantFile = new ParticipantFile();
-        console.log('file', file);
         file.headers = {
           'Content-Type': file.mimetype
         };

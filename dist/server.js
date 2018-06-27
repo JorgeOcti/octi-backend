@@ -78,6 +78,7 @@ exports.io.on("connection", function (socket) {
     console.log('socket.id', socket.id);
     console.log('socket.user\n', socket.user);
     socket.on('join', function (data) {
+        console.log(`join ${data.room}`);
         socket.join(data.room);
     });
     socket.on('disconnect', function () {
