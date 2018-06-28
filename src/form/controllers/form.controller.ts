@@ -10,6 +10,7 @@ import {IRequest} from "../../interfaces/global.interface";
 import * as moment  from "moment-timezone";
 import { io } from '../../server';
 import ParticipantFile from "../models/participantFile.model";
+import * as autoRotate from "exif-image-auto-rotation";
 
 class FormController {
 
@@ -256,6 +257,19 @@ class FormController {
     }
   }
 
+  private autoRotate(path: string) {
+    return new Promise((resolve, reject) => {
+      try {
+        autoRotate(path, () => {
+          resolve();
+        });
+
+      } catch (e) {
+        reject(e)
+      }
+    })
+  }
+
   public async uploadFile(req: IRequest, res: Response) {
     const {id} = req.params;
     const company = req.user.company;
@@ -263,6 +277,8 @@ class FormController {
       let file: any = req.file;
       try {
         const participantFile = new ParticipantFile();
+        // fix exif
+        await this.autoRotate(file.path);
         file.headers = {
           'Content-Type': file.mimetype
         };

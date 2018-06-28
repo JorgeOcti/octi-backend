@@ -10,6 +10,7 @@ const bson_1 = require("bson");
 const moment = require("moment-timezone");
 const server_1 = require("../../server");
 const participantFile_model_1 = require("../models/participantFile.model");
+const autoRotate = require("exif-image-auto-rotation");
 class FormController {
     constructor() {
         this.list = this.list.bind(this);
@@ -244,6 +245,18 @@ class FormController {
             });
         }
     }
+    autoRotate(path) {
+        return new Promise((resolve, reject) => {
+            try {
+                autoRotate(path, () => {
+                    resolve();
+                });
+            }
+            catch (e) {
+                reject(e);
+            }
+        });
+    }
     async uploadFile(req, res) {
         const { id } = req.params;
         const company = req.user.company;
@@ -251,6 +264,8 @@ class FormController {
             let file = req.file;
             try {
                 const participantFile = new participantFile_model_1.default();
+                // fix exif
+                await this.autoRotate(file.path);
                 file.headers = {
                     'Content-Type': file.mimetype
                 };
