@@ -1,5 +1,6 @@
 import * as React from 'react';
 import {CSSProperties} from "react";
+// import ExifOrientationImg from "react-exif-orientation-img";
 
 
 interface IPropsType {
@@ -44,6 +45,11 @@ class ImageLazyLoad extends React.Component<IPropsType, IStateType> {
           onLoad={this.handleImageLoaded}
           style={imageStyle}
         />
+        {/*<ExifOrientationImg*/}
+          {/*src={url}*/}
+          {/*onLoad={this.handleImageLoaded}*/}
+          {/*style={imageStyle}*/}
+        {/*/>*/}
         {
           loading ?
             <div style={{height: height, display:'table-cell', verticalAlign: 'middle'}} className={'text-center'}>

@@ -71,7 +71,6 @@ class FormController {
         let { vin } = req.body;
         const { answers } = req.body;
         const company = req.user.company;
-        console.log(JSON.stringify(company));
         // validate answers in body
         if (!answers) {
             return res.status(400).json({
@@ -133,8 +132,17 @@ class FormController {
                             sumQualifications += (qualification * question.weight);
                             sumWeigths += question.weight;
                             // concat allImages
-                            if (answer && answer.images && answer.images.length) {
+                            if (choice && choice.requireImage && answer && answer.images && answer.images.length) {
                                 allImages = [...answer.images, ...allImages];
+                            }
+                            // delete images no used
+                            if (choice && !choice.requireImage && answer && answer.images && answer.images.length) {
+                                answer.images.forEach(async (image) => {
+                                    const deleteFile = await participantFile_model_1.default.findById(image);
+                                    if (deleteFile) {
+                                        await deleteFile.remove();
+                                    }
+                                });
                             }
                             // generate answer
                             newAnswers.push({

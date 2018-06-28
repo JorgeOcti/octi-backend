@@ -74,7 +74,6 @@ class FormController {
     let {vin} = req.body;
     const {answers} = req.body;
     const company = req.user.company;
-    console.log(JSON.stringify(company));
 
     // validate answers in body
     if (!answers){
@@ -129,6 +128,7 @@ class FormController {
               const choice = question.scale.choices.find((choice) => {
                 return answer ? choice._id.toString() === answer.value : false;
               });
+
               // calculate qualification
               let qualification = 0;
               if (choice) {
@@ -137,10 +137,22 @@ class FormController {
 
               sumQualifications +=  (qualification * question.weight);
               sumWeigths += question.weight;
+
               // concat allImages
-              if(answer && answer.images && answer.images.length){
+              if(choice && choice.requireImage && answer && answer.images && answer.images.length){
                 allImages = [...answer.images, ...allImages]
               }
+
+              // delete images no used
+              if(choice && !choice.requireImage && answer && answer.images && answer.images.length){
+                answer.images.forEach(async (image: string) => {
+                  const deleteFile = await ParticipantFile.findById(image);
+                  if(deleteFile){
+                      await deleteFile.remove()
+                  }
+                })
+              }
+
               // generate answer
               newAnswers.push({
                 _id: question._id,
