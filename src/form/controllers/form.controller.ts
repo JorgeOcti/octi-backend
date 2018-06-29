@@ -266,7 +266,6 @@ class FormController {
     return new Promise((resolve, reject) => {
       GraphicsMagick(path)
         .autoOrient()
-        .resize(1500, 1500)
         .write(path, function (err) {
           if (err) reject(err);
           else resolve();
