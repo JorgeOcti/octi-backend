@@ -259,9 +259,14 @@ class FormController {
 
   private autoRotate(path: string) {
     // doc http://aheckmann.github.io/gm/docs.html
+    /**** REQUIRE *****
+      brew install imagemagick
+      brew install graphicsmagick
+    * */
     return new Promise((resolve, reject) => {
       GraphicsMagick(path)
         .autoOrient()
+        .resize(1500, 1500)
         .write(path, function (err) {
           if (err) reject(err);
           else resolve();
