@@ -10,7 +10,7 @@ import {IRequest} from "../../interfaces/global.interface";
 import * as moment  from "moment-timezone";
 import { io } from '../../server';
 import ParticipantFile from "../models/participantFile.model";
-import * as autoRotate from "exif-image-auto-rotation";
+import * as GraphicsMagick from "gm";
 
 class FormController {
 
@@ -258,27 +258,39 @@ class FormController {
   }
 
   private autoRotate(path: string) {
+    // doc http://aheckmann.github.io/gm/docs.html
     return new Promise((resolve, reject) => {
-      try {
-        autoRotate(path, () => {
-          resolve();
+      GraphicsMagick(path)
+        .autoOrient()
+        .write(path, function (err) {
+          if (err) reject(err);
+          else resolve();
         });
-
-      } catch (e) {
-        reject(e)
-      }
     })
   }
 
-  public async uploadFile(req: IRequest, res: Response) {
+  public async uploadFile(req: IRequest, res: Response): Promise<any> {
     const {id} = req.params;
     const company = req.user.company;
     if (req.file) {
       let file: any = req.file;
       try {
         const participantFile = new ParticipantFile();
+        /*
+          { fieldname: 'file',
+          originalname: 'Captura de pantalla 2018-06-28 a la(s) 11.59.58.png',
+          encoding: '7bit',
+          mimetype: 'image/png',
+          destination: '/tmp/',
+          filename: 'Captura de pantalla 2018-06-28 a la(s) 11.59.58.png',
+          path: '/tmp/Captura de pantalla 2018-06-28 a la(s) 11.59.58.png',
+          size: 794429
+          }
+        */
         // fix exif
-        await this.autoRotate(file.path);
+        if(file.mimetype.includes('image')){
+          await this.autoRotate(file.path);
+        }
         file.headers = {
           'Content-Type': file.mimetype
         };

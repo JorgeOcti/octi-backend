@@ -10,7 +10,7 @@ const bson_1 = require("bson");
 const moment = require("moment-timezone");
 const server_1 = require("../../server");
 const participantFile_model_1 = require("../models/participantFile.model");
-const autoRotate = require("exif-image-auto-rotation");
+const GraphicsMagick = require("gm");
 class FormController {
     constructor() {
         this.list = this.list.bind(this);
@@ -246,15 +246,16 @@ class FormController {
         }
     }
     autoRotate(path) {
+        // doc http://aheckmann.github.io/gm/docs.html
         return new Promise((resolve, reject) => {
-            try {
-                autoRotate(path, () => {
+            GraphicsMagick(path)
+                .autoOrient()
+                .write(path, function (err) {
+                if (err)
+                    reject(err);
+                else
                     resolve();
-                });
-            }
-            catch (e) {
-                reject(e);
-            }
+            });
         });
     }
     async uploadFile(req, res) {
@@ -264,8 +265,21 @@ class FormController {
             let file = req.file;
             try {
                 const participantFile = new participantFile_model_1.default();
+                /*
+                  { fieldname: 'file',
+                  originalname: 'Captura de pantalla 2018-06-28 a la(s) 11.59.58.png',
+                  encoding: '7bit',
+                  mimetype: 'image/png',
+                  destination: '/tmp/',
+                  filename: 'Captura de pantalla 2018-06-28 a la(s) 11.59.58.png',
+                  path: '/tmp/Captura de pantalla 2018-06-28 a la(s) 11.59.58.png',
+                  size: 794429
+                  }
+                */
                 // fix exif
-                await this.autoRotate(file.path);
+                if (file.mimetype.includes('image')) {
+                    await this.autoRotate(file.path);
+                }
                 file.headers = {
                     'Content-Type': file.mimetype
                 };
