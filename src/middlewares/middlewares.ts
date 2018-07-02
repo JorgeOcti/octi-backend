@@ -55,7 +55,7 @@ class Middlewares {
   }
 
   public cleanStaticFiles(req: IRequest, res: Response, next: NextFunction) {
-    req.url = req.url.replace(/\/([^\/]+)\.[0-9a-f]+\.(css|js|jpg|png|gif|svg)$/, '/$1.$2');
+    req.url = req.url.replace(/\/([^\/]+)\.[0-9a-f]+\.(css|js|jpg|png|gif|svg|ico)$/, '/$1.$2');
     next();
   }
 }
