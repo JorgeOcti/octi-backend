@@ -1,7 +1,5 @@
 import * as React from 'react';
-import {CSSProperties} from "react";
-// import ExifOrientationImg from "react-exif-orientation-img";
-
+import {CSSProperties, RefObject} from "react";
 
 interface IPropsType {
   url: string;
@@ -9,19 +7,36 @@ interface IPropsType {
 }
 
 interface IStateType {
-  loading: boolean
+  loading: boolean,
+  inViewPort: boolean
 }
 
 class ImageLazyLoad extends React.Component<IPropsType, IStateType> {
-  state = {
-    loading: true
+  private element: RefObject<HTMLDivElement>;
+
+  readonly state = {
+    loading: true,
+    inViewPort: false
   };
+
   constructor(props: IPropsType) {
     super(props);
+    this.element = React.createRef();
     this.handleImageLoaded = this.handleImageLoaded.bind(this);
+    this.isInViewport = this.isInViewport.bind(this);
+    this.addEventListener = this.addEventListener.bind(this);
+    this.removeEventListener = this.removeEventListener.bind(this);
   }
 
-  handleImageLoaded() {
+  public componentDidMount(){
+    this.addEventListener();
+  }
+
+  public componentWillUnmount(){
+    this.removeEventListener();
+  }
+
+  private handleImageLoaded() {
     this.setState({ loading: false });
   }
 
@@ -29,8 +44,53 @@ class ImageLazyLoad extends React.Component<IPropsType, IStateType> {
   //   this.setState({ imageStatus: "failed to loading" });
   // }
 
-  render() {
-    const { loading } = this.state;
+  private isInViewport() {
+    console.log('isInViewport');
+    if(!this.state.inViewPort && this.element.current){
+      const bounding = this.element.current.getBoundingClientRect();
+      const isInViewPort = (
+        bounding.top >= 0 &&
+        bounding.left >= 0 &&
+        (bounding.bottom - 100) <= (window.innerHeight || document.documentElement.clientHeight) &&
+        bounding.right <= (window.innerWidth || document.documentElement.clientWidth)
+      );
+      if(isInViewPort){
+        this.removeEventListener();
+        this.setState({
+          inViewPort: true
+        });
+      }
+    }
+  };
+
+  private addEventListener(){
+    const modal = document.getElementById("andesModal");
+    if(modal){
+      modal.addEventListener('scroll', this.isInViewport, false);
+      modal.addEventListener('rezise', this.isInViewport, false);
+      setTimeout(()=>{
+        this.isInViewport();
+      },1000)
+    } else{
+      window.addEventListener('scroll', this.isInViewport, false);
+      window.addEventListener('rezise', this.isInViewport, false);
+      this.isInViewport();
+    }
+  }
+
+  private removeEventListener(){
+    const modal = document.getElementById("andesModal");
+    if (modal) {
+      modal.removeEventListener('scroll', this.isInViewport, false);
+      modal.removeEventListener('rezise', this.isInViewport, false);
+    } else {
+      window.removeEventListener('scroll', this.isInViewport, false);
+      window.removeEventListener('rezise', this.isInViewport, false);
+    }
+  }
+
+  public render() {
+    const { loading, inViewPort} = this.state;
     const { url, height } = this.props;
 
     let imageStyle:CSSProperties = {};
@@ -40,19 +100,17 @@ class ImageLazyLoad extends React.Component<IPropsType, IStateType> {
 
     return (
       <React.Fragment>
-        <img
-          src={url}
-          onLoad={this.handleImageLoaded}
-          style={imageStyle}
-        />
-        {/*<ExifOrientationImg*/}
-          {/*src={url}*/}
-          {/*onLoad={this.handleImageLoaded}*/}
-          {/*style={imageStyle}*/}
-        {/*/>*/}
+        {
+          inViewPort &&
+            <img
+              src={url}
+              onLoad={this.handleImageLoaded}
+              style={imageStyle}
+            />
+        }
         {
           loading ?
-            <div style={{height: height, display:'table-cell', verticalAlign: 'middle'}} className={'text-center'}>
+            <div style={{height: height, display:'table-cell', verticalAlign: 'middle'}} className={'text-center'} ref={this.element}>
               <i className={'fa fa-circle-o-notch fa-spin fa-2x'}/>
             </div>
           : null
