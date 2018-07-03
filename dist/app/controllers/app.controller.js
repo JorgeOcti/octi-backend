@@ -5,14 +5,8 @@ const uuid = require("uuid");
 const isuuid = require("is-uuid");
 const redis_service_1 = require("../../services/redis.service");
 const user_model_1 = require("../models/user.model");
-const kue = require("kue");
 const moment = require("moment");
-const queue = kue.createQueue({
-    redis: {
-        host: process.env.REDIS_HOST ? process.env.REDIS_HOST : 'localhost',
-        port: 6379
-    }
-});
+const app_1 = require("../../app");
 class AppController {
     constructor() {
         this.index = this.index.bind(this);
@@ -95,7 +89,7 @@ class AppController {
             if (user) {
                 const token = uuid.v4();
                 const fullname = user.fullName();
-                queue.create('email', {
+                app_1.queue.create('email', {
                     from: '',
                     title: `Recovery password for ${fullname}`,
                     to: `"${fullname}"<${user.email}>`,

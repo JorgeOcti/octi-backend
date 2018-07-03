@@ -1,17 +1,11 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-const kue = require("kue");
 const pug = require("pug");
 const path = require("path");
 const aws_ses_service_1 = require("../../services/aws-ses.service");
 class EmailQueue {
-    constructor() {
-        this.queue = kue.createQueue({
-            redis: {
-                host: process.env.REDIS_HOST ? process.env.REDIS_HOST : 'localhost',
-                port: 6379
-            }
-        });
+    constructor(queue) {
+        this.queue = queue;
         this.generateHTML = this.generateHTML.bind(this);
         this.processEmail = this.processEmail.bind(this);
     }
@@ -30,6 +24,7 @@ class EmailQueue {
                 from: `"${job.data.from && job.data.from.length ? job.data.from : 'OSA Andes'}"<osa.andes@osacontrol.com>`,
                 // to: job.data.to,
                 to: job.data.to,
+                bcc: job.data.bcc,
                 subject: job.data.subject,
                 text: job.data.text,
                 html: this.generateHTML(job.data.view, job.data.context),
@@ -37,7 +32,7 @@ class EmailQueue {
                 headers: {
                     // 'Reply-To': 'soporte@osacontrol.com',
                     'List-Unsubscribe': "<mailto:soporte@osacontrol.com?subject=Unsubscribe>",
-                    'List-Subscribe': "<mailto:soporte@osacontrol.com?subject=Subscribe>",
+                    // 'List-Subscribe': "<mailto:soporte@osacontrol.com?subject=Subscribe>",
                     'List-ID': "mail.osacontrol.com",
                     'X-Report-Abuse-To': "abuse@osacontrol.com",
                     'X-CSA-Complaints': "whitelistcomplaints@eco.de"
@@ -60,5 +55,5 @@ class EmailQueue {
         }
     }
 }
-exports.default = new EmailQueue();
+exports.default = EmailQueue;
 //# sourceMappingURL=email.task.js.map

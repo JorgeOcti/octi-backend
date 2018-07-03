@@ -220,7 +220,13 @@ app.use('/api/v1', jwtRouter);
 app.use('/api/v1/forms', formRouter);
 
 /* queues */
-EmailQueue.run();
+export const queue = kue.createQueue({
+  redis: {
+    host: process.env.REDIS_HOST ? process.env.REDIS_HOST : 'localhost',
+    port: 6379
+  }
+});
+new EmailQueue(queue).run();
 kue.app.listen(3041);
 
 // The error handler must be before any other error middleware

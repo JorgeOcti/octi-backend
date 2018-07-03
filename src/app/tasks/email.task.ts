@@ -1,5 +1,4 @@
 import {Job, Queue} from 'kue';
-import * as kue from 'kue';
 import * as pug from 'pug';
 import * as path from 'path';
 import nodemailerTransporter from '../../services/aws-ses.service';
@@ -9,13 +8,8 @@ import * as Mail from "nodemailer/lib/mailer";
 class EmailQueue {
   private queue: Queue;
 
-  constructor() {
-    this.queue = kue.createQueue({
-      redis: {
-        host: process.env.REDIS_HOST ? process.env.REDIS_HOST : 'localhost',
-        port: 6379
-      }
-    });
+  constructor(queue: Queue) {
+    this.queue = queue;
     this.generateHTML = this.generateHTML.bind(this);
     this.processEmail = this.processEmail.bind(this);
   }
@@ -32,12 +26,12 @@ class EmailQueue {
 
   private processEmail(job?: Job, done?: (error?: Error | null, data?: object) => void) {
     if (job && done) {
-
       // generate email
       const mail: Mail.Options = {
         from: `"${job.data.from && job.data.from.length ? job.data.from : 'OSA Andes'}"<osa.andes@osacontrol.com>`,
         // to: job.data.to,
         to: job.data.to,
+        bcc: job.data.bcc,
         subject: job.data.subject,
         text: job.data.text,
         html: this.generateHTML(job.data.view, job.data.context),
@@ -45,7 +39,7 @@ class EmailQueue {
         headers: {
           // 'Reply-To': 'soporte@osacontrol.com',
           'List-Unsubscribe': "<mailto:soporte@osacontrol.com?subject=Unsubscribe>",
-          'List-Subscribe': "<mailto:soporte@osacontrol.com?subject=Subscribe>",
+          // 'List-Subscribe': "<mailto:soporte@osacontrol.com?subject=Subscribe>",
           'List-ID': "mail.osacontrol.com",
           'X-Report-Abuse-To': "abuse@osacontrol.com",
           'X-CSA-Complaints': "whitelistcomplaints@eco.de"
@@ -71,4 +65,4 @@ class EmailQueue {
   }
 }
 
-export default new EmailQueue();
+export default EmailQueue;

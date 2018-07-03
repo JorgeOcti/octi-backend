@@ -11,6 +11,7 @@ import * as moment  from "moment-timezone";
 import { io } from '../../server';
 import ParticipantFile from "../models/participantFile.model";
 import * as GraphicsMagick from "gm";
+import {queue} from "../../app";
 
 class FormController {
 
@@ -208,6 +209,33 @@ class FormController {
                 $lt: tomorrow.toDate()
               }
             });
+            if (formQualification < 85) {
+              queue.create('email', {
+                from: '',
+                title: `Low qualification`,
+                to: `"Richard Ibarra"<richard@osacontrol.com>`,
+                bcc: `"Gonzalo Muñoz"<gmunoz@osacontrol.com>`,
+                subject: `Revisión con baja calificación`,
+                text: `Hola Richard
+                Se ha evaluado un VIN con calificación ${formQualification.toFixed(0)}%
+                
+                Datos del Vehiculo
+                VIN: ${car ? car.vin : ''}
+                MARCA: ${car ? car.brand : ''}
+                
+                Para ver el detalle has click aquí
+                ${process.env.SITE_URL}cars/${car._id}
+                
+                © 2018 OSA SpA. Todos los derechos reservados.`,
+                view: 'alerts/lowQualification',
+                context: {
+                  brand: car ? car.brand : '',
+                  vin: car ? car.vin : '',
+                  qualification: formQualification.toFixed(0),
+                  url: `${process.env.SITE_URL}cars/${car._id}`
+                }
+              }).priority('high').attempts(5).save();
+            }
 
             io.to(`dashboard-vin-view-${company._id}`).emit('REFRESH', {update: true, car: car._id});
 
@@ -281,18 +309,19 @@ class FormController {
       try {
         const participantFile = new ParticipantFile();
         /*
-          { fieldname: 'file',
-          originalname: 'Captura de pantalla 2018-06-28 a la(s) 11.59.58.png',
-          encoding: '7bit',
-          mimetype: 'image/png',
-          destination: '/tmp/',
-          filename: 'Captura de pantalla 2018-06-28 a la(s) 11.59.58.png',
-          path: '/tmp/Captura de pantalla 2018-06-28 a la(s) 11.59.58.png',
-          size: 794429
+          {
+            fieldname: 'file',
+            originalname: 'Captura de pantalla 2018-06-28 a la(s) 11.59.58.png',
+            encoding: '7bit',
+            mimetype: 'image/png',
+            destination: '/tmp/',
+            filename: 'Captura de pantalla 2018-06-28 a la(s) 11.59.58.png',
+            path: '/tmp/Captura de pantalla 2018-06-28 a la(s) 11.59.58.png',
+            size: 794429
           }
         */
         // fix exif
-        if(file.mimetype.includes('image')){
+        if (new RegExp('\\bimage\\b').test(file.mimetype)) {
           await this.autoRotate(file.path);
         }
         file.headers = {

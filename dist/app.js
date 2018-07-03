@@ -192,7 +192,13 @@ app.use('/', router_1.appRouter);
 app.use('/api/v1', router_1.jwtRouter);
 app.use('/api/v1/forms', router_2.default);
 /* queues */
-email_task_1.default.run();
+exports.queue = kue.createQueue({
+    redis: {
+        host: process.env.REDIS_HOST ? process.env.REDIS_HOST : 'localhost',
+        port: 6379
+    }
+});
+new email_task_1.default(exports.queue).run();
 kue.app.listen(3041);
 // The error handler must be before any other error middleware
 app.use(Raven.errorHandler());

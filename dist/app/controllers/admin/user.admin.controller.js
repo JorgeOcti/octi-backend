@@ -1,8 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 const user_model_1 = require("../../models/user.model");
-const kue = require("kue");
-const queue = kue.createQueue();
+const app_1 = require("../../../app");
 class AdminUsersController {
     constructor() {
         this.index = this.index.bind(this);
@@ -97,7 +96,7 @@ class AdminUsersController {
                 // console.log(error);
                 // send welcome email
                 const fullname = newUser.fullName();
-                queue.create('email', {
+                app_1.queue.create('email', {
                     from: '',
                     title: `Welcome email for ${fullname}`,
                     to: `"${fullname}"<${newUser.email}>`,

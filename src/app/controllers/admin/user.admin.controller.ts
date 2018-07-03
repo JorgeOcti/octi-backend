@@ -1,10 +1,9 @@
 import {Request, Response} from 'express';
 import User, {IUserModel} from '../../models/user.model';
 import {PaginateOptions, PaginateResult} from 'mongoose';
-import * as kue from 'kue';
 import {IRequest} from "../../../interfaces/global.interface";
 import {ObjectID} from "bson";
-const queue = kue.createQueue();
+import {queue} from '../../../app';
 
 class AdminUsersController {
 
