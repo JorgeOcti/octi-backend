@@ -45,13 +45,15 @@ class ImageLazyLoad extends React.Component<IPropsType, IStateType> {
   // }
 
   private isInViewport() {
-    console.log('isInViewport');
+    // console.log('isInViewport');
     if(!this.state.inViewPort && this.element.current){
       const bounding = this.element.current.getBoundingClientRect();
+      // start load distance
+      const distance = 300;
       const isInViewPort = (
         bounding.top >= 0 &&
         bounding.left >= 0 &&
-        (bounding.bottom - 100) <= (window.innerHeight || document.documentElement.clientHeight) &&
+        (bounding.bottom - distance) <= (window.innerHeight || document.documentElement.clientHeight) &&
         bounding.right <= (window.innerWidth || document.documentElement.clientWidth)
       );
       if(isInViewPort){
