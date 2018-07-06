@@ -13,7 +13,7 @@ async function updateVin2() {
   cars.forEach(function (x: ICarModel) {
     const vin2 = x.vin.substr(x.vin.length - 6);
     console.log(vin2);
-    x.vin2 = vin2;
+    x.vin2 = vin2.toString();
     x.save();
   });
   process.exit(1);

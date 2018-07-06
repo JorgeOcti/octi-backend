@@ -1,6 +1,7 @@
 import {Job, Queue} from 'kue';
 import * as pug from 'pug';
 import * as path from 'path';
+// import * as nodemailer from 'nodemailer';
 import nodemailerTransporter from '../../services/aws-ses.service';
 import {compileTemplate} from "pug";
 import * as Mail from "nodemailer/lib/mailer";
@@ -60,6 +61,7 @@ class EmailQueue {
         }
         done(null, {});
         console.log('Message %s sent: %s', info.messageId, info.response);
+        // console.log('Preview URL: %s', nodemailer.getTestMessageUrl(info));
       });
     }
   }

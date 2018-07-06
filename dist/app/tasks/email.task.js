@@ -2,6 +2,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 const pug = require("pug");
 const path = require("path");
+// import * as nodemailer from 'nodemailer';
 const aws_ses_service_1 = require("../../services/aws-ses.service");
 class EmailQueue {
     constructor(queue) {
@@ -51,6 +52,7 @@ class EmailQueue {
                 }
                 done(null, {});
                 console.log('Message %s sent: %s', info.messageId, info.response);
+                // console.log('Preview URL: %s', nodemailer.getTestMessageUrl(info));
             });
         }
     }
