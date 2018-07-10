@@ -4,44 +4,47 @@ const jwt = require("jsonwebtoken");
 const user_model_1 = require("../models/user.model");
 const participant_model_1 = require("../../form/models/participant.model");
 const moment = require("moment-timezone");
+const uuid = require("uuid");
+const app_1 = require("../../app");
+const user_model_2 = require("../models/user.model");
 class JWTController {
     constructor() {
         this.login = this.login.bind(this);
         this.token = this.token.bind(this);
-        this.createUser = this.createUser.bind(this);
+        // this.createUser = this.createUser.bind(this);
         this.isJWTAuthenticated = this.isJWTAuthenticated.bind(this);
+        this.forgotPassword = this.forgotPassword.bind(this);
     }
-    createUser(req, res) {
-        const { username, password, firstName, lastName } = req.body;
-        if (username && username.length && password && password.length) {
-            const newUser = new user_model_1.default({
-                username,
-                firstName,
-                lastName,
-                email: username,
-                password,
-                active: true
-            });
-            newUser.save((err, user) => {
-                if (err) {
-                    throw err;
-                }
-                console.log(JSON.stringify(user));
-            });
-            res.json({
-                data: {
-                    username
-                },
-                status: 200
-            });
-        }
-        else {
-            res.status(400).json({
-                message: 'username and password are required',
-                status: 400
-            });
-        }
-    }
+    // public createUser(req: Request, res: Response) {
+    //   const {username, password, firstName, lastName} = req.body;
+    //   if (username && username.length && password && password.length) {
+    //     const newUser = new User({
+    //       username,
+    //       firstName,
+    //       lastName,
+    //       email: username,
+    //       password,
+    //       active: true
+    //     });
+    //     newUser.save((err, user: IUserModel) => {
+    //       if (err) {
+    //         throw err;
+    //       }
+    //       console.log(JSON.stringify(user));
+    //     });
+    //     res.json({
+    //       data: {
+    //         username
+    //       },
+    //       status: 200
+    //     });
+    //   } else {
+    //     res.status(400).json({
+    //       message: 'username and password are required',
+    //       status: 400
+    //     });
+    //   }
+    // }
     login(req, res) {
         if (req.body.username === null || req.body.username === undefined || req.body.password === null || req.body.password === undefined) {
             res.status(401).json({ message: 'Authentication failed. Invalid user or password.' });
@@ -222,6 +225,61 @@ class JWTController {
                         }
                     });
                 }
+            });
+        }
+    }
+    async forgotPassword(req, res, error) {
+        const { username } = req.body;
+        try {
+            const user = await user_model_2.default.findOne({ email: username });
+            if (user) {
+                const token = uuid.v4();
+                const fullname = user.fullName();
+                app_1.queue.create('email', {
+                    from: '',
+                    title: `Recovery password for ${fullname}`,
+                    to: `"${fullname}"<${user.email}>`,
+                    subject: `Recuperación de tu cuenta en OSA Andes`,
+                    text: `Hola ${fullname}
+
+            Recibimos una solicitud para restablecer tu contraseña.
+            
+            Haz clic aquí para cambiar tu contraseña.
+            ${process.env.SITE_URL}account/recovery/${token}/
+
+            ¿No solicitaste este cambio?
+            Puedes contactarte con nosotros a través de soporte@osacontrol.com.
+            
+            © 2018 OSA SpA. Todos los derechos reservados.`,
+                    view: 'account/forgotPassword',
+                    context: {
+                        fullname,
+                        url: `${process.env.SITE_URL}account/recovery/${token}/`
+                    }
+                }).priority('high').attempts(5).save();
+                user.passwordResetToken = token;
+                user.passwordResetExpires = moment().add(2, 'days').toDate();
+                await user.save();
+                console.log('Se ha reestablecido ', username);
+                res.json({
+                    message: 'Se ha enviado un e-mail para reestablecer tú contraseña',
+                    status: 200
+                });
+            }
+            else {
+                console.log('No se encontro ', username);
+                res.json({
+                    message: 'Se ha enviado un e-mail para reestablecer tú contraseña',
+                    status: 200
+                });
+            }
+        }
+        catch (e) {
+            console.log(e);
+            console.log('ocurrio un error ', username);
+            res.json({
+                message: 'Se ha enviado un e-mail para reestablecer tú contraseña',
+                status: 200
             });
         }
     }

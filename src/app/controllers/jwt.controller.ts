@@ -4,46 +4,50 @@ import {IRequest} from '../../interfaces/global.interface';
 import User, {IUserModel} from '../models/user.model';
 import ParticipantModel from "../../form/models/participant.model";
 import * as moment  from "moment-timezone";
+import * as uuid from "uuid";
+import {queue} from "../../app";
+import UserModel from "../models/user.model";
 
 class JWTController {
 
   constructor() {
     this.login = this.login.bind(this);
     this.token = this.token.bind(this);
-    this.createUser = this.createUser.bind(this);
+    // this.createUser = this.createUser.bind(this);
     this.isJWTAuthenticated = this.isJWTAuthenticated.bind(this);
+    this.forgotPassword = this.forgotPassword.bind(this);
   }
 
-  public createUser(req: Request, res: Response) {
-    const {username, password, firstName, lastName} = req.body;
-    if (username && username.length && password && password.length) {
-      const newUser = new User({
-        username,
-        firstName,
-        lastName,
-        email: username,
-        password,
-        active: true
-      });
-      newUser.save((err, user: IUserModel) => {
-        if (err) {
-          throw err;
-        }
-        console.log(JSON.stringify(user));
-      });
-      res.json({
-        data: {
-          username
-        },
-        status: 200
-      });
-    } else {
-      res.status(400).json({
-        message: 'username and password are required',
-        status: 400
-      });
-    }
-  }
+  // public createUser(req: Request, res: Response) {
+  //   const {username, password, firstName, lastName} = req.body;
+  //   if (username && username.length && password && password.length) {
+  //     const newUser = new User({
+  //       username,
+  //       firstName,
+  //       lastName,
+  //       email: username,
+  //       password,
+  //       active: true
+  //     });
+  //     newUser.save((err, user: IUserModel) => {
+  //       if (err) {
+  //         throw err;
+  //       }
+  //       console.log(JSON.stringify(user));
+  //     });
+  //     res.json({
+  //       data: {
+  //         username
+  //       },
+  //       status: 200
+  //     });
+  //   } else {
+  //     res.status(400).json({
+  //       message: 'username and password are required',
+  //       status: 400
+  //     });
+  //   }
+  // }
 
   public login(req: Request, res: Response) {
     if (req.body.username === null || req.body.username === undefined || req.body.password === null || req.body.password === undefined) {
@@ -220,6 +224,60 @@ class JWTController {
         }
       })
 
+    }
+  }
+
+  public async forgotPassword(req: Request, res: Response, error: any) {
+    const {username} = req.body;
+    try {
+      const user = await UserModel.findOne({email: username});
+      if (user) {
+        const token = uuid.v4();
+        const fullname = user.fullName();
+        queue.create('email', {
+          from: '',
+          title: `Recovery password for ${fullname}`,
+          to: `"${fullname}"<${user.email}>`,
+          subject: `Recuperación de tu cuenta en OSA Andes`,
+          text: `Hola ${fullname}
+
+            Recibimos una solicitud para restablecer tu contraseña.
+            
+            Haz clic aquí para cambiar tu contraseña.
+            ${process.env.SITE_URL}account/recovery/${token}/
+
+            ¿No solicitaste este cambio?
+            Puedes contactarte con nosotros a través de soporte@osacontrol.com.
+            
+            © 2018 OSA SpA. Todos los derechos reservados.`,
+          view: 'account/forgotPassword',
+          context: {
+            fullname,
+            url: `${process.env.SITE_URL}account/recovery/${token}/`
+          }
+        }).priority('high').attempts(5).save();
+        user.passwordResetToken = token;
+        user.passwordResetExpires = moment().add(2, 'days').toDate();
+        await user.save();
+        console.log('Se ha reestablecido ', username);
+        res.json({
+          message: 'Se ha enviado un e-mail para reestablecer tú contraseña',
+          status: 200
+        })
+      } else{
+        console.log('No se encontro ', username);
+        res.json({
+          message: 'Se ha enviado un e-mail para reestablecer tú contraseña',
+          status: 200
+        })
+      }
+    } catch (e) {
+      console.log(e);
+      console.log('ocurrio un error ', username);
+      res.json({
+          message: 'Se ha enviado un e-mail para reestablecer tú contraseña',
+          status: 200
+        })
     }
   }
 
