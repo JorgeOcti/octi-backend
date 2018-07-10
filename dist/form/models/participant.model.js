@@ -2,48 +2,138 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 const mongoose = require("mongoose");
 const participantChoiceSchema = new mongoose.Schema({
-    choice: { type: String, required: true, trim: true },
-    value: { type: Number, required: true },
-    backgroundColor: { type: String, default: 'blue' },
-    requireImage: { type: Boolean, default: false },
-    requireComment: { type: Boolean, default: false },
-    na: { type: Boolean, default: false },
-    order: { type: Number, required: true }
+    choice: {
+        type: String,
+        required: true,
+        trim: true
+    },
+    value: {
+        type: Number,
+        required: true
+    },
+    backgroundColor: {
+        type: String,
+        default: 'blue'
+    },
+    requireImage: {
+        type: Boolean,
+        default: false
+    },
+    requireComment: {
+        type: Boolean,
+        default: false
+    },
+    na: {
+        type: Boolean,
+        default: false
+    },
+    order: {
+        type: Number,
+        required: true
+    }
 });
 exports.scaleSchema = new mongoose.Schema({
     name: String,
-    minValue: { type: Number, required: true },
-    maxValue: { type: Number, required: true },
+    minValue: {
+        type: Number,
+        required: true
+    },
+    maxValue: {
+        type: Number,
+        required: true
+    },
     choices: [participantChoiceSchema],
-    active: { type: Boolean, default: true }
+    active: {
+        type: Boolean,
+        default: true
+    }
+});
+const itemSchema = new mongoose.Schema({
+    item: {
+        type: String,
+        required: true,
+        trim: true
+    },
+});
+const accessorySchema = new mongoose.Schema({
+    question: {
+        type: String,
+        required: true,
+        trim: true
+    },
+    items: [itemSchema]
 });
 const participantAnswersSchema = new mongoose.Schema({
     question: { type: String, required: true, trim: true },
     shortName: { type: String, trim: true },
     scale: exports.scaleSchema,
-    risk: { type: String, trim: true },
-    observe: { type: String, trim: true },
-    answer: { type: mongoose.Schema.Types.ObjectId },
+    accessories: {
+        type: accessorySchema,
+        default: null
+    },
+    accesoriesSelected: [mongoose.Schema.Types.ObjectId],
+    risk: {
+        type: String,
+        trim: true
+    },
+    observe: {
+        type: String,
+        trim: true
+    },
+    answer: {
+        type: mongoose.Schema.Types.ObjectId
+    },
     images: [{
             type: mongoose.Schema.Types.ObjectId,
             ref: 'ParticipantFile',
         }],
-    comment: { type: String },
-    qualification: { type: Number },
-    weight: { type: Number, required: true },
-    order: { type: Number, required: true }
+    comment: {
+        type: String
+    },
+    qualification: {
+        type: Number
+    },
+    weight: {
+        type: Number,
+        required: true
+    },
+    order: {
+        type: Number,
+        required: true
+    }
 });
 const participantSectionsSchema = new mongoose.Schema({
-    section_id: { type: mongoose.Schema.Types.ObjectId },
-    name: { type: String, required: true, trim: true },
-    shortName: { type: String, trim: true },
+    section_id: {
+        type: mongoose.Schema.Types.ObjectId
+    },
+    name: {
+        type: String,
+        required: true,
+        trim: true
+    },
+    shortName: {
+        type: String,
+        trim: true
+    },
     answers: [participantAnswersSchema],
-    qualification: { type: Number },
-    weight: { type: Number, required: true },
-    order: { type: Number, required: true }
+    qualification: {
+        type: Number
+    },
+    weight: {
+        type: Number,
+        required: true
+    },
+    order: {
+        type: Number,
+        required: true
+    }
 });
 const participantSchema = new mongoose.Schema({
-    name: { type: String, required: true, trim: true },
+    name: {
+        type: String,
+        required: true,
+        trim: true
+    },
     form: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Form',
@@ -69,8 +159,14 @@ const participantSchema = new mongoose.Schema({
         trim: true
     },
     sections: [participantSectionsSchema],
-    qualification: { type: Number, default: 0 },
-    active: { type: Boolean, default: true }
+    qualification: {
+        type: Number,
+        default: 0
+    },
+    active: {
+        type: Boolean,
+        default: true
+    }
 }, {
     timestamps: true
 });

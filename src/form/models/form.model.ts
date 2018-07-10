@@ -26,7 +26,8 @@ const formQuestionsSchema = new mongoose.Schema({
   },
 
   accessories: {
-    type: accessorySchema
+    type: accessorySchema,
+    default: null
   },
 
   conciliation: {type: Boolean, default: false},

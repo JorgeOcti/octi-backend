@@ -1,8 +1,9 @@
 import * as mongoose from 'mongoose';
 import {
+  IParticipantAccesoryModel,
   IParticipantAnswerModel,
-  IParticipantChoicesModel,
-  IParticipantSectionModel,
+  IParticipantChoicesModel, IParticipantItemModel,
+  IParticipantSectionModel, IScaleParticipantModel,
 } from "../form/models/participant.model";
 import {IUserModel} from "../app/models/user.model";
 import {IFormModel} from "../form/models/form.model";
@@ -28,11 +29,26 @@ export interface IParticipantScale {
   active: boolean;
 }
 
+export interface IparticipantItems {
+  _id: any;
+  item: string;
+}
+
+export interface IparticipantAccesory {
+  _id: any;
+  question: string;
+  items: IParticipantItemModel[]
+}
+
 export interface IParticipantAnswer {
   question: string;
   shortName: string;
 
-  scale: IParticipantScale;
+  scale: IScaleParticipantModel;
+
+  accessories:IParticipantAccesoryModel;
+  accesoriesSelected: any[];
+
   answer: string;
   images: IParticipantFile[],
   qualification: number;

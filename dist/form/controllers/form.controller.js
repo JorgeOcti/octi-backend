@@ -152,6 +152,8 @@ class FormController {
                                 question: question.question,
                                 shortName: question.shortName,
                                 scale: question.scale,
+                                accessories: question.accessories,
+                                accesoriesSelected: answer && answer.accesories ? answer.accesories.map((accesory) => new bson_1.ObjectID(accesory)) : [],
                                 risk: question.risk,
                                 observe: question.observe,
                                 answer: answer ? new bson_1.ObjectID(answer.value) : null,
