@@ -231,6 +231,7 @@ export function getParticipant(id: string) {
                                 selectChoice && selectChoice.requireAccesories && answer.accessories && answer.accessories.items.length?
                                   <div className="row" style={{marginTop: '10px'}}>
                                     <div className="col-md-12">
+                                      <p><strong>{answer.accessories.question}</strong></p>
                                       {
                                         answer.accessories.items.map((item) => {
                                           return (
