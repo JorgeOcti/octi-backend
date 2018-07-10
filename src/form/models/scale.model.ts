@@ -13,8 +13,8 @@ const choiceSchema = new mongoose.Schema({
   },
   requireImage: {type: Boolean, default: false},
   requireComment: {type: Boolean, default: false},
-  requireAccesories:{type: Boolean, default: false},
-  requireConciliation:{type: Boolean, default: false},
+  requireAccesories: {type: Boolean, default: false},
+  requireConciliation: {type: Boolean, default: false},
   na: {type: Boolean, default: false},
   order: {type: Number, required: true}
 });

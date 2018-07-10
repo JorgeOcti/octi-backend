@@ -24,6 +24,8 @@ export interface IFormQuestion {
   scale: IScaleModel;
   accessories: IFormAccesoryModel;
 
+  conciliation: boolean;
+
   risk: string;
   observe: string;
 

@@ -10,7 +10,6 @@ export interface IChoices {
   requireImage: boolean;
   requireComment: boolean;
   requireAccesories: boolean;
-  requireConciliation: boolean;
   na: boolean;
   order: number;
 }
