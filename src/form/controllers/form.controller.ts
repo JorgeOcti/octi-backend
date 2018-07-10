@@ -162,7 +162,7 @@ class FormController {
                 shortName: question.shortName,
                 scale: question.scale,
                 accessories: question.accessories,
-                accesoriesSelected: answer && answer.accesories ? answer.accesories.map((accesory: any) => new ObjectID(accesory)) : [],
+                accesoriesSelected: choice && choice.requireAccesories && answer && answer.accesories ? answer.accesories.map((accesory: any) => new ObjectID(accesory)) : [],
                 risk: question.risk,
                 observe: question.observe,
                 answer: answer ? new ObjectID(answer.value) : null,
