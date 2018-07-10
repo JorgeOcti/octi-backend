@@ -234,7 +234,11 @@ export function getParticipant(id: string) {
                                       {
                                         answer.accessories.items.map((item) => {
                                           return (
-                                            <p key={item._id}>{answer.accesoriesSelected.includes(item._id) ? <i className="fa fa-check" /> : <i className="fa fa-times" />} {item.item}</p>
+                                            <p key={item._id}
+                                               className={answer.accesoriesSelected.includes(item._id) ? 'text-green' : 'text-red'}
+                                            >{answer.accesoriesSelected.includes(item._id) ?
+                                              <i className="fa fa-check"/> : <i className="fa fa-times"/>} {item.item}
+                                            </p>
                                           )
                                         })
                                       }
