@@ -200,7 +200,6 @@ export function getParticipant(id: string) {
                       {
                         section.answers.map((answer) => {
                           const selectChoice = answer.scale.choices.find((choice) => choice._id === answer.answer);
-                          console.log('selectChoice', selectChoice);
                           return (
                             <div className="question" key={answer._id}>
                               <p><strong>{answer.order} {answer.question}</strong></p>
