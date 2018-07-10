@@ -1,5 +1,18 @@
 import * as mongoose from 'mongoose';
-import {IForm, IFormQuestion, IFormSection} from "../../interfaces/form.interface";
+import {IForm, IFormAccesory, IFormItems, IFormQuestion, IFormSection} from "../../interfaces/form.interface";
+
+
+export interface IFormItemModel extends IFormItems, mongoose.Types.Subdocument {}
+const itemSchema = new mongoose.Schema({
+  item: {type: String, required: true, trim: true},
+});
+
+export interface IFormAccesoryModel extends IFormAccesory, mongoose.Types.Subdocument {}
+const accessorySchema = new mongoose.Schema({
+  question: {type: String, required: true, trim: true},
+
+  items: [itemSchema]
+});
 
 export interface IFormQuestionModel extends IFormQuestion, mongoose.Types.Subdocument {}
 const formQuestionsSchema = new mongoose.Schema({
@@ -11,6 +24,8 @@ const formQuestionsSchema = new mongoose.Schema({
     ref: 'Scale',
     required: true
   },
+
+  accessories: accessorySchema,
 
   risk: {type: String, trim: true},
   observe: {type: String, trim: true},

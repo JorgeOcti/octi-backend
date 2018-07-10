@@ -1,6 +1,13 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 const mongoose = require("mongoose");
+const itemSchema = new mongoose.Schema({
+    item: { type: String, required: true, trim: true },
+});
+const accessorySchema = new mongoose.Schema({
+    question: { type: String, required: true, trim: true },
+    items: [itemSchema]
+});
 const formQuestionsSchema = new mongoose.Schema({
     question: { type: String, required: true, trim: true },
     shortName: { type: String, trim: true },
@@ -9,6 +16,7 @@ const formQuestionsSchema = new mongoose.Schema({
         ref: 'Scale',
         required: true
     },
+    accessories: accessorySchema,
     risk: { type: String, trim: true },
     observe: { type: String, trim: true },
     weight: { type: Number, required: true },
