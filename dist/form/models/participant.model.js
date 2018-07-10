@@ -79,6 +79,10 @@ const participantAnswersSchema = new mongoose.Schema({
         type: accessorySchema,
         default: null
     },
+    conciliation: {
+        type: Boolean,
+        default: false
+    },
     accesoriesSelected: [mongoose.Schema.Types.ObjectId],
     risk: {
         type: String,

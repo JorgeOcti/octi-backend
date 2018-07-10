@@ -200,6 +200,10 @@ export function getParticipant(id: string) {
                       {
                         section.answers.map((answer) => {
                           const selectChoice = answer.scale.choices.find((choice) => choice._id === answer.answer);
+                          // no show conciliation questions if no require
+                          if(answer.conciliation && selectChoice && !selectChoice.requireConciliation){
+                            return null;
+                          }
                           return (
                             <div className="question" key={answer._id}>
                               <p><strong>{answer.order} {answer.question}</strong></p>

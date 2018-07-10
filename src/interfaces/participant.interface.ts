@@ -49,6 +49,7 @@ export interface IParticipantAnswer {
 
   accessories: IParticipantAccesoryModel;
   accesoriesSelected: any[];
+  conciliation: boolean;
 
   answer: string;
   images: IParticipantFile[],
