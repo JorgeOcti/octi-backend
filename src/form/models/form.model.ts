@@ -25,7 +25,9 @@ const formQuestionsSchema = new mongoose.Schema({
     required: true
   },
 
-  accessories: accessorySchema,
+  accessories: {
+    type: accessorySchema
+  },
 
   risk: {type: String, trim: true},
   observe: {type: String, trim: true},

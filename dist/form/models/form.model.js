@@ -16,7 +16,9 @@ const formQuestionsSchema = new mongoose.Schema({
         ref: 'Scale',
         required: true
     },
-    accessories: accessorySchema,
+    accessories: {
+        type: accessorySchema
+    },
     risk: { type: String, trim: true },
     observe: { type: String, trim: true },
     weight: { type: Number, required: true },
