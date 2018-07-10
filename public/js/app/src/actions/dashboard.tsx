@@ -230,13 +230,15 @@ export function getParticipant(id: string) {
                               {
                                 selectChoice && selectChoice.requireAccesories && answer.accessories && answer.accessories.items.length?
                                   <div className="row">
-                                    {
-                                      answer.accessories.items.map((item) => {
-                                        return (
-                                          <p key={item._id}>{item.item}-{answer.accesoriesSelected.includes(item._id) ? 'Y' : 'N'}</p>
-                                        )
-                                      })
-                                    }
+                                    <div className="col-md-12">
+                                      {
+                                        answer.accessories.items.map((item) => {
+                                          return (
+                                            <p key={item._id}>{item.item}-{answer.accesoriesSelected.includes(item._id) ? 'Y' : 'N'}</p>
+                                          )
+                                        })
+                                      }
+                                    </div>
                                   </div>
                                 :null
                               }
