@@ -238,7 +238,7 @@ export function getParticipant(id: string) {
                                             <p key={item._id}
                                                className={answer.accesoriesSelected.includes(item._id) ? 'text-green' : 'text-red'}
                                             >{answer.accesoriesSelected.includes(item._id) ?
-                                              <i className="fa fa-check"/> : <i className="fa fa-times"/>} {item.item}
+                                              <i className="fa fa-check" style={{marginRight:'5px'}}/> : <i className="fa fa-times" style={{marginRight:'5px'}}/>} {item.item}
                                             </p>
                                           )
                                         })
