@@ -161,6 +161,7 @@ class FormController {
                 question: question.question,
                 shortName: question.shortName,
                 scale: question.scale,
+                conciliation: question.conciliation,
                 accessories: question.accessories,
                 accesoriesSelected: choice && choice.requireAccesories && answer && answer.accesories ? answer.accesories.map((accesory: any) => new ObjectID(accesory)) : [],
                 risk: question.risk,
