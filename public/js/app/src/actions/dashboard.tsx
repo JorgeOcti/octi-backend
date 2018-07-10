@@ -233,7 +233,7 @@ export function getParticipant(id: string) {
                                     {
                                       answer.accessories.items.map((item) => {
                                         return (
-                                          <p key={item._id}>{item.item} {answer.accesoriesSelected.includes(item._id)}</p>
+                                          <p key={item._id}>{item.item}-{answer.accesoriesSelected.includes(item._id) ? 'Y' : 'N'}</p>
                                         )
                                       })
                                     }
