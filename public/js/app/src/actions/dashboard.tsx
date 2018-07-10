@@ -229,12 +229,12 @@ export function getParticipant(id: string) {
                               </div>
                               {
                                 selectChoice && selectChoice.requireAccesories && answer.accessories && answer.accessories.items.length?
-                                  <div className="row">
+                                  <div className="row" style={{marginTop: '10px'}}>
                                     <div className="col-md-12">
                                       {
                                         answer.accessories.items.map((item) => {
                                           return (
-                                            <p key={item._id}>{item.item}-{answer.accesoriesSelected.includes(item._id) ? 'Y' : 'N'}</p>
+                                            <p key={item._id}>{answer.accesoriesSelected.includes(item._id) ? <i className="fa fa-check" /> : <i className="fa fa-times" />} {item.item}</p>
                                           )
                                         })
                                       }
