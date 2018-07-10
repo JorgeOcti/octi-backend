@@ -201,7 +201,8 @@ export function getParticipant(id: string) {
                         section.answers.map((answer) => {
                           const selectChoice = answer.scale.choices.find((choice) => choice._id === answer.answer);
                           // no show conciliation questions if no require
-                          if(answer.conciliation && ((selectChoice && !selectChoice.requireConciliation) || !selectChoice)){
+                          // if(answer.conciliation && ((selectChoice && !selectChoice.requireConciliation) || !selectChoice)){
+                          if(answer.conciliation && !selectChoice){
                             return null;
                           }
                           return (
