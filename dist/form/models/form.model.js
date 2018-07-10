@@ -2,15 +2,30 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 const mongoose = require("mongoose");
 const itemSchema = new mongoose.Schema({
-    item: { type: String, required: true, trim: true },
+    item: {
+        type: String,
+        required: true,
+        trim: true
+    },
 });
 const accessorySchema = new mongoose.Schema({
-    question: { type: String, required: true, trim: true },
+    question: {
+        type: String,
+        required: true,
+        trim: true
+    },
     items: [itemSchema]
 });
 const formQuestionsSchema = new mongoose.Schema({
-    question: { type: String, required: true, trim: true },
-    shortName: { type: String, trim: true },
+    question: {
+        type: String,
+        required: true,
+        trim: true
+    },
+    shortName: {
+        type: String,
+        trim: true
+    },
     scale: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Scale',
@@ -20,18 +35,46 @@ const formQuestionsSchema = new mongoose.Schema({
         type: accessorySchema,
         default: null
     },
-    conciliation: { type: Boolean, default: false },
-    risk: { type: String, trim: true },
-    observe: { type: String, trim: true },
-    weight: { type: Number, required: true },
-    order: { type: Number, required: true }
+    conciliation: {
+        type: Boolean,
+        default: false
+    },
+    risk: {
+        type: String,
+        trim: true
+    },
+    observe: {
+        type: String,
+        trim: true
+    },
+    weight: {
+        type: Number,
+        required: true
+    },
+    order: {
+        type: Number,
+        required: true
+    }
 });
 const formSectionsSchema = new mongoose.Schema({
-    name: { type: String, required: true, trim: true },
-    shortName: { type: String, trim: true },
+    name: {
+        type: String,
+        required: true,
+        trim: true
+    },
+    shortName: {
+        type: String,
+        trim: true
+    },
     questions: [formQuestionsSchema],
-    weight: { type: Number, required: true },
-    order: { type: Number, required: true }
+    weight: {
+        type: Number,
+        required: true
+    },
+    order: {
+        type: Number,
+        required: true
+    }
 });
 const formSchema = new mongoose.Schema({
     name: {

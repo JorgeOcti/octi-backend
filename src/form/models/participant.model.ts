@@ -33,6 +33,14 @@ const participantChoiceSchema = new mongoose.Schema({
     type: Boolean,
     default: false
   },
+  requireAccesories: {
+    type: Boolean,
+    default: false
+  },
+  requireConciliation: {
+    type: Boolean,
+    default: false
+  },
   na: {
     type: Boolean,
     default: false

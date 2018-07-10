@@ -4,20 +4,35 @@ import {IForm, IFormAccesory, IFormItems, IFormQuestion, IFormSection} from "../
 
 export interface IFormItemModel extends IFormItems, mongoose.Types.Subdocument {}
 const itemSchema = new mongoose.Schema({
-  item: {type: String, required: true, trim: true},
+  item: {
+    type: String,
+    required: true,
+    trim: true
+  },
 });
 
 export interface IFormAccesoryModel extends IFormAccesory, mongoose.Types.Subdocument {}
 const accessorySchema = new mongoose.Schema({
-  question: {type: String, required: true, trim: true},
+  question: {
+    type: String,
+    required: true,
+    trim: true
+  },
 
   items: [itemSchema]
 });
 
 export interface IFormQuestionModel extends IFormQuestion, mongoose.Types.Subdocument {}
 const formQuestionsSchema = new mongoose.Schema({
-  question: {type: String, required: true, trim: true},
-  shortName: {type: String, trim: true},
+  question: {
+    type: String,
+    required: true,
+    trim: true
+  },
+  shortName: {
+    type: String,
+    trim: true
+  },
 
   scale: {
     type: mongoose.Schema.Types.ObjectId,
@@ -30,25 +45,53 @@ const formQuestionsSchema = new mongoose.Schema({
     default: null
   },
 
-  conciliation: {type: Boolean, default: false},
+  conciliation: {
+    type: Boolean,
+    default: false
+  },
 
-  risk: {type: String, trim: true},
-  observe: {type: String, trim: true},
+  risk: {
+    type: String,
+    trim: true
+  },
+  observe: {
+    type: String,
+    trim: true
+  },
 
 
-  weight: {type: Number, required: true},
-  order: {type: Number, required: true}
+  weight: {
+    type: Number,
+    required: true
+  },
+  order: {
+    type: Number,
+    required: true
+  }
 });
 
 export interface IFormSectionModel extends IFormSection, mongoose.Types.Subdocument {}
 const formSectionsSchema = new mongoose.Schema({
-  name: {type: String, required: true, trim: true},
-  shortName: {type: String, trim: true},
+  name: {
+    type: String,
+    required: true,
+    trim: true
+  },
+  shortName: {
+    type: String,
+    trim: true
+  },
 
   questions: [formQuestionsSchema],
 
-  weight: {type: Number, required: true},
-  order: {type: Number, required: true}
+  weight: {
+    type: Number,
+    required: true
+  },
+  order: {
+    type: Number,
+    required: true
+  }
 });
 
 export interface IFormModel extends IForm, mongoose.Document {}

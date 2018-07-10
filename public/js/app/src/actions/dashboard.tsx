@@ -199,6 +199,8 @@ export function getParticipant(id: string) {
                     <h4>{section.name} <small>{Math.round(section.qualification)}%</small></h4>
                       {
                         section.answers.map((answer) => {
+                          const selectChoice = answer.scale.choices.find((choice) => choice._id === answer.answer);
+                          console.log('selectChoice', selectChoice);
                           return (
                             <div className="question" key={answer._id}>
                               <p><strong>{answer.order} {answer.question}</strong></p>
@@ -226,7 +228,20 @@ export function getParticipant(id: string) {
                                 }
                               </div>
                               {
-                                answer.images && answer.images.length?
+                                selectChoice && selectChoice.requireAccesories && answer.accessories && answer.accessories.items.length?
+                                  <div className="row">
+                                    {
+                                      answer.accessories.items.map((item) => {
+                                        return (
+                                          <p key={item._id}>{item.item} {answer.accesoriesSelected.includes(item._id)}</p>
+                                        )
+                                      })
+                                    }
+                                  </div>
+                                :null
+                              }
+                              {
+                                selectChoice && selectChoice.requireImage && answer.images && answer.images.length?
                                   <div className="row images">
                                     {
                                       answer.images.map((image)=>{

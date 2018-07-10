@@ -16,7 +16,8 @@ export interface IParticipantChoices {
   value: number;
   backgroundColor: string;
   requireImage: boolean;
-  requireComment: boolean;
+  requireAccesories: boolean;
+  requireConciliation: boolean;
   na: boolean;
   order: number;
 }
@@ -46,7 +47,7 @@ export interface IParticipantAnswer {
 
   scale: IScaleParticipantModel;
 
-  accessories:IParticipantAccesoryModel;
+  accessories: IParticipantAccesoryModel;
   accesoriesSelected: any[];
 
   answer: string;
