@@ -43,6 +43,7 @@ const carSchema = new mongoose.Schema({
   timestamps: true
 });
 
+carSchema.index({vin: 1}, {unique: true});
 carSchema.index({company: 1, vin2: 1}, {unique: true});
 carSchema.index({company: 1, vin: 1}, {unique: true});
 

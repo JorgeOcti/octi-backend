@@ -27,7 +27,7 @@ class AppController {
   }
 
   public index(req: Request, res: Response) {
-    res.render('app/index', );
+    res.render('app/index');
   }
 
   public robots(req: Request, res: Response) {
