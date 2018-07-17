@@ -1,12 +1,12 @@
 import {NextFunction, Request, Response} from 'express';
 import * as jwt from 'jsonwebtoken';
 import {IRequest} from '../../interfaces/global.interface';
-import User, {IUserModel} from '../models/user.model';
+import User from '../models/user.model';
+import UserModel, {IUserModel} from '../models/user.model';
 import ParticipantModel from "../../form/models/participant.model";
-import * as moment  from "moment-timezone";
+import * as moment from "moment-timezone";
 import * as uuid from "uuid";
 import {queue} from "../../app";
-import UserModel from "../models/user.model";
 
 class JWTController {
 

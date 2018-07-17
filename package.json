@@ -20,6 +20,7 @@
     "chai-http": "^4.0.0",
     "compression": "^1.7.2",
     "connect-redis": "^3.3.3",
+    "console-probe": "^3.3.0",
     "cookie-parser": "^1.4.3",
     "crypto": "^1.0.1",
     "csurf": "^1.9.0",

@@ -28,8 +28,7 @@ const carSchema = new mongoose.Schema({
     company: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Company',
-        required: true,
-        index: true
+        required: true
     },
     lastForm: {
         type: mongoose.Schema.Types.ObjectId,
@@ -40,7 +39,6 @@ const carSchema = new mongoose.Schema({
     timestamps: true
 });
 carSchema.index({ vin: 1 }, { unique: true });
-carSchema.index({ company: 1, vin2: 1 }, { unique: true });
 carSchema.index({ company: 1, vin: 1 }, { unique: true });
 carSchema.virtual('participants', {
     ref: 'Participant',

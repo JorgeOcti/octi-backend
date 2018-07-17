@@ -2,11 +2,11 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 const jwt = require("jsonwebtoken");
 const user_model_1 = require("../models/user.model");
+const user_model_2 = require("../models/user.model");
 const participant_model_1 = require("../../form/models/participant.model");
 const moment = require("moment-timezone");
 const uuid = require("uuid");
 const app_1 = require("../../app");
-const user_model_2 = require("../models/user.model");
 class JWTController {
     constructor() {
         this.login = this.login.bind(this);

@@ -1,7 +1,7 @@
 import * as mongoose from 'mongoose';
+import {PaginateModel} from 'mongoose';
 import {ICar} from "../../interfaces/car.interface";
 import * as mongoosePaginate from "mongoose-paginate";
-import {PaginateModel} from "mongoose";
 
 export interface ICarModel extends ICar, mongoose.Document {}
 
@@ -31,8 +31,7 @@ const carSchema = new mongoose.Schema({
   company: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Company',
-    required: true,
-    index: true
+    required: true
   },
   lastForm: {
     type: mongoose.Schema.Types.ObjectId,
@@ -44,7 +43,6 @@ const carSchema = new mongoose.Schema({
 });
 
 carSchema.index({vin: 1}, {unique: true});
-carSchema.index({company: 1, vin2: 1}, {unique: true});
 carSchema.index({company: 1, vin: 1}, {unique: true});
 
 carSchema.virtual('participants', {

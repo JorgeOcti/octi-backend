@@ -47,6 +47,7 @@ class CarController {
     }
     async checkVIN(req, res) {
         let { vin, vin2 } = req.body;
+        const { multi } = req.query;
         const company = req.user.company;
         const carBrands = {
             'VF1': 'RENAULT',
@@ -129,34 +130,53 @@ class CarController {
         else if (vin2) {
             vin2 = vin2.replace(/[\W_]+/g, "");
             try {
-                const car = await car_model_1.default.findOne({
-                    vin2,
-                    company
-                }, {
-                    vin: true,
-                    vin2: true,
-                    brand: true,
-                    color: true,
-                    denomination: true
-                });
-                if (car) {
-                    res.json({
-                        data: {
-                            _id: car._id,
-                            vin: car.vin,
-                            vin2: car.vin2,
-                            brand: car.brand,
-                            color: car.color,
-                            denomination: car.denomination,
-                        },
-                        status: 200
+                if (multi === 'true') {
+                    const car = await car_model_1.default.find({
+                        vin2,
+                        company
+                    }, {
+                        vin: true,
+                        vin2: true,
+                        brand: true,
+                        color: true,
+                        denomination: true
                     });
+                    if (car) {
+                        res.json({
+                            data: car,
+                            status: 200
+                        });
+                    }
+                    else {
+                        res.status(400).json({
+                            message: 'VIN no encontrado.',
+                            status: 400
+                        });
+                    }
                 }
                 else {
-                    res.status(400).json({
-                        message: 'VIN no encontrado.',
-                        status: 400
+                    const car = await car_model_1.default.findOne({
+                        vin2,
+                        company
+                    }, {
+                        vin: true,
+                        vin2: true,
+                        brand: true,
+                        color: true,
+                        denomination: true
                     });
+                    if (car) {
+                        res.json({
+                            data: car,
+                            status: 200
+                        });
+                    }
+                    else {
+                        res.status(400).json({
+                            message: 'VIN no encontrado.',
+                            status: 400
+                        });
+                    }
                 }
             }
             catch (e) {

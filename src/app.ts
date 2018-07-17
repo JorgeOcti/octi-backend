@@ -20,12 +20,8 @@ import User from './app/models/user.model';
 import Middlewares from './middlewares/middlewares'
 import * as Staticify from 'staticify';
 import EmailQueue from './app/tasks/email.task';
-
 // Import routes
-import {
-  appRouter,
-  jwtRouter
-} from './app/router';
+import {appRouter, jwtRouter} from './app/router';
 import formRouter from './form/router';
 // import {QueueServices} from "./services/queue.services";
 
