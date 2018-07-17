@@ -147,7 +147,7 @@ class CarController {
             color: true,
             denomination: true
           });
-          if (car) {
+          if (car.length) {
             res.json({
               data: car,
               status: 200
