@@ -5,6 +5,7 @@ const csrf = require("csurf");
 const app_controller_1 = require("./controllers/app.controller");
 const car_controller_1 = require("./controllers/car.controller");
 const user_admin_controller_1 = require("./controllers/admin/user.admin.controller");
+const car_admin_controller_1 = require("./controllers/admin/car.admin.controller");
 const user_controller_1 = require("./controllers/user.controller");
 const companies_admin_controller_1 = require("./controllers/admin/companies.admin.controller");
 const venues_admin_controller_1 = require("./controllers/admin/venues.admin.controller");
@@ -34,6 +35,8 @@ appRouter.get('/api/admin/users/', middlewares_1.default.isLoggedIn, user_admin_
 appRouter.post('/api/admin/users/', middlewares_1.default.isLoggedIn, user_admin_controller_1.default.apiAddUser);
 appRouter.patch('/api/admin/users/:id/', middlewares_1.default.isLoggedIn, user_admin_controller_1.default.apiEditUser);
 appRouter.delete('/api/admin/users/:id/', middlewares_1.default.isLoggedIn, user_admin_controller_1.default.apiDeleteUser);
+// import cars
+appRouter.get('/import/cars/', middlewares_1.default.isLoggedIn, car_admin_controller_1.default.index);
 // admin companies
 appRouter.get('/companies/', middlewares_1.default.isLoggedIn, companies_admin_controller_1.default.index);
 // venue companies

@@ -3,6 +3,7 @@ import * as csrf from 'csurf';
 import AppController from './controllers/app.controller';
 import CarController from './controllers/car.controller';
 import AdminUsersController from './controllers/admin/user.admin.controller';
+import AdminCarsController from './controllers/admin/car.admin.controller';
 import UserController from './controllers/user.controller';
 import AdminCompaniesController from './controllers/admin/companies.admin.controller';
 import AdminVenuesController from './controllers/admin/venues.admin.controller';
@@ -14,6 +15,7 @@ const appRouter = express.Router();
 
 const csrfProtection = csrf({ cookie: true });
 // robots.txt
+
 appRouter.get('/robots.txt', AppController.robots);
 
 // DashBoard Principal
@@ -38,6 +40,9 @@ appRouter.get('/api/admin/users/', Middlewares.isLoggedIn, AdminUsersController.
 appRouter.post('/api/admin/users/', Middlewares.isLoggedIn, AdminUsersController.apiAddUser);
 appRouter.patch('/api/admin/users/:id/', Middlewares.isLoggedIn, AdminUsersController.apiEditUser);
 appRouter.delete('/api/admin/users/:id/', Middlewares.isLoggedIn, AdminUsersController.apiDeleteUser);
+
+// import cars
+appRouter.get('/import/cars/', Middlewares.isLoggedIn, AdminCarsController.index);
 
 // admin companies
 appRouter.get('/companies/', Middlewares.isLoggedIn, AdminCompaniesController.index);

@@ -39,6 +39,12 @@ menus.push({
       text: 'Usuarios',
       url: '/users/'
     },
+    {
+      id: '2.2',
+      icon: 'fa-circle-o',
+      text: 'Importar autos',
+      url: '/import/cars/'
+    },
     // {
     //   id: '2.2',
     //   icon: 'fa-circle-o',
