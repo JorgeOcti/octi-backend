@@ -37,6 +37,7 @@ appRouter.patch('/api/admin/users/:id/', middlewares_1.default.isLoggedIn, user_
 appRouter.delete('/api/admin/users/:id/', middlewares_1.default.isLoggedIn, user_admin_controller_1.default.apiDeleteUser);
 // import cars
 appRouter.get('/import/cars/', middlewares_1.default.isLoggedIn, car_admin_controller_1.default.index);
+appRouter.post('/api/admin/import-cars/', middlewares_1.default.isLoggedIn, car_admin_controller_1.default.importCars);
 // admin companies
 appRouter.get('/companies/', middlewares_1.default.isLoggedIn, companies_admin_controller_1.default.index);
 // venue companies

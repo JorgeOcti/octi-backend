@@ -70,7 +70,7 @@ carSchema.plugin(mongoosePaginate);
 
 export type CarSchema = mongoose.Model<ICarModel> & PaginateModel<ICarModel> & {
   findOneOrCreate(condition: any, create: any): Promise<ICarModel>
-}
+};
 
 const Car = mongoose.model<ICarModel, CarSchema>('Car', carSchema);
 

@@ -44,6 +44,8 @@ appRouter.delete('/api/admin/users/:id/', Middlewares.isLoggedIn, AdminUsersCont
 // import cars
 appRouter.get('/import/cars/', Middlewares.isLoggedIn, AdminCarsController.index);
 
+appRouter.post('/api/admin/import-cars/', Middlewares.isLoggedIn, AdminCarsController.importCars);
+
 // admin companies
 appRouter.get('/companies/', Middlewares.isLoggedIn, AdminCompaniesController.index);
 

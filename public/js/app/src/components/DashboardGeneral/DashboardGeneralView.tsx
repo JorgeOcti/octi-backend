@@ -41,7 +41,6 @@ class DashboardGeneralView extends React.Component<IPropsType, IStateType> {
     window.addEventListener('resize', this.resizeCharts, false);
   }
 
-
   private resizeCharts() {
     if (this.participantsPerDayChart != null && this.participantsPerDayChart != undefined) {
       this.participantsPerDayChart.resize();
@@ -158,7 +157,7 @@ class DashboardGeneralView extends React.Component<IPropsType, IStateType> {
               </div>
             </div>
             <div className="box-body">
-              <div id="participant-per-date" style={{height: '400px', maxWidth:'100%'}} />
+              <div id="participant-per-date" style={{height: '400px', maxWidth: '100%'}}/>
             </div>
             {/*<div className="box-footer">Footer</div>*/}
             {

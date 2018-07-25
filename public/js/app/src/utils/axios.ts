@@ -112,7 +112,15 @@ export default class ApiService {
 
   public getCar(id: string): AxiosPromise {
     return this.instance.get(
-      `/api/admin/cars/${id}`,{
+      `/api/admin/cars/${id}`, {
+        cancelToken: this.source.token
+      }
+    );
+  }
+
+  public sendImportCars(data: any): AxiosPromise {
+    return this.instance.post(
+      `/api/admin/import-cars/`, data, {
         cancelToken: this.source.token
       }
     );
