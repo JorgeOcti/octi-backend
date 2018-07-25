@@ -208,9 +208,9 @@ class ImportCarsView extends React.Component<IPropsType, IStateType> {
       .getSource();
     api
       .sendImportCars(cars)
-      .then((data) => {
-        console.log(data);
-      })
+      // .then((data) => {
+      //   console.log(data);
+      // })
       .catch((err: AxiosError) => {
         api.errorHandler(err);
       });
@@ -257,7 +257,7 @@ class ImportCarsView extends React.Component<IPropsType, IStateType> {
             const workbook = XLSX.read(data, {
               type: rABS ? 'binary' : 'array'
             });
-            const cars: IImportCar[] =  XLSX.utils.sheet_to_json(workbook.Sheets.Autos);
+            const cars: IImportCar[] = workbook.Sheets.hasOwnProperty('Autos') ? XLSX.utils.sheet_to_json(workbook.Sheets.Autos) : [];
             if (cars.length > 1) {
               this.setState({
                 cars: cars.map((car) => {
@@ -271,7 +271,7 @@ class ImportCarsView extends React.Component<IPropsType, IStateType> {
                 // }, {})
               });
             } else {
-              swal('Importador de autos', 'Este excel no cumple con los requisitos minimos o no tiene autos.', 'error');
+              swal('Importador de autos', 'Este excel no cumple con los requisitos mínimos o no tiene autos.', 'error');
             }
           }
         };
