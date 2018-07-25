@@ -22,7 +22,7 @@ class AdminCarsController {
         setTimeout(async () => {
           const vin2 = car.vin.substr(car.vin.length - 6);
           try {
-            const newCar = await Car.findOneOrCreate({
+            await Car.findOneOrCreate({
               vin: car.vin,
               company
             }, {
@@ -34,17 +34,16 @@ class AdminCarsController {
               company
             });
             // io.to(req.user._id).emit('STATUS-CARS', {newCar});
-            console.log('newCar', newCar);
           } catch (e) {
             console.log(e);
           }
         }, 1000);
       }
-      // cars.forEach(async (car: any) => {
-
-      // });
       io.to(req.user._id).emit('FINISH-IMPORT', {finish: true});
     }
+    res.json({
+      status: 200
+    });
   }
 }
 
