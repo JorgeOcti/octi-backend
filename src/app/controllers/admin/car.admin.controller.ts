@@ -22,19 +22,30 @@ class AdminCarsController {
           if (car.vin && car.vin.length) {
             const vin2 = car.vin.substr(car.vin.length - 6);
             try {
-              await Car.findOneOrCreate({
+              const newCar = await Car.findOne({
                 vin: car.vin,
-                company
-              }, {
-                vin: car.vin,
-                vin2,
-                bran: car.marca ? car.marca : '',
-                denomination: car.denominacion ? car.denominacion : '',
-                color: car.color ? car.color : '',
-                internalNumber: car.NInterno ? car.NInterno : '',
-                destination: car.destino ? car.destino : '',
                 company
               });
+              if (newCar) {
+                newCar.vin2 = vin2;
+                newCar.brand = car.marca ? car.marca : newCar.brand;
+                newCar.denomination = car.denominacion ? car.denominacion : newCar.denomination;
+                newCar.color = car.denominacion ? car.color : newCar.color;
+                newCar.internalNumber = car.NInterno ? car.NInterno : newCar.internalNumber;
+                newCar.destination = car.destino ? car.destino : newCar.destination;
+                await newCar.save();
+              } else {
+                await Car.create({
+                  vin: car.vin,
+                  vin2,
+                  brand: car.marca ? car.marca : '',
+                  denomination: car.denominacion ? car.denominacion : '',
+                  color: car.color ? car.color : '',
+                  internalNumber: car.NInterno ? car.NInterno : '',
+                  destination: car.destino ? car.destino : '',
+                  company
+                });
+              }
               // io.to(req.user._id).emit('STATUS-CARS', {newCar});
             } catch (e) {
               console.log(e);

@@ -74,7 +74,7 @@ class DashboardVinDetail extends React.Component<IPropsType, IStateType> {
     });
   }
 
-  public componentWillUnmount(){
+  public componentWillUnmount() {
     // cancel request if component is inmounted
     if (this.props.dashboard.source) {
       this.props.dashboard.source.cancel('Operation canceled by the user.');

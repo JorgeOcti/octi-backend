@@ -185,8 +185,8 @@ class AdminUsersController {
           res.status(200).json(response);
         } else {
           const response = {
-            message: 'Usuario no encontardo',
-            id: id
+            id,
+            message: 'Usuario no encontardo'
           };
           res.status(200).json(response);
         }
@@ -210,8 +210,8 @@ class AdminUsersController {
         res.status(200).json(response);
       } else {
         const response = {
-          message: 'Este usuario ya fue eliminado.',
-          id: id
+          id,
+          message: 'Este usuario ya fue eliminado.'
         };
         res.status(200).json(response);
       }

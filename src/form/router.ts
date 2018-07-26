@@ -1,6 +1,6 @@
 import * as express from 'express';
-import FormController from './controllers/form.controller';
 import Middlewares from '../middlewares/middlewares';
+import FormController from './controllers/form.controller';
 
 const router = express.Router();
 
@@ -16,6 +16,5 @@ router.get('/:id/', Middlewares.isJWTAuthenticated, FormController.detail);
 
 // answer form
 router.post('/:id/', Middlewares.isJWTAuthenticated, FormController.complete);
-
 
 export default router;

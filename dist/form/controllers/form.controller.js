@@ -1,17 +1,17 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+const bson_1 = require("bson");
+const GraphicsMagick = require("gm");
+const moment = require("moment-timezone");
+const app_1 = require("../../app");
+const car_model_1 = require("../../app/models/car.model");
+const user_model_1 = require("../../app/models/user.model");
+const server_1 = require("../../server");
 const redis_service_1 = require("../../services/redis.service");
 const form_model_1 = require("../models/form.model");
-const scale_model_1 = require("../models/scale.model");
 const participant_model_1 = require("../models/participant.model");
-const user_model_1 = require("../../app/models/user.model");
-const car_model_1 = require("../../app/models/car.model");
-const bson_1 = require("bson");
-const moment = require("moment-timezone");
-const server_1 = require("../../server");
 const participantFile_model_1 = require("../models/participantFile.model");
-const GraphicsMagick = require("gm");
-const app_1 = require("../../app");
+const scale_model_1 = require("../models/scale.model");
 class FormController {
     constructor() {
         this.list = this.list.bind(this);
@@ -87,7 +87,7 @@ class FormController {
                 status: 400
             });
         }
-        vin = vin.replace(/[\W_]+/g, "");
+        vin = vin.replace(/[\W_]+/g, '');
         try {
             const car = await car_model_1.default.findOne({
                 $or: [{ vin: { $eq: vin } }, { vin2: { $eq: vin } }],
@@ -101,10 +101,10 @@ class FormController {
                         name: form.name,
                         company,
                         form: form._id,
-                        car: car,
+                        car,
                         description: form.description,
                         user: req.user._id,
-                        active: form.active,
+                        active: form.active
                     });
                     // var sum sections
                     let sumSectionWeigths = 0;
@@ -162,7 +162,7 @@ class FormController {
                                 images: answer && answer.images && answer.images.length ? answer.images.map((image) => (new bson_1.ObjectID(image))) : [],
                                 qualification,
                                 weight: question.weight,
-                                order: question.order,
+                                order: question.order
                             });
                         }
                         // calculate section qualification
@@ -177,7 +177,7 @@ class FormController {
                             answers: newAnswers,
                             qualification: sectionQualification,
                             weight: section.weight,
-                            order: section.order,
+                            order: section.order
                         });
                     }
                     // calculate participant qualification
@@ -210,14 +210,14 @@ class FormController {
                                 subject: `Revisión con baja calificación`,
                                 text: `Hola Richard
                 Se ha evaluado un VIN con calificación ${formQualification.toFixed(0)}%
-                
+
                 Datos del Vehiculo
                 VIN: ${car ? car.vin : ''}
                 MARCA: ${car ? car.brand : ''}
-                
+
                 Para ver el detalle has click aquí
                 ${process.env.SITE_URL}cars/${car._id}
-                
+
                 © 2018 OSA SpA. Todos los derechos reservados.`,
                                 view: 'alerts/lowQualification',
                                 context: {
@@ -276,28 +276,11 @@ class FormController {
             });
         }
     }
-    autoRotate(path) {
-        // doc http://aheckmann.github.io/gm/docs.html
-        /**** REQUIRE *****
-          brew install imagemagick
-          brew install graphicsmagick
-        * */
-        return new Promise((resolve, reject) => {
-            GraphicsMagick(path)
-                .autoOrient()
-                .write(path, function (err) {
-                if (err)
-                    reject(err);
-                else
-                    resolve();
-            });
-        });
-    }
     async uploadFile(req, res) {
         const { id } = req.params;
         const company = req.user.company;
         if (req.file) {
-            let file = req.file;
+            const file = req.file;
             try {
                 const participantFile = new participantFile_model_1.default();
                 /*
@@ -323,7 +306,7 @@ class FormController {
                 file.form = id;
                 participantFile.user = req.user._id;
                 participantFile.company = company._id;
-                participantFile.attach('file', file, async function (error) {
+                participantFile.attach('file', file, async (error) => {
                     if (error) {
                         res.status(400).json(error);
                     }
@@ -388,6 +371,25 @@ class FormController {
                 status: 400
             });
         }
+    }
+    autoRotate(path) {
+        // doc http://aheckmann.github.io/gm/docs.html
+        /**** REQUIRE *****
+          brew install imagemagick
+          brew install graphicsmagick
+        * */
+        return new Promise((resolve, reject) => {
+            GraphicsMagick(path)
+                .autoOrient()
+                .write(path, (err) => {
+                if (err) {
+                    reject(err);
+                }
+                else {
+                    resolve();
+                }
+            });
+        });
     }
     getForms(company) {
         const keyCache = `forms`;

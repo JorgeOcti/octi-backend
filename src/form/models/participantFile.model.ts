@@ -1,27 +1,27 @@
 import * as mongoose from 'mongoose';
 import * as mongooseCrate from 'mongoose-crate';
 import * as MongooseCrateS3 from 'mongoose-crate-s3';
-import {IParticipantFile} from "../../interfaces/participantFile.interface";
-import * as uuid from "uuid";
+import * as uuid from 'uuid';
 import * as s3Config from '../../../s3-config.json';
+import {IParticipantFile} from '../../interfaces/participantFile.interface';
 
 const fileSchema = new mongoose.Schema({
   url: {
     type: String
   },
-  type:{
+  type: {
     type: String
   },
-  name:{
+  name: {
     type: String
   },
-  size:{
+  size: {
     type: Number
-  },
+  }
 });
 
 export interface IParticipantFileModel extends IParticipantFile, mongoose.Document {
-  attach(condition: string, file: any, error: (err:any) => void): void
+  attach(condition: string, file: any, error: (err: any) => void): void;
 }
 
 export const participantFileSchema = new mongoose.Schema({
@@ -65,7 +65,7 @@ participantFileSchema.plugin(mongooseCrate, {
       size:966
       type:"image/svg"
       * */
-      return `/forms/files/${attachment.company}/${attachment.form}/${uuid.v1()}-${attachment.originalname}`
+      return `/forms/files/${attachment.company}/${attachment.form}/${uuid.v1()}-${attachment.originalname}`;
     }
   }),
   fields: {

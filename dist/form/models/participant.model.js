@@ -61,7 +61,7 @@ const itemSchema = new mongoose.Schema({
         type: String,
         required: true,
         trim: true
-    },
+    }
 });
 const accessorySchema = new mongoose.Schema({
     question: {
@@ -97,7 +97,7 @@ const participantAnswersSchema = new mongoose.Schema({
     },
     images: [{
             type: mongoose.Schema.Types.ObjectId,
-            ref: 'ParticipantFile',
+            ref: 'ParticipantFile'
         }],
     comment: {
         type: String

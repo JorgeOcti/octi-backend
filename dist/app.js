@@ -2,14 +2,13 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 const bodyParser = require("body-parser");
 const compression = require("compression");
+const connectRedis = require("connect-redis");
 const cookieParser = require("cookie-parser");
 const dotenv = require("dotenv");
 const express = require("express");
-const kue = require("kue");
 const session = require("express-session");
-const connectRedis = require("connect-redis");
 const fileStreamRotator = require("file-stream-rotator");
-// import * as git from 'git-rev-sync';
+const kue = require("kue");
 const lusca = require("lusca");
 const morgan = require("morgan");
 const multer = require("multer");
@@ -18,14 +17,12 @@ const passportLocal = require("passport-local");
 const path = require("path");
 const Raven = require("raven");
 const responseTime = require("response-time");
-const user_model_1 = require("./app/models/user.model");
-const middlewares_1 = require("./middlewares/middlewares");
 const Staticify = require("staticify");
-const email_task_1 = require("./app/tasks/email.task");
-// Import routes
+const user_model_1 = require("./app/models/user.model");
 const router_1 = require("./app/router");
+const email_task_1 = require("./app/tasks/email.task");
 const router_2 = require("./form/router");
-// import {QueueServices} from "./services/queue.services";
+const middlewares_1 = require("./middlewares/middlewares");
 // Create Express server
 const app = express();
 // Configure sentry
@@ -93,7 +90,7 @@ app.use(bodyParser.urlencoded({ extended: true }));
 const upload = multer({
     storage: multer.diskStorage({
         destination: '/tmp/',
-        filename: function (req, file, callback) {
+        filename: (req, file, callback) => {
             callback(null, file.originalname);
         }
     })

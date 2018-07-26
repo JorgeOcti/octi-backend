@@ -1,7 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-const nodemailer = require("nodemailer");
 const AWS = require("aws-sdk");
+const nodemailer = require("nodemailer");
 const path = require("path");
 AWS.config.loadFromPath(path.join(__dirname, '../../ses-config.json'));
 const transport = nodemailer.createTransport({

@@ -6,7 +6,7 @@ const itemSchema = new mongoose.Schema({
         type: String,
         required: true,
         trim: true
-    },
+    }
 });
 const accessorySchema = new mongoose.Schema({
     question: {

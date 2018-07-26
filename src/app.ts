@@ -1,13 +1,12 @@
 import * as bodyParser from 'body-parser';
 import * as compression from 'compression';
+import * as connectRedis from 'connect-redis';
 import * as cookieParser from 'cookie-parser';
 import * as dotenv from 'dotenv';
 import * as express from 'express';
-import * as kue from 'kue';
 import * as session from 'express-session';
-import * as connectRedis from 'connect-redis';
 import * as fileStreamRotator from 'file-stream-rotator';
-// import * as git from 'git-rev-sync';
+import * as kue from 'kue';
 import * as lusca from 'lusca';
 import * as morgan from 'morgan';
 import * as multer from 'multer';
@@ -16,14 +15,12 @@ import * as passportLocal from 'passport-local';
 import * as path from 'path';
 import * as Raven from 'raven';
 import * as responseTime from 'response-time';
-import User from './app/models/user.model';
-import Middlewares from './middlewares/middlewares'
 import * as Staticify from 'staticify';
-import EmailQueue from './app/tasks/email.task';
-// Import routes
+import User from './app/models/user.model';
 import {appRouter, jwtRouter} from './app/router';
+import EmailQueue from './app/tasks/email.task';
 import formRouter from './form/router';
-// import {QueueServices} from "./services/queue.services";
+import Middlewares from './middlewares/middlewares';
 
 // Create Express server
 const app = express();
@@ -106,7 +103,7 @@ app.use(bodyParser.urlencoded({ extended: true }));
 const upload = multer({
   storage: multer.diskStorage({
     destination: '/tmp/',
-    filename: function (req, file, callback) {
+    filename: (req, file, callback) => {
       callback(null, file.originalname);
     }
   })
@@ -249,7 +246,7 @@ app.use((err: IResponseError, req: express.Request, res: express.Response, next:
   res.locals.error = req.app.get('env') === 'development' ? err : {};
 
   // render the error page
-  const statusCode = [403, 404, 500].includes(err.status)?err.status:500;
+  const statusCode = [403, 404, 500].includes(err.status) ? err.status : 500;
   console.log('err', err);
   res.status(statusCode).render(statusCode.toString());
   // res.json({

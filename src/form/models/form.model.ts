@@ -1,6 +1,5 @@
 import * as mongoose from 'mongoose';
-import {IForm, IFormAccesory, IFormItems, IFormQuestion, IFormSection} from "../../interfaces/form.interface";
-
+import {IForm, IFormAccesory, IFormItems, IFormQuestion, IFormSection} from '../../interfaces/form.interface';
 
 export interface IFormItemModel extends IFormItems, mongoose.Types.Subdocument {}
 const itemSchema = new mongoose.Schema({
@@ -8,7 +7,7 @@ const itemSchema = new mongoose.Schema({
     type: String,
     required: true,
     trim: true
-  },
+  }
 });
 
 export interface IFormAccesoryModel extends IFormAccesory, mongoose.Types.Subdocument {}
@@ -58,8 +57,6 @@ const formQuestionsSchema = new mongoose.Schema({
     type: String,
     trim: true
   },
-
-
   weight: {
     type: Number,
     required: true

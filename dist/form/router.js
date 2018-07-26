@@ -1,8 +1,8 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 const express = require("express");
-const form_controller_1 = require("./controllers/form.controller");
 const middlewares_1 = require("../middlewares/middlewares");
+const form_controller_1 = require("./controllers/form.controller");
 const router = express.Router();
 // list form avaibles
 router.get('/', middlewares_1.default.isJWTAuthenticated, form_controller_1.default.list);

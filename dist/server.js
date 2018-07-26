@@ -1,12 +1,12 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 const bluebird = require("bluebird");
+const jwt = require("jsonwebtoken");
 const mongoose = require("mongoose");
+const socketIO = require("socket.io");
+const socketRedis = require("socket.io-redis");
 const app_1 = require("./app");
 const logger_service_1 = require("./services/logger.service");
-const socketIO = require("socket.io");
-const jwt = require("jsonwebtoken");
-const socketRedis = require("socket.io-redis");
 // Mongoose setting
 const MONGODB_URI = process.env.MONGODB_URI || '';
 // Mongoose connect
@@ -24,8 +24,8 @@ mongoose.Promise = bluebird;
 // mongoose.Promise = global.Promise;
 mongoose.set('debug', app_1.default.get('env') !== 'testing');
 // mongoose.set('debug', false);
-const NODE_APP_INSTANCE = parseInt(process.env.NODE_APP_INSTANCE) || 0;
-const server = app_1.default.listen(parseInt(app_1.default.get('port')) + NODE_APP_INSTANCE, () => {
+const NODE_APP_INSTANCE = parseInt(process.env.NODE_APP_INSTANCE, 10) || 0;
+const server = app_1.default.listen(parseInt(app_1.default.get('port'), 10) + NODE_APP_INSTANCE, () => {
     /* istanbul ignore if */
     if (app_1.default.get('env') !== 'testing') {
         console.log(`${logger_service_1.default.colors.magenta}----------------------${logger_service_1.default.colors.reset}`);
@@ -41,8 +41,8 @@ exports.io.adapter(socketRedis({
     port: 6379
 }));
 exports.io.use(async (socket, next) => {
-    //validate token to use socket
-    let token = socket.handshake.query.token;
+    // validate token to use socket
+    const token = socket.handshake.query.token;
     if (token) {
         try {
             const user = await jwt.verify(token, process.env.SECRET_KEY || 'secretKey');
@@ -72,18 +72,18 @@ exports.io.use(async (socket, next) => {
     // }
     // return next(new Error('authentication error'));
 });
-exports.io.on("connection", function (socket) {
+exports.io.on('connection', (socket) => {
     console.log('---------------------');
-    console.log("A user connected");
+    console.log('A user connected');
     console.log('socket.id', socket.id);
     console.log('socket.user\n', socket.user);
-    socket.on('join', function (data) {
+    socket.on('join', (data) => {
         console.log(`join ${data.room}`);
         socket.join(data.room);
     });
-    socket.on('disconnect', function () {
+    socket.on('disconnect', () => {
         console.log('---------------------');
-        console.log("user disconnected");
+        console.log('user disconnected');
         console.log('socket.user\n', socket.user);
         // io.emit('user disconnected');
     });

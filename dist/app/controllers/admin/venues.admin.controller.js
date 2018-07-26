@@ -20,8 +20,8 @@ class AdminVenuesController {
             sort: {
                 createdAt: -1
             },
-            page: parseInt(page ? page : 1),
-            limit: parseInt(pageSize ? pageSize : 20),
+            page: parseInt(page ? page : 1, 10),
+            limit: parseInt(pageSize ? pageSize : 20, 10)
         };
         try {
             const venues = await this.getVenues(company, options);
@@ -29,7 +29,7 @@ class AdminVenuesController {
             if (options.page && venues.pages && venues.pages < options.page) {
                 res.status(400).json({
                     message: 'La página solicitada no existe.',
-                    status: 400,
+                    status: 400
                 });
             }
             else {
@@ -39,13 +39,14 @@ class AdminVenuesController {
                     hasPrevious: options.page && options.page > 1 && venues.pages && venues.pages >= options.page,
                     hasNext: options.page && venues.pages && venues.pages > options.page,
                     results: venues.docs,
-                    status: 200,
+                    status: 200
                 });
             }
         }
         catch (e) {
-            if (e)
+            if (e) {
                 res.status(500).json(e);
+            }
         }
     }
     getVenues(company, options) {

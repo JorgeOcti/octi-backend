@@ -1,14 +1,13 @@
 import * as mongoose from 'mongoose';
 import {
   IParticipant,
+  IparticipantAccesory,
   IParticipantAnswer,
   IParticipantChoices,
-  IParticipantScale,
-  IParticipantSection,
   IparticipantItems,
-  IparticipantAccesory
-} from "../../interfaces/participant.interface";
-
+  IParticipantScale,
+  IParticipantSection
+} from '../../interfaces/participant.interface';
 
 export interface IParticipantChoicesModel extends IParticipantChoices, mongoose.Types.Subdocument {}
 const participantChoiceSchema = new mongoose.Schema({
@@ -75,7 +74,7 @@ const itemSchema = new mongoose.Schema({
     type: String,
     required: true,
     trim: true
-  },
+  }
 });
 
 export interface IParticipantAccesoryModel extends IparticipantAccesory, mongoose.Types.Subdocument {}
@@ -114,13 +113,12 @@ const participantAnswersSchema = new mongoose.Schema({
     type: String,
     trim: true
   },
-
   answer: {
     type: mongoose.Schema.Types.ObjectId
   },
   images: [{
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'ParticipantFile',
+    ref: 'ParticipantFile'
   }],
   comment: {
     type: String

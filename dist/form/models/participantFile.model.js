@@ -17,7 +17,7 @@ const fileSchema = new mongoose.Schema({
     },
     size: {
         type: Number
-    },
+    }
 });
 exports.participantFileSchema = new mongoose.Schema({
     participant: {

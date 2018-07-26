@@ -1,17 +1,17 @@
+import {ObjectID} from 'bson';
 import {Response} from 'express';
+import * as GraphicsMagick from 'gm';
+import * as moment from 'moment-timezone';
+import {queue} from '../../app';
+import CarModel from '../../app/models/car.model';
+import UserModel from '../../app/models/user.model';
+import {IRequest} from '../../interfaces/global.interface';
+import {io} from '../../server';
 import redisClient from '../../services/redis.service';
 import FormModel, {IFormModel} from '../models/form.model';
-import ScaleModel, {IScaleModel} from '../models/scale.model';
 import ParticipantModel from '../models/participant.model';
-import UserModel from '../../app/models/user.model';
-import CarModel from '../../app/models/car.model';
-import {ObjectID} from 'bson';
-import {IRequest} from "../../interfaces/global.interface";
-import * as moment from "moment-timezone";
-import {io} from '../../server';
-import ParticipantFile from "../models/participantFile.model";
-import * as GraphicsMagick from "gm";
-import {queue} from "../../app";
+import ParticipantFile from '../models/participantFile.model';
+import ScaleModel, {IScaleModel} from '../models/scale.model';
 
 class FormController {
 
@@ -78,26 +78,26 @@ class FormController {
     const company = req.user.company;
 
     // validate answers in body
-    if (!answers){
+    if (!answers) {
       return res.status(400).json({
         message: 'Debes enviar las respuestas',
         status: 400
       });
     }
     // validate vin in body
-    if (!vin){
+    if (!vin) {
       return res.status(400).json({
         message: 'Debes enviar el vin',
         status: 400
       });
     }
-    vin = vin.replace(/[\W_]+/g,"");
+    vin = vin.replace(/[\W_]+/g, '');
     try {
       const car = await CarModel.findOne({
         $or: [{vin: {$eq: vin}}, {vin2: {$eq: vin}}],
         company
       });
-      if(car){
+      if (car) {
         const form = await this.getFormWithScale(id, company);
         if (form) {
           // initialize participant
@@ -105,10 +105,10 @@ class FormController {
             name: form.name,
             company,
             form: form._id,
-            car: car,
+            car,
             description: form.description,
             user: req.user._id,
-            active: form.active,
+            active: form.active
           });
           // var sum sections
           let sumSectionWeigths = 0;
@@ -141,18 +141,18 @@ class FormController {
               sumWeigths += question.weight;
 
               // concat allImages
-              if(choice && choice.requireImage && answer && answer.images && answer.images.length){
-                allImages = [...answer.images, ...allImages]
+              if (choice && choice.requireImage && answer && answer.images && answer.images.length) {
+                allImages = [...answer.images, ...allImages];
               }
 
               // delete images no used
-              if(choice && !choice.requireImage && answer && answer.images && answer.images.length){
+              if (choice && !choice.requireImage && answer && answer.images && answer.images.length) {
                 answer.images.forEach(async (image: string) => {
                   const deleteFile = await ParticipantFile.findById(image);
-                  if(deleteFile){
-                      await deleteFile.remove()
+                  if (deleteFile) {
+                    await deleteFile.remove();
                   }
-                })
+                });
               }
 
               // generate answer
@@ -171,8 +171,8 @@ class FormController {
                 images: answer && answer.images && answer.images.length ? answer.images.map((image: string) => (new ObjectID(image))) : [],
                 qualification,
                 weight: question.weight,
-                order: question.order,
-              })
+                order: question.order
+              });
             }
             // calculate section qualification
             const sectionQualification = sumQualifications ? sumQualifications / sumWeigths : 0;
@@ -186,7 +186,7 @@ class FormController {
               answers: newAnswers,
               qualification: sectionQualification,
               weight: section.weight,
-              order: section.order,
+              order: section.order
             });
           }
           // calculate participant qualification
@@ -197,8 +197,8 @@ class FormController {
             await newParticipant.save();
 
             // associate file to participant
-            if(allImages.length){
-              await ParticipantFile.update({_id: {$in: allImages}}, {participant: newParticipant}, { multi: true })
+            if (allImages.length) {
+              await ParticipantFile.update({_id: {$in: allImages}}, {participant: newParticipant}, {multi: true});
             }
 
             car.lastForm = newParticipant;
@@ -221,14 +221,14 @@ class FormController {
                 subject: `Revisión con baja calificación`,
                 text: `Hola Richard
                 Se ha evaluado un VIN con calificación ${formQualification.toFixed(0)}%
-                
+
                 Datos del Vehiculo
                 VIN: ${car ? car.vin : ''}
                 MARCA: ${car ? car.brand : ''}
-                
+
                 Para ver el detalle has click aquí
                 ${process.env.SITE_URL}cars/${car._id}
-                
+
                 © 2018 OSA SpA. Todos los derechos reservados.`,
                 view: 'alerts/lowQualification',
                 context: {
@@ -266,8 +266,7 @@ class FormController {
               status: 400
             });
           }
-        }
-        else {
+        } else {
           // return error, if the form could not find
           return res.status(400).json({
             message: 'No se ha encontrado el formularío',
@@ -278,7 +277,7 @@ class FormController {
         return res.status(400).json({
           message: 'VIN no encontrado.',
           status: 400
-        })
+        });
       }
     } catch (e) {
       return res.status(400).json({
@@ -288,27 +287,11 @@ class FormController {
     }
   }
 
-  private autoRotate(path: string) {
-    // doc http://aheckmann.github.io/gm/docs.html
-    /**** REQUIRE *****
-      brew install imagemagick
-      brew install graphicsmagick
-    * */
-    return new Promise((resolve, reject) => {
-      GraphicsMagick(path)
-        .autoOrient()
-        .write(path, function (err) {
-          if (err) reject(err);
-          else resolve();
-        });
-    })
-  }
-
   public async uploadFile(req: IRequest, res: Response): Promise<any> {
     const {id} = req.params;
     const company = req.user.company;
     if (req.file) {
-      let file: any = req.file;
+      const file: any = req.file;
       try {
         const participantFile = new ParticipantFile();
         /*
@@ -335,7 +318,7 @@ class FormController {
 
         participantFile.user = req.user._id;
         participantFile.company = company._id;
-        participantFile.attach('file', file, async function (error: any) {
+        participantFile.attach('file', file, async (error: any) => {
           if (error) {
             res.status(400).json(error);
           } else {
@@ -361,7 +344,6 @@ class FormController {
     }
     // ParticipantFile
   }
-
 
   public async changePreferred(req: IRequest, res: Response) {
     let {form} = req.body;
@@ -399,11 +381,30 @@ class FormController {
     }
   }
 
+  private autoRotate(path: string) {
+    // doc http://aheckmann.github.io/gm/docs.html
+    /**** REQUIRE *****
+      brew install imagemagick
+      brew install graphicsmagick
+    * */
+    return new Promise((resolve, reject) => {
+      GraphicsMagick(path)
+        .autoOrient()
+        .write(path, (err) => {
+          if (err) {
+            reject(err);
+          } else {
+            resolve();
+          }
+        });
+    });
+  }
+
   private getForms(company: ObjectID): Promise<IFormModel[]> {
     const keyCache = `forms`;
     return new Promise((resolve, reject) => {
       redisClient.get(keyCache, async (error, result) => {
-        if(result){
+        if (result) {
           console.log(`cache: ${keyCache}`);
           resolve(JSON.parse(result));
         } else {
@@ -431,7 +432,7 @@ class FormController {
     const keyCache = `form-${id}`;
     return new Promise((resolve, reject) => {
       redisClient.get(keyCache, async (error, result) => {
-        if(result){
+        if (result) {
           console.log(`cache: ${keyCache}`);
           resolve(JSON.parse(result));
         } else {
@@ -457,7 +458,7 @@ class FormController {
               return reject('No se encontro formularío');
             });
         }
-      })
+      });
     });
   }
 

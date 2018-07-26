@@ -1,6 +1,6 @@
-import {Request, Response, NextFunction} from "express";
-import * as jwt from "jsonwebtoken";
-import {IRequest} from "../interfaces/global.interface";
+import {NextFunction, Request, Response} from 'express';
+import * as jwt from 'jsonwebtoken';
+import {IRequest} from '../interfaces/global.interface';
 
 class Middlewares {
 
@@ -14,8 +14,7 @@ class Middlewares {
     if (req.isAuthenticated()) {
       if (req.user) {
         res.locals.user = req.user;
-      }
-      else {
+      } else {
         res.locals.user = null;
       }
       return next();
@@ -29,8 +28,7 @@ class Middlewares {
     if (req.isAuthenticated()) {
       if (req.user) {
         res.locals.user = req.user;
-      }
-      else {
+      } else {
         res.locals.user = null;
       }
       return next();

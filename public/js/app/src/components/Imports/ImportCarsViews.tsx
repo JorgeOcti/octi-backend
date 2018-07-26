@@ -105,7 +105,12 @@ class ImportCarsView extends React.Component<IPropsType, IStateType> {
 
   public componentWillMount() {
     // set the title of the page
+    // set the title of the page
     document.title = 'OSA Andes | Importar autos';
+  }
+
+  public componentWillUnmount() {
+    this.socket.disconnect();
   }
 
   public componentDidCatch(error: Error, errorInfo: ErrorInfo) {
