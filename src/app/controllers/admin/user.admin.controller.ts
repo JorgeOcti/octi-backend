@@ -1,9 +1,9 @@
+import {ObjectID} from 'bson';
 import {Request, Response} from 'express';
-import User, {IUserModel} from '../../models/user.model';
 import {PaginateOptions, PaginateResult} from 'mongoose';
-import {IRequest} from "../../../interfaces/global.interface";
-import {ObjectID} from "bson";
 import {queue} from '../../../app';
+import {IRequest} from '../../../interfaces/global.interface';
+import User, {IUserModel} from '../../models/user.model';
 
 class AdminUsersController {
 
@@ -37,8 +37,8 @@ class AdminUsersController {
       sort: {
         createdAt: -1
       },
-      page: parseInt(page ? page : 1),
-      limit: parseInt(pageSize ? pageSize : 20),
+      page: parseInt(page ? page : 1, 10),
+      limit: parseInt(pageSize ? pageSize : 20, 10)
     };
     try {
       const users = await this.getUsers(company, options);
@@ -46,7 +46,7 @@ class AdminUsersController {
       if (options.page && users.pages && users.pages < options.page) {
         res.status(400).json({
           error: 'La página solicitada no existe.',
-          status: 200,
+          status: 200
         });
       } else {
         res.json({
@@ -55,11 +55,13 @@ class AdminUsersController {
           hasPrevious: options.page && options.page > 1 && users.pages && users.pages >= options.page,
           hasNext: options.page && users.pages && users.pages > options.page,
           results: users.docs,
-          status: 200,
+          status: 200
         });
       }
     } catch (e) {
-      if (e) res.status(500).json(e);
+      if (e) {
+        res.status(500).json(e);
+      }
     }
   }
 
@@ -67,7 +69,7 @@ class AdminUsersController {
     const {firstName, lastName, email, venue} = req.body;
     const company = req.user.company;
     // validate fields required
-    if(!firstName || !firstName.length || !lastName || !lastName.length || !email || !email.length|| !venue || !venue.length){
+    if (!firstName || !firstName.length || !lastName || !lastName.length || !email || !email.length || !venue || !venue.length) {
       res.status(400).json({
         message: 'firstName, lastName, email and venue are required',
         status: 400
@@ -75,14 +77,13 @@ class AdminUsersController {
     }
     try {
       // validate existe user
-      const existUser = await User.find({$or: [{email: email}, {username: email}]});
+      const existUser = await User.find({$or: [{email}, {username: email}]});
       if (existUser.length) {
         res.status(400).json({
           message: 'Usuario ya existe con este email.',
           status: 400
         });
-      }
-      else{
+      } else {
         // generate password
         const password = Math.random().toString(36).slice(-8);
         // create user
@@ -114,7 +115,7 @@ class AdminUsersController {
           Usuario: ${newUser.email}
           Contraseña ${password}
           En caso de dudas o consultas puedes contactarte asoporte@osacontrol.com o a nuestro twitter @TaskforceOSA.
-          
+
           © 2018 OSA SpA. All rights reserved.`,
           view: 'account/welcome',
           context: {
@@ -142,7 +143,7 @@ class AdminUsersController {
     const company = req.user.company;
     const {firstName, lastName, email, venue} = req.body;
     // validate fields required
-    if(!firstName || !firstName.length || !lastName || !lastName.length || !email || !email.length || !venue || !venue.length){
+    if (!firstName || !firstName.length || !lastName || !lastName.length || !email || !email.length || !venue || !venue.length) {
       res.status(400).json({
         message: 'firstName, lastName, email and venue are required',
         status: 400
@@ -150,7 +151,7 @@ class AdminUsersController {
     }
     try {
       // validate email not duplicate
-      const countUser = await User.count({email: email, _id: {$ne: id}});
+      const countUser = await User.count({email, _id: {$ne: id}});
       if (countUser) {
         res.status(400).json({
           message: 'Usuario ya existe con este email.',
@@ -173,16 +174,18 @@ class AdminUsersController {
         if (user) {
           // prevent return password
           user = user.toObject();
-          if (user) delete user.password;
+          if (user) {
+            delete user.password;
+          }
 
           const response = {
-            message: "Usuario editado satisfactoriamente.",
+            message: 'Usuario editado satisfactoriamente.',
             user
           };
           res.status(200).json(response);
         } else {
           const response = {
-            message: "Usuario no encontardo",
+            message: 'Usuario no encontardo',
             id: id
           };
           res.status(200).json(response);
@@ -201,14 +204,13 @@ class AdminUsersController {
       const user = await User.findOneAndRemove({_id: id, company});
       if (user) {
         const response = {
-          message: "Usuario eliminado satisfactoriamente.",
+          message: 'Usuario eliminado satisfactoriamente.',
           id: user._id
         };
         res.status(200).json(response);
-      }
-      else {
+      } else {
         const response = {
-          message: "Este usuario ya fue eliminado.",
+          message: 'Este usuario ya fue eliminado.',
           id: id
         };
         res.status(200).json(response);

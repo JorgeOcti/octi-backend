@@ -1,10 +1,10 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 const bcrypt = require("bcrypt");
+const jwt = require("jsonwebtoken");
 const mongoose = require("mongoose");
 const mongoosePaginate = require("mongoose-paginate");
 const passportLocalMongoose = require("passport-local-mongoose");
-const jwt = require("jsonwebtoken");
 const userSchema = new mongoose.Schema({
     username: {
         type: String,
@@ -27,7 +27,7 @@ const userSchema = new mongoose.Schema({
     venue: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Venue',
-        required: [true, 'La sucursal es requerida'],
+        required: [true, 'La sucursal es requerida']
     },
     preferred: {
         type: mongoose.Schema.Types.ObjectId,
@@ -74,7 +74,7 @@ userSchema.plugin(mongoosePaginate);
  * Password hash middleware.
  */
 userSchema.methods.fullName = function () {
-    return (this.firstName.trim() + " " + this.lastName.trim());
+    return (this.firstName.trim() + ' ' + this.lastName.trim());
 };
 userSchema.methods.generateToken = function () {
     const userInfo = {

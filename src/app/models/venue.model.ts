@@ -1,6 +1,6 @@
 import * as mongoose from 'mongoose';
-import {IVenue} from "../../interfaces/venue.interface";
 import * as mongoosePaginate from 'mongoose-paginate';
+import {IVenue} from '../../interfaces/venue.interface';
 
 export interface IVenueModel extends IVenue, mongoose.Document {}
 

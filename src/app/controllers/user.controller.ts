@@ -1,7 +1,7 @@
-import {Response} from 'express';
 import * as bcrypt from 'bcrypt';
-import {IRequest} from "../../interfaces/global.interface";
-import UserModel from "../models/user.model";
+import {Response} from 'express';
+import {IRequest} from '../../interfaces/global.interface';
+import UserModel from '../models/user.model';
 
 class UserController {
 
@@ -15,9 +15,9 @@ class UserController {
     if (password && password.trim().length && newPassword && newPassword.trim().length) {
       try {
         const User = await UserModel.findById(user._id);
-        if(User){
+        if (User) {
           const isPassword = bcrypt.compareSync(password, User.password);
-          if (isPassword){
+          if (isPassword) {
             User.password = newPassword;
             User.save();
             res.status(200).json({

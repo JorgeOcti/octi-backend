@@ -19,25 +19,27 @@ class AdminCarsController {
     const cars = req.body;
     if (cars && cars.length) {
       for (const car of cars) {
-        setTimeout(async () => {
-          const vin2 = car.vin.substr(car.vin.length - 6);
-          try {
-            await Car.findOneOrCreate({
-              vin: car.vin,
-              company
-            }, {
-              vin: car.vin,
-              vin2,
-              bran: car.brand ? car.brand : '',
-              denomination: car.denomination ? car.denomination : '',
-              color: car.color ? car.color : '',
-              company
-            });
-            // io.to(req.user._id).emit('STATUS-CARS', {newCar});
-          } catch (e) {
-            console.log(e);
+          if (car.vin && car.vin.length) {
+            const vin2 = car.vin.substr(car.vin.length - 6);
+            try {
+              await Car.findOneOrCreate({
+                vin: car.vin,
+                company
+              }, {
+                vin: car.vin,
+                vin2,
+                bran: car.marca ? car.marca : '',
+                denomination: car.denominacion ? car.denominacion : '',
+                color: car.color ? car.color : '',
+                internalNumber: car.NInterno ? car.NInterno : '',
+                destination: car.destino ? car.destino : '',
+                company
+              });
+              // io.to(req.user._id).emit('STATUS-CARS', {newCar});
+            } catch (e) {
+              console.log(e);
+            }
           }
-        }, 1000);
       }
       io.to(req.user._id).emit('FINISH-IMPORT', {finish: true});
     }

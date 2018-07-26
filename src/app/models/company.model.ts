@@ -1,5 +1,5 @@
 import * as mongoose from 'mongoose';
-import {ICompany} from "../../interfaces/company.interface";
+import {ICompany} from '../../interfaces/company.interface';
 
 export interface ICompanyModel extends ICompany, mongoose.Document {}
 

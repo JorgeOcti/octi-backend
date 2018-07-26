@@ -1,11 +1,10 @@
-import {Response} from "express";
-import CarModel, {ICarModel} from '../models/car.model'
+import {ObjectID} from 'bson';
+import {Response} from 'express';
 import * as mongoose from 'mongoose';
-// import * as probe from 'console-probe';
 import {PaginateOptions, PaginateResult} from 'mongoose';
-import {ObjectID} from "bson";
-import {IRequest} from "../../interfaces/global.interface";
-import ParticipantModel from "../../form/models/participant.model";
+import ParticipantModel from '../../form/models/participant.model';
+import {IRequest} from '../../interfaces/global.interface';
+import CarModel, {ICarModel} from '../models/car.model';
 
 class CarController {
 
@@ -47,7 +46,9 @@ class CarController {
         res.render('app/index', {token: await req.user.generateToken()});
       }
     } catch (e) {
-      if (e) res.status(500).send(e);
+      if (e) {
+        res.status(500).send(e);
+      }
     }
   }
 
@@ -105,7 +106,7 @@ class CarController {
     */
 
     if (vin) {
-      vin = vin.replace(/[\W_]+/g,"");
+      vin = vin.replace(/[\W_]+/g, '');
       try {
         const indexBrand: string = vin.slice(0, 3);
         vin2 = vin.substr(vin.length - 6);
@@ -126,15 +127,17 @@ class CarController {
             vin2: car.vin2,
             brand: car.brand,
             color: car.color,
-            denomination: car.denomination,
+            denomination: car.denomination
           },
           status: 200
-        })
+        });
       } catch (e) {
-        if (e) res.status(500).send(e);
+        if (e) {
+          res.status(500).send(e);
+        }
       }
     } else if (vin2) {
-      vin2 = vin2.replace(/[\W_]+/g,"");
+      vin2 = vin2.replace(/[\W_]+/g, '');
       try {
         if (multi === 'true') {
           const car = await CarModel.find({
@@ -151,12 +154,12 @@ class CarController {
             res.json({
               data: car,
               status: 200
-            })
+            });
           } else {
             res.status(400).json({
               message: 'VIN no encontrado.',
               status: 400
-            })
+            });
           }
         } else {
           const car = await CarModel.findOne({
@@ -173,25 +176,26 @@ class CarController {
             res.json({
               data: car,
               status: 200
-            })
+            });
           } else {
             res.status(400).json({
               message: 'VIN no encontrado.',
               status: 400
-            })
+            });
           }
         }
       } catch (e) {
-        if (e) res.status(500).send(e);
+        if (e) {
+          res.status(500).send(e);
+        }
       }
     } else {
       res.status(400).json({
         message: 'VIN no encontrado.',
         status: 400
-      })
+      });
     }
   }
-
 
   public async apiParticipantsPerDate(req: IRequest, res: Response) {
     const company = req.user.company;
@@ -204,7 +208,7 @@ class CarController {
         }, {
           $project: {
             _id: 1, user: 1, form: 1, car: 1, createdAt: {
-              $subtract: ["$createdAt", 4 * 60 * 60 * 1000]
+              $subtract: ['$createdAt', 4 * 60 * 60 * 1000]
             }
           }
         }, {
@@ -221,9 +225,9 @@ class CarController {
                   format: '%Y-%m-%d',
                   date: '$createdAt'
                   // timezone: 'America/Santiago'
-                },
+                }
               },
-              user: "$user",
+              user: '$user'
             },
             total: {
               $sum: 1
@@ -231,13 +235,13 @@ class CarController {
           }
         }, {
           $lookup: {
-            from: "users",
-            localField: "_id.user",
-            foreignField: "_id",
-            as: "userInfo",
+            from: 'users',
+            localField: '_id.user',
+            foreignField: '_id',
+            as: 'userInfo'
           }
         }, {
-          $unwind: "$userInfo"
+          $unwind: '$userInfo'
         }, {
           $project: {
             '_id.category': 1,
@@ -245,19 +249,19 @@ class CarController {
             'total': 1,
             'userInfo._id': 1,
             'userInfo.firstName': 1,
-            'userInfo.lastName': 1,
+            'userInfo.lastName': 1
           }
         }, {
           $group: {
-            _id: "$_id.category",
+            _id: '$_id.category',
             users: {
               $push: {
-                user: "$_id.user",
-                userInfo: "$userInfo",
-                total: "$total"
+                user: '$_id.user',
+                userInfo: '$userInfo',
+                total: '$total'
               }
             },
-            total: {$sum: "$total"}
+            total: {$sum: '$total'}
           }
         }, {
           $sort: {
@@ -269,7 +273,9 @@ class CarController {
           status: 200
         });
     } catch (e) {
-      if (e) res.status(500).json(e);
+      if (e) {
+        res.status(500).json(e);
+      }
     }
   }
 
@@ -290,8 +296,8 @@ class CarController {
         .populate([{
           path: 'user',
           select: ['firstName', 'lastName']
-        },{
-          path: 'sections.answers.images',
+        }, {
+          path: 'sections.answers.images'
         }]);
       // validate exist participant
       if (!participant) {
@@ -306,7 +312,9 @@ class CarController {
         });
       }
     } catch (e) {
-      if (e) res.status(500).json(e);
+      if (e) {
+        res.status(500).json(e);
+      }
     }
   }
 
@@ -328,7 +336,7 @@ class CarController {
           // reverse populate
           path: 'participants',
           select: ['name', 'user', 'createdAt', 'qualification'],
-          options:{
+          options: {
             sort: {
               createdAt: -1
             }
@@ -351,7 +359,9 @@ class CarController {
         });
       }
     } catch (e) {
-      if (e) res.status(500).json(e);
+      if (e) {
+        res.status(500).json(e);
+      }
     }
   }
 
@@ -378,8 +388,8 @@ class CarController {
       sort: {
         updatedAt: -1
       },
-      page: parseInt(page ? page : 1),
-      limit: parseInt(pageSize ? pageSize : 20),
+      page: parseInt(page ? page : 1, 10),
+      limit: parseInt(pageSize ? pageSize : 20, 10)
     };
     try {
       const cars = await this.getCars(company, options, search);
@@ -388,7 +398,7 @@ class CarController {
       if (options.page && cars.pages && cars.pages < options.page) {
         res.status(400).json({
           message: 'La página solicitada no existe.',
-          status: 200,
+          status: 200
         });
       } else {
         res.json({
@@ -397,11 +407,13 @@ class CarController {
           hasPrevious: options.page && options.page > 1 && cars.pages && cars.pages >= options.page,
           hasNext: options.page && cars.pages && cars.pages > options.page,
           results: cars.docs,
-          status: 200,
+          status: 200
         });
       }
     } catch (e) {
-      if (e) res.status(500).json(e);
+      if (e) {
+        res.status(500).json(e);
+      }
     }
   }
 
@@ -409,7 +421,7 @@ class CarController {
     let filter: any = {company, lastForm: {$exists: true, $ne: null}};
 
     if (search && search.length) {
-      const searchText= new RegExp(search, 'i');
+      const searchText = new RegExp(search, 'i');
       // search in vin and brand
       filter = {$and: [{$or: [{vin: {$regex: searchText}}, {brand: {$regex: searchText}}]}, filter]};
     }

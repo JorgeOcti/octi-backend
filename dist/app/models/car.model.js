@@ -13,17 +13,24 @@ const carSchema = new mongoose.Schema({
         trim: true,
         required: true
     },
+    internalNumber: {
+        type: Number
+    },
+    destination: {
+        type: String,
+        trim: true
+    },
     brand: {
         type: String,
-        trim: true,
+        trim: true
     },
     denomination: {
         type: String,
-        trim: true,
+        trim: true
     },
     color: {
         type: String,
-        trim: true,
+        trim: true
     },
     company: {
         type: mongoose.Schema.Types.ObjectId,
@@ -50,13 +57,16 @@ carSchema.statics.findOneOrCreate = function (condition, create) {
     const model = this;
     return new Promise((resolve, reject) => {
         model.findOne(condition, (err, result) => {
-            if (err)
+            if (err) {
                 return reject(err);
-            if (result)
+            }
+            if (result) {
                 return resolve(result);
+            }
             model.create(create, (err, result) => {
-                if (err)
+                if (err) {
                     return reject(err);
+                }
                 return resolve(result);
             });
         });

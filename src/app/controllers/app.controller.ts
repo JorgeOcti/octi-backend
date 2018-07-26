@@ -1,12 +1,11 @@
 import {NextFunction, Request, Response} from 'express';
+import * as isuuid from 'is-uuid';
+import * as moment from 'moment';
 import * as passport from 'passport';
 import * as uuid from 'uuid';
-import * as isuuid from 'is-uuid';
+import {queue} from '../../app';
 import redisClient from '../../services/redis.service';
-import UserModel from "../models/user.model";
-import * as moment from "moment";
-import {queue} from "../../app";
-
+import UserModel from '../models/user.model';
 
 class AppController {
 
@@ -32,11 +31,11 @@ class AppController {
 
   public robots(req: Request, res: Response) {
     res.setHeader('content-type', 'text/plain; charset=utf-8');
-    res.send(`User-Agent: *\nDisallow: /`)
+    res.send(`User-Agent: *\nDisallow: /`);
   }
 
-  public login(req: Request, res: Response, error:any) {
-    if (req.user){
+  public login(req: Request, res: Response) {
+    if (req.user) {
       return res.redirect('/');
     } else {
       return res.render('app/login', {csrfToken: req.csrfToken()});
@@ -47,19 +46,19 @@ class AppController {
     if (req.user) {
       return res.redirect('/');
     } else {
-      passport.authenticate('local', (err, user, info) => {
+      passport.authenticate('local', (err, user) => {
         if (err) {
           return next(err); // will generate a 500 error
         }
         if (!user) {
           return res.render('app/login', {error: 'Usuario o contraseña incorrecta.', csrfToken: req.csrfToken()});
         }
-        req.login(user, loginErr => {
+        req.login(user, (loginErr) => {
           if (loginErr) {
             return next(loginErr);
           } else {
-            user.lastLogin = new Date;
-            user.save(function (err: any) {
+            user.lastLogin = new Date();
+            user.save((err: any) => {
               if (err) {
                 console.log(err); // handle errors!
               } else {
@@ -72,16 +71,15 @@ class AppController {
     }
   }
 
-  public forgotPassword(req: Request, res: Response, error: any) {
+  public forgotPassword(req: Request, res: Response) {
     if (req.user) {
       return res.redirect('/');
-    }
-    else {
+    } else {
       return res.render('app/forgotPassword', {csrfToken: req.csrfToken()});
     }
   }
 
-  public async processForgotPassword(req: Request, res: Response, error: any) {
+  public async processForgotPassword(req: Request, res: Response) {
     const {username, _csrf} = req.body;
     if (req.user) {
       return res.redirect('/');
@@ -106,13 +104,13 @@ class AppController {
           text: `Hola ${fullname}
 
             Recibimos una solicitud para restablecer tu contraseña.
-            
+
             Haz clic aquí para cambiar tu contraseña.
             ${process.env.SITE_URL}account/recovery/${token}/
 
             ¿No solicitaste este cambio?
             Puedes contactarte con nosotros a través de soporte@osacontrol.com.
-            
+
             © 2018 OSA SpA. Todos los derechos reservados.`,
           view: 'account/forgotPassword',
           context: {
@@ -122,10 +120,10 @@ class AppController {
         }).priority('high').attempts(5).save();
         user.passwordResetToken = token;
         user.passwordResetExpires = moment().add(2, 'days').toDate();
-        user.save()
+        user.save();
       }
     } catch (e) {
-      console.log(e)
+      console.log(e);
     }
     return res.render('app/forgotPassword', {
       csrfToken: req.csrfToken(),
@@ -135,7 +133,7 @@ class AppController {
 
   public async recovery(req: Request, res: Response) {
     const {token} = req.params;
-    if(!isuuid.anyNonNil(token)){
+    if (!isuuid.anyNonNil(token)) {
       return res.status(404).render('404');
     }
     // close sesión
@@ -151,21 +149,21 @@ class AppController {
         user
       });
     } catch (e) {
-      console.log(e)
+      console.log(e);
     }
   }
 
   public async processRecovery(req: Request, res: Response, next: NextFunction) {
     const {token} = req.params;
     const {password, password2} = req.body;
-    if(!isuuid.anyNonNil(token)){
+    if (!isuuid.anyNonNil(token)) {
       return res.status(404).render('404');
     }
     if (req.user) {
       return res.redirect( `/`);
     }
-    if(!password.trim().length || !password2.trim().length  || password !== password2){
-      return res.redirect( `/account/recovery/${token}`);
+    if (!password.trim().length || !password2.trim().length || password !== password2) {
+      return res.redirect(`/account/recovery/${token}`);
     }
     try {
       const user = await UserModel.findOne({passwordResetToken: token});
@@ -174,12 +172,12 @@ class AppController {
         user.passwordResetToken = undefined;
         user.passwordResetExpires = undefined;
         user.save();
-        req.login(user, loginErr => {
+        req.login(user, (loginErr) => {
           if (loginErr) {
             return next(loginErr);
           } else {
-            user.lastLogin = new Date;
-            user.save(function (err: any) {
+            user.lastLogin = new Date();
+            user.save((err: any) => {
               if (err) {
                 console.log(err); // handle errors!
               } else {
@@ -192,7 +190,7 @@ class AppController {
         return res.redirect(`/account/recovery/${token}`);
       }
     } catch (e) {
-      console.log(e)
+      console.log(e);
     }
   }
 

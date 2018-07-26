@@ -1,10 +1,9 @@
 import {Job, Queue} from 'kue';
-import * as pug from 'pug';
+import * as Mail from 'nodemailer/lib/mailer';
 import * as path from 'path';
-// import * as nodemailer from 'nodemailer';
+import * as pug from 'pug';
+import {compileTemplate} from 'pug';
 import nodemailerTransporter from '../../services/aws-ses.service';
-import {compileTemplate} from "pug";
-import * as Mail from "nodemailer/lib/mailer";
 
 class EmailQueue {
   private queue: Queue;
@@ -39,19 +38,13 @@ class EmailQueue {
         attachments: job.data.attachments || [],
         headers: {
           'Reply-To': 'OSA Andes<osa.andes@osacontrol.com>',
-          'List-Unsubscribe': "<mailto:soporte@osacontrol.com?subject=Unsubscribe>",
+          'List-Unsubscribe': '<mailto:soporte@osacontrol.com?subject=Unsubscribe>',
           // 'List-Subscribe': "<mailto:soporte@osacontrol.com?subject=Subscribe>",
-          'List-ID': "mail.osacontrol.com",
-          'X-Report-Abuse-To': "abuse@osacontrol.com",
-          'X-CSA-Complaints': "whitelistcomplaints@eco.de"
+          'List-ID': 'mail.osacontrol.com',
+          'X-Report-Abuse-To': 'abuse@osacontrol.com',
+          'X-CSA-Complaints': 'whitelistcomplaints@eco.de'
         }
       };
-
-      // console.log('---------------------------');
-      // console.log(JSON.stringify(mail));
-      // console.log('---------------------------');
-      // console.log(JSON.stringify(process.env));
-      // console.log('---------------------------');
 
       // send mail with defined transport object
       nodemailerTransporter.sendMail(mail, (error, info) => {

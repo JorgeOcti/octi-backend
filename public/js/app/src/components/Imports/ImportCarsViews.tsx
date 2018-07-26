@@ -25,11 +25,12 @@ enum carStatus {
 }
 interface IImportCar {
   id?: string;
+  NInterno: string;
   vin: string;
-  brand: string;
-  denomination: string;
+  marca: string;
+  denominacion: string;
   color: string;
-  detail: string;
+  destino: string;
   status: number;
 }
 
@@ -143,16 +144,20 @@ class ImportCarsView extends React.Component<IPropsType, IStateType> {
                       {
                         loadFile ? <div>
                           Cargando...
-                        </div> : <button className="btn btn-success" onClick={this.startLoad}>Iniciar carga</button>
+                        </div> :
+                          <div className="pull-right">
+                            <button className="btn btn-success" onClick={this.startLoad}>Iniciar carga</button>
+                          </div>
                       }
                       <table className="table">
                         <thead>
                         <tr>
+                          <th>Nº Interno</th>
                           <th>VIN</th>
                           <th>Marca</th>
                           <th>Denominación</th>
                           <th>Color</th>
-                          <th>Detalle</th>
+                          <th>Destino</th>
                         </tr>
                         </thead>
                         <tbody>
@@ -166,11 +171,12 @@ class ImportCarsView extends React.Component<IPropsType, IStateType> {
                             }
                             return (
                               <tr key={car.id} className={classTR}>
+                                <td>{car.NInterno}</td>
                                 <td>{car.vin}</td>
-                                <td>{car.brand}</td>
-                                <td>{car.denomination}</td>
+                                <td>{car.marca}</td>
+                                <td>{car.denominacion}</td>
                                 <td>{car.color}</td>
-                                <td>{car.detail}</td>
+                                <td>{car.destino}</td>
                               </tr>
                             );
                           })
@@ -200,20 +206,35 @@ class ImportCarsView extends React.Component<IPropsType, IStateType> {
 
   private startLoad() {
     const {cars} = this.state;
-    const api: ApiService = new ApiService();
-    this.setState({
-      loadFile: true
-    });
-    api
-      .getSource();
-    api
-      .sendImportCars(cars)
-      // .then((data) => {
-      //   console.log(data);
-      // })
-      .catch((err: AxiosError) => {
-        api.errorHandler(err);
+    swal({
+      title: '¿Estás seguro?',
+      text: `Vas a cargar ${cars.length} autos, recuerda que puedes revisar que los datos estén correctos en la pre visualización del Excel.`,
+      icon: 'warning',
+      buttons: true,
+      dangerMode: true
+    } as any)
+      .then((willDelete) => {
+        if (willDelete) {
+          const api: ApiService = new ApiService();
+          this.setState({
+            loadFile: true
+          });
+          api
+            .getSource();
+          api
+            .sendImportCars(cars)
+            // .then((data) => {
+            //   console.log(data);
+            // })
+            .catch((err: AxiosError) => {
+              api.errorHandler(err);
+            });
+          // swal('Poof! Your imaginary file has been deleted!', {
+          //   icon: 'success'
+          // });
+        }
       });
+
   }
 
   private clickUploadFile() {
@@ -223,14 +244,14 @@ class ImportCarsView extends React.Component<IPropsType, IStateType> {
   }
 
   private downloadTemplate() {
-    const data = [
-      {
-        vin: '',
-        brand: '',
-        denomination: '',
-        color: ''
-      }
-    ];
+    const data = [{
+      NInterno: '',
+      vin: '',
+      marca: '',
+      denominacion: '',
+      color: '',
+      destino: ''
+    }];
     /* make the worksheet */
     const ws = XLSX.utils.json_to_sheet(data);
 

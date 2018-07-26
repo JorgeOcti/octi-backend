@@ -1,14 +1,14 @@
-import * as express from 'express';
 import * as csrf from 'csurf';
+import * as express from 'express';
+import Middlewares from '../middlewares/middlewares';
+import AdminCarsController from './controllers/admin/car.admin.controller';
+import AdminCompaniesController from './controllers/admin/companies.admin.controller';
+import AdminUsersController from './controllers/admin/user.admin.controller';
+import AdminVenuesController from './controllers/admin/venues.admin.controller';
 import AppController from './controllers/app.controller';
 import CarController from './controllers/car.controller';
-import AdminUsersController from './controllers/admin/user.admin.controller';
-import AdminCarsController from './controllers/admin/car.admin.controller';
-import UserController from './controllers/user.controller';
-import AdminCompaniesController from './controllers/admin/companies.admin.controller';
-import AdminVenuesController from './controllers/admin/venues.admin.controller';
 import JWTController from './controllers/jwt.controller';
-import Middlewares from '../middlewares/middlewares';
+import UserController from './controllers/user.controller';
 
 // setup route middlewares
 const appRouter = express.Router();

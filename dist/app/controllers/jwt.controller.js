@@ -1,12 +1,12 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 const jwt = require("jsonwebtoken");
-const user_model_1 = require("../models/user.model");
-const user_model_2 = require("../models/user.model");
-const participant_model_1 = require("../../form/models/participant.model");
 const moment = require("moment-timezone");
 const uuid = require("uuid");
 const app_1 = require("../../app");
+const participant_model_1 = require("../../form/models/participant.model");
+const user_model_1 = require("../models/user.model");
+const user_model_2 = require("../models/user.model");
 class JWTController {
     constructor() {
         this.login = this.login.bind(this);
@@ -60,7 +60,7 @@ class JWTController {
                 password: true,
                 updatedAt: true,
                 preferred: true,
-                active: true,
+                active: true
             })
                 .populate([{
                     path: 'venue',
@@ -87,7 +87,7 @@ class JWTController {
                 }
                 else {
                     user.lastLogin = new Date();
-                    user.save(function (err) {
+                    user.save((err) => {
                         if (err) {
                             res.status(500).json(err);
                         }
@@ -128,7 +128,7 @@ class JWTController {
                                         refreshToken: jwt.sign(userInfo, req.app.locals.secretKey, {
                                             expiresIn: '60 days'
                                         }),
-                                        user: userInfo,
+                                        user: userInfo
                                     },
                                     status: 200
                                 });
@@ -177,7 +177,7 @@ class JWTController {
                         }
                         else {
                             user.lastLogin = new Date();
-                            user.save(function (err) {
+                            user.save((err) => {
                                 if (err) {
                                     res.status(500).json(err);
                                 }
@@ -228,7 +228,7 @@ class JWTController {
             });
         }
     }
-    async forgotPassword(req, res, error) {
+    async forgotPassword(req, res) {
         const { username } = req.body;
         try {
             const user = await user_model_2.default.findOne({ email: username });
@@ -243,13 +243,13 @@ class JWTController {
                     text: `Hola ${fullname}
 
             Recibimos una solicitud para restablecer tu contraseña.
-            
+
             Haz clic aquí para cambiar tu contraseña.
             ${process.env.SITE_URL}account/recovery/${token}/
 
             ¿No solicitaste este cambio?
             Puedes contactarte con nosotros a través de soporte@osacontrol.com.
-            
+
             © 2018 OSA SpA. Todos los derechos reservados.`,
                     view: 'account/forgotPassword',
                     context: {
@@ -286,7 +286,6 @@ class JWTController {
     isJWTAuthenticated(req, res, next) {
         console.log('test');
         if (req.headers && req.headers.authorization && req.headers.authorization.split(' ')[0] === 'JWT') {
-            //process.env.SECRET_KEY
             jwt.verify(req.headers.authorization.split(' ')[1], req.app.locals.secretKey, (err, decode) => {
                 if (err) {
                     res.status(401).json({

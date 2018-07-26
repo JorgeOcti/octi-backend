@@ -1,12 +1,12 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+const isuuid = require("is-uuid");
+const moment = require("moment");
 const passport = require("passport");
 const uuid = require("uuid");
-const isuuid = require("is-uuid");
+const app_1 = require("../../app");
 const redis_service_1 = require("../../services/redis.service");
 const user_model_1 = require("../models/user.model");
-const moment = require("moment");
-const app_1 = require("../../app");
 class AppController {
     constructor() {
         this.index = this.index.bind(this);
@@ -26,7 +26,7 @@ class AppController {
         res.setHeader('content-type', 'text/plain; charset=utf-8');
         res.send(`User-Agent: *\nDisallow: /`);
     }
-    login(req, res, error) {
+    login(req, res) {
         if (req.user) {
             return res.redirect('/');
         }
@@ -39,20 +39,20 @@ class AppController {
             return res.redirect('/');
         }
         else {
-            passport.authenticate('local', (err, user, info) => {
+            passport.authenticate('local', (err, user) => {
                 if (err) {
                     return next(err); // will generate a 500 error
                 }
                 if (!user) {
                     return res.render('app/login', { error: 'Usuario o contraseña incorrecta.', csrfToken: req.csrfToken() });
                 }
-                req.login(user, loginErr => {
+                req.login(user, (loginErr) => {
                     if (loginErr) {
                         return next(loginErr);
                     }
                     else {
-                        user.lastLogin = new Date;
-                        user.save(function (err) {
+                        user.lastLogin = new Date();
+                        user.save((err) => {
                             if (err) {
                                 console.log(err); // handle errors!
                             }
@@ -65,7 +65,7 @@ class AppController {
             })(req, res, next);
         }
     }
-    forgotPassword(req, res, error) {
+    forgotPassword(req, res) {
         if (req.user) {
             return res.redirect('/');
         }
@@ -73,7 +73,7 @@ class AppController {
             return res.render('app/forgotPassword', { csrfToken: req.csrfToken() });
         }
     }
-    async processForgotPassword(req, res, error) {
+    async processForgotPassword(req, res) {
         const { username, _csrf } = req.body;
         if (req.user) {
             return res.redirect('/');
@@ -97,13 +97,13 @@ class AppController {
                     text: `Hola ${fullname}
 
             Recibimos una solicitud para restablecer tu contraseña.
-            
+
             Haz clic aquí para cambiar tu contraseña.
             ${process.env.SITE_URL}account/recovery/${token}/
 
             ¿No solicitaste este cambio?
             Puedes contactarte con nosotros a través de soporte@osacontrol.com.
-            
+
             © 2018 OSA SpA. Todos los derechos reservados.`,
                     view: 'account/forgotPassword',
                     context: {
@@ -165,13 +165,13 @@ class AppController {
                 user.passwordResetToken = undefined;
                 user.passwordResetExpires = undefined;
                 user.save();
-                req.login(user, loginErr => {
+                req.login(user, (loginErr) => {
                     if (loginErr) {
                         return next(loginErr);
                     }
                     else {
-                        user.lastLogin = new Date;
-                        user.save(function (err) {
+                        user.lastLogin = new Date();
+                        user.save((err) => {
                             if (err) {
                                 console.log(err); // handle errors!
                             }

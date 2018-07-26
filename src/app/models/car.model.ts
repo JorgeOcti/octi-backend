@@ -1,7 +1,7 @@
 import * as mongoose from 'mongoose';
 import {PaginateModel} from 'mongoose';
-import {ICar} from "../../interfaces/car.interface";
-import * as mongoosePaginate from "mongoose-paginate";
+import * as mongoosePaginate from 'mongoose-paginate';
+import {ICar} from '../../interfaces/car.interface';
 
 export interface ICarModel extends ICar, mongoose.Document {}
 
@@ -16,17 +16,24 @@ const carSchema = new mongoose.Schema({
     trim: true,
     required: true
   },
+  internalNumber: {
+    type: Number
+  },
+  destination: {
+    type: String,
+    trim: true
+  },
   brand: {
     type: String,
-    trim: true,
+    trim: true
   },
   denomination: {
     type: String,
-    trim: true,
+    trim: true
   },
   color: {
     type: String,
-    trim: true,
+    trim: true
   },
   company: {
     type: mongoose.Schema.Types.ObjectId,
@@ -52,14 +59,20 @@ carSchema.virtual('participants', {
   justOne: false
 });
 
-carSchema.statics.findOneOrCreate = function (condition: any, create: any): Promise<ICarModel> {
+carSchema.statics.findOneOrCreate = function(condition: any, create: any): Promise<ICarModel> {
   const model = this;
   return new Promise((resolve, reject) => {
     model.findOne(condition, (err: any, result: ICarModel) => {
-      if (err) return reject(err);
-      if (result) return resolve(result);
+      if (err) {
+        return reject(err);
+      }
+      if (result) {
+        return resolve(result);
+      }
       model.create(create, (err: any, result: ICarModel) => {
-        if (err) return reject(err);
+        if (err) {
+          return reject(err);
+        }
         return resolve(result);
       });
     });

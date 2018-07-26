@@ -1,8 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-const pug = require("pug");
 const path = require("path");
-// import * as nodemailer from 'nodemailer';
+const pug = require("pug");
 const aws_ses_service_1 = require("../../services/aws-ses.service");
 class EmailQueue {
     constructor(queue) {
@@ -32,18 +31,13 @@ class EmailQueue {
                 attachments: job.data.attachments || [],
                 headers: {
                     'Reply-To': 'OSA Andes<osa.andes@osacontrol.com>',
-                    'List-Unsubscribe': "<mailto:soporte@osacontrol.com?subject=Unsubscribe>",
+                    'List-Unsubscribe': '<mailto:soporte@osacontrol.com?subject=Unsubscribe>',
                     // 'List-Subscribe': "<mailto:soporte@osacontrol.com?subject=Subscribe>",
-                    'List-ID': "mail.osacontrol.com",
-                    'X-Report-Abuse-To': "abuse@osacontrol.com",
-                    'X-CSA-Complaints': "whitelistcomplaints@eco.de"
+                    'List-ID': 'mail.osacontrol.com',
+                    'X-Report-Abuse-To': 'abuse@osacontrol.com',
+                    'X-CSA-Complaints': 'whitelistcomplaints@eco.de'
                 }
             };
-            // console.log('---------------------------');
-            // console.log(JSON.stringify(mail));
-            // console.log('---------------------------');
-            // console.log(JSON.stringify(process.env));
-            // console.log('---------------------------');
             // send mail with defined transport object
             aws_ses_service_1.default.sendMail(mail, (error, info) => {
                 if (error) {

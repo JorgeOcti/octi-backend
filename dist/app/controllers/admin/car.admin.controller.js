@@ -15,7 +15,7 @@ class AdminCarsController {
         const cars = req.body;
         if (cars && cars.length) {
             for (const car of cars) {
-                setTimeout(async () => {
+                if (car.vin && car.vin.length) {
                     const vin2 = car.vin.substr(car.vin.length - 6);
                     try {
                         await car_model_1.default.findOneOrCreate({
@@ -24,9 +24,11 @@ class AdminCarsController {
                         }, {
                             vin: car.vin,
                             vin2,
-                            bran: car.brand ? car.brand : '',
-                            denomination: car.denomination ? car.denomination : '',
+                            bran: car.marca ? car.marca : '',
+                            denomination: car.denominacion ? car.denominacion : '',
                             color: car.color ? car.color : '',
+                            internalNumber: car.NInterno ? car.NInterno : '',
+                            destination: car.destino ? car.destino : '',
                             company
                         });
                         // io.to(req.user._id).emit('STATUS-CARS', {newCar});
@@ -34,7 +36,7 @@ class AdminCarsController {
                     catch (e) {
                         console.log(e);
                     }
-                }, 1000);
+                }
             }
             server_1.io.to(req.user._id).emit('FINISH-IMPORT', { finish: true });
         }

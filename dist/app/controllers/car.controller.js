@@ -1,8 +1,8 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-const car_model_1 = require("../models/car.model");
 const mongoose = require("mongoose");
 const participant_model_1 = require("../../form/models/participant.model");
+const car_model_1 = require("../models/car.model");
 class CarController {
     constructor() {
         this.generalDashboard = this.generalDashboard.bind(this);
@@ -41,8 +41,9 @@ class CarController {
             }
         }
         catch (e) {
-            if (e)
+            if (e) {
                 res.status(500).send(e);
+            }
         }
     }
     async checkVIN(req, res) {
@@ -96,7 +97,7 @@ class CarController {
         }
         */
         if (vin) {
-            vin = vin.replace(/[\W_]+/g, "");
+            vin = vin.replace(/[\W_]+/g, '');
             try {
                 const indexBrand = vin.slice(0, 3);
                 vin2 = vin.substr(vin.length - 6);
@@ -117,18 +118,19 @@ class CarController {
                         vin2: car.vin2,
                         brand: car.brand,
                         color: car.color,
-                        denomination: car.denomination,
+                        denomination: car.denomination
                     },
                     status: 200
                 });
             }
             catch (e) {
-                if (e)
+                if (e) {
                     res.status(500).send(e);
+                }
             }
         }
         else if (vin2) {
-            vin2 = vin2.replace(/[\W_]+/g, "");
+            vin2 = vin2.replace(/[\W_]+/g, '');
             try {
                 if (multi === 'true') {
                     const car = await car_model_1.default.find({
@@ -180,8 +182,9 @@ class CarController {
                 }
             }
             catch (e) {
-                if (e)
+                if (e) {
                     res.status(500).send(e);
+                }
             }
         }
         else {
@@ -202,7 +205,7 @@ class CarController {
                 }, {
                     $project: {
                         _id: 1, user: 1, form: 1, car: 1, createdAt: {
-                            $subtract: ["$createdAt", 4 * 60 * 60 * 1000]
+                            $subtract: ['$createdAt', 4 * 60 * 60 * 1000]
                         }
                     }
                 }, {
@@ -219,9 +222,9 @@ class CarController {
                                     format: '%Y-%m-%d',
                                     date: '$createdAt'
                                     // timezone: 'America/Santiago'
-                                },
+                                }
                             },
-                            user: "$user",
+                            user: '$user'
                         },
                         total: {
                             $sum: 1
@@ -229,13 +232,13 @@ class CarController {
                     }
                 }, {
                     $lookup: {
-                        from: "users",
-                        localField: "_id.user",
-                        foreignField: "_id",
-                        as: "userInfo",
+                        from: 'users',
+                        localField: '_id.user',
+                        foreignField: '_id',
+                        as: 'userInfo'
                     }
                 }, {
-                    $unwind: "$userInfo"
+                    $unwind: '$userInfo'
                 }, {
                     $project: {
                         '_id.category': 1,
@@ -243,19 +246,19 @@ class CarController {
                         'total': 1,
                         'userInfo._id': 1,
                         'userInfo.firstName': 1,
-                        'userInfo.lastName': 1,
+                        'userInfo.lastName': 1
                     }
                 }, {
                     $group: {
-                        _id: "$_id.category",
+                        _id: '$_id.category',
                         users: {
                             $push: {
-                                user: "$_id.user",
-                                userInfo: "$userInfo",
-                                total: "$total"
+                                user: '$_id.user',
+                                userInfo: '$userInfo',
+                                total: '$total'
                             }
                         },
-                        total: { $sum: "$total" }
+                        total: { $sum: '$total' }
                     }
                 }, {
                     $sort: {
@@ -268,8 +271,9 @@ class CarController {
             });
         }
         catch (e) {
-            if (e)
+            if (e) {
                 res.status(500).json(e);
+            }
         }
     }
     async apiParticipantDetail(req, res) {
@@ -290,7 +294,7 @@ class CarController {
                     path: 'user',
                     select: ['firstName', 'lastName']
                 }, {
-                    path: 'sections.answers.images',
+                    path: 'sections.answers.images'
                 }]);
             // validate exist participant
             if (!participant) {
@@ -307,8 +311,9 @@ class CarController {
             }
         }
         catch (e) {
-            if (e)
+            if (e) {
                 res.status(500).json(e);
+            }
         }
     }
     async apiCarDetail(req, res) {
@@ -354,8 +359,9 @@ class CarController {
             }
         }
         catch (e) {
-            if (e)
+            if (e) {
                 res.status(500).json(e);
+            }
         }
     }
     async apiCars(req, res) {
@@ -380,8 +386,8 @@ class CarController {
             sort: {
                 updatedAt: -1
             },
-            page: parseInt(page ? page : 1),
-            limit: parseInt(pageSize ? pageSize : 20),
+            page: parseInt(page ? page : 1, 10),
+            limit: parseInt(pageSize ? pageSize : 20, 10)
         };
         try {
             const cars = await this.getCars(company, options, search);
@@ -389,7 +395,7 @@ class CarController {
             if (options.page && cars.pages && cars.pages < options.page) {
                 res.status(400).json({
                     message: 'La página solicitada no existe.',
-                    status: 200,
+                    status: 200
                 });
             }
             else {
@@ -399,13 +405,14 @@ class CarController {
                     hasPrevious: options.page && options.page > 1 && cars.pages && cars.pages >= options.page,
                     hasNext: options.page && cars.pages && cars.pages > options.page,
                     results: cars.docs,
-                    status: 200,
+                    status: 200
                 });
             }
         }
         catch (e) {
-            if (e)
+            if (e) {
                 res.status(500).json(e);
+            }
         }
     }
     getCars(company, options, search) {

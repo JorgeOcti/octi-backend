@@ -1,16 +1,16 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-const express = require("express");
 const csrf = require("csurf");
+const express = require("express");
+const middlewares_1 = require("../middlewares/middlewares");
+const car_admin_controller_1 = require("./controllers/admin/car.admin.controller");
+const companies_admin_controller_1 = require("./controllers/admin/companies.admin.controller");
+const user_admin_controller_1 = require("./controllers/admin/user.admin.controller");
+const venues_admin_controller_1 = require("./controllers/admin/venues.admin.controller");
 const app_controller_1 = require("./controllers/app.controller");
 const car_controller_1 = require("./controllers/car.controller");
-const user_admin_controller_1 = require("./controllers/admin/user.admin.controller");
-const car_admin_controller_1 = require("./controllers/admin/car.admin.controller");
-const user_controller_1 = require("./controllers/user.controller");
-const companies_admin_controller_1 = require("./controllers/admin/companies.admin.controller");
-const venues_admin_controller_1 = require("./controllers/admin/venues.admin.controller");
 const jwt_controller_1 = require("./controllers/jwt.controller");
-const middlewares_1 = require("../middlewares/middlewares");
+const user_controller_1 = require("./controllers/user.controller");
 // setup route middlewares
 const appRouter = express.Router();
 exports.appRouter = appRouter;

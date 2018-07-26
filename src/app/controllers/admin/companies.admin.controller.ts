@@ -1,5 +1,5 @@
-import {Request, Response} from "express";
-import Company from '../../models/company.model'
+import {Request, Response} from 'express';
+import Company from '../../models/company.model';
 
 class AdminCompaniesController {
   constructor() {

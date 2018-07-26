@@ -1,12 +1,12 @@
 import {NextFunction, Request, Response} from 'express';
 import * as jwt from 'jsonwebtoken';
+import * as moment from 'moment-timezone';
+import * as uuid from 'uuid';
+import {queue} from '../../app';
+import ParticipantModel from '../../form/models/participant.model';
 import {IRequest} from '../../interfaces/global.interface';
 import User from '../models/user.model';
 import UserModel, {IUserModel} from '../models/user.model';
-import ParticipantModel from "../../form/models/participant.model";
-import * as moment from "moment-timezone";
-import * as uuid from "uuid";
-import {queue} from "../../app";
 
 class JWTController {
 
@@ -63,7 +63,7 @@ class JWTController {
           password: true,
           updatedAt: true,
           preferred: true,
-          active: true,
+          active: true
         })
         .populate([{
           path: 'venue',
@@ -88,7 +88,7 @@ class JWTController {
             });
           } else {
             user.lastLogin = new Date();
-            user.save(function (err: any) {
+            user.save((err: any) => {
               if (err) {
                 res.status(500).json(err);
               } else {
@@ -128,7 +128,7 @@ class JWTController {
                       refreshToken: jwt.sign(userInfo, req.app.locals.secretKey, {
                         expiresIn: '60 days'
                       }),
-                      user: userInfo,
+                      user: userInfo
                     },
                     status: 200
                   });
@@ -140,15 +140,15 @@ class JWTController {
     }
   }
 
-  public token(req: Request, res: Response){
+  public token(req: Request, res: Response) {
     const {refreshToken} = req.body;
-    if(!refreshToken){
+    if (!refreshToken) {
       res.status(400).json({
         message: 'refresh token is required',
         status: 400
       });
-    } else{
-      jwt.verify(refreshToken, req.app.locals.secretKey, (err: any, decode: any)=>{
+    } else {
+      jwt.verify(refreshToken, req.app.locals.secretKey, (err: any, decode: any) => {
         if (err) {
           res.status(401).json({
             message: err.message,
@@ -167,15 +167,14 @@ class JWTController {
             .exec((err, user: IUserModel) => {
               if (err) {
                 res.status(500).json(err);
-              }
-              else if (!user.active) {
+              } else if (!user.active) {
                 res.status(401).json({
                   message: 'User is inactive',
                   status: 401
                 });
               } else {
                 user.lastLogin = new Date();
-                user.save(function (err: any) {
+                user.save( (err: any) => {
                   if (err) {
                     res.status(500).json(err);
                   } else {
@@ -216,18 +215,18 @@ class JWTController {
                         },
                         status: 200
                       });
-                    })
+                    });
                   }
                 });
               }
             });
         }
-      })
+      });
 
     }
   }
 
-  public async forgotPassword(req: Request, res: Response, error: any) {
+  public async forgotPassword(req: Request, res: Response) {
     const {username} = req.body;
     try {
       const user = await UserModel.findOne({email: username});
@@ -242,13 +241,13 @@ class JWTController {
           text: `Hola ${fullname}
 
             Recibimos una solicitud para restablecer tu contraseña.
-            
+
             Haz clic aquí para cambiar tu contraseña.
             ${process.env.SITE_URL}account/recovery/${token}/
 
             ¿No solicitaste este cambio?
             Puedes contactarte con nosotros a través de soporte@osacontrol.com.
-            
+
             © 2018 OSA SpA. Todos los derechos reservados.`,
           view: 'account/forgotPassword',
           context: {
@@ -263,13 +262,13 @@ class JWTController {
         res.json({
           message: 'Se ha enviado un e-mail para reestablecer tú contraseña',
           status: 200
-        })
-      } else{
+        });
+      } else {
         console.log('No se encontro ', username);
         res.json({
           message: 'Se ha enviado un e-mail para reestablecer tú contraseña',
           status: 200
-        })
+        });
       }
     } catch (e) {
       console.log(e);
@@ -277,14 +276,13 @@ class JWTController {
       res.json({
           message: 'Se ha enviado un e-mail para reestablecer tú contraseña',
           status: 200
-        })
+        });
     }
   }
 
   public isJWTAuthenticated(req: IRequest, res: Response, next: NextFunction) {
     console.log('test');
     if (req.headers && req.headers.authorization && req.headers.authorization.split(' ')[0] === 'JWT') {
-      //process.env.SECRET_KEY
       jwt.verify(req.headers.authorization.split(' ')[1], req.app.locals.secretKey, (err: any, decode: any) => {
         if (err) {
           res.status(401).json({
