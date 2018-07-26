@@ -11,7 +11,7 @@ interface ILoadData {
     title: string;
     body: JSX.Element | null;
     footer?: JSX.Element | null;
-  }
+  };
 }
 
 export function loadDataAction(title: string, body: JSX.Element, footer?: JSX.Element): ILoadData {
@@ -22,7 +22,7 @@ export function loadDataAction(title: string, body: JSX.Element, footer?: JSX.El
       body,
       footer
     }
-  }
+  };
 }
 
 interface IClear {

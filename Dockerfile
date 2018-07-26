@@ -28,7 +28,7 @@ RUN npm  --unsafe-perm  install
 # port to expose
 EXPOSE 3000
 
-#CMD pm2 start --no-daemon  pm2.json
+# CMD pm2 start --no-daemon  pm2.json
 
-#run app
+# run app
 CMD ["node", "server.js"]

@@ -1,12 +1,12 @@
+import * as PropTypes from 'prop-types';
 import * as Raven from 'raven-js';
 import * as React from 'react';
-import {ErrorInfo} from "react";
-import AppContainer from "../../container/AppContainer";
-import {connect} from "react-redux";
-import {Dispatch} from "redux";
-import {RouteComponentProps} from "react-router";
-import {DashboardReduxAction, getParticipantsPerDateAction, IDashboardState} from "../../actions/dashboard";
-import * as PropTypes from "prop-types";
+import {ErrorInfo} from 'react';
+import {connect} from 'react-redux';
+import {RouteComponentProps} from 'react-router';
+import {Dispatch} from 'redux';
+import {DashboardReduxAction, getParticipantsPerDateAction, IDashboardState} from '../../actions/dashboard';
+import AppContainer from '../../container/AppContainer';
 
 interface IPropsType extends RouteComponentProps<{ ticket: string }> {
   dispatch: Dispatch<DashboardReduxAction>;
@@ -21,40 +21,34 @@ interface IStateType {
 
 class DashboardGeneralView extends React.Component<IPropsType, IStateType> {
 
-  participantsPerDayChart: any;
-
   static propTypes = {
     dashboard: PropTypes.object.isRequired,
     dispatch: PropTypes.func.isRequired,
-    getParticipantsPerDateAction: PropTypes.func.isRequired,
+    getParticipantsPerDateAction: PropTypes.func.isRequired
   };
+
+  participantsPerDayChart: any;
 
   constructor(props: IPropsType) {
     super(props);
-    this.resizeCharts = this.resizeCharts.bind(this)
+    this.resizeCharts = this.resizeCharts.bind(this);
   }
 
-  componentWillMount(){
+  public componentWillMount(): void {
     // set the title of the page
     document.title = 'OSA Andes | Reportes generales';
     this.props.getParticipantsPerDateAction();
     window.addEventListener('resize', this.resizeCharts, false);
   }
 
-  private resizeCharts() {
-    if (this.participantsPerDayChart != null && this.participantsPerDayChart != undefined) {
-      this.participantsPerDayChart.resize();
-    }
-  }
-
-  public componentDidCatch(error: Error, errorInfo: ErrorInfo) {
+  public componentDidCatch(error: Error, errorInfo: ErrorInfo): void {
     this.setState({error});
     Raven.captureException(error, {
       extra: errorInfo
     });
   }
 
-  componentDidUpdate(prevProps: IPropsType, prevState: IStateType) {
+  public componentDidUpdate(prevProps: IPropsType, prevState: IStateType): void {
     const {participantsPerDate, loading} = this.props.dashboard;
 
     const $participantPerDate = document.getElementById('participant-per-date') as HTMLDivElement;
@@ -72,9 +66,9 @@ class DashboardGeneralView extends React.Component<IPropsType, IStateType> {
       const option = {
         title: {
           text: 'Revisiones realizadas por día',
-          x:'center',
+          x: 'center',
           textStyle: {
-            align: 'center',
+            align: 'center'
           }
         },
         tooltip: {},
@@ -98,10 +92,10 @@ class DashboardGeneralView extends React.Component<IPropsType, IStateType> {
           }
         },
         grid: {
-          //left
+          // left
           x: 30,
-          //right
-          x2: 10,
+          // right
+          x2: 10
 
           // borderColor: '#FF0000'
         },
@@ -132,13 +126,13 @@ class DashboardGeneralView extends React.Component<IPropsType, IStateType> {
           type: 'line',
           smooth: true
         }],
-        color: ["#006faf", ]
+        color: ['#006faf']
       };
       this.participantsPerDayChart.setOption(option);
     }
   }
 
-  public componentWillUnmount(){
+  public componentWillUnmount() {
     // cancel request if component is inmounted
     window.removeEventListener('resize', this.resizeCharts, false);
     if (this.props.dashboard.source) {
@@ -147,9 +141,9 @@ class DashboardGeneralView extends React.Component<IPropsType, IStateType> {
   }
 
   public render(): React.ReactElement<IPropsType> {
-    const {loading, cars} = this.props.dashboard;
+    const {loading} = this.props.dashboard;
     return (
-      <AppContainer title='' cMenu='1' cSubMenu='1.1'>
+      <AppContainer title="" cMenu="1" cSubMenu="1.1">
         <section className="content">
           <div className="box">
             <div className="box-header with-border"><h3 className="box-title">Dashboard General</h3>
@@ -171,6 +165,12 @@ class DashboardGeneralView extends React.Component<IPropsType, IStateType> {
       </AppContainer>
     );
   }
+
+  private resizeCharts() {
+    if (this.participantsPerDayChart && this.participantsPerDayChart !== undefined) {
+      this.participantsPerDayChart.resize();
+    }
+  }
 }
 
 const mapStateToProps = (state: { dashboard: IDashboardState }) => {
@@ -182,9 +182,8 @@ const mapStateToProps = (state: { dashboard: IDashboardState }) => {
 const mapDispatchToProps = (dispatch: any ) => {
   return {
     dispatch,
-    getParticipantsPerDateAction: () => dispatch(getParticipantsPerDateAction()),
+    getParticipantsPerDateAction: () => dispatch(getParticipantsPerDateAction())
   };
 };
 
 export default connect<{}, {}, IPropsType>(mapStateToProps, mapDispatchToProps)(DashboardGeneralView);
-

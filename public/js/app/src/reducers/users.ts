@@ -1,27 +1,27 @@
 import {
   IUsersState,
   UserReduxAction
-} from "../actions/users";
+} from '../actions/users';
 
-import {IUser} from "../../../../../src/interfaces/user.interface";
+import {IUser} from '../../../../../src/interfaces/user.interface';
 
 const initialState: IUsersState = {
   users: [],
   venues: [],
   loading: true,
   tempUser: {
-    _id:'',
+    _id: '',
     firstName: '',
     lastName: '',
     email: '',
-    venue:''
+    venue: ''
   },
   source: null,
   pagination: {
     count: 0,
     page: 1,
     pages: 1
-  },
+  }
 };
 
 export function users(state = initialState, action: UserReduxAction): IUsersState {
@@ -75,7 +75,7 @@ export function users(state = initialState, action: UserReduxAction): IUsersStat
         ...state,
         pagination: {
           ...state.pagination,
-          page: action.payload.page,
+          page: action.payload.page
         }
       };
     default:

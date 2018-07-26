@@ -1,18 +1,17 @@
+import * as moment from 'moment';
+import * as PropTypes from 'prop-types';
 import * as Raven from 'raven-js';
+import {ErrorInfo} from 'react';
 import * as React from 'react';
-import {ErrorInfo} from "react";
-import AppContainer from "../../container/AppContainer";
-import {connect} from "react-redux";
-import {Dispatch} from "redux";
-import {RouteComponentProps} from "react-router";
-import {DashboardReduxAction, getCarsAction, IDashboardState} from "../../actions/dashboard";
-import * as PropTypes from "prop-types";
-import * as moment from "moment";
-import Paginator from "../Paginator";
+import {connect} from 'react-redux';
+import {RouteComponentProps} from 'react-router';
+import {Dispatch} from 'redux';
 import * as io from 'socket.io-client';
-// backend interfaces
-import {ICar} from "../../../../../../src/interfaces/car.interface";
-import {IWindow} from "../../interfaces/window";
+import {ICar} from '../../../../../../src/interfaces/car.interface';
+import {DashboardReduxAction, getCarsAction, IDashboardState} from '../../actions/dashboard';
+import AppContainer from '../../container/AppContainer';
+import {IWindow} from '../../interfaces/window';
+import Paginator from '../Paginator';
 
 declare let window: IWindow;
 
@@ -30,10 +29,7 @@ interface IStateType {
 
 class DashboardVinView extends React.Component<IPropsType, IStateType> {
 
-  private socket: SocketIOClient.Socket;
-  protected isMount: boolean = false;
-
-  state = {
+  static state = {
     error: null,
     highlight: []
   };
@@ -41,15 +37,18 @@ class DashboardVinView extends React.Component<IPropsType, IStateType> {
   static propTypes = {
     dashboard: PropTypes.object.isRequired,
     dispatch: PropTypes.func.isRequired,
-    getCarsAction: PropTypes.func.isRequired,
+    getCarsAction: PropTypes.func.isRequired
   };
+
+  protected isMount: boolean = false;
+  private socket: SocketIOClient.Socket;
 
   constructor(props: IPropsType) {
     super(props);
     this.changePage = this.changePage.bind(this);
   }
 
-  componentWillMount(){
+  public componentWillMount(): void {
     // set the title of the page
     document.title = 'OSA Andes | Listado de VINs';
     this.props.getCarsAction();
@@ -73,7 +72,7 @@ class DashboardVinView extends React.Component<IPropsType, IStateType> {
           });
         } else {
           this.setState({
-            highlight: this.state.highlight.filter(e => e !== data.car)
+            highlight: this.state.highlight.filter((e) => e !== data.car)
           }, () => {
             this.setState({
               highlight: [data.car, ...this.state.highlight]
@@ -83,7 +82,7 @@ class DashboardVinView extends React.Component<IPropsType, IStateType> {
         setTimeout(() => {
           if (this.isMount) {
             this.setState({
-              highlight: this.state.highlight.filter(e => e !== data.car)
+              highlight: this.state.highlight.filter((e) => e !== data.car)
             });
           }
         }, 3000);
@@ -99,7 +98,7 @@ class DashboardVinView extends React.Component<IPropsType, IStateType> {
     });
   }
 
-  public componentWillUnmount(){
+  public componentWillUnmount() {
     this.isMount = false;
     // cancel request if component is inmounted
     if (this.props.dashboard.source) {
@@ -108,16 +107,11 @@ class DashboardVinView extends React.Component<IPropsType, IStateType> {
     this.socket.disconnect();
   }
 
-  private changePage(page:number){
-    // change the page
-    this.props.getCarsAction(page);
-  }
-
   public render(): React.ReactElement<IPropsType> {
     const {loading, cars, pagination} = this.props.dashboard;
     const {highlight} = this.state;
     return (
-      <AppContainer title='' cMenu='1' cSubMenu='1.2'>
+      <AppContainer title="" cMenu="1" cSubMenu="1.2">
         <section className="content">
           <div className="box">
             <div className="box-header with-border"><h3 className="box-title">Listado de VINs</h3>
@@ -151,7 +145,7 @@ class DashboardVinView extends React.Component<IPropsType, IStateType> {
                             <button className="btn btn-xs btn-primary" onClick={() => this.props.history.push(`/cars/${car._id}`)}><i className="fa fa-bars"/></button>
                           </td>
                         </tr>
-                      )
+                      );
                     })
                   }
                 </tbody>
@@ -175,6 +169,11 @@ class DashboardVinView extends React.Component<IPropsType, IStateType> {
       </AppContainer>
     );
   }
+
+  private changePage(page: number) {
+    // change the page
+    this.props.getCarsAction(page);
+  }
 }
 
 const mapStateToProps = (state: { dashboard: IDashboardState }) => {
@@ -186,9 +185,8 @@ const mapStateToProps = (state: { dashboard: IDashboardState }) => {
 const mapDispatchToProps = (dispatch: any ) => {
   return {
     dispatch,
-    getCarsAction: (page?: number, loading?: boolean) => dispatch(getCarsAction(page, loading)),
+    getCarsAction: (page?: number, loading?: boolean) => dispatch(getCarsAction(page, loading))
   };
 };
 
 export default connect<{}, {}, IPropsType>(mapStateToProps, mapDispatchToProps)(DashboardVinView);
-

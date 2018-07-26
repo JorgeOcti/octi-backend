@@ -1,53 +1,45 @@
-import {
-  default as Axios,
-  AxiosError,
-  AxiosResponse,
-  CancelTokenSource
-} from "axios";
-import {Dispatch} from "redux";
-import ApiService from "../utils/axios";
-import {
-  showModal,
-  statusFooterButttonsModal
-} from "../utils/common";
+import {AxiosError, AxiosResponse, CancelTokenSource, default as Axios} from 'axios';
+import {Dispatch} from 'redux';
+import ApiService from '../utils/axios';
+import {showModal, statusFooterButttonsModal} from '../utils/common';
 
-import {IUser} from "../../../../../src/interfaces/user.interface";
-import {IVenue} from "../../../../../src/interfaces/venue.interface";
+import {IUser} from '../../../../../src/interfaces/user.interface';
+import {IVenue} from '../../../../../src/interfaces/venue.interface';
 
 export interface IUsersState {
   users: IUser[];
   venues: IVenue[];
   loading: boolean;
-  tempUser: ITempUser,
+  tempUser: ITempUser;
   source: CancelTokenSource | null;
   pagination: {
     count: number;
     page: number;
     pages: number;
-  }
+  };
 }
 
 interface ICancelRequest {
   type: '/USERS/CANCEL_REQUEST';
   payload: {
     source: CancelTokenSource;
-  }
+  };
 }
 
 export function cancelRequestAction(source: CancelTokenSource): ICancelRequest {
   return {
     type: '/USERS/CANCEL_REQUEST',
     payload: {
-      source,
+      source
     }
-  }
+  };
 }
 
 interface IIsLoading {
   type: '/USERS/IS_LOADING';
-  payload:{
+  payload: {
     loading: boolean;
-  }
+  };
 }
 export function isLoadingAction(loading: boolean): IIsLoading {
   return {
@@ -55,14 +47,14 @@ export function isLoadingAction(loading: boolean): IIsLoading {
     payload: {
       loading
     }
-  }
+  };
 }
 
 interface IChangePage {
   type: '/USERS/CHANGE_PAGE';
-  payload:{
+  payload: {
     page: number;
-  }
+  };
 }
 
 export function changePageAction(page: number): IChangePage {
@@ -71,7 +63,7 @@ export function changePageAction(page: number): IChangePage {
     payload: {
       page
     }
-  }
+  };
 }
 
 export interface ITempUser {
@@ -86,12 +78,12 @@ interface IChangeTempUser {
   type: '/USERS/CHANGE_TEMP_USER';
   payload: {
     user: ITempUser;
-  },
+  };
   meta: {
     debounce: {
       time: number
     }
-  }
+  };
 }
 
 export function changeTempUserAction(user: ITempUser): IChangeTempUser {
@@ -105,7 +97,7 @@ export function changeTempUserAction(user: ITempUser): IChangeTempUser {
         time: 100
       }
     }
-  }
+  };
 }
 
 interface ILoadUsers {
@@ -114,10 +106,10 @@ interface ILoadUsers {
     users: any;
     count: number;
     pages: number
-  }
+  };
 }
 
-export function loadUserAction(users: any, count:number, pages: number): ILoadUsers {
+export function loadUserAction(users: any, count: number, pages: number): ILoadUsers {
   return {
     type: '/USERS/LOAD_USERS',
     payload: {
@@ -125,14 +117,14 @@ export function loadUserAction(users: any, count:number, pages: number): ILoadUs
       count,
       pages
     }
-  }
+  };
 }
 
 interface IChangeUser {
   type: '/USERS/CHANGE_USER';
   payload: {
     user: IUser;
-  }
+  };
 }
 
 export function changeUserAction(user: IUser): IChangeUser {
@@ -141,7 +133,7 @@ export function changeUserAction(user: IUser): IChangeUser {
     payload: {
       user
     }
-  }
+  };
 }
 
 export function editUserAction() {
@@ -157,11 +149,11 @@ export function editUserAction() {
         dispatch(changeUserAction(response.data.user));
         $(`#user-${tempUser._id}`).addClass('editing-item');
         swal(response.data.message, {
-          icon: "success"
+          icon: 'success'
         });
         setTimeout(() => {
           $(`#user-${tempUser._id}`).removeClass('editing-item');
-        }, 2000)
+        }, 2000);
       })
       .catch((err: AxiosError) => {
         statusFooterButttonsModal(false);
@@ -184,7 +176,7 @@ export function addUserAction() {
         showModal(false);
         dispatch(getUsersAction(1) as any);
         swal(response.data.message, {
-          icon: "success"
+          icon: 'success'
         });
       })
       .catch((err: AxiosError) => {
@@ -200,7 +192,7 @@ interface ILoadVenuesUser {
   type: '/USERS/LOAD_VENUES';
   payload: {
     venues: IVenue[];
-  }
+  };
 }
 
 export function loadVenuesUserAction(venues: IVenue[]): ILoadVenuesUser {
@@ -209,7 +201,7 @@ export function loadVenuesUserAction(venues: IVenue[]): ILoadVenuesUser {
     payload: {
       venues
     }
-  }
+  };
 }
 
 export function getUsersAction(nextPage?: number) {
@@ -217,7 +209,7 @@ export function getUsersAction(nextPage?: number) {
     const api: ApiService = new ApiService();
     const state = getState();
     // get venues only are empty
-    if(!state.users.venues.length){
+    if (!state.users.venues.length) {
       api.getVenues()
         .then((response: AxiosResponse) => {
           dispatch(loadVenuesUserAction(response.data.results));
@@ -253,16 +245,16 @@ interface IDeleteUser {
   type: '/USERS/DELETE_USER';
   payload: {
     id: string;
-  }
+  };
 }
 
 export function removeUserAction(id: string): IDeleteUser {
   return {
     type: '/USERS/DELETE_USER',
     payload: {
-      id,
+      id
     }
-  }
+  };
 }
 
 export function deleteUserAction(id: string) {
@@ -272,7 +264,7 @@ export function deleteUserAction(id: string) {
       .then((response: AxiosResponse) => {
         // effect when removing user
         swal(response.data.message, {
-          icon: "success"
+          icon: 'success'
         });
         $(`#user-${id}`)
           .addClass('deleted-item');
@@ -284,8 +276,7 @@ export function deleteUserAction(id: string) {
         dispatch(isLoadingAction(false));
         api.errorHandler(err);
       });
-  }
+  };
 }
-
 
 export type UserReduxAction = IIsLoading | ILoadUsers | IChangePage | IDeleteUser | ICancelRequest | IChangeTempUser | IChangeUser | ILoadVenuesUser;

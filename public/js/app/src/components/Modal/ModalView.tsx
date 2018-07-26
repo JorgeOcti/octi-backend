@@ -1,9 +1,9 @@
-import * as React from "react";
-import {Dispatch} from "redux";
-import {connect} from "react-redux";
-import {IModalState, ModalReduxAction} from "../../actions/modal";
-import * as PropTypes from "prop-types";
-import {IUsersState} from "../../actions/users";
+import * as PropTypes from 'prop-types';
+import * as React from 'react';
+import {connect} from 'react-redux';
+import {Dispatch} from 'redux';
+import {IModalState, ModalReduxAction} from '../../actions/modal';
+import {IUsersState} from '../../actions/users';
 
 interface IPropsType {
   dispatch?: Dispatch<ModalReduxAction>;
@@ -14,7 +14,6 @@ interface IStateType {
   error: Error | null;
   show: boolean;
 }
-
 
 class ModalView extends React.Component<IPropsType, IStateType> {
 
@@ -42,7 +41,7 @@ class ModalView extends React.Component<IPropsType, IStateType> {
           </div>
         </div>
       </div>
-    )
+    );
   }
 
   // public componentWillUnmount(){
@@ -57,12 +56,10 @@ const mapStateToProps = (state: { modal: IModalState, users: IUsersState }) => {
   };
 };
 
-
 const mapDispatchToProps = (dispatch: any ) => {
   return {
-    dispatch,
+    dispatch
   };
 };
 
 export default connect<{}, {}, IPropsType>(mapStateToProps, mapDispatchToProps)(ModalView);
-

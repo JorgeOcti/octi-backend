@@ -1,4 +1,4 @@
-import {IModalState, ModalReduxAction} from "../actions/modal";
+import {IModalState, ModalReduxAction} from '../actions/modal';
 
 const initialState: IModalState = {
   title: '',
@@ -9,7 +9,7 @@ const initialState: IModalState = {
 export function modal(state = initialState, action: ModalReduxAction): IModalState {
   switch (action.type) {
     case '/MODAL/LOAD_DATA':
-      setTimeout(()=>{
+      setTimeout(() => {
         ($('#andesModal') as any).modal('show');
       }, 100);
       return {

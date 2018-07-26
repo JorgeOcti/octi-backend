@@ -1,9 +1,9 @@
 import * as PropTypes from 'prop-types';
 import * as React from 'react';
-import HeaderApp from './HeadeApp';
-import FooterApp from './FooterApp';
-import MenuApp from './MenuApp';
 import BreadcrumbApp from './BreadcrumbApp';
+import FooterApp from './FooterApp';
+import HeaderApp from './HeadeApp';
+import MenuApp from './MenuApp';
 // import {Dispatch} from 'react-redux';
 // import {RouteComponentProps} from "react-router";
 
@@ -27,17 +27,16 @@ class AppContainer extends React.Component<IPropsType, IStateType> {
     title: PropTypes.string.isRequired,
     cMenu: PropTypes.string.isRequired,
     cSubMenu: PropTypes.string.isRequired,
-    cAction: PropTypes.string,
+    cAction: PropTypes.string
   };
 
-
-  render() {
+  public render() {
     const {title, cMenu, cSubMenu, cAction} = this.props;
     return (
       <React.Fragment>
         <HeaderApp />
         <MenuApp cMenu={cMenu} cSubMenu={cSubMenu} />
-        <div className="content-wrapper" style={{minHeight:`${window.innerHeight-51}px`}}>
+        <div className="content-wrapper" style={{minHeight: `${window.innerHeight - 51}px`}}>
           <section className="content-header">
             <h1>{title}&nbsp;</h1>
             <BreadcrumbApp cMenu={cMenu} cSubMenu={cSubMenu} cAction={cAction}/>
@@ -65,6 +64,5 @@ class AppContainer extends React.Component<IPropsType, IStateType> {
 // };
 //
 // export default connect<{}, {}, IPropsType>(mapStateToProps, mapDispatchToProps)(TicketCreateView);
-
 
 export default AppContainer;

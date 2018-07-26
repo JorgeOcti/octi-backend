@@ -7,16 +7,16 @@ import {ErrorInfo, RefObject} from 'react';
 import {connect} from 'react-redux';
 import {RouteComponentProps} from 'react-router';
 import {Dispatch} from 'redux';
-import * as io from 'socket.io-client';
+// import * as io from 'socket.io-client';
 import * as uuid from 'uuid';
 import * as XLSX from 'xlsx';
 import {IUsersState, UserReduxAction} from '../../actions/users';
 import AppContainer from '../../container/AppContainer';
-import {IWindow} from '../../interfaces/window';
+// import {IWindow} from '../../interfaces/window';
 import ApiService from '../../utils/axios';
 import ModalView from '../Modal/ModalView';
 
-declare let window: IWindow;
+// declare let window: IWindow;
 
 enum carStatus {
   Error,
@@ -63,7 +63,7 @@ class ImportCarsView extends React.Component<IPropsType, IStateType> {
   };
 
   readonly inputFile: RefObject<HTMLInputElement>;
-  private socket: SocketIOClient.Socket;
+  // private socket: SocketIOClient.Socket;
 
   constructor(props: IPropsType) {
     super(props);
@@ -73,24 +73,24 @@ class ImportCarsView extends React.Component<IPropsType, IStateType> {
     this.inputFile = React.createRef();
 
     // socket
-    this.socket = io.connect(`${location.protocol}//${location.host}`, {
+    /*this.socket = io.connect(`${location.protocol}//${location.host}`, {
       secure: location.protocol === 'https:',
       reconnection: true,
       query: {token: (window.user as any).token}
     });
-    // this.socket.on('STATUS-CARS', (data: any): void => {
-    //   if (data.hasOwnProperty('newCar')) {
-    //     this.setState({
-    //       carsObj: {
-    //         ...this.state.carsObj,
-    //         [data.newCar.vin]: {
-    //           ...(this.state.carsObj as any)[data.newCar.vin],
-    //           status: carStatus.Finish
-    //         }
-    //       }
-    //     });
-    //   }
-    // });
+    this.socket.on('STATUS-CARS', (data: any): void => {
+      if (data.hasOwnProperty('newCar')) {
+        this.setState({
+          carsObj: {
+            ...this.state.carsObj,
+            [data.newCar.vin]: {
+              ...(this.state.carsObj as any)[data.newCar.vin],
+              status: carStatus.Finish
+            }
+          }
+        });
+      }
+    });
     this.socket.on('FINISH-IMPORT', (data: any): void => {
       swal('Importador de autos', 'La carga a finalizado exitosamente.', 'success');
       this.setState({
@@ -100,7 +100,7 @@ class ImportCarsView extends React.Component<IPropsType, IStateType> {
           return car;
         })
       });
-    });
+    });*/
   }
 
   public componentWillMount() {
@@ -110,7 +110,7 @@ class ImportCarsView extends React.Component<IPropsType, IStateType> {
   }
 
   public componentWillUnmount() {
-    this.socket.disconnect();
+    // this.socket.disconnect();
   }
 
   public componentDidCatch(error: Error, errorInfo: ErrorInfo) {
@@ -129,17 +129,23 @@ class ImportCarsView extends React.Component<IPropsType, IStateType> {
             <div className="box-header with-border">
               <h3 className="box-title">Importar autos</h3>
               <div className="pull-right box-tools">
-                {/*<div className="form-group">*/}
-                  <button className="btn btn-sm btn-primary" onClick={this.downloadTemplate} style={{marginRight: '5px'}}>Descargar Formato</button>
-                <button className="btn btn-sm btn-success"
-                        onClick={this.clickUploadFile}>{cars.length > 1 ? 'Cargar otro excel' : 'Subir excel'}</button>
-                {/*</div>*/}
+                <button
+                  className="btn btn-sm btn-primary"
+                  onClick={this.downloadTemplate}
+                  style={{marginRight: '5px'}}>
+                  Descargar Formato
+                </button>
+                <button
+                  className="btn btn-sm btn-success"
+                  onClick={this.clickUploadFile}>
+                  {cars.length > 1 ? 'Cargar otro excel' : 'Subir excel'}
+                </button>
               </div>
             </div>
             <div className="box-body">
               <div className="row">
                 <div className="col-md-12">
-                  <input type="file"  ref={this.inputFile} style={{display: 'none'}} onChange={this.handleChangeInputFile} />
+                  <input type="file" ref={this.inputFile} style={{display: 'none'}} onChange={this.handleChangeInputFile} />
                 </div>
               </div>
               {
@@ -228,15 +234,19 @@ class ImportCarsView extends React.Component<IPropsType, IStateType> {
             .getSource();
           api
             .sendImportCars(cars)
-            // .then((data) => {
-            //   console.log(data);
-            // })
+            .then(() => {
+              swal('Importador de autos', 'La carga a finalizado exitosamente.', 'success');
+              this.setState({
+                loadFile: false,
+                cars: this.state.cars.map((car: IImportCar) => {
+                  car.status = carStatus.Finish;
+                  return car;
+                })
+              });
+            })
             .catch((err: AxiosError) => {
               api.errorHandler(err);
             });
-          // swal('Poof! Your imaginary file has been deleted!', {
-          //   icon: 'success'
-          // });
         }
       });
 
@@ -249,6 +259,7 @@ class ImportCarsView extends React.Component<IPropsType, IStateType> {
   }
 
   private downloadTemplate() {
+    /* headers worksheet */
     const data = [{
       NInterno: '',
       vin: '',
@@ -259,7 +270,6 @@ class ImportCarsView extends React.Component<IPropsType, IStateType> {
     }];
     /* make the worksheet */
     const ws = XLSX.utils.json_to_sheet(data);
-
     /* add to workbook */
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, 'Autos');

@@ -7,10 +7,10 @@ import Axios, {
   CancelTokenStatic
 } from 'axios';
 import * as Raven from 'raven-js';
-import {IWindow} from '../interfaces/window';
-import {ITempUser} from "../actions/users";
+import {ITempUser} from '../actions/users';
+// import {IWindow} from '../interfaces/window';
 
-declare let window: IWindow;
+// declare let window: IWindow;
 
 export interface IHeaders {
   'X-CSRFToken'?: string;
@@ -25,7 +25,7 @@ export default class ApiService {
   private source: CancelTokenSource;
 
   constructor() {
-    let headers: IHeaders = {};
+    const headers: IHeaders = {};
     // if (window.token) {
     //   headers = {
     //     Authorization: `Bearer ${window.token}`
@@ -45,11 +45,11 @@ export default class ApiService {
 
   public errorHandler(err: AxiosError): void {
     if (err.response) {
-      if([500].includes(err.response.status)){
+      if ([500].includes(err.response.status)) {
         Raven.captureException(JSON.stringify(err.response));
-        swal('Up ha ocurrido un error', err.response.data.message ? err.response.data.message : err.response.data.errmsg, 'error');
-      } else{
-        swal('Up ha ocurrido un error', err.response.data.message ? err.response.data.message : err.response.data.errmsg, 'error');
+        swal('Ups ha ocurrido un error', err.response.data.message ? err.response.data.message : err.response.data.errmsg, 'error');
+      } else {
+        swal('Ups ha ocurrido un error', err.response.data.message ? err.response.data.message : err.response.data.errmsg, 'error');
       }
     } else if (err.request) {
       Raven.captureException(JSON.stringify(err.request));
@@ -58,7 +58,7 @@ export default class ApiService {
     }
   }
 
-  public getUsers(page?:number): AxiosPromise {
+  public getUsers(page?: number): AxiosPromise {
     return this.instance.get(
       `/api/admin/users/${page ? `?page=${page}` : ''}`
       , {
@@ -124,40 +124,6 @@ export default class ApiService {
         cancelToken: this.source.token
       }
     );
-  }
-
-  public getTicket(ticket: number): AxiosPromise {
-    return this.instance.get(
-      `${window.urls.tickets}${ticket}/`
-    );
-  }
-
-  public createTicket(ticket: any): AxiosPromise {
-    return this.instance.post(
-      `${window.urls.tickets}`,
-      ticket
-    );
-  }
-
-  public addComment(ticket: string, comment: string): AxiosPromise {
-    return this.instance.post(
-      `${window.urls.ticketComments.replace('0', ticket)}`,
-      {comment}
-    );
-  }
-  public closeTicket(ticket: string): AxiosPromise {
-    return this.instance.put(
-      `${window.urls.ticketClose.replace('0', ticket)}`
-    );
-  }
-  public invalidateTicket(ticket: string): AxiosPromise {
-    return this.instance.put(
-      `${window.urls.ticketInvalidate.replace('0', ticket)}`
-    );
-  }
-
-  public getTeams(): AxiosPromise {
-    return this.instance.get(window.urls.ticketsTeams);
   }
 
   public getSource(): CancelTokenSource {

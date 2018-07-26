@@ -1,17 +1,23 @@
+import * as moment from 'moment';
+import * as PropTypes from 'prop-types';
 import * as Raven from 'raven-js';
-import * as React from "react";
-import {ErrorInfo} from "react";
-import {Dispatch} from "redux";
-import {RouteComponentProps} from "react-router";
-import {connect} from "react-redux";
-import {DashboardReduxAction, IDashboardState, getCarAction, getParticipant, loadParticipantInCarAction} from "../../actions/dashboard";
-import AppContainer from "../../container/AppContainer";
-import * as moment from "moment";
-import * as PropTypes from "prop-types";
-import ModalView from "../Modal/ModalView";
-import * as io from "socket.io-client";
-import {IParticipant} from "../../../../../../src/interfaces/participant.interface";
-import {IWindow} from "../../interfaces/window";
+import {ErrorInfo} from 'react';
+import * as React from 'react';
+import {connect} from 'react-redux';
+import {RouteComponentProps} from 'react-router';
+import {Dispatch} from 'redux';
+import * as io from 'socket.io-client';
+import {IParticipant} from '../../../../../../src/interfaces/participant.interface';
+import {
+  DashboardReduxAction,
+  getCarAction,
+  getParticipant,
+  IDashboardState,
+  loadParticipantInCarAction
+} from '../../actions/dashboard';
+import AppContainer from '../../container/AppContainer';
+import {IWindow} from '../../interfaces/window';
+import ModalView from '../Modal/ModalView';
 
 declare let window: IWindow;
 
@@ -20,7 +26,8 @@ interface IPropsType extends RouteComponentProps<{ id: string }> {
   dashboard: IDashboardState;
   getCarAction(id: string): void;
   getParticipant(id: string): void;
-  loadParticipantInCarAction(participant:IParticipant): void;
+
+  loadParticipantInCarAction(participant: IParticipant): void;
 }
 
 interface IStateType {
@@ -30,9 +37,7 @@ interface IStateType {
 
 class DashboardVinDetail extends React.Component<IPropsType, IStateType> {
 
-  private socket: SocketIOClient.Socket;
-
-  state = {
+  static state = {
     error: null,
     highlight: []
   };
@@ -41,10 +46,12 @@ class DashboardVinDetail extends React.Component<IPropsType, IStateType> {
     dashboard: PropTypes.object.isRequired,
     dispatch: PropTypes.func.isRequired,
     getCarAction: PropTypes.func.isRequired,
-    getParticipant: PropTypes.func.isRequired,
+    getParticipant: PropTypes.func.isRequired
   };
 
-  componentWillMount(){
+  private socket: SocketIOClient.Socket;
+
+  componentWillMount() {
     // set the title of the page
     const {id} = this.props.match.params;
     document.title = 'OSA Andes | Detalle VIN';
@@ -87,7 +94,7 @@ class DashboardVinDetail extends React.Component<IPropsType, IStateType> {
     const {highlight} = this.state;
     const {getParticipant} = this.props;
     return (
-      <AppContainer title='' cMenu='1' cSubMenu='1.2' cAction={`Detalle`}>
+      <AppContainer title="" cMenu="1" cSubMenu="1.2" cAction={`Detalle`}>
         <section className="content">
           <div className="box">
             <div className="box-header with-border"><h3 className="box-title">Auto VIN {car ? car.vin : null}</h3>
@@ -98,16 +105,16 @@ class DashboardVinDetail extends React.Component<IPropsType, IStateType> {
               <table style={{width: '50%'}}>
                 <tbody>
                   <tr>
-                    <td style={{padding:'5px'}}><strong>Último Checkeo</strong></td>
-                    <td style={{padding:'5px'}}>
+                    <td style={{padding: '5px'}}><strong>Último Checkeo</strong></td>
+                    <td style={{padding: '5px'}}>
                       {
                         car && car.participants && `${moment(car.participants[0].createdAt).format('LLL')}`
                       }
                     </td>
                   </tr>
                   <tr>
-                    <td style={{padding:'5px'}}><strong>Por</strong></td>
-                    <td style={{padding:'5px'}}>
+                    <td style={{padding: '5px'}}><strong>Por</strong></td>
+                    <td style={{padding: '5px'}}>
                       {
                         car && car.participants && car.participants[0].user ? `${car.participants[0].user.firstName} ${car.participants[0].user.lastName}` : ''
                       }
@@ -138,7 +145,7 @@ class DashboardVinDetail extends React.Component<IPropsType, IStateType> {
                         <button
                           className="btn btn-xs btn-primary"
                           disabled={loadingParticipant && loadingParticipant === participant._id ? true : false}
-                          onClick={loadingParticipant ? () => {} : () => getParticipant(participant._id)}
+                          onClick={loadingParticipant ? undefined : () => getParticipant(participant._id)}
                         >
                           {
                             loadingParticipant && loadingParticipant === participant._id ?
@@ -174,13 +181,12 @@ const mapStateToProps = (state: { dashboard: IDashboardState }) => {
   };
 };
 
-//loadParticipantInCarAction(participant:IParticipant): void;
 const mapDispatchToProps = (dispatch: any ) => {
   return {
     dispatch,
     getCarAction: (id: string) => dispatch(getCarAction(id)),
     getParticipant: (id: string) => dispatch(getParticipant(id)),
-    loadParticipantInCarAction: (participant:IParticipant) => dispatch(loadParticipantInCarAction(participant))
+    loadParticipantInCarAction: (participant: IParticipant) => dispatch(loadParticipantInCarAction(participant))
   };
 };
 

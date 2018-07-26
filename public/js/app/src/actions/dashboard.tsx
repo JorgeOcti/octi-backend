@@ -1,12 +1,15 @@
+import {AxiosError, AxiosResponse, CancelTokenSource, default as Axios} from 'axios';
+import * as moment from 'moment';
 import * as React from 'react';
-import {AxiosError, AxiosResponse, CancelTokenSource, default as Axios} from "axios";
-import ApiService from "../utils/axios";
-import {Dispatch} from "redux";
+import {Dispatch} from 'redux';
+import {ICar} from '../../../../../src/interfaces/car.interface';
+import {
+  IParticipant,
+  IParticipantSection
+} from '../../../../../src/interfaces/participant.interface';
+import ImageLazyLoad from '../components/ImageLazyLoad';
+import ApiService from '../utils/axios';
 import {loadDataAction} from './modal';
-import {ICar} from "../../../../../src/interfaces/car.interface";
-import {IParticipant, IParticipantSection} from "../../../../../src/interfaces/participant.interface";
-import * as moment from "moment";
-import ImageLazyLoad from "../components/ImageLazyLoad";
 
 export interface IDashboardState {
   loading: boolean;
@@ -19,14 +22,14 @@ export interface IDashboardState {
     count: number;
     page: number;
     pages: number;
-  }
+  };
 }
 
 interface IIsLoading {
   type: '/DASHBOARD/IS_LOADING';
-  payload:{
+  payload: {
     loading: boolean;
-  }
+  };
 }
 
 export function isLoadingAction(loading: boolean): IIsLoading {
@@ -35,23 +38,23 @@ export function isLoadingAction(loading: boolean): IIsLoading {
     payload: {
       loading
     }
-  }
+  };
 }
 
 interface ICancelRequest {
   type: '/DASHBOARD/CANCEL_REQUEST';
   payload: {
     source: CancelTokenSource;
-  }
+  };
 }
 
 export function cancelRequestAction(source: CancelTokenSource): ICancelRequest {
   return {
     type: '/DASHBOARD/CANCEL_REQUEST',
     payload: {
-      source,
+      source
     }
-  }
+  };
 }
 
 interface ILoadCars {
@@ -60,10 +63,10 @@ interface ILoadCars {
     cars: ICar[];
     count: number;
     pages: number
-  }
+  };
 }
 
-export function loadCarsAction(cars: ICar[], count:number, pages: number): ILoadCars {
+export function loadCarsAction(cars: ICar[], count: number, pages: number): ILoadCars {
   return {
     type: '/DASHBOARD/LOAD_CARS',
     payload: {
@@ -71,14 +74,14 @@ export function loadCarsAction(cars: ICar[], count:number, pages: number): ILoad
       count,
       pages
     }
-  }
+  };
 }
 
 interface ILoadParticipantInCar {
   type: '/DASHBOARD/LOAD_PARTICIPANT_IN_CAR';
   payload: {
     participant: IParticipant;
-  }
+  };
 }
 
 export function loadParticipantInCarAction(participant: IParticipant): ILoadParticipantInCar {
@@ -87,14 +90,14 @@ export function loadParticipantInCarAction(participant: IParticipant): ILoadPart
     payload: {
       participant
     }
-  }
+  };
 }
 
 interface ILoadCar {
   type: '/DASHBOARD/LOAD_CAR';
   payload: {
     car: ICar;
-  }
+  };
 }
 
 export function loadCarAction(car: ICar): ILoadCar {
@@ -103,14 +106,14 @@ export function loadCarAction(car: ICar): ILoadCar {
     payload: {
       car
     }
-  }
+  };
 }
 
 interface IChangePage {
   type: '/DASHBOARD/CHANGE_PAGE';
-  payload:{
+  payload: {
     page: number;
-  }
+  };
 }
 
 export function changePageAction(page: number): IChangePage {
@@ -119,7 +122,7 @@ export function changePageAction(page: number): IChangePage {
     payload: {
       page
     }
-  }
+  };
 }
 
 export function getCarsAction(nextPage?: number, loading: boolean = true) {
@@ -127,7 +130,9 @@ export function getCarsAction(nextPage?: number, loading: boolean = true) {
     const api: ApiService = new ApiService();
     const state = getState();
     dispatch(cancelRequestAction(api.getSource()));
-    if (loading) dispatch(isLoadingAction(true));
+    if (loading) {
+      dispatch(isLoadingAction(true));
+    }
     const page = nextPage ? nextPage : state.dashboard.pagination.page;
     if (nextPage) {
       dispatch(changePageAction(nextPage));
@@ -135,26 +140,31 @@ export function getCarsAction(nextPage?: number, loading: boolean = true) {
     api.getCars(page)
       .then((response: AxiosResponse) => {
         dispatch(loadCarsAction(response.data.results, response.data.count, response.data.pages));
-        if (loading) dispatch(isLoadingAction(false));
+        if (loading) {
+          dispatch(isLoadingAction(false));
+        }
       })
       .catch((err: AxiosError) => {
         // if the request is canceled
         if (Axios.isCancel(err)) {
-          if (loading) dispatch(isLoadingAction(true));
+          if (loading) {
+            dispatch(isLoadingAction(true));
+          }
         } else {
-          if (loading) dispatch(isLoadingAction(false));
+          if (loading) {
+            dispatch(isLoadingAction(false));
+          }
           api.errorHandler(err);
         }
       });
   };
 }
 
-
 interface ILoadingParticipant {
   type: '/DASHBOARD/LOADING_PARTICIPANT';
-  payload:{
+  payload: {
     loadingParticipant: string | null;
-  }
+  };
 }
 
 export function loadingParticipantAction(loadingParticipant: string | null): ILoadingParticipant {
@@ -163,7 +173,7 @@ export function loadingParticipantAction(loadingParticipant: string | null): ILo
     payload: {
       loadingParticipant
     }
-  }
+  };
 }
 
 export function getParticipant(id: string) {
@@ -178,18 +188,18 @@ export function getParticipant(id: string) {
           <div id="form-detail">
             <table>
               <tbody>
-                <tr>
-                  <td style={{width:'40%'}}><strong>Supervisor</strong></td>
-                  <td>{response.data.data.user ? response.data.data.user.firstName : ''} {response.data.data.user ? response.data.data.user.lastName : ''}</td>
-                </tr>
-                <tr>
-                  <td style={{width:'40%'}}><strong>Fecha</strong></td>
-                  <td>{moment(response.data.data.createdAt).format('LLL')}</td>
-                </tr>
               <tr>
-                  <td style={{width:'40%'}}><strong>Calificación</strong></td>
-                  <td>{Math.round(response.data.data.qualification)}%</td>
-                </tr>
+                <td style={{width: '40%'}}><strong>Supervisor</strong></td>
+                <td>{response.data.data.user ? response.data.data.user.firstName : ''} {response.data.data.user ? response.data.data.user.lastName : ''}</td>
+              </tr>
+              <tr>
+                <td style={{width: '40%'}}><strong>Fecha</strong></td>
+                <td>{moment(response.data.data.createdAt).format('LLL')}</td>
+              </tr>
+              <tr>
+                <td style={{width: '40%'}}><strong>Calificación</strong></td>
+                <td>{Math.round(response.data.data.qualification)}%</td>
+              </tr>
               </tbody>
             </table>
             {
@@ -202,7 +212,7 @@ export function getParticipant(id: string) {
                           const selectChoice = answer.scale.choices.find((choice) => choice._id === answer.answer);
                           // no show conciliation questions if no require
                           // if(answer.conciliation && ((selectChoice && !selectChoice.requireConciliation) || !selectChoice)){
-                          if(answer.conciliation && !selectChoice){
+                          if (answer.conciliation && !selectChoice) {
                             return null;
                           }
                           return (
@@ -213,10 +223,10 @@ export function getParticipant(id: string) {
                                   answer.scale.choices.map((choice) => {
                                     const btnDefault = 'btn-default';
                                     const optionsClass: any = {
-                                      'blue': 'btn-primary',
-                                      'green': 'btn-success',
-                                      'yellow': 'btn-warning',
-                                      'red': 'btn-danger'
+                                      blue: 'btn-primary',
+                                      green: 'btn-success',
+                                      yellow: 'btn-warning',
+                                      red: 'btn-danger'
                                     };
                                     const btnClass =  optionsClass.hasOwnProperty(choice.backgroundColor) ? optionsClass[choice.backgroundColor] : btnDefault;
                                     return (
@@ -227,12 +237,12 @@ export function getParticipant(id: string) {
                                           disabled={true}
                                         >{choice.choice}</button>
                                       </div>
-                                    )
+                                    );
                                   })
                                 }
                               </div>
                               {
-                                selectChoice && selectChoice.requireAccesories && answer.accessories && answer.accessories.items.length?
+                                selectChoice && selectChoice.requireAccesories && answer.accessories && answer.accessories.items.length ?
                                   <div className="row" style={{marginTop: '10px'}}>
                                     <div className="col-md-12">
                                       <p><strong>{answer.accessories.question}</strong></p>
@@ -245,38 +255,40 @@ export function getParticipant(id: string) {
                                               <i className="fa fa-check" style={{marginRight: '5px'}}/> :
                                               <i className="fa fa-times" style={{marginRight: '5px', width: '14px'}}/>} {item.item}
                                             </p>
-                                          )
+                                          );
                                         })
                                       }
                                     </div>
                                   </div>
-                                :null
+                                  : null
                               }
                               {
-                                selectChoice && selectChoice.requireImage && answer.images && answer.images.length?
+                                selectChoice && selectChoice.requireImage && answer.images && answer.images.length ?
                                   <div className="row images">
                                     {
-                                      answer.images.map((image)=>{
-                                        return <div className="col-md-3 col-sm-4 col-xs-4 text-center" key={image._id}>
-                                          <a href={image.file.url} data-toggle="lightbox" data-gallery={answer._id}>
-                                            <ImageLazyLoad
-                                              url={image.file.url}
-                                              height={'100px'}
-                                            />
-                                          </a>
-                                          <p className={'text-ellipsis'} data-toggle="tooltip" data-placement="top" title={image.file.name}>{image.file.name}</p>
-                                        </div>
+                                      answer.images.map((image) => {
+                                        return (
+                                          <div className="col-md-3 col-sm-4 col-xs-4 text-center" key={image._id}>
+                                            <a href={image.file.url} data-toggle="lightbox" data-gallery={answer._id}>
+                                              <ImageLazyLoad
+                                                url={image.file.url}
+                                                height={'100px'}
+                                              />
+                                            </a>
+                                            <p className={'text-ellipsis'} data-toggle="tooltip" data-placement="top" title={image.file.name}>{image.file.name}</p>
+                                          </div>
+                                        );
                                       })
                                     }
                                   </div>
                                 : null
                               }
                             </div>
-                          )
+                          );
                         })
                       }
                   </div>
-                )
+                );
               })
             }
           </div>
@@ -299,7 +311,7 @@ interface ILoadParticipantsPerDate {
   type: '/DASHBOARD/LOAD_PARTICIPANTS_PER_DATE';
   payload: {
     participantsPerDate: any;
-  }
+  };
 }
 
 export function loadParticipantsPerDateAction(participantsPerDate: any): ILoadParticipantsPerDate {
@@ -308,7 +320,7 @@ export function loadParticipantsPerDateAction(participantsPerDate: any): ILoadPa
     payload: {
       participantsPerDate
     }
-  }
+  };
 }
 
 export function getParticipantsPerDateAction() {

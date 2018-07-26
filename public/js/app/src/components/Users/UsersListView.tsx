@@ -1,30 +1,28 @@
 ///<reference path="../../../node_modules/sweetalert/typings/sweetalert.d.ts"/>
+import * as moment from 'moment';
 import * as PropTypes from 'prop-types';
 import * as Raven from 'raven-js';
 import * as React from 'react';
-import * as moment from 'moment';
 import {ErrorInfo} from 'react';
 import {connect} from 'react-redux';
 import {RouteComponentProps} from 'react-router';
 import {Dispatch} from 'redux';
-import AppContainer from "../../container/AppContainer";
+import {IUser} from '../../../../../../src/interfaces/user.interface';
+import {loadDataAction, ModalReduxAction} from '../../actions/modal';
 import {
-  IUsersState,
-  UserReduxAction,
-  changeTempUserAction,
-  getUsersAction,
   addUserAction,
-  editUserAction,
+  changeTempUserAction,
   deleteUserAction,
-  ITempUser
-} from "../../actions/users";
-import {loadDataAction, ModalReduxAction} from "../../actions/modal";
-import ModalView from "../Modal/ModalView";
-import Paginator from "../Paginator";
-import {statusFooterButttonsModal} from "../../utils/common";
-// backend interfaces
-import {IUser} from "../../../../../../src/interfaces/user.interface";
-
+  editUserAction,
+  getUsersAction,
+  ITempUser,
+  IUsersState,
+  UserReduxAction
+} from '../../actions/users';
+import AppContainer from '../../container/AppContainer';
+import {statusFooterButttonsModal} from '../../utils/common';
+import ModalView from '../Modal/ModalView';
+import Paginator from '../Paginator';
 
 interface IPropsType extends RouteComponentProps<{ ticket: string }> {
   dispatch: Dispatch<UserReduxAction>;
@@ -47,7 +45,7 @@ class UsersListView extends React.Component<IPropsType, IStateType> {
   static propTypes = {
     users: PropTypes.object.isRequired,
     dispatch: PropTypes.func.isRequired,
-    getUsersAction: PropTypes.func.isRequired,
+    getUsersAction: PropTypes.func.isRequired
   };
 
   constructor(props: IPropsType) {
@@ -60,7 +58,7 @@ class UsersListView extends React.Component<IPropsType, IStateType> {
     this.processEditUser = this.processEditUser.bind(this);
   }
 
-  public componentWillMount(){
+  public componentWillMount() {
     // set the title of the page
     document.title = 'OSA Andes | Listado de usuarios';
     this.props.getUsersAction();
@@ -73,192 +71,17 @@ class UsersListView extends React.Component<IPropsType, IStateType> {
     });
   }
 
-  public componentWillUnmount(){
+  public componentWillUnmount() {
     // cancel request if component is inmounted
     if (this.props.users.source) {
       this.props.users.source.cancel('Operation canceled by the user.');
     }
   }
 
-  private addUser(): void {
-    const {changeTempUser} = this;
-    const {venues} = this.props.users;
-    this.props.changeTempUserAction({
-      _id: '',
-      firstName: '',
-      lastName: '',
-      email: '',
-      venue: ''
-    });
-    this.props.loadDataAction(
-      'Agregar Usuario',
-      <div className={'row'}>
-        <div className="col-md-12">
-          <div className="form-group">
-            <label>Nombres</label>
-            <input type="text" name="fistName" className="form-control" maxLength={50} onChange={(e:React.ChangeEvent<HTMLInputElement>) => changeTempUser({firstName: e.target.value})}
-            />
-          </div>
-        </div>
-        <div className="col-md-12">
-          <div className="form-group">
-            <label>Apellidos</label>
-            <input type="text" name="lastName" className="form-control" maxLength={50} onChange={(e:React.ChangeEvent<HTMLInputElement>) => changeTempUser({lastName: e.target.value})}
-            />
-          </div>
-        </div>
-        <div className="col-md-12">
-          <div className="form-group">
-            <label>Email</label>
-            <input type="email" name="email" className="form-control" maxLength={80} onChange={(e:React.ChangeEvent<HTMLInputElement>) => changeTempUser({email: e.target.value})}
-            />
-          </div>
-        </div>
-        <div className="col-md-12">
-          <div className="form-group">
-            <label htmlFor="sel1">Sucursal</label>
-            <select className="form-control" name="venue" onChange={(e:React.ChangeEvent<HTMLSelectElement>) => changeTempUser({venue: e.target.value})}>
-              <option value="">Seleccione venue</option>
-              {
-                venues.map((venue) => (
-                  <option key={venue._id} value={venue._id}>{venue.name}</option>
-                ))
-              }
-            </select>
-          </div>
-        </div>
-      </div>,
-      <React.Fragment>
-        <button type="button" className="btn btn-default" data-dismiss="modal">Cancelar</button>
-        <button type="button" className="btn btn-primary" onClick={this.processAddUser}>Grabar</button>
-      </React.Fragment>
-    )
-  }
-
-  private processAddUser(): void{
-    const {firstName, lastName, email, venue} = this.props.users.tempUser;
-    // debugger;
-    if (!firstName || !firstName.trim().length) {
-      swal('Agregar usuario', 'El campo nombres es requerido', 'error');
-    } else if (!lastName || !lastName.trim().length) {
-      swal('Agregar usuario', 'El campo apellidos es requerido', 'error');
-    } else if (!email || !email.trim().length) {
-      swal('Agregar usuario', 'El campo email es requerido', 'error');
-    } else if (!venue || !venue.trim().length) {
-      swal('Agregar usuario', 'El campo sucursal es requerido', 'error');
-    } else {
-      statusFooterButttonsModal(true);
-      this.props.AddUserAction();
-    }
-  }
-
-  private editUser(user:IUser){
-    const {changeTempUser} = this;
-    const {venues} = this.props.users;
-    const tmpUser = {...user};
-    tmpUser.venue = tmpUser.venue._id;
-    changeTempUser(tmpUser);
-    this.props.loadDataAction(
-      'Editar Usuario',
-      <div className={'row'}>
-        <div className="col-md-12">
-          <div className="form-group">
-            <label>Nombres</label>
-            <input type="text" className="form-control" maxLength={50} defaultValue={user.firstName} onChange={(e:React.ChangeEvent<HTMLInputElement>) => changeTempUser({firstName: e.target.value})}/>
-          </div>
-        </div>
-        <div className="col-md-12">
-          <div className="form-group">
-            <label>Apellidos</label>
-            <input type="text" className="form-control" maxLength={50} defaultValue={user.lastName} onChange={(e:React.ChangeEvent<HTMLInputElement>) => changeTempUser({lastName: e.target.value})}/>
-          </div>
-        </div>
-        <div className="col-md-12">
-          <div className="form-group">
-            <label>Email</label>
-            <input type="text" className="form-control" maxLength={100} defaultValue={user.email}  onChange={(e:React.ChangeEvent<HTMLInputElement>) => changeTempUser({email: e.target.value})}/>
-          </div>
-        </div>
-        <div className="col-md-12">
-          <div className="form-group">
-            <label htmlFor="sel1">Sucursal</label>
-            <select className="form-control" name="venue" onChange={(e:React.ChangeEvent<HTMLSelectElement>) => changeTempUser({venue: e.target.value})} defaultValue={user.venue._id}>
-              <option value="">Seleccione venue</option>
-              {
-                venues.map((venue) => (
-                  <option key={venue._id} value={venue._id}>{venue.name}</option>
-                ))
-              }
-            </select>
-          </div>
-        </div>
-      </div>,
-      <React.Fragment>
-        <button type="button" className="btn btn-default" data-dismiss="modal">Cancelar</button>
-        <button type="button" className="btn btn-primary" onClick={this.processEditUser}>Editar</button>
-      </React.Fragment>
-    )
-  }
-
-  private processEditUser(){
-    const {firstName, lastName, email, venue} = this.props.users.tempUser;
-    // debugger;
-    if (!firstName || !firstName.trim().length) {
-      swal('Agregar usuario', 'El campo nombres es requerido', 'error');
-    } else if (!lastName || !lastName.trim().length) {
-      swal('Agregar usuario', 'El campo apellidos es requerido', 'error');
-    } else if (!email || !email.trim().length) {
-      swal('Agregar usuario', 'El campo email es requerido', 'error');
-    } else if (!venue || !venue.trim().length) {
-      swal('Agregar usuario', 'El campo sucursal es requerido', 'error');
-    } else {
-      statusFooterButttonsModal(true);
-      this.props.editUserAction();
-      console.log('Usuario Procesado' )
-    }
-  }
-
-  private changeTempUser({_id, firstName, lastName, email, venue}: ITempUser) {
-    //fix tempUser
-    const tempUser: ITempUser = {
-      _id: _id ? _id : this.props.users.tempUser._id,
-      firstName: firstName ? firstName : this.props.users.tempUser.firstName,
-      lastName: lastName ? lastName : this.props.users.tempUser.lastName,
-      email: email ? email : this.props.users.tempUser.email,
-      venue: venue ? venue : this.props.users.tempUser.venue
-    };
-    this.props.changeTempUserAction(tempUser);
-  }
-
-  private deleteUser(user: IUser) {
-    // ask if you are sure that you are going to delete the user?
-    swal({
-      title: '¿Estás seguro?',
-      text: `Vas a eliminar el usuario ${user.firstName || ''} ${user.lastName || ''}`,
-      icon: 'warning',
-      dangerMode: true,
-      buttons: {
-        cancel: 'Cancelar' as any,
-        confirm: {
-          text: 'Sí'
-        },
-      }
-    }).then((willDelete) => {
-      if (willDelete) {
-        this.props.deleteUserAction(user._id);
-      }
-    });
-  }
-
-  private changePage(page:number){
-    // change the page
-    this.props.getUsersAction(page);
-  }
-
   public render(): React.ReactElement<IPropsType> {
     const {loading, users, pagination} = this.props.users;
     return (
-      <AppContainer title='' cMenu='2' cSubMenu='2.1' cAction='Listado'>
+      <AppContainer title="" cMenu="2" cSubMenu="2.1" cAction="Listado">
         <section className="content">
           <div className="box">
             <div className="box-header with-border"><h3 className="box-title">Usuarios <small>{pagination.count}</small></h3>
@@ -298,7 +121,7 @@ class UsersListView extends React.Component<IPropsType, IStateType> {
                           <td className="text-blue pointer" onClick={() => this.editUser(user)}><i className="fa fa-pencil"/></td>
                           <td className="text-red pointer" onClick={() => this.deleteUser(user)}><i className="fa fa-minus-circle"/></td>
                         </tr>
-                      )
+                      );
                     })
                   }
                 </tbody>
@@ -322,6 +145,186 @@ class UsersListView extends React.Component<IPropsType, IStateType> {
       </AppContainer>
     );
   }
+  private addUser(): void {
+    const {changeTempUser} = this;
+    const {venues} = this.props.users;
+    this.props.changeTempUserAction({
+      _id: '',
+      firstName: '',
+      lastName: '',
+      email: '',
+      venue: ''
+    });
+    this.props.loadDataAction(
+      'Agregar Usuario',
+      <div className={'row'}>
+        <div className="col-md-12">
+          <div className="form-group">
+            <label>Nombres</label>
+            <input type="text" name="fistName" className="form-control" maxLength={50}
+                   onChange={(e: React.ChangeEvent<HTMLInputElement>) => changeTempUser({firstName: e.target.value})}
+            />
+          </div>
+        </div>
+        <div className="col-md-12">
+          <div className="form-group">
+            <label>Apellidos</label>
+            <input type="text" name="lastName" className="form-control" maxLength={50}
+                   onChange={(e: React.ChangeEvent<HTMLInputElement>) => changeTempUser({lastName: e.target.value})}
+            />
+          </div>
+        </div>
+        <div className="col-md-12">
+          <div className="form-group">
+            <label>Email</label>
+            <input type="email" name="email" className="form-control" maxLength={80}
+                   onChange={(e: React.ChangeEvent<HTMLInputElement>) => changeTempUser({email: e.target.value})}
+            />
+          </div>
+        </div>
+        <div className="col-md-12">
+          <div className="form-group">
+            <label htmlFor="sel1">Sucursal</label>
+            <select className="form-control" name="venue"
+                    onChange={(e: React.ChangeEvent<HTMLSelectElement>) => changeTempUser({venue: e.target.value})}>
+              <option value="">Seleccione venue</option>
+              {
+                venues.map((venue) => (
+                  <option key={venue._id} value={venue._id}>{venue.name}</option>
+                ))
+              }
+            </select>
+          </div>
+        </div>
+      </div>,
+      <React.Fragment>
+        <button type="button" className="btn btn-default" data-dismiss="modal">Cancelar</button>
+        <button type="button" className="btn btn-primary" onClick={this.processAddUser}>Grabar</button>
+      </React.Fragment>
+    );
+  }
+
+  private processAddUser(): void {
+    const {firstName, lastName, email, venue} = this.props.users.tempUser;
+    // debugger;
+    if (!firstName || !firstName.trim().length) {
+      swal('Agregar usuario', 'El campo nombres es requerido', 'error');
+    } else if (!lastName || !lastName.trim().length) {
+      swal('Agregar usuario', 'El campo apellidos es requerido', 'error');
+    } else if (!email || !email.trim().length) {
+      swal('Agregar usuario', 'El campo email es requerido', 'error');
+    } else if (!venue || !venue.trim().length) {
+      swal('Agregar usuario', 'El campo sucursal es requerido', 'error');
+    } else {
+      statusFooterButttonsModal(true);
+      this.props.AddUserAction();
+    }
+  }
+
+  private editUser(user: IUser) {
+    const {changeTempUser} = this;
+    const {venues} = this.props.users;
+    const tmpUser = {...user};
+    tmpUser.venue = tmpUser.venue._id;
+    changeTempUser(tmpUser);
+    this.props.loadDataAction(
+      'Editar Usuario',
+      <div className={'row'}>
+        <div className="col-md-12">
+          <div className="form-group">
+            <label>Nombres</label>
+            <input type="text" className="form-control" maxLength={50} defaultValue={user.firstName}
+                   onChange={(e: React.ChangeEvent<HTMLInputElement>) => changeTempUser({firstName: e.target.value})}/>
+          </div>
+        </div>
+        <div className="col-md-12">
+          <div className="form-group">
+            <label>Apellidos</label>
+            <input type="text" className="form-control" maxLength={50} defaultValue={user.lastName}
+                   onChange={(e: React.ChangeEvent<HTMLInputElement>) => changeTempUser({lastName: e.target.value})}/>
+          </div>
+        </div>
+        <div className="col-md-12">
+          <div className="form-group">
+            <label>Email</label>
+            <input type="text" className="form-control" maxLength={100} defaultValue={user.email}
+                   onChange={(e: React.ChangeEvent<HTMLInputElement>) => changeTempUser({email: e.target.value})}/>
+          </div>
+        </div>
+        <div className="col-md-12">
+          <div className="form-group">
+            <label htmlFor="sel1">Sucursal</label>
+            <select className="form-control" name="venue"
+                    onChange={(e: React.ChangeEvent<HTMLSelectElement>) => changeTempUser({venue: e.target.value})} defaultValue={user.venue._id}>
+              <option value="">Seleccione venue</option>
+              {
+                venues.map((venue) => (
+                  <option key={venue._id} value={venue._id}>{venue.name}</option>
+                ))
+              }
+            </select>
+          </div>
+        </div>
+      </div>,
+      <React.Fragment>
+        <button type="button" className="btn btn-default" data-dismiss="modal">Cancelar</button>
+        <button type="button" className="btn btn-primary" onClick={this.processEditUser}>Editar</button>
+      </React.Fragment>
+    );
+  }
+
+  private processEditUser() {
+    const {firstName, lastName, email, venue} = this.props.users.tempUser;
+    // debugger;
+    if (!firstName || !firstName.trim().length) {
+      swal('Agregar usuario', 'El campo nombres es requerido', 'error');
+    } else if (!lastName || !lastName.trim().length) {
+      swal('Agregar usuario', 'El campo apellidos es requerido', 'error');
+    } else if (!email || !email.trim().length) {
+      swal('Agregar usuario', 'El campo email es requerido', 'error');
+    } else if (!venue || !venue.trim().length) {
+      swal('Agregar usuario', 'El campo sucursal es requerido', 'error');
+    } else {
+      statusFooterButttonsModal(true);
+      this.props.editUserAction();
+    }
+  }
+
+  private changeTempUser({_id, firstName, lastName, email, venue}: ITempUser) {
+    const tempUser: ITempUser = {
+      _id: _id ? _id : this.props.users.tempUser._id,
+      firstName: firstName ? firstName : this.props.users.tempUser.firstName,
+      lastName: lastName ? lastName : this.props.users.tempUser.lastName,
+      email: email ? email : this.props.users.tempUser.email,
+      venue: venue ? venue : this.props.users.tempUser.venue
+    };
+    this.props.changeTempUserAction(tempUser);
+  }
+
+  private deleteUser(user: IUser) {
+    // ask if you are sure that you are going to delete the user?
+    swal({
+      title: '¿Estás seguro?',
+      text: `Vas a eliminar el usuario ${user.firstName || ''} ${user.lastName || ''}`,
+      icon: 'warning',
+      dangerMode: true,
+      buttons: {
+        cancel: 'Cancelar' as any,
+        confirm: {
+          text: 'Sí'
+        }
+      }
+    }).then((willDelete) => {
+      if (willDelete) {
+        this.props.deleteUserAction(user._id);
+      }
+    });
+  }
+
+  private changePage(page: number) {
+    // change the page
+    this.props.getUsersAction(page);
+  }
 }
 
 const mapStateToProps = (state: { users: IUsersState }) => {
@@ -344,4 +347,3 @@ const mapDispatchToProps = (dispatch: any ) => {
 };
 
 export default connect<{}, {}, IPropsType>(mapStateToProps, mapDispatchToProps)(UsersListView);
-

@@ -1,9 +1,8 @@
 // import * as PropTypes from 'prop-types';
 import * as React from 'react';
-import {IWindow} from "../interfaces/window";
+import {IWindow} from '../interfaces/window';
 
 declare let window: IWindow;
-
 
 class HeaderApp extends React.Component<{}, {}> {
   protected channel: BroadcastChannel;
@@ -14,18 +13,10 @@ class HeaderApp extends React.Component<{}, {}> {
     this.closeSesion = this.closeSesion.bind(this);
   }
 
-  private closeSesion() {
-    if (this.existBC) {
-      this.channel.postMessage({
-        close: true
-      });
-    }
-  }
-
   public componentDidMount() {
     if (this.existBC) {
       this.channel = new BroadcastChannel('andes');
-      this.channel.onmessage = function (e) {
+      this.channel.onmessage = (e) => {
         if (e.data.close) {
           location.href = '/account/logout/';
         }
@@ -125,9 +116,13 @@ class HeaderApp extends React.Component<{}, {}> {
       </header>
     );
   }
+  private closeSesion() {
+    if (this.existBC) {
+      this.channel.postMessage({
+        close: true
+      });
+    }
+  }
 }
 
-
 export default HeaderApp;
-
-

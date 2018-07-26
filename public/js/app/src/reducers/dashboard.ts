@@ -1,4 +1,4 @@
-import {DashboardReduxAction, IDashboardState} from "../actions/dashboard";
+import {DashboardReduxAction, IDashboardState} from '../actions/dashboard';
 
 const initialState: IDashboardState = {
   loading: true,
@@ -11,7 +11,7 @@ const initialState: IDashboardState = {
     count: 0,
     page: 1,
     pages: 1
-  },
+  }
 };
 
 export function dashboard(state = initialState, action: DashboardReduxAction): IDashboardState {
@@ -19,7 +19,7 @@ export function dashboard(state = initialState, action: DashboardReduxAction): I
     case '/DASHBOARD/IS_LOADING':
       return {
         ...state,
-        loading: action.payload.loading,
+        loading: action.payload.loading
       };
     case '/DASHBOARD/LOAD_CARS':
       return {
@@ -44,17 +44,17 @@ export function dashboard(state = initialState, action: DashboardReduxAction): I
     case '/DASHBOARD/LOAD_CAR':
       return {
         ...state,
-        car: action.payload.car,
+        car: action.payload.car
       };
     case '/DASHBOARD/LOAD_PARTICIPANT_IN_CAR':
       if (state.car && state.car.participants) {
         return {
           ...state,
-          car:{
+          car: {
             ...state.car,
             participants: [action.payload.participant, ...state.car.participants]
           }
-        }
+        };
       } else {
         return state;
       }
@@ -68,7 +68,7 @@ export function dashboard(state = initialState, action: DashboardReduxAction): I
         ...state,
         pagination: {
           ...state.pagination,
-          page: action.payload.page,
+          page: action.payload.page
         }
       };
     default:
