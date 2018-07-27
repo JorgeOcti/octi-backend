@@ -29,15 +29,15 @@ interface IStateType {
 
 class DashboardVinView extends React.Component<IPropsType, IStateType> {
 
-  static state = {
-    error: null,
-    highlight: []
-  };
-
   static propTypes = {
     dashboard: PropTypes.object.isRequired,
     dispatch: PropTypes.func.isRequired,
     getCarsAction: PropTypes.func.isRequired
+  };
+
+  state = {
+    error: null,
+    highlight: []
   };
 
   protected isMount: boolean = false;

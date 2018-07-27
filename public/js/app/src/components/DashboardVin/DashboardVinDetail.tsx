@@ -37,16 +37,16 @@ interface IStateType {
 
 class DashboardVinDetail extends React.Component<IPropsType, IStateType> {
 
-  static state = {
-    error: null,
-    highlight: []
-  };
-
   static propTypes = {
     dashboard: PropTypes.object.isRequired,
     dispatch: PropTypes.func.isRequired,
     getCarAction: PropTypes.func.isRequired,
     getParticipant: PropTypes.func.isRequired
+  };
+
+  state = {
+    error: null,
+    highlight: []
   };
 
   private socket: SocketIOClient.Socket;

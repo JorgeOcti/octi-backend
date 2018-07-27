@@ -59,7 +59,7 @@ describe('Forms', () => {
                     '_id',
                     'name',
                     'description',
-                    'sections',
+                    'sections'
                 ]);
                 expect(res.body.data.form.sections).be.a('array');
                 // validate sections keys
@@ -68,7 +68,7 @@ describe('Forms', () => {
                     'name',
                     'weight',
                     'questions',
-                    'order',
+                    'order'
                 ]);
                 // validate question keys
                 expect(res.body.data.form.sections[0].questions).be.a('array');
@@ -79,14 +79,14 @@ describe('Forms', () => {
                     'risk',
                     'observe',
                     'weight',
-                    'order',
+                    'order'
                 ]);
                 // validate scales keys
                 expect(res.body.data.scales).be.a('array');
                 expect(res.body.data.scales[0]).to.have.all.keys([
                     '_id',
                     'name',
-                    'choices',
+                    'choices'
                 ]);
                 // validate choice keys
                 expect(res.body.data.scales[0].choices).be.a('array');
@@ -97,7 +97,7 @@ describe('Forms', () => {
                     'backgroundColor',
                     'requireComment',
                     'value',
-                    'order',
+                    'order'
                 ]);
                 done();
             });
