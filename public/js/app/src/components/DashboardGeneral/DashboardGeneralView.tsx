@@ -141,7 +141,7 @@ class DashboardGeneralView extends React.Component<IPropsType, IStateType> {
   }
 
   public render(): React.ReactElement<IPropsType> {
-    const {loading} = this.props.dashboard;
+    const {loading, participantsPerDate} = this.props.dashboard;
     return (
       <AppContainer title="" cMenu="1" cSubMenu="1.1">
         <section className="content">
@@ -151,7 +151,11 @@ class DashboardGeneralView extends React.Component<IPropsType, IStateType> {
               </div>
             </div>
             <div className="box-body">
-              <div id="participant-per-date" style={{height: '400px', maxWidth: '100%'}}/>
+              {
+                participantsPerDate.length ?
+                  <div id="participant-per-date" style={{height: '400px', maxWidth: '100%'}}/>
+                  : !loading ? <strong>Aún no se han realizado revisiones.</strong> : null
+              }
             </div>
             {/*<div className="box-footer">Footer</div>*/}
             {
