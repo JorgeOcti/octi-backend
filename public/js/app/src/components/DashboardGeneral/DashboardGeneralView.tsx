@@ -142,6 +142,7 @@ class DashboardGeneralView extends React.Component<IPropsType, IStateType> {
 
   public render(): React.ReactElement<IPropsType> {
     const {loading, participantsPerDate} = this.props.dashboard;
+    console.log('participantsPerDate', participantsPerDate);
     return (
       <AppContainer title="" cMenu="1" cSubMenu="1.1">
         <section className="content">
