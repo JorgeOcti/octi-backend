@@ -119,38 +119,42 @@ class DashboardVinView extends React.Component<IPropsType, IStateType> {
               </div>
             </div>
             <div className="box-body">
-              <table className="table table-striped">
-                <thead>
-                  <tr>
-                    <th className="middle">VIN</th>
-                    <th className="middle hidden-xs">Marca</th>
-                    <th className="middle">Supervisor</th>
-                    <th className="hidden-xs">Último checkeo</th>
-                    <th className="width-10" />
-                  </tr>
-                </thead>
-                <tbody>
-                  {
-                    cars.map((car: ICar) => {
-                      return (
-                        <tr
-                          key={car._id} id={`car-${car._id}`}
-                          className={highlight.length && highlight.includes(car._id as never) ? 'highlight-info' : ''}
-                        >
-                          <td className="middle">{car.vin}</td>
-                          <td className="middle hidden-xs">{car.brand}</td>
-                          <td className="middle">{`${car.lastForm.user ? `${car.lastForm.user.firstName} ${car.lastForm.user.lastName}` : ''}`}</td>
-                          <td className="middle hidden-xs">{moment(car.lastForm.createdAt).format('LLL')}</td>
-                          <td className="text-primary">
-                            <button className="btn btn-xs btn-primary" onClick={() => this.props.history.push(`/cars/${car._id}`)}><i className="fa fa-bars"/></button>
-                          </td>
-                        </tr>
-                      );
-                    })
-                  }
-                </tbody>
-              </table>
-
+              {
+                cars.length ?
+                  <table className="table table-striped">
+                    <thead>
+                    <tr>
+                      <th className="middle">VIN</th>
+                      <th className="middle hidden-xs">Marca</th>
+                      <th className="middle">Supervisor</th>
+                      <th className="hidden-xs">Último checkeo</th>
+                      <th className="width-10"/>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {
+                      cars.map((car: ICar) => {
+                        return (
+                          <tr
+                            key={car._id} id={`car-${car._id}`}
+                            className={highlight.length && highlight.includes(car._id as never) ? 'highlight-info' : ''}
+                          >
+                            <td className="middle">{car.vin}</td>
+                            <td className="middle hidden-xs">{car.brand}</td>
+                            <td className="middle">{`${car.lastForm.user ? `${car.lastForm.user.firstName} ${car.lastForm.user.lastName}` : ''}`}</td>
+                            <td className="middle hidden-xs">{moment(car.lastForm.createdAt).format('LLL')}</td>
+                            <td className="text-primary">
+                              <button className="btn btn-xs btn-primary" onClick={() => this.props.history.push(`/cars/${car._id}`)}><i
+                                className="fa fa-bars"/></button>
+                            </td>
+                          </tr>
+                        );
+                      })
+                    }
+                    </tbody>
+                  </table>
+                  : !loading ? <strong>Aún no se han realizado revisiones.</strong> : null
+              }
             </div>
             {
               pagination.pages > 1 &&
