@@ -6,6 +6,7 @@ interface IURL {
   ticketClose: string;
   ticketInvalidate: string;
   uploadFile: string;
+  alerts: string;
 }
 
 interface IUser {

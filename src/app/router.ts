@@ -1,6 +1,7 @@
 import * as csrf from 'csurf';
 import * as express from 'express';
 import Middlewares from '../middlewares/middlewares';
+import AdminAlertsController from './controllers/admin/alerts.admin.controller';
 import AdminCarsController from './controllers/admin/car.admin.controller';
 import AdminCompaniesController from './controllers/admin/companies.admin.controller';
 import AdminUsersController from './controllers/admin/user.admin.controller';
@@ -34,7 +35,8 @@ appRouter.get('/api/admin/participant/:id/', Middlewares.isLoggedIn, CarControll
 appRouter.get('/api/admin/participants-per-date/', Middlewares.isLoggedIn, CarController.apiParticipantsPerDate);
 
 // admin user
-appRouter.get('/users/', Middlewares.isLoggedIn, AdminUsersController.index);
+appRouter.get('/settings/users/', Middlewares.isLoggedIn, AdminUsersController.index);
+
 // api admin users
 appRouter.get('/api/admin/users/', Middlewares.isLoggedIn, AdminUsersController.apiUsers);
 appRouter.post('/api/admin/users/', Middlewares.isLoggedIn, AdminUsersController.apiAddUser);
@@ -42,9 +44,13 @@ appRouter.patch('/api/admin/users/:id/', Middlewares.isLoggedIn, AdminUsersContr
 appRouter.delete('/api/admin/users/:id/', Middlewares.isLoggedIn, AdminUsersController.apiDeleteUser);
 
 // import cars
-appRouter.get('/import/cars/', Middlewares.isLoggedIn, AdminCarsController.index);
+appRouter.get('/settings/cars/import/', Middlewares.isLoggedIn, AdminCarsController.index);
 
 appRouter.post('/api/admin/import-cars/', Middlewares.isLoggedIn, AdminCarsController.importCars);
+
+// alerts
+appRouter.get('/settings/alerts/', Middlewares.isLoggedIn, AdminAlertsController.index);
+appRouter.get('/api/admin/alerts/', Middlewares.isLoggedIn, AdminAlertsController.list);
 
 // admin companies
 appRouter.get('/companies/', Middlewares.isLoggedIn, AdminCompaniesController.index);

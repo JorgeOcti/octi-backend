@@ -10,13 +10,13 @@ menus.push({
       id: '1.1',
       icon: 'fa-circle-o',
       text: 'General',
-      url: '/',
+      url: '/'
     }, {
       id: '1.2',
       icon: 'fa-circle-o',
       text: 'Listado de VINs',
-      url: '/cars/',
-    },
+      url: '/cars/'
+    }
     // {
     //   id: '1.2',
     //   icon: 'fa-circle-o',
@@ -37,14 +37,20 @@ menus.push({
       id: '2.1',
       icon: 'fa-circle-o',
       text: 'Usuarios',
-      url: '/users/'
+      url: '/settings/users/'
     },
     {
       id: '2.2',
       icon: 'fa-circle-o',
       text: 'Importar autos',
-      url: '/import/cars/'
+      url: '/settings/cars/import/'
     },
+    {
+      id: '2.3',
+      icon: 'fa-circle-o',
+      text: 'Alertas',
+      url: '/settings/alerts/'
+    }
     // {
     //   id: '2.2',
     //   icon: 'fa-circle-o',

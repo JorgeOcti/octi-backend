@@ -1,9 +1,14 @@
 import * as mongoose from 'mongoose';
 import {
+  IFormAccesoryModel,
+  IFormItemModel,
+  IFormQuestionModel,
+  IFormSectionModel
+} from '../form/models/form.model';
+import {
   IScaleModel
-} from "../form/models/scale.model";
-import {ICompany} from "./company.interface";
-import {IFormAccesoryModel, IFormItemModel, IFormQuestionModel, IFormSectionModel} from "../form/models/form.model";
+} from '../form/models/scale.model';
+import {ICompany} from './company.interface';
 
 export interface IFormItems {
   _id: any;
@@ -13,7 +18,7 @@ export interface IFormItems {
 export interface IFormAccesory {
   _id: any;
   question: string;
-  items: IFormItemModel[]
+  items: IFormItemModel[];
 }
 
 export interface IFormQuestion {

@@ -177,8 +177,12 @@ class UsersListView extends React.Component<IPropsType, IStateType> {
         <div className="col-md-12">
           <div className="form-group">
             <label>Email</label>
-            <input type="email" name="email" className="form-control" maxLength={80}
-                   onChange={(e: React.ChangeEvent<HTMLInputElement>) => changeTempUser({email: e.target.value})}
+            <input
+              type="email"
+              name="email"
+              className="form-control"
+              maxLength={80}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) => changeTempUser({email: e.target.value})}
             />
           </div>
         </div>

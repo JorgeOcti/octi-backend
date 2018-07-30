@@ -284,7 +284,7 @@ class ImportCarsView extends React.Component<IPropsType, IStateType> {
       if (['application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'].includes(file.type)) {
         const reader = new FileReader();
         const rABS = !!reader.readAsBinaryString;
-        reader.onload = (e: FileReaderProgressEvent) => {
+        reader.onload = (e: any) => {
           if (e.target) {
             let data = e.target.result;
             if (!rABS) {

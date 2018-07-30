@@ -126,6 +126,14 @@ export default class ApiService {
     );
   }
 
+  public getAlerts(): AxiosPromise {
+    return this.instance.get(
+      `/api/admin/alerts/`, {
+        cancelToken: this.source.token
+      }
+    );
+  }
+
   public getSource(): CancelTokenSource {
     this.source = this.CancelToken.source();
     return this.source;
