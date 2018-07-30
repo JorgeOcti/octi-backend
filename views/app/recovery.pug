@@ -1,0 +1,85 @@
+doctype html
+html
+  head
+    meta(charset='utf-8')
+    link(rel='shortcut icon', href='https://www.osa-app.cl/img-osa/logo/favicon-osa.ico')
+    meta(http-equiv='X-UA-Compatible', content='IE=edge')
+    //- Tell the browser to be responsive to screen width
+    meta(content='width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no', name='viewport')
+    //- Bootstrap 3.3.7
+    link(rel='stylesheet', href=`/static${getVersionedPath('/css/vendor/bootstrap/bootstrap.min.css')}`)
+    //- Font Awesome
+    link(rel='stylesheet', href=`/static${getVersionedPath('/css/vendor/font-awesome/font-awesome.min.css')}`)
+    //- Google Font
+    link(rel='stylesheet', href='https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,600,700,300italic,400italic,600italic')
+    <!--[if lt IE 9]>
+    script(src='https://oss.maxcdn.com/html5shiv/3.7.3/html5shiv.min.js')
+    script(src='https://oss.maxcdn.com/respond/1.4.2/respond.min.js')
+    <![endif]-->
+    link(rel='stylesheet', href=`/static${getVersionedPath('/css/style.css')}`)
+    title OSA Andes | Reestablecer contraseña
+    //- html,body{overflow-y:hidden;overflow-x:hidden}body{background:linear-gradient(to left, #A34E69, #90354D);color:#FFF;}
+    style
+      | html,body{background:linear-gradient(to left, #096e9f, #033a67);overflow-y:hidden;overflow-x:hidden}body{color:#FFF;overflow-y:hidden;}
+
+  body
+    if(user)
+      #login-container
+        .row
+          .col-md-4
+          .col-md-4
+            .login
+              p.text-center
+                img(src=`/static${getVersionedPath('/images/OSA_andes_logo.svg')}`, class='text-center logo')
+              form(role='form', action='', method="post")
+                input(type='hidden', name='_csrf', value=csrfToken)
+                //- p.text-center
+                //-  | Ingresa tu correo electrónico y te enviaremos un enlace para que restaures el acceso a tu cuenta.
+                .form-group
+                  .input-group
+                    .input-group-addon
+                      i.fa.fa-lock
+                    input#password.form-control(type='password', placeholder='contraseña nueva', name='password')
+                  #password-requirements
+                    p
+                      strong La contraseña debe contener lo siguiente:
+                    ul
+                      li#has-letter Al menos una letra.
+                      li#has-number Al menos un número.
+                      li#length Mínimo 6 caracteres.
+                .form-group
+                  .input-group
+                    .input-group-addon
+                      i.fa.fa-lock
+                    input#password2.form-control(type='password', placeholder='repetir contrasela nueva', name='password2')
+                  #password-2-requirements
+                    p.error
+                      | Las contraseñas no coincide
+                .form-group
+                  button#btn-change-password.btn.btn-block.btn-primary(type='submit', style='margin-right:3px', disabled=true)='Continuar'
+          .col-md-4
+    else
+      #login-container
+        .row
+          .col-md-4
+          .col-md-4
+            .login
+              p.text-center
+                img(src=`/static${getVersionedPath('/images/OSA_andes_logo.svg')}`, class='text-center logo')
+              p.text-center
+                | Este link a expirado o ha sido utilizado.
+              p
+                | &nbsp;
+              .form-group
+                a.btn.btn-block.btn-primary(href='/account/login/', style='margin-right:3px')='Ir a iniciar sesión'
+          .col-md-4
+    #login-footer.text-center
+      | Copyright (c) 2018 OSA SPA. Todos los derechos reservados.
+    .js
+      //- polyfill.io
+      script(src='https://cdn.polyfill.io/v2/polyfill.min.js')
+      //- jQuery 3
+      script(src=`/static${getVersionedPath('/js/vendor/jquery/jquery.min.js')}`)
+      //- Bootstrap 3.3.7
+      script(src=`/static${getVersionedPath('/js/vendor/bootstrap/bootstrap.min.js')}`)
+      script(src=`/static${getVersionedPath('/js/account/dist/recovery.js')}`)

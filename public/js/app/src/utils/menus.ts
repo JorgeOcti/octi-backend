@@ -2,29 +2,34 @@ const menus: any[] = [];
 // Dashboard
 menus.push({
   id: '1',
-  text: 'Dashboard',
+  text: 'Dashboards',
   icon: 'fa-dashboard',
   url: '/',
   items: [
     {
       id: '1.1',
       icon: 'fa-circle-o',
-      text: 'Dashboard v1',
+      text: 'General',
       url: '/',
-    },
-    {
+    }, {
       id: '1.2',
       icon: 'fa-circle-o',
-      text: 'Dashboard v2',
-      url: '/',
-    }
+      text: 'Listado de VINs',
+      url: '/cars/',
+    },
+    // {
+    //   id: '1.2',
+    //   icon: 'fa-circle-o',
+    //   text: 'Dashboard v2',
+    //   url: '/',
+    // }
   ]
 });
 
 // Report
 menus.push({
   id: '2',
-  text: 'Setting',
+  text: 'Settings',
   icon: 'fa-cog',
   url: '/users/',
   items: [
@@ -37,9 +42,15 @@ menus.push({
     {
       id: '2.2',
       icon: 'fa-circle-o',
-      text: 'Setting v2',
-      url: '/'
-    }
+      text: 'Importar autos',
+      url: '/import/cars/'
+    },
+    // {
+    //   id: '2.2',
+    //   icon: 'fa-circle-o',
+    //   text: 'Setting v2',
+    //   url: '/'
+    // }
   ]
 });
 

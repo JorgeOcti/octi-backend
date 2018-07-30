@@ -1,8 +1,7 @@
+import * as PropTypes from 'prop-types';
 import * as React from 'react';
-import * as PropTypes from "prop-types";
-import {Link} from "react-router-dom";
-import menus from "../utils/menus";
-
+import {Link} from 'react-router-dom';
+import menus from '../utils/menus';
 
 interface IPropsType {
   cMenu: string;
@@ -16,11 +15,11 @@ class MenuApp extends React.Component<IPropsType, {}> {
     cSubMenu: PropTypes.string.isRequired
   };
 
-  componentDidMount(){
+  public componentDidMount(): void {
     ($('.sidebar-menu') as any).tree();
   }
 
-  render(){
+  public render() {
     const {cMenu, cSubMenu} = this.props;
 
     return (
@@ -45,12 +44,12 @@ class MenuApp extends React.Component<IPropsType, {}> {
                             <li key={item.id} className={item.id === cSubMenu ? 'active' : ''}>
                               <Link to={item.url}><i className={`fa ${item.icon}`}/> {item.text}</Link>
                             </li>
-                          )
+                          );
                         })
                       }
                     </ul>
                   </li>
-                )
+                );
               })
             }
           </ul>

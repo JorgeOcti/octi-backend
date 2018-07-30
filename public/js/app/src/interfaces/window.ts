@@ -13,6 +13,7 @@ interface IUser {
   firstName: string;
   lastName: string;
   email: string;
+  company: string;
 }
 
 export interface IWindow extends Window {

@@ -1,8 +1,10 @@
 import { combineReducers } from 'redux';
+import { dashboard } from './dashboard';
+import { modal } from './modal';
 import { users } from './users';
-// import { tickets } from './tickets';
 
 export default combineReducers({
   users,
-  // ticket
+  modal,
+  dashboard
 });

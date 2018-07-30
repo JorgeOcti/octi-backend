@@ -1,13 +1,12 @@
 import * as bodyParser from 'body-parser';
 import * as compression from 'compression';
+import * as connectRedis from 'connect-redis';
 import * as cookieParser from 'cookie-parser';
 import * as dotenv from 'dotenv';
 import * as express from 'express';
 import * as session from 'express-session';
-import * as connectRedis from 'connect-redis';
-import redisClient from './services/redis';
 import * as fileStreamRotator from 'file-stream-rotator';
-import * as git from 'git-rev-sync';
+import * as kue from 'kue';
 import * as lusca from 'lusca';
 import * as morgan from 'morgan';
 import * as multer from 'multer';
@@ -16,29 +15,34 @@ import * as passportLocal from 'passport-local';
 import * as path from 'path';
 import * as Raven from 'raven';
 import * as responseTime from 'response-time';
-import User from './app/models/user.model';
-import Middlewares from './middlewares/middlewares'
 import * as Staticify from 'staticify';
-
-// Import routes
-import {
-  appRouter,
-  jwtRouter
-} from './app/router';
+import User from './app/models/user.model';
+import {appRouter, jwtRouter} from './app/router';
+import EmailQueue from './app/tasks/email.task';
 import formRouter from './form/router';
+import Middlewares from './middlewares/middlewares';
+
+// Create Express server
+const app = express();
 
 // Configure sentry
+// Load environment variables from .env file, where API keys and passwords are configured
+
 (global as any).__rootdir__ = __dirname || process.cwd();
 const root = (global as any).__rootdir__;
 const LocalStrategy = passportLocal.Strategy;
-const gitCommit = git.long();
+// const gitCommit = git.long();
 const redisStore = connectRedis(session);
+
+dotenv.config({
+  path: path.join(__dirname, '../.env')
+});
 
 /* istanbul ignore next */
 Raven.config(process.env.SENTRY_DNS, {
-  release: gitCommit,
+  // release: gitCommit,
   tags: {
-    git_commit: gitCommit,
+    // git_commit: gitCommit,
     environment: process.env.ENV || 'development'
   },
   environment: process.env.ENV,
@@ -63,14 +67,6 @@ Raven.config(process.env.SENTRY_DNS, {
 
     return data;
   }}).install();
-
-// Load environment variables from .env file, where API keys and passwords are configured
-dotenv.config({
-  path: path.join(__dirname, '../.env')
-});
-
-// Create Express server
-const app = express();
 
 // Middlewares
 app.use(compression());
@@ -103,8 +99,16 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
 // For parsing multipart/form-data
-const upload = multer();
-app.use(upload.single());
+// const upload = multer({dest:'/tmp/'});
+const upload = multer({
+  storage: multer.diskStorage({
+    destination: '/tmp/',
+    filename: (req, file, callback) => {
+      callback(null, file.originalname);
+    }
+  })
+});
+app.use(upload.single('file'));
 
 // static files
 const staticDirectory = path.join(__dirname, '../public');
@@ -119,15 +123,14 @@ app.locals.getVersionedPath = staticify.getVersionedPath;
 app.use(cookieParser());
 app.use(session({
   resave: false,
-  saveUninitialized: true,
+  saveUninitialized: false,
   secret: (process.env.SECRET_KEY as string),
   cookie: {
-    maxAge: 3600000 * 48
+    maxAge: 2592000000 // 30 * 24 * 60 * 60 * 1000 Rememeber 'me' for 30 days
   },
-  store: new redisStore({
-    host: 'localhost',
-    port: 6379,
-    client: redisClient
+  store: new redisStore( {
+    host: process.env.REDIS_HOST ? process.env.REDIS_HOST : 'localhost',
+    port: 6379
   })
 }));
 
@@ -142,7 +145,7 @@ app.use(passport.session());
  */
 
 passport.use(new LocalStrategy({ usernameField: 'username' }, (username, password, done) => {
-  User.findOne({ username: username.toLowerCase() }, (err, user: any) => {
+  User.findOne({username: username.toLowerCase(), active: true}, (err, user: any) => {
     if (err) { return done(err); }
     if (!user) {
       return done(undefined, false, { message: `username ${username} not found.` });
@@ -183,6 +186,14 @@ export const accessLogStream = fileStreamRotator.getStream({
   verbose: false
 });
 
+// export const mongooseCrateConfig: any = {
+//   key: process.env.S3_KEY || 'key',
+//   secret: process.env.S3_SECRET || 'secret',
+//   bucket: process.env.S3_BUCKET || 'bucket',
+//   acl: 'public-read', // defaults to public-read
+//   region: process.env.S3_REGION || 'region', // defaults to us-standard
+// };
+
 /* istanbul ignore if */
 if (app.get('env') !== 'testing') {
   morgan.token('remote-addr', (req: express.Request): string => {
@@ -200,6 +211,16 @@ app.use(Raven.requestHandler());
 app.use('/', appRouter);
 app.use('/api/v1', jwtRouter);
 app.use('/api/v1/forms', formRouter);
+
+/* queues */
+export const queue = kue.createQueue({
+  redis: {
+    host: process.env.REDIS_HOST ? process.env.REDIS_HOST : 'localhost',
+    port: 6379
+  }
+});
+new EmailQueue(queue).run();
+kue.app.listen(3041);
 
 // The error handler must be before any other error middleware
 app.use(Raven.errorHandler());
@@ -225,11 +246,13 @@ app.use((err: IResponseError, req: express.Request, res: express.Response, next:
   res.locals.error = req.app.get('env') === 'development' ? err : {};
 
   // render the error page
-  res.status(err.status || 500);
-  res.json({
-    status: err.status,
-    error: err.message ? err.message : err.error
-  });
+  const statusCode = [403, 404, 500].includes(err.status) ? err.status : 500;
+  console.log('err', err);
+  res.status(statusCode).render(statusCode.toString());
+  // res.json({
+  //   status: err.status,
+  //   error: err.message ? err.message : err.error
+  // });
   next();
 });
 

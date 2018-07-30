@@ -1,7 +1,10 @@
 import * as bluebird from 'bluebird';
+import * as jwt from 'jsonwebtoken';
 import * as mongoose from 'mongoose';
+import * as socketIO from 'socket.io';
+import * as socketRedis from 'socket.io-redis';
 import app from './app';
-import logger from './services/logger';
+import logger from './services/logger.service';
 
 // Mongoose setting
 const MONGODB_URI: string = process.env.MONGODB_URI || '';
@@ -21,7 +24,8 @@ mongoose.connect(MONGODB_URI, {useMongoClient: true}, (err) => {
 // mongoose.Promise = global.Promise;
 mongoose.set('debug', app.get('env') !== 'testing');
 // mongoose.set('debug', false);
-const server = app.listen(app.get('port'), () => {
+const NODE_APP_INSTANCE: number = parseInt(process.env.NODE_APP_INSTANCE as string, 10) || 0;
+const server = app.listen(parseInt(app.get('port'), 10) + NODE_APP_INSTANCE, () => {
   /* istanbul ignore if */
   if (app.get('env') !== 'testing') {
     console.log(`${logger.colors.magenta}----------------------${logger.colors.reset}`);
@@ -34,6 +38,62 @@ const server = app.listen(app.get('port'), () => {
     );
     console.log(`${logger.colors.brightBlack}Press CTRL-C to stop${logger.colors.reset}`);
   }
+});
+
+export const io = socketIO(server);
+
+io.adapter(socketRedis({
+  host: process.env.REDIS_HOST ? process.env.REDIS_HOST : 'localhost',
+  port: 6379
+}));
+
+io.use( async (socket, next) => {
+  // validate token to use socket
+  const token = socket.handshake.query.token;
+  if (token) {
+    try {
+      const user = await jwt.verify(token, process.env.SECRET_KEY || 'secretKey');
+      if (user) {
+        // socket: generate user room
+        (socket as any).user = user;
+        socket.join((user as any)._id);
+        return next();
+      } else {
+        socket.disconnect();
+        return next(new Error('authentication error'));
+      }
+    } catch (e) {
+      socket.disconnect();
+      return next(new Error('authentication error'));
+    }
+  } else {
+    socket.disconnect();
+    return next(new Error('authentication error'));
+  }
+  // console.log('token', token);
+  // if (isValid(token)) {
+  //   return next();
+  // }
+  // return next(new Error('authentication error'));
+});
+
+io.on( 'connection', ( socket ) => {
+  console.log('---------------------');
+  console.log('A user connected');
+  console.log('socket.id', socket.id);
+  console.log('socket.user\n', (socket as any).user);
+
+  socket.on('join', (data) => {
+    console.log(`join ${data.room}`);
+    socket.join(data.room);
+  });
+
+  socket.on('disconnect',  () => {
+    console.log('---------------------');
+    console.log('user disconnected');
+    console.log('socket.user\n', (socket as any).user);
+    // io.emit('user disconnected');
+  });
 });
 
 export default server;

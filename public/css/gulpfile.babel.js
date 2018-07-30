@@ -3,6 +3,7 @@ import sass from 'gulp-sass';
 import autoprefixer from 'autoprefixer';
 import postcss from 'gulp-postcss';
 import sourcemaps from 'gulp-sourcemaps';
+import objectFitImages from 'postcss-object-fit-images';
 
 const dirs = {
   src: './styles',
@@ -27,7 +28,7 @@ gulp.task('css', function () {
         'last 2 versions',
         'ie 6-10'
       ]
-    })
+    }), objectFitImages
   ];
   return gulp.src(sassPaths.src)
     .pipe(sourcemaps.init())

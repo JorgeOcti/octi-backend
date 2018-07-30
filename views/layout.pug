@@ -2,6 +2,8 @@ doctype html
 html
   head
     meta(charset='utf-8')
+    //- link(rel='shortcut icon', class='favicon' href=`${process.env.SITE_URL}/static${getVersionedPath('/images/favicon.ico')}`, type='image/x-icon')
+    //- link(rel='icon', class='favicon', href=`${process.env.SITE_URL}/static${getVersionedPath('/images/favicon.ico')}`, type='image/x-icon')
     link(rel='shortcut icon', href='https://www.osa-app.cl/img-osa/logo/favicon-osa.ico')
     meta(http-equiv='X-UA-Compatible', content='IE=edge')
     //- Tell the browser to be responsive to screen width
@@ -21,6 +23,7 @@ html
     script(src='https://oss.maxcdn.com/respond/1.4.2/respond.min.js')
     <![endif]-->
     link(rel='stylesheet', href=`/static${getVersionedPath('/css/style.css')}`)
+    link(rel='stylesheet', href=`/static${getVersionedPath('/js/vendor/lightbox/ekko-lightbox.css')}`)
     block head
   block content
   .js
@@ -37,6 +40,12 @@ html
     script(src=`/static${getVersionedPath('/js/vendor/sweetalert/sweetalert.min.js')}`)
     //- Bootstrap 3.3.7
     script(src=`/static${getVersionedPath('/js/vendor/bootstrap/bootstrap.min.js')}`)
+    //- echarts
+    script(src=`/static${getVersionedPath('/js/vendor/echarts/echarts.min.js')}`)
+    //- lighbox
+    script(src=`/static${getVersionedPath('/js/vendor/lightbox/ekko-lightbox.min.js')}`)
+    //- socket io
+    script(src=`/socket.io/socket.io.js`)
     //- js app
     block js
 

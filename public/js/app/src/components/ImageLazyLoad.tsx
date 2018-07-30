@@ -1,0 +1,122 @@
+import * as React from 'react';
+import {CSSProperties, RefObject} from 'react';
+
+interface IPropsType {
+  url: string;
+  height: string;
+}
+
+interface IStateType {
+  loading: boolean;
+  inViewPort: boolean;
+}
+
+class ImageLazyLoad extends React.Component<IPropsType, IStateType> {
+
+  readonly state = {
+    loading: true,
+    inViewPort: false
+  };
+
+  private element: RefObject<HTMLDivElement>;
+
+  constructor(props: IPropsType) {
+    super(props);
+    this.element = React.createRef();
+    this.handleImageLoaded = this.handleImageLoaded.bind(this);
+    this.isInViewport = this.isInViewport.bind(this);
+    this.addEventListener = this.addEventListener.bind(this);
+    this.removeEventListener = this.removeEventListener.bind(this);
+  }
+
+  public componentDidMount() {
+    this.addEventListener();
+  }
+
+  public componentWillUnmount() {
+    this.removeEventListener();
+  }
+
+  public render() {
+    const { loading, inViewPort} = this.state;
+    const { url, height } = this.props;
+
+    const imageStyle: CSSProperties = {};
+    if (loading) {
+      imageStyle.display = 'none';
+    }
+
+    return (
+      <React.Fragment>
+        {
+          inViewPort &&
+            <img
+              src={url}
+              onLoad={this.handleImageLoaded}
+              style={imageStyle}
+            />
+        }
+        {
+          loading ?
+            <div style={{height, display: 'table-cell', verticalAlign: 'middle'}} className={'text-center'} ref={this.element}>
+              <i className={'fa fa-circle-o-notch fa-spin fa-2x'}/>
+            </div>
+          : null
+        }
+
+      </React.Fragment>
+    );
+  }
+
+  private handleImageLoaded() {
+    this.setState({ loading: false });
+  }
+
+  private isInViewport() {
+    // console.log('isInViewport');
+    if (!this.state.inViewPort && this.element.current) {
+      const bounding = this.element.current.getBoundingClientRect();
+      // start load distance
+      const distance = 300;
+      const isInViewPort = (
+        bounding.top >= 0 &&
+        bounding.left >= 0 &&
+        (bounding.bottom - distance) <= (window.innerHeight || document.documentElement.clientHeight) &&
+        bounding.right <= (window.innerWidth || document.documentElement.clientWidth)
+      );
+      if (isInViewPort) {
+        this.removeEventListener();
+        this.setState({
+          inViewPort: true
+        });
+      }
+    }
+  }
+
+  private addEventListener() {
+    const modal = document.getElementById('andesModal');
+    if (modal) {
+      modal.addEventListener('scroll', this.isInViewport, false);
+      modal.addEventListener('rezise', this.isInViewport, false);
+      setTimeout(() => {
+        this.isInViewport();
+      }, 1000);
+    } else {
+      window.addEventListener('scroll', this.isInViewport, false);
+      window.addEventListener('rezise', this.isInViewport, false);
+      this.isInViewport();
+    }
+  }
+
+  private removeEventListener() {
+    const modal = document.getElementById('andesModal');
+    if (modal) {
+      modal.removeEventListener('scroll', this.isInViewport, false);
+      modal.removeEventListener('rezise', this.isInViewport, false);
+    } else {
+      window.removeEventListener('scroll', this.isInViewport, false);
+      window.removeEventListener('rezise', this.isInViewport, false);
+    }
+  }
+}
+export default ImageLazyLoad;

@@ -1,9 +1,12 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 const bluebird = require("bluebird");
+const jwt = require("jsonwebtoken");
 const mongoose = require("mongoose");
+const socketIO = require("socket.io");
+const socketRedis = require("socket.io-redis");
 const app_1 = require("./app");
-const logger_1 = require("./services/logger");
+const logger_service_1 = require("./services/logger.service");
 // Mongoose setting
 const MONGODB_URI = process.env.MONGODB_URI || '';
 // Mongoose connect
@@ -21,15 +24,69 @@ mongoose.Promise = bluebird;
 // mongoose.Promise = global.Promise;
 mongoose.set('debug', app_1.default.get('env') !== 'testing');
 // mongoose.set('debug', false);
-const server = app_1.default.listen(app_1.default.get('port'), () => {
+const NODE_APP_INSTANCE = parseInt(process.env.NODE_APP_INSTANCE, 10) || 0;
+const server = app_1.default.listen(parseInt(app_1.default.get('port'), 10) + NODE_APP_INSTANCE, () => {
     /* istanbul ignore if */
     if (app_1.default.get('env') !== 'testing') {
-        console.log(`${logger_1.default.colors.magenta}----------------------${logger_1.default.colors.reset}`);
-        console.log(`${logger_1.default.colors.brighCyan}OSA-ANDES ${logger_1.default.colors.white}v1.0.0 ${logger_1.default.colors.brighGreen}RELEASE${logger_1.default.colors.reset}`);
-        console.log(`${logger_1.default.colors.magenta}----------------------${logger_1.default.colors.reset}`);
+        console.log(`${logger_service_1.default.colors.magenta}----------------------${logger_service_1.default.colors.reset}`);
+        console.log(`${logger_service_1.default.colors.brighCyan}OSA-ANDES ${logger_service_1.default.colors.white}v1.0.0 ${logger_service_1.default.colors.brighGreen}RELEASE${logger_service_1.default.colors.reset}`);
+        console.log(`${logger_service_1.default.colors.magenta}----------------------${logger_service_1.default.colors.reset}`);
         console.log('is running at http://localhost:%s in %s mode', app_1.default.get('port'), app_1.default.get('env'));
-        console.log(`${logger_1.default.colors.brightBlack}Press CTRL-C to stop${logger_1.default.colors.reset}`);
+        console.log(`${logger_service_1.default.colors.brightBlack}Press CTRL-C to stop${logger_service_1.default.colors.reset}`);
     }
+});
+exports.io = socketIO(server);
+exports.io.adapter(socketRedis({
+    host: process.env.REDIS_HOST ? process.env.REDIS_HOST : 'localhost',
+    port: 6379
+}));
+exports.io.use(async (socket, next) => {
+    // validate token to use socket
+    const token = socket.handshake.query.token;
+    if (token) {
+        try {
+            const user = await jwt.verify(token, process.env.SECRET_KEY || 'secretKey');
+            if (user) {
+                // socket: generate user room
+                socket.user = user;
+                socket.join(user._id);
+                return next();
+            }
+            else {
+                socket.disconnect();
+                return next(new Error('authentication error'));
+            }
+        }
+        catch (e) {
+            socket.disconnect();
+            return next(new Error('authentication error'));
+        }
+    }
+    else {
+        socket.disconnect();
+        return next(new Error('authentication error'));
+    }
+    // console.log('token', token);
+    // if (isValid(token)) {
+    //   return next();
+    // }
+    // return next(new Error('authentication error'));
+});
+exports.io.on('connection', (socket) => {
+    console.log('---------------------');
+    console.log('A user connected');
+    console.log('socket.id', socket.id);
+    console.log('socket.user\n', socket.user);
+    socket.on('join', (data) => {
+        console.log(`join ${data.room}`);
+        socket.join(data.room);
+    });
+    socket.on('disconnect', () => {
+        console.log('---------------------');
+        console.log('user disconnected');
+        console.log('socket.user\n', socket.user);
+        // io.emit('user disconnected');
+    });
 });
 exports.default = server;
 //# sourceMappingURL=server.js.map

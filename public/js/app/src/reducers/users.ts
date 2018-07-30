@@ -1,8 +1,21 @@
-import {IUsersState, UserReduxAction} from "../actions/users";
+import {
+  IUsersState,
+  UserReduxAction
+} from '../actions/users';
+
+import {IUser} from '../../../../../src/interfaces/user.interface';
 
 const initialState: IUsersState = {
-  loading: true,
   users: [],
+  venues: [],
+  loading: true,
+  tempUser: {
+    _id: '',
+    firstName: '',
+    lastName: '',
+    email: '',
+    venue: ''
+  },
   source: null,
   pagination: {
     count: 0,
@@ -17,6 +30,21 @@ export function users(state = initialState, action: UserReduxAction): IUsersStat
       return {
         ...state,
         loading: action.payload.loading
+      };
+    case '/USERS/LOAD_VENUES':
+      return {
+        ...state,
+        venues: action.payload.venues
+      };
+    case '/USERS/CHANGE_TEMP_USER':
+      return {
+        ...state,
+        tempUser: action.payload.user
+      };
+    case '/USERS/CHANGE_USER':
+      return {
+        ...state,
+        users: state.users.map((user) => (user._id === action.payload.user._id ? action.payload.user : user))
       };
     case '/USERS/LOAD_USERS':
       return {
@@ -36,14 +64,18 @@ export function users(state = initialState, action: UserReduxAction): IUsersStat
     case '/USERS/DELETE_USER':
       return {
         ...state,
-        users: state.users.filter((user: any) => user._id !== action.payload.id)
+        users: state.users.filter((user: IUser) => user._id !== action.payload.id),
+        pagination: {
+          ...state.pagination,
+          count: state.pagination.count - 1
+        }
       };
     case '/USERS/CHANGE_PAGE':
       return {
         ...state,
         pagination: {
           ...state.pagination,
-          page: action.payload.page,
+          page: action.payload.page
         }
       };
     default:

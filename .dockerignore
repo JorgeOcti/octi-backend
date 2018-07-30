@@ -1,0 +1,11 @@
+.idea
+
+.nyc_output
+coverage
+
+email-templates
+kubernetes
+logs
+
+bower_components
+node_modules

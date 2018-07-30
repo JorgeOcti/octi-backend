@@ -17,7 +17,7 @@ else {
 }
 
 module.exports = {// entry: process.env.NODE_ENV === 'production'?['babel-polyfill', './src/app.jsx']:['./src/app.jsx'],
-  entry: [`${sourcePath}/app.tsx`],
+  entry:  process.env.NODE_ENV === 'production'?['babel-polyfill', `${sourcePath}/app.tsx`]:[`${sourcePath}/app.tsx`],
   module: {
     rules: [
       {

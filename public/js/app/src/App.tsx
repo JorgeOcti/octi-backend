@@ -4,10 +4,12 @@ import { Provider } from 'react-redux';
 import { Route, RouteComponentProps, Router as BrowserRouter, Switch } from 'react-router-dom';
 import configureStore from './store/configureStore';
 import history from './utils/history';
-import TestDetailView from "./components/TestDetail/TestDetailView";
-import TestDetailView2 from "./components/TestDetail/TestDetailView2";
-import UsersListView from "./components/Users/UsersListView";
+import UsersListView from './components/Users/UsersListView';
 import * as moment from 'moment';
+import DashboardVinView from './components/DashboardVin/DashboardVinView';
+import DashboardVinDetail from './components/DashboardVin/DashboardVinDetail';
+import DashboardGeneralView from './components/DashboardGeneral/DashboardGeneralView';
+import ImportCarsView from './components/Imports/ImportCarsViews';
 
 const store = configureStore();
 
@@ -21,27 +23,43 @@ const App = () => (
     <Provider store={store}>
         <BrowserRouter history={history}>
             <Switch>
-                <Route exact path="/" component={ TestDetailView }/>
-                <Route exact path="/2/" component={ TestDetailView2 }/>
+                <Route exact path="/" component={ DashboardGeneralView }/>
+                <Route exact path="/cars/" component={ DashboardVinView }/>
+                <Route exact path="/cars/:id" component={ DashboardVinDetail }/>
                 <Route exact path="/users/" component={ UsersListView }/>
-                {/*<Route exact path="/ticket/create/" component={ TicketCreateView }/>*/}
-                {/*<Route exact path="/ticket/:ticket/" component={ TicketDetailView }/>*/}
+                <Route exact path="/import/cars/" component={ ImportCarsView }/>
                 <Route component={ NoMatch }/>
             </Switch>
         </BrowserRouter>
     </Provider>
 );
+
+// clear state of the modeal on hidden
+$('body').on('hidden.bs.modal', '#andesModal', function (e) {
+  store.dispatch({type: '/MODAL/CLEAR'});
+});
+
 $(function() {
   moment.locale('es');
   ReactDOM.render(
       <App />,
       document.querySelector('#app')
   );
-
   ($('.sidebar-menu') as any).tree();
 
   $('body').on('click', '.treeview-menu li', () => {
     $('body').removeClass('sidebar-open');
+  });
+  // ekk-lightbox
+  $(document).on('click', '[data-toggle="lightbox"]', function (event) {
+    event.preventDefault();
+    ($(this) as any).ekkoLightbox();
+  });
+  // fix ekk-lightbox
+  $(document).on('hidden.bs.modal', function (event) {
+    if ($('.modal:visible').length) {
+      $('body').addClass('modal-open');
+    }
   });
 });
 

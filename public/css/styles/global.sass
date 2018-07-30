@@ -7,6 +7,9 @@
 .max-width-300
   max-width: 300px
 
+.middle
+  vertical-align: middle !important
+
 .has-error
   > .input-group-addon
     border-color: $redErros
@@ -22,3 +25,30 @@
   transition: background-color 500ms linear
   background-color: transparentize($redErros, 0.6) !important
   color: $white
+
+.editing-item
+  transition: background-color 300ms ease
+  background-color: transparentize($primary, 0.4) !important
+  color: $white
+
+@-webkit-keyframes info-fade
+  0%
+    background: #d9edf7
+  100%
+    //background: none
+
+
+@keyframes info-fade
+  0%
+    background: #d9edf7
+  100%
+    //background: none
+
+.highlight-info
+  animation: info-fade 2s ease-in 1
+
+.text-ellipsis
+  overflow: hidden
+  text-overflow: ellipsis
+  white-space: nowrap
+

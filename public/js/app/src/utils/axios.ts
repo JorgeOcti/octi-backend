@@ -1,3 +1,4 @@
+///<reference path="../../node_modules/sweetalert/typings/sweetalert.d.ts"/>
 import Axios, {
   AxiosError,
   AxiosInstance,
@@ -6,9 +7,10 @@ import Axios, {
   CancelTokenStatic
 } from 'axios';
 import * as Raven from 'raven-js';
-import {IWindow} from '../interfaces/window';
+import {ITempUser} from '../actions/users';
+// import {IWindow} from '../interfaces/window';
 
-declare let window: IWindow;
+// declare let window: IWindow;
 
 export interface IHeaders {
   'X-CSRFToken'?: string;
@@ -23,7 +25,7 @@ export default class ApiService {
   private source: CancelTokenSource;
 
   constructor() {
-    let headers: IHeaders = {};
+    const headers: IHeaders = {};
     // if (window.token) {
     //   headers = {
     //     Authorization: `Bearer ${window.token}`
@@ -42,10 +44,12 @@ export default class ApiService {
   }
 
   public errorHandler(err: AxiosError): void {
-    const ingnoreStatus = [403, 404];
     if (err.response) {
-      if (!ingnoreStatus.includes(err.response.status)) {
+      if ([500].includes(err.response.status)) {
         Raven.captureException(JSON.stringify(err.response));
+        swal('Ups ha ocurrido un error', err.response.data.message ? err.response.data.message : err.response.data.errmsg, 'error');
+      } else {
+        swal('Ups ha ocurrido un error', err.response.data.message ? err.response.data.message : err.response.data.errmsg, 'error');
       }
     } else if (err.request) {
       Raven.captureException(JSON.stringify(err.request));
@@ -54,12 +58,25 @@ export default class ApiService {
     }
   }
 
-  public getUsers(page?:number): AxiosPromise {
+  public getUsers(page?: number): AxiosPromise {
     return this.instance.get(
       `/api/admin/users/${page ? `?page=${page}` : ''}`
       , {
         cancelToken: this.source.token
       });
+  }
+
+  public addUser(user: ITempUser): AxiosPromise {
+    delete user._id;
+    return this.instance.post(
+      `/api/admin/users/`
+      , user);
+  }
+
+  public editUser(user: ITempUser): AxiosPromise {
+    return this.instance.patch(
+      `/api/admin/users/${user._id}`
+      , user);
   }
 
   public deleteUser(id: string): AxiosPromise {
@@ -68,38 +85,45 @@ export default class ApiService {
     );
   }
 
-  public getTicket(ticket: number): AxiosPromise {
+  public getParticipantsPerDate() {
     return this.instance.get(
-      `${window.urls.tickets}${ticket}/`
+      `/api/admin/participants-per-date/`
+    );
+  }
+  public getParticipant(id: string) {
+    return this.instance.get(
+      `/api/admin/participant/${id}/`
     );
   }
 
-  public createTicket(ticket: any): AxiosPromise {
+  public getVenues(): AxiosPromise {
+    return this.instance.get(
+      `/api/admin/venues/`
+    );
+  }
+
+  public getCars(page?: number): AxiosPromise {
+    return this.instance.get(
+      `/api/admin/cars/${page ? `?page=${page}` : ''}`, {
+        cancelToken: this.source.token
+      }
+    );
+  }
+
+  public getCar(id: string): AxiosPromise {
+    return this.instance.get(
+      `/api/admin/cars/${id}`, {
+        cancelToken: this.source.token
+      }
+    );
+  }
+
+  public sendImportCars(data: any): AxiosPromise {
     return this.instance.post(
-      `${window.urls.tickets}`,
-      ticket
+      `/api/admin/import-cars/`, data, {
+        cancelToken: this.source.token
+      }
     );
-  }
-
-  public addComment(ticket: string, comment: string): AxiosPromise {
-    return this.instance.post(
-      `${window.urls.ticketComments.replace('0', ticket)}`,
-      {comment}
-    );
-  }
-  public closeTicket(ticket: string): AxiosPromise {
-    return this.instance.put(
-      `${window.urls.ticketClose.replace('0', ticket)}`
-    );
-  }
-  public invalidateTicket(ticket: string): AxiosPromise {
-    return this.instance.put(
-      `${window.urls.ticketInvalidate.replace('0', ticket)}`
-    );
-  }
-
-  public getTeams(): AxiosPromise {
-    return this.instance.get(window.urls.ticketsTeams);
   }
 
   public getSource(): CancelTokenSource {

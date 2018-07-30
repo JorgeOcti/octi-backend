@@ -1,6 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 const bcrypt = require("bcrypt");
+const jwt = require("jsonwebtoken");
 const mongoose = require("mongoose");
 const mongoosePaginate = require("mongoose-paginate");
 const passportLocalMongoose = require("passport-local-mongoose");
@@ -11,19 +12,44 @@ const userSchema = new mongoose.Schema({
     },
     firstName: {
         type: String,
-        default: ''
+        default: null
     },
     lastName: {
         type: String,
-        default: ''
+        default: null
     },
-    email: { type: String, unique: true, index: true },
+    company: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Company',
+        required: [true, 'La empresa es requerida'],
+        index: true
+    },
+    venue: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Venue',
+        required: [true, 'La sucursal es requerida']
+    },
+    preferred: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Form',
+        default: null
+    },
+    email: {
+        type: String,
+        trim: true,
+        required: [true, 'El email es requerido'],
+        unique: true,
+        index: true
+    },
     password: String,
     hash_password: String,
     passwordResetToken: String,
     passwordResetExpires: Date,
     lastLogin: Date,
-    active: Boolean
+    active: {
+        type: Boolean,
+        default: true
+    }
 }, {
     timestamps: true
 });
@@ -48,9 +74,20 @@ userSchema.plugin(mongoosePaginate);
  * Password hash middleware.
  */
 userSchema.methods.fullName = function () {
-    return (this.firstName.trim() + " " + this.lastName.trim());
+    return (this.firstName.trim() + ' ' + this.lastName.trim());
 };
-userSchema.pre('save', function save(next) {
+userSchema.methods.generateToken = function () {
+    const userInfo = {
+        _id: this._id,
+        firstName: this.firstName,
+        lastName: this.lastName,
+        email: this.email,
+        company: this.company,
+        venue: this.venue
+    };
+    return jwt.sign(userInfo, process.env.SECRET_KEY || 'secretKey', { expiresIn: '7 days' });
+};
+userSchema.pre('save', function (next) {
     const user = this;
     if (!user.isModified('password')) {
         return next();
@@ -76,7 +113,6 @@ userSchema.methods.comparePassword = function (candidatePassword, cb) {
 userSchema.methods.comparePasswordSync = function (candidatePassword) {
     return bcrypt.compareSync(candidatePassword, this.password);
 };
-// const User = mongoose.model('User', userSchema);
 const User = mongoose.model('User', userSchema);
 exports.default = User;
 //# sourceMappingURL=user.model.js.map

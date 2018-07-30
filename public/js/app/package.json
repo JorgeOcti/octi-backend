@@ -11,11 +11,15 @@
   "author": "Gonzalo Muñoz Coloma",
   "license": "ISC",
   "devDependencies": {
+    "@types/echarts": "0.0.13",
     "@types/jquery": "^3.3.2",
     "@types/mixpanel": "^2.14.0",
     "@types/moment": "^2.13.0",
+    "@types/react-router-redux": "^5.0.15",
+    "@types/socket.io-client": "^1.4.32",
     "@types/sweetalert": "^2.0.4",
     "@types/uuid": "^3.4.3",
+    "@types/xlsx": "0.0.36",
     "awesome-typescript-loader": "^5.0.0",
     "axios": "^0.18.0",
     "babel-core": "^6.26.3",
@@ -75,13 +79,20 @@
     "@types/redux-thunk": "^2.1.0",
     "@types/validator": "^9.4.0",
     "autoprefixer": "^8.5.2",
+    "babel-polyfill": "^6.26.0",
+    "echarts": "^4.1.0",
+    "fsevents": "^1.2.4",
     "gulp": "^3.9.1",
     "gulp-postcss": "^7.0.1",
     "gulp-sass": "^4.0.1",
     "gulp-sourcemaps": "^2.6.4",
     "mixpanel": "^0.9.2",
     "moment": "^2.22.1",
+    "react-exif-orientation-img": "^0.1.5",
+    "react-router-redux": "^4.0.8",
+    "socket.io-client": "^2.1.1",
     "sweetalert": "^2.1.0",
-    "uuid": "^3.2.1"
+    "uuid": "^3.2.1",
+    "xlsx": "^0.13.2"
   }
 }

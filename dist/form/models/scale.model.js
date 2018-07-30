@@ -4,18 +4,38 @@ const mongoose = require("mongoose");
 const choiceSchema = new mongoose.Schema({
     choice: { type: String, required: true, trim: true },
     value: { type: Number, required: true },
-    backgroundColor: { type: String, default: 'blue' },
+    backgroundColor: {
+        type: String,
+        enum: ['red', 'green', 'yellow', 'blue'],
+        default: 'blue'
+    },
     requireImage: { type: Boolean, default: false },
     requireComment: { type: Boolean, default: false },
+    requireAccesories: { type: Boolean, default: false },
+    requireConciliation: { type: Boolean, default: false },
     na: { type: Boolean, default: false },
     order: { type: Number, required: true }
 });
 exports.scaleSchema = new mongoose.Schema({
     name: String,
-    minValue: { type: Number, required: true },
-    maxValue: { type: Number, required: true },
+    company: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Company',
+        require: true
+    },
+    minValue: {
+        type: Number,
+        required: true
+    },
+    maxValue: {
+        type: Number,
+        required: true
+    },
     choices: [choiceSchema],
-    active: { type: Boolean, default: true }
+    active: {
+        type: Boolean,
+        default: true
+    }
 }, {
     timestamps: true
 });
