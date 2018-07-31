@@ -104,28 +104,39 @@ class AlertsViews extends React.Component<IPropsType, IStateType> {
               <table className="table table-striped">
                 <thead>
                   <tr>
-                    <th>Nombre</th>
-                    <th>Menor igual que</th>
-                    <th>Mayor igual que</th>
-                    <th>Usuarios</th>
+                    <th className="middle">Nombre</th>
+                    <th className="middle text-center">Menor igual que</th>
+                    <th className="middle text-center">Mayor igual que</th>
+                    <th className="middle">Usuarios</th>
                     {/*<th className="width-10" />*/}
-                    <th className="width-10" />
+                    <th className="middle width-10" />
                   </tr>
                 </thead>
                 <tbody>
                 {
-                  alerts.map((alert) => {
-                    return (
-                      <tr key={alert._id} id={`alert-${alert._id}`}>
-                        <td>{alert.name}</td>
-                        <td>{alert.lte !== 0 ? alert.lte : '-'}</td>
-                        <td>{alert.gte !== 0 ? alert.gte : '-'}</td>
-                        <td>{alert.users.length}</td>
-                        {/*<td className="text-blue pointer" onClick={undefined}><i className="fa fa-pencil"/></td>*/}
-                        <td className="text-red pointer" onClick={() => this.deleteAlert(alert)}><i className="fa fa-minus-circle"/></td>
-                      </tr>
-                    );
-                  })
+                  alerts.length ?
+                    alerts.map((alert) => {
+                      return (
+                        <tr key={alert._id} id={`alert-${alert._id}`}>
+                          <td style={{width: '20%'}} className="middle">{alert.name}</td>
+                          <td style={{width: '15%'}} className="middle text-center">{alert.lte !== 0 ? alert.lte : '-'}</td>
+                          <td style={{width: '15%'}} className="middle text-center">{alert.gte !== 0 ? alert.gte : '-'}</td>
+                          <td style={{width: '50%'}}>
+                            {
+                              alert.users.map((user) => {
+                                return (
+                                  <p key={user._id} style={{margin: 0}}>{`${user.firstName} ${user.lastName} <${user.email}>`}</p>
+                                );
+                              })
+                            }
+                          </td>
+                          {/*<td className="text-blue pointer" onClick={undefined}><i className="fa fa-pencil"/></td>*/}
+                          <td className="text-red pointer" onClick={() => this.deleteAlert(alert)}><i className="fa fa-minus-circle"/></td>
+                        </tr>
+                      );
+                    }) : <tr>
+                      <td colSpan={5}>Aún no se han ingresado alertas</td>
+                    </tr>
                 }
                 </tbody>
               </table>
