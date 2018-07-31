@@ -27,12 +27,12 @@ appRouter.get('/cars/', Middlewares.isLoggedIn, CarController.vinDashboard);
 appRouter.get('/cars/:id', Middlewares.isLoggedIn, CarController.vinDashboardDetail);
 
 // api cars
-appRouter.get('/api/admin/cars/:id', Middlewares.isLoggedIn, CarController.apiCarDetail);
-appRouter.get('/api/admin/cars/', Middlewares.isLoggedIn, CarController.apiCars);
+appRouter.get('/api/cars/:id', Middlewares.isLoggedIn, CarController.apiCarDetail);
+appRouter.get('/api/cars/', Middlewares.isLoggedIn, CarController.apiCars);
 
 // form detail
-appRouter.get('/api/admin/participant/:id/', Middlewares.isLoggedIn, CarController.apiParticipantDetail);
-appRouter.get('/api/admin/participants-per-date/', Middlewares.isLoggedIn, CarController.apiParticipantsPerDate);
+appRouter.get('/api/participant/:id/', Middlewares.isLoggedIn, CarController.apiParticipantDetail);
+appRouter.get('/api/participants-per-date/', Middlewares.isLoggedIn, CarController.apiParticipantsPerDate);
 
 // admin user
 appRouter.get('/settings/users/', Middlewares.isLoggedIn, AdminUsersController.index);
@@ -43,9 +43,12 @@ appRouter.post('/api/admin/users/', Middlewares.isLoggedIn, AdminUsersController
 appRouter.patch('/api/admin/users/:id/', Middlewares.isLoggedIn, AdminUsersController.apiEditUser);
 appRouter.delete('/api/admin/users/:id/', Middlewares.isLoggedIn, AdminUsersController.apiDeleteUser);
 
+// setting cars
+appRouter.get('/settings/cars/', Middlewares.isLoggedIn, AdminCarsController.index);
+appRouter.get('/api/admin/cars/', Middlewares.isLoggedIn, AdminCarsController.apiListCars);
+
 // import cars
 appRouter.get('/settings/cars/import/', Middlewares.isLoggedIn, AdminCarsController.index);
-
 appRouter.post('/api/admin/import-cars/', Middlewares.isLoggedIn, AdminCarsController.importCars);
 
 // alerts

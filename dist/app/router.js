@@ -24,11 +24,11 @@ appRouter.get('/', middlewares_1.default.isLoggedIn, car_controller_1.default.ge
 appRouter.get('/cars/', middlewares_1.default.isLoggedIn, car_controller_1.default.vinDashboard);
 appRouter.get('/cars/:id', middlewares_1.default.isLoggedIn, car_controller_1.default.vinDashboardDetail);
 // api cars
-appRouter.get('/api/admin/cars/:id', middlewares_1.default.isLoggedIn, car_controller_1.default.apiCarDetail);
-appRouter.get('/api/admin/cars/', middlewares_1.default.isLoggedIn, car_controller_1.default.apiCars);
+appRouter.get('/api/cars/:id', middlewares_1.default.isLoggedIn, car_controller_1.default.apiCarDetail);
+appRouter.get('/api/cars/', middlewares_1.default.isLoggedIn, car_controller_1.default.apiCars);
 // form detail
-appRouter.get('/api/admin/participant/:id/', middlewares_1.default.isLoggedIn, car_controller_1.default.apiParticipantDetail);
-appRouter.get('/api/admin/participants-per-date/', middlewares_1.default.isLoggedIn, car_controller_1.default.apiParticipantsPerDate);
+appRouter.get('/api/participant/:id/', middlewares_1.default.isLoggedIn, car_controller_1.default.apiParticipantDetail);
+appRouter.get('/api/participants-per-date/', middlewares_1.default.isLoggedIn, car_controller_1.default.apiParticipantsPerDate);
 // admin user
 appRouter.get('/settings/users/', middlewares_1.default.isLoggedIn, user_admin_controller_1.default.index);
 // api admin users
@@ -36,6 +36,9 @@ appRouter.get('/api/admin/users/', middlewares_1.default.isLoggedIn, user_admin_
 appRouter.post('/api/admin/users/', middlewares_1.default.isLoggedIn, user_admin_controller_1.default.apiAddUser);
 appRouter.patch('/api/admin/users/:id/', middlewares_1.default.isLoggedIn, user_admin_controller_1.default.apiEditUser);
 appRouter.delete('/api/admin/users/:id/', middlewares_1.default.isLoggedIn, user_admin_controller_1.default.apiDeleteUser);
+// setting cars
+appRouter.get('/settings/cars/', middlewares_1.default.isLoggedIn, car_admin_controller_1.default.index);
+appRouter.get('/api/admin/cars/', middlewares_1.default.isLoggedIn, car_admin_controller_1.default.apiListCars);
 // import cars
 appRouter.get('/settings/cars/import/', middlewares_1.default.isLoggedIn, car_admin_controller_1.default.index);
 appRouter.post('/api/admin/import-cars/', middlewares_1.default.isLoggedIn, car_admin_controller_1.default.importCars);

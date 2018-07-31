@@ -30,20 +30,20 @@ menus.push({
     {
       id: '2.1',
       icon: 'fa-circle-o',
-      text: 'Usuarios',
-      url: '/settings/users/'
+      text: 'Alertas',
+      url: '/settings/alerts/'
     },
     {
       id: '2.2',
       icon: 'fa-circle-o',
-      text: 'Importar autos',
-      url: '/settings/cars/import/'
+      text: 'Autos',
+      url: '/settings/cars/'
     },
     {
       id: '2.3',
       icon: 'fa-circle-o',
-      text: 'Alertas',
-      url: '/settings/alerts/'
+      text: 'Usuarios',
+      url: '/settings/users/'
     }
   ]
 });

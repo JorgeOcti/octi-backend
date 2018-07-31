@@ -11,6 +11,7 @@ import ImportCarsView from './components/Imports/ImportCarsViews';
 import UsersListView from './components/Users/UsersListView';
 import configureStore from './store/configureStore';
 import history from './utils/history';
+import CarsListView from "./components/Cars/CarsListView";
 
 const store = configureStore();
 
@@ -28,6 +29,7 @@ const App = () => (
                 <Route exact path="/cars/" component={ DashboardVinView }/>
                 <Route exact path="/cars/:id" component={ DashboardVinDetail }/>
                 <Route exact path="/settings/users/" component={ UsersListView }/>
+                <Route exact path="/settings/cars/" component={ CarsListView }/>
                 <Route exact path="/settings/cars/import/" component={ ImportCarsView }/>
                 <Route exact path="/settings/alerts/" component={ AlertsViews }/>
                 <Route component={ NoMatch }/>

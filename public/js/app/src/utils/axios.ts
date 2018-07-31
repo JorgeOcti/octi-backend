@@ -87,12 +87,12 @@ export default class ApiService {
 
   public getParticipantsPerDate() {
     return this.instance.get(
-      `/api/admin/participants-per-date/`
+      `/api/participants-per-date/`
     );
   }
   public getParticipant(id: string) {
     return this.instance.get(
-      `/api/admin/participant/${id}/`
+      `/api/participant/${id}/`
     );
   }
 
@@ -104,6 +104,14 @@ export default class ApiService {
 
   public getCars(page?: number): AxiosPromise {
     return this.instance.get(
+      `/api/cars/${page ? `?page=${page}` : ''}`, {
+        cancelToken: this.source.token
+      }
+    );
+  }
+
+   public getAdminCars(page?: number): AxiosPromise {
+    return this.instance.get(
       `/api/admin/cars/${page ? `?page=${page}` : ''}`, {
         cancelToken: this.source.token
       }
@@ -112,7 +120,7 @@ export default class ApiService {
 
   public getCar(id: string): AxiosPromise {
     return this.instance.get(
-      `/api/admin/cars/${id}`, {
+      `/api/cars/${id}`, {
         cancelToken: this.source.token
       }
     );

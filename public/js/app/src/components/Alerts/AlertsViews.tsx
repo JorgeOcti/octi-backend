@@ -91,7 +91,7 @@ class AlertsViews extends React.Component<IPropsType, IStateType> {
   public render(): React.ReactElement<IPropsType> {
     const {alerts, loading} = this.props.alerts;
     return (
-      <AppContainer title="" cMenu="2" cSubMenu="2.3">
+      <AppContainer title="" cMenu="2" cSubMenu="2.1">
         <section className="content">
           <div className="box">
             <div className="box-header with-border">
