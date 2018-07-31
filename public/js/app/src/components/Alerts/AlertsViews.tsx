@@ -118,10 +118,10 @@ class AlertsViews extends React.Component<IPropsType, IStateType> {
                     alerts.map((alert) => {
                       return (
                         <tr key={alert._id} id={`alert-${alert._id}`}>
-                          <td style={{width: '20%'}} className="middle">{alert.name}</td>
+                          <td style={{width: '30%'}} className="middle">{alert.name}</td>
                           <td style={{width: '15%'}} className="middle text-center">{alert.lte !== 0 ? alert.lte : '-'}</td>
                           <td style={{width: '15%'}} className="middle text-center">{alert.gte !== 0 ? alert.gte : '-'}</td>
-                          <td style={{width: '50%'}}>
+                          <td style={{width: '40%'}}>
                             {
                               alert.users.map((user) => {
                                 return (
