@@ -15,7 +15,7 @@ const expect = chai.expect;
 describe('Forms', () => {
   describe('/GET ', () => {
     let firstForm: any = '';
-    it('get list forms', (done) => {
+    it('get apiListAlerts forms', (done) => {
       chai.request(server)
         .get('/api/v1/forms/')
         .end((err, res) => {

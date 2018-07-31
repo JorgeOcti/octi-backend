@@ -1,6 +1,6 @@
-import {ICompany} from "./company.interface";
-import {IVenue} from "./venue.interface";
-import {IForm} from "./form.interface";
+import {ICompany} from './company.interface';
+import {IForm} from './form.interface';
+import {IVenue} from './venue.interface';
 
 export interface IUser {
   _id: any;

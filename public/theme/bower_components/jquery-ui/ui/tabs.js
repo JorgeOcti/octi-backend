@@ -90,7 +90,7 @@ return $.widget( "ui.tabs", {
 			) ).sort();
 		}
 
-		// check for length avoids error when initializing empty list
+		// check for length avoids error when initializing empty apiListAlerts
 		if ( this.options.active !== false && this.anchors.length ) {
 			this.active = this._findActive( options.active );
 		} else {
@@ -469,7 +469,7 @@ return $.widget( "ui.tabs", {
 		}
 	},
 
-	// allow overriding how to find the list for rare usage scenarios (#7715)
+	// allow overriding how to find the apiListAlerts for rare usage scenarios (#7715)
 	_getList: function() {
 		return this.tablist || this.element.find( "ol,ul" ).eq( 0 );
 	},

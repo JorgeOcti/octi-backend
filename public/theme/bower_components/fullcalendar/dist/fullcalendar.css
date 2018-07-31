@@ -1197,7 +1197,7 @@ be a descendant of the grid when it is being dragged.
 .fc-list-table tr:first-child td {
   border-top-width: 0; }
 
-/* day headings with the list */
+/* day headings with the apiListAlerts */
 .fc-list-heading {
   border-bottom-width: 1px; }
 
@@ -1216,7 +1216,7 @@ be a descendant of the grid when it is being dragged.
 .fc-rtl .fc-list-heading-alt {
   float: left; }
 
-/* event list items */
+/* event apiListAlerts items */
 .fc-list-item.fc-has-url {
   cursor: pointer;
   /* whole row will be clickable */ }

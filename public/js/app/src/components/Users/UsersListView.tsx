@@ -161,16 +161,24 @@ class UsersListView extends React.Component<IPropsType, IStateType> {
         <div className="col-md-12">
           <div className="form-group">
             <label>Nombres</label>
-            <input type="text" name="fistName" className="form-control" maxLength={50}
-                   onChange={(e: React.ChangeEvent<HTMLInputElement>) => changeTempUser({firstName: e.target.value})}
+            <input
+              type="text"
+              name="fistName"
+              className="form-control"
+              maxLength={50}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) => changeTempUser({firstName: e.target.value})}
             />
           </div>
         </div>
         <div className="col-md-12">
           <div className="form-group">
             <label>Apellidos</label>
-            <input type="text" name="lastName" className="form-control" maxLength={50}
-                   onChange={(e: React.ChangeEvent<HTMLInputElement>) => changeTempUser({lastName: e.target.value})}
+            <input
+              type="text"
+              name="lastName"
+              className="form-control"
+              maxLength={50}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) => changeTempUser({lastName: e.target.value})}
             />
           </div>
         </div>
@@ -189,8 +197,10 @@ class UsersListView extends React.Component<IPropsType, IStateType> {
         <div className="col-md-12">
           <div className="form-group">
             <label htmlFor="sel1">Sucursal</label>
-            <select className="form-control" name="venue"
-                    onChange={(e: React.ChangeEvent<HTMLSelectElement>) => changeTempUser({venue: e.target.value})}>
+            <select
+              className="form-control"
+              name="venue"
+              onChange={(e: React.ChangeEvent<HTMLSelectElement>) => changeTempUser({venue: e.target.value})}>
               <option value="">Seleccione venue</option>
               {
                 venues.map((venue) => (
@@ -210,7 +220,6 @@ class UsersListView extends React.Component<IPropsType, IStateType> {
 
   private processAddUser(): void {
     const {firstName, lastName, email, venue} = this.props.users.tempUser;
-    // debugger;
     if (!firstName || !firstName.trim().length) {
       swal('Agregar usuario', 'El campo nombres es requerido', 'error');
     } else if (!lastName || !lastName.trim().length) {

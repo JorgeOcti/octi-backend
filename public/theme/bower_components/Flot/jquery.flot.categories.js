@@ -13,7 +13,7 @@ labels, e.g.
 
 By default, the labels are ordered as they are met in the data series. If you
 need a different ordering, you can specify "categories" on the axis options
-and list the categories there:
+and apiListAlerts the categories there:
 
 	xaxis: {
 		mode: "categories",

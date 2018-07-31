@@ -3,6 +3,7 @@ import {IUser} from './user.interface';
 
 export interface IAlert {
   _id: any;
+  name: string;
   company: ICompany | any;
   users: IUser[];
   gte: number;

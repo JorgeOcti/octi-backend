@@ -312,7 +312,7 @@ function Sizzle( selector, context, results, seed ) {
 						context.setAttribute( "id", (nid = expando) );
 					}
 
-					// Prefix every selector in the list
+					// Prefix every selector in the apiListAlerts
 					groups = tokenize( selector );
 					i = groups.length;
 					while ( i-- ) {
@@ -398,7 +398,7 @@ function assert( fn ) {
 
 /**
  * Adds the same handler for all of the specified attrs
- * @param {String} attrs Pipe-separated list of attributes
+ * @param {String} attrs Pipe-separated apiListAlerts of attributes
  * @param {Function} handler The method that will be applied
  */
 function addHandle( attrs, handler ) {
@@ -2122,7 +2122,7 @@ select = Sizzle.select = function( selector, context, results, seed ) {
 
 	results = results || [];
 
-	// Try to minimize operations if there is only one selector in the list and no seed
+	// Try to minimize operations if there is only one selector in the apiListAlerts and no seed
 	// (the latter of which guarantees us context)
 	if ( match.length === 1 ) {
 

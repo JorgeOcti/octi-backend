@@ -24,6 +24,11 @@ export function alerts(state = initialState, action: AlertReduxAction): IAlertsS
         ...state,
         source: action.payload.source
       };
+    case '/ALERTS/DELETE':
+      return {
+        ...state,
+        alerts: state.alerts.filter((alert) => alert._id !== action.payload.id)
+      };
     case '/ALERTS/LOAD_DATA':
       return {
         ...state,

@@ -5,12 +5,13 @@ const user_model_1 = require("../../models/user.model");
 class AdminAlertsController {
     constructor() {
         this.index = this.index.bind(this);
-        this.list = this.list.bind(this);
+        this.apiListAlerts = this.apiListAlerts.bind(this);
+        this.apiDeleteAlert = this.apiDeleteAlert.bind(this);
     }
     async index(req, res) {
         res.render('app/index', { token: await req.user.generateToken() });
     }
-    async list(req, res) {
+    async apiListAlerts(req, res) {
         const company = req.user.company;
         try {
             const alerts = await alert_model_1.default
@@ -34,6 +35,30 @@ class AdminAlertsController {
                 message: e,
                 status: 400
             });
+        }
+    }
+    async apiDeleteAlert(req, res) {
+        const { id } = req.params;
+        const company = req.user.company;
+        try {
+            const alert = await alert_model_1.default.findOneAndRemove({ _id: id, company });
+            if (alert) {
+                const response = {
+                    message: 'Alerta eliminada satisfactoriamente.',
+                    id: alert._id
+                };
+                res.status(200).json(response);
+            }
+            else {
+                const response = {
+                    id,
+                    message: 'Esta alerta ya fue eliminada.'
+                };
+                res.status(200).json(response);
+            }
+        }
+        catch (e) {
+            res.status(500).json(e);
         }
     }
 }

@@ -403,7 +403,7 @@ var requirejs, require, define;
             }
 
             if (callback.splice) {
-                //callback is an array, which means it is a dependency list.
+                //callback is an array, which means it is a dependency apiListAlerts.
                 //Adjust args if there are dependencies
                 deps = callback;
                 callback = relName;
@@ -1856,7 +1856,7 @@ S2.define('select2/selection/search',[
       '<li class="select2-search select2-search--inline">' +
         '<input class="select2-search__field" type="search" tabindex="-1"' +
         ' autocomplete="off" autocorrect="off" autocapitalize="none"' +
-        ' spellcheck="false" role="textbox" aria-autocomplete="list" />' +
+        ' spellcheck="false" role="textbox" aria-autocomplete="apiListAlerts" />' +
       '</li>'
     );
 

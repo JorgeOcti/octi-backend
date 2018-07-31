@@ -4,6 +4,9 @@ import {IAlert} from '../../interfaces/alert.interface';
 export interface IAlertModel extends IAlert, mongoose.Document {}
 
 const alertSchema = new mongoose.Schema({
+  name: {
+    type: String
+  },
   company: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Company',

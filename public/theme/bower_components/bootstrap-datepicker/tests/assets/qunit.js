@@ -1392,7 +1392,7 @@ QUnit.jsDump = (function() {
 		join: join,
 		//
 		_depth_: 1,
-		// This is the list of parsers, to modify them, use jsDump.setParser
+		// This is the apiListAlerts of parsers, to modify them, use jsDump.setParser
 		parsers: {
 			window: '[Window]',
 			document: '[Document]',

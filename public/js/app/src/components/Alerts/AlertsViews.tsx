@@ -7,7 +7,8 @@ import {ErrorInfo} from 'react';
 import {connect} from 'react-redux';
 import {RouteComponentProps} from 'react-router';
 import {Dispatch} from 'redux';
-import {AlertReduxAction, IAlertsState, loadAlertsDataAction} from '../../actions/alerts';
+import {IAlert} from '../../../../../../src/interfaces/alert.interface';
+import {AlertReduxAction, deleteAlertAction, IAlertsState, loadAlertsDataAction} from '../../actions/alerts';
 // import * as io from 'socket.io-client';
 import {loadDataAction, ModalReduxAction} from '../../actions/modal';
 import AppContainer from '../../container/AppContainer';
@@ -21,6 +22,8 @@ interface IPropsType extends RouteComponentProps<{ ticket: string }> {
   dispatch: Dispatch<AlertReduxAction>;
   loadDataAction(title: string, body: JSX.Element, footer: JSX.Element): ModalReduxAction;
   loadAlertsDataAction(): ModalReduxAction;
+
+  deleteAlertAction(id: string): ModalReduxAction;
 }
 
 interface IStateType {
@@ -38,40 +41,9 @@ class AlertsViews extends React.Component<IPropsType, IStateType> {
     error: null
   };
 
-  // private socket: SocketIOClient.Socket;
-
   constructor(props: IPropsType) {
     super(props);
-
-    // socket
-    /*this.socket = io.connect(`${location.protocol}//${location.host}`, {
-      secure: location.protocol === 'https:',
-      reconnection: true,
-      query: {token: (window.user as any).token}
-    });
-    this.socket.on('STATUS-CARS', (data: any): void => {
-      if (data.hasOwnProperty('newCar')) {
-        this.setState({
-          carsObj: {
-            ...this.state.carsObj,
-            [data.newCar.vin]: {
-              ...(this.state.carsObj as any)[data.newCar.vin],
-              status: carStatus.Finish
-            }
-          }
-        });
-      }
-    });
-    this.socket.on('FINISH-IMPORT', (data: any): void => {
-      swal('Importador de autos', 'La carga a finalizado exitosamente.', 'success');
-      this.setState({
-        loadFile: false,
-        cars: this.state.cars.map((car: IImportCar) => {
-          car.status = carStatus.Finish;
-          return car;
-        })
-      });
-    });*/
+    this.deleteAlert = this.deleteAlert.bind(this);
   }
 
   public componentWillMount() {
@@ -110,6 +82,7 @@ class AlertsViews extends React.Component<IPropsType, IStateType> {
               <table className="table table-striped">
                 <thead>
                   <tr>
+                    <th>Nombre</th>
                     <th>Menor igual que</th>
                     <th>Mayor igual que</th>
                     <th>Usuarios</th>
@@ -121,12 +94,13 @@ class AlertsViews extends React.Component<IPropsType, IStateType> {
                 {
                   alerts.map((alert) => {
                     return (
-                      <tr key={alert._id}>
-                        <td>{alert.lte}</td>
-                        <td>{alert.gte}</td>
+                      <tr key={alert._id} id={`alert-${alert._id}`}>
+                        <td>{alert.name}</td>
+                        <td>{alert.lte !== 0 ? alert.lte : '-'}</td>
+                        <td>{alert.gte !== 0 ? alert.gte : '-'}</td>
                         <td>{alert.users.length}</td>
                         <td className="text-blue pointer" onClick={undefined}><i className="fa fa-pencil"/></td>
-                        <td className="text-red pointer" onClick={undefined}><i className="fa fa-minus-circle"/></td>
+                        <td className="text-red pointer" onClick={() => this.deleteAlert(alert)}><i className="fa fa-minus-circle"/></td>
                       </tr>
                     );
                   })
@@ -147,6 +121,26 @@ class AlertsViews extends React.Component<IPropsType, IStateType> {
     );
   }
 
+  private deleteAlert(alert: IAlert) {
+    // ask if you are sure that you are going to delete the alert?
+    swal({
+      title: '¿Estás seguro?',
+      text: `Vas a eliminar la alerta ${alert.name}`,
+      icon: 'warning',
+      dangerMode: true,
+      buttons: {
+        cancel: 'Cancelar' as any,
+        confirm: {
+          text: 'Sí'
+        }
+      }
+    }).then((willDelete) => {
+      if (willDelete) {
+        this.props.deleteAlertAction(alert._id);
+      }
+    });
+  }
+
   // private createAlert(){
   //
   // }
@@ -162,7 +156,8 @@ const mapDispatchToProps = (dispatch: any ) => {
   return {
     dispatch,
     loadDataAction: (title: string, body: JSX.Element, footer: JSX.Element) => dispatch(loadDataAction(title, body, footer)),
-    loadAlertsDataAction: () => dispatch(loadAlertsDataAction())
+    loadAlertsDataAction: () => dispatch(loadAlertsDataAction()),
+    deleteAlertAction: (id: string) => dispatch(deleteAlertAction(id))
   };
 };
 

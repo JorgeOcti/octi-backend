@@ -2,6 +2,9 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 const mongoose = require("mongoose");
 const alertSchema = new mongoose.Schema({
+    name: {
+        type: String
+    },
     company: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Company',

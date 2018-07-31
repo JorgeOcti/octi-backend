@@ -874,10 +874,10 @@ throw new Error('AdminLTE requires jQuery')
 
 /* TodoList()
  * =========
- * Converts a list into a todoList.
+ * Converts a apiListAlerts into a todoList.
  *
- * @Usage: $('.my-list').todoList(options)
- *         or add [data-widget="todo-list"] to the ul element
+ * @Usage: $('.my-apiListAlerts').todoList(options)
+ *         or add [data-widget="todo-apiListAlerts"] to the ul element
  *         Pass any option as data-option="value"
  */
 +function ($) {
@@ -895,7 +895,7 @@ throw new Error('AdminLTE requires jQuery')
   };
 
   var Selector = {
-    data: '[data-widget="todo-list"]'
+    data: '[data-widget="todo-apiListAlerts"]'
   };
 
   var ClassName = {
@@ -984,7 +984,7 @@ throw new Error('AdminLTE requires jQuery')
 
 /* Tree()
  * ======
- * Converts a nested list into a multilevel
+ * Converts a nested apiListAlerts into a multilevel
  * tree view menu.
  *
  * @Usage: $('.my-menu').tree(options)

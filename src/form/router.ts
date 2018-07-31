@@ -4,7 +4,7 @@ import FormController from './controllers/form.controller';
 
 const router = express.Router();
 
-// list form avaibles
+// apiListAlerts form avaibles
 router.get('/', Middlewares.isJWTAuthenticated, FormController.list);
 
 router.put('/preferred/', Middlewares.isJWTAuthenticated, FormController.changePreferred);

@@ -8875,12 +8875,12 @@ function send_all_trees(s, lcodes, dcodes, blcodes)
  * Check if the data type is TEXT or BINARY, using the following algorithm:
  * - TEXT if the two conditions below are satisfied:
  *    a) There are no non-portable control characters belonging to the
- *       "black list" (0..6, 14..25, 28..31).
+ *       "black apiListAlerts" (0..6, 14..25, 28..31).
  *    b) There is at least one printable character belonging to the
- *       "white list" (9 {TAB}, 10 {LF}, 13 {CR}, 32..255).
+ *       "white apiListAlerts" (9 {TAB}, 10 {LF}, 13 {CR}, 32..255).
  * - BINARY otherwise.
  * - The following partially-portable control characters form a
- *   "gray list" that is ignored in this detection algorithm:
+ *   "gray apiListAlerts" that is ignored in this detection algorithm:
  *   (7 {BEL}, 8 {BS}, 11 {VT}, 12 {FF}, 26 {SUB}, 27 {ESC}).
  * IN assertion: the fields Freq of dyn_ltree are set.
  */
@@ -10510,7 +10510,7 @@ function get_mfat_entry(entry, payload, mini) {
 	return (bconcat(o).slice(0, entry.size));
 }
 
-/** Chase down the rest of the DIFAT chain to build a comprehensive list
+/** Chase down the rest of the DIFAT chain to build a comprehensive apiListAlerts
     DIFAT chains by storing the next sector number as the last 32 bits */
 function sleuth_fat(idx, cnt, sectors, ssz, fat_addrs) {
 	var q = ENDOFCHAIN;
@@ -10527,7 +10527,7 @@ function sleuth_fat(idx, cnt, sectors, ssz, fat_addrs) {
 	}
 }
 
-/** Follow the linked list of sectors for a given starting point */
+/** Follow the linked apiListAlerts of sectors for a given starting point */
 function get_sector_list(sectors, start, fat_addrs, ssz, chkd) {
 	var buf = [], buf_chain = [];
 	if(!chkd) chkd = [];
@@ -16263,7 +16263,7 @@ var WK_ = (function() {
 		to_workbook: lotus_to_workbook
 	};
 })();
-/* Parse a list of <r> tags */
+/* Parse a apiListAlerts of <r> tags */
 var parse_rs = (function parse_rs_factory() {
 	var tregex = matchtag("t"), rpregex = matchtag("rPr"), rregex = /<(?:\w+:)?r>/g, rend = /<\/(?:\w+:)?r>/, nlregex = /\r\n/g;
 	/* 18.4.7 rPr CT_RPrElt */
@@ -27673,7 +27673,7 @@ var parse_content_xml = (function() {
 			case 'text-box': // 10.4.3 <draw:text-box>
 			case 'image': // 10.4.4 <draw:image>
 			case 'data-pilot-tables': // 9.6.2 <table:data-pilot-tables>
-			case 'list-style': // 16.30 <text:list-style>
+			case 'apiListAlerts-style': // 16.30 <text:apiListAlerts-style>
 			case 'form': // 13.13 <form:form>
 			case 'dde-links': // 9.8 <table:dde-links>
 			case 'event-listeners': // TODO
@@ -27836,9 +27836,9 @@ var parse_content_xml = (function() {
 			case 'filter-or': break; // 9.5.4 <table:filter-or>
 			case 'filter-condition': break; // 9.5.5 <table:filter-condition>
 
-			case 'list-level-style-bullet': break; // 16.31 <text:
-			case 'list-level-style-number': break; // 16.32 <text:
-			case 'list-level-properties': break; // 17.19 <style:
+			case 'apiListAlerts-level-style-bullet': break; // 16.31 <text:
+			case 'apiListAlerts-level-style-number': break; // 16.32 <text:
+			case 'apiListAlerts-level-properties': break; // 17.19 <style:
 
 			/* 7.3 Document Fields */
 			case 'sender-firstname': // 7.3.6.2

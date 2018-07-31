@@ -8269,7 +8269,7 @@ StandardTheme.prototype.classes = {
     // day grid
     headerRow: 'fc-widget-header',
     dayRow: 'fc-widget-content',
-    // list view
+    // apiListAlerts view
     listView: 'fc-widget-content'
 };
 StandardTheme.prototype.baseIconClass = 'fc-icon';
@@ -8319,7 +8319,7 @@ JqueryUiTheme.prototype.classes = {
     // day grid
     headerRow: 'ui-widget-header',
     dayRow: 'ui-widget-content',
-    // list view
+    // apiListAlerts view
     listView: 'ui-widget-content'
 };
 JqueryUiTheme.prototype.baseIconClass = 'ui-icon';
@@ -12225,7 +12225,7 @@ var ListView = /** @class */ (function (_super) {
     tslib_1.__extends(ListView, _super);
     function ListView(calendar, viewSpec) {
         var _this = _super.call(this, calendar, viewSpec) || this;
-        _this.segSelector = '.fc-list-item'; // which elements accept event actions
+        _this.segSelector = '.fc-apiListAlerts-item'; // which elements accept event actions
         _this.scroller = new Scroller_1.default({
             overflowX: 'hidden',
             overflowY: 'auto'
@@ -12233,7 +12233,7 @@ var ListView = /** @class */ (function (_super) {
         return _this;
     }
     ListView.prototype.renderSkeleton = function () {
-        this.el.addClass('fc-list-view ' +
+        this.el.addClass('fc-apiListAlerts-view ' +
             this.calendar.theme.getClass('listView'));
         this.scroller.render();
         this.scroller.el.appendTo(this.el);
@@ -12296,9 +12296,9 @@ var ListView = /** @class */ (function (_super) {
         return segs;
     };
     ListView.prototype.renderEmptyMessage = function () {
-        this.contentEl.html('<div class="fc-list-empty-wrap2">' + // TODO: try less wraps
-            '<div class="fc-list-empty-wrap1">' +
-            '<div class="fc-list-empty">' +
+        this.contentEl.html('<div class="fc-apiListAlerts-empty-wrap2">' + // TODO: try less wraps
+            '<div class="fc-apiListAlerts-empty-wrap1">' +
+            '<div class="fc-apiListAlerts-empty">' +
             util_1.htmlEscape(this.opt('noEventsMessage')) +
             '</div>' +
             '</div>' +
@@ -12310,7 +12310,7 @@ var ListView = /** @class */ (function (_super) {
         var dayIndex;
         var daySegs;
         var i;
-        var tableEl = $('<table class="fc-list-table ' + this.calendar.theme.getClass('tableList') + '"><tbody/></table>');
+        var tableEl = $('<table class="fc-apiListAlerts-table ' + this.calendar.theme.getClass('tableList') + '"><tbody/></table>');
         var tbodyEl = tableEl.find('tbody');
         for (dayIndex = 0; dayIndex < segsByDay.length; dayIndex++) {
             daySegs = segsByDay[dayIndex];
@@ -12341,14 +12341,14 @@ var ListView = /** @class */ (function (_super) {
     ListView.prototype.dayHeaderHtml = function (dayDate) {
         var mainFormat = this.opt('listDayFormat');
         var altFormat = this.opt('listDayAltFormat');
-        return '<tr class="fc-list-heading" data-date="' + dayDate.format('YYYY-MM-DD') + '">' +
+        return '<tr class="fc-apiListAlerts-heading" data-date="' + dayDate.format('YYYY-MM-DD') + '">' +
             '<td class="' + this.calendar.theme.getClass('widgetHeader') + '" colspan="3">' +
             (mainFormat ?
-                this.buildGotoAnchorHtml(dayDate, { 'class': 'fc-list-heading-main' }, util_1.htmlEscape(dayDate.format(mainFormat)) // inner HTML
+                this.buildGotoAnchorHtml(dayDate, { 'class': 'fc-apiListAlerts-heading-main' }, util_1.htmlEscape(dayDate.format(mainFormat)) // inner HTML
                 ) :
                 '') +
             (altFormat ?
-                this.buildGotoAnchorHtml(dayDate, { 'class': 'fc-list-heading-alt' }, util_1.htmlEscape(dayDate.format(altFormat)) // inner HTML
+                this.buildGotoAnchorHtml(dayDate, { 'class': 'fc-apiListAlerts-heading-alt' }, util_1.htmlEscape(dayDate.format(altFormat)) // inner HTML
                 ) :
                 '') +
             '</td>' +
@@ -14684,7 +14684,7 @@ var ListEventRenderer = /** @class */ (function (_super) {
         var eventDef = eventFootprint.eventDef;
         var componentFootprint = eventFootprint.componentFootprint;
         var url = eventDef.url;
-        var classes = ['fc-list-item'].concat(this.getClasses(eventDef));
+        var classes = ['fc-apiListAlerts-item'].concat(this.getClasses(eventDef));
         var bgColor = this.getBgColor(eventDef);
         var timeHtml;
         if (componentFootprint.isAllDay) {
@@ -14707,18 +14707,18 @@ var ListEventRenderer = /** @class */ (function (_super) {
         }
         return '<tr class="' + classes.join(' ') + '">' +
             (this.displayEventTime ?
-                '<td class="fc-list-item-time ' + theme.getClass('widgetContent') + '">' +
+                '<td class="fc-apiListAlerts-item-time ' + theme.getClass('widgetContent') + '">' +
                     (timeHtml || '') +
                     '</td>' :
                 '') +
-            '<td class="fc-list-item-marker ' + theme.getClass('widgetContent') + '">' +
+            '<td class="fc-apiListAlerts-item-marker ' + theme.getClass('widgetContent') + '">' +
             '<span class="fc-event-dot"' +
             (bgColor ?
                 ' style="background-color:' + bgColor + '"' :
                 '') +
             '></span>' +
             '</td>' +
-            '<td class="fc-list-item-title ' + theme.getClass('widgetContent') + '">' +
+            '<td class="fc-apiListAlerts-item-title ' + theme.getClass('widgetContent') + '">' +
             '<a' + (url ? ' href="' + util_1.htmlEscape(url) + '"' : '') + '>' +
             util_1.htmlEscape(eventDef.title || '') +
             '</a>' +
@@ -14823,7 +14823,7 @@ BootstrapTheme.prototype.classes = {
     // day grid
     headerRow: 'panel-default',
     dayRow: 'panel-default',
-    // list view
+    // apiListAlerts view
     listView: 'panel panel-default'
 };
 BootstrapTheme.prototype.baseIconClass = 'glyphicon';

@@ -3411,7 +3411,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	     | "M10,20L30,40"
 	     * Here we can see two commands: “M”, with arguments `(10, 20)` and “L” with arguments `(30, 40)`. Upper case letter mean command is absolute, lower case—relative.
 	     *
-	     # <p>Here is short list of commands available, for more details see <a href="http://www.w3.org/TR/SVG/paths.html#PathData" title="Details of a path's data attribute's format are described in the SVG specification.">SVG path string format</a>.</p>
+	     # <p>Here is short apiListAlerts of commands available, for more details see <a href="http://www.w3.org/TR/SVG/paths.html#PathData" title="Details of a path's data attribute's format are described in the SVG specification.">SVG path string format</a>.</p>
 	     # <table><thead><tr><th>Command</th><th>Name</th><th>Parameters</th></tr></thead><tbody>
 	     # <tr><td>M</td><td>moveto</td><td>(x y)+</td></tr>
 	     # <tr><td>Z</td><td>closepath</td><td>(none)</td></tr>
@@ -4079,7 +4079,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	     * Raphael.easing_formulas
 	     [ property ]
 	     **
-	     * Object that contains easing formulas for animation. You could extend it with your own. By default it has following list of easing:
+	     * Object that contains easing formulas for animation. You could extend it with your own. By default it has following apiListAlerts of easing:
 	     # <ul>
 	     #     <li>“linear”</li>
 	     #     <li>“&lt;” or “easeIn” or “ease-in”</li>
@@ -5663,7 +5663,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	     * If for some reasons you don’t like default separators (`.` or `/`) you can specify yours
 	     * here. Be aware that if you pass a string longer than one character it will be treated as
-	     * a list of characters.
+	     * a apiListAlerts of characters.
 
 	     - separator (string) new separator. Empty string resets to default: `.` or `/`.
 	    \*/
@@ -5735,7 +5735,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	     **
 	     * Returns function that will fire given event with optional arguments.
 	     * Arguments that will be passed to the result function will be also
-	     * concated to the list of final arguments.
+	     * concated to the apiListAlerts of final arguments.
 	     | el.onclick = eve.f("click", 1, 2);
 	     | eve.on("click", function (a, b, c) {
 	     |     console.log(a, b, c); // 1, 2, [event object]
@@ -5797,7 +5797,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	     * eve.off
 	     [ method ]
 	     **
-	     * Removes given function from the list of event listeners assigned to given name.
+	     * Removes given function from the apiListAlerts of event listeners assigned to given name.
 	     * If no arguments specified all the events will be cleared.
 	     **
 	     > Arguments
@@ -6652,7 +6652,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	     [ method ]
 	     **
 	     * Deprecated! Use @Element.transform instead.
-	     * Adds rotation by given angle around given point to the list of
+	     * Adds rotation by given angle around given point to the apiListAlerts of
 	     * transformations of the element.
 	     > Parameters
 	     - deg (number) angle in degrees
@@ -6685,7 +6685,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	     [ method ]
 	     **
 	     * Deprecated! Use @Element.transform instead.
-	     * Adds scale by given amount relative to given point to the list of
+	     * Adds scale by given amount relative to given point to the apiListAlerts of
 	     * transformations of the element.
 	     > Parameters
 	     - sx (number) horisontal scale amount
@@ -6721,7 +6721,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	     [ method ]
 	     **
 	     * Deprecated! Use @Element.transform instead.
-	     * Adds translation by given amount to the list of transformations of the element.
+	     * Adds translation by given amount to the apiListAlerts of transformations of the element.
 	     > Parameters
 	     - dx (number) horisontal shift
 	     - dy (number) vertical shift

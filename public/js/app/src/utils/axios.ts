@@ -134,6 +134,12 @@ export default class ApiService {
     );
   }
 
+  public deleteAlert(id: string): AxiosPromise {
+    return this.instance.delete(
+      `/api/admin/alerts/${id}/`
+    );
+  }
+
   public getSource(): CancelTokenSource {
     this.source = this.CancelToken.source();
     return this.source;

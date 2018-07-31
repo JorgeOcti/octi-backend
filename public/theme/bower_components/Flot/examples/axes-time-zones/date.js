@@ -53,7 +53,7 @@
   // `timezoneJS.timezone.transport` to a `function`. More details will follow
   var $ = root.$ || root.jQuery || root.Zepto
     , fleegix = root.fleegix
-  // Declare constant list of days and months. Unfortunately this doesn't leave room for i18n due to the Olson data being in English itself
+  // Declare constant apiListAlerts of days and months. Unfortunately this doesn't leave room for i18n due to the Olson data being in English itself
     , DAYS = timezoneJS.Days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
     , MONTHS = timezoneJS.Months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
     , SHORT_MONTHS = {}
@@ -163,7 +163,7 @@
     //
     // - `Array`: Can be any combo of the above.
     //
-    //If 1st argument is an array, we can use it as a list of arguments itself
+    //If 1st argument is an array, we can use it as a apiListAlerts of arguments itself
     if (Object.prototype.toString.call(args[0]) === '[object Array]') {
       args = args[0];
     }

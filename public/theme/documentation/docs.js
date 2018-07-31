@@ -64,7 +64,7 @@ $(function () {
   // Skin switcher
   var currentSkin = 'skin-blue'
 
-  $('#layout-skins-list [data-skin]').click(function (e) {
+  $('#layout-skins-apiListAlerts [data-skin]').click(function (e) {
     e.preventDefault()
     var skinName = $(this).data('skin')
     $('body').removeClass(currentSkin)

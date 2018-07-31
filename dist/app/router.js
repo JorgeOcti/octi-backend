@@ -41,7 +41,9 @@ appRouter.get('/settings/cars/import/', middlewares_1.default.isLoggedIn, car_ad
 appRouter.post('/api/admin/import-cars/', middlewares_1.default.isLoggedIn, car_admin_controller_1.default.importCars);
 // alerts
 appRouter.get('/settings/alerts/', middlewares_1.default.isLoggedIn, alerts_admin_controller_1.default.index);
-appRouter.get('/api/admin/alerts/', middlewares_1.default.isLoggedIn, alerts_admin_controller_1.default.list);
+// api alerts
+appRouter.get('/api/admin/alerts/', middlewares_1.default.isLoggedIn, alerts_admin_controller_1.default.apiListAlerts);
+appRouter.delete('/api/admin/alerts/:id', middlewares_1.default.isLoggedIn, alerts_admin_controller_1.default.apiDeleteAlert);
 // admin companies
 appRouter.get('/companies/', middlewares_1.default.isLoggedIn, companies_admin_controller_1.default.index);
 // venue companies

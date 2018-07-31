@@ -15,7 +15,7 @@ API.txt for details.
 			timezone: null,		// "browser" for local to the client or timezone for timezone-js
 			timeformat: null,	// format string to use
 			twelveHourClock: false,	// 12 or 24 time in time mode
-			monthNames: null	// list of names of months
+			monthNames: null	// apiListAlerts of names of months
 		}
 	};
 

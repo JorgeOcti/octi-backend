@@ -316,7 +316,7 @@ return $.widget( "ui.menu", {
 			}
 		});
 
-		// Don't refresh list items that are already adapted
+		// Don't refresh apiListAlerts items that are already adapted
 		items.not( ".ui-menu-item, .ui-menu-divider" )
 			.addClass( "ui-menu-item" )
 			.uniqueId()

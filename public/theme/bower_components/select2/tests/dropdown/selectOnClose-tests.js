@@ -34,7 +34,7 @@ test('will not trigger if no results were given', function (assert) {
   container.trigger('close');
 });
 
-test('will not trigger if the results list is empty', function (assert) {
+test('will not trigger if the results apiListAlerts is empty', function (assert) {
   assert.expect(1);
 
   var $element = $('<select></select>');

@@ -998,23 +998,23 @@ function createFlags( flags ) {
 }
 
 /*
- * Create a callback list using the following parameters:
+ * Create a callback apiListAlerts using the following parameters:
  *
- *	flags:	an optional list of space-separated flags that will change how
- *			the callback list behaves
+ *	flags:	an optional apiListAlerts of space-separated flags that will change how
+ *			the callback apiListAlerts behaves
  *
- * By default a callback list will act like an event callback list and can be
+ * By default a callback apiListAlerts will act like an event callback apiListAlerts and can be
  * "fired" multiple times.
  *
  * Possible flags:
  *
- *	once:			will ensure the callback list can only be fired once (like a Deferred)
+ *	once:			will ensure the callback apiListAlerts can only be fired once (like a Deferred)
  *
  *	memory:			will keep track of previous values and will call any callback added
- *					after the list has been fired right away with the latest "memorized"
+ *					after the apiListAlerts has been fired right away with the latest "memorized"
  *					values (like a Deferred)
  *
- *	unique:			will ensure a callback can only be added once (no duplicate in the list)
+ *	unique:			will ensure a callback can only be added once (no duplicate in the apiListAlerts)
  *
  *	stopOnFalse:	interrupt callings when a callback returns false
  *
@@ -1025,15 +1025,15 @@ jQuery.Callbacks = function( flags ) {
 	// (we check in cache first)
 	flags = flags ? ( flagsCache[ flags ] || createFlags( flags ) ) : {};
 
-	var // Actual callback list
+	var // Actual callback apiListAlerts
 		list = [],
 		// Stack of fire calls for repeatable lists
 		stack = [],
 		// Last fire value (for non-forgettable lists)
 		memory,
-		// Flag to know if list was already fired
+		// Flag to know if apiListAlerts was already fired
 		fired,
-		// Flag to know if list is currently firing
+		// Flag to know if apiListAlerts is currently firing
 		firing,
 		// First callback to fire (used internally by add and fireWith)
 		firingStart,
@@ -1041,7 +1041,7 @@ jQuery.Callbacks = function( flags ) {
 		firingLength,
 		// Index of currently firing callback (modified by remove if needed)
 		firingIndex,
-		// Add one or several callbacks to the list
+		// Add one or several callbacks to the apiListAlerts
 		add = function( args ) {
 			var i,
 				length,
@@ -1093,7 +1093,7 @@ jQuery.Callbacks = function( flags ) {
 		},
 		// Actual Callbacks object
 		self = {
-			// Add a callback or a collection of callbacks to the list
+			// Add a callback or a collection of callbacks to the apiListAlerts
 			add: function() {
 				if ( list ) {
 					var length = list.length;
@@ -1112,7 +1112,7 @@ jQuery.Callbacks = function( flags ) {
 				}
 				return this;
 			},
-			// Remove a callback from the list
+			// Remove a callback from the apiListAlerts
 			remove: function() {
 				if ( list ) {
 					var args = arguments,
@@ -1143,7 +1143,7 @@ jQuery.Callbacks = function( flags ) {
 				}
 				return this;
 			},
-			// Control if a given callback is in the list
+			// Control if a given callback is in the apiListAlerts
 			has: function( fn ) {
 				if ( list ) {
 					var i = 0,
@@ -1156,12 +1156,12 @@ jQuery.Callbacks = function( flags ) {
 				}
 				return false;
 			},
-			// Remove all callbacks from the list
+			// Remove all callbacks from the apiListAlerts
 			empty: function() {
 				list = [];
 				return this;
 			},
-			// Have the list do nothing anymore
+			// Have the apiListAlerts do nothing anymore
 			disable: function() {
 				list = stack = memory = undefined;
 				return this;
@@ -1170,7 +1170,7 @@ jQuery.Callbacks = function( flags ) {
 			disabled: function() {
 				return !list;
 			},
-			// Lock the list in its current state
+			// Lock the apiListAlerts in its current state
 			lock: function() {
 				stack = undefined;
 				if ( !memory || memory === true ) {
@@ -2338,7 +2338,7 @@ jQuery.fn.extend({
 					classNames = value.split( rspace );
 
 				while ( (className = classNames[ i++ ]) ) {
-					// check each className given, space seperated list
+					// check each className given, space seperated apiListAlerts
 					state = isBool ? state : !self.hasClass( className );
 					self[ state ? "addClass" : "removeClass" ]( className );
 				}
@@ -3001,7 +3001,7 @@ jQuery.event = {
 				}
 			}
 
-			// Add to the element's handler list, delegates in front
+			// Add to the element's handler apiListAlerts, delegates in front
 			if ( selector ) {
 				handlers.splice( handlers.delegateCount++, 0, handleObj );
 			} else {
@@ -3170,7 +3170,7 @@ jQuery.event = {
 			event.target = elem;
 		}
 
-		// Clone any incoming data and prepend the event, creating the handler arg list
+		// Clone any incoming data and prepend the event, creating the handler arg apiListAlerts
 		data = data != null ? jQuery.makeArray( data ) : [];
 		data.unshift( event );
 
@@ -4942,7 +4942,7 @@ if ( document.documentElement.compareDocumentPosition ) {
 		}
 
 		// Otherwise they're somewhere else in the tree so we need
-		// to build up a full list of the parentNodes for comparison
+		// to build up a full apiListAlerts of the parentNodes for comparison
 		while ( cur ) {
 			ap.unshift( cur );
 			cur = cur.parentNode;
@@ -7588,7 +7588,7 @@ jQuery.extend({
 		// We also use the url parameter if available
 		s.url = ( ( url || s.url ) + "" ).replace( rhash, "" ).replace( rprotocol, ajaxLocParts[ 1 ] + "//" );
 
-		// Extract dataTypes list
+		// Extract dataTypes apiListAlerts
 		s.dataTypes = jQuery.trim( s.dataType || "*" ).toLowerCase().split( rspacesAjax );
 
 		// Determine if a cross-domain request is in order
@@ -7870,7 +7870,7 @@ function ajaxHandleResponses( s, jqXHR, responses ) {
 	}
 
 	// If we found a dataType
-	// We add the dataType to the list if needed
+	// We add the dataType to the apiListAlerts if needed
 	// and return the corresponding response
 	if ( finalDataType ) {
 		if ( finalDataType !== dataTypes[ 0 ] ) {
@@ -8279,7 +8279,7 @@ if ( jQuery.support.ajax ) {
 									responses = {};
 									xml = xhr.responseXML;
 
-									// Construct response list
+									// Construct response apiListAlerts
 									if ( xml && xml.documentElement /* #4958 */ ) {
 										responses.xml = xml;
 									}
@@ -8333,13 +8333,13 @@ if ( jQuery.support.ajax ) {
 					} else {
 						handle = ++xhrId;
 						if ( xhrOnUnloadAbort ) {
-							// Create the active xhrs callbacks list if needed
+							// Create the active xhrs callbacks apiListAlerts if needed
 							// and attach the unload handler
 							if ( !xhrCallbacks ) {
 								xhrCallbacks = {};
 								jQuery( window ).unload( xhrOnUnloadAbort );
 							}
-							// Add to list of active xhrs callbacks
+							// Add to apiListAlerts of active xhrs callbacks
 							xhrCallbacks[ handle ] = callback;
 						}
 						xhr.onreadystatechange = callback;
@@ -8995,7 +8995,7 @@ jQuery.extend( jQuery.fx, {
 
 // Ensure props that can't be negative don't go there on undershoot easing
 jQuery.each( fxAttrs.concat.apply( [], fxAttrs ), function( i, prop ) {
-	// exclude marginTop, marginLeft, marginBottom and marginRight from this list
+	// exclude marginTop, marginLeft, marginBottom and marginRight from this apiListAlerts
 	if ( prop.indexOf( "margin" ) ) {
 		jQuery.fx.step[ prop ] = function( fx ) {
 			jQuery.style( fx.elem, prop, Math.max(0, fx.now) + fx.unit );
