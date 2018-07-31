@@ -134,6 +134,13 @@ export default class ApiService {
     );
   }
 
+  public createAlert(alert: any): AxiosPromise {
+    return this.instance.post(
+      `/api/admin/alerts/`,
+      alert
+    );
+  }
+
   public deleteAlert(id: string): AxiosPromise {
     return this.instance.delete(
       `/api/admin/alerts/${id}/`

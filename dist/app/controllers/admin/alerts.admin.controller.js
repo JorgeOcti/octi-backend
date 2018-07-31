@@ -6,6 +6,7 @@ class AdminAlertsController {
     constructor() {
         this.index = this.index.bind(this);
         this.apiListAlerts = this.apiListAlerts.bind(this);
+        this.apiCreateAlert = this.apiCreateAlert.bind(this);
         this.apiDeleteAlert = this.apiDeleteAlert.bind(this);
     }
     async index(req, res) {
@@ -15,20 +16,73 @@ class AdminAlertsController {
         const company = req.user.company;
         try {
             const alerts = await alert_model_1.default
-                .find({ company })
+                .find({
+                company
+            }, {
+                name: 1,
+                users: 1,
+                lte: 1,
+                gte: 1
+            })
                 .populate([{
                     path: 'users',
-                    select: ['firstName', 'lastName']
-                }]);
+                    select: ['firstName', 'lastName', 'email']
+                }])
+                .sort({
+                createdAt: -1
+            });
             const users = await user_model_1.default
                 .find({ company }, {
                 firstName: 1,
-                lastName: 1
+                lastName: 1,
+                email: 1
             });
             res.json({
                 alerts,
                 users
             });
+        }
+        catch (e) {
+            res.status(400).json({
+                message: e,
+                status: 400
+            });
+        }
+    }
+    async apiCreateAlert(req, res) {
+        console.log('req.body', req.body);
+        const { name, gte, lte, users } = req.body;
+        const company = req.user.company;
+        try {
+            if (name && users && users.length) {
+                const alert = await alert_model_1.default
+                    .create({
+                    name,
+                    gte,
+                    lte,
+                    users,
+                    company
+                });
+                res.json({
+                    message: 'Alerta agregada satisfactoriamente',
+                    alert: await alert_model_1.default
+                        .findOne({ _id: alert._id, company }, {
+                        name: 1,
+                        users: 1,
+                        lte: 1,
+                        gte: 1
+                    })
+                        .populate([{
+                            path: 'users',
+                            select: ['firstName', 'lastName', 'email']
+                        }])
+                });
+            }
+            else {
+                res.status(400).json({
+                    message: 'No se a podido crear a alerta'
+                });
+            }
         }
         catch (e) {
             res.status(400).json({

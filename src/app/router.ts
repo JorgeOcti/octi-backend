@@ -52,6 +52,7 @@ appRouter.post('/api/admin/import-cars/', Middlewares.isLoggedIn, AdminCarsContr
 appRouter.get('/settings/alerts/', Middlewares.isLoggedIn, AdminAlertsController.index);
 // api alerts
 appRouter.get('/api/admin/alerts/', Middlewares.isLoggedIn, AdminAlertsController.apiListAlerts);
+appRouter.post('/api/admin/alerts/', Middlewares.isLoggedIn, AdminAlertsController.apiCreateAlert);
 appRouter.delete('/api/admin/alerts/:id', Middlewares.isLoggedIn, AdminAlertsController.apiDeleteAlert);
 
 // admin companies

@@ -3,7 +3,7 @@ import {Dispatch} from 'redux';
 import {IAlert} from '../../../../../src/interfaces/alert.interface';
 import {IUser} from '../../../../../src/interfaces/user.interface';
 import ApiService from '../utils/axios';
-import {removeUserAction} from "./users";
+import {showModal, statusFooterButttonsModal} from '../utils/common';
 
 export interface IAlertsState {
   alerts: IAlert[];
@@ -85,6 +85,44 @@ export function deleteAlertAction(id: string) {
   };
 }
 
+interface ICreateAlert {
+  type: '/ALERTS/CREATE';
+  payload: {
+    alert: IAlert;
+  };
+}
+
+export function createAlert(alert: IAlert): ICreateAlert {
+  return {
+    type: '/ALERTS/CREATE',
+    payload: {
+      alert
+    }
+  };
+}
+
+export function createAlertAction(alert: any) {
+  return (dispatch: Dispatch<AlertReduxAction>) => {
+    dispatch(isLoadingAction(true));
+    const api: ApiService = new ApiService();
+    api.createAlert(alert)
+      .then((response: AxiosResponse) => {
+        const data = response.data;
+        statusFooterButttonsModal(false);
+        showModal(false);
+        dispatch(createAlert(data.alert));
+        dispatch(isLoadingAction(false));
+        swal(response.data.message, {
+          icon: 'success'
+        });
+      })
+      .catch((err: AxiosError) => {
+        api.errorHandler(err);
+        dispatch(isLoadingAction(false));
+      });
+  };
+}
+
 interface ILoadAlerts {
   type: '/ALERTS/LOAD_DATA';
   payload: {
@@ -103,7 +141,7 @@ export function loadAlertsAction(alerts: IAlert[], users: IUser[]): ILoadAlerts 
   };
 }
 
-export function loadAlertsDataAction() {
+export function getAlertsAction() {
   return (dispatch: Dispatch<AlertReduxAction>) => {
     const api: ApiService = new ApiService();
     dispatch(isLoadingAction(true));
@@ -121,4 +159,4 @@ export function loadAlertsDataAction() {
   };
 }
 
-export type AlertReduxAction = ICancelRequest | IIsLoading | ILoadAlerts | IDeleteAlert;
+export type AlertReduxAction = ICancelRequest | IIsLoading | ILoadAlerts | IDeleteAlert |ICreateAlert;

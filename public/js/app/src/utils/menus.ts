@@ -17,12 +17,6 @@ menus.push({
       text: 'Listado de VINs',
       url: '/cars/'
     }
-    // {
-    //   id: '1.2',
-    //   icon: 'fa-circle-o',
-    //   text: 'Dashboard v2',
-    //   url: '/',
-    // }
   ]
 });
 
@@ -31,7 +25,7 @@ menus.push({
   id: '2',
   text: 'Settings',
   icon: 'fa-cog',
-  url: '/users/',
+  url: '/settings/users/',
   items: [
     {
       id: '2.1',
@@ -51,12 +45,6 @@ menus.push({
       text: 'Alertas',
       url: '/settings/alerts/'
     }
-    // {
-    //   id: '2.2',
-    //   icon: 'fa-circle-o',
-    //   text: 'Setting v2',
-    //   url: '/'
-    // }
   ]
 });
 

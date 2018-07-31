@@ -4,6 +4,7 @@ const bson_1 = require("bson");
 const GraphicsMagick = require("gm");
 const moment = require("moment-timezone");
 const app_1 = require("../../app");
+const alert_model_1 = require("../../app/models/alert.model");
 const car_model_1 = require("../../app/models/car.model");
 const user_model_1 = require("../../app/models/user.model");
 const server_1 = require("../../server");
@@ -201,32 +202,49 @@ class FormController {
                                 $lt: tomorrow.toDate()
                             }
                         });
-                        if (formQualification < 85) {
-                            app_1.queue.create('email', {
-                                from: '',
-                                title: `Low qualification`,
-                                to: `"Richard Ibarra"<richard@osacontrol.com>`,
-                                bcc: `"Gonzalo Muñoz"<gmunoz@osacontrol.com>`,
-                                subject: `Revisión con baja calificación`,
-                                text: `Hola Richard
-                Se ha evaluado un VIN con calificación ${formQualification.toFixed(0)}%
+                        /* Search alerts */
+                        const alerts = await alert_model_1.default
+                            .find({
+                            $or: [
+                                { $and: [{ lte: { $gte: formQualification } }, { lte: { $gt: 0 } }] },
+                                { $and: [{ gte: { $lte: formQualification } }, { gte: { $gt: 0 } }] }
+                            ]
+                        }).populate([{
+                                path: 'users',
+                                select: ['firstName', 'lastName', 'email']
+                            }]);
+                        /* Send alerts if exist */
+                        if (alerts.length) {
+                            alerts.forEach((alert) => {
+                                alert.users.forEach((user) => {
+                                    if (user.email && user.email.length) {
+                                        app_1.queue.create('email', {
+                                            from: '',
+                                            title: `Alert qualification`,
+                                            to: `"${user.firstName} ${user.lastName}"<${user.email}>`,
+                                            subject: `ALERTA: ${alert.name}`,
+                                            text: `Hola Richard
+                        Se ha evaluado un VIN con calificación ${formQualification.toFixed(0)}%
 
-                Datos del Vehiculo
-                VIN: ${car ? car.vin : ''}
-                MARCA: ${car ? car.brand : ''}
+                        Datos del Vehiculo
+                        VIN: ${car ? car.vin : ''}
+                        MARCA: ${car ? car.brand : ''}
 
-                Para ver el detalle has click aquí
-                ${process.env.SITE_URL}cars/${car._id}
+                        Para ver el detalle has click aquí
+                        ${process.env.SITE_URL}cars/${car._id}
 
-                © 2018 OSA SpA. Todos los derechos reservados.`,
-                                view: 'alerts/lowQualification',
-                                context: {
-                                    brand: car ? car.brand : '',
-                                    vin: car ? car.vin : '',
-                                    qualification: formQualification.toFixed(0),
-                                    url: `${process.env.SITE_URL}cars/${car._id}`
-                                }
-                            }).priority('high').attempts(5).save();
+                        © 2018 OSA SpA. Todos los derechos reservados.`,
+                                            view: 'alerts/lowQualification',
+                                            context: {
+                                                brand: car ? car.brand : '',
+                                                vin: car ? car.vin : '',
+                                                qualification: formQualification.toFixed(0),
+                                                url: `${process.env.SITE_URL}cars/${car._id}`
+                                            }
+                                        }).priority('high').attempts(5).save();
+                                    }
+                                });
+                            });
                         }
                         server_1.io.to(`dashboard-vin-view-${company._id}`).emit('REFRESH', { update: true, car: car._id });
                         server_1.io.to(`dashboard-vin-detail-${car._id}`).emit(`ADD_PARTICIPANT`, await participant_model_1.default

@@ -8,6 +8,7 @@ class AdminAlertsController {
   constructor() {
     this.index = this.index.bind(this);
     this.apiListAlerts = this.apiListAlerts.bind(this);
+    this.apiCreateAlert = this.apiCreateAlert.bind(this);
     this.apiDeleteAlert = this.apiDeleteAlert.bind(this);
   }
 
@@ -19,15 +20,26 @@ class AdminAlertsController {
     const company = req.user.company;
     try {
       const alerts = await Alert
-        .find({company})
+        .find({
+          company
+        }, {
+          name: 1,
+          users: 1,
+          lte: 1,
+          gte: 1
+        })
         .populate([{
           path: 'users',
-          select: ['firstName', 'lastName']
-        }]);
+          select: ['firstName', 'lastName', 'email']
+        }])
+        .sort({
+          createdAt: -1
+        });
       const users = await User
         .find({company}, {
           firstName: 1,
-          lastName: 1
+          lastName: 1,
+          email: 1
         });
       res.json({
         alerts,
@@ -39,6 +51,48 @@ class AdminAlertsController {
         status: 400
       });
     }
+  }
+
+  public async apiCreateAlert(req: IRequest, res: Response) {
+    console.log('req.body', req.body);
+    const {name, gte, lte, users} = req.body;
+    const company = req.user.company;
+    try {
+      if (name && users && users.length) {
+        const alert = await Alert
+          .create({
+            name,
+            gte,
+            lte,
+            users,
+            company
+          });
+        res.json({
+          message: 'Alerta agregada satisfactoriamente',
+          alert: await Alert
+            .findOne({_id: alert._id, company}, {
+              name: 1,
+              users: 1,
+              lte: 1,
+              gte: 1
+            })
+            .populate([{
+              path: 'users',
+              select: ['firstName', 'lastName', 'email']
+            }])
+        });
+      } else {
+        res.status(400).json({
+          message: 'No se a podido crear a alerta'
+        });
+      }
+    } catch (e) {
+      res.status(400).json({
+        message: e,
+        status: 400
+      });
+    }
+
   }
 
   public async apiDeleteAlert(req: IRequest, res: Response) {

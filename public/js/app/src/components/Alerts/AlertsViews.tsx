@@ -1,5 +1,4 @@
 ///<reference path="../../../node_modules/sweetalert/typings/sweetalert.d.ts"/>
-// import {AxiosError} from 'axios';
 import * as PropTypes from 'prop-types';
 import * as Raven from 'raven-js';
 import * as React from 'react';
@@ -8,12 +7,13 @@ import {connect} from 'react-redux';
 import {RouteComponentProps} from 'react-router';
 import {Dispatch} from 'redux';
 import {IAlert} from '../../../../../../src/interfaces/alert.interface';
-import {AlertReduxAction, deleteAlertAction, IAlertsState, loadAlertsDataAction} from '../../actions/alerts';
-// import * as io from 'socket.io-client';
+import {AlertReduxAction, createAlertAction, deleteAlertAction, getAlertsAction, IAlertsState} from '../../actions/alerts';
 import {loadDataAction, ModalReduxAction} from '../../actions/modal';
 import AppContainer from '../../container/AppContainer';
-// import {IWindow} from '../../interfaces/window';
 import ModalView from '../Modal/ModalView';
+import AlertFormView from './AlertFormView';
+import {statusFooterButttonsModal} from '../../utils/common';
+// import {IWindow} from '../../interfaces/window';
 
 // declare let window: IWindow;
 
@@ -21,13 +21,23 @@ interface IPropsType extends RouteComponentProps<{ ticket: string }> {
   alerts: IAlertsState;
   dispatch: Dispatch<AlertReduxAction>;
   loadDataAction(title: string, body: JSX.Element, footer: JSX.Element): ModalReduxAction;
-  loadAlertsDataAction(): ModalReduxAction;
+  getAlertsAction(): ModalReduxAction;
 
   deleteAlertAction(id: string): ModalReduxAction;
+  createAlertAction(alert: ITempAlert): ModalReduxAction;
+}
+
+interface ITempAlert {
+  name: string;
+  gte: number;
+  lte: number;
+  users: string[];
+  type: string;
 }
 
 interface IStateType {
   error: Error | null;
+  tempAlert: ITempAlert;
 }
 
 class AlertsViews extends React.Component<IPropsType, IStateType> {
@@ -38,16 +48,28 @@ class AlertsViews extends React.Component<IPropsType, IStateType> {
   };
 
   state = {
-    error: null
+    error: null,
+    tempAlert: {
+      name: '',
+      type: 'gte',
+      gte: 0,
+      lte: 0,
+      users: []
+    }
   };
 
   constructor(props: IPropsType) {
     super(props);
+    this.changeTempAlert = this.changeTempAlert.bind(this);
+
+    this.addAlert = this.addAlert.bind(this);
+    this.processAddAlert = this.processAddAlert.bind(this);
+
     this.deleteAlert = this.deleteAlert.bind(this);
   }
 
   public componentWillMount() {
-    this.props.loadAlertsDataAction();
+    this.props.getAlertsAction();
     // set the title of the page
     document.title = 'OSA Andes | Alertas';
   }
@@ -75,7 +97,7 @@ class AlertsViews extends React.Component<IPropsType, IStateType> {
             <div className="box-header with-border">
               <h3 className="box-title">Alertas</h3>
               <div className="pull-right box-tools">
-                <button className="btn btn-sm btn-success">Agregar</button>
+                <button className="btn btn-sm btn-success" onClick={this.addAlert}>Agregar</button>
               </div>
             </div>
             <div className="box-body">
@@ -86,7 +108,7 @@ class AlertsViews extends React.Component<IPropsType, IStateType> {
                     <th>Menor igual que</th>
                     <th>Mayor igual que</th>
                     <th>Usuarios</th>
-                    <th className="width-10" />
+                    {/*<th className="width-10" />*/}
                     <th className="width-10" />
                   </tr>
                 </thead>
@@ -99,7 +121,7 @@ class AlertsViews extends React.Component<IPropsType, IStateType> {
                         <td>{alert.lte !== 0 ? alert.lte : '-'}</td>
                         <td>{alert.gte !== 0 ? alert.gte : '-'}</td>
                         <td>{alert.users.length}</td>
-                        <td className="text-blue pointer" onClick={undefined}><i className="fa fa-pencil"/></td>
+                        {/*<td className="text-blue pointer" onClick={undefined}><i className="fa fa-pencil"/></td>*/}
                         <td className="text-red pointer" onClick={() => this.deleteAlert(alert)}><i className="fa fa-minus-circle"/></td>
                       </tr>
                     );
@@ -141,9 +163,40 @@ class AlertsViews extends React.Component<IPropsType, IStateType> {
     });
   }
 
-  // private createAlert(){
-  //
-  // }
+  private addAlert() {
+    const {users} = this.props.alerts;
+    this.props.loadDataAction(
+      'Agregar Alerta',
+        <AlertFormView users={users} changeTempAlert={this.changeTempAlert} />
+      ,
+      <React.Fragment>
+        <button type="button" className="btn btn-default" data-dismiss="modal">Cancelar</button>
+        <button type="button" className="btn btn-primary" onClick={this.processAddAlert}>Grabar</button>
+      </React.Fragment>
+    );
+  }
+
+  private changeTempAlert(tempAlert: ITempAlert) {
+    this.setState({
+      tempAlert
+    });
+  }
+
+  private processAddAlert() {
+    const {tempAlert} = this.state;
+    const value = (tempAlert as any)[tempAlert.type];
+    if (tempAlert.name.trim().length === 0) {
+      swal('Agregar alerta', 'El campo nombre es requerido.', 'error');
+    } else if (tempAlert.users.length === 0) {
+      swal('Agregar alerta', 'Debe seleccionar al menos un usuario para notificar.', 'error');
+    } else if (!value || value === 0) {
+      swal('Agregar alerta', 'El valor para notificar debe ser entre 1 y 100.', 'error');
+    } else {
+      statusFooterButttonsModal(true);
+      this.props.createAlertAction(tempAlert);
+      // console.log('tempAlert', tempAlert);
+    }
+  }
 }
 
 const mapStateToProps = (state: { alerts: IAlertsState }) => {
@@ -156,8 +209,9 @@ const mapDispatchToProps = (dispatch: any ) => {
   return {
     dispatch,
     loadDataAction: (title: string, body: JSX.Element, footer: JSX.Element) => dispatch(loadDataAction(title, body, footer)),
-    loadAlertsDataAction: () => dispatch(loadAlertsDataAction()),
-    deleteAlertAction: (id: string) => dispatch(deleteAlertAction(id))
+    getAlertsAction: () => dispatch(getAlertsAction()),
+    deleteAlertAction: (id: string) => dispatch(deleteAlertAction(id)),
+    createAlertAction: (alert: ITempAlert) => dispatch(createAlertAction(alert))
   };
 };
 

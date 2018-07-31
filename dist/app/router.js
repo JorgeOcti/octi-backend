@@ -43,6 +43,7 @@ appRouter.post('/api/admin/import-cars/', middlewares_1.default.isLoggedIn, car_
 appRouter.get('/settings/alerts/', middlewares_1.default.isLoggedIn, alerts_admin_controller_1.default.index);
 // api alerts
 appRouter.get('/api/admin/alerts/', middlewares_1.default.isLoggedIn, alerts_admin_controller_1.default.apiListAlerts);
+appRouter.post('/api/admin/alerts/', middlewares_1.default.isLoggedIn, alerts_admin_controller_1.default.apiCreateAlert);
 appRouter.delete('/api/admin/alerts/:id', middlewares_1.default.isLoggedIn, alerts_admin_controller_1.default.apiDeleteAlert);
 // admin companies
 appRouter.get('/companies/', middlewares_1.default.isLoggedIn, companies_admin_controller_1.default.index);
