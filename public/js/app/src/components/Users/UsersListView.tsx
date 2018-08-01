@@ -99,13 +99,13 @@ class UsersListView extends React.Component<IPropsType, IStateType> {
               <table className="table table-striped">
                 <thead>
                   <tr>
-                    <th>Nombre</th>
-                    <th>Apellido</th>
-                    <th className="hidden-xs">Sucursal</th>
-                    <th className="hidden-xs">Email</th>
-                    <th className="hidden-xs">Modificado</th>
-                    <th className="width-10" />
-                    <th className="width-10" />
+                    <th style={{width: '20%'}}>Nombre</th>
+                    <th style={{width: '20%'}}>Apellido</th>
+                    <th style={{width: '20%'}} className="hidden-xs">Sucursal</th>
+                    <th style={{width: '20%'}} className="hidden-xs">Email</th>
+                    <th style={{width: '20%'}} className="hidden-xs">Modificado</th>
+                    <th style={{width: '1%'}} className="width-10" />
+                    <th style={{width: '1%'}} className="width-10" />
                   </tr>
                 </thead>
                 <tbody>

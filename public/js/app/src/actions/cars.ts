@@ -81,7 +81,7 @@ export function loadCarsAction(cars: any, count: number, pages: number): ILoadCa
   };
 }
 
-export function getCarsAction(nextPage?: number) {
+export function getCarsAction(nextPage: number, search?: string) {
   return (dispatch: Dispatch<CarReduxAction>, getState: () => {cars: ICarsState}) => {
     const api: ApiService = new ApiService();
     const state = getState();
@@ -92,7 +92,7 @@ export function getCarsAction(nextPage?: number) {
     if (nextPage) {
       dispatch(changePageAction(nextPage));
     }
-    api.getAdminCars(page)
+    api.getAdminCars(page, search)
       .then((response: AxiosResponse) => {
         dispatch(loadCarsAction(response.data.results, response.data.count, response.data.pages));
         dispatch(isLoadingAction(false));

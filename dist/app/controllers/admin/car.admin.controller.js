@@ -58,7 +58,7 @@ class AdminCarsController {
         });
     }
     async apiListCars(req, res) {
-        const { page, pageSize } = req.query;
+        const { page, pageSize, search } = req.query;
         const company = req.user.company;
         // paginate options
         const options = {
@@ -68,7 +68,9 @@ class AdminCarsController {
                 brand: true,
                 denomination: true,
                 color: true,
-                internalNumber: true
+                internalNumber: true,
+                createdAt: true,
+                updatedAt: true
             },
             populate: [{
                     path: 'venue',
@@ -81,7 +83,7 @@ class AdminCarsController {
             limit: parseInt(pageSize ? pageSize : 20, 10)
         };
         try {
-            const cars = await this.getCars(company, options);
+            const cars = await this.getCars(company, options, search);
             // validate exist page
             if (options.page && cars.pages && cars.pages < options.page) {
                 res.status(400).json({
@@ -106,9 +108,28 @@ class AdminCarsController {
             }
         }
     }
-    getCars(company, options) {
+    getCars(company, options, search) {
+        let filter = { company };
+        if (search && search.length) {
+            const searchText = new RegExp(search, 'i');
+            filter = {
+                $and: [{
+                        $or: [{
+                                vin: { $regex: searchText }
+                            }, {
+                                brand: { $regex: searchText }
+                            }, {
+                                denomination: { $regex: searchText }
+                            }, {
+                                color: { $regex: searchText }
+                            }]
+                    },
+                    filter
+                ]
+            };
+        }
         return new Promise((resolve, reject) => {
-            car_model_1.default.paginate({ company }, options, (err, result) => {
+            car_model_1.default.paginate(filter, options, (err, result) => {
                 if (err) {
                     return reject(err);
                 }

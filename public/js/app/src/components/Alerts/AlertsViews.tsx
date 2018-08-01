@@ -10,9 +10,9 @@ import {IAlert} from '../../../../../../src/interfaces/alert.interface';
 import {AlertReduxAction, createAlertAction, deleteAlertAction, getAlertsAction, IAlertsState} from '../../actions/alerts';
 import {loadDataAction, ModalReduxAction} from '../../actions/modal';
 import AppContainer from '../../container/AppContainer';
+import {statusFooterButttonsModal} from '../../utils/common';
 import ModalView from '../Modal/ModalView';
 import AlertFormView from './AlertFormView';
-import {statusFooterButttonsModal} from '../../utils/common';
 // import {IWindow} from '../../interfaces/window';
 
 // declare let window: IWindow;
@@ -104,10 +104,10 @@ class AlertsViews extends React.Component<IPropsType, IStateType> {
               <table className="table table-striped">
                 <thead>
                   <tr>
-                    <th className="middle">Nombre</th>
-                    <th className="middle text-center">Menor igual que</th>
-                    <th className="middle text-center">Mayor igual que</th>
-                    <th className="middle">Usuarios</th>
+                    <th style={{width: '20%'}} className="middle">Nombre</th>
+                    <th style={{width: '20%'}} className="middle text-center">Menor igual que</th>
+                    <th style={{width: '20%'}} className="middle text-center">Mayor igual que</th>
+                    <th style={{width: '40%'}} className="middle">Usuarios</th>
                     {/*<th className="width-10" />*/}
                     <th className="middle width-10" />
                   </tr>
@@ -118,10 +118,10 @@ class AlertsViews extends React.Component<IPropsType, IStateType> {
                     alerts.map((alert) => {
                       return (
                         <tr key={alert._id} id={`alert-${alert._id}`}>
-                          <td style={{width: '30%'}} className="middle">{alert.name}</td>
-                          <td style={{width: '15%'}} className="middle text-center">{alert.lte !== 0 ? alert.lte : '-'}</td>
-                          <td style={{width: '15%'}} className="middle text-center">{alert.gte !== 0 ? alert.gte : '-'}</td>
-                          <td style={{width: '40%'}}>
+                          <td className="middle">{alert.name}</td>
+                          <td className="middle text-center">{alert.lte !== 0 ? alert.lte : '-'}</td>
+                          <td className="middle text-center">{alert.gte !== 0 ? alert.gte : '-'}</td>
+                          <td>
                             {
                               alert.users.map((user) => {
                                 return (
