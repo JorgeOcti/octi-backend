@@ -73,7 +73,7 @@ class CarsListView extends React.Component<IPropsType, IStateType> {
           <div className="box">
             <div className="box-header with-border"><h3 className="box-title">Autos <small>{pagination.count}</small></h3>
               <div className="box-tools">
-                <form className="form-inline">
+                <div className="form-inline">
                   <button
                     className="btn btn-sm btn-primary  hidden-xs"
                     onClick={() => this.props.history.push(`/settings/cars/import/`)}
@@ -85,10 +85,10 @@ class CarsListView extends React.Component<IPropsType, IStateType> {
                            onChange={this.onChangeSearch}
                            placeholder="Buscar"/>
                     <div className="input-group-btn">
-                      <button className="btn btn-default"><i className="fa fa-search" /></button>
+                      <button className="btn btn-default"><i className="fa fa-search"/></button>
                     </div>
                   </div>
-                </form>
+                </div>
               </div>
             </div>
             <div className="box-body">
@@ -148,6 +148,7 @@ class CarsListView extends React.Component<IPropsType, IStateType> {
   }
 
   private onChangeSearch(e: React.ChangeEvent<HTMLInputElement>) {
+    e.preventDefault();
     const value = e.target.value.trim();
     this.setState({
       searchText: value
