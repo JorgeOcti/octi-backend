@@ -132,6 +132,10 @@ class AdminCarsController {
           filter
         ]
       };
+      // filter = {
+      //   $text: { $search: search }, company
+      // };
+      /* {score: {$meta: "toextScore"} */
     }
 
     return new Promise((resolve, reject) => {

@@ -130,8 +130,17 @@ class CarsListView extends React.Component<IPropsType, IStateType> {
             </div>
             {
               pagination.pages > 1 &&
-                <div className="box-footer text-right">
-                  <Paginator changePage={this.changePage} page={pagination.page} pages={pagination.pages} />
+                <div className="box-footer">
+                  <div className="row">
+                    <div className="col-md-6">
+                      {
+                        searchText && searchText.length ? <p><strong>Filtrado por:</strong> {searchText}</p> : null
+                      }
+                    </div>
+                    <div className="col-md-6 text-right">
+                      <Paginator changePage={this.changePage} page={pagination.page} pages={pagination.pages} />
+                    </div>
+                  </div>
                 </div>
             }
             {

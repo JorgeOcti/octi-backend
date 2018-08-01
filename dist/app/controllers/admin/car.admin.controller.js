@@ -127,6 +127,10 @@ class AdminCarsController {
                     filter
                 ]
             };
+            // filter = {
+            //   $text: { $search: search }, company
+            // };
+            /* {score: {$meta: "toextScore"} */
         }
         return new Promise((resolve, reject) => {
             car_model_1.default.paginate(filter, options, (err, result) => {

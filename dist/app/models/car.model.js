@@ -47,6 +47,19 @@ const carSchema = new mongoose.Schema({
 });
 carSchema.index({ vin: 1 }, { unique: true });
 carSchema.index({ company: 1, vin: 1 }, { unique: true });
+carSchema.index({
+    vin: 'text',
+    brand: 'text',
+    denomination: 'text',
+    color: 'text'
+}, {
+    weights: {
+        vin: 9,
+        brand: 10,
+        denomination: 1,
+        color: 1
+    }
+});
 carSchema.virtual('participants', {
     ref: 'Participant',
     localField: '_id',
