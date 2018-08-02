@@ -81,7 +81,7 @@ class UsersListView extends React.Component<IPropsType, IStateType> {
   public render(): React.ReactElement<IPropsType> {
     const {loading, users, pagination} = this.props.users;
     return (
-      <AppContainer title="" cMenu="2" cSubMenu="2.1" cAction="Listado">
+      <AppContainer title="" cMenu="2" cSubMenu="2.3" cAction="Listado">
         <section className="content">
           <div className="box">
             <div className="box-header with-border"><h3 className="box-title">Usuarios <small>{pagination.count}</small></h3>
@@ -99,13 +99,13 @@ class UsersListView extends React.Component<IPropsType, IStateType> {
               <table className="table table-striped">
                 <thead>
                   <tr>
-                    <th>Nombre</th>
-                    <th>Apellido</th>
-                    <th className="hidden-xs">Sucursal</th>
-                    <th className="hidden-xs">Email</th>
-                    <th className="hidden-xs">Modificado</th>
-                    <th className="width-10" />
-                    <th className="width-10" />
+                    <th style={{width: '20%'}}>Nombre</th>
+                    <th style={{width: '20%'}}>Apellido</th>
+                    <th style={{width: '20%'}} className="hidden-xs">Sucursal</th>
+                    <th style={{width: '20%'}} className="hidden-xs">Email</th>
+                    <th style={{width: '20%'}} className="hidden-xs">Modificado</th>
+                    <th style={{width: '1%'}} className="width-10" />
+                    <th style={{width: '1%'}} className="width-10" />
                   </tr>
                 </thead>
                 <tbody>
@@ -161,32 +161,46 @@ class UsersListView extends React.Component<IPropsType, IStateType> {
         <div className="col-md-12">
           <div className="form-group">
             <label>Nombres</label>
-            <input type="text" name="fistName" className="form-control" maxLength={50}
-                   onChange={(e: React.ChangeEvent<HTMLInputElement>) => changeTempUser({firstName: e.target.value})}
+            <input
+              type="text"
+              name="fistName"
+              className="form-control"
+              maxLength={50}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) => changeTempUser({firstName: e.target.value})}
             />
           </div>
         </div>
         <div className="col-md-12">
           <div className="form-group">
             <label>Apellidos</label>
-            <input type="text" name="lastName" className="form-control" maxLength={50}
-                   onChange={(e: React.ChangeEvent<HTMLInputElement>) => changeTempUser({lastName: e.target.value})}
+            <input
+              type="text"
+              name="lastName"
+              className="form-control"
+              maxLength={50}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) => changeTempUser({lastName: e.target.value})}
             />
           </div>
         </div>
         <div className="col-md-12">
           <div className="form-group">
             <label>Email</label>
-            <input type="email" name="email" className="form-control" maxLength={80}
-                   onChange={(e: React.ChangeEvent<HTMLInputElement>) => changeTempUser({email: e.target.value})}
+            <input
+              type="email"
+              name="email"
+              className="form-control"
+              maxLength={80}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) => changeTempUser({email: e.target.value})}
             />
           </div>
         </div>
         <div className="col-md-12">
           <div className="form-group">
             <label htmlFor="sel1">Sucursal</label>
-            <select className="form-control" name="venue"
-                    onChange={(e: React.ChangeEvent<HTMLSelectElement>) => changeTempUser({venue: e.target.value})}>
+            <select
+              className="form-control"
+              name="venue"
+              onChange={(e: React.ChangeEvent<HTMLSelectElement>) => changeTempUser({venue: e.target.value})}>
               <option value="">Seleccione venue</option>
               {
                 venues.map((venue) => (
@@ -206,7 +220,6 @@ class UsersListView extends React.Component<IPropsType, IStateType> {
 
   private processAddUser(): void {
     const {firstName, lastName, email, venue} = this.props.users.tempUser;
-    // debugger;
     if (!firstName || !firstName.trim().length) {
       swal('Agregar usuario', 'El campo nombres es requerido', 'error');
     } else if (!lastName || !lastName.trim().length) {

@@ -1,13 +1,16 @@
+import {ObjectID} from 'bson';
 import {Response} from 'express';
+import {PaginateOptions, PaginateResult} from 'mongoose';
 import {IRequest} from '../../../interfaces/global.interface';
 import {io} from '../../../server';
-import Car from '../../models/car.model';
+import Car, {ICarModel} from '../../models/car.model';
 
 class AdminCarsController {
 
   constructor() {
     this.index = this.index.bind(this);
     this.importCars = this.importCars.bind(this);
+    this.apiListCars = this.apiListCars.bind(this);
   }
 
   public async index(req: IRequest, res: Response) {
@@ -56,6 +59,92 @@ class AdminCarsController {
     }
     res.json({
       status: 200
+    });
+  }
+
+  public async apiListCars(req: IRequest, res: Response) {
+    const {page, pageSize, search} = req.query;
+    const company = req.user.company;
+    // paginate options
+    const options: PaginateOptions = {
+      select: {
+        vin: true,
+        vin2: true,
+        brand: true,
+        denomination: true,
+        color: true,
+        internalNumber: true,
+        createdAt: true,
+        updatedAt: true
+      },
+      populate: [{
+        path: 'venue',
+        select: ['name', 'active']
+      }],
+      sort: {
+        createdAt: -1
+      },
+      page: parseInt(page ? page : 1, 10),
+      limit: parseInt(pageSize ? pageSize : 20, 10)
+    };
+    try {
+      const cars = await this.getCars(company, options, search);
+      // validate exist page
+      if (options.page && cars.pages && cars.pages < options.page) {
+        res.status(400).json({
+          error: 'La página solicitada no existe.',
+          status: 200
+        });
+      } else {
+        res.json({
+          count: cars.total,
+          pages: cars.pages,
+          hasPrevious: options.page && options.page > 1 && cars.pages && cars.pages >= options.page,
+          hasNext: options.page && cars.pages && cars.pages > options.page,
+          results: cars.docs,
+          status: 200
+        });
+      }
+    } catch (e) {
+      if (e) {
+        res.status(500).json(e);
+      }
+    }
+  }
+
+  private getCars(company: ObjectID, options: PaginateOptions, search?: string): Promise<PaginateResult<ICarModel>> {
+    let filter: any = {company};
+
+    if (search && search.length) {
+      const searchText = new RegExp(search, 'i');
+      filter = {
+        $and: [{
+          $or: [{
+              vin: {$regex: searchText}
+            }, {
+              brand: {$regex: searchText}
+            }, {
+              denomination: {$regex: searchText}
+            }, {
+              color: {$regex: searchText}
+            }]
+          },
+          filter
+        ]
+      };
+      // filter = {
+      //   $text: { $search: search }, company
+      // };
+      /* {score: {$meta: "toextScore"} */
+    }
+
+    return new Promise((resolve, reject) => {
+      Car.paginate(filter, options, (err, result) => {
+        if (err) {
+          return reject(err);
+        }
+        return resolve(result);
+      });
     });
   }
 }

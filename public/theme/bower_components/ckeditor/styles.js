@@ -6,7 +6,7 @@
 // This file contains style definitions that can be used by CKEditor plugins.
 //
 // The most common use for it is the "stylescombo" plugin which shows the Styles drop-down
-// list containing all styles in the editor toolbar. Other plugins, like
+// apiListAlerts containing all styles in the editor toolbar. Other plugins, like
 // the "div" plugin, use a subset of the styles for their features.
 //
 // If you do not have plugins that depend on this file in your editor build, you can simply
@@ -18,7 +18,7 @@
 CKEDITOR.stylesSet.add( 'default', [
 	/* Block styles */
 
-	// These styles are already available in the "Format" drop-down list ("format" plugin),
+	// These styles are already available in the "Format" drop-down apiListAlerts ("format" plugin),
 	// so they are not needed here by default. You may enable them to avoid
 	// placing the "Format" combo in the toolbar, maintaining the same features.
 	/*
@@ -48,7 +48,7 @@ CKEDITOR.stylesSet.add( 'default', [
 	/* Inline styles */
 
 	// These are core styles available as toolbar buttons. You may opt enabling
-	// some of them in the Styles drop-down list, removing them from the toolbar.
+	// some of them in the Styles drop-down apiListAlerts, removing them from the toolbar.
 	// (This requires the "stylescombo" plugin.)
 	/*
 	{ name: 'Strong',			element: 'strong', overrides: 'b' },

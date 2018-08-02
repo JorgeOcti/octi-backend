@@ -3,6 +3,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const csrf = require("csurf");
 const express = require("express");
 const middlewares_1 = require("../middlewares/middlewares");
+const alerts_admin_controller_1 = require("./controllers/admin/alerts.admin.controller");
 const car_admin_controller_1 = require("./controllers/admin/car.admin.controller");
 const companies_admin_controller_1 = require("./controllers/admin/companies.admin.controller");
 const user_admin_controller_1 = require("./controllers/admin/user.admin.controller");
@@ -23,21 +24,30 @@ appRouter.get('/', middlewares_1.default.isLoggedIn, car_controller_1.default.ge
 appRouter.get('/cars/', middlewares_1.default.isLoggedIn, car_controller_1.default.vinDashboard);
 appRouter.get('/cars/:id', middlewares_1.default.isLoggedIn, car_controller_1.default.vinDashboardDetail);
 // api cars
-appRouter.get('/api/admin/cars/:id', middlewares_1.default.isLoggedIn, car_controller_1.default.apiCarDetail);
-appRouter.get('/api/admin/cars/', middlewares_1.default.isLoggedIn, car_controller_1.default.apiCars);
+appRouter.get('/api/cars/:id', middlewares_1.default.isLoggedIn, car_controller_1.default.apiCarDetail);
+appRouter.get('/api/cars/', middlewares_1.default.isLoggedIn, car_controller_1.default.apiCars);
 // form detail
-appRouter.get('/api/admin/participant/:id/', middlewares_1.default.isLoggedIn, car_controller_1.default.apiParticipantDetail);
-appRouter.get('/api/admin/participants-per-date/', middlewares_1.default.isLoggedIn, car_controller_1.default.apiParticipantsPerDate);
+appRouter.get('/api/participant/:id/', middlewares_1.default.isLoggedIn, car_controller_1.default.apiParticipantDetail);
+appRouter.get('/api/participants-per-date/', middlewares_1.default.isLoggedIn, car_controller_1.default.apiParticipantsPerDate);
 // admin user
-appRouter.get('/users/', middlewares_1.default.isLoggedIn, user_admin_controller_1.default.index);
+appRouter.get('/settings/users/', middlewares_1.default.isLoggedIn, user_admin_controller_1.default.index);
 // api admin users
 appRouter.get('/api/admin/users/', middlewares_1.default.isLoggedIn, user_admin_controller_1.default.apiUsers);
 appRouter.post('/api/admin/users/', middlewares_1.default.isLoggedIn, user_admin_controller_1.default.apiAddUser);
 appRouter.patch('/api/admin/users/:id/', middlewares_1.default.isLoggedIn, user_admin_controller_1.default.apiEditUser);
 appRouter.delete('/api/admin/users/:id/', middlewares_1.default.isLoggedIn, user_admin_controller_1.default.apiDeleteUser);
+// setting cars
+appRouter.get('/settings/cars/', middlewares_1.default.isLoggedIn, car_admin_controller_1.default.index);
+appRouter.get('/api/admin/cars/', middlewares_1.default.isLoggedIn, car_admin_controller_1.default.apiListCars);
 // import cars
-appRouter.get('/import/cars/', middlewares_1.default.isLoggedIn, car_admin_controller_1.default.index);
+appRouter.get('/settings/cars/import/', middlewares_1.default.isLoggedIn, car_admin_controller_1.default.index);
 appRouter.post('/api/admin/import-cars/', middlewares_1.default.isLoggedIn, car_admin_controller_1.default.importCars);
+// alerts
+appRouter.get('/settings/alerts/', middlewares_1.default.isLoggedIn, alerts_admin_controller_1.default.index);
+// api alerts
+appRouter.get('/api/admin/alerts/', middlewares_1.default.isLoggedIn, alerts_admin_controller_1.default.apiListAlerts);
+appRouter.post('/api/admin/alerts/', middlewares_1.default.isLoggedIn, alerts_admin_controller_1.default.apiCreateAlert);
+appRouter.delete('/api/admin/alerts/:id', middlewares_1.default.isLoggedIn, alerts_admin_controller_1.default.apiDeleteAlert);
 // admin companies
 appRouter.get('/companies/', middlewares_1.default.isLoggedIn, companies_admin_controller_1.default.index);
 // venue companies

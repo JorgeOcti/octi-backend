@@ -124,10 +124,10 @@ class DashboardVinView extends React.Component<IPropsType, IStateType> {
                   <table className="table table-striped">
                     <thead>
                     <tr>
-                      <th className="middle">VIN</th>
-                      <th className="middle hidden-xs">Marca</th>
-                      <th className="middle">Supervisor</th>
-                      <th className="hidden-xs">Último checkeo</th>
+                      <th style={{width: '25%'}} className="middle">VIN</th>
+                      <th style={{width: '25%'}} className="middle hidden-xs">Marca</th>
+                      <th style={{width: '25%'}} className="middle">Supervisor</th>
+                      <th style={{width: '25%'}} className="hidden-xs">Último checkeo</th>
                       <th className="width-10"/>
                     </tr>
                     </thead>

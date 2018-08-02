@@ -3336,7 +3336,7 @@ define(["eve"], function(eve) {
      | "M10,20L30,40"
      * Here we can see two commands: “M”, with arguments `(10, 20)` and “L” with arguments `(30, 40)`. Upper case letter mean command is absolute, lower case—relative.
      *
-     # <p>Here is short list of commands available, for more details see <a href="http://www.w3.org/TR/SVG/paths.html#PathData" title="Details of a path's data attribute's format are described in the SVG specification.">SVG path string format</a>.</p>
+     # <p>Here is short apiListAlerts of commands available, for more details see <a href="http://www.w3.org/TR/SVG/paths.html#PathData" title="Details of a path's data attribute's format are described in the SVG specification.">SVG path string format</a>.</p>
      # <table><thead><tr><th>Command</th><th>Name</th><th>Parameters</th></tr></thead><tbody>
      # <tr><td>M</td><td>moveto</td><td>(x y)+</td></tr>
      # <tr><td>Z</td><td>closepath</td><td>(none)</td></tr>
@@ -4004,7 +4004,7 @@ define(["eve"], function(eve) {
      * Raphael.easing_formulas
      [ property ]
      **
-     * Object that contains easing formulas for animation. You could extend it with your own. By default it has following list of easing:
+     * Object that contains easing formulas for animation. You could extend it with your own. By default it has following apiListAlerts of easing:
      # <ul>
      #     <li>“linear”</li>
      #     <li>“&lt;” or “easeIn” or “ease-in”</li>

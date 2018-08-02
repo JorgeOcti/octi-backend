@@ -296,7 +296,7 @@ var eventPluginOrder = null;
 var namesToPlugins = {};
 
 /**
- * Recomputes the plugin list using the injected plugins and plugin ordering.
+ * Recomputes the plugin apiListAlerts using the injected plugins and plugin ordering.
  *
  * @private
  */
@@ -378,7 +378,7 @@ function publishRegistrationName(registrationName, pluginModule, eventName) {
  */
 
 /**
- * Ordered list of injected plugins.
+ * Ordered apiListAlerts of injected plugins.
  */
 var plugins = [];
 
@@ -2634,7 +2634,7 @@ function PropertyInfoRecord(name, type, mustUseProperty, attributeName, attribut
   this.type = type;
 }
 
-// When adding attributes to this list, be sure to also add them to
+// When adding attributes to this apiListAlerts, be sure to also add them to
 // the `possibleStandardNames` module to ensure casing and incorrect
 // name warnings.
 var properties = {};
@@ -2730,10 +2730,10 @@ var capitalize = function (token) {
   return token[1].toUpperCase();
 };
 
-// This is a list of all SVG attributes that need special casing, namespacing,
+// This is a apiListAlerts of all SVG attributes that need special casing, namespacing,
 // or boolean value assignment. Regular attributes that just accept strings
 // and have the same names are omitted, just like in the HTML whitelist.
-// Some of these attributes can be hard to find. This list was created by
+// Some of these attributes can be hard to find. This apiListAlerts was created by
 // scrapping the MDN documentation.
 ['accent-height', 'alignment-baseline', 'arabic-form', 'baseline-shift', 'cap-height', 'clip-path', 'clip-rule', 'color-interpolation', 'color-interpolation-filters', 'color-profile', 'color-rendering', 'dominant-baseline', 'enable-background', 'fill-opacity', 'fill-rule', 'flood-color', 'flood-opacity', 'font-family', 'font-size', 'font-size-adjust', 'font-stretch', 'font-style', 'font-variant', 'font-weight', 'glyph-name', 'glyph-orientation-horizontal', 'glyph-orientation-vertical', 'horiz-adv-x', 'horiz-origin-x', 'image-rendering', 'letter-spacing', 'lighting-color', 'marker-end', 'marker-mid', 'marker-start', 'overline-position', 'overline-thickness', 'paint-order', 'panose-1', 'pointer-events', 'rendering-intent', 'shape-rendering', 'stop-color', 'stop-opacity', 'strikethrough-position', 'strikethrough-thickness', 'stroke-dasharray', 'stroke-dashoffset', 'stroke-linecap', 'stroke-linejoin', 'stroke-miterlimit', 'stroke-opacity', 'stroke-width', 'text-anchor', 'text-decoration', 'text-rendering', 'underline-position', 'underline-thickness', 'unicode-bidi', 'unicode-range', 'units-per-em', 'v-alphabetic', 'v-hanging', 'v-ideographic', 'v-mathematical', 'vector-effect', 'vert-adv-y', 'vert-origin-x', 'vert-origin-y', 'word-spacing', 'writing-mode', 'xmlns:xlink', 'x-height'].forEach(function (attributeName) {
   var name = attributeName.replace(CAMELIZE, capitalize);
@@ -2857,7 +2857,7 @@ function setValueForProperty(node, name, value, isCustomComponentTag) {
   if (shouldRemoveAttribute(name, value, propertyInfo, isCustomComponentTag)) {
     value = null;
   }
-  // If the prop isn't in the special list, treat it as a simple attribute.
+  // If the prop isn't in the special apiListAlerts, treat it as a simple attribute.
   if (isCustomComponentTag || propertyInfo === null) {
     if (isAttributeNameSafe(name)) {
       var _attributeName = name;
@@ -4661,7 +4661,7 @@ function makePrefixMap(styleProp, eventName) {
 }
 
 /**
- * A list of event names to a configurable list of vendor prefixes.
+ * A apiListAlerts of event names to a configurable apiListAlerts of vendor prefixes.
  */
 var vendorPrefixes = {
   animationend: makePrefixMap('Animation', 'AnimationEnd'),
@@ -4783,7 +4783,7 @@ var topLevelTypes = {
 };
 
 // There are so many media events, it makes sense to just
-// maintain a list of them. Note these aren't technically
+// maintain a apiListAlerts of them. Note these aren't technically
 // "top-level" since they don't bubble. We should come up
 // with a better naming convention if we come to refactoring
 // the event system.
@@ -5710,7 +5710,7 @@ function createWorkInProgress(current, pendingProps, expirationTime) {
     // Reset the effect tag.
     workInProgress.effectTag = NoEffect;
 
-    // The effect list is no longer valid.
+    // The effect apiListAlerts is no longer valid.
     workInProgress.nextEffect = null;
     workInProgress.firstEffect = null;
     workInProgress.lastEffect = null;
@@ -5874,7 +5874,7 @@ function assignFiberPropertiesInDEV(target, source) {
     target = createFiber(IndeterminateComponent, null, null, NoContext);
   }
 
-  // This is intentionally written as a list of all properties.
+  // This is intentionally written as a apiListAlerts of all properties.
   // We tried to use Object.assign() instead but this is called in
   // the hottest path, and Object.assign() was too slow:
   // https://github.com/facebook/react/issues/12502
@@ -6705,7 +6705,7 @@ var didWarnUpdateInsideUpdate = void 0;
 // Callbacks are not validated until invocation
 
 
-// Singly linked-list of updates. When an update is scheduled, it is added to
+// Singly linked-apiListAlerts of updates. When an update is scheduled, it is added to
 // the queue of the current fiber and the work-in-progress fiber. The two queues
 // are separate but they share a persistent structure.
 //
@@ -6736,7 +6736,7 @@ function createUpdateQueue(baseState) {
 }
 
 function insertUpdateIntoQueue(queue, update) {
-  // Append the update to the end of the list.
+  // Append the update to the end of the apiListAlerts.
   if (queue.last === null) {
     // Queue is empty
     queue.first = queue.last = update;
@@ -6900,7 +6900,7 @@ function processUpdateQueue(current, workInProgress, queue, instance, props, ren
     // This update does have sufficient priority.
 
     // If no previous updates were skipped, drop this update from the queue by
-    // advancing the head of the list.
+    // advancing the head of the apiListAlerts.
     if (!didSkip) {
       queue.first = update.next;
       if (queue.first === null) {
@@ -6935,7 +6935,7 @@ function processUpdateQueue(current, workInProgress, queue, instance, props, ren
       queue.hasForceUpdate = true;
     }
     if (update.callback !== null) {
-      // Append to list of callbacks.
+      // Append to apiListAlerts of callbacks.
       var _callbackList = queue.callbackList;
       if (_callbackList === null) {
         _callbackList = queue.callbackList = [];
@@ -6978,7 +6978,7 @@ function commitCallbacks(queue, context) {
   if (callbackList === null) {
     return;
   }
-  // Set the list to null to make sure they don't get called more than once.
+  // Set the apiListAlerts to null to make sure they don't get called more than once.
   queue.callbackList = null;
   for (var i = 0; i < callbackList.length; i++) {
     var update = callbackList[i];
@@ -7819,8 +7819,8 @@ function ChildReconciler(shouldTrackSideEffects) {
       return;
     }
     // Deletions are added in reversed order so we add it to the front.
-    // At this point, the return fiber's effect list is empty except for
-    // deletions, so we can just append the deletion to the list. The remaining
+    // At this point, the return fiber's effect apiListAlerts is empty except for
+    // deletions, so we can just append the deletion to the apiListAlerts. The remaining
     // effects aren't added until the complete phase. Once we implement
     // resuming, this may not be true.
     var last = returnFiber.lastEffect;
@@ -8263,8 +8263,8 @@ function ChildReconciler(shouldTrackSideEffects) {
           if (_newFiber2.alternate !== null) {
             // The new fiber is a work in progress, but if there exists a
             // current, that means that we reused the fiber. We need to delete
-            // it from the child list so that we don't add it to the deletion
-            // list.
+            // it from the child apiListAlerts so that we don't add it to the deletion
+            // apiListAlerts.
             existingChildren['delete'](_newFiber2.key === null ? newIdx : _newFiber2.key);
           }
         }
@@ -8280,7 +8280,7 @@ function ChildReconciler(shouldTrackSideEffects) {
 
     if (shouldTrackSideEffects) {
       // Any existing children that weren't consumed above were deleted. We need
-      // to add them to the deletion list.
+      // to add them to the deletion apiListAlerts.
       existingChildren.forEach(function (child) {
         return deleteChild(returnFiber, child);
       });
@@ -8408,8 +8408,8 @@ function ChildReconciler(shouldTrackSideEffects) {
           if (_newFiber4.alternate !== null) {
             // The new fiber is a work in progress, but if there exists a
             // current, that means that we reused the fiber. We need to delete
-            // it from the child list so that we don't add it to the deletion
-            // list.
+            // it from the child apiListAlerts so that we don't add it to the deletion
+            // apiListAlerts.
             existingChildren['delete'](_newFiber4.key === null ? newIdx : _newFiber4.key);
           }
         }
@@ -8425,7 +8425,7 @@ function ChildReconciler(shouldTrackSideEffects) {
 
     if (shouldTrackSideEffects) {
       // Any existing children that weren't consumed above were deleted. We need
-      // to add them to the deletion list.
+      // to add them to the deletion apiListAlerts.
       existingChildren.forEach(function (child) {
         return deleteChild(returnFiber, child);
       });
@@ -8458,7 +8458,7 @@ function ChildReconciler(shouldTrackSideEffects) {
     var child = currentFirstChild;
     while (child !== null) {
       // TODO: If key === null and child.key === null, then this only applies to
-      // the first item in the list.
+      // the first item in the apiListAlerts.
       if (child.key === key) {
         if (child.tag === Fragment ? element.type === REACT_FRAGMENT_TYPE : child.type === element.type) {
           deleteRemainingChildren(returnFiber, child.sibling);
@@ -8497,7 +8497,7 @@ function ChildReconciler(shouldTrackSideEffects) {
     var child = currentFirstChild;
     while (child !== null) {
       // TODO: If key === null and child.key === null, then this only applies to
-      // the first item in the list.
+      // the first item in the apiListAlerts.
       if (child.key === key) {
         if (child.tag === HostPortal && child.stateNode.containerInfo === portal.containerInfo && child.stateNode.implementation === portal.implementation) {
           deleteRemainingChildren(returnFiber, child.sibling);
@@ -8520,7 +8520,7 @@ function ChildReconciler(shouldTrackSideEffects) {
   }
 
   // This API will tag the children with the side-effect of the reconciliation
-  // itself. They will be added to the side-effect list as we pass through the
+  // itself. They will be added to the side-effect apiListAlerts as we pass through the
   // children and the parent.
   function reconcileChildFibers(returnFiber, currentFirstChild, newChild, expirationTime) {
     // This function is not recursive.
@@ -9904,7 +9904,7 @@ var ReactFiberUnwindWork = function (hostContext, legacyContext, newContext, sch
   function throwException(returnFiber, sourceFiber, rawValue) {
     // The source fiber did not complete.
     sourceFiber.effectTag |= Incomplete;
-    // Its effect list is no longer valid.
+    // Its effect apiListAlerts is no longer valid.
     sourceFiber.firstEffect = sourceFiber.lastEffect = null;
 
     var value = createCapturedValue(rawValue, sourceFiber);
@@ -10995,7 +10995,7 @@ var ReactFiberHydrationContext = function (config) {
     childToDelete.effectTag = Deletion;
 
     // This might seem like it belongs on progressedFirstDeletion. However,
-    // these children are not part of the reconciliation list of children.
+    // these children are not part of the reconciliation apiListAlerts of children.
     // Even if we abort and rereconcile the children, that will try to hydrate
     // again and the nodes are still in the host tree so these will be
     // recreated.
@@ -11936,9 +11936,9 @@ var ReactFiberScheduler = function (config) {
 
     var firstEffect = void 0;
     if (finishedWork.effectTag > PerformedWork) {
-      // A fiber's effect list consists only of its children, not itself. So if
-      // the root has an effect, we need to add it to the end of the list. The
-      // resulting list is the set that would belong to the root's parent, if
+      // A fiber's effect apiListAlerts consists only of its children, not itself. So if
+      // the root has an effect, we need to add it to the end of the apiListAlerts. The
+      // resulting apiListAlerts is the set that would belong to the root's parent, if
       // it had one; that is, all the effects in the tree including the root.
       if (finishedWork.lastEffect !== null) {
         finishedWork.lastEffect.nextEffect = finishedWork;
@@ -12119,7 +12119,7 @@ var ReactFiberScheduler = function (config) {
         // Do not append effects to parents if a sibling failed to complete
         (returnFiber.effectTag & Incomplete) === NoEffect) {
           // Append all the effects of the subtree and this fiber onto the effect
-          // list of the parent. The completion order of the children affects the
+          // apiListAlerts of the parent. The completion order of the children affects the
           // side-effect order.
           if (returnFiber.firstEffect === null) {
             returnFiber.firstEffect = workInProgress.firstEffect;
@@ -12133,12 +12133,12 @@ var ReactFiberScheduler = function (config) {
 
           // If this fiber had side-effects, we append it AFTER the children's
           // side-effects. We can perform certain side-effects earlier if
-          // needed, by doing multiple passes over the effect list. We don't want
-          // to schedule our own side-effect on our own list because if end up
+          // needed, by doing multiple passes over the effect apiListAlerts. We don't want
+          // to schedule our own side-effect on our own apiListAlerts because if end up
           // reusing children we'll schedule this effect onto itself since we're
           // at the end.
           var effectTag = workInProgress.effectTag;
-          // Skip both NoWork and PerformedWork tags when creating the effect list.
+          // Skip both NoWork and PerformedWork tags when creating the effect apiListAlerts.
           // PerformedWork effect is read by React DevTools but shouldn't be committed.
           if (effectTag > PerformedWork) {
             if (returnFiber.lastEffect !== null) {
@@ -12197,7 +12197,7 @@ var ReactFiberScheduler = function (config) {
         }
 
         if (returnFiber !== null) {
-          // Mark the parent fiber as incomplete and clear its effect list.
+          // Mark the parent fiber as incomplete and clear its effect apiListAlerts.
           returnFiber.firstEffect = returnFiber.lastEffect = null;
           returnFiber.effectTag |= Incomplete;
         }
@@ -12586,7 +12586,7 @@ var ReactFiberScheduler = function (config) {
   // TODO: Everything below this is written as if it has been lifted to the
   // renderers. I'll do this in a follow-up.
 
-  // Linked-list of roots
+  // Linked-apiListAlerts of roots
   var firstScheduledRoot = null;
   var lastScheduledRoot = null;
 
@@ -12709,18 +12709,18 @@ var ReactFiberScheduler = function (config) {
           // from the loop right after.
           !(previousScheduledRoot !== null && lastScheduledRoot !== null) ? invariant_1(false, 'Should have a previous and last root. This error is likely caused by a bug in React. Please file an issue.') : void 0;
           if (root === root.nextScheduledRoot) {
-            // This is the only root in the list.
+            // This is the only root in the apiListAlerts.
             root.nextScheduledRoot = null;
             firstScheduledRoot = lastScheduledRoot = null;
             break;
           } else if (root === firstScheduledRoot) {
-            // This is the first root in the list.
+            // This is the first root in the apiListAlerts.
             var next = root.nextScheduledRoot;
             firstScheduledRoot = next;
             lastScheduledRoot.nextScheduledRoot = next;
             root.nextScheduledRoot = null;
           } else if (root === lastScheduledRoot) {
-            // This is the last root in the list.
+            // This is the last root in the apiListAlerts.
             lastScheduledRoot = previousScheduledRoot;
             lastScheduledRoot.nextScheduledRoot = firstScheduledRoot;
             root.nextScheduledRoot = null;
@@ -15342,7 +15342,7 @@ function setInitialDOMProperties(tag, domElement, rootContainerElement, nextProp
       // Noop
     } else if (propKey === AUTOFOCUS) {
       // We polyfill it separately on the client during commit.
-      // We blacklist it here rather than in the property list because we emit it in SSR.
+      // We blacklist it here rather than in the property apiListAlerts because we emit it in SSR.
     } else if (registrationNameModules.hasOwnProperty(propKey)) {
       if (nextProp != null) {
         if (true && typeof nextProp !== 'function') {
@@ -16323,7 +16323,7 @@ var validateDOMNesting = emptyFunction_1;
         return ancestorInfo.buttonTagInScope;
 
       case 'a':
-        // Spec says something about storing a list of markers, but it sounds
+        // Spec says something about storing a apiListAlerts of markers, but it sounds
         // equivalent to this check.
         return ancestorInfo.aTagInScope;
 
@@ -16497,7 +16497,7 @@ ReactBatch.prototype.commit = function () {
 
   var expirationTime = this._expirationTime;
 
-  // Ensure this is the first batch in the list.
+  // Ensure this is the first batch in the apiListAlerts.
   if (firstBatch !== this) {
     // This batch is not the earliest batch. We need to move it to the front.
     // Update its expiration time to be the expiration time of the earliest
@@ -16511,7 +16511,7 @@ ReactBatch.prototype.commit = function () {
       this.render(this._children);
     }
 
-    // Remove the batch from the list.
+    // Remove the batch from the apiListAlerts.
     var previous = null;
     var batch = firstBatch;
     while (batch !== this) {
@@ -16530,7 +16530,7 @@ ReactBatch.prototype.commit = function () {
   this._defer = false;
   DOMRenderer.flushRoot(internalRoot, expirationTime);
 
-  // Pop the batch from the list.
+  // Pop the batch from the apiListAlerts.
   var next = this._next;
   this._next = null;
   firstBatch = internalRoot.firstBatch = next;
@@ -16560,7 +16560,7 @@ function ReactWork() {
   this._callbacks = null;
   this._didCommit = false;
   // TODO: Avoid need to bind by replacing callbacks in the update queue with
-  // list of Work objects.
+  // apiListAlerts of Work objects.
   this._onCommit = this._onCommit.bind(this);
 }
 ReactWork.prototype.then = function (onCommit) {

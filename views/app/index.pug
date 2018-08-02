@@ -10,6 +10,9 @@ block content
 block js
   //- AdminLTE App
   script(src=`/static${getVersionedPath('/theme/dist/js/adminlte.min.js')}`)
+  //- xlsx
+  script(src=`/static${getVersionedPath('/js/vendor/xlsx/shim.min.js')}`)
+  script(src=`/static${getVersionedPath('/js/vendor/xlsx/xlsx.full.min.js')}`)
   script.
     window.user = {id: '!{`${user.id}`}', firstName: '!{`${user.firstName}`}', lastName: '!{`${user.lastName}`}', email: '!{`${user.email}`}', company: '!{`${user.company}`}', token: '!{`${token}`}'}
   //- React App

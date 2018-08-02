@@ -917,23 +917,23 @@ function createOptions( options ) {
 }
 
 /*
- * Create a callback list using the following parameters:
+ * Create a callback apiListAlerts using the following parameters:
  *
- *	options: an optional list of space-separated options that will change how
- *			the callback list behaves or a more traditional option object
+ *	options: an optional apiListAlerts of space-separated options that will change how
+ *			the callback apiListAlerts behaves or a more traditional option object
  *
- * By default a callback list will act like an event callback list and can be
+ * By default a callback apiListAlerts will act like an event callback apiListAlerts and can be
  * "fired" multiple times.
  *
  * Possible options:
  *
- *	once:			will ensure the callback list can only be fired once (like a Deferred)
+ *	once:			will ensure the callback apiListAlerts can only be fired once (like a Deferred)
  *
  *	memory:			will keep track of previous values and will call any callback added
- *					after the list has been fired right away with the latest "memorized"
+ *					after the apiListAlerts has been fired right away with the latest "memorized"
  *					values (like a Deferred)
  *
- *	unique:			will ensure a callback can only be added once (no duplicate in the list)
+ *	unique:			will ensure a callback can only be added once (no duplicate in the apiListAlerts)
  *
  *	stopOnFalse:	interrupt callings when a callback returns false
  *
@@ -948,9 +948,9 @@ jQuery.Callbacks = function( options ) {
 
 	var // Last fire value (for non-forgettable lists)
 		memory,
-		// Flag to know if list was already fired
+		// Flag to know if apiListAlerts was already fired
 		fired,
-		// Flag to know if list is currently firing
+		// Flag to know if apiListAlerts is currently firing
 		firing,
 		// First callback to fire (used internally by add and fireWith)
 		firingStart,
@@ -958,7 +958,7 @@ jQuery.Callbacks = function( options ) {
 		firingLength,
 		// Index of currently firing callback (modified by remove if needed)
 		firingIndex,
-		// Actual callback list
+		// Actual callback apiListAlerts
 		list = [],
 		// Stack of fire calls for repeatable lists
 		stack = !options.once && [],
@@ -991,7 +991,7 @@ jQuery.Callbacks = function( options ) {
 		},
 		// Actual Callbacks object
 		self = {
-			// Add a callback or a collection of callbacks to the list
+			// Add a callback or a collection of callbacks to the apiListAlerts
 			add: function() {
 				if ( list ) {
 					// First, we save the current length
@@ -1022,7 +1022,7 @@ jQuery.Callbacks = function( options ) {
 				}
 				return this;
 			},
-			// Remove a callback from the list
+			// Remove a callback from the apiListAlerts
 			remove: function() {
 				if ( list ) {
 					jQuery.each( arguments, function( _, arg ) {
@@ -1043,16 +1043,16 @@ jQuery.Callbacks = function( options ) {
 				}
 				return this;
 			},
-			// Control if a given callback is in the list
+			// Control if a given callback is in the apiListAlerts
 			has: function( fn ) {
 				return jQuery.inArray( fn, list ) > -1;
 			},
-			// Remove all callbacks from the list
+			// Remove all callbacks from the apiListAlerts
 			empty: function() {
 				list = [];
 				return this;
 			},
-			// Have the list do nothing anymore
+			// Have the apiListAlerts do nothing anymore
 			disable: function() {
 				list = stack = memory = undefined;
 				return this;
@@ -1061,7 +1061,7 @@ jQuery.Callbacks = function( options ) {
 			disabled: function() {
 				return !list;
 			},
-			// Lock the list in its current state
+			// Lock the apiListAlerts in its current state
 			lock: function() {
 				stack = undefined;
 				if ( !memory ) {
@@ -1103,7 +1103,7 @@ jQuery.extend({
 
 	Deferred: function( func ) {
 		var tuples = [
-				// action, add listener, listener list, final state
+				// action, add listener, listener apiListAlerts, final state
 				[ "resolve", "done", jQuery.Callbacks("once memory"), "resolved" ],
 				[ "reject", "fail", jQuery.Callbacks("once memory"), "rejected" ],
 				[ "notify", "progress", jQuery.Callbacks("memory") ]
@@ -1153,12 +1153,12 @@ jQuery.extend({
 		// Keep pipe for back-compat
 		promise.pipe = promise.then;
 
-		// Add list-specific methods
+		// Add apiListAlerts-specific methods
 		jQuery.each( tuples, function( i, tuple ) {
 			var list = tuple[ 2 ],
 				stateString = tuple[ 3 ];
 
-			// promise[ done | fail | progress ] = list.add
+			// promise[ done | fail | progress ] = apiListAlerts.add
 			promise[ tuple[1] ] = list.add;
 
 			// Handle state
@@ -1171,7 +1171,7 @@ jQuery.extend({
 				}, tuples[ i ^ 1 ][ 2 ].disable, tuples[ 2 ][ 2 ].lock );
 			}
 
-			// deferred[ resolve | reject | notify ] = list.fire
+			// deferred[ resolve | reject | notify ] = apiListAlerts.fire
 			deferred[ tuple[0] ] = list.fire;
 			deferred[ tuple[0] + "With" ] = list.fireWith;
 		});
@@ -2080,7 +2080,7 @@ jQuery.fn.extend({
 
 					className = (" " + elem.className + " ").replace( rclass, " " );
 
-					// loop over each item in the removal list
+					// loop over each item in the removal apiListAlerts
 					for ( c = 0, cl = removes.length; c < cl; c++ ) {
 						// Remove until there is nothing to remove,
 						while ( className.indexOf(" " + removes[ c ] + " ") >= 0 ) {
@@ -2115,7 +2115,7 @@ jQuery.fn.extend({
 					classNames = value.split( core_rspace );
 
 				while ( (className = classNames[ i++ ]) ) {
-					// check each className given, space separated list
+					// check each className given, space separated apiListAlerts
 					state = isBool ? state : !self.hasClass( className );
 					self[ state ? "addClass" : "removeClass" ]( className );
 				}
@@ -2736,7 +2736,7 @@ jQuery.event = {
 				}
 			}
 
-			// Add to the element's handler list, delegates in front
+			// Add to the element's handler apiListAlerts, delegates in front
 			if ( selector ) {
 				handlers.splice( handlers.delegateCount++, 0, handleObj );
 			} else {
@@ -2902,7 +2902,7 @@ jQuery.event = {
 			event.target = elem;
 		}
 
-		// Clone any incoming data and prepend the event, creating the handler arg list
+		// Clone any incoming data and prepend the event, creating the handler arg apiListAlerts
 		data = data != null ? jQuery.makeArray( data ) : [];
 		data.unshift( event );
 
@@ -4618,7 +4618,7 @@ sortOrder = docElem.compareDocumentPosition ?
 		}
 
 		// Otherwise they're somewhere else in the tree so we need
-		// to build up a full list of the parentNodes for comparison
+		// to build up a full apiListAlerts of the parentNodes for comparison
 		while ( cur ) {
 			ap.unshift( cur );
 			cur = cur.parentNode;
@@ -7853,7 +7853,7 @@ jQuery.extend({
 		// We also use the url parameter if available
 		s.url = ( ( url || s.url ) + "" ).replace( rhash, "" ).replace( rprotocol, ajaxLocParts[ 1 ] + "//" );
 
-		// Extract dataTypes list
+		// Extract dataTypes apiListAlerts
 		s.dataTypes = jQuery.trim( s.dataType || "*" ).toLowerCase().split( core_rspace );
 
 		// A cross-domain request is in order when we have a protocol:host:port mismatch
@@ -8063,7 +8063,7 @@ function ajaxHandleResponses( s, jqXHR, responses ) {
 	}
 
 	// If we found a dataType
-	// We add the dataType to the list if needed
+	// We add the dataType to the apiListAlerts if needed
 	// and return the corresponding response
 	if ( finalDataType ) {
 		if ( finalDataType !== dataTypes[ 0 ] ) {
@@ -8095,7 +8095,7 @@ function ajaxConvert( s, response ) {
 		}
 	}
 
-	// Convert to each sequential dataType, tolerating list modification
+	// Convert to each sequential dataType, tolerating apiListAlerts modification
 	for ( ; (current = dataTypes[++i]); ) {
 
 		// There's only work to do if current dataType is non-auto
@@ -8473,7 +8473,7 @@ if ( jQuery.support.ajax ) {
 									responses = {};
 									xml = xhr.responseXML;
 
-									// Construct response list
+									// Construct response apiListAlerts
 									if ( xml && xml.documentElement /* #4958 */ ) {
 										responses.xml = xml;
 									}
@@ -8529,13 +8529,13 @@ if ( jQuery.support.ajax ) {
 					} else {
 						handle = ++xhrId;
 						if ( xhrOnUnloadAbort ) {
-							// Create the active xhrs callbacks list if needed
+							// Create the active xhrs callbacks apiListAlerts if needed
 							// and attach the unload handler
 							if ( !xhrCallbacks ) {
 								xhrCallbacks = {};
 								jQuery( window ).unload( xhrOnUnloadAbort );
 							}
-							// Add to list of active xhrs callbacks
+							// Add to apiListAlerts of active xhrs callbacks
 							xhrCallbacks[ handle ] = callback;
 						}
 						xhr.onreadystatechange = callback;

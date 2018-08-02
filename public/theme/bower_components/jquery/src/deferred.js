@@ -278,14 +278,14 @@ jQuery.extend( {
 			},
 			deferred = {};
 
-		// Add list-specific methods
+		// Add apiListAlerts-specific methods
 		jQuery.each( tuples, function( i, tuple ) {
 			var list = tuple[ 2 ],
 				stateString = tuple[ 5 ];
 
-			// promise.progress = list.add
-			// promise.done = list.add
-			// promise.fail = list.add
+			// promise.progress = apiListAlerts.add
+			// promise.done = apiListAlerts.add
+			// promise.fail = apiListAlerts.add
 			promise[ tuple[ 1 ] ] = list.add;
 
 			// Handle state
@@ -327,9 +327,9 @@ jQuery.extend( {
 				return this;
 			};
 
-			// deferred.notifyWith = list.fireWith
-			// deferred.resolveWith = list.fireWith
-			// deferred.rejectWith = list.fireWith
+			// deferred.notifyWith = apiListAlerts.fireWith
+			// deferred.resolveWith = apiListAlerts.fireWith
+			// deferred.rejectWith = apiListAlerts.fireWith
 			deferred[ tuple[ 0 ] + "With" ] = list.fireWith;
 		} );
 

@@ -2571,7 +2571,7 @@ declare module 'fullcalendar/src/main' {
 	import 'fullcalendar/src/theme/config';
 	import 'fullcalendar/src/basic/config';
 	import 'fullcalendar/src/agenda/config';
-	import 'fullcalendar/src/list/config';
+	import 'fullcalendar/src/apiListAlerts/config';
 	import 'fullcalendar/src/types/jquery-hooks';
 	export = exportHooks;
 }

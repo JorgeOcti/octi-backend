@@ -1,15 +1,17 @@
+import * as moment from 'moment';
 import * as React from 'react';
 import * as ReactDOM from 'react-dom';
 import { Provider } from 'react-redux';
 import { Route, RouteComponentProps, Router as BrowserRouter, Switch } from 'react-router-dom';
+import AlertsViews from './components/Alerts/AlertsViews';
+import DashboardGeneralView from './components/DashboardGeneral/DashboardGeneralView';
+import DashboardVinDetail from './components/DashboardVin/DashboardVinDetail';
+import DashboardVinView from './components/DashboardVin/DashboardVinView';
+import ImportCarsView from './components/Imports/ImportCarsViews';
+import UsersListView from './components/Users/UsersListView';
 import configureStore from './store/configureStore';
 import history from './utils/history';
-import UsersListView from './components/Users/UsersListView';
-import * as moment from 'moment';
-import DashboardVinView from './components/DashboardVin/DashboardVinView';
-import DashboardVinDetail from './components/DashboardVin/DashboardVinDetail';
-import DashboardGeneralView from './components/DashboardGeneral/DashboardGeneralView';
-import ImportCarsView from './components/Imports/ImportCarsViews';
+import CarsListView from "./components/Cars/CarsListView";
 
 const store = configureStore();
 
@@ -26,8 +28,10 @@ const App = () => (
                 <Route exact path="/" component={ DashboardGeneralView }/>
                 <Route exact path="/cars/" component={ DashboardVinView }/>
                 <Route exact path="/cars/:id" component={ DashboardVinDetail }/>
-                <Route exact path="/users/" component={ UsersListView }/>
-                <Route exact path="/import/cars/" component={ ImportCarsView }/>
+                <Route exact path="/settings/users/" component={ UsersListView }/>
+                <Route exact path="/settings/cars/" component={ CarsListView }/>
+                <Route exact path="/settings/cars/import/" component={ ImportCarsView }/>
+                <Route exact path="/settings/alerts/" component={ AlertsViews }/>
                 <Route component={ NoMatch }/>
             </Switch>
         </BrowserRouter>
@@ -35,7 +39,7 @@ const App = () => (
 );
 
 // clear state of the modeal on hidden
-$('body').on('hidden.bs.modal', '#andesModal', function (e) {
+$('body').on('hidden.bs.modal', '#andesModal', function(e) {
   store.dispatch({type: '/MODAL/CLEAR'});
 });
 
@@ -51,12 +55,12 @@ $(function() {
     $('body').removeClass('sidebar-open');
   });
   // ekk-lightbox
-  $(document).on('click', '[data-toggle="lightbox"]', function (event) {
+  $(document).on('click', '[data-toggle="lightbox"]', function(event) {
     event.preventDefault();
     ($(this) as any).ekkoLightbox();
   });
   // fix ekk-lightbox
-  $(document).on('hidden.bs.modal', function (event) {
+  $(document).on('hidden.bs.modal', function(event) {
     if ($('.modal:visible').length) {
       $('body').addClass('modal-open');
     }

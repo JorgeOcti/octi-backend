@@ -1,9 +1,9 @@
 /* TodoList()
  * =========
- * Converts a list into a todoList.
+ * Converts a apiListAlerts into a todoList.
  *
- * @Usage: $('.my-list').todoList(options)
- *         or add [data-widget="todo-list"] to the ul element
+ * @Usage: $('.my-apiListAlerts').todoList(options)
+ *         or add [data-widget="todo-apiListAlerts"] to the ul element
  *         Pass any option as data-option="value"
  */
 +function ($) {
@@ -21,7 +21,7 @@
   };
 
   var Selector = {
-    data: '[data-widget="todo-list"]'
+    data: '[data-widget="todo-apiListAlerts"]'
   };
 
   var ClassName = {

@@ -177,7 +177,7 @@
 
      * If for some reasons you don’t like default separators (`.` or `/`) you can specify yours
      * here. Be aware that if you pass a string longer than one character it will be treated as
-     * a list of characters.
+     * a apiListAlerts of characters.
 
      - separator (string) new separator. Empty string resets to default: `.` or `/`.
     \*/
@@ -249,7 +249,7 @@
      **
      * Returns function that will fire given event with optional arguments.
      * Arguments that will be passed to the result function will be also
-     * concated to the list of final arguments.
+     * concated to the apiListAlerts of final arguments.
      | el.onclick = eve.f("click", 1, 2);
      | eve.on("click", function (a, b, c) {
      |     console.log(a, b, c); // 1, 2, [event object]
@@ -311,7 +311,7 @@
      * eve.off
      [ method ]
      **
-     * Removes given function from the list of event listeners assigned to given name.
+     * Removes given function from the apiListAlerts of event listeners assigned to given name.
      * If no arguments specified all the events will be cleared.
      **
      > Arguments

@@ -734,7 +734,7 @@ define(["./raphael.core"], function(R) {
      [ method ]
      **
      * Deprecated! Use @Element.transform instead.
-     * Adds rotation by given angle around given point to the list of
+     * Adds rotation by given angle around given point to the apiListAlerts of
      * transformations of the element.
      > Parameters
      - deg (number) angle in degrees
@@ -767,7 +767,7 @@ define(["./raphael.core"], function(R) {
      [ method ]
      **
      * Deprecated! Use @Element.transform instead.
-     * Adds scale by given amount relative to given point to the list of
+     * Adds scale by given amount relative to given point to the apiListAlerts of
      * transformations of the element.
      > Parameters
      - sx (number) horisontal scale amount
@@ -803,7 +803,7 @@ define(["./raphael.core"], function(R) {
      [ method ]
      **
      * Deprecated! Use @Element.transform instead.
-     * Adds translation by given amount to the list of transformations of the element.
+     * Adds translation by given amount to the apiListAlerts of transformations of the element.
      > Parameters
      - dx (number) horisontal shift
      - dy (number) vertical shift

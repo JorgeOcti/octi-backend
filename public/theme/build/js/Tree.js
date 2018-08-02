@@ -1,6 +1,6 @@
 /* Tree()
  * ======
- * Converts a nested list into a multilevel
+ * Converts a nested apiListAlerts into a multilevel
  * tree view menu.
  *
  * @Usage: $('.my-menu').tree(options)

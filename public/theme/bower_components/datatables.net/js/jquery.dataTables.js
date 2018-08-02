@@ -63,7 +63,7 @@
 	 * DataTables is a plug-in for the jQuery Javascript library. It is a highly
 	 * flexible tool, based upon the foundations of progressive enhancement,
 	 * which will add advanced interaction controls to any HTML table. For a
-	 * full list of features please refer to
+	 * full apiListAlerts of features please refer to
 	 * [DataTables.net](href="http://datatables.net).
 	 *
 	 * Note that the `DataTable` object is not a global variable but is aliased
@@ -221,7 +221,7 @@
 		 *      <li>array of objects - multiple data objects when using <i>mData</i></li>
 		 *    </ul>
 		 *  @param {bool} [redraw=true] redraw the table or not
-		 *  @returns {array} An array of integers, representing the list of indexes in
+		 *  @returns {array} An array of integers, representing the apiListAlerts of indexes in
 		 *    <i>aoData</i> ({@link DataTable.models.oSettings}) that have been added to
 		 *    the table.
 		 *  @dtopt API
@@ -1317,7 +1317,7 @@
 	 * It is useful to have variables which are scoped locally so only the
 	 * DataTables functions can access them and they don't leak into global space.
 	 * At the same time these functions are often useful over multiple files in the
-	 * core and API, so we list, or at least document, all variables which are used
+	 * core and API, so we apiListAlerts, or at least document, all variables which are used
 	 * by DataTables as private variables here. This also ensures that there is no
 	 * clashing of variable names and that they can easily referenced for reuse.
 	 */
@@ -1950,7 +1950,7 @@
 	}
 	
 	/**
-	 * Add a column to the list used for the table with default values
+	 * Add a column to the apiListAlerts used for the table with default values
 	 *  @param {object} oSettings dataTables settings object
 	 *  @param {node} nTh The th element for this column
 	 *  @memberof DataTable#oApi
@@ -3775,7 +3775,7 @@
 	 *  @param {object} oSettings dataTables settings object
 	 *  @param {node} nHeader automatically detect the layout from this node - optional
 	 *  @param {array} aLayout thead/tfoot layout from _fnDetectHeader - optional
-	 *  @returns array {node} aReturn list of unique th's
+	 *  @returns array {node} aReturn apiListAlerts of unique th's
 	 *  @memberof DataTable#oApi
 	 */
 	function _fnGetUniqueThs ( oSettings, nHeader, aLayout )
@@ -5458,7 +5458,7 @@
 	 * TD children of TR rows
 	 *  @param {function} fn Method to apply to the objects
 	 *  @param array {nodes} an1 List of elements to look through for display children
-	 *  @param array {nodes} an2 Another list (identical structure to the first) - optional
+	 *  @param array {nodes} an2 Another apiListAlerts (identical structure to the first) - optional
 	 *  @memberof DataTable#oApi
 	 */
 	function _fnApplyToChildren( fn, an1, an2 )
@@ -8380,7 +8380,7 @@
 	 *
 	 */
 	
-	// can be an array of these items, comma separated list, or an array of comma
+	// can be an array of these items, comma separated apiListAlerts, or an array of comma
 	// separated lists
 	
 	var __re_column_selector = /^([^:]+):(name|visIdx|visible)$/;
@@ -8917,7 +8917,7 @@
 			order = [ [ order, dir ] ];
 		}
 		else if ( order.length && ! $.isArray( order[0] ) ) {
-			// Arguments passed in (list of 1D arrays)
+			// Arguments passed in (apiListAlerts of 1D arrays)
 			order = Array.prototype.slice.call( arguments );
 		}
 		// otherwise a 2D array was passed in
@@ -9598,7 +9598,7 @@
 		"idx": null,
 	
 		/**
-		 * A list of the columns that sorting should occur on when this column
+		 * A apiListAlerts of the columns that sorting should occur on when this column
 		 * is sorted. That this property is an array allows multi-column sorting
 		 * to be defined for a column (for example first name / last name columns
 		 * would benefit from this). The values are integers pointing to the
@@ -10144,7 +10144,7 @@
 	
 		/**
 		 * The `columns` option in the initialisation parameter allows you to define
-		 * details about the way individual columns behave. For a full list of
+		 * details about the way individual columns behave. For a full apiListAlerts of
 		 * column options that can be set, please see
 		 * {@link DataTable.defaults.column}. Note that if you use `columns` to
 		 * define your columns, you must have an entry in the array for every single
@@ -10819,7 +10819,7 @@
 		 *  @param {node} row "TR" element for the current row
 		 *  @param {array} data Raw data array for this row
 		 *  @param {int} displayIndex The display index for the current table draw
-		 *  @param {int} displayIndexFull The index of the data in the full list of
+		 *  @param {int} displayIndexFull The index of the data in the full apiListAlerts of
 		 *    rows (after filtering)
 		 *
 		 *  @dtopt Callbacks
@@ -11541,7 +11541,7 @@
 			/**
 			 * Detail the action that will be taken when the drop down menu for the
 			 * pagination length option is changed. The '_MENU_' variable is replaced
-			 * with a default select list of 10, 25, 50 and 100, and can be replaced
+			 * with a default select apiListAlerts of 10, 25, 50 and 100, and can be replaced
 			 * with a custom select box if required.
 			 *  @type string
 			 *  @default Show _MENU_ entries
@@ -12257,7 +12257,7 @@
 		 *    * `[]` - Array notation. DataTables can automatically combine data
 		 *      from and array source, joining the data with the characters provided
 		 *      between the two brackets. For example: `name[, ]` would provide a
-		 *      comma-space separated list from the source array. If no characters
+		 *      comma-space separated apiListAlerts from the source array. If no characters
 		 *      are provided between the brackets, the original array source is
 		 *      returned.
 		 *    * `()` - Function notation. Adding `()` to the end of a parameter will
@@ -12397,7 +12397,7 @@
 		 *    } );
 		 *
 		 *  @example
-		 *    // Using array notation - outputting a list from an array
+		 *    // Using array notation - outputting a apiListAlerts from an array
 		 *    $(document).ready( function() {
 		 *      $('#example').dataTable( {
 		 *        "columnDefs": [ {
@@ -12433,7 +12433,7 @@
 		 *    * `[]` - Array notation. DataTables can automatically combine data
 		 *      from and array source, joining the data with the characters provided
 		 *      between the two brackets. For example: `name[, ]` would provide a
-		 *      comma-space separated list from the source array. If no characters
+		 *      comma-space separated apiListAlerts from the source array. If no characters
 		 *      are provided between the brackets, the original array source is
 		 *      returned.
 		 *    * `()` - Function notation. Adding `()` to the end of a parameter will
@@ -12468,7 +12468,7 @@
 		 *  @dtopt Columns
 		 *
 		 *  @example
-		 *    // Create a comma separated list from an array of objects
+		 *    // Create a comma separated apiListAlerts from an array of objects
 		 *    $(document).ready( function() {
 		 *      $('#example').dataTable( {
 		 *        "ajaxSource": "sources/deep.txt",

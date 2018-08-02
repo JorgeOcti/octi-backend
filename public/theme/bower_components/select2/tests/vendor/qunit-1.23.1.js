@@ -2043,7 +2043,7 @@ QUnit.dump = ( function() {
 			depth: 1,
 			maxDepth: QUnit.config.maxDepth,
 
-			// This is the list of parsers, to modify them, use dump.setParser
+			// This is the apiListAlerts of parsers, to modify them, use dump.setParser
 			parsers: {
 				window: "[Window]",
 				document: "[Document]",
@@ -2856,7 +2856,7 @@ function appendTest( name, testId, moduleName ) {
 	testBlock.id = "qunit-test-output-" + testId;
 
 	assertList = document.createElement( "ol" );
-	assertList.className = "qunit-assert-list";
+	assertList.className = "qunit-assert-apiListAlerts";
 
 	testBlock.appendChild( assertList );
 

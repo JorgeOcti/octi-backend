@@ -135,7 +135,7 @@ jQuery.fn.extend( {
 
 				while ( ( className = classNames[ i++ ] ) ) {
 
-					// Check each className given, space separated list
+					// Check each className given, space separated apiListAlerts
 					if ( self.hasClass( className ) ) {
 						self.removeClass( className );
 					} else {

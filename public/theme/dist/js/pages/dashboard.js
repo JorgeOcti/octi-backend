@@ -19,8 +19,8 @@ $(function () {
   });
   $('.connectedSortable .box-header, .connectedSortable .nav-tabs-custom').css('cursor', 'move');
 
-  // jQuery UI sortable for the todo list
-  $('.todo-list').sortable({
+  // jQuery UI sortable for the todo apiListAlerts
+  $('.todo-apiListAlerts').sortable({
     placeholder         : 'sort-highlight',
     handle              : '.handle',
     forcePlaceholderSize: true,
@@ -197,8 +197,8 @@ $(function () {
     line.redraw();
   });
 
-  /* The todo list plugin */
-  $('.todo-list').todoList({
+  /* The todo apiListAlerts plugin */
+  $('.todo-apiListAlerts').todoList({
     onCheck  : function () {
       window.console.log($(this), 'The element has been checked');
     },

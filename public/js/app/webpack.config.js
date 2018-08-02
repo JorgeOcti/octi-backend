@@ -1,9 +1,10 @@
 const webpack = require('webpack');
 const path = require('path');
+const DashboardPlugin = require('webpack-dashboard/plugin');
 
 let plugins;
 const sourcePath = path.join(__dirname, './src');
-const outPath = path.join(__dirname, './dist');
+// const outPath = path.join(__dirname, './dist');
 
 if (process.env.NODE_ENV === 'production') {
   plugins = [
@@ -12,6 +13,7 @@ if (process.env.NODE_ENV === 'production') {
 }
 else {
   plugins = [
+    new DashboardPlugin(),
     new webpack.EnvironmentPlugin(['NODE_ENV'])
   ];
 }
@@ -45,8 +47,10 @@ module.exports = {// entry: process.env.NODE_ENV === 'production'?['babel-polyfi
     $: 'jQuery',
     react: 'React',
     'react-dom': 'ReactDOM',
+    'echarts': 'echarts',
+    'xlsx': 'XLSX',
     sweetalert: {
-      root: "swal"
+      root: 'swal'
     },
     moment: 'moment'
   },

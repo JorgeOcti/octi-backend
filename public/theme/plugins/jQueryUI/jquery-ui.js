@@ -445,7 +445,7 @@ $.widget = function( name, base, prototype ) {
 			// originally used, but inherit from the new version of the base
 			$.widget( childPrototype.namespace + "." + childPrototype.widgetName, constructor, child._proto );
 		});
-		// remove the list of existing child constructors from the old constructor
+		// remove the apiListAlerts of existing child constructors from the old constructor
 		// so the old child constructors can be garbage collected
 		delete existingConstructor._childConstructors;
 	} else {
@@ -2428,7 +2428,7 @@ var menu = $.widget( "ui.menu", {
 			}
 		});
 
-		// Don't refresh list items that are already adapted
+		// Don't refresh apiListAlerts items that are already adapted
 		items.not( ".ui-menu-item, .ui-menu-divider" )
 			.addClass( "ui-menu-item" )
 			.uniqueId()
@@ -9250,7 +9250,7 @@ $.ui.ddmanager = {
 	drop: function( draggable, event ) {
 
 		var dropped = false;
-		// Create a copy of the droppables in case the list changes during the drop (#9116)
+		// Create a copy of the droppables in case the apiListAlerts changes during the drop (#9116)
 		$.each( ( $.ui.ddmanager.droppables[ draggable.options.scope ] || [] ).slice(), function() {
 
 			if ( !this.options ) {
@@ -15361,7 +15361,7 @@ var tabs = $.widget( "ui.tabs", {
 			) ).sort();
 		}
 
-		// check for length avoids error when initializing empty list
+		// check for length avoids error when initializing empty apiListAlerts
 		if ( this.options.active !== false && this.anchors.length ) {
 			this.active = this._findActive( options.active );
 		} else {
@@ -15740,7 +15740,7 @@ var tabs = $.widget( "ui.tabs", {
 		}
 	},
 
-	// allow overriding how to find the list for rare usage scenarios (#7715)
+	// allow overriding how to find the apiListAlerts for rare usage scenarios (#7715)
 	_getList: function() {
 		return this.tablist || this.element.find( "ol,ul" ).eq( 0 );
 	},

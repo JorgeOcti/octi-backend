@@ -4367,8 +4367,8 @@ wysihtml5.browser = (function() {
         // formatBlock fails with some tags (eg. <blockquote>)
         "formatBlock":          isIE(10, "<="),
          // When inserting unordered or ordered lists in Firefox, Chrome or Safari, the current selection or line gets
-         // converted into a list (<ul><li>...</li></ul>, <ol><li>...</li></ol>)
-         // IE and Opera act a bit different here as they convert the entire content of the current block element into a list
+         // converted into a apiListAlerts (<ul><li>...</li></ul>, <ol><li>...</li></ol>)
+         // IE and Opera act a bit different here as they convert the entire content of the current block element into a apiListAlerts
         "insertUnorderedList":  isIE(),
         "insertOrderedList":    isIE()
       };
@@ -5083,22 +5083,22 @@ wysihtml5.browser = (function() {
   }
 })();
 ;/**
- * Converts an HTML fragment/element into a unordered/ordered list
+ * Converts an HTML fragment/element into a unordered/ordered apiListAlerts
  *
- * @param {Element} element The element which should be turned into a list
- * @param {String} listType The list type in which to convert the tree (either "ul" or "ol")
- * @return {Element} The created list
+ * @param {Element} element The element which should be turned into a apiListAlerts
+ * @param {String} listType The apiListAlerts type in which to convert the tree (either "ul" or "ol")
+ * @return {Element} The created apiListAlerts
  *
  * @example
  *    <!-- Assume the following dom: -->
- *    <span id="pseudo-list">
+ *    <span id="pseudo-apiListAlerts">
  *      eminem<br>
  *      dr. dre
  *      <div>50 Cent</div>
  *    </span>
  *
  *    <script>
- *      wysihtml5.dom.convertToList(document.getElementById("pseudo-list"), "ul");
+ *      wysihtml5.dom.convertToList(document.getElementById("pseudo-apiListAlerts"), "ul");
  *    </script>
  *
  *    <!-- Will result in: -->
@@ -5121,7 +5121,7 @@ wysihtml5.dom.convertToList = (function() {
 
   function convertToList(element, listType, uneditableClass) {
     if (element.nodeName === "UL" || element.nodeName === "OL" || element.nodeName === "MENU") {
-      // Already a list
+      // Already a apiListAlerts
       return element;
     }
 
@@ -5170,7 +5170,7 @@ wysihtml5.dom.convertToList = (function() {
       }
 
       if (isLineBreak) {
-        // Only create a new list item in the next iteration when the current one has already content
+        // Only create a new apiListAlerts item in the next iteration when the current one has already content
         currentListItem = currentListItem.firstChild ? null : currentListItem;
         continue;
       }
@@ -6616,7 +6616,7 @@ wysihtml5.dom.parse = function(elementOrHtml_current, config_current) {
           return true;
         }
 
-        // matches list of visible dimensioned elements
+        // matches apiListAlerts of visible dimensioned elements
         for (var i = visibleElements.length; i--;) {
           if (el.querySelector(visibleElements[i])) {
             return true;
@@ -6667,19 +6667,19 @@ wysihtml5.dom.removeEmptyTextNodes = function(node) {
 ;/**
  * Renames an element (eg. a <div> to a <p>) and keeps its childs
  *
- * @param {Element} element The list element which should be renamed
+ * @param {Element} element The apiListAlerts element which should be renamed
  * @param {Element} newNodeName The desired tag name
  *
  * @example
  *    <!-- Assume the following dom: -->
- *    <ul id="list">
+ *    <ul id="apiListAlerts">
  *      <li>eminem</li>
  *      <li>dr. dre</li>
  *      <li>50 Cent</li>
  *    </ul>
  *
  *    <script>
- *      wysihtml5.dom.renameElement(document.getElementById("list"), "ol");
+ *      wysihtml5.dom.renameElement(document.getElementById("apiListAlerts"), "ol");
  *    </script>
  *
  *    <!-- Will result in: -->
@@ -6730,20 +6730,20 @@ wysihtml5.dom.replaceWithChildNodes = function(node) {
   node = fragment = null;
 };
 ;/**
- * Unwraps an unordered/ordered list
+ * Unwraps an unordered/ordered apiListAlerts
  *
- * @param {Element} element The list element which should be unwrapped
+ * @param {Element} element The apiListAlerts element which should be unwrapped
  *
  * @example
  *    <!-- Assume the following dom: -->
- *    <ul id="list">
+ *    <ul id="apiListAlerts">
  *      <li>eminem</li>
  *      <li>dr. dre</li>
  *      <li>50 Cent</li>
  *    </ul>
  *
  *    <script>
- *      wysihtml5.dom.resolveList(document.getElementById("list"));
+ *      wysihtml5.dom.resolveList(document.getElementById("apiListAlerts"));
  *    </script>
  *
  *    <!-- Will result in: -->
@@ -6781,7 +6781,7 @@ wysihtml5.dom.replaceWithChildNodes = function(node) {
         listItem;
 
     if (useLineBreaks) {
-      // Insert line break if list is after a non-block element
+      // Insert line break if apiListAlerts is after a non-block element
       if (previousSibling && !_isBlockElement(previousSibling) && !_isLineBreak(previousSibling)) {
         _appendLineBreak(fragment);
       }
@@ -11262,7 +11262,7 @@ wysihtml5.commands.formatCode = {
       }
     }
 
-    // do not count list elements outside of composer
+    // do not count apiListAlerts elements outside of composer
     if (ret.el && !composer.element.contains(ret.el)) {
       ret.el = null;
     }
@@ -11273,7 +11273,7 @@ wysihtml5.commands.formatCode = {
   var handleSameTypeList = function(el, nodeName, composer) {
     var otherNodeName = (nodeName === "UL") ? "OL" : "UL",
         otherLists, innerLists;
-    // Unwrap list
+    // Unwrap apiListAlerts
     // <ul><li>foo</li><li>bar</li></ul>
     // becomes:
     // foo<br>bar<br>
@@ -11295,7 +11295,7 @@ wysihtml5.commands.formatCode = {
 
   var handleOtherTypeList =  function(el, nodeName, composer) {
     var otherNodeName = (nodeName === "UL") ? "OL" : "UL";
-    // Turn an ordered list into an unordered list
+    // Turn an ordered apiListAlerts into an unordered apiListAlerts
     // <ol><li>foo</li><li>bar</li></ol>
     // becomes:
     // <ul><li>foo</li><li>bar</li></ul>
@@ -11324,7 +11324,7 @@ wysihtml5.commands.formatCode = {
   };
 
   var createListFallback = function(nodeName, composer) {
-    // Fallback for Create list
+    // Fallback for Create apiListAlerts
     composer.selection.executeAndRestoreRangy(function() {
       var tempClassName =  "_wysihtml5-temp-" + new Date().getTime(),
           tempElement = composer.selection.deblockAndSurround({
@@ -12448,7 +12448,7 @@ wysihtml5.views.View = Base.extend(
         var blockElement = dom.getParentElement(that.selection.getSelectedNode(), { nodeName: USE_NATIVE_LINE_BREAK_INSIDE_TAGS }, 4);
         if (blockElement) {
           setTimeout(function() {
-            // Unwrap paragraph after leaving a list or a H1-6
+            // Unwrap paragraph after leaving a apiListAlerts or a H1-6
             var selectedNode = that.selection.getSelectedNode(),
                 list;
 
@@ -12911,7 +12911,7 @@ wysihtml5.views.View = Base.extend(
 
     if (!browser.canSelectImagesInContentEditable()) {
         dom.observe(element, "drop", function(event) {
-            // TODO: if I knew how to get dropped elements list from event I could limit it to only IMG element case
+            // TODO: if I knew how to get dropped elements apiListAlerts from event I could limit it to only IMG element case
             setTimeout(function() {
                 that.selection.getSelection().removeAllRanges();
             }, 0);
@@ -14503,25 +14503,25 @@ function program1(depth0,data) {
 function program3(depth0,data) {
   
   
-  return "\n      <span class=\"fa fa-list-ul\"></span>\n    ";
+  return "\n      <span class=\"fa fa-apiListAlerts-ul\"></span>\n    ";
   }
 
 function program5(depth0,data) {
   
   
-  return "\n      <span class=\"glyphicon glyphicon-list\"></span>\n    ";
+  return "\n      <span class=\"glyphicon glyphicon-apiListAlerts\"></span>\n    ";
   }
 
 function program7(depth0,data) {
   
   
-  return "\n      <span class=\"fa fa-list-ol\"></span>\n    ";
+  return "\n      <span class=\"fa fa-apiListAlerts-ol\"></span>\n    ";
   }
 
 function program9(depth0,data) {
   
   
-  return "\n      <span class=\"glyphicon glyphicon-th-list\"></span>\n    ";
+  return "\n      <span class=\"glyphicon glyphicon-th-apiListAlerts\"></span>\n    ";
   }
 
 function program11(depth0,data) {
@@ -14941,8 +14941,8 @@ function program17(depth0,data) {
       small: 'Small'
     },
     lists: {
-      unordered: 'Unordered list',
-      ordered: 'Ordered list',
+      unordered: 'Unordered apiListAlerts',
+      ordered: 'Ordered apiListAlerts',
       outdent: 'Outdent',
       indent: 'Indent'
     },

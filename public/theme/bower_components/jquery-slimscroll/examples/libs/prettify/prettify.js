@@ -186,7 +186,7 @@ window['PR_SHOULD_USE_CONTINUATION'] = true;
  * A set of tokens that can precede a regular expression literal in
  * javascript
  * http://web.archive.org/web/20070717142515/http://www.mozilla.org/js/language/js20/rationale/syntax.html
- * has the full list, but I've removed ones that might be problematic when
+ * has the full apiListAlerts, but I've removed ones that might be problematic when
  * seen in languages that don't support regular expression literals.
  *
  * <p>Specifically, I've removed any keywords that can't precede a regexp
@@ -592,13 +592,13 @@ var REGEXP_PRECEDER_PATTERN = '(?:^^\\.?|[+-]|\\!|\\!=|\\!==|\\#|\\%|\\%=|&|&&|&
 
   /** Given triples of [style, pattern, context] returns a lexing function,
     * The lexing function interprets the patterns to find token boundaries and
-    * returns a decoration list of the form
+    * returns a decoration apiListAlerts of the form
     * [index_0, style_0, index_1, style_1, ..., index_n, style_n]
     * where index_n is an index into the sourceCode, and style_n is a style
     * constant like PR_PLAIN.  index_n-1 <= index_n, and style_n-1 applies to
     * all characters in sourceCode[index_n-1:index_n].
     *
-    * The stylePatterns is a list whose elements have the form
+    * The stylePatterns is a apiListAlerts whose elements have the form
     * [style : string, pattern : RegExp, DEPRECATED, shortcut : string].
     *
     * Style is a style constant like PR_PLAIN, or can be a string of the
@@ -634,7 +634,7 @@ var REGEXP_PRECEDER_PATTERN = '(?:^^\\.?|[+-]|\\!|\\!=|\\!==|\\#|\\%|\\%=|&|&&|&
     *   order if the shortcut ones fail.  May have shortcuts.
     *
     * @return {function (Object)} a
-    *   function that takes source code and returns a list of decorations.
+    *   function that takes source code and returns a apiListAlerts of decorations.
     */
   function createSimpleLexer(shortcutStylePatterns, fallthroughStylePatterns) {
     var shortcuts = {};
@@ -764,7 +764,7 @@ var REGEXP_PRECEDER_PATTERN = '(?:^^\\.?|[+-]|\\!|\\!=|\\!==|\\#|\\%|\\%=|&|&&|&
     return decorate;
   }
 
-  /** returns a function that produces a list of decorations from source text.
+  /** returns a function that produces a apiListAlerts of decorations from source text.
     *
     * This code treats ", ', and ` as string delimiters, and \ as a string
     * escape.  It does not recognize perl's qq() style strings.
@@ -777,7 +777,7 @@ var REGEXP_PRECEDER_PATTERN = '(?:^^\\.?|[+-]|\\!|\\!=|\\!==|\\#|\\%|\\%=|&|&&|&
     *
     * @param {Object} options a set of optional parameters.
     * @return {function (Object)} a function that examines the source code
-    *     in the input job and builds the decoration list.
+    *     in the input job and builds the decoration apiListAlerts.
     */
   function sourceDecorator(options) {
     var shortcutStylePatterns = [], fallthroughStylePatterns = [];
@@ -899,11 +899,11 @@ var REGEXP_PRECEDER_PATTERN = '(?:^^\\.?|[+-]|\\!|\\!=|\\!==|\\#|\\%|\\%=|&|&&|&
       });
 
   /**
-   * Given a DOM subtree, wraps it in a list, and puts each line into its own
-   * list item.
+   * Given a DOM subtree, wraps it in a apiListAlerts, and puts each line into its own
+   * apiListAlerts item.
    *
    * @param {Node} node modified in place.  Its content is pulled into an
-   *     HTMLOListElement, and each line is moved into a separate list item.
+   *     HTMLOListElement, and each line is moved into a separate apiListAlerts item.
    *     This requires cloning elements, so the input might not have unique
    *     IDs after numbering.
    */
@@ -1012,7 +1012,7 @@ var REGEXP_PRECEDER_PATTERN = '(?:^^\\.?|[+-]|\\!|\\!=|\\!==|\\#|\\%|\\%=|&|&&|&
            (parent = copiedListItem.parentNode) && parent.nodeType === 1;) {
         copiedListItem = parent;
       }
-      // Put it on the list of lines for later processing.
+      // Put it on the apiListAlerts of lines for later processing.
       listItems.push(copiedListItem);
     }
   
@@ -1159,7 +1159,7 @@ var REGEXP_PRECEDER_PATTERN = '(?:^^\\.?|[+-]|\\!|\\!=|\\!==|\\#|\\%|\\%=|&|&&|&
   /** Maps language-specific file extensions to handlers. */
   var langHandlerRegistry = {};
   /** Register a language handler for the given file extensions.
-    * @param {function (Object)} handler a function from source code to a list
+    * @param {function (Object)} handler a function from source code to a apiListAlerts
     *      of decorations.  Takes a single argument job which describes the
     *      state of the computation.   The single parameter has the form
     *      {@code {
@@ -1346,7 +1346,7 @@ var REGEXP_PRECEDER_PATTERN = '(?:^^\\.?|[+-]|\\!|\\!=|\\!==|\\#|\\%|\\%=|&|&&|&
 
   function prettyPrint(opt_whenDone) {
     function byTagName(tn) { return document.getElementsByTagName(tn); }
-    // fetch a list of nodes to rewrite
+    // fetch a apiListAlerts of nodes to rewrite
     var codeSegments = [byTagName('pre'), byTagName('code'), byTagName('xmp')];
     var elements = [];
     for (var i = 0; i < codeSegments.length; ++i) {

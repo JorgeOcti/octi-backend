@@ -64,7 +64,7 @@ jQuery.extend( jQuery.event, {
 			event.target = elem;
 		}
 
-		// Clone any incoming data and prepend the event, creating the handler arg list
+		// Clone any incoming data and prepend the event, creating the handler arg apiListAlerts
 		data = data == null ?
 			[ event ] :
 			jQuery.makeArray( data, [ event ] );

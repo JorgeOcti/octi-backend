@@ -235,7 +235,7 @@ $(function () {
     + '<p>Toggle between dark and light skins for the right sidebar</p>'
     + '</div>'
   )
-  var $skinsList = $('<ul />', { 'class': 'list-unstyled clearfix' })
+  var $skinsList = $('<ul />', { 'class': 'apiListAlerts-unstyled clearfix' })
 
   // Dark sidebar skins
   var $skinBlue =

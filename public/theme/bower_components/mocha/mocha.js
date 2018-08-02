@@ -1998,7 +1998,7 @@ exports.cursor = {
 };
 
 /**
- * Outut the given `failures` as a list.
+ * Outut the given `failures` as a apiListAlerts.
  *
  * @param {Array} failures
  * @api public
@@ -2827,7 +2827,7 @@ exports.Doc = require('./doc');
 exports.TAP = require('./tap');
 exports.JSON = require('./json');
 exports.HTML = require('./html');
-exports.List = require('./list');
+exports.List = require('./apiListAlerts');
 exports.Min = require('./min');
 exports.Spec = require('./spec');
 exports.Nyan = require('./nyan');
@@ -3239,7 +3239,7 @@ Landing.prototype.constructor = Landing;
 
 }); // module: reporters/landing.js
 
-require.register("reporters/list.js", function(module, exports, require){
+require.register("reporters/apiListAlerts.js", function(module, exports, require){
 
 /**
  * Module dependencies.
@@ -3309,7 +3309,7 @@ List.prototype = new F;
 List.prototype.constructor = List;
 
 
-}); // module: reporters/list.js
+}); // module: reporters/apiListAlerts.js
 
 require.register("reporters/markdown.js", function(module, exports, require){
 /**
@@ -4467,7 +4467,7 @@ Runner.prototype.grepTotal = function(suite) {
 };
 
 /**
- * Return a list of global properties.
+ * Return a apiListAlerts of global properties.
  *
  * @return {Array}
  * @api private
