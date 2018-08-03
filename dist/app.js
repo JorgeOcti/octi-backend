@@ -145,7 +145,21 @@ passport.use(new LocalStrategy({ usernameField: 'username' }, (username, passwor
     });
 }));
 passport.serializeUser(user_model_1.default.serializeUser());
-passport.deserializeUser(user_model_1.default.deserializeUser());
+// passport.deserializeUser((User as any).deserializeUser());
+passport.deserializeUser(async (email, done) => {
+    try {
+        const user = await user_model_1.default.findOne({ email }).populate({ path: 'userPermissions', select: ['codeName'] });
+        if (user) {
+            done(null, user);
+        }
+        else {
+            done(new Error('User not found'));
+        }
+    }
+    catch (e) {
+        done(e);
+    }
+});
 /*
 passport.serializeUser<any, any>((user, done) => {
   done(undefined, user.id);

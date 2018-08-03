@@ -11,9 +11,19 @@ class AdminUsersController {
         this.apiDeleteUser = this.apiDeleteUser.bind(this);
     }
     async index(req, res) {
-        res.render('app/index');
+        if (req.user.hasPermission('viewUser')) {
+            res.render('app/index', { token: await req.user.generateToken() });
+        }
+        else {
+            res.status(403).render('403');
+        }
     }
     async apiUsers(req, res) {
+        if (!req.user.hasPermission('viewUser')) {
+            return res.status(403).json({
+                message: 'No tiene permisos para esta operación'
+            });
+        }
         const { page, pageSize } = req.query;
         const company = req.user.company;
         // paginate options
@@ -61,6 +71,11 @@ class AdminUsersController {
         }
     }
     async apiAddUser(req, res) {
+        if (!req.user.hasPermission('addUser')) {
+            return res.status(403).json({
+                message: 'No tiene permisos para esta operación'
+            });
+        }
         const { firstName, lastName, email, venue } = req.body;
         const company = req.user.company;
         // validate fields required
@@ -93,8 +108,8 @@ class AdminUsersController {
                     email,
                     active: true
                 }).save();
-                // const error = await newUser.validate();
-                // console.log(error);
+                // const errors = await newUser.validate();
+                // console.log(errors);
                 // send welcome email
                 const fullname = newUser.fullName();
                 app_1.queue.create('email', {
@@ -132,6 +147,11 @@ class AdminUsersController {
         }
     }
     async apiEditUser(req, res) {
+        if (!req.user.hasPermission('changeUser')) {
+            return res.status(403).json({
+                message: 'No tiene permisos para esta operación'
+            });
+        }
         const { id } = req.params;
         const company = req.user.company;
         const { firstName, lastName, email, venue } = req.body;
@@ -192,6 +212,11 @@ class AdminUsersController {
         }
     }
     async apiDeleteUser(req, res) {
+        if (!req.user.hasPermission('deleteUser')) {
+            return res.status(403).json({
+                message: 'No tiene permisos para esta operación'
+            });
+        }
         const { id } = req.params;
         const company = req.user.company;
         try {

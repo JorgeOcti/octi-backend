@@ -210,7 +210,7 @@ export function getUsersAction(nextPage?: number) {
     const state = getState();
     // get venues only are empty
     if (!state.users.venues.length) {
-      api.getVenues()
+      api.getVenues(1, 200)
         .then((response: AxiosResponse) => {
           dispatch(loadVenuesUserAction(response.data.results));
         })

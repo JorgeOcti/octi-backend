@@ -71,6 +71,9 @@ class JWTController {
         }, {
           path: 'company',
           select: ['name']
+        }, {
+          path: 'userPermissions',
+          select: ['codeName']
         }])
         .exec((err, user: IUserModel) => {
           if (err) {
@@ -107,6 +110,7 @@ class JWTController {
                     lastName: user.lastName,
                     email: user.email,
                     preferred: user.preferred,
+                    userPermissions: user.userPermissions,
                     venue: {
                       _id: user.venue ? user.venue._id : null,
                       name: user.venue ? user.venue.name : null
@@ -163,6 +167,9 @@ class JWTController {
             }, {
               path: 'company',
               select: ['name']
+            }, {
+              path: 'userPermissions',
+              select: ['codeName']
             }])
             .exec((err, user: IUserModel) => {
               if (err) {
@@ -193,6 +200,7 @@ class JWTController {
                         lastName: user.lastName,
                         email: user.email,
                         preferred: user.preferred,
+                        userPermissions: user.userPermissions,
                         venue: {
                           _id: user.venue ? user.venue._id : null,
                           name: user.venue ? user.venue.name : null

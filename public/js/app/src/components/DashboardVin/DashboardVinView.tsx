@@ -124,10 +124,11 @@ class DashboardVinView extends React.Component<IPropsType, IStateType> {
                   <table className="table table-striped">
                     <thead>
                     <tr>
-                      <th style={{width: '25%'}} className="middle">VIN</th>
-                      <th style={{width: '25%'}} className="middle hidden-xs">Marca</th>
-                      <th style={{width: '25%'}} className="middle">Supervisor</th>
-                      <th style={{width: '25%'}} className="hidden-xs">Último checkeo</th>
+                      <th style={{width: '20%'}} className="middle">VIN</th>
+                      <th style={{width: '20%'}} className="middle hidden-xs">Marca</th>
+                      <th style={{width: '20%'}} className="middle hidden-xs">Supervisor</th>
+                      <th style={{width: '20%'}} className="hidden-xs">Calificación</th>
+                      <th style={{width: '20%'}} className="hidden-xs">Último checkeo</th>
                       <th className="width-10"/>
                     </tr>
                     </thead>
@@ -142,6 +143,7 @@ class DashboardVinView extends React.Component<IPropsType, IStateType> {
                             <td className="middle">{car.vin}</td>
                             <td className="middle hidden-xs">{car.brand}</td>
                             <td className="middle">{`${car.lastForm.user ? `${car.lastForm.user.firstName} ${car.lastForm.user.lastName}` : ''}`}</td>
+                            <td className="middle">{`${car.lastForm && car.lastForm.hasOwnProperty('qualification') ? `${Math.round(car.lastForm.qualification)}%` : ''}`}</td>
                             <td className="middle hidden-xs">{moment(car.lastForm.createdAt).format('LLL')}</td>
                             <td className="text-primary">
                               <button className="btn btn-xs btn-primary" onClick={() => this.props.history.push(`/cars/${car._id}`)}><i

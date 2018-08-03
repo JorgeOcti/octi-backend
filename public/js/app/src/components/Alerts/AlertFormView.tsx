@@ -52,6 +52,13 @@ class AlertFormView extends React.Component<IPropsType, IStateType> {
     this.deleteUser = this.deleteUser.bind(this);
   }
 
+  public componentDidMount() {
+    ($('#user-select') as any).chosen().change((e: React.ChangeEvent<HTMLSelectElement>) => {
+      this.onChangeSelectUser(e);
+      // console.log(e.target.value)
+    });
+  }
+
   public componentDidCatch(error: Error, errorInfo: ErrorInfo) {
     this.setState({error});
     Raven.captureException(error, {
@@ -60,6 +67,7 @@ class AlertFormView extends React.Component<IPropsType, IStateType> {
   }
 
   componentDidUpdate() {
+    $('#user-select').trigger('chosen:updated');
     this.props.changeTempAlert(this.state.tempAlert);
   }
 
@@ -82,9 +90,9 @@ class AlertFormView extends React.Component<IPropsType, IStateType> {
         </div>
         <div className="col-md-12">
           <label>Usuarios a notificar</label>
-          <div className="input-group">
-            <select className="form-control" onChange={this.onChangeSelectUser}>
-              <option>Selecciones usuarios.</option>
+          <div className="form-group">
+            <select id="user-select" className="form-control" style={{minWidth: '200px'}} onChange={this.onChangeSelectUser}>
+              <option value="">Selecciones usuarios.</option>
               {
                 users.filter((user) => !(tempAlert.users as string[]).includes(user._id)).map((user) => {
                   return (
@@ -93,9 +101,9 @@ class AlertFormView extends React.Component<IPropsType, IStateType> {
                 })
               }
             </select>
-            <span className="input-group-btn">
-              <button className="btn btn-success" onClick={this.addUser}>agregar</button>
-            </span>
+            {/*<span className="input-group-btn">*/}
+              {/*<button className="btn btn-success" onClick={this.addUser}>agregar</button>*/}
+            {/*</span>*/}
           </div>
         </div>
         <div className="col-md-12">
@@ -195,7 +203,7 @@ class AlertFormView extends React.Component<IPropsType, IStateType> {
     if (e.target.value) {
       this.setState({
         currentUser: e.target.value
-      });
+      }, () => this.addUser());
     }
   }
 

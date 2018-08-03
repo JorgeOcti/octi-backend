@@ -3,7 +3,7 @@ import {IRequest} from '../../../interfaces/global.interface';
 import Alert from '../../models/alert.model';
 import User from '../../models/user.model';
 
-class AdminAlertsController {
+class AdminAlertController {
 
   constructor() {
     this.index = this.index.bind(this);
@@ -119,4 +119,4 @@ class AdminAlertsController {
   }
 }
 
-export default new AdminAlertsController();
+export default new AdminAlertController();

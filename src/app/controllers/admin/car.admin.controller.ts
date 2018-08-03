@@ -3,57 +3,73 @@ import {Response} from 'express';
 import {PaginateOptions, PaginateResult} from 'mongoose';
 import {IRequest} from '../../../interfaces/global.interface';
 import {io} from '../../../server';
-import Car, {ICarModel} from '../../models/car.model';
-
-class AdminCarsController {
+class AdminCarController {
 
   constructor() {
     this.index = this.index.bind(this);
+    this.import = this.import.bind(this);
     this.importCars = this.importCars.bind(this);
     this.apiListCars = this.apiListCars.bind(this);
   }
 
   public async index(req: IRequest, res: Response) {
-    res.render('app/index', {token: await req.user.generateToken()});
+    if (req.user.hasPermission('viewCar')) {
+      res.render('app/index', {token: await req.user.generateToken()});
+    } else {
+      res.status(403).render('403');
+    }
   }
 
-  public async importCars(req: IRequest, res: Response) {
+  public async import(req: IRequest, res: Response): Promise<any> {
+    if (req.user.hasPermission('addCar')) {
+      res.render('app/index', {token: await req.user.generateToken()});
+    } else {
+      res.status(403).render('403');
+    }
+  }
+
+  public async importCars(req: IRequest, res: Response): Promise<any> {
+    if (!req.user.hasPermission('addCar')) {
+      return res.status(403).json({
+        message: 'No tiene permisos para esta operación'
+      });
+    }
     const company = req.user.company;
     const cars = req.body;
     if (cars && cars.length) {
       for (const car of cars) {
-          if (car.vin && car.vin.length) {
-            const vin2 = car.vin.substr(car.vin.length - 6);
-            try {
-              const newCar = await Car.findOne({
+        if (car.vin && car.vin.length) {
+          const vin2 = car.vin.substr(car.vin.length - 6);
+          try {
+            const newCar = await Car.findOne({
+              vin: car.vin,
+              company
+            });
+            if (newCar) {
+              newCar.vin2 = vin2;
+              newCar.brand = car.marca ? car.marca : newCar.brand;
+              newCar.denomination = car.denominacion ? car.denominacion : newCar.denomination;
+              newCar.color = car.denominacion ? car.color : newCar.color;
+              newCar.internalNumber = car.NInterno ? car.NInterno : newCar.internalNumber;
+              newCar.destination = car.destino ? car.destino : newCar.destination;
+              await newCar.save();
+            } else {
+              await Car.create({
                 vin: car.vin,
+                vin2,
+                brand: car.marca ? car.marca : '',
+                denomination: car.denominacion ? car.denominacion : '',
+                color: car.color ? car.color : '',
+                internalNumber: car.NInterno ? car.NInterno : '',
+                destination: car.destino ? car.destino : '',
                 company
               });
-              if (newCar) {
-                newCar.vin2 = vin2;
-                newCar.brand = car.marca ? car.marca : newCar.brand;
-                newCar.denomination = car.denominacion ? car.denominacion : newCar.denomination;
-                newCar.color = car.denominacion ? car.color : newCar.color;
-                newCar.internalNumber = car.NInterno ? car.NInterno : newCar.internalNumber;
-                newCar.destination = car.destino ? car.destino : newCar.destination;
-                await newCar.save();
-              } else {
-                await Car.create({
-                  vin: car.vin,
-                  vin2,
-                  brand: car.marca ? car.marca : '',
-                  denomination: car.denominacion ? car.denominacion : '',
-                  color: car.color ? car.color : '',
-                  internalNumber: car.NInterno ? car.NInterno : '',
-                  destination: car.destino ? car.destino : '',
-                  company
-                });
-              }
-              // io.to(req.user._id).emit('STATUS-CARS', {newCar});
-            } catch (e) {
-              console.log(e);
             }
+            // io.to(req.user._id).emit('STATUS-CARS', {newCar});
+          } catch (e) {
+            console.log(e);
           }
+        }
       }
       io.to(req.user._id).emit('FINISH-IMPORT', {finish: true});
     }
@@ -62,7 +78,12 @@ class AdminCarsController {
     });
   }
 
-  public async apiListCars(req: IRequest, res: Response) {
+  public async apiListCars(req: IRequest, res: Response): Promise<any> {
+    if (!req.user.hasPermission('viewCar')) {
+      return res.status(403).json({
+        message: 'No tiene permisos para esta operación'
+      });
+    }
     const {page, pageSize, search} = req.query;
     const company = req.user.company;
     // paginate options
@@ -120,15 +141,15 @@ class AdminCarsController {
       filter = {
         $and: [{
           $or: [{
-              vin: {$regex: searchText}
-            }, {
-              brand: {$regex: searchText}
-            }, {
-              denomination: {$regex: searchText}
-            }, {
-              color: {$regex: searchText}
-            }]
-          },
+            vin: {$regex: searchText}
+          }, {
+            brand: {$regex: searchText}
+          }, {
+            denomination: {$regex: searchText}
+          }, {
+            color: {$regex: searchText}
+          }]
+        },
           filter
         ]
       };
@@ -149,4 +170,6 @@ class AdminCarsController {
   }
 }
 
-export default new AdminCarsController();
+import Car, {ICarModel} from '../../models/car.model';
+
+export default new AdminCarController();

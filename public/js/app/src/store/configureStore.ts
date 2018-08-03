@@ -24,7 +24,7 @@ const configureStore = () => {
     middlewares.push(createDebounce());
     Raven.config('https://7cb5eacf6f8249b888468a1b72bd7632@sentry.osacontrol.com/5').install();
     const context = {
-        id: window.user.id,
+        id: window.user._id,
         name: `${window.user.firstName} ${window.user.lastName}`,
         email: window.user.email
     };

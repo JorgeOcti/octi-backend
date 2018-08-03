@@ -161,7 +161,19 @@ passport.use(new LocalStrategy({ usernameField: 'username' }, (username, passwor
 }));
 
 passport.serializeUser((User as any).serializeUser());
-passport.deserializeUser((User as any).deserializeUser());
+// passport.deserializeUser((User as any).deserializeUser());
+passport.deserializeUser(async (email, done) => {
+  try {
+    const user = await User.findOne({email}).populate({path: 'userPermissions', select: ['codeName']});
+    if (user) {
+      done(null, user);
+    } else {
+      done(new Error('User not found'));
+    }
+  } catch (e) {
+    done(e);
+  }
+});
 
 /*
 passport.serializeUser<any, any>((user, done) => {

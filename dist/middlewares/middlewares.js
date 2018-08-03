@@ -1,16 +1,17 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 const jwt = require("jsonwebtoken");
+// import User from "../app/models/user.model";
 class Middlewares {
     constructor() {
         this.isLoggedIn = this.isLoggedIn.bind(this);
         this.isJWTAuthenticated = this.isJWTAuthenticated.bind(this);
     }
-    isLoggedIn(req, res, next) {
+    async isLoggedIn(req, res, next) {
         // if user is authenticated in the session, carry on
         if (req.isAuthenticated()) {
             if (req.user) {
-                res.locals.user = req.user;
+                res.locals.user = await req.user;
             }
             else {
                 res.locals.user = null;

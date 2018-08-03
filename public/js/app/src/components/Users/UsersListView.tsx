@@ -20,7 +20,8 @@ import {
   UserReduxAction
 } from '../../actions/users';
 import AppContainer from '../../container/AppContainer';
-import {statusFooterButttonsModal} from '../../utils/common';
+import {IWindow} from '../../interfaces/window';
+import {hasPermission, statusFooterButttonsModal} from '../../utils/common';
 import ModalView from '../Modal/ModalView';
 import Paginator from '../Paginator';
 
@@ -39,6 +40,8 @@ interface IPropsType extends RouteComponentProps<{ ticket: string }> {
 interface IStateType {
   error: Error | null;
 }
+
+declare let window: IWindow;
 
 class UsersListView extends React.Component<IPropsType, IStateType> {
 
@@ -85,17 +88,15 @@ class UsersListView extends React.Component<IPropsType, IStateType> {
         <section className="content">
           <div className="box">
             <div className="box-header with-border"><h3 className="box-title">Usuarios <small>{pagination.count}</small></h3>
-              <div className="box-tools pull-right">
-                <button className="btn btn-sm btn-success" onClick={this.addUser}>Agregar</button>
-              </div>
+              {
+                hasPermission(window.user, 'addUser') ?
+                  <div className="box-tools pull-right">
+                    <button className="btn btn-sm btn-success" onClick={this.addUser}>Agregar</button>
+                  </div>
+                  : null
+              }
             </div>
             <div className="box-body">
-              {/*<div className="pull-right">*/}
-                {/*<div className="input-group text-right max-width-300">*/}
-                  {/*<input type="text" className="form-control" placeholder="Buscar"/>*/}
-                  {/*<span className="input-group-addon input-group-primary"><i className="fa fa-search" /></span>*/}
-                {/*</div>*/}
-              {/*</div>*/}
               <table className="table table-striped">
                 <thead>
                   <tr>
@@ -104,8 +105,10 @@ class UsersListView extends React.Component<IPropsType, IStateType> {
                     <th style={{width: '20%'}} className="hidden-xs">Sucursal</th>
                     <th style={{width: '20%'}} className="hidden-xs">Email</th>
                     <th style={{width: '20%'}} className="hidden-xs">Modificado</th>
-                    <th style={{width: '1%'}} className="width-10" />
-                    <th style={{width: '1%'}} className="width-10" />
+                    {hasPermission(window.user, 'changeUser') ?
+                      <th style={{width: '1%'}} className="width-10"/> : null}
+                    {hasPermission(window.user, 'deleteUser') ?
+                      <th style={{width: '1%'}} className="width-10"/> : null}
                   </tr>
                 </thead>
                 <tbody>
@@ -118,8 +121,10 @@ class UsersListView extends React.Component<IPropsType, IStateType> {
                           <td className="hidden-xs">{user.venue.name}</td>
                           <td className="hidden-xs">{user.email}</td>
                           <td className="hidden-xs">{moment(user.updatedAt).format('LLL')}</td>
-                          <td className="text-blue pointer" onClick={() => this.editUser(user)}><i className="fa fa-pencil"/></td>
-                          <td className="text-red pointer" onClick={() => this.deleteUser(user)}><i className="fa fa-minus-circle"/></td>
+                          {hasPermission(window.user, 'changeUser') ?
+                            <td className="text-blue pointer" onClick={() => this.editUser(user)}><i className="fa fa-pencil"/></td> : null}
+                          {hasPermission(window.user, 'deleteUser') ?
+                            <td className="text-red pointer" onClick={() => this.deleteUser(user)}><i className="fa fa-minus-circle"/></td> : null}
                         </tr>
                       );
                     })

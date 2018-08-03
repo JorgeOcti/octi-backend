@@ -1,6 +1,7 @@
-import {NextFunction, Request, Response} from 'express';
+import {NextFunction, Response} from 'express';
 import * as jwt from 'jsonwebtoken';
 import {IRequest} from '../interfaces/global.interface';
+// import User from "../app/models/user.model";
 
 class Middlewares {
 
@@ -9,11 +10,11 @@ class Middlewares {
     this.isJWTAuthenticated = this.isJWTAuthenticated.bind(this);
   }
 
-  public isLoggedIn(req: Request, res: Response, next: NextFunction) {
+  public async isLoggedIn(req: IRequest, res: Response, next: NextFunction) {
     // if user is authenticated in the session, carry on
     if (req.isAuthenticated()) {
       if (req.user) {
-        res.locals.user = req.user;
+        res.locals.user = await req.user;
       } else {
         res.locals.user = null;
       }

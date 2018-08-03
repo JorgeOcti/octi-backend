@@ -1,5 +1,5 @@
 import {ObjectID} from 'bson';
-import {Request, Response} from 'express';
+import {Response} from 'express';
 import {PaginateOptions, PaginateResult} from 'mongoose';
 import {queue} from '../../../app';
 import {IRequest} from '../../../interfaces/global.interface';
@@ -15,11 +15,20 @@ class AdminUsersController {
     this.apiDeleteUser = this.apiDeleteUser.bind(this);
   }
 
-  public async index(req: Request, res: Response) {
-    res.render('app/index');
+  public async index(req: IRequest, res: Response) {
+    if (req.user.hasPermission('viewUser')) {
+      res.render('app/index', {token: await req.user.generateToken()});
+    } else {
+      res.status(403).render('403');
+    }
   }
 
-  public async apiUsers(req: IRequest, res: Response) {
+  public async apiUsers(req: IRequest, res: Response): Promise<any> {
+    if (!req.user.hasPermission('viewUser')) {
+      return res.status(403).json({
+        message: 'No tiene permisos para esta operación'
+      });
+    }
     const {page, pageSize} = req.query;
     const company = req.user.company;
     // paginate options
@@ -65,7 +74,12 @@ class AdminUsersController {
     }
   }
 
-  public async apiAddUser(req: IRequest, res: Response) {
+  public async apiAddUser(req: IRequest, res: Response): Promise<any> {
+    if (!req.user.hasPermission('addUser')) {
+      return res.status(403).json({
+        message: 'No tiene permisos para esta operación'
+      });
+    }
     const {firstName, lastName, email, venue} = req.body;
     const company = req.user.company;
     // validate fields required
@@ -98,8 +112,8 @@ class AdminUsersController {
           active: true
         }).save();
 
-        // const error = await newUser.validate();
-        // console.log(error);
+        // const errors = await newUser.validate();
+        // console.log(errors);
 
         // send welcome email
         const fullname: string = newUser.fullName();
@@ -138,7 +152,12 @@ class AdminUsersController {
     }
   }
 
-  public async apiEditUser(req: IRequest, res: Response) {
+  public async apiEditUser(req: IRequest, res: Response): Promise<any> {
+    if (!req.user.hasPermission('changeUser')) {
+      return res.status(403).json({
+        message: 'No tiene permisos para esta operación'
+      });
+    }
     const {id} = req.params;
     const company = req.user.company;
     const {firstName, lastName, email, venue} = req.body;
@@ -197,7 +216,12 @@ class AdminUsersController {
     }
   }
 
-  public async apiDeleteUser(req: IRequest, res: Response) {
+  public async apiDeleteUser(req: IRequest, res: Response): Promise<any> {
+    if (!req.user.hasPermission('deleteUser')) {
+      return res.status(403).json({
+        message: 'No tiene permisos para esta operación'
+      });
+    }
     const {id} = req.params;
     const company = req.user.company;
     try {
