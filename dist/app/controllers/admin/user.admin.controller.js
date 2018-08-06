@@ -88,7 +88,7 @@ class AdminUsersController {
                 message: 'No tiene permisos para esta operación'
             });
         }
-        const { firstName, lastName, email, venue, userPermissions, userForms } = req.body;
+        const { firstName, lastName, email, venue, userPermissions, userForms, preferred } = req.body;
         const company = req.user.company;
         // validate fields required
         if (!firstName || !firstName.length || !lastName || !lastName.length || !email || !email.length || !venue || !venue.length) {
@@ -115,6 +115,7 @@ class AdminUsersController {
                     lastName,
                     username: email,
                     venue,
+                    preferred,
                     userPermissions: userPermissions && userPermissions.length ? userPermissions.map((userPermission) => userPermission._id) : [],
                     userForms: userForms && userForms.length ? userForms.map((userForm) => userForm._id) : [],
                     company,
@@ -168,7 +169,7 @@ class AdminUsersController {
         }
         const { id } = req.params;
         const company = req.user.company;
-        const { firstName, lastName, email, venue, userPermissions, userForms } = req.body;
+        const { firstName, lastName, email, venue, userPermissions, userForms, preferred } = req.body;
         // validate fields required
         if (!firstName || !firstName.length || !lastName || !lastName.length || !email || !email.length || !venue || !venue.length) {
             res.status(400).json({
@@ -193,6 +194,7 @@ class AdminUsersController {
                     firstName,
                     lastName,
                     email,
+                    preferred,
                     userPermissions: userPermissions && userPermissions.length ? userPermissions.map((userPermission) => userPermission._id) : [],
                     userForms: userForms && userForms.length ? userForms.map((userForm) => userForm._id) : [],
                     venue
