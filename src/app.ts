@@ -164,7 +164,13 @@ passport.serializeUser((User as any).serializeUser());
 // passport.deserializeUser((User as any).deserializeUser());
 passport.deserializeUser(async (email, done) => {
   try {
-    const user = await User.findOne({email}).populate({path: 'userPermissions', select: ['codeName']});
+    const user = await User.findOne({email}).populate([{
+      path: 'userPermissions',
+      select: ['codeName']
+    }, {
+      path: 'userForms',
+      select: ['name']
+    }]);
     if (user) {
       done(null, user);
     } else {
@@ -221,8 +227,8 @@ app.use(Raven.requestHandler());
 
 // Routes
 app.use('/', appRouter);
+app.use('/', formRouter);
 app.use('/api/v1', jwtRouter);
-app.use('/api/v1/forms', formRouter);
 
 /* queues */
 export const queue = kue.createQueue({

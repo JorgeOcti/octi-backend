@@ -27,7 +27,11 @@ class FormController {
   public async list(req: IRequest, res: Response) {
     const company = req.user.company;
     try {
-      const forms = await this.getForms(company);
+      const forms = await this.getForms(company, {
+        _id: {
+          $in: req.user.userForms.map((form) => form._id)
+        }
+      });
       res.json({
         data: forms,
         status: 200
@@ -419,8 +423,18 @@ class FormController {
     });
   }
 
-  private getForms(company: ObjectID): Promise<IFormModel[]> {
-    const keyCache = `forms`;
+  private getForms(company: ObjectID, filter?: any): Promise<IFormModel[]> {
+    const keyCache = `forms${filter ? JSON.stringify(filter) : ''}`;
+    if (filter) {
+      filter = {
+        company,
+        ...filter
+      };
+    } else {
+      filter = {
+        company
+      };
+    }
     return new Promise((resolve, reject) => {
       redisClient.get(keyCache, async (error, result) => {
         if (result) {
@@ -428,9 +442,7 @@ class FormController {
           resolve(JSON.parse(result));
         } else {
           FormModel
-            .find({
-              company
-            }, {
+            .find(filter, {
               _id: 1,
               name: 1
             })

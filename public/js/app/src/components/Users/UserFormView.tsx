@@ -4,14 +4,17 @@ import * as Raven from 'raven-js';
 import * as React from 'react';
 import {ErrorInfo} from 'react';
 import {connect} from 'react-redux';
+import {IForm} from '../../../../../../src/interfaces/form.interface';
 import {IPermission} from '../../../../../../src/interfaces/permision.interface';
 import {IUser} from '../../../../../../src/interfaces/user.interface';
+import {IVenue} from '../../../../../../src/interfaces/venue.interface';
 import {IUsersState} from '../../actions/users';
 
 interface IPropsType {
   users: IUsersState;
-  venues: any[];
-  permissions: any[];
+  venues: IVenue[];
+  forms: IForm[];
+  permissions: IPermission[];
   user?: IUser;
   changeTempUser(user: any): void;
 }
@@ -35,11 +38,16 @@ class UserFormView extends React.Component<IPropsType, IStateType> {
     super(props);
     this.addPermission = this.addPermission.bind(this);
     this.deletePermission = this.deletePermission.bind(this);
+    this.addForm = this.addForm.bind(this);
+    this.deleteForm = this.deleteForm.bind(this);
   }
 
   public componentDidMount() {
     ($('#permission-select') as any).chosen().change((e: React.ChangeEvent<HTMLSelectElement>) => {
       this.addPermission(e.target.value);
+    });
+    ($('#form-select') as any).chosen().change((e: React.ChangeEvent<HTMLSelectElement>) => {
+      this.addForm(e.target.value);
     });
   }
 
@@ -52,19 +60,30 @@ class UserFormView extends React.Component<IPropsType, IStateType> {
 
   componentDidUpdate() {
     $('#permission-select').trigger('chosen:updated');
+    $('#form-select').trigger('chosen:updated');
   }
 
   public render(): React.ReactElement<IPropsType> {
-    const {changeTempUser, venues, permissions} = this.props;
+    const {changeTempUser, venues, permissions, forms} = this.props;
     const {tempUser} = this.props.users;
     const userPermissions: IPermission[] = [];
     const selectPermissions: IPermission[] = [];
+    const userForms: IForm[] = [];
+    const selectForms: IForm[] = [];
     const idsUserPermissions = tempUser && tempUser.userPermissions.length ? tempUser.userPermissions.map((userPermission) => userPermission._id) : [];
+    const idsUserForms = tempUser && tempUser.userForms.length ? tempUser.userForms.map((userForm) => userForm._id) : [];
     permissions.forEach((permission) => {
       if (idsUserPermissions.includes(permission._id)) {
         userPermissions.push(permission);
       } else {
         selectPermissions.push(permission);
+      }
+    });
+    forms.forEach((form) => {
+      if (idsUserForms.includes(form._id)) {
+        userForms.push(form);
+      } else {
+        selectForms.push(form);
       }
     });
     return (
@@ -126,10 +145,68 @@ class UserFormView extends React.Component<IPropsType, IStateType> {
           </div>
         </div>
         <div className="col-md-12">
-          <label>Permisos</label>
           <div className="form-group">
+            <label>Formularios</label>
+            <select id="form-select" className="form-control" style={{minWidth: '200px'}} onChange={undefined}>
+              <option value="">Seleccione formularios</option>
+              {
+                selectForms.map((form) => {
+                  return (
+                    <option key={form._id} value={form._id}>{form.name}</option>
+                  );
+                })
+              }
+            </select>
+          </div>
+        </div>
+        <div className="col-md-12">
+          <table className="table table-striped">
+            <thead>
+              <tr>
+                <th style={{width: '90%'}}>Name</th>
+                <th style={{width: '10%'}}/>
+              </tr>
+            </thead>
+            <tbody>
+            {
+              userForms.length ? userForms.map((form: any) => {
+                  return (
+                    <tr key={form._id}>
+                      <td>{form.name}</td>
+                      <td className="text-center text-red pointer" onClick={() => this.deleteForm(form._id)}><i
+                        className="fa fa-minus-circle"/></td>
+                    </tr>
+                  );
+                }) :
+                <tr>
+                  <td colSpan={2}>Aún no se han seleccionado permisos.</td>
+                </tr>
+            }
+            </tbody>
+          </table>
+        </div>
+        <div className="col-md-12">
+          <div className="form-group">
+            <label>Formulario por defecto</label>
+            <select id="form-default-select" className="form-control" style={{minWidth: '200px'}}
+                    defaultValue={tempUser && tempUser.preferred ? tempUser.preferred : undefined}
+                    onChange={undefined}>
+              <option value="">Seleccione formularios</option>
+              {
+                forms.map((form) => {
+                  return (
+                    <option key={form._id} value={form._id}>{form.name}</option>
+                  );
+                })
+              }
+            </select>
+          </div>
+        </div>
+        <div className="col-md-12">
+          <div className="form-group">
+            <label>Permisos</label>
             <select id="permission-select" className="form-control" style={{minWidth: '200px'}} onChange={undefined}>
-              <option value="">Selecciones permiso</option>
+              <option value="">Seleccione permisos</option>
               {
                 selectPermissions.map((permission) => {
                   return (
@@ -189,6 +266,26 @@ class UserFormView extends React.Component<IPropsType, IStateType> {
     const {tempUser} = this.props.users;
     changeTempUser({
       userPermissions: tempUser ? tempUser.userPermissions.filter((permission) => permission._id !== id) : []
+    });
+  }
+
+  private addForm(id: string) {
+    const {changeTempUser} = this.props;
+    const {tempUser} = this.props.users;
+    const {forms} = this.props;
+    const findForm = forms.find((form) => form._id === id);
+    if (findForm) {
+      changeTempUser({
+        userForms: [findForm, ...tempUser.userForms]
+      });
+    }
+  }
+
+  private deleteForm(id: string) {
+    const {changeTempUser} = this.props;
+    const {tempUser} = this.props.users;
+    changeTempUser({
+      userForms: tempUser ? tempUser.userForms.filter((form) => form._id !== id) : []
     });
   }
 }

@@ -148,7 +148,13 @@ passport.serializeUser(user_model_1.default.serializeUser());
 // passport.deserializeUser((User as any).deserializeUser());
 passport.deserializeUser(async (email, done) => {
     try {
-        const user = await user_model_1.default.findOne({ email }).populate({ path: 'userPermissions', select: ['codeName'] });
+        const user = await user_model_1.default.findOne({ email }).populate([{
+                path: 'userPermissions',
+                select: ['codeName']
+            }, {
+                path: 'userForms',
+                select: ['name']
+            }]);
         if (user) {
             done(null, user);
         }
@@ -200,8 +206,8 @@ if (app.get('env') !== 'testing') {
 app.use(Raven.requestHandler());
 // Routes
 app.use('/', router_1.appRouter);
+app.use('/', router_2.default);
 app.use('/api/v1', router_1.jwtRouter);
-app.use('/api/v1/forms', router_2.default);
 /* queues */
 exports.queue = kue.createQueue({
     redis: {

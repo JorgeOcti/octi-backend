@@ -4,6 +4,7 @@ import {Dispatch} from 'redux';
 import ApiService from '../utils/axios';
 import {showModal, statusFooterButttonsModal} from '../utils/common';
 
+import {IForm} from '../../../../../src/interfaces/form.interface';
 import {IPermission} from '../../../../../src/interfaces/permision.interface';
 import {IUser} from '../../../../../src/interfaces/user.interface';
 import {IVenue} from '../../../../../src/interfaces/venue.interface';
@@ -11,6 +12,7 @@ import {IVenue} from '../../../../../src/interfaces/venue.interface';
 export interface IUsersState {
   users: IUser[];
   venues: IVenue[];
+  forms: IForm[];
   permissions: IPermission[];
   loading: boolean;
   tempUser: ITempUser;
@@ -75,6 +77,8 @@ export interface ITempUser {
   lastName?: string;
   email?: string;
   venue?: string;
+  userForms: IForm[];
+  preferred?: string;
   userPermissions: IPermission[];
 }
 
@@ -224,17 +228,34 @@ export function loadPermissionsUserAction(permissions: IPermission[]): ILoadPerm
   };
 }
 
+interface ILoadFormsUser {
+  type: '/USERS/LOAD_FORMS';
+  payload: {
+    forms: IForm[];
+  };
+}
+
+export function loadFormsUserAction(forms: IForm[]): ILoadFormsUser {
+  return {
+    type: '/USERS/LOAD_FORMS',
+    payload: {
+      forms
+    }
+  };
+}
+
 export function getUsersAction(nextPage?: number) {
   return (dispatch: Dispatch<UserReduxAction>, getState: () => {users: IUsersState}) => {
     const api: ApiService = new ApiService();
     const state = getState();
 
     // get venues and permissions
-    if (!state.users.venues.length || !state.users.permissions.length) {
-      axios.all([api.getVenues(1, 200), api.getPermissions(1, 200)])
-        .then(axios.spread((venues, permissions) => {
+    if (!state.users.venues.length || !state.users.permissions.length || !state.users.forms.length) {
+      axios.all([api.getVenues(1, 200), api.getPermissions(1, 200), api.getForms(1, 200)])
+        .then(axios.spread((venues, permissions, forms) => {
           dispatch(loadVenuesUserAction(venues.data.results));
           dispatch(loadPermissionsUserAction(permissions.data.results));
+          dispatch(loadFormsUserAction(forms.data.results));
         }))
         .catch((err: AxiosError) => {
           api.errorHandler(err);
@@ -302,4 +323,4 @@ export function deleteUserAction(id: string) {
   };
 }
 
-export type UserReduxAction = IIsLoading | ILoadUsers | IChangePage | IDeleteUser | ICancelRequest | IChangeTempUser | IChangeUser | ILoadVenuesUser | ILoadPermissionsUser;
+export type UserReduxAction = IIsLoading | ILoadUsers | IChangePage | IDeleteUser | ICancelRequest | IChangeTempUser | IChangeUser | ILoadVenuesUser | ILoadPermissionsUser | ILoadFormsUser;

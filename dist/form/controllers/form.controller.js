@@ -24,7 +24,11 @@ class FormController {
     async list(req, res) {
         const company = req.user.company;
         try {
-            const forms = await this.getForms(company);
+            const forms = await this.getForms(company, {
+                _id: {
+                    $in: req.user.userForms.map((form) => form._id)
+                }
+            });
             res.json({
                 data: forms,
                 status: 200
@@ -409,8 +413,19 @@ class FormController {
             });
         });
     }
-    getForms(company) {
-        const keyCache = `forms`;
+    getForms(company, filter) {
+        const keyCache = `forms${filter ? JSON.stringify(filter) : ''}`;
+        if (filter) {
+            filter = {
+                company,
+                ...filter
+            };
+        }
+        else {
+            filter = {
+                company
+            };
+        }
         return new Promise((resolve, reject) => {
             redis_service_1.default.get(keyCache, async (error, result) => {
                 if (result) {
@@ -419,9 +434,7 @@ class FormController {
                 }
                 else {
                     form_model_1.default
-                        .find({
-                        company
-                    }, {
+                        .find(filter, {
                         _id: 1,
                         name: 1
                     })

@@ -89,8 +89,8 @@ class AlertFormView extends React.Component<IPropsType, IStateType> {
           </div>
         </div>
         <div className="col-md-12">
-          <label>Usuarios a notificar</label>
           <div className="form-group">
+            <label>Usuarios a notificar</label>
             <select id="user-select" className="form-control" style={{minWidth: '200px'}} onChange={this.onChangeSelectUser}>
               <option value="">Selecciones usuarios.</option>
               {
@@ -134,8 +134,10 @@ class AlertFormView extends React.Component<IPropsType, IStateType> {
           </table>
         </div>
         <div className="col-md-12">
-          <label>Notificar cuando la calificación sea:</label>
-          <div className="form-group">
+          <div className="form-group" style={{marginBottom: '0px'}}>
+            <label>Notificar cuando la calificación sea:</label>
+          </div>
+          <div>
             <label className="radio-inline">
               <input type="radio" value="lte" checked={this.state.tempAlert.type === 'lte'} onChange={this.onChangeType}/>
               Menor igual que

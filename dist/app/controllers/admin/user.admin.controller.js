@@ -31,6 +31,7 @@ class AdminUsersController {
             select: {
                 firstName: true,
                 lastName: true,
+                preferred: true,
                 email: true,
                 updatedAt: true
             },
@@ -45,6 +46,9 @@ class AdminUsersController {
                             name: 1
                         }
                     }
+                }, {
+                    path: 'userForms',
+                    select: ['name']
                 }],
             sort: {
                 firstName: 1
@@ -84,7 +88,7 @@ class AdminUsersController {
                 message: 'No tiene permisos para esta operación'
             });
         }
-        const { firstName, lastName, email, venue, userPermissions } = req.body;
+        const { firstName, lastName, email, venue, userPermissions, userForms } = req.body;
         const company = req.user.company;
         // validate fields required
         if (!firstName || !firstName.length || !lastName || !lastName.length || !email || !email.length || !venue || !venue.length) {
@@ -112,6 +116,7 @@ class AdminUsersController {
                     username: email,
                     venue,
                     userPermissions: userPermissions && userPermissions.length ? userPermissions.map((userPermission) => userPermission._id) : [],
+                    userForms: userForms && userForms.length ? userForms.map((userForm) => userForm._id) : [],
                     company,
                     password,
                     email,
@@ -163,7 +168,7 @@ class AdminUsersController {
         }
         const { id } = req.params;
         const company = req.user.company;
-        const { firstName, lastName, email, venue, userPermissions } = req.body;
+        const { firstName, lastName, email, venue, userPermissions, userForms } = req.body;
         // validate fields required
         if (!firstName || !firstName.length || !lastName || !lastName.length || !email || !email.length || !venue || !venue.length) {
             res.status(400).json({
@@ -188,9 +193,12 @@ class AdminUsersController {
                     firstName,
                     lastName,
                     email,
-                    venue,
                     userPermissions: userPermissions && userPermissions.length ? userPermissions.map((userPermission) => userPermission._id) : [],
-                }, { new: true })
+                    userForms: userForms && userForms.length ? userForms.map((userForm) => userForm._id) : [],
+                    venue
+                }, {
+                    new: true
+                })
                     .populate([{
                         path: 'venue',
                         select: ['name', 'active']
@@ -202,6 +210,9 @@ class AdminUsersController {
                                 name: 1
                             }
                         }
+                    }, {
+                        path: 'userForms',
+                        select: ['name']
                     }]);
                 if (user) {
                     // prevent return password

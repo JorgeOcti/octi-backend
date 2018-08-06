@@ -1,5 +1,6 @@
 import * as mongoose from 'mongoose';
 import {IForm, IFormAccesory, IFormItems, IFormQuestion, IFormSection} from '../../interfaces/form.interface';
+import * as mongoosePaginate from "mongoose-paginate";
 
 export interface IFormItemModel extends IFormItems, mongoose.Types.Subdocument {}
 const itemSchema = new mongoose.Schema({
@@ -117,6 +118,8 @@ const formSchema = new mongoose.Schema({
 }, {
   timestamps: true
 });
+
+formSchema.plugin(mongoosePaginate);
 
 formSchema.virtual('participants', {
   ref: 'Participant', // The model to use

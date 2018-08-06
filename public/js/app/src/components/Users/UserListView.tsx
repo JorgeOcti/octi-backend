@@ -154,19 +154,20 @@ class UserListView extends React.Component<IPropsType, IStateType> {
 
   private addUser(): void {
     const {changeTempUser} = this;
-    const {venues, permissions} = this.props.users;
+    const {venues, permissions, forms} = this.props.users;
     this.props.changeTempUserAction({
       _id: '',
       firstName: '',
       lastName: '',
       email: '',
       venue: '',
-      userPermissions: []
+      userPermissions: [],
+      userForms: []
     });
     setTimeout(() => {
       this.props.loadDataAction(
         'Agregar Usuario',
-        <UserFormView changeTempUser={changeTempUser} venues={venues} users={this.props.users} permissions={permissions}/>,
+        <UserFormView changeTempUser={changeTempUser} venues={venues} users={this.props.users} forms={forms} permissions={permissions}/>,
         <React.Fragment>
           <button type="button" className="btn btn-default" data-dismiss="modal">Cancelar</button>
           <button type="button" className="btn btn-primary" onClick={this.processAddUser}>Grabar</button>
@@ -193,14 +194,14 @@ class UserListView extends React.Component<IPropsType, IStateType> {
 
   private editUser(user: IUser) {
     const {changeTempUser} = this;
-    const {venues, permissions} = this.props.users;
+    const {venues, permissions, forms} = this.props.users;
     const tmpUser = {...user};
     tmpUser.venue = tmpUser.venue._id;
     changeTempUser(tmpUser);
     setTimeout(() => {
       this.props.loadDataAction(
         'Editar Usuario',
-        <UserFormView changeTempUser={changeTempUser} venues={venues} users={this.props.users} permissions={permissions} user={user}/>,
+        <UserFormView changeTempUser={changeTempUser} venues={venues} users={this.props.users} forms={forms} permissions={permissions} user={user}/>,
         <React.Fragment>
           <button type="button" className="btn btn-default" data-dismiss="modal">Cancelar</button>
           <button type="button" className="btn btn-primary" onClick={this.processEditUser}>Editar</button>
@@ -226,13 +227,15 @@ class UserListView extends React.Component<IPropsType, IStateType> {
     }
   }
 
-  private changeTempUser({_id, firstName, lastName, email, venue, userPermissions}: ITempUser) {
+  private changeTempUser({_id, firstName, lastName, email, venue, userPermissions, preferred, userForms}: ITempUser) {
     const tempUser: ITempUser = {
       _id: _id ? _id : this.props.users.tempUser._id,
       firstName: firstName ? firstName : this.props.users.tempUser.firstName,
       lastName: lastName ? lastName : this.props.users.tempUser.lastName,
       email: email ? email : this.props.users.tempUser.email,
       userPermissions: userPermissions ? userPermissions : this.props.users.tempUser.userPermissions,
+      userForms: userForms ? userForms : this.props.users.tempUser.userForms,
+      preferred: preferred ? preferred : this.props.users.tempUser.preferred,
       venue: venue ? venue : this.props.users.tempUser.venue
     };
     this.props.changeTempUserAction(tempUser);
