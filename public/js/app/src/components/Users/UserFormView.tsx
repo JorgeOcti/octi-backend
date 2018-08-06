@@ -193,7 +193,7 @@ class UserFormView extends React.Component<IPropsType, IStateType> {
                     onChange={(e: React.ChangeEvent<HTMLSelectElement>) => changeTempUser({preferred: e.target.value})}>
               <option value="">Seleccione formularios</option>
               {
-                forms.map((form) => {
+                userForms.map((form) => {
                   return (
                     <option key={form._id} value={form._id}>{form.name}</option>
                   );
