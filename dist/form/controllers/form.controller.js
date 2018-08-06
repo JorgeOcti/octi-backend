@@ -44,6 +44,11 @@ class FormController {
     async detail(req, res) {
         const { id } = req.params;
         const company = req.user.company;
+        if (req.user.userForms.filter((form) => form._id.toString() === id).length === 0) {
+            return res.status(403).json({
+                message: 'No tiene permisos para esta operación'
+            });
+        }
         try {
             const form = await this.getForm(id, company);
             // generate array of scale ids
