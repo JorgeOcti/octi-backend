@@ -4,37 +4,59 @@ const permision_model_1 = require("../../models/permision.model");
 class AdminPermissionController {
     constructor() {
         this.index = this.index.bind(this);
+        this.apiListPermissions = this.apiListPermissions.bind(this);
     }
     async index(req, res) {
-        await this.getPermissions({});
         res.render('app/index', { token: await req.user.generateToken() });
     }
-    getPermissions(options, search) {
-        let filter = {};
-        if (search && search.length) {
-            const searchText = new RegExp(search, 'i');
-            filter = {
-                $and: [{
-                        $or: [{
-                                vin: { $regex: searchText }
-                            }, {
-                                brand: { $regex: searchText }
-                            }, {
-                                denomination: { $regex: searchText }
-                            }, {
-                                color: { $regex: searchText }
-                            }]
-                    },
-                    filter
-                ]
-            };
-            // filter = {
-            //   $text: { $search: search }, company
-            // };
-            /* {score: {$meta: "toextScore"} */
+    async apiListPermissions(req, res) {
+        // if (!req.user.hasPermission('viewCar')) {
+        //   return res.status(403).json({
+        //     message: 'No tiene permisos para esta operación'
+        //   });
+        // }
+        const { page, pageSize, search } = req.query;
+        // paginate options
+        const options = {
+            select: {
+                name: true,
+                codeName: true
+            },
+            sort: {
+                name: 1
+            },
+            page: parseInt(page ? page : 1, 10),
+            limit: parseInt(pageSize ? pageSize : 20, 10)
+        };
+        try {
+            const permissions = await this.getPermissions(options, search);
+            // validate exist page
+            if (options.page && permissions.pages && permissions.pages < options.page) {
+                res.status(400).json({
+                    error: 'La página solicitada no existe.',
+                    status: 200
+                });
+            }
+            else {
+                res.json({
+                    count: permissions.total,
+                    pages: permissions.pages,
+                    hasPrevious: options.page && options.page > 1 && permissions.pages && permissions.pages >= options.page,
+                    hasNext: options.page && permissions.pages && permissions.pages > options.page,
+                    results: permissions.docs,
+                    status: 200
+                });
+            }
         }
+        catch (e) {
+            if (e) {
+                res.status(500).json(e);
+            }
+        }
+    }
+    getPermissions(options, search) {
         return new Promise((resolve, reject) => {
-            permision_model_1.default.paginate(filter, options, (err, result) => {
+            permision_model_1.default.paginate({}, options, (err, result) => {
                 if (err) {
                     return reject(err);
                 }

@@ -24,6 +24,7 @@ import {IWindow} from '../../interfaces/window';
 import {hasPermission, statusFooterButttonsModal} from '../../utils/common';
 import ModalView from '../Modal/ModalView';
 import Paginator from '../Paginator';
+import UserFormView from './UserFormView';
 
 interface IPropsType extends RouteComponentProps<{ ticket: string }> {
   dispatch: Dispatch<UserReduxAction>;
@@ -43,7 +44,7 @@ interface IStateType {
 
 declare let window: IWindow;
 
-class UsersListView extends React.Component<IPropsType, IStateType> {
+class UserListView extends React.Component<IPropsType, IStateType> {
 
   static propTypes = {
     users: PropTypes.object.isRequired,
@@ -150,77 +151,28 @@ class UsersListView extends React.Component<IPropsType, IStateType> {
       </AppContainer>
     );
   }
+
   private addUser(): void {
     const {changeTempUser} = this;
-    const {venues} = this.props.users;
+    const {venues, permissions} = this.props.users;
     this.props.changeTempUserAction({
       _id: '',
       firstName: '',
       lastName: '',
       email: '',
-      venue: ''
+      venue: '',
+      userPermissions: []
     });
-    this.props.loadDataAction(
-      'Agregar Usuario',
-      <div className={'row'}>
-        <div className="col-md-12">
-          <div className="form-group">
-            <label>Nombres</label>
-            <input
-              type="text"
-              name="fistName"
-              className="form-control"
-              maxLength={50}
-              onChange={(e: React.ChangeEvent<HTMLInputElement>) => changeTempUser({firstName: e.target.value})}
-            />
-          </div>
-        </div>
-        <div className="col-md-12">
-          <div className="form-group">
-            <label>Apellidos</label>
-            <input
-              type="text"
-              name="lastName"
-              className="form-control"
-              maxLength={50}
-              onChange={(e: React.ChangeEvent<HTMLInputElement>) => changeTempUser({lastName: e.target.value})}
-            />
-          </div>
-        </div>
-        <div className="col-md-12">
-          <div className="form-group">
-            <label>Email</label>
-            <input
-              type="email"
-              name="email"
-              className="form-control"
-              maxLength={80}
-              onChange={(e: React.ChangeEvent<HTMLInputElement>) => changeTempUser({email: e.target.value})}
-            />
-          </div>
-        </div>
-        <div className="col-md-12">
-          <div className="form-group">
-            <label htmlFor="sel1">Sucursal</label>
-            <select
-              className="form-control"
-              name="venue"
-              onChange={(e: React.ChangeEvent<HTMLSelectElement>) => changeTempUser({venue: e.target.value})}>
-              <option value="">Seleccione venue</option>
-              {
-                venues.map((venue) => (
-                  <option key={venue._id} value={venue._id}>{venue.name}</option>
-                ))
-              }
-            </select>
-          </div>
-        </div>
-      </div>,
-      <React.Fragment>
-        <button type="button" className="btn btn-default" data-dismiss="modal">Cancelar</button>
-        <button type="button" className="btn btn-primary" onClick={this.processAddUser}>Grabar</button>
-      </React.Fragment>
-    );
+    setTimeout(() => {
+      this.props.loadDataAction(
+        'Agregar Usuario',
+        <UserFormView changeTempUser={changeTempUser} venues={venues} users={this.props.users} permissions={permissions}/>,
+        <React.Fragment>
+          <button type="button" className="btn btn-default" data-dismiss="modal">Cancelar</button>
+          <button type="button" className="btn btn-primary" onClick={this.processAddUser}>Grabar</button>
+        </React.Fragment>
+      );
+    }, 200);
   }
 
   private processAddUser(): void {
@@ -241,54 +193,20 @@ class UsersListView extends React.Component<IPropsType, IStateType> {
 
   private editUser(user: IUser) {
     const {changeTempUser} = this;
-    const {venues} = this.props.users;
+    const {venues, permissions} = this.props.users;
     const tmpUser = {...user};
     tmpUser.venue = tmpUser.venue._id;
     changeTempUser(tmpUser);
-    this.props.loadDataAction(
-      'Editar Usuario',
-      <div className={'row'}>
-        <div className="col-md-12">
-          <div className="form-group">
-            <label>Nombres</label>
-            <input type="text" className="form-control" maxLength={50} defaultValue={user.firstName}
-                   onChange={(e: React.ChangeEvent<HTMLInputElement>) => changeTempUser({firstName: e.target.value})}/>
-          </div>
-        </div>
-        <div className="col-md-12">
-          <div className="form-group">
-            <label>Apellidos</label>
-            <input type="text" className="form-control" maxLength={50} defaultValue={user.lastName}
-                   onChange={(e: React.ChangeEvent<HTMLInputElement>) => changeTempUser({lastName: e.target.value})}/>
-          </div>
-        </div>
-        <div className="col-md-12">
-          <div className="form-group">
-            <label>Email</label>
-            <input type="text" className="form-control" maxLength={100} defaultValue={user.email}
-                   onChange={(e: React.ChangeEvent<HTMLInputElement>) => changeTempUser({email: e.target.value})}/>
-          </div>
-        </div>
-        <div className="col-md-12">
-          <div className="form-group">
-            <label htmlFor="sel1">Sucursal</label>
-            <select className="form-control" name="venue"
-                    onChange={(e: React.ChangeEvent<HTMLSelectElement>) => changeTempUser({venue: e.target.value})} defaultValue={user.venue._id}>
-              <option value="">Seleccione venue</option>
-              {
-                venues.map((venue) => (
-                  <option key={venue._id} value={venue._id}>{venue.name}</option>
-                ))
-              }
-            </select>
-          </div>
-        </div>
-      </div>,
-      <React.Fragment>
-        <button type="button" className="btn btn-default" data-dismiss="modal">Cancelar</button>
-        <button type="button" className="btn btn-primary" onClick={this.processEditUser}>Editar</button>
-      </React.Fragment>
-    );
+    setTimeout(() => {
+      this.props.loadDataAction(
+        'Editar Usuario',
+        <UserFormView changeTempUser={changeTempUser} venues={venues} users={this.props.users} permissions={permissions} user={user}/>,
+        <React.Fragment>
+          <button type="button" className="btn btn-default" data-dismiss="modal">Cancelar</button>
+          <button type="button" className="btn btn-primary" onClick={this.processEditUser}>Editar</button>
+        </React.Fragment>
+      );
+    }, 200);
   }
 
   private processEditUser() {
@@ -308,12 +226,13 @@ class UsersListView extends React.Component<IPropsType, IStateType> {
     }
   }
 
-  private changeTempUser({_id, firstName, lastName, email, venue}: ITempUser) {
+  private changeTempUser({_id, firstName, lastName, email, venue, userPermissions}: ITempUser) {
     const tempUser: ITempUser = {
       _id: _id ? _id : this.props.users.tempUser._id,
       firstName: firstName ? firstName : this.props.users.tempUser.firstName,
       lastName: lastName ? lastName : this.props.users.tempUser.lastName,
       email: email ? email : this.props.users.tempUser.email,
+      userPermissions: userPermissions ? userPermissions : this.props.users.tempUser.userPermissions,
       venue: venue ? venue : this.props.users.tempUser.venue
     };
     this.props.changeTempUserAction(tempUser);
@@ -364,4 +283,4 @@ const mapDispatchToProps = (dispatch: any ) => {
   };
 };
 
-export default connect<{}, {}, IPropsType>(mapStateToProps, mapDispatchToProps)(UsersListView);
+export default connect<{}, {}, IPropsType>(mapStateToProps, mapDispatchToProps)(UserListView);

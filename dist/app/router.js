@@ -43,7 +43,8 @@ appRouter.get('/api/admin/cars/', middlewares_1.default.isLoggedIn, car_admin_co
 // import cars
 appRouter.get('/settings/cars/import/', middlewares_1.default.isLoggedIn, car_admin_controller_1.default.import);
 appRouter.post('/api/admin/import-cars/', middlewares_1.default.isLoggedIn, car_admin_controller_1.default.importCars);
-appRouter.get('/api/admin/permissions/', middlewares_1.default.isLoggedIn, permission_admin_controller_1.default.index);
+// permissions
+appRouter.get('/api/admin/permissions/', middlewares_1.default.isLoggedIn, permission_admin_controller_1.default.apiListPermissions);
 // alerts
 appRouter.get('/settings/alerts/', middlewares_1.default.isLoggedIn, alert_admin_controller_1.default.index);
 // api alerts

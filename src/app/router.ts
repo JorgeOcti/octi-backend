@@ -52,7 +52,8 @@ appRouter.get('/api/admin/cars/', Middlewares.isLoggedIn, AdminCarsController.ap
 appRouter.get('/settings/cars/import/', Middlewares.isLoggedIn, AdminCarsController.import);
 appRouter.post('/api/admin/import-cars/', Middlewares.isLoggedIn, AdminCarsController.importCars);
 
-appRouter.get('/api/admin/permissions/', Middlewares.isLoggedIn, AdminPermissionController.index);
+// permissions
+appRouter.get('/api/admin/permissions/', Middlewares.isLoggedIn, AdminPermissionController.apiListPermissions);
 
 // alerts
 appRouter.get('/settings/alerts/', Middlewares.isLoggedIn, AdminAlertsController.index);

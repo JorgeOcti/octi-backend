@@ -37,9 +37,17 @@ class AdminUsersController {
             populate: [{
                     path: 'venue',
                     select: ['name', 'active']
+                }, {
+                    path: 'userPermissions',
+                    select: ['name', 'codeName'],
+                    options: {
+                        sort: {
+                            name: 1
+                        }
+                    }
                 }],
             sort: {
-                createdAt: -1
+                firstName: 1
             },
             page: parseInt(page ? page : 1, 10),
             limit: parseInt(pageSize ? pageSize : 20, 10)
@@ -76,7 +84,7 @@ class AdminUsersController {
                 message: 'No tiene permisos para esta operación'
             });
         }
-        const { firstName, lastName, email, venue } = req.body;
+        const { firstName, lastName, email, venue, userPermissions } = req.body;
         const company = req.user.company;
         // validate fields required
         if (!firstName || !firstName.length || !lastName || !lastName.length || !email || !email.length || !venue || !venue.length) {
@@ -103,6 +111,7 @@ class AdminUsersController {
                     lastName,
                     username: email,
                     venue,
+                    userPermissions: userPermissions && userPermissions.length ? userPermissions.map((userPermission) => userPermission._id) : [],
                     company,
                     password,
                     email,
@@ -154,7 +163,7 @@ class AdminUsersController {
         }
         const { id } = req.params;
         const company = req.user.company;
-        const { firstName, lastName, email, venue } = req.body;
+        const { firstName, lastName, email, venue, userPermissions } = req.body;
         // validate fields required
         if (!firstName || !firstName.length || !lastName || !lastName.length || !email || !email.length || !venue || !venue.length) {
             res.status(400).json({
@@ -179,11 +188,20 @@ class AdminUsersController {
                     firstName,
                     lastName,
                     email,
-                    venue
+                    venue,
+                    userPermissions: userPermissions && userPermissions.length ? userPermissions.map((userPermission) => userPermission._id) : [],
                 }, { new: true })
                     .populate([{
                         path: 'venue',
                         select: ['name', 'active']
+                    }, {
+                        path: 'userPermissions',
+                        select: ['name', 'codeName'],
+                        options: {
+                            sort: {
+                                name: 1
+                            }
+                        }
                     }]);
                 if (user) {
                     // prevent return password

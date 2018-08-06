@@ -102,6 +102,12 @@ export default class ApiService {
     );
   }
 
+  public getPermissions(page: number, pageSize?: number): AxiosPromise {
+    return this.instance.get(
+      `/api/admin/permissions/?page=${page}${pageSize ? `&pageSize=${pageSize}` : ''}`
+    );
+  }
+
   public getCars(page?: number): AxiosPromise {
     return this.instance.get(
       `/api/cars/${page ? `?page=${page}` : ''}`, {

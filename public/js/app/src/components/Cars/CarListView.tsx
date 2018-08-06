@@ -30,7 +30,7 @@ interface IStateType {
   searchText: string;
 }
 
-class CarsListView extends React.Component<IPropsType, IStateType> {
+class CarListView extends React.Component<IPropsType, IStateType> {
 
   static propTypes = {
     dispatch: PropTypes.func.isRequired
@@ -200,4 +200,4 @@ const mapDispatchToProps = (dispatch: any ) => {
   };
 };
 
-export default connect<{}, {}, IPropsType>(mapStateToProps, mapDispatchToProps)(CarsListView);
+export default connect<{}, {}, IPropsType>(mapStateToProps, mapDispatchToProps)(CarListView);
