@@ -190,7 +190,7 @@ class UserFormView extends React.Component<IPropsType, IStateType> {
             <label>Formulario por defecto</label>
             <select id="form-default-select" className="form-control" style={{minWidth: '200px'}}
                     defaultValue={tempUser && tempUser.preferred ? tempUser.preferred : undefined}
-                    onChange={undefined}>
+                    onChange={(e: React.ChangeEvent<HTMLSelectElement>) => changeTempUser({preferred: e.target.value})}>
               <option value="">Seleccione formularios</option>
               {
                 forms.map((form) => {
@@ -205,7 +205,7 @@ class UserFormView extends React.Component<IPropsType, IStateType> {
         <div className="col-md-12">
           <div className="form-group">
             <label>Permisos</label>
-            <select id="permission-select" className="form-control" style={{minWidth: '200px'}} onChange={undefined}>
+            <select id="permission-select" className="form-control" style={{minWidth: '200px'}}>
               <option value="">Seleccione permisos</option>
               {
                 selectPermissions.map((permission) => {
