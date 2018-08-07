@@ -1,5 +1,6 @@
 import {ObjectID} from 'bson';
 import {Response} from 'express';
+import * as moment from 'moment';
 import * as mongoose from 'mongoose';
 import {PaginateOptions, PaginateResult} from 'mongoose';
 import ParticipantModel from '../../form/models/participant.model';
@@ -203,7 +204,10 @@ class CarController {
       const participantPerDay = await ParticipantModel
         .aggregate([{
           $match: {
-            company
+            company,
+            createdAt: {
+              $gte: moment().subtract(14, 'd').toDate()
+            }
           }
         }, {
           $project: {
@@ -268,6 +272,7 @@ class CarController {
             _id: 1
           }
         }]);
+      console.log('participantPerDay', participantPerDay);
       res.json({
           data: participantPerDay,
           status: 200

@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+const moment = require("moment");
 const mongoose = require("mongoose");
 const participant_model_1 = require("../../form/models/participant.model");
 const car_model_1 = require("../models/car.model");
@@ -200,7 +201,10 @@ class CarController {
             const participantPerDay = await participant_model_1.default
                 .aggregate([{
                     $match: {
-                        company
+                        company,
+                        createdAt: {
+                            $gte: moment().subtract(14, 'd').toDate()
+                        }
                     }
                 }, {
                     $project: {
@@ -265,6 +269,7 @@ class CarController {
                         _id: 1
                     }
                 }]);
+            console.log('participantPerDay', participantPerDay);
             res.json({
                 data: participantPerDay,
                 status: 200
