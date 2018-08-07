@@ -269,9 +269,24 @@ class CarController {
                         _id: 1
                     }
                 }]);
-            console.log('participantPerDay', participantPerDay);
+            // normalize show last 14 days
+            const data = [];
+            for (let i = 15; i > 1; i--) {
+                const key = moment().subtract(i, 'd').format('YYYY-MM-DD');
+                const existInParticipantPerDay = participantPerDay.find((day) => day._id.toString() === key);
+                if (!existInParticipantPerDay) {
+                    data.push({
+                        _id: key,
+                        users: [],
+                        total: 0
+                    });
+                }
+                else {
+                    data.push(existInParticipantPerDay);
+                }
+            }
             res.json({
-                data: participantPerDay,
+                data,
                 status: 200
             });
         }
