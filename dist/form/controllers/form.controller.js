@@ -226,13 +226,14 @@ class FormController {
                         if (alerts.length) {
                             alerts.forEach((alert) => {
                                 alert.users.forEach((user) => {
+                                    const userName = `${user.firstName} ${user.lastName}`;
                                     if (user.email && user.email.length) {
                                         app_1.queue.create('email', {
                                             from: '',
                                             title: `Alert qualification`,
-                                            to: `"${user.firstName} ${user.lastName}"<${user.email}>`,
+                                            to: `""<${user.email}>`,
                                             subject: `ALERTA: ${alert.name}`,
-                                            text: `Hola Richard
+                                            text: `Hola ${userName}
                         Se ha evaluado un VIN con calificación ${formQualification.toFixed(0)}%
 
                         Datos del Vehiculo
@@ -245,6 +246,7 @@ class FormController {
                         © 2018 OSA SpA. Todos los derechos reservados.`,
                                             view: 'alerts/lowQualification',
                                             context: {
+                                                userName,
                                                 brand: car ? car.brand : '',
                                                 vin: car ? car.vin : '',
                                                 qualification: formQualification.toFixed(0),
