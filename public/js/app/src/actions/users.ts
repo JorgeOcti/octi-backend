@@ -78,7 +78,7 @@ export interface ITempUser {
   email?: string;
   venue?: string;
   userForms: IForm[];
-  preferred?: string;
+  preferred?: string | null;
   userPermissions: IPermission[];
 }
 

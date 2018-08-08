@@ -235,7 +235,7 @@ class UserListView extends React.Component<IPropsType, IStateType> {
       email: email ? email : this.props.users.tempUser.email,
       userPermissions: userPermissions ? userPermissions : this.props.users.tempUser.userPermissions,
       userForms: userForms ? userForms : this.props.users.tempUser.userForms,
-      preferred: preferred ? preferred : this.props.users.tempUser.preferred,
+      preferred: preferred ? preferred : preferred === undefined ? this.props.users.tempUser.preferred : null,
       venue: venue ? venue : this.props.users.tempUser.venue
     };
     this.props.changeTempUserAction(tempUser);
