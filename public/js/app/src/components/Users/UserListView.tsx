@@ -62,20 +62,20 @@ class UserListView extends React.Component<IPropsType, IStateType> {
     this.processEditUser = this.processEditUser.bind(this);
   }
 
-  public componentWillMount() {
+  public componentWillMount(): void {
     // set the title of the page
     document.title = 'OSA Andes | Listado de usuarios';
     this.props.getUsersAction();
   }
 
-  public componentDidCatch(error: Error, errorInfo: ErrorInfo) {
+  public componentDidCatch(error: Error, errorInfo: ErrorInfo): void {
     this.setState({error});
     Raven.captureException(error, {
       extra: errorInfo
     });
   }
 
-  public componentWillUnmount() {
+  public componentWillUnmount(): void {
     // cancel request if component is inmounted
     if (this.props.users.source) {
       this.props.users.source.cancel('Operation canceled by the user.');
@@ -192,7 +192,7 @@ class UserListView extends React.Component<IPropsType, IStateType> {
     }
   }
 
-  private editUser(user: IUser) {
+  private editUser(user: IUser): void {
     const {changeTempUser} = this;
     const {venues, permissions, forms} = this.props.users;
     const tmpUser = {...user};
@@ -236,7 +236,7 @@ class UserListView extends React.Component<IPropsType, IStateType> {
       userPermissions: userPermissions ? userPermissions : this.props.users.tempUser.userPermissions,
       userForms: userForms ? userForms : this.props.users.tempUser.userForms,
       preferred: preferred ? preferred : preferred === undefined ? this.props.users.tempUser.preferred : null,
-      venue: venue ? venue : this.props.users.tempUser.venue
+      venue: venue ? venue : venue === undefined ? this.props.users.tempUser.venue : null
     };
     this.props.changeTempUserAction(tempUser);
   }
@@ -261,7 +261,7 @@ class UserListView extends React.Component<IPropsType, IStateType> {
     });
   }
 
-  private changePage(page: number) {
+  private changePage(page: number): void {
     // change the page
     this.props.getUsersAction(page);
   }
