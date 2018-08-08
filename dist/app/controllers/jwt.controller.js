@@ -185,6 +185,12 @@ class JWTController {
                         if (err) {
                             res.status(500).json(err);
                         }
+                        else if (!user) {
+                            res.status(401).json({
+                                message: 'User not found',
+                                status: 401
+                            });
+                        }
                         else if (!user.active) {
                             res.status(401).json({
                                 message: 'User is inactive',
