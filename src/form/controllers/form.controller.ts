@@ -3,7 +3,7 @@ import {Response} from 'express';
 import * as GraphicsMagick from 'gm';
 import * as moment from 'moment-timezone';
 import {queue} from '../../app';
-import Alert from "../../app/models/alert.model";
+import Alert from '../../app/models/alert.model';
 import CarModel from '../../app/models/car.model';
 import UserModel from '../../app/models/user.model';
 import {IRequest} from '../../interfaces/global.interface';
@@ -269,9 +269,13 @@ class FormController {
                 });
               });
             }
+            // send refresh with websocket to dashboard list
+            io.to(`dashboard-vin-view-${company._id}`).emit('REFRESH', {
+              update: true,
+              car: car._id
+            });
 
-            io.to(`dashboard-vin-view-${company._id}`).emit('REFRESH', {update: true, car: car._id});
-
+            // send refresh with websocket to dashboard detail
             io.to(`dashboard-vin-detail-${car._id}`).emit(`ADD_PARTICIPANT`, await ParticipantModel
               .findById(newParticipant._id, {name: 1, user: 1, createdAt: 1, qualification: 1})
               .populate({
@@ -279,6 +283,7 @@ class FormController {
                 select: ['firstName', 'lastName']
               })
             );
+
             return res.json({
               data: {
                 id,

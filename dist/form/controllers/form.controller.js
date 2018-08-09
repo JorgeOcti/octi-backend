@@ -257,7 +257,12 @@ class FormController {
                                 });
                             });
                         }
-                        server_1.io.to(`dashboard-vin-view-${company._id}`).emit('REFRESH', { update: true, car: car._id });
+                        // send refresh with websocket to dashboard list
+                        server_1.io.to(`dashboard-vin-view-${company._id}`).emit('REFRESH', {
+                            update: true,
+                            car: car._id
+                        });
+                        // send refresh with websocket to dashboard detail
                         server_1.io.to(`dashboard-vin-detail-${car._id}`).emit(`ADD_PARTICIPANT`, await participant_model_1.default
                             .findById(newParticipant._id, { name: 1, user: 1, createdAt: 1, qualification: 1 })
                             .populate({

@@ -21,13 +21,14 @@ const Paginator: React.StatelessComponent<IPropsType> = (props) => {
                 <a className="page-link" href="javascript:void(0)" onClick={onClick}>{key}</a>
               </li>
             );
-          } else if (key > page + 3 && key === pages - 1) {
+          }
+          if (key >= page + 3 && key === pages - 1) {
             return (
               <li className={`page-item disabled`} key={key}>
                 <a className="page-link" href="javascript:void(0)">...</a>
               </li>
             );
-          } else if (key < page - 3 && key === 2) {
+          } else if (key <= page - 3 && key === 2) {
             return (
               <li className={`page-item disabled`} key={key}>
                 <a className="page-link" href="javascript:void(0)">...</a>
