@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+const moment = require("moment");
 const mongoose = require("mongoose");
 const participant_model_1 = require("../../form/models/participant.model");
 const car_model_1 = require("../models/car.model");
@@ -200,7 +201,10 @@ class CarController {
             const participantPerDay = await participant_model_1.default
                 .aggregate([{
                     $match: {
-                        company
+                        company,
+                        createdAt: {
+                            $gte: moment().subtract(14, 'd').toDate()
+                        }
                     }
                 }, {
                     $project: {
@@ -265,8 +269,24 @@ class CarController {
                         _id: 1
                     }
                 }]);
+            // normalize show last 14 days
+            const data = [];
+            for (let i = 15; i > 1; i--) {
+                const key = moment().subtract(i, 'd').format('YYYY-MM-DD');
+                const existInParticipantPerDay = participantPerDay.find((day) => day._id.toString() === key);
+                if (!existInParticipantPerDay) {
+                    data.push({
+                        _id: key,
+                        users: [],
+                        total: 0
+                    });
+                }
+                else {
+                    data.push(existInParticipantPerDay);
+                }
+            }
             res.json({
-                data: participantPerDay,
+                data,
                 status: 200
             });
         }

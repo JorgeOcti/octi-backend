@@ -11,8 +11,12 @@ import {debounce} from 'throttle-debounce';
 import {ICar} from '../../../../../../src/interfaces/car.interface';
 import {CarReduxAction, getCarsAction, ICarsState} from '../../actions/cars';
 import AppContainer from '../../container/AppContainer';
+import {IWindow} from '../../interfaces/window';
+import {hasPermission} from '../../utils/common';
 import ModalView from '../Modal/ModalView';
 import Paginator from '../Paginator';
+
+declare let window: IWindow;
 
 interface IPropsType extends RouteComponentProps<{ ticket: string }> {
   dispatch: Dispatch<CarReduxAction>;
@@ -26,7 +30,7 @@ interface IStateType {
   searchText: string;
 }
 
-class CarsListView extends React.Component<IPropsType, IStateType> {
+class CarListView extends React.Component<IPropsType, IStateType> {
 
   static propTypes = {
     dispatch: PropTypes.func.isRequired
@@ -74,11 +78,14 @@ class CarsListView extends React.Component<IPropsType, IStateType> {
             <div className="box-header with-border"><h3 className="box-title">Autos <small>{pagination.count}</small></h3>
               <div className="box-tools">
                 <div className="form-inline">
-                  <button
-                    className="btn btn-sm btn-primary  hidden-xs"
-                    onClick={() => this.props.history.push(`/settings/cars/import/`)}
-                    style={{marginRight: '5px'}}
-                  >Importar</button>
+                  {
+                    hasPermission(window.user, 'addCar') ?
+                      <button
+                        className="btn btn-sm btn-primary  hidden-xs"
+                        onClick={() => this.props.history.push(`/settings/cars/import/`)}
+                        style={{marginRight: '5px'}}
+                      >Importar</button> : null
+                  }
                   <div className="input-group input-group-sm" style={{width: '200px'}}>
                     <input type="text" className="form-control pull-right"
                            // onChange={debounce(300, this.onChangeSearch)}
@@ -193,4 +200,4 @@ const mapDispatchToProps = (dispatch: any ) => {
   };
 };
 
-export default connect<{}, {}, IPropsType>(mapStateToProps, mapDispatchToProps)(CarsListView);
+export default connect<{}, {}, IPropsType>(mapStateToProps, mapDispatchToProps)(CarListView);

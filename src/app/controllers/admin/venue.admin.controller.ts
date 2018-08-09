@@ -4,7 +4,7 @@ import {PaginateOptions, PaginateResult} from 'mongoose';
 import {IRequest} from '../../../interfaces/global.interface';
 import Venue, {IVenueModel} from '../../models/venue.model';
 
-class AdminVenuesController {
+class AdminVenueController {
   constructor() {
     this.index = this.index.bind(this);
     this.getVenues = this.getVenues.bind(this);
@@ -66,4 +66,4 @@ class AdminVenuesController {
   }
 }
 
-export default new AdminVenuesController();
+export default new AdminVenueController();

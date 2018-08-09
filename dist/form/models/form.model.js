@@ -1,6 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 const mongoose = require("mongoose");
+const mongoosePaginate = require("mongoose-paginate");
 const itemSchema = new mongoose.Schema({
     item: {
         type: String,
@@ -99,6 +100,7 @@ const formSchema = new mongoose.Schema({
 }, {
     timestamps: true
 });
+formSchema.plugin(mongoosePaginate);
 formSchema.virtual('participants', {
     ref: 'Participant',
     localField: '_id',

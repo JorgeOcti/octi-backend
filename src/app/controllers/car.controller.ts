@@ -1,5 +1,6 @@
 import {ObjectID} from 'bson';
 import {Response} from 'express';
+import * as moment from 'moment';
 import * as mongoose from 'mongoose';
 import {PaginateOptions, PaginateResult} from 'mongoose';
 import ParticipantModel from '../../form/models/participant.model';
@@ -203,7 +204,10 @@ class CarController {
       const participantPerDay = await ParticipantModel
         .aggregate([{
           $match: {
-            company
+            company,
+            createdAt: {
+              $gte: moment().subtract(14, 'd').toDate()
+            }
           }
         }, {
           $project: {
@@ -268,8 +272,25 @@ class CarController {
             _id: 1
           }
         }]);
+
+      // normalize show last 14 days
+      const data = [];
+      for (let i = 15; i > 1; i--) {
+        const key = moment().subtract(i, 'd').format('YYYY-MM-DD');
+        const existInParticipantPerDay = participantPerDay.find((day) => day._id.toString() === key);
+        if (!existInParticipantPerDay) {
+          data.push({
+            _id: key,
+            users: [],
+            total: 0
+          });
+        } else {
+          data.push(existInParticipantPerDay);
+        }
+      }
+
       res.json({
-          data: participantPerDay,
+          data,
           status: 200
         });
     } catch (e) {

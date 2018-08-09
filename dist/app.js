@@ -145,7 +145,27 @@ passport.use(new LocalStrategy({ usernameField: 'username' }, (username, passwor
     });
 }));
 passport.serializeUser(user_model_1.default.serializeUser());
-passport.deserializeUser(user_model_1.default.deserializeUser());
+// passport.deserializeUser((User as any).deserializeUser());
+passport.deserializeUser(async (email, done) => {
+    try {
+        const user = await user_model_1.default.findOne({ email }).populate([{
+                path: 'userPermissions',
+                select: ['codeName']
+            }, {
+                path: 'userForms',
+                select: ['name']
+            }]);
+        if (user) {
+            done(null, user);
+        }
+        else {
+            done(new Error('User not found'));
+        }
+    }
+    catch (e) {
+        done(e);
+    }
+});
 /*
 passport.serializeUser<any, any>((user, done) => {
   done(undefined, user.id);
@@ -186,8 +206,8 @@ if (app.get('env') !== 'testing') {
 app.use(Raven.requestHandler());
 // Routes
 app.use('/', router_1.appRouter);
+app.use('/', router_2.default);
 app.use('/api/v1', router_1.jwtRouter);
-app.use('/api/v1/forms', router_2.default);
 /* queues */
 exports.queue = kue.createQueue({
     redis: {

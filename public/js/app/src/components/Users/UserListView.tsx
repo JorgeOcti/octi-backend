@@ -20,9 +20,11 @@ import {
   UserReduxAction
 } from '../../actions/users';
 import AppContainer from '../../container/AppContainer';
-import {statusFooterButttonsModal} from '../../utils/common';
+import {IWindow} from '../../interfaces/window';
+import {hasPermission, statusFooterButttonsModal} from '../../utils/common';
 import ModalView from '../Modal/ModalView';
 import Paginator from '../Paginator';
+import UserFormView from './UserFormView';
 
 interface IPropsType extends RouteComponentProps<{ ticket: string }> {
   dispatch: Dispatch<UserReduxAction>;
@@ -40,7 +42,9 @@ interface IStateType {
   error: Error | null;
 }
 
-class UsersListView extends React.Component<IPropsType, IStateType> {
+declare let window: IWindow;
+
+class UserListView extends React.Component<IPropsType, IStateType> {
 
   static propTypes = {
     users: PropTypes.object.isRequired,
@@ -58,20 +62,20 @@ class UsersListView extends React.Component<IPropsType, IStateType> {
     this.processEditUser = this.processEditUser.bind(this);
   }
 
-  public componentWillMount() {
+  public componentWillMount(): void {
     // set the title of the page
     document.title = 'OSA Andes | Listado de usuarios';
     this.props.getUsersAction();
   }
 
-  public componentDidCatch(error: Error, errorInfo: ErrorInfo) {
+  public componentDidCatch(error: Error, errorInfo: ErrorInfo): void {
     this.setState({error});
     Raven.captureException(error, {
       extra: errorInfo
     });
   }
 
-  public componentWillUnmount() {
+  public componentWillUnmount(): void {
     // cancel request if component is inmounted
     if (this.props.users.source) {
       this.props.users.source.cancel('Operation canceled by the user.');
@@ -85,17 +89,15 @@ class UsersListView extends React.Component<IPropsType, IStateType> {
         <section className="content">
           <div className="box">
             <div className="box-header with-border"><h3 className="box-title">Usuarios <small>{pagination.count}</small></h3>
-              <div className="box-tools pull-right">
-                <button className="btn btn-sm btn-success" onClick={this.addUser}>Agregar</button>
-              </div>
+              {
+                hasPermission(window.user, 'addUser') ?
+                  <div className="box-tools pull-right">
+                    <button className="btn btn-sm btn-success" onClick={this.addUser}>Agregar</button>
+                  </div>
+                  : null
+              }
             </div>
             <div className="box-body">
-              {/*<div className="pull-right">*/}
-                {/*<div className="input-group text-right max-width-300">*/}
-                  {/*<input type="text" className="form-control" placeholder="Buscar"/>*/}
-                  {/*<span className="input-group-addon input-group-primary"><i className="fa fa-search" /></span>*/}
-                {/*</div>*/}
-              {/*</div>*/}
               <table className="table table-striped">
                 <thead>
                   <tr>
@@ -104,8 +106,10 @@ class UsersListView extends React.Component<IPropsType, IStateType> {
                     <th style={{width: '20%'}} className="hidden-xs">Sucursal</th>
                     <th style={{width: '20%'}} className="hidden-xs">Email</th>
                     <th style={{width: '20%'}} className="hidden-xs">Modificado</th>
-                    <th style={{width: '1%'}} className="width-10" />
-                    <th style={{width: '1%'}} className="width-10" />
+                    {hasPermission(window.user, 'changeUser') ?
+                      <th style={{width: '1%'}} className="width-10"/> : null}
+                    {hasPermission(window.user, 'deleteUser') ?
+                      <th style={{width: '1%'}} className="width-10"/> : null}
                   </tr>
                 </thead>
                 <tbody>
@@ -118,8 +122,10 @@ class UsersListView extends React.Component<IPropsType, IStateType> {
                           <td className="hidden-xs">{user.venue.name}</td>
                           <td className="hidden-xs">{user.email}</td>
                           <td className="hidden-xs">{moment(user.updatedAt).format('LLL')}</td>
-                          <td className="text-blue pointer" onClick={() => this.editUser(user)}><i className="fa fa-pencil"/></td>
-                          <td className="text-red pointer" onClick={() => this.deleteUser(user)}><i className="fa fa-minus-circle"/></td>
+                          {hasPermission(window.user, 'changeUser') ?
+                            <td className="text-blue pointer" onClick={() => this.editUser(user)}><i className="fa fa-pencil"/></td> : null}
+                          {hasPermission(window.user, 'deleteUser') ?
+                            <td className="text-red pointer" onClick={() => this.deleteUser(user)}><i className="fa fa-minus-circle"/></td> : null}
                         </tr>
                       );
                     })
@@ -145,77 +151,29 @@ class UsersListView extends React.Component<IPropsType, IStateType> {
       </AppContainer>
     );
   }
+
   private addUser(): void {
     const {changeTempUser} = this;
-    const {venues} = this.props.users;
+    const {venues, permissions, forms} = this.props.users;
     this.props.changeTempUserAction({
       _id: '',
       firstName: '',
       lastName: '',
       email: '',
-      venue: ''
+      venue: '',
+      userPermissions: [],
+      userForms: []
     });
-    this.props.loadDataAction(
-      'Agregar Usuario',
-      <div className={'row'}>
-        <div className="col-md-12">
-          <div className="form-group">
-            <label>Nombres</label>
-            <input
-              type="text"
-              name="fistName"
-              className="form-control"
-              maxLength={50}
-              onChange={(e: React.ChangeEvent<HTMLInputElement>) => changeTempUser({firstName: e.target.value})}
-            />
-          </div>
-        </div>
-        <div className="col-md-12">
-          <div className="form-group">
-            <label>Apellidos</label>
-            <input
-              type="text"
-              name="lastName"
-              className="form-control"
-              maxLength={50}
-              onChange={(e: React.ChangeEvent<HTMLInputElement>) => changeTempUser({lastName: e.target.value})}
-            />
-          </div>
-        </div>
-        <div className="col-md-12">
-          <div className="form-group">
-            <label>Email</label>
-            <input
-              type="email"
-              name="email"
-              className="form-control"
-              maxLength={80}
-              onChange={(e: React.ChangeEvent<HTMLInputElement>) => changeTempUser({email: e.target.value})}
-            />
-          </div>
-        </div>
-        <div className="col-md-12">
-          <div className="form-group">
-            <label htmlFor="sel1">Sucursal</label>
-            <select
-              className="form-control"
-              name="venue"
-              onChange={(e: React.ChangeEvent<HTMLSelectElement>) => changeTempUser({venue: e.target.value})}>
-              <option value="">Seleccione venue</option>
-              {
-                venues.map((venue) => (
-                  <option key={venue._id} value={venue._id}>{venue.name}</option>
-                ))
-              }
-            </select>
-          </div>
-        </div>
-      </div>,
-      <React.Fragment>
-        <button type="button" className="btn btn-default" data-dismiss="modal">Cancelar</button>
-        <button type="button" className="btn btn-primary" onClick={this.processAddUser}>Grabar</button>
-      </React.Fragment>
-    );
+    setTimeout(() => {
+      this.props.loadDataAction(
+        'Agregar Usuario',
+        <UserFormView changeTempUser={changeTempUser} venues={venues} users={this.props.users} forms={forms} permissions={permissions}/>,
+        <React.Fragment>
+          <button type="button" className="btn btn-default" data-dismiss="modal">Cancelar</button>
+          <button type="button" className="btn btn-primary" onClick={this.processAddUser}>Grabar</button>
+        </React.Fragment>
+      );
+    }, 200);
   }
 
   private processAddUser(): void {
@@ -234,56 +192,22 @@ class UsersListView extends React.Component<IPropsType, IStateType> {
     }
   }
 
-  private editUser(user: IUser) {
+  private editUser(user: IUser): void {
     const {changeTempUser} = this;
-    const {venues} = this.props.users;
+    const {venues, permissions, forms} = this.props.users;
     const tmpUser = {...user};
     tmpUser.venue = tmpUser.venue._id;
     changeTempUser(tmpUser);
-    this.props.loadDataAction(
-      'Editar Usuario',
-      <div className={'row'}>
-        <div className="col-md-12">
-          <div className="form-group">
-            <label>Nombres</label>
-            <input type="text" className="form-control" maxLength={50} defaultValue={user.firstName}
-                   onChange={(e: React.ChangeEvent<HTMLInputElement>) => changeTempUser({firstName: e.target.value})}/>
-          </div>
-        </div>
-        <div className="col-md-12">
-          <div className="form-group">
-            <label>Apellidos</label>
-            <input type="text" className="form-control" maxLength={50} defaultValue={user.lastName}
-                   onChange={(e: React.ChangeEvent<HTMLInputElement>) => changeTempUser({lastName: e.target.value})}/>
-          </div>
-        </div>
-        <div className="col-md-12">
-          <div className="form-group">
-            <label>Email</label>
-            <input type="text" className="form-control" maxLength={100} defaultValue={user.email}
-                   onChange={(e: React.ChangeEvent<HTMLInputElement>) => changeTempUser({email: e.target.value})}/>
-          </div>
-        </div>
-        <div className="col-md-12">
-          <div className="form-group">
-            <label htmlFor="sel1">Sucursal</label>
-            <select className="form-control" name="venue"
-                    onChange={(e: React.ChangeEvent<HTMLSelectElement>) => changeTempUser({venue: e.target.value})} defaultValue={user.venue._id}>
-              <option value="">Seleccione venue</option>
-              {
-                venues.map((venue) => (
-                  <option key={venue._id} value={venue._id}>{venue.name}</option>
-                ))
-              }
-            </select>
-          </div>
-        </div>
-      </div>,
-      <React.Fragment>
-        <button type="button" className="btn btn-default" data-dismiss="modal">Cancelar</button>
-        <button type="button" className="btn btn-primary" onClick={this.processEditUser}>Editar</button>
-      </React.Fragment>
-    );
+    setTimeout(() => {
+      this.props.loadDataAction(
+        'Editar Usuario',
+        <UserFormView changeTempUser={changeTempUser} venues={venues} users={this.props.users} forms={forms} permissions={permissions} user={user}/>,
+        <React.Fragment>
+          <button type="button" className="btn btn-default" data-dismiss="modal">Cancelar</button>
+          <button type="button" className="btn btn-primary" onClick={this.processEditUser}>Editar</button>
+        </React.Fragment>
+      );
+    }, 200);
   }
 
   private processEditUser() {
@@ -303,13 +227,16 @@ class UsersListView extends React.Component<IPropsType, IStateType> {
     }
   }
 
-  private changeTempUser({_id, firstName, lastName, email, venue}: ITempUser) {
+  private changeTempUser({_id, firstName, lastName, email, venue, userPermissions, preferred, userForms}: ITempUser) {
     const tempUser: ITempUser = {
       _id: _id ? _id : this.props.users.tempUser._id,
       firstName: firstName ? firstName : this.props.users.tempUser.firstName,
       lastName: lastName ? lastName : this.props.users.tempUser.lastName,
       email: email ? email : this.props.users.tempUser.email,
-      venue: venue ? venue : this.props.users.tempUser.venue
+      userPermissions: userPermissions ? userPermissions : this.props.users.tempUser.userPermissions,
+      userForms: userForms ? userForms : this.props.users.tempUser.userForms,
+      preferred: preferred ? preferred : preferred === undefined ? this.props.users.tempUser.preferred : null,
+      venue: venue ? venue : venue === undefined ? this.props.users.tempUser.venue : null
     };
     this.props.changeTempUserAction(tempUser);
   }
@@ -334,7 +261,7 @@ class UsersListView extends React.Component<IPropsType, IStateType> {
     });
   }
 
-  private changePage(page: number) {
+  private changePage(page: number): void {
     // change the page
     this.props.getUsersAction(page);
   }
@@ -359,4 +286,4 @@ const mapDispatchToProps = (dispatch: any ) => {
   };
 };
 
-export default connect<{}, {}, IPropsType>(mapStateToProps, mapDispatchToProps)(UsersListView);
+export default connect<{}, {}, IPropsType>(mapStateToProps, mapDispatchToProps)(UserListView);

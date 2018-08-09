@@ -24,7 +24,11 @@ class FormController {
     async list(req, res) {
         const company = req.user.company;
         try {
-            const forms = await this.getForms(company);
+            const forms = await this.getForms(company, {
+                _id: {
+                    $in: req.user.userForms.map((form) => form._id)
+                }
+            });
             res.json({
                 data: forms,
                 status: 200
@@ -40,6 +44,11 @@ class FormController {
     async detail(req, res) {
         const { id } = req.params;
         const company = req.user.company;
+        if (req.user.userForms.filter((form) => form._id.toString() === id).length === 0) {
+            return res.status(403).json({
+                message: 'No tiene permisos para esta operación'
+            });
+        }
         try {
             const form = await this.getForm(id, company);
             // generate array of scale ids
@@ -217,13 +226,14 @@ class FormController {
                         if (alerts.length) {
                             alerts.forEach((alert) => {
                                 alert.users.forEach((user) => {
+                                    const userName = `${user.firstName} ${user.lastName}`;
                                     if (user.email && user.email.length) {
                                         app_1.queue.create('email', {
                                             from: '',
                                             title: `Alert qualification`,
-                                            to: `"${user.firstName} ${user.lastName}"<${user.email}>`,
+                                            to: `""<${user.email}>`,
                                             subject: `ALERTA: ${alert.name}`,
-                                            text: `Hola Richard
+                                            text: `Hola ${userName}
                         Se ha evaluado un VIN con calificación ${formQualification.toFixed(0)}%
 
                         Datos del Vehiculo
@@ -236,6 +246,7 @@ class FormController {
                         © 2018 OSA SpA. Todos los derechos reservados.`,
                                             view: 'alerts/lowQualification',
                                             context: {
+                                                userName,
                                                 brand: car ? car.brand : '',
                                                 vin: car ? car.vin : '',
                                                 qualification: formQualification.toFixed(0),
@@ -246,7 +257,12 @@ class FormController {
                                 });
                             });
                         }
-                        server_1.io.to(`dashboard-vin-view-${company._id}`).emit('REFRESH', { update: true, car: car._id });
+                        // send refresh with websocket to dashboard list
+                        server_1.io.to(`dashboard-vin-view-${company._id}`).emit('REFRESH', {
+                            update: true,
+                            car: car._id
+                        });
+                        // send refresh with websocket to dashboard detail
                         server_1.io.to(`dashboard-vin-detail-${car._id}`).emit(`ADD_PARTICIPANT`, await participant_model_1.default
                             .findById(newParticipant._id, { name: 1, user: 1, createdAt: 1, qualification: 1 })
                             .populate({
@@ -409,8 +425,19 @@ class FormController {
             });
         });
     }
-    getForms(company) {
-        const keyCache = `forms`;
+    getForms(company, filter) {
+        const keyCache = `forms${filter ? JSON.stringify(filter) : ''}`;
+        if (filter) {
+            filter = {
+                company,
+                ...filter
+            };
+        }
+        else {
+            filter = {
+                company
+            };
+        }
         return new Promise((resolve, reject) => {
             redis_service_1.default.get(keyCache, async (error, result) => {
                 if (result) {
@@ -419,9 +446,7 @@ class FormController {
                 }
                 else {
                     form_model_1.default
-                        .find({
-                        company
-                    }, {
+                        .find(filter, {
                         _id: 1,
                         name: 1
                     })

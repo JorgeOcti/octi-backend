@@ -4,12 +4,12 @@ import * as mongoose from 'mongoose';
 import * as mongoosePaginate from 'mongoose-paginate';
 import * as passportLocalMongoose from 'passport-local-mongoose';
 import {IUser} from '../../interfaces/user.interface';
-// import mongooseCrate  from 'mongoose-crate';
-// import S3 from 'mongoose-crate-s3';
+import {IPermissionModel} from './permision.model';
 
 export interface IUserModel extends IUser, mongoose.Document {
   comparePassword: (candidatePassword: string, cb: (err: any, isMatch: any) => {}) => void;
   comparePasswordSync: (candidatePassword: string) => void;
+  hasPermission: (permission: string) => boolean;
   fullName: () => string;
   generateToken: () => string;
 }
@@ -50,7 +50,22 @@ const userSchema = new mongoose.Schema({
     unique: true,
     index: true
   },
-
+  group: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Group'
+  },
+  userPermissions: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Permission'
+  }],
+  userForms: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Form'
+  }],
+  isAdmin: {
+    type: Boolean,
+    default: false
+  },
   password: String,
   hash_password:  String,
 
@@ -64,47 +79,53 @@ const userSchema = new mongoose.Schema({
     default: true
   }
 }, {
+  // toObject: {
+  //   transform:  (doc, ret) => {
+  //     delete ret._id;
+  //     delete ret.password;
+  //   }
+  // },
+  toJSON: {
+    transform: (doc, ret) => {
+      // delete ret._id;
+      delete ret.password;
+    }
+  },
   timestamps: true
 });
 
 userSchema.plugin(passportLocalMongoose);
 // https://www.npmjs.com/package/mongoose-paginate
 userSchema.plugin(mongoosePaginate);
-// userSchema.plugin(mongooseCrate, {
-//   storage: new S3({
-//     key: 'REDACTED',
-//     secret: 'REDACTED',
-//     bucket: 'REDACTED',
-//     acl: 'public-read', // defaults to public-read
-//     region: 'eu-west-1', // defaults to us-standard
-//     // where the file is stored in the bucket - defaults to this function
-//     path: (attachment) => `/${path.basename(attachment.path)}`
-//   }),
-//   fields: {
-//     file: {}
-//   }
-// });
-
-/**
- * Password hash middleware.
- */
 
 userSchema.methods.fullName = function(): string {
   return (this.firstName.trim() + ' '  + this.lastName.trim());
 };
 
+// validate user has permissions
+userSchema.methods.hasPermission = function(permission: string): boolean {
+  if (permission && permission.length && this.userPermissions && this.userPermissions.length) {
+    return this.userPermissions.some((p: IPermissionModel) => p.codeName === permission);
+  }
+  return false;
+};
+
+// used by sockets
 userSchema.methods.generateToken = function() {
   const userInfo = {
-    _id: this._id,
-    firstName: this.firstName,
-    lastName: this.lastName,
-    email: this.email,
-    company: this.company,
-    venue: this.venue
+    _id: this._id
+    // firstName: this.firstName,
+    // lastName: this.lastName,
+    // email: this.email,
+    // company: this.company,
+    // venue: this.venue
   };
   return jwt.sign(userInfo, process.env.SECRET_KEY || 'secretKey', {expiresIn: '7 days'});
 };
 
+/**
+ * Password hash middleware.
+ */
 userSchema.pre('save', function(this: IUserModel, next) {
   const user = this;
   if (!user.isModified('password')) { return next(); }

@@ -8,13 +8,16 @@ import {IUser} from '../../../../../src/interfaces/user.interface';
 const initialState: IUsersState = {
   users: [],
   venues: [],
+  permissions: [],
+  forms: [],
   loading: true,
   tempUser: {
     _id: '',
     firstName: '',
     lastName: '',
     email: '',
-    venue: ''
+    userPermissions: [],
+    userForms: []
   },
   source: null,
   pagination: {
@@ -35,6 +38,16 @@ export function users(state = initialState, action: UserReduxAction): IUsersStat
       return {
         ...state,
         venues: action.payload.venues
+      };
+    case '/USERS/LOAD_PERMISSIONS':
+      return {
+        ...state,
+        permissions: action.payload.permissions
+      };
+    case '/USERS/LOAD_FORMS':
+      return {
+        ...state,
+        forms: action.payload.forms
       };
     case '/USERS/CHANGE_TEMP_USER':
       return {

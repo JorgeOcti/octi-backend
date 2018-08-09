@@ -1,9 +1,11 @@
 import {ObjectID} from 'bson';
-import {Request, Response} from 'express';
+import {Response} from 'express';
 import {PaginateOptions, PaginateResult} from 'mongoose';
 import {queue} from '../../../app';
 import {IRequest} from '../../../interfaces/global.interface';
+import {IPermission} from '../../../interfaces/permision.interface';
 import User, {IUserModel} from '../../models/user.model';
+import {IForm} from "../../../interfaces/form.interface";
 
 class AdminUsersController {
 
@@ -15,11 +17,20 @@ class AdminUsersController {
     this.apiDeleteUser = this.apiDeleteUser.bind(this);
   }
 
-  public async index(req: Request, res: Response) {
-    res.render('app/index');
+  public async index(req: IRequest, res: Response) {
+    if (req.user.hasPermission('viewUser')) {
+      res.render('app/index', {token: await req.user.generateToken()});
+    } else {
+      res.status(403).render('403');
+    }
   }
 
-  public async apiUsers(req: IRequest, res: Response) {
+  public async apiUsers(req: IRequest, res: Response): Promise<any> {
+    if (!req.user.hasPermission('viewUser')) {
+      return res.status(403).json({
+        message: 'No tiene permisos para esta operación'
+      });
+    }
     const {page, pageSize} = req.query;
     const company = req.user.company;
     // paginate options
@@ -27,15 +38,27 @@ class AdminUsersController {
       select: {
         firstName: true,
         lastName: true,
+        preferred: true,
         email: true,
         updatedAt: true
       },
       populate: [{
         path: 'venue',
         select: ['name', 'active']
+      }, {
+        path: 'userPermissions',
+        select: ['name', 'codeName'],
+        options: {
+          sort: {
+            name: 1
+          }
+        }
+      }, {
+        path: 'userForms',
+        select: ['name']
       }],
       sort: {
-        createdAt: -1
+        firstName: 1
       },
       page: parseInt(page ? page : 1, 10),
       limit: parseInt(pageSize ? pageSize : 20, 10)
@@ -65,8 +88,13 @@ class AdminUsersController {
     }
   }
 
-  public async apiAddUser(req: IRequest, res: Response) {
-    const {firstName, lastName, email, venue} = req.body;
+  public async apiAddUser(req: IRequest, res: Response): Promise<any> {
+    if (!req.user.hasPermission('addUser')) {
+      return res.status(403).json({
+        message: 'No tiene permisos para esta operación'
+      });
+    }
+    const {firstName, lastName, email, venue, userPermissions, userForms, preferred} = req.body;
     const company = req.user.company;
     // validate fields required
     if (!firstName || !firstName.length || !lastName || !lastName.length || !email || !email.length || !venue || !venue.length) {
@@ -92,14 +120,17 @@ class AdminUsersController {
           lastName,
           username: email,
           venue,
+          preferred,
+          userPermissions: userPermissions && userPermissions.length ? userPermissions.map((userPermission: IPermission) => userPermission._id) : [],
+          userForms: userForms && userForms.length ? userForms.map((userForm: IForm) => userForm._id) : [],
           company,
           password,
           email,
           active: true
         }).save();
 
-        // const error = await newUser.validate();
-        // console.log(error);
+        // const errors = await newUser.validate();
+        // console.log(errors);
 
         // send welcome email
         const fullname: string = newUser.fullName();
@@ -138,10 +169,15 @@ class AdminUsersController {
     }
   }
 
-  public async apiEditUser(req: IRequest, res: Response) {
+  public async apiEditUser(req: IRequest, res: Response): Promise<any> {
+    if (!req.user.hasPermission('changeUser')) {
+      return res.status(403).json({
+        message: 'No tiene permisos para esta operación'
+      });
+    }
     const {id} = req.params;
     const company = req.user.company;
-    const {firstName, lastName, email, venue} = req.body;
+    const {firstName, lastName, email, venue, userPermissions, userForms, preferred} = req.body;
     // validate fields required
     if (!firstName || !firstName.length || !lastName || !lastName.length || !email || !email.length || !venue || !venue.length) {
       res.status(400).json({
@@ -165,11 +201,27 @@ class AdminUsersController {
             firstName,
             lastName,
             email,
+            preferred,
+            userPermissions: userPermissions && userPermissions.length ? userPermissions.map((userPermission: IPermission) => userPermission._id) : [],
+            userForms: userForms && userForms.length ? userForms.map((userForm: IForm) => userForm._id) : [],
             venue
-          }, {new: true})
+          }, {
+            new: true
+          })
           .populate([{
             path: 'venue',
             select: ['name', 'active']
+          }, {
+            path: 'userPermissions',
+            select: ['name', 'codeName'],
+            options: {
+              sort: {
+                name: 1
+              }
+            }
+          }, {
+            path: 'userForms',
+            select: ['name']
           }]);
         if (user) {
           // prevent return password
@@ -197,7 +249,12 @@ class AdminUsersController {
     }
   }
 
-  public async apiDeleteUser(req: IRequest, res: Response) {
+  public async apiDeleteUser(req: IRequest, res: Response): Promise<any> {
+    if (!req.user.hasPermission('deleteUser')) {
+      return res.status(403).json({
+        message: 'No tiene permisos para esta operación'
+      });
+    }
     const {id} = req.params;
     const company = req.user.company;
     try {

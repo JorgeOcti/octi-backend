@@ -40,7 +40,7 @@ interface IStateType {
   tempAlert: ITempAlert;
 }
 
-class AlertsViews extends React.Component<IPropsType, IStateType> {
+class AlertViews extends React.Component<IPropsType, IStateType> {
 
   static propTypes = {
     alerts: PropTypes.object.isRequired,
@@ -226,4 +226,4 @@ const mapDispatchToProps = (dispatch: any ) => {
   };
 };
 
-export default connect<{}, {}, IPropsType>(mapStateToProps, mapDispatchToProps)(AlertsViews);
+export default connect<{}, {}, IPropsType>(mapStateToProps, mapDispatchToProps)(AlertViews);

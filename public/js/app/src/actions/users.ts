@@ -1,14 +1,19 @@
 import {AxiosError, AxiosResponse, CancelTokenSource, default as Axios} from 'axios';
+import axios from 'axios';
 import {Dispatch} from 'redux';
 import ApiService from '../utils/axios';
 import {showModal, statusFooterButttonsModal} from '../utils/common';
 
+import {IForm} from '../../../../../src/interfaces/form.interface';
+import {IPermission} from '../../../../../src/interfaces/permision.interface';
 import {IUser} from '../../../../../src/interfaces/user.interface';
 import {IVenue} from '../../../../../src/interfaces/venue.interface';
 
 export interface IUsersState {
   users: IUser[];
   venues: IVenue[];
+  forms: IForm[];
+  permissions: IPermission[];
   loading: boolean;
   tempUser: ITempUser;
   source: CancelTokenSource | null;
@@ -71,7 +76,10 @@ export interface ITempUser {
   firstName?: string;
   lastName?: string;
   email?: string;
-  venue?: string;
+  venue?: string | null;
+  userForms: IForm[];
+  preferred?: string | null;
+  userPermissions: IPermission[];
 }
 
 interface IChangeTempUser {
@@ -204,20 +212,56 @@ export function loadVenuesUserAction(venues: IVenue[]): ILoadVenuesUser {
   };
 }
 
+interface ILoadPermissionsUser {
+  type: '/USERS/LOAD_PERMISSIONS';
+  payload: {
+    permissions: IPermission[];
+  };
+}
+
+export function loadPermissionsUserAction(permissions: IPermission[]): ILoadPermissionsUser {
+  return {
+    type: '/USERS/LOAD_PERMISSIONS',
+    payload: {
+      permissions
+    }
+  };
+}
+
+interface ILoadFormsUser {
+  type: '/USERS/LOAD_FORMS';
+  payload: {
+    forms: IForm[];
+  };
+}
+
+export function loadFormsUserAction(forms: IForm[]): ILoadFormsUser {
+  return {
+    type: '/USERS/LOAD_FORMS',
+    payload: {
+      forms
+    }
+  };
+}
+
 export function getUsersAction(nextPage?: number) {
   return (dispatch: Dispatch<UserReduxAction>, getState: () => {users: IUsersState}) => {
     const api: ApiService = new ApiService();
     const state = getState();
-    // get venues only are empty
-    if (!state.users.venues.length) {
-      api.getVenues()
-        .then((response: AxiosResponse) => {
-          dispatch(loadVenuesUserAction(response.data.results));
-        })
+
+    // get venues and permissions
+    if (!state.users.venues.length || !state.users.permissions.length || !state.users.forms.length) {
+      axios.all([api.getVenues(1, 200), api.getPermissions(1, 200), api.getForms(1, 200)])
+        .then(axios.spread((venues, permissions, forms) => {
+          dispatch(loadVenuesUserAction(venues.data.results));
+          dispatch(loadPermissionsUserAction(permissions.data.results));
+          dispatch(loadFormsUserAction(forms.data.results));
+        }))
         .catch((err: AxiosError) => {
           api.errorHandler(err);
         });
     }
+
     dispatch(isLoadingAction(true));
     dispatch(cancelRequestAction(api.getSource()));
     const page = nextPage ? nextPage : state.users.pagination.page;
@@ -279,4 +323,4 @@ export function deleteUserAction(id: string) {
   };
 }
 
-export type UserReduxAction = IIsLoading | ILoadUsers | IChangePage | IDeleteUser | ICancelRequest | IChangeTempUser | IChangeUser | ILoadVenuesUser;
+export type UserReduxAction = IIsLoading | ILoadUsers | IChangePage | IDeleteUser | ICancelRequest | IChangeTempUser | IChangeUser | ILoadVenuesUser | ILoadPermissionsUser | ILoadFormsUser;

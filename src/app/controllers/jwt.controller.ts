@@ -71,6 +71,12 @@ class JWTController {
         }, {
           path: 'company',
           select: ['name']
+        }, {
+          path: 'userPermissions',
+          select: ['codeName']
+        }, {
+          path: 'userForms',
+          select: ['name']
         }])
         .exec((err, user: IUserModel) => {
           if (err) {
@@ -107,6 +113,8 @@ class JWTController {
                     lastName: user.lastName,
                     email: user.email,
                     preferred: user.preferred,
+                    userPermissions: user.userPermissions,
+                    userForms: user.userForms,
                     venue: {
                       _id: user.venue ? user.venue._id : null,
                       name: user.venue ? user.venue.name : null
@@ -128,6 +136,8 @@ class JWTController {
                       refreshToken: jwt.sign(userInfo, req.app.locals.secretKey, {
                         expiresIn: '60 days'
                       }),
+                      iosVersion: '1.4.0',
+                      androidVersion: '1.4.0',
                       user: userInfo
                     },
                     status: 200
@@ -163,10 +173,21 @@ class JWTController {
             }, {
               path: 'company',
               select: ['name']
+            }, {
+              path: 'userPermissions',
+              select: ['codeName']
+            }, {
+              path: 'userForms',
+              select: ['name']
             }])
             .exec((err, user: IUserModel) => {
               if (err) {
                 res.status(500).json(err);
+              } else if (!user) {
+                res.status(401).json({
+                  message: 'User not found',
+                  status: 401
+                });
               } else if (!user.active) {
                 res.status(401).json({
                   message: 'User is inactive',
@@ -193,6 +214,8 @@ class JWTController {
                         lastName: user.lastName,
                         email: user.email,
                         preferred: user.preferred,
+                        userPermissions: user.userPermissions,
+                        userForms: user.userForms,
                         venue: {
                           _id: user.venue ? user.venue._id : null,
                           name: user.venue ? user.venue.name : null
@@ -211,6 +234,8 @@ class JWTController {
                           refreshToken: jwt.sign(userInfo, req.app.locals.secretKey, {
                             expiresIn: '60 days'
                           }),
+                          iosVersion: '1.4.0',
+                          androidVersion: '1.4.0',
                           user: userInfo
                         },
                         status: 200

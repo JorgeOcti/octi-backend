@@ -96,9 +96,21 @@ export default class ApiService {
     );
   }
 
-  public getVenues(): AxiosPromise {
+  public getVenues(page: number, pageSize?: number): AxiosPromise {
     return this.instance.get(
-      `/api/admin/venues/`
+      `/api/admin/venues/?page=${page}${pageSize ? `&pageSize=${pageSize}` : ''}`
+    );
+  }
+
+  public getPermissions(page: number, pageSize?: number): AxiosPromise {
+    return this.instance.get(
+      `/api/admin/permissions/?page=${page}${pageSize ? `&pageSize=${pageSize}` : ''}`
+    );
+  }
+
+  public getForms(page: number, pageSize?: number): AxiosPromise {
+    return this.instance.get(
+      `/api/admin/forms/?page=${page}${pageSize ? `&pageSize=${pageSize}` : ''}`
     );
   }
 
