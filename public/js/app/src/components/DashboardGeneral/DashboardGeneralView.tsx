@@ -49,16 +49,22 @@ class DashboardGeneralView extends React.Component<IPropsType, IStateType> {
   }
 
   public componentDidUpdate(prevProps: IPropsType, prevState: IStateType): void {
-    const {participantsPerDate, loading} = this.props.dashboard;
+    const {participantsPerDate, carsPerDate, loading} = this.props.dashboard;
 
     const $participantPerDate = document.getElementById('participant-per-date') as HTMLDivElement;
     const categories: any[] = [];
     const totals: any[] = [];
+    const totalsCars: any[] = [];
 
     if (participantsPerDate.length) {
       participantsPerDate.forEach((day) => {
         categories.push(day._id);
         totals.push(day.total);
+      });
+    }
+    if (carsPerDate.length) {
+      carsPerDate.forEach((day) => {
+        totalsCars.push(day.total);
       });
     }
     if ($participantPerDate && !loading) {
@@ -71,7 +77,14 @@ class DashboardGeneralView extends React.Component<IPropsType, IStateType> {
             align: 'center'
           }
         },
-        tooltip: {},
+        tooltip: {
+          trigger: 'axis'
+        },
+        legend: {
+          x: 'center',
+          y: 'bottom',
+          data: ['Checkeados', 'Cargados']
+        },
         xAxis: {
           type: 'category',
           data: categories,
@@ -95,8 +108,8 @@ class DashboardGeneralView extends React.Component<IPropsType, IStateType> {
           // left
           x: 30,
           // right
-          x2: 10
-
+          x2: 10,
+          containLabel: true
           // borderColor: '#FF0000'
         },
         series: [{
@@ -123,10 +136,44 @@ class DashboardGeneralView extends React.Component<IPropsType, IStateType> {
           //     color: '#c23531'
           //   }
           // }],
+          name: 'Checkeados',
           type: 'line',
-          smooth: true
+          smooth: true,
+          itemStyle: {
+            color: '#009cde'
+          }
+        }, {
+          data: totalsCars,
+          // itemStyle: {
+          //   normal: {
+          //     areaStyle: {
+          //       type: 'default',
+          //       color: '#0081da',
+          //       opacity: 0.4
+          //     }
+          //   }
+          // },
+          // lineStyle: {
+          //   normal: {
+          //     color: '#006faf',
+          //     // opacity: 0.1
+          //   }
+          // },
+          // data: [{
+          //   value: 820,
+          //   name: '2018-06-05',
+          //   itemStyle: {
+          //     color: '#c23531'
+          //   }
+          // }],
+          name: 'Cargados',
+          type: 'line',
+          smooth: true,
+          itemStyle: {
+            color: '#6d7a89'
+          }
         }],
-        color: ['#006faf']
+        color: ['#009cde', '#6d7a89']
       };
       this.participantsPerDayChart.setOption(option);
     }
