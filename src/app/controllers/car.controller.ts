@@ -138,11 +138,12 @@ class CarController {
         }
       }
     } else if (vin2) {
-      vin2 = vin2.replace(/[\W_]+/g, '');
+      // vin2 = vin2.replace(/[\W_]+/g, '');
       try {
         if (multi === 'true') {
+          const vinRegex = new RegExp('[a-zA-Z0]' + vin2.substr(vin2.length - 5), 'i');
           const car = await CarModel.find({
-            vin2,
+            vin2: vin2 && vin2[0] === '0' ? {$regex: vinRegex} : vin2,
             company
           }, {
             vin: true,
