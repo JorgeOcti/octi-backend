@@ -71,7 +71,7 @@ class DashboardGeneralView extends React.Component<IPropsType, IStateType> {
       this.participantsPerDayChart = echarts.init($participantPerDate);
       const option = {
         title: {
-          text: 'Revisiones realizadas por día',
+          text: 'Revisiones y cargas realizadas por día',
           x: 'center',
           textStyle: {
             align: 'center'
@@ -83,24 +83,27 @@ class DashboardGeneralView extends React.Component<IPropsType, IStateType> {
         legend: {
           x: 'center',
           y: 'bottom',
-          data: ['Checkeados', 'Cargados']
+          data: ['Revisiones', 'Cargados']
         },
         xAxis: {
           type: 'category',
           data: categories,
           axisLine: {
             lineStyle: {
-              color: '#9b9b9b',
-              width: 0.5
+              color: 'rgba(0, 0, 0, 0.5)'
             }
+          },
+          axisLabel: {
+            rotate: 45
+            // fontSize: 10
           }
         },
         yAxis: {
+          minInterval: 1,
           type: 'value',
           axisLine: {
             lineStyle: {
-              color: '#9b9b9b',
-              width: 0.5
+              color: 'rgba(0, 0, 0, 0.5)'
             }
           }
         },
@@ -114,66 +117,17 @@ class DashboardGeneralView extends React.Component<IPropsType, IStateType> {
         },
         series: [{
           data: totals,
-          // itemStyle: {
-          //   normal: {
-          //     areaStyle: {
-          //       type: 'default',
-          //       color: '#0081da',
-          //       opacity: 0.4
-          //     }
-          //   }
-          // },
-          // lineStyle: {
-          //   normal: {
-          //     color: '#006faf',
-          //     // opacity: 0.1
-          //   }
-          // },
-          // data: [{
-          //   value: 820,
-          //   name: '2018-06-05',
-          //   itemStyle: {
-          //     color: '#c23531'
-          //   }
-          // }],
-          name: 'Checkeados',
+          name: 'Revisiones',
           type: 'line',
-          smooth: true,
-          itemStyle: {
-            color: '#009cde'
-          }
+          color: '#009cde',
+          smooth: true
         }, {
           data: totalsCars,
-          // itemStyle: {
-          //   normal: {
-          //     areaStyle: {
-          //       type: 'default',
-          //       color: '#0081da',
-          //       opacity: 0.4
-          //     }
-          //   }
-          // },
-          // lineStyle: {
-          //   normal: {
-          //     color: '#006faf',
-          //     // opacity: 0.1
-          //   }
-          // },
-          // data: [{
-          //   value: 820,
-          //   name: '2018-06-05',
-          //   itemStyle: {
-          //     color: '#c23531'
-          //   }
-          // }],
           name: 'Cargados',
           type: 'line',
-          smooth: true,
-          itemStyle: {
-            color: '#6d7a89'
-          }
-        }],
-        color: ['#009cde', '#6d7a89']
+          color: '#6d7a89',
+          smooth: true
+        }]
       };
       this.participantsPerDayChart.setOption(option);
     }
@@ -188,10 +142,49 @@ class DashboardGeneralView extends React.Component<IPropsType, IStateType> {
   }
 
   public render(): React.ReactElement<IPropsType> {
-    const {loading, participantsPerDate} = this.props.dashboard;
+    const {loading, participantsPerDate, carsPerDate} = this.props.dashboard;
     return (
       <AppContainer title="" cMenu="1" cSubMenu="1.1">
         <section className="content">
+          <div className="row">
+            <div className="col-md-3 col-sm-6 col-xs-12">
+              <div className="info-box">
+                <span className="info-box-icon bg-aqua"><i className="fa fa-clipboard"/></span>
+                <div className="info-box-content">
+                  <span className="info-box-text">Revisiones Hoy</span>
+                  <span className="info-box-number">{participantsPerDate.length ? participantsPerDate[participantsPerDate.length - 1 ].total : 0}</span>
+                </div>
+              </div>
+            </div>
+            <div className="col-md-3 col-sm-6 col-xs-12">
+              <div className="info-box">
+                <span className="info-box-icon bg-yellow"><i className="fa fa-check-square"/></span>
+                <div className="info-box-content">
+                  <span className="info-box-text">Cargar Hoy</span>
+                  <span className="info-box-number">{carsPerDate.length ? carsPerDate[carsPerDate.length - 1 ].total : 0}</span>
+                </div>
+              </div>
+            </div>
+            {/*<div className="clearfix visible-sm-block"/>*/}
+            {/*<div className="col-md-3 col-sm-6 col-xs-12">*/}
+              {/*<div className="info-box">*/}
+                {/*<span className="info-box-icon bg-green"><i className="ion ion-ios-cart-outline"/></span>*/}
+                {/*<div className="info-box-content">*/}
+                  {/*<span className="info-box-text">Sales</span>*/}
+                  {/*<span className="info-box-number">760</span>*/}
+                {/*</div>*/}
+              {/*</div>*/}
+            {/*</div>*/}
+            {/*<div className="col-md-3 col-sm-6 col-xs-12">*/}
+              {/*<div className="info-box">*/}
+                {/*<span className="info-box-icon bg-yellow"><i className="ion ion-ios-people-outline"/></span>*/}
+                {/*<div className="info-box-content">*/}
+                  {/*<span className="info-box-text">New Members</span>*/}
+                  {/*<span className="info-box-number">2,000</span>*/}
+                {/*</div>*/}
+              {/*</div>*/}
+            {/*</div>*/}
+          </div>
           <div className="box">
             <div className="box-header with-border"><h3 className="box-title">Dashboard General</h3>
               <div className="box-tools pull-right">

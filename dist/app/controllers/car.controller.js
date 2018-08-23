@@ -131,11 +131,13 @@ class CarController {
             }
         }
         else if (vin2) {
-            vin2 = vin2.replace(/[\W_]+/g, '');
+            // vin2 = vin2.replace(/[\W_]+/g, '');
             try {
                 if (multi === 'true') {
+                    const vinRegex = new RegExp('[a-zA-Z0]' + vin2.substr(vin2.length - 5), 'i');
+                    console.log('vin2', vin2);
                     const car = await car_model_1.default.find({
-                        vin2,
+                        vin2: vin2 && vin2[0] === '0' ? { $regex: vinRegex } : vin2,
                         company
                     }, {
                         vin: true,
@@ -302,7 +304,6 @@ class CarController {
             const cars = [];
             for (let i = 13; i >= 0; i--) {
                 const key = moment().subtract(i, 'd').format('YYYY-MM-DD');
-                console.log('key', key);
                 const existInParticipantPerDay = participantPerDay.find((day) => day._id.toString() === key);
                 const existInImportCarsPerDay = importCarsPerDay.find((day) => day._id.toString() === key);
                 if (!existInParticipantPerDay) {
