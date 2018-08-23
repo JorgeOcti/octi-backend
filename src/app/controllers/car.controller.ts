@@ -272,7 +272,6 @@ class CarController {
             _id: 1
           }
         }]);
-      console.log('participantPerDay', participantPerDay);
 
       const importCarsPerDay = await CarModel
         .aggregate([{
@@ -302,7 +301,6 @@ class CarController {
             }
           }
         }]);
-      console.log('importCarsPerDay', importCarsPerDay);
       // normalize show last 14 days
       const participants = [];
       const cars = [];
