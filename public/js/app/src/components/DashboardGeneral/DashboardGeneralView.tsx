@@ -83,24 +83,27 @@ class DashboardGeneralView extends React.Component<IPropsType, IStateType> {
         legend: {
           x: 'center',
           y: 'bottom',
-          data: ['Checkeados', 'Cargados']
+          data: ['Revisiones', 'Cargados']
         },
         xAxis: {
           type: 'category',
           data: categories,
           axisLine: {
             lineStyle: {
-              color: '#9b9b9b',
-              width: 0.5
+              color: 'rgba(0, 0, 0, 0.5)'
             }
+          },
+          axisLabel: {
+            rotate: 45
+            // fontSize: 10
           }
         },
         yAxis: {
+          minInterval: 1,
           type: 'value',
           axisLine: {
             lineStyle: {
-              color: '#9b9b9b',
-              width: 0.5
+              color: 'rgba(0, 0, 0, 0.5)'
             }
           }
         },
@@ -114,66 +117,17 @@ class DashboardGeneralView extends React.Component<IPropsType, IStateType> {
         },
         series: [{
           data: totals,
-          // itemStyle: {
-          //   normal: {
-          //     areaStyle: {
-          //       type: 'default',
-          //       color: '#0081da',
-          //       opacity: 0.4
-          //     }
-          //   }
-          // },
-          // lineStyle: {
-          //   normal: {
-          //     color: '#006faf',
-          //     // opacity: 0.1
-          //   }
-          // },
-          // data: [{
-          //   value: 820,
-          //   name: '2018-06-05',
-          //   itemStyle: {
-          //     color: '#c23531'
-          //   }
-          // }],
-          name: 'Checkeados',
+          name: 'Revisiones',
           type: 'line',
-          smooth: true,
-          itemStyle: {
-            color: '#009cde'
-          }
+          color: '#009cde',
+          smooth: true
         }, {
           data: totalsCars,
-          // itemStyle: {
-          //   normal: {
-          //     areaStyle: {
-          //       type: 'default',
-          //       color: '#0081da',
-          //       opacity: 0.4
-          //     }
-          //   }
-          // },
-          // lineStyle: {
-          //   normal: {
-          //     color: '#006faf',
-          //     // opacity: 0.1
-          //   }
-          // },
-          // data: [{
-          //   value: 820,
-          //   name: '2018-06-05',
-          //   itemStyle: {
-          //     color: '#c23531'
-          //   }
-          // }],
           name: 'Cargados',
           type: 'line',
-          smooth: true,
-          itemStyle: {
-            color: '#6d7a89'
-          }
-        }],
-        color: ['#009cde', '#6d7a89']
+          color: '#6d7a89',
+          smooth: true
+        }]
       };
       this.participantsPerDayChart.setOption(option);
     }

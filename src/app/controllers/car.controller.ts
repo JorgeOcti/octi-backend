@@ -306,7 +306,6 @@ class CarController {
       const cars = [];
       for (let i = 13; i >= 0; i--) {
         const key = moment().subtract(i, 'd').format('YYYY-MM-DD');
-        console.log('key', key);
         const existInParticipantPerDay = participantPerDay.find((day) => day._id.toString() === key);
         const existInImportCarsPerDay = importCarsPerDay.find((day) => day._id.toString() === key);
         if (!existInParticipantPerDay) {
