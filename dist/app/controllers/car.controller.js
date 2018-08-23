@@ -269,24 +269,65 @@ class CarController {
                         _id: 1
                     }
                 }]);
+            const importCarsPerDay = await car_model_1.default
+                .aggregate([{
+                    $match: {
+                        company,
+                        createdAt: {
+                            $gte: moment().subtract(14, 'd').toDate()
+                        }
+                    }
+                }, {
+                    $project: {
+                        _id: 1, createdAt: {
+                            $subtract: ['$createdAt', 4 * 60 * 60 * 1000]
+                        }
+                    }
+                }, {
+                    $group: {
+                        _id: {
+                            $dateToString: {
+                                format: '%Y-%m-%d',
+                                date: '$createdAt'
+                                // timezone: 'America/Santiago'
+                            }
+                        },
+                        total: {
+                            $sum: 1
+                        }
+                    }
+                }]);
             // normalize show last 14 days
-            const data = [];
-            for (let i = 15; i > 1; i--) {
+            const participants = [];
+            const cars = [];
+            for (let i = 13; i >= 0; i--) {
                 const key = moment().subtract(i, 'd').format('YYYY-MM-DD');
+                console.log('key', key);
                 const existInParticipantPerDay = participantPerDay.find((day) => day._id.toString() === key);
+                const existInImportCarsPerDay = importCarsPerDay.find((day) => day._id.toString() === key);
                 if (!existInParticipantPerDay) {
-                    data.push({
+                    participants.push({
                         _id: key,
                         users: [],
                         total: 0
                     });
                 }
                 else {
-                    data.push(existInParticipantPerDay);
+                    participants.push(existInParticipantPerDay);
+                }
+                if (!existInImportCarsPerDay) {
+                    cars.push({
+                        _id: key,
+                        total: 0
+                    });
+                }
+                else {
+                    cars.push(existInImportCarsPerDay);
                 }
             }
             res.json({
-                data,
+                participants,
+                cars,
                 status: 200
             });
         }
