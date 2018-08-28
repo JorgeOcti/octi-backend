@@ -98,7 +98,8 @@ class FormController {
         data: {
           form,
           scales,
-          extra
+          extra,
+          accessories: []
         },
         status: 200
       });
