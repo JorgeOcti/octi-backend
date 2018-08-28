@@ -65,6 +65,7 @@ export interface IForm {
 
   conciliation: boolean;
   conciliationText: string;
+  conciliationImage: boolean;
 
   sections: mongoose.Types.Array<IFormSectionModel>;
   url?: string;
