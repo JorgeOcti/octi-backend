@@ -65,7 +65,9 @@ class FormController {
         });
       });
 
-      const extra: IAnyObject = {};
+      const extra: IAnyObject = {
+        accessories: []
+      };
       if (form.shipping) {
         extra.shipping = {
           text: form.shippingText,
@@ -98,8 +100,7 @@ class FormController {
         data: {
           form,
           scales,
-          extra,
-          accessories: []
+          extra
         },
         status: 200
       });
@@ -114,7 +115,7 @@ class FormController {
   public async complete(req: IRequest, res: Response) {
     const {id} = req.params;
     let {vin} = req.body;
-    const {answers} = req.body;
+    const {answers, shipping, reception, conciliation} = req.body;
     const company = req.user.company;
 
     // validate answers in body
@@ -141,7 +142,7 @@ class FormController {
         const form = await this.getFormWithScale(id, company);
         if (form) {
           // initialize participant
-          const newParticipant = new ParticipantModel({
+          const participantObject: any = {
             name: form.name,
             company,
             form: form._id,
@@ -149,7 +150,26 @@ class FormController {
             description: form.description,
             user: req.user._id,
             active: form.active
-          });
+          };
+          if (form.reception && reception) {
+            participantObject.reception = reception.answer;
+            if (reception.images) {
+              participantObject.receptionImages = reception.images.map((image: string) => (new ObjectID(image)));
+            }
+          }
+          if (form.shipping && shipping) {
+            participantObject.shipping = shipping.answer;
+            if (shipping.images) {
+              participantObject.shippingImages = shipping.images.map((image: string) => (new ObjectID(image)));
+            }
+          }
+          if (form.conciliation && conciliation) {
+            participantObject.conciliation = conciliation.answer;
+            if (conciliation.images) {
+              participantObject.conciliationImages = conciliation.images.map((image: string) => (new ObjectID(image)));
+            }
+          }
+          const newParticipant = new ParticipantModel(participantObject);
           // var sum sections
           let sumSectionWeigths = 0;
           let sumSectionQualifications = 0;

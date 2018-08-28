@@ -61,7 +61,9 @@ class FormController {
                     }
                 });
             });
-            const extra = {};
+            const extra = {
+                accessories: []
+            };
             if (form.shipping) {
                 extra.shipping = {
                     text: form.shippingText,
@@ -107,7 +109,7 @@ class FormController {
     async complete(req, res) {
         const { id } = req.params;
         let { vin } = req.body;
-        const { answers } = req.body;
+        const { answers, shipping, reception, conciliation } = req.body;
         const company = req.user.company;
         // validate answers in body
         if (!answers) {
@@ -133,7 +135,7 @@ class FormController {
                 const form = await this.getFormWithScale(id, company);
                 if (form) {
                     // initialize participant
-                    const newParticipant = new participant_model_1.default({
+                    const participantObject = {
                         name: form.name,
                         company,
                         form: form._id,
@@ -141,7 +143,26 @@ class FormController {
                         description: form.description,
                         user: req.user._id,
                         active: form.active
-                    });
+                    };
+                    if (form.reception && reception) {
+                        participantObject.reception = reception.answer;
+                        if (reception.images) {
+                            participantObject.receptionImages = reception.images.map((image) => (new bson_1.ObjectID(image)));
+                        }
+                    }
+                    if (form.shipping && shipping) {
+                        participantObject.shipping = shipping.answer;
+                        if (shipping.images) {
+                            participantObject.shippingImages = shipping.images.map((image) => (new bson_1.ObjectID(image)));
+                        }
+                    }
+                    if (form.conciliation && conciliation) {
+                        participantObject.conciliation = conciliation.answer;
+                        if (conciliation.images) {
+                            participantObject.conciliationImages = conciliation.images.map((image) => (new bson_1.ObjectID(image)));
+                        }
+                    }
+                    const newParticipant = new participant_model_1.default(participantObject);
                     // var sum sections
                     let sumSectionWeigths = 0;
                     let sumSectionQualifications = 0;
