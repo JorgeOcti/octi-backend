@@ -124,6 +124,10 @@ const formSchema = new mongoose.Schema({
         type: String,
         default: ''
     },
+    conciliationImage: {
+        type: Boolean,
+        default: false
+    },
     sections: [formSectionsSchema],
     active: {
         type: Boolean,

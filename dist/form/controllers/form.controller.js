@@ -76,7 +76,8 @@ class FormController {
             }
             extra.conciliation = {
                 text: form.conciliationText,
-                require: form.conciliation
+                require: form.conciliation,
+                requireImage: form.conciliationImage
             };
             // delete keys from object returned by api
             const deleteKeys = ['shipping', 'shippingText', 'reception', 'receptionText', 'conciliation'];
