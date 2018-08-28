@@ -135,7 +135,6 @@ class CarController {
             try {
                 if (multi === 'true') {
                     const vinRegex = new RegExp('[a-zA-Z0]' + vin2.substr(vin2.length - 5), 'i');
-                    console.log('vin2', vin2);
                     const car = await car_model_1.default.find({
                         vin2: vin2 && vin2[0] === '0' ? { $regex: vinRegex } : vin2,
                         company
@@ -482,7 +481,19 @@ class CarController {
         if (search && search.length) {
             const searchText = new RegExp(search, 'i');
             // search in vin and brand
-            filter = { $and: [{ $or: [{ vin: { $regex: searchText } }, { brand: { $regex: searchText } }] }, filter] };
+            filter = {
+                $and: [{
+                        $or: [{
+                                vin: {
+                                    $regex: searchText
+                                }
+                            }, {
+                                brand: {
+                                    $regex: searchText
+                                }
+                            }]
+                    }, filter]
+            };
         }
         return new Promise((resolve, reject) => {
             car_model_1.default.paginate(filter, options, (err, result) => {

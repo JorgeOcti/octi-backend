@@ -6,7 +6,7 @@ import {queue} from '../../app';
 import Alert from '../../app/models/alert.model';
 import CarModel from '../../app/models/car.model';
 import UserModel from '../../app/models/user.model';
-import {IRequest} from '../../interfaces/global.interface';
+import {IAnyObject, IRequest} from '../../interfaces/global.interface';
 import {io} from '../../server';
 import redisClient from '../../services/redis.service';
 import FormModel, {IFormModel} from '../models/form.model';
@@ -64,12 +64,40 @@ class FormController {
           }
         });
       });
+
+      const extra: IAnyObject = {};
+      if (form.shipping) {
+        extra.shipping = {
+          text: form.shippingText,
+          requireImage: form.shippingImage
+        };
+      }
+      if (form.reception) {
+        extra.reception = {
+          text: form.receptionText,
+          requireImage: form.receptionImage
+        };
+      }
+      extra.conciliation = {
+        text: form.conciliationText,
+        require: form.conciliation
+      };
+
+      // delete keys from object returned by api
+      const deleteKeys: string[] = ['shipping', 'shippingText', 'reception', 'receptionText', 'conciliation'];
+      deleteKeys.forEach((key: string) => {
+        if (form.hasOwnProperty(key)) {
+          delete (form as any)[key];
+        }
+      });
+
       // get scales from db
       const scales = await this.getScales(scalesIds, company);
       res.json({
         data: {
           form,
-          scales
+          scales,
+          extra
         },
         status: 200
       });

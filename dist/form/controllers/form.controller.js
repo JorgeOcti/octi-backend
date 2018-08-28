@@ -61,12 +61,37 @@ class FormController {
                     }
                 });
             });
+            const extra = {};
+            if (form.shipping) {
+                extra.shipping = {
+                    text: form.shippingText,
+                    requireImage: form.shippingImage
+                };
+            }
+            if (form.reception) {
+                extra.reception = {
+                    text: form.receptionText,
+                    requireImage: form.receptionImage
+                };
+            }
+            extra.conciliation = {
+                text: form.conciliationText,
+                require: form.conciliation
+            };
+            // delete keys from object returned by api
+            const deleteKeys = ['shipping', 'shippingText', 'reception', 'receptionText', 'conciliation'];
+            deleteKeys.forEach((key) => {
+                if (form.hasOwnProperty(key)) {
+                    delete form[key];
+                }
+            });
             // get scales from db
             const scales = await this.getScales(scalesIds, company);
             res.json({
                 data: {
                     form,
-                    scales
+                    scales,
+                    extra
                 },
                 status: 200
             });

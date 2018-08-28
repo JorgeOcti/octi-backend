@@ -484,7 +484,19 @@ class CarController {
     if (search && search.length) {
       const searchText = new RegExp(search, 'i');
       // search in vin and brand
-      filter = {$and: [{$or: [{vin: {$regex: searchText}}, {brand: {$regex: searchText}}]}, filter]};
+      filter = {
+        $and: [{
+          $or: [{
+            vin: {
+              $regex: searchText
+            }
+          }, {
+            brand: {
+              $regex: searchText
+            }
+          }]
+        }, filter]
+      };
     }
 
     return new Promise((resolve, reject) => {

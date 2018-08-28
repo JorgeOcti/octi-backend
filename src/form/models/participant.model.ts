@@ -208,6 +208,32 @@ const participantSchema = new mongoose.Schema({
     type: Number,
     default: 0
   },
+
+  shipping: {
+    type: Boolean,
+    default: false
+  },
+  shippingImages: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'ParticipantFile'
+  }],
+  reception: {
+    type: Boolean,
+    default: false
+  },
+  receptionImages: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'ParticipantFile'
+  }],
+  conciliation: {
+    type: Boolean,
+    default: false
+  },
+  conciliationImages: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'ParticipantFile'
+  }],
+
   active: {
     type: Boolean,
     default: true
