@@ -70,13 +70,13 @@ class DashboardGeneralView extends React.Component<IPropsType, IStateType> {
     if ($participantPerDate && !loading) {
       this.participantsPerDayChart = echarts.init($participantPerDate);
       const option = {
-        title: {
-          text: 'Revisiones y cargas realizadas por día',
-          x: 'center',
-          textStyle: {
-            align: 'center'
-          }
-        },
+        // title: {
+        //   text: 'Revisiones y cargas realizadas por día',
+        //   x: 'center',
+        //   textStyle: {
+        //     align: 'center'
+        //   }
+        // },
         tooltip: {
           trigger: 'axis'
         },
@@ -108,6 +108,7 @@ class DashboardGeneralView extends React.Component<IPropsType, IStateType> {
           }
         },
         grid: {
+          top: 20,
           // left
           x: 30,
           // right
@@ -195,7 +196,7 @@ class DashboardGeneralView extends React.Component<IPropsType, IStateType> {
             {/*</div>*/}
           </div>
           <div className="box">
-            <div className="box-header with-border"><h3 className="box-title">Dashboard General</h3>
+            <div className="box-header with-border"><h3 className="box-title">Revisiones y cargas realizadas por día</h3>
               <div className="box-tools pull-right">
               </div>
             </div>
