@@ -160,7 +160,7 @@ class DashboardGeneralView extends React.Component<IPropsType, IStateType> {
               <div className="info-box">
                 <span className="info-box-icon bg-yellow"><i className="fa fa-check-square"/></span>
                 <div className="info-box-content">
-                  <span className="info-box-text">Cargar Hoy</span>
+                  <span className="info-box-text">Cargados Hoy</span>
                   <span className="info-box-number">{carsPerDate.length ? carsPerDate[carsPerDate.length - 1 ].total : 0}</span>
                 </div>
               </div>
