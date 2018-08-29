@@ -13,6 +13,7 @@ const form_model_1 = require("../models/form.model");
 const participant_model_1 = require("../models/participant.model");
 const participantFile_model_1 = require("../models/participantFile.model");
 const scale_model_1 = require("../models/scale.model");
+// import * as cp from 'console-probe';
 class FormController {
     constructor() {
         this.list = this.list.bind(this);
@@ -183,13 +184,21 @@ class FormController {
                             const choice = question.scale.choices.find((choice) => {
                                 return answer ? choice._id.toString() === answer.value : false;
                             });
+                            // cp.probe(choice);
                             // calculate qualification
                             let qualification = 0;
                             if (choice) {
                                 qualification = (100 / question.scale.maxValue) * choice.value;
                             }
-                            sumQualifications += (qualification * question.weight);
-                            sumWeigths += question.weight;
+                            if (choice && choice.na) {
+                                console.log('-----------------------');
+                                console.log('-choice');
+                                console.log(JSON.stringify(choice));
+                            }
+                            else {
+                                sumQualifications += (qualification * question.weight);
+                                sumWeigths += question.weight;
+                            }
                             // concat allImages
                             if (choice && choice.requireImage && answer && answer.images && answer.images.length) {
                                 allImages = [...answer.images, ...allImages];
@@ -218,6 +227,7 @@ class FormController {
                                 // images: answer.images && answer.images.length ? await ParticipantFile.find({_id: {$in: answer.images}}, {_id:1}) : [],
                                 images: answer && answer.images && answer.images.length ? answer.images.map((image) => (new bson_1.ObjectID(image))) : [],
                                 qualification,
+                                na: !!(choice && choice.na),
                                 weight: question.weight,
                                 order: question.order
                             });

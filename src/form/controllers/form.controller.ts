@@ -13,6 +13,7 @@ import FormModel, {IFormModel} from '../models/form.model';
 import ParticipantModel from '../models/participant.model';
 import ParticipantFile from '../models/participantFile.model';
 import ScaleModel, {IScaleModel} from '../models/scale.model';
+// import * as cp from 'console-probe';
 
 class FormController {
 
@@ -191,14 +192,20 @@ class FormController {
                 return answer ? choice._id.toString() === answer.value : false;
               });
 
+              // cp.probe(choice);
               // calculate qualification
               let qualification = 0;
               if (choice) {
                 qualification = (100 / question.scale.maxValue) * choice.value;
               }
-
-              sumQualifications +=  (qualification * question.weight);
-              sumWeigths += question.weight;
+              if (choice && choice.na) {
+                console.log('-----------------------');
+                console.log('-choice');
+                console.log(JSON.stringify(choice));
+              } else {
+                sumQualifications += (qualification * question.weight);
+                sumWeigths += question.weight;
+              }
 
               // concat allImages
               if (choice && choice.requireImage && answer && answer.images && answer.images.length) {
@@ -230,6 +237,7 @@ class FormController {
                 // images: answer.images && answer.images.length ? await ParticipantFile.find({_id: {$in: answer.images}}, {_id:1}) : [],
                 images: answer && answer.images && answer.images.length ? answer.images.map((image: string) => (new ObjectID(image))) : [],
                 qualification,
+                na: !!(choice && choice.na),
                 weight: question.weight,
                 order: question.order
               });

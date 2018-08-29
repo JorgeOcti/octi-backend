@@ -16,7 +16,7 @@ const dashboardItems = [{
 }, {
   id: '1.2',
   icon: 'fa-circle-o',
-  text: 'Listado de VINs',
+  text: 'Revisiones',
   url: '/cars/'
 }];
 

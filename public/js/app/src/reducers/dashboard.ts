@@ -7,6 +7,7 @@ const initialState: IDashboardState = {
   car: null,
   participantsPerDate: [],
   carsPerDate: [],
+  totalCars: 0,
   loadingParticipant: null,
   pagination: {
     count: 0,
@@ -41,7 +42,8 @@ export function dashboard(state = initialState, action: DashboardReduxAction): I
       return {
         ...state,
         participantsPerDate: action.payload.participantsPerDate,
-        carsPerDate: action.payload.carsPerDate
+        carsPerDate: action.payload.carsPerDate,
+        totalCars: action.payload.totalCars
       };
     case '/DASHBOARD/LOAD_CAR':
       return {

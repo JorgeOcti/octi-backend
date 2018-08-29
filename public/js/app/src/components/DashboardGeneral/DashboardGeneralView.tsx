@@ -142,7 +142,7 @@ class DashboardGeneralView extends React.Component<IPropsType, IStateType> {
   }
 
   public render(): React.ReactElement<IPropsType> {
-    const {loading, participantsPerDate, carsPerDate} = this.props.dashboard;
+    const {loading, participantsPerDate, carsPerDate, totalCars} = this.props.dashboard;
     return (
       <AppContainer title="" cMenu="1" cSubMenu="1.1">
         <section className="content">
@@ -162,6 +162,15 @@ class DashboardGeneralView extends React.Component<IPropsType, IStateType> {
                 <div className="info-box-content">
                   <span className="info-box-text">Cargar Hoy</span>
                   <span className="info-box-number">{carsPerDate.length ? carsPerDate[carsPerDate.length - 1 ].total : 0}</span>
+                </div>
+              </div>
+            </div>
+            <div className="col-md-3 col-sm-6 col-xs-12">
+              <div className="info-box">
+                <span className="info-box-icon bg-green"><i className="fa fa-car"/></span>
+                <div className="info-box-content">
+                  <span className="info-box-text">Total Cargas</span>
+                  <span className="info-box-number">{totalCars}</span>
                 </div>
               </div>
             </div>

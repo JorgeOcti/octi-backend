@@ -57,6 +57,7 @@ export interface IParticipantAnswer {
   images: IParticipantFile[];
   qualification: number;
   comment: string;
+  na: boolean;
 
   risk: string;
   observe: string;

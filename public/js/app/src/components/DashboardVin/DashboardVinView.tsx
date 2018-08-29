@@ -114,7 +114,7 @@ class DashboardVinView extends React.Component<IPropsType, IStateType> {
       <AppContainer title="" cMenu="1" cSubMenu="1.2">
         <section className="content">
           <div className="box">
-            <div className="box-header with-border"><h3 className="box-title">Listado de VINs</h3>
+            <div className="box-header with-border"><h3 className="box-title">Revisiones</h3>
               <div className="box-tools pull-right">
               </div>
             </div>

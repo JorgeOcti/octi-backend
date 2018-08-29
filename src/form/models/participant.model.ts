@@ -123,6 +123,10 @@ const participantAnswersSchema = new mongoose.Schema({
   comment: {
     type: String
   },
+  na: {
+    type: Boolean,
+    default: false
+  },
   qualification: {
     type: Number
   },

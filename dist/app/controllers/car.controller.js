@@ -328,6 +328,7 @@ class CarController {
             res.json({
                 participants,
                 cars,
+                totalCars: await car_model_1.default.count(company),
                 status: 200
             });
         }

@@ -331,6 +331,7 @@ class CarController {
       res.json({
           participants,
           cars,
+          totalCars: await CarModel.count(company),
           status: 200
         });
     } catch (e) {

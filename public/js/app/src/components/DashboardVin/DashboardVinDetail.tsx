@@ -97,7 +97,7 @@ class DashboardVinDetail extends React.Component<IPropsType, IStateType> {
       <AppContainer title="" cMenu="1" cSubMenu="1.2" cAction={`Detalle`}>
         <section className="content">
           <div className="box">
-            <div className="box-header with-border"><h3 className="box-title">Auto VIN {car ? car.vin : null}</h3>
+            <div className="box-header with-border"><h3 className="box-title">Detalle VIN {car ? car.vin : null}</h3>
               <div className="box-tools pull-right">
               </div>
             </div>
@@ -117,6 +117,22 @@ class DashboardVinDetail extends React.Component<IPropsType, IStateType> {
                     <td style={{padding: '5px'}}>
                       {
                         car && car.participants && car.participants[0].user ? `${car.participants[0].user.firstName} ${car.participants[0].user.lastName}` : ''
+                      }
+                    </td>
+                  </tr>
+                <tr>
+                    <td style={{padding: '5px'}}><strong>Marca</strong></td>
+                    <td style={{padding: '5px'}}>
+                      {
+                        car && car.brand ? car.brand : ''
+                      }
+                    </td>
+                  </tr>
+                <tr>
+                    <td style={{padding: '5px'}}><strong>Denominación</strong></td>
+                    <td style={{padding: '5px'}}>
+                      {
+                        car && car.denomination ? car.denomination : ''
                       }
                     </td>
                   </tr>
