@@ -184,16 +184,15 @@ class FormController {
                             const choice = question.scale.choices.find((choice) => {
                                 return answer ? choice._id.toString() === answer.value : false;
                             });
-                            // cp.probe(choice);
                             // calculate qualification
                             let qualification = 0;
                             if (choice) {
                                 qualification = (100 / question.scale.maxValue) * choice.value;
                             }
+                            // no apply
+                            let na = false;
                             if (choice && choice.na) {
-                                console.log('-----------------------');
-                                console.log('-choice');
-                                console.log(JSON.stringify(choice));
+                                na = true;
                             }
                             else {
                                 sumQualifications += (qualification * question.weight);
@@ -227,7 +226,7 @@ class FormController {
                                 // images: answer.images && answer.images.length ? await ParticipantFile.find({_id: {$in: answer.images}}, {_id:1}) : [],
                                 images: answer && answer.images && answer.images.length ? answer.images.map((image) => (new bson_1.ObjectID(image))) : [],
                                 qualification,
-                                na: !!(choice && choice.na),
+                                na,
                                 weight: question.weight,
                                 order: question.order
                             });

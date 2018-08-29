@@ -29,7 +29,7 @@ const server = app.listen(parseInt(app.get('port'), 10) + NODE_APP_INSTANCE, () 
   /* istanbul ignore if */
   if (app.get('env') !== 'testing') {
     console.log(`${logger.colors.magenta}----------------------${logger.colors.reset}`);
-    console.log(`${logger.colors.brighCyan}OSA-ANDES ${logger.colors.white}v1.0.0 ${logger.colors.brighGreen}RELEASE${logger.colors.reset}`);
+    console.log(`${logger.colors.brighCyan}OSA-ANDES ${logger.colors.white}v1.1.2 ${logger.colors.brighGreen}RELEASE${logger.colors.reset}`);
     console.log(`${logger.colors.magenta}----------------------${logger.colors.reset}`);
     console.log(
       'is running at http://localhost:%s in %s mode',

@@ -116,7 +116,7 @@ class DashboardVinDetail extends React.Component<IPropsType, IStateType> {
                     <td style={{padding: '5px'}}><strong>Por</strong></td>
                     <td style={{padding: '5px'}}>
                       {
-                        car && car.participants && car.participants[0].user ? `${car.participants[0].user.firstName} ${car.participants[0].user.lastName}` : ''
+                        car && car.participants && car.participants[0].user ? `${car.participants[0].user.firstName} ${car.participants[0].user.lastName}` : '-'
                       }
                     </td>
                   </tr>
@@ -124,7 +124,7 @@ class DashboardVinDetail extends React.Component<IPropsType, IStateType> {
                     <td style={{padding: '5px'}}><strong>Marca</strong></td>
                     <td style={{padding: '5px'}}>
                       {
-                        car && car.brand ? car.brand : ''
+                        car && car.brand ? car.brand : '-'
                       }
                     </td>
                   </tr>
@@ -132,7 +132,7 @@ class DashboardVinDetail extends React.Component<IPropsType, IStateType> {
                     <td style={{padding: '5px'}}><strong>Denominación</strong></td>
                     <td style={{padding: '5px'}}>
                       {
-                        car && car.denomination ? car.denomination : ''
+                        car && car.denomination ? car.denomination : '-'
                       }
                     </td>
                   </tr>

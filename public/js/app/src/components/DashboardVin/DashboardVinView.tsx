@@ -50,7 +50,7 @@ class DashboardVinView extends React.Component<IPropsType, IStateType> {
 
   public componentWillMount(): void {
     // set the title of the page
-    document.title = 'OSA Andes | Listado de VINs';
+    document.title = 'OSA Andes | Revisiones';
     this.props.getCarsAction();
 
     // socket

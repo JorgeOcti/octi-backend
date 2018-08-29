@@ -71,7 +71,7 @@ class AlertViews extends React.Component<IPropsType, IStateType> {
   public componentWillMount() {
     this.props.getAlertsAction();
     // set the title of the page
-    document.title = 'OSA Andes | Alertas';
+    document.title = 'OSA Andes | Listado de alertas';
   }
 
   public componentWillUnmount() {
