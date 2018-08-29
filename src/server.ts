@@ -50,6 +50,7 @@ io.adapter(socketRedis({
 io.use( async (socket, next) => {
   // validate token to use socket
   const token = socket.handshake.query.token;
+  const msgErrorAuthentication: string = 'authentication error';
   if (token) {
     try {
       const user = await jwt.verify(token, process.env.SECRET_KEY || 'secretKey');
@@ -60,15 +61,15 @@ io.use( async (socket, next) => {
         return next();
       } else {
         socket.disconnect();
-        return next(new Error('authentication error'));
+        return next(new Error(msgErrorAuthentication));
       }
     } catch (e) {
       socket.disconnect();
-      return next(new Error('authentication error'));
+      return next(new Error(msgErrorAuthentication));
     }
   } else {
     socket.disconnect();
-    return next(new Error('authentication error'));
+    return next(new Error(msgErrorAuthentication));
   }
   // console.log('token', token);
   // if (isValid(token)) {

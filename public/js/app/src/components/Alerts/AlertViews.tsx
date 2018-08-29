@@ -95,7 +95,7 @@ class AlertViews extends React.Component<IPropsType, IStateType> {
         <section className="content">
           <div className="box">
             <div className="box-header with-border">
-              <h3 className="box-title">Alertas</h3>
+              <h3 className="box-title">Alertas <small>{alerts.length}</small></h3>
               <div className="pull-right box-tools">
                 <button className="btn btn-sm btn-success" onClick={this.addAlert}>Agregar</button>
               </div>
