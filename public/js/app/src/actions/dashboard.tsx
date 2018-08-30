@@ -213,6 +213,31 @@ export function getParticipant(id: string) {
                   </tr> : null
               }
               {
+                data.receptionText && data.receptionText.length && data.receptionImages.length ?
+                  <tr>
+                    <td style={{width: '40%'}}>
+                    </td>
+                    <td>{
+                      <div className="row special-question images">
+                        {
+                          data.receptionImages.map((image: any) => {
+                            return (
+                              <div className="col-md-2 col-sm-2 col-xs-2 text-center" key={image._id}>
+                                <a href={image.file.url} data-toggle="lightbox" data-gallery={'shipping'}>
+                                  <ImageLazyLoad
+                                    url={image.file.url}
+                                    height={'50px'}
+                                  />
+                                </a>
+                              </div>
+                            );
+                          })
+                        }
+                      </div>
+                    }</td>
+                  </tr> : null
+              }
+              {
                 data.shippingText && data.shippingText.length ?
                   <tr>
                     <td style={{width: '40%'}}>
@@ -222,12 +247,62 @@ export function getParticipant(id: string) {
                   </tr> : null
               }
               {
+                data.shippingText && data.shippingText.length && data.shippingImages.length ?
+                  <tr>
+                    <td style={{width: '40%'}}>
+                    </td>
+                    <td>{
+                      <div className="row special-question images">
+                        {
+                          data.shippingImages.map((image: any) => {
+                            return (
+                              <div className="col-md-2 col-sm-2 col-xs-2 text-center" key={image._id}>
+                                <a href={image.file.url} data-toggle="lightbox" data-gallery={'shipping'}>
+                                  <ImageLazyLoad
+                                    url={image.file.url}
+                                    height={'50px'}
+                                  />
+                                </a>
+                              </div>
+                            );
+                          })
+                        }
+                      </div>
+                    }</td>
+                  </tr> : null
+              }
+              {
                 data.conciliationText && data.conciliationText.length ?
                   <tr>
                     <td style={{width: '40%'}}>
                       <strong>Conciliado</strong>
                     </td>
                     <td>{data.conciliation ? <i className="fa fa-check text-success" /> : <i className="fa fa-close text-danger" />}</td>
+                  </tr> : null
+              }
+              {
+                data.conciliationText && data.conciliationText.length && data.conciliationImages.length ?
+                  <tr>
+                    <td style={{width: '40%'}}>
+                    </td>
+                    <td>{
+                      <div className="row special-question images">
+                        {
+                          data.conciliationImages.map((image: any) => {
+                            return (
+                              <div className="col-md-2 col-sm-2 col-xs-2 text-center" key={image._id}>
+                                <a href={image.file.url} data-toggle="lightbox" data-gallery={'shipping'}>
+                                  <ImageLazyLoad
+                                    url={image.file.url}
+                                    height={'50px'}
+                                  />
+                                </a>
+                              </div>
+                            );
+                          })
+                        }
+                      </div>
+                    }</td>
                   </tr> : null
               }
               </tbody>
