@@ -83,14 +83,14 @@ class FormController {
                     name: 'shipping',
                     choices: [
                         {
-                            _id: true,
+                            _id: 'true',
                             choice: 'Si',
                             requireImage: form.shippingImage,
                             requireComment: false,
                             requireAccesories: false,
                             requireConciliation: false
                         }, {
-                            _id: false,
+                            _id: 'false',
                             choice: 'No',
                             requireImage: false,
                             requireComment: false,
@@ -112,14 +112,14 @@ class FormController {
                     name: 'reception',
                     choices: [
                         {
-                            _id: true,
+                            _id: 'true',
                             choice: 'Si',
                             requireImage: form.receptionImage,
                             requireComment: false,
                             requireAccesories: false,
                             requireConciliation: false
                         }, {
-                            _id: false,
+                            _id: 'false',
                             choice: 'No',
                             requireImage: false,
                             requireComment: false,
@@ -141,14 +141,14 @@ class FormController {
                     name: 'conciliation',
                     choices: [
                         {
-                            _id: true,
+                            _id: 'true',
                             choice: 'Si',
                             requireImage: form.conciliationImage,
                             requireComment: false,
                             requireAccesories: false,
                             requireConciliation: false
                         }, {
-                            _id: false,
+                            _id: 'false',
                             choice: 'No',
                             requireImage: false,
                             requireComment: false,
