@@ -165,11 +165,12 @@ class FormController {
                     delete form[key];
                 }
             });
+            let scales = await this.getScales(scalesIds, company);
+            scales = [...scales, ...extraScales];
             if (extraSection.questions.length) {
                 form.sections = [...form.sections, extraSection];
             }
             // get scales from db
-            const scales = await this.getScales(scalesIds, company);
             res.json({
                 data: {
                     form,
