@@ -223,7 +223,7 @@ export function getParticipant(id: string) {
                           data.receptionImages.map((image: any) => {
                             return (
                               <div className="col-md-2 col-sm-2 col-xs-2 text-center" key={image._id}>
-                                <a href={image.file.url} data-toggle="lightbox" data-gallery={'shipping'}>
+                                <a href={image.file.url} data-toggle="lightbox" data-gallery={'reception'}>
                                   <ImageLazyLoad
                                     url={image.file.url}
                                     height={'50px'}
@@ -291,7 +291,7 @@ export function getParticipant(id: string) {
                           data.conciliationImages.map((image: any) => {
                             return (
                               <div className="col-md-2 col-sm-2 col-xs-2 text-center" key={image._id}>
-                                <a href={image.file.url} data-toggle="lightbox" data-gallery={'shipping'}>
+                                <a href={image.file.url} data-toggle="lightbox" data-gallery={'conciliation'}>
                                   <ImageLazyLoad
                                     url={image.file.url}
                                     height={'50px'}
