@@ -191,7 +191,7 @@ class FormController {
     async complete(req, res) {
         const { id } = req.params;
         let { vin } = req.body;
-        const { answers, shipping, reception, conciliation } = req.body;
+        const { answers } = req.body;
         const company = req.user.company;
         // validate answers in body
         if (!answers) {
@@ -226,20 +226,23 @@ class FormController {
                         user: req.user._id,
                         active: form.active
                     };
-                    if (form.reception && reception) {
-                        participantObject.reception = reception.answer;
+                    if (form.reception && 'reception' in answers) {
+                        const reception = answers.reception;
+                        participantObject.reception = [true, 'true'].includes(reception.value);
                         if (reception.images) {
                             participantObject.receptionImages = reception.images.map((image) => (new bson_1.ObjectID(image)));
                         }
                     }
-                    if (form.shipping && shipping) {
-                        participantObject.shipping = shipping.answer;
+                    if (form.shipping && 'shipping' in answers) {
+                        const shipping = answers.shipping;
+                        participantObject.shipping = [true, 'true'].includes(shipping.value);
                         if (shipping.images) {
                             participantObject.shippingImages = shipping.images.map((image) => (new bson_1.ObjectID(image)));
                         }
                     }
-                    if (form.conciliation && conciliation) {
-                        participantObject.conciliation = conciliation.answer;
+                    if (form.conciliation && 'conciliation' in answers) {
+                        const conciliation = answers.conciliation;
+                        participantObject.conciliation = [true, 'true'].includes(conciliation.value);
                         if (conciliation.images) {
                             participantObject.conciliationImages = conciliation.images.map((image) => (new bson_1.ObjectID(image)));
                         }
