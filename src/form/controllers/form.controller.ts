@@ -237,6 +237,7 @@ class FormController {
           if (form.reception && 'reception' in answers) {
             const reception = answers.reception;
             participantObject.reception = [true, 'true'].includes(reception.value);
+            participantObject.receptionText = form.receptionText;
             if (reception.images) {
               participantObject.receptionImages = reception.images.map((image: string) => (new ObjectID(image)));
             }
@@ -244,6 +245,7 @@ class FormController {
           if (form.shipping && 'shipping' in answers) {
             const shipping = answers.shipping;
             participantObject.shipping = [true, 'true'].includes(shipping.value);
+            participantObject.shippingText = form.shippingText;
             if (shipping.images) {
               participantObject.shippingImages = shipping.images.map((image: string) => (new ObjectID(image)));
             }
@@ -251,6 +253,7 @@ class FormController {
           if (form.conciliation && 'conciliation' in answers) {
             const conciliation = answers.conciliation;
             participantObject.conciliation = [true, 'true'].includes(conciliation.value);
+            participantObject.conciliationText = form.conciliationText;
             if (conciliation.images) {
               participantObject.conciliationImages = conciliation.images.map((image: string) => (new ObjectID(image)));
             }

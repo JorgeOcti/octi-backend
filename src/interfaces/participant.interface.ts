@@ -94,10 +94,13 @@ export interface IParticipant {
   qualification: number;
 
   shipping: boolean;
+  shippingText: string;
   shippingImages: IParticipantFile[];
+  receptionText: string;
   reception: boolean;
   receptionImages: IParticipantFile[];
   conciliation: boolean;
+  conciliationText: string;
   conciliationImages: IParticipantFile[];
 
   active: boolean;

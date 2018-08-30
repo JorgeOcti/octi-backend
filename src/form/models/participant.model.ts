@@ -217,6 +217,10 @@ const participantSchema = new mongoose.Schema({
     type: Boolean,
     default: false
   },
+  shippingText: {
+    type: String,
+    default: ''
+  },
   shippingImages: [{
     type: mongoose.Schema.Types.ObjectId,
     ref: 'ParticipantFile'
@@ -225,6 +229,10 @@ const participantSchema = new mongoose.Schema({
     type: Boolean,
     default: false
   },
+  receptionText: {
+    type: String,
+    default: ''
+  },
   receptionImages: [{
     type: mongoose.Schema.Types.ObjectId,
     ref: 'ParticipantFile'
@@ -232,6 +240,10 @@ const participantSchema = new mongoose.Schema({
   conciliation: {
     type: Boolean,
     default: false
+  },
+  conciliationText: {
+    type: String,
+    default: ''
   },
   conciliationImages: [{
     type: mongoose.Schema.Types.ObjectId,
