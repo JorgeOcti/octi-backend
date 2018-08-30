@@ -353,6 +353,15 @@ class CarController {
           user: true,
           sections: true,
           qualification: true,
+          shipping: true,
+          shippingText: true,
+          shippingImages: true,
+          reception: true,
+          receptionText: true,
+          receptionImages: true,
+          conciliation: true,
+          conciliationText: true,
+          conciliationImages: true,
           createdAt: true
         })
         .populate([{
@@ -360,6 +369,12 @@ class CarController {
           select: ['firstName', 'lastName']
         }, {
           path: 'sections.answers.images'
+        }, {
+          path: 'shippingImages'
+        }, {
+          path: 'receptionImages'
+        }, {
+          path: 'conciliationImages'
         }]);
       // validate exist participant
       if (!participant) {
