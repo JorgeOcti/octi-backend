@@ -89,6 +89,7 @@ class FormController {
             {
               _id: 'true',
               choice: 'Si',
+              backgroundColor: 'green',
               requireImage: form.shippingImage,
               requireComment: false,
               requireAccesories: false,
@@ -96,6 +97,7 @@ class FormController {
             }, {
               _id: 'false',
               choice: 'No',
+              backgroundColor: 'red',
               requireImage: false,
               requireComment: false,
               requireAccesories: false,
@@ -118,6 +120,7 @@ class FormController {
             {
               _id: 'true',
               choice: 'Si',
+              backgroundColor: 'green',
               requireImage: form.receptionImage,
               requireComment: false,
               requireAccesories: false,
@@ -125,6 +128,7 @@ class FormController {
             }, {
               _id: 'false',
               choice: 'No',
+              backgroundColor: 'red',
               requireImage: false,
               requireComment: false,
               requireAccesories: false,
@@ -147,6 +151,7 @@ class FormController {
             {
               _id: 'true',
               choice: 'Si',
+              backgroundColor: 'green',
               requireImage: form.conciliationImage,
               requireComment: false,
               requireAccesories: false,
@@ -154,6 +159,7 @@ class FormController {
             }, {
               _id: 'false',
               choice: 'No',
+              backgroundColor: 'red',
               requireImage: false,
               requireComment: false,
               requireAccesories: false,
