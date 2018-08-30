@@ -65,30 +65,109 @@ class FormController {
             const extra = {
                 accessories: []
             };
+            const extraSection = {
+                name: '',
+                questions: [],
+                order: form.sections.length + 1
+            };
+            const extraScales = [];
             if (form.shipping) {
-                extra.shipping = {
-                    text: form.shippingText,
-                    requireImage: form.shippingImage
-                };
+                extraSection.questions.push({
+                    _id: 'shipping',
+                    question: form.shippingText,
+                    scale: 'shipping',
+                    conciliation: false
+                });
+                extraScales.push({
+                    _id: 'shipping',
+                    name: 'shipping',
+                    choices: [
+                        {
+                            _id: true,
+                            choice: 'Si',
+                            requireImage: form.shippingImage,
+                            requireComment: false,
+                            requireAccesories: false,
+                            requireConciliation: false
+                        }, {
+                            _id: false,
+                            choice: 'No',
+                            requireImage: false,
+                            requireComment: false,
+                            requireAccesories: false,
+                            requireConciliation: false
+                        }
+                    ]
+                });
             }
             if (form.reception) {
-                extra.reception = {
-                    text: form.receptionText,
-                    requireImage: form.receptionImage
-                };
+                extraSection.questions.push({
+                    _id: 'reception',
+                    question: form.receptionText,
+                    scale: 'reception',
+                    conciliation: false
+                });
+                extraScales.push({
+                    _id: 'reception',
+                    name: 'reception',
+                    choices: [
+                        {
+                            _id: true,
+                            choice: 'Si',
+                            requireImage: form.receptionImage,
+                            requireComment: false,
+                            requireAccesories: false,
+                            requireConciliation: false
+                        }, {
+                            _id: false,
+                            choice: 'No',
+                            requireImage: false,
+                            requireComment: false,
+                            requireAccesories: false,
+                            requireConciliation: false
+                        }
+                    ]
+                });
             }
-            extra.conciliation = {
-                text: form.conciliationText,
-                require: form.conciliation,
-                requireImage: form.conciliationImage
-            };
+            if (form.conciliation) {
+                extraSection.questions.push({
+                    _id: 'conciliation',
+                    question: form.conciliationText,
+                    scale: 'conciliation',
+                    conciliation: true
+                });
+                extraScales.push({
+                    _id: 'conciliation',
+                    name: 'conciliation',
+                    choices: [
+                        {
+                            _id: true,
+                            choice: 'Si',
+                            requireImage: form.conciliationImage,
+                            requireComment: false,
+                            requireAccesories: false,
+                            requireConciliation: false
+                        }, {
+                            _id: false,
+                            choice: 'No',
+                            requireImage: false,
+                            requireComment: false,
+                            requireAccesories: false,
+                            requireConciliation: false
+                        }
+                    ]
+                });
+            }
             // delete keys from object returned by api
-            const deleteKeys = ['shipping', 'shippingText', 'reception', 'receptionText', 'conciliation'];
+            const deleteKeys = ['shipping', 'shippingText', 'shippingImage', 'reception', 'receptionText', 'receptionImage', 'conciliation', 'conciliationText', 'conciliationImage'];
             deleteKeys.forEach((key) => {
                 if (form.hasOwnProperty(key)) {
                     delete form[key];
                 }
             });
+            if (extraSection.questions.length) {
+                form.sections = [...form.sections, extraSection];
+            }
             // get scales from db
             const scales = await this.getScales(scalesIds, company);
             res.json({
@@ -101,6 +180,7 @@ class FormController {
             });
         }
         catch (e) {
+            console.log('e', e);
             res.status(400).json({
                 message: 'No se encontro formularío',
                 status: 400
