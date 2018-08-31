@@ -94,16 +94,16 @@ class CarController {
     };
 
     /*
-    {
-      $group: {
-        _id: {
-          vin: {
-            $substr: ["$vin", 0, 3]
-          },
-          brand: "$brand"
+      {
+        $group: {
+          _id: {
+            vin: {
+              $substr: ["$vin", 0, 3]
+            },
+            brand: "$brand"
+          }
         }
       }
-    }
     */
 
     if (vin) {

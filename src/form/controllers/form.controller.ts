@@ -88,21 +88,23 @@ class FormController {
           name: 'shipping',
           choices: [
             {
-              _id: 'true',
-              choice: 'Si',
-              backgroundColor: 'green',
-              requireImage: form.shippingImage,
-              requireComment: false,
-              requireAccesories: false,
-              requireConciliation: false
-            }, {
               _id: 'false',
               choice: 'No',
               backgroundColor: 'red',
               requireImage: false,
               requireComment: false,
               requireAccesories: false,
-              requireConciliation: false
+              requireConciliation: false,
+              order: 0
+            }, {
+              _id: 'true',
+              choice: 'Si',
+              backgroundColor: 'green',
+              requireImage: form.shippingImage,
+              requireComment: false,
+              requireAccesories: false,
+              requireConciliation: false,
+              order: 1
             }
           ]
         });
@@ -119,21 +121,23 @@ class FormController {
           name: 'reception',
           choices: [
             {
-              _id: 'true',
-              choice: 'Si',
-              backgroundColor: 'green',
-              requireImage: form.receptionImage,
-              requireComment: false,
-              requireAccesories: false,
-              requireConciliation: false
-            }, {
               _id: 'false',
               choice: 'No',
               backgroundColor: 'red',
               requireImage: false,
               requireComment: false,
               requireAccesories: false,
-              requireConciliation: false
+              requireConciliation: false,
+              order: 0
+            }, {
+              _id: 'true',
+              choice: 'Si',
+              backgroundColor: 'green',
+              requireImage: form.receptionImage,
+              requireComment: false,
+              requireAccesories: false,
+              requireConciliation: false,
+              order: 1
             }
           ]
         });
@@ -150,21 +154,23 @@ class FormController {
           name: 'conciliation',
           choices: [
             {
-              _id: 'true',
-              choice: 'Si',
-              backgroundColor: 'green',
-              requireImage: form.conciliationImage,
-              requireComment: false,
-              requireAccesories: false,
-              requireConciliation: false
-            }, {
               _id: 'false',
               choice: 'No',
               backgroundColor: 'red',
               requireImage: false,
               requireComment: false,
               requireAccesories: false,
-              requireConciliation: false
+              requireConciliation: false,
+              order: 0
+            }, {
+              _id: 'true',
+              choice: 'Si',
+              backgroundColor: 'green',
+              requireImage: form.conciliationImage,
+              requireComment: false,
+              requireAccesories: false,
+              requireConciliation: false,
+              order: 1
             }
           ]
         });

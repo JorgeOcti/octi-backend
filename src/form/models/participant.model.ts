@@ -8,6 +8,7 @@ import {
   IParticipantScale,
   IParticipantSection
 } from '../../interfaces/participant.interface';
+import {choiceBackgroundColors} from './scale.model';
 
 export interface IParticipantChoicesModel extends IParticipantChoices, mongoose.Types.Subdocument {}
 const participantChoiceSchema = new mongoose.Schema({
@@ -22,6 +23,7 @@ const participantChoiceSchema = new mongoose.Schema({
   },
   backgroundColor: {
     type: String,
+    enum: choiceBackgroundColors,
     default: 'blue'
   },
   requireImage: {
@@ -258,7 +260,7 @@ const participantSchema = new mongoose.Schema({
   timestamps: true
 });
 
-participantSchema.index({ form: 1, user: 1 });
+participantSchema.index({form: 1, user: 1 });
 
 const Participant = mongoose.model<IParticipantModel>('Participant', participantSchema);
 

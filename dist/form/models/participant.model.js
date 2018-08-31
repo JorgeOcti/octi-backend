@@ -1,6 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 const mongoose = require("mongoose");
+const scale_model_1 = require("./scale.model");
 const participantChoiceSchema = new mongoose.Schema({
     choice: {
         type: String,
@@ -13,6 +14,7 @@ const participantChoiceSchema = new mongoose.Schema({
     },
     backgroundColor: {
         type: String,
+        enum: scale_model_1.choiceBackgroundColors,
         default: 'blue'
     },
     requireImage: {
