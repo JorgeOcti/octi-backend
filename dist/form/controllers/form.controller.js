@@ -66,6 +66,7 @@ class FormController {
                 accessories: []
             };
             const extraSection = {
+                _id: '',
                 name: '',
                 questions: [],
                 order: form.sections.length + 1

@@ -153,7 +153,9 @@ class DashboardGeneralView extends React.Component<IPropsType, IStateType> {
                 <span className="info-box-icon bg-aqua"><i className="fa fa-clipboard"/></span>
                 <div className="info-box-content">
                   <span className="info-box-text">Revisiones Hoy</span>
-                  <span className="info-box-number">{participantsPerDate.length ? participantsPerDate[participantsPerDate.length - 1 ].total : 0}</span>
+                  <span className="info-box-number">
+                    {participantsPerDate.length ? participantsPerDate[participantsPerDate.length - 1 ].total : 0}
+                  </span>
                 </div>
               </div>
             </div>

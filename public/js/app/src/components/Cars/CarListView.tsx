@@ -75,7 +75,10 @@ class CarListView extends React.Component<IPropsType, IStateType> {
       <AppContainer title="" cMenu="2" cSubMenu="2.2" cAction="Listado">
         <section className="content">
           <div className="box">
-            <div className="box-header with-border"><h3 className="box-title">Autos <small>{pagination.count}</small></h3>
+            <div className="box-header with-border">
+              <h3 className="box-title">
+                Autos <small>{pagination.count}</small>
+              </h3>
               <div className="box-tools">
                 <div className="form-inline">
                   {
@@ -87,10 +90,11 @@ class CarListView extends React.Component<IPropsType, IStateType> {
                       >Importar</button> : null
                   }
                   <div className="input-group input-group-sm" style={{width: '200px'}}>
-                    <input type="text" className="form-control pull-right"
-                           // onChange={debounce(300, this.onChangeSearch)}
-                           onChange={this.onChangeSearch}
-                           placeholder="Buscar"/>
+                    <input
+                      type="text"
+                      className="form-control pull-right"
+                      onChange={this.onChangeSearch}
+                      placeholder="Buscar" />
                     <div className="input-group-btn">
                       <button className="btn btn-default"><i className="fa fa-search"/></button>
                     </div>
@@ -107,7 +111,6 @@ class CarListView extends React.Component<IPropsType, IStateType> {
                     <th style={{width: '20%'}} className="hidden-xs">Denominación</th>
                     <th style={{width: '20%'}} className="hidden-xs">Color</th>
                     <th style={{width: '20%'}} className="hidden-xs">Creado</th>
-                    {/*<th className="width-10" />*/}
                     {/*<th className="width-10" />*/}
                   </tr>
                 </thead>
@@ -126,8 +129,6 @@ class CarListView extends React.Component<IPropsType, IStateType> {
                           <td className="hidden-xs text-ellipsis">{car.denomination}</td>
                           <td className="hidden-xs text-ellipsis">{car.color}</td>
                           <td className="hidden-xs text-ellipsis">{moment(car.createdAt).format('LLL')}</td>
-                          {/*<td className="text-blue pointer" onClick={() => this.editUser(user)}><i className="fa fa-pencil"/></td>*/}
-                          {/*<td className="text-red pointer" onClick={undefined}><i className="fa fa-minus-circle"/></td>*/}
                         </tr>
                       );
                     })
