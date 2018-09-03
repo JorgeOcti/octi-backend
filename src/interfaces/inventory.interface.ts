@@ -1,9 +1,18 @@
+import {IInventoryCarModel} from '../inventory/models/inventory.model';
 import {ICar} from './car.interface';
 import {ICompany} from './company.interface';
+import {IVenue} from './venue.interface';
+
+export interface IInventoryCar {
+  car: ICar;
+  venue: IVenue;
+  status: string;
+}
 
 export interface IInventory {
   name: string;
   company: ICompany;
-  cars: ICar[];
-  carsFound: ICar[];
+  venues: IVenue[];
+  cars: IInventoryCarModel[];
+  status: string;
 }

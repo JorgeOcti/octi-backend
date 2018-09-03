@@ -39,7 +39,7 @@ if (hasPermission(window.user, 'viewInventory')) {
   inventoryItems.push({
     id: '2.1',
     icon: 'fa-circle-o',
-    text: 'Administración',
+    text: 'Gestión',
     url: '/inventory/'
   });
 }

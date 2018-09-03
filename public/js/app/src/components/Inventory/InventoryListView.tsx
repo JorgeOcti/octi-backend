@@ -59,14 +59,14 @@ class InventoryListView extends React.Component<IPropsType, IStateType> {
     return (
       <AppContainer title="" cMenu="2" cSubMenu="2.1">
         <section className="content">
-          {/*<div className="box">*/}
-            {/*<div className="box-header with-border">*/}
-              {/*<h3 className="box-title">Alertas <small>{alerts.length}</small></h3>*/}
-              {/*<div className="pull-right box-tools">*/}
-                {/*<button className="btn btn-sm btn-success" onClick={this.addAlert}>Agregar</button>*/}
-              {/*</div>*/}
-            {/*</div>*/}
-            {/*<div className="box-body">*/}
+          <div className="box">
+            <div className="box-header with-border">
+              <h3 className="box-title">Gestión</h3>
+              <div className="pull-right box-tools">
+                <button className="btn btn-sm btn-success">Nuevo</button>
+              </div>
+            </div>
+            <div className="box-body">
               {/*<table className="table table-striped">*/}
                 {/*<thead>*/}
                   {/*<tr>*/}
@@ -106,14 +106,14 @@ class InventoryListView extends React.Component<IPropsType, IStateType> {
                 {/*}*/}
                 {/*</tbody>*/}
               {/*</table>*/}
-            {/*</div>*/}
+            </div>
             {/*{*/}
               {/*loading &&*/}
                 {/*<div className="overlay">*/}
                   {/*<i className="fa fa-spinner fa-spin text-purple"/>*/}
                 {/*</div>*/}
             {/*}*/}
-          {/*</div>*/}
+          </div>
           {/*<ModalView />*/}
         </section>
       </AppContainer>

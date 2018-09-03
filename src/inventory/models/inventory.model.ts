@@ -1,9 +1,26 @@
 import * as mongoose from 'mongoose';
-import {IInventory} from '../../interfaces/inventory.interface';
+import {IInventory, IInventoryCar} from '../../interfaces/inventory.interface';
+
+export interface IInventoryCarModel extends IInventoryCar, mongoose.Types.Subdocument {}
+export const choicesStatusCarInventory = ['notFound', 'found'];
+const inventoryCarSchema = new mongoose.Schema({
+  car: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Car'
+  },
+  venue: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Venue'
+  },
+  status: {
+    type: String,
+    enum: choicesStatusCarInventory,
+    default: 'notFound'
+  }
+});
 
 export interface IInventoryModel extends IInventory, mongoose.Document {}
-
-export const choiceStatusInventory = ['pending', 'in_process', 'finalized'];
+export const choicesStatusInventory = ['pending', 'in_process', 'finalized'];
 const inventorySchema = new mongoose.Schema({
   name: {
     type: String
@@ -13,17 +30,14 @@ const inventorySchema = new mongoose.Schema({
     ref: 'Company',
     required: true
   },
-  cars: [{
+  cars: [inventoryCarSchema],
+  venues: [{
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'Car'
-  }],
-  carsFound: [{
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'Car'
+    ref: 'Venue'
   }],
   status: {
     type: String,
-    enum: choiceStatusInventory,
+    enum: choicesStatusInventory,
     default: 'pending'
   }
 }, {
