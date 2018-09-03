@@ -95,7 +95,7 @@ class FormController {
               requireComment: false,
               requireAccesories: false,
               requireConciliation: false,
-              order: 0
+              order: 1
             }, {
               _id: 'true',
               choice: 'Si',
@@ -104,7 +104,7 @@ class FormController {
               requireComment: false,
               requireAccesories: false,
               requireConciliation: false,
-              order: 1
+              order: 2
             }
           ]
         });
@@ -128,7 +128,7 @@ class FormController {
               requireComment: false,
               requireAccesories: false,
               requireConciliation: false,
-              order: 0
+              order: 1
             }, {
               _id: 'true',
               choice: 'Si',
@@ -137,7 +137,7 @@ class FormController {
               requireComment: false,
               requireAccesories: false,
               requireConciliation: false,
-              order: 1
+              order: 2
             }
           ]
         });
@@ -161,7 +161,7 @@ class FormController {
               requireComment: false,
               requireAccesories: false,
               requireConciliation: false,
-              order: 0
+              order: 1
             }, {
               _id: 'true',
               choice: 'Si',
@@ -170,7 +170,7 @@ class FormController {
               requireComment: false,
               requireAccesories: false,
               requireConciliation: false,
-              order: 1
+              order: 2
             }
           ]
         });

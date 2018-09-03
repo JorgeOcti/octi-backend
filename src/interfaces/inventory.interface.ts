@@ -5,4 +5,5 @@ export interface IInventory {
   name: string;
   company: ICompany;
   cars: ICar[];
+  carsFound: ICar[];
 }

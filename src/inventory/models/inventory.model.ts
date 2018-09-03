@@ -17,6 +17,10 @@ const inventorySchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Car'
   }],
+  carsFound: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Car'
+  }],
   status: {
     type: String,
     enum: choiceStatusInventory,

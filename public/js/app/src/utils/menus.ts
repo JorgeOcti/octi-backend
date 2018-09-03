@@ -5,9 +5,9 @@ declare let window: IWindow;
 
 const menus: any[] = [];
 
-/* ********
-* Dashboard
-***********/
+/* *****************
+* 1. Dashboard
+*****************/
 const dashboardItems = [{
   id: '1.1',
   icon: 'fa-circle-o',
@@ -30,11 +30,35 @@ if (dashboardItems.length) {
   });
 }
 
-/* ********
-* Settings
-***********/
+/* *****************
+* 1. Inventory
+*****************/
+const inventoryItems = [];
+
+if (hasPermission(window.user, 'viewInventory')) {
+  inventoryItems.push({
+    id: '2.1',
+    icon: 'fa-circle-o',
+    text: 'Administración',
+    url: '/inventory/'
+  });
+}
+
+if (inventoryItems.length) {
+  menus.push({
+    id: '2',
+    text: 'Inventario',
+    icon: 'fa-navicon',
+    url: '/inventory/',
+    items: inventoryItems
+  });
+}
+
+/* *****************
+* 10. Settings
+*****************/
 const settingItems = [{
-  id: '2.1',
+  id: '10.1',
   icon: 'fa-circle-o',
   text: 'Alertas',
   url: '/settings/alerts/'
@@ -42,7 +66,7 @@ const settingItems = [{
 
 if (hasPermission(window.user, 'viewCar')) {
   settingItems.push({
-    id: '2.2',
+    id: '10.2',
     icon: 'fa-circle-o',
     text: 'Autos',
     url: '/settings/cars/'
@@ -50,7 +74,7 @@ if (hasPermission(window.user, 'viewCar')) {
 }
 if (hasPermission(window.user, 'viewUser')) {
   settingItems.push({
-    id: '2.3',
+    id: '10.3',
     icon: 'fa-circle-o',
     text: 'Usuarios',
     url: '/settings/users/'
@@ -59,7 +83,7 @@ if (hasPermission(window.user, 'viewUser')) {
 
 if (settingItems.length) {
   menus.push({
-    id: '2',
+    id: '10',
     text: 'Settings',
     icon: 'fa-cog',
     url: '/settings/users/',
