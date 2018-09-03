@@ -94,16 +94,16 @@ class CarController {
     };
 
     /*
-    {
-      $group: {
-        _id: {
-          vin: {
-            $substr: ["$vin", 0, 3]
-          },
-          brand: "$brand"
+      {
+        $group: {
+          _id: {
+            vin: {
+              $substr: ["$vin", 0, 3]
+            },
+            brand: "$brand"
+          }
         }
       }
-    }
     */
 
     if (vin) {
@@ -329,10 +329,11 @@ class CarController {
       }
 
       res.json({
-          participants,
-          cars,
-          status: 200
-        });
+        participants,
+        cars,
+        totalCars: await CarModel.count({company}),
+        status: 200
+      });
     } catch (e) {
       if (e) {
         res.status(500).json(e);
@@ -352,6 +353,15 @@ class CarController {
           user: true,
           sections: true,
           qualification: true,
+          shipping: true,
+          shippingText: true,
+          shippingImages: true,
+          reception: true,
+          receptionText: true,
+          receptionImages: true,
+          conciliation: true,
+          conciliationText: true,
+          conciliationImages: true,
           createdAt: true
         })
         .populate([{
@@ -359,6 +369,12 @@ class CarController {
           select: ['firstName', 'lastName']
         }, {
           path: 'sections.answers.images'
+        }, {
+          path: 'shippingImages'
+        }, {
+          path: 'receptionImages'
+        }, {
+          path: 'conciliationImages'
         }]);
       // validate exist participant
       if (!participant) {
@@ -484,7 +500,19 @@ class CarController {
     if (search && search.length) {
       const searchText = new RegExp(search, 'i');
       // search in vin and brand
-      filter = {$and: [{$or: [{vin: {$regex: searchText}}, {brand: {$regex: searchText}}]}, filter]};
+      filter = {
+        $and: [{
+          $or: [{
+            vin: {
+              $regex: searchText
+            }
+          }, {
+            brand: {
+              $regex: searchText
+            }
+          }]
+        }, filter]
+      };
     }
 
     return new Promise((resolve, reject) => {

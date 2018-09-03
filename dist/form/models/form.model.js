@@ -92,6 +92,42 @@ const formSchema = new mongoose.Schema({
         type: String,
         trim: true
     },
+    shipping: {
+        type: Boolean,
+        default: false
+    },
+    shippingText: {
+        type: String,
+        default: ''
+    },
+    shippingImage: {
+        type: Boolean,
+        default: false
+    },
+    reception: {
+        type: Boolean,
+        default: false
+    },
+    receptionText: {
+        type: String,
+        default: ''
+    },
+    receptionImage: {
+        type: Boolean,
+        default: false
+    },
+    conciliation: {
+        type: Boolean,
+        default: false
+    },
+    conciliationText: {
+        type: String,
+        default: ''
+    },
+    conciliationImage: {
+        type: Boolean,
+        default: false
+    },
     sections: [formSectionsSchema],
     active: {
         type: Boolean,

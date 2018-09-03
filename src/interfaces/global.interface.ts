@@ -31,3 +31,7 @@ export interface IResponsePaginateData<S> {
 export interface IRequest extends Request {
   user: IUserModel;
 }
+
+export interface IAnyObject {
+  [key: string]: any;
+}

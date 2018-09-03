@@ -86,16 +86,16 @@ class CarController {
             'LGW': 'GREAT WALL'
         };
         /*
-        {
-          $group: {
-            _id: {
-              vin: {
-                $substr: ["$vin", 0, 3]
-              },
-              brand: "$brand"
+          {
+            $group: {
+              _id: {
+                vin: {
+                  $substr: ["$vin", 0, 3]
+                },
+                brand: "$brand"
+              }
             }
           }
-        }
         */
         if (vin) {
             vin = vin.replace(/[\W_]+/g, '');
@@ -135,7 +135,6 @@ class CarController {
             try {
                 if (multi === 'true') {
                     const vinRegex = new RegExp('[a-zA-Z0]' + vin2.substr(vin2.length - 5), 'i');
-                    console.log('vin2', vin2);
                     const car = await car_model_1.default.find({
                         vin2: vin2 && vin2[0] === '0' ? { $regex: vinRegex } : vin2,
                         company
@@ -329,6 +328,7 @@ class CarController {
             res.json({
                 participants,
                 cars,
+                totalCars: await car_model_1.default.count({ company }),
                 status: 200
             });
         }
@@ -350,6 +350,15 @@ class CarController {
                 user: true,
                 sections: true,
                 qualification: true,
+                shipping: true,
+                shippingText: true,
+                shippingImages: true,
+                reception: true,
+                receptionText: true,
+                receptionImages: true,
+                conciliation: true,
+                conciliationText: true,
+                conciliationImages: true,
                 createdAt: true
             })
                 .populate([{
@@ -357,6 +366,12 @@ class CarController {
                     select: ['firstName', 'lastName']
                 }, {
                     path: 'sections.answers.images'
+                }, {
+                    path: 'shippingImages'
+                }, {
+                    path: 'receptionImages'
+                }, {
+                    path: 'conciliationImages'
                 }]);
             // validate exist participant
             if (!participant) {
@@ -482,7 +497,19 @@ class CarController {
         if (search && search.length) {
             const searchText = new RegExp(search, 'i');
             // search in vin and brand
-            filter = { $and: [{ $or: [{ vin: { $regex: searchText } }, { brand: { $regex: searchText } }] }, filter] };
+            filter = {
+                $and: [{
+                        $or: [{
+                                vin: {
+                                    $regex: searchText
+                                }
+                            }, {
+                                brand: {
+                                    $regex: searchText
+                                }
+                            }]
+                    }, filter]
+            };
         }
         return new Promise((resolve, reject) => {
             car_model_1.default.paginate(filter, options, (err, result) => {

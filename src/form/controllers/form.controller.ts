@@ -6,13 +6,14 @@ import {queue} from '../../app';
 import Alert from '../../app/models/alert.model';
 import CarModel from '../../app/models/car.model';
 import UserModel from '../../app/models/user.model';
-import {IRequest} from '../../interfaces/global.interface';
+import {IAnyObject, IRequest} from '../../interfaces/global.interface';
 import {io} from '../../server';
 import redisClient from '../../services/redis.service';
 import FormModel, {IFormModel} from '../models/form.model';
 import ParticipantModel from '../models/participant.model';
 import ParticipantFile from '../models/participantFile.model';
 import ScaleModel, {IScaleModel} from '../models/scale.model';
+// import * as cp from 'console-probe';
 
 class FormController {
 
@@ -64,16 +65,142 @@ class FormController {
           }
         });
       });
+
+      const extra: IAnyObject = {
+        accessories: []
+      };
+      const extraSection: any = {
+        _id: '',
+        name: '',
+        questions: [],
+        order: form.sections.length + 1
+      };
+      const extraScales: any = [];
+      if (form.shipping) {
+        extraSection.questions.push({
+          _id: 'shipping',
+          question: form.shippingText,
+          scale: 'shipping',
+          conciliation: false
+        });
+        extraScales.push({
+          _id: 'shipping',
+          name: 'shipping',
+          choices: [
+            {
+              _id: 'false',
+              choice: 'No',
+              backgroundColor: 'red',
+              requireImage: false,
+              requireComment: false,
+              requireAccesories: false,
+              requireConciliation: false,
+              order: 0
+            }, {
+              _id: 'true',
+              choice: 'Si',
+              backgroundColor: 'green',
+              requireImage: form.shippingImage,
+              requireComment: false,
+              requireAccesories: false,
+              requireConciliation: false,
+              order: 1
+            }
+          ]
+        });
+      }
+      if (form.reception) {
+        extraSection.questions.push({
+          _id: 'reception',
+          question: form.receptionText,
+          scale: 'reception',
+          conciliation: false
+        });
+        extraScales.push({
+          _id: 'reception',
+          name: 'reception',
+          choices: [
+            {
+              _id: 'false',
+              choice: 'No',
+              backgroundColor: 'red',
+              requireImage: false,
+              requireComment: false,
+              requireAccesories: false,
+              requireConciliation: false,
+              order: 0
+            }, {
+              _id: 'true',
+              choice: 'Si',
+              backgroundColor: 'green',
+              requireImage: form.receptionImage,
+              requireComment: false,
+              requireAccesories: false,
+              requireConciliation: false,
+              order: 1
+            }
+          ]
+        });
+      }
+      if (form.conciliation) {
+        extraSection.questions.push({
+          _id: 'conciliation',
+          question: form.conciliationText,
+          scale: 'conciliation',
+          conciliation: true
+        });
+        extraScales.push({
+          _id: 'conciliation',
+          name: 'conciliation',
+          choices: [
+            {
+              _id: 'false',
+              choice: 'No',
+              backgroundColor: 'red',
+              requireImage: false,
+              requireComment: false,
+              requireAccesories: false,
+              requireConciliation: false,
+              order: 0
+            }, {
+              _id: 'true',
+              choice: 'Si',
+              backgroundColor: 'green',
+              requireImage: form.conciliationImage,
+              requireComment: false,
+              requireAccesories: false,
+              requireConciliation: false,
+              order: 1
+            }
+          ]
+        });
+      }
+
+      // delete keys from object returned by api
+      const deleteKeys: string[] = ['shipping', 'shippingText', 'shippingImage', 'reception', 'receptionText', 'receptionImage', 'conciliation', 'conciliationText', 'conciliationImage'];
+      deleteKeys.forEach((key: string) => {
+        if (form.hasOwnProperty(key)) {
+          delete (form as any)[key];
+        }
+      });
+      let scales = await this.getScales(scalesIds, company);
+
+      scales = [...scales, ...extraScales];
+      if (extraSection.questions.length) {
+        (form as any).sections = [...form.sections, extraSection];
+      }
+
       // get scales from db
-      const scales = await this.getScales(scalesIds, company);
       res.json({
         data: {
           form,
-          scales
+          scales,
+          extra
         },
         status: 200
       });
     } catch (e) {
+      console.log('e', e);
       res.status(400).json({
         message: 'No se encontro formularío',
         status: 400
@@ -111,7 +238,7 @@ class FormController {
         const form = await this.getFormWithScale(id, company);
         if (form) {
           // initialize participant
-          const newParticipant = new ParticipantModel({
+          const participantObject: any = {
             name: form.name,
             company,
             form: form._id,
@@ -119,7 +246,32 @@ class FormController {
             description: form.description,
             user: req.user._id,
             active: form.active
-          });
+          };
+          if (form.reception && 'reception' in answers) {
+            const reception = answers.reception;
+            participantObject.reception = [true, 'true'].includes(reception.value);
+            participantObject.receptionText = form.receptionText;
+            if (reception.images) {
+              participantObject.receptionImages = reception.images.map((image: string) => (new ObjectID(image)));
+            }
+          }
+          if (form.shipping && 'shipping' in answers) {
+            const shipping = answers.shipping;
+            participantObject.shipping = [true, 'true'].includes(shipping.value);
+            participantObject.shippingText = form.shippingText;
+            if (shipping.images) {
+              participantObject.shippingImages = shipping.images.map((image: string) => (new ObjectID(image)));
+            }
+          }
+          if (form.conciliation && 'conciliation' in answers) {
+            const conciliation = answers.conciliation;
+            participantObject.conciliation = [true, 'true'].includes(conciliation.value);
+            participantObject.conciliationText = form.conciliationText;
+            if (conciliation.images) {
+              participantObject.conciliationImages = conciliation.images.map((image: string) => (new ObjectID(image)));
+            }
+          }
+          const newParticipant = new ParticipantModel(participantObject);
           // var sum sections
           let sumSectionWeigths = 0;
           let sumSectionQualifications = 0;
@@ -140,15 +292,20 @@ class FormController {
               const choice = question.scale.choices.find((choice) => {
                 return answer ? choice._id.toString() === answer.value : false;
               });
-
               // calculate qualification
               let qualification = 0;
               if (choice) {
                 qualification = (100 / question.scale.maxValue) * choice.value;
               }
 
-              sumQualifications +=  (qualification * question.weight);
-              sumWeigths += question.weight;
+              // no apply
+              let na: boolean = false;
+              if (choice && choice.na) {
+                na = true;
+              } else {
+                sumQualifications += (qualification * question.weight);
+                sumWeigths += question.weight;
+              }
 
               // concat allImages
               if (choice && choice.requireImage && answer && answer.images && answer.images.length) {
@@ -180,6 +337,7 @@ class FormController {
                 // images: answer.images && answer.images.length ? await ParticipantFile.find({_id: {$in: answer.images}}, {_id:1}) : [],
                 images: answer && answer.images && answer.images.length ? answer.images.map((image: string) => (new ObjectID(image))) : [],
                 qualification,
+                na,
                 weight: question.weight,
                 order: question.order
               });

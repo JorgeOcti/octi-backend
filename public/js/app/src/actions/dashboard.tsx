@@ -19,6 +19,7 @@ export interface IDashboardState {
   participantsPerDate: any[];
   carsPerDate: any[];
   loadingParticipant: string | null;
+  totalCars: number;
   pagination: {
     count: number;
     page: number;
@@ -184,27 +185,130 @@ export function getParticipant(id: string) {
     dispatch(loadingParticipantAction(id));
     api.getParticipant(id)
       .then((response: AxiosResponse) => {
+        const data = response.data.data;
         dispatch(loadDataAction(
-          response.data.data.name,
+          data.name,
           <div id="form-detail">
             <table>
               <tbody>
               <tr>
                 <td style={{width: '40%'}}><strong>Supervisor</strong></td>
-                <td>{response.data.data.user ? response.data.data.user.firstName : ''} {response.data.data.user ? response.data.data.user.lastName : ''}</td>
+                <td>{data.user ? data.user.firstName : ''} {data.user ? data.user.lastName : ''}</td>
               </tr>
               <tr>
                 <td style={{width: '40%'}}><strong>Fecha</strong></td>
-                <td>{moment(response.data.data.createdAt).format('LLL')}</td>
+                <td>{moment(data.createdAt).format('LLL')}</td>
               </tr>
               <tr>
                 <td style={{width: '40%'}}><strong>Calificación</strong></td>
-                <td>{Math.round(response.data.data.qualification)}%</td>
+                <td>{Math.round(data.qualification)}%</td>
               </tr>
+              {
+                data.receptionText && data.receptionText.length ?
+                  <tr>
+                    <td style={{width: '40%'}}>
+                      <strong>Recepcionado</strong>
+                    </td>
+                    <td>{data.reception ? <i className="fa fa-check text-success" /> : <i className="fa fa-close text-danger" />}</td>
+                  </tr> : null
+              }
+              {
+                data.receptionText && data.receptionText.length && data.receptionImages.length ?
+                  <tr>
+                    <td style={{width: '40%'}}>
+                    </td>
+                    <td>{
+                      <div className="row special-question images">
+                        {
+                          data.receptionImages.map((image: any) => {
+                            return (
+                              <div className="col-md-2 col-sm-2 col-xs-2 text-center" key={image._id}>
+                                <a href={image.file.url} data-toggle="lightbox" data-gallery={'reception'}>
+                                  <ImageLazyLoad
+                                    url={image.file.url}
+                                    height={'50px'}
+                                  />
+                                </a>
+                              </div>
+                            );
+                          })
+                        }
+                      </div>
+                    }</td>
+                  </tr> : null
+              }
+              {
+                data.shippingText && data.shippingText.length ?
+                  <tr>
+                    <td style={{width: '40%'}}>
+                      <strong>Enviado</strong>
+                    </td>
+                    <td>{data.shipping ? <i className="fa fa-check text-success" /> : <i className="fa fa-close text-danger" />}</td>
+                  </tr> : null
+              }
+              {
+                data.shippingText && data.shippingText.length && data.shippingImages.length ?
+                  <tr>
+                    <td style={{width: '40%'}}>
+                    </td>
+                    <td>{
+                      <div className="row special-question images">
+                        {
+                          data.shippingImages.map((image: any) => {
+                            return (
+                              <div className="col-md-2 col-sm-2 col-xs-2 text-center" key={image._id}>
+                                <a href={image.file.url} data-toggle="lightbox" data-gallery={'shipping'}>
+                                  <ImageLazyLoad
+                                    url={image.file.url}
+                                    height={'50px'}
+                                  />
+                                </a>
+                              </div>
+                            );
+                          })
+                        }
+                      </div>
+                    }</td>
+                  </tr> : null
+              }
+              {
+                data.conciliationText && data.conciliationText.length ?
+                  <tr>
+                    <td style={{width: '40%'}}>
+                      <strong>Conciliado</strong>
+                    </td>
+                    <td>{data.conciliation ? <i className="fa fa-check text-success" /> : <i className="fa fa-close text-danger" />}</td>
+                  </tr> : null
+              }
+              {
+                data.conciliationText && data.conciliationText.length && data.conciliationImages.length ?
+                  <tr>
+                    <td style={{width: '40%'}}>
+                    </td>
+                    <td>{
+                      <div className="row special-question images">
+                        {
+                          data.conciliationImages.map((image: any) => {
+                            return (
+                              <div className="col-md-2 col-sm-2 col-xs-2 text-center" key={image._id}>
+                                <a href={image.file.url} data-toggle="lightbox" data-gallery={'conciliation'}>
+                                  <ImageLazyLoad
+                                    url={image.file.url}
+                                    height={'50px'}
+                                  />
+                                </a>
+                              </div>
+                            );
+                          })
+                        }
+                      </div>
+                    }</td>
+                  </tr> : null
+              }
               </tbody>
             </table>
             {
-              response.data.data.sections.map((section: IParticipantSection, index: number) => {
+              data.sections.map((section: IParticipantSection, index: number) => {
                 return (
                   <div className="section" key={index}>
                     <h4>{section.name} <small>{Math.round(section.qualification)}%</small></h4>
@@ -313,15 +417,17 @@ interface ILoadParticipantsPerDate {
   payload: {
     participantsPerDate: any;
     carsPerDate: any;
+    totalCars: number;
   };
 }
 
-export function loadParticipantsPerDateAction(participantsPerDate: any, carsPerDate: any): ILoadParticipantsPerDate {
+export function loadParticipantsPerDateAction(participantsPerDate: any, carsPerDate: any, totalCars:number): ILoadParticipantsPerDate {
   return {
     type: '/DASHBOARD/LOAD_PARTICIPANTS_PER_DATE',
     payload: {
       participantsPerDate,
-      carsPerDate
+      carsPerDate,
+      totalCars
     }
   };
 }
@@ -333,7 +439,7 @@ export function getParticipantsPerDateAction() {
     dispatch(isLoadingAction(true));
     api.getParticipantsPerDate()
       .then((response: AxiosResponse) => {
-        dispatch(loadParticipantsPerDateAction(response.data.participants, response.data.cars));
+        dispatch(loadParticipantsPerDateAction(response.data.participants, response.data.cars, response.data.totalCars));
         dispatch(isLoadingAction(false));
       })
       .catch((err: AxiosError) => {

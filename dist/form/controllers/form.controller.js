@@ -13,6 +13,7 @@ const form_model_1 = require("../models/form.model");
 const participant_model_1 = require("../models/participant.model");
 const participantFile_model_1 = require("../models/participantFile.model");
 const scale_model_1 = require("../models/scale.model");
+// import * as cp from 'console-probe';
 class FormController {
     constructor() {
         this.list = this.list.bind(this);
@@ -61,17 +62,139 @@ class FormController {
                     }
                 });
             });
+            const extra = {
+                accessories: []
+            };
+            const extraSection = {
+                _id: '',
+                name: '',
+                questions: [],
+                order: form.sections.length + 1
+            };
+            const extraScales = [];
+            if (form.shipping) {
+                extraSection.questions.push({
+                    _id: 'shipping',
+                    question: form.shippingText,
+                    scale: 'shipping',
+                    conciliation: false
+                });
+                extraScales.push({
+                    _id: 'shipping',
+                    name: 'shipping',
+                    choices: [
+                        {
+                            _id: 'false',
+                            choice: 'No',
+                            backgroundColor: 'red',
+                            requireImage: false,
+                            requireComment: false,
+                            requireAccesories: false,
+                            requireConciliation: false,
+                            order: 0
+                        }, {
+                            _id: 'true',
+                            choice: 'Si',
+                            backgroundColor: 'green',
+                            requireImage: form.shippingImage,
+                            requireComment: false,
+                            requireAccesories: false,
+                            requireConciliation: false,
+                            order: 1
+                        }
+                    ]
+                });
+            }
+            if (form.reception) {
+                extraSection.questions.push({
+                    _id: 'reception',
+                    question: form.receptionText,
+                    scale: 'reception',
+                    conciliation: false
+                });
+                extraScales.push({
+                    _id: 'reception',
+                    name: 'reception',
+                    choices: [
+                        {
+                            _id: 'false',
+                            choice: 'No',
+                            backgroundColor: 'red',
+                            requireImage: false,
+                            requireComment: false,
+                            requireAccesories: false,
+                            requireConciliation: false,
+                            order: 0
+                        }, {
+                            _id: 'true',
+                            choice: 'Si',
+                            backgroundColor: 'green',
+                            requireImage: form.receptionImage,
+                            requireComment: false,
+                            requireAccesories: false,
+                            requireConciliation: false,
+                            order: 1
+                        }
+                    ]
+                });
+            }
+            if (form.conciliation) {
+                extraSection.questions.push({
+                    _id: 'conciliation',
+                    question: form.conciliationText,
+                    scale: 'conciliation',
+                    conciliation: true
+                });
+                extraScales.push({
+                    _id: 'conciliation',
+                    name: 'conciliation',
+                    choices: [
+                        {
+                            _id: 'false',
+                            choice: 'No',
+                            backgroundColor: 'red',
+                            requireImage: false,
+                            requireComment: false,
+                            requireAccesories: false,
+                            requireConciliation: false,
+                            order: 0
+                        }, {
+                            _id: 'true',
+                            choice: 'Si',
+                            backgroundColor: 'green',
+                            requireImage: form.conciliationImage,
+                            requireComment: false,
+                            requireAccesories: false,
+                            requireConciliation: false,
+                            order: 1
+                        }
+                    ]
+                });
+            }
+            // delete keys from object returned by api
+            const deleteKeys = ['shipping', 'shippingText', 'shippingImage', 'reception', 'receptionText', 'receptionImage', 'conciliation', 'conciliationText', 'conciliationImage'];
+            deleteKeys.forEach((key) => {
+                if (form.hasOwnProperty(key)) {
+                    delete form[key];
+                }
+            });
+            let scales = await this.getScales(scalesIds, company);
+            scales = [...scales, ...extraScales];
+            if (extraSection.questions.length) {
+                form.sections = [...form.sections, extraSection];
+            }
             // get scales from db
-            const scales = await this.getScales(scalesIds, company);
             res.json({
                 data: {
                     form,
-                    scales
+                    scales,
+                    extra
                 },
                 status: 200
             });
         }
         catch (e) {
+            console.log('e', e);
             res.status(400).json({
                 message: 'No se encontro formularío',
                 status: 400
@@ -107,7 +230,7 @@ class FormController {
                 const form = await this.getFormWithScale(id, company);
                 if (form) {
                     // initialize participant
-                    const newParticipant = new participant_model_1.default({
+                    const participantObject = {
                         name: form.name,
                         company,
                         form: form._id,
@@ -115,7 +238,32 @@ class FormController {
                         description: form.description,
                         user: req.user._id,
                         active: form.active
-                    });
+                    };
+                    if (form.reception && 'reception' in answers) {
+                        const reception = answers.reception;
+                        participantObject.reception = [true, 'true'].includes(reception.value);
+                        participantObject.receptionText = form.receptionText;
+                        if (reception.images) {
+                            participantObject.receptionImages = reception.images.map((image) => (new bson_1.ObjectID(image)));
+                        }
+                    }
+                    if (form.shipping && 'shipping' in answers) {
+                        const shipping = answers.shipping;
+                        participantObject.shipping = [true, 'true'].includes(shipping.value);
+                        participantObject.shippingText = form.shippingText;
+                        if (shipping.images) {
+                            participantObject.shippingImages = shipping.images.map((image) => (new bson_1.ObjectID(image)));
+                        }
+                    }
+                    if (form.conciliation && 'conciliation' in answers) {
+                        const conciliation = answers.conciliation;
+                        participantObject.conciliation = [true, 'true'].includes(conciliation.value);
+                        participantObject.conciliationText = form.conciliationText;
+                        if (conciliation.images) {
+                            participantObject.conciliationImages = conciliation.images.map((image) => (new bson_1.ObjectID(image)));
+                        }
+                    }
+                    const newParticipant = new participant_model_1.default(participantObject);
                     // var sum sections
                     let sumSectionWeigths = 0;
                     let sumSectionQualifications = 0;
@@ -141,8 +289,15 @@ class FormController {
                             if (choice) {
                                 qualification = (100 / question.scale.maxValue) * choice.value;
                             }
-                            sumQualifications += (qualification * question.weight);
-                            sumWeigths += question.weight;
+                            // no apply
+                            let na = false;
+                            if (choice && choice.na) {
+                                na = true;
+                            }
+                            else {
+                                sumQualifications += (qualification * question.weight);
+                                sumWeigths += question.weight;
+                            }
                             // concat allImages
                             if (choice && choice.requireImage && answer && answer.images && answer.images.length) {
                                 allImages = [...answer.images, ...allImages];
@@ -171,6 +326,7 @@ class FormController {
                                 // images: answer.images && answer.images.length ? await ParticipantFile.find({_id: {$in: answer.images}}, {_id:1}) : [],
                                 images: answer && answer.images && answer.images.length ? answer.images.map((image) => (new bson_1.ObjectID(image))) : [],
                                 qualification,
+                                na,
                                 weight: question.weight,
                                 order: question.order
                             });

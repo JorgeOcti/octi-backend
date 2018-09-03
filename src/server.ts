@@ -29,7 +29,7 @@ const server = app.listen(parseInt(app.get('port'), 10) + NODE_APP_INSTANCE, () 
   /* istanbul ignore if */
   if (app.get('env') !== 'testing') {
     console.log(`${logger.colors.magenta}----------------------${logger.colors.reset}`);
-    console.log(`${logger.colors.brighCyan}OSA-ANDES ${logger.colors.white}v1.0.0 ${logger.colors.brighGreen}RELEASE${logger.colors.reset}`);
+    console.log(`${logger.colors.brighCyan}OSA-ANDES ${logger.colors.white}v1.1.2 ${logger.colors.brighGreen}RELEASE${logger.colors.reset}`);
     console.log(`${logger.colors.magenta}----------------------${logger.colors.reset}`);
     console.log(
       'is running at http://localhost:%s in %s mode',
@@ -50,6 +50,7 @@ io.adapter(socketRedis({
 io.use( async (socket, next) => {
   // validate token to use socket
   const token = socket.handshake.query.token;
+  const msgErrorAuthentication: string = 'authentication error';
   if (token) {
     try {
       const user = await jwt.verify(token, process.env.SECRET_KEY || 'secretKey');
@@ -60,15 +61,15 @@ io.use( async (socket, next) => {
         return next();
       } else {
         socket.disconnect();
-        return next(new Error('authentication error'));
+        return next(new Error(msgErrorAuthentication));
       }
     } catch (e) {
       socket.disconnect();
-      return next(new Error('authentication error'));
+      return next(new Error(msgErrorAuthentication));
     }
   } else {
     socket.disconnect();
-    return next(new Error('authentication error'));
+    return next(new Error(msgErrorAuthentication));
   }
   // console.log('token', token);
   // if (isValid(token)) {
