@@ -91,7 +91,7 @@ class FormController {
                             requireComment: false,
                             requireAccesories: false,
                             requireConciliation: false,
-                            value: 'false',
+                            value: 0,
                             order: 1
                         }, {
                             _id: 'true',
@@ -101,7 +101,7 @@ class FormController {
                             requireComment: false,
                             requireAccesories: false,
                             requireConciliation: false,
-                            value: 'true',
+                            value: 1,
                             order: 2
                         }
                     ]
@@ -126,7 +126,7 @@ class FormController {
                             requireComment: false,
                             requireAccesories: false,
                             requireConciliation: false,
-                            value: 'false',
+                            value: 0,
                             order: 1
                         }, {
                             _id: 'true',
@@ -136,7 +136,7 @@ class FormController {
                             requireComment: false,
                             requireAccesories: false,
                             requireConciliation: false,
-                            value: 'true',
+                            value: 1,
                             order: 2
                         }
                     ]
@@ -161,7 +161,7 @@ class FormController {
                             requireComment: false,
                             requireAccesories: false,
                             requireConciliation: false,
-                            value: 'false',
+                            value: 0,
                             order: 1
                         }, {
                             _id: 'true',
@@ -171,7 +171,7 @@ class FormController {
                             requireComment: false,
                             requireAccesories: false,
                             requireConciliation: false,
-                            value: 'true',
+                            value: 1,
                             order: 2
                         }
                     ]
