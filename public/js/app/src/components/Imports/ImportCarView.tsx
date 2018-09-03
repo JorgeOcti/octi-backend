@@ -294,7 +294,7 @@ class ImportCarsView extends React.Component<IPropsType, IStateType> {
               type: rABS ? 'binary' : 'array'
             });
             const cars: IImportCar[] = workbook.Sheets.hasOwnProperty('Autos') ? XLSX.utils.sheet_to_json(workbook.Sheets.Autos) : [];
-            if (cars.length > 1) {
+            if (cars.length >= 1) {
               this.setState({
                 cars: cars.map((car) => {
                   car.id = uuid.v1();
