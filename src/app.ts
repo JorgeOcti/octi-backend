@@ -20,6 +20,7 @@ import User from './app/models/user.model';
 import {appRouter, jwtRouter} from './app/router';
 import EmailQueue from './app/tasks/email.task';
 import formRouter from './form/router';
+import {inventoryRouter} from './inventory/router';
 import Middlewares from './middlewares/middlewares';
 
 // Create Express server
@@ -228,6 +229,7 @@ app.use(Raven.requestHandler());
 // Routes
 app.use('/', appRouter);
 app.use('/', formRouter);
+app.use('/', inventoryRouter);
 app.use('/api/v1', jwtRouter);
 
 /* queues */

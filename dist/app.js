@@ -22,6 +22,7 @@ const user_model_1 = require("./app/models/user.model");
 const router_1 = require("./app/router");
 const email_task_1 = require("./app/tasks/email.task");
 const router_2 = require("./form/router");
+const router_3 = require("./inventory/router");
 const middlewares_1 = require("./middlewares/middlewares");
 // Create Express server
 const app = express();
@@ -207,6 +208,7 @@ app.use(Raven.requestHandler());
 // Routes
 app.use('/', router_1.appRouter);
 app.use('/', router_2.default);
+app.use('/', router_3.inventoryRouter);
 app.use('/api/v1', router_1.jwtRouter);
 /* queues */
 exports.queue = kue.createQueue({

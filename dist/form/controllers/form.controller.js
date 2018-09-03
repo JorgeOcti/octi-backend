@@ -91,6 +91,7 @@ class FormController {
                             requireComment: false,
                             requireAccesories: false,
                             requireConciliation: false,
+                            value: 'false',
                             order: 1
                         }, {
                             _id: 'true',
@@ -100,6 +101,7 @@ class FormController {
                             requireComment: false,
                             requireAccesories: false,
                             requireConciliation: false,
+                            value: 'true',
                             order: 2
                         }
                     ]
@@ -124,6 +126,7 @@ class FormController {
                             requireComment: false,
                             requireAccesories: false,
                             requireConciliation: false,
+                            value: 'false',
                             order: 1
                         }, {
                             _id: 'true',
@@ -133,6 +136,7 @@ class FormController {
                             requireComment: false,
                             requireAccesories: false,
                             requireConciliation: false,
+                            value: 'true',
                             order: 2
                         }
                     ]
@@ -157,6 +161,7 @@ class FormController {
                             requireComment: false,
                             requireAccesories: false,
                             requireConciliation: false,
+                            value: 'false',
                             order: 1
                         }, {
                             _id: 'true',
@@ -166,6 +171,7 @@ class FormController {
                             requireComment: false,
                             requireAccesories: false,
                             requireConciliation: false,
+                            value: 'true',
                             order: 2
                         }
                     ]
