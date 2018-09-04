@@ -108,7 +108,8 @@ class FormController {
               value: 1,
               order: 2
             }
-          ]
+          ],
+          order: extraScales.length + 1
         });
       }
       if (form.reception) {
@@ -143,7 +144,8 @@ class FormController {
               value: 1,
               order: 2
             }
-          ]
+          ],
+          order: extraScales.length + 1
         });
       }
       if (form.conciliation) {
@@ -178,7 +180,8 @@ class FormController {
               value: 1,
               order: 2
             }
-          ]
+          ],
+          order: extraScales.length + 1
         });
       }
 
