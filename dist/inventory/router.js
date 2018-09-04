@@ -7,4 +7,5 @@ const inventoryRouter = express.Router();
 exports.inventoryRouter = inventoryRouter;
 // Inventories List
 inventoryRouter.get('/inventory/', middlewares_1.default.isLoggedIn, inventory_controller_1.default.index);
+inventoryRouter.get('/inventory/create/', middlewares_1.default.isLoggedIn, inventory_controller_1.default.index);
 //# sourceMappingURL=router.js.map

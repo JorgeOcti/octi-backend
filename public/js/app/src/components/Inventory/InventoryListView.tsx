@@ -32,6 +32,7 @@ class InventoryListView extends React.Component<IPropsType, IStateType> {
 
   constructor(props: IPropsType) {
     super(props);
+    this.create = this.create.bind(this);
   }
 
   public componentWillMount() {
@@ -63,7 +64,7 @@ class InventoryListView extends React.Component<IPropsType, IStateType> {
             <div className="box-header with-border">
               <h3 className="box-title">Gestión de inventarios</h3>
               <div className="pull-right box-tools">
-                <button className="btn btn-sm btn-success">Nuevo</button>
+                <button className="btn btn-sm btn-success" onClick={this.create}>Nuevo</button>
               </div>
             </div>
             <div className="box-body">
@@ -168,6 +169,10 @@ class InventoryListView extends React.Component<IPropsType, IStateType> {
         </section>
       </AppContainer>
     );
+  }
+
+  private create() {
+    this.props.history.push('create/');
   }
 }
 
