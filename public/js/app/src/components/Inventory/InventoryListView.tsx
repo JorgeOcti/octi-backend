@@ -61,60 +61,110 @@ class InventoryListView extends React.Component<IPropsType, IStateType> {
         <section className="content">
           <div className="box">
             <div className="box-header with-border">
-              <h3 className="box-title">Gestión</h3>
+              <h3 className="box-title">Gestión de inventarios</h3>
               <div className="pull-right box-tools">
                 <button className="btn btn-sm btn-success">Nuevo</button>
               </div>
             </div>
             <div className="box-body">
-              {/*<table className="table table-striped">*/}
-                {/*<thead>*/}
-                  {/*<tr>*/}
-                    {/*<th style={{width: '20%'}} className="middle">Nombre</th>*/}
-                    {/*<th style={{width: '20%'}} className="middle text-center">Menor igual que</th>*/}
-                    {/*<th style={{width: '20%'}} className="middle text-center">Mayor igual que</th>*/}
-                    {/*<th style={{width: '40%'}} className="middle">Usuarios</th>*/}
-                    {/*/!*<th className="width-10" />*!/*/}
-                    {/*<th className="middle width-10" />*/}
-                  {/*</tr>*/}
-                {/*</thead>*/}
-                {/*<tbody>*/}
-                {/*{*/}
-                  {/*alerts.length ?*/}
-                    {/*alerts.map((alert) => {*/}
-                      {/*return (*/}
-                        {/*<tr key={alert._id} id={`alert-${alert._id}`}>*/}
-                          {/*<td className="middle">{alert.name}</td>*/}
-                          {/*<td className="middle text-center">{alert.lte !== 0 ? alert.lte : '-'}</td>*/}
-                          {/*<td className="middle text-center">{alert.gte !== 0 ? alert.gte : '-'}</td>*/}
-                          {/*<td>*/}
-                            {/*{*/}
-                              {/*alert.users.map((user) => {*/}
-                                {/*return (*/}
-                                  {/*<p key={user._id} style={{margin: 0}}>{`${user.firstName} ${user.lastName} <${user.email}>`}</p>*/}
-                                {/*);*/}
-                              {/*})*/}
-                            {/*}*/}
-                          {/*</td>*/}
-                          {/*/!*<td className="text-blue pointer" onClick={undefined}><i className="fa fa-pencil"/></td>*!/*/}
-                          {/*<td className="text-red pointer" onClick={() => this.deleteAlert(alert)}><i className="fa fa-minus-circle"/></td>*/}
-                        {/*</tr>*/}
-                      {/*);*/}
-                    {/*}) : <tr>*/}
-                      {/*<td colSpan={5}>Aún no se han ingresado alertas</td>*/}
-                    {/*</tr>*/}
-                {/*}*/}
-                {/*</tbody>*/}
-              {/*</table>*/}
+              <div className="row">
+                <div className="col-md-12">
+                  <div className="inventory" style={{border: '1px solid #cccccc4d', padding: '10px', marginBottom: '10px'}}>
+                    <div className="row">
+                      <div className="col-md-6">
+                        <h4 className={'text-primary'} style={{marginTop: '3px', marginBottom: '10px'}}>Inventario de prueba</h4>
+                      </div>
+                      <div className="col-md-6 text-right">
+                        <span className="label label-warning">En progreso</span>
+                      </div>
+                    </div>
+                    <div className="row">
+                      <div className="col-md-2 col-xs-12 text-muted">
+                        <p style={{marginTop: '20px'}}>Creado el 4 de septiembre por Gonzalo Muñoz</p>
+                      </div>
+                      <div className="col-md-8">
+                        <div className="row">
+                          <div className="col-md-4 col-xs-4 text-center text-success" style={{borderRight: '1px solid #cccccc4d'}}>
+                            <strong>Encontrados</strong>
+                            <h2>10</h2>
+                          </div>
+                          <div className="col-md-4 col-xs-4 text-center text-primary" style={{borderRight: '1px solid #cccccc4d'}}>
+                            <strong>Sobrantes</strong>
+                            <h2>20</h2>
+                          </div>
+                          <div className="col-md-4 col-xs-4 text-center text-danger">
+                            <strong>Faltantes</strong>
+                            <h2>50</h2>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="col-md-2 text-right">
+                        <div className="btn-group btn-group-sm" style={{marginTop: '10px'}}>
+                          <button type="button" className="btn btn-default">Ver progreso</button>
+                          <button type="button" className="btn btn-default dropdown-toggle" data-toggle="dropdown">
+                            <span className="caret" />
+                            <span className="sr-only">Toggle Dropdown</span>
+                          </button>
+                          <ul className="dropdown-menu pull-right" role="menu">
+                            <li><a href="#">Finalizar</a></li>
+                          </ul>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="inventory" style={{border: '1px solid #cccccc4d', padding: '10px', marginBottom: '10px'}}>
+                    <div className="row">
+                      <div className="col-md-6">
+                        <h4 className={'text-primary'} style={{marginTop: '3px', marginBottom: '10px'}}>Inventario de prueba 2</h4>
+                      </div>
+                      <div className="col-md-6 text-right">
+                        <span className="label label-success">Finalizado</span>
+                      </div>
+                    </div>
+                    <div className="row">
+                      <div className="col-md-2 text-muted">
+                        <p style={{marginTop: '20px'}}>Creado el 1 de septiembre por Gonzalo Muñoz</p>
+                      </div>
+                      <div className="col-md-8">
+                        <div className="row">
+                          <div className="col-md-4 col-xs-4 text-center text-success" style={{borderRight: '1px solid #cccccc4d'}}>
+                            <strong>Encontrados</strong>
+                            <h2>20</h2>
+                          </div>
+                          <div className="col-md-4 col-xs-4 text-center text-primary" style={{borderRight: '1px solid #cccccc4d'}}>
+                            <strong>Sobrantes</strong>
+                            <h2>30</h2>
+                          </div>
+                          <div className="col-md-4 col-xs-4 text-center text-danger">
+                            <strong>Faltantes</strong>
+                            <h2>50</h2>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="col-md-2 text-right">
+                        <div className="btn-group btn-group-sm" style={{marginTop: '10px'}}>
+                          <button type="button" className="btn btn-default">Ver reporte</button>
+                          <button type="button" className="btn btn-default dropdown-toggle" data-toggle="dropdown">
+                            <span className="caret" />
+                            <span className="sr-only">Toggle Dropdown</span>
+                          </button>
+                          <ul className="dropdown-menu pull-right" role="menu">
+                            <li><a href="#">Borrar</a></li>
+                          </ul>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
-            {/*{*/}
-              {/*loading &&*/}
-                {/*<div className="overlay">*/}
-                  {/*<i className="fa fa-spinner fa-spin text-purple"/>*/}
-                {/*</div>*/}
-            {/*}*/}
+            {
+              false &&
+                <div className="overlay">
+                  <i className="fa fa-spinner fa-spin text-purple"/>
+                </div>
+            }
           </div>
-          {/*<ModalView />*/}
         </section>
       </AppContainer>
     );

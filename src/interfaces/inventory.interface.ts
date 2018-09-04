@@ -6,6 +6,7 @@ import {IVenue} from './venue.interface';
 export interface IInventoryCar {
   car: ICar;
   venue: IVenue;
+  venueFound: IVenue;
   status: string;
 }
 
