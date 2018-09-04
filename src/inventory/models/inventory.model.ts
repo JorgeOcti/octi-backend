@@ -1,8 +1,11 @@
 import * as mongoose from 'mongoose';
-import {IInventory, IInventoryCar} from '../../interfaces/inventory.interface';
+import {
+  IInventory,
+  IInventoryCar
+} from '../../interfaces/inventory.interface';
 
 export interface IInventoryCarModel extends IInventoryCar, mongoose.Types.Subdocument {}
-export const choicesStatusCarInventory = ['notFound', 'found'];
+export const choicesStatusCarInventory = ['pending', 'notFound', 'found'];
 const inventoryCarSchema = new mongoose.Schema({
   car: {
     type: mongoose.Schema.Types.ObjectId,
@@ -12,10 +15,14 @@ const inventoryCarSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Venue'
   },
+  venueFound: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Venue'
+  },
   status: {
     type: String,
     enum: choicesStatusCarInventory,
-    default: 'notFound'
+    default: 'pending'
   }
 });
 

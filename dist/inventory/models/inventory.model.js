@@ -1,7 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 const mongoose = require("mongoose");
-exports.choicesStatusCarInventory = ['notFound', 'found'];
+exports.choicesStatusCarInventory = ['pending', 'notFound', 'found'];
 const inventoryCarSchema = new mongoose.Schema({
     car: {
         type: mongoose.Schema.Types.ObjectId,
@@ -11,10 +11,14 @@ const inventoryCarSchema = new mongoose.Schema({
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Venue'
     },
+    venueFound: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Venue'
+    },
     status: {
         type: String,
         enum: exports.choicesStatusCarInventory,
-        default: 'notFound'
+        default: 'pending'
     }
 });
 exports.choicesStatusInventory = ['pending', 'in_process', 'finalized'];
