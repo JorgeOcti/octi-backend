@@ -89,13 +89,13 @@ class InventoryListView extends React.Component<IPropsType, IStateType> {
                             <strong>Encontrados</strong>
                             <h2>10</h2>
                           </div>
-                          <div className="col-md-4 col-xs-4 text-center text-primary" style={{borderRight: '1px solid #cccccc4d'}}>
-                            <strong>Sobrantes</strong>
-                            <h2>20</h2>
-                          </div>
-                          <div className="col-md-4 col-xs-4 text-center text-danger">
+                          <div className="col-md-4 col-xs-4 text-center text-danger" style={{borderRight: '1px solid #cccccc4d'}}>
                             <strong>Faltantes</strong>
                             <h2>50</h2>
+                          </div>
+                          <div className="col-md-4 col-xs-4 text-center text-primary">
+                            <strong>Sobrantes</strong>
+                            <h2>20</h2>
                           </div>
                         </div>
                       </div>
@@ -132,13 +132,13 @@ class InventoryListView extends React.Component<IPropsType, IStateType> {
                             <strong>Encontrados</strong>
                             <h2>20</h2>
                           </div>
-                          <div className="col-md-4 col-xs-4 text-center text-primary" style={{borderRight: '1px solid #cccccc4d'}}>
-                            <strong>Sobrantes</strong>
-                            <h2>30</h2>
-                          </div>
-                          <div className="col-md-4 col-xs-4 text-center text-danger">
+                          <div className="col-md-4 col-xs-4 text-center text-danger" style={{borderRight: '1px solid #cccccc4d'}}>
                             <strong>Faltantes</strong>
                             <h2>50</h2>
+                          </div>
+                          <div className="col-md-4 col-xs-4 text-center text-primary">
+                            <strong>Sobrantes</strong>
+                            <h2>30</h2>
                           </div>
                         </div>
                       </div>

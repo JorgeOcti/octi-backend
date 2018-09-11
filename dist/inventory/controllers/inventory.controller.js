@@ -7,6 +7,8 @@ class InventoryController {
     constructor() {
         this.index = this.index.bind(this);
         this.create = this.create.bind(this);
+        this.list = this.list.bind(this);
+        this.apiList = this.apiList.bind(this);
     }
     async index(req, res) {
         res.render('app/index', { token: await req.user.generateToken() });
@@ -60,7 +62,8 @@ class InventoryController {
                 name: 'prueba',
                 company,
                 cars: inventoryCars,
-                venues: venuesIDs
+                venues: venuesIDs,
+                status: inventory_model_1.ChoicesStatusInventory.inProcess
             });
             inventory.save();
             res.json({});
@@ -73,11 +76,68 @@ class InventoryController {
         }
     }
     async list(req, res) {
+        const { company } = req.user;
+        try {
+            const response = [];
+            const inventories = await inventory_model_1.default.find({
+                company
+            }, {
+                name: 1,
+                status: 1,
+                ['cars.status']: 1
+            }, {
+                sort: {
+                    createdAt: -1
+                }
+            });
+            for (const inventory of inventories) {
+                const results = await inventory_model_1.default.aggregate([{
+                        $match: {
+                            _id: inventory._id,
+                            company
+                        }
+                    }, {
+                        $unwind: '$cars'
+                    }, {
+                        $group: {
+                            _id: '$cars.status',
+                            total: {
+                                $sum: 1
+                            }
+                        }
+                    }]);
+                response.push({
+                    _id: inventory._id,
+                    name: inventory.name,
+                    results: results.reduce((acc, cur) => {
+                        acc[cur._id] = cur.total;
+                        return acc;
+                    }, {}),
+                    status: inventory.status
+                });
+            }
+            res.json({
+                inventories: response,
+                status: 200
+            });
+        }
+        catch (e) {
+            console.log(e);
+            res.status(400).json({
+                message: e,
+                status: 400
+            });
+        }
+    }
+    async apiList(req, res) {
         const { company, venue } = req.user;
         try {
             const inventories = await inventory_model_1.default.find({
                 company,
-                venues: venue._id
+                venues: venue._id,
+                status: {
+                    $in: [inventory_model_1.ChoicesStatusInventory.inProcess]
+                }
             }, {
                 _id: true,
                 name: true

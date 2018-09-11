@@ -8,7 +8,8 @@ exports.inventoryRouter = inventoryRouter;
 // Inventories List
 inventoryRouter.get('/inventory/', middlewares_1.default.isLoggedIn, inventory_controller_1.default.index);
 inventoryRouter.get('/inventory/create/', middlewares_1.default.isLoggedIn, inventory_controller_1.default.index);
-inventoryRouter.post('/inventory/create/', middlewares_1.default.isLoggedIn, inventory_controller_1.default.create);
+inventoryRouter.get('/api/inventory/', middlewares_1.default.isLoggedIn, inventory_controller_1.default.list);
+inventoryRouter.post('/api/inventory/', middlewares_1.default.isLoggedIn, inventory_controller_1.default.create);
 // Inventories API
-inventoryRouter.get('/api/v1/inventory/', middlewares_1.default.isJWTAuthenticated, inventory_controller_1.default.list);
+inventoryRouter.get('/api/v1/inventory/', middlewares_1.default.isJWTAuthenticated, inventory_controller_1.default.apiList);
 //# sourceMappingURL=router.js.map
