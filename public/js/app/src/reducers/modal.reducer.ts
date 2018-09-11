@@ -1,4 +1,4 @@
-import {IModalState, ModalReduxAction} from '../actions/modal';
+import {IModalState, ModalReduxAction} from '../actions/modal.action';
 
 const initialState: IModalState = {
   title: '',
@@ -6,7 +6,7 @@ const initialState: IModalState = {
   footer: null
 };
 
-export function modal(state = initialState, action: ModalReduxAction): IModalState {
+export function modalReducer(state = initialState, action: ModalReduxAction): IModalState {
   switch (action.type) {
     case '/MODAL/LOAD_DATA':
       setTimeout(() => {

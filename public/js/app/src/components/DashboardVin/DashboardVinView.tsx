@@ -8,7 +8,7 @@ import {RouteComponentProps} from 'react-router';
 import {Dispatch} from 'redux';
 import * as io from 'socket.io-client';
 import {ICar} from '../../../../../../src/interfaces/car.interface';
-import {DashboardReduxAction, getCarsAction, IDashboardState} from '../../actions/dashboard';
+import {DashboardReduxAction, getCarsAction, IDashboardState} from '../../actions/dashboard.action';
 import AppContainer from '../../container/AppContainer';
 import {IWindow} from '../../interfaces/window';
 import Paginator from '../Paginator';
@@ -29,11 +29,11 @@ interface IStateType {
 
 class DashboardVinView extends React.Component<IPropsType, IStateType> {
 
-  static propTypes = {
-    dashboard: PropTypes.object.isRequired,
-    dispatch: PropTypes.func.isRequired,
-    getCarsAction: PropTypes.func.isRequired
-  };
+  // static propTypes = {
+  //   dashboard: PropTypes.object.isRequired,
+  //   dispatch: PropTypes.func.isRequired,
+  //   getCarsAction: PropTypes.func.isRequired
+  // };
 
   state = {
     error: null,

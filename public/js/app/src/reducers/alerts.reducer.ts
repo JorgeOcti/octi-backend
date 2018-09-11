@@ -1,4 +1,4 @@
-import {AlertReduxAction, IAlertsState} from '../actions/alerts';
+import {AlertReduxAction, IAlertsState} from '../actions/alerts.action';
 
 const initialState: IAlertsState = {
   alerts: [],

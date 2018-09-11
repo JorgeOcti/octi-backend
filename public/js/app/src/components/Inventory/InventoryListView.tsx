@@ -1,13 +1,13 @@
 ///<reference path="../../../node_modules/sweetalert/typings/sweetalert.d.ts"/>
-import * as PropTypes from 'prop-types';
+// import * as PropTypes from 'prop-types';
 import * as Raven from 'raven-js';
 import * as React from 'react';
 import {ErrorInfo} from 'react';
 import {connect} from 'react-redux';
 import {RouteComponentProps} from 'react-router';
 import {Dispatch} from 'redux';
-import {AlertReduxAction, IAlertsState} from '../../actions/alerts';
-import {loadDataAction, ModalReduxAction} from '../../actions/modal';
+import {AlertReduxAction, IAlertsState} from '../../actions/alerts.action';
+import {loadDataAction, ModalReduxAction} from '../../actions/modal.action';
 import AppContainer from '../../container/AppContainer';
 
 interface IPropsType extends RouteComponentProps<{ ticket: string }> {
@@ -22,9 +22,9 @@ interface IStateType {
 
 class InventoryListView extends React.Component<IPropsType, IStateType> {
 
-  static propTypes = {
-    dispatch: PropTypes.func.isRequired
-  };
+  // static propTypes = {
+  //   dispatch: PropTypes.func.isRequired
+  // };
 
   state = {
     error: null
@@ -172,7 +172,7 @@ class InventoryListView extends React.Component<IPropsType, IStateType> {
   }
 
   private create() {
-    this.props.history.push('create/');
+    this.props.history.push('/inventory/create/');
   }
 }
 

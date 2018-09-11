@@ -83,7 +83,7 @@ app.disable('x-powered-by');
 // strict routing
 app.set('strict routing', true);
 // For parsing application/json
-app.use(bodyParser.json());
+app.use(bodyParser.json({ limit: '50mb' }));
 // for parsing application/xwww-
 app.use(bodyParser.urlencoded({ extended: true }));
 // For parsing multipart/form-data

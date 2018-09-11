@@ -10,7 +10,7 @@ import {Dispatch} from 'redux';
 // import * as io from 'socket.io-client';
 import * as uuid from 'uuid';
 import * as XLSX from 'xlsx';
-import {IUsersState, UserReduxAction} from '../../actions/users';
+import {IUsersState, UserReduxAction} from '../../actions/users.action';
 import AppContainer from '../../container/AppContainer';
 // import {IWindow} from '../../interfaces/window';
 import ApiService from '../../utils/axios';
@@ -50,10 +50,10 @@ interface IStateType {
 
 class ImportCarsView extends React.Component<IPropsType, IStateType> {
 
-  static propTypes = {
-    users: PropTypes.object.isRequired,
-    dispatch: PropTypes.func.isRequired
-  };
+  // static propTypes = {
+  //   users: PropTypes.object.isRequired,
+  //   dispatch: PropTypes.func.isRequired
+  // };
 
   state = {
     error: null,
@@ -318,7 +318,6 @@ class ImportCarsView extends React.Component<IPropsType, IStateType> {
         }
         if (this.inputFile.current) {
           this.inputFile.current.value = '';
-
         }
       }
     }

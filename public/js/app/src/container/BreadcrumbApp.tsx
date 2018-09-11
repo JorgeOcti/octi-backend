@@ -28,10 +28,10 @@ const BreadcrumbApp: React.StatelessComponent<IPropsType> = (props) => {
   return null;
 };
 
-BreadcrumbApp.propTypes = {
-  cMenu: PropTypes.string.isRequired,
-  cSubMenu: PropTypes.string.isRequired,
-  cAction: PropTypes.string
-};
+// BreadcrumbApp.propTypes = {
+//   cMenu: PropTypes.string.isRequired,
+//   cSubMenu: PropTypes.string.isRequired,
+//   cAction: PropTypes.string
+// };
 
 export default BreadcrumbApp;

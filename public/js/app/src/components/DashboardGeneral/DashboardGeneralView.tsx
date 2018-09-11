@@ -5,7 +5,7 @@ import {ErrorInfo} from 'react';
 import {connect} from 'react-redux';
 import {RouteComponentProps} from 'react-router';
 import {Dispatch} from 'redux';
-import {DashboardReduxAction, getParticipantsPerDateAction, IDashboardState} from '../../actions/dashboard';
+import {DashboardReduxAction, getParticipantsPerDateAction, IDashboardState} from '../../actions/dashboard.action';
 import AppContainer from '../../container/AppContainer';
 
 interface IPropsType extends RouteComponentProps<{ ticket: string }> {
@@ -21,11 +21,11 @@ interface IStateType {
 
 class DashboardGeneralView extends React.Component<IPropsType, IStateType> {
 
-  static propTypes = {
-    dashboard: PropTypes.object.isRequired,
-    dispatch: PropTypes.func.isRequired,
-    getParticipantsPerDateAction: PropTypes.func.isRequired
-  };
+  // static propTypes = {
+  //   dashboard: PropTypes.object.isRequired,
+  //   dispatch: PropTypes.func.isRequired,
+  //   getParticipantsPerDateAction: PropTypes.func.isRequired
+  // };
 
   participantsPerDayChart: any;
 

@@ -7,7 +7,10 @@ const inventoryRouter = express.Router();
 // Inventories List
 inventoryRouter.get('/inventory/', Middlewares.isLoggedIn, InventoryController.index);
 inventoryRouter.get('/inventory/create/', Middlewares.isLoggedIn, InventoryController.index);
-// inventoryRouter.get('/api/v1/inventory/', Middlewares.isLoggedIn, InventoryController.index);
+inventoryRouter.post('/inventory/create/', Middlewares.isLoggedIn, InventoryController.create);
+
+// Inventories API
+inventoryRouter.get('/api/v1/inventory/', Middlewares.isJWTAuthenticated, InventoryController.list);
 
 export {
   inventoryRouter

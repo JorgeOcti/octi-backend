@@ -9,7 +9,7 @@ import {RouteComponentProps} from 'react-router';
 import {Dispatch} from 'redux';
 import {debounce} from 'throttle-debounce';
 import {ICar} from '../../../../../../src/interfaces/car.interface';
-import {CarReduxAction, getCarsAction, ICarsState} from '../../actions/cars';
+import {CarReduxAction, getCarsAction, ICarsState} from '../../actions/cars.action';
 import AppContainer from '../../container/AppContainer';
 import {IWindow} from '../../interfaces/window';
 import {hasPermission} from '../../utils/common';
@@ -32,9 +32,9 @@ interface IStateType {
 
 class CarListView extends React.Component<IPropsType, IStateType> {
 
-  static propTypes = {
-    dispatch: PropTypes.func.isRequired
-  };
+  // static propTypes = {
+  //   dispatch: PropTypes.func.isRequired
+  // };
 
   readonly state = {
     error: null,

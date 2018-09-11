@@ -8,7 +8,7 @@ import {connect} from 'react-redux';
 import {RouteComponentProps} from 'react-router';
 import {Dispatch} from 'redux';
 import {IUser} from '../../../../../../src/interfaces/user.interface';
-import {loadDataAction, ModalReduxAction} from '../../actions/modal';
+import {loadDataAction, ModalReduxAction} from '../../actions/modal.action';
 import {
   addUserAction,
   changeTempUserAction,
@@ -18,7 +18,7 @@ import {
   ITempUser,
   IUsersState,
   UserReduxAction
-} from '../../actions/users';
+} from '../../actions/users.action';
 import AppContainer from '../../container/AppContainer';
 import {IWindow} from '../../interfaces/window';
 import {hasPermission, statusFooterButttonsModal} from '../../utils/common';
@@ -46,11 +46,11 @@ declare let window: IWindow;
 
 class UserListView extends React.Component<IPropsType, IStateType> {
 
-  static propTypes = {
-    users: PropTypes.object.isRequired,
-    dispatch: PropTypes.func.isRequired,
-    getUsersAction: PropTypes.func.isRequired
-  };
+  // static propTypes = {
+  //   users: PropTypes.object.isRequired,
+  //   dispatch: PropTypes.func.isRequired,
+  //   getUsersAction: PropTypes.func.isRequired
+  // };
 
   constructor(props: IPropsType) {
     super(props);
@@ -119,7 +119,7 @@ class UserListView extends React.Component<IPropsType, IStateType> {
                         <tr key={user._id} id={`user-${user._id}`}>
                           <td>{user.firstName}</td>
                           <td>{user.lastName}</td>
-                          <td className="hidden-xs">{user.venue.name}</td>
+                          <td className="hidden-xs">{user.venue ? user.venue.name : ''}</td>
                           <td className="hidden-xs">{user.email}</td>
                           <td className="hidden-xs">{moment(user.updatedAt).format('LLL')}</td>
                           {hasPermission(window.user, 'changeUser') ?
@@ -196,7 +196,7 @@ class UserListView extends React.Component<IPropsType, IStateType> {
     const {changeTempUser} = this;
     const {venues, permissions, forms} = this.props.users;
     const tmpUser = {...user};
-    tmpUser.venue = tmpUser.venue._id;
+    tmpUser.venue = tmpUser.venue ? tmpUser.venue._id : '';
     changeTempUser(tmpUser);
     setTimeout(() => {
       this.props.loadDataAction(

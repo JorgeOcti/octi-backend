@@ -2,8 +2,8 @@ import * as PropTypes from 'prop-types';
 import * as React from 'react';
 import {connect} from 'react-redux';
 import {Dispatch} from 'redux';
-import {IModalState, ModalReduxAction} from '../../actions/modal';
-import {IUsersState} from '../../actions/users';
+import {IModalState, ModalReduxAction} from '../../actions/modal.action';
+import {IUsersState} from '../../actions/users.action';
 
 interface IPropsType {
   dispatch?: Dispatch<ModalReduxAction>;
@@ -17,10 +17,10 @@ interface IStateType {
 
 class ModalView extends React.Component<IPropsType, IStateType> {
 
-  static propTypes = {
-    modal: PropTypes.object.isRequired,
-    dispatch: PropTypes.func.isRequired
-  };
+  // static propTypes = {
+  //   modal: PropTypes.object.isRequired,
+  //   dispatch: PropTypes.func.isRequired
+  // };
 
   render() {
     const {modal} = this.props;

@@ -1,4 +1,4 @@
-import {DashboardReduxAction, IDashboardState} from '../actions/dashboard';
+import {DashboardReduxAction, IDashboardState} from '../actions/dashboard.action';
 
 const initialState: IDashboardState = {
   loading: true,
@@ -16,7 +16,7 @@ const initialState: IDashboardState = {
   }
 };
 
-export function dashboard(state = initialState, action: DashboardReduxAction): IDashboardState {
+export function dashboardReducer(state = initialState, action: DashboardReduxAction): IDashboardState {
   switch (action.type) {
     case '/DASHBOARD/IS_LOADING':
       return {

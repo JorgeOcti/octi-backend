@@ -14,7 +14,7 @@ import {
   getParticipant,
   IDashboardState,
   loadParticipantInCarAction
-} from '../../actions/dashboard';
+} from '../../actions/dashboard.action';
 import AppContainer from '../../container/AppContainer';
 import {IWindow} from '../../interfaces/window';
 import ModalView from '../Modal/ModalView';
@@ -37,12 +37,12 @@ interface IStateType {
 
 class DashboardVinDetail extends React.Component<IPropsType, IStateType> {
 
-  static propTypes = {
-    dashboard: PropTypes.object.isRequired,
-    dispatch: PropTypes.func.isRequired,
-    getCarAction: PropTypes.func.isRequired,
-    getParticipant: PropTypes.func.isRequired
-  };
+  // static propTypes = {
+  //   dashboard: PropTypes.object.isRequired,
+  //   dispatch: PropTypes.func.isRequired,
+  //   getCarAction: PropTypes.func.isRequired,
+  //   getParticipant: PropTypes.func.isRequired
+  // };
 
   state = {
     error: null,

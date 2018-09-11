@@ -1,4 +1,4 @@
-import {CarReduxAction, ICarsState} from '../actions/cars';
+import {CarReduxAction, ICarsState} from '../actions/cars.action';
 
 const initialState: ICarsState = {
   cars: [],
@@ -11,7 +11,7 @@ const initialState: ICarsState = {
   }
 };
 
-export function cars(state = initialState, action: CarReduxAction): ICarsState {
+export function carsReducer(state = initialState, action: CarReduxAction): ICarsState {
   switch (action.type) {
     case '/CARS/IS_LOADING':
       return {
