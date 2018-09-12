@@ -106,7 +106,7 @@ class InventoryListView extends React.Component<IPropsType, IStateType> {
                             </div>
                           </div>
                           <div className="row">
-                            <div className="col-md-2 col-xs-12 text-muted text-detail-user">
+                            <div className="col-md-3 col-xs-12 text-muted text-detail-user">
                               <p>
                                 {
                                   inventory.createdBy ?
@@ -116,7 +116,7 @@ class InventoryListView extends React.Component<IPropsType, IStateType> {
                                 <i className="fa fa-fw fa-clock-o" />Creada el {moment(inventory.createdAt).format('LLL')}<br />
                               </p>
                             </div>
-                            <div className="col-md-8">
+                            <div className="col-md-7">
                               <div className="row">
                                 <div className="col-md-4 col-xs-4 text-center text-success" style={{borderRight: '1px solid #cccccc4d'}}>
                                   <strong>Encontrados</strong>
