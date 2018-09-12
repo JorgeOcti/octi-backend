@@ -134,7 +134,12 @@ class InventoryListView extends React.Component<IPropsType, IStateType> {
                             </div>
                             <div className="col-md-2 text-right">
                               <div className="btn-group btn-group-sm">
-                                <button type="button" className="btn btn-default">Ver progreso</button>
+                                {
+                                  inventory.status === 'inProcess' ?
+                                    <button type="button" className="btn btn-default">Ver progreso</button>
+                                    :
+                                    <button type="button" className="btn btn-default">Ver Reporte</button>
+                                }
                                 <button type="button" className="btn btn-default dropdown-toggle" data-toggle="dropdown">
                                   <span className="caret" />
                                   <span className="sr-only">Toggle Dropdown</span>
