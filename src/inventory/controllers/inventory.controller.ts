@@ -1,14 +1,11 @@
 import {Response} from 'express';
-import CarModel, {ICarModel} from '../../app/models/car.model';
+import CarModel from '../../app/models/car.model';
+import Car, {ICarModel} from '../../app/models/car.model';
 import VenueModel, {IVenueModel} from '../../app/models/venue.model';
 import {IRequest} from '../../interfaces/global.interface';
 import {IInventoryCar} from '../../interfaces/inventory.interface';
 import {io} from '../../server';
-import InventoryModel, {
-  ChoicesStatusCarInventory,
-  ChoicesStatusInventory
-} from '../models/inventory.model';
-import Car from "../../app/models/car.model";
+import InventoryModel, {ChoicesStatusCarInventory, ChoicesStatusInventory} from '../models/inventory.model';
 
 class InventoryController {
 
@@ -194,22 +191,104 @@ class InventoryController {
   }
 
   public async apiFoundCar(req: IRequest, res: Response) {
-    const {company} = req.user;
+    const {company, venue} = req.user;
     const {id} = req.params;
     const {vin} = req.body;
     try {
-      const car = await Car.findOne({vin, company})
+      const car = await Car.findOne({
+        vin,
+        company
+      });
+      // if car exist
       if (car) {
-        const inventory = await InventoryModel.update({
+        const inventoryCar = await InventoryModel.findOne({
           _id: id,
           ['cars.car']: car._id,
           company
-        }, {
-          $set: {'cars.$.status': ChoicesStatusCarInventory.found}
-        }, {
-          upsert: true
+        }, {'cars.$': 1});
+        // if car in inventory
+        if (inventoryCar && inventoryCar.cars.length) {
+          await InventoryModel.update({
+            _id: id,
+            ['cars.car']: car._id,
+            company
+          }, {
+            $set: {
+              'cars.$.venueFound': venue._id,
+              'cars.$.status': ChoicesStatusCarInventory.found
+            }
+          }, {
+            upsert: true
+          });
+          // send socket messsage
+          io.to(`inventory-list-${company._id}`).emit('REFRESH', {
+            update: true
+          });
+          res.json({
+            id
+          });
+        } else {
+          const inventory = await InventoryModel.findOne({
+            _id: id,
+            company
+          });
+          if (inventory) {
+            inventory.cars.push({
+              car: car._id,
+              venue: venue._id,
+              venueFound: venue._id,
+              status: ChoicesStatusCarInventory.leftover
+            });
+            await inventory.save();
+            // send socket messsage
+            io.to(`inventory-list-${company._id}`).emit('REFRESH', {
+              update: true
+            });
+            res.json({
+              id
+          });
+          } else {
+            // if inventory no exist
+            res.status(400).json({
+              message: 'Este inventario ya no se encuentra activo',
+              status: 400
+            });
+          }
+        }
+      } else {
+        // if car no exist
+        const inventory = await InventoryModel.findOne({
+          _id: id,
+          company
         });
-        console.log('inventory', inventory);
+        if (inventory) {
+          const newCar = new CarModel({
+            vin,
+            vin2: vin.substr(vin.length - 6),
+            company
+          });
+          await newCar.save();
+          inventory.cars.push({
+            car: newCar._id,
+            venue: venue._id,
+            venueFound: venue._id,
+            status: ChoicesStatusCarInventory.leftover
+          });
+          await inventory.save();
+          // send socket messsage
+          io.to(`inventory-list-${company._id}`).emit('REFRESH', {
+            update: true
+          });
+          res.json({
+            id
+          });
+        } else {
+          // if inventory no exist
+          res.status(400).json({
+            message: 'Este inventario ya no se encuentra activo',
+            status: 400
+          });
+        }
       }
     } catch (e) {
       res.status(400).json({
@@ -217,12 +296,6 @@ class InventoryController {
         status: 400
       });
     }
-    io.to(`inventory-list-${company._id}`).emit('REFRESH', {
-      update: true
-    });
-    res.json({
-      id
-    });
   }
 
   public async apiList(req: IRequest, res: Response) {

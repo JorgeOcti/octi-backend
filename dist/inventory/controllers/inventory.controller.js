@@ -1,10 +1,10 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 const car_model_1 = require("../../app/models/car.model");
+const car_model_2 = require("../../app/models/car.model");
 const venue_model_1 = require("../../app/models/venue.model");
 const server_1 = require("../../server");
 const inventory_model_1 = require("../models/inventory.model");
-const car_model_2 = require("../../app/models/car.model");
 class InventoryController {
     constructor() {
         this.index = this.index.bind(this);
@@ -186,22 +186,108 @@ class InventoryController {
         }
     }
     async apiFoundCar(req, res) {
-        const { company } = req.user;
+        const { company, venue } = req.user;
         const { id } = req.params;
         const { vin } = req.body;
         try {
-            const car = await car_model_2.default.findOne({ vin, company });
+            const car = await car_model_2.default.findOne({
+                vin,
+                company
+            });
+            // if car exist
             if (car) {
-                const inventory = await inventory_model_1.default.update({
+                const inventoryCar = await inventory_model_1.default.findOne({
                     _id: id,
                     ['cars.car']: car._id,
                     company
-                }, {
-                    $set: { 'cars.$.status': inventory_model_1.ChoicesStatusCarInventory.found }
-                }, {
-                    upsert: true
+                }, { 'cars.$': 1 });
+                // if car in inventory
+                if (inventoryCar && inventoryCar.cars.length) {
+                    await inventory_model_1.default.update({
+                        _id: id,
+                        ['cars.car']: car._id,
+                        company
+                    }, {
+                        $set: {
+                            'cars.$.venueFound': venue._id,
+                            'cars.$.status': inventory_model_1.ChoicesStatusCarInventory.found
+                        }
+                    }, {
+                        upsert: true
+                    });
+                    // send socket messsage
+                    server_1.io.to(`inventory-list-${company._id}`).emit('REFRESH', {
+                        update: true
+                    });
+                    res.json({
+                        id
+                    });
+                }
+                else {
+                    const inventory = await inventory_model_1.default.findOne({
+                        _id: id,
+                        company
+                    });
+                    if (inventory) {
+                        inventory.cars.push({
+                            car: car._id,
+                            venue: venue._id,
+                            venueFound: venue._id,
+                            status: inventory_model_1.ChoicesStatusCarInventory.leftover
+                        });
+                        await inventory.save();
+                        // send socket messsage
+                        server_1.io.to(`inventory-list-${company._id}`).emit('REFRESH', {
+                            update: true
+                        });
+                        res.json({
+                            id
+                        });
+                    }
+                    else {
+                        // if inventory no exist
+                        res.status(400).json({
+                            message: 'Este inventario ya no se encuentra activo',
+                            status: 400
+                        });
+                    }
+                }
+            }
+            else {
+                // if car no exist
+                const inventory = await inventory_model_1.default.findOne({
+                    _id: id,
+                    company
                 });
-                console.log('inventory', inventory);
+                if (inventory) {
+                    const newCar = new car_model_1.default({
+                        vin,
+                        vin2: vin.substr(vin.length - 6),
+                        company
+                    });
+                    await newCar.save();
+                    inventory.cars.push({
+                        car: newCar._id,
+                        venue: venue._id,
+                        venueFound: venue._id,
+                        status: inventory_model_1.ChoicesStatusCarInventory.leftover
+                    });
+                    await inventory.save();
+                    // send socket messsage
+                    server_1.io.to(`inventory-list-${company._id}`).emit('REFRESH', {
+                        update: true
+                    });
+                    res.json({
+                        id
+                    });
+                }
+                else {
+                    // if inventory no exist
+                    res.status(400).json({
+                        message: 'Este inventario ya no se encuentra activo',
+                        status: 400
+                    });
+                }
             }
         }
         catch (e) {
@@ -210,12 +296,6 @@ class InventoryController {
                 status: 400
             });
         }
-        server_1.io.to(`inventory-list-${company._id}`).emit('REFRESH', {
-            update: true
-        });
-        res.json({
-            id
-        });
     }
     async apiList(req, res) {
         const { company, venue } = req.user;
