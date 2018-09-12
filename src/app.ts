@@ -94,7 +94,7 @@ app.disable('x-powered-by');
 app.set('strict routing', true);
 
 // For parsing application/json
-app.use(bodyParser.json());
+app.use(bodyParser.json({limit: '50mb'}));
 
 // for parsing application/xwww-
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -170,6 +170,9 @@ passport.deserializeUser(async (email, done) => {
       select: ['codeName']
     }, {
       path: 'userForms',
+      select: ['name']
+    }, {
+      path: 'venue',
       select: ['name']
     }]);
     if (user) {

@@ -7,7 +7,7 @@ import Axios, {
   CancelTokenStatic
 } from 'axios';
 import * as Raven from 'raven-js';
-import {ITempUser} from '../actions/users';
+import {ITempUser} from '../actions/users.action';
 // import {IWindow} from '../interfaces/window';
 
 // declare let window: IWindow;
@@ -146,6 +146,22 @@ export default class ApiService {
     );
   }
 
+  public getInventories() {
+    return this.instance.get(
+      `/api/inventory/`,  {
+        cancelToken: this.source.token
+      }
+    );
+  }
+
+  public createInventory(data: any): AxiosPromise {
+    return this.instance.post(
+      `/api/inventory/`, {carsByVenue: data}, {
+        cancelToken: this.source.token
+      }
+    );
+  }
+
   public getAlerts(): AxiosPromise {
     return this.instance.get(
       `/api/admin/alerts/`, {
@@ -171,5 +187,4 @@ export default class ApiService {
     this.source = this.CancelToken.source();
     return this.source;
   }
-
 }

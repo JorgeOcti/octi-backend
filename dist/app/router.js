@@ -28,6 +28,7 @@ appRouter.get('/cars/:id', middlewares_1.default.isLoggedIn, car_controller_1.de
 appRouter.get('/api/cars/:id', middlewares_1.default.isLoggedIn, car_controller_1.default.apiCarDetail);
 appRouter.get('/api/cars/', middlewares_1.default.isLoggedIn, car_controller_1.default.apiCars);
 // form detail
+appRouter.get('/api/participant/csv/', middlewares_1.default.isLoggedIn, car_controller_1.default.apiParticipantCSV);
 appRouter.get('/api/participant/:id/', middlewares_1.default.isLoggedIn, car_controller_1.default.apiParticipantDetail);
 appRouter.get('/api/participants-per-date/', middlewares_1.default.isLoggedIn, car_controller_1.default.apiParticipantsPerDate);
 // admin user

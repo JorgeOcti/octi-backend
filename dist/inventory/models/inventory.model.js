@@ -1,7 +1,17 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 const mongoose = require("mongoose");
-exports.choicesStatusCarInventory = ['pending', 'notFound', 'found'];
+var ChoicesStatusCarInventory;
+(function (ChoicesStatusCarInventory) {
+    ChoicesStatusCarInventory["pending"] = "pending";
+    ChoicesStatusCarInventory["found"] = "found";
+    ChoicesStatusCarInventory["leftover"] = "leftover";
+})(ChoicesStatusCarInventory = exports.ChoicesStatusCarInventory || (exports.ChoicesStatusCarInventory = {}));
+exports.choicesStatusCarInventory = [
+    ChoicesStatusCarInventory.pending,
+    ChoicesStatusCarInventory.found,
+    ChoicesStatusCarInventory.leftover
+];
 const inventoryCarSchema = new mongoose.Schema({
     car: {
         type: mongoose.Schema.Types.ObjectId,
@@ -18,10 +28,20 @@ const inventoryCarSchema = new mongoose.Schema({
     status: {
         type: String,
         enum: exports.choicesStatusCarInventory,
-        default: 'pending'
+        default: ChoicesStatusCarInventory.pending
     }
 });
-exports.choicesStatusInventory = ['pending', 'in_process', 'finalized'];
+var ChoicesStatusInventory;
+(function (ChoicesStatusInventory) {
+    ChoicesStatusInventory["pending"] = "pending";
+    ChoicesStatusInventory["inProcess"] = "inProcess";
+    ChoicesStatusInventory["finalized"] = "finalized";
+})(ChoicesStatusInventory = exports.ChoicesStatusInventory || (exports.ChoicesStatusInventory = {}));
+exports.choicesStatusInventory = [
+    ChoicesStatusInventory.pending,
+    ChoicesStatusInventory.inProcess,
+    ChoicesStatusInventory.finalized
+];
 const inventorySchema = new mongoose.Schema({
     name: {
         type: String
@@ -36,10 +56,21 @@ const inventorySchema = new mongoose.Schema({
             type: mongoose.Schema.Types.ObjectId,
             ref: 'Venue'
         }],
+    createdBy: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User'
+    },
+    finalizedBy: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User'
+    },
+    finalizedAt: {
+        type: Date
+    },
     status: {
         type: String,
         enum: exports.choicesStatusInventory,
-        default: 'pending'
+        default: ChoicesStatusInventory.pending
     }
 }, {
     timestamps: true

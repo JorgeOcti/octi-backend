@@ -338,6 +338,24 @@ class CarController {
             }
         }
     }
+    async apiParticipantCSV(req, res) {
+        const participants = await participant_model_1.default.find({}).populate([{
+                path: 'car'
+            }, {
+                path: 'user',
+                populate: [{
+                        path: 'venue'
+                    }]
+            }, {
+                path: 'form'
+            }]);
+        const data = [];
+        data.push(`VIN, Marca, Denominacion, Usuario, formulario, venue, calificacion, fecha`);
+        for (const participant of participants) {
+            data.push(`${participant.car.vin},${participant.car.brand},${participant.car.denomination},${participant.user.fullName()},${participant.form.name},${participant.user.venue.name},${participant.qualification},${participant.createdAt},`);
+        }
+        res.send(data.join('\n'));
+    }
     async apiParticipantDetail(req, res) {
         const { id } = req.params;
         const company = req.user.company;

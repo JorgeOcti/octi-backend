@@ -1,4 +1,4 @@
-import {AlertReduxAction, IAlertsState} from '../actions/alerts';
+import {AlertReduxAction, IAlertsState} from '../actions/alerts.action';
 
 const initialState: IAlertsState = {
   alerts: [],
@@ -12,7 +12,7 @@ const initialState: IAlertsState = {
   }
 };
 
-export function alerts(state = initialState, action: AlertReduxAction): IAlertsState {
+export function alertsReducer(state = initialState, action: AlertReduxAction): IAlertsState {
   switch (action.type) {
     case '/ALERTS/IS_LOADING':
       return {

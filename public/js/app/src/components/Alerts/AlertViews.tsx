@@ -7,8 +7,8 @@ import {connect} from 'react-redux';
 import {RouteComponentProps} from 'react-router';
 import {Dispatch} from 'redux';
 import {IAlert} from '../../../../../../src/interfaces/alert.interface';
-import {AlertReduxAction, createAlertAction, deleteAlertAction, getAlertsAction, IAlertsState} from '../../actions/alerts';
-import {loadDataAction, ModalReduxAction} from '../../actions/modal';
+import {AlertReduxAction, createAlertAction, deleteAlertAction, getAlertsAction, IAlertsState} from '../../actions/alerts.action';
+import {loadDataAction, ModalReduxAction} from '../../actions/modal.action';
 import AppContainer from '../../container/AppContainer';
 import {statusFooterButttonsModal} from '../../utils/common';
 import ModalView from '../Modal/ModalView';
@@ -42,10 +42,10 @@ interface IStateType {
 
 class AlertViews extends React.Component<IPropsType, IStateType> {
 
-  static propTypes = {
-    alerts: PropTypes.object.isRequired,
-    dispatch: PropTypes.func.isRequired
-  };
+  // static propTypes = {
+  //   alerts: PropTypes.object.isRequired,
+  //   dispatch: PropTypes.func.isRequired
+  // };
 
   state = {
     error: null,

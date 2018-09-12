@@ -8,7 +8,7 @@ import {IForm} from '../../../../../../src/interfaces/form.interface';
 import {IPermission} from '../../../../../../src/interfaces/permision.interface';
 import {IUser} from '../../../../../../src/interfaces/user.interface';
 import {IVenue} from '../../../../../../src/interfaces/venue.interface';
-import {IUsersState} from '../../actions/users';
+import {IUsersState} from '../../actions/users.action';
 
 interface IPropsType {
   users: IUsersState;
@@ -25,10 +25,10 @@ interface IStateType {
 
 class UserFormView extends React.Component<IPropsType, IStateType> {
 
-  static propTypes = {
-    venues: PropTypes.array.isRequired,
-    changeTempUser: PropTypes.func.isRequired
-  };
+  // static propTypes = {
+  //   venues: PropTypes.array.isRequired,
+  //   changeTempUser: PropTypes.func.isRequired
+  // };
 
   readonly state = {
     error: null

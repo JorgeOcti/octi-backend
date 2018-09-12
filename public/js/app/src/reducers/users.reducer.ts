@@ -1,7 +1,7 @@
 import {
   IUsersState,
   UserReduxAction
-} from '../actions/users';
+} from '../actions/users.action';
 
 import {IUser} from '../../../../../src/interfaces/user.interface';
 
@@ -27,7 +27,7 @@ const initialState: IUsersState = {
   }
 };
 
-export function users(state = initialState, action: UserReduxAction): IUsersState {
+export function usersReducer(state = initialState, action: UserReduxAction): IUsersState {
   switch (action.type) {
     case '/USERS/IS_LOADING':
       return {
