@@ -63,6 +63,7 @@ class InventoryController {
                 company,
                 cars: inventoryCars,
                 venues: venuesIDs,
+                createdBy: req.user._id,
                 status: inventory_model_1.ChoicesStatusInventory.inProcess
             });
             inventory.save();
@@ -79,41 +80,93 @@ class InventoryController {
         const { company } = req.user;
         try {
             const response = [];
-            const inventories = await inventory_model_1.default.find({
-                company
-            }, {
-                name: 1,
-                status: 1,
-                ['cars.status']: 1
-            }, {
-                sort: {
-                    createdAt: -1
-                }
-            });
-            for (const inventory of inventories) {
-                const results = await inventory_model_1.default.aggregate([{
-                        $match: {
-                            _id: inventory._id,
-                            company
+            const inventories = await inventory_model_1.default.aggregate([{
+                    $match: {
+                        company
+                    }
+                }, {
+                    $unwind: '$cars'
+                }, {
+                    $group: {
+                        _id: {
+                            category: '$_id',
+                            status: '$status',
+                            carStatus: '$cars.status',
+                            name: '$name',
+                            createdBy: '$createdBy',
+                            createdAt: '$createdAt'
+                        },
+                        total: {
+                            $sum: 1
                         }
-                    }, {
-                        $unwind: '$cars'
-                    }, {
-                        $group: {
-                            _id: '$cars.status',
-                            total: {
-                                $sum: 1
+                    }
+                }, {
+                    $group: {
+                        _id: '$_id.category',
+                        name: {
+                            $first: '$_id.name'
+                        },
+                        createdAt: {
+                            $first: '$_id.createdAt'
+                        },
+                        user: {
+                            $first: '$_id.createdBy'
+                        },
+                        results: {
+                            $push: {
+                                status: '$_id.carStatus',
+                                total: '$total'
                             }
+                        },
+                        status: {
+                            $first: '$_id.status'
                         }
-                    }]);
+                    }
+                }, {
+                    $lookup: {
+                        from: 'users',
+                        localField: 'user',
+                        foreignField: '_id',
+                        as: 'userInfo'
+                    }
+                }, {
+                    $unwind: '$userInfo'
+                }, {
+                    $project: {
+                        '_id': 1,
+                        'name': 1,
+                        'results': 1,
+                        'userInfo.firstName': 1,
+                        'userInfo.lastName': 1,
+                        'status': 1,
+                        'createdAt': 1
+                    }
+                }, {
+                    $sort: {
+                        createdAt: -1
+                    }
+                }]);
+            for (const inventory of inventories) {
+                const defaultResults = {
+                    [inventory_model_1.ChoicesStatusCarInventory.pending]: 0,
+                    [inventory_model_1.ChoicesStatusCarInventory.found]: 0,
+                    [inventory_model_1.ChoicesStatusCarInventory.leftover]: 0
+                };
                 response.push({
                     _id: inventory._id,
                     name: inventory.name,
-                    results: results.reduce((acc, cur) => {
-                        acc[cur._id] = cur.total;
+                    createdBy: inventory.userInfo ? {
+                        ...inventory.userInfo,
+                        fullName: `${inventory.userInfo.firstName} ${inventory.userInfo.lastName}`
+                    } : {},
+                    results: inventory.results.reduce((acc, cur) => {
+                        acc[cur.status] = cur.total;
                         return acc;
-                    }, {}),
-                    status: inventory.status
+                    }, {
+                        ...defaultResults
+                    }),
+                    status: inventory.status,
+                    createdAt: inventory.createdAt
                 });
             }
             res.json({

@@ -1,7 +1,8 @@
 import { combineReducers } from 'redux';
-import { alerts } from './alerts.reducer';
+import { alertsReducer } from './alerts.reducer';
 import { carsReducer } from './cars.reducer';
 import { dashboardReducer } from './dashboard.reducer';
+import { inventoriesReducer } from './inventory.reducer';
 import { modalReducer } from './modal.reducer';
 import { usersReducer } from './users.reducer';
 
@@ -10,5 +11,6 @@ export default combineReducers({
   cars: carsReducer,
   modal: modalReducer,
   dashboard: dashboardReducer,
-  alerts
+  inventories: inventoriesReducer,
+  alerts: alertsReducer
 });

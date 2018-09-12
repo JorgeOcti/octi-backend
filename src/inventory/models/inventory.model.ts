@@ -8,13 +8,11 @@ export interface IInventoryCarModel extends IInventoryCar, mongoose.Types.Subdoc
 
 export enum ChoicesStatusCarInventory {
   pending = 'pending',
-  notFound = 'notFound',
   found = 'found',
   leftover = 'leftover'
 }
 export const choicesStatusCarInventory = [
   ChoicesStatusCarInventory.pending,
-  ChoicesStatusCarInventory.notFound,
   ChoicesStatusCarInventory.found,
   ChoicesStatusCarInventory.leftover
 ];
@@ -63,6 +61,17 @@ const inventorySchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Venue'
   }],
+  createdBy: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User'
+  },
+  finalizedBy: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User'
+  },
+  finalizedAt: {
+    type: Date
+  },
   status: {
     type: String,
     enum: choicesStatusInventory,

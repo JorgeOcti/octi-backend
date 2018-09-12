@@ -4,13 +4,11 @@ const mongoose = require("mongoose");
 var ChoicesStatusCarInventory;
 (function (ChoicesStatusCarInventory) {
     ChoicesStatusCarInventory["pending"] = "pending";
-    ChoicesStatusCarInventory["notFound"] = "notFound";
     ChoicesStatusCarInventory["found"] = "found";
     ChoicesStatusCarInventory["leftover"] = "leftover";
 })(ChoicesStatusCarInventory = exports.ChoicesStatusCarInventory || (exports.ChoicesStatusCarInventory = {}));
 exports.choicesStatusCarInventory = [
     ChoicesStatusCarInventory.pending,
-    ChoicesStatusCarInventory.notFound,
     ChoicesStatusCarInventory.found,
     ChoicesStatusCarInventory.leftover
 ];
@@ -58,6 +56,17 @@ const inventorySchema = new mongoose.Schema({
             type: mongoose.Schema.Types.ObjectId,
             ref: 'Venue'
         }],
+    createdBy: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User'
+    },
+    finalizedBy: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User'
+    },
+    finalizedAt: {
+        type: Date
+    },
     status: {
         type: String,
         enum: exports.choicesStatusInventory,

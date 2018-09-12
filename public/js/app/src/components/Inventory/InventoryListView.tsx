@@ -1,19 +1,19 @@
 ///<reference path="../../../node_modules/sweetalert/typings/sweetalert.d.ts"/>
 // import * as PropTypes from 'prop-types';
+import * as moment from 'moment';
 import * as Raven from 'raven-js';
 import * as React from 'react';
 import {ErrorInfo} from 'react';
 import {connect} from 'react-redux';
 import {RouteComponentProps} from 'react-router';
 import {Dispatch} from 'redux';
-import {AlertReduxAction, IAlertsState} from '../../actions/alerts.action';
-import {loadDataAction, ModalReduxAction} from '../../actions/modal.action';
+import {getInventoriesAction, IInventoryState, InventoryReduxAction} from '../../actions/inventory.action';
 import AppContainer from '../../container/AppContainer';
 
 interface IPropsType extends RouteComponentProps<{ ticket: string }> {
-  alerts: IAlertsState;
-  dispatch: Dispatch<AlertReduxAction>;
-  loadDataAction(title: string, body: JSX.Element, footer: JSX.Element): ModalReduxAction;
+  inventories: IInventoryState;
+  dispatch: Dispatch<InventoryReduxAction>;
+  getInventoriesAction(): void;
 }
 
 interface IStateType {
@@ -33,19 +33,20 @@ class InventoryListView extends React.Component<IPropsType, IStateType> {
   constructor(props: IPropsType) {
     super(props);
     this.create = this.create.bind(this);
+    this.labelStatus = this.labelStatus.bind(this);
   }
 
   public componentWillMount() {
-    // this.props.getAlertsAction();
+    this.props.getInventoriesAction();
     // set the title of the page
     document.title = 'OSA Andes | Inventarios';
   }
 
   public componentWillUnmount() {
     // cancel request if component is inmounted
-    // if (this.props.alerts.source) {
-    //   this.props.alerts.source.cancel('Operation canceled by the user.');
-    // }
+    if (this.props.inventories.source) {
+      this.props.inventories.source.cancel('Operation canceled by the user.');
+    }
   }
 
   public componentDidCatch(error: Error, errorInfo: ErrorInfo) {
@@ -56,7 +57,7 @@ class InventoryListView extends React.Component<IPropsType, IStateType> {
   }
 
   public render(): React.ReactElement<IPropsType> {
-    // const {alerts, loading} = this.props.alerts;
+    const {inventories, loading} = this.props.inventories;
     return (
       <AppContainer title="" cMenu="2" cSubMenu="2.1">
         <section className="content">
@@ -70,97 +71,74 @@ class InventoryListView extends React.Component<IPropsType, IStateType> {
             <div className="box-body">
               <div className="row">
                 <div className="col-md-12">
-                  <div className="inventory" style={{border: '1px solid #cccccc4d', padding: '10px', marginBottom: '10px'}}>
-                    <div className="row">
-                      <div className="col-md-6">
-                        <h4 className={'text-primary'} style={{marginTop: '3px', marginBottom: '10px'}}>Inventario de prueba</h4>
-                      </div>
-                      <div className="col-md-6 text-right">
-                        <span className="label label-warning">En progreso</span>
-                      </div>
-                    </div>
-                    <div className="row">
-                      <div className="col-md-2 col-xs-12 text-muted">
-                        <p style={{marginTop: '20px'}}>Creado el 4 de septiembre por Gonzalo Muñoz</p>
-                      </div>
-                      <div className="col-md-8">
-                        <div className="row">
-                          <div className="col-md-4 col-xs-4 text-center text-success" style={{borderRight: '1px solid #cccccc4d'}}>
-                            <strong>Encontrados</strong>
-                            <h2>10</h2>
+                  {
+                    inventories.map((inventory: any) => {
+                      return (
+                        <div className="inventory" key={inventory._id}>
+                          <div className="row">
+                            <div className="col-md-6 col-xs-6">
+                              <h4 className={'text-primary'}>{inventory.name}</h4>
+                            </div>
+                            <div className="col-md-6 col-xs-6 text-right">
+                              {this.labelStatus(inventory.status)}
+                            </div>
                           </div>
-                          <div className="col-md-4 col-xs-4 text-center text-danger" style={{borderRight: '1px solid #cccccc4d'}}>
-                            <strong>Faltantes</strong>
-                            <h2>50</h2>
-                          </div>
-                          <div className="col-md-4 col-xs-4 text-center text-primary">
-                            <strong>Sobrantes</strong>
-                            <h2>20</h2>
-                          </div>
-                        </div>
-                      </div>
-                      <div className="col-md-2 text-right">
-                        <div className="btn-group btn-group-sm" style={{marginTop: '10px'}}>
-                          <button type="button" className="btn btn-default">Ver progreso</button>
-                          <button type="button" className="btn btn-default dropdown-toggle" data-toggle="dropdown">
-                            <span className="caret" />
-                            <span className="sr-only">Toggle Dropdown</span>
-                          </button>
-                          <ul className="dropdown-menu pull-right" role="menu">
-                            <li><a href="#">Finalizar</a></li>
-                          </ul>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                  <div className="inventory" style={{border: '1px solid #cccccc4d', padding: '10px', marginBottom: '10px'}}>
-                    <div className="row">
-                      <div className="col-md-6">
-                        <h4 className={'text-primary'} style={{marginTop: '3px', marginBottom: '10px'}}>Inventario de prueba 2</h4>
-                      </div>
-                      <div className="col-md-6 text-right">
-                        <span className="label label-success">Finalizado</span>
-                      </div>
-                    </div>
-                    <div className="row">
-                      <div className="col-md-2 text-muted">
-                        <p style={{marginTop: '20px'}}>Creado el 1 de septiembre por Gonzalo Muñoz</p>
-                      </div>
-                      <div className="col-md-8">
-                        <div className="row">
-                          <div className="col-md-4 col-xs-4 text-center text-success" style={{borderRight: '1px solid #cccccc4d'}}>
-                            <strong>Encontrados</strong>
-                            <h2>20</h2>
-                          </div>
-                          <div className="col-md-4 col-xs-4 text-center text-danger" style={{borderRight: '1px solid #cccccc4d'}}>
-                            <strong>Faltantes</strong>
-                            <h2>50</h2>
-                          </div>
-                          <div className="col-md-4 col-xs-4 text-center text-primary">
-                            <strong>Sobrantes</strong>
-                            <h2>30</h2>
+                          <div className="row">
+                            <div className="col-md-2 col-xs-12 text-muted text-detail-user">
+                              <p>
+                                {
+                                  inventory.createdBy ?
+                                    <React.Fragment><i className="fa fa-fw fa-user"/>{inventory.createdBy.fullName}<br/></React.Fragment>
+                                    : null
+                                }
+                                <i className="fa fa-fw fa-clock-o" />Creada el {moment(inventory.createdAt).format('LLL')}<br />
+                              </p>
+                            </div>
+                            <div className="col-md-8">
+                              <div className="row">
+                                <div className="col-md-4 col-xs-4 text-center text-success" style={{borderRight: '1px solid #cccccc4d'}}>
+                                  <strong>Encontrados</strong>
+                                  <h2>{inventory.results.found}</h2>
+                                </div>
+                                <div className="col-md-4 col-xs-4 text-center text-danger" style={{borderRight: '1px solid #cccccc4d'}}>
+                                  <strong>Faltantes</strong>
+                                  <h2>{inventory.results.pending}</h2>
+                                </div>
+                                <div className="col-md-4 col-xs-4 text-center text-primary">
+                                  <strong>Sobrantes</strong>
+                                  <h2>{inventory.results.leftover}</h2>
+                                </div>
+                              </div>
+                            </div>
+                            <div className="col-md-2 text-right">
+                              <div className="btn-group btn-group-sm">
+                                <button type="button" className="btn btn-default">Ver progreso</button>
+                                <button type="button" className="btn btn-default dropdown-toggle" data-toggle="dropdown">
+                                  <span className="caret" />
+                                  <span className="sr-only">Toggle Dropdown</span>
+                                </button>
+                                {
+                                  inventory.status === 'inProcess' ?
+                                    <ul className="dropdown-menu pull-right" role="menu">
+                                      <li><a href="#">Finalizar</a></li>
+                                    </ul>
+                                    :
+                                    <ul className="dropdown-menu pull-right" role="menu">
+                                      <li><a href="#">Eliminar</a></li>
+                                    </ul>
+                                }
+                              </div>
+                            </div>
                           </div>
                         </div>
-                      </div>
-                      <div className="col-md-2 text-right">
-                        <div className="btn-group btn-group-sm" style={{marginTop: '10px'}}>
-                          <button type="button" className="btn btn-default">Ver reporte</button>
-                          <button type="button" className="btn btn-default dropdown-toggle" data-toggle="dropdown">
-                            <span className="caret" />
-                            <span className="sr-only">Toggle Dropdown</span>
-                          </button>
-                          <ul className="dropdown-menu pull-right" role="menu">
-                            <li><a href="#">Borrar</a></li>
-                          </ul>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
+                      );
+                    })
+                  }
                 </div>
               </div>
             </div>
             {
-              false &&
+              loading &&
                 <div className="overlay">
                   <i className="fa fa-spinner fa-spin text-purple"/>
                 </div>
@@ -171,21 +149,31 @@ class InventoryListView extends React.Component<IPropsType, IStateType> {
     );
   }
 
+  private labelStatus(option: string) {
+    if (option === 'finalized') {
+      return <span className="label label-success"><i className="fa fa-fw fa-check"/> Finalizado</span>;
+    } else if (option === 'inProcess') {
+      return <span className="label label-primary"><i className="fa fa-fw fa-spin fa-spinner"/> En progreso</span>;
+    } else {
+      return <span className="label label-warning">Pendiente</span>;
+    }
+  }
+
   private create() {
     this.props.history.push('/inventory/create/');
   }
 }
 
-const mapStateToProps = (state: { alerts: IAlertsState }) => {
+const mapStateToProps = (state: { inventories: IInventoryState }) => {
   return {
-    alerts: state.alerts
+    inventories: state.inventories
   };
 };
 
 const mapDispatchToProps = (dispatch: any ) => {
   return {
     dispatch,
-    loadDataAction: (title: string, body: JSX.Element, footer: JSX.Element) => dispatch(loadDataAction(title, body, footer))
+    getInventoriesAction: () => dispatch(getInventoriesAction())
   };
 };
 

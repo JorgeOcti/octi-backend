@@ -3,7 +3,7 @@ import CarModel, {ICarModel} from '../../app/models/car.model';
 import VenueModel, {IVenueModel} from '../../app/models/venue.model';
 import {IRequest} from '../../interfaces/global.interface';
 import {IInventoryCar} from '../../interfaces/inventory.interface';
-import InventoryModel, {ChoicesStatusInventory} from '../models/inventory.model';
+import InventoryModel, {ChoicesStatusCarInventory, ChoicesStatusInventory} from '../models/inventory.model';
 
 class InventoryController {
 
@@ -13,6 +13,7 @@ class InventoryController {
     this.list = this.list.bind(this);
     this.apiList = this.apiList.bind(this);
   }
+
   public async index(req: IRequest, res: Response) {
     res.render('app/index', {token: await req.user.generateToken()});
   }
@@ -67,6 +68,7 @@ class InventoryController {
         company,
         cars: inventoryCars,
         venues: venuesIDs,
+        createdBy: req.user._id,
         status: ChoicesStatusInventory.inProcess
       });
       inventory.save();
@@ -83,45 +85,95 @@ class InventoryController {
     const {company} = req.user;
     try {
       const response: any[] = [];
-      const inventories = await InventoryModel.find({
-        company
-      }, {
-        name: 1,
-        status: 1,
-        ['cars.status']: 1
-      }, {
-        sort: {
-          createdAt: -1
+      const inventories = await InventoryModel.aggregate([{
+        $match: {
+          company
         }
-      });
-
-      for (const inventory of inventories) {
-        const results = await InventoryModel.aggregate([{
-          $match: {
-            _id: inventory._id,
-            company
+      }, {
+        $unwind: '$cars'
+      }, {
+        $group: {
+          _id: {
+            category: '$_id',
+            status: '$status',
+            carStatus: '$cars.status',
+            name: '$name',
+            createdBy: '$createdBy',
+            createdAt: '$createdAt'
+          },
+          total: {
+            $sum: 1
           }
-        }, {
-          $unwind: '$cars'
-        }, {
-          $group: {
-            _id: '$cars.status',
-            total: {
-              $sum: 1
+        }
+      }, {
+        $group: {
+          _id: '$_id.category',
+          name: {
+            $first: '$_id.name'
+          },
+          createdAt: {
+            $first: '$_id.createdAt'
+          },
+          user: {
+            $first: '$_id.createdBy'
+          },
+          results: {
+            $push: {
+              status: '$_id.carStatus',
+              total: '$total'
             }
+          },
+          status: {
+            $first: '$_id.status'
           }
-        }]);
+        }
+      }, {
+        $lookup: {
+          from: 'users',
+          localField: 'user',
+          foreignField: '_id',
+          as: 'userInfo'
+        }
+      }, {
+        $unwind: '$userInfo'
+      }, {
+        $project: {
+          '_id': 1,
+          'name': 1,
+          'results': 1,
+          'userInfo.firstName': 1,
+          'userInfo.lastName': 1,
+          'status': 1,
+          'createdAt': 1
+        }
+      }, {
+        $sort : {
+          createdAt : -1
+        }
+      }]);
+      for (const inventory of inventories) {
+        const defaultResults = {
+          [ChoicesStatusCarInventory.pending]: 0,
+          [ChoicesStatusCarInventory.found]: 0,
+          [ChoicesStatusCarInventory.leftover]: 0
+        };
         response.push({
           _id: inventory._id,
           name: inventory.name,
-          results: results.reduce((acc: any, cur: any) => {
-            acc[cur._id] = cur.total;
+          createdBy: inventory.userInfo ? {
+            ...inventory.userInfo,
+            fullName: `${inventory.userInfo.firstName} ${inventory.userInfo.lastName}`
+          } : {},
+          results: inventory.results.reduce((acc: any, cur: any) => {
+            acc[cur.status] = cur.total;
             return acc;
-          }, {}),
-          status: inventory.status
+          }, {
+            ...defaultResults
+          }),
+          status: inventory.status,
+          createdAt: inventory.createdAt
         });
       }
-
       res.json({
         inventories: response,
         status: 200

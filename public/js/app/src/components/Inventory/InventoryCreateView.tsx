@@ -92,7 +92,7 @@ class InventoryCreateView extends React.Component<IPropsType, IStateType> {
                 <div className="col col-md-6">
                   <div className="form-group">
                     <label htmlFor="name">Nombre</label>
-                    <input type="text" className="form-control" id="name" value={`Inventario del ${moment().format('YYMMDD')}`} />
+                    <input type="text" className="form-control" id="name" defaultValue={`Inventario del ${moment().format('YYMMDD')}`} />
                   </div>
                 </div>
               </div>

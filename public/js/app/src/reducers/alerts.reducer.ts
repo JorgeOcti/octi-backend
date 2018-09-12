@@ -12,7 +12,7 @@ const initialState: IAlertsState = {
   }
 };
 
-export function alerts(state = initialState, action: AlertReduxAction): IAlertsState {
+export function alertsReducer(state = initialState, action: AlertReduxAction): IAlertsState {
   switch (action.type) {
     case '/ALERTS/IS_LOADING':
       return {
