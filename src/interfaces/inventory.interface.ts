@@ -1,8 +1,8 @@
+import {IUserModel} from '../app/models/user.model';
 import {IInventoryCarModel} from '../inventory/models/inventory.model';
 import {ICar} from './car.interface';
 import {ICompany} from './company.interface';
 import {IVenue} from './venue.interface';
-import {IUserModel} from "../app/models/user.model";
 
 export interface IInventoryCar {
   car: ICar;

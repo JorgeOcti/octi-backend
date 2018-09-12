@@ -7,13 +7,17 @@ import {ErrorInfo} from 'react';
 import {connect} from 'react-redux';
 import {RouteComponentProps} from 'react-router';
 import {Dispatch} from 'redux';
+import * as io from 'socket.io-client';
 import {getInventoriesAction, IInventoryState, InventoryReduxAction} from '../../actions/inventory.action';
 import AppContainer from '../../container/AppContainer';
+import {IWindow} from '../../interfaces/window';
+
+declare let window: IWindow;
 
 interface IPropsType extends RouteComponentProps<{ ticket: string }> {
   inventories: IInventoryState;
   dispatch: Dispatch<InventoryReduxAction>;
-  getInventoriesAction(): void;
+  getInventoriesAction(loading: boolean): void;
 }
 
 interface IStateType {
@@ -29,6 +33,7 @@ class InventoryListView extends React.Component<IPropsType, IStateType> {
   state = {
     error: null
   };
+  private socket: SocketIOClient.Socket;
 
   constructor(props: IPropsType) {
     super(props);
@@ -37,9 +42,26 @@ class InventoryListView extends React.Component<IPropsType, IStateType> {
   }
 
   public componentWillMount() {
-    this.props.getInventoriesAction();
     // set the title of the page
     document.title = 'OSA Andes | Inventarios';
+
+    // get data
+    this.props.getInventoriesAction(true);
+
+    // socket
+    this.socket = io.connect(`${location.protocol}//${location.host}`, {
+      secure: location.protocol === 'https:',
+      reconnection: true,
+      query: {token: (window.user as any).token}
+    });
+    this.socket.on('connect', () => {
+      this.socket.emit('join', {room: `inventory-list-${window.user.company}`});
+    });
+    this.socket.on('REFRESH', (data: any): void => {
+      if (data.update) {
+        this.props.getInventoriesAction(false);
+      }
+    });
   }
 
   public componentWillUnmount() {
@@ -173,7 +195,7 @@ const mapStateToProps = (state: { inventories: IInventoryState }) => {
 const mapDispatchToProps = (dispatch: any ) => {
   return {
     dispatch,
-    getInventoriesAction: () => dispatch(getInventoriesAction())
+    getInventoriesAction: (loading: boolean) => dispatch(getInventoriesAction(loading))
   };
 };
 

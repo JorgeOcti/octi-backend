@@ -3,7 +3,12 @@ import CarModel, {ICarModel} from '../../app/models/car.model';
 import VenueModel, {IVenueModel} from '../../app/models/venue.model';
 import {IRequest} from '../../interfaces/global.interface';
 import {IInventoryCar} from '../../interfaces/inventory.interface';
-import InventoryModel, {ChoicesStatusCarInventory, ChoicesStatusInventory} from '../models/inventory.model';
+import {io} from '../../server';
+import InventoryModel, {
+  ChoicesStatusCarInventory,
+  ChoicesStatusInventory
+} from '../models/inventory.model';
+import Car from "../../app/models/car.model";
 
 class InventoryController {
 
@@ -12,6 +17,7 @@ class InventoryController {
     this.create = this.create.bind(this);
     this.list = this.list.bind(this);
     this.apiList = this.apiList.bind(this);
+    this.apiFoundCar = this.apiFoundCar.bind(this);
   }
 
   public async index(req: IRequest, res: Response) {
@@ -185,6 +191,38 @@ class InventoryController {
         status: 400
       });
     }
+  }
+
+  public async apiFoundCar(req: IRequest, res: Response) {
+    const {company} = req.user;
+    const {id} = req.params;
+    const {vin} = req.body;
+    try {
+      const car = await Car.findOne({vin, company})
+      if (car) {
+        const inventory = await InventoryModel.update({
+          _id: id,
+          ['cars.car']: car._id,
+          company
+        }, {
+          $set: {'cars.$.status': ChoicesStatusCarInventory.found}
+        }, {
+          upsert: true
+        });
+        console.log('inventory', inventory);
+      }
+    } catch (e) {
+      res.status(400).json({
+        message: e,
+        status: 400
+      });
+    }
+    io.to(`inventory-list-${company._id}`).emit('REFRESH', {
+      update: true
+    });
+    res.json({
+      id
+    });
   }
 
   public async apiList(req: IRequest, res: Response) {

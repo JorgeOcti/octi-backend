@@ -2,13 +2,16 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 const car_model_1 = require("../../app/models/car.model");
 const venue_model_1 = require("../../app/models/venue.model");
+const server_1 = require("../../server");
 const inventory_model_1 = require("../models/inventory.model");
+const car_model_2 = require("../../app/models/car.model");
 class InventoryController {
     constructor() {
         this.index = this.index.bind(this);
         this.create = this.create.bind(this);
         this.list = this.list.bind(this);
         this.apiList = this.apiList.bind(this);
+        this.apiFoundCar = this.apiFoundCar.bind(this);
     }
     async index(req, res) {
         res.render('app/index', { token: await req.user.generateToken() });
@@ -181,6 +184,38 @@ class InventoryController {
                 status: 400
             });
         }
+    }
+    async apiFoundCar(req, res) {
+        const { company } = req.user;
+        const { id } = req.params;
+        const { vin } = req.body;
+        try {
+            const car = await car_model_2.default.findOne({ vin, company });
+            if (car) {
+                const inventory = await inventory_model_1.default.update({
+                    _id: id,
+                    ['cars.car']: car._id,
+                    company
+                }, {
+                    $set: { 'cars.$.status': inventory_model_1.ChoicesStatusCarInventory.found }
+                }, {
+                    upsert: true
+                });
+                console.log('inventory', inventory);
+            }
+        }
+        catch (e) {
+            res.status(400).json({
+                message: e,
+                status: 400
+            });
+        }
+        server_1.io.to(`inventory-list-${company._id}`).emit('REFRESH', {
+            update: true
+        });
+        res.json({
+            id
+        });
     }
     async apiList(req, res) {
         const { company, venue } = req.user;

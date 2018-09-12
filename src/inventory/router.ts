@@ -12,6 +12,7 @@ inventoryRouter.post('/api/inventory/', Middlewares.isLoggedIn, InventoryControl
 
 // Inventories API
 inventoryRouter.get('/api/v1/inventory/', Middlewares.isJWTAuthenticated, InventoryController.apiList);
+inventoryRouter.post('/api/v1/inventory/:id/', Middlewares.isJWTAuthenticated, InventoryController.apiFoundCar);
 
 export {
   inventoryRouter

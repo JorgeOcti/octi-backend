@@ -60,19 +60,25 @@ export function loadAlertsAction(inventories: any[]): ILoadInventories {
   };
 }
 
-export function getInventoriesAction() {
+export function getInventoriesAction(loading: boolean) {
   return (dispatch: Dispatch<InventoryReduxAction>) => {
     const api: ApiService = new ApiService();
-    dispatch(isLoadingAction(true));
+    if (loading) {
+      dispatch(isLoadingAction(true));
+    }
     dispatch(cancelRequestAction(api.getSource()));
     api.getInventories()
       .then((response: AxiosResponse) => {
         const data = response.data;
-        dispatch(isLoadingAction(false));
+        if (loading) {
+          dispatch(isLoadingAction(false));
+        }
         dispatch(loadAlertsAction(data.inventories));
       })
       .catch((err: AxiosError) => {
-        dispatch(isLoadingAction(false));
+        if (loading) {
+          dispatch(isLoadingAction(false));
+        }
         api.errorHandler(err);
       });
   };
