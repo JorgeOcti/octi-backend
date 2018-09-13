@@ -201,60 +201,81 @@ class InventoryController {
       });
       // if car exist
       if (car) {
-        const inventoryCar = await InventoryModel.findOne({
-          _id: id,
-          ['cars.car']: car._id,
-          company
-        }, {'cars.$': 1});
-        // if car in inventory
-        if (inventoryCar && inventoryCar.cars.length) {
-          await InventoryModel.update({
+        const inventoriedCar = await InventoryModel.findOne({
+          $and: [{
+            _id: id
+          }, {
+            company
+          }, {
+            ['cars.car']: car._id
+          }]
+        }, {
+          'cars.$': 1
+        });
+        if (inventoriedCar && inventoriedCar.cars.length && inventoriedCar.cars[0].status !== ChoicesStatusCarInventory.pending) {
+          res.status(400).json({
+            message: 'Este auto ya ha sido inventariado',
+            status: 400
+          });
+        } else {
+          const inventoryCar = await InventoryModel.findOne({
             _id: id,
             ['cars.car']: car._id,
             company
           }, {
-            $set: {
-              'cars.$.venueFound': venue._id,
-              'cars.$.status': ChoicesStatusCarInventory.found
-            }
-          }, {
-            upsert: true
+            'cars.$': 1
           });
-          // send socket messsage
-          io.to(`inventory-list-${company._id}`).emit('REFRESH', {
-            update: true
-          });
-          res.json({
-            id
-          });
-        } else {
-          const inventory = await InventoryModel.findOne({
-            _id: id,
-            company
-          });
-          if (inventory) {
-            inventory.cars.push({
-              car: car._id,
-              venue: venue._id,
-              venueFound: venue._id,
-              status: ChoicesStatusCarInventory.leftover
+          // if car in inventory
+          if (inventoryCar && inventoryCar.cars.length) {
+            await InventoryModel.update({
+              _id: id,
+              ['cars.car']: car._id,
+              company
+            }, {
+              $set: {
+                'cars.$.venueFound': venue._id,
+                'cars.$.status': ChoicesStatusCarInventory.found
+              }
+            }, {
+              upsert: true
             });
-            await inventory.save();
             // send socket messsage
             io.to(`inventory-list-${company._id}`).emit('REFRESH', {
               update: true
             });
             res.json({
               id
-          });
-          } else {
-            // if inventory no exist
-            res.status(400).json({
-              message: 'Este inventario ya no se encuentra activo',
-              status: 400
             });
+          } else {
+            const inventory = await InventoryModel.findOne({
+              _id: id,
+              company
+            });
+            if (inventory) {
+              inventory.cars.push({
+                car: car._id,
+                venue: venue._id,
+                venueFound: venue._id,
+                status: ChoicesStatusCarInventory.leftover
+              });
+              await inventory.save();
+              // send socket messsage
+              io.to(`inventory-list-${company._id}`).emit('REFRESH', {
+                update: true
+              });
+              res.json({
+                id
+              });
+            } else {
+              // if inventory no exist
+              res.status(400).json({
+                message: 'Este inventario ya no se encuentra activo',
+                status: 400
+              });
+            }
           }
         }
+
       } else {
         // if car no exist
         const inventory = await InventoryModel.findOne({
