@@ -12,5 +12,6 @@ inventoryRouter.get('/api/inventory/', middlewares_1.default.isLoggedIn, invento
 inventoryRouter.post('/api/inventory/', middlewares_1.default.isLoggedIn, inventory_controller_1.default.create);
 // Inventories API
 inventoryRouter.get('/api/v1/inventory/', middlewares_1.default.isJWTAuthenticated, inventory_controller_1.default.apiList);
+inventoryRouter.post('/api/v1/inventory/:id/upload-file/', middlewares_1.default.isJWTAuthenticated, inventory_controller_1.default.uploadFile);
 inventoryRouter.post('/api/v1/inventory/:id/', middlewares_1.default.isJWTAuthenticated, inventory_controller_1.default.apiFoundCar);
 //# sourceMappingURL=router.js.map

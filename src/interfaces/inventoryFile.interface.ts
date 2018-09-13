@@ -1,6 +1,6 @@
 import {ICompanyModel} from '../app/models/company.model';
 import {IUserModel} from '../app/models/user.model';
-import {IFormModel} from '../form/models/form.model';
+import {IInventoryModel} from '../inventory/models/inventory.model';
 
 interface IIFile {
   url: string;
@@ -9,9 +9,9 @@ interface IIFile {
   size: number;
 }
 
-export interface IParticipantFile {
+export interface IInventoryFile {
   _id: any;
-  form: IFormModel;
+  inventory: IInventoryModel;
   company: ICompanyModel;
   user: IUserModel;
   file: IIFile;

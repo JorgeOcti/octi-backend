@@ -1,10 +1,12 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+const GraphicsMagick = require("gm");
 const car_model_1 = require("../../app/models/car.model");
 const car_model_2 = require("../../app/models/car.model");
 const venue_model_1 = require("../../app/models/venue.model");
 const server_1 = require("../../server");
 const inventory_model_1 = require("../models/inventory.model");
+const inventoryFile_model_1 = require("../models/inventoryFile.model");
 class InventoryController {
     constructor() {
         this.index = this.index.bind(this);
@@ -12,6 +14,8 @@ class InventoryController {
         this.list = this.list.bind(this);
         this.apiList = this.apiList.bind(this);
         this.apiFoundCar = this.apiFoundCar.bind(this);
+        this.uploadFile = this.uploadFile.bind(this);
+        this.autoRotate = this.autoRotate.bind(this);
     }
     async index(req, res) {
         res.render('app/index', { token: await req.user.generateToken() });
@@ -185,6 +189,63 @@ class InventoryController {
             });
         }
     }
+    async uploadFile(req, res) {
+        const { id } = req.params;
+        const { company } = req.user;
+        if (req.file) {
+            const file = req.file;
+            try {
+                const inventoryFile = new inventoryFile_model_1.default();
+                /*
+                  {
+                    fieldname: 'file',
+                    originalname: 'Captura de pantalla 2018-06-28 a la(s) 11.59.58.png',
+                    encoding: '7bit',
+                    mimetype: 'image/png',
+                    destination: '/tmp/',
+                    filename: 'Captura de pantalla 2018-06-28 a la(s) 11.59.58.png',
+                    path: '/tmp/Captura de pantalla 2018-06-28 a la(s) 11.59.58.png',
+                    size: 794429
+                  }
+                */
+                // fix exif
+                if (new RegExp('\\bimage\\b').test(file.mimetype)) {
+                    await this.autoRotate(file.path);
+                }
+                file.headers = {
+                    'Content-Type': file.mimetype
+                };
+                file.company = company._id;
+                file.inventory = id;
+                inventoryFile.user = req.user._id;
+                inventoryFile.company = company._id;
+                inventoryFile.attach('file', file, async (error) => {
+                    if (error) {
+                        res.status(400).json(error);
+                    }
+                    else {
+                        await inventoryFile.save();
+                        res.status(201).json({
+                            data: {
+                                _id: inventoryFile._id,
+                                file: inventoryFile.file
+                            },
+                            status: 201
+                        });
+                    }
+                });
+            }
+            catch (e) {
+                res.status(400).json(e);
+            }
+        }
+        else {
+            res.status(400).json({
+                message: 'La imagen es obligatoria.',
+                status: 400
+            });
+        }
+    }
     async apiFoundCar(req, res) {
         const { company, venue } = req.user;
         const { id } = req.params;
@@ -202,12 +263,19 @@ class InventoryController {
                         }, {
                             company
                         }, {
-                            ['cars.car']: car._id
+                            cars: {
+                                $elemMatch: {
+                                    car: car._id,
+                                    status: {
+                                        $ne: inventory_model_1.ChoicesStatusCarInventory.pending
+                                    }
+                                }
+                            }
                         }]
                 }, {
                     'cars.$': 1
                 });
-                if (inventoriedCar && inventoriedCar.cars.length && inventoriedCar.cars[0].status !== inventory_model_1.ChoicesStatusCarInventory.pending) {
+                if (inventoriedCar) {
                     res.status(400).json({
                         message: 'Este auto ya ha sido inventariado',
                         status: 400
@@ -230,7 +298,8 @@ class InventoryController {
                         }, {
                             $set: {
                                 'cars.$.venueFound': venue._id,
-                                'cars.$.status': inventory_model_1.ChoicesStatusCarInventory.found
+                                'cars.$.status': inventory_model_1.ChoicesStatusCarInventory.found,
+                                'cars.$.inventoriedBy': req.user._id
                             }
                         }, {
                             upsert: true
@@ -253,7 +322,8 @@ class InventoryController {
                                 car: car._id,
                                 venue: venue._id,
                                 venueFound: venue._id,
-                                status: inventory_model_1.ChoicesStatusCarInventory.leftover
+                                status: inventory_model_1.ChoicesStatusCarInventory.leftover,
+                                inventoriedBy: req.user._id
                             });
                             await inventory.save();
                             // send socket messsage
@@ -291,7 +361,8 @@ class InventoryController {
                         car: newCar._id,
                         venue: venue._id,
                         venueFound: venue._id,
-                        status: inventory_model_1.ChoicesStatusCarInventory.leftover
+                        status: inventory_model_1.ChoicesStatusCarInventory.leftover,
+                        inventoriedBy: req.user._id
                     });
                     await inventory.save();
                     // send socket messsage
@@ -342,6 +413,25 @@ class InventoryController {
                 status: 400
             });
         }
+    }
+    autoRotate(path) {
+        // doc http://aheckmann.github.io/gm/docs.html
+        /**** REQUIRE *****
+          brew install imagemagick
+          brew install graphicsmagick
+        * */
+        return new Promise((resolve, reject) => {
+            GraphicsMagick(path)
+                .autoOrient()
+                .write(path, (err) => {
+                if (err) {
+                    reject(err);
+                }
+                else {
+                    resolve();
+                }
+            });
+        });
     }
 }
 exports.default = new InventoryController();

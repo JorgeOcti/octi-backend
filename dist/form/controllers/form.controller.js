@@ -532,7 +532,6 @@ class FormController {
                 status: 400
             });
         }
-        // ParticipantFile
     }
     async changePreferred(req, res) {
         let { form } = req.body;

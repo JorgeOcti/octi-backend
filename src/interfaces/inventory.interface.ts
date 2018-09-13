@@ -7,6 +7,7 @@ export interface IInventoryCar {
   car: ICar;
   venue: IVenue;
   venueFound?: IVenue;
+  inventoriedBy?: IUserModel;
   status?: string;
 }
 
