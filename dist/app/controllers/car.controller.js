@@ -352,7 +352,7 @@ class CarController {
         const data = [];
         data.push(`VIN, Marca, Denominacion, Usuario, formulario, venue, calificacion, fecha`);
         for (const participant of participants) {
-            data.push(`${participant.car.vin},${participant.car.brand},${participant.car.denomination},${participant.user.fullName()},${participant.form.name},${participant.user.venue.name},${participant.qualification},${participant.createdAt},`);
+            data.push(`${participant.car.vin}|${participant.car.brand}|${participant.car.denomination}|${participant.user.fullName()}|${participant.form.name}|${participant.user.venue.name}|${participant.qualification.toString().replace('.', ',')}|${participant.createdAt}`);
         }
         res.send(data.join('\n'));
     }
