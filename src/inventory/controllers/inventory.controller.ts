@@ -1,11 +1,21 @@
+import {ObjectID} from 'bson';
 import {Response} from 'express';
+import * as GraphicsMagick from 'gm';
 import CarModel from '../../app/models/car.model';
-import Car, {ICarModel} from '../../app/models/car.model';
-import VenueModel, {IVenueModel} from '../../app/models/venue.model';
+import Car, {
+  ICarModel
+} from '../../app/models/car.model';
+import VenueModel, {
+  IVenueModel
+} from '../../app/models/venue.model';
 import {IRequest} from '../../interfaces/global.interface';
 import {IInventoryCar} from '../../interfaces/inventory.interface';
 import {io} from '../../server';
-import InventoryModel, {ChoicesStatusCarInventory, ChoicesStatusInventory} from '../models/inventory.model';
+import InventoryModel, {
+  ChoicesStatusCarInventory,
+  ChoicesStatusInventory
+} from '../models/inventory.model';
+import InventoryFileModel from '../models/inventoryFile.model';
 
 class InventoryController {
 
@@ -15,6 +25,8 @@ class InventoryController {
     this.list = this.list.bind(this);
     this.apiList = this.apiList.bind(this);
     this.apiFoundCar = this.apiFoundCar.bind(this);
+    this.uploadFile = this.uploadFile.bind(this);
+    this.autoRotate = this.autoRotate.bind(this);
   }
 
   public async index(req: IRequest, res: Response) {
@@ -59,7 +71,8 @@ class InventoryController {
               if (currentVenue && currentCar) {
                 inventoryCars.push({
                   venue: currentVenue._id,
-                  car: currentCar._id
+                  car: currentCar._id,
+                  images: []
                 });
               }
             }
@@ -74,8 +87,11 @@ class InventoryController {
         createdBy: req.user._id,
         status: ChoicesStatusInventory.inProcess
       });
-      inventory.save();
-      res.json({});
+      await inventory.save();
+      res.json({
+        message: 'Inventario creado satisfactoriamente',
+        status: 200
+      });
     } catch (e) {
       res.status(400).json({
         message: e,
@@ -190,10 +206,66 @@ class InventoryController {
     }
   }
 
+  public async uploadFile(req: IRequest, res: Response) {
+    const {id} = req.params;
+    const {company} = req.user;
+    if (req.file) {
+      const file: any = req.file;
+      try {
+        const inventoryFile = new InventoryFileModel();
+        /*
+          {
+            fieldname: 'file',
+            originalname: 'Captura de pantalla 2018-06-28 a la(s) 11.59.58.png',
+            encoding: '7bit',
+            mimetype: 'image/png',
+            destination: '/tmp/',
+            filename: 'Captura de pantalla 2018-06-28 a la(s) 11.59.58.png',
+            path: '/tmp/Captura de pantalla 2018-06-28 a la(s) 11.59.58.png',
+            size: 794429
+          }
+        */
+        // fix exif
+        if (new RegExp('\\bimage\\b').test(file.mimetype)) {
+          await this.autoRotate(file.path);
+        }
+        file.headers = {
+          'Content-Type': file.mimetype
+        };
+        file.company = company._id;
+        file.inventory = id;
+
+        inventoryFile.user = req.user._id;
+        inventoryFile.company = company._id;
+        inventoryFile.attach('file', file, async (error: any) => {
+          if (error) {
+            res.status(400).json(error);
+          } else {
+            await inventoryFile.save();
+            res.status(201).json({
+              data: {
+                _id: inventoryFile._id,
+                file: inventoryFile.file
+              },
+              status: 201
+            });
+          }
+        });
+      } catch (e) {
+        res.status(400).json(e);
+      }
+    } else {
+      res.status(400).json({
+        message: 'La imagen es obligatoria.',
+        status: 400
+      });
+    }
+  }
+
   public async apiFoundCar(req: IRequest, res: Response) {
     const {company, venue} = req.user;
     const {id} = req.params;
-    const {vin} = req.body;
+    const {vin, images} = req.body;
     try {
       const car = await Car.findOne({
         vin,
@@ -201,58 +273,89 @@ class InventoryController {
       });
       // if car exist
       if (car) {
-        const inventoryCar = await InventoryModel.findOne({
-          _id: id,
-          ['cars.car']: car._id,
-          company
-        }, {'cars.$': 1});
-        // if car in inventory
-        if (inventoryCar && inventoryCar.cars.length) {
-          await InventoryModel.update({
+        const inventoriedCar = await InventoryModel.findOne({
+          $and: [{
+            _id: id
+          }, {
+            company
+          }, {
+            cars: {
+              $elemMatch: {
+                car: car._id,
+                status: {
+                  $ne: ChoicesStatusCarInventory.pending
+                }
+              }
+            }
+          }]
+        }, {
+          'cars.$': 1
+        });
+        if (inventoriedCar) {
+          res.status(400).json({
+            message: 'Este auto ya ha sido inventariado',
+            status: 400
+          });
+        } else {
+          const inventoryCar = await InventoryModel.findOne({
             _id: id,
             ['cars.car']: car._id,
             company
           }, {
-            $set: {
-              'cars.$.venueFound': venue._id,
-              'cars.$.status': ChoicesStatusCarInventory.found
-            }
-          }, {
-            upsert: true
+            'cars.$': 1
           });
-          // send socket messsage
-          io.to(`inventory-list-${company._id}`).emit('REFRESH', {
-            update: true
-          });
-          res.json({
-            id
-          });
-        } else {
-          const inventory = await InventoryModel.findOne({
-            _id: id,
-            company
-          });
-          if (inventory) {
-            inventory.cars.push({
-              car: car._id,
-              venue: venue._id,
-              venueFound: venue._id,
-              status: ChoicesStatusCarInventory.leftover
+          // if car in inventory
+          if (inventoryCar && inventoryCar.cars.length) {
+            await InventoryModel.update({
+              _id: id,
+              ['cars.car']: car._id,
+              company
+            }, {
+              $set: {
+                'cars.$.venueFound': venue._id,
+                'cars.$.status': ChoicesStatusCarInventory.found,
+                'cars.$.images': images ? images.map((image: string) => (new ObjectID(image))) : [],
+                'cars.$.inventoriedBy': req.user._id
+              }
+            }, {
+              upsert: true
             });
-            await inventory.save();
             // send socket messsage
             io.to(`inventory-list-${company._id}`).emit('REFRESH', {
               update: true
             });
             res.json({
               id
-          });
-          } else {
-            // if inventory no exist
-            res.status(400).json({
-              message: 'Este inventario ya no se encuentra activo',
-              status: 400
             });
+          } else {
+            const inventory = await InventoryModel.findOne({
+              _id: id,
+              company
+            });
+            if (inventory) {
+              inventory.cars.push({
+                car: car._id,
+                venue: venue._id,
+                venueFound: venue._id,
+                status: ChoicesStatusCarInventory.leftover,
+                inventoriedBy: req.user._id,
+                images: images ? images.map((image: string) => (new ObjectID(image))) : []
+              });
+              await inventory.save();
+              // send socket messsage
+              io.to(`inventory-list-${company._id}`).emit('REFRESH', {
+                update: true
+              });
+              res.json({
+                id
+              });
+            } else {
+              // if inventory no exist
+              res.status(400).json({
+                message: 'Este inventario ya no se encuentra activo',
+                status: 400
+              });
+            }
           }
         }
       } else {
@@ -272,7 +375,9 @@ class InventoryController {
             car: newCar._id,
             venue: venue._id,
             venueFound: venue._id,
-            status: ChoicesStatusCarInventory.leftover
+            status: ChoicesStatusCarInventory.leftover,
+            inventoriedBy: req.user._id,
+            images: images ? images.map((image: string) => (new ObjectID(image))) : []
           });
           await inventory.save();
           // send socket messsage
@@ -321,6 +426,25 @@ class InventoryController {
         status: 400
       });
     }
+  }
+
+  private autoRotate(path: string) {
+    // doc http://aheckmann.github.io/gm/docs.html
+    /**** REQUIRE *****
+      brew install imagemagick
+      brew install graphicsmagick
+    * */
+    return new Promise((resolve, reject) => {
+      GraphicsMagick(path)
+        .autoOrient()
+        .write(path, (err) => {
+          if (err) {
+            reject(err);
+          } else {
+            resolve();
+          }
+        });
+    });
   }
 }
 export default new InventoryController();

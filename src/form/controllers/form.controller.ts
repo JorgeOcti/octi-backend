@@ -545,7 +545,6 @@ class FormController {
         status: 400
       });
     }
-    // ParticipantFile
   }
 
   public async changePreferred(req: IRequest, res: Response) {

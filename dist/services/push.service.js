@@ -4,21 +4,23 @@ const PushNotifications = require("@pusher/push-notifications-server");
 class PushService {
     constructor() {
         this.pushNotifications = new PushNotifications({
-            instanceId: 'b3b20a65-8633-47b5-9705-9e2f5551916d',
-            secretKey: '04391C84F08B18A520232DE5F5074F7'
+            instanceId: process.env.PUSHER_INSTANCE_ID,
+            secretKey: process.env.PUHSER_SECRET_KEY
         });
     }
-    send(message, interests) {
+    send(title, body, interests) {
         this.pushNotifications.publish(interests, {
             apns: {
                 aps: {
-                    alert: 'Hello!'
+                    alert: title,
+                    title,
+                    body
                 }
             },
             fcm: {
                 notification: {
-                    title: 'Hello',
-                    body: 'Hello, world!'
+                    title,
+                    body
                 }
             }
         });

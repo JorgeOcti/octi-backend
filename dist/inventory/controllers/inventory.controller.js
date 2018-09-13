@@ -1,10 +1,13 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+const bson_1 = require("bson");
+const GraphicsMagick = require("gm");
 const car_model_1 = require("../../app/models/car.model");
 const car_model_2 = require("../../app/models/car.model");
 const venue_model_1 = require("../../app/models/venue.model");
 const server_1 = require("../../server");
 const inventory_model_1 = require("../models/inventory.model");
+const inventoryFile_model_1 = require("../models/inventoryFile.model");
 class InventoryController {
     constructor() {
         this.index = this.index.bind(this);
@@ -12,6 +15,8 @@ class InventoryController {
         this.list = this.list.bind(this);
         this.apiList = this.apiList.bind(this);
         this.apiFoundCar = this.apiFoundCar.bind(this);
+        this.uploadFile = this.uploadFile.bind(this);
+        this.autoRotate = this.autoRotate.bind(this);
     }
     async index(req, res) {
         res.render('app/index', { token: await req.user.generateToken() });
@@ -54,7 +59,8 @@ class InventoryController {
                             if (currentVenue && currentCar) {
                                 inventoryCars.push({
                                     venue: currentVenue._id,
-                                    car: currentCar._id
+                                    car: currentCar._id,
+                                    images: []
                                 });
                             }
                         }
@@ -69,8 +75,11 @@ class InventoryController {
                 createdBy: req.user._id,
                 status: inventory_model_1.ChoicesStatusInventory.inProcess
             });
-            inventory.save();
-            res.json({});
+            await inventory.save();
+            res.json({
+                message: 'Inventario creado satisfactoriamente',
+                status: 200
+            });
         }
         catch (e) {
             res.status(400).json({
@@ -185,10 +194,67 @@ class InventoryController {
             });
         }
     }
+    async uploadFile(req, res) {
+        const { id } = req.params;
+        const { company } = req.user;
+        if (req.file) {
+            const file = req.file;
+            try {
+                const inventoryFile = new inventoryFile_model_1.default();
+                /*
+                  {
+                    fieldname: 'file',
+                    originalname: 'Captura de pantalla 2018-06-28 a la(s) 11.59.58.png',
+                    encoding: '7bit',
+                    mimetype: 'image/png',
+                    destination: '/tmp/',
+                    filename: 'Captura de pantalla 2018-06-28 a la(s) 11.59.58.png',
+                    path: '/tmp/Captura de pantalla 2018-06-28 a la(s) 11.59.58.png',
+                    size: 794429
+                  }
+                */
+                // fix exif
+                if (new RegExp('\\bimage\\b').test(file.mimetype)) {
+                    await this.autoRotate(file.path);
+                }
+                file.headers = {
+                    'Content-Type': file.mimetype
+                };
+                file.company = company._id;
+                file.inventory = id;
+                inventoryFile.user = req.user._id;
+                inventoryFile.company = company._id;
+                inventoryFile.attach('file', file, async (error) => {
+                    if (error) {
+                        res.status(400).json(error);
+                    }
+                    else {
+                        await inventoryFile.save();
+                        res.status(201).json({
+                            data: {
+                                _id: inventoryFile._id,
+                                file: inventoryFile.file
+                            },
+                            status: 201
+                        });
+                    }
+                });
+            }
+            catch (e) {
+                res.status(400).json(e);
+            }
+        }
+        else {
+            res.status(400).json({
+                message: 'La imagen es obligatoria.',
+                status: 400
+            });
+        }
+    }
     async apiFoundCar(req, res) {
         const { company, venue } = req.user;
         const { id } = req.params;
-        const { vin } = req.body;
+        const { vin, images } = req.body;
         try {
             const car = await car_model_2.default.findOne({
                 vin,
@@ -196,46 +262,54 @@ class InventoryController {
             });
             // if car exist
             if (car) {
-                const inventoryCar = await inventory_model_1.default.findOne({
-                    _id: id,
-                    ['cars.car']: car._id,
-                    company
-                }, { 'cars.$': 1 });
-                // if car in inventory
-                if (inventoryCar && inventoryCar.cars.length) {
-                    await inventory_model_1.default.update({
+                const inventoriedCar = await inventory_model_1.default.findOne({
+                    $and: [{
+                            _id: id
+                        }, {
+                            company
+                        }, {
+                            cars: {
+                                $elemMatch: {
+                                    car: car._id,
+                                    status: {
+                                        $ne: inventory_model_1.ChoicesStatusCarInventory.pending
+                                    }
+                                }
+                            }
+                        }]
+                }, {
+                    'cars.$': 1
+                });
+                if (inventoriedCar) {
+                    res.status(400).json({
+                        message: 'Este auto ya ha sido inventariado',
+                        status: 400
+                    });
+                }
+                else {
+                    const inventoryCar = await inventory_model_1.default.findOne({
                         _id: id,
                         ['cars.car']: car._id,
                         company
                     }, {
-                        $set: {
-                            'cars.$.venueFound': venue._id,
-                            'cars.$.status': inventory_model_1.ChoicesStatusCarInventory.found
-                        }
-                    }, {
-                        upsert: true
+                        'cars.$': 1
                     });
-                    // send socket messsage
-                    server_1.io.to(`inventory-list-${company._id}`).emit('REFRESH', {
-                        update: true
-                    });
-                    res.json({
-                        id
-                    });
-                }
-                else {
-                    const inventory = await inventory_model_1.default.findOne({
-                        _id: id,
-                        company
-                    });
-                    if (inventory) {
-                        inventory.cars.push({
-                            car: car._id,
-                            venue: venue._id,
-                            venueFound: venue._id,
-                            status: inventory_model_1.ChoicesStatusCarInventory.leftover
+                    // if car in inventory
+                    if (inventoryCar && inventoryCar.cars.length) {
+                        await inventory_model_1.default.update({
+                            _id: id,
+                            ['cars.car']: car._id,
+                            company
+                        }, {
+                            $set: {
+                                'cars.$.venueFound': venue._id,
+                                'cars.$.status': inventory_model_1.ChoicesStatusCarInventory.found,
+                                'cars.$.images': images ? images.map((image) => (new bson_1.ObjectID(image))) : [],
+                                'cars.$.inventoriedBy': req.user._id
+                            }
+                        }, {
+                            upsert: true
                         });
-                        await inventory.save();
                         // send socket messsage
                         server_1.io.to(`inventory-list-${company._id}`).emit('REFRESH', {
                             update: true
@@ -245,11 +319,35 @@ class InventoryController {
                         });
                     }
                     else {
-                        // if inventory no exist
-                        res.status(400).json({
-                            message: 'Este inventario ya no se encuentra activo',
-                            status: 400
+                        const inventory = await inventory_model_1.default.findOne({
+                            _id: id,
+                            company
                         });
+                        if (inventory) {
+                            inventory.cars.push({
+                                car: car._id,
+                                venue: venue._id,
+                                venueFound: venue._id,
+                                status: inventory_model_1.ChoicesStatusCarInventory.leftover,
+                                inventoriedBy: req.user._id,
+                                images: images ? images.map((image) => (new bson_1.ObjectID(image))) : []
+                            });
+                            await inventory.save();
+                            // send socket messsage
+                            server_1.io.to(`inventory-list-${company._id}`).emit('REFRESH', {
+                                update: true
+                            });
+                            res.json({
+                                id
+                            });
+                        }
+                        else {
+                            // if inventory no exist
+                            res.status(400).json({
+                                message: 'Este inventario ya no se encuentra activo',
+                                status: 400
+                            });
+                        }
                     }
                 }
             }
@@ -270,7 +368,9 @@ class InventoryController {
                         car: newCar._id,
                         venue: venue._id,
                         venueFound: venue._id,
-                        status: inventory_model_1.ChoicesStatusCarInventory.leftover
+                        status: inventory_model_1.ChoicesStatusCarInventory.leftover,
+                        inventoriedBy: req.user._id,
+                        images: images ? images.map((image) => (new bson_1.ObjectID(image))) : []
                     });
                     await inventory.save();
                     // send socket messsage
@@ -321,6 +421,25 @@ class InventoryController {
                 status: 400
             });
         }
+    }
+    autoRotate(path) {
+        // doc http://aheckmann.github.io/gm/docs.html
+        /**** REQUIRE *****
+          brew install imagemagick
+          brew install graphicsmagick
+        * */
+        return new Promise((resolve, reject) => {
+            GraphicsMagick(path)
+                .autoOrient()
+                .write(path, (err) => {
+                if (err) {
+                    reject(err);
+                }
+                else {
+                    resolve();
+                }
+            });
+        });
     }
 }
 exports.default = new InventoryController();

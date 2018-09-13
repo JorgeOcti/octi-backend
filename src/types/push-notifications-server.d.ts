@@ -6,6 +6,9 @@ declare module '@pusher/push-notifications-server' {
 
   interface Iaps {
     alert: string;
+    title?: string;
+    body?: string;
+    badge?: number;
   }
 
   interface Iapns {
@@ -14,7 +17,9 @@ declare module '@pusher/push-notifications-server' {
 
   interface Inotification {
     title: string;
+    subtitle?: string;
     body: string;
+    badge?: number;
   }
 
   interface Ifcm {
