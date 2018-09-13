@@ -1,6 +1,7 @@
 import {IUserModel} from '../app/models/user.model';
 import {ICar} from './car.interface';
 import {ICompany} from './company.interface';
+import {IInventoryFile} from './inventoryFile.interface';
 import {IVenue} from './venue.interface';
 
 export interface IInventoryCar {
@@ -8,6 +9,7 @@ export interface IInventoryCar {
   venue: IVenue;
   venueFound?: IVenue;
   inventoriedBy?: IUserModel;
+  images: IInventoryFile[];
   status?: string;
 }
 
