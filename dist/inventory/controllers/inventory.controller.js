@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+const bson_1 = require("bson");
 const GraphicsMagick = require("gm");
 const car_model_1 = require("../../app/models/car.model");
 const car_model_2 = require("../../app/models/car.model");
@@ -58,7 +59,8 @@ class InventoryController {
                             if (currentVenue && currentCar) {
                                 inventoryCars.push({
                                     venue: currentVenue._id,
-                                    car: currentCar._id
+                                    car: currentCar._id,
+                                    images: []
                                 });
                             }
                         }
@@ -73,8 +75,11 @@ class InventoryController {
                 createdBy: req.user._id,
                 status: inventory_model_1.ChoicesStatusInventory.inProcess
             });
-            inventory.save();
-            res.json({});
+            await inventory.save();
+            res.json({
+                message: 'Inventario creado satisfactoriamente',
+                status: 200
+            });
         }
         catch (e) {
             res.status(400).json({
@@ -249,7 +254,7 @@ class InventoryController {
     async apiFoundCar(req, res) {
         const { company, venue } = req.user;
         const { id } = req.params;
-        const { vin } = req.body;
+        const { vin, images } = req.body;
         try {
             const car = await car_model_2.default.findOne({
                 vin,
@@ -299,6 +304,7 @@ class InventoryController {
                             $set: {
                                 'cars.$.venueFound': venue._id,
                                 'cars.$.status': inventory_model_1.ChoicesStatusCarInventory.found,
+                                'cars.$.images': images ? images.map((image) => (new bson_1.ObjectID(image))) : [],
                                 'cars.$.inventoriedBy': req.user._id
                             }
                         }, {
@@ -323,7 +329,8 @@ class InventoryController {
                                 venue: venue._id,
                                 venueFound: venue._id,
                                 status: inventory_model_1.ChoicesStatusCarInventory.leftover,
-                                inventoriedBy: req.user._id
+                                inventoriedBy: req.user._id,
+                                images: images ? images.map((image) => (new bson_1.ObjectID(image))) : []
                             });
                             await inventory.save();
                             // send socket messsage
@@ -362,7 +369,8 @@ class InventoryController {
                         venue: venue._id,
                         venueFound: venue._id,
                         status: inventory_model_1.ChoicesStatusCarInventory.leftover,
-                        inventoriedBy: req.user._id
+                        inventoriedBy: req.user._id,
+                        images: images ? images.map((image) => (new bson_1.ObjectID(image))) : []
                     });
                     await inventory.save();
                     // send socket messsage

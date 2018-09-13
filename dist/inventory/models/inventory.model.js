@@ -29,6 +29,10 @@ const inventoryCarSchema = new mongoose.Schema({
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User'
     },
+    images: [{
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'InventoryFile'
+        }],
     status: {
         type: String,
         enum: exports.choicesStatusCarInventory,
