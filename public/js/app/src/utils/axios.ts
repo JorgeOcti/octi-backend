@@ -146,7 +146,7 @@ export default class ApiService {
     );
   }
 
-  public getInventories() {
+  public getInventories(): AxiosPromise  {
     return this.instance.get(
       `/api/inventory/`,  {
         cancelToken: this.source.token
