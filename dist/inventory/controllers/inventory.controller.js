@@ -17,6 +17,8 @@ class InventoryController {
         this.apiFoundCar = this.apiFoundCar.bind(this);
         this.uploadFile = this.uploadFile.bind(this);
         this.autoRotate = this.autoRotate.bind(this);
+        this.finishInventory = this.finishInventory.bind(this);
+        this.deleteInventory = this.deleteInventory.bind(this);
     }
     async index(req, res) {
         res.render('app/index', { token: await req.user.generateToken() });
@@ -394,6 +396,61 @@ class InventoryController {
             console.log(e);
             res.status(400).json({
                 message: e,
+                status: 400
+            });
+        }
+    }
+    async finishInventory(req, res) {
+        const { company } = req.user;
+        const { id } = req.params;
+        try {
+            const inventory = await inventory_model_1.default.findOne({ _id: id, company });
+            if (inventory) {
+                await inventory.update({ status: inventory_model_1.ChoicesStatusInventory.finalized });
+                res.json({
+                    message: 'Se ha finalizado correctamente el inventario.',
+                    status: 200
+                });
+            }
+            else {
+                res.status(400).json({
+                    message: 'No se ha encontrado el inventario',
+                    status: 400
+                });
+            }
+        }
+        catch (e) {
+            console.log('e', e);
+            res.status(400).json({
+                message: 'Ha ocurrido un error',
+                status: 400
+            });
+        }
+    }
+    async deleteInventory(req, res) {
+        const { company } = req.user;
+        const { id } = req.params;
+        try {
+            const inventory = await inventory_model_1.default.findOne({ _id: id, company });
+            if (inventory) {
+                // await InventoryModel.findByIdAndRemove(inventory._id);
+                await inventory.remove();
+                res.json({
+                    message: 'Se ha eliminado correctamente el inventario.',
+                    status: 200
+                });
+            }
+            else {
+                res.status(400).json({
+                    message: 'No se ha encontrado el inventario',
+                    status: 400
+                });
+            }
+        }
+        catch (e) {
+            console.log('e', e);
+            res.status(400).json({
+                message: 'Ha ocurrido un error',
                 status: 400
             });
         }

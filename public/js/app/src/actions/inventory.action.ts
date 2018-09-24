@@ -84,4 +84,34 @@ export function getInventoriesAction(loading: boolean) {
   };
 }
 
+export function finishInventoryAction(id: string) {
+  return (dispatch: Dispatch<InventoryReduxAction>) => {
+    const api: ApiService = new ApiService();
+    api.finishInventory(id)
+      .then((response: AxiosResponse) => {
+        const data = response.data;
+        swal('Inventarios', data.message, 'success');
+        dispatch(getInventoriesAction(false) as any);
+      })
+      .catch((err: AxiosError) => {
+        api.errorHandler(err);
+      });
+  };
+}
+
+export function deleteInventoryAction(id: string) {
+  return (dispatch: Dispatch<InventoryReduxAction>) => {
+    const api: ApiService = new ApiService();
+    api.deleteInventory(id)
+      .then((response: AxiosResponse) => {
+        const data = response.data;
+        swal('Inventarios', data.message, 'success');
+        dispatch(getInventoriesAction(false) as any);
+      })
+      .catch((err: AxiosError) => {
+        api.errorHandler(err);
+      });
+  };
+}
+
 export type InventoryReduxAction = ICancelRequest | IIsLoading | ILoadInventories;

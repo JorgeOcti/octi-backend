@@ -27,6 +27,8 @@ class InventoryController {
     this.apiFoundCar = this.apiFoundCar.bind(this);
     this.uploadFile = this.uploadFile.bind(this);
     this.autoRotate = this.autoRotate.bind(this);
+    this.finishInventory = this.finishInventory.bind(this);
+    this.deleteInventory = this.deleteInventory.bind(this);
   }
 
   public async index(req: IRequest, res: Response) {
@@ -399,6 +401,61 @@ class InventoryController {
       console.log(e);
       res.status(400).json({
         message: e,
+        status: 400
+      });
+    }
+  }
+
+  public async finishInventory(req: IRequest, res: Response) {
+    const {company} = req.user;
+    const {id} = req.params;
+    try {
+      const inventory = await InventoryModel.findOne({_id: id, company});
+      if (inventory) {
+        await inventory.update({status: ChoicesStatusInventory.finalized});
+        res.json({
+          message: 'Se ha finalizado correctamente el inventario.',
+          status: 200
+        });
+      } else {
+        res.status(400).json({
+          message: 'No se ha encontrado el inventario',
+          status: 400
+        });
+      }
+
+    } catch (e) {
+      console.log('e', e);
+      res.status(400).json({
+        message: 'Ha ocurrido un error',
+        status: 400
+      });
+    }
+  }
+
+  public async deleteInventory(req: IRequest, res: Response) {
+    const {company} = req.user;
+    const {id} = req.params;
+    try {
+      const inventory = await InventoryModel.findOne({_id: id, company});
+      if (inventory) {
+        // await InventoryModel.findByIdAndRemove(inventory._id);
+        await inventory.remove();
+        res.json({
+          message: 'Se ha eliminado correctamente el inventario.',
+          status: 200
+        });
+      } else {
+        res.status(400).json({
+          message: 'No se ha encontrado el inventario',
+          status: 400
+        });
+      }
+
+    } catch (e) {
+      console.log('e', e);
+      res.status(400).json({
+        message: 'Ha ocurrido un error',
         status: 400
       });
     }

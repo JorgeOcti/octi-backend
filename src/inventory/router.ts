@@ -9,6 +9,8 @@ inventoryRouter.get('/inventory/', Middlewares.isLoggedIn, InventoryController.i
 inventoryRouter.get('/inventory/create/', Middlewares.isLoggedIn, InventoryController.index);
 inventoryRouter.get('/api/inventory/', Middlewares.isLoggedIn, InventoryController.list);
 inventoryRouter.post('/api/inventory/', Middlewares.isLoggedIn, InventoryController.create);
+inventoryRouter.post('/api/inventory/:id/finish/', Middlewares.isLoggedIn, InventoryController.finishInventory);
+inventoryRouter.delete('/api/inventory/:id/', Middlewares.isLoggedIn, InventoryController.deleteInventory);
 
 // Inventories API
 inventoryRouter.get('/api/v1/inventory/', Middlewares.isJWTAuthenticated, InventoryController.apiList);

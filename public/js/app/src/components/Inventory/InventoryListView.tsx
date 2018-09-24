@@ -8,7 +8,13 @@ import {connect} from 'react-redux';
 import {RouteComponentProps} from 'react-router';
 import {Dispatch} from 'redux';
 import * as io from 'socket.io-client';
-import {getInventoriesAction, IInventoryState, InventoryReduxAction} from '../../actions/inventory.action';
+import {
+  deleteInventoryAction,
+  finishInventoryAction,
+  getInventoriesAction,
+  IInventoryState,
+  InventoryReduxAction
+} from '../../actions/inventory.action';
 import AppContainer from '../../container/AppContainer';
 import {IWindow} from '../../interfaces/window';
 
@@ -18,6 +24,8 @@ interface IPropsType extends RouteComponentProps<{ ticket: string }> {
   inventories: IInventoryState;
   dispatch: Dispatch<InventoryReduxAction>;
   getInventoriesAction(loading: boolean): void;
+  finishInventoryAction(id: string): void;
+  deleteInventoryAction(id: string): void;
 }
 
 interface IStateType {
@@ -147,11 +155,11 @@ class InventoryListView extends React.Component<IPropsType, IStateType> {
                                 {
                                   inventory.status === 'inProcess' ?
                                     <ul className="dropdown-menu pull-right" role="menu">
-                                      <li><a href="#">Finalizar</a></li>
+                                      <li><a href="javascript:void(0);" onClick={() => this.props.finishInventoryAction(inventory._id)}>Finalizar</a></li>
                                     </ul>
                                     :
                                     <ul className="dropdown-menu pull-right" role="menu">
-                                      <li><a href="#">Eliminar</a></li>
+                                      <li><a href="javascript:void(0);" onClick={() => this.deleteInventoryAction(inventory)}>Eliminar</a></li>
                                     </ul>
                                 }
                               </div>
@@ -174,6 +182,26 @@ class InventoryListView extends React.Component<IPropsType, IStateType> {
         </section>
       </AppContainer>
     );
+  }
+
+  private deleteInventoryAction(inventory: any) {
+    const {deleteInventoryAction} = this.props;
+    swal({
+      title: '¿Estás seguro?',
+      text: `Vas a eliminar el inventario`,
+      icon: 'warning',
+      dangerMode: true,
+      buttons: {
+        cancel: 'Cancelar' as any,
+        confirm: {
+          text: 'Sí'
+        }
+      }
+    }).then((willDelete) => {
+      if (willDelete) {
+        deleteInventoryAction(inventory._id);
+      }
+    });
   }
 
   private labelStatus(option: string) {
@@ -200,7 +228,9 @@ const mapStateToProps = (state: { inventories: IInventoryState }) => {
 const mapDispatchToProps = (dispatch: any ) => {
   return {
     dispatch,
-    getInventoriesAction: (loading: boolean) => dispatch(getInventoriesAction(loading))
+    getInventoriesAction: (loading: boolean) => dispatch(getInventoriesAction(loading)),
+    finishInventoryAction: (id: string) => dispatch(finishInventoryAction(id)),
+    deleteInventoryAction: (id: string) => dispatch(deleteInventoryAction(id))
   };
 };
 

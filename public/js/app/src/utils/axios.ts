@@ -162,6 +162,18 @@ export default class ApiService {
     );
   }
 
+  public finishInventory(id: string): AxiosPromise {
+    return this.instance.post(
+      `/api/inventory/${id}/finish/`, {}
+    );
+  }
+
+  public deleteInventory(id: string): AxiosPromise {
+    return this.instance.delete(
+      `/api/inventory/${id}/`, {}
+    );
+  }
+
   public getAlerts(): AxiosPromise {
     return this.instance.get(
       `/api/admin/alerts/`, {
