@@ -21,13 +21,6 @@ interface IPropsType extends RouteComponentProps<{ ticket: string }> {
   loadDataAction(title: string, body: JSX.Element, footer: JSX.Element): ModalReduxAction;
 }
 
-interface IStateType {
-  error: Error | null;
-  canDrop: boolean;
-  loadingSettings: boolean;
-  carsByVenue: any;
-}
-
 class InventoryCreateView extends React.Component<IPropsType, IStateType> {
 
   // static propTypes = {
@@ -40,7 +33,9 @@ class InventoryCreateView extends React.Component<IPropsType, IStateType> {
     error: null,
     canDrop: false,
     loadingSettings: false,
-    carsByVenue: []
+    carsByVenue: [],
+    name: `Inventario del ${moment().format('YYMMDD')}`,
+    sending: false
   };
 
   constructor(props: IPropsType) {
@@ -53,6 +48,7 @@ class InventoryCreateView extends React.Component<IPropsType, IStateType> {
     this.dragEndHandler = this.dragEndHandler.bind(this);
     this.dragLeaveHandler = this.dragLeaveHandler.bind(this);
     this.sendCreate = this.sendCreate.bind(this);
+    this.handleChangeName = this.handleChangeName.bind(this);
     this.inputFile = React.createRef();
   }
 
@@ -78,7 +74,7 @@ class InventoryCreateView extends React.Component<IPropsType, IStateType> {
 
   public render(): React.ReactElement<IPropsType> {
     // const {alerts, loading} = this.props.alerts;
-    const {loadingSettings, carsByVenue} = this.state;
+    const {loadingSettings, carsByVenue, name, sending} = this.state;
     let carsInSettings = 0;
     return (
       <AppContainer title="" cMenu="2" cSubMenu="2.1" cAction="Creación">
@@ -92,7 +88,7 @@ class InventoryCreateView extends React.Component<IPropsType, IStateType> {
                 <div className="col col-md-6">
                   <div className="form-group">
                     <label htmlFor="name">Nombre</label>
-                    <input type="text" className="form-control" id="name" defaultValue={`Inventario del ${moment().format('YYMMDD')}`} />
+                    <input type="text" className="form-control" id="name" value={name} onChange={this.handleChangeName} />
                   </div>
                 </div>
               </div>
@@ -206,13 +202,19 @@ class InventoryCreateView extends React.Component<IPropsType, IStateType> {
             </div>
             <div className="box-footer text-right">
               <button className="btn btn-sm btn-default" onClick={() => this.props.history.push('/inventory/')}>Cancelar</button>
-              <button className="btn btn-sm btn-primary" style={{marginLeft: '5px'}} onClick={this.sendCreate}>Crear</button>
+              <button className="btn btn-sm btn-primary" style={{marginLeft: '5px'}} onClick={this.sendCreate} disabled={sending}>{
+                sending ?
+                  <React.Fragment><i className="fa fa-fw fa-spin fa-spinner"/> Creando...</React.Fragment>
+                  :
+                  'Crear'
+              }
+              </button>
             </div>
             {
               loadingSettings &&
-                <div className="overlay">
-                  <i className="fa fa-spinner fa-spin text-purple"/>
-                </div>
+              <div className="overlay">
+                <i className="fa fa-spinner fa-spin text-purple"/>
+              </div>
             }
           </div>
         </section>
@@ -224,6 +226,13 @@ class InventoryCreateView extends React.Component<IPropsType, IStateType> {
     if (this.inputFile.current) {
       this.inputFile.current.click();
     }
+  }
+
+  private handleChangeName(e: React.ChangeEvent<HTMLInputElement>) {
+    const {value} = e.target;
+    this.setState({
+      name: value
+    });
   }
 
   private downloadTemplate() {
@@ -286,15 +295,18 @@ class InventoryCreateView extends React.Component<IPropsType, IStateType> {
                 carsByVenue[item.sucursal].cars.push(car);
                 cars.push(car);
               } else {
+                console.log('Error en linea:');
                 console.log(item.__rowNum__);
               }
             });
-            console.log('cars', cars);
-            console.log('venues', venues);
-            console.log('carsByVenue', carsByVenue);
-            const carsByVenueArray: any[] = []
-            for (let cv in carsByVenue) {
-              carsByVenueArray.push({name: cv, cars: carsByVenue[cv].cars});
+            const carsByVenueArray: any[] = [];
+            for (const cv in carsByVenue) {
+              if (carsByVenue.hasOwnProperty(cv)) {
+                carsByVenueArray.push({
+                  name: cv,
+                  cars: carsByVenue[cv].cars
+                });
+              }
             }
             this.setState({
               carsByVenue: carsByVenueArray,
@@ -375,14 +387,55 @@ class InventoryCreateView extends React.Component<IPropsType, IStateType> {
     }
   }
 
-  private sendCreate() {
-    const {carsByVenue} = this.state;
-    const api = new ApiService();
-    api.getSource();
-    api.createInventory(carsByVenue).then((data) => {
-      console.log(data);
-    })
+  private async sendCreate() {
+    const {carsByVenue, name} = this.state;
+    const { history } = this.props;
+    this.setState({
+      sending: true
+    });
+    if (!name.trim().length) {
+      swal('Envió inventario', 'El nombre del inventario es obligatorio.', 'error');
+      await this.setState({
+        sending: false
+      });
+    } else if (!carsByVenue.length) {
+      swal('Envió inventario', 'No se ha importado la configuración o no contiene sucursales.', 'error');
+      await this.setState({
+        sending: false
+      });
+    } else {
+      const api = new ApiService();
+      api.getSource();
+      api
+        .createInventory(carsByVenue, name)
+        .then((response) => {
+          const { message } = response.data;
+          setTimeout(() => {
+            swal('Envió inventario', message, 'success');
+          }, 1000);
+          history.push('/inventory/');
+          this.setState({
+            sending: false
+          });
+        })
+        .catch((e) => {
+          console.log('e', e);
+          swal('Envió inventario', 'Se produjo un error al crear el inventario.', 'error');
+          this.setState({
+            sending: false
+          });
+        });
+    }
   }
+}
+
+interface IStateType {
+  error: Error | null;
+  canDrop: boolean;
+  loadingSettings: boolean;
+  carsByVenue: any;
+  name: string;
+  sending: boolean;
 }
 
 const mapStateToProps = (state: { alerts: IAlertsState }) => {

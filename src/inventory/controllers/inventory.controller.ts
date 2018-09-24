@@ -35,7 +35,7 @@ class InventoryController {
 
   public async create(req: IRequest, res: Response) {
     const company = req.user.company;
-    const {carsByVenue} = req.body;
+    const {carsByVenue, name} = req.body;
     try {
       const inventoryCars: IInventoryCar[] = [];
       const venuesIDs: string[] = [];
@@ -80,7 +80,7 @@ class InventoryController {
         }
       }
       const inventory = new InventoryModel({
-        name: 'prueba',
+        name,
         company,
         cars: inventoryCars,
         venues: venuesIDs,

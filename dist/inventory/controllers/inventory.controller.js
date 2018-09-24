@@ -23,7 +23,7 @@ class InventoryController {
     }
     async create(req, res) {
         const company = req.user.company;
-        const { carsByVenue } = req.body;
+        const { carsByVenue, name } = req.body;
         try {
             const inventoryCars = [];
             const venuesIDs = [];
@@ -68,7 +68,7 @@ class InventoryController {
                 }
             }
             const inventory = new inventory_model_1.default({
-                name: 'prueba',
+                name,
                 company,
                 cars: inventoryCars,
                 venues: venuesIDs,
