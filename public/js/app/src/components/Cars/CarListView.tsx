@@ -87,7 +87,7 @@ class CarListView extends React.Component<IPropsType, IStateType> {
                         className="btn btn-sm btn-primary  hidden-xs"
                         onClick={() => this.props.history.push(`/settings/cars/import/`)}
                         style={{marginRight: '5px'}}
-                      >Importar</button> : null
+                      ><i className="fa fa-fw fa-cloud-upload" /> Importar</button> : null
                   }
                   <div className="input-group input-group-sm" style={{width: '200px'}}>
                     <input

@@ -160,8 +160,8 @@ class InventoryCreateView extends React.Component<IPropsType, IStateType> {
                       <p><strong>Total de vehiculos:</strong> {carsInSettings}</p>
                     </div>
                     <div className="col-md-12 text-right">
-                      <button className="btn btn-sm btn-primary" onClick={this.downloadTemplate}>Descargar Formato</button>
-                      <button className="btn btn-sm btn-default" onClick={this.clickUploadFile} style={{marginLeft: '5px'}}>Cambiar configuración</button>
+                      <button className="btn btn-sm btn-primary" onClick={this.downloadTemplate}><i className="fa fa-fw fa-download" /> Descargar Formato</button>
+                      <button className="btn btn-sm btn-default" onClick={this.clickUploadFile} style={{marginLeft: '5px'}}><i className="fa fa-fw fa-cogs" /> Cambiar configuración</button>
                     </div>
                   </div> :
                   <div className="row">
@@ -188,7 +188,7 @@ class InventoryCreateView extends React.Component<IPropsType, IStateType> {
                       </div>
                     </div>
                     <div className="col-md-12 text-right">
-                      <button className="btn btn-sm btn-primary" onClick={this.downloadTemplate}>Descargar Formato</button>
+                      <button className="btn btn-sm btn-primary" onClick={this.downloadTemplate}><i className="fa fa-fw fa-download" /> Descargar Formato</button>
                     </div>
                   </div>
               }

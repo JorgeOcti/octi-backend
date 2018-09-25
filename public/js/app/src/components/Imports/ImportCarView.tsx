@@ -123,7 +123,7 @@ class ImportCarsView extends React.Component<IPropsType, IStateType> {
   public render(): React.ReactElement<IPropsType> {
     const {cars, loadFile} = this.state;
     return (
-      <AppContainer title="" cMenu="2" cSubMenu="2.2"  cAction="Importar">
+      <AppContainer title="" cMenu="10" cSubMenu="10.2"  cAction="Importar">
         <section className="content">
           <div className="box">
             <div className="box-header with-border">
@@ -133,12 +133,12 @@ class ImportCarsView extends React.Component<IPropsType, IStateType> {
                   className="btn btn-sm btn-primary"
                   onClick={this.downloadTemplate}
                   style={{marginRight: '5px'}}>
-                  Descargar Formato
+                  <i className="fa fa-fw fa-download" /> Descargar Formato
                 </button>
                 <button
                   className="btn btn-sm btn-success"
                   onClick={this.clickUploadFile}>
-                  {cars.length > 1 ? 'Cargar otro excel' : 'Subir excel'}
+                  <i className="fa fa-fw fa-cloud-upload" /> {cars.length > 1 ? 'Cargar otro excel' : 'Subir excel'}
                 </button>
               </div>
             </div>

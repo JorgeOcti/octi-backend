@@ -260,7 +260,7 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
             </div>
             <div className="col-md-4">
               <div className="info-box bg-yellow">
-                <span className="info-box-icon"><i className="fa fa-check" /></span>
+                <span className="info-box-icon"><i className="fa fa-bookmark" /></span>
                 <div className="info-box-content">
                   <span className="info-box-text">Sobrantes</span>
                   <span className="info-box-number">5,200</span>
@@ -351,7 +351,7 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
               </div>
             </div>
           </div>
-          <h3>Detalle sucursales</h3>
+          <h2 className="page-header">Detalle sucursales</h2>
           <div className="row">
             <div className="col-md-6">
               <div className="box box-warning collapsed-box">
