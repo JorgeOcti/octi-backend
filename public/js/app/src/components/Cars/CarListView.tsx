@@ -164,7 +164,7 @@ class CarListView extends React.Component<IPropsType, IStateType> {
     );
   }
 
-  private onChangeSearch(e: React.ChangeEvent<HTMLInputElement>) {
+  private onChangeSearch(e: React.ChangeEvent<HTMLInputElement>): void {
     e.preventDefault();
     const value = e.target.value.trim();
     this.setState({
@@ -173,7 +173,7 @@ class CarListView extends React.Component<IPropsType, IStateType> {
     this.debounceOnChangeSearch();
   }
 
-  private debounceOnChangeSearch() {
+  private debounceOnChangeSearch(): void {
     const {searchText} = this.state;
     if (searchText && searchText.length) {
       this.props.getCarsAction(1, searchText);
@@ -182,7 +182,7 @@ class CarListView extends React.Component<IPropsType, IStateType> {
     }
   }
 
-  private changePage(page: number) {
+  private changePage(page: number): void {
     const { searchText } = this.state;
     this.props.getCarsAction(page, searchText);
   }

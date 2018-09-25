@@ -46,6 +46,7 @@ interface IStateType {
   loadFile: boolean;
   cars: IImportCar[];
   carsObj: ICarObject;
+  canDrop: boolean;
 }
 
 class ImportCarsView extends React.Component<IPropsType, IStateType> {
@@ -59,6 +60,7 @@ class ImportCarsView extends React.Component<IPropsType, IStateType> {
     error: null,
     loadFile: false,
     cars: [],
+    canDrop: false,
     carsObj: {}
   };
 
@@ -70,6 +72,11 @@ class ImportCarsView extends React.Component<IPropsType, IStateType> {
     this.clickUploadFile = this.clickUploadFile.bind(this);
     this.handleChangeInputFile = this.handleChangeInputFile.bind(this);
     this.startLoad = this.startLoad.bind(this);
+    this.processSettings = this.processSettings.bind(this);
+    this.handleDrop = this.handleDrop.bind(this);
+    this.dragOverHandler = this.dragOverHandler.bind(this);
+    this.dragEndHandler = this.dragEndHandler.bind(this);
+    this.dragLeaveHandler = this.dragLeaveHandler.bind(this);
     this.inputFile = React.createRef();
 
     // socket
@@ -135,11 +142,13 @@ class ImportCarsView extends React.Component<IPropsType, IStateType> {
                   style={{marginRight: '5px'}}>
                   <i className="fa fa-fw fa-download" /> Descargar Formato
                 </button>
-                <button
-                  className="btn btn-sm btn-success"
-                  onClick={this.clickUploadFile}>
-                  <i className="fa fa-fw fa-cloud-upload" /> {cars.length > 1 ? 'Cargar otro excel' : 'Subir excel'}
-                </button>
+                {
+                  cars.length >= 1 ? <button
+                    className="btn btn-sm btn-success"
+                    onClick={this.clickUploadFile}>
+                    <i className="fa fa-fw fa-cloud-upload"/> {cars.length >= 1 ? 'Cargar otro excel' : 'Subir excel'}
+                  </button> : null
+                }
               </div>
             </div>
             <div className="box-body">
@@ -195,11 +204,23 @@ class ImportCarsView extends React.Component<IPropsType, IStateType> {
                         </tbody>
                       </table>
                     </div>
-                  </div> : <div className="row">
-                    <div className="col-md-12">
-                      <p>Seleccione un archivo para cargar.</p>
-                    </div>
-                  </div>
+                  </div> : <div
+                  className="upload-file text-center pointer"
+                  onClick={this.clickUploadFile}
+                  onDrop={this.handleDrop}
+                  onDragOver={this.dragOverHandler}
+                  onDragEnd={this.dragEndHandler}
+                  onDragLeave={this.dragLeaveHandler}
+                  style={{
+                    backgroundColor: '#EEEEEE',
+                    border: this.state.canDrop ? '1px solid #979797' : '1px dashed #979797',
+                    padding: '20px',
+                    color: this.state.canDrop ? '#aebccb' : '#6e7a89',
+                    borderRadius: '5px'
+                  }}>
+                  <i className="fa fa-2x fa-cloud-upload"/><br/>
+                  Prueba a soltanto el excel aquí, o haz click para seleccionar el excel a cargar.
+                </div>
               }
             </div>
             {
@@ -213,6 +234,50 @@ class ImportCarsView extends React.Component<IPropsType, IStateType> {
         </section>
       </AppContainer>
     );
+  }
+
+  private handleDrop(e: React.DragEvent<HTMLDivElement>): void {
+    e.preventDefault();
+    const dt = e.dataTransfer;
+    if (dt.items) {
+      if (dt.items.length) {
+        const file: File | null = dt.items[0].getAsFile();
+        if (file) {
+          this.processSettings(file);
+        }
+      }
+    } else {
+      if (dt.files.length) {
+        const file = dt.files[0];
+        this.processSettings(file);
+      }
+    }
+  }
+
+  private dragOverHandler(e: React.DragEvent<HTMLDivElement>): void {
+    e.preventDefault();
+    this.setState({
+      canDrop: true
+    });
+  }
+
+  private dragLeaveHandler(): void {
+    this.setState({
+      canDrop: false
+    });
+  }
+
+  private dragEndHandler(e: React.DragEvent<HTMLDivElement>): void {
+    const dt = e.dataTransfer;
+    if (dt.items) {
+      // Use DataTransferItemList interface to remove the drag data
+      for (let i = 0; i < dt.items.length; i++) {
+        dt.items.remove(i);
+      }
+    } else {
+      // Use DataTransfer interface to remove the drag data
+      e.dataTransfer.clearData();
+    }
   }
 
   private startLoad() {
@@ -281,44 +346,48 @@ class ImportCarsView extends React.Component<IPropsType, IStateType> {
     const {files} = e.target;
     if (files && files.length) {
       const file = files[0];
-      if (['application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'].includes(file.type)) {
-        const reader = new FileReader();
-        const rABS = !!reader.readAsBinaryString;
-        reader.onload = (e: any) => {
-          if (e.target) {
-            let data = e.target.result;
-            if (!rABS) {
-              data = new Uint8Array(data);
-            }
-            const workbook = XLSX.read(data, {
-              type: rABS ? 'binary' : 'array'
-            });
-            const cars: IImportCar[] = workbook.Sheets.hasOwnProperty('Autos') ? XLSX.utils.sheet_to_json(workbook.Sheets.Autos) : [];
-            if (cars.length >= 1) {
-              this.setState({
-                cars: cars.map((car) => {
-                  car.id = uuid.v1();
-                  car.status = carStatus.Pending;
-                  return car;
-                })
-                // carsObj: cars.reduce((acc: any, cur: any) => {
-                //   acc[cur.vin] = cur;
-                //   return acc;
-                // }, {})
-              });
-            } else {
-              swal('Importador de autos', 'Este excel no cumple con los requisitos mínimos o no tiene autos.', 'error');
-            }
+      this.processSettings(file);
+    }
+  }
+
+  private processSettings(file: File): void {
+    if (['application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'].includes(file.type)) {
+      const reader = new FileReader();
+      const rABS = !!reader.readAsBinaryString;
+      reader.onload = (e: any) => {
+        if (e.target) {
+          let data = e.target.result;
+          if (!rABS) {
+            data = new Uint8Array(data);
           }
-        };
-        if (rABS) {
-          reader.readAsBinaryString(file);
-        } else {
-          reader.readAsArrayBuffer(file);
+          const workbook = XLSX.read(data, {
+            type: rABS ? 'binary' : 'array'
+          });
+          const cars: IImportCar[] = workbook.Sheets.hasOwnProperty('Autos') ? XLSX.utils.sheet_to_json(workbook.Sheets.Autos) : [];
+          if (cars.length >= 1) {
+            this.setState({
+              cars: cars.map((car) => {
+                car.id = uuid.v1();
+                car.status = carStatus.Pending;
+                return car;
+              })
+              // carsObj: cars.reduce((acc: any, cur: any) => {
+              //   acc[cur.vin] = cur;
+              //   return acc;
+              // }, {})
+            });
+          } else {
+            swal('Importador de autos', 'Este excel no cumple con los requisitos mínimos o no tiene autos.', 'error');
+          }
         }
-        if (this.inputFile.current) {
-          this.inputFile.current.value = '';
-        }
+      };
+      if (rABS) {
+        reader.readAsBinaryString(file);
+      } else {
+        reader.readAsArrayBuffer(file);
+      }
+      if (this.inputFile.current) {
+        this.inputFile.current.value = '';
       }
     }
   }
