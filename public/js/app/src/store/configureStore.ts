@@ -6,7 +6,7 @@ import {composeWithDevTools} from 'redux-devtools-extension';
 // import LogerMiddleware from 'redux-logger';
 import ThunkMiddleware from 'redux-thunk';
 import {IWindow} from '../interfaces/window';
-import rootReducer from '../reducers/';
+import rootReducer from '../reducers/index.reducer';
 
 declare let window: IWindow;
 
@@ -24,7 +24,7 @@ const configureStore = () => {
     middlewares.push(createDebounce());
     Raven.config('https://7cb5eacf6f8249b888468a1b72bd7632@sentry.osacontrol.com/5').install();
     const context = {
-        id: window.user.id,
+        id: window.user._id,
         name: `${window.user.firstName} ${window.user.lastName}`,
         email: window.user.email
     };

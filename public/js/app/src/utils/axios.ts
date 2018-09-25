@@ -7,7 +7,7 @@ import Axios, {
   CancelTokenStatic
 } from 'axios';
 import * as Raven from 'raven-js';
-import {ITempUser} from '../actions/users';
+import {ITempUser} from '../actions/users.action';
 // import {IWindow} from '../interfaces/window';
 
 // declare let window: IWindow;
@@ -96,9 +96,21 @@ export default class ApiService {
     );
   }
 
-  public getVenues(): AxiosPromise {
+  public getVenues(page: number, pageSize?: number): AxiosPromise {
     return this.instance.get(
-      `/api/admin/venues/`
+      `/api/admin/venues/?page=${page}${pageSize ? `&pageSize=${pageSize}` : ''}`
+    );
+  }
+
+  public getPermissions(page: number, pageSize?: number): AxiosPromise {
+    return this.instance.get(
+      `/api/admin/permissions/?page=${page}${pageSize ? `&pageSize=${pageSize}` : ''}`
+    );
+  }
+
+  public getForms(page: number, pageSize?: number): AxiosPromise {
+    return this.instance.get(
+      `/api/admin/forms/?page=${page}${pageSize ? `&pageSize=${pageSize}` : ''}`
     );
   }
 
@@ -134,6 +146,34 @@ export default class ApiService {
     );
   }
 
+  public getInventories(): AxiosPromise  {
+    return this.instance.get(
+      `/api/inventory/`,  {
+        cancelToken: this.source.token
+      }
+    );
+  }
+
+  public createInventory(data: any, name: string): AxiosPromise {
+    return this.instance.post(
+      `/api/inventory/`, {carsByVenue: data, name}, {
+        cancelToken: this.source.token
+      }
+    );
+  }
+
+  public finishInventory(id: string): AxiosPromise {
+    return this.instance.post(
+      `/api/inventory/${id}/finish/`, {}
+    );
+  }
+
+  public deleteInventory(id: string): AxiosPromise {
+    return this.instance.delete(
+      `/api/inventory/${id}/`, {}
+    );
+  }
+
   public getAlerts(): AxiosPromise {
     return this.instance.get(
       `/api/admin/alerts/`, {
@@ -159,5 +199,4 @@ export default class ApiService {
     this.source = this.CancelToken.source();
     return this.source;
   }
-
 }

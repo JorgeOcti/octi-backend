@@ -1,5 +1,7 @@
 import {ICompany} from './company.interface';
 import {IForm} from './form.interface';
+import {IGroup} from './group.interface';
+import {IPermission} from './permision.interface';
 import {IVenue} from './venue.interface';
 
 export interface IUser {
@@ -19,5 +21,9 @@ export interface IUser {
   active: boolean;
   updatedAt: Date;
   createdAt: Date;
+  group: IGroup;
+  userPermissions: IPermission[];
+  userForms: IForm[];
+  isAdmin: boolean;
   generateToken: () => string;
 }

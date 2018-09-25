@@ -1,11 +1,11 @@
-import * as PropTypes from 'prop-types';
+// import * as PropTypes from 'prop-types';
 import * as Raven from 'raven-js';
 import * as React from 'react';
 import {ErrorInfo} from 'react';
 import {connect} from 'react-redux';
 import {RouteComponentProps} from 'react-router';
 import {Dispatch} from 'redux';
-import {DashboardReduxAction, getParticipantsPerDateAction, IDashboardState} from '../../actions/dashboard';
+import {DashboardReduxAction, getParticipantsPerDateAction, IDashboardState} from '../../actions/dashboard.action';
 import AppContainer from '../../container/AppContainer';
 
 interface IPropsType extends RouteComponentProps<{ ticket: string }> {
@@ -21,11 +21,11 @@ interface IStateType {
 
 class DashboardGeneralView extends React.Component<IPropsType, IStateType> {
 
-  static propTypes = {
-    dashboard: PropTypes.object.isRequired,
-    dispatch: PropTypes.func.isRequired,
-    getParticipantsPerDateAction: PropTypes.func.isRequired
-  };
+  // static propTypes = {
+  //   dashboard: PropTypes.object.isRequired,
+  //   dispatch: PropTypes.func.isRequired,
+  //   getParticipantsPerDateAction: PropTypes.func.isRequired
+  // };
 
   participantsPerDayChart: any;
 
@@ -37,7 +37,9 @@ class DashboardGeneralView extends React.Component<IPropsType, IStateType> {
   public componentWillMount(): void {
     // set the title of the page
     document.title = 'OSA Andes | Reportes generales';
+    // get data
     this.props.getParticipantsPerDateAction();
+    // add listeners
     window.addEventListener('resize', this.resizeCharts, false);
   }
 
@@ -49,11 +51,12 @@ class DashboardGeneralView extends React.Component<IPropsType, IStateType> {
   }
 
   public componentDidUpdate(prevProps: IPropsType, prevState: IStateType): void {
-    const {participantsPerDate, loading} = this.props.dashboard;
+    const {participantsPerDate, carsPerDate, loading} = this.props.dashboard;
 
     const $participantPerDate = document.getElementById('participant-per-date') as HTMLDivElement;
     const categories: any[] = [];
     const totals: any[] = [];
+    const totalsCars: any[] = [];
 
     if (participantsPerDate.length) {
       participantsPerDate.forEach((day) => {
@@ -61,92 +64,152 @@ class DashboardGeneralView extends React.Component<IPropsType, IStateType> {
         totals.push(day.total);
       });
     }
+    if (carsPerDate.length) {
+      carsPerDate.forEach((day) => {
+        totalsCars.push(day.total);
+      });
+    }
     if ($participantPerDate && !loading) {
       this.participantsPerDayChart = echarts.init($participantPerDate);
       const option = {
-        title: {
-          text: 'Revisiones realizadas por día',
-          x: 'center',
-          textStyle: {
-            align: 'center'
-          }
+        // title: {
+        //   text: 'Revisiones y cargas realizadas por día',
+        //   x: 'center',
+        //   textStyle: {
+        //     align: 'center'
+        //   }
+        // },
+        tooltip: {
+          trigger: 'axis'
         },
-        tooltip: {},
+        legend: {
+          x: 'center',
+          y: 'bottom',
+          data: ['Revisiones', 'Cargados']
+        },
         xAxis: {
           type: 'category',
+          boundaryGap: false,
           data: categories,
           axisLine: {
             lineStyle: {
-              color: '#9b9b9b',
-              width: 0.5
+              color: 'rgba(0, 0, 0, 0.5)'
             }
+          },
+          axisLabel: {
+            rotate: 45
+            // fontSize: 10
           }
         },
         yAxis: {
+          minInterval: 1,
           type: 'value',
           axisLine: {
             lineStyle: {
-              color: '#9b9b9b',
-              width: 0.5
+              color: 'rgba(0, 0, 0, 0.5)'
+            }
+          },
+          splitLine: {
+            show: true,
+            lineStyle: {
+              type: 'dashed',
+              color: 'rgba(35, 36, 37, 0.5)'
             }
           }
         },
         grid: {
+          top: 30,
           // left
-          x: 30,
+          x: 40,
           // right
-          x2: 10
-
+          x2: 30,
+          containLabel: true
           // borderColor: '#FF0000'
         },
         series: [{
           data: totals,
-          // itemStyle: {
-          //   normal: {
-          //     areaStyle: {
-          //       type: 'default',
-          //       color: '#0081da',
-          //       opacity: 0.4
-          //     }
-          //   }
-          // },
-          // lineStyle: {
-          //   normal: {
-          //     color: '#006faf',
-          //     // opacity: 0.1
-          //   }
-          // },
-          // data: [{
-          //   value: 820,
-          //   name: '2018-06-05',
-          //   itemStyle: {
-          //     color: '#c23531'
-          //   }
-          // }],
+          name: 'Revisiones',
           type: 'line',
+          color: '#009cde',
           smooth: true
-        }],
-        color: ['#006faf']
+        }, {
+          data: totalsCars,
+          name: 'Cargados',
+          type: 'line',
+          color: '#6d7a89',
+          smooth: true
+        }]
       };
       this.participantsPerDayChart.setOption(option);
     }
   }
 
   public componentWillUnmount() {
-    // cancel request if component is inmounted
+    // remove listeners
     window.removeEventListener('resize', this.resizeCharts, false);
+    // cancel request if component is inmounted
     if (this.props.dashboard.source) {
       this.props.dashboard.source.cancel('Operation canceled by the user.');
     }
   }
 
   public render(): React.ReactElement<IPropsType> {
-    const {loading, participantsPerDate} = this.props.dashboard;
+    const {loading, participantsPerDate, carsPerDate, totalCars} = this.props.dashboard;
     return (
       <AppContainer title="" cMenu="1" cSubMenu="1.1">
         <section className="content">
+          <div className="row">
+            <div className="col-md-3 col-sm-6 col-xs-12">
+              <div className="info-box">
+                <span className="info-box-icon bg-aqua"><i className="fa fa-clipboard"/></span>
+                <div className="info-box-content">
+                  <span className="info-box-text">Revisiones Hoy</span>
+                  <span className="info-box-number">
+                    {participantsPerDate.length ? participantsPerDate[participantsPerDate.length - 1 ].total : 0}
+                  </span>
+                </div>
+              </div>
+            </div>
+            <div className="col-md-3 col-sm-6 col-xs-12">
+              <div className="info-box">
+                <span className="info-box-icon bg-yellow"><i className="fa fa-check-square"/></span>
+                <div className="info-box-content">
+                  <span className="info-box-text">Cargados Hoy</span>
+                  <span className="info-box-number">{carsPerDate.length ? carsPerDate[carsPerDate.length - 1 ].total : 0}</span>
+                </div>
+              </div>
+            </div>
+            <div className="col-md-3 col-sm-6 col-xs-12">
+              <div className="info-box">
+                <span className="info-box-icon bg-green"><i className="fa fa-car"/></span>
+                <div className="info-box-content">
+                  <span className="info-box-text">Total Cargas</span>
+                  <span className="info-box-number">{totalCars}</span>
+                </div>
+              </div>
+            </div>
+            {/*<div className="clearfix visible-sm-block"/>*/}
+            {/*<div className="col-md-3 col-sm-6 col-xs-12">*/}
+              {/*<div className="info-box">*/}
+                {/*<span className="info-box-icon bg-green"><i className="ion ion-ios-cart-outline"/></span>*/}
+                {/*<div className="info-box-content">*/}
+                  {/*<span className="info-box-text">Sales</span>*/}
+                  {/*<span className="info-box-number">760</span>*/}
+                {/*</div>*/}
+              {/*</div>*/}
+            {/*</div>*/}
+            {/*<div className="col-md-3 col-sm-6 col-xs-12">*/}
+              {/*<div className="info-box">*/}
+                {/*<span className="info-box-icon bg-yellow"><i className="ion ion-ios-people-outline"/></span>*/}
+                {/*<div className="info-box-content">*/}
+                  {/*<span className="info-box-text">New Members</span>*/}
+                  {/*<span className="info-box-number">2,000</span>*/}
+                {/*</div>*/}
+              {/*</div>*/}
+            {/*</div>*/}
+          </div>
           <div className="box">
-            <div className="box-header with-border"><h3 className="box-title">Dashboard General</h3>
+            <div className="box-header with-border"><h3 className="box-title">Revisiones y cargas realizadas por día</h3>
               <div className="box-tools pull-right">
               </div>
             </div>

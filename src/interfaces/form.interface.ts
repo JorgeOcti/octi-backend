@@ -55,6 +55,18 @@ export interface IForm {
   company: ICompany | any;
   description: string;
 
+  shipping: boolean;
+  shippingText: string;
+  shippingImage: boolean;
+
+  reception: boolean;
+  receptionText: string;
+  receptionImage: boolean;
+
+  conciliation: boolean;
+  conciliationText: string;
+  conciliationImage: boolean;
+
   sections: mongoose.Types.Array<IFormSectionModel>;
   url?: string;
   active: boolean;

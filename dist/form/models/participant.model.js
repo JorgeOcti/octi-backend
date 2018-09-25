@@ -1,6 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 const mongoose = require("mongoose");
+const scale_model_1 = require("./scale.model");
 const participantChoiceSchema = new mongoose.Schema({
     choice: {
         type: String,
@@ -13,6 +14,7 @@ const participantChoiceSchema = new mongoose.Schema({
     },
     backgroundColor: {
         type: String,
+        enum: scale_model_1.choiceBackgroundColors,
         default: 'blue'
     },
     requireImage: {
@@ -102,6 +104,10 @@ const participantAnswersSchema = new mongoose.Schema({
     comment: {
         type: String
     },
+    na: {
+        type: Boolean,
+        default: false
+    },
     qualification: {
         type: Number
     },
@@ -175,6 +181,42 @@ const participantSchema = new mongoose.Schema({
         type: Number,
         default: 0
     },
+    shipping: {
+        type: Boolean,
+        default: false
+    },
+    shippingText: {
+        type: String,
+        default: ''
+    },
+    shippingImages: [{
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'ParticipantFile'
+        }],
+    reception: {
+        type: Boolean,
+        default: false
+    },
+    receptionText: {
+        type: String,
+        default: ''
+    },
+    receptionImages: [{
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'ParticipantFile'
+        }],
+    conciliation: {
+        type: Boolean,
+        default: false
+    },
+    conciliationText: {
+        type: String,
+        default: ''
+    },
+    conciliationImages: [{
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'ParticipantFile'
+        }],
     active: {
         type: Boolean,
         default: true

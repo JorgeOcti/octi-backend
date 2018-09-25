@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+const moment = require("moment");
 const mongoose = require("mongoose");
 const participant_model_1 = require("../../form/models/participant.model");
 const car_model_1 = require("../models/car.model");
@@ -85,16 +86,16 @@ class CarController {
             'LGW': 'GREAT WALL'
         };
         /*
-        {
-          $group: {
-            _id: {
-              vin: {
-                $substr: ["$vin", 0, 3]
-              },
-              brand: "$brand"
+          {
+            $group: {
+              _id: {
+                vin: {
+                  $substr: ["$vin", 0, 3]
+                },
+                brand: "$brand"
+              }
             }
           }
-        }
         */
         if (vin) {
             vin = vin.replace(/[\W_]+/g, '');
@@ -130,11 +131,12 @@ class CarController {
             }
         }
         else if (vin2) {
-            vin2 = vin2.replace(/[\W_]+/g, '');
+            // vin2 = vin2.replace(/[\W_]+/g, '');
             try {
                 if (multi === 'true') {
+                    const vinRegex = new RegExp('[a-zA-Z0]' + vin2.substr(vin2.length - 5), 'i');
                     const car = await car_model_1.default.find({
-                        vin2,
+                        vin2: vin2 && vin2[0] === '0' ? { $regex: vinRegex } : vin2,
                         company
                     }, {
                         vin: true,
@@ -200,7 +202,10 @@ class CarController {
             const participantPerDay = await participant_model_1.default
                 .aggregate([{
                     $match: {
-                        company
+                        company,
+                        createdAt: {
+                            $gte: moment().subtract(14, 'd').toDate()
+                        }
                     }
                 }, {
                     $project: {
@@ -265,8 +270,65 @@ class CarController {
                         _id: 1
                     }
                 }]);
+            const importCarsPerDay = await car_model_1.default
+                .aggregate([{
+                    $match: {
+                        company,
+                        createdAt: {
+                            $gte: moment().subtract(14, 'd').toDate()
+                        }
+                    }
+                }, {
+                    $project: {
+                        _id: 1, createdAt: {
+                            $subtract: ['$createdAt', 4 * 60 * 60 * 1000]
+                        }
+                    }
+                }, {
+                    $group: {
+                        _id: {
+                            $dateToString: {
+                                format: '%Y-%m-%d',
+                                date: '$createdAt'
+                                // timezone: 'America/Santiago'
+                            }
+                        },
+                        total: {
+                            $sum: 1
+                        }
+                    }
+                }]);
+            // normalize show last 14 days
+            const participants = [];
+            const cars = [];
+            for (let i = 13; i >= 0; i--) {
+                const key = moment().subtract(i, 'd').format('YYYY-MM-DD');
+                const existInParticipantPerDay = participantPerDay.find((day) => day._id.toString() === key);
+                const existInImportCarsPerDay = importCarsPerDay.find((day) => day._id.toString() === key);
+                if (!existInParticipantPerDay) {
+                    participants.push({
+                        _id: key,
+                        users: [],
+                        total: 0
+                    });
+                }
+                else {
+                    participants.push(existInParticipantPerDay);
+                }
+                if (!existInImportCarsPerDay) {
+                    cars.push({
+                        _id: key,
+                        total: 0
+                    });
+                }
+                else {
+                    cars.push(existInImportCarsPerDay);
+                }
+            }
             res.json({
-                data: participantPerDay,
+                participants,
+                cars,
+                totalCars: await car_model_1.default.count({ company }),
                 status: 200
             });
         }
@@ -275,6 +337,24 @@ class CarController {
                 res.status(500).json(e);
             }
         }
+    }
+    async apiParticipantCSV(req, res) {
+        const participants = await participant_model_1.default.find({}).populate([{
+                path: 'car'
+            }, {
+                path: 'user',
+                populate: [{
+                        path: 'venue'
+                    }]
+            }, {
+                path: 'form'
+            }]);
+        const data = [];
+        data.push(`VIN, Marca, Denominacion, Usuario, formulario, venue, calificacion, fecha`);
+        for (const participant of participants) {
+            data.push(`${participant.car.vin}|${participant.car.brand}|${participant.car.denomination}|${participant.user.fullName()}|${participant.form.name}|${participant.user.venue.name}|${participant.qualification.toString().replace('.', ',')}|${participant.createdAt}`);
+        }
+        res.send(data.join('\n'));
     }
     async apiParticipantDetail(req, res) {
         const { id } = req.params;
@@ -288,6 +368,15 @@ class CarController {
                 user: true,
                 sections: true,
                 qualification: true,
+                shipping: true,
+                shippingText: true,
+                shippingImages: true,
+                reception: true,
+                receptionText: true,
+                receptionImages: true,
+                conciliation: true,
+                conciliationText: true,
+                conciliationImages: true,
                 createdAt: true
             })
                 .populate([{
@@ -295,6 +384,12 @@ class CarController {
                     select: ['firstName', 'lastName']
                 }, {
                     path: 'sections.answers.images'
+                }, {
+                    path: 'shippingImages'
+                }, {
+                    path: 'receptionImages'
+                }, {
+                    path: 'conciliationImages'
                 }]);
             // validate exist participant
             if (!participant) {
@@ -420,7 +515,19 @@ class CarController {
         if (search && search.length) {
             const searchText = new RegExp(search, 'i');
             // search in vin and brand
-            filter = { $and: [{ $or: [{ vin: { $regex: searchText } }, { brand: { $regex: searchText } }] }, filter] };
+            filter = {
+                $and: [{
+                        $or: [{
+                                vin: {
+                                    $regex: searchText
+                                }
+                            }, {
+                                brand: {
+                                    $regex: searchText
+                                }
+                            }]
+                    }, filter]
+            };
         }
         return new Promise((resolve, reject) => {
             car_model_1.default.paginate(filter, options, (err, result) => {

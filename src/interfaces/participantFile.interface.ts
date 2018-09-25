@@ -1,12 +1,12 @@
-import {IFormModel} from "../form/models/form.model";
-import {ICompanyModel} from "../app/models/company.model";
-import {IUserModel} from "../app/models/user.model";
+import {ICompanyModel} from '../app/models/company.model';
+import {IUserModel} from '../app/models/user.model';
+import {IFormModel} from '../form/models/form.model';
 
 interface IIFile {
   url: string;
-  type: string,
-  name: string,
-  size: number,
+  type: string;
+  name: string;
+  size: number;
 }
 
 export interface IParticipantFile {

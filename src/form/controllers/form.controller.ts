@@ -3,16 +3,17 @@ import {Response} from 'express';
 import * as GraphicsMagick from 'gm';
 import * as moment from 'moment-timezone';
 import {queue} from '../../app';
-import Alert from "../../app/models/alert.model";
+import Alert from '../../app/models/alert.model';
 import CarModel from '../../app/models/car.model';
 import UserModel from '../../app/models/user.model';
-import {IRequest} from '../../interfaces/global.interface';
+import {IAnyObject, IRequest} from '../../interfaces/global.interface';
 import {io} from '../../server';
 import redisClient from '../../services/redis.service';
 import FormModel, {IFormModel} from '../models/form.model';
 import ParticipantModel from '../models/participant.model';
 import ParticipantFile from '../models/participantFile.model';
 import ScaleModel, {IScaleModel} from '../models/scale.model';
+// import * as cp from 'console-probe';
 
 class FormController {
 
@@ -27,7 +28,11 @@ class FormController {
   public async list(req: IRequest, res: Response) {
     const company = req.user.company;
     try {
-      const forms = await this.getForms(company);
+      const forms = await this.getForms(company, {
+        _id: {
+          $in: req.user.userForms.map((form) => form._id)
+        }
+      });
       res.json({
         data: forms,
         status: 200
@@ -40,9 +45,14 @@ class FormController {
     }
   }
 
-  public async detail(req: IRequest, res: Response) {
+  public async detail(req: IRequest, res: Response): Promise<any> {
     const {id} = req.params;
     const company = req.user.company;
+    if (req.user.userForms.filter((form) => form._id.toString() === id).length === 0) {
+      return res.status(403).json({
+        message: 'No tiene permisos para esta operación'
+      });
+    }
     try {
       const form = await this.getForm(id, company);
       // generate array of scale ids
@@ -55,16 +65,151 @@ class FormController {
           }
         });
       });
+
+      const extra: IAnyObject = {
+        accessories: []
+      };
+      const extraSection: any = {
+        _id: '',
+        name: '',
+        questions: [],
+        order: form.sections.length + 1
+      };
+      const extraScales: any = [];
+      if (form.shipping) {
+        extraSection.questions.push({
+          _id: 'shipping',
+          question: form.shippingText,
+          scale: 'shipping',
+          conciliation: false
+        });
+        extraScales.push({
+          _id: 'shipping',
+          name: 'shipping',
+          choices: [
+            {
+              _id: 'false',
+              choice: 'No',
+              backgroundColor: 'red',
+              requireImage: false,
+              requireComment: false,
+              requireAccesories: false,
+              requireConciliation: false,
+              value: 0,
+              order: 1
+            }, {
+              _id: 'true',
+              choice: 'Si',
+              backgroundColor: 'green',
+              requireImage: form.shippingImage,
+              requireComment: false,
+              requireAccesories: false,
+              requireConciliation: false,
+              value: 1,
+              order: 2
+            }
+          ],
+          order: extraScales.length + 1
+        });
+      }
+      if (form.reception) {
+        extraSection.questions.push({
+          _id: 'reception',
+          question: form.receptionText,
+          scale: 'reception',
+          conciliation: false
+        });
+        extraScales.push({
+          _id: 'reception',
+          name: 'reception',
+          choices: [
+            {
+              _id: 'false',
+              choice: 'No',
+              backgroundColor: 'red',
+              requireImage: false,
+              requireComment: false,
+              requireAccesories: false,
+              requireConciliation: false,
+              value: 0,
+              order: 1
+            }, {
+              _id: 'true',
+              choice: 'Si',
+              backgroundColor: 'green',
+              requireImage: form.receptionImage,
+              requireComment: false,
+              requireAccesories: false,
+              requireConciliation: false,
+              value: 1,
+              order: 2
+            }
+          ],
+          order: extraScales.length + 1
+        });
+      }
+      if (form.conciliation) {
+        extraSection.questions.push({
+          _id: 'conciliation',
+          question: form.conciliationText,
+          scale: 'conciliation',
+          conciliation: true
+        });
+        extraScales.push({
+          _id: 'conciliation',
+          name: 'conciliation',
+          choices: [
+            {
+              _id: 'false',
+              choice: 'No',
+              backgroundColor: 'red',
+              requireImage: false,
+              requireComment: false,
+              requireAccesories: false,
+              requireConciliation: false,
+              value: 0,
+              order: 1
+            }, {
+              _id: 'true',
+              choice: 'Si',
+              backgroundColor: 'green',
+              requireImage: form.conciliationImage,
+              requireComment: false,
+              requireAccesories: false,
+              requireConciliation: false,
+              value: 1,
+              order: 2
+            }
+          ],
+          order: extraScales.length + 1
+        });
+      }
+
+      // delete keys from object returned by api
+      const deleteKeys: string[] = ['shipping', 'shippingText', 'shippingImage', 'reception', 'receptionText', 'receptionImage', 'conciliation', 'conciliationText', 'conciliationImage'];
+      deleteKeys.forEach((key: string) => {
+        if (form.hasOwnProperty(key)) {
+          delete (form as any)[key];
+        }
+      });
+      let scales = await this.getScales(scalesIds, company);
+
+      scales = [...scales, ...extraScales];
+      if (extraSection.questions.length) {
+        (form as any).sections = [...form.sections, extraSection];
+      }
+
       // get scales from db
-      const scales = await this.getScales(scalesIds, company);
       res.json({
         data: {
           form,
-          scales
+          scales,
+          extra
         },
         status: 200
       });
     } catch (e) {
+      console.log('e', e);
       res.status(400).json({
         message: 'No se encontro formularío',
         status: 400
@@ -102,7 +247,7 @@ class FormController {
         const form = await this.getFormWithScale(id, company);
         if (form) {
           // initialize participant
-          const newParticipant = new ParticipantModel({
+          const participantObject: any = {
             name: form.name,
             company,
             form: form._id,
@@ -110,7 +255,32 @@ class FormController {
             description: form.description,
             user: req.user._id,
             active: form.active
-          });
+          };
+          if (form.reception && 'reception' in answers) {
+            const reception = answers.reception;
+            participantObject.reception = [true, 'true'].includes(reception.value);
+            participantObject.receptionText = form.receptionText;
+            if (reception.images) {
+              participantObject.receptionImages = reception.images.map((image: string) => (new ObjectID(image)));
+            }
+          }
+          if (form.shipping && 'shipping' in answers) {
+            const shipping = answers.shipping;
+            participantObject.shipping = [true, 'true'].includes(shipping.value);
+            participantObject.shippingText = form.shippingText;
+            if (shipping.images) {
+              participantObject.shippingImages = shipping.images.map((image: string) => (new ObjectID(image)));
+            }
+          }
+          if (form.conciliation && 'conciliation' in answers) {
+            const conciliation = answers.conciliation;
+            participantObject.conciliation = [true, 'true'].includes(conciliation.value);
+            participantObject.conciliationText = form.conciliationText;
+            if (conciliation.images) {
+              participantObject.conciliationImages = conciliation.images.map((image: string) => (new ObjectID(image)));
+            }
+          }
+          const newParticipant = new ParticipantModel(participantObject);
           // var sum sections
           let sumSectionWeigths = 0;
           let sumSectionQualifications = 0;
@@ -131,15 +301,20 @@ class FormController {
               const choice = question.scale.choices.find((choice) => {
                 return answer ? choice._id.toString() === answer.value : false;
               });
-
               // calculate qualification
               let qualification = 0;
               if (choice) {
                 qualification = (100 / question.scale.maxValue) * choice.value;
               }
 
-              sumQualifications +=  (qualification * question.weight);
-              sumWeigths += question.weight;
+              // no apply
+              let na: boolean = false;
+              if (choice && choice.na) {
+                na = true;
+              } else {
+                sumQualifications += (qualification * question.weight);
+                sumWeigths += question.weight;
+              }
 
               // concat allImages
               if (choice && choice.requireImage && answer && answer.images && answer.images.length) {
@@ -171,6 +346,7 @@ class FormController {
                 // images: answer.images && answer.images.length ? await ParticipantFile.find({_id: {$in: answer.images}}, {_id:1}) : [],
                 images: answer && answer.images && answer.images.length ? answer.images.map((image: string) => (new ObjectID(image))) : [],
                 qualification,
+                na,
                 weight: question.weight,
                 order: question.order
               });
@@ -217,6 +393,7 @@ class FormController {
             /* Search alerts */
             const alerts = await Alert
               .find({
+                company,
                 $or: [
                   {$and: [{lte: {$gte: formQualification}}, {lte: {$gt: 0}}]},
                   {$and: [{gte: {$lte: formQualification}}, {gte: {$gt: 0}}]}
@@ -229,13 +406,14 @@ class FormController {
             if (alerts.length) {
               alerts.forEach((alert) => {
                 alert.users.forEach((user) => {
+                  const userName = `${user.firstName} ${user.lastName}`;
                   if (user.email && user.email.length) {
                     queue.create('email', {
                       from: '',
                       title: `Alert qualification`,
-                      to: `"${user.firstName} ${user.lastName}"<${user.email}>`,
+                      to: `""<${user.email}>`,
                       subject: `ALERTA: ${alert.name}`,
-                      text: `Hola Richard
+                      text: `Hola ${userName}
                         Se ha evaluado un VIN con calificación ${formQualification.toFixed(0)}%
 
                         Datos del Vehiculo
@@ -248,6 +426,7 @@ class FormController {
                         © 2018 OSA SpA. Todos los derechos reservados.`,
                       view: 'alerts/lowQualification',
                       context: {
+                        userName,
                         brand: car ? car.brand : '',
                         vin: car ? car.vin : '',
                         qualification: formQualification.toFixed(0),
@@ -258,9 +437,13 @@ class FormController {
                 });
               });
             }
+            // send refresh with websocket to dashboard list
+            io.to(`dashboard-vin-view-${company._id}`).emit('REFRESH', {
+              update: true,
+              car: car._id
+            });
 
-            io.to(`dashboard-vin-view-${company._id}`).emit('REFRESH', {update: true, car: car._id});
-
+            // send refresh with websocket to dashboard detail
             io.to(`dashboard-vin-detail-${car._id}`).emit(`ADD_PARTICIPANT`, await ParticipantModel
               .findById(newParticipant._id, {name: 1, user: 1, createdAt: 1, qualification: 1})
               .populate({
@@ -268,6 +451,7 @@ class FormController {
                 select: ['firstName', 'lastName']
               })
             );
+
             return res.json({
               data: {
                 id,
@@ -361,7 +545,6 @@ class FormController {
         status: 400
       });
     }
-    // ParticipantFile
   }
 
   public async changePreferred(req: IRequest, res: Response) {
@@ -419,8 +602,18 @@ class FormController {
     });
   }
 
-  private getForms(company: ObjectID): Promise<IFormModel[]> {
-    const keyCache = `forms`;
+  private getForms(company: ObjectID, filter?: any): Promise<IFormModel[]> {
+    const keyCache = `forms${filter ? JSON.stringify(filter) : ''}`;
+    if (filter) {
+      filter = {
+        company,
+        ...filter
+      };
+    } else {
+      filter = {
+        company
+      };
+    }
     return new Promise((resolve, reject) => {
       redisClient.get(keyCache, async (error, result) => {
         if (result) {
@@ -428,9 +621,7 @@ class FormController {
           resolve(JSON.parse(result));
         } else {
           FormModel
-            .find({
-              company
-            }, {
+            .find(filter, {
               _id: 1,
               name: 1
             })

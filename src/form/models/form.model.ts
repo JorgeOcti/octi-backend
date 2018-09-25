@@ -1,4 +1,5 @@
 import * as mongoose from 'mongoose';
+import * as mongoosePaginate from 'mongoose-paginate';
 import {IForm, IFormAccesory, IFormItems, IFormQuestion, IFormSection} from '../../interfaces/form.interface';
 
 export interface IFormItemModel extends IFormItems, mongoose.Types.Subdocument {}
@@ -108,6 +109,45 @@ const formSchema = new mongoose.Schema({
     trim: true
   },
 
+  shipping: {
+    type: Boolean,
+    default: false
+  },
+  shippingText: {
+    type: String,
+    default: ''
+  },
+  shippingImage: {
+    type: Boolean,
+    default: false
+  },
+
+  reception: {
+    type: Boolean,
+    default: false
+  },
+  receptionText: {
+    type: String,
+    default: ''
+  },
+  receptionImage: {
+    type: Boolean,
+    default: false
+  },
+
+  conciliation: {
+    type: Boolean,
+    default: false
+  },
+  conciliationText: {
+    type: String,
+    default: ''
+  },
+  conciliationImage: {
+    type: Boolean,
+    default: false
+  },
+
   sections: [formSectionsSchema],
 
   active: {
@@ -117,6 +157,8 @@ const formSchema = new mongoose.Schema({
 }, {
   timestamps: true
 });
+
+formSchema.plugin(mongoosePaginate);
 
 formSchema.virtual('participants', {
   ref: 'Participant', // The model to use

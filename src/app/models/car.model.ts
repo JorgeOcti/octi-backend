@@ -8,16 +8,17 @@ export interface ICarModel extends ICar, mongoose.Document {}
 const carSchema = new mongoose.Schema({
   vin: {
     type: String,
-    trim: true,
-    required: true
+    trim: true
   },
   vin2: {
     type: String,
-    trim: true,
-    required: true
+    trim: true
   },
   internalNumber: {
     type: Number
+  },
+  patent: {
+    type: String
   },
   destination: {
     type: String,
@@ -51,19 +52,19 @@ const carSchema = new mongoose.Schema({
 
 carSchema.index({vin: 1}, {unique: true});
 carSchema.index({company: 1, vin: 1}, {unique: true});
-carSchema.index({
-  vin: 'text',
-  brand: 'text',
-  denomination: 'text',
-  color: 'text'
-}, {
-  weights: {
-    vin: 9,
-    brand: 10,
-    denomination: 1,
-    color: 1
-  }
-});
+// carSchema.index({
+//   vin: 'text',
+//   brand: 'text',
+//   denomination: 'text',
+//   color: 'text'
+// }, {
+//   weights: {
+//     vin: 9,
+//     brand: 10,
+//     denomination: 1,
+//     color: 1
+//   }
+// });
 
 carSchema.virtual('participants', {
   ref: 'Participant', // The model to use

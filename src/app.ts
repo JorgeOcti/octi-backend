@@ -20,6 +20,7 @@ import User from './app/models/user.model';
 import {appRouter, jwtRouter} from './app/router';
 import EmailQueue from './app/tasks/email.task';
 import formRouter from './form/router';
+import {inventoryRouter} from './inventory/router';
 import Middlewares from './middlewares/middlewares';
 
 // Create Express server
@@ -93,7 +94,7 @@ app.disable('x-powered-by');
 app.set('strict routing', true);
 
 // For parsing application/json
-app.use(bodyParser.json());
+app.use(bodyParser.json({limit: '50mb'}));
 
 // for parsing application/xwww-
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -161,7 +162,28 @@ passport.use(new LocalStrategy({ usernameField: 'username' }, (username, passwor
 }));
 
 passport.serializeUser((User as any).serializeUser());
-passport.deserializeUser((User as any).deserializeUser());
+// passport.deserializeUser((User as any).deserializeUser());
+passport.deserializeUser(async (email, done) => {
+  try {
+    const user = await User.findOne({email}).populate([{
+      path: 'userPermissions',
+      select: ['codeName']
+    }, {
+      path: 'userForms',
+      select: ['name']
+    }, {
+      path: 'venue',
+      select: ['name']
+    }]);
+    if (user) {
+      done(null, user);
+    } else {
+      done(new Error('User not found'));
+    }
+  } catch (e) {
+    done(e);
+  }
+});
 
 /*
 passport.serializeUser<any, any>((user, done) => {
@@ -209,8 +231,9 @@ app.use(Raven.requestHandler());
 
 // Routes
 app.use('/', appRouter);
+app.use('/', formRouter);
+app.use('/', inventoryRouter);
 app.use('/api/v1', jwtRouter);
-app.use('/api/v1/forms', formRouter);
 
 /* queues */
 export const queue = kue.createQueue({

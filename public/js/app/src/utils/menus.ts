@@ -1,51 +1,94 @@
-const menus: any[] = [];
-// Dashboard
-menus.push({
-  id: '1',
-  text: 'Dashboards',
-  icon: 'fa-dashboard',
-  url: '/',
-  items: [
-    {
-      id: '1.1',
-      icon: 'fa-circle-o',
-      text: 'General',
-      url: '/'
-    }, {
-      id: '1.2',
-      icon: 'fa-circle-o',
-      text: 'Listado de VINs',
-      url: '/cars/'
-    }
-  ]
-});
+import {IWindow} from '../interfaces/window';
+import {hasPermission} from './common';
 
-// Report
-menus.push({
-  id: '2',
-  text: 'Settings',
-  icon: 'fa-cog',
-  url: '/settings/users/',
-  items: [
-    {
-      id: '2.1',
-      icon: 'fa-circle-o',
-      text: 'Alertas',
-      url: '/settings/alerts/'
-    },
-    {
-      id: '2.2',
-      icon: 'fa-circle-o',
-      text: 'Autos',
-      url: '/settings/cars/'
-    },
-    {
-      id: '2.3',
-      icon: 'fa-circle-o',
-      text: 'Usuarios',
-      url: '/settings/users/'
-    }
-  ]
-});
+declare let window: IWindow;
+
+const menus: any[] = [];
+
+/* *****************
+* 1. Dashboard
+*****************/
+const dashboardItems = [{
+  id: '1.1',
+  icon: 'fa-circle-o',
+  text: 'General',
+  url: '/'
+}, {
+  id: '1.2',
+  icon: 'fa-circle-o',
+  text: 'Revisiones',
+  url: '/cars/'
+}];
+
+if (dashboardItems.length) {
+  menus.push({
+    id: '1',
+    text: 'Dashboards',
+    icon: 'fa-dashboard',
+    url: '/',
+    items: dashboardItems
+  });
+}
+
+/* *****************
+* 1. Inventory
+*****************/
+const inventoryItems = [];
+
+if (hasPermission(window.user, 'viewInventory')) {
+  inventoryItems.push({
+    id: '2.1',
+    icon: 'fa-circle-o',
+    text: 'Gestión',
+    url: '/inventory/'
+  });
+}
+
+if (inventoryItems.length) {
+  menus.push({
+    id: '2',
+    text: 'Inventario',
+    icon: 'fa-navicon',
+    url: '/inventory/',
+    items: inventoryItems
+  });
+}
+
+/* *****************
+* 10. Settings
+*****************/
+const settingItems = [{
+  id: '10.1',
+  icon: 'fa-circle-o',
+  text: 'Alertas',
+  url: '/settings/alerts/'
+}];
+
+if (hasPermission(window.user, 'viewCar')) {
+  settingItems.push({
+    id: '10.2',
+    icon: 'fa-circle-o',
+    text: 'Autos',
+    url: '/settings/cars/'
+  });
+}
+if (hasPermission(window.user, 'viewUser')) {
+  settingItems.push({
+    id: '10.3',
+    icon: 'fa-circle-o',
+    text: 'Usuarios',
+    url: '/settings/users/'
+  });
+}
+
+if (settingItems.length) {
+  menus.push({
+    id: '10',
+    text: 'Settings',
+    icon: 'fa-cog',
+    url: '/settings/users/',
+    items: settingItems
+  });
+}
 
 export default menus;

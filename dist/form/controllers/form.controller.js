@@ -13,6 +13,7 @@ const form_model_1 = require("../models/form.model");
 const participant_model_1 = require("../models/participant.model");
 const participantFile_model_1 = require("../models/participantFile.model");
 const scale_model_1 = require("../models/scale.model");
+// import * as cp from 'console-probe';
 class FormController {
     constructor() {
         this.list = this.list.bind(this);
@@ -24,7 +25,11 @@ class FormController {
     async list(req, res) {
         const company = req.user.company;
         try {
-            const forms = await this.getForms(company);
+            const forms = await this.getForms(company, {
+                _id: {
+                    $in: req.user.userForms.map((form) => form._id)
+                }
+            });
             res.json({
                 data: forms,
                 status: 200
@@ -40,6 +45,11 @@ class FormController {
     async detail(req, res) {
         const { id } = req.params;
         const company = req.user.company;
+        if (req.user.userForms.filter((form) => form._id.toString() === id).length === 0) {
+            return res.status(403).json({
+                message: 'No tiene permisos para esta operación'
+            });
+        }
         try {
             const form = await this.getForm(id, company);
             // generate array of scale ids
@@ -52,17 +62,148 @@ class FormController {
                     }
                 });
             });
+            const extra = {
+                accessories: []
+            };
+            const extraSection = {
+                _id: '',
+                name: '',
+                questions: [],
+                order: form.sections.length + 1
+            };
+            const extraScales = [];
+            if (form.shipping) {
+                extraSection.questions.push({
+                    _id: 'shipping',
+                    question: form.shippingText,
+                    scale: 'shipping',
+                    conciliation: false
+                });
+                extraScales.push({
+                    _id: 'shipping',
+                    name: 'shipping',
+                    choices: [
+                        {
+                            _id: 'false',
+                            choice: 'No',
+                            backgroundColor: 'red',
+                            requireImage: false,
+                            requireComment: false,
+                            requireAccesories: false,
+                            requireConciliation: false,
+                            value: 0,
+                            order: 1
+                        }, {
+                            _id: 'true',
+                            choice: 'Si',
+                            backgroundColor: 'green',
+                            requireImage: form.shippingImage,
+                            requireComment: false,
+                            requireAccesories: false,
+                            requireConciliation: false,
+                            value: 1,
+                            order: 2
+                        }
+                    ],
+                    order: extraScales.length + 1
+                });
+            }
+            if (form.reception) {
+                extraSection.questions.push({
+                    _id: 'reception',
+                    question: form.receptionText,
+                    scale: 'reception',
+                    conciliation: false
+                });
+                extraScales.push({
+                    _id: 'reception',
+                    name: 'reception',
+                    choices: [
+                        {
+                            _id: 'false',
+                            choice: 'No',
+                            backgroundColor: 'red',
+                            requireImage: false,
+                            requireComment: false,
+                            requireAccesories: false,
+                            requireConciliation: false,
+                            value: 0,
+                            order: 1
+                        }, {
+                            _id: 'true',
+                            choice: 'Si',
+                            backgroundColor: 'green',
+                            requireImage: form.receptionImage,
+                            requireComment: false,
+                            requireAccesories: false,
+                            requireConciliation: false,
+                            value: 1,
+                            order: 2
+                        }
+                    ],
+                    order: extraScales.length + 1
+                });
+            }
+            if (form.conciliation) {
+                extraSection.questions.push({
+                    _id: 'conciliation',
+                    question: form.conciliationText,
+                    scale: 'conciliation',
+                    conciliation: true
+                });
+                extraScales.push({
+                    _id: 'conciliation',
+                    name: 'conciliation',
+                    choices: [
+                        {
+                            _id: 'false',
+                            choice: 'No',
+                            backgroundColor: 'red',
+                            requireImage: false,
+                            requireComment: false,
+                            requireAccesories: false,
+                            requireConciliation: false,
+                            value: 0,
+                            order: 1
+                        }, {
+                            _id: 'true',
+                            choice: 'Si',
+                            backgroundColor: 'green',
+                            requireImage: form.conciliationImage,
+                            requireComment: false,
+                            requireAccesories: false,
+                            requireConciliation: false,
+                            value: 1,
+                            order: 2
+                        }
+                    ],
+                    order: extraScales.length + 1
+                });
+            }
+            // delete keys from object returned by api
+            const deleteKeys = ['shipping', 'shippingText', 'shippingImage', 'reception', 'receptionText', 'receptionImage', 'conciliation', 'conciliationText', 'conciliationImage'];
+            deleteKeys.forEach((key) => {
+                if (form.hasOwnProperty(key)) {
+                    delete form[key];
+                }
+            });
+            let scales = await this.getScales(scalesIds, company);
+            scales = [...scales, ...extraScales];
+            if (extraSection.questions.length) {
+                form.sections = [...form.sections, extraSection];
+            }
             // get scales from db
-            const scales = await this.getScales(scalesIds, company);
             res.json({
                 data: {
                     form,
-                    scales
+                    scales,
+                    extra
                 },
                 status: 200
             });
         }
         catch (e) {
+            console.log('e', e);
             res.status(400).json({
                 message: 'No se encontro formularío',
                 status: 400
@@ -98,7 +239,7 @@ class FormController {
                 const form = await this.getFormWithScale(id, company);
                 if (form) {
                     // initialize participant
-                    const newParticipant = new participant_model_1.default({
+                    const participantObject = {
                         name: form.name,
                         company,
                         form: form._id,
@@ -106,7 +247,32 @@ class FormController {
                         description: form.description,
                         user: req.user._id,
                         active: form.active
-                    });
+                    };
+                    if (form.reception && 'reception' in answers) {
+                        const reception = answers.reception;
+                        participantObject.reception = [true, 'true'].includes(reception.value);
+                        participantObject.receptionText = form.receptionText;
+                        if (reception.images) {
+                            participantObject.receptionImages = reception.images.map((image) => (new bson_1.ObjectID(image)));
+                        }
+                    }
+                    if (form.shipping && 'shipping' in answers) {
+                        const shipping = answers.shipping;
+                        participantObject.shipping = [true, 'true'].includes(shipping.value);
+                        participantObject.shippingText = form.shippingText;
+                        if (shipping.images) {
+                            participantObject.shippingImages = shipping.images.map((image) => (new bson_1.ObjectID(image)));
+                        }
+                    }
+                    if (form.conciliation && 'conciliation' in answers) {
+                        const conciliation = answers.conciliation;
+                        participantObject.conciliation = [true, 'true'].includes(conciliation.value);
+                        participantObject.conciliationText = form.conciliationText;
+                        if (conciliation.images) {
+                            participantObject.conciliationImages = conciliation.images.map((image) => (new bson_1.ObjectID(image)));
+                        }
+                    }
+                    const newParticipant = new participant_model_1.default(participantObject);
                     // var sum sections
                     let sumSectionWeigths = 0;
                     let sumSectionQualifications = 0;
@@ -132,8 +298,15 @@ class FormController {
                             if (choice) {
                                 qualification = (100 / question.scale.maxValue) * choice.value;
                             }
-                            sumQualifications += (qualification * question.weight);
-                            sumWeigths += question.weight;
+                            // no apply
+                            let na = false;
+                            if (choice && choice.na) {
+                                na = true;
+                            }
+                            else {
+                                sumQualifications += (qualification * question.weight);
+                                sumWeigths += question.weight;
+                            }
                             // concat allImages
                             if (choice && choice.requireImage && answer && answer.images && answer.images.length) {
                                 allImages = [...answer.images, ...allImages];
@@ -162,6 +335,7 @@ class FormController {
                                 // images: answer.images && answer.images.length ? await ParticipantFile.find({_id: {$in: answer.images}}, {_id:1}) : [],
                                 images: answer && answer.images && answer.images.length ? answer.images.map((image) => (new bson_1.ObjectID(image))) : [],
                                 qualification,
+                                na,
                                 weight: question.weight,
                                 order: question.order
                             });
@@ -205,6 +379,7 @@ class FormController {
                         /* Search alerts */
                         const alerts = await alert_model_1.default
                             .find({
+                            company,
                             $or: [
                                 { $and: [{ lte: { $gte: formQualification } }, { lte: { $gt: 0 } }] },
                                 { $and: [{ gte: { $lte: formQualification } }, { gte: { $gt: 0 } }] }
@@ -217,13 +392,14 @@ class FormController {
                         if (alerts.length) {
                             alerts.forEach((alert) => {
                                 alert.users.forEach((user) => {
+                                    const userName = `${user.firstName} ${user.lastName}`;
                                     if (user.email && user.email.length) {
                                         app_1.queue.create('email', {
                                             from: '',
                                             title: `Alert qualification`,
-                                            to: `"${user.firstName} ${user.lastName}"<${user.email}>`,
+                                            to: `""<${user.email}>`,
                                             subject: `ALERTA: ${alert.name}`,
-                                            text: `Hola Richard
+                                            text: `Hola ${userName}
                         Se ha evaluado un VIN con calificación ${formQualification.toFixed(0)}%
 
                         Datos del Vehiculo
@@ -236,6 +412,7 @@ class FormController {
                         © 2018 OSA SpA. Todos los derechos reservados.`,
                                             view: 'alerts/lowQualification',
                                             context: {
+                                                userName,
                                                 brand: car ? car.brand : '',
                                                 vin: car ? car.vin : '',
                                                 qualification: formQualification.toFixed(0),
@@ -246,7 +423,12 @@ class FormController {
                                 });
                             });
                         }
-                        server_1.io.to(`dashboard-vin-view-${company._id}`).emit('REFRESH', { update: true, car: car._id });
+                        // send refresh with websocket to dashboard list
+                        server_1.io.to(`dashboard-vin-view-${company._id}`).emit('REFRESH', {
+                            update: true,
+                            car: car._id
+                        });
+                        // send refresh with websocket to dashboard detail
                         server_1.io.to(`dashboard-vin-detail-${car._id}`).emit(`ADD_PARTICIPANT`, await participant_model_1.default
                             .findById(newParticipant._id, { name: 1, user: 1, createdAt: 1, qualification: 1 })
                             .populate({
@@ -350,7 +532,6 @@ class FormController {
                 status: 400
             });
         }
-        // ParticipantFile
     }
     async changePreferred(req, res) {
         let { form } = req.body;
@@ -409,8 +590,19 @@ class FormController {
             });
         });
     }
-    getForms(company) {
-        const keyCache = `forms`;
+    getForms(company, filter) {
+        const keyCache = `forms${filter ? JSON.stringify(filter) : ''}`;
+        if (filter) {
+            filter = {
+                company,
+                ...filter
+            };
+        }
+        else {
+            filter = {
+                company
+            };
+        }
         return new Promise((resolve, reject) => {
             redis_service_1.default.get(keyCache, async (error, result) => {
                 if (result) {
@@ -419,9 +611,7 @@ class FormController {
                 }
                 else {
                     form_model_1.default
-                        .find({
-                        company
-                    }, {
+                        .find(filter, {
                         _id: 1,
                         name: 1
                     })

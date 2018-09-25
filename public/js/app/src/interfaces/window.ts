@@ -1,3 +1,5 @@
+import {IUser} from '../../../../../src/interfaces/user.interface';
+
 interface IURL {
   current: string;
   tickets: string;
@@ -7,14 +9,6 @@ interface IURL {
   ticketInvalidate: string;
   uploadFile: string;
   alerts: string;
-}
-
-interface IUser {
-  id: string;
-  firstName: string;
-  lastName: string;
-  email: string;
-  company: string;
 }
 
 export interface IWindow extends Window {

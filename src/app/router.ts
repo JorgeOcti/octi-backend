@@ -1,11 +1,12 @@
 import * as csrf from 'csurf';
 import * as express from 'express';
 import Middlewares from '../middlewares/middlewares';
-import AdminAlertsController from './controllers/admin/alerts.admin.controller';
+import AdminAlertsController from './controllers/admin/alert.admin.controller';
 import AdminCarsController from './controllers/admin/car.admin.controller';
-import AdminCompaniesController from './controllers/admin/companies.admin.controller';
+import AdminCompaniesController from './controllers/admin/company.admin.controller';
+import AdminPermissionController from './controllers/admin/permission.admin.controller';
 import AdminUsersController from './controllers/admin/user.admin.controller';
-import AdminVenuesController from './controllers/admin/venues.admin.controller';
+import AdminVenuesController from './controllers/admin/venue.admin.controller';
 import AppController from './controllers/app.controller';
 import CarController from './controllers/car.controller';
 import JWTController from './controllers/jwt.controller';
@@ -31,6 +32,7 @@ appRouter.get('/api/cars/:id', Middlewares.isLoggedIn, CarController.apiCarDetai
 appRouter.get('/api/cars/', Middlewares.isLoggedIn, CarController.apiCars);
 
 // form detail
+appRouter.get('/api/participant/csv/', Middlewares.isLoggedIn, CarController.apiParticipantCSV);
 appRouter.get('/api/participant/:id/', Middlewares.isLoggedIn, CarController.apiParticipantDetail);
 appRouter.get('/api/participants-per-date/', Middlewares.isLoggedIn, CarController.apiParticipantsPerDate);
 
@@ -48,8 +50,11 @@ appRouter.get('/settings/cars/', Middlewares.isLoggedIn, AdminCarsController.ind
 appRouter.get('/api/admin/cars/', Middlewares.isLoggedIn, AdminCarsController.apiListCars);
 
 // import cars
-appRouter.get('/settings/cars/import/', Middlewares.isLoggedIn, AdminCarsController.index);
+appRouter.get('/settings/cars/import/', Middlewares.isLoggedIn, AdminCarsController.import);
 appRouter.post('/api/admin/import-cars/', Middlewares.isLoggedIn, AdminCarsController.importCars);
+
+// permissions
+appRouter.get('/api/admin/permissions/', Middlewares.isLoggedIn, AdminPermissionController.apiListPermissions);
 
 // alerts
 appRouter.get('/settings/alerts/', Middlewares.isLoggedIn, AdminAlertsController.index);

@@ -22,6 +22,7 @@ const user_model_1 = require("./app/models/user.model");
 const router_1 = require("./app/router");
 const email_task_1 = require("./app/tasks/email.task");
 const router_2 = require("./form/router");
+const router_3 = require("./inventory/router");
 const middlewares_1 = require("./middlewares/middlewares");
 // Create Express server
 const app = express();
@@ -82,7 +83,7 @@ app.disable('x-powered-by');
 // strict routing
 app.set('strict routing', true);
 // For parsing application/json
-app.use(bodyParser.json());
+app.use(bodyParser.json({ limit: '50mb' }));
 // for parsing application/xwww-
 app.use(bodyParser.urlencoded({ extended: true }));
 // For parsing multipart/form-data
@@ -145,7 +146,30 @@ passport.use(new LocalStrategy({ usernameField: 'username' }, (username, passwor
     });
 }));
 passport.serializeUser(user_model_1.default.serializeUser());
-passport.deserializeUser(user_model_1.default.deserializeUser());
+// passport.deserializeUser((User as any).deserializeUser());
+passport.deserializeUser(async (email, done) => {
+    try {
+        const user = await user_model_1.default.findOne({ email }).populate([{
+                path: 'userPermissions',
+                select: ['codeName']
+            }, {
+                path: 'userForms',
+                select: ['name']
+            }, {
+                path: 'venue',
+                select: ['name']
+            }]);
+        if (user) {
+            done(null, user);
+        }
+        else {
+            done(new Error('User not found'));
+        }
+    }
+    catch (e) {
+        done(e);
+    }
+});
 /*
 passport.serializeUser<any, any>((user, done) => {
   done(undefined, user.id);
@@ -186,8 +210,9 @@ if (app.get('env') !== 'testing') {
 app.use(Raven.requestHandler());
 // Routes
 app.use('/', router_1.appRouter);
+app.use('/', router_2.default);
+app.use('/', router_3.inventoryRouter);
 app.use('/api/v1', router_1.jwtRouter);
-app.use('/api/v1/forms', router_2.default);
 /* queues */
 exports.queue = kue.createQueue({
     redis: {

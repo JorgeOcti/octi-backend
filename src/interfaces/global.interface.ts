@@ -1,6 +1,7 @@
 import {AxiosError, AxiosResponse} from 'axios';
 import {Request} from 'express';
-import {IUser} from "./user.interface";
+// import {IUser} from "./user.interface";
+import {IUserModel} from '../app/models/user.model';
 
 export interface IResponseErrorData extends AxiosResponse {
   data: {
@@ -28,5 +29,9 @@ export interface IResponsePaginateData<S> {
 }
 
 export interface IRequest extends Request {
-  user: IUser;
+  user: IUserModel;
+}
+
+export interface IAnyObject {
+  [key: string]: any;
 }

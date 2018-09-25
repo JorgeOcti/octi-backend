@@ -1,6 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 const mongoose = require("mongoose");
+const mongoosePaginate = require("mongoose-paginate");
 const itemSchema = new mongoose.Schema({
     item: {
         type: String,
@@ -91,6 +92,42 @@ const formSchema = new mongoose.Schema({
         type: String,
         trim: true
     },
+    shipping: {
+        type: Boolean,
+        default: false
+    },
+    shippingText: {
+        type: String,
+        default: ''
+    },
+    shippingImage: {
+        type: Boolean,
+        default: false
+    },
+    reception: {
+        type: Boolean,
+        default: false
+    },
+    receptionText: {
+        type: String,
+        default: ''
+    },
+    receptionImage: {
+        type: Boolean,
+        default: false
+    },
+    conciliation: {
+        type: Boolean,
+        default: false
+    },
+    conciliationText: {
+        type: String,
+        default: ''
+    },
+    conciliationImage: {
+        type: Boolean,
+        default: false
+    },
     sections: [formSectionsSchema],
     active: {
         type: Boolean,
@@ -99,6 +136,7 @@ const formSchema = new mongoose.Schema({
 }, {
     timestamps: true
 });
+formSchema.plugin(mongoosePaginate);
 formSchema.virtual('participants', {
     ref: 'Participant',
     localField: '_id',

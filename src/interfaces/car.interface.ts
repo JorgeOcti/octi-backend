@@ -4,6 +4,7 @@ import {IParticipant} from './participant.interface';
 export interface ICar {
   _id: any;
   internalNumber: number;
+  patent: string;
   vin: string;
   vin2: string;
   brand: string;

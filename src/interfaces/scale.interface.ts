@@ -1,7 +1,7 @@
 import * as mongoose from 'mongoose';
 import {
   IChoicesModel
-} from "../form/models/scale.model";
+} from '../form/models/scale.model';
 
 export interface IChoices {
   choice: string;

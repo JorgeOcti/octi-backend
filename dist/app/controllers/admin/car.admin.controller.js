@@ -1,17 +1,35 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 const server_1 = require("../../../server");
-const car_model_1 = require("../../models/car.model");
-class AdminCarsController {
+class AdminCarController {
     constructor() {
         this.index = this.index.bind(this);
+        this.import = this.import.bind(this);
         this.importCars = this.importCars.bind(this);
         this.apiListCars = this.apiListCars.bind(this);
     }
     async index(req, res) {
-        res.render('app/index', { token: await req.user.generateToken() });
+        if (req.user.hasPermission('viewCar')) {
+            res.render('app/index', { token: await req.user.generateToken() });
+        }
+        else {
+            res.status(403).render('403');
+        }
+    }
+    async import(req, res) {
+        if (req.user.hasPermission('addCar')) {
+            res.render('app/index', { token: await req.user.generateToken() });
+        }
+        else {
+            res.status(403).render('403');
+        }
     }
     async importCars(req, res) {
+        if (!req.user.hasPermission('addCar')) {
+            return res.status(403).json({
+                message: 'No tiene permisos para esta operación'
+            });
+        }
         const company = req.user.company;
         const cars = req.body;
         if (cars && cars.length) {
@@ -58,6 +76,11 @@ class AdminCarsController {
         });
     }
     async apiListCars(req, res) {
+        if (!req.user.hasPermission('viewCar')) {
+            return res.status(403).json({
+                message: 'No tiene permisos para esta operación'
+            });
+        }
         const { page, pageSize, search } = req.query;
         const company = req.user.company;
         // paginate options
@@ -142,5 +165,6 @@ class AdminCarsController {
         });
     }
 }
-exports.default = new AdminCarsController();
+const car_model_1 = require("../../models/car.model");
+exports.default = new AdminCarController();
 //# sourceMappingURL=car.admin.controller.js.map
