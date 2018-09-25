@@ -8,8 +8,10 @@ exports.inventoryRouter = inventoryRouter;
 // Inventories List
 inventoryRouter.get('/inventory/', middlewares_1.default.isLoggedIn, inventory_controller_1.default.index);
 inventoryRouter.get('/inventory/create/', middlewares_1.default.isLoggedIn, inventory_controller_1.default.index);
+inventoryRouter.get('/inventory/:id/', middlewares_1.default.isLoggedIn, inventory_controller_1.default.detail);
 inventoryRouter.get('/api/inventory/', middlewares_1.default.isLoggedIn, inventory_controller_1.default.list);
 inventoryRouter.post('/api/inventory/', middlewares_1.default.isLoggedIn, inventory_controller_1.default.create);
+inventoryRouter.get('/api/inventory/:id/', middlewares_1.default.isLoggedIn, inventory_controller_1.default.apiDetaill);
 inventoryRouter.post('/api/inventory/:id/finish/', middlewares_1.default.isLoggedIn, inventory_controller_1.default.finishInventory);
 inventoryRouter.delete('/api/inventory/:id/', middlewares_1.default.isLoggedIn, inventory_controller_1.default.deleteInventory);
 // Inventories API

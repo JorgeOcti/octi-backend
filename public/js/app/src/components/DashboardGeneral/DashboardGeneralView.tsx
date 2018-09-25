@@ -37,7 +37,9 @@ class DashboardGeneralView extends React.Component<IPropsType, IStateType> {
   public componentWillMount(): void {
     // set the title of the page
     document.title = 'OSA Andes | Reportes generales';
+    // get data
     this.props.getParticipantsPerDateAction();
+    // add listeners
     window.addEventListener('resize', this.resizeCharts, false);
   }
 
@@ -87,6 +89,7 @@ class DashboardGeneralView extends React.Component<IPropsType, IStateType> {
         },
         xAxis: {
           type: 'category',
+          boundaryGap: false,
           data: categories,
           axisLine: {
             lineStyle: {
@@ -105,14 +108,21 @@ class DashboardGeneralView extends React.Component<IPropsType, IStateType> {
             lineStyle: {
               color: 'rgba(0, 0, 0, 0.5)'
             }
+          },
+          splitLine: {
+            show: true,
+            lineStyle: {
+              type: 'dashed',
+              color: 'rgba(35, 36, 37, 0.5)'
+            }
           }
         },
         grid: {
-          top: 20,
+          top: 30,
           // left
-          x: 30,
+          x: 40,
           // right
-          x2: 10,
+          x2: 30,
           containLabel: true
           // borderColor: '#FF0000'
         },
@@ -135,8 +145,9 @@ class DashboardGeneralView extends React.Component<IPropsType, IStateType> {
   }
 
   public componentWillUnmount() {
-    // cancel request if component is inmounted
+    // remove listeners
     window.removeEventListener('resize', this.resizeCharts, false);
+    // cancel request if component is inmounted
     if (this.props.dashboard.source) {
       this.props.dashboard.source.cancel('Operation canceled by the user.');
     }

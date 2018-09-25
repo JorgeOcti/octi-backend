@@ -2,6 +2,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 const bson_1 = require("bson");
 const GraphicsMagick = require("gm");
+const mongoose = require("mongoose");
 const car_model_1 = require("../../app/models/car.model");
 const car_model_2 = require("../../app/models/car.model");
 const venue_model_1 = require("../../app/models/venue.model");
@@ -11,9 +12,11 @@ const inventoryFile_model_1 = require("../models/inventoryFile.model");
 class InventoryController {
     constructor() {
         this.index = this.index.bind(this);
+        this.detail = this.detail.bind(this);
         this.create = this.create.bind(this);
         this.list = this.list.bind(this);
         this.apiList = this.apiList.bind(this);
+        this.apiDetaill = this.apiDetaill.bind(this);
         this.apiFoundCar = this.apiFoundCar.bind(this);
         this.uploadFile = this.uploadFile.bind(this);
         this.autoRotate = this.autoRotate.bind(this);
@@ -22,6 +25,24 @@ class InventoryController {
     }
     async index(req, res) {
         res.render('app/index', { token: await req.user.generateToken() });
+    }
+    async detail(req, res) {
+        const { company } = req.user;
+        const { id } = req.params;
+        try {
+            const inventory = await inventory_model_1.default.findOne({ _id: id, company });
+            if (!inventory) {
+                return res.status(404).render('404');
+            }
+            else {
+                res.render('app/index', { token: await req.user.generateToken() });
+            }
+        }
+        catch (e) {
+            if (e) {
+                res.status(500).send(e);
+            }
+        }
     }
     async create(req, res) {
         const company = req.user.company;
@@ -42,12 +63,12 @@ class InventoryController {
                     venuesIDs.push(currentVenue._id.toString());
                     if (venue.cars && venue.cars.length) {
                         for (const car of venue.cars) {
-                            let currentCar = await car_model_1.default.findOne({
+                            let currentCar = await car_model_2.default.findOne({
                                 company,
                                 vin: car.vin
                             });
                             if (currentCar === null && car.vin && car.vin.length) {
-                                currentCar = new car_model_1.default({
+                                currentCar = new car_model_2.default({
                                     company,
                                     vin: car.vin,
                                     vin2: car.vin.substr(car.vin.length - 6),
@@ -108,7 +129,8 @@ class InventoryController {
                             carStatus: '$cars.status',
                             name: '$name',
                             createdBy: '$createdBy',
-                            createdAt: '$createdAt'
+                            createdAt: '$createdAt',
+                            finalizedAt: '$finalizedAt'
                         },
                         total: {
                             $sum: 1
@@ -122,6 +144,9 @@ class InventoryController {
                         },
                         createdAt: {
                             $first: '$_id.createdAt'
+                        },
+                        finalizedAt: {
+                            $first: '$_id.finalizedAt'
                         },
                         user: {
                             $first: '$_id.createdBy'
@@ -153,7 +178,8 @@ class InventoryController {
                         'userInfo.firstName': 1,
                         'userInfo.lastName': 1,
                         'status': 1,
-                        'createdAt': 1
+                        'createdAt': 1,
+                        'finalizedAt': 1
                     }
                 }, {
                     $sort: {
@@ -180,7 +206,8 @@ class InventoryController {
                         ...defaultResults
                     }),
                     status: inventory.status,
-                    createdAt: inventory.createdAt
+                    createdAt: inventory.createdAt,
+                    finalizedAt: inventory.finalizedAt ? inventory.finalizedAt : null
                 });
             }
             res.json({
@@ -258,7 +285,7 @@ class InventoryController {
         const { id } = req.params;
         const { vin, images } = req.body;
         try {
-            const car = await car_model_2.default.findOne({
+            const car = await car_model_1.default.findOne({
                 vin,
                 company
             });
@@ -360,7 +387,7 @@ class InventoryController {
                     company
                 });
                 if (inventory) {
-                    const newCar = new car_model_1.default({
+                    const newCar = new car_model_2.default({
                         vin,
                         vin2: vin.substr(vin.length - 6),
                         company
@@ -406,7 +433,11 @@ class InventoryController {
         try {
             const inventory = await inventory_model_1.default.findOne({ _id: id, company });
             if (inventory) {
-                await inventory.update({ status: inventory_model_1.ChoicesStatusInventory.finalized });
+                await inventory.update({
+                    status: inventory_model_1.ChoicesStatusInventory.finalized,
+                    finalizedAt: new Date(),
+                    finalizedBy: req.user._id
+                });
                 res.json({
                     message: 'Se ha finalizado correctamente el inventario.',
                     status: 200
@@ -431,9 +462,11 @@ class InventoryController {
         const { company } = req.user;
         const { id } = req.params;
         try {
-            const inventory = await inventory_model_1.default.findOne({ _id: id, company });
+            const inventory = await inventory_model_1.default.findOne({
+                _id: id,
+                company
+            });
             if (inventory) {
-                // await InventoryModel.findByIdAndRemove(inventory._id);
                 await inventory.remove();
                 res.json({
                     message: 'Se ha eliminado correctamente el inventario.',
@@ -474,6 +507,126 @@ class InventoryController {
             });
         }
         catch (e) {
+            res.status(400).json({
+                message: e,
+                status: 400
+            });
+        }
+    }
+    async apiDetaill(req, res) {
+        const { id } = req.params;
+        const { company } = req.user;
+        try {
+            const inventory = await inventory_model_1.default.aggregate([{
+                    $match: {
+                        company,
+                        _id: { $in: [mongoose.Types.ObjectId(id)] }
+                    }
+                }, {
+                    $unwind: '$cars'
+                }, {
+                    $group: {
+                        _id: {
+                            category: '$_id',
+                            status: '$status',
+                            carStatus: '$cars.status',
+                            name: '$name',
+                            createdBy: '$createdBy',
+                            createdAt: '$createdAt',
+                            finalizedAt: '$finalizedAt'
+                        },
+                        total: {
+                            $sum: 1
+                        }
+                    }
+                }, {
+                    $group: {
+                        _id: '$_id.category',
+                        name: {
+                            $first: '$_id.name'
+                        },
+                        createdAt: {
+                            $first: '$_id.createdAt'
+                        },
+                        finalizedAt: {
+                            $first: '$_id.finalizedAt'
+                        },
+                        user: {
+                            $first: '$_id.createdBy'
+                        },
+                        results: {
+                            $push: {
+                                status: '$_id.carStatus',
+                                total: '$total'
+                            }
+                        },
+                        status: {
+                            $first: '$_id.status'
+                        }
+                    }
+                }, {
+                    $lookup: {
+                        from: 'users',
+                        localField: 'user',
+                        foreignField: '_id',
+                        as: 'userInfo'
+                    }
+                }, {
+                    $unwind: '$userInfo'
+                }, {
+                    $project: {
+                        '_id': 1,
+                        'name': 1,
+                        'results': 1,
+                        'userInfo.firstName': 1,
+                        'userInfo.lastName': 1,
+                        'status': 1,
+                        'createdAt': 1,
+                        'finalizedAt': 1
+                    }
+                }, {
+                    $sort: {
+                        createdAt: -1
+                    }
+                }]);
+            const defaultResults = {
+                [inventory_model_1.ChoicesStatusCarInventory.pending]: 0,
+                [inventory_model_1.ChoicesStatusCarInventory.found]: 0,
+                [inventory_model_1.ChoicesStatusCarInventory.leftover]: 0
+            };
+            if (inventory && inventory.length) {
+                const currentInventory = inventory[0];
+                const response = {
+                    _id: currentInventory._id,
+                    name: currentInventory.name,
+                    createdBy: currentInventory.userInfo ? {
+                        ...currentInventory.userInfo,
+                        fullName: `${currentInventory.userInfo.firstName} ${currentInventory.userInfo.lastName}`
+                    } : {},
+                    results: currentInventory.results.reduce((acc, cur) => {
+                        acc[cur.status] = cur.total;
+                        return acc;
+                    }, {
+                        ...defaultResults
+                    }),
+                    status: currentInventory.status,
+                    createdAt: currentInventory.createdAt,
+                    finalizedAt: currentInventory.finalizedAt ? currentInventory.finalizedAt : null
+                };
+                res.json({
+                    summary: response,
+                    status: 200
+                });
+            }
+            else {
+                res.status(404).json({
+                    message: 'Inventario no encontrado',
+                    status: 404
+                });
+            }
+        }
+        catch (e) {
+            console.log(e);
             res.status(400).json({
                 message: e,
                 status: 400

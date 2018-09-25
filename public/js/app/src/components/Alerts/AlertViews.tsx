@@ -100,7 +100,7 @@ class AlertViews extends React.Component<IPropsType, IStateType> {
                 <button className="btn btn-sm btn-success" onClick={this.addAlert}>Agregar</button>
               </div>
             </div>
-            <div className="box-body">
+            <div className="box-body no-padding">
               <table className="table table-striped">
                 <thead>
                   <tr>

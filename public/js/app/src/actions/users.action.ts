@@ -251,13 +251,17 @@ export function getUsersAction(nextPage?: number) {
 
     // get venues and permissions
     if (!state.users.venues.length || !state.users.permissions.length || !state.users.forms.length) {
-      axios.all([api.getVenues(1, 200), api.getPermissions(1, 200), api.getForms(1, 200)])
+      axios.all([
+        api.getVenues(1, 200),
+        api.getPermissions(1, 200),
+        api.getForms(1, 200)
+      ])
         .then(axios.spread((venues, permissions, forms) => {
           dispatch(loadVenuesUserAction(venues.data.results));
           dispatch(loadPermissionsUserAction(permissions.data.results));
           dispatch(loadFormsUserAction(forms.data.results));
         }))
-        .catch((err: AxiosError) => {
+        .catch((err: AxiosError): void => {
           api.errorHandler(err);
         });
     }
@@ -269,11 +273,11 @@ export function getUsersAction(nextPage?: number) {
       dispatch(changePageAction(nextPage));
     }
     api.getUsers(page)
-      .then((response: AxiosResponse) => {
+      .then((response: AxiosResponse): void => {
         dispatch(loadUserAction(response.data.results, response.data.count, response.data.pages));
         dispatch(isLoadingAction(false));
       })
-      .catch((err: AxiosError) => {
+      .catch((err: AxiosError): void => {
         // if the request is canceled
         if (Axios.isCancel(err)) {
           dispatch(isLoadingAction(true));
@@ -305,7 +309,7 @@ export function deleteUserAction(id: string) {
   return (dispatch: Dispatch<UserReduxAction>) => {
     const api: ApiService = new ApiService();
     api.deleteUser(id)
-      .then((response: AxiosResponse) => {
+      .then((response: AxiosResponse): void => {
         // effect when removing user
         swal(response.data.message, {
           icon: 'success'
@@ -316,7 +320,7 @@ export function deleteUserAction(id: string) {
           dispatch(removeUserAction(id));
         }, 500);
       })
-      .catch((err: AxiosError) => {
+      .catch((err: AxiosError): void => {
         dispatch(isLoadingAction(false));
         api.errorHandler(err);
       });

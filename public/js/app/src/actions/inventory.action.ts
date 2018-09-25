@@ -1,6 +1,7 @@
 import {AxiosError, AxiosResponse, CancelTokenSource} from 'axios';
 import {Dispatch} from 'redux';
 import ApiService from '../utils/axios';
+// import {removeUserAction} from "./users.action";
 
 export interface IInventoryState {
   inventories: any[];
@@ -70,10 +71,10 @@ export function getInventoriesAction(loading: boolean) {
     api.getInventories()
       .then((response: AxiosResponse) => {
         const data = response.data;
+        dispatch(loadAlertsAction(data.inventories));
         if (loading) {
           dispatch(isLoadingAction(false));
         }
-        dispatch(loadAlertsAction(data.inventories));
       })
       .catch((err: AxiosError) => {
         if (loading) {
@@ -90,8 +91,8 @@ export function finishInventoryAction(id: string) {
     api.finishInventory(id)
       .then((response: AxiosResponse) => {
         const data = response.data;
-        swal('Inventarios', data.message, 'success');
         dispatch(getInventoriesAction(false) as any);
+        swal('Inventarios', data.message, 'success');
       })
       .catch((err: AxiosError) => {
         api.errorHandler(err);
@@ -104,9 +105,13 @@ export function deleteInventoryAction(id: string) {
     const api: ApiService = new ApiService();
     api.deleteInventory(id)
       .then((response: AxiosResponse) => {
+        $(`#inventory-${id}`)
+          .addClass('deleted-item');
         const data = response.data;
         swal('Inventarios', data.message, 'success');
-        dispatch(getInventoriesAction(false) as any);
+        setTimeout(() => {
+          dispatch(getInventoriesAction(false) as any);
+        }, 500);
       })
       .catch((err: AxiosError) => {
         api.errorHandler(err);

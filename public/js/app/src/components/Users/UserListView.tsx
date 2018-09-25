@@ -97,7 +97,7 @@ class UserListView extends React.Component<IPropsType, IStateType> {
                   : null
               }
             </div>
-            <div className="box-body">
+            <div className="box-body no-padding">
               <table className="table table-striped">
                 <thead>
                   <tr>

@@ -10,6 +10,7 @@ import DashboardVinDetail from './components/DashboardVin/DashboardVinDetail';
 import DashboardVinView from './components/DashboardVin/DashboardVinView';
 import ImportCarsView from './components/Imports/ImportCarView';
 import InventoryCreateView from './components/Inventory/InventoryCreateView';
+import InventoryDetailView from './components/Inventory/InventoryDetailView';
 import InventoryListView from './components/Inventory/InventoryListView';
 import UsersListView from './components/Users/UserListView';
 import configureStore from './store/configureStore';
@@ -32,6 +33,7 @@ const App = () => (
                 <Route exact path="/cars/:id" component={ DashboardVinDetail }/>
                 <Route exact path="/inventory/" component={ InventoryListView }/>
                 <Route exact path="/inventory/create/" component={ InventoryCreateView }/>
+                <Route exact path="/inventory/:id/" component={ InventoryDetailView }/>
                 <Route exact path="/settings/users/" component={ UsersListView }/>
                 <Route exact path="/settings/cars/" component={ CarsListView }/>
                 <Route exact path="/settings/cars/import/" component={ ImportCarsView }/>

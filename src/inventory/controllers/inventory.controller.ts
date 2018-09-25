@@ -1,10 +1,11 @@
 import {ObjectID} from 'bson';
 import {Response} from 'express';
 import * as GraphicsMagick from 'gm';
-import CarModel from '../../app/models/car.model';
+import * as mongoose from 'mongoose';
 import Car, {
   ICarModel
 } from '../../app/models/car.model';
+import CarModel from '../../app/models/car.model';
 import VenueModel, {
   IVenueModel
 } from '../../app/models/venue.model';
@@ -21,9 +22,11 @@ class InventoryController {
 
   constructor() {
     this.index = this.index.bind(this);
+    this.detail = this.detail.bind(this);
     this.create = this.create.bind(this);
     this.list = this.list.bind(this);
     this.apiList = this.apiList.bind(this);
+    this.apiDetaill = this.apiDetaill.bind(this);
     this.apiFoundCar = this.apiFoundCar.bind(this);
     this.uploadFile = this.uploadFile.bind(this);
     this.autoRotate = this.autoRotate.bind(this);
@@ -33,6 +36,23 @@ class InventoryController {
 
   public async index(req: IRequest, res: Response) {
     res.render('app/index', {token: await req.user.generateToken()});
+  }
+
+  public async detail(req: IRequest, res: Response) {
+    const {company} = req.user;
+    const {id} = req.params;
+    try {
+      const inventory = await InventoryModel.findOne({_id: id, company});
+      if (!inventory) {
+        return res.status(404).render('404');
+      } else {
+        res.render('app/index', {token: await req.user.generateToken()});
+      }
+    } catch (e) {
+      if (e) {
+        res.status(500).send(e);
+      }
+    }
   }
 
   public async create(req: IRequest, res: Response) {
@@ -120,7 +140,8 @@ class InventoryController {
             carStatus: '$cars.status',
             name: '$name',
             createdBy: '$createdBy',
-            createdAt: '$createdAt'
+            createdAt: '$createdAt',
+            finalizedAt: '$finalizedAt'
           },
           total: {
             $sum: 1
@@ -134,6 +155,9 @@ class InventoryController {
           },
           createdAt: {
             $first: '$_id.createdAt'
+          },
+          finalizedAt: {
+            $first: '$_id.finalizedAt'
           },
           user: {
             $first: '$_id.createdBy'
@@ -165,7 +189,8 @@ class InventoryController {
           'userInfo.firstName': 1,
           'userInfo.lastName': 1,
           'status': 1,
-          'createdAt': 1
+          'createdAt': 1,
+          'finalizedAt': 1
         }
       }, {
         $sort : {
@@ -192,7 +217,8 @@ class InventoryController {
             ...defaultResults
           }),
           status: inventory.status,
-          createdAt: inventory.createdAt
+          createdAt: inventory.createdAt,
+          finalizedAt: inventory.finalizedAt ? inventory.finalizedAt : null
         });
       }
       res.json({
@@ -412,7 +438,11 @@ class InventoryController {
     try {
       const inventory = await InventoryModel.findOne({_id: id, company});
       if (inventory) {
-        await inventory.update({status: ChoicesStatusInventory.finalized});
+        await inventory.update({
+          status: ChoicesStatusInventory.finalized,
+          finalizedAt: new Date(),
+          finalizedBy: req.user._id
+        });
         res.json({
           message: 'Se ha finalizado correctamente el inventario.',
           status: 200
@@ -437,9 +467,11 @@ class InventoryController {
     const {company} = req.user;
     const {id} = req.params;
     try {
-      const inventory = await InventoryModel.findOne({_id: id, company});
+      const inventory = await InventoryModel.findOne({
+        _id: id,
+        company
+      });
       if (inventory) {
-        // await InventoryModel.findByIdAndRemove(inventory._id);
         await inventory.remove();
         res.json({
           message: 'Se ha eliminado correctamente el inventario.',
@@ -479,6 +511,125 @@ class InventoryController {
         status: 200
       });
     } catch (e) {
+      res.status(400).json({
+        message: e,
+        status: 400
+      });
+    }
+  }
+
+  public async apiDetaill(req: IRequest, res: Response) {
+    const {id} = req.params;
+    const {company} = req.user;
+    try {
+      const inventory = await InventoryModel.aggregate([{
+        $match: {
+          company,
+          _id: { $in: [mongoose.Types.ObjectId(id)] }
+        }
+      }, {
+        $unwind: '$cars'
+      }, {
+        $group: {
+          _id: {
+            category: '$_id',
+            status: '$status',
+            carStatus: '$cars.status',
+            name: '$name',
+            createdBy: '$createdBy',
+            createdAt: '$createdAt',
+            finalizedAt: '$finalizedAt'
+          },
+          total: {
+            $sum: 1
+          }
+        }
+      }, {
+        $group: {
+          _id: '$_id.category',
+          name: {
+            $first: '$_id.name'
+          },
+          createdAt: {
+            $first: '$_id.createdAt'
+          },
+          finalizedAt: {
+            $first: '$_id.finalizedAt'
+          },
+          user: {
+            $first: '$_id.createdBy'
+          },
+          results: {
+            $push: {
+              status: '$_id.carStatus',
+              total: '$total'
+            }
+          },
+          status: {
+            $first: '$_id.status'
+          }
+        }
+      }, {
+        $lookup: {
+          from: 'users',
+          localField: 'user',
+          foreignField: '_id',
+          as: 'userInfo'
+        }
+      }, {
+        $unwind: '$userInfo'
+      }, {
+        $project: {
+          '_id': 1,
+          'name': 1,
+          'results': 1,
+          'userInfo.firstName': 1,
+          'userInfo.lastName': 1,
+          'status': 1,
+          'createdAt': 1,
+          'finalizedAt': 1
+        }
+      }, {
+        $sort : {
+          createdAt : -1
+        }
+      }]);
+      const defaultResults = {
+        [ChoicesStatusCarInventory.pending]: 0,
+        [ChoicesStatusCarInventory.found]: 0,
+        [ChoicesStatusCarInventory.leftover]: 0
+      };
+      if (inventory && inventory.length) {
+        const currentInventory = inventory[0];
+        const response = {
+          _id: currentInventory._id,
+          name: currentInventory.name,
+          createdBy: currentInventory.userInfo ? {
+            ...currentInventory.userInfo,
+            fullName: `${currentInventory.userInfo.firstName} ${currentInventory.userInfo.lastName}`
+          } : {},
+          results: currentInventory.results.reduce((acc: any, cur: any) => {
+            acc[cur.status] = cur.total;
+            return acc;
+          }, {
+            ...defaultResults
+          }),
+          status: currentInventory.status,
+          createdAt: currentInventory.createdAt,
+          finalizedAt: currentInventory.finalizedAt ? currentInventory.finalizedAt : null
+        };
+        res.json({
+          summary: response,
+          status: 200
+        });
+      } else {
+        res.status(404).json({
+          message: 'Inventario no encontrado',
+          status: 404
+        });
+      }
+    } catch (e) {
+      console.log(e);
       res.status(400).json({
         message: e,
         status: 400

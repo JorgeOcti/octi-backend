@@ -47,6 +47,9 @@ class InventoryListView extends React.Component<IPropsType, IStateType> {
     super(props);
     this.create = this.create.bind(this);
     this.labelStatus = this.labelStatus.bind(this);
+    this.finishInventoryAction = this.finishInventoryAction.bind(this);
+    this.deleteInventoryAction = this.deleteInventoryAction.bind(this);
+    this.goToDetail = this.goToDetail.bind(this);
   }
 
   public componentWillMount() {
@@ -77,6 +80,7 @@ class InventoryListView extends React.Component<IPropsType, IStateType> {
     if (this.props.inventories.source) {
       this.props.inventories.source.cancel('Operation canceled by the user.');
     }
+    this.socket.disconnect();
   }
 
   public componentDidCatch(error: Error, errorInfo: ErrorInfo) {
@@ -104,10 +108,10 @@ class InventoryListView extends React.Component<IPropsType, IStateType> {
                   {
                     inventories.map((inventory: any) => {
                       return (
-                        <div className="inventory" key={inventory._id}>
+                        <div className="inventory" key={inventory._id} id={`inventory-${inventory._id}`}>
                           <div className="row">
                             <div className="col-md-6 col-xs-6">
-                              <h4 className={'text-primary'}>{inventory.name}</h4>
+                              <h4 className="text-primary pointer" onClick={() => this.goToDetail(inventory._id)}>{inventory.name}</h4>
                             </div>
                             <div className="col-md-6 col-xs-6 text-right">
                               {this.labelStatus(inventory.status)}
@@ -121,7 +125,13 @@ class InventoryListView extends React.Component<IPropsType, IStateType> {
                                     <React.Fragment><i className="fa fa-fw fa-user"/>{inventory.createdBy.fullName}<br/></React.Fragment>
                                     : null
                                 }
-                                <i className="fa fa-fw fa-clock-o" />Creada el {moment(inventory.createdAt).format('LLL')}<br />
+                                <i className="fa fa-fw fa-clock-o text-success"/>Creado el {moment(inventory.createdAt).format('LLL')}<br/>
+                                {
+                                  inventory.finalizedAt ?
+                                    <React.Fragment><i className="fa fa-fw fa-clock-o text-danger"/>Finalizado
+                                      el {moment(inventory.finalizedAt).format('LLL')}</React.Fragment>
+                                    : null
+                                }
                               </p>
                             </div>
                             <div className="col-md-7">
@@ -144,24 +154,26 @@ class InventoryListView extends React.Component<IPropsType, IStateType> {
                               <div className="btn-group btn-group-sm">
                                 {
                                   inventory.status === 'inProcess' ?
-                                    <button type="button" className="btn btn-default">Ver progreso</button>
+                                    <button type="button" className="btn btn-default" onClick={() => this.goToDetail(inventory._id)}>
+                                      <i className="fa fa-fw fa-area-chart"/> Ver Progreso
+                                    </button>
                                     :
-                                    <button type="button" className="btn btn-default">Ver Reporte</button>
+                                    <button type="button" className="btn btn-default" onClick={() => this.goToDetail(inventory._id)}>
+                                      <i className="fa fa-fw fa-area-chart"/> Ver Reporte
+                                    </button>
                                 }
                                 <button type="button" className="btn btn-default dropdown-toggle" data-toggle="dropdown">
                                   <span className="caret" />
                                   <span className="sr-only">Toggle Dropdown</span>
                                 </button>
-                                {
-                                  inventory.status === 'inProcess' ?
-                                    <ul className="dropdown-menu pull-right" role="menu">
-                                      <li><a href="javascript:void(0);" onClick={() => this.props.finishInventoryAction(inventory._id)}>Finalizar</a></li>
-                                    </ul>
-                                    :
-                                    <ul className="dropdown-menu pull-right" role="menu">
-                                      <li><a href="javascript:void(0);" onClick={() => this.deleteInventoryAction(inventory)}>Eliminar</a></li>
-                                    </ul>
-                                }
+                                <ul className="dropdown-menu pull-right" role="menu">
+                                  {
+                                    inventory.status === 'inProcess' ?
+                                        <li><a href="javascript:void(0);" onClick={() => this.finishInventoryAction(inventory)}><i className="fa fa-fw fa-stop" />Finalizar</a></li>
+                                      : null
+                                  }
+                                  <li><a href="javascript:void(0);" onClick={() => this.deleteInventoryAction(inventory)}><i className="fa fa-fw fa-close" />Eliminar</a></li>
+                                </ul>
                               </div>
                             </div>
                           </div>
@@ -184,11 +196,38 @@ class InventoryListView extends React.Component<IPropsType, IStateType> {
     );
   }
 
-  private deleteInventoryAction(inventory: any) {
-    const {deleteInventoryAction} = this.props;
+  private goToDetail(id: string): void {
+    const {history} = this.props;
+    history.push(`/inventory/${id}/`);
+  }
+
+  private finishInventoryAction(inventory: any): void {
+    const {finishInventoryAction} = this.props;
+    // ask if you are sure that you are going to finish the inventory?
     swal({
       title: '¿Estás seguro?',
-      text: `Vas a eliminar el inventario`,
+      text: `Vas a finalizar "${inventory.name}".`,
+      icon: 'warning',
+      dangerMode: true,
+      buttons: {
+        cancel: 'Cancelar' as any,
+        confirm: {
+          text: 'Sí'
+        }
+      }
+    }).then((willDelete) => {
+      if (willDelete) {
+        finishInventoryAction(inventory._id);
+      }
+    });
+  }
+
+  private deleteInventoryAction(inventory: any): void {
+    const {deleteInventoryAction} = this.props;
+    // ask if you are sure that you are going to delete the inventory?
+    swal({
+      title: '¿Estás seguro?',
+      text: `Vas a eliminar "${inventory.name}".`,
       icon: 'warning',
       dangerMode: true,
       buttons: {
@@ -204,7 +243,7 @@ class InventoryListView extends React.Component<IPropsType, IStateType> {
     });
   }
 
-  private labelStatus(option: string) {
+  private labelStatus(option: string): React.ReactElement<IPropsType> {
     if (option === 'finalized') {
       return <span className="label label-success"><i className="fa fa-fw fa-check"/> Finalizado</span>;
     } else if (option === 'inProcess') {
@@ -214,7 +253,7 @@ class InventoryListView extends React.Component<IPropsType, IStateType> {
     }
   }
 
-  private create() {
+  private create(): void {
     this.props.history.push('/inventory/create/');
   }
 }

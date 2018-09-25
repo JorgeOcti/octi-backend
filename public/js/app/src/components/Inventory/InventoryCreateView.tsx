@@ -21,6 +21,15 @@ interface IPropsType extends RouteComponentProps<{ ticket: string }> {
   loadDataAction(title: string, body: JSX.Element, footer: JSX.Element): ModalReduxAction;
 }
 
+interface IStateType {
+  error: Error | null;
+  canDrop: boolean;
+  loadingSettings: boolean;
+  carsByVenue: any;
+  name: string;
+  sending: boolean;
+}
+
 class InventoryCreateView extends React.Component<IPropsType, IStateType> {
 
   // static propTypes = {
@@ -53,7 +62,6 @@ class InventoryCreateView extends React.Component<IPropsType, IStateType> {
   }
 
   public componentWillMount() {
-    // this.props.getAlertsAction();
     // set the title of the page
     document.title = 'OSA Andes | Crear Inventario';
   }
@@ -222,20 +230,20 @@ class InventoryCreateView extends React.Component<IPropsType, IStateType> {
     );
   }
 
-  private clickUploadFile() {
+  private clickUploadFile(): void {
     if (this.inputFile.current) {
       this.inputFile.current.click();
     }
   }
 
-  private handleChangeName(e: React.ChangeEvent<HTMLInputElement>) {
+  private handleChangeName(e: React.ChangeEvent<HTMLInputElement>): void {
     const {value} = e.target;
     this.setState({
       name: value
     });
   }
 
-  private downloadTemplate() {
+  private downloadTemplate(): void {
     /* headers worksheet */
     const data = [{
       sucursal: '',
@@ -255,7 +263,7 @@ class InventoryCreateView extends React.Component<IPropsType, IStateType> {
     XLSX.writeFile(wb, 'template_inventory_settings.xlsx');
   }
 
-  private processSettings(file: File) {
+  private processSettings(file: File): void {
     this.setState({
       loadingSettings: true
     });
@@ -272,8 +280,8 @@ class InventoryCreateView extends React.Component<IPropsType, IStateType> {
             type: rABS ? 'binary' : 'array'
           });
           const excelData = workbook.Sheets.hasOwnProperty('Autos') ? XLSX.utils.sheet_to_json(workbook.Sheets.Autos) : [];
-          const cars: any[] = [];
-          const venues: any[] = [];
+          // const cars: any[] = [];
+          // const venues: any[] = [];
           const carsByVenue: any = {};
           if (excelData.length >= 1) {
             excelData.forEach((item: any) => {
@@ -287,15 +295,17 @@ class InventoryCreateView extends React.Component<IPropsType, IStateType> {
                   patent: item.patente
                 };
                 if (!carsByVenue.hasOwnProperty(item.sucursal)) {
-                  venues.push(item.sucursal);
+                  // venues.push(item.sucursal);
                   carsByVenue[item.sucursal] = {
                     cars: []
                   };
                 }
                 carsByVenue[item.sucursal].cars.push(car);
-                cars.push(car);
+                // cars.push(car);
               } else {
+                // @ts-ignore: Unreachable code error
                 console.log('Error en linea:');
+                // @ts-ignore: Unreachable code error
                 console.log(item.__rowNum__);
               }
             });
@@ -336,14 +346,14 @@ class InventoryCreateView extends React.Component<IPropsType, IStateType> {
     }
   }
 
-  private handleChangeInputFile(e: React.ChangeEvent<HTMLInputElement>) {
+  private handleChangeInputFile(e: React.ChangeEvent<HTMLInputElement>): void {
     const {files} = e.target;
     if (files && files.length) {
       this.processSettings(files[0]);
     }
   }
 
-  private handleDrop(e: React.DragEvent<HTMLDivElement>) {
+  private handleDrop(e: React.DragEvent<HTMLDivElement>): void {
     e.preventDefault();
     const dt = e.dataTransfer;
     if (dt.items) {
@@ -361,20 +371,20 @@ class InventoryCreateView extends React.Component<IPropsType, IStateType> {
     }
   }
 
-  private dragOverHandler(e: React.DragEvent<HTMLDivElement>) {
+  private dragOverHandler(e: React.DragEvent<HTMLDivElement>): void {
     e.preventDefault();
     this.setState({
       canDrop: true
     });
   }
 
-  private dragLeaveHandler() {
+  private dragLeaveHandler(): void {
     this.setState({
       canDrop: false
     });
   }
 
-  private dragEndHandler(e: React.DragEvent<HTMLDivElement>) {
+  private dragEndHandler(e: React.DragEvent<HTMLDivElement>): void {
     const dt = e.dataTransfer;
     if (dt.items) {
       // Use DataTransferItemList interface to remove the drag data
@@ -387,7 +397,7 @@ class InventoryCreateView extends React.Component<IPropsType, IStateType> {
     }
   }
 
-  private async sendCreate() {
+  private sendCreate(): void {
     const {carsByVenue, name} = this.state;
     const { history } = this.props;
     this.setState({
@@ -395,12 +405,12 @@ class InventoryCreateView extends React.Component<IPropsType, IStateType> {
     });
     if (!name.trim().length) {
       swal('Envió inventario', 'El nombre del inventario es obligatorio.', 'error');
-      await this.setState({
+      this.setState({
         sending: false
       });
     } else if (!carsByVenue.length) {
       swal('Envió inventario', 'No se ha importado la configuración o no contiene sucursales.', 'error');
-      await this.setState({
+      this.setState({
         sending: false
       });
     } else {
@@ -412,7 +422,7 @@ class InventoryCreateView extends React.Component<IPropsType, IStateType> {
           const { message } = response.data;
           setTimeout(() => {
             swal('Envió inventario', message, 'success');
-          }, 1000);
+          }, 200);
           history.push('/inventory/');
           this.setState({
             sending: false
@@ -427,15 +437,6 @@ class InventoryCreateView extends React.Component<IPropsType, IStateType> {
         });
     }
   }
-}
-
-interface IStateType {
-  error: Error | null;
-  canDrop: boolean;
-  loadingSettings: boolean;
-  carsByVenue: any;
-  name: string;
-  sending: boolean;
 }
 
 const mapStateToProps = (state: { alerts: IAlertsState }) => {
