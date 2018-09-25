@@ -144,7 +144,7 @@ class ImportCarsView extends React.Component<IPropsType, IStateType> {
                 </button>
                 {
                   cars.length >= 1 ? <button
-                    className="btn btn-sm btn-success"
+                    className="btn btn-sm btn-default"
                     onClick={this.clickUploadFile}>
                     <i className="fa fa-fw fa-cloud-upload"/> {cars.length >= 1 ? 'Cargar otro excel' : 'Subir excel'}
                   </button> : null
@@ -166,7 +166,9 @@ class ImportCarsView extends React.Component<IPropsType, IStateType> {
                           Cargando...
                         </div> :
                           <div className="pull-right">
-                            <button className="btn btn-success" onClick={this.startLoad}>Iniciar carga</button>
+                            <button className="btn btn-sm btn-flat btn-success" onClick={this.startLoad}>
+                              <i className="fa fa-fw fa-play" /> Iniciar carga
+                            </button>
                           </div>
                       }
                       <table className="table">
