@@ -178,7 +178,7 @@ class InventoryCreateView extends React.Component<IPropsType, IStateType> {
                           style={{
                             backgroundColor: '#EEEEEE',
                             border: this.state.canDrop ? '1px solid #979797' : '1px dashed #979797',
-                            padding: '20px',
+                            padding: '40px 20px',
                             color: this.state.canDrop ? '#aebccb' : '#6e7a89',
                             borderRadius: '5px'
                           }}>
