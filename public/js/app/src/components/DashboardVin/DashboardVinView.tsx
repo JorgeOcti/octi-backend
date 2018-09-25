@@ -182,7 +182,7 @@ class DashboardVinView extends React.Component<IPropsType, IStateType> {
     );
   }
 
-  private changePage(page: number) {
+  private changePage(page: number): void {
     // change the page
     this.props.getCarsAction(page);
   }
