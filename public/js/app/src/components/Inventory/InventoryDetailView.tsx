@@ -69,6 +69,23 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
     const $brandDetail = document.getElementById('chart-brand-detail') as HTMLDivElement;
     this.venuesDetailChart = echarts.init($venuesDetail);
     this.brandDetailChart = echarts.init($brandDetail);
+    const labelOption = {
+      normal: {
+        show: true,
+        position: 'insideBottom',
+        distance: 15,
+        align: 'left',
+        verticalAlign: 'middle',
+        rotate: 90,
+        formatter: '{c}  {name|{a}}',
+        fontSize: 16,
+        rich: {
+          name: {
+            textBorderColor: '#fff'
+          }
+        }
+      }
+    };
     const optionVenues = {
       tooltip: {
         trigger: 'axis',
@@ -78,7 +95,8 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
       },
       legend: {
         x: 'center',
-        y: 'bottom',
+        // y: 'bottom',
+        bottom: 40,
         data: ['Encontrados', 'Faltantes', 'Sobrantes']
       },
       xAxis: {
@@ -96,6 +114,20 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
         }
       },
       calculable: true,
+      dataZoom: [
+        {
+          show: true,
+          realtime: true,
+          start: 50,
+          end: 100
+        }
+        // {
+          // type: 'inside'
+        //   realtime: true,
+        //   start: 65,
+        //   end: 85
+        // }
+      ],
       yAxis: {
         minInterval: 1,
         type: 'value',
@@ -114,6 +146,7 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
       },
       grid: {
         top: 30,
+        bottom: 100,
         // left
         x: 30,
         // right
@@ -126,6 +159,7 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
         name: 'Encontrados',
         type: 'bar',
         color: '#00aa51',
+        label: labelOption,
         barGap: 0
         // areaStyle: {}
         // smooth: true
@@ -134,6 +168,7 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
         name: 'Faltantes',
         type: 'bar',
         color: '#f1392c',
+        // label: labelOption,
         barGap: 0
         // areaStyle: {}
         // smooth: true
@@ -142,6 +177,7 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
         name: 'Sobrantes',
         type: 'bar',
         color: '#ff9600',
+        // label: labelOption,
         barGap: 0
         // areaStyle: {}
         // smooth: true
@@ -199,6 +235,7 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
       series: [{
         data: [10, 40, 50, 0, 3, 16, 28],
         name: 'Encontrados',
+        // label: labelOption,
         type: 'line',
         color: '#00aa51',
         areaStyle: {}
@@ -279,7 +316,7 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
               <h3 className="box-title">Detalle de inventario por sucursal</h3>
             </div>
             <div className="box-body">
-              <div id="chart-venues-detail" style={{height: '400px', maxWidth: '100%'}}/>
+              <div id="chart-venues-detail" style={{height: '500px', maxWidth: '100%'}}/>
             </div>
             {/*<div className="box-footer text-right">*/}
             {/*</div>*/}
@@ -361,7 +398,7 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
                     <button type="button" className="btn btn-box-tool" data-widget="collapse"><i className="fa fa-plus" /></button>
                   </div>
                 </div>
-                <div className="box-body" style={{display: 'none'}}>
+                <div className="box-body">
                   <p>&nbsp;</p>
                   <p>&nbsp;</p>
                   <p>&nbsp;</p>
@@ -377,7 +414,7 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
                     <button type="button" className="btn btn-box-tool" data-widget="collapse"><i className="fa fa-plus" /></button>
                   </div>
                 </div>
-                <div className="box-body" style={{display: 'none'}}>
+                <div className="box-body">
                   <p>&nbsp;</p>
                   <p>&nbsp;</p>
                   <p>&nbsp;</p>
@@ -393,7 +430,7 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
                     <button type="button" className="btn btn-box-tool" data-widget="collapse"><i className="fa fa-plus" /></button>
                   </div>
                 </div>
-                <div className="box-body" style={{display: 'none'}}>
+                <div className="box-body">
                   <p>&nbsp;</p>
                   <p>&nbsp;</p>
                   <p>&nbsp;</p>
