@@ -96,7 +96,7 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
       legend: {
         x: 'center',
         // y: 'bottom',
-        bottom: 40,
+        bottom: 50,
         data: ['Encontrados', 'Faltantes', 'Sobrantes']
       },
       xAxis: {
@@ -148,7 +148,7 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
         top: 30,
         bottom: 100,
         // left
-        x: 30,
+        x: 0,
         // right
         x2: 10,
         containLabel: true
@@ -202,7 +202,7 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
           }
         },
         axisLabel: {
-          rotate: 45
+          rotate: 80
           // fontSize: 10
         }
       },
@@ -226,9 +226,9 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
       grid: {
         top: 30,
         // left
-        x: 30,
+        x: 10,
         // right
-        x2: 20,
+        x2: 5,
         containLabel: true
         // borderColor: '#FF0000'
       },
