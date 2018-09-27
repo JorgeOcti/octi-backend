@@ -120,13 +120,12 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
           realtime: true,
           start: 50,
           end: 100
+        }, {
+          type: 'inside',
+          realtime: true,
+          start: 50,
+          end: 100
         }
-        // {
-          // type: 'inside'
-        //   realtime: true,
-        //   start: 65,
-        //   end: 85
-        // }
       ],
       yAxis: {
         minInterval: 1,
@@ -140,7 +139,8 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
           show: true,
           lineStyle: {
             type: 'dashed',
-            color: 'rgba(35, 36, 37, 0.5)'
+            // color: 'rgba(0, 0, 0, 0.5)'
+            color: 'rgba(150, 150, 150, 0.5)'
           }
         }
       },
@@ -216,11 +216,11 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
           }
         },
         splitLine: {
-          show: true
-          // lineStyle: {
-          //   type: 'dashed',
-          //   color: 'rgba(35, 36, 37, 0.5)'
-          // }
+          show: true,
+          lineStyle: {
+            // type: 'dashed',
+            color: 'rgba(150, 150, 150, 0.5)'
+          }
         }
       },
       grid: {
@@ -392,13 +392,13 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
           <div className="row">
             <div className="col-md-6">
               <div className="box box-warning collapsed-box">
-                <div className="box-header">
+                <div className="box-header with-border">
                   <h3 className="box-title">Sucursal 1</h3>
                   <div className="box-tools pull-right">
                     <button type="button" className="btn btn-box-tool" data-widget="collapse"><i className="fa fa-plus" /></button>
                   </div>
                 </div>
-                <div className="box-body">
+                <div className="box-body" style={{display: 'none'}}>
                   <p>&nbsp;</p>
                   <p>&nbsp;</p>
                   <p>&nbsp;</p>

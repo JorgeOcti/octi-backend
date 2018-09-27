@@ -522,78 +522,118 @@ class InventoryController {
     const {id} = req.params;
     const {company} = req.user;
     try {
-      const inventory = await InventoryModel.aggregate([{
-        $match: {
-          company,
-          _id: { $in: [mongoose.Types.ObjectId(id)] }
-        }
-      }, {
-        $unwind: '$cars'
-      }, {
-        $group: {
-          _id: {
-            category: '$_id',
-            status: '$status',
-            carStatus: '$cars.status',
-            name: '$name',
-            createdBy: '$createdBy',
-            createdAt: '$createdAt',
-            finalizedAt: '$finalizedAt'
-          },
-          total: {
-            $sum: 1
+      // summary
+      const inventory = await InventoryModel.aggregate([
+        {
+          $match: {
+            company,
+            _id: {$in: [mongoose.Types.ObjectId(id)]}
           }
-        }
-      }, {
-        $group: {
-          _id: '$_id.category',
-          name: {
-            $first: '$_id.name'
-          },
-          createdAt: {
-            $first: '$_id.createdAt'
-          },
-          finalizedAt: {
-            $first: '$_id.finalizedAt'
-          },
-          user: {
-            $first: '$_id.createdBy'
-          },
-          results: {
-            $push: {
-              status: '$_id.carStatus',
-              total: '$total'
+        }, {
+          $unwind: '$cars'
+        }, {
+          $group: {
+            _id: {
+              category: '$_id',
+              status: '$status',
+              carStatus: '$cars.status',
+              name: '$name',
+              createdBy: '$createdBy',
+              createdAt: '$createdAt',
+              finalizedAt: '$finalizedAt'
+            },
+            total: {
+              $sum: 1
             }
-          },
-          status: {
-            $first: '$_id.status'
           }
-        }
-      }, {
-        $lookup: {
-          from: 'users',
-          localField: 'user',
-          foreignField: '_id',
-          as: 'userInfo'
-        }
-      }, {
-        $unwind: '$userInfo'
-      }, {
-        $project: {
-          '_id': 1,
-          'name': 1,
-          'results': 1,
-          'userInfo.firstName': 1,
-          'userInfo.lastName': 1,
-          'status': 1,
-          'createdAt': 1,
-          'finalizedAt': 1
-        }
-      }, {
-        $sort : {
-          createdAt : -1
-        }
-      }]);
+        }, {
+          $group: {
+            _id: '$_id.category',
+            name: {
+              $first: '$_id.name'
+            },
+            createdAt: {
+              $first: '$_id.createdAt'
+            },
+            finalizedAt: {
+              $first: '$_id.finalizedAt'
+            },
+            user: {
+              $first: '$_id.createdBy'
+            },
+            results: {
+              $push: {
+                status: '$_id.carStatus',
+                total: '$total'
+              }
+            },
+            status: {
+              $first: '$_id.status'
+            }
+          }
+        }, {
+          $lookup: {
+            from: 'users',
+            localField: 'user',
+            foreignField: '_id',
+            as: 'userInfo'
+          }
+        }, {
+          $unwind: '$userInfo'
+        }, {
+          $project: {
+            '_id': 1,
+            'name': 1,
+            'results': 1,
+            'userInfo.firstName': 1,
+            'userInfo.lastName': 1,
+            'status': 1,
+            'createdAt': 1,
+            'finalizedAt': 1
+          }
+        }, {
+          $sort: {
+            createdAt: -1
+          }
+        }]);
+      // detail by venue
+      const detailByVenue = await InventoryModel.aggregate([
+        {
+          $match: {
+            company,
+            _id: {$in: [mongoose.Types.ObjectId(id)]}
+          }
+        }, {
+          $unwind: '$cars'
+        }, {
+          $group: {
+            _id: {
+              category: '$cars.venue',
+              status: '$cars.status'
+            },
+            total: {
+              $sum: 1
+            }
+          }
+        }, {
+          $group: {
+            _id: '$_id.category',
+            status: {
+              $push: {
+                name: '$_id.status',
+                total: '$total'
+              }
+            }
+          }
+        }, {
+          $lookup: {
+            from: 'venues',
+            localField: '_id',
+            foreignField: '_id',
+            as: 'info'
+          }
+        }]);
+
       const defaultResults = {
         [ChoicesStatusCarInventory.pending]: 0,
         [ChoicesStatusCarInventory.found]: 0,
@@ -618,8 +658,10 @@ class InventoryController {
           createdAt: currentInventory.createdAt,
           finalizedAt: currentInventory.finalizedAt ? currentInventory.finalizedAt : null
         };
+
         res.json({
           summary: response,
+          detailByVenue,
           status: 200
         });
       } else {

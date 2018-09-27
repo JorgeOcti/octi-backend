@@ -96,6 +96,13 @@ class DashboardGeneralView extends React.Component<IPropsType, IStateType> {
               color: 'rgba(0, 0, 0, 0.5)'
             }
           },
+          splitLine: {
+            show: false,
+            lineStyle: {
+              type: 'dashed',
+              color: 'rgba(150, 150, 150, 0.5)'
+            }
+          },
           axisLabel: {
             rotate: 45
             // fontSize: 10
@@ -113,7 +120,7 @@ class DashboardGeneralView extends React.Component<IPropsType, IStateType> {
             show: true,
             lineStyle: {
               type: 'dashed',
-              color: 'rgba(35, 36, 37, 0.5)'
+              color: 'rgba(150, 150, 150, 0.5)'
             }
           }
         },

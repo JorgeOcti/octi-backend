@@ -517,7 +517,9 @@ class InventoryController {
         const { id } = req.params;
         const { company } = req.user;
         try {
-            const inventory = await inventory_model_1.default.aggregate([{
+            // summary
+            const inventory = await inventory_model_1.default.aggregate([
+                {
                     $match: {
                         company,
                         _id: { $in: [mongoose.Types.ObjectId(id)] }
@@ -588,7 +590,46 @@ class InventoryController {
                     $sort: {
                         createdAt: -1
                     }
-                }]);
+                }
+            ]);
+            // detail by venue
+            const detailByVenue = await inventory_model_1.default.aggregate([
+                {
+                    $match: {
+                        company,
+                        _id: { $in: [mongoose.Types.ObjectId(id)] }
+                    }
+                }, {
+                    $unwind: '$cars'
+                }, {
+                    $group: {
+                        _id: {
+                            category: '$cars.venue',
+                            status: '$cars.status'
+                        },
+                        total: {
+                            $sum: 1
+                        }
+                    }
+                }, {
+                    $group: {
+                        _id: '$_id.category',
+                        status: {
+                            $push: {
+                                name: '$_id.status',
+                                total: '$total'
+                            }
+                        }
+                    }
+                }, {
+                    $lookup: {
+                        from: 'venues',
+                        localField: '_id',
+                        foreignField: '_id',
+                        as: 'info'
+                    }
+                }
+            ]);
             const defaultResults = {
                 [inventory_model_1.ChoicesStatusCarInventory.pending]: 0,
                 [inventory_model_1.ChoicesStatusCarInventory.found]: 0,
@@ -615,6 +656,7 @@ class InventoryController {
                 };
                 res.json({
                     summary: response,
+                    detailByVenue,
                     status: 200
                 });
             }
