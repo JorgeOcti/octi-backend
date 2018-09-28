@@ -336,20 +336,38 @@ class InventoryController {
           });
           // if car in inventory
           if (inventoryCar && inventoryCar.cars.length) {
-            await InventoryModel.update({
-              _id: id,
-              ['cars.car']: car._id,
-              company
-            }, {
-              $set: {
-                'cars.$.venueFound': venue._id,
-                'cars.$.status': ChoicesStatusCarInventory.found,
-                'cars.$.images': images ? images.map((image: string) => (new ObjectID(image))) : [],
-                'cars.$.inventoriedBy': req.user._id
+            if (inventoryCar.cars[0].venue === req.user.venue._id){
+              await InventoryModel.update({
+                _id: id,
+                ['cars.car']: car._id,
+                company
+              }, {
+                $set: {
+                  'cars.$.venueFound': venue._id,
+                  'cars.$.status': ChoicesStatusCarInventory.found,
+                  'cars.$.images': images ? images.map((image: string) => (new ObjectID(image))) : [],
+                  'cars.$.inventoriedBy': req.user._id
+                }
+              }, {
+                upsert: true
+              });
+            } else {
+              const inventory = await InventoryModel.findOne({
+                _id: id,
+                company
+              });
+              if (inventory) {
+                inventory.cars.push({
+                  car: car._id,
+                  venue: req.user.venue._id,
+                  venueFound: req.user.venue._id,
+                  images: images ? images.map((image: string) => (new ObjectID(image))) : [],
+                  status: ChoicesStatusCarInventory.leftover,
+                  inventoriedBy: req.user._id
+                });
+                await inventory.save();
               }
-            }, {
-              upsert: true
-            });
+            }
             // send socket messsage
             io.to(`inventory-list-${company._id}`).emit('REFRESH', {
               update: true

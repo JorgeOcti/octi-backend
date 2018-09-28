@@ -327,20 +327,39 @@ class InventoryController {
                     });
                     // if car in inventory
                     if (inventoryCar && inventoryCar.cars.length) {
-                        await inventory_model_1.default.update({
-                            _id: id,
-                            ['cars.car']: car._id,
-                            company
-                        }, {
-                            $set: {
-                                'cars.$.venueFound': venue._id,
-                                'cars.$.status': inventory_model_1.ChoicesStatusCarInventory.found,
-                                'cars.$.images': images ? images.map((image) => (new bson_1.ObjectID(image))) : [],
-                                'cars.$.inventoriedBy': req.user._id
+                        if (inventoryCar.cars[0].venue === req.user.venue._id) {
+                            await inventory_model_1.default.update({
+                                _id: id,
+                                ['cars.car']: car._id,
+                                company
+                            }, {
+                                $set: {
+                                    'cars.$.venueFound': venue._id,
+                                    'cars.$.status': inventory_model_1.ChoicesStatusCarInventory.found,
+                                    'cars.$.images': images ? images.map((image) => (new bson_1.ObjectID(image))) : [],
+                                    'cars.$.inventoriedBy': req.user._id
+                                }
+                            }, {
+                                upsert: true
+                            });
+                        }
+                        else {
+                            const inventory = await inventory_model_1.default.findOne({
+                                _id: id,
+                                company
+                            });
+                            if (inventory) {
+                                inventory.cars.push({
+                                    car: car._id,
+                                    venue: req.user.venue._id,
+                                    venueFound: req.user.venue._id,
+                                    images: images ? images.map((image) => (new bson_1.ObjectID(image))) : [],
+                                    status: inventory_model_1.ChoicesStatusCarInventory.leftover,
+                                    inventoriedBy: req.user._id
+                                });
+                                await inventory.save();
                             }
-                        }, {
-                            upsert: true
-                        });
+                        }
                         // send socket messsage
                         server_1.io.to(`inventory-list-${company._id}`).emit('REFRESH', {
                             update: true
