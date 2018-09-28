@@ -292,7 +292,7 @@ class InventoryController {
             // if car exist
             let textNotification = '';
             if (car) {
-                textNotification = `${req.user.firstName} ${req.user.lastName} encontró ${car.brand} (${car.denomination}) en ${venue.name}`;
+                textNotification = `${req.user.firstName} ${req.user.lastName} encontró ${car.brand} (${car.denomination}) en ${venue.name}.`;
                 const inventoriedCar = await inventory_model_1.default.findOne({
                     $and: [{
                             _id: id
@@ -405,7 +405,7 @@ class InventoryController {
                         company
                     });
                     await newCar.save();
-                    textNotification = `${req.user.firstName} ${req.user.lastName} encontró ${vin} en ${venue.name}`;
+                    textNotification = `${req.user.firstName} ${req.user.lastName} encontró ${vin} en ${venue.name}.`;
                     inventory.cars.push({
                         car: newCar._id,
                         venue: venue._id,
