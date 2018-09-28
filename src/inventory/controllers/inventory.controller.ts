@@ -336,7 +336,7 @@ class InventoryController {
           });
           // if car in inventory
           if (inventoryCar && inventoryCar.cars.length) {
-            if (inventoryCar.cars[0].venue === req.user.venue._id){
+            if (inventoryCar.cars[0].venue.toString() === req.user.venue._id.toString()) {
               await InventoryModel.update({
                 _id: id,
                 ['cars.car']: car._id,
