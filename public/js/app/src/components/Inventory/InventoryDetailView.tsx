@@ -362,6 +362,9 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
     const venuesFound: number[] = [];
     const venuesPending: number[] = [];
     const venuesLeftover: number[] = [];
+    detailByVenue.sort((a, b) => {
+      return a.name.localeCompare(b.name);
+    });
     for (const venue of detailByVenue) {
       venuesNames.push(venue.name);
       venuesFound.push(venue.results ? venue.results.found : 0);
@@ -474,6 +477,9 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
     const brandFound: number[] = [];
     const brandPending: number[] = [];
     const brandLeftover: number[] = [];
+    detailByBrand.sort((a, b) => {
+      return a.name.localeCompare(b.name);
+    });
     for (const brand of detailByBrand) {
       brandNames.push(brand.name);
       brandFound.push(brand.results ? brand.results.found : 0);
