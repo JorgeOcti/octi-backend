@@ -300,8 +300,9 @@ class InventoryController {
         company
       });
       // if car exist
+      let textNotification = '';
       if (car) {
-        const textNotification = `${req.user.firstName} ${req.user.lastName} encontró ${car.brand} (${car.denomination}) en ${venue.name}`;
+        textNotification = `${req.user.firstName} ${req.user.lastName} encontró ${car.brand} (${car.denomination}) en ${venue.name}`;
         const inventoriedCar = await InventoryModel.findOne({
           $and: [{
             _id: id
@@ -410,6 +411,7 @@ class InventoryController {
             company
           });
           await newCar.save();
+          textNotification = `${req.user.firstName} ${req.user.lastName} encontró ${vin} en ${venue.name}`;
           inventory.cars.push({
             car: newCar._id,
             venue: venue._id,
@@ -423,6 +425,11 @@ class InventoryController {
           io.to(`inventory-list-${company._id}`).emit('REFRESH', {
             update: true
           });
+          io.to(`inventory-detail-${inventory._id}`).emit('REFRESH', {
+              title: 'Vehiculo encontrado',
+              text: textNotification,
+              update: true
+            });
           res.json({
             id
           });
