@@ -342,6 +342,12 @@ class InventoryController {
                             }, {
                                 upsert: true
                             });
+                            server_1.io.to(`inventory-detail-${inventoryCar._id}`).emit('REFRESH', {
+                                title: 'Vehiculo encontrado',
+                                text: textNotification,
+                                status: inventory_model_1.ChoicesStatusCarInventory.found,
+                                update: true
+                            });
                         }
                         else {
                             const inventory = await inventory_model_1.default.findOne({
@@ -359,14 +365,15 @@ class InventoryController {
                                 });
                                 await inventory.save();
                             }
+                            server_1.io.to(`inventory-detail-${inventoryCar._id}`).emit('REFRESH', {
+                                title: 'Vehiculo encontrado',
+                                text: textNotification,
+                                status: inventory_model_1.ChoicesStatusCarInventory.leftover,
+                                update: true
+                            });
                         }
                         // send socket messsage
                         server_1.io.to(`inventory-list-${company._id}`).emit('REFRESH', {
-                            update: true
-                        });
-                        server_1.io.to(`inventory-detail-${inventoryCar._id}`).emit('REFRESH', {
-                            title: 'Vehiculo encontrado',
-                            text: textNotification,
                             update: true
                         });
                         res.json({
@@ -395,6 +402,7 @@ class InventoryController {
                             server_1.io.to(`inventory-detail-${inventory._id}`).emit('REFRESH', {
                                 title: 'Vehiculo encontrado',
                                 text: textNotification,
+                                status: inventory_model_1.ChoicesStatusCarInventory.leftover,
                                 update: true
                             });
                             res.json({

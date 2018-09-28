@@ -351,6 +351,12 @@ class InventoryController {
               }, {
                 upsert: true
               });
+              io.to(`inventory-detail-${inventoryCar._id}`).emit('REFRESH', {
+                title: 'Vehiculo encontrado',
+                text: textNotification,
+                status: ChoicesStatusCarInventory.found,
+                update: true
+              });
             } else {
               const inventory = await InventoryModel.findOne({
                 _id: id,
@@ -367,14 +373,15 @@ class InventoryController {
                 });
                 await inventory.save();
               }
+              io.to(`inventory-detail-${inventoryCar._id}`).emit('REFRESH', {
+                title: 'Vehiculo encontrado',
+                text: textNotification,
+                status: ChoicesStatusCarInventory.leftover,
+                update: true
+              });
             }
             // send socket messsage
             io.to(`inventory-list-${company._id}`).emit('REFRESH', {
-              update: true
-            });
-            io.to(`inventory-detail-${inventoryCar._id}`).emit('REFRESH', {
-              title: 'Vehiculo encontrado',
-              text: textNotification,
               update: true
             });
             res.json({
@@ -402,6 +409,7 @@ class InventoryController {
               io.to(`inventory-detail-${inventory._id}`).emit('REFRESH', {
                 title: 'Vehiculo encontrado',
                 text: textNotification,
+                status: ChoicesStatusCarInventory.leftover,
                 update: true
               });
               res.json({
