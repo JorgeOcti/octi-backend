@@ -6,17 +6,22 @@ import * as React from 'react';
 import {connect} from 'react-redux';
 import {RouteComponentProps} from 'react-router';
 import {Dispatch} from 'redux';
+import * as io from 'socket.io-client';
 import {getInventoryDetailAction, IDetailByBrand, IDetailByVenue, IInventoryState, InventoryReduxAction} from '../../actions/inventory.action';
 import AppContainer from '../../container/AppContainer';
+import {IWindow} from '../../interfaces/window';
+
+declare let window: IWindow;
 
 interface IPropsType extends RouteComponentProps<{ id: string }> {
   inventories: IInventoryState;
   dispatch: Dispatch<InventoryReduxAction>;
-  getInventoryDetailAction(id: string): InventoryReduxAction;
+  getInventoryDetailAction(id: string, update: boolean): InventoryReduxAction;
 }
 
 interface IStateType {
   error: Error | null;
+  setCharts: boolean;
 }
 
 class InventoryDetailView extends React.Component<IPropsType, IStateType> {
@@ -26,11 +31,12 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
   // };
 
   state = {
-    error: null
+    error: null,
+    setCharts: false
   };
 
-  venuesDetailChart: any;
-  brandDetailChart: any;
+  venuesDetailChart: echarts.ECharts;
+  brandDetailChart: echarts.ECharts;
 
   private labelOption: any = {
     normal: {
@@ -49,6 +55,7 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
       }
     }
   };
+  private socket: SocketIOClient.Socket;
 
   constructor(props: IPropsType) {
     super(props);
@@ -58,20 +65,38 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
   public componentWillMount() {
     // get data
     const {id} = this.props.match.params;
-    this.props.getInventoryDetailAction(id);
+    this.props.getInventoryDetailAction(id, false);
+    // setTimeout(() => {
+    //   this.props.getInventoryDetailAction(id, true);
+    // }, 10000);
     // set the title of the page
     document.title = 'OSA Andes | Detalle Inventario';
     // add listeners
     window.addEventListener('resize', this.resizeCharts, false);
+    // socket
+    this.socket = io.connect(`${location.protocol}//${location.host}`, {
+      secure: location.protocol === 'https:',
+      reconnection: true,
+      query: {token: (window.user as any).token}
+    });
+    this.socket.on('connect', () => {
+      this.socket.emit('join', {room: `inventory-detail-${id}`});
+    });
+    this.socket.on('REFRESH', (data: any): void => {
+      if (data.update) {
+        this.props.getInventoryDetailAction(id, true);
+      }
+    });
   }
 
   public componentWillUnmount() {
     // remove listeners
     window.removeEventListener('resize', this.resizeCharts, false);
     // cancel request if component is inmounted
-    // if (this.props.alerts.source) {
-    //   this.props.alerts.source.cancel('Operation canceled by the user.');
-    // }
+    if (this.props.inventories.source) {
+      this.props.inventories.source.cancel('Operation canceled by the user.');
+    }
+    this.socket.disconnect();
   }
 
   public componentDidCatch(error: Error, errorInfo: ErrorInfo) {
@@ -90,223 +115,18 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
     this.brandDetailChart = echarts.init($brandDetail);
   }
 
-  public updateVenueChart(detailByVenue: IDetailByVenue[]) {
-    const venuesNames: string[] = [];
-    const venuesFound: number[] = [];
-    const venuesPending: number[] = [];
-    const venuesLeftover: number[] = [];
-    for (const venue of detailByVenue) {
-      venuesNames.push(venue.name);
-      venuesFound.push(venue.results ? venue.results.found : 0);
-      venuesPending.push(venue.results ? venue.results.pending : 0);
-      venuesLeftover.push(venue.results ? venue.results.leftover : 0);
-    }
-    const optionVenues = {
-      tooltip: {
-        trigger: 'axis',
-        axisPointer: {
-          type: 'shadow'
-        }
-      },
-      legend: {
-        x: 'center',
-        // y: 'bottom',
-        bottom: 50,
-        data: ['Encontrados', 'Faltantes', 'Sobrantes']
-      },
-      xAxis: {
-        type: 'category',
-        // boundaryGap: false,
-        data: venuesNames,
-        axisLine: {
-          lineStyle: {
-            color: 'rgba(0, 0, 0, 0.5)'
-          }
-        },
-        axisLabel: {
-          rotate: 45
-          // fontSize: 10
-        }
-      },
-      calculable: true,
-      dataZoom: [
-        {
-          show: true,
-          realtime: true,
-          start: 50,
-          end: 100
-        }, {
-          type: 'inside',
-          realtime: true,
-          start: 50,
-          end: 100
-        }
-      ],
-      yAxis: {
-        minInterval: 1,
-        type: 'value',
-        axisLine: {
-          lineStyle: {
-            color: 'rgba(0, 0, 0, 0.5)'
-          }
-        },
-        splitLine: {
-          show: true,
-          lineStyle: {
-            type: 'dashed',
-            // color: 'rgba(0, 0, 0, 0.5)'
-            color: 'rgba(150, 150, 150, 0.5)'
-          }
-        }
-      },
-      grid: {
-        top: 30,
-        bottom: 100,
-        // left
-        x: 0,
-        // right
-        x2: 10,
-        containLabel: true
-        // borderColor: '#FF0000'
-      },
-      series: [{
-        data: venuesFound,
-        name: 'Encontrados',
-        type: 'bar',
-        color: '#00aa51',
-        label: this.labelOption,
-        barGap: 0
-        // areaStyle: {}
-        // smooth: true
-      }, {
-        data: venuesPending,
-        name: 'Faltantes',
-        type: 'bar',
-        color: '#f1392c',
-        // label: labelOption,
-        barGap: 0
-        // areaStyle: {}
-        // smooth: true
-      }, {
-        data: venuesLeftover,
-        name: 'Sobrantes',
-        type: 'bar',
-        color: '#ff9600',
-        // label: labelOption,
-        barGap: 0
-        // areaStyle: {}
-        // smooth: true
-      }]
-    };
-    this.venuesDetailChart.setOption(optionVenues);
-  }
-
-  public updateBrandChart(detailByBrand: IDetailByBrand[]) {
-    const brandNames: string[] = [];
-    const brandFound: number[] = [];
-    const brandPending: number[] = [];
-    const brandLeftover: number[] = [];
-    for (const brand of detailByBrand) {
-      brandNames.push(brand.name);
-      brandFound.push(brand.results ? brand.results.found : 0);
-      brandPending.push(brand.results ? brand.results.pending : 0);
-      brandLeftover.push(brand.results ? brand.results.leftover : 0);
-    }
-    const optionBrands = {
-      tooltip: {
-        trigger: 'axis'
-      },
-      legend: {
-        x: 'center',
-        bottom: 50,
-        data: ['Encontrados', 'Faltantes', 'Sobrantes']
-      },
-      xAxis: {
-        type: 'category',
-        boundaryGap: false,
-        data: brandNames,
-        axisLine: {
-          lineStyle: {
-            color: 'rgba(0, 0, 0, 0.5)'
-          }
-        },
-        axisLabel: {
-          rotate: 90
-          // fontSize: 10
-        }
-      },
-      calculable: true,
-      dataZoom: [
-        {
-          show: true,
-          realtime: true,
-          start: 50,
-          end: 100
-        }, {
-          type: 'inside',
-          realtime: true,
-          start: 50,
-          end: 100
-        }
-      ],
-      yAxis: {
-        minInterval: 1,
-        type: 'value',
-        axisLine: {
-          lineStyle: {
-            color: 'rgba(0, 0, 0, 0.5)'
-          }
-        },
-        splitLine: {
-          show: true,
-          lineStyle: {
-            // type: 'dashed',
-            color: 'rgba(150, 150, 150, 0.5)'
-          }
-        }
-      },
-      grid: {
-        top: 30,
-        bottom: 100,
-        // left
-        x: 10,
-        // right
-        x2: 5,
-        containLabel: true
-        // borderColor: '#FF0000'
-      },
-      series: [{
-        data: brandFound,
-        name: 'Encontrados',
-        // label: labelOption,
-        type: 'line',
-        color: '#00aa51',
-        areaStyle: {}
-        // smooth: true
-      }, {
-        data: brandPending,
-        name: 'Faltantes',
-        type: 'line',
-        color: '#f1392c',
-        areaStyle: {}
-        // smooth: true
-      }, {
-        data: brandLeftover,
-        name: 'Sobrantes',
-        type: 'line',
-        color: '#ff9600',
-        areaStyle: {}
-        // smooth: true
-      }]
-    };
-    this.brandDetailChart.setOption(optionBrands);
-  }
-
   public componentDidUpdate() {
     const {loadingDetail, detailByVenue, detailByBrand} = this.props.inventories;
-    if (!loadingDetail) {
+    const {setCharts} = this.state;
+    if (!loadingDetail && !setCharts) {
       this.updateVenueChart(detailByVenue);
       this.updateBrandChart(detailByBrand);
+      this.setState({
+        setCharts: true
+      });
+    } else {
+      this.updateVenueChart(detailByVenue, true);
+      this.updateBrandChart(detailByBrand, true);
     }
   }
 
@@ -524,6 +344,220 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
     );
   }
 
+  private updateVenueChart(detailByVenue: IDetailByVenue[], update?: boolean) {
+    const venuesNames: string[] = [];
+    const venuesFound: number[] = [];
+    const venuesPending: number[] = [];
+    const venuesLeftover: number[] = [];
+    for (const venue of detailByVenue) {
+      venuesNames.push(venue.name);
+      venuesFound.push(venue.results ? venue.results.found : 0);
+      venuesPending.push(venue.results ? venue.results.pending : 0);
+      venuesLeftover.push(venue.results ? venue.results.leftover : 0);
+    }
+    const optionVenues: echarts.EChartOption = {
+      tooltip: {
+        trigger: 'axis',
+        axisPointer: {
+          type: 'shadow'
+        }
+      },
+      legend: {
+        x: 'center',
+        // y: 'bottom',
+        bottom: 50,
+        data: ['Encontrados', 'Faltantes', 'Sobrantes']
+      },
+      xAxis: {
+        type: 'category',
+        // boundaryGap: false,
+        data: venuesNames,
+        axisLine: {
+          lineStyle: {
+            color: 'rgba(0, 0, 0, 0.5)'
+          }
+        },
+        axisLabel: {
+          rotate: 45
+          // fontSize: 10
+        }
+      },
+      yAxis: {
+        minInterval: 1,
+        type: 'value',
+        axisLine: {
+          lineStyle: {
+            color: 'rgba(0, 0, 0, 0.5)'
+          }
+        },
+        splitLine: {
+          show: true,
+          lineStyle: {
+            type: 'dashed',
+            // color: 'rgba(0, 0, 0, 0.5)'
+            color: 'rgba(150, 150, 150, 0.5)'
+          }
+        }
+      },
+      grid: {
+        top: 30,
+        bottom: 100,
+        // left
+        x: 0,
+        // right
+        x2: 10,
+        containLabel: true
+        // borderColor: '#FF0000'
+      },
+      series: [{
+        data: venuesFound,
+        name: 'Encontrados',
+        type: 'bar',
+        color: '#00aa51',
+        label: this.labelOption,
+        barGap: 0
+        // areaStyle: {}
+        // smooth: true
+      }, {
+        data: venuesPending,
+        name: 'Faltantes',
+        type: 'bar',
+        color: '#f1392c',
+        // label: labelOption,
+        barGap: 0
+        // areaStyle: {}
+        // smooth: true
+      }, {
+        data: venuesLeftover,
+        name: 'Sobrantes',
+        type: 'bar',
+        color: '#ff9600',
+        // label: labelOption,
+        barGap: 0
+        // areaStyle: {}
+        // smooth: true
+      }]
+    };
+    if (!update) {
+      optionVenues.dataZoom = [
+        {
+          show: true,
+          realtime: true,
+          start: 50,
+          end: 100
+        }, {
+          type: 'inside',
+          realtime: true,
+          start: 50,
+          end: 100
+        }
+      ];
+    }
+    this.venuesDetailChart.setOption(optionVenues);
+  }
+
+  private updateBrandChart(detailByBrand: IDetailByBrand[], update?: boolean) {
+    const brandNames: string[] = [];
+    const brandFound: number[] = [];
+    const brandPending: number[] = [];
+    const brandLeftover: number[] = [];
+    for (const brand of detailByBrand) {
+      brandNames.push(brand.name);
+      brandFound.push(brand.results ? brand.results.found : 0);
+      brandPending.push(brand.results ? brand.results.pending : 0);
+      brandLeftover.push(brand.results ? brand.results.leftover : 0);
+    }
+    const optionBrands: echarts.EChartOption = {
+      tooltip: {
+        trigger: 'axis'
+      },
+      legend: {
+        x: 'center',
+        bottom: 50,
+        data: ['Encontrados', 'Faltantes', 'Sobrantes']
+      },
+      xAxis: {
+        type: 'category',
+        boundaryGap: false,
+        data: brandNames,
+        axisLine: {
+          lineStyle: {
+            color: 'rgba(0, 0, 0, 0.5)'
+          }
+        },
+        axisLabel: {
+          rotate: 90
+          // fontSize: 10
+        }
+      },
+      yAxis: {
+        minInterval: 1,
+        type: 'value',
+        axisLine: {
+          lineStyle: {
+            color: 'rgba(0, 0, 0, 0.5)'
+          }
+        },
+        splitLine: {
+          show: true,
+          lineStyle: {
+            // type: 'dashed',
+            color: 'rgba(150, 150, 150, 0.5)'
+          }
+        }
+      },
+      grid: {
+        top: 30,
+        bottom: 100,
+        // left
+        x: 10,
+        // right
+        x2: 5,
+        containLabel: true
+        // borderColor: '#FF0000'
+      },
+      series: [{
+        data: brandFound,
+        name: 'Encontrados',
+        // label: labelOption,
+        type: 'line',
+        color: '#00aa51',
+        areaStyle: {}
+        // smooth: true
+      }, {
+        data: brandPending,
+        name: 'Faltantes',
+        type: 'line',
+        color: '#f1392c',
+        areaStyle: {}
+        // smooth: true
+      }, {
+        data: brandLeftover,
+        name: 'Sobrantes',
+        type: 'line',
+        color: '#ff9600',
+        areaStyle: {}
+        // smooth: true
+      }]
+    };
+    if (!update) {
+      optionBrands.dataZoom = [
+        {
+          show: true,
+          realtime: true,
+          start: 50,
+          end: 100
+        }, {
+          type: 'inside',
+          realtime: true,
+          start: 50,
+          end: 100
+        }
+      ];
+    }
+    this.brandDetailChart.setOption(optionBrands);
+  }
+
   private resizeCharts(): void {
     if (this.venuesDetailChart && this.venuesDetailChart !== undefined) {
       this.venuesDetailChart.resize();
@@ -543,7 +577,7 @@ const mapStateToProps = (state: { inventories: IInventoryState }) => {
 const mapDispatchToProps = (dispatch: any ) => {
   return {
     dispatch,
-    getInventoryDetailAction: (id: string) => dispatch(getInventoryDetailAction(id))
+    getInventoryDetailAction: (id: string, update: boolean) => dispatch(getInventoryDetailAction(id, update))
   };
 };
 

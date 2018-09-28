@@ -192,9 +192,11 @@ export function loadInventoryAction(summary: IInventorySummary, detailByVenue: I
   };
 }
 
-export function getInventoryDetailAction(id: string) {
+export function getInventoryDetailAction(id: string, update: boolean) {
   return (dispatch: Dispatch<InventoryReduxAction>) => {
-    dispatch(loadingInventoryDetaillAction(true));
+    if (!update) {
+      dispatch(loadingInventoryDetaillAction(true));
+    }
     const api: ApiService = new ApiService();
     api.getSource();
     api.getInventory(id)

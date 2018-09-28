@@ -352,6 +352,9 @@ class InventoryController {
             io.to(`inventory-list-${company._id}`).emit('REFRESH', {
               update: true
             });
+            io.to(`inventory-detail-${inventoryCar._id}`).emit('REFRESH', {
+              update: true
+            });
             res.json({
               id
             });
@@ -372,6 +375,9 @@ class InventoryController {
               await inventory.save();
               // send socket messsage
               io.to(`inventory-list-${company._id}`).emit('REFRESH', {
+                update: true
+              });
+              io.to(`inventory-detail-${inventory._id}`).emit('REFRESH', {
                 update: true
               });
               res.json({
