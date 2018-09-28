@@ -84,6 +84,15 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
     });
     this.socket.on('REFRESH', (data: any): void => {
       if (data.update) {
+        ($ as any).toast({
+          heading: data.title,
+          text: data.text,
+          position: 'top-right',
+          loaderBg: '#bce8f1',
+          icon: 'info',
+          hideAfter: 5000,
+          stack: 6
+        });
         this.props.getInventoryDetailAction(id, true);
       }
     });
