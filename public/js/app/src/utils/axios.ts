@@ -154,6 +154,14 @@ export default class ApiService {
     );
   }
 
+  public getInventory(id: string): AxiosPromise {
+    return this.instance.get(
+      `/api/inventory/${id}`,  {
+        cancelToken: this.source.token
+      }
+    );
+  }
+
   public createInventory(data: any, name: string): AxiosPromise {
     return this.instance.post(
       `/api/inventory/`, {carsByVenue: data, name}, {

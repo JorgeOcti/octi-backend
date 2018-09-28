@@ -6,14 +6,13 @@ import * as React from 'react';
 import {connect} from 'react-redux';
 import {RouteComponentProps} from 'react-router';
 import {Dispatch} from 'redux';
-import {AlertReduxAction, IAlertsState} from '../../actions/alerts.action';
-import {loadDataAction} from '../../actions/modal.action';
+import {getInventoryDetailAction, IDetailByBrand, IDetailByVenue, IInventoryState, InventoryReduxAction} from '../../actions/inventory.action';
 import AppContainer from '../../container/AppContainer';
 
 interface IPropsType extends RouteComponentProps<{ id: string }> {
-  alerts: IAlertsState;
-  dispatch: Dispatch<AlertReduxAction>;
-  // loadDataAction(title: string, body: JSX.Element, footer: JSX.Element): ModalReduxAction;
+  inventories: IInventoryState;
+  dispatch: Dispatch<InventoryReduxAction>;
+  getInventoryDetailAction(id: string): InventoryReduxAction;
 }
 
 interface IStateType {
@@ -33,13 +32,33 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
   venuesDetailChart: any;
   brandDetailChart: any;
 
+  private labelOption: any = {
+    normal: {
+      show: true,
+      position: 'insideBottom',
+      distance: 15,
+      align: 'left',
+      verticalAlign: 'middle',
+      rotate: 90,
+      formatter: '{c}  {name|{a}}',
+      fontSize: 16,
+      rich: {
+        name: {
+          textBorderColor: '#fff'
+        }
+      }
+    }
+  };
+
   constructor(props: IPropsType) {
     super(props);
     this.resizeCharts = this.resizeCharts.bind(this);
   }
 
   public componentWillMount() {
-    // this.props.getAlertsAction();
+    // get data
+    const {id} = this.props.match.params;
+    this.props.getInventoryDetailAction(id);
     // set the title of the page
     document.title = 'OSA Andes | Detalle Inventario';
     // add listeners
@@ -69,28 +88,24 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
     const $brandDetail = document.getElementById('chart-brand-detail') as HTMLDivElement;
     this.venuesDetailChart = echarts.init($venuesDetail);
     this.brandDetailChart = echarts.init($brandDetail);
-    const labelOption = {
-      normal: {
-        show: true,
-        position: 'insideBottom',
-        distance: 15,
-        align: 'left',
-        verticalAlign: 'middle',
-        rotate: 90,
-        formatter: '{c}  {name|{a}}',
-        fontSize: 16,
-        rich: {
-          name: {
-            textBorderColor: '#fff'
-          }
-        }
-      }
-    };
+  }
+
+  public updateVenueChart(detailByVenue: IDetailByVenue[]) {
+    const venuesNames: string[] = [];
+    const venuesFound: number[] = [];
+    const venuesPending: number[] = [];
+    const venuesLeftover: number[] = [];
+    for (const venue of detailByVenue) {
+      venuesNames.push(venue.name);
+      venuesFound.push(venue.results ? venue.results.found : 0);
+      venuesPending.push(venue.results ? venue.results.pending : 0);
+      venuesLeftover.push(venue.results ? venue.results.leftover : 0);
+    }
     const optionVenues = {
       tooltip: {
         trigger: 'axis',
         axisPointer: {
-            type: 'shadow'
+          type: 'shadow'
         }
       },
       legend: {
@@ -102,7 +117,7 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
       xAxis: {
         type: 'category',
         // boundaryGap: false,
-        data: ['Sucursal 1', 'Sucursal 2', 'Sucursal 3', 'Sucursal 4', 'Sucursal 5', 'Sucursal 6', 'Sucursal 7', 'Sucursal 8', 'Sucursal 9', 'Sucursal 10', 'Sucursal 11', 'Sucursal 12'],
+        data: venuesNames,
         axisLine: {
           lineStyle: {
             color: 'rgba(0, 0, 0, 0.5)'
@@ -155,16 +170,16 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
         // borderColor: '#FF0000'
       },
       series: [{
-        data: [10, 40, 50, 0, 3, 16, 28, 10, 40, 50, 100, 3],
+        data: venuesFound,
         name: 'Encontrados',
         type: 'bar',
         color: '#00aa51',
-        label: labelOption,
+        label: this.labelOption,
         barGap: 0
         // areaStyle: {}
         // smooth: true
       }, {
-        data: [20, 20, 10, 2, 0, 0, 20, 20, 10, 2, 0, 6],
+        data: venuesPending,
         name: 'Faltantes',
         type: 'bar',
         color: '#f1392c',
@@ -173,7 +188,7 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
         // areaStyle: {}
         // smooth: true
       }, {
-        data: [1, 0, 3, 0, 1, 2, 1, 0, 3, 0, 1, 2],
+        data: venuesLeftover,
         name: 'Sobrantes',
         type: 'bar',
         color: '#ff9600',
@@ -183,30 +198,57 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
         // smooth: true
       }]
     };
+    this.venuesDetailChart.setOption(optionVenues);
+  }
+
+  public updateBrandChart(detailByBrand: IDetailByBrand[]) {
+    const brandNames: string[] = [];
+    const brandFound: number[] = [];
+    const brandPending: number[] = [];
+    const brandLeftover: number[] = [];
+    for (const brand of detailByBrand) {
+      brandNames.push(brand.name);
+      brandFound.push(brand.results ? brand.results.found : 0);
+      brandPending.push(brand.results ? brand.results.pending : 0);
+      brandLeftover.push(brand.results ? brand.results.leftover : 0);
+    }
     const optionBrands = {
       tooltip: {
         trigger: 'axis'
       },
       legend: {
         x: 'center',
-        y: 'bottom',
+        bottom: 50,
         data: ['Encontrados', 'Faltantes', 'Sobrantes']
       },
       xAxis: {
         type: 'category',
         boundaryGap: false,
-        data: ['Mazda', 'Great Wall', 'Susuki', 'Mercedez', 'Nissan', 'Cheevrolet'],
+        data: brandNames,
         axisLine: {
           lineStyle: {
             color: 'rgba(0, 0, 0, 0.5)'
           }
         },
         axisLabel: {
-          rotate: 80
+          rotate: 90
           // fontSize: 10
         }
       },
       calculable: true,
+      dataZoom: [
+        {
+          show: true,
+          realtime: true,
+          start: 50,
+          end: 100
+        }, {
+          type: 'inside',
+          realtime: true,
+          start: 50,
+          end: 100
+        }
+      ],
       yAxis: {
         minInterval: 1,
         type: 'value',
@@ -225,6 +267,7 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
       },
       grid: {
         top: 30,
+        bottom: 100,
         // left
         x: 10,
         // right
@@ -233,7 +276,7 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
         // borderColor: '#FF0000'
       },
       series: [{
-        data: [10, 40, 50, 0, 3, 16, 28],
+        data: brandFound,
         name: 'Encontrados',
         // label: labelOption,
         type: 'line',
@@ -241,14 +284,14 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
         areaStyle: {}
         // smooth: true
       }, {
-        data: [20, 20, 10, 2, 0, 0],
+        data: brandPending,
         name: 'Faltantes',
         type: 'line',
         color: '#f1392c',
         areaStyle: {}
         // smooth: true
       }, {
-        data: [1, 0, 3, 0, 1, 2],
+        data: brandLeftover,
         name: 'Sobrantes',
         type: 'line',
         color: '#ff9600',
@@ -256,13 +299,24 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
         // smooth: true
       }]
     };
-    this.venuesDetailChart.setOption(optionVenues);
     this.brandDetailChart.setOption(optionBrands);
   }
 
+  public componentDidUpdate() {
+    const {loadingDetail, detailByVenue, detailByBrand} = this.props.inventories;
+    if (!loadingDetail) {
+      this.updateVenueChart(detailByVenue);
+      this.updateBrandChart(detailByBrand);
+    }
+  }
+
   public render(): React.ReactElement<IPropsType> {
+    const {loadingDetail, summary} = this.props.inventories;
+    const percentagePending = summary.results ? (100 / (summary.results.found + summary.results.pending + summary.results.leftover)) * summary.results.pending : 0;
+    const percentageFound = summary.results ? (100 / (summary.results.found + summary.results.pending + summary.results.leftover)) * summary.results.found : 0;
+    const percentageLeftover = summary.results ? (100 / (summary.results.found + summary.results.pending + summary.results.leftover)) * summary.results.leftover : 0;
     return (
-      <AppContainer title="Inventario Prueba" cMenu="2" cSubMenu="2.1" cAction="Detalle">
+      <AppContainer title={summary.name} cMenu="2" cSubMenu="2.1" cAction="Detalle">
         <section className="content">
           <div className="row">
             <div className="col-md-4">
@@ -270,12 +324,14 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
                 <span className="info-box-icon"><i className="fa fa-check" /></span>
                 <div className="info-box-content">
                   <span className="info-box-text">Encontrados</span>
-                  <span className="info-box-number">5,200</span>
+                  <span className="info-box-number">{summary.results ? summary.results.found : 0}</span>
                   <div className="progress">
-                    <div className="progress-bar" style={{width: '50%'}} />
+                    <div className="progress-bar" style={{
+                      width: `${percentageFound}%`
+                    }} />
                   </div>
                   <span className="progress-description">
-                    50% Increase in 30 Days
+                    {`${percentageFound.toFixed(3)}% encontrados.`}
                   </span>
                 </div>
               </div>
@@ -285,12 +341,14 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
                 <span className="info-box-icon"><i className="fa fa-close" /></span>
                 <div className="info-box-content">
                   <span className="info-box-text">Faltantes</span>
-                  <span className="info-box-number">5,200</span>
+                  <span className="info-box-number">{summary.results ? summary.results.pending : 0}</span>
                   <div className="progress">
-                    <div className="progress-bar" style={{width: '50%'}} />
+                    <div className="progress-bar" style={{
+                      width: `${percentagePending}%`
+                    }} />
                   </div>
                   <span className="progress-description">
-                    50% Increase in 30 Days
+                    {`${percentagePending.toFixed(3)}% faltantes.`}
                   </span>
                 </div>
               </div>
@@ -300,12 +358,14 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
                 <span className="info-box-icon"><i className="fa fa-bookmark" /></span>
                 <div className="info-box-content">
                   <span className="info-box-text">Sobrantes</span>
-                  <span className="info-box-number">5,200</span>
+                  <span className="info-box-number">{summary.results ? summary.results.leftover : 0}</span>
                   <div className="progress">
-                    <div className="progress-bar" style={{width: '50%'}} />
+                    <div className="progress-bar" style={{
+                      width: `${percentageLeftover}%`
+                    }} />
                   </div>
                   <span className="progress-description">
-                    50% Increase in 30 Days
+                    {`${percentageLeftover.toFixed(3)}% sobrantes.`}
                   </span>
                 </div>
               </div>
@@ -318,10 +378,8 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
             <div className="box-body">
               <div id="chart-venues-detail" style={{height: '500px', maxWidth: '100%'}}/>
             </div>
-            {/*<div className="box-footer text-right">*/}
-            {/*</div>*/}
             {
-              false &&
+              loadingDetail &&
               <div className="overlay">
                 <i className="fa fa-spinner fa-spin text-purple"/>
               </div>
@@ -338,123 +396,129 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
                 <div className="box-body">
                   <div id="chart-brand-detail" style={{height: '400px', maxWidth: '100%'}}/>
                 </div>
+                {
+                  loadingDetail &&
+                  <div className="overlay">
+                    <i className="fa fa-spinner fa-spin text-purple"/>
+                  </div>
+                }
               </div>
             </div>
             <div className="col-md-4">
-              <div className="box box-info">
-                <div className="box-header with-border">
-                  <h3 className="box-title">Visitors Report</h3>
-                  {/*<div className="box-tools pull-right">*/}
+              {/*<div className="box box-info">*/}
+                {/*<div className="box-header with-border">*/}
+                  {/*<h3 className="box-title">Visitors Report</h3>*/}
+                  {/*/!*<div className="box-tools pull-right">*!/*/}
+                  {/*/!*</div>*!/*/}
+                {/*</div>*/}
+                {/*<div className="box-body">*/}
+                  {/*<div className="row">*/}
+                    {/*<div className="col-md-12">*/}
+                      {/*<div className="progress-group">*/}
+                        {/*<span className="progress-text">Add Products to Cart</span>*/}
+                        {/*<span className="progress-number"><b>160</b>/200</span>*/}
+
+                        {/*<div className="progress sm">*/}
+                          {/*<div className="progress-bar progress-bar-aqua" style={{width: '80%'}}/>*/}
+                        {/*</div>*/}
+                      {/*</div>*/}
+                      {/*<div className="progress-group">*/}
+                        {/*<span className="progress-text">Complete Purchase</span>*/}
+                        {/*<span className="progress-number"><b>310</b>/400</span>*/}
+
+                        {/*<div className="progress sm">*/}
+                          {/*<div className="progress-bar progress-bar-red" style={{width: '80%'}}/>*/}
+                        {/*</div>*/}
+                      {/*</div>*/}
+                      {/*<div className="progress-group">*/}
+                        {/*<span className="progress-text">Visit Premium Page</span>*/}
+                        {/*<span className="progress-number"><b>480</b>/800</span>*/}
+
+                        {/*<div className="progress sm">*/}
+                          {/*<div className="progress-bar progress-bar-green" style={{width: '80%'}}/>*/}
+                        {/*</div>*/}
+                      {/*</div>*/}
+                      {/*<div className="progress-group">*/}
+                        {/*<span className="progress-text">Send Inquiries</span>*/}
+                        {/*<span className="progress-number"><b>250</b>/500</span>*/}
+
+                        {/*<div className="progress sm">*/}
+                          {/*<div className="progress-bar progress-bar-yellow" style={{width: '80%'}}/>*/}
+                        {/*</div>*/}
+                      {/*</div>*/}
+                    {/*</div>*/}
                   {/*</div>*/}
-                </div>
-                <div className="box-body">
-                  <div className="row">
-                    <div className="col-md-12">
-                      <div className="progress-group">
-                        <span className="progress-text">Add Products to Cart</span>
-                        <span className="progress-number"><b>160</b>/200</span>
-
-                        <div className="progress sm">
-                          <div className="progress-bar progress-bar-aqua" style={{width: '80%'}}/>
-                        </div>
-                      </div>
-                      <div className="progress-group">
-                        <span className="progress-text">Complete Purchase</span>
-                        <span className="progress-number"><b>310</b>/400</span>
-
-                        <div className="progress sm">
-                          <div className="progress-bar progress-bar-red" style={{width: '80%'}}/>
-                        </div>
-                      </div>
-                      <div className="progress-group">
-                        <span className="progress-text">Visit Premium Page</span>
-                        <span className="progress-number"><b>480</b>/800</span>
-
-                        <div className="progress sm">
-                          <div className="progress-bar progress-bar-green" style={{width: '80%'}}/>
-                        </div>
-                      </div>
-                      <div className="progress-group">
-                        <span className="progress-text">Send Inquiries</span>
-                        <span className="progress-number"><b>250</b>/500</span>
-
-                        <div className="progress sm">
-                          <div className="progress-bar progress-bar-yellow" style={{width: '80%'}}/>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
+                {/*</div>*/}
+              {/*</div>*/}
             </div>
           </div>
-          <h2 className="page-header">Detalle sucursales</h2>
-          <div className="row">
-            <div className="col-md-6">
-              <div className="box box-warning collapsed-box">
-                <div className="box-header with-border">
-                  <h3 className="box-title">Sucursal 1</h3>
-                  <div className="box-tools pull-right">
-                    <button type="button" className="btn btn-box-tool" data-widget="collapse"><i className="fa fa-plus" /></button>
-                  </div>
-                </div>
-                <div className="box-body" style={{display: 'none'}}>
-                  <p>&nbsp;</p>
-                  <p>&nbsp;</p>
-                  <p>&nbsp;</p>
-                  <p>&nbsp;</p>
-                </div>
-              </div>
-            </div>
-            <div className="col-md-6">
-              <div className="box box-warning collapsed-box">
-                <div className="box-header">
-                  <h3 className="box-title">Sucursal 2</h3>
-                  <div className="box-tools pull-right">
-                    <button type="button" className="btn btn-box-tool" data-widget="collapse"><i className="fa fa-plus" /></button>
-                  </div>
-                </div>
-                <div className="box-body">
-                  <p>&nbsp;</p>
-                  <p>&nbsp;</p>
-                  <p>&nbsp;</p>
-                  <p>&nbsp;</p>
-                </div>
-              </div>
-            </div>
-            <div className="col-md-6">
-              <div className="box box-warning collapsed-box">
-                <div className="box-header">
-                  <h3 className="box-title">Sucursal 3</h3>
-                  <div className="box-tools pull-right">
-                    <button type="button" className="btn btn-box-tool" data-widget="collapse"><i className="fa fa-plus" /></button>
-                  </div>
-                </div>
-                <div className="box-body">
-                  <p>&nbsp;</p>
-                  <p>&nbsp;</p>
-                  <p>&nbsp;</p>
-                  <p>&nbsp;</p>
-                </div>
-              </div>
-            </div>
-            <div className="col-md-6">
-              <div className="box box-warning collapsed-box">
-                <div className="box-header">
-                  <h3 className="box-title">Sucursal 4</h3>
-                  <div className="box-tools pull-right">
-                    <button type="button" className="btn btn-box-tool" data-widget="collapse"><i className="fa fa-plus" /></button>
-                  </div>
-                </div>
-                <div className="box-body" style={{display: 'none'}}>
-                  <p>&nbsp;</p>
-                  <p>&nbsp;</p>
-                  <p>&nbsp;</p>
-                  <p>&nbsp;</p>
-                </div>
-              </div>
-            </div>
-          </div>
+          {/*<h2 className="page-header">Detalle sucursales</h2>*/}
+          {/*<div className="row">*/}
+            {/*<div className="col-md-6">*/}
+              {/*<div className="box box-warning collapsed-box">*/}
+                {/*<div className="box-header with-border">*/}
+                  {/*<h3 className="box-title">Sucursal 1</h3>*/}
+                  {/*<div className="box-tools pull-right">*/}
+                    {/*<button type="button" className="btn btn-box-tool" data-widget="collapse"><i className="fa fa-plus" /></button>*/}
+                  {/*</div>*/}
+                {/*</div>*/}
+                {/*<div className="box-body" style={{display: 'none'}}>*/}
+                  {/*<p>&nbsp;</p>*/}
+                  {/*<p>&nbsp;</p>*/}
+                  {/*<p>&nbsp;</p>*/}
+                  {/*<p>&nbsp;</p>*/}
+                {/*</div>*/}
+              {/*</div>*/}
+            {/*</div>*/}
+            {/*<div className="col-md-6">*/}
+              {/*<div className="box box-warning collapsed-box">*/}
+                {/*<div className="box-header">*/}
+                  {/*<h3 className="box-title">Sucursal 2</h3>*/}
+                  {/*<div className="box-tools pull-right">*/}
+                    {/*<button type="button" className="btn btn-box-tool" data-widget="collapse"><i className="fa fa-plus" /></button>*/}
+                  {/*</div>*/}
+                {/*</div>*/}
+                {/*<div className="box-body">*/}
+                  {/*<p>&nbsp;</p>*/}
+                  {/*<p>&nbsp;</p>*/}
+                  {/*<p>&nbsp;</p>*/}
+                  {/*<p>&nbsp;</p>*/}
+                {/*</div>*/}
+              {/*</div>*/}
+            {/*</div>*/}
+            {/*<div className="col-md-6">*/}
+              {/*<div className="box box-warning collapsed-box">*/}
+                {/*<div className="box-header">*/}
+                  {/*<h3 className="box-title">Sucursal 3</h3>*/}
+                  {/*<div className="box-tools pull-right">*/}
+                    {/*<button type="button" className="btn btn-box-tool" data-widget="collapse"><i className="fa fa-plus" /></button>*/}
+                  {/*</div>*/}
+                {/*</div>*/}
+                {/*<div className="box-body">*/}
+                  {/*<p>&nbsp;</p>*/}
+                  {/*<p>&nbsp;</p>*/}
+                  {/*<p>&nbsp;</p>*/}
+                  {/*<p>&nbsp;</p>*/}
+                {/*</div>*/}
+              {/*</div>*/}
+            {/*</div>*/}
+            {/*<div className="col-md-6">*/}
+              {/*<div className="box box-warning collapsed-box">*/}
+                {/*<div className="box-header">*/}
+                  {/*<h3 className="box-title">Sucursal 4</h3>*/}
+                  {/*<div className="box-tools pull-right">*/}
+                    {/*<button type="button" className="btn btn-box-tool" data-widget="collapse"><i className="fa fa-plus" /></button>*/}
+                  {/*</div>*/}
+                {/*</div>*/}
+                {/*<div className="box-body" style={{display: 'none'}}>*/}
+                  {/*<p>&nbsp;</p>*/}
+                  {/*<p>&nbsp;</p>*/}
+                  {/*<p>&nbsp;</p>*/}
+                  {/*<p>&nbsp;</p>*/}
+                {/*</div>*/}
+              {/*</div>*/}
+            {/*</div>*/}
+          {/*</div>*/}
         </section>
       </AppContainer>
     );
@@ -470,16 +534,16 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
   }
 }
 
-const mapStateToProps = (state: { alerts: IAlertsState }) => {
+const mapStateToProps = (state: { inventories: IInventoryState }) => {
   return {
-    alerts: state.alerts
+    inventories: state.inventories
   };
 };
 
 const mapDispatchToProps = (dispatch: any ) => {
   return {
     dispatch,
-    loadDataAction: (title: string, body: JSX.Element, footer: JSX.Element) => dispatch(loadDataAction(title, body, footer))
+    getInventoryDetailAction: (id: string) => dispatch(getInventoryDetailAction(id))
   };
 };
 

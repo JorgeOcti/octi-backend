@@ -4,6 +4,16 @@ const initialState: IInventoryState = {
   inventories: [],
   loading: true,
   source: null,
+  loadingDetail: false,
+  summary: {
+    _id: '',
+    name: '',
+    status: '',
+    createdAt: null,
+    finalizedAt: null
+  },
+  detailByVenue: [],
+  detailByBrand: [],
   pagination: {
     count: 0,
     page: 1,
@@ -26,7 +36,19 @@ export function inventoriesReducer(state = initialState, action: InventoryReduxA
     case '/INVENTORORIES/LOAD_DATA':
       return {
         ...state,
-        inventories: action.payload.inventories,
+        inventories: action.payload.inventories
+      };
+    case '/INVENTORORIES/LOADING_INVENTORY_DETAIL':
+      return {
+        ...state,
+        loadingDetail: action.payload.loadingDetail
+      };
+    case '/INVENTORORIES/LOAD_INVENTORY_DATA':
+      return {
+        ...state,
+        summary: action.payload.summary,
+        detailByVenue: action.payload.detailByVenue,
+        detailByBrand: action.payload.detailByBrand
       };
     default:
       return state;

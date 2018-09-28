@@ -1,12 +1,49 @@
 import {AxiosError, AxiosResponse, CancelTokenSource} from 'axios';
 import {Dispatch} from 'redux';
 import ApiService from '../utils/axios';
-// import {removeUserAction} from "./users.action";
+
+export interface IInventorySummary {
+  _id: string;
+  name: string;
+  createdBy?: {
+    lastName: string;
+    firstName: string;
+    fullName: string;
+  };
+  results?: {
+    pending: number;
+    found: number;
+    leftover: number;
+  };
+  status: string;
+  createdAt: Date | null;
+  finalizedAt: Date | null;
+}
+export interface IDetailByVenue {
+  name: string;
+  results: {
+    pending: number;
+    found: number;
+    leftover: number;
+  };
+}
+export interface IDetailByBrand {
+  name: string;
+  results: {
+    pending: number;
+    found: number;
+    leftover: number;
+  };
+}
 
 export interface IInventoryState {
   inventories: any[];
   loading: boolean;
   source: CancelTokenSource | null;
+  loadingDetail: boolean;
+  summary: IInventorySummary;
+  detailByVenue: IDetailByVenue[];
+  detailByBrand: IDetailByBrand[];
   pagination: {
     count: number;
     page: number;
@@ -52,7 +89,7 @@ interface ILoadInventories {
   };
 }
 
-export function loadAlertsAction(inventories: any[]): ILoadInventories {
+export function loadInventoriesAction(inventories: any[]): ILoadInventories {
   return {
     type: '/INVENTORORIES/LOAD_DATA',
     payload: {
@@ -71,7 +108,7 @@ export function getInventoriesAction(loading: boolean) {
     api.getInventories()
       .then((response: AxiosResponse) => {
         const data = response.data;
-        dispatch(loadAlertsAction(data.inventories));
+        dispatch(loadInventoriesAction(data.inventories));
         if (loading) {
           dispatch(isLoadingAction(false));
         }
@@ -119,4 +156,58 @@ export function deleteInventoryAction(id: string) {
   };
 }
 
-export type InventoryReduxAction = ICancelRequest | IIsLoading | ILoadInventories;
+interface ILoadingDetailInventory {
+  type: '/INVENTORORIES/LOADING_INVENTORY_DETAIL';
+  payload: {
+    loadingDetail: boolean;
+  };
+}
+
+export function loadingInventoryDetaillAction(loadingDetail: boolean): ILoadingDetailInventory {
+  return {
+    type: '/INVENTORORIES/LOADING_INVENTORY_DETAIL',
+    payload: {
+      loadingDetail
+    }
+  };
+}
+
+interface ILoadInventory {
+  type: '/INVENTORORIES/LOAD_INVENTORY_DATA';
+  payload: {
+    summary: IInventorySummary;
+    detailByVenue: IDetailByVenue[];
+    detailByBrand: IDetailByBrand[];
+  };
+}
+
+export function loadInventoryAction(summary: IInventorySummary, detailByVenue: IDetailByVenue[], detailByBrand: IDetailByBrand[]): ILoadInventory {
+  return {
+    type: '/INVENTORORIES/LOAD_INVENTORY_DATA',
+    payload: {
+      summary,
+      detailByVenue,
+      detailByBrand
+    }
+  };
+}
+
+export function getInventoryDetailAction(id: string) {
+  return (dispatch: Dispatch<InventoryReduxAction>) => {
+    dispatch(loadingInventoryDetaillAction(true));
+    const api: ApiService = new ApiService();
+    api.getSource();
+    api.getInventory(id)
+      .then((response: AxiosResponse) => {
+        const {data} = response;
+        dispatch(loadInventoryAction(data.summary, data.detailByVenue, data.detailByBrand));
+        dispatch(loadingInventoryDetaillAction(false));
+      })
+      .catch((err: AxiosError) => {
+        api.errorHandler(err);
+        dispatch(loadingInventoryDetaillAction(false));
+      });
+  };
+}
+
+export type InventoryReduxAction = ICancelRequest | IIsLoading | ILoadInventories | ILoadInventory | ILoadingDetailInventory;

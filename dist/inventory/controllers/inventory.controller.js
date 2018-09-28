@@ -593,7 +593,7 @@ class InventoryController {
                 }
             ]);
             // detail by venue
-            const detailByVenue = await inventory_model_1.default.aggregate([
+            const detailByVenues = await inventory_model_1.default.aggregate([
                 {
                     $match: {
                         company,
@@ -628,13 +628,86 @@ class InventoryController {
                         foreignField: '_id',
                         as: 'info'
                     }
+                }, {
+                    $unwind: '$info'
                 }
             ]);
+            // detail by brands
+            const detailByBrands = await inventory_model_1.default.aggregate([
+                {
+                    $match: {
+                        company,
+                        _id: { $in: [mongoose.Types.ObjectId(id)] }
+                    }
+                }, {
+                    $unwind: '$cars'
+                }, {
+                    $lookup: {
+                        from: 'cars',
+                        localField: 'cars.car',
+                        foreignField: '_id',
+                        as: 'car'
+                    }
+                }, {
+                    $unwind: '$car'
+                }, {
+                    $group: {
+                        _id: {
+                            car: '$car.brand',
+                            status: '$cars.status'
+                        },
+                        total: {
+                            $sum: 1
+                        }
+                    }
+                }, {
+                    $group: {
+                        _id: '$_id.car',
+                        status: {
+                            $push: {
+                                name: '$_id.status',
+                                total: '$total'
+                            }
+                        }
+                    }
+                }, {
+                    $lookup: {
+                        from: 'venues',
+                        localField: '_id',
+                        foreignField: '_id',
+                        as: 'info'
+                    }
+                }
+            ]);
+            const detailByBrand = [];
+            const detailByVenue = [];
             const defaultResults = {
                 [inventory_model_1.ChoicesStatusCarInventory.pending]: 0,
                 [inventory_model_1.ChoicesStatusCarInventory.found]: 0,
                 [inventory_model_1.ChoicesStatusCarInventory.leftover]: 0
             };
+            for (const db of detailByBrands) {
+                detailByBrand.push({
+                    name: db._id ? db._id : 'Sin Marca',
+                    results: db.status.reduce((acc, cur) => {
+                        acc[cur.name] = cur.total;
+                        return acc;
+                    }, {
+                        ...defaultResults
+                    })
+                });
+            }
+            for (const dv of detailByVenues) {
+                detailByVenue.push({
+                    name: dv.info.name,
+                    results: dv.status.reduce((acc, cur) => {
+                        acc[cur.name] = cur.total;
+                        return acc;
+                    }, {
+                        ...defaultResults
+                    })
+                });
+            }
             if (inventory && inventory.length) {
                 const currentInventory = inventory[0];
                 const response = {
@@ -654,9 +727,11 @@ class InventoryController {
                     createdAt: currentInventory.createdAt,
                     finalizedAt: currentInventory.finalizedAt ? currentInventory.finalizedAt : null
                 };
+                // console.log('detailByVenue', detailByVenue);
                 res.json({
                     summary: response,
                     detailByVenue,
+                    detailByBrand,
                     status: 200
                 });
             }
