@@ -120,8 +120,8 @@ class InventoryController {
       }, {_id: true});
       PushService.massiveSend(
         'Nuevo inventario',
-        'Puedes empezar ha escanear autos.',
-        'Gonzalo ha iniciado un nuevo inventatio llamado prueba',
+        `Se ha iniciado el inventario "${inventory.name}"`,
+        'Ya puedes empezar ha escanear autos.',
          usersIDs.map((user) => user._id.toString())
       );
       console.log('usersIDs', usersIDs.map((user) => user._id.toString()));
