@@ -5,8 +5,10 @@ const GraphicsMagick = require("gm");
 const mongoose = require("mongoose");
 const car_model_1 = require("../../app/models/car.model");
 const car_model_2 = require("../../app/models/car.model");
+const user_model_1 = require("../../app/models/user.model");
 const venue_model_1 = require("../../app/models/venue.model");
 const server_1 = require("../../server");
+const push_service_1 = require("../../services/push.service");
 const inventory_model_1 = require("../models/inventory.model");
 const inventoryFile_model_1 = require("../models/inventoryFile.model");
 class InventoryController {
@@ -63,12 +65,12 @@ class InventoryController {
                     venuesIDs.push(currentVenue._id.toString());
                     if (venue.cars && venue.cars.length) {
                         for (const car of venue.cars) {
-                            let currentCar = await car_model_2.default.findOne({
+                            let currentCar = await car_model_1.default.findOne({
                                 company,
                                 vin: car.vin
                             });
-                            if (currentCar === null && car.vin && car.vin.length) {
-                                currentCar = new car_model_2.default({
+                            if (currentCar === null && car.vin && car.vin.trim().length) {
+                                currentCar = new car_model_1.default({
                                     company,
                                     vin: car.vin,
                                     vin2: car.vin.substr(car.vin.length - 6),
@@ -99,6 +101,14 @@ class InventoryController {
                 status: inventory_model_1.ChoicesStatusInventory.inProcess
             });
             await inventory.save();
+            const usersIDs = await user_model_1.default.find({
+                venue: {
+                    $in: venuesIDs
+                },
+                company
+            }, { _id: true });
+            push_service_1.default.massiveSend('Inventario', 'Se ha iniciado un nuevo inventario', 'Gonzalo ha iniciado un nuevo inventatio llamado prueba', usersIDs.map((user) => user._id.toString()));
+            console.log('usersIDs', usersIDs.map((user) => user._id.toString()));
             res.json({
                 message: 'Inventario creado satisfactoriamente',
                 status: 200
@@ -285,7 +295,7 @@ class InventoryController {
         const { id } = req.params;
         const { vin, images } = req.body;
         try {
-            const car = await car_model_1.default.findOne({
+            const car = await car_model_2.default.findOne({
                 vin,
                 company
             });
@@ -426,7 +436,7 @@ class InventoryController {
                     company
                 });
                 if (inventory) {
-                    const newCar = new car_model_2.default({
+                    const newCar = new car_model_1.default({
                         vin,
                         vin2: vin.substr(vin.length - 6),
                         company

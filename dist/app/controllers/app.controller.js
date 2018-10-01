@@ -39,12 +39,13 @@ class AppController {
             return res.redirect('/');
         }
         else {
+            const { username } = req.body;
             passport.authenticate('local', (err, user) => {
                 if (err) {
                     return next(err); // will generate a 500 error
                 }
                 if (!user) {
-                    return res.render('app/login', { error: 'Usuario o contraseña incorrecta.', csrfToken: req.csrfToken() });
+                    return res.render('app/login', { username, error: 'Usuario o contraseña incorrecta.', csrfToken: req.csrfToken() });
                 }
                 req.login(user, (loginErr) => {
                     if (loginErr) {

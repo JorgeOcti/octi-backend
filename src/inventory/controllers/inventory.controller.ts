@@ -2,16 +2,18 @@ import {ObjectID} from 'bson';
 import {Response} from 'express';
 import * as GraphicsMagick from 'gm';
 import * as mongoose from 'mongoose';
+import CarModel from '../../app/models/car.model';
 import Car, {
   ICarModel
 } from '../../app/models/car.model';
-import CarModel from '../../app/models/car.model';
+import UserModel from '../../app/models/user.model';
 import VenueModel, {
   IVenueModel
 } from '../../app/models/venue.model';
 import {IRequest} from '../../interfaces/global.interface';
 import {IInventoryCar} from '../../interfaces/inventory.interface';
 import {io} from '../../server';
+import PushService from '../../services/push.service';
 import InventoryModel, {
   ChoicesStatusCarInventory,
   ChoicesStatusInventory
@@ -78,7 +80,7 @@ class InventoryController {
                 company,
                 vin: car.vin
               });
-              if (currentCar === null && car.vin && car.vin.length) {
+              if (currentCar === null && car.vin && car.vin.trim().length) {
                 currentCar = new CarModel({
                   company,
                   vin: car.vin,
@@ -110,6 +112,19 @@ class InventoryController {
         status: ChoicesStatusInventory.inProcess
       });
       await inventory.save();
+      const usersIDs = await UserModel.find({
+        venue: {
+          $in: venuesIDs
+        },
+        company
+      }, {_id: true});
+      PushService.massiveSend(
+        'Inventario',
+        'Se ha iniciado un nuevo inventario',
+        'Gonzalo ha iniciado un nuevo inventatio llamado prueba',
+         usersIDs.map((user) => user._id.toString())
+      );
+      console.log('usersIDs', usersIDs.map((user) => user._id.toString()));
       res.json({
         message: 'Inventario creado satisfactoriamente',
         status: 200

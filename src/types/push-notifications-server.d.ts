@@ -7,6 +7,8 @@ declare module '@pusher/push-notifications-server' {
   interface Iaps {
     alert: string;
     title?: string;
+    subtitle?: string;
+    sound?: string;
     body?: string;
     badge?: number;
   }
@@ -19,6 +21,7 @@ declare module '@pusher/push-notifications-server' {
     title: string;
     subtitle?: string;
     body: string;
+    sound?: string;
     badge?: number;
   }
 
