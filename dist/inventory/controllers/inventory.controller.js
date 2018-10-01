@@ -107,7 +107,7 @@ class InventoryController {
                 },
                 company
             }, { _id: true });
-            push_service_1.default.massiveSend('Inventario', 'Se ha iniciado un nuevo inventario', 'Gonzalo ha iniciado un nuevo inventatio llamado prueba', usersIDs.map((user) => user._id.toString()));
+            push_service_1.default.massiveSend('Nuevo inventario', 'Puedes empezar ha escanear autos.', 'Gonzalo ha iniciado un nuevo inventatio llamado prueba', usersIDs.map((user) => user._id.toString()));
             console.log('usersIDs', usersIDs.map((user) => user._id.toString()));
             res.json({
                 message: 'Inventario creado satisfactoriamente',
