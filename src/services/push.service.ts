@@ -1,9 +1,15 @@
 import * as PushNotifications from '@pusher/push-notifications-server';
+import * as dotenv from 'dotenv';
+import * as path from 'path';
+import logger from './logger.service';
 
 class PushService {
   protected pushNotifications: PushNotifications;
 
   constructor() {
+    dotenv.config({
+      path: path.join(__dirname, '../../.env')
+    });
     this.pushNotifications = new PushNotifications({
       instanceId: process.env.PUSHER_INSTANCE_ID ? process.env.PUSHER_INSTANCE_ID : '',
       secretKey: process.env.PUHSER_SECRET_KEY ? process.env.PUHSER_SECRET_KEY : ''
@@ -11,14 +17,20 @@ class PushService {
   }
 
   public send(title: string, subtitle: string, body: string, interests: string[]) {
+    logger.info('-----------------------PUSH---------------------------');
+    logger.info(`title, ${title}`);
+    logger.info(`subtitle, ${subtitle}`);
+    logger.info(`body, ${body}`);
+    logger.info(`interests, ${interests}`);
     this.pushNotifications.publish(interests, {
       apns: {
         aps: {
-          alert: title,
-          title,
-          subtitle,
-          sound: 'default',
-          body
+          alert: {
+            title,
+            subtitle,
+            body
+          },
+          sound: 'default'
         }
       },
       fcm: {

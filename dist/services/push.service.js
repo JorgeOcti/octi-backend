@@ -1,22 +1,34 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 const PushNotifications = require("@pusher/push-notifications-server");
+const dotenv = require("dotenv");
+const path = require("path");
+const logger_service_1 = require("./logger.service");
 class PushService {
     constructor() {
+        dotenv.config({
+            path: path.join(__dirname, '../../.env')
+        });
         this.pushNotifications = new PushNotifications({
             instanceId: process.env.PUSHER_INSTANCE_ID ? process.env.PUSHER_INSTANCE_ID : '',
             secretKey: process.env.PUHSER_SECRET_KEY ? process.env.PUHSER_SECRET_KEY : ''
         });
     }
     send(title, subtitle, body, interests) {
+        logger_service_1.default.info('-----------------------PUSH---------------------------');
+        logger_service_1.default.info(`title, ${title}`);
+        logger_service_1.default.info(`subtitle, ${subtitle}`);
+        logger_service_1.default.info(`body, ${body}`);
+        logger_service_1.default.info(`interests, ${interests}`);
         this.pushNotifications.publish(interests, {
             apns: {
                 aps: {
-                    alert: title,
-                    title,
-                    subtitle,
-                    sound: 'default',
-                    body
+                    alert: {
+                        title,
+                        subtitle,
+                        body
+                    },
+                    sound: 'default'
                 }
             },
             fcm: {

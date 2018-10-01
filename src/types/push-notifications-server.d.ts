@@ -4,12 +4,15 @@ declare module '@pusher/push-notifications-server' {
     secretKey: string;
   }
 
-  interface Iaps {
-    alert: string;
+  interface IOSAlert {
     title?: string;
     subtitle?: string;
-    sound?: string;
     body?: string;
+  }
+
+  interface Iaps {
+    alert: IOSAlert;
+    sound?: string;
     badge?: number;
   }
 
