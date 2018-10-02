@@ -255,8 +255,6 @@ class DashboardGeneralView extends React.Component<IPropsType, IStateType> {
 
   private updateCarsChart() {
     const {carsByVenue} = this.props.dashboard;
-    console.log('carsByVenue', carsByVenue);
-    //inTransit
     const legends = [];
     const series = [];
     for (const car in carsByVenue) {
@@ -281,13 +279,7 @@ class DashboardGeneralView extends React.Component<IPropsType, IStateType> {
         });
       }
     }
-    console.log('-----', carsByVenue);
     const option: echarts.EChartOption = {
-      // title : {
-      //     text: '同名数量统计',
-      //     subtext: '纯属虚构',
-      //     x:'center'
-      // },
       tooltip: {
         trigger: 'item',
         formatter: '{a} <br/>{b} : {c} ({d}%)'
@@ -298,9 +290,10 @@ class DashboardGeneralView extends React.Component<IPropsType, IStateType> {
         right: 10,
         top: 20,
         bottom: 20,
-        data: legends
-
-        // selected: data.selected
+        data: legends,
+        selected: {
+          'En transito': false
+        }
       },
       series: [
         {
