@@ -292,7 +292,7 @@ class DashboardGeneralView extends React.Component<IPropsType, IStateType> {
         bottom: 20,
         data: legends,
         selected: {
-          'En tránsito': Object.keys(carsByVenue).length > 1
+          'En tránsito': Object.keys(carsByVenue).length === 1
         }
       },
       series: [
