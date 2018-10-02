@@ -325,6 +325,31 @@ class CarController {
                     cars.push(existInImportCarsPerDay);
                 }
             }
+            /* Update Venue in lastForm*/
+            const participantWithLastForm = await car_model_1.default.find({
+                company,
+                $and: [{
+                        lastForm: {
+                            $exists: true
+                        }
+                    }, {
+                        lastForm: {
+                            $ne: null
+                        }
+                    }]
+            }).populate({
+                path: 'lastForm',
+                populate: [{
+                        path: 'user'
+                    }]
+            });
+            for (const p of participantWithLastForm) {
+                console.log('p.lastForm.user.venue', p.lastForm.user.venue);
+                console.log('p.lastForm.venue', p.lastForm.venue);
+                p.lastForm.venue = p.lastForm.user.venue;
+                p.lastForm.save();
+            }
+            /* END Update Venue in lastForm */
             res.json({
                 participants,
                 cars,

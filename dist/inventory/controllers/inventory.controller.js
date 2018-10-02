@@ -106,9 +106,10 @@ class InventoryController {
                     $in: venuesIDs
                 },
                 company
-            }, { _id: true });
-            push_service_1.default.massiveSend('Nuevo inventario', `Se ha iniciado el inventario "${inventory.name}"`, 'Ya puedes empezar ha escanear autos.', usersIDs.map((user) => user._id.toString()));
-            console.log('usersIDs', usersIDs.map((user) => user._id.toString()));
+            }, {
+                _id: true
+            });
+            push_service_1.default.massiveSend('Nuevo inventario', `Se ha iniciado el inventario "${inventory.name}"`, 'Ya puedes empezar ha escanear', usersIDs.map((user) => user._id.toString()));
             res.json({
                 message: 'Inventario creado satisfactoriamente',
                 status: 200

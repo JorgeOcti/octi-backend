@@ -127,7 +127,10 @@ app.use(passport.session());
  * Sign in using Email and Password.
  */
 passport.use(new LocalStrategy({ usernameField: 'username' }, (username, password, done) => {
-    user_model_1.default.findOne({ username: username.toLowerCase(), active: true }, (err, user) => {
+    user_model_1.default.findOne({
+        username: username.toLowerCase(),
+        active: true
+    }, (err, user) => {
         if (err) {
             return done(err);
         }

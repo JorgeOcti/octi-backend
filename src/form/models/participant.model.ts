@@ -204,6 +204,11 @@ const participantSchema = new mongoose.Schema({
     index: true
   },
 
+  venue: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Venue'
+  },
+
   description: {
     type: String,
     trim: true

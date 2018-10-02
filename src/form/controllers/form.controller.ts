@@ -254,6 +254,7 @@ class FormController {
             car,
             description: form.description,
             user: req.user._id,
+            venue: req.user.venue._id,
             active: form.active
           };
           if (form.reception && 'reception' in answers) {

@@ -92,7 +92,7 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
           heading: data.title,
           text: data.text,
           position: 'top-right',
-          loaderBg: '#bce8f1',
+          loaderBg: '#e2e2e2',
           icon: status[data.status],
           hideAfter: 5000,
           stack: 6

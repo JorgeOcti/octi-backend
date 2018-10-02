@@ -12,6 +12,7 @@ import {
   IScaleParticipantModel
 } from '../form/models/participant.model';
 import {IParticipantFile} from './participantFile.interface';
+import {IVenueModel} from "../app/models/venue.model";
 
 export interface IParticipantChoices {
   choice: string;
@@ -85,6 +86,7 @@ export interface IParticipant {
   company: ICompanyModel;
 
   user: IUserModel;
+  venue: IVenueModel;
   car: ICarModel;
 
   description: string;
