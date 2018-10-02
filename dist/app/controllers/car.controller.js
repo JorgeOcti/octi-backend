@@ -326,24 +326,34 @@ class CarController {
                 }
             }
             /* Update Venue in lastForm*/
-            // const participantWithLastForm = await CarModel.find({
-            //   $and: [{
-            //       lastForm: {
-            //         $exists: true
-            //       }
-            //     }, {
-            //       lastForm: {
-            //         $ne: null
-            //       }
-            //     }]
-            // }).populate({
-            //   path: 'lastForm',
-            //   populate: [{
-            //     path: 'user'
-            //   }]
-            // });
+            const participantWithLastForm = await car_model_1.default.find({
+                company,
+                $and: [{
+                        lastForm: {
+                            $exists: true
+                        }
+                    }, {
+                        lastForm: {
+                            $ne: null
+                        }
+                    }]
+            }, {
+                lastForm: true
+            }).populate({
+                path: 'lastForm',
+                select: ['venue', 'reception', 'shipping', 'createdAt'],
+                options: {
+                    sort: {
+                        createdAt: -1
+                    }
+                },
+                populate: [{
+                        path: 'venue',
+                        select: 'name'
+                    }]
+            });
             //
-            // for (const p of participantWithLastForm) {
+            // for (const participant of participantWithLastForm) {
             //   if (p.lastForm.user) {
             //     console.log('p.lastForm.user.venue', p.lastForm.user.venue);
             //     console.log('p.lastForm.venue', p.lastForm.venue);
@@ -353,6 +363,7 @@ class CarController {
             // }
             /* END Update Venue in lastForm */
             res.json({
+                participantWithLastForm,
                 participants,
                 cars,
                 totalCars: await car_model_1.default.count({ company }),
