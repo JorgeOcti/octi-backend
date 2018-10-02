@@ -269,9 +269,9 @@ class DashboardGeneralView extends React.Component<IPropsType, IStateType> {
           // }
         });
       } else {
-        legends.push('En transito');
+        legends.push('En tránsito');
         series.push({
-          name: 'En transito',
+          name: 'En tránsito',
           value: currentCar.cars.length
           // itemStyle: {
           //   color: this.chartsColors[0]
@@ -292,7 +292,7 @@ class DashboardGeneralView extends React.Component<IPropsType, IStateType> {
         bottom: 20,
         data: legends,
         selected: {
-          'En transito': false
+          'En tránsito': false
         }
       },
       series: [
@@ -301,6 +301,11 @@ class DashboardGeneralView extends React.Component<IPropsType, IStateType> {
           type: 'pie',
           radius: '80%',
           center: ['40%', '50%'],
+          // label: {
+          //   normal: {
+          //     position: 'inner'
+          //   }
+          // },
           data: series,
           itemStyle: {
             emphasis: {
