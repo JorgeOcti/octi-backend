@@ -326,30 +326,31 @@ class CarController {
                 }
             }
             /* Update Venue in lastForm*/
-            const participantWithLastForm = await car_model_1.default.find({
-                $and: [{
-                        lastForm: {
-                            $exists: true
-                        }
-                    }, {
-                        lastForm: {
-                            $ne: null
-                        }
-                    }]
-            }).populate({
-                path: 'lastForm',
-                populate: [{
-                        path: 'user'
-                    }]
-            });
-            for (const p of participantWithLastForm) {
-                if (p.lastForm.user) {
-                    console.log('p.lastForm.user.venue', p.lastForm.user.venue);
-                    console.log('p.lastForm.venue', p.lastForm.venue);
-                    p.lastForm.venue = p.lastForm.user.venue;
-                    p.lastForm.save();
-                }
-            }
+            // const participantWithLastForm = await CarModel.find({
+            //   $and: [{
+            //       lastForm: {
+            //         $exists: true
+            //       }
+            //     }, {
+            //       lastForm: {
+            //         $ne: null
+            //       }
+            //     }]
+            // }).populate({
+            //   path: 'lastForm',
+            //   populate: [{
+            //     path: 'user'
+            //   }]
+            // });
+            //
+            // for (const p of participantWithLastForm) {
+            //   if (p.lastForm.user) {
+            //     console.log('p.lastForm.user.venue', p.lastForm.user.venue);
+            //     console.log('p.lastForm.venue', p.lastForm.venue);
+            //     p.lastForm.venue = p.lastForm.user.venue;
+            //     p.lastForm.save();
+            //   }
+            // }
             /* END Update Venue in lastForm */
             res.json({
                 participants,
