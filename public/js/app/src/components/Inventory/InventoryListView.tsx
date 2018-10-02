@@ -144,7 +144,7 @@ class InventoryListView extends React.Component<IPropsType, IStateType> {
                                   <strong>Faltantes</strong>
                                   <h2>{inventory.results.pending}</h2>
                                 </div>
-                                <div className="col-md-4 col-xs-4 text-center text-primary">
+                                <div className="col-md-4 col-xs-4 text-center text-warning">
                                   <strong>Sobrantes</strong>
                                   <h2>{inventory.results.leftover}</h2>
                                 </div>

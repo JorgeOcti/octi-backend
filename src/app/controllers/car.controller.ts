@@ -368,7 +368,8 @@ class CarController {
               };
             }
             carsByVenue[car.lastForm.venue.name].cars.push(car._id.toString());
-          } else if (car.lastForm.shipping) {
+          // } else if (car.lastForm.shipping) {
+          } else {
             carsByVenue.inTransit.cars.push(car._id.toString());
           }
         }

@@ -285,22 +285,34 @@ class DashboardGeneralView extends React.Component<IPropsType, IStateType> {
         formatter: '{a} <br/>{b} : {c} ({d}%)'
       },
       legend: {
-        type: 'scroll',
-        orient: 'vertical',
-        right: 10,
-        top: 20,
-        bottom: 20,
+        x: 'center',
+        // type: 'scroll',
+        // orient: 'vertical',
+        // right: 10,
+        // top: 20,
+        // bottom: 20,
         data: legends,
+        // bottom: 20,
         selected: {
-          'En tránsito': Object.keys(carsByVenue).length === 1
+          ['En tránsito']: Object.keys(carsByVenue).length === 1
         }
+      },
+      grid: {
+        top: 0,
+        bottom: 100
+        // left
+        // x: 0,
+        // right
+        // x2: 10,
+        // containLabel: true
+        // borderColor: '#FF0000'
       },
       series: [
         {
           name: 'Sucursales',
           type: 'pie',
-          radius: '80%',
-          center: ['40%', '50%'],
+          // radius: '70%',
+          // center: ['40%', '50%'],
           // label: {
           //   normal: {
           //     position: 'inner'
