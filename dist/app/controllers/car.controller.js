@@ -327,7 +327,6 @@ class CarController {
             }
             /* Update Venue in lastForm*/
             const participantWithLastForm = await car_model_1.default.find({
-                company,
                 $and: [{
                         lastForm: {
                             $exists: true
