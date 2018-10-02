@@ -346,10 +346,12 @@ class CarController {
       });
 
       for (const p of participantWithLastForm) {
-        console.log('p.lastForm.user.venue', p.lastForm.user.venue);
-        console.log('p.lastForm.venue', p.lastForm.venue);
-        p.lastForm.venue = p.lastForm.user.venue;
-        p.lastForm.save();
+        if (p.lastForm.user) {
+          console.log('p.lastForm.user.venue', p.lastForm.user.venue);
+          console.log('p.lastForm.venue', p.lastForm.venue);
+          p.lastForm.venue = p.lastForm.user.venue;
+          p.lastForm.save();
+        }
       }
       /* END Update Venue in lastForm */
 
@@ -360,6 +362,7 @@ class CarController {
         status: 200
       });
     } catch (e) {
+      console.log('e', e);
       if (e) {
         res.status(500).json(e);
       }
