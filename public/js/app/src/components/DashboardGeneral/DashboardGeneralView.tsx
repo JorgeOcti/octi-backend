@@ -27,11 +27,16 @@ class DashboardGeneralView extends React.Component<IPropsType, IStateType> {
   //   getParticipantsPerDateAction: PropTypes.func.isRequired
   // };
 
-  participantsPerDayChart: any;
+  participantsPerDayChart: echarts.ECharts;
+  carsByVenueChart: echarts.ECharts;
+
+  chartsColors: string[] = ['#3085c1', '#5c4b55', '#55b188', '#4d5c99', '#c53e5a', '#f8d991'];
 
   constructor(props: IPropsType) {
     super(props);
     this.resizeCharts = this.resizeCharts.bind(this);
+    this.updateParticipantsChart = this.updateParticipantsChart.bind(this);
+    this.updateCarsChart = this.updateCarsChart.bind(this);
   }
 
   public componentWillMount(): void {
@@ -43,6 +48,13 @@ class DashboardGeneralView extends React.Component<IPropsType, IStateType> {
     window.addEventListener('resize', this.resizeCharts, false);
   }
 
+  public componentDidMount(): void {
+    const $participantPerDate = document.getElementById('participant-per-date') as HTMLDivElement;
+    const $carsByVenue = document.getElementById('cars-by-venue') as HTMLDivElement;
+    this.participantsPerDayChart = echarts.init($participantPerDate);
+    this.carsByVenueChart = echarts.init($carsByVenue);
+  }
+
   public componentDidCatch(error: Error, errorInfo: ErrorInfo): void {
     this.setState({error});
     Raven.captureException(error, {
@@ -51,103 +63,10 @@ class DashboardGeneralView extends React.Component<IPropsType, IStateType> {
   }
 
   public componentDidUpdate(prevProps: IPropsType, prevState: IStateType): void {
-    const {participantsPerDate, carsPerDate, loading} = this.props.dashboard;
-
-    const $participantPerDate = document.getElementById('participant-per-date') as HTMLDivElement;
-    const categories: any[] = [];
-    const totals: any[] = [];
-    const totalsCars: any[] = [];
-
-    if (participantsPerDate.length) {
-      participantsPerDate.forEach((day) => {
-        categories.push(day._id);
-        totals.push(day.total);
-      });
-    }
-    if (carsPerDate.length) {
-      carsPerDate.forEach((day) => {
-        totalsCars.push(day.total);
-      });
-    }
-    if ($participantPerDate && !loading) {
-      this.participantsPerDayChart = echarts.init($participantPerDate);
-      const option = {
-        // title: {
-        //   text: 'Revisiones y cargas realizadas por día',
-        //   x: 'center',
-        //   textStyle: {
-        //     align: 'center'
-        //   }
-        // },
-        tooltip: {
-          trigger: 'axis'
-        },
-        legend: {
-          x: 'center',
-          y: 'bottom',
-          data: ['Revisiones', 'Cargados']
-        },
-        xAxis: {
-          type: 'category',
-          boundaryGap: false,
-          data: categories,
-          axisLine: {
-            lineStyle: {
-              color: 'rgba(0, 0, 0, 0.5)'
-            }
-          },
-          splitLine: {
-            show: false,
-            lineStyle: {
-              type: 'dashed',
-              color: 'rgba(150, 150, 150, 0.5)'
-            }
-          },
-          axisLabel: {
-            rotate: 45
-            // fontSize: 10
-          }
-        },
-        yAxis: {
-          minInterval: 1,
-          type: 'value',
-          axisLine: {
-            lineStyle: {
-              color: 'rgba(0, 0, 0, 0.5)'
-            }
-          },
-          splitLine: {
-            show: true,
-            lineStyle: {
-              type: 'dashed',
-              color: 'rgba(150, 150, 150, 0.5)'
-            }
-          }
-        },
-        grid: {
-          top: 30,
-          // left
-          x: 40,
-          // right
-          x2: 30,
-          containLabel: true
-          // borderColor: '#FF0000'
-        },
-        series: [{
-          data: totals,
-          name: 'Revisiones',
-          type: 'line',
-          color: '#009cde',
-          smooth: true
-        }, {
-          data: totalsCars,
-          name: 'Cargados',
-          type: 'line',
-          color: '#6d7a89',
-          smooth: true
-        }]
-      };
-      this.participantsPerDayChart.setOption(option);
+    const {loading} = this.props.dashboard;
+    if (!loading) {
+      this.updateParticipantsChart();
+      this.updateCarsChart();
     }
   }
 
@@ -195,54 +114,221 @@ class DashboardGeneralView extends React.Component<IPropsType, IStateType> {
                 </div>
               </div>
             </div>
-            {/*<div className="clearfix visible-sm-block"/>*/}
-            {/*<div className="col-md-3 col-sm-6 col-xs-12">*/}
-              {/*<div className="info-box">*/}
-                {/*<span className="info-box-icon bg-green"><i className="ion ion-ios-cart-outline"/></span>*/}
-                {/*<div className="info-box-content">*/}
-                  {/*<span className="info-box-text">Sales</span>*/}
-                  {/*<span className="info-box-number">760</span>*/}
-                {/*</div>*/}
-              {/*</div>*/}
-            {/*</div>*/}
-            {/*<div className="col-md-3 col-sm-6 col-xs-12">*/}
-              {/*<div className="info-box">*/}
-                {/*<span className="info-box-icon bg-yellow"><i className="ion ion-ios-people-outline"/></span>*/}
-                {/*<div className="info-box-content">*/}
-                  {/*<span className="info-box-text">New Members</span>*/}
-                  {/*<span className="info-box-number">2,000</span>*/}
-                {/*</div>*/}
-              {/*</div>*/}
-            {/*</div>*/}
           </div>
-          <div className="box">
-            <div className="box-header with-border"><h3 className="box-title">Revisiones y cargas realizadas por día</h3>
-              <div className="box-tools pull-right">
+          <div className="row">
+            <div className="col-md-12">
+              <div className="box">
+                <div className="box-header with-border"><h3 className="box-title">Revisiones y cargas realizadas por día</h3>
+                  <div className="box-tools pull-right">
+                  </div>
+                </div>
+                <div className="box-body">
+                  <div id="participant-per-date" style={{height: '400px', maxWidth: '100%'}}/>
+                </div>
+                {
+                  loading &&
+                    <div className="overlay">
+                      <i className="fa fa-spinner fa-spin text-purple"/>
+                    </div>
+                }
               </div>
             </div>
-            <div className="box-body">
-              {
-                participantsPerDate.length ?
-                  <div id="participant-per-date" style={{height: '400px', maxWidth: '100%'}}/>
-                  : !loading ? <strong>Aún no se han realizado revisiones.</strong> : null
-              }
-            </div>
-            {/*<div className="box-footer">Footer</div>*/}
-            {
-              loading &&
-                <div className="overlay">
-                  <i className="fa fa-spinner fa-spin text-purple"/>
+            <div className="col-md-8">
+              <div className="box">
+                <div className="box-header with-border"><h3 className="box-title">Vehiculos por sucursal</h3>
+                  <div className="box-tools pull-right">
+                  </div>
                 </div>
-            }
+                <div className="box-body">
+                  <div id="cars-by-venue" style={{height: '500px', maxWidth: '100%'}}/>
+                </div>
+                {
+                  loading &&
+                    <div className="overlay">
+                      <i className="fa fa-spinner fa-spin text-purple"/>
+                    </div>
+                }
+              </div>
+            </div>
           </div>
         </section>
       </AppContainer>
     );
   }
 
+  private updateParticipantsChart() {
+    const {participantsPerDate, carsPerDate} = this.props.dashboard;
+    const categories: any[] = [];
+    const totals: any[] = [];
+    const totalsCars: any[] = [];
+
+    if (participantsPerDate.length) {
+      participantsPerDate.forEach((day) => {
+        categories.push(day._id);
+        totals.push(day.total);
+      });
+    }
+    if (carsPerDate.length) {
+      carsPerDate.forEach((day) => {
+        totalsCars.push(day.total);
+      });
+    }
+    const option: echarts.EChartOption = {
+      // title: {
+      //   text: 'Revisiones y cargas realizadas por día',
+      //   x: 'center',
+      //   textStyle: {
+      //     align: 'center'
+      //   }
+      // },
+      tooltip: {
+        trigger: 'axis'
+      },
+      legend: {
+        x: 'center',
+        y: 'bottom',
+        data: ['Revisiones', 'Cargados']
+      },
+      xAxis: {
+        type: 'category',
+        boundaryGap: false,
+        data: categories,
+        axisLine: {
+          lineStyle: {
+            color: 'rgba(0, 0, 0, 0.5)'
+          }
+        },
+        splitLine: {
+          show: false,
+          lineStyle: {
+            type: 'dashed',
+            color: 'rgba(150, 150, 150, 0.5)'
+          }
+        },
+        axisLabel: {
+          rotate: 45
+          // fontSize: 10
+        }
+      },
+      yAxis: {
+        minInterval: 1,
+        type: 'value',
+        axisLine: {
+          lineStyle: {
+            color: 'rgba(0, 0, 0, 0.5)'
+          }
+        },
+        splitLine: {
+          show: true,
+          lineStyle: {
+            type: 'dashed',
+            color: 'rgba(150, 150, 150, 0.5)'
+          }
+        }
+      },
+      grid: {
+        top: 30,
+        // left
+        x: 40,
+        // right
+        x2: 30,
+        containLabel: true
+        // borderColor: '#FF0000'
+      },
+      series: [{
+        data: totals,
+        name: 'Revisiones',
+        type: 'line',
+        color: '#009cde',
+        smooth: true
+      }, {
+        data: totalsCars,
+        name: 'Cargados',
+        type: 'line',
+        color: '#6d7a89',
+        smooth: true
+      }]
+    };
+    this.participantsPerDayChart.setOption(option);
+
+  }
+
+  private updateCarsChart() {
+    const {carsByVenue} = this.props.dashboard;
+    console.log('carsByVenue', carsByVenue);
+    //inTransit
+    const legends = [];
+    const series = [];
+    for (const car in carsByVenue) {
+      const currentCar = carsByVenue[car];
+      if (car !== 'inTransit') {
+        legends.push(car);
+        series.push({
+          name: car,
+          value: currentCar.cars.length
+          // itemStyle: {
+          //   color: this.chartsColors[0]
+          // }
+        });
+      } else {
+        legends.push('En transito');
+        series.push({
+          name: 'En transito',
+          value: currentCar.cars.length
+          // itemStyle: {
+          //   color: this.chartsColors[0]
+          // }
+        });
+      }
+    }
+    console.log('-----', carsByVenue);
+    const option: echarts.EChartOption = {
+      // title : {
+      //     text: '同名数量统计',
+      //     subtext: '纯属虚构',
+      //     x:'center'
+      // },
+      tooltip: {
+        trigger: 'item',
+        formatter: '{a} <br/>{b} : {c} ({d}%)'
+      },
+      legend: {
+        type: 'scroll',
+        orient: 'vertical',
+        right: 10,
+        top: 20,
+        bottom: 20,
+        data: legends
+
+        // selected: data.selected
+      },
+      series: [
+        {
+          name: 'Sucursales',
+          type: 'pie',
+          radius: '80%',
+          center: ['40%', '50%'],
+          data: series,
+          itemStyle: {
+            emphasis: {
+              shadowBlur: 10,
+              shadowOffsetX: 0,
+              shadowColor: 'rgba(0, 0, 0, 0.5)'
+            }
+          }
+        }
+      ]
+    };
+    this.carsByVenueChart.setOption(option);
+
+  }
+
   private resizeCharts() {
     if (this.participantsPerDayChart && this.participantsPerDayChart !== undefined) {
       this.participantsPerDayChart.resize();
+    }
+    if (this.carsByVenueChart && this.carsByVenueChart !== undefined) {
+      this.carsByVenueChart.resize();
     }
   }
 }

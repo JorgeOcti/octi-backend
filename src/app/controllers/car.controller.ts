@@ -354,37 +354,29 @@ class CarController {
           select: 'name'
         }]
       });
-      const CarsByVenue: any = {
+      const carsByVenue: any = {
         inTransit: {
           cars: []
         }
       };
-      // const legendCarVenue = [];
-      // const dataCarVenue = [];
-      //
       for (const car of carsWithLastForm) {
         if (car.lastForm.venue) {
           if (car.lastForm.reception) {
-            if (!CarsByVenue.hasOwnProperty(car.lastForm.venue.name)) {
-              CarsByVenue[car.lastForm.venue.name] = {
+            if (!carsByVenue.hasOwnProperty(car.lastForm.venue.name)) {
+              carsByVenue[car.lastForm.venue.name] = {
                 cars: []
               };
             }
-            CarsByVenue[car.lastForm.venue.name].cars.push(car._id.toString());
+            carsByVenue[car.lastForm.venue.name].cars.push(car._id.toString());
           } else if (car.lastForm.shipping) {
-            CarsByVenue.inTransit.cars.push(car._id.toString())
+            carsByVenue.inTransit.cars.push(car._id.toString());
           }
-      //     console.log('p.lastForm.user.venue', p.lastForm.user.venue);
-      //     console.log('p.lastForm.venue', p.lastForm.venue);
-      //     p.lastForm.venue = p.lastForm.user.venue;
-      //     p.lastForm.save();
         }
       }
       /* END Update Venue in lastForm */
 
       res.json({
-        carsWithLastForm,
-        CarsByVenue,
+        carsByVenue,
         participants,
         cars,
         totalCars: await CarModel.count({company}),

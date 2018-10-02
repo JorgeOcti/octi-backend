@@ -121,7 +121,6 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
 
   // public componentDidUpdate(prevProps: IPropsType, prevState: IStateType): void {
   public componentDidMount(): void {
-    document.title = 'OSA Andes | Detalle Inventario';
     const $venuesDetail = document.getElementById('chart-venues-detail') as HTMLDivElement;
     const $brandDetail = document.getElementById('chart-brand-detail') as HTMLDivElement;
     this.venuesDetailChart = echarts.init($venuesDetail);
