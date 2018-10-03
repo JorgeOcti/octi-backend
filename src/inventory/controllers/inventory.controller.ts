@@ -516,6 +516,9 @@ class InventoryController {
           finalizedAt: new Date(),
           finalizedBy: req.user._id
         });
+        io.to(`inventory-list-${company._id}`).emit('REFRESH', {
+          update: true
+        });
         res.json({
           message: 'Se ha finalizado correctamente el inventario.',
           status: 200
@@ -546,6 +549,9 @@ class InventoryController {
       });
       if (inventory) {
         await inventory.remove();
+        io.to(`inventory-list-${company._id}`).emit('REFRESH', {
+          update: true
+        });
         res.json({
           message: 'Se ha eliminado correctamente el inventario.',
           status: 200
