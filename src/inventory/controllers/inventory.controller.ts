@@ -126,6 +126,9 @@ class InventoryController {
         'Ya puedes empezar ha escanear',
          usersIDs.map((user) => user._id.toString())
       );
+      io.to(`inventory-list-${company}`).emit('REFRESH', {
+        update: true
+      });
       res.json({
         message: 'Inventario creado satisfactoriamente',
         status: 200
@@ -516,7 +519,7 @@ class InventoryController {
           finalizedAt: new Date(),
           finalizedBy: req.user._id
         });
-        io.to(`inventory-list-${company._id}`).emit('REFRESH', {
+        io.to(`inventory-list-${company}`).emit('REFRESH', {
           update: true
         });
         res.json({
@@ -549,7 +552,7 @@ class InventoryController {
       });
       if (inventory) {
         await inventory.remove();
-        io.to(`inventory-list-${company._id}`).emit('REFRESH', {
+        io.to(`inventory-list-${company}`).emit('REFRESH', {
           update: true
         });
         res.json({
