@@ -3,9 +3,44 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const moment = require("moment");
 const mongoose = require("mongoose");
 const participant_model_1 = require("../../form/models/participant.model");
+const inventory_model_1 = require("../../inventory/models/inventory.model");
 const car_model_1 = require("../models/car.model");
 class CarController {
     constructor() {
+        this.carBrands = {
+            'VF1': 'RENAULT',
+            'VF2': 'RENAULT',
+            'VF6': 'RENAULT',
+            '8A1': 'RENAULT',
+            '93Y': 'RENAULT',
+            '9FB': 'RENAULT',
+            '3BR': 'RENAULT',
+            'JC1': 'MAZDA',
+            'JMZ': 'MAZDA',
+            'JM6': 'MAZDA',
+            'JM7': 'MAZDA',
+            'PE3': 'MAZDA',
+            'MM8': 'MAZDA',
+            'MM0': 'MAZDA',
+            'MM7': 'MAZDA',
+            '1YV': 'MAZDA',
+            '3MD': 'MAZDA',
+            'JS2': 'SUZUKI',
+            'MMS': 'SUZUKI',
+            'JS3': 'SUZUKI',
+            'IJS': 'SUZUKI',
+            'TSM': 'SUZUKI',
+            'MA3': 'SUZUKI',
+            'MHY': 'SUZUKI',
+            'LJ1': 'JAC',
+            'LS4': 'CHANGAN',
+            'LSC': 'CHANGAN',
+            'LS5': 'CHANGAN',
+            'LPA': 'CHANGAN',
+            'LVR': 'CHANGAN',
+            'LVS': 'CHANGAN',
+            'LGW': 'GREAT WALL'
+        };
         this.generalDashboard = this.generalDashboard.bind(this);
         this.vinDashboard = this.vinDashboard.bind(this);
         this.vinDashboardDetail = this.vinDashboardDetail.bind(this);
@@ -49,42 +84,9 @@ class CarController {
     }
     async checkVIN(req, res) {
         let { vin, vin2 } = req.body;
-        const { multi } = req.query;
+        const { inventory } = req.body;
+        // const {multi} = req.query;
         const company = req.user.company;
-        const carBrands = {
-            'VF1': 'RENAULT',
-            'VF2': 'RENAULT',
-            'VF6': 'RENAULT',
-            '8A1': 'RENAULT',
-            '93Y': 'RENAULT',
-            '9FB': 'RENAULT',
-            '3BR': 'RENAULT',
-            'JC1': 'MAZDA',
-            'JMZ': 'MAZDA',
-            'JM6': 'MAZDA',
-            'JM7': 'MAZDA',
-            'PE3': 'MAZDA',
-            'MM8': 'MAZDA',
-            'MM0': 'MAZDA',
-            'MM7': 'MAZDA',
-            '1YV': 'MAZDA',
-            '3MD': 'MAZDA',
-            'JS2': 'SUZUKI',
-            'MMS': 'SUZUKI',
-            'JS3': 'SUZUKI',
-            'IJS': 'SUZUKI',
-            'TSM': 'SUZUKI',
-            'MA3': 'SUZUKI',
-            'MHY': 'SUZUKI',
-            'LJ1': 'JAC',
-            'LS4': 'CHANGAN',
-            'LSC': 'CHANGAN',
-            'LS5': 'CHANGAN',
-            'LPA': 'CHANGAN',
-            'LVR': 'CHANGAN',
-            'LVS': 'CHANGAN',
-            'LGW': 'GREAT WALL'
-        };
         /*
           {
             $group: {
@@ -97,43 +99,125 @@ class CarController {
             }
           }
         */
-        if (vin) {
-            vin = vin.replace(/[\W_]+/g, '');
+        if (inventory) {
             try {
-                const indexBrand = vin.slice(0, 3);
-                vin2 = vin.substr(vin.length - 6);
-                const brand = carBrands.hasOwnProperty(indexBrand) ? carBrands[indexBrand] : null;
-                const car = await car_model_1.default.findOneOrCreate({
-                    vin,
+                const cars = await car_model_1.default.find({
+                    $or: [{ vin }, { vin2 }],
                     company
                 }, {
-                    vin,
-                    vin2,
-                    company,
-                    brand
+                    vin: true,
+                    vin2: true,
+                    brand: true,
+                    color: true,
+                    denomination: true
                 });
-                res.json({
-                    data: {
-                        _id: car._id,
-                        vin: car.vin,
-                        vin2: car.vin2,
-                        brand: car.brand,
-                        color: car.color,
-                        denomination: car.denomination
-                    },
-                    status: 200
-                });
+                if (cars.length) {
+                    const carsByID = cars.reduce((acc, cur) => {
+                        acc[cur._id.toString()] = cur;
+                        return acc;
+                    }, {});
+                    const inventoriedCar = await inventory_model_1.default.findOne({
+                        _id: inventory,
+                        company,
+                        status: inventory_model_1.ChoicesStatusInventory.inProcess
+                    }, {
+                        'cars.car': true,
+                        'cars.status': true,
+                        'cars.venue': true
+                    }).populate([{
+                            path: 'cars.venue',
+                            select: ['name']
+                        }]);
+                    if (inventoriedCar) {
+                        const carsInInventory = [];
+                        for (const car of inventoriedCar.cars) {
+                            if (carsByID.hasOwnProperty(car.car)) {
+                                const carToAdd = cars.find((ci) => {
+                                    return ci._id.toString() === car.car.toString();
+                                });
+                                if (carToAdd && car.status !== inventory_model_1.ChoicesStatusCarInventory.leftover) {
+                                    carsInInventory.push({
+                                        _id: carToAdd._id,
+                                        vin: carToAdd.vin,
+                                        vin2: carToAdd.vin2,
+                                        color: carToAdd.color,
+                                        denomination: carToAdd.denomination,
+                                        status: car.status,
+                                        venue: car.venue,
+                                        brand: carToAdd.brand
+                                    });
+                                }
+                            }
+                        }
+                        if (carsInInventory.length) {
+                            res.json({
+                                data: vin2 ? carsInInventory : carsInInventory[0]
+                            });
+                        }
+                        else {
+                            res.status(400).json({
+                                message: 'VIN no válido.',
+                                status: 400
+                            });
+                        }
+                    }
+                    else {
+                        res.status(400).json({
+                            message: 'Este inventario ya no se encuentra disponible.',
+                            status: 400
+                        });
+                    }
+                }
+                else {
+                    res.status(400).json({
+                        message: 'VIN no válido.',
+                        status: 400
+                    });
+                }
             }
             catch (e) {
                 if (e) {
-                    res.status(500).send(e);
+                    res.status(500).json(e);
                 }
             }
         }
-        else if (vin2) {
-            // vin2 = vin2.replace(/[\W_]+/g, '');
-            try {
-                if (multi === 'true') {
+        else {
+            if (vin) {
+                vin = vin.replace(/[\W_]+/g, '');
+                try {
+                    const indexBrand = vin.slice(0, 3);
+                    vin2 = vin.substr(vin.length - 6);
+                    const brand = this.carBrands.hasOwnProperty(indexBrand) ? this.carBrands[indexBrand] : null;
+                    const car = await car_model_1.default.findOneOrCreate({
+                        vin,
+                        company
+                    }, {
+                        vin,
+                        vin2,
+                        company,
+                        brand
+                    });
+                    res.json({
+                        data: {
+                            _id: car._id,
+                            vin: car.vin,
+                            vin2: car.vin2,
+                            brand: car.brand,
+                            color: car.color,
+                            denomination: car.denomination
+                        },
+                        status: 200
+                    });
+                }
+                catch (e) {
+                    if (e) {
+                        res.status(500).send(e);
+                    }
+                }
+            }
+            else if (vin2) {
+                // vin2 = vin2.replace(/[\W_]+/g, '');
+                try {
                     const vinRegex = new RegExp('[a-zA-Z0]' + vin2.substr(vin2.length - 5), 'i');
                     const car = await car_model_1.default.find({
                         vin2: vin2 && vin2[0] === '0' ? { $regex: vinRegex } : vin2,
@@ -158,42 +242,18 @@ class CarController {
                         });
                     }
                 }
-                else {
-                    const car = await car_model_1.default.findOne({
-                        vin2,
-                        company
-                    }, {
-                        vin: true,
-                        vin2: true,
-                        brand: true,
-                        color: true,
-                        denomination: true
-                    });
-                    if (car) {
-                        res.json({
-                            data: car,
-                            status: 200
-                        });
-                    }
-                    else {
-                        res.status(400).json({
-                            message: 'VIN no encontrado.',
-                            status: 400
-                        });
+                catch (e) {
+                    if (e) {
+                        res.status(500).send(e);
                     }
                 }
             }
-            catch (e) {
-                if (e) {
-                    res.status(500).send(e);
-                }
+            else {
+                res.status(400).json({
+                    message: 'VIN no encontrado.',
+                    status: 400
+                });
             }
-        }
-        else {
-            res.status(400).json({
-                message: 'VIN no encontrado.',
-                status: 400
-            });
         }
     }
     async apiParticipantsPerDate(req, res) {

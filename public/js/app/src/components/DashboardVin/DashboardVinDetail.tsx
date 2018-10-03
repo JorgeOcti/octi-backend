@@ -102,7 +102,7 @@ class DashboardVinDetail extends React.Component<IPropsType, IStateType> {
               </div>
             </div>
             <div className="box-body">
-              <table style={{width: '50%'}}>
+              <table style={{width: '100%'}}>
                 <tbody>
                   <tr>
                     <td style={{padding: '5px'}}><strong>Último Checkeo</strong></td>
@@ -142,10 +142,10 @@ class DashboardVinDetail extends React.Component<IPropsType, IStateType> {
               <table className="table table-striped">
                 <thead>
                   <tr>
-                    <th style={{width: '25%'}}>Fecha</th>
-                    <th style={{width: '25%'}}>Formulario</th>
-                    <th style={{width: '25%'}} className="hidden-xs">Supervisor</th>
-                    <th style={{width: '25%'}} className="hidden-xs">Calificación</th>
+                    <th>Fecha</th>
+                    <th>Formulario</th>
+                    <th className="hidden-xs">Supervisor</th>
+                    <th className="hidden-xs">Calificación</th>
                     <th className="width-10"/>
                   </tr>
                 </thead>

@@ -120,17 +120,17 @@ class InventoryListView extends React.Component<IPropsType, IStateType> {
                           <div className="row">
                             <div className="col-md-3 col-xs-12 text-muted text-detail-user">
                               <p>
+                                <i className="fa fa-fw fa-clock-o text-success"/>Creado el {moment(inventory.createdAt).format('LLL')}<br/>
                                 {
                                   inventory.createdBy ?
-                                    <React.Fragment><i className="fa fa-fw fa-user"/>{inventory.createdBy.fullName}<br/></React.Fragment>
+                                    <React.Fragment><i className="fa fa-fw fa-user"/>Por {inventory.createdBy.fullName}<br/></React.Fragment>
                                     : null
                                 }
-                                <i className="fa fa-fw fa-clock-o text-success"/>Creado el {moment(inventory.createdAt).format('LLL')}<br/>
                                 {
                                   inventory.finalizedAt ?
                                     <React.Fragment>
-                                      {inventory.finalizedBy ? <React.Fragment><i className="fa fa-fw fa-user"/>{inventory.finalizedBy.fullName}<br/></React.Fragment> : null}
-                                      <i className="fa fa-fw fa-clock-o text-danger"/>Finalizado el {moment(inventory.finalizedAt).format('LLL')}
+                                      <i className="fa fa-fw fa-clock-o text-danger"/>Finalizado el {moment(inventory.finalizedAt).format('LLL')}<br/>
+                                      {inventory.finalizedBy ? <React.Fragment><i className="fa fa-fw fa-user"/>Por {inventory.finalizedBy.fullName}</React.Fragment> : null}
                                     </React.Fragment>
                                     : null
                                 }
