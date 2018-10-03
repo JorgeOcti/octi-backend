@@ -14,6 +14,7 @@ import {AlertReduxAction, IAlertsState} from '../../actions/alerts.action';
 import {loadDataAction, ModalReduxAction} from '../../actions/modal.action';
 import AppContainer from '../../container/AppContainer';
 import ApiService from '../../utils/axios';
+import Checkbox from "../CheckBox";
 
 interface IPropsType extends RouteComponentProps<{ ticket: string }> {
   alerts: IAlertsState;
@@ -24,6 +25,7 @@ interface IPropsType extends RouteComponentProps<{ ticket: string }> {
 interface IStateType {
   error: Error | null;
   canDrop: boolean;
+  notification: boolean;
   loadingSettings: boolean;
   carsByVenue: any;
   name: string;
@@ -43,6 +45,7 @@ class InventoryCreateView extends React.Component<IPropsType, IStateType> {
     canDrop: false,
     loadingSettings: false,
     carsByVenue: [],
+    notification: true,
     name: `Inventario del ${moment().format('YYMMDD')}`,
     sending: false
   };
@@ -58,6 +61,7 @@ class InventoryCreateView extends React.Component<IPropsType, IStateType> {
     this.dragLeaveHandler = this.dragLeaveHandler.bind(this);
     this.sendCreate = this.sendCreate.bind(this);
     this.handleChangeName = this.handleChangeName.bind(this);
+    this.handleChangeNotification = this.handleChangeNotification.bind(this);
     this.inputFile = React.createRef();
   }
 
@@ -82,7 +86,7 @@ class InventoryCreateView extends React.Component<IPropsType, IStateType> {
 
   public render(): React.ReactElement<IPropsType> {
     // const {alerts, loading} = this.props.alerts;
-    const {loadingSettings, carsByVenue, name, sending} = this.state;
+    const {loadingSettings, carsByVenue, name, sending, notification} = this.state;
     let carsInSettings = 0;
     return (
       <AppContainer title="" cMenu="2" cSubMenu="2.1" cAction="Creación">
@@ -91,7 +95,7 @@ class InventoryCreateView extends React.Component<IPropsType, IStateType> {
             <div className="box-header with-border">
               <h3 className="box-title">Creando auditoria de inventario</h3>
             </div>
-            <div className="box-body">
+            <div className="box-body margin">
               <div className="row">
                 <div className="col col-md-6">
                   <div className="form-group">
@@ -201,8 +205,9 @@ class InventoryCreateView extends React.Component<IPropsType, IStateType> {
               <div className="row">
                 <div className="col col-md-6">
                   <div className="checkbox">
-                    <label>
-                      <input type="checkbox" defaultChecked={true} /> Enviar notificaciones push
+                    <label style={{paddingLeft: '0'}} onClick={this.handleChangeNotification}>
+                      <Checkbox active={notification} action={this.handleChangeNotification} classes="icheck-in-checkbox" />
+                      Enviar notificaciones push
                     </label>
                   </div>
                 </div>
@@ -228,6 +233,12 @@ class InventoryCreateView extends React.Component<IPropsType, IStateType> {
         </section>
       </AppContainer>
     );
+  }
+
+  private handleChangeNotification() {
+    this.setState({
+      notification: !this.state.notification
+    });
   }
 
   private clickUploadFile(): void {

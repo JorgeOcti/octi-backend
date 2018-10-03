@@ -157,6 +157,7 @@ class InventoryController {
             name: '$name',
             createdBy: '$createdBy',
             createdAt: '$createdAt',
+            finalizedBy: '$finalizedBy',
             finalizedAt: '$finalizedAt'
           },
           total: {
@@ -175,8 +176,11 @@ class InventoryController {
           finalizedAt: {
             $first: '$_id.finalizedAt'
           },
-          user: {
+          createdBy: {
             $first: '$_id.createdBy'
+          },
+          finalizedBy: {
+            $first: '$_id.finalizedBy'
           },
           results: {
             $push: {
@@ -191,19 +195,26 @@ class InventoryController {
       }, {
         $lookup: {
           from: 'users',
-          localField: 'user',
+          localField: 'createdBy',
           foreignField: '_id',
-          as: 'userInfo'
+          as: 'createdBy'
         }
       }, {
-        $unwind: '$userInfo'
+        $lookup: {
+          from: 'users',
+          localField: 'finalizedBy',
+          foreignField: '_id',
+          as: 'finalizedBy'
+        }
       }, {
         $project: {
           '_id': 1,
           'name': 1,
           'results': 1,
-          'userInfo.firstName': 1,
-          'userInfo.lastName': 1,
+          'createdBy.firstName': 1,
+          'createdBy.lastName': 1,
+          'finalizedBy.firstName': 1,
+          'finalizedBy.lastName': 1,
           'status': 1,
           'createdAt': 1,
           'finalizedAt': 1
@@ -222,9 +233,11 @@ class InventoryController {
         response.push({
           _id: inventory._id,
           name: inventory.name,
-          createdBy: inventory.userInfo ? {
-            ...inventory.userInfo,
-            fullName: `${inventory.userInfo.firstName} ${inventory.userInfo.lastName}`
+          createdBy: inventory.createdBy.length ? {
+            fullName: `${inventory.createdBy[0].firstName} ${inventory.createdBy[0].lastName}`
+          } : {},
+          finalizedBy: inventory.finalizedBy.length ? {
+            fullName: `${inventory.finalizedBy[0].firstName} ${inventory.finalizedBy[0].lastName}`
           } : {},
           results: inventory.results.reduce((acc: any, cur: any) => {
             acc[cur.status] = cur.total;

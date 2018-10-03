@@ -579,9 +579,15 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
   private resizeCharts(): void {
     if (this.venuesDetailChart && this.venuesDetailChart !== undefined) {
       this.venuesDetailChart.resize();
+      setTimeout(() => {
+        this.venuesDetailChart.resize();
+      }, 400);
     }
     if (this.brandDetailChart && this.brandDetailChart !== undefined) {
       this.brandDetailChart.resize();
+      setTimeout(() => {
+        this.brandDetailChart.resize();
+      }, 400);
     }
   }
 }

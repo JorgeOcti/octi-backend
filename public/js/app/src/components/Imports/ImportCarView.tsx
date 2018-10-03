@@ -151,7 +151,7 @@ class ImportCarsView extends React.Component<IPropsType, IStateType> {
                 }
               </div>
             </div>
-            <div className="box-body">
+            <div className="box-body margin">
               <div className="row">
                 <div className="col-md-12">
                   <input type="file" ref={this.inputFile} style={{display: 'none'}} onChange={this.handleChangeInputFile} />
@@ -218,7 +218,8 @@ class ImportCarsView extends React.Component<IPropsType, IStateType> {
                     border: this.state.canDrop ? '1px solid #979797' : '1px dashed #979797',
                     padding: '100px 20px',
                     color: this.state.canDrop ? '#aebccb' : '#6e7a89',
-                    borderRadius: '5px'
+                    borderRadius: '5px',
+                    marginBottom: '10px'
                   }}>
                   <i className="fa fa-2x fa-cloud-upload"/><br/>
                   Prueba a soltanto el excel aquí, o haz click para seleccionar el excel a cargar.

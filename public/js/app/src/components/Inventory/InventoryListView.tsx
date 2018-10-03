@@ -128,8 +128,10 @@ class InventoryListView extends React.Component<IPropsType, IStateType> {
                                 <i className="fa fa-fw fa-clock-o text-success"/>Creado el {moment(inventory.createdAt).format('LLL')}<br/>
                                 {
                                   inventory.finalizedAt ?
-                                    <React.Fragment><i className="fa fa-fw fa-clock-o text-danger"/>Finalizado
-                                      el {moment(inventory.finalizedAt).format('LLL')}</React.Fragment>
+                                    <React.Fragment>
+                                      {inventory.finalizedBy ? <React.Fragment><i className="fa fa-fw fa-user"/>{inventory.finalizedBy.fullName}<br/></React.Fragment> : null}
+                                      <i className="fa fa-fw fa-clock-o text-danger"/>Finalizado el {moment(inventory.finalizedAt).format('LLL')}
+                                    </React.Fragment>
                                     : null
                                 }
                               </p>
