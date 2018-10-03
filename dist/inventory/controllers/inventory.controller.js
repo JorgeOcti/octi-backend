@@ -109,7 +109,7 @@ class InventoryController {
             }, {
                 _id: true
             });
-            push_service_1.default.massiveSend('Nuevo inventario', `Se ha iniciado el inventario "${inventory.name}"`, 'Ya puedes empezar ha escanear', usersIDs.map((user) => user._id.toString()));
+            push_service_1.default.massiveSend('Nuevo inventario', `Se ha iniciado el inventario "${inventory.name}"`, 'Ya puedes empezar a escanear', usersIDs.map((user) => user._id.toString()));
             server_1.io.to(`inventory-list-${company}`).emit('REFRESH', {
                 update: true
             });

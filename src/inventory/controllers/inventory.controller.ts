@@ -123,7 +123,7 @@ class InventoryController {
       PushService.massiveSend(
         'Nuevo inventario',
         `Se ha iniciado el inventario "${inventory.name}"`,
-        'Ya puedes empezar ha escanear',
+        'Ya puedes empezar a escanear',
          usersIDs.map((user) => user._id.toString())
       );
       io.to(`inventory-list-${company}`).emit('REFRESH', {
@@ -854,5 +854,6 @@ class InventoryController {
         });
     });
   }
+
 }
 export default new InventoryController();
