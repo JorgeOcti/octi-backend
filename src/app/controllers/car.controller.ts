@@ -157,7 +157,8 @@ class CarController {
             }
             if (carsInInventory.length) {
               res.json({
-                data: vin2 ? carsInInventory : carsInInventory[0]
+                data: vin2 ? carsInInventory : carsInInventory[0],
+                status: 200
               });
             } else {
               res.status(400).json({
