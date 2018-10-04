@@ -42,6 +42,7 @@ export interface IInventoryState {
   source: CancelTokenSource | null;
   loadingDetail: boolean;
   summary: IInventorySummary;
+  detail: any | null;
   detailByVenue: IDetailByVenue[];
   detailByBrand: IDetailByBrand[];
   pagination: {
@@ -178,16 +179,18 @@ interface ILoadInventory {
     summary: IInventorySummary;
     detailByVenue: IDetailByVenue[];
     detailByBrand: IDetailByBrand[];
+    detail: any;
   };
 }
 
-export function loadInventoryAction(summary: IInventorySummary, detailByVenue: IDetailByVenue[], detailByBrand: IDetailByBrand[]): ILoadInventory {
+export function loadInventoryAction(summary: IInventorySummary, detailByVenue: IDetailByVenue[], detailByBrand: IDetailByBrand[], detail: any): ILoadInventory {
   return {
     type: '/INVENTORORIES/LOAD_INVENTORY_DATA',
     payload: {
       summary,
       detailByVenue,
-      detailByBrand
+      detailByBrand,
+      detail
     }
   };
 }
@@ -202,7 +205,7 @@ export function getInventoryDetailAction(id: string, update: boolean) {
     api.getInventory(id)
       .then((response: AxiosResponse) => {
         const {data} = response;
-        dispatch(loadInventoryAction(data.summary, data.detailByVenue, data.detailByBrand));
+        dispatch(loadInventoryAction(data.summary, data.detailByVenue, data.detailByBrand, data.detail));
         dispatch(loadingInventoryDetaillAction(false));
       })
       .catch((err: AxiosError) => {

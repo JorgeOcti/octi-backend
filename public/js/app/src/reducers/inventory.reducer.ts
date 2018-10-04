@@ -12,6 +12,7 @@ const initialState: IInventoryState = {
     createdAt: null,
     finalizedAt: null
   },
+  detail: null,
   detailByVenue: [],
   detailByBrand: [],
   pagination: {
@@ -48,6 +49,7 @@ export function inventoriesReducer(state = initialState, action: InventoryReduxA
         ...state,
         summary: action.payload.summary,
         detailByVenue: action.payload.detailByVenue,
+        detail: action.payload.detail,
         detailByBrand: action.payload.detailByBrand
       };
     default:

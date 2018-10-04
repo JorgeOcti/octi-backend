@@ -14,7 +14,7 @@ import {AlertReduxAction, IAlertsState} from '../../actions/alerts.action';
 import {loadDataAction, ModalReduxAction} from '../../actions/modal.action';
 import AppContainer from '../../container/AppContainer';
 import ApiService from '../../utils/axios';
-import Checkbox from "../CheckBox";
+import Checkbox from '../CheckBox';
 
 interface IPropsType extends RouteComponentProps<{ ticket: string }> {
   alerts: IAlertsState;
@@ -192,7 +192,7 @@ class InventoryCreateView extends React.Component<IPropsType, IStateType> {
                       </div>
                     </div>
                     <div className="col-md-12 text-right">
-                      <button className="btn btn-sm btn-primary" onClick={this.downloadTemplate}><i className="fa fa-fw fa-download" /> Descargar Formato</button>
+                      <button className="btn btn-sm btn-primary" onClick={this.downloadTemplate}><i className="fa fa-fw fa-download"/> Descargar Formato</button>
                     </div>
                   </div>
               }
@@ -206,7 +206,7 @@ class InventoryCreateView extends React.Component<IPropsType, IStateType> {
                 <div className="col col-md-6">
                   <div className="checkbox">
                     <label style={{paddingLeft: '0'}} onClick={this.handleChangeNotification}>
-                      <Checkbox active={notification} action={this.handleChangeNotification} classes="icheck-in-checkbox" />
+                      <Checkbox active={notification} action={this.handleChangeNotification} classes="icheck-in-checkbox"/>
                       Enviar notificaciones push
                     </label>
                   </div>

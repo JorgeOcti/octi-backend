@@ -32,8 +32,12 @@ module.exports = {// entry: process.env.NODE_ENV === 'production'?['babel-polyfi
       {
         test: /\.(ts|tsx)$/,
         exclude: /node_modules/,
-        use: process.env.NODE_ENV === 'production'?[{loader: 'babel-loader'}, {loader: 'ts-loader'}]:{
-          loader: 'ts-loader'
+        use: process.env.NODE_ENV === 'production'?[{
+          loader: 'babel-loader'
+        }, {
+          loader: 'awesome-typescript-loader'
+        }]:{
+          loader: 'awesome-typescript-loader'
         }
       }
     ]

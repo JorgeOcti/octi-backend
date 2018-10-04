@@ -1,8 +1,13 @@
 ///<reference path="../../../node_modules/sweetalert/typings/sweetalert.d.ts"/>
-// import * as PropTypes from 'prop-types';
+///<reference path="../../../src/types/react-bootstrap-table-next.d.ts"/>
+///<reference path="../../../src/types/react-bootstrap-table2-filter.d.ts"/>
+///<reference path="../../../src/types/react-bootstrap-table2-paginator.d.ts"/>
 import * as Raven from 'raven-js';
 import {ErrorInfo} from 'react';
 import * as React from 'react';
+import BootstrapTable from 'react-bootstrap-table-next';
+import filterFactory, { selectFilter, textFilter } from 'react-bootstrap-table2-filter';
+import paginationFactory from 'react-bootstrap-table2-paginator';
 import {connect} from 'react-redux';
 import {RouteComponentProps} from 'react-router';
 import {Dispatch} from 'redux';
@@ -125,10 +130,15 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
     const $brandDetail = document.getElementById('chart-brand-detail') as HTMLDivElement;
     this.venuesDetailChart = echarts.init($venuesDetail);
     this.brandDetailChart = echarts.init($brandDetail);
+    // ($('#custom-filter') as any).chosen().change((e: React.ChangeEvent<HTMLSelectElement>) => {
+    //   console.log('e.target.value', e.target.value);
+    //   // this.addForm(e.target.value);
+    // });;
   }
 
   public componentDidUpdate() {
     const {loadingDetail, detailByVenue, detailByBrand} = this.props.inventories;
+    // $('#custom-filter').trigger('chosen:updated');
     const {setCharts} = this.state;
     if (!loadingDetail && !setCharts) {
       this.updateVenueChart(detailByVenue);
@@ -143,10 +153,83 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
   }
 
   public render(): React.ReactElement<IPropsType> {
-    const {loadingDetail, summary} = this.props.inventories;
+    const {loadingDetail, summary, detail} = this.props.inventories;
     const percentagePending = summary.results ? (100 / (summary.results.found + summary.results.pending + summary.results.leftover)) * summary.results.pending : 0;
     const percentageFound = summary.results ? (100 / (summary.results.found + summary.results.pending + summary.results.leftover)) * summary.results.found : 0;
     const percentageLeftover = summary.results ? (100 / (summary.results.found + summary.results.pending + summary.results.leftover)) * summary.results.leftover : 0;
+
+    const selectOptions: any = {
+      pending: 'Pendiente',
+      found: 'Encontrado',
+      leftover: 'Sobrante'
+    };
+    const columns = [{
+      dataField: 'vin',
+      text: 'VIN',
+      filter: textFilter(),
+      sort: true
+    }, {
+      dataField: 'brand',
+      text: 'Marca',
+      filter: textFilter(),
+      sort: true
+    }, {
+      dataField: 'venue',
+      text: 'Sucursal',
+      filter: textFilter(),
+      sort: true
+    }, {
+      dataField: 'venueFound',
+      text: 'Encontrado en',
+      filter: textFilter(),
+      sort: true
+    }, {
+      dataField: 'inventoriedBy',
+      text: 'Encontrado por',
+      filter: textFilter(),
+      sort: true
+    }, {
+      dataField: 'status',
+      text: 'Status',
+      sort: true,
+      formatter: (cell: string) => (selectOptions[cell]),
+      filter: selectFilter({
+        options: selectOptions,
+        // withoutEmptyOption: true,
+        placeholder: 'Seleccione tipo',
+        id: 'custom-filter'
+      }),
+      headerStyle: {
+        maxWidth: '50px'
+      }
+    }];
+    const products: any[] = [];
+    if (detail && detail.cars && detail.cars.length) {
+      for (const car of detail.cars) {
+        products.push({
+          _id: car._id,
+          vin: car.car.vin,
+          brand: car.car.brand,
+          venue: car.venue ? car.venue.name : '-',
+          venueFound: car.venueFound ? car.venueFound.name : '-',
+          inventoriedBy: car.inventoriedBy ? `${car.inventoriedBy.firstName} ${car.inventoriedBy.lastName}` : '-',
+          status: car.status
+        });
+      }
+    }
+    console.log('products', products);
+
+    const paginationOption: any = {
+      // paginationSize: 4,
+      sizePerPageList: [{
+        text: '20', value: 20
+      }, {
+        text: '10', value: 10
+      }/*, {
+        text: 'All', value: products.length
+      }*/]
+    };
+
     return (
       <AppContainer title={summary.name} cMenu="2" cSubMenu="2.1" cAction="Detalle">
         <section className="content">
@@ -236,7 +319,23 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
                 }
               </div>
             </div>
-            <div className="col-md-4">
+            <div className="col-md-12">
+              <div className="box box-info">
+                <div className="box-header with-border">
+                  <h3 className="box-title">Detalle de inventario</h3>
+                  {/*<div className="box-tools pull-right">*/}
+                  {/*</div>*/}
+                </div>
+                <div className="box-body">
+                  <BootstrapTable keyField="_id" data={ products } columns={ columns } filter={filterFactory()} pagination={paginationFactory(paginationOption)} />
+                </div>
+                {
+                  loadingDetail &&
+                  <div className="overlay">
+                    <i className="fa fa-spinner fa-spin text-purple"/>
+                  </div>
+                }
+              </div>
               {/*<div className="box box-info">*/}
                 {/*<div className="box-header with-border">*/}
                   {/*<h3 className="box-title">Visitors Report</h3>*/}

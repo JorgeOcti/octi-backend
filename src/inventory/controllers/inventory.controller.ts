@@ -395,7 +395,7 @@ class InventoryController {
               if (inventory) {
                 inventory.cars.push({
                   car: car._id,
-                  venue: req.user.venue._id,
+                  venue: inventoryCar.cars[0].venue ? inventoryCar.cars[0].venue : req.user.venue._id,
                   venueFound: req.user.venue._id,
                   images: images ? images.map((image: string) => (new ObjectID(image))) : [],
                   status: ChoicesStatusCarInventory.leftover,
@@ -813,10 +813,20 @@ class InventoryController {
           finalizedAt: currentInventory.finalizedAt ? currentInventory.finalizedAt : null
         };
         // console.log('detailByVenue', detailByVenue);
+        const detailInventory = await InventoryModel.findById(id).populate([{
+          path: 'cars.car'
+        }, {
+          path: 'cars.venue'
+        }, {
+          path: 'cars.venueFound'
+        }, {
+          path: 'cars.inventoriedBy'
+        }]);
         res.json({
           summary: response,
           detailByVenue,
           detailByBrand,
+          detail: detailInventory,
           status: 200
         });
       } else {
