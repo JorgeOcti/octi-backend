@@ -166,27 +166,37 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
     const columns = [{
       dataField: 'vin',
       text: 'VIN',
-      filter: textFilter(),
+      filter: textFilter({
+        className: 'input-sm'
+      }),
       sort: true
     }, {
       dataField: 'brand',
       text: 'Marca',
-      filter: textFilter(),
+      filter: textFilter({
+        className: 'input-sm'
+      }),
       sort: true
     }, {
       dataField: 'venue',
       text: 'Sucursal',
-      filter: textFilter(),
+      filter: textFilter({
+        className: 'input-sm'
+      }),
       sort: true
     }, {
       dataField: 'venueFound',
       text: 'Encontrado en',
-      filter: textFilter(),
+      filter: textFilter({
+        className: 'input-sm'
+      }),
       sort: true
     }, {
       dataField: 'inventoriedBy',
       text: 'Encontrado por',
-      filter: textFilter(),
+      filter: textFilter({
+        className: 'input-sm'
+      }),
       sort: true
     }, {
       dataField: 'status',
@@ -196,11 +206,13 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
       filter: selectFilter({
         options: selectOptions,
         // withoutEmptyOption: true,
+        className: 'input-sm',
         placeholder: 'Seleccione tipo',
         id: 'custom-filter'
       }),
       headerStyle: {
-        maxWidth: '50px'
+        maxWidth: '100px',
+        minWidth: '100px'
       }
     }];
     const products: any[] = [];
@@ -327,7 +339,13 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
                   {/*</div>*/}
                 </div>
                 <div className="box-body">
-                  <BootstrapTable keyField="_id" data={ products } columns={ columns } filter={filterFactory()} pagination={paginationFactory(paginationOption)} />
+                  <BootstrapTable
+                    keyField="_id"
+                    data={products}
+                    columns={columns}
+                    filter={filterFactory()}
+                    pagination={paginationFactory(paginationOption)}
+                  />
                 </div>
                 {
                   loadingDetail &&
