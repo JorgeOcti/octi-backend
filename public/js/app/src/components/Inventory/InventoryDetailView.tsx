@@ -139,6 +139,9 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
 
   public componentDidUpdate() {
     const {loadingDetail, detailByVenue, detailByBrand} = this.props.inventories;
+    $('.react-bootstrap-table-pagination div').removeClass('col-xs-6').addClass('col-xs-12').css({padding: '3px 15px'});
+    $('#pageDropDown').removeClass('btn-sm').addClass('btn-sm');
+    $('.pagination').removeClass('pagination-sm').addClass('pagination-sm').css({margin: 0});
     // $('#custom-filter').trigger('chosen:updated');
     const {setCharts} = this.state;
     if (!loadingDetail && !setCharts) {
@@ -164,6 +167,11 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
       found: 'Encontrado',
       leftover: 'Sobrante'
     };
+    const classStatus: any = {
+      pending: 'bg-red',
+      found: 'bg-green',
+      leftover: 'bg-yellow'
+    };
     const columns = [{
       dataField: 'vin',
       text: 'VIN',
@@ -177,6 +185,8 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
       filter: textFilter({
         className: 'input-sm'
       }),
+      classes: 'hidden-xs',
+      headerClasses: 'hidden-xs',
       sort: true
     }, {
       dataField: 'venue',
@@ -184,6 +194,8 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
       filter: textFilter({
         className: 'input-sm'
       }),
+      classes: 'hidden-xs',
+      headerClasses: 'hidden-xs',
       sort: true
     }, {
       dataField: 'venueFound',
@@ -191,6 +203,8 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
       filter: textFilter({
         className: 'input-sm'
       }),
+      classes: 'hidden-xs',
+      headerClasses: 'hidden-xs',
       sort: true
     }, {
       dataField: 'inventoriedBy',
@@ -198,6 +212,8 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
       filter: textFilter({
         className: 'input-sm'
       }),
+      classes: 'hidden-xs',
+      headerClasses: 'hidden-xs',
       sort: true
     }, {
       dataField: 'status',
@@ -214,6 +230,10 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
       headerStyle: {
         maxWidth: '100px',
         minWidth: '100px'
+      },
+      classes: (cell: any, row: any, rowIndex: any, colIndex: any) => {
+        // if (rowIndex % 2 === 0) return 'demo-row-even';
+        return classStatus.hasOwnProperty(cell) ? classStatus[cell] : '';
       }
     }];
     const products: any[] = [];
@@ -230,10 +250,16 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
         });
       }
     }
-    console.log('products', products);
 
+    const customTotal = (from: any, to: any, size: any) => (
+      <span className="react-bootstrap-table-pagination-total">
+        &nbsp;&nbsp;Mostrando {from} - {to}. De {size} resultados.
+      </span>
+    );
     const paginationOption: any = {
       // paginationSize: 4,
+      showTotal: true,
+      paginationTotalRenderer: customTotal,
       sizePerPageList: [{
         text: '20', value: 20
       }, {
@@ -484,8 +510,9 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
   }
 
   private export() {
-    alert('ha haaa, por desarrollar =D');
+    alert('En desarrollar =D');
   }
+
   private updateVenueChart(detailByVenue: IDetailByVenue[], update?: boolean) {
     const venuesNames: string[] = [];
     const venuesFound: number[] = [];
