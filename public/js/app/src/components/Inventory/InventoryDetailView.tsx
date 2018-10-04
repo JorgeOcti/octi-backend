@@ -65,6 +65,7 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
   constructor(props: IPropsType) {
     super(props);
     this.resizeCharts = this.resizeCharts.bind(this);
+    this.export = this.export.bind(this);
   }
 
   public componentWillMount() {
@@ -339,13 +340,22 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
                   {/*</div>*/}
                 </div>
                 <div className="box-body">
-                  <BootstrapTable
-                    keyField="_id"
-                    data={products}
-                    columns={columns}
-                    filter={filterFactory()}
-                    pagination={paginationFactory(paginationOption)}
-                  />
+                  <div className="row">
+                    <div className="col-md-12 text-right">
+                      <p><button className="btn btn-sm btn-primary" onClick={this.export}>
+                        <i className="fa fa-fw fa-download" /> Exportart excel
+                      </button></p>
+                    </div>
+                    <div className="col-md-12">
+                      <BootstrapTable
+                        keyField="_id"
+                        data={products}
+                        columns={columns}
+                        filter={filterFactory()}
+                        pagination={paginationFactory(paginationOption)}
+                      />
+                    </div>
+                  </div>
                 </div>
                 {
                   loadingDetail &&
@@ -473,6 +483,9 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
     );
   }
 
+  private export() {
+    alert('ha haaa, por desarrollar =D');
+  }
   private updateVenueChart(detailByVenue: IDetailByVenue[], update?: boolean) {
     const venuesNames: string[] = [];
     const venuesFound: number[] = [];
