@@ -335,7 +335,7 @@ class InventoryController {
                 }, {
                     'cars.$': 1
                 });
-                if (inventoriedCar) {
+                if (!inventoriedCar) {
                     res.status(400).json({
                         message: 'Este auto ya ha sido inventariado',
                         status: 400
