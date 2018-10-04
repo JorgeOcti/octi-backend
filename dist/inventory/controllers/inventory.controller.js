@@ -328,10 +328,7 @@ class InventoryController {
                         }, {
                             cars: {
                                 $elemMatch: {
-                                    car: car._id,
-                                    status: {
-                                        $ne: inventory_model_1.ChoicesStatusCarInventory.pending
-                                    }
+                                    car: car._id
                                 }
                             }
                         }]
