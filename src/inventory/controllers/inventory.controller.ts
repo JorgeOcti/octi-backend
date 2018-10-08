@@ -813,14 +813,23 @@ class InventoryController {
           finalizedAt: currentInventory.finalizedAt ? currentInventory.finalizedAt : null
         };
         // console.log('detailByVenue', detailByVenue);
-        const detailInventory = await InventoryModel.findById(id).populate([{
+        const detailInventory = await InventoryModel.findById(id,{
+          name: true,
+          status: true,
+          cars: true
+        }).populate([{
           path: 'cars.car'
         }, {
-          path: 'cars.venue'
+          path: 'cars.venue',
+          select: ['name']
         }, {
-          path: 'cars.venueFound'
+          path: 'cars.images'
         }, {
-          path: 'cars.inventoriedBy'
+          path: 'cars.venueFound',
+          select: ['name']
+        }, {
+          path: 'cars.inventoriedBy',
+          select: ['firstName', 'lastName']
         }]);
         res.json({
           summary: response,

@@ -16,6 +16,7 @@ import * as XLSX from 'xlsx';
 import {getInventoryDetailAction, IDetailByBrand, IDetailByVenue, IInventoryState, InventoryReduxAction} from '../../actions/inventory.action';
 import AppContainer from '../../container/AppContainer';
 import {IWindow} from '../../interfaces/window';
+import ImageLazyLoad from "../ImageLazyLoad";
 
 declare let window: IWindow;
 
@@ -74,6 +75,7 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
     super(props);
     this.resizeCharts = this.resizeCharts.bind(this);
     this.export = this.export.bind(this);
+    this.imagesFormatter = this.imagesFormatter.bind(this);
   }
 
   public componentWillMount() {
@@ -166,6 +168,26 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
     }
   }
 
+  public imagesFormatter(cell: string, row: any) {
+    if (row.images && row.images.length) {
+      return (
+        <span>{
+          row.images.map((image: any) => (
+            <div key={row._id} >
+              <a href={image.file.url} data-toggle="lightbox" data-gallery={row._id}>
+                <ImageLazyLoad url={image.file.url} height={'10px'} maxHeight={'35px'} maxWidth={'35px'}/>
+              </a>
+            </div>
+          ))
+        }</span>
+      );
+    } else {
+      return (
+        '-'
+      );
+    }
+  }
+
   public render(): React.ReactElement<IPropsType> {
     const {loadingDetail, summary, detail} = this.props.inventories;
     const percentagePending = summary.results ? (100 / (summary.results.found + summary.results.pending + summary.results.leftover)) * summary.results.pending : 0;
@@ -242,6 +264,15 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
       headerClasses: 'hidden-xs pointer',
       sort: true
     }, {
+      dataField: 'images',
+      text: 'Imágenes',
+      classes: 'hidden-xs',
+      headerClasses: 'hidden-xs',
+      formatter: this.imagesFormatter,
+      headerStyle: {
+        verticalAlign: 'top'
+      }
+    }, {
       dataField: 'status',
       text: 'Status',
       sort: true,
@@ -266,12 +297,16 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
     const products: any[] = [];
     if (detail && detail.cars && detail.cars.length) {
       for (const car of detail.cars) {
+        // if (car.images.length) {
+        //   console.log('car.images', car.images);
+        // }
         products.push({
           _id: car._id,
           vin: car.car.vin,
           brand: car.car.brand,
           denomination: car.car.denomination,
           venue: car.venue ? car.venue.name : '-',
+          images: car.images && car.images.length ? car.images : [],
           venueFound: car.venueFound ? car.venueFound.name : '-',
           inventoriedBy: car.inventoriedBy ? `${car.inventoriedBy.firstName} ${car.inventoriedBy.lastName}` : '-',
           status: car.status

@@ -4,6 +4,8 @@ import {CSSProperties, RefObject} from 'react';
 interface IPropsType {
   url: string;
   height: string;
+  maxHeight?: string;
+  maxWidth?: string;
 }
 
 interface IStateType {
@@ -39,11 +41,17 @@ class ImageLazyLoad extends React.Component<IPropsType, IStateType> {
 
   public render() {
     const { loading, inViewPort} = this.state;
-    const { url, height } = this.props;
+    const { url, height, maxHeight, maxWidth} = this.props;
 
     const imageStyle: CSSProperties = {};
     if (loading) {
       imageStyle.display = 'none';
+    }
+    if (maxHeight) {
+      imageStyle.maxHeight = maxHeight;
+    }
+    if (maxWidth) {
+      imageStyle.maxWidth = maxWidth;
     }
 
     return (

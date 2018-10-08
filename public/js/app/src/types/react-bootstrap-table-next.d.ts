@@ -5,7 +5,7 @@ declare module 'react-bootstrap-table-next' {
     dataField: string;
     text: string;
     filter?: any;
-    formatter?: (cell: string) => string;
+    formatter?: (cell: string, row?: any) => any;
   }
   interface IProps {
     keyField: string;
