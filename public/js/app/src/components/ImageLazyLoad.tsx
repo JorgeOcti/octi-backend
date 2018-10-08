@@ -58,7 +58,7 @@ class ImageLazyLoad extends React.Component<IPropsType, IStateType> {
     if (error) {
       return (
         <div></div>
-      )
+      );
     } else {
       return (
         <React.Fragment>
