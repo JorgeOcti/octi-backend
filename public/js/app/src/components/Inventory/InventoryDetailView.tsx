@@ -16,7 +16,7 @@ import * as XLSX from 'xlsx';
 import {getInventoryDetailAction, IDetailByBrand, IDetailByVenue, IInventoryState, InventoryReduxAction} from '../../actions/inventory.action';
 import AppContainer from '../../container/AppContainer';
 import {IWindow} from '../../interfaces/window';
-import ImageLazyLoad from "../ImageLazyLoad";
+import ImageLazyLoad from '../ImageLazyLoad';
 
 declare let window: IWindow;
 
@@ -174,8 +174,8 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
         <span>{
           row.images.map((image: any) => (
             <div key={row._id} >
-              <a href={image.file.url} data-toggle="lightbox" data-gallery={row._id}>
-                <ImageLazyLoad url={image.file.url} height={'10px'} maxHeight={'35px'} maxWidth={'35px'}/>
+              <a href={decodeURI(image.file.url)} data-toggle="lightbox" data-gallery={row._id}>
+                <ImageLazyLoad url={decodeURI(image.file.url)} height={'10px'} maxHeight={'35px'} maxWidth={'35px'}/>
               </a>
             </div>
           ))

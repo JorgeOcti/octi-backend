@@ -11,13 +11,15 @@ interface IPropsType {
 interface IStateType {
   loading: boolean;
   inViewPort: boolean;
+  error: boolean;
 }
 
 class ImageLazyLoad extends React.Component<IPropsType, IStateType> {
 
   readonly state = {
     loading: true,
-    inViewPort: false
+    inViewPort: false,
+    error: false
   };
 
   private element: RefObject<HTMLDivElement>;
@@ -40,7 +42,7 @@ class ImageLazyLoad extends React.Component<IPropsType, IStateType> {
   }
 
   public render() {
-    const { loading, inViewPort} = this.state;
+    const { loading, inViewPort, error} = this.state;
     const { url, height, maxHeight, maxWidth} = this.props;
 
     const imageStyle: CSSProperties = {};
@@ -53,29 +55,40 @@ class ImageLazyLoad extends React.Component<IPropsType, IStateType> {
     if (maxWidth) {
       imageStyle.maxWidth = maxWidth;
     }
+    if (error) {
+      return (
+        <div></div>
+      )
+    } else {
+      return (
+        <React.Fragment>
+          {
+            inViewPort &&
+              <img
+                src={url}
+                onLoad={this.handleImageLoaded}
+                onError={this.error}
+                style={imageStyle}
+              />
+          }
+          {
+            loading ?
+              <div style={{height, display: 'table-cell', verticalAlign: 'middle'}} className={'text-center'} ref={this.element}>
+                <i className={'fa fa-circle-o-notch fa-spin fa-2x'}/>
+              </div>
+            : null
+          }
 
-    return (
-      <React.Fragment>
-        {
-          inViewPort &&
-            <img
-              src={url}
-              onLoad={this.handleImageLoaded}
-              style={imageStyle}
-            />
-        }
-        {
-          loading ?
-            <div style={{height, display: 'table-cell', verticalAlign: 'middle'}} className={'text-center'} ref={this.element}>
-              <i className={'fa fa-circle-o-notch fa-spin fa-2x'}/>
-            </div>
-          : null
-        }
-
-      </React.Fragment>
-    );
+        </React.Fragment>
+      );
+    }
   }
 
+  private error() {
+    this.setState({
+      error: true
+    });
+  }
   private handleImageLoaded() {
     this.setState({ loading: false });
   }
