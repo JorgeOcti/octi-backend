@@ -463,10 +463,16 @@ class CarController {
             }, {
                 path: 'company'
             }]);
+        const cars = await car_model_1.default.find({}).populate([{
+                path: 'company'
+            }]);
         const data = [];
-        data.push(`Company|VIN|Marca|Denominacion|Usuario|formulario|venue|calificacion|fecha`);
+        data.push(`Company|VIN|Marca|Denominacion|Usuario|formulario|venue|calificacion|fecha|Cargado`);
         for (const participant of participants) {
             data.push(`${participant.company.name}|${participant.car.vin}|${participant.car.brand}|${participant.car.denomination}|${participant.user.fullName()}|${participant.form.name}|${participant.user.venue.name}|${participant.qualification.toString().replace('.', ',')}|${moment(participant.createdAt).format('DD/MM/YY HH:MM:SS')}`);
+        }
+        for (const car of cars) {
+            data.push(`${car.company.name}|${car.vin}|${car.brand}|${car.denomination}||||||${moment(car.createdAt).format('DD/MM/YY HH:MM:SS')}`);
         }
         res.send(data.join('\n'));
     }
