@@ -204,6 +204,10 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
       found: 'bg-green',
       leftover: 'bg-yellow'
     };
+    const defaultSorted = [{
+      dataField: 'status',
+      order: 'asc'
+    }];
     const columns = [{
       dataField: 'vin',
       text: 'VIN',
@@ -444,6 +448,7 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
                         columns={columns}
                         filter={filterFactory()}
                         pagination={paginationFactory(paginationOption)}
+                        defaultSorted={defaultSorted}
                       />
                     </div>
                   </div>

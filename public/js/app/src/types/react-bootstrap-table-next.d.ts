@@ -13,6 +13,7 @@ declare module 'react-bootstrap-table-next' {
     columns: IColumns[];
     filter?: () => void;
     pagination?: any;
+    defaultSorted?: any;
     rowStyle?: any;
   }
   export default class BootstrapTable extends React.Component<IProps, any> {}
