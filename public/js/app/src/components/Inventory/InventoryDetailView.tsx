@@ -3,8 +3,8 @@
 ///<reference path="../../../src/types/react-bootstrap-table2-filter.d.ts"/>
 ///<reference path="../../../src/types/react-bootstrap-table2-paginator.d.ts"/>
 import * as Raven from 'raven-js';
-import {ErrorInfo} from 'react';
 import * as React from 'react';
+import {ErrorInfo} from 'react';
 import BootstrapTable from 'react-bootstrap-table-next';
 import filterFactory, { selectFilter, textFilter } from 'react-bootstrap-table2-filter';
 import paginationFactory from 'react-bootstrap-table2-paginator';
@@ -12,6 +12,7 @@ import {connect} from 'react-redux';
 import {RouteComponentProps} from 'react-router';
 import {Dispatch} from 'redux';
 import * as io from 'socket.io-client';
+import * as XLSX from 'xlsx';
 import {getInventoryDetailAction, IDetailByBrand, IDetailByVenue, IInventoryState, InventoryReduxAction} from '../../actions/inventory.action';
 import AppContainer from '../../container/AppContainer';
 import {IWindow} from '../../interfaces/window';
@@ -60,6 +61,13 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
       }
     }
   };
+
+  private statusText: any = {
+    pending: 'Pendiente',
+    found: 'Encontrado',
+    leftover: 'Sobrante'
+  };
+
   private socket: SocketIOClient.Socket;
 
   constructor(props: IPropsType) {
@@ -139,7 +147,9 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
 
   public componentDidUpdate() {
     const {loadingDetail, detailByVenue, detailByBrand} = this.props.inventories;
+    // style react boostrap table
     $('.react-bootstrap-table-pagination div').removeClass('col-xs-6').addClass('col-xs-12').css({padding: '3px 15px'});
+    $('.react-bootstrap-table-pagination div:last').removeClass('text-right').addClass('text-right');
     $('#pageDropDown').removeClass('btn-sm').addClass('btn-sm');
     $('.pagination').removeClass('pagination-sm').addClass('pagination-sm').css({margin: 0});
     // $('#custom-filter').trigger('chosen:updated');
@@ -176,44 +186,60 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
       dataField: 'vin',
       text: 'VIN',
       filter: textFilter({
-        className: 'input-sm'
+        className: 'input-sm',
+        placeholder: ' Buscar'
       }),
+      headerClasses: 'pointer',
       sort: true
     }, {
       dataField: 'brand',
       text: 'Marca',
       filter: textFilter({
-        className: 'input-sm'
+        className: 'input-sm',
+        placeholder: ' Buscar'
       }),
       classes: 'hidden-xs',
-      headerClasses: 'hidden-xs',
+      headerClasses: 'hidden-xs pointer',
+      sort: true
+    }, {
+      dataField: 'denomination',
+      text: 'Denominación',
+      filter: textFilter({
+        className: 'input-sm',
+        placeholder: ' Buscar'
+      }),
+      classes: 'hidden-xs',
+      headerClasses: 'hidden-xs pointer',
       sort: true
     }, {
       dataField: 'venue',
       text: 'Sucursal',
       filter: textFilter({
-        className: 'input-sm'
+        className: 'input-sm',
+        placeholder: ' Buscar'
       }),
       classes: 'hidden-xs',
-      headerClasses: 'hidden-xs',
+      headerClasses: 'hidden-xs pointer',
       sort: true
     }, {
       dataField: 'venueFound',
       text: 'Encontrado en',
       filter: textFilter({
-        className: 'input-sm'
+        className: 'input-sm',
+        placeholder: ' Buscar'
       }),
       classes: 'hidden-xs',
-      headerClasses: 'hidden-xs',
+      headerClasses: 'hidden-xs pointer',
       sort: true
     }, {
       dataField: 'inventoriedBy',
       text: 'Encontrado por',
       filter: textFilter({
-        className: 'input-sm'
+        className: 'input-sm',
+        placeholder: ' Buscar'
       }),
       classes: 'hidden-xs',
-      headerClasses: 'hidden-xs',
+      headerClasses: 'hidden-xs pointer',
       sort: true
     }, {
       dataField: 'status',
@@ -227,6 +253,7 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
         placeholder: 'Seleccione tipo',
         id: 'custom-filter'
       }),
+      headerClasses: 'pointer',
       headerStyle: {
         maxWidth: '100px',
         minWidth: '100px'
@@ -243,6 +270,7 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
           _id: car._id,
           vin: car.car.vin,
           brand: car.car.brand,
+          denomination: car.car.denomination,
           venue: car.venue ? car.venue.name : '-',
           venueFound: car.venueFound ? car.venueFound.name : '-',
           inventoriedBy: car.inventoriedBy ? `${car.inventoriedBy.firstName} ${car.inventoriedBy.lastName}` : '-',
@@ -252,8 +280,8 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
     }
 
     const customTotal = (from: any, to: any, size: any) => (
-      <span className="react-bootstrap-table-pagination-total">
-        &nbsp;&nbsp;Mostrando {from} - {to}. De {size} resultados.
+      <span className="react-bootstrap-table-pagination-total text-ellipsis" style={{fontSize: '75%'}}>
+        &nbsp;&nbsp;Mostrando registros del {from} al {to} de un total de {size} registros.
       </span>
     );
     const paginationOption: any = {
@@ -261,9 +289,11 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
       showTotal: true,
       paginationTotalRenderer: customTotal,
       sizePerPageList: [{
-        text: '20', value: 20
+        text: '30', value: 30
       }, {
-        text: '10', value: 10
+        text: '50', value: 50
+      }, {
+        text: '100', value: 100
       }/*, {
         text: 'All', value: products.length
       }*/]
@@ -510,7 +540,30 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
   }
 
   private export() {
-    alert('En desarrollar =D');
+    const {detail} = this.props.inventories;
+    const data: any = [];
+    // Order data
+    if (detail && detail.cars && detail.cars.length) {
+      for (const car of detail.cars) {
+        data.push({
+          VIN: car.car.vin,
+          Marca: car.car.brand ? car.car.brand : '-',
+          ['Denominación']: car.car.denomination ? car.car.denomination : '-',
+          Color: car.car.color ? car.car.color : '-',
+          Sucursal: car.venue ? car.venue.name : '-',
+          ['Sucursal encontrado']: car.venueFound ? car.venueFound.name : '-',
+          ['Encontrado por']: car.inventoriedBy ? `${car.inventoriedBy.firstName} ${car.inventoriedBy.lastName}` : '-',
+          Status: this.statusText.hasOwnProperty(car.status) ? this.statusText[car.status] : '-'
+        });
+      }
+    }
+    /* make the worksheet */
+    const ws = XLSX.utils.json_to_sheet(data);
+    /* add to workbook */
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, 'Detalle');
+    /* generate an XLSX file */
+    XLSX.writeFile(wb, `Detalle ${detail.name}.xlsx`);
   }
 
   private updateVenueChart(detailByVenue: IDetailByVenue[], update?: boolean) {

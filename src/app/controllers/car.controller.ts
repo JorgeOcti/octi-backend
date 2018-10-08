@@ -458,9 +458,9 @@ class CarController {
       path: 'form'
     }]);
     const data = [];
-    data.push(`VIN, Marca, Denominacion, Usuario, formulario, venue, calificacion, fecha`);
+    data.push(`VIN|Marca|Denominacion|Usuario|formulario|venue|calificacion|fecha`);
     for (const participant of participants) {
-      data.push(`${participant.car.vin}|${participant.car.brand}|${participant.car.denomination}|${participant.user.fullName()}|${participant.form.name}|${participant.user.venue.name}|${participant.qualification.toString().replace('.', ',')}|${participant.createdAt}`);
+      data.push(`${participant.car.vin}|${participant.car.brand}|${participant.car.denomination}|${participant.user.fullName()}|${participant.form.name}|${participant.user.venue.name}|${participant.qualification.toString().replace('.', ',')}|${moment(participant.createdAt).format('DD/MM/YY HH:MM:SS')}`);
     }
     res.send(data.join('\n'));
   }
