@@ -297,6 +297,7 @@ export function getParticipant(id: string) {
                                 <a href={image.file.url} data-toggle="lightbox" data-gallery={'conciliation'}>
                                   <ImageLazyLoad
                                     url={image.file.url}
+                                    small={true}
                                     height={'50px'}
                                   />
                                 </a>
