@@ -6,6 +6,7 @@ interface IPropsType {
   height: string;
   maxHeight?: string;
   maxWidth?: string;
+  small?: boolean;
 }
 
 interface IStateType {
@@ -19,7 +20,7 @@ class ImageLazyLoad extends React.Component<IPropsType, IStateType> {
   readonly state = {
     loading: true,
     inViewPort: false,
-    error: false
+    error: false,
   };
 
   private element: RefObject<HTMLDivElement>;
@@ -43,7 +44,7 @@ class ImageLazyLoad extends React.Component<IPropsType, IStateType> {
 
   public render() {
     const { loading, inViewPort, error} = this.state;
-    const { url, height, maxHeight, maxWidth} = this.props;
+    const { url, height, maxHeight, maxWidth, small} = this.props;
 
     const imageStyle: CSSProperties = {};
     if (loading) {
@@ -74,7 +75,7 @@ class ImageLazyLoad extends React.Component<IPropsType, IStateType> {
           {
             loading ?
               <div style={{height, display: 'table-cell', verticalAlign: 'middle'}} className={'text-center'} ref={this.element}>
-                <i className={'fa fa-circle-o-notch fa-spin fa-2x'}/>
+                {small ? <i className={'fa fa-circle-o-notch fa-spin'}/> : <i className={'fa fa-circle-o-notch fa-spin fa-2x'}/>}
               </div>
             : null
           }

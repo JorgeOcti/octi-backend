@@ -175,7 +175,7 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
           row.images.map((image: any) => (
             <div key={image._id} className={'col-md-3 images-25 text-center'}>
               <a href={decodeURI(image.file.url)} data-toggle="lightbox" data-gallery={row._id}>
-                <ImageLazyLoad url={decodeURI(image.file.url)} height={'10px'} maxHeight={'35px'} maxWidth={'35px'}/>
+                <ImageLazyLoad url={decodeURI(image.file.url)} height={'10px'} maxHeight={'35px'} maxWidth={'35px'} small={true}/>
               </a>
             </div>
           ))
