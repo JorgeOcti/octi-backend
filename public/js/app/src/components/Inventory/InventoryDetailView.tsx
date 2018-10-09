@@ -190,6 +190,7 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
 
   public render(): React.ReactElement<IPropsType> {
     const {loadingDetail, summary, detail} = this.props.inventories;
+
     const percentagePending = summary.results ? (100 / (summary.results.found + summary.results.pending + summary.results.leftover)) * summary.results.pending : 0;
     const percentageFound = summary.results ? (100 / (summary.results.found + summary.results.pending + summary.results.leftover)) * summary.results.found : 0;
     const percentageLeftover = summary.results ? (100 / (summary.results.found + summary.results.pending + summary.results.leftover)) * summary.results.leftover : 0;
@@ -215,6 +216,7 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
         className: 'input-sm',
         placeholder: ' Buscar'
       }),
+      classes: 'text-ellipsis',
       headerClasses: 'pointer',
       sort: true
     }, {
@@ -294,16 +296,12 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
         minWidth: '100px'
       },
       classes: (cell: any, row: any, rowIndex: any, colIndex: any) => {
-        // if (rowIndex % 2 === 0) return 'demo-row-even';
         return classStatus.hasOwnProperty(cell) ? classStatus[cell] : '';
       }
     }];
     const products: any[] = [];
     if (detail && detail.cars && detail.cars.length) {
       for (const car of detail.cars) {
-        // if (car.images.length) {
-        //   console.log('car.images', car.images);
-        // }
         products.push({
           _id: car._id,
           vin: car.car.vin,
