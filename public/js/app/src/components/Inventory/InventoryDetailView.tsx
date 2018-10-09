@@ -407,7 +407,7 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
             }
           </div>
           <div className="row">
-            <div className="col-md-8">
+            <div className="col-md-12">
               <div className="box box-success">
                 <div className="box-header with-border">
                   <h3 className="box-title">Detalle de inventario por Marca</h3>
@@ -735,7 +735,10 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
     }
     const optionBrands: echarts.EChartOption = {
       tooltip: {
-        trigger: 'axis'
+        trigger: 'axis',
+        axisPointer: {
+          type: 'shadow'
+        }
       },
       legend: {
         x: 'center',
@@ -744,7 +747,7 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
       },
       xAxis: {
         type: 'category',
-        boundaryGap: false,
+        // boundaryGap: false,
         data: brandNames,
         axisLine: {
           lineStyle: {
@@ -786,21 +789,21 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
         data: brandFound,
         name: 'Encontrados',
         // label: labelOption,
-        type: 'line',
+        type: 'bar',
         color: '#00aa51',
         areaStyle: {}
         // smooth: true
       }, {
         data: brandPending,
         name: 'Faltantes',
-        type: 'line',
+        type: 'bar',
         color: '#f1392c',
         areaStyle: {}
         // smooth: true
       }, {
         data: brandLeftover,
         name: 'Sobrantes',
-        type: 'line',
+        type: 'bar',
         color: '#ff9600',
         areaStyle: {}
         // smooth: true
