@@ -809,7 +809,8 @@ class InventoryController {
             const defaultResults = {
                 [inventory_model_1.ChoicesStatusCarInventory.pending]: 0,
                 [inventory_model_1.ChoicesStatusCarInventory.found]: 0,
-                [inventory_model_1.ChoicesStatusCarInventory.leftover]: 0
+                [inventory_model_1.ChoicesStatusCarInventory.leftover]: 0,
+                [inventory_model_1.ChoicesStatusCarInventory.reported]: 0
             };
             for (const db of detailByBrands) {
                 detailByBrand.push({
