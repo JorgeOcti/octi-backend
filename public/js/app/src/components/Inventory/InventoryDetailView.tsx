@@ -103,7 +103,8 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
       if (data.update) {
         const status: any = {
           found: 'success',
-          leftover: 'warning'
+          leftover: 'warning',
+          reported: 'grey'
         };
         ($ as any).toast({
           heading: data.title,
@@ -300,7 +301,7 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
         minWidth: '100px'
       },
       classes: (cell: any, row: any, rowIndex: any, colIndex: any) => {
-        return classStatus.hasOwnProperty(cell) ? classStatus[cell] : '';
+        return `text-center ${classStatus.hasOwnProperty(cell) ? classStatus[cell] : ''}`;
       }
     }];
     const products: any[] = [];

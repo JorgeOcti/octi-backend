@@ -602,6 +602,13 @@ class InventoryController {
           status: ChoicesStatusCarInventory.reported
         });
         await inventory.save();
+        const textNotification = `${req.user.firstName} ${req.user.lastName} encontró ${newCar.brand} (${newCar.denomination}) en ${venue.name}.`;
+        io.to(`inventory-detail-${inventory._id}`).emit('REFRESH', {
+          title: 'Vehiculo encontrado',
+          text: textNotification,
+          status: ChoicesStatusCarInventory.reported,
+          update: true
+        });
         res.json({
           message: 'Se ha generado el reporte correctamente.',
           status: 200
