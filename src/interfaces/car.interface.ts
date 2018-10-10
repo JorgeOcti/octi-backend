@@ -14,6 +14,7 @@ export interface ICar {
   company: ICompany | any;
   lastForm: IParticipant | any;
   participants?: IParticipant[];
+  status: string;
   updatedAt: Date;
   createdAt: Date;
 }

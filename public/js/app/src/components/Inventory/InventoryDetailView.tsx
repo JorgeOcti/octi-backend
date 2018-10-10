@@ -201,7 +201,9 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
     const selectOptions: any = {
       pending: 'Pendiente',
       found: 'Encontrado',
-      leftover: 'Sobrante',
+      leftover: 'Sobrante'
+    };
+    const selectOptionsReported: any = {
       reported: 'Reportado'
     };
     const classStatus: any = {
@@ -214,7 +216,8 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
       dataField: 'status',
       order: 'asc'
     }];
-    const columns = [{
+
+    const defaultColumns = [{
       dataField: 'vin',
       text: 'VIN',
       filter: textFilter({
@@ -283,7 +286,8 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
       headerStyle: {
         verticalAlign: 'top'
       }
-    }, {
+    }];
+    const columns = [...defaultColumns, {
       dataField: 'status',
       text: 'Status',
       sort: true,
@@ -304,6 +308,28 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
         return `text-center ${classStatus.hasOwnProperty(cell) ? classStatus[cell] : ''}`;
       }
     }];
+    const columnsReported = [...defaultColumns, {
+      dataField: 'status',
+      text: 'Status',
+      sort: true,
+      formatter: (cell: string) => (selectOptionsReported[cell]),
+      filter: selectFilter({
+        options: selectOptionsReported,
+        // withoutEmptyOption: true,
+        className: 'input-sm',
+        placeholder: 'Seleccione tipo',
+        id: 'custom-filter'
+      }),
+      headerClasses: 'pointer',
+      headerStyle: {
+        maxWidth: '100px',
+        minWidth: '100px'
+      },
+      classes: (cell: any, row: any, rowIndex: any, colIndex: any) => {
+        return `text-center ${classStatus.hasOwnProperty(cell) ? classStatus[cell] : ''}`;
+      }
+    }];
+
     const products: any[] = [];
     const reported: any[] = [];
     if (detail && detail.cars && detail.cars.length) {
@@ -472,7 +498,7 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
                 <div className="box-body">
                   <div className="row">
                     <div className="col-md-12 text-right">
-                      <p><button className="btn btn-sm btn-primary" onClick={this.export}>
+                      <p><button className="btn btn-sm btn-primary" onClick={() => this.export(['pending', 'found', 'leftover'])}>
                         <i className="fa fa-fw fa-download" /> Exportart excel
                       </button></p>
                     </div>
@@ -505,19 +531,20 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
                 </div>
                 <div className="box-body">
                   <div className="row">
-                    {/*<div className="col-md-12 text-right">*/}
-                      {/*<p><button className="btn btn-sm btn-primary" onClick={this.export}>*/}
-                        {/*<i className="fa fa-fw fa-download" /> Exportart excel*/}
-                      {/*</button></p>*/}
-                    {/*</div>*/}
+                    <div className="col-md-12 text-right">
+                      <p><button className="btn btn-sm btn-primary" onClick={() => this.export(['reported'])}>
+                        <i className="fa fa-fw fa-download" /> Exportart excel
+                      </button></p>
+                    </div>
                     <div className="col-md-12">
                       <BootstrapTable
                         keyField="_id"
                         data={reported}
-                        columns={columns}
+                        columns={columnsReported}
                         filter={filterFactory()}
                         pagination={paginationFactory(paginationOption)}
                         defaultSorted={defaultSorted}
+                        noDataIndication={'No hay vehiculos reportados aún.'}
                       />
                     </div>
                   </div>
@@ -603,22 +630,24 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
     );
   }
 
-  private export() {
+  private export(status: string[]) {
     const {detail} = this.props.inventories;
     const data: any = [];
     // Order data
     if (detail && detail.cars && detail.cars.length) {
       for (const car of detail.cars) {
-        data.push({
-          VIN: car.car.vin,
-          Marca: car.car.brand ? car.car.brand : '-',
-          ['Denominación']: car.car.denomination ? car.car.denomination : '-',
-          Color: car.car.color ? car.car.color : '-',
-          Sucursal: car.venue ? car.venue.name : '-',
-          ['Sucursal encontrado']: car.venueFound ? car.venueFound.name : '-',
-          ['Encontrado por']: car.inventoriedBy ? `${car.inventoriedBy.firstName} ${car.inventoriedBy.lastName}` : '-',
-          Status: this.statusText.hasOwnProperty(car.status) ? this.statusText[car.status] : '-'
-        });
+        if (status.includes(car.status)) {
+          data.push({
+            VIN: car.car.vin,
+            Marca: car.car.brand ? car.car.brand : '-',
+            ['Denominación']: car.car.denomination ? car.car.denomination : '-',
+            Color: car.car.color ? car.car.color : '-',
+            Sucursal: car.venue ? car.venue.name : '-',
+            ['Sucursal encontrado']: car.venueFound ? car.venueFound.name : '-',
+            ['Encontrado por']: car.inventoriedBy ? `${car.inventoriedBy.firstName} ${car.inventoriedBy.lastName}` : '-',
+            Status: this.statusText.hasOwnProperty(car.status) ? this.statusText[car.status] : '-'
+          });
+        }
       }
     }
     /* make the worksheet */
