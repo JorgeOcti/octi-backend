@@ -392,7 +392,7 @@ class InventoryController {
                                 await inventory.save();
                             }
                             server_1.io.to(`inventory-detail-${inventoryCar._id}`).emit('REFRESH', {
-                                title: 'Vehiculo encontrado',
+                                title: 'Vehículo encontrado',
                                 text: textNotification,
                                 status: inventory_model_1.ChoicesStatusCarInventory.leftover,
                                 update: true
@@ -426,7 +426,7 @@ class InventoryController {
                                 update: true
                             });
                             server_1.io.to(`inventory-detail-${inventory._id}`).emit('REFRESH', {
-                                title: 'Vehiculo encontrado',
+                                title: 'Vehículo encontrado',
                                 text: textNotification,
                                 status: inventory_model_1.ChoicesStatusCarInventory.leftover,
                                 update: true
@@ -438,7 +438,7 @@ class InventoryController {
                         else {
                             // if inventory no exist
                             res.status(400).json({
-                                message: 'Este inventario ya no se encuentra activo',
+                                message: 'Este inventario ya no se encuentra activo.',
                                 status: 400
                             });
                         }
@@ -596,7 +596,7 @@ class InventoryController {
                 await inventory.save();
                 const textNotification = `${req.user.firstName} ${req.user.lastName} encontró ${newCar.brand} (${newCar.denomination}) en ${venue.name}.`;
                 server_1.io.to(`inventory-detail-${inventory._id}`).emit('REFRESH', {
-                    title: 'Vehiculo encontrado',
+                    title: 'Vehículo reportado',
                     text: textNotification,
                     status: inventory_model_1.ChoicesStatusCarInventory.reported,
                     update: true

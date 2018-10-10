@@ -405,7 +405,7 @@ class InventoryController {
                 await inventory.save();
               }
               io.to(`inventory-detail-${inventoryCar._id}`).emit('REFRESH', {
-                title: 'Vehiculo encontrado',
+                title: 'Vehículo encontrado',
                 text: textNotification,
                 status: ChoicesStatusCarInventory.leftover,
                 update: true
@@ -438,7 +438,7 @@ class InventoryController {
                 update: true
               });
               io.to(`inventory-detail-${inventory._id}`).emit('REFRESH', {
-                title: 'Vehiculo encontrado',
+                title: 'Vehículo encontrado',
                 text: textNotification,
                 status: ChoicesStatusCarInventory.leftover,
                 update: true
@@ -449,7 +449,7 @@ class InventoryController {
             } else {
               // if inventory no exist
               res.status(400).json({
-                message: 'Este inventario ya no se encuentra activo',
+                message: 'Este inventario ya no se encuentra activo.',
                 status: 400
               });
             }
@@ -605,7 +605,7 @@ class InventoryController {
         await inventory.save();
         const textNotification = `${req.user.firstName} ${req.user.lastName} encontró ${newCar.brand} (${newCar.denomination}) en ${venue.name}.`;
         io.to(`inventory-detail-${inventory._id}`).emit('REFRESH', {
-          title: 'Vehiculo encontrado',
+          title: 'Vehículo reportado',
           text: textNotification,
           status: ChoicesStatusCarInventory.reported,
           update: true
