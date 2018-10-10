@@ -577,6 +577,7 @@ class InventoryController {
             if (inventory) {
                 const newCar = new car_model_1.default({
                     vin,
+                    vin2: vin.substr(vin.length - 6),
                     denomination,
                     brand,
                     color,
