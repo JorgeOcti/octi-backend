@@ -244,8 +244,8 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
         className: 'input-sm',
         placeholder: ' Buscar'
       }),
-      classes: 'hidden-xs',
-      headerClasses: 'hidden-xs pointer',
+      classes: 'hidden-xs hidden-sm ',
+      headerClasses: 'hidden-xs hidden-sm pointer',
       sort: true
     }, {
       dataField: 'venue',
@@ -267,17 +267,19 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
       classes: 'hidden-xs',
       headerClasses: 'hidden-xs pointer',
       sort: true
-    }, {
-      dataField: 'inventoriedBy',
-      text: 'Encontrado por',
-      filter: textFilter({
-        className: 'input-sm',
-        placeholder: ' Buscar'
-      }),
-      classes: 'hidden-xs',
-      headerClasses: 'hidden-xs pointer',
-      sort: true
-    }, {
+    },
+    // {
+    //   dataField: 'inventoriedBy',
+    //   text: 'Encontrado por',
+    //   filter: textFilter({
+    //     className: 'input-sm',
+    //     placeholder: ' Buscar'
+    //   }),
+    //   classes: 'hidden-xs',
+    //   headerClasses: 'hidden-xs pointer',
+    //   sort: true
+    // },
+    {
       dataField: 'images',
       text: 'Imágenes',
       classes: 'hidden-xs',
