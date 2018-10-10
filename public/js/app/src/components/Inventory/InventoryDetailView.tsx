@@ -411,7 +411,7 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
               </div>
             </div>
             <div className="col-md-3">
-              <div className="info-box bg-gray-light">
+              <div className="info-box bg-gray">
                 <span className="info-box-icon"><i className="fa fa-bookmark" /></span>
                 <div className="info-box-content">
                   <span className="info-box-text">Reportados</span>
