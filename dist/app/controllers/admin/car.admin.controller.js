@@ -1,6 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 const server_1 = require("../../../server");
+const car_model_1 = require("../../models/car.model");
 class AdminCarController {
     constructor() {
         this.index = this.index.bind(this);
@@ -132,7 +133,7 @@ class AdminCarController {
         }
     }
     getCars(company, options, search) {
-        let filter = { company };
+        let filter = { company, status: { $ne: car_model_1.ChoicesStatusCar.inventory } };
         if (search && search.length) {
             const searchText = new RegExp(search, 'i');
             filter = {
@@ -165,6 +166,5 @@ class AdminCarController {
         });
     }
 }
-const car_model_1 = require("../../models/car.model");
 exports.default = new AdminCarController();
 //# sourceMappingURL=car.admin.controller.js.map

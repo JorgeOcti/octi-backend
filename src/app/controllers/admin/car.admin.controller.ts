@@ -3,6 +3,8 @@ import {Response} from 'express';
 import {PaginateOptions, PaginateResult} from 'mongoose';
 import {IRequest} from '../../../interfaces/global.interface';
 import {io} from '../../../server';
+import Car, {ChoicesStatusCar, ICarModel} from '../../models/car.model';
+
 class AdminCarController {
 
   constructor() {
@@ -134,7 +136,7 @@ class AdminCarController {
   }
 
   private getCars(company: ObjectID, options: PaginateOptions, search?: string): Promise<PaginateResult<ICarModel>> {
-    let filter: any = {company};
+    let filter: any = {company, status: {$ne: ChoicesStatusCar.inventory}};
 
     if (search && search.length) {
       const searchText = new RegExp(search, 'i');
@@ -170,6 +172,5 @@ class AdminCarController {
   }
 }
 
-import Car, {ICarModel} from '../../models/car.model';
 
 export default new AdminCarController();
