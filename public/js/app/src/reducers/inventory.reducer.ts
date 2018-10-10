@@ -4,7 +4,7 @@ const initialState: IInventoryState = {
   inventories: [],
   loading: true,
   source: null,
-  loadingDetail: false,
+  loadingDetail: true,
   summary: {
     _id: '',
     name: '',

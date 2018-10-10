@@ -2,7 +2,7 @@ import {ObjectID} from 'bson';
 import {Response} from 'express';
 import * as GraphicsMagick from 'gm';
 import * as mongoose from 'mongoose';
-import CarModel from '../../app/models/car.model';
+import CarModel, {ChoicesStatusCar} from '../../app/models/car.model';
 import Car, {
   ICarModel
 } from '../../app/models/car.model';
@@ -34,6 +34,7 @@ class InventoryController {
     this.autoRotate = this.autoRotate.bind(this);
     this.finishInventory = this.finishInventory.bind(this);
     this.deleteInventory = this.deleteInventory.bind(this);
+    this.reportCar = this.reportCar.bind(this);
   }
 
   public async index(req: IRequest, res: Response) {
@@ -568,6 +569,53 @@ class InventoryController {
       console.log('e', e);
       res.status(400).json({
         message: 'Ha ocurrido un error',
+        status: 400
+      });
+    }
+  }
+
+  public async reportCar(req: IRequest, res: Response) {
+    const {company, venue} = req.user;
+    const {id} = req.params;
+    const {vin, denomination, brand, color, images} = req.body;
+    try {
+      const inventory = await InventoryModel.findOne({
+        _id: id,
+        company
+      });
+      if (inventory) {
+        const newCar = new CarModel({
+          vin,
+          denomination,
+          brand,
+          color,
+          company,
+          status: ChoicesStatusCar.inventory
+        });
+        await newCar.save();
+        inventory.cars.push({
+          car: newCar,
+          venue,
+          venueFound: venue,
+          inventoriedBy: req.user._id,
+          images:  images ? images.map((image: string) => (new ObjectID(image))) : [],
+          status: ChoicesStatusCarInventory.reported
+        });
+        await inventory.save();
+        res.json({
+          message: 'Se ha generado el reporte correctamente.',
+          status: 200
+        });
+      } else {
+        res.status(400).json({
+          message: 'Este inventario ya no se encuentra disponible.',
+          status: 400
+        });
+      }
+    } catch (e) {
+      console.log(e);
+      res.status(400).json({
+        message: e,
         status: 400
       });
     }

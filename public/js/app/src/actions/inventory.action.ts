@@ -14,6 +14,7 @@ export interface IInventorySummary {
     pending: number;
     found: number;
     leftover: number;
+    reported: number;
   };
   status: string;
   createdAt: Date | null;
@@ -25,6 +26,7 @@ export interface IDetailByVenue {
     pending: number;
     found: number;
     leftover: number;
+    reported: number;
   };
 }
 export interface IDetailByBrand {
@@ -33,6 +35,7 @@ export interface IDetailByBrand {
     pending: number;
     found: number;
     leftover: number;
+    reported: number;
   };
 }
 

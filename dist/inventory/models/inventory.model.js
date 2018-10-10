@@ -6,11 +6,13 @@ var ChoicesStatusCarInventory;
     ChoicesStatusCarInventory["pending"] = "pending";
     ChoicesStatusCarInventory["found"] = "found";
     ChoicesStatusCarInventory["leftover"] = "leftover";
+    ChoicesStatusCarInventory["reported"] = "reported";
 })(ChoicesStatusCarInventory = exports.ChoicesStatusCarInventory || (exports.ChoicesStatusCarInventory = {}));
 exports.choicesStatusCarInventory = [
     ChoicesStatusCarInventory.pending,
     ChoicesStatusCarInventory.found,
-    ChoicesStatusCarInventory.leftover
+    ChoicesStatusCarInventory.leftover,
+    ChoicesStatusCarInventory.reported
 ];
 const inventoryCarSchema = new mongoose.Schema({
     car: {

@@ -9,12 +9,14 @@ export interface IInventoryCarModel extends IInventoryCar, mongoose.Types.Subdoc
 export enum ChoicesStatusCarInventory {
   pending = 'pending',
   found = 'found',
-  leftover = 'leftover'
+  leftover = 'leftover',
+  reported = 'reported'
 }
 export const choicesStatusCarInventory = [
   ChoicesStatusCarInventory.pending,
   ChoicesStatusCarInventory.found,
-  ChoicesStatusCarInventory.leftover
+  ChoicesStatusCarInventory.leftover,
+  ChoicesStatusCarInventory.reported
 ];
 const inventoryCarSchema = new mongoose.Schema({
   car: {

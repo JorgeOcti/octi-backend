@@ -24,6 +24,7 @@ class InventoryController {
         this.autoRotate = this.autoRotate.bind(this);
         this.finishInventory = this.finishInventory.bind(this);
         this.deleteInventory = this.deleteInventory.bind(this);
+        this.reportCar = this.reportCar.bind(this);
     }
     async index(req, res) {
         res.render('app/index', { token: await req.user.generateToken() });
@@ -560,6 +561,54 @@ class InventoryController {
             console.log('e', e);
             res.status(400).json({
                 message: 'Ha ocurrido un error',
+                status: 400
+            });
+        }
+    }
+    async reportCar(req, res) {
+        const { company, venue } = req.user;
+        const { id } = req.params;
+        const { vin, denomination, brand, color, images } = req.body;
+        try {
+            const inventory = await inventory_model_1.default.findOne({
+                _id: id,
+                company
+            });
+            if (inventory) {
+                const newCar = new car_model_1.default({
+                    vin,
+                    denomination,
+                    brand,
+                    color,
+                    company,
+                    status: car_model_1.ChoicesStatusCar.inventory
+                });
+                await newCar.save();
+                inventory.cars.push({
+                    car: newCar,
+                    venue,
+                    venueFound: venue,
+                    inventoriedBy: req.user._id,
+                    images: images ? images.map((image) => (new bson_1.ObjectID(image))) : [],
+                    status: inventory_model_1.ChoicesStatusCarInventory.reported
+                });
+                await inventory.save();
+                res.json({
+                    message: 'Se ha generado el reporte correctamente.',
+                    status: 200
+                });
+            }
+            else {
+                res.status(400).json({
+                    message: 'Este inventario ya no se encuentra disponible.',
+                    status: 400
+                });
+            }
+        }
+        catch (e) {
+            console.log(e);
+            res.status(400).json({
+                message: e,
                 status: 400
             });
         }

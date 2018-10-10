@@ -66,7 +66,8 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
   private statusText: any = {
     pending: 'Pendiente',
     found: 'Encontrado',
-    leftover: 'Sobrante'
+    leftover: 'Sobrante',
+    reported: 'Reportado'
   };
 
   private socket: SocketIOClient.Socket;
@@ -151,7 +152,7 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
     const {loadingDetail, detailByVenue, detailByBrand} = this.props.inventories;
     // style react boostrap table
     $('.react-bootstrap-table-pagination div').removeClass('col-xs-6').addClass('col-xs-12').css({padding: '3px 15px'});
-    $('.react-bootstrap-table-pagination div:last').removeClass('text-right').addClass('text-right');
+    $('.react-bootstrap-table-pagination div:last-child').removeClass('text-right').addClass('text-right');
     $('#pageDropDown').removeClass('btn-sm').addClass('btn-sm');
     $('.pagination').removeClass('pagination-sm').addClass('pagination-sm').css({margin: 0});
     // $('#custom-filter').trigger('chosen:updated');
@@ -190,20 +191,23 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
 
   public render(): React.ReactElement<IPropsType> {
     const {loadingDetail, summary, detail} = this.props.inventories;
-
-    const percentagePending = summary.results ? (100 / (summary.results.found + summary.results.pending + summary.results.leftover)) * summary.results.pending : 0;
-    const percentageFound = summary.results ? (100 / (summary.results.found + summary.results.pending + summary.results.leftover)) * summary.results.found : 0;
-    const percentageLeftover = summary.results ? (100 / (summary.results.found + summary.results.pending + summary.results.leftover)) * summary.results.leftover : 0;
+    const totalCars = summary.results ? summary.results.found + summary.results.pending + summary.results.leftover + summary.results.reported : 0;
+    const percentagePending = summary.results ? (100 / totalCars) * summary.results.pending : 0;
+    const percentageFound = summary.results ? (100 / totalCars) * summary.results.found : 0;
+    const percentageLeftover = summary.results ? (100 / totalCars) * summary.results.leftover : 0;
+    const percentageReported = summary.results ? (100 / totalCars) * summary.results.reported : 0;
 
     const selectOptions: any = {
       pending: 'Pendiente',
       found: 'Encontrado',
-      leftover: 'Sobrante'
+      leftover: 'Sobrante',
+      reported: 'Reportado'
     };
     const classStatus: any = {
       pending: 'bg-red',
       found: 'bg-green',
-      leftover: 'bg-yellow'
+      leftover: 'bg-yellow',
+      reported: 'bg-gray'
     };
     const defaultSorted = [{
       dataField: 'status',
@@ -300,19 +304,34 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
       }
     }];
     const products: any[] = [];
+    const reported: any[] = [];
     if (detail && detail.cars && detail.cars.length) {
       for (const car of detail.cars) {
-        products.push({
-          _id: car._id,
-          vin: car.car.vin,
-          brand: car.car.brand,
-          denomination: car.car.denomination,
-          venue: car.venue ? car.venue.name : '-',
-          images: car.images && car.images.length ? car.images : [],
-          venueFound: car.venueFound ? car.venueFound.name : '-',
-          inventoriedBy: car.inventoriedBy ? `${car.inventoriedBy.firstName} ${car.inventoriedBy.lastName}` : '-',
-          status: car.status
-        });
+        if (car.status === 'reported') {
+          reported.push({
+            _id: car._id,
+            vin: car.car.vin,
+            brand: car.car.brand,
+            denomination: car.car.denomination,
+            venue: car.venue ? car.venue.name : '-',
+            images: car.images && car.images.length ? car.images : [],
+            venueFound: car.venueFound ? car.venueFound.name : '-',
+            inventoriedBy: car.inventoriedBy ? `${car.inventoriedBy.firstName} ${car.inventoriedBy.lastName}` : '-',
+            status: car.status
+          });
+        } else {
+          products.push({
+            _id: car._id,
+            vin: car.car.vin,
+            brand: car.car.brand,
+            denomination: car.car.denomination,
+            venue: car.venue ? car.venue.name : '-',
+            images: car.images && car.images.length ? car.images : [],
+            venueFound: car.venueFound ? car.venueFound.name : '-',
+            inventoriedBy: car.inventoriedBy ? `${car.inventoriedBy.firstName} ${car.inventoriedBy.lastName}` : '-',
+            status: car.status
+          });
+        }
       }
     }
 
@@ -340,7 +359,7 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
       <AppContainer title={summary.name} cMenu="2" cSubMenu="2.1" cAction="Detalle">
         <section className="content">
           <div className="row">
-            <div className="col-md-4">
+            <div className="col-md-3">
               <div className="info-box bg-green">
                 <span className="info-box-icon"><i className="fa fa-check" /></span>
                 <div className="info-box-content">
@@ -357,7 +376,7 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
                 </div>
               </div>
             </div>
-            <div className="col-md-4">
+            <div className="col-md-3">
               <div className="info-box bg-red">
                 <span className="info-box-icon"><i className="fa fa-close" /></span>
                 <div className="info-box-content">
@@ -374,7 +393,7 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
                 </div>
               </div>
             </div>
-            <div className="col-md-4">
+            <div className="col-md-3">
               <div className="info-box bg-yellow">
                 <span className="info-box-icon"><i className="fa fa-bookmark" /></span>
                 <div className="info-box-content">
@@ -387,6 +406,23 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
                   </div>
                   <span className="progress-description">
                     {`${percentageLeftover.toFixed(3)}% sobrantes.`}
+                  </span>
+                </div>
+              </div>
+            </div>
+            <div className="col-md-3">
+              <div className="info-box bg-gray-light">
+                <span className="info-box-icon"><i className="fa fa-bookmark" /></span>
+                <div className="info-box-content">
+                  <span className="info-box-text">Reportados</span>
+                  <span className="info-box-number">{summary.results ? summary.results.reported : 0}</span>
+                  <div className="progress">
+                    <div className="progress-bar" style={{
+                      width: `${percentageReported}%`
+                    }} />
+                  </div>
+                  <span className="progress-description">
+                    {`${percentageReported.toFixed(3)}% sobrantes.`}
                   </span>
                 </div>
               </div>
@@ -458,51 +494,40 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
                   </div>
                 }
               </div>
-              {/*<div className="box box-info">*/}
-                {/*<div className="box-header with-border">*/}
-                  {/*<h3 className="box-title">Visitors Report</h3>*/}
-                  {/*/!*<div className="box-tools pull-right">*!/*/}
-                  {/*/!*</div>*!/*/}
-                {/*</div>*/}
-                {/*<div className="box-body">*/}
-                  {/*<div className="row">*/}
-                    {/*<div className="col-md-12">*/}
-                      {/*<div className="progress-group">*/}
-                        {/*<span className="progress-text">Add Products to Cart</span>*/}
-                        {/*<span className="progress-number"><b>160</b>/200</span>*/}
-
-                        {/*<div className="progress sm">*/}
-                          {/*<div className="progress-bar progress-bar-aqua" style={{width: '80%'}}/>*/}
-                        {/*</div>*/}
-                      {/*</div>*/}
-                      {/*<div className="progress-group">*/}
-                        {/*<span className="progress-text">Complete Purchase</span>*/}
-                        {/*<span className="progress-number"><b>310</b>/400</span>*/}
-
-                        {/*<div className="progress sm">*/}
-                          {/*<div className="progress-bar progress-bar-red" style={{width: '80%'}}/>*/}
-                        {/*</div>*/}
-                      {/*</div>*/}
-                      {/*<div className="progress-group">*/}
-                        {/*<span className="progress-text">Visit Premium Page</span>*/}
-                        {/*<span className="progress-number"><b>480</b>/800</span>*/}
-
-                        {/*<div className="progress sm">*/}
-                          {/*<div className="progress-bar progress-bar-green" style={{width: '80%'}}/>*/}
-                        {/*</div>*/}
-                      {/*</div>*/}
-                      {/*<div className="progress-group">*/}
-                        {/*<span className="progress-text">Send Inquiries</span>*/}
-                        {/*<span className="progress-number"><b>250</b>/500</span>*/}
-
-                        {/*<div className="progress sm">*/}
-                          {/*<div className="progress-bar progress-bar-yellow" style={{width: '80%'}}/>*/}
-                        {/*</div>*/}
-                      {/*</div>*/}
-                    {/*</div>*/}
+            </div>
+            <div className="col-md-12">
+              <div className="box box-info">
+                <div className="box-header with-border">
+                  <h3 className="box-title">Detalle Reportados</h3>
+                  {/*<div className="box-tools pull-right">*/}
                   {/*</div>*/}
-                {/*</div>*/}
-              {/*</div>*/}
+                </div>
+                <div className="box-body">
+                  <div className="row">
+                    {/*<div className="col-md-12 text-right">*/}
+                      {/*<p><button className="btn btn-sm btn-primary" onClick={this.export}>*/}
+                        {/*<i className="fa fa-fw fa-download" /> Exportart excel*/}
+                      {/*</button></p>*/}
+                    {/*</div>*/}
+                    <div className="col-md-12">
+                      <BootstrapTable
+                        keyField="_id"
+                        data={reported}
+                        columns={columns}
+                        filter={filterFactory()}
+                        pagination={paginationFactory(paginationOption)}
+                        defaultSorted={defaultSorted}
+                      />
+                    </div>
+                  </div>
+                </div>
+                {
+                  loadingDetail &&
+                  <div className="overlay">
+                    <i className="fa fa-spinner fa-spin text-purple"/>
+                  </div>
+                }
+              </div>
             </div>
           </div>
           {/*<h2 className="page-header">Detalle sucursales</h2>*/}
@@ -609,6 +634,7 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
     const venuesFound: number[] = [];
     const venuesPending: number[] = [];
     const venuesLeftover: number[] = [];
+    const venuesReported: number[] = [];
     detailByVenue.sort((a, b) => {
       return a.name.localeCompare(b.name);
     });
@@ -617,6 +643,7 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
       venuesFound.push(venue.results ? venue.results.found : 0);
       venuesPending.push(venue.results ? venue.results.pending : 0);
       venuesLeftover.push(venue.results ? venue.results.leftover : 0);
+      venuesReported.push(venue.results ? venue.results.reported : 0);
     }
     const optionVenues: echarts.EChartOption = {
       tooltip: {
@@ -629,7 +656,7 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
         x: 'center',
         // y: 'bottom',
         bottom: 50,
-        data: ['Encontrados', 'Faltantes', 'Sobrantes']
+        data: ['Encontrados', 'Faltantes', 'Sobrantes', 'Reportados']
       },
       xAxis: {
         type: 'category',
@@ -699,6 +726,15 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
         barGap: 0
         // areaStyle: {}
         // smooth: true
+      }, {
+        data: venuesReported,
+        name: 'Reportados',
+        type: 'bar',
+        color: '#96a4b3',
+        // label: labelOption,
+        barGap: 0
+        // areaStyle: {}
+        // smooth: true
       }]
     };
     if (!update) {
@@ -724,6 +760,7 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
     const brandFound: number[] = [];
     const brandPending: number[] = [];
     const brandLeftover: number[] = [];
+    const brandReported: number[] = [];
     detailByBrand.sort((a, b) => {
       return a.name.localeCompare(b.name);
     });
@@ -732,6 +769,7 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
       brandFound.push(brand.results ? brand.results.found : 0);
       brandPending.push(brand.results ? brand.results.pending : 0);
       brandLeftover.push(brand.results ? brand.results.leftover : 0);
+      brandReported.push(brand.results ? brand.results.reported : 0);
     }
     const optionBrands: echarts.EChartOption = {
       tooltip: {
@@ -743,7 +781,7 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
       legend: {
         x: 'center',
         bottom: 50,
-        data: ['Encontrados', 'Faltantes', 'Sobrantes']
+        data: ['Encontrados', 'Faltantes', 'Sobrantes', 'Reportados']
       },
       xAxis: {
         type: 'category',
@@ -805,6 +843,13 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
         name: 'Sobrantes',
         type: 'bar',
         color: '#ff9600',
+        areaStyle: {}
+        // smooth: true
+      }, {
+        data: brandReported,
+        name: 'Reportados',
+        type: 'bar',
+        color: '#96a4b3',
         areaStyle: {}
         // smooth: true
       }]
