@@ -1,5 +1,8 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+/* data from
+* https://support.alldata.com/alldata-repair-online-article/vin-to-year-chart
+ */
 const Years = {
     'L': 1990,
     'M': 1991,

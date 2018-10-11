@@ -60,6 +60,10 @@ class JWTController {
                 password: true,
                 updatedAt: true,
                 preferred: true,
+                venue: true,
+                company: true,
+                userForms: true,
+                userPermissions: true,
                 active: true
             })
                 .populate([{
@@ -167,7 +171,19 @@ class JWTController {
                 }
                 else {
                     user_model_1.default
-                        .findById(decode._id)
+                        .findById(decode._id, {
+                        firstName: true,
+                        lastName: true,
+                        email: true,
+                        password: true,
+                        updatedAt: true,
+                        preferred: true,
+                        venue: true,
+                        company: true,
+                        userForms: true,
+                        userPermissions: true,
+                        active: true
+                    })
                         .populate([{
                             path: 'venue',
                             select: ['name']

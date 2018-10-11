@@ -56,33 +56,27 @@ class ImageLazyLoad extends React.Component<IPropsType, IStateType> {
     if (maxWidth) {
       imageStyle.maxWidth = maxWidth;
     }
-    if (error) {
-      return (
-        <div></div>
-      );
-    } else {
-      return (
-        <React.Fragment>
-          {
-            inViewPort &&
-              <img
-                src={url}
-                onLoad={this.handleImageLoaded}
-                onError={this.error}
-                style={imageStyle}
-              />
-          }
-          {
-            loading ?
-              <div style={{height, display: 'table-cell', verticalAlign: 'middle'}} className={'text-center'} ref={this.element}>
-                {small ? <i className={'fa fa-circle-o-notch fa-spin'}/> : <i className={'fa fa-circle-o-notch fa-spin fa-2x'}/>}
-              </div>
-            : null
-          }
+    return (
+      <React.Fragment>
+        {
+          inViewPort &&
+            <img
+              src={url}
+              onLoad={this.handleImageLoaded}
+              onError={this.error}
+              style={imageStyle}
+            />
+        }
+        {
+          loading ?
+            <div style={{height, display: 'table-cell', verticalAlign: 'middle'}} className={'text-center'} ref={this.element}>
+              {small ? <i className={'fa fa-circle-o-notch fa-spin'}/> : <i className={'fa fa-circle-o-notch fa-spin fa-2x'}/>}
+            </div>
+          : null
+        }
 
-        </React.Fragment>
-      );
-    }
+      </React.Fragment>
+    );
   }
 
   private error() {
@@ -100,11 +94,12 @@ class ImageLazyLoad extends React.Component<IPropsType, IStateType> {
       const bounding = this.element.current.getBoundingClientRect();
       // start load distance
       const distance = 300;
+      const clientWidth: number = document && document.documentElement ? document.documentElement.clientWidth : 0;
       const isInViewPort = (
         bounding.top >= 0 &&
         bounding.left >= 0 &&
-        (bounding.bottom - distance) <= (window.innerHeight || document.documentElement.clientHeight) &&
-        bounding.right <= (window.innerWidth || document.documentElement.clientWidth)
+        (bounding.bottom - distance) <= (window && window.innerHeight || clientWidth) &&
+        bounding.right <= (window.innerWidth || clientWidth)
       );
       if (isInViewPort) {
         this.removeEventListener();

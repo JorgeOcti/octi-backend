@@ -1,3 +1,6 @@
+/* data from
+* https://support.alldata.com/alldata-repair-online-article/vin-to-year-chart
+ */
 const Years = {
   'L': 1990,
   'M': 1991,
