@@ -78,7 +78,8 @@ class InventoryController {
                                     color: car.color,
                                     denomination: car.denomination,
                                     brand: car.brand,
-                                    patent: car.patent
+                                    patent: car.patent,
+                                    status: car_model_1.ChoicesStatusCar.active
                                 });
                                 await currentCar.save();
                             }
@@ -456,7 +457,8 @@ class InventoryController {
                     const newCar = new car_model_1.default({
                         vin,
                         vin2: vin.substr(vin.length - 6),
-                        company
+                        company,
+                        status: car_model_1.ChoicesStatusCar.active
                     });
                     await newCar.save();
                     textNotification = `${req.user.firstName} ${req.user.lastName} encontró ${vin} en ${venue.name}.`;
