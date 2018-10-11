@@ -6,7 +6,7 @@ import {PaginateOptions, PaginateResult} from 'mongoose';
 import ParticipantModel from '../../form/models/participant.model';
 import {IRequest} from '../../interfaces/global.interface';
 import InventoryModel, {ChoicesStatusCarInventory, ChoicesStatusInventory} from '../../inventory/models/inventory.model';
-import CarModel, {ICarModel} from '../models/car.model';
+import CarModel, {ChoicesStatusCar, ICarModel} from '../models/car.model';
 
 class CarController {
   protected carBrands: any = {
@@ -197,7 +197,8 @@ class CarController {
             vin,
             vin2,
             company,
-            brand
+            brand,
+            status: ChoicesStatusCar.active
           });
           res.json({
             data: {

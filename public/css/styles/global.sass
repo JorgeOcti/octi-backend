@@ -75,3 +75,14 @@
     object-fit: cover
     padding: 0
 
+// row with right border
+.right-border
+  div
+    border-right: 1px solid #cccccc4d
+    &:last-child
+      border-right: 0
+
+@media (max-width: 768px)
+  .right-border
+    .no-right-border-mobile
+      border-right: 0

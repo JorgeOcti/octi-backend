@@ -244,7 +244,7 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
         className: 'input-sm',
         placeholder: ' Buscar'
       }),
-      classes: 'hidden-xs hidden-sm ',
+      classes: 'hidden-xs',
       headerClasses: 'hidden-xs hidden-sm pointer',
       sort: true
     }, {
@@ -264,21 +264,21 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
         className: 'input-sm',
         placeholder: ' Buscar'
       }),
-      classes: 'hidden-xs',
-      headerClasses: 'hidden-xs pointer',
+      classes: 'hidden-xs hidden-md',
+      headerClasses: 'hidden-xs hidden-md pointer',
       sort: true
     },
-    // {
-    //   dataField: 'inventoriedBy',
-    //   text: 'Encontrado por',
-    //   filter: textFilter({
-    //     className: 'input-sm',
-    //     placeholder: ' Buscar'
-    //   }),
-    //   classes: 'hidden-xs',
-    //   headerClasses: 'hidden-xs pointer',
-    //   sort: true
-    // },
+    {
+      dataField: 'inventoriedBy',
+      text: 'Encontrado por',
+      filter: textFilter({
+        className: 'input-sm',
+        placeholder: ' Buscar'
+      }),
+      classes: 'hidden-xs hidden-md',
+      headerClasses: 'hidden-xs hidden-md pointer',
+      sort: true
+    },
     {
       dataField: 'images',
       text: 'Imágenes',
@@ -440,7 +440,7 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
               </div>
             </div>
             <div className="col-md-3">
-              <div className="info-box bg-gray">
+              <div className="info-box bg-gray-dark">
                 <span className="info-box-icon"><i className="fa fa-bookmark" /></span>
                 <div className="info-box-content">
                   <span className="info-box-text">Reportados</span>
@@ -499,7 +499,7 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
                 </div>
                 <div className="box-body">
                   <div className="row">
-                    <div className="col-md-12 text-right">
+                    <div className="col-md-12 text-right hidden-xs">
                       <p><button className="btn btn-sm btn-primary" onClick={() => this.export(['pending', 'found', 'leftover'])}>
                         <i className="fa fa-fw fa-download" /> Exportart excel
                       </button></p>
@@ -533,7 +533,7 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
                 </div>
                 <div className="box-body">
                   <div className="row">
-                    <div className="col-md-12 text-right">
+                    <div className="col-md-12 text-right hidden-xs">
                       <p><button className="btn btn-sm btn-primary" onClick={() => this.export(['reported'])}>
                         <i className="fa fa-fw fa-download" /> Exportart excel
                       </button></p>

@@ -232,6 +232,7 @@ class InventoryController {
         const defaultResults = {
           [ChoicesStatusCarInventory.pending]: 0,
           [ChoicesStatusCarInventory.found]: 0,
+          [ChoicesStatusCarInventory.reported]: 0,
           [ChoicesStatusCarInventory.leftover]: 0
         };
         response.push({
@@ -584,18 +585,20 @@ class InventoryController {
         company
       });
       if (inventory) {
-        const newCar = new CarModel({
+        const car = await CarModel.findOneOrCreate({
+          vin,
+          company
+        }, {
           vin,
           vin2: vin.substr(vin.length - 6),
-          denomination,
           brand,
+          denomination,
           color,
           company,
           status: ChoicesStatusCar.inventory
         });
-        await newCar.save();
         inventory.cars.push({
-          car: newCar,
+          car,
           venue,
           venueFound: venue,
           inventoriedBy: req.user._id,
@@ -603,11 +606,14 @@ class InventoryController {
           status: ChoicesStatusCarInventory.reported
         });
         await inventory.save();
-        const textNotification = `${req.user.firstName} ${req.user.lastName} encontró ${newCar.brand} (${newCar.denomination}) en ${venue.name}.`;
+        const textNotification = `${req.user.firstName} ${req.user.lastName} encontró ${car.brand} (${car.denomination}) en ${venue.name}.`;
         io.to(`inventory-detail-${inventory._id}`).emit('REFRESH', {
           title: 'Vehículo reportado',
           text: textNotification,
           status: ChoicesStatusCarInventory.reported,
+          update: true
+        });
+        io.to(`inventory-list-${company._id}`).emit('REFRESH', {
           update: true
         });
         res.json({

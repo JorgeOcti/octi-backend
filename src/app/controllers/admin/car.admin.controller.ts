@@ -24,7 +24,9 @@ class AdminCarController {
 
   public async import(req: IRequest, res: Response): Promise<any> {
     if (req.user.hasPermission('addCar')) {
-      res.render('app/index', {token: await req.user.generateToken()});
+      res.render('app/index', {
+        token: await req.user.generateToken()
+      });
     } else {
       res.status(403).render('403');
     }
@@ -54,6 +56,7 @@ class AdminCarController {
               newCar.color = car.denominacion ? car.color : newCar.color;
               newCar.internalNumber = car.NInterno ? car.NInterno : newCar.internalNumber;
               newCar.destination = car.destino ? car.destino : newCar.destination;
+              newCar.status = ChoicesStatusCar.active;
               await newCar.save();
             } else {
               await Car.create({
@@ -64,7 +67,8 @@ class AdminCarController {
                 color: car.color ? car.color : '',
                 internalNumber: car.NInterno ? car.NInterno : '',
                 destination: car.destino ? car.destino : '',
-                company
+                company,
+                status: ChoicesStatusCar.active
               });
             }
             // io.to(req.user._id).emit('STATUS-CARS', {newCar});

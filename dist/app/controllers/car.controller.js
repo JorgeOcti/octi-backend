@@ -196,7 +196,8 @@ class CarController {
                         vin,
                         vin2,
                         company,
-                        brand
+                        brand,
+                        status: car_model_1.ChoicesStatusCar.active
                     });
                     res.json({
                         data: {
