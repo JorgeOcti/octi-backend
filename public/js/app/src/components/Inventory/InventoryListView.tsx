@@ -150,7 +150,7 @@ class InventoryListView extends React.Component<IPropsType, IStateType> {
                                   <strong>Sobrantes</strong>
                                   <h2>{inventory.results.leftover}</h2>
                                 </div>
-                                <div className="col-md-3 text-center text-muted hidden-xs">
+                                <div className="col-md-3 text-center text-muted hidden-xs hidden-sm">
                                   <strong>Reportados</strong>
                                   <h2>{inventory.results.reported}</h2>
                                 </div>

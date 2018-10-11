@@ -244,7 +244,7 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
         className: 'input-sm',
         placeholder: ' Buscar'
       }),
-      classes: 'hidden-xs',
+      classes: 'hidden-xs hidden-sm',
       headerClasses: 'hidden-xs hidden-sm pointer',
       sort: true
     }, {
@@ -254,8 +254,8 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
         className: 'input-sm',
         placeholder: ' Buscar'
       }),
-      classes: 'hidden-xs',
-      headerClasses: 'hidden-xs pointer',
+      classes: 'hidden-xs hidden-sm',
+      headerClasses: 'hidden-xs hidden-sm pointer',
       sort: true
     }, {
       dataField: 'venueFound',
@@ -264,8 +264,8 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
         className: 'input-sm',
         placeholder: ' Buscar'
       }),
-      classes: 'hidden-xs hidden-md',
-      headerClasses: 'hidden-xs hidden-md pointer',
+      classes: 'hidden-xs hidden-sm hidden-md',
+      headerClasses: 'hidden-xs hidden-sm hidden-md pointer',
       sort: true
     },
     {
@@ -275,8 +275,8 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
         className: 'input-sm',
         placeholder: ' Buscar'
       }),
-      classes: 'hidden-xs hidden-md',
-      headerClasses: 'hidden-xs hidden-md pointer',
+      classes: 'hidden-xs hidden-sm hidden-md',
+      headerClasses: 'hidden-xs hidden-sm hidden-md pointer',
       sort: true
     },
     {
@@ -388,7 +388,7 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
       <AppContainer title={summary.name} cMenu="2" cSubMenu="2.1" cAction="Detalle">
         <section className="content">
           <div className="row">
-            <div className="col-md-3">
+            <div className="col-md-6 col-lg-3">
               <div className="info-box bg-green">
                 <span className="info-box-icon"><i className="fa fa-check" /></span>
                 <div className="info-box-content">
@@ -405,7 +405,7 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
                 </div>
               </div>
             </div>
-            <div className="col-md-3">
+            <div className="col-md-6 col-lg-3">
               <div className="info-box bg-red">
                 <span className="info-box-icon"><i className="fa fa-close" /></span>
                 <div className="info-box-content">
@@ -422,7 +422,7 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
                 </div>
               </div>
             </div>
-            <div className="col-md-3">
+            <div className="col-md-6 col-lg-3">
               <div className="info-box bg-yellow">
                 <span className="info-box-icon"><i className="fa fa-bookmark" /></span>
                 <div className="info-box-content">
@@ -439,7 +439,7 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
                 </div>
               </div>
             </div>
-            <div className="col-md-3">
+            <div className="col-md-6 col-lg-3">
               <div className="info-box bg-gray-dark">
                 <span className="info-box-icon"><i className="fa fa-bookmark" /></span>
                 <div className="info-box-content">
@@ -499,7 +499,7 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
                 </div>
                 <div className="box-body">
                   <div className="row">
-                    <div className="col-md-12 text-right hidden-xs">
+                    <div className="col-md-12 text-right hidden-xs hidden-sm ">
                       <p><button className="btn btn-sm btn-primary" onClick={() => this.export(['pending', 'found', 'leftover'])}>
                         <i className="fa fa-fw fa-download" /> Exportart excel
                       </button></p>
@@ -533,7 +533,7 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
                 </div>
                 <div className="box-body">
                   <div className="row">
-                    <div className="col-md-12 text-right hidden-xs">
+                    <div className="col-md-12 text-right hidden-xs hidden-sm ">
                       <p><button className="btn btn-sm btn-primary" onClick={() => this.export(['reported'])}>
                         <i className="fa fa-fw fa-download" /> Exportart excel
                       </button></p>
