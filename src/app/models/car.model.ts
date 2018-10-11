@@ -58,6 +58,7 @@ const carSchema = new mongoose.Schema({
   status: {
     type: String,
     enum: choicesStatusCar,
+    required: true,
     default: ChoicesStatusCar.active
   }
 }, {

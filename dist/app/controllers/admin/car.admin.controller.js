@@ -137,7 +137,7 @@ class AdminCarController {
         }
     }
     getCars(company, options, search) {
-        let filter = { company, status: { $ne: car_model_1.ChoicesStatusCar.inventory } };
+        let filter = { company, status: { $eq: car_model_1.ChoicesStatusCar.active } };
         if (search && search.length) {
             const searchText = new RegExp(search, 'i');
             filter = {

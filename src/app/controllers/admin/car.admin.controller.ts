@@ -140,7 +140,7 @@ class AdminCarController {
   }
 
   private getCars(company: ObjectID, options: PaginateOptions, search?: string): Promise<PaginateResult<ICarModel>> {
-    let filter: any = {company, status: {$ne: ChoicesStatusCar.inventory}};
+    let filter: any = {company, status: {$eq: ChoicesStatusCar.active}};
 
     if (search && search.length) {
       const searchText = new RegExp(search, 'i');
