@@ -4,6 +4,7 @@ const moment = require("moment");
 const mongoose = require("mongoose");
 const participant_model_1 = require("../../form/models/participant.model");
 const inventory_model_1 = require("../../inventory/models/inventory.model");
+const vin_service_1 = require("../../services/vin.service");
 const car_model_1 = require("../models/car.model");
 class CarController {
     constructor() {
@@ -186,6 +187,7 @@ class CarController {
             if (vin) {
                 vin = vin.replace(/[\W_]+/g, '');
                 try {
+                    console.log('vin', vin_service_1.default.decode(vin));
                     const indexBrand = vin.slice(0, 3);
                     vin2 = vin.substr(vin.length - 6);
                     const brand = this.carBrands.hasOwnProperty(indexBrand) ? this.carBrands[indexBrand] : null;
@@ -212,6 +214,7 @@ class CarController {
                     });
                 }
                 catch (e) {
+                    console.log(e);
                     if (e) {
                         res.status(500).send(e);
                     }
