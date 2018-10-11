@@ -62,9 +62,7 @@
     "socket.io-redis": "^5.2.0",
     "staticify": "^2.0.0",
     "supertest": "^3.3.0",
-    "uuid": "^3.3.2",
-    "vin": "^0.1.0",
-    "vin-decode": "^0.2.0"
+    "uuid": "^3.3.2"
   },
   "devDependencies": {
     "@types/aws-sdk": "^2.7.0",
