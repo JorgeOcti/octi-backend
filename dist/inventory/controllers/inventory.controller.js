@@ -745,7 +745,13 @@ class InventoryController {
                 }, {
                     $group: {
                         _id: {
-                            category: '$cars.venue',
+                            category: {
+                                $cond: {
+                                    if: { $eq: ['$cars.status', 'leftover'] },
+                                    then: '$cars.venueFound',
+                                    else: '$cars.venue'
+                                }
+                            },
                             status: '$cars.status'
                         },
                         total: {
