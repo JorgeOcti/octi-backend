@@ -102,10 +102,22 @@ class CarController {
         */
         if (inventory) {
             try {
-                const cars = await car_model_1.default.find({
-                    $or: [{ vin }, { vin2 }],
+                let inventoryQuery = {
                     company
-                }, {
+                };
+                if (vin) {
+                    inventoryQuery.vin = vin;
+                }
+                if (vin2) {
+                    if (vin2[0] === '0') {
+                        const vinRegex = new RegExp('[a-zA-Z0]' + vin2.substr(vin2.length - 5), 'i');
+                        inventoryQuery.vin2 = { $regex: vinRegex };
+                    }
+                    else {
+                        inventoryQuery.vin2 = vin2;
+                    }
+                }
+                const cars = await car_model_1.default.find(inventoryQuery, {
                     vin: true,
                     vin2: true,
                     brand: true,
