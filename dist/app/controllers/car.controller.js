@@ -102,7 +102,7 @@ class CarController {
         */
         if (inventory) {
             try {
-                let inventoryQuery = {
+                const inventoryQuery = {
                     company
                 };
                 if (vin) {
