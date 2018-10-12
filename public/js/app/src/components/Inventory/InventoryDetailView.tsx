@@ -374,7 +374,9 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
       showTotal: true,
       paginationTotalRenderer: customTotal,
       sizePerPageList: [{
-        text: '10', value: 10
+        text: '15', value: 15
+      }, {
+        text: '20', value: 20
       }, {
         text: '30', value: 30
       }, {
