@@ -14,7 +14,7 @@ import {
   getInventoriesAction,
   IInventoryState,
   InventoryReduxAction
-} from '../../actions/inventory.action';
+} from '../../actions/inventory.actions';
 import AppContainer from '../../container/AppContainer';
 import {IWindow} from '../../interfaces/window';
 

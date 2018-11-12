@@ -8,7 +8,7 @@ import {IForm} from '../../../../../../src/interfaces/form.interface';
 import {IPermission} from '../../../../../../src/interfaces/permision.interface';
 import {IUser} from '../../../../../../src/interfaces/user.interface';
 import {IVenue} from '../../../../../../src/interfaces/venue.interface';
-import {IUsersState} from '../../actions/users.action';
+import {IUsersState} from '../../actions/users.actions';
 
 interface IPropsType {
   users: IUsersState;

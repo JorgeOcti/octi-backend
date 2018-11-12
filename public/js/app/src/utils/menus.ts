@@ -81,6 +81,13 @@ if (hasPermission(window.user, 'viewUser')) {
   });
 }
 
+settingItems.push({
+  id: '10.4',
+  icon: 'fa-circle-o',
+  text: 'Sucursales',
+  url: '/settings/venues/'
+});
+
 if (settingItems.length) {
   menus.push({
     id: '10',

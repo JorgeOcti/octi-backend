@@ -10,7 +10,7 @@ import {Dispatch} from 'redux';
 // import * as io from 'socket.io-client';
 import * as uuid from 'uuid';
 import * as XLSX from 'xlsx';
-import {IUsersState, UserReduxAction} from '../../actions/users.action';
+import {IUsersState, UserReduxAction} from '../../actions/users.actions';
 import AppContainer from '../../container/AppContainer';
 // import {IWindow} from '../../interfaces/window';
 import ApiService from '../../utils/axios';

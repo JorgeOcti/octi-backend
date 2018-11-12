@@ -1,4 +1,4 @@
-import {IModalState, ModalReduxAction} from '../actions/modal.action';
+import {IModalState, ModalReduxAction} from '../actions/modal.actions';
 
 const initialState: IModalState = {
   title: '',

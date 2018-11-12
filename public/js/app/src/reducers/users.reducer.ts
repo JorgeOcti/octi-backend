@@ -1,7 +1,7 @@
 import {
   IUsersState,
   UserReduxAction
-} from '../actions/users.action';
+} from '../actions/users.actions';
 
 import {IUser} from '../../../../../src/interfaces/user.interface';
 

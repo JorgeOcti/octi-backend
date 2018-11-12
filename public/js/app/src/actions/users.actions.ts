@@ -1,5 +1,4 @@
 import {AxiosError, AxiosResponse, CancelTokenSource, default as Axios} from 'axios';
-import axios from 'axios';
 import {Dispatch} from 'redux';
 import ApiService from '../utils/axios';
 import {showModal, statusFooterButttonsModal} from '../utils/common';
@@ -251,12 +250,12 @@ export function getUsersAction(nextPage?: number) {
 
     // get venues and permissions
     if (!state.users.venues.length || !state.users.permissions.length || !state.users.forms.length) {
-      axios.all([
+      Axios.all([
         api.getVenues(1, 200),
         api.getPermissions(1, 200),
         api.getForms(1, 200)
       ])
-        .then(axios.spread((venues, permissions, forms) => {
+        .then(Axios.spread((venues, permissions, forms) => {
           dispatch(loadVenuesUserAction(venues.data.results));
           dispatch(loadPermissionsUserAction(permissions.data.results));
           dispatch(loadFormsUserAction(forms.data.results));

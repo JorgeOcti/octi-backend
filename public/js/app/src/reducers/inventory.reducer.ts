@@ -1,4 +1,4 @@
-import {IInventoryState, InventoryReduxAction} from '../actions/inventory.action';
+import {IInventoryState, InventoryReduxAction} from '../actions/inventory.actions';
 
 const initialState: IInventoryState = {
   inventories: [],

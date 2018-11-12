@@ -45,6 +45,9 @@ appRouter.post('/api/admin/users/', Middlewares.isLoggedIn, AdminUsersController
 appRouter.patch('/api/admin/users/:id/', Middlewares.isLoggedIn, AdminUsersController.apiEditUser);
 appRouter.delete('/api/admin/users/:id/', Middlewares.isLoggedIn, AdminUsersController.apiDeleteUser);
 
+// admin venues
+appRouter.get('/settings/venues/', Middlewares.isLoggedIn, AdminUsersController.index);
+
 // setting cars
 appRouter.get('/settings/cars/', Middlewares.isLoggedIn, AdminCarsController.index);
 appRouter.get('/api/admin/cars/', Middlewares.isLoggedIn, AdminCarsController.apiListCars);

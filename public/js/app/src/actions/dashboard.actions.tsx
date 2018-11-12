@@ -9,7 +9,7 @@ import {
 } from '../../../../../src/interfaces/participant.interface';
 import ImageLazyLoad from '../components/ImageLazyLoad';
 import ApiService from '../utils/axios';
-import {loadDataAction} from './modal.action';
+import {loadDataAction} from './modal.actions';
 
 export interface IDashboardState {
   loading: boolean;

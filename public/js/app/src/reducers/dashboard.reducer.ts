@@ -1,4 +1,4 @@
-import {DashboardReduxAction, IDashboardState} from '../actions/dashboard.action';
+import {DashboardReduxAction, IDashboardState} from '../actions/dashboard.actions';
 
 const initialState: IDashboardState = {
   loading: true,

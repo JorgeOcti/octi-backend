@@ -14,7 +14,7 @@ import {
   getParticipant,
   IDashboardState,
   loadParticipantInCarAction
-} from '../../actions/dashboard.action';
+} from '../../actions/dashboard.actions';
 import AppContainer from '../../container/AppContainer';
 import {IWindow} from '../../interfaces/window';
 import ModalView from '../Modal/ModalView';

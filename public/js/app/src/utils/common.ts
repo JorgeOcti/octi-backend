@@ -23,7 +23,9 @@ interface IMixpanelProps {
 }
 
 export function statusFooterButttonsModal(status: boolean) {
-  $('.modal-footer button').attr({disabled: status});
+  $('.modal-footer button').attr({
+    disabled: status
+  });
 }
 
 export function showModal(show: boolean) {

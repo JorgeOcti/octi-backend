@@ -8,7 +8,7 @@ import {RouteComponentProps} from 'react-router';
 import {Dispatch} from 'redux';
 import * as io from 'socket.io-client';
 import {ICar} from '../../../../../../src/interfaces/car.interface';
-import {DashboardReduxAction, getCarsAction, IDashboardState} from '../../actions/dashboard.action';
+import {DashboardReduxAction, getCarsAction, IDashboardState} from '../../actions/dashboard.actions';
 import AppContainer from '../../container/AppContainer';
 import {IWindow} from '../../interfaces/window';
 import Paginator from '../Paginator';

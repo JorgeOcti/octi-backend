@@ -1,4 +1,4 @@
-import {CarReduxAction, ICarsState} from '../actions/cars.action';
+import {CarReduxAction, ICarsState} from '../actions/cars.actions';
 
 const initialState: ICarsState = {
   cars: [],

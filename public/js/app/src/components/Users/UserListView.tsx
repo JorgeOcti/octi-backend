@@ -8,7 +8,7 @@ import {connect} from 'react-redux';
 import {RouteComponentProps} from 'react-router';
 import {Dispatch} from 'redux';
 import {IUser} from '../../../../../../src/interfaces/user.interface';
-import {loadDataAction, ModalReduxAction} from '../../actions/modal.action';
+import {loadDataAction, ModalReduxAction} from '../../actions/modal.actions';
 import {
   addUserAction,
   changeTempUserAction,
@@ -18,7 +18,7 @@ import {
   ITempUser,
   IUsersState,
   UserReduxAction
-} from '../../actions/users.action';
+} from '../../actions/users.actions';
 import AppContainer from '../../container/AppContainer';
 import {IWindow} from '../../interfaces/window';
 import {hasPermission, statusFooterButttonsModal} from '../../utils/common';
@@ -212,7 +212,6 @@ class UserListView extends React.Component<IPropsType, IStateType> {
 
   private processEditUser() {
     const {firstName, lastName, email, venue} = this.props.users.tempUser;
-    // debugger;
     if (!firstName || !firstName.trim().length) {
       swal('Agregar usuario', 'El campo nombres es requerido', 'error');
     } else if (!lastName || !lastName.trim().length) {

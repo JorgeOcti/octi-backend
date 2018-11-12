@@ -9,7 +9,7 @@ import {RouteComponentProps} from 'react-router';
 import {Dispatch} from 'redux';
 import {debounce} from 'throttle-debounce';
 import {ICar} from '../../../../../../src/interfaces/car.interface';
-import {CarReduxAction, getCarsAction, ICarsState} from '../../actions/cars.action';
+import {CarReduxAction, getCarsAction, ICarsState} from '../../actions/cars.actions';
 import AppContainer from '../../container/AppContainer';
 import {IWindow} from '../../interfaces/window';
 import {hasPermission} from '../../utils/common';

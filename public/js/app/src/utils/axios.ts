@@ -7,7 +7,7 @@ import Axios, {
   CancelTokenStatic
 } from 'axios';
 import * as Raven from 'raven-js';
-import {ITempUser} from '../actions/users.action';
+import {ITempUser} from '../actions/users.actions';
 // import {IWindow} from '../interfaces/window';
 
 // declare let window: IWindow;

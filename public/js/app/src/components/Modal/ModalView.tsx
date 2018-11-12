@@ -2,8 +2,8 @@ import * as PropTypes from 'prop-types';
 import * as React from 'react';
 import {connect} from 'react-redux';
 import {Dispatch} from 'redux';
-import {IModalState, ModalReduxAction} from '../../actions/modal.action';
-import {IUsersState} from '../../actions/users.action';
+import {IModalState, ModalReduxAction} from '../../actions/modal.actions';
+import {IUsersState} from '../../actions/users.actions';
 
 interface IPropsType {
   dispatch?: Dispatch<ModalReduxAction>;
