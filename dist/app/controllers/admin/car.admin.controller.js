@@ -30,7 +30,7 @@ class AdminCarController {
     async importCars(req, res) {
         if (!req.user.hasPermission('addCar')) {
             return res.status(403).json({
-                message: 'No tiene permisos para esta operación'
+                message: 'No tienes permisos para esta operación'
             });
         }
         const company = req.user.company;
@@ -83,7 +83,7 @@ class AdminCarController {
     async apiListCars(req, res) {
         if (!req.user.hasPermission('viewCar')) {
             return res.status(403).json({
-                message: 'No tiene permisos para esta operación'
+                message: 'No tienes permisos para esta operación'
             });
         }
         const { page, pageSize, search } = req.query;

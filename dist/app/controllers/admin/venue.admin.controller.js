@@ -73,14 +73,14 @@ class AdminVenueController {
     async apiAddVenue(req, res) {
         if (!req.user.hasPermission('addVenue')) {
             return res.status(403).json({
-                message: 'No tiene permisos para esta operación'
+                message: 'No tienes permisos para esta operación'
             });
         }
         const { name } = req.body;
         const company = req.user.company;
         if (!name || !name.length || !name.trim()) {
             res.status(400).json({
-                message: 'The name is are required',
+                message: 'El nombre es requerido.',
                 status: 400
             });
         }
@@ -114,7 +114,7 @@ class AdminVenueController {
     async apiEditVenue(req, res) {
         if (!req.user.hasPermission('changeVenue')) {
             return res.status(403).json({
-                message: 'No tiene permisos para esta operación'
+                message: 'No tienes permisos para esta operación'
             });
         }
         const { id } = req.params;
@@ -158,7 +158,7 @@ class AdminVenueController {
     async apiDeleteVenue(req, res) {
         if (!req.user.hasPermission('deleteVenue')) {
             return res.status(403).json({
-                message: 'No tiene permisos para esta operación'
+                message: 'No tienes permisos para esta operación'
             });
         }
         const { id } = req.params;
@@ -178,7 +178,7 @@ class AdminVenueController {
             if (inventories && inventories.length) {
                 const textInventories = inventories.map((inventory) => (inventory.name)).join('\n- ');
                 res.status(400).json({
-                    message: `La sucursal no ha podido ser elimanada porque esta utilizada en los siguientes inventarios : \n- ${textInventories}`
+                    message: `La sucursal no ha podido ser eliminada porque está utilizada en los siguientes inventarios : \n- ${textInventories}`
                 });
             }
             else {
@@ -195,12 +195,12 @@ class AdminVenueController {
                 if (venue) {
                     if (venue.users && venue.users.length) {
                         res.status(400).json({
-                            message: 'La sucursal no ha podido ser elimanada porque aún tiene usuarios asignados.'
+                            message: 'La sucursal no ha podido ser eliminada porque aún tiene usuarios asignados.'
                         });
                     }
                     else if (venue.participants && venue.participants.length) {
                         res.status(400).json({
-                            message: 'La sucursal no ha podido ser elimanada porque aún tiene revisiones asignados.'
+                            message: 'La sucursal no ha podido ser eliminada porque aún tiene revisiones asignados.'
                         });
                     }
                     else {
@@ -215,7 +215,7 @@ class AdminVenueController {
                 else {
                     const response = {
                         id,
-                        message: 'Esta sucursal ya fue eliminado.'
+                        message: 'Esta sucursal ya ha sido eliminada.'
                     };
                     res.status(200).json(response);
                 }

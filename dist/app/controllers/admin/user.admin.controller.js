@@ -21,7 +21,7 @@ class AdminUsersController {
     async apiUsers(req, res) {
         if (!req.user.hasPermission('viewUser')) {
             return res.status(403).json({
-                message: 'No tiene permisos para esta operación'
+                message: 'No tienes permisos para esta operación'
             });
         }
         const { page, pageSize } = req.query;
@@ -85,7 +85,7 @@ class AdminUsersController {
     async apiAddUser(req, res) {
         if (!req.user.hasPermission('addUser')) {
             return res.status(403).json({
-                message: 'No tiene permisos para esta operación'
+                message: 'No tienes permisos para esta operación'
             });
         }
         const { firstName, lastName, email, venue, userPermissions, userForms, preferred } = req.body;
@@ -164,7 +164,7 @@ class AdminUsersController {
     async apiEditUser(req, res) {
         if (!req.user.hasPermission('changeUser')) {
             return res.status(403).json({
-                message: 'No tiene permisos para esta operación'
+                message: 'No tienes permisos para esta operación'
             });
         }
         const { id } = req.params;
@@ -245,7 +245,7 @@ class AdminUsersController {
     async apiDeleteUser(req, res) {
         if (!req.user.hasPermission('deleteUser')) {
             return res.status(403).json({
-                message: 'No tiene permisos para esta operación'
+                message: 'No tienes permisos para esta operación'
             });
         }
         const { id } = req.params;

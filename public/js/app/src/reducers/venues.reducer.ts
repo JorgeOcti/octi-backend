@@ -46,7 +46,6 @@ export function venuesReducer(state = initialState, action: VenueReduxAction): I
           return venue;
         })
       };
-
     case '/VENUES/CHANGE_TEMP_VENUE':
       return {
         ...state,

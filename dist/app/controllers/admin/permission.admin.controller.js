@@ -12,7 +12,7 @@ class AdminPermissionController {
     async apiListPermissions(req, res) {
         // if (!req.user.hasPermission('viewCar')) {
         //   return res.status(403).json({
-        //     message: 'No tiene permisos para esta operación'
+        //     message: 'No tienes permisos para esta operación'
         //   });
         // }
         const { page, pageSize, search } = req.query;
