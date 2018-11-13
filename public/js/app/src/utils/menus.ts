@@ -80,13 +80,14 @@ if (hasPermission(window.user, 'viewUser')) {
     url: '/settings/users/'
   });
 }
-
-settingItems.push({
-  id: '10.4',
-  icon: 'fa-circle-o',
-  text: 'Sucursales',
-  url: '/settings/venues/'
-});
+if (hasPermission(window.user, 'viewVenue')) {
+  settingItems.push({
+    id: '10.4',
+    icon: 'fa-circle-o',
+    text: 'Sucursales',
+    url: '/settings/venues/'
+  });
+}
 
 if (settingItems.length) {
   menus.push({
