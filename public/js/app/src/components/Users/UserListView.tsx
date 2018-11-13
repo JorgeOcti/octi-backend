@@ -1,6 +1,6 @@
 ///<reference path="../../../node_modules/sweetalert/typings/sweetalert.d.ts"/>
 import * as moment from 'moment';
-import * as PropTypes from 'prop-types';
+// import * as PropTypes from 'prop-types';
 import * as Raven from 'raven-js';
 import * as React from 'react';
 import {ErrorInfo} from 'react';
@@ -8,7 +8,10 @@ import {connect} from 'react-redux';
 import {RouteComponentProps} from 'react-router';
 import {Dispatch} from 'redux';
 import {IUser} from '../../../../../../src/interfaces/user.interface';
-import {loadDataAction, ModalReduxAction} from '../../actions/modal.actions';
+import {
+  loadDataAction,
+  ModalReduxAction
+} from '../../actions/modal.actions';
 import {
   addUserAction,
   changeTempUserAction,
@@ -21,7 +24,10 @@ import {
 } from '../../actions/users.actions';
 import AppContainer from '../../container/AppContainer';
 import {IWindow} from '../../interfaces/window';
-import {hasPermission, statusFooterButttonsModal} from '../../utils/common';
+import {
+  hasPermission,
+  statusFooterButttonsModal
+} from '../../utils/common';
 import ModalView from '../Modal/ModalView';
 import Paginator from '../Paginator';
 import UserFormView from './UserFormView';
@@ -106,10 +112,14 @@ class UserListView extends React.Component<IPropsType, IStateType> {
                     <th style={{width: '20%'}} className="hidden-xs">Sucursal</th>
                     <th style={{width: '20%'}} className="hidden-xs">Email</th>
                     <th style={{width: '20%'}} className="hidden-xs">Modificado</th>
-                    {hasPermission(window.user, 'changeUser') ?
-                      <th style={{width: '1%'}} className="width-10"/> : null}
-                    {hasPermission(window.user, 'deleteUser') ?
-                      <th style={{width: '1%'}} className="width-10"/> : null}
+                    {
+                      hasPermission(window.user, 'changeUser') ?
+                        <th style={{width: '1%'}} className="width-10"/> : null
+                    }
+                    {
+                      hasPermission(window.user, 'deleteUser') ?
+                      <th style={{width: '1%'}} className="width-10"/> : null
+                    }
                   </tr>
                 </thead>
                 <tbody>
@@ -122,10 +132,14 @@ class UserListView extends React.Component<IPropsType, IStateType> {
                           <td className="hidden-xs">{user.venue ? user.venue.name : ''}</td>
                           <td className="hidden-xs">{user.email}</td>
                           <td className="hidden-xs">{moment(user.updatedAt).format('LLL')}</td>
-                          {hasPermission(window.user, 'changeUser') ?
-                            <td className="text-blue pointer" onClick={() => this.editUser(user)}><i className="fa fa-pencil"/></td> : null}
-                          {hasPermission(window.user, 'deleteUser') ?
-                            <td className="text-red pointer" onClick={() => this.deleteUser(user)}><i className="fa fa-minus-circle"/></td> : null}
+                          {
+                            hasPermission(window.user, 'changeUser') ?
+                              <td className="text-blue pointer" onClick={() => this.editUser(user)}><i className="fa fa-pencil"/></td> : null
+                          }
+                          {
+                            hasPermission(window.user, 'deleteUser') ?
+                              <td className="text-red pointer" onClick={() => this.deleteUser(user)}><i className="fa fa-minus-circle"/></td> : null
+                          }
                         </tr>
                       );
                     })
@@ -179,13 +193,13 @@ class UserListView extends React.Component<IPropsType, IStateType> {
   private processAddUser(): void {
     const {firstName, lastName, email, venue} = this.props.users.tempUser;
     if (!firstName || !firstName.trim().length) {
-      swal('Agregar usuario', 'El campo nombres es requerido', 'error');
+      swal('Agregar usuario', 'El nombres es requerido', 'error');
     } else if (!lastName || !lastName.trim().length) {
-      swal('Agregar usuario', 'El campo apellidos es requerido', 'error');
+      swal('Agregar usuario', 'El apellidos es requerido', 'error');
     } else if (!email || !email.trim().length) {
-      swal('Agregar usuario', 'El campo email es requerido', 'error');
+      swal('Agregar usuario', 'El email es requerido', 'error');
     } else if (!venue || !venue.trim().length) {
-      swal('Agregar usuario', 'El campo sucursal es requerido', 'error');
+      swal('Agregar usuario', 'El sucursal es requerido', 'error');
     } else {
       statusFooterButttonsModal(true);
       this.props.AddUserAction();
@@ -213,13 +227,13 @@ class UserListView extends React.Component<IPropsType, IStateType> {
   private processEditUser() {
     const {firstName, lastName, email, venue} = this.props.users.tempUser;
     if (!firstName || !firstName.trim().length) {
-      swal('Agregar usuario', 'El campo nombres es requerido', 'error');
+      swal('Agregar usuario', 'El nombres es requerido', 'error');
     } else if (!lastName || !lastName.trim().length) {
-      swal('Agregar usuario', 'El campo apellidos es requerido', 'error');
+      swal('Agregar usuario', 'El apellidos es requerido', 'error');
     } else if (!email || !email.trim().length) {
-      swal('Agregar usuario', 'El campo email es requerido', 'error');
+      swal('Agregar usuario', 'El email es requerido', 'error');
     } else if (!venue || !venue.trim().length) {
-      swal('Agregar usuario', 'El campo sucursal es requerido', 'error');
+      swal('Agregar usuario', 'El sucursal es requerido', 'error');
     } else {
       statusFooterButttonsModal(true);
       this.props.editUserAction();

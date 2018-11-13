@@ -1,47 +1,44 @@
 ///<reference path="../../../node_modules/sweetalert/typings/sweetalert.d.ts"/>
 import * as moment from 'moment';
-
 import * as Raven from 'raven-js';
 import * as React from 'react';
 import {ErrorInfo} from 'react';
 import {connect} from 'react-redux';
 import {RouteComponentProps} from 'react-router';
 import {Dispatch} from 'redux';
-import {IUser} from '../../../../../../src/interfaces/user.interface';
+import {IVenue} from '../../../../../../src/interfaces/venue.interface';
+import {IBaseVenue} from '../../../../../../src/interfaces/venue.interface';
 import {
   loadDataAction,
   ModalReduxAction
 } from '../../actions/modal.actions';
 import {
-  addUserAction,
-  changeTempUserAction,
-  deleteUserAction,
-  editUserAction,
-  getUsersAction,
-  ITempUser,
-  IUsersState,
-  UserReduxAction
-} from '../../actions/users.actions';
+  addVenueAction,
+  changeTempVenueAction,
+  deleteVenueAction, editVenueAction,
+  getVenuesAction,
+  IVenuesState,
+  VenueReduxAction
+} from '../../actions/venues.actions';
 import AppContainer from '../../container/AppContainer';
 import {IWindow} from '../../interfaces/window';
 import {
-  hasPermission,
-  statusFooterButttonsModal
+  hasPermission, showModal, statusFooterButttonsModal
 } from '../../utils/common';
 import ModalView from '../Modal/ModalView';
 import Paginator from '../Paginator';
-// import UserFormView from './UserFormView';
+import VenueFormView from './VenueFormView';
 
 interface IPropsType extends RouteComponentProps<{ ticket: string }> {
-  dispatch: Dispatch<UserReduxAction>;
-  users: IUsersState;
+  dispatch: Dispatch<VenueReduxAction>;
+  venues: IVenuesState;
 
-  getUsersAction(page?: number): UserReduxAction;
-  deleteUserAction(id?: string): UserReduxAction;
-  changeTempUserAction(user: ITempUser): UserReduxAction;
-  editUserAction(): UserReduxAction;
+  getVenuesAction(page: number): VenueReduxAction;
+  deleteVenueAction(id?: string): VenueReduxAction;
+  changeTempVenueAction(venue: IBaseVenue): VenueReduxAction;
   loadDataAction(title: string, body: JSX.Element, footer: JSX.Element): ModalReduxAction;
-  AddUserAction(): UserReduxAction;
+  editVenueAction(): ModalReduxAction;
+  addVenueAction(): ModalReduxAction;
 }
 
 interface IStateType {
@@ -52,26 +49,21 @@ declare let window: IWindow;
 
 class VenuesListView extends React.Component<IPropsType, IStateType> {
 
-  // static propTypes = {
-  //   users: PropTypes.object.isRequired,
-  //   dispatch: PropTypes.func.isRequired,
-  //   getUsersAction: PropTypes.func.isRequired
-  // };
-
   constructor(props: IPropsType) {
     super(props);
     this.changePage = this.changePage.bind(this);
-    // this.changeTempUser = this.changeTempUser.bind(this);
-    // this.addUser = this.addUser.bind(this);
-    // this.processAddUser = this.processAddUser.bind(this);
-    // this.editUser = this.editUser.bind(this);
-    // this.processEditUser = this.processEditUser.bind(this);
+    this.addVenue = this.addVenue.bind(this);
+    this.processAddVenue = this.processAddVenue.bind(this);
+    this.editVenue = this.editVenue.bind(this);
+    this.processEditVenue = this.processEditVenue.bind(this);
+    this.deleteVenue = this.deleteVenue.bind(this);
   }
 
   public componentWillMount(): void {
+    const {pagination} = this.props.venues;
     // set the title of the page
-    document.title = 'OSA Andes | Listado de usuarios';
-    this.props.getUsersAction();
+    document.title = 'OSA Andes | Listado de sucursales';
+    this.props.getVenuesAction(pagination.page);
   }
 
   public componentDidCatch(error: Error, errorInfo: ErrorInfo): void {
@@ -83,22 +75,22 @@ class VenuesListView extends React.Component<IPropsType, IStateType> {
 
   public componentWillUnmount(): void {
     // cancel request if component is inmounted
-    if (this.props.users.source) {
-      this.props.users.source.cancel('Operation canceled by the user.');
+    if (this.props.venues.source) {
+      this.props.venues.source.cancel('Operation canceled by the user.');
     }
   }
 
   public render(): React.ReactElement<IPropsType> {
-    const {loading, users, pagination} = this.props.users;
+    const {loading, venues, pagination} = this.props.venues;
     return (
       <AppContainer title="" cMenu="10" cSubMenu="10.4" cAction="Listado">
         <section className="content">
           <div className="box">
             <div className="box-header with-border"><h3 className="box-title">Sucursales <small>{pagination.count}</small></h3>
               {
-                hasPermission(window.user, 'addUser') ?
+                hasPermission(window.user, 'addVenue') ?
                   <div className="box-tools pull-right">
-                    <button className="btn btn-sm btn-success" onClick={undefined}>Agregar</button>
+                    <button className="btn btn-sm btn-success" onClick={this.addVenue}>Agregar</button>
                   </div>
                   : null
               }
@@ -107,31 +99,46 @@ class VenuesListView extends React.Component<IPropsType, IStateType> {
               <table className="table table-striped">
                 <thead>
                   <tr>
-                    <th style={{width: '20%'}}>Nombre</th>
-                    <th style={{width: '20%'}}>Apellido</th>
-                    <th style={{width: '20%'}} className="hidden-xs">Sucursal</th>
-                    <th style={{width: '20%'}} className="hidden-xs">Email</th>
-                    <th style={{width: '20%'}} className="hidden-xs">Modificado</th>
-                    {/*{hasPermission(window.user, 'changeUser') ?*/}
-                      {/*<th style={{width: '1%'}} className="width-10"/> : null}*/}
-                    {/*{hasPermission(window.user, 'deleteUser') ?*/}
-                      {/*<th style={{width: '1%'}} className="width-10"/> : null}*/}
+                    <th style={{width: '60%'}} className="middle">Nombre</th>
+                    <th style={{width: '20%'}} className="middle">Asignaciones</th>
+                    <th style={{width: '20%'}} className="middle hidden-xs">Modificado</th>
+                    {
+                      hasPermission(window.user, 'changeVenue') ?
+                        <th style={{width: '1%'}} className="width-10"/> : null
+                    }
+                    {
+                      hasPermission(window.user, 'deleteVenue') ?
+                        <th style={{width: '1%'}} className="width-10"/> : null
+                    }
                   </tr>
                 </thead>
                 <tbody>
                   {
-                    users.map((user: IUser) => {
+                    venues.map((venue: IVenue) => {
+                      const canDelete = venue.users && venue.users.length === 0 && venue.participants && venue.participants.length === 0;
                       return (
-                        <tr key={user._id} id={`user-${user._id}`}>
-                          <td>{user.firstName}</td>
-                          <td>{user.lastName}</td>
-                          <td className="hidden-xs">{user.venue ? user.venue.name : ''}</td>
-                          <td className="hidden-xs">{user.email}</td>
-                          <td className="hidden-xs">{moment(user.updatedAt).format('LLL')}</td>
-                          {/*{hasPermission(window.user, 'changeUser') ?*/}
-                            {/*<td className="text-blue pointer" onClick={() => this.editUser(user)}><i className="fa fa-pencil"/></td> : null}*/}
-                          {/*{hasPermission(window.user, 'deleteUser') ?*/}
-                            {/*<td className="text-red pointer" onClick={() => this.deleteUser(user)}><i className="fa fa-minus-circle"/></td> : null}*/}
+                        <tr key={venue._id} id={`venue-${venue._id}`}>
+                          <td className="middle">{venue.name}</td>
+                          <td className="text-sm">
+                            Usuarios: {venue.users ? venue.users.length : 0}<br/>
+                            Revisiones: {venue.participants ? venue.participants.length : 0}<br/>
+                          </td>
+                          <td className="middle hidden-xs">{moment(venue.updatedAt).format('LLL')}</td>
+                          {
+                            hasPermission(window.user, 'changeVenue') ?
+                              <td
+                                className="middle text-blue pointer"
+                                onClick={() => this.editVenue(venue)}>
+                                <i className="fa fa-pencil"/>
+                              </td> : null
+                          }
+                          {
+                            hasPermission(window.user, 'deleteVenue') ?
+                              <td
+                                className={canDelete ? 'middle text-red pointer' : 'middle text-muted not-allowed'}
+                                onClick={canDelete ? () => this.deleteVenue(venue) : undefined}
+                              ><i className="fa fa-minus-circle"/></td> : null
+                          }
                         </tr>
                       );
                     })
@@ -158,100 +165,63 @@ class VenuesListView extends React.Component<IPropsType, IStateType> {
     );
   }
 
-  // private addUser(): void {
-  //   const {changeTempUser} = this;
-  //   const {venues, permissions, forms} = this.props.users;
-  //   this.props.changeTempUserAction({
-  //     _id: '',
-  //     firstName: '',
-  //     lastName: '',
-  //     email: '',
-  //     venue: '',
-  //     userPermissions: [],
-  //     userForms: []
-  //   });
-  //   setTimeout(() => {
-  //     this.props.loadDataAction(
-  //       'Agregar Usuario',
-  //       <UserFormView changeTempUser={changeTempUser} venues={venues} users={this.props.users} forms={forms} permissions={permissions}/>,
-  //       <React.Fragment>
-  //         <button type="button" className="btn btn-default" data-dismiss="modal">Cancelar</button>
-  //         <button type="button" className="btn btn-primary" onClick={this.processAddUser}>Grabar</button>
-  //       </React.Fragment>
-  //     );
-  //   }, 200);
-  // }
-  //
-  // private processAddUser(): void {
-  //   const {firstName, lastName, email, venue} = this.props.users.tempUser;
-  //   if (!firstName || !firstName.trim().length) {
-  //     swal('Agregar usuario', 'El campo nombres es requerido', 'error');
-  //   } else if (!lastName || !lastName.trim().length) {
-  //     swal('Agregar usuario', 'El campo apellidos es requerido', 'error');
-  //   } else if (!email || !email.trim().length) {
-  //     swal('Agregar usuario', 'El campo email es requerido', 'error');
-  //   } else if (!venue || !venue.trim().length) {
-  //     swal('Agregar usuario', 'El campo sucursal es requerido', 'error');
-  //   } else {
-  //     statusFooterButttonsModal(true);
-  //     this.props.AddUserAction();
-  //   }
-  // }
-  //
-  // private editUser(user: IUser): void {
-  //   const {changeTempUser} = this;
-  //   const {venues, permissions, forms} = this.props.users;
-  //   const tmpUser = {...user};
-  //   tmpUser.venue = tmpUser.venue ? tmpUser.venue._id : '';
-  //   changeTempUser(tmpUser);
-  //   setTimeout(() => {
-  //     this.props.loadDataAction(
-  //       'Editar Usuario',
-  //       <UserFormView changeTempUser={changeTempUser} venues={venues} users={this.props.users} forms={forms} permissions={permissions} user={user}/>,
-  //       <React.Fragment>
-  //         <button type="button" className="btn btn-default" data-dismiss="modal">Cancelar</button>
-  //         <button type="button" className="btn btn-primary" onClick={this.processEditUser}>Editar</button>
-  //       </React.Fragment>
-  //     );
-  //   }, 200);
-  // }
-  //
-  // private processEditUser() {
-  //   const {firstName, lastName, email, venue} = this.props.users.tempUser;
-  //   // debugger;
-  //   if (!firstName || !firstName.trim().length) {
-  //     swal('Agregar usuario', 'El campo nombres es requerido', 'error');
-  //   } else if (!lastName || !lastName.trim().length) {
-  //     swal('Agregar usuario', 'El campo apellidos es requerido', 'error');
-  //   } else if (!email || !email.trim().length) {
-  //     swal('Agregar usuario', 'El campo email es requerido', 'error');
-  //   } else if (!venue || !venue.trim().length) {
-  //     swal('Agregar usuario', 'El campo sucursal es requerido', 'error');
-  //   } else {
-  //     statusFooterButttonsModal(true);
-  //     this.props.editUserAction();
-  //   }
-  // }
-  //
-  // private changeTempUser({_id, firstName, lastName, email, venue, userPermissions, preferred, userForms}: ITempUser) {
-  //   const tempUser: ITempUser = {
-  //     _id: _id ? _id : this.props.users.tempUser._id,
-  //     firstName: firstName ? firstName : this.props.users.tempUser.firstName,
-  //     lastName: lastName ? lastName : this.props.users.tempUser.lastName,
-  //     email: email ? email : this.props.users.tempUser.email,
-  //     userPermissions: userPermissions ? userPermissions : this.props.users.tempUser.userPermissions,
-  //     userForms: userForms ? userForms : this.props.users.tempUser.userForms,
-  //     preferred: preferred ? preferred : preferred === undefined ? this.props.users.tempUser.preferred : null,
-  //     venue: venue ? venue : venue === undefined ? this.props.users.tempUser.venue : null
-  //   };
-  //   this.props.changeTempUserAction(tempUser);
-  // }
+  private addVenue(): void {
+    this.props.changeTempVenueAction({
+      _id: '',
+      name: ''
+    });
+    setTimeout(() => {
+      this.props.loadDataAction(
+        'Agregar Sucursal',
+        <VenueFormView />,
+        <React.Fragment>
+          <button type="button" className="btn btn-default" data-dismiss="modal">Cancelar</button>
+          <button type="button" className="btn btn-primary" onClick={this.processAddVenue}>Grabar</button>
+        </React.Fragment>
+      );
+    }, 200);
+  }
 
-  private deleteUser(user: IUser) {
+  private processAddVenue(): void {
+    const {tempVenue} = this.props.venues;
+    if (!tempVenue.name || !tempVenue.name.trim()) {
+      swal('Agregar sucursal', 'El nombres es requerido', 'error');
+    } else {
+     this.props.addVenueAction();
+    }
+  }
+
+  private editVenue(venue: IVenue): void {
+    this.props.changeTempVenueAction({
+      _id: venue._id,
+      name: venue.name
+    });
+    setTimeout(() => {
+      this.props.loadDataAction(
+        'Editar Sucursal',
+        <VenueFormView />,
+        <React.Fragment>
+          <button type="button" className="btn btn-default" data-dismiss="modal">Cancelar</button>
+          <button type="button" className="btn btn-primary" onClick={this.processEditVenue}>Editar</button>
+        </React.Fragment>
+      );
+    }, 200);
+  }
+
+  private processEditVenue(): void {
+    const {tempVenue} = this.props.venues;
+    if (!tempVenue.name || !tempVenue.name.trim()) {
+      swal('Editar sucursal', 'El nombres es requerido', 'error');
+    } else {
+      this.props.editVenueAction();
+    }
+  }
+
+  private deleteVenue(venue: IVenue) {
     // ask if you are sure that you are going to delete the user?
     swal({
       title: '¿Estás seguro?',
-      text: `Vas a eliminar el usuario ${user.firstName || ''} ${user.lastName || ''}`,
+      text: `Vas a eliminar la sucursal ${venue.name} `,
       icon: 'warning',
       dangerMode: true,
       buttons: {
@@ -262,33 +232,32 @@ class VenuesListView extends React.Component<IPropsType, IStateType> {
       }
     }).then((willDelete) => {
       if (willDelete) {
-        this.props.deleteUserAction(user._id);
+        this.props.deleteVenueAction(venue._id);
       }
     });
   }
 
   private changePage(page: number): void {
     // change the page
-    this.props.getUsersAction(page);
+    this.props.getVenuesAction(page);
   }
 }
 
-const mapStateToProps = (state: { users: IUsersState }) => {
+const mapStateToProps = (state: { venues: IVenuesState }) => {
   return {
-    users: state.users
+    venues: state.venues
   };
 };
 
-// const mapDispatchToProps = (dispatch: Dispatch<UserReduxAction> ) => {
 const mapDispatchToProps = (dispatch: any ) => {
   return {
     dispatch,
-    getUsersAction: (page?: number) => dispatch(getUsersAction(page)),
-    deleteUserAction: (id: string) => dispatch(deleteUserAction(id)),
-    changeTempUserAction: (user: ITempUser) => dispatch(changeTempUserAction(user)),
-    AddUserAction: () => dispatch(addUserAction()),
-    editUserAction: () => dispatch(editUserAction()),
-    loadDataAction: (title: string, body: JSX.Element, footer: JSX.Element) => dispatch(loadDataAction(title, body, footer))
+    getVenuesAction: (page: number) => dispatch(getVenuesAction(page)),
+    deleteVenueAction: (id: string) => dispatch(deleteVenueAction(id)),
+    changeTempVenueAction: (venue: IBaseVenue) => dispatch(changeTempVenueAction(venue)),
+    loadDataAction: (title: string, body: JSX.Element, footer: JSX.Element) => dispatch(loadDataAction(title, body, footer)),
+    editVenueAction: () => dispatch(editVenueAction()),
+    addVenueAction: () => dispatch(addVenueAction())
   };
 };
 

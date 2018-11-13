@@ -46,7 +46,14 @@ appRouter.patch('/api/admin/users/:id/', Middlewares.isLoggedIn, AdminUsersContr
 appRouter.delete('/api/admin/users/:id/', Middlewares.isLoggedIn, AdminUsersController.apiDeleteUser);
 
 // admin venues
-appRouter.get('/settings/venues/', Middlewares.isLoggedIn, AdminUsersController.index);
+appRouter.get('/settings/venues/', Middlewares.isLoggedIn, AdminVenuesController.index);
+
+// venue companies
+appRouter.get('/venues/', Middlewares.isLoggedIn, AdminVenuesController.index);
+appRouter.get('/api/admin/venues/', Middlewares.isLoggedIn, AdminVenuesController.apiVenues);
+appRouter.post('/api/admin/venues/', Middlewares.isLoggedIn, AdminVenuesController.apiAddVenue);
+appRouter.patch('/api/admin/venues/:id', Middlewares.isLoggedIn, AdminVenuesController.apiEditVenue);
+appRouter.delete('/api/admin/venues/:id', Middlewares.isLoggedIn, AdminVenuesController.apiDeleteVenue);
 
 // setting cars
 appRouter.get('/settings/cars/', Middlewares.isLoggedIn, AdminCarsController.index);
@@ -68,10 +75,6 @@ appRouter.delete('/api/admin/alerts/:id', Middlewares.isLoggedIn, AdminAlertsCon
 
 // admin companies
 appRouter.get('/companies/', Middlewares.isLoggedIn, AdminCompaniesController.index);
-
-// venue companies
-appRouter.get('/venues/', Middlewares.isLoggedIn, AdminVenuesController.index);
-appRouter.get('/api/admin/venues/', Middlewares.isLoggedIn, AdminVenuesController.apiVenues);
 
 // validate vins
 appRouter.post('/api/v1/check-vin/', Middlewares.isJWTAuthenticated, CarController.checkVIN);

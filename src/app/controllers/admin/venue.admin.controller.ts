@@ -9,10 +9,17 @@ class AdminVenueController {
     this.index = this.index.bind(this);
     this.getVenues = this.getVenues.bind(this);
     this.apiVenues = this.apiVenues.bind(this);
+    this.apiAddVenue = this.apiAddVenue.bind(this);
+    this.apiEditVenue = this.apiEditVenue.bind(this);
+    this.apiDeleteVenue = this.apiDeleteVenue.bind(this);
   }
 
-  public index(req: IRequest, res: Response) {
-
+  public async index(req: IRequest, res: Response) {
+    if (req.user.hasPermission('viewVenue')) {
+      res.render('app/index', {token: await req.user.generateToken()});
+    } else {
+      res.status(403).render('403');
+    }
   }
 
   public async apiVenues(req: IRequest, res: Response) {
@@ -21,8 +28,19 @@ class AdminVenueController {
     // paginate options
     const options: PaginateOptions = {
       select: {
-        name: true
+        _id: true,
+        name: true,
+        updatedAt: true,
+        createdAt: true
       },
+      populate: [{
+        path: 'users',
+        select: ['_id']
+      }, {
+        path: 'participants',
+        select: ['_id']
+      }],
+      lean: true,
       sort: {
         createdAt: -1
       },
@@ -51,6 +69,137 @@ class AdminVenueController {
       if (e) {
         res.status(500).json(e);
       }
+    }
+  }
+
+  public async apiAddVenue(req: IRequest, res: Response): Promise<any> {
+    if (!req.user.hasPermission('addVenue')) {
+      return res.status(403).json({
+        message: 'No tiene permisos para esta operación'
+      });
+    }
+    const {name} = req.body;
+    const company = req.user.company;
+    if (!name || !name.length || !name.trim()) {
+      res.status(400).json({
+        message: 'The name is are required',
+        status: 400
+      });
+    }
+    try {
+      const existVenue = await Venue.find({
+        name,
+        company
+      });
+      if (existVenue.length) {
+        res.status(400).json({
+          message: 'Sucursal ya existe.',
+          status: 400
+        });
+      } else {
+        const newVenue = await new Venue({
+          name,
+          company
+        }).save();
+        res.status(201).json({
+          message: 'Sucursal agregada satisfactoriamente.',
+          venue: newVenue
+        });
+      }
+    } catch (e) {
+      console.log(e);
+      res.status(500).json(e);
+    }
+  }
+
+  public async apiEditVenue(req: IRequest, res: Response): Promise<any> {
+    if (!req.user.hasPermission('changeVenue')) {
+      return res.status(403).json({
+        message: 'No tiene permisos para esta operación'
+      });
+    }
+    const {id} = req.params;
+    const company = req.user.company;
+    const {name} = req.body;
+    if (!name || !name.length) {
+      res.status(400).json({
+        message: 'The name is are required',
+        status: 400
+      });
+    }
+    try {
+      const venue = await Venue.findOneAndUpdate({
+        _id: id
+        , company
+      }, {
+        name
+      }, {
+        new: true
+      });
+      if (venue) {
+        const response = {
+          message: 'Sucursal editada satisfactoriamente.',
+          venue
+        };
+        res.status(200).json(response);
+      } else {
+        const response = {
+          id,
+          message: 'Sucursal no encontrada'
+        };
+        res.status(200).json(response);
+      }
+    } catch (e) {
+      console.log(e);
+      res.status(500).json(e);
+    }
+  }
+
+  public async apiDeleteVenue(req: IRequest, res: Response): Promise<any> {
+    if (!req.user.hasPermission('deleteVenue')) {
+      return res.status(403).json({
+        message: 'No tiene permisos para esta operación'
+      });
+    }
+    const {id} = req.params;
+    const company = req.user.company;
+    try {
+      const venue = await Venue.findOne({
+        _id: id,
+        company
+      }).populate([{
+        path: 'users',
+        select: ['_id']
+      }, {
+        path: 'participants',
+        select: ['_id']
+      }]);
+      if (venue) {
+        if (venue.users && venue.users.length) {
+          res.status(400).json({
+            message: 'La sucursal no ha podido ser elimanada porque aún tiene usuarios asignados.'
+          });
+        } else if (venue.participants && venue.participants.length) {
+          res.status(400).json({
+            message: 'La sucursal no ha podido ser elimanada porque aún tiene revisiones asignados.'
+          });
+        } else {
+          await venue.remove();
+          const response = {
+            message: 'Sucursal eliminada satisfactoriamente.',
+            id: venue._id
+          };
+          res.status(200).json(response);
+        }
+      } else {
+        const response = {
+          id,
+          message: 'Esta sucursal ya fue eliminado.'
+        };
+        res.status(200).json(response);
+      }
+    } catch (e) {
+      res.status(500).json(e);
     }
   }
 

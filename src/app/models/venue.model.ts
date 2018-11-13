@@ -20,7 +20,22 @@ const venueSchema = new mongoose.Schema({
 }, {
   timestamps: true
 });
+
 mongoose.plugin(mongoosePaginate);
+
+venueSchema.virtual('users', {
+  ref: 'User', // The model to use
+  localField: '_id', // Find field in this model
+  foreignField: 'venue', // is equal to field in another model
+  justOne: false
+});
+
+venueSchema.virtual('participants', {
+  ref: 'Participant', // The model to use
+  localField: '_id', // Find field in this model
+  foreignField: 'venue', // is equal to field in another model
+  justOne: false
+});
 
 const Venue = mongoose.model<IVenueModel>('Venue', venueSchema);
 

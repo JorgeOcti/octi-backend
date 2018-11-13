@@ -8,6 +8,9 @@ import Axios, {
 } from 'axios';
 import * as Raven from 'raven-js';
 import {ITempUser} from '../actions/users.actions';
+import {
+  IBaseVenue
+} from '../../../../../src/interfaces/venue.interface';
 // import {IWindow} from '../interfaces/window';
 
 // declare let window: IWindow;
@@ -26,17 +29,6 @@ export default class ApiService {
 
   constructor() {
     const headers: IHeaders = {};
-    // if (window.token) {
-    //   headers = {
-    //     Authorization: `Bearer ${window.token}`
-    //   };
-    // } else {
-    //   headers = {
-    //     'X-CSRFToken': window.getCookie('csrftoken')
-    //   };
-    // }
-    // headers['Content-Type'] = 'application/json';
-
     this.instance = Axios.create({
       headers
     });
@@ -99,6 +91,23 @@ export default class ApiService {
   public getVenues(page: number, pageSize?: number): AxiosPromise {
     return this.instance.get(
       `/api/admin/venues/?page=${page}${pageSize ? `&pageSize=${pageSize}` : ''}`
+    );
+  }
+
+  public deleteVenue(id: string): AxiosPromise {
+    return this.instance.delete(
+      `/api/admin/venues/${id}/`
+    );
+  }
+
+  public editVenue(venue: IBaseVenue): AxiosPromise {
+    return this.instance.patch(
+      `/api/admin/venues/${venue._id}/`, venue
+    );
+  }
+  public addVenue(venue: IBaseVenue): AxiosPromise {
+    return this.instance.post(
+      `/api/admin/venues/`, venue
     );
   }
 

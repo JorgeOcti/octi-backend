@@ -1,9 +1,11 @@
 ///<reference path="../../../node_modules/sweetalert/typings/sweetalert.d.ts"/>
-import * as PropTypes from 'prop-types';
+// import * as PropTypes from 'prop-types';
 import * as Raven from 'raven-js';
 import * as React from 'react';
 import {ErrorInfo} from 'react';
 import {connect} from 'react-redux';
+
+// Interfaces
 import {IForm} from '../../../../../../src/interfaces/form.interface';
 import {IPermission} from '../../../../../../src/interfaces/permision.interface';
 import {IUser} from '../../../../../../src/interfaces/user.interface';
@@ -43,8 +45,15 @@ class UserFormView extends React.Component<IPropsType, IStateType> {
   }
 
   public componentDidMount() {
+    const {changeTempUser} = this.props;
     ($('#permission-select') as any).chosen().change((e: React.ChangeEvent<HTMLSelectElement>) => {
       this.addPermission(e.target.value);
+    });
+    ($('#id-venue') as any).chosen().change((e: React.ChangeEvent<HTMLSelectElement>) => {
+      changeTempUser({venue: e.target.value});
+    });
+    ($('#form-default-select') as any).chosen().change((e: React.ChangeEvent<HTMLSelectElement>) => {
+      changeTempUser({preferred: e.target.value});
     });
     ($('#form-select') as any).chosen().change((e: React.ChangeEvent<HTMLSelectElement>) => {
       this.addForm(e.target.value);
@@ -60,6 +69,8 @@ class UserFormView extends React.Component<IPropsType, IStateType> {
 
   componentDidUpdate() {
     $('#permission-select').trigger('chosen:updated');
+    $('#form-default-select').trigger('chosen:updated');
+    $('#id-venue').trigger('chosen:updated');
     $('#form-select').trigger('chosen:updated');
   }
 
@@ -129,12 +140,15 @@ class UserFormView extends React.Component<IPropsType, IStateType> {
         </div>
         <div className="col-md-12">
           <div className="form-group">
-            <label htmlFor="sel1">Sucursal</label>
+            <label htmlFor="id-venue">Sucursal</label>
             <select
               className="form-control"
+              id="id-venue"
               name="venue"
               defaultValue={tempUser && tempUser.venue ? tempUser.venue : undefined}
-              onChange={(e: React.ChangeEvent<HTMLSelectElement>) => changeTempUser({venue: e.target.value})}>
+              onChange={undefined}
+              // onChange={(e: React.ChangeEvent<HTMLSelectElement>) => changeTempUser({venue: e.target.value})}
+              >
               <option value="">Seleccione venue</option>
               {
                 venues.map((venue) => (
@@ -188,9 +202,14 @@ class UserFormView extends React.Component<IPropsType, IStateType> {
         <div className="col-md-12">
           <div className="form-group">
             <label>Formulario por defecto</label>
-            <select id="form-default-select" className="form-control" style={{minWidth: '200px'}}
-                    defaultValue={tempUser && tempUser.preferred ? tempUser.preferred : undefined}
-                    onChange={(e: React.ChangeEvent<HTMLSelectElement>) => changeTempUser({preferred: e.target.value})}>
+            <select
+              id="form-default-select"
+              className="form-control"
+              style={{minWidth: '200px'}}
+              defaultValue={tempUser && tempUser.preferred ? tempUser.preferred : undefined}
+              onChange={undefined}
+              // onChange={(e: React.ChangeEvent<HTMLSelectElement>) => changeTempUser({preferred: e.target.value})}
+            >
               <option value="">Seleccione formularios</option>
               {
                 userForms.map((form) => {

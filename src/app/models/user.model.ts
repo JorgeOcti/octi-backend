@@ -7,8 +7,8 @@ import {IUser} from '../../interfaces/user.interface';
 import {IPermissionModel} from './permision.model';
 
 export interface IUserModel extends IUser, mongoose.Document {
-  comparePassword: (candidatePassword: string, cb: (err: any, isMatch: any) => {}) => void;
-  comparePasswordSync: (candidatePassword: string) => void;
+  comparePassword: (candidatePassword: string, cb: (err: any, isMatch: any) => {}) => boolean;
+  comparePasswordSync: (candidatePassword: string) => boolean;
   hasPermission: (permission: string) => boolean;
   fullName: () => string;
   generateToken: () => string;
@@ -145,7 +145,7 @@ userSchema.methods.comparePassword = function(candidatePassword: string, cb: (er
   });
 };
 
-userSchema.methods.comparePasswordSync = function(candidatePassword: string) {
+userSchema.methods.comparePasswordSync = function(candidatePassword: string){
   return bcrypt.compareSync(candidatePassword, this.password);
 };
 

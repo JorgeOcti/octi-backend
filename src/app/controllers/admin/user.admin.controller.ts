@@ -1,11 +1,16 @@
 import {ObjectID} from 'bson';
 import {Response} from 'express';
-import {PaginateOptions, PaginateResult} from 'mongoose';
+import {
+  PaginateOptions,
+  PaginateResult
+} from 'mongoose';
 import {queue} from '../../../app';
+import {IForm} from '../../../interfaces/form.interface';
 import {IRequest} from '../../../interfaces/global.interface';
 import {IPermission} from '../../../interfaces/permision.interface';
-import User, {IUserModel} from '../../models/user.model';
-import {IForm} from "../../../interfaces/form.interface";
+import User, {
+  IUserModel
+} from '../../models/user.model';
 
 class AdminUsersController {
 
@@ -238,7 +243,7 @@ class AdminUsersController {
         } else {
           const response = {
             id,
-            message: 'Usuario no encontardo'
+            message: 'Usuario no encontrado'
           };
           res.status(200).json(response);
         }

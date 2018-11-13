@@ -19,6 +19,18 @@ const venueSchema = new mongoose.Schema({
     timestamps: true
 });
 mongoose.plugin(mongoosePaginate);
+venueSchema.virtual('users', {
+    ref: 'User',
+    localField: '_id',
+    foreignField: 'venue',
+    justOne: false
+});
+venueSchema.virtual('participants', {
+    ref: 'Participant',
+    localField: '_id',
+    foreignField: 'venue',
+    justOne: false
+});
 const Venue = mongoose.model('Venue', venueSchema);
 exports.default = Venue;
 //# sourceMappingURL=venue.model.js.map

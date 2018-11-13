@@ -39,7 +39,13 @@ appRouter.post('/api/admin/users/', middlewares_1.default.isLoggedIn, user_admin
 appRouter.patch('/api/admin/users/:id/', middlewares_1.default.isLoggedIn, user_admin_controller_1.default.apiEditUser);
 appRouter.delete('/api/admin/users/:id/', middlewares_1.default.isLoggedIn, user_admin_controller_1.default.apiDeleteUser);
 // admin venues
-appRouter.get('/settings/venues/', middlewares_1.default.isLoggedIn, user_admin_controller_1.default.index);
+appRouter.get('/settings/venues/', middlewares_1.default.isLoggedIn, venue_admin_controller_1.default.index);
+// venue companies
+appRouter.get('/venues/', middlewares_1.default.isLoggedIn, venue_admin_controller_1.default.index);
+appRouter.get('/api/admin/venues/', middlewares_1.default.isLoggedIn, venue_admin_controller_1.default.apiVenues);
+appRouter.post('/api/admin/venues/', middlewares_1.default.isLoggedIn, venue_admin_controller_1.default.apiAddVenue);
+appRouter.patch('/api/admin/venues/:id', middlewares_1.default.isLoggedIn, venue_admin_controller_1.default.apiEditVenue);
+appRouter.delete('/api/admin/venues/:id', middlewares_1.default.isLoggedIn, venue_admin_controller_1.default.apiDeleteVenue);
 // setting cars
 appRouter.get('/settings/cars/', middlewares_1.default.isLoggedIn, car_admin_controller_1.default.index);
 appRouter.get('/api/admin/cars/', middlewares_1.default.isLoggedIn, car_admin_controller_1.default.apiListCars);
@@ -56,9 +62,6 @@ appRouter.post('/api/admin/alerts/', middlewares_1.default.isLoggedIn, alert_adm
 appRouter.delete('/api/admin/alerts/:id', middlewares_1.default.isLoggedIn, alert_admin_controller_1.default.apiDeleteAlert);
 // admin companies
 appRouter.get('/companies/', middlewares_1.default.isLoggedIn, company_admin_controller_1.default.index);
-// venue companies
-appRouter.get('/venues/', middlewares_1.default.isLoggedIn, venue_admin_controller_1.default.index);
-appRouter.get('/api/admin/venues/', middlewares_1.default.isLoggedIn, venue_admin_controller_1.default.apiVenues);
 // validate vins
 appRouter.post('/api/v1/check-vin/', middlewares_1.default.isJWTAuthenticated, car_controller_1.default.checkVIN);
 // change password

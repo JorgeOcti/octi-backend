@@ -160,7 +160,7 @@ export function editUserAction() {
         });
         setTimeout(() => {
           $(`#user-${tempUser._id}`).removeClass('editing-item');
-        }, 2000);
+        }, 1000);
       })
       .catch((err: AxiosError) => {
         statusFooterButttonsModal(false);
@@ -317,7 +317,7 @@ export function deleteUserAction(id: string) {
           .addClass('deleted-item');
         setTimeout(() => {
           dispatch(removeUserAction(id));
-        }, 500);
+        }, 1000);
       })
       .catch((err: AxiosError): void => {
         dispatch(isLoadingAction(false));

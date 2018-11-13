@@ -231,7 +231,7 @@ class AdminUsersController {
                 else {
                     const response = {
                         id,
-                        message: 'Usuario no encontardo'
+                        message: 'Usuario no encontrado'
                     };
                     res.status(200).json(response);
                 }
