@@ -4,8 +4,6 @@ import * as Raven from 'raven-js';
 import * as React from 'react';
 import {ErrorInfo} from 'react';
 import {connect} from 'react-redux';
-
-// Interfaces
 import {IForm} from '../../../../../../src/interfaces/form.interface';
 import {IPermission} from '../../../../../../src/interfaces/permision.interface';
 import {IUser} from '../../../../../../src/interfaces/user.interface';

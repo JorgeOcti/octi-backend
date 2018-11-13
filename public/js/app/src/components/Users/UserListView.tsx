@@ -8,10 +8,7 @@ import {connect} from 'react-redux';
 import {RouteComponentProps} from 'react-router';
 import {Dispatch} from 'redux';
 import {IUser} from '../../../../../../src/interfaces/user.interface';
-import {
-  loadDataAction,
-  ModalReduxAction
-} from '../../actions/modal.actions';
+import {loadDataAction, ModalReduxAction} from '../../actions/modal.actions';
 import {
   addUserAction,
   changeTempUserAction,
@@ -24,10 +21,7 @@ import {
 } from '../../actions/users.actions';
 import AppContainer from '../../container/AppContainer';
 import {IWindow} from '../../interfaces/window';
-import {
-  hasPermission,
-  statusFooterButttonsModal
-} from '../../utils/common';
+import {hasPermission, statusFooterButttonsModal} from '../../utils/common';
 import ModalView from '../Modal/ModalView';
 import Paginator from '../Paginator';
 import UserFormView from './UserFormView';

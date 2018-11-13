@@ -6,7 +6,7 @@ const initialState: IVenuesState = {
   loading: true,
   source: null,
   tempVenue: {
-    _id:'',
+    _id: '',
     name: ''
   },
   pagination: {

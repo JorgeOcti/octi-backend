@@ -6,25 +6,20 @@ import {ErrorInfo} from 'react';
 import {connect} from 'react-redux';
 import {RouteComponentProps} from 'react-router';
 import {Dispatch} from 'redux';
-import {IVenue} from '../../../../../../src/interfaces/venue.interface';
-import {IBaseVenue} from '../../../../../../src/interfaces/venue.interface';
-import {
-  loadDataAction,
-  ModalReduxAction
-} from '../../actions/modal.actions';
+import {IBaseVenue, IVenue} from '../../../../../../src/interfaces/venue.interface';
+import {loadDataAction, ModalReduxAction} from '../../actions/modal.actions';
 import {
   addVenueAction,
   changeTempVenueAction,
-  deleteVenueAction, editVenueAction,
+  deleteVenueAction,
+  editVenueAction,
   getVenuesAction,
   IVenuesState,
   VenueReduxAction
 } from '../../actions/venues.actions';
 import AppContainer from '../../container/AppContainer';
 import {IWindow} from '../../interfaces/window';
-import {
-  hasPermission, showModal, statusFooterButttonsModal
-} from '../../utils/common';
+import {hasPermission} from '../../utils/common';
 import ModalView from '../Modal/ModalView';
 import Paginator from '../Paginator';
 import VenueFormView from './VenueFormView';

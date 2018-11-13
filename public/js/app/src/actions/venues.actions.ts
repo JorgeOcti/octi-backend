@@ -1,16 +1,8 @@
-import {
-  AxiosError,
-  AxiosResponse,
-  CancelTokenSource,
-  default as Axios
-} from 'axios';
+import {AxiosError, AxiosResponse, CancelTokenSource, default as Axios} from 'axios';
 import {Dispatch} from 'redux';
-import {
-  IBaseVenue, IVenue
-} from '../../../../../src/interfaces/venue.interface';
+import {IBaseVenue, IVenue} from '../../../../../src/interfaces/venue.interface';
 import ApiService from '../utils/axios';
 import {showModal, statusFooterButttonsModal} from '../utils/common';
-import {getUsersAction, IUsersState, UserReduxAction} from "./users.actions";
 
 export interface IVenuesState {
   venues: IVenue[];
