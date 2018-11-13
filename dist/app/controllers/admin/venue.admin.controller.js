@@ -1,6 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 const venue_model_1 = require("../../models/venue.model");
+const inventory_model_1 = require("../../../inventory/models/inventory.model");
 class AdminVenueController {
     constructor() {
         this.index = this.index.bind(this);
@@ -163,42 +164,61 @@ class AdminVenueController {
         const { id } = req.params;
         const company = req.user.company;
         try {
-            const venue = await venue_model_1.default.findOne({
-                _id: id,
-                company
-            }).populate([{
-                    path: 'users',
-                    select: ['_id']
-                }, {
-                    path: 'participants',
-                    select: ['_id']
-                }]);
-            if (venue) {
-                if (venue.users && venue.users.length) {
-                    res.status(400).json({
-                        message: 'La sucursal no ha podido ser elimanada porque aún tiene usuarios asignados.'
-                    });
-                }
-                else if (venue.participants && venue.participants.length) {
-                    res.status(400).json({
-                        message: 'La sucursal no ha podido ser elimanada porque aún tiene revisiones asignados.'
-                    });
+            const inventories = await inventory_model_1.default.find({
+                $or: [{
+                        venues: id
+                    }, {
+                        'cars.venue': id
+                    }, {
+                        'cars.venueFound': id
+                    }], company
+            }, {
+                name: true
+            });
+            if (inventories && inventories.length) {
+                const textInventories = inventories.map((inventory) => (inventory.name)).join('\n- ');
+                res.status(400).json({
+                    message: `La sucursal no ha podido ser elimanada porque esta utilizada en los siguientes inventarios : \n- ${textInventories}`
+                });
+            }
+            else {
+                const venue = await venue_model_1.default.findOne({
+                    _id: id,
+                    company
+                }).populate([{
+                        path: 'users',
+                        select: ['_id']
+                    }, {
+                        path: 'participants',
+                        select: ['_id']
+                    }]);
+                if (venue) {
+                    if (venue.users && venue.users.length) {
+                        res.status(400).json({
+                            message: 'La sucursal no ha podido ser elimanada porque aún tiene usuarios asignados.'
+                        });
+                    }
+                    else if (venue.participants && venue.participants.length) {
+                        res.status(400).json({
+                            message: 'La sucursal no ha podido ser elimanada porque aún tiene revisiones asignados.'
+                        });
+                    }
+                    else {
+                        await venue.remove();
+                        const response = {
+                            message: 'Sucursal eliminada satisfactoriamente.',
+                            id: venue._id
+                        };
+                        res.status(200).json(response);
+                    }
                 }
                 else {
-                    await venue.remove();
                     const response = {
-                        message: 'Sucursal eliminada satisfactoriamente.',
-                        id: venue._id
+                        id,
+                        message: 'Esta sucursal ya fue eliminado.'
                     };
                     res.status(200).json(response);
                 }
-            }
-            else {
-                const response = {
-                    id,
-                    message: 'Esta sucursal ya fue eliminado.'
-                };
-                res.status(200).json(response);
             }
         }
         catch (e) {

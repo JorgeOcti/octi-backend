@@ -3,6 +3,7 @@ import {Response} from 'express';
 import {PaginateOptions, PaginateResult} from 'mongoose';
 import {IRequest} from '../../../interfaces/global.interface';
 import Venue, {IVenueModel} from '../../models/venue.model';
+import Inventory from "../../../inventory/models/inventory.model";
 
 class AdminVenueController {
   constructor() {
@@ -164,39 +165,57 @@ class AdminVenueController {
     const {id} = req.params;
     const company = req.user.company;
     try {
-      const venue = await Venue.findOne({
-        _id: id,
-        company
-      }).populate([{
-        path: 'users',
-        select: ['_id']
+      const inventories = await Inventory.find({
+        $or: [{
+          venues: id
+        }, {
+          'cars.venue': id
+        }, {
+          'cars.venueFound': id
+        }], company
       }, {
-        path: 'participants',
-        select: ['_id']
-      }]);
-      if (venue) {
-        if (venue.users && venue.users.length) {
-          res.status(400).json({
-            message: 'La sucursal no ha podido ser elimanada porque aún tiene usuarios asignados.'
-          });
-        } else if (venue.participants && venue.participants.length) {
-          res.status(400).json({
-            message: 'La sucursal no ha podido ser elimanada porque aún tiene revisiones asignados.'
-          });
+        name: true
+      });
+      if (inventories && inventories.length) {
+        const textInventories = inventories.map((inventory) => (inventory.name)).join('\n- ');
+        res.status(400).json({
+          message: `La sucursal no ha podido ser elimanada porque esta utilizada en los siguientes inventarios : \n- ${textInventories}`
+        });
+      } else {
+        const venue = await Venue.findOne({
+          _id: id,
+          company
+        }).populate([{
+          path: 'users',
+          select: ['_id']
+        }, {
+          path: 'participants',
+          select: ['_id']
+        }]);
+        if (venue) {
+          if (venue.users && venue.users.length) {
+            res.status(400).json({
+              message: 'La sucursal no ha podido ser elimanada porque aún tiene usuarios asignados.'
+            });
+          } else if (venue.participants && venue.participants.length) {
+            res.status(400).json({
+              message: 'La sucursal no ha podido ser elimanada porque aún tiene revisiones asignados.'
+            });
+          } else {
+            await venue.remove();
+            const response = {
+              message: 'Sucursal eliminada satisfactoriamente.',
+              id: venue._id
+            };
+            res.status(200).json(response);
+          }
         } else {
-          await venue.remove();
           const response = {
-            message: 'Sucursal eliminada satisfactoriamente.',
-            id: venue._id
+            id,
+            message: 'Esta sucursal ya fue eliminado.'
           };
           res.status(200).json(response);
         }
-      } else {
-        const response = {
-          id,
-          message: 'Esta sucursal ya fue eliminado.'
-        };
-        res.status(200).json(response);
       }
     } catch (e) {
       res.status(500).json(e);

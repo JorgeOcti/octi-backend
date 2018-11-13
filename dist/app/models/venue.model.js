@@ -31,6 +31,12 @@ venueSchema.virtual('participants', {
     foreignField: 'venue',
     justOne: false
 });
+// venueSchema.virtual('inventories', {
+//   ref: 'Inventory', // The model to use
+//   localField: '_id', // Find field in this model
+//   foreignField: 'cars.venue', // is equal to field in another model
+//   justOne: false
+// });
 const Venue = mongoose.model('Venue', venueSchema);
 exports.default = Venue;
 //# sourceMappingURL=venue.model.js.map
