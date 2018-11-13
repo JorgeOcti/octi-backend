@@ -98,173 +98,188 @@ class UserFormView extends React.Component<IPropsType, IStateType> {
       }
     });
     return (
-      <div className="row">
-        <div className="col-md-12">
-          <div className="form-group">
-            <label>Nombres</label>
-            <input
-              type="text"
-              name="fistName"
-              className="form-control"
-              maxLength={50}
-              defaultValue={tempUser ? tempUser.firstName : undefined}
-              onChange={(e: React.ChangeEvent<HTMLInputElement>) => changeTempUser({firstName: e.target.value})}
-            />
+      <React.Fragment>
+        <ul className="nav nav-tabs" style={{marginBottom: '15px'}}>
+          <li className="active"><a data-toggle="tab" href="#general">General</a></li>
+          <li><a data-toggle="tab" href="#permissions">Permisos</a></li>
+        </ul>
+        <div className="tab-content">
+          <div id="general" className="tab-pane fade in active">
+            <div className="row">
+              <div className="col-md-12">
+                <div className="form-group">
+                  <label>Nombres</label>
+                  <input
+                    type="text"
+                    name="fistName"
+                    className="form-control"
+                    maxLength={50}
+                    defaultValue={tempUser ? tempUser.firstName : undefined}
+                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => changeTempUser({firstName: e.target.value})}
+                  />
+                </div>
+              </div>
+              <div className="col-md-12">
+                <div className="form-group">
+                  <label>Apellidos</label>
+                  <input
+                    type="text"
+                    name="lastName"
+                    className="form-control"
+                    maxLength={50}
+                    defaultValue={tempUser ? tempUser.lastName : undefined}
+                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => changeTempUser({lastName: e.target.value})}
+                  />
+                </div>
+              </div>
+              <div className="col-md-12">
+                <div className="form-group">
+                  <label>Email</label>
+                  <input
+                    type="email"
+                    name="email"
+                    className="form-control"
+                    maxLength={80}
+                    defaultValue={tempUser ? tempUser.email : undefined}
+                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => changeTempUser({email: e.target.value})}
+                  />
+                </div>
+              </div>
+              <div className="col-md-12">
+                <div className="form-group">
+                  <label htmlFor="id-venue">Sucursal</label>
+                  <select
+                    className="form-control"
+                    id="id-venue"
+                    name="venue"
+                    defaultValue={tempUser && tempUser.venue ? tempUser.venue : undefined}
+                    onChange={undefined}
+                    // onChange={(e: React.ChangeEvent<HTMLSelectElement>) => changeTempUser({venue: e.target.value})}
+                  >
+                    <option value="">Seleccione venue</option>
+                    {
+                      venues.map((venue) => (
+                        <option key={venue._id} value={venue._id}>{venue.name}</option>
+                      ))
+                    }
+                  </select>
+                </div>
+              </div>
+              <div className="col-md-12">
+                <div className="form-group">
+                  <label>Formularios</label>
+                  <select id="form-select" className="form-control" style={{minWidth: '200px'}} onChange={undefined}>
+                    <option value="">Seleccione formularios</option>
+                    {
+                      selectForms.map((form) => {
+                        return (
+                          <option key={form._id} value={form._id}>{form.name}</option>
+                        );
+                      })
+                    }
+                  </select>
+                </div>
+              </div>
+              <div className="col-md-12">
+                <table className="table table-striped">
+                  <thead>
+                  <tr>
+                    <th style={{width: '90%'}}>Name</th>
+                    <th style={{width: '10%'}}/>
+                  </tr>
+                  </thead>
+                  <tbody>
+                  {
+                    userForms.length ? userForms.map((form: any) => {
+                        return (
+                          <tr key={form._id}>
+                            <td>{form.name}</td>
+                            <td className="text-center text-red pointer" onClick={() => this.deleteForm(form._id)}><i
+                              className="fa fa-minus-circle"/></td>
+                          </tr>
+                        );
+                      }) :
+                      <tr>
+                        <td colSpan={2}>Aún no se han seleccionado permisos.</td>
+                      </tr>
+                  }
+                  </tbody>
+                </table>
+              </div>
+              <div className="col-md-12">
+                <div className="form-group">
+                  <label>Formulario por defecto</label>
+                  <select
+                    id="form-default-select"
+                    className="form-control"
+                    style={{minWidth: '200px'}}
+                    defaultValue={tempUser && tempUser.preferred ? tempUser.preferred : undefined}
+                    onChange={undefined}
+                    // onChange={(e: React.ChangeEvent<HTMLSelectElement>) => changeTempUser({preferred: e.target.value})}
+                  >
+                    <option value="">Seleccione formularios</option>
+                    {
+                      userForms.map((form) => {
+                        return (
+                          <option key={form._id} value={form._id}>{form.name}</option>
+                        );
+                      })
+                    }
+                  </select>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div id="permissions" className="tab-pane fade">
+
+            <div className="row">
+              <div className="col-md-12">
+                <div className="form-group">
+                  <label>Permisos</label>
+                  <select id="permission-select" className="form-control" style={{minWidth: '200px'}}>
+                    <option value="">Seleccione permisos</option>
+                    {
+                      selectPermissions.map((permission) => {
+                        return (
+                          <option key={permission._id} value={permission._id}>{permission.name}</option>
+                        );
+                      })
+                    }
+                  </select>
+                </div>
+              </div>
+              <div className="col-md-12">
+                <table className="table table-striped">
+                  <thead>
+                  <tr>
+                    <th style={{width: '20%'}}>Code</th>
+                    <th style={{width: '70%'}}>Name</th>
+                    <th style={{width: '10%'}}/>
+                  </tr>
+                  </thead>
+                  <tbody>
+                  {
+                    userPermissions.length ? userPermissions.map((permission: any) => {
+                        return (
+                          <tr key={permission._id}>
+                            <td>{permission.codeName}</td>
+                            <td>{permission.name}</td>
+                            <td className="text-center text-red pointer" onClick={() => this.deletePermission(permission._id)}><i
+                              className="fa fa-minus-circle"/></td>
+                          </tr>
+                        );
+                      }) :
+                      <tr>
+                        <td colSpan={3}>Aún no se han seleccionado permisos.</td>
+                      </tr>
+                  }
+                  </tbody>
+                </table>
+              </div>
+            </div>
           </div>
         </div>
-        <div className="col-md-12">
-          <div className="form-group">
-            <label>Apellidos</label>
-            <input
-              type="text"
-              name="lastName"
-              className="form-control"
-              maxLength={50}
-              defaultValue={tempUser ? tempUser.lastName : undefined}
-              onChange={(e: React.ChangeEvent<HTMLInputElement>) => changeTempUser({lastName: e.target.value})}
-            />
-          </div>
-        </div>
-        <div className="col-md-12">
-          <div className="form-group">
-            <label>Email</label>
-            <input
-              type="email"
-              name="email"
-              className="form-control"
-              maxLength={80}
-              defaultValue={tempUser ? tempUser.email : undefined}
-              onChange={(e: React.ChangeEvent<HTMLInputElement>) => changeTempUser({email: e.target.value})}
-            />
-          </div>
-        </div>
-        <div className="col-md-12">
-          <div className="form-group">
-            <label htmlFor="id-venue">Sucursal</label>
-            <select
-              className="form-control"
-              id="id-venue"
-              name="venue"
-              defaultValue={tempUser && tempUser.venue ? tempUser.venue : undefined}
-              onChange={undefined}
-              // onChange={(e: React.ChangeEvent<HTMLSelectElement>) => changeTempUser({venue: e.target.value})}
-              >
-              <option value="">Seleccione venue</option>
-              {
-                venues.map((venue) => (
-                  <option key={venue._id} value={venue._id}>{venue.name}</option>
-                ))
-              }
-            </select>
-          </div>
-        </div>
-        <div className="col-md-12">
-          <div className="form-group">
-            <label>Formularios</label>
-            <select id="form-select" className="form-control" style={{minWidth: '200px'}} onChange={undefined}>
-              <option value="">Seleccione formularios</option>
-              {
-                selectForms.map((form) => {
-                  return (
-                    <option key={form._id} value={form._id}>{form.name}</option>
-                  );
-                })
-              }
-            </select>
-          </div>
-        </div>
-        <div className="col-md-12">
-          <table className="table table-striped">
-            <thead>
-              <tr>
-                <th style={{width: '90%'}}>Name</th>
-                <th style={{width: '10%'}}/>
-              </tr>
-            </thead>
-            <tbody>
-            {
-              userForms.length ? userForms.map((form: any) => {
-                  return (
-                    <tr key={form._id}>
-                      <td>{form.name}</td>
-                      <td className="text-center text-red pointer" onClick={() => this.deleteForm(form._id)}><i
-                        className="fa fa-minus-circle"/></td>
-                    </tr>
-                  );
-                }) :
-                <tr>
-                  <td colSpan={2}>Aún no se han seleccionado permisos.</td>
-                </tr>
-            }
-            </tbody>
-          </table>
-        </div>
-        <div className="col-md-12">
-          <div className="form-group">
-            <label>Formulario por defecto</label>
-            <select
-              id="form-default-select"
-              className="form-control"
-              style={{minWidth: '200px'}}
-              defaultValue={tempUser && tempUser.preferred ? tempUser.preferred : undefined}
-              onChange={undefined}
-              // onChange={(e: React.ChangeEvent<HTMLSelectElement>) => changeTempUser({preferred: e.target.value})}
-            >
-              <option value="">Seleccione formularios</option>
-              {
-                userForms.map((form) => {
-                  return (
-                    <option key={form._id} value={form._id}>{form.name}</option>
-                  );
-                })
-              }
-            </select>
-          </div>
-        </div>
-        <div className="col-md-12">
-          <div className="form-group">
-            <label>Permisos</label>
-            <select id="permission-select" className="form-control" style={{minWidth: '200px'}}>
-              <option value="">Seleccione permisos</option>
-              {
-                selectPermissions.map((permission) => {
-                  return (
-                    <option key={permission._id} value={permission._id}>{permission.name}</option>
-                  );
-                })
-              }
-            </select>
-          </div>
-        </div>
-        <div className="col-md-12">
-          <table className="table table-striped">
-            <thead>
-              <tr>
-                <th style={{width: '20%'}}>Code</th>
-                <th style={{width: '70%'}}>Name</th>
-                <th style={{width: '10%'}}/>
-              </tr>
-            </thead>
-            <tbody>
-            {
-              userPermissions.length ? userPermissions.map((permission: any) => {
-                  return (
-                    <tr key={permission._id}>
-                      <td>{permission.codeName}</td>
-                      <td>{permission.name}</td>
-                      <td className="text-center text-red pointer" onClick={() => this.deletePermission(permission._id)}><i
-                        className="fa fa-minus-circle"/></td>
-                    </tr>
-                  );
-                }) :
-                <tr>
-                  <td colSpan={3}>Aún no se han seleccionado permisos.</td>
-                </tr>
-            }
-            </tbody>
-          </table>
-        </div>
-      </div>
+      </React.Fragment>
     );
   }
 
