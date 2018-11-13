@@ -214,7 +214,7 @@ class UserListView extends React.Component<IPropsType, IStateType> {
     changeTempUser(tmpUser);
     setTimeout(() => {
       this.props.loadDataAction(
-        'Editar Usuario',
+        `Editando a ${user.firstName} ${user.lastName}`,
         <UserFormView changeTempUser={changeTempUser} venues={venues} users={this.props.users} forms={forms} permissions={permissions} user={user}/>,
         <React.Fragment>
           <button type="button" className="btn btn-default" data-dismiss="modal">Cancelar</button>
