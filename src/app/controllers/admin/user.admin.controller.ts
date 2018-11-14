@@ -205,7 +205,6 @@ class AdminUsersController {
           }, {
             firstName,
             lastName,
-            email,
             preferred,
             userPermissions: userPermissions && userPermissions.length ? userPermissions.map((userPermission: IPermission) => userPermission._id) : [],
             userForms: userForms && userForms.length ? userForms.map((userForm: IForm) => userForm._id) : [],
@@ -231,7 +230,7 @@ class AdminUsersController {
         if (user) {
           // prevent return password
           user = user.toObject();
-          if (user) {
+          if (user && user.password) {
             delete user.password;
           }
 

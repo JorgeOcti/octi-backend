@@ -16,6 +16,7 @@ interface IPropsType {
   forms: IForm[];
   permissions: IPermission[];
   user?: IUser;
+  create: boolean;
   changeTempUser(user: any): void;
 }
 
@@ -73,7 +74,7 @@ class UserFormView extends React.Component<IPropsType, IStateType> {
   }
 
   public render(): React.ReactElement<IPropsType> {
-    const {changeTempUser, venues, permissions, forms} = this.props;
+    const {changeTempUser, venues, permissions, forms, create} = this.props;
     const {tempUser} = this.props.users;
     const userPermissions: IPermission[] = [];
     const selectPermissions: IPermission[] = [];
@@ -136,6 +137,7 @@ class UserFormView extends React.Component<IPropsType, IStateType> {
                   <input
                     type="email"
                     name="email"
+                    disabled={!create}
                     className="form-control"
                     maxLength={80}
                     defaultValue={tempUser ? tempUser.email : undefined}

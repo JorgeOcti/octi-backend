@@ -175,7 +175,7 @@ class UserListView extends React.Component<IPropsType, IStateType> {
     setTimeout(() => {
       this.props.loadDataAction(
         'Agregar Usuario',
-        <UserFormView changeTempUser={changeTempUser} venues={venues} users={this.props.users} forms={forms} permissions={permissions}/>,
+        <UserFormView create={true} changeTempUser={changeTempUser} venues={venues} users={this.props.users} forms={forms} permissions={permissions}/>,
         <React.Fragment>
           <button type="button" className="btn btn-default" data-dismiss="modal">Cancelar</button>
           <button type="button" className="btn btn-primary" onClick={this.processAddUser}>Grabar</button>
@@ -209,7 +209,7 @@ class UserListView extends React.Component<IPropsType, IStateType> {
     setTimeout(() => {
       this.props.loadDataAction(
         `Editando a ${user.firstName} ${user.lastName}`,
-        <UserFormView changeTempUser={changeTempUser} venues={venues} users={this.props.users} forms={forms} permissions={permissions} user={user}/>,
+        <UserFormView create={false}  changeTempUser={changeTempUser} venues={venues} users={this.props.users} forms={forms} permissions={permissions} user={user}/>,
         <React.Fragment>
           <button type="button" className="btn btn-default" data-dismiss="modal">Cancelar</button>
           <button type="button" className="btn btn-primary" onClick={this.processEditUser}>Editar</button>

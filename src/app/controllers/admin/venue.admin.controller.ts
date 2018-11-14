@@ -2,8 +2,8 @@ import {ObjectID} from 'bson';
 import {Response} from 'express';
 import {PaginateOptions, PaginateResult} from 'mongoose';
 import {IRequest} from '../../../interfaces/global.interface';
+import Inventory from '../../../inventory/models/inventory.model';
 import Venue, {IVenueModel} from '../../models/venue.model';
-import Inventory from "../../../inventory/models/inventory.model";
 
 class AdminVenueController {
   constructor() {
