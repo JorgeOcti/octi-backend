@@ -100,7 +100,7 @@ class AdminUsersController {
       });
     }
     const {firstName, lastName, email, venue, userPermissions, userForms, preferred} = req.body;
-    const company = req.user.company;
+    const {company, team} = req.user;
     // validate fields required
     if (!firstName || !firstName.length || !lastName || !lastName.length || !email || !email.length || !venue || !venue.length) {
       res.status(400).json({
@@ -129,6 +129,7 @@ class AdminUsersController {
           userPermissions: userPermissions && userPermissions.length ? userPermissions.map((userPermission: IPermission) => userPermission._id) : [],
           userForms: userForms && userForms.length ? userForms.map((userForm: IForm) => userForm._id) : [],
           company,
+          team,
           password,
           email,
           active: true
@@ -145,7 +146,7 @@ class AdminUsersController {
           to: `"${fullname}"<${newUser.email}>`,
           subject: `${fullname} bienvenido(a) a OSA Andes`,
           text: `${fullname} bienvenido(a) a OSA Andes
-          {Empresa} te da la bienvenida a usar OSA Andes. bla bla bla......
+          {Empresa} te da la bienvenida a usar OSA Andes.
 
           Tus Datos para acceder a la aplicación son:
           Usuario: ${newUser.email}

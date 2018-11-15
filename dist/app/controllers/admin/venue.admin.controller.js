@@ -118,7 +118,7 @@ class AdminVenueController {
             });
         }
         const { id } = req.params;
-        const company = req.user.company;
+        const { company } = req.user;
         const { name } = req.body;
         if (!name || !name.length) {
             res.status(400).json({
