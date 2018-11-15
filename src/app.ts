@@ -246,7 +246,7 @@ export const queue = kue.createQueue({
   }
 });
 new EmailQueue(queue).run();
-kue.app.listen(3041);
+kue.app.listen((parseInt(process.env.PORT as string, 10) || 3000) + 40);
 
 // The error handler must be before any other error middleware
 app.use(Raven.errorHandler());

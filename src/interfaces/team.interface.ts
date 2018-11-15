@@ -1,12 +1,10 @@
-import {ITeam} from './team.interface';
 import {IUser} from './user.interface';
 
-export interface ICompany {
+export interface ITeam {
   _id: any;
   name: string;
   active: boolean;
   users?: IUser[];
-  team: ITeam;
   updatedAt: Date;
   createdAt: Date;
 }

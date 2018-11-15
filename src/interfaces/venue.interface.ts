@@ -7,11 +7,12 @@ export interface IBaseVenue {
   name: string;
 }
 
-export interface IVenue extends IBaseVenue{
+export interface IVenue extends IBaseVenue {
   name: string;
   company?: ICompany | any;
   users?: IUser[];
   participants?: IParticipant[];
+  type: string;
   active: boolean;
   updatedAt?: Date;
   createdAt?: Date;

@@ -10,6 +10,7 @@ const logger_service_1 = require("./services/logger.service");
 // Mongoose setting
 const MONGODB_URI = process.env.MONGODB_URI || '';
 // Mongoose connect
+mongoose.Promise = bluebird;
 mongoose.connect(MONGODB_URI, { useMongoClient: true }, (err) => {
     if (err) {
         console.log('Unable to connect to the mongodb instance. Error: ', err);
@@ -20,7 +21,6 @@ mongoose.connect(MONGODB_URI, { useMongoClient: true }, (err) => {
         console.log('Mongoose Successfully connected');
     }
 });
-mongoose.Promise = bluebird;
 // mongoose.Promise = global.Promise;
 mongoose.set('debug', app_1.default.get('env') !== 'testing');
 // mongoose.set('debug', false);

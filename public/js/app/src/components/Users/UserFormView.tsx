@@ -45,16 +45,19 @@ class UserFormView extends React.Component<IPropsType, IStateType> {
 
   public componentDidMount() {
     const {changeTempUser} = this.props;
-    ($('#permission-select') as any).chosen().change((e: React.ChangeEvent<HTMLSelectElement>) => {
+    const chosenOptions = {
+      no_results_text: 'Sin resultados para:'
+    };
+    ($('#permission-select') as any).chosen(chosenOptions).change((e: React.ChangeEvent<HTMLSelectElement>) => {
       this.addPermission(e.target.value);
     });
-    ($('#id-venue') as any).chosen().change((e: React.ChangeEvent<HTMLSelectElement>) => {
+    ($('#id-venue') as any).chosen(chosenOptions).change((e: React.ChangeEvent<HTMLSelectElement>) => {
       changeTempUser({venue: e.target.value});
     });
-    ($('#form-default-select') as any).chosen().change((e: React.ChangeEvent<HTMLSelectElement>) => {
+    ($('#form-default-select') as any).chosen(chosenOptions).change((e: React.ChangeEvent<HTMLSelectElement>) => {
       changeTempUser({preferred: e.target.value});
     });
-    ($('#form-select') as any).chosen().change((e: React.ChangeEvent<HTMLSelectElement>) => {
+    ($('#form-select') as any).chosen(chosenOptions).change((e: React.ChangeEvent<HTMLSelectElement>) => {
       this.addForm(e.target.value);
     });
   }

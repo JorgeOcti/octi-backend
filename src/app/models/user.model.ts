@@ -27,6 +27,10 @@ const userSchema = new mongoose.Schema({
     type: String,
     default: null
   },
+  team: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Team'
+  },
   company: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Company',
@@ -145,7 +149,7 @@ userSchema.methods.comparePassword = function(candidatePassword: string, cb: (er
   });
 };
 
-userSchema.methods.comparePasswordSync = function(candidatePassword: string){
+userSchema.methods.comparePasswordSync = function(candidatePassword: string) {
   return bcrypt.compareSync(candidatePassword, this.password);
 };
 

@@ -4,6 +4,16 @@ import {IVenue} from '../../interfaces/venue.interface';
 
 export interface IVenueModel extends IVenue, mongoose.Document {}
 
+export enum ChoicesTypeVenue {
+  distributor = 'distributor',
+  receiver = 'receiver'
+}
+
+export const choicesStatusCarInventory = [
+  ChoicesTypeVenue.distributor,
+  ChoicesTypeVenue.receiver
+];
+
 const venueSchema = new mongoose.Schema({
   name: {
     type: String,
@@ -12,6 +22,11 @@ const venueSchema = new mongoose.Schema({
   company: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Company'
+  },
+  type: {
+    type: String,
+    enum: choicesStatusCarInventory,
+    default: ChoicesTypeVenue.receiver
   },
   active: {
     type: Boolean,
@@ -36,13 +51,6 @@ venueSchema.virtual('participants', {
   foreignField: 'venue', // is equal to field in another model
   justOne: false
 });
-
-// venueSchema.virtual('inventories', {
-//   ref: 'Inventory', // The model to use
-//   localField: '_id', // Find field in this model
-//   foreignField: 'cars.venue', // is equal to field in another model
-//   justOne: false
-// });
 
 const Venue = mongoose.model<IVenueModel>('Venue', venueSchema);
 

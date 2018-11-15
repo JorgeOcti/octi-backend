@@ -2,6 +2,15 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 const mongoose = require("mongoose");
 const mongoosePaginate = require("mongoose-paginate");
+var ChoicesTypeVenue;
+(function (ChoicesTypeVenue) {
+    ChoicesTypeVenue["distributor"] = "distributor";
+    ChoicesTypeVenue["receiver"] = "receiver";
+})(ChoicesTypeVenue = exports.ChoicesTypeVenue || (exports.ChoicesTypeVenue = {}));
+exports.choicesStatusCarInventory = [
+    ChoicesTypeVenue.distributor,
+    ChoicesTypeVenue.receiver
+];
 const venueSchema = new mongoose.Schema({
     name: {
         type: String,
@@ -10,6 +19,11 @@ const venueSchema = new mongoose.Schema({
     company: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Company'
+    },
+    type: {
+        type: String,
+        enum: exports.choicesStatusCarInventory,
+        default: ChoicesTypeVenue.receiver
     },
     active: {
         type: Boolean,
@@ -31,12 +45,6 @@ venueSchema.virtual('participants', {
     foreignField: 'venue',
     justOne: false
 });
-// venueSchema.virtual('inventories', {
-//   ref: 'Inventory', // The model to use
-//   localField: '_id', // Find field in this model
-//   foreignField: 'cars.venue', // is equal to field in another model
-//   justOne: false
-// });
 const Venue = mongoose.model('Venue', venueSchema);
 exports.default = Venue;
 //# sourceMappingURL=venue.model.js.map

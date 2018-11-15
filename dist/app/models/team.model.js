@@ -1,15 +1,11 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 const mongoose = require("mongoose");
-const companySchema = new mongoose.Schema({
+const teamSchema = new mongoose.Schema({
     name: {
         type: String,
         trim: true,
         required: true
-    },
-    team: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'Team'
     },
     active: {
         type: Boolean,
@@ -18,12 +14,12 @@ const companySchema = new mongoose.Schema({
 }, {
     timestamps: true
 });
-companySchema.virtual('users', {
+teamSchema.virtual('users', {
     ref: 'User',
     localField: '_id',
-    foreignField: 'company',
+    foreignField: 'team',
     justOne: false
 });
-const Company = mongoose.model('Company', companySchema);
-exports.default = Company;
-//# sourceMappingURL=company.model.js.map
+const Team = mongoose.model('Team', teamSchema);
+exports.default = Team;
+//# sourceMappingURL=team.model.js.map

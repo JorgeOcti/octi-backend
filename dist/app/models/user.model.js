@@ -18,6 +18,10 @@ const userSchema = new mongoose.Schema({
         type: String,
         default: null
     },
+    team: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Team'
+    },
     company: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Company',
