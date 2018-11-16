@@ -214,7 +214,7 @@ class FormController {
         const { id } = req.params;
         let { vin } = req.body;
         const { answers } = req.body;
-        const company = req.user.company;
+        const { company, venue } = req.user;
         // validate answers in body
         if (!answers) {
             return res.status(400).json({
@@ -246,7 +246,7 @@ class FormController {
                         car,
                         description: form.description,
                         user: req.user._id,
-                        venue: req.user.venue._id,
+                        venue,
                         active: form.active
                     };
                     if (form.reception && 'reception' in answers) {
@@ -387,14 +387,16 @@ class FormController {
                             ]
                         }).populate([{
                                 path: 'users',
-                                select: ['firstName', 'lastName', 'email']
+                                select: ['firstName', 'lastName', 'email', 'venue']
                             }]);
                         /* Send alerts if exist */
                         if (alerts.length) {
                             alerts.forEach((alert) => {
                                 alert.users.forEach((user) => {
                                     const userName = `${user.firstName} ${user.lastName}`;
-                                    if (user.email && user.email.length) {
+                                    // console.log('venue._id.toString()', venue._id.toString());
+                                    // console.log('user.venue.toString()', user.venue.toString());
+                                    if (venue._id.toString() === user.venue.toString() && user.email && user.email.length) {
                                         app_1.queue.create('email', {
                                             from: '',
                                             title: `Alert qualification`,
@@ -405,7 +407,7 @@ class FormController {
 
                         Datos del Vehiculo
                         VIN: ${car ? car.vin : ''}
-                        MARCA: ${car ? car.brand : ''}
+                        MARCA: ${car && car.brand ? car.brand : ''}
 
                         Para ver el detalle has click aquí
                         ${process.env.SITE_URL}cars/${car._id}
@@ -414,8 +416,8 @@ class FormController {
                                             view: 'alerts/lowQualification',
                                             context: {
                                                 userName,
-                                                brand: car ? car.brand : '',
-                                                vin: car ? car.vin : '',
+                                                brand: car && car.brand ? car.brand : '',
+                                                vin: car && car.vin ? car.vin : '',
                                                 qualification: formQualification.toFixed(0),
                                                 url: `${process.env.SITE_URL}cars/${car._id}`
                                             }
