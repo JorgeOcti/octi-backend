@@ -456,7 +456,7 @@ class CarController {
             const proyectionInterval = 5;
             for (let i = 0; i < 100; i += proyectionInterval) {
                 const max = i + proyectionInterval;
-                proyection.push({ $cond: [{ $and: [{ $gte: ['$qualification', i] }, { $lte: ['$qualification', max] }] }, `${i}-${max}`, ''] });
+                proyection.push({ $cond: [{ $and: [{ $gt: ['$qualification', i] }, { $lte: ['$qualification', max] }] }, `${i}-${max}`, ''] });
             }
             const participantPerRange = await participant_model_1.default
                 .aggregate([{
