@@ -447,6 +447,7 @@ class CarController {
       /* END Update Venue in lastForm */
 
       /* search participant and group per range qualification */
+      // generate ranges
       const proyection = [];
       const proyectionInterval = 5;
       for (let i = 0; i < 100; i += proyectionInterval) {
@@ -457,6 +458,7 @@ class CarController {
           proyection.push({$cond: [{$and: [{$gt: ['$qualification', i]}, {$lte: ['$qualification', max]}]}, `${i}-${max}`, '']});
         }
       }
+      // get data
       const participantPerRange = await ParticipantModel
         .aggregate([{
           $match: {

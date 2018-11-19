@@ -437,6 +437,12 @@ class DashboardGeneralView extends React.Component<IPropsType, IStateType> {
         this.carsByVenueChart.resize();
       }, 400);
     }
+    if (this.participantsRangeChart && this.participantsRangeChart !== undefined) {
+      this.participantsRangeChart.resize();
+      setTimeout(() => {
+        this.participantsRangeChart.resize();
+      }, 400);
+    }
   }
 }
 
