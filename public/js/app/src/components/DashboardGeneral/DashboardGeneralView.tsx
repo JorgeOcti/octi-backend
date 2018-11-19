@@ -293,6 +293,9 @@ class DashboardGeneralView extends React.Component<IPropsType, IStateType> {
       // proyection.push({$cond: [{$and: [{$gte: ['$qualification', i]}, {$lte: ['$qualification', max]}]}, `${i}-${max}`, '']});
     }
     const option: echarts.EChartOption = {
+      tooltip: {
+        trigger: 'axis'
+      },
       xAxis: {
         type: 'category',
         // boundaryGap: false,
