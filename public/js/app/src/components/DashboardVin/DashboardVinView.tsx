@@ -57,7 +57,10 @@ class DashboardVinView extends React.Component<IPropsType, IStateType> {
     this.socket = io.connect(`${location.protocol}//${location.host}`, {
       secure: location.protocol === 'https:',
       reconnection: true,
-      query: {token: (window.user as any).token}
+      // transports: ['websocket'],
+      query: {
+        token: (window.user as any).token
+      }
     });
     this.socket.on('connect', () => {
       this.socket.emit('join', {room: `dashboard-vin-view-${window.user.company}`});

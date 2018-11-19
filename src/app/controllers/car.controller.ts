@@ -270,7 +270,7 @@ class CarController {
   }
 
   public async apiParticipantsPerDate(req: IRequest, res: Response) {
-    const company = req.user.company;
+    const {company} = req.user;
     try {
       const participantPerDay = await ParticipantModel
         .aggregate([{
@@ -446,9 +446,53 @@ class CarController {
       }
       /* END Update Venue in lastForm */
 
+      /* search participant and group per range qualification */
+      const proyection = [];
+      const proyectionInterval = 5;
+      for (let i = 0; i < 100; i += proyectionInterval) {
+        const max = i + proyectionInterval;
+        proyection.push({$cond: [{$and: [{$gte: ['$qualification', i]}, {$lte: ['$qualification', max]}]}, `${i}-${max}`, '']});
+      }
+      const participantPerRange = await ParticipantModel
+        .aggregate([{
+          $match: {
+            company,
+            createdAt: {
+              $gte: moment().subtract(14, 'd').toDate()
+            }
+          }
+        }, {
+          $project: {
+            range: {
+              $concat: [
+                {$cond: [{$lt: ['$qualification', 0]}, 'Unknown', '']},
+                // {$cond: [{$and: [{$gte: ['$qualification', 1]}, {$lt: ['$qualification', 10]}]}, '1-10', '']},
+                // {$cond: [{$and: [{$gte: ['$qualification', 11]}, {$lt: ['$qualification', 20]}]}, '11-20', '']},
+                // {$cond: [{$and: [{$gte: ['$qualification', 21]}, {$lt: ['$qualification', 30]}]}, '25-30', '']},
+                // {$cond: [{$and: [{$gte: ['$qualification', 31]}, {$lt: ['$qualification', 40]}]}, '31-40', '']},
+                // {$cond: [{$and: [{$gte: ['$qualification', 41]}, {$lt: ['$qualification', 50]}]}, '41-50', '']},
+                // {$cond: [{$and: [{$gte: ['$qualification', 51]}, {$lt: ['$qualification', 60]}]}, '51-60', '']},
+                // {$cond: [{$and: [{$gte: ['$qualification', 61]}, {$lt: ['$qualification', 70]}]}, '61-70', '']},
+                // {$cond: [{$and: [{$gte: ['$qualification', 71]}, {$lt: ['$qualification', 80]}]}, '71-80', '']},
+                // {$cond: [{$and: [{$gte: ['$qualification', 81]}, {$lt: ['$qualification', 90]}]}, '81-90', '']},
+                // {$cond: [{$and: [{$gte: ['$qualification', 91]}, {$lt: ['$qualification', 100]}]}, '91-100', '']},
+                ...proyection
+              ]
+            }
+          }
+        }, {
+          $group: {
+            _id: '$range',
+            count: {
+              $sum: 1
+            }
+          }
+        }]);
+
       res.json({
         carsByVenue,
         participants,
+        participantPerRange,
         cars,
         totalCars: await CarModel.count({company}),
         status: 200

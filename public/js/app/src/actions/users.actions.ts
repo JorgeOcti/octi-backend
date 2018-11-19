@@ -188,7 +188,6 @@ export function addUserAction() {
       })
       .catch((err: AxiosError) => {
         statusFooterButttonsModal(false);
-
         dispatch(isLoadingAction(false));
         api.errorHandler(err);
       });

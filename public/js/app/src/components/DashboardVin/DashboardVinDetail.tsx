@@ -61,6 +61,7 @@ class DashboardVinDetail extends React.Component<IPropsType, IStateType> {
     this.socket = io.connect(`${location.protocol}//${location.host}`, {
       secure: location.protocol === 'https:',
       reconnection: true,
+      // transports: ['websocket'],
       query: {token: (window.user as any).token}
     });
     this.socket.on('connect', () => {

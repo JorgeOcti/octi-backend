@@ -6,6 +6,7 @@ const initialState: IDashboardState = {
   cars: [],
   car: null,
   participantsPerDate: [],
+  participantPerRange: [],
   carsPerDate: [],
   carsByVenue: [],
   totalCars: 0,
@@ -45,7 +46,8 @@ export function dashboardReducer(state = initialState, action: DashboardReduxAct
         participantsPerDate: action.payload.participantsPerDate,
         carsPerDate: action.payload.carsPerDate,
         totalCars: action.payload.totalCars,
-        carsByVenue: action.payload.carsByVenue
+        carsByVenue: action.payload.carsByVenue,
+        participantPerRange: action.payload.participantPerRange
       };
     case '/DASHBOARD/LOAD_CAR':
       return {

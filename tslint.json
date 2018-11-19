@@ -16,11 +16,12 @@
         }],
         "no-shadowed-variable": false,
         "member-access": true,
-        "max-line-length": [true, 240],
+        "max-line-length": [true, 500],
         "object-literal-sort-keys": false,
         "no-trailing-whitespace": [true],
         "no-unused-variable": [true, "react"],
-        "no-empty": false
+        "no-empty": false,
+         "forin": true
     },
     "rulesDirectory": []
 }

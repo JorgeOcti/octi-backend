@@ -19,6 +19,7 @@ export interface IDashboardState {
   participantsPerDate: any[];
   carsPerDate: any[];
   carsByVenue: any[];
+  participantPerRange: any[];
   loadingParticipant: string | null;
   totalCars: number;
   pagination: {
@@ -423,17 +424,19 @@ interface ILoadParticipantsPerDate {
     carsPerDate: any;
     carsByVenue: any;
     totalCars: number;
+    participantPerRange: any;
   };
 }
 
-export function loadParticipantsPerDateAction(participantsPerDate: any, carsPerDate: any, totalCars: number, carsByVenue: any): ILoadParticipantsPerDate {
+export function loadParticipantsPerDateAction(participantsPerDate: any, carsPerDate: any, totalCars: number, carsByVenue: any, participantPerRange:any): ILoadParticipantsPerDate {
   return {
     type: '/DASHBOARD/LOAD_PARTICIPANTS_PER_DATE',
     payload: {
       participantsPerDate,
       carsPerDate,
       carsByVenue,
-      totalCars
+      totalCars,
+      participantPerRange
     }
   };
 }
@@ -445,7 +448,7 @@ export function getParticipantsPerDateAction() {
     dispatch(isLoadingAction(true));
     api.getParticipantsPerDate()
       .then((response: AxiosResponse) => {
-        dispatch(loadParticipantsPerDateAction(response.data.participants, response.data.cars, response.data.totalCars, response.data.carsByVenue));
+        dispatch(loadParticipantsPerDateAction(response.data.participants, response.data.cars, response.data.totalCars, response.data.carsByVenue, response.data.participantPerRange));
         dispatch(isLoadingAction(false));
       })
       .catch((err: AxiosError) => {

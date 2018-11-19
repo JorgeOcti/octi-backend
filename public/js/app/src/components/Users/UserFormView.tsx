@@ -48,17 +48,17 @@ class UserFormView extends React.Component<IPropsType, IStateType> {
     const chosenOptions = {
       no_results_text: 'Sin resultados para:'
     };
-    ($('#permission-select') as any).chosen(chosenOptions).change((e: React.ChangeEvent<HTMLSelectElement>) => {
-      this.addPermission(e.target.value);
+    ($('#id-forms') as any).chosen(chosenOptions).change((e: React.ChangeEvent<HTMLSelectElement>) => {
+      this.addForm(e.target.value);
+    });
+    ($('#id-form-default') as any).chosen(chosenOptions).change((e: React.ChangeEvent<HTMLSelectElement>) => {
+      changeTempUser({preferred: e.target.value});
     });
     ($('#id-venue') as any).chosen(chosenOptions).change((e: React.ChangeEvent<HTMLSelectElement>) => {
       changeTempUser({venue: e.target.value});
     });
-    ($('#form-default-select') as any).chosen(chosenOptions).change((e: React.ChangeEvent<HTMLSelectElement>) => {
-      changeTempUser({preferred: e.target.value});
-    });
-    ($('#form-select') as any).chosen(chosenOptions).change((e: React.ChangeEvent<HTMLSelectElement>) => {
-      this.addForm(e.target.value);
+    ($('#id-permissions') as any).chosen(chosenOptions).change((e: React.ChangeEvent<HTMLSelectElement>) => {
+      this.addPermission(e.target.value);
     });
   }
 
@@ -70,10 +70,10 @@ class UserFormView extends React.Component<IPropsType, IStateType> {
   }
 
   componentDidUpdate() {
-    $('#permission-select').trigger('chosen:updated');
-    $('#form-default-select').trigger('chosen:updated');
+    $('#id-forms').trigger('chosen:updated');
+    $('#id-form-default').trigger('chosen:updated');
     $('#id-venue').trigger('chosen:updated');
-    $('#form-select').trigger('chosen:updated');
+    $('#id-permissions').trigger('chosen:updated');
   }
 
   public render(): React.ReactElement<IPropsType> {
@@ -171,7 +171,7 @@ class UserFormView extends React.Component<IPropsType, IStateType> {
               <div className="col-md-12">
                 <div className="form-group">
                   <label>Formularios</label>
-                  <select id="form-select" className="form-control" style={{minWidth: '200px'}} onChange={undefined}>
+                  <select id="id-forms" className="form-control" style={{minWidth: '200px'}} onChange={undefined}>
                     <option value="">Seleccione formularios</option>
                     {
                       selectForms.map((form) => {
@@ -213,7 +213,7 @@ class UserFormView extends React.Component<IPropsType, IStateType> {
                 <div className="form-group">
                   <label>Formulario por defecto</label>
                   <select
-                    id="form-default-select"
+                    id="id-form-default"
                     className="form-control"
                     style={{minWidth: '200px'}}
                     defaultValue={tempUser && tempUser.preferred ? tempUser.preferred : undefined}
@@ -239,7 +239,7 @@ class UserFormView extends React.Component<IPropsType, IStateType> {
               <div className="col-md-12">
                 <div className="form-group">
                   <label>Permisos</label>
-                  <select id="permission-select" className="form-control" style={{minWidth: '200px'}}>
+                  <select id="id-permissions" className="form-control" style={{minWidth: '200px'}}>
                     <option value="">Seleccione permisos</option>
                     {
                       selectPermissions.map((permission) => {
@@ -263,15 +263,15 @@ class UserFormView extends React.Component<IPropsType, IStateType> {
                   <tbody>
                   {
                     userPermissions.length ? userPermissions.map((permission: any) => {
-                        return (
-                          <tr key={permission._id}>
-                            <td>{permission.codeName}</td>
-                            <td>{permission.name}</td>
-                            <td className="text-center text-red pointer" onClick={() => this.deletePermission(permission._id)}><i
-                              className="fa fa-minus-circle"/></td>
-                          </tr>
-                        );
-                      }) :
+                      return (
+                        <tr key={permission._id}>
+                          <td>{permission.codeName}</td>
+                          <td>{permission.name}</td>
+                          <td className="text-center text-red pointer" onClick={() => this.deletePermission(permission._id)}><i
+                            className="fa fa-minus-circle"/></td>
+                        </tr>
+                      );
+                    }) :
                       <tr>
                         <td colSpan={3}>Aún no se han seleccionado permisos.</td>
                       </tr>

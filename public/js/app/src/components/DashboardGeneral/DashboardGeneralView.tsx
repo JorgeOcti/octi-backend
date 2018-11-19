@@ -28,15 +28,17 @@ class DashboardGeneralView extends React.Component<IPropsType, IStateType> {
   // };
 
   participantsPerDayChart: echarts.ECharts;
+  participantsRangeChart: echarts.ECharts;
   carsByVenueChart: echarts.ECharts;
 
-  chartsColors: string[] = ['#3085c1', '#5c4b55', '#55b188', '#4d5c99', '#c53e5a', '#f8d991'];
+  // chartsColors: string[] = ['#3085c1', '#5c4b55', '#55b188', '#4d5c99', '#c53e5a', '#f8d991'];
 
   constructor(props: IPropsType) {
     super(props);
     this.resizeCharts = this.resizeCharts.bind(this);
     this.updateParticipantsChart = this.updateParticipantsChart.bind(this);
     this.updateCarsChart = this.updateCarsChart.bind(this);
+    this.updateChartParticipantRange = this.updateChartParticipantRange.bind(this);
   }
 
   public componentWillMount(): void {
@@ -50,9 +52,11 @@ class DashboardGeneralView extends React.Component<IPropsType, IStateType> {
 
   public componentDidMount(): void {
     const $participantPerDate = document.getElementById('participant-per-date') as HTMLDivElement;
+    const $participantRange = document.getElementById('participant-range') as HTMLDivElement;
     const $carsByVenue = document.getElementById('cars-by-venue') as HTMLDivElement;
     this.participantsPerDayChart = echarts.init($participantPerDate);
     this.carsByVenueChart = echarts.init($carsByVenue);
+    this.participantsRangeChart = echarts.init($participantRange);
   }
 
   public componentDidCatch(error: Error, errorInfo: ErrorInfo): void {
@@ -67,6 +71,7 @@ class DashboardGeneralView extends React.Component<IPropsType, IStateType> {
     if (!loading) {
       this.updateParticipantsChart();
       this.updateCarsChart();
+      this.updateChartParticipantRange();
     }
   }
 
@@ -124,6 +129,23 @@ class DashboardGeneralView extends React.Component<IPropsType, IStateType> {
                 </div>
                 <div className="box-body">
                   <div id="participant-per-date" style={{height: '400px', maxWidth: '100%'}}/>
+                </div>
+                {
+                  loading &&
+                    <div className="overlay">
+                      <i className="fa fa-spinner fa-spin text-purple"/>
+                    </div>
+                }
+              </div>
+            </div>
+            <div className="col-md-12">
+              <div className="box">
+                <div className="box-header with-border"><h3 className="box-title">Histograma cumplimiento de revisiones</h3>
+                  <div className="box-tools pull-right">
+                  </div>
+                </div>
+                <div className="box-body">
+                  <div id="participant-range" style={{height: '400px', maxWidth: '100%'}}/>
                 </div>
                 {
                   loading &&
@@ -251,6 +273,82 @@ class DashboardGeneralView extends React.Component<IPropsType, IStateType> {
     };
     this.participantsPerDayChart.setOption(option);
 
+  }
+
+  private updateChartParticipantRange() {
+    const {participantPerRange} = this.props.dashboard;
+    const legends: any[] = [];
+    const proyectionInterval = 5;
+    const totals: any[] = [];
+    for (let i = 0; i < 100; i += proyectionInterval) {
+      const max = i + proyectionInterval;
+      const key = `${i}-${max}`;
+      legends.push(key);
+      const value = participantPerRange.find((range) => (range._id === key));
+      if (value) {
+        totals.push(value.count);
+      } else {
+        totals.push(0);
+      }
+      // proyection.push({$cond: [{$and: [{$gte: ['$qualification', i]}, {$lte: ['$qualification', max]}]}, `${i}-${max}`, '']});
+    }
+    const option: echarts.EChartOption = {
+      xAxis: {
+        type: 'category',
+        // boundaryGap: false,
+        data: legends,
+        axisLine: {
+          lineStyle: {
+            color: 'rgba(0, 0, 0, 0.5)'
+          }
+        },
+        splitLine: {
+          show: false,
+          lineStyle: {
+            type: 'dashed',
+            color: 'rgba(150, 150, 150, 0.5)'
+          }
+        }
+      },
+      legend: {
+        x: 'center',
+        y: 'bottom',
+        data: ['Revisiones']
+      },
+      grid: {
+        top: 30,
+        // left
+        x: 40,
+        // right
+        x2: 30,
+        containLabel: true
+        // borderColor: '#FF0000'
+      },
+      yAxis: {
+        minInterval: 1,
+        type: 'value',
+        axisLine: {
+          lineStyle: {
+            color: 'rgba(0, 0, 0, 0.5)'
+          }
+        },
+        splitLine: {
+          show: true,
+          lineStyle: {
+            type: 'dashed',
+            color: 'rgba(150, 150, 150, 0.5)'
+          }
+        }
+      },
+      series: [{
+        data: totals,
+        type: 'line',
+        name: 'Revisiones',
+        areaStyle: {},
+        smooth: true
+      }]
+    };
+    this.participantsRangeChart.setOption(option);
   }
 
   private updateCarsChart() {
