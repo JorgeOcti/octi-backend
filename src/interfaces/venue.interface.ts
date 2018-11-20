@@ -5,6 +5,7 @@ import {IUser} from './user.interface';
 export interface IBaseVenue {
   _id: any;
   name: string;
+  type: string;
 }
 
 export interface IVenue extends IBaseVenue {
@@ -12,7 +13,6 @@ export interface IVenue extends IBaseVenue {
   company?: ICompany | any;
   users?: IUser[];
   participants?: IParticipant[];
-  type: string;
   active: boolean;
   updatedAt?: Date;
   createdAt?: Date;

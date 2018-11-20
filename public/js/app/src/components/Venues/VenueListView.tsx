@@ -95,7 +95,8 @@ class VenuesListView extends React.Component<IPropsType, IStateType> {
                 <thead>
                   <tr>
                     <th style={{width: '60%'}} className="middle">Nombre</th>
-                    <th style={{width: '20%'}} className="middle">Asignaciones</th>
+                    <th style={{width: '10%'}} className="middle-center">Distribuidor</th>
+                    <th style={{width: '10%'}} className="middle">Asignaciones</th>
                     <th style={{width: '20%'}} className="middle hidden-xs">Modificado</th>
                     {
                       hasPermission(window.user, 'changeVenue') ?
@@ -114,6 +115,7 @@ class VenuesListView extends React.Component<IPropsType, IStateType> {
                       return (
                         <tr key={venue._id} id={`venue-${venue._id}`}>
                           <td className="middle">{venue.name}</td>
+                          <td className="middle-center">{venue.type === 'distributor' ? <i className="fa fa-check-circle text-green" /> : <i className="fa fa-times-circle text-blue" /> }</td>
                           <td className="text-sm">
                             Usuarios: {venue.users ? venue.users.length : 0}<br/>
                             Revisiones: {venue.participants ? venue.participants.length : 0}<br/>
@@ -163,7 +165,8 @@ class VenuesListView extends React.Component<IPropsType, IStateType> {
   private addVenue(): void {
     this.props.changeTempVenueAction({
       _id: '',
-      name: ''
+      name: '',
+      type: 'receiver'
     });
     setTimeout(() => {
       this.props.loadDataAction(
@@ -189,7 +192,8 @@ class VenuesListView extends React.Component<IPropsType, IStateType> {
   private editVenue(venue: IVenue): void {
     this.props.changeTempVenueAction({
       _id: venue._id,
-      name: venue.name
+      name: venue.name,
+      type: venue.type ? venue.type : 'receiver'
     });
     setTimeout(() => {
       this.props.loadDataAction(

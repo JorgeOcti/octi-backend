@@ -31,6 +31,7 @@ class AdminVenueController {
       select: {
         _id: true,
         name: true,
+        type: true,
         updatedAt: true,
         createdAt: true
       },
@@ -79,9 +80,9 @@ class AdminVenueController {
         message: 'No tienes permisos para esta operación'
       });
     }
-    const {name} = req.body;
+    const {name, type} = req.body;
     const company = req.user.company;
-    if (!name || !name.length || !name.trim()) {
+    if (!name || !name.trim().length) {
       res.status(400).json({
         message: 'El nombre es requerido.',
         status: 400
@@ -100,6 +101,7 @@ class AdminVenueController {
       } else {
         const newVenue = await new Venue({
           name,
+          type,
           company
         }).save();
         res.status(201).json({
@@ -121,7 +123,7 @@ class AdminVenueController {
     }
     const {id} = req.params;
     const {company} = req.user;
-    const {name} = req.body;
+    const {name, type} = req.body;
     if (!name || !name.length) {
       res.status(400).json({
         message: 'The name is are required',
@@ -133,7 +135,8 @@ class AdminVenueController {
         _id: id
         , company
       }, {
-        name
+        name,
+        type
       }, {
         new: true
       });

@@ -1,4 +1,4 @@
-import * as PropTypes from 'prop-types';
+// import * as PropTypes from 'prop-types';
 import * as React from 'react';
 import {connect} from 'react-redux';
 import {Dispatch} from 'redux';

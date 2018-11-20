@@ -7,7 +7,8 @@ const initialState: IVenuesState = {
   source: null,
   tempVenue: {
     _id: '',
-    name: ''
+    name: '',
+    type: 'receiver'
   },
   pagination: {
     count: 0,
@@ -42,6 +43,7 @@ export function venuesReducer(state = initialState, action: VenueReduxAction): I
         venues: state.venues.map((venue) => {
           if (venue._id === action.payload.venue._id) {
             venue.name = action.payload.venue.name;
+            venue.type = action.payload.venue.type;
           }
           return venue;
         })

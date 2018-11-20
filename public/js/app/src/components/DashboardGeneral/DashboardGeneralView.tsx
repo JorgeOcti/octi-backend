@@ -228,7 +228,7 @@ class DashboardGeneralView extends React.Component<IPropsType, IStateType> {
           }
         },
         axisLabel: {
-          rotate: 45
+          rotate: 60
           // fontSize: 10
         }
       },
@@ -251,9 +251,9 @@ class DashboardGeneralView extends React.Component<IPropsType, IStateType> {
       grid: {
         top: 30,
         // left
-        x: 40,
+        x: 20,
         // right
-        x2: 30,
+        x2: 20,
         containLabel: true
         // borderColor: '#FF0000'
       },
@@ -321,9 +321,9 @@ class DashboardGeneralView extends React.Component<IPropsType, IStateType> {
       grid: {
         top: 30,
         // left
-        x: 40,
+        x: 20,
         // right
-        x2: 30,
+        x2: 20,
         containLabel: true
         // borderColor: '#FF0000'
       },
