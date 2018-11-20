@@ -600,7 +600,7 @@ class CarController {
         }
     }
     async apiCarDetail(req, res) {
-        const company = req.user.company;
+        const { company, venue } = req.user;
         const { id } = req.params;
         try {
             const car = await car_model_1.default
@@ -617,6 +617,9 @@ class CarController {
                     // reverse populate
                     path: 'participants',
                     select: ['name', 'user', 'createdAt', 'qualification'],
+                    match: {
+                        venue: venue._id
+                    },
                     options: {
                         sort: {
                             createdAt: -1
@@ -648,7 +651,7 @@ class CarController {
         }
     }
     async apiCars(req, res) {
-        const company = req.user.company;
+        const { company, venue } = req.user;
         const { page, pageSize, search } = req.query;
         // paginate options
         const options = {
@@ -660,7 +663,7 @@ class CarController {
             },
             populate: [{
                     path: 'lastForm',
-                    select: ['createdAt', 'user', 'qualification'],
+                    select: ['createdAt', 'user', 'qualification', 'venue'],
                     populate: [{
                             path: 'user',
                             select: ['firstName', 'lastName']
@@ -673,7 +676,10 @@ class CarController {
             limit: parseInt(pageSize ? pageSize : 20, 10)
         };
         try {
-            const cars = await this.getCars(company, options, search);
+            const cars = await this.getCars({
+                company,
+                lastForm: { $in: await participant_model_1.default.find({ company, venue: venue._id }, { _id: true }), $exists: true, $ne: null }
+            }, options, search);
             // validate exist page
             if (options.page && cars.pages && cars.pages < options.page) {
                 res.status(400).json({
@@ -698,8 +704,8 @@ class CarController {
             }
         }
     }
-    getCars(company, options, search) {
-        let filter = { company, lastForm: { $exists: true, $ne: null } };
+    getCars(filters, options, search) {
+        let filter = { ...filters };
         if (search && search.length) {
             const searchText = new RegExp(search, 'i');
             // search in vin and brand

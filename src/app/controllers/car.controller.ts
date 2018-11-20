@@ -1,4 +1,3 @@
-import {ObjectID} from 'bson';
 import {Response} from 'express';
 import * as moment from 'moment';
 import * as mongoose from 'mongoose';
@@ -595,7 +594,7 @@ class CarController {
   }
 
   public async apiCarDetail(req: IRequest, res: Response) {
-    const company = req.user.company;
+    const {company, venue} = req.user;
     const {id} = req.params;
     try {
       const car = await CarModel
@@ -612,6 +611,9 @@ class CarController {
           // reverse populate
           path: 'participants',
           select: ['name', 'user', 'createdAt', 'qualification'],
+          match: {
+            venue: venue._id
+          },
           options: {
             sort: {
               createdAt: -1
@@ -642,7 +644,7 @@ class CarController {
   }
 
   public async apiCars(req: IRequest, res: Response) {
-    const company = req.user.company;
+    const {company, venue} = req.user;
     const {page, pageSize, search} = req.query;
 
     // paginate options
@@ -655,7 +657,7 @@ class CarController {
       },
       populate: [{
         path: 'lastForm',
-        select: ['createdAt', 'user', 'qualification'],
+        select: ['createdAt', 'user', 'qualification', 'venue'],
         populate: [{
           path: 'user',
           select: ['firstName', 'lastName']
@@ -668,7 +670,10 @@ class CarController {
       limit: parseInt(pageSize ? pageSize : 20, 10)
     };
     try {
-      const cars = await this.getCars(company, options, search);
+      const cars = await this.getCars({
+        company,
+        lastForm: {$in: await ParticipantModel.find({company, venue: venue._id}, {_id: true}), $exists: true, $ne: null}
+      }, options, search);
 
       // validate exist page
       if (options.page && cars.pages && cars.pages < options.page) {
@@ -693,8 +698,8 @@ class CarController {
     }
   }
 
-  private getCars(company: ObjectID, options: PaginateOptions, search?: string): Promise<PaginateResult<ICarModel>> {
-    let filter: any = {company, lastForm: {$exists: true, $ne: null}};
+  private getCars(filters: any, options: PaginateOptions, search?: string): Promise<PaginateResult<ICarModel>> {
+    let filter: any = {...filters};
 
     if (search && search.length) {
       const searchText = new RegExp(search, 'i');
