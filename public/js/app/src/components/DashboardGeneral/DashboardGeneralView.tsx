@@ -155,7 +155,7 @@ class DashboardGeneralView extends React.Component<IPropsType, IStateType> {
                 }
               </div>
             </div>
-            <div className="col-md-8">
+            <div className="col-md-8" style={{display: 'none'}}>
               <div className="box">
                 <div className="box-header with-border"><h3 className="box-title">Vehiculos por sucursal</h3>
                   <div className="box-tools pull-right">

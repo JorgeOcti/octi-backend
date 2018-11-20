@@ -270,12 +270,13 @@ class CarController {
   }
 
   public async apiParticipantsPerDate(req: IRequest, res: Response) {
-    const {company} = req.user;
+    const {company, venue} = req.user;
     try {
       const participantPerDay = await ParticipantModel
         .aggregate([{
           $match: {
             company,
+            venue: venue._id,
             createdAt: {
               $gte: moment().subtract(14, 'd').toDate()
             }
@@ -463,6 +464,7 @@ class CarController {
         .aggregate([{
           $match: {
             company,
+            venue: venue._id,
             createdAt: {
               $gte: moment().subtract(14, 'd').toDate()
             }
