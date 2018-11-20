@@ -261,13 +261,13 @@ class DashboardGeneralView extends React.Component<IPropsType, IStateType> {
         data: totals,
         name: 'Revisiones',
         type: 'line',
-        color: '#009cde',
+        color: '#76b7f9',
         smooth: true
       }, {
         data: totalsCars,
         name: 'Cargados',
         type: 'line',
-        color: '#6d7a89',
+        color: '#678099',
         smooth: true
       }]
     };
@@ -347,6 +347,7 @@ class DashboardGeneralView extends React.Component<IPropsType, IStateType> {
         data: totals,
         type: 'line',
         name: 'Revisiones',
+        color: '#e54e76',
         areaStyle: {},
         smooth: true
       }]
