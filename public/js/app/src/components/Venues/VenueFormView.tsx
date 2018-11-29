@@ -1,4 +1,6 @@
+import * as Raven from 'raven-js';
 import * as React from 'react';
+import {ErrorInfo} from 'react';
 import {connect} from 'react-redux';
 import {IBaseVenue} from '../../../../../../src/interfaces/venue.interface';
 import {changeTempVenueAction, IVenuesState, VenueReduxAction} from '../../actions/venues.actions';
@@ -28,11 +30,17 @@ class VenueFormView extends React.Component<IPropsType, IStateType> {
     $('[data-toggle="tooltip"]').tooltip();
   }
 
-  render() {
+  public componentDidCatch(error: Error, errorInfo: ErrorInfo): void {
+    this.setState({error});
+    Raven.captureException(error, {
+      extra: errorInfo
+    });
+  }
+
+  render(): React.ReactElement<IPropsType> | null {
     if (this.props.venues && this.props.changeTempVenueAction) {
       const {changeTempVenueAction} = this.props;
       const {tempVenue} = this.props.venues;
-
       return (
         <div className="row">
           <div className="col-md-12">

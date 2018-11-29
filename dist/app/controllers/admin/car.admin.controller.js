@@ -5,7 +5,7 @@ const car_model_1 = require("../../models/car.model");
 class AdminCarController {
     constructor() {
         this.index = this.index.bind(this);
-        this.import = this.import.bind(this);
+        this.imports = this.imports.bind(this);
         this.importCars = this.importCars.bind(this);
         this.apiListCars = this.apiListCars.bind(this);
     }
@@ -17,7 +17,7 @@ class AdminCarController {
             res.status(403).render('403');
         }
     }
-    async import(req, res) {
+    async imports(req, res) {
         if (req.user.hasPermission('addCar')) {
             res.render('app/index', {
                 token: await req.user.generateToken()

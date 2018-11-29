@@ -9,7 +9,7 @@ class AdminCarController {
 
   constructor() {
     this.index = this.index.bind(this);
-    this.import = this.import.bind(this);
+    this.imports = this.imports.bind(this);
     this.importCars = this.importCars.bind(this);
     this.apiListCars = this.apiListCars.bind(this);
   }
@@ -22,7 +22,7 @@ class AdminCarController {
     }
   }
 
-  public async import(req: IRequest, res: Response): Promise<any> {
+  public async imports(req: IRequest, res: Response): Promise<any> {
     if (req.user.hasPermission('addCar')) {
       res.render('app/index', {
         token: await req.user.generateToken()

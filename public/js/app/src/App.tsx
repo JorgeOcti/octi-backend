@@ -5,6 +5,7 @@ import { Provider } from 'react-redux';
 import { Route, RouteComponentProps, Router as BrowserRouter, Switch } from 'react-router-dom';
 import AlertsViews from './components/Alerts/AlertViews';
 import CarsListView from './components/Cars/CarListView';
+import CompaniesListView from './components/Companies/CompaniesListView';
 import DashboardGeneralView from './components/DashboardGeneral/DashboardGeneralView';
 import DashboardVinDetail from './components/DashboardVin/DashboardVinDetail';
 import DashboardVinView from './components/DashboardVin/DashboardVinView';
@@ -38,6 +39,7 @@ const App = () => (
                 <Route exact path="/settings/users/" component={ UsersListView }/>
                 <Route exact path="/settings/cars/" component={ CarsListView }/>
                 <Route exact path="/settings/venues/" component={ VenuesListView }/>
+                <Route exact path="/settings/companies/" component={ CompaniesListView }/>
                 <Route exact path="/settings/cars/import/" component={ ImportCarsView }/>
                 <Route exact path="/settings/alerts/" component={ AlertsViews }/>
                 <Route component={ NoMatch }/>
@@ -53,7 +55,7 @@ $('body').on('hidden.bs.modal', '#andesModal', () => {
   });
 });
 
-$(function() {
+$(() => {
   moment.locale('es');
   ReactDOM.render(
       <App />,
@@ -70,10 +72,9 @@ $(function() {
     ($(this) as any).ekkoLightbox();
   });
   // fix ekk-lightbox
-  $(document).on('hidden.bs.modal', function(event) {
+  $(document).on('hidden.bs.modal', () => {
     if ($('.modal:visible').length) {
       $('body').addClass('modal-open');
     }
   });
 });
-

@@ -88,6 +88,12 @@ export default class ApiService {
     );
   }
 
+  public getCompanies(page: number, pageSize?: number): AxiosPromise {
+    return this.instance.get(
+      `/api/admin/companies/?page=${page}${pageSize ? `&pageSize=${pageSize}` : ''}`
+    );
+  }
+
   public getVenues(page: number, pageSize?: number): AxiosPromise {
     return this.instance.get(
       `/api/admin/venues/?page=${page}${pageSize ? `&pageSize=${pageSize}` : ''}`

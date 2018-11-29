@@ -170,7 +170,7 @@ export function changeTempVenueAction(venue: IBaseVenue): IChangeTempVenue {
     },
     meta: {
       debounce: {
-        time: 100
+        time: 300
       }
     }
   };

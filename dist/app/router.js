@@ -46,11 +46,15 @@ appRouter.get('/api/admin/venues/', middlewares_1.default.isLoggedIn, venue_admi
 appRouter.post('/api/admin/venues/', middlewares_1.default.isLoggedIn, venue_admin_controller_1.default.apiAddVenue);
 appRouter.patch('/api/admin/venues/:id', middlewares_1.default.isLoggedIn, venue_admin_controller_1.default.apiEditVenue);
 appRouter.delete('/api/admin/venues/:id', middlewares_1.default.isLoggedIn, venue_admin_controller_1.default.apiDeleteVenue);
+// companies
+appRouter.get('/settings/companies/', middlewares_1.default.isLoggedIn, company_admin_controller_1.default.index);
+// api companies
+appRouter.get('/api/admin/companies/', middlewares_1.default.isLoggedIn, company_admin_controller_1.default.apiCompanies);
 // setting cars
 appRouter.get('/settings/cars/', middlewares_1.default.isLoggedIn, car_admin_controller_1.default.index);
 appRouter.get('/api/admin/cars/', middlewares_1.default.isLoggedIn, car_admin_controller_1.default.apiListCars);
 // import cars
-appRouter.get('/settings/cars/import/', middlewares_1.default.isLoggedIn, car_admin_controller_1.default.import);
+appRouter.get('/settings/cars/import/', middlewares_1.default.isLoggedIn, car_admin_controller_1.default.imports);
 appRouter.post('/api/admin/import-cars/', middlewares_1.default.isLoggedIn, car_admin_controller_1.default.importCars);
 // permissions
 appRouter.get('/api/admin/permissions/', middlewares_1.default.isLoggedIn, permission_admin_controller_1.default.apiListPermissions);
@@ -60,8 +64,6 @@ appRouter.get('/settings/alerts/', middlewares_1.default.isLoggedIn, alert_admin
 appRouter.get('/api/admin/alerts/', middlewares_1.default.isLoggedIn, alert_admin_controller_1.default.apiListAlerts);
 appRouter.post('/api/admin/alerts/', middlewares_1.default.isLoggedIn, alert_admin_controller_1.default.apiCreateAlert);
 appRouter.delete('/api/admin/alerts/:id', middlewares_1.default.isLoggedIn, alert_admin_controller_1.default.apiDeleteAlert);
-// admin companies
-appRouter.get('/companies/', middlewares_1.default.isLoggedIn, company_admin_controller_1.default.index);
 // validate vins
 appRouter.post('/api/v1/check-vin/', middlewares_1.default.isJWTAuthenticated, car_controller_1.default.checkVIN);
 // change password

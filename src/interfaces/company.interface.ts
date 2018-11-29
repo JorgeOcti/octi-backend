@@ -1,12 +1,17 @@
 import {ITeam} from './team.interface';
 import {IUser} from './user.interface';
 
-export interface ICompany {
-  _id: any;
+export interface IBaseCompany {
+  _id?: any;
   name: string;
-  active: boolean;
+}
+
+export interface ICompany extends IBaseCompany {
+  _id: any;
   users?: IUser[];
   team: ITeam;
+  active: boolean;
+  deleted: boolean;
   updatedAt: Date;
   createdAt: Date;
 }

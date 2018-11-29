@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "dev": "nodemon --inspect dist/server.js --ignore 'public/**/*.*' --ignore 'email-templates/**/*.*'",
+    "dev": "nodemon --inspect dist/server.js -e js,jade",
     "watch-ts": "tsc -w",
     "test": "mocha --recursive --require ts-node/register \"src/tests/**/*.ts\" --timeout 5000 --exit",
     "test-with-coverage": "nyc --reporter=html --reporter=text mocha dist/tests --timeout 5000 --exit"
@@ -117,11 +117,15 @@
   },
   "nodemonConfig": {
     "ignore": [
-      "src/*.*",
-      "coverage/*.*",
-      ".nyc_output/*.*",
-      "public/*.*",
-      "email-templates/*.*"
-    ]
+      "src/*",
+      "coverage/*",
+      ".nyc_output/*",
+      "public/*",
+      "email-templates/*",
+      "package.json",
+      "Dockerfile",
+      "docker-compose.yml"
+    ],
+    "delay": "1000"
   }
 }

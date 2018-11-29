@@ -28,6 +28,10 @@ const venueSchema = new mongoose.Schema({
     enum: choicesStatusCarInventory,
     default: ChoicesTypeVenue.receiver
   },
+  deleted: {
+    type: Boolean,
+    default: false
+  },
   active: {
     type: Boolean,
     default: true

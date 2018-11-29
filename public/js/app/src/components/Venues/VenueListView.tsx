@@ -114,7 +114,9 @@ class VenuesListView extends React.Component<IPropsType, IStateType> {
                       const canDelete = venue.users && venue.users.length === 0 && venue.participants && venue.participants.length === 0;
                       return (
                         <tr key={venue._id} id={`venue-${venue._id}`}>
-                          <td className="middle">{venue.name}</td>
+                          <td className="middle">{venue.name}<br/>
+                            {venue.company ? <span className={'text-sm text-muted'}>{venue.company.name}</span> : null}
+                          </td>
                           <td className="middle-center">{venue.type === 'distributor' ? <i className="fa fa-check-circle text-green" /> : <i className="fa fa-times-circle text-blue" /> }</td>
                           <td className="text-sm">
                             Usuarios: {venue.users ? venue.users.length : 0}<br/>
@@ -177,7 +179,7 @@ class VenuesListView extends React.Component<IPropsType, IStateType> {
           <button type="button" className="btn btn-primary" onClick={this.processAddVenue}>Grabar</button>
         </React.Fragment>
       );
-    }, 200);
+    }, 400);
   }
 
   private processAddVenue(): void {
@@ -204,7 +206,7 @@ class VenuesListView extends React.Component<IPropsType, IStateType> {
           <button type="button" className="btn btn-primary" onClick={this.processEditVenue}>Editar</button>
         </React.Fragment>
       );
-    }, 200);
+    }, 400);
   }
 
   private processEditVenue(): void {

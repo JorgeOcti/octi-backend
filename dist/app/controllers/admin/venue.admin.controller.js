@@ -20,7 +20,7 @@ class AdminVenueController {
         }
     }
     async apiVenues(req, res) {
-        const company = req.user.company;
+        const { company } = req.user;
         const { page, pageSize } = req.query;
         // paginate options
         const options = {
@@ -37,6 +37,9 @@ class AdminVenueController {
                 }, {
                     path: 'participants',
                     select: ['_id']
+                }, {
+                    path: 'company',
+                    select: ['name']
                 }],
             lean: true,
             sort: {
@@ -46,7 +49,10 @@ class AdminVenueController {
             limit: parseInt(pageSize ? pageSize : 20, 10)
         };
         try {
-            const venues = await this.getVenues(company, options);
+            const venues = await this.getVenues({
+                // delete: false,
+                company
+            }, options);
             // validate exist page
             if (options.page && venues.pages && venues.pages < options.page) {
                 res.status(400).json({
@@ -228,9 +234,9 @@ class AdminVenueController {
             res.status(500).json(e);
         }
     }
-    getVenues(company, options) {
+    getVenues(filter, options) {
         return new Promise((resolve, reject) => {
-            venue_model_1.default.paginate({ company }, options, (err, result) => {
+            venue_model_1.default.paginate(filter, options, (err, result) => {
                 if (err) {
                     return reject(err);
                 }

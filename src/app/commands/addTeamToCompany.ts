@@ -9,6 +9,7 @@ import User from '../models/user.model';
 async function addTeamToCompany() {
   /*
   * Generate teams and associate if necessary.
+  * - Create Team
   * - Assign users to team
   * - Assing company to team
   * */
@@ -16,7 +17,6 @@ async function addTeamToCompany() {
     path: path.join(__dirname, '../../../.env')
   });
   const MONGODB_URI: string = process.env.MONGODB_URI || '';
-  console.log('MONGODB_URI', MONGODB_URI);
   (mongoose as any).Promise = bluebird;
   await mongoose.connect(MONGODB_URI, {
     useMongoClient: true

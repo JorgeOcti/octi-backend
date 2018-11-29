@@ -89,6 +89,13 @@ if (hasPermission(window.user, 'viewVenue')) {
   });
 }
 
+settingItems.push({
+    id: '10.5',
+    icon: 'fa-circle-o',
+    text: 'Empresas',
+    url: '/settings/companies/'
+  });
+
 if (settingItems.length) {
   menus.push({
     id: '10',

@@ -1,6 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 const mongoose = require("mongoose");
+const mongoosePaginate = require("mongoose-paginate");
 const companySchema = new mongoose.Schema({
     name: {
         type: String,
@@ -11,6 +12,10 @@ const companySchema = new mongoose.Schema({
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Team'
     },
+    deleted: {
+        type: Boolean,
+        default: false
+    },
     active: {
         type: Boolean,
         default: true
@@ -18,6 +23,7 @@ const companySchema = new mongoose.Schema({
 }, {
     timestamps: true
 });
+companySchema.plugin(mongoosePaginate);
 companySchema.virtual('users', {
     ref: 'User',
     localField: '_id',

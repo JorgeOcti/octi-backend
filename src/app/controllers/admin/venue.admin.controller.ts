@@ -1,4 +1,4 @@
-import {ObjectID} from 'bson';
+
 import {Response} from 'express';
 import {PaginateOptions, PaginateResult} from 'mongoose';
 import {IRequest} from '../../../interfaces/global.interface';
@@ -24,7 +24,7 @@ class AdminVenueController {
   }
 
   public async apiVenues(req: IRequest, res: Response) {
-    const company = req.user.company;
+    const {company} = req.user;
     const {page, pageSize} = req.query;
     // paginate options
     const options: PaginateOptions = {
@@ -41,6 +41,9 @@ class AdminVenueController {
       }, {
         path: 'participants',
         select: ['_id']
+      }, {
+        path: 'company',
+        select: ['name']
       }],
       lean: true,
       sort: {
@@ -50,7 +53,10 @@ class AdminVenueController {
       limit: parseInt(pageSize ? pageSize : 20, 10)
     };
     try {
-      const venues = await this.getVenues(company, options);
+      const venues = await this.getVenues({
+        // delete: false,
+        company
+      }, options);
       // validate exist page
       if (options.page && venues.pages && venues.pages < options.page) {
         res.status(400).json({
@@ -225,9 +231,9 @@ class AdminVenueController {
     }
   }
 
-  private getVenues(company: ObjectID, options: PaginateOptions): Promise<PaginateResult<IVenueModel>> {
+  private getVenues(filter: any, options: PaginateOptions): Promise<PaginateResult<IVenueModel>> {
     return new Promise((resolve, reject) => {
-      Venue.paginate({company}, options, (err, result) => {
+      Venue.paginate(filter, options, (err, result) => {
         if (err) {
           return reject(err);
         }

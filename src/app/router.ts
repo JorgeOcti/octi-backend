@@ -55,12 +55,18 @@ appRouter.post('/api/admin/venues/', Middlewares.isLoggedIn, AdminVenuesControll
 appRouter.patch('/api/admin/venues/:id', Middlewares.isLoggedIn, AdminVenuesController.apiEditVenue);
 appRouter.delete('/api/admin/venues/:id', Middlewares.isLoggedIn, AdminVenuesController.apiDeleteVenue);
 
+// companies
+appRouter.get('/settings/companies/', Middlewares.isLoggedIn, AdminCompaniesController.index);
+
+// api companies
+appRouter.get('/api/admin/companies/', Middlewares.isLoggedIn, AdminCompaniesController.apiCompanies);
+
 // setting cars
 appRouter.get('/settings/cars/', Middlewares.isLoggedIn, AdminCarsController.index);
 appRouter.get('/api/admin/cars/', Middlewares.isLoggedIn, AdminCarsController.apiListCars);
 
 // import cars
-appRouter.get('/settings/cars/import/', Middlewares.isLoggedIn, AdminCarsController.import);
+appRouter.get('/settings/cars/import/', Middlewares.isLoggedIn, AdminCarsController.imports);
 appRouter.post('/api/admin/import-cars/', Middlewares.isLoggedIn, AdminCarsController.importCars);
 
 // permissions
@@ -72,9 +78,6 @@ appRouter.get('/settings/alerts/', Middlewares.isLoggedIn, AdminAlertsController
 appRouter.get('/api/admin/alerts/', Middlewares.isLoggedIn, AdminAlertsController.apiListAlerts);
 appRouter.post('/api/admin/alerts/', Middlewares.isLoggedIn, AdminAlertsController.apiCreateAlert);
 appRouter.delete('/api/admin/alerts/:id', Middlewares.isLoggedIn, AdminAlertsController.apiDeleteAlert);
-
-// admin companies
-appRouter.get('/companies/', Middlewares.isLoggedIn, AdminCompaniesController.index);
 
 // validate vins
 appRouter.post('/api/v1/check-vin/', Middlewares.isJWTAuthenticated, CarController.checkVIN);

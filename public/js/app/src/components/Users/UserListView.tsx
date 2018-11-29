@@ -181,7 +181,7 @@ class UserListView extends React.Component<IPropsType, IStateType> {
           <button type="button" className="btn btn-primary" onClick={this.processAddUser}>Grabar</button>
         </React.Fragment>
       );
-    }, 200);
+    }, 400);
   }
 
   private processAddUser(): void {
@@ -215,7 +215,7 @@ class UserListView extends React.Component<IPropsType, IStateType> {
           <button type="button" className="btn btn-primary" onClick={this.processEditUser}>Editar</button>
         </React.Fragment>
       );
-    }, 200);
+    }, 400);
   }
 
   private processEditUser() {

@@ -14,6 +14,7 @@ export interface IVenue extends IBaseVenue {
   users?: IUser[];
   participants?: IParticipant[];
   active: boolean;
+  deleted: boolean;
   updatedAt?: Date;
   createdAt?: Date;
 }
