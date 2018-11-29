@@ -60,6 +60,7 @@ appRouter.get('/settings/companies/', Middlewares.isLoggedIn, AdminCompaniesCont
 
 // api companies
 appRouter.get('/api/admin/companies/', Middlewares.isLoggedIn, AdminCompaniesController.apiCompanies);
+appRouter.post('/api/admin/companies/', Middlewares.isLoggedIn, AdminCompaniesController.apiAddCompany);
 
 // setting cars
 appRouter.get('/settings/cars/', Middlewares.isLoggedIn, AdminCarsController.index);

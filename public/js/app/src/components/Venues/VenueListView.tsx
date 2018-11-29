@@ -29,11 +29,11 @@ interface IPropsType extends RouteComponentProps<{ ticket: string }> {
   venues: IVenuesState;
 
   getVenuesAction(page: number): VenueReduxAction;
+  addVenueAction(): VenueReduxAction;
+  editVenueAction(): VenueReduxAction;
   deleteVenueAction(id?: string): VenueReduxAction;
   changeTempVenueAction(venue: IBaseVenue): VenueReduxAction;
   loadDataAction(title: string, body: JSX.Element, footer: JSX.Element): ModalReduxAction;
-  editVenueAction(): ModalReduxAction;
-  addVenueAction(): ModalReduxAction;
 }
 
 interface IStateType {
@@ -218,7 +218,7 @@ class VenuesListView extends React.Component<IPropsType, IStateType> {
     }
   }
 
-  private deleteVenue(venue: IVenue) {
+  private deleteVenue(venue: IVenue): void {
     // ask if you are sure that you are going to delete the user?
     swal({
       title: '¿Estás seguro?',

@@ -6,6 +6,7 @@ class AdminCompaniesController {
         this.index = this.index.bind(this);
         this.getCompanies = this.getCompanies.bind(this);
         this.apiCompanies = this.apiCompanies.bind(this);
+        this.apiAddCompany = this.apiAddCompany.bind(this);
     }
     async index(req, res) {
         // if (req.user.hasPermission('viewCompanies')) {
@@ -49,6 +50,47 @@ class AdminCompaniesController {
                 results: companies.docs,
                 status: 200
             });
+        }
+    }
+    async apiAddCompany(req, res) {
+        /*if (!req.user.hasPermission('addCompany')) {
+          return res.status(403).json({
+            message: 'No tienes permisos para esta operación'
+          });
+        }*/
+        const { name } = req.body;
+        const { team } = req.user;
+        if (!name || !name.trim().length) {
+            res.status(400).json({
+                message: 'El nombre es requerido.',
+                status: 400
+            });
+        }
+        try {
+            const existCompany = await company_model_1.default.find({
+                name,
+                team
+            });
+            if (existCompany.length) {
+                res.status(400).json({
+                    message: 'Empresa ya existe.',
+                    status: 400
+                });
+            }
+            else {
+                const newCompany = await new company_model_1.default({
+                    name,
+                    team
+                }).save();
+                res.status(201).json({
+                    message: 'Empresa agregada satisfactoriamente.',
+                    company: newCompany
+                });
+            }
+        }
+        catch (e) {
+            console.log(e);
+            res.status(500).json(e);
         }
     }
     getCompanies(filter, options, search) {

@@ -2,6 +2,7 @@ import {AxiosError, AxiosResponse, CancelTokenSource, default as Axios} from 'ax
 import {Dispatch} from 'redux';
 import {IBaseCompany, ICompany} from '../../../../../src/interfaces/company.interface';
 import ApiService from '../utils/axios';
+import {showModal, statusFooterButttonsModal} from '../utils/common';
 
 export interface ICompaniesState {
   companies: ICompany[];
@@ -133,6 +134,30 @@ export function getCompaniesAction(nextPage: number) {
           dispatch(isLoadingAction(false));
           api.errorHandler(err);
         }
+      });
+  };
+}
+
+export function addCompanyAction() {
+  return (dispatch: Dispatch<CompaniesReduxAction>, getState: () => {companies: ICompaniesState}) => {
+    dispatch(isLoadingAction(true));
+    const state = getState();
+    const {tempCompany} = state.companies;
+    const api: ApiService = new ApiService();
+    api.addCompanies(tempCompany)
+      .then((response: AxiosResponse) => {
+        statusFooterButttonsModal(false);
+        showModal(false);
+        dispatch(getCompaniesAction(1) as any);
+        swal(response.data.message, {
+          icon: 'success'
+        });
+      })
+      .catch((err: AxiosError) => {
+        statusFooterButttonsModal(false);
+
+        dispatch(isLoadingAction(false));
+        api.errorHandler(err);
       });
   };
 }

@@ -7,7 +7,7 @@ import {connect} from 'react-redux';
 import {RouteComponentProps} from 'react-router';
 import {Dispatch} from 'redux';
 import {IBaseCompany, ICompany} from '../../../../../../src/interfaces/company.interface';
-import {changeTempCompanyAction, CompaniesReduxAction, getCompaniesAction, ICompaniesState} from '../../actions/companies.actions';
+import {addCompanyAction, changeTempCompanyAction, CompaniesReduxAction, getCompaniesAction, ICompaniesState} from '../../actions/companies.actions';
 import {loadDataAction, ModalReduxAction} from '../../actions/modal.actions';
 import AppContainer from '../../container/AppContainer';
 import ModalView from '../Modal/ModalView';
@@ -19,11 +19,11 @@ interface IPropsType extends RouteComponentProps<{ ticket: string }> {
   companies: ICompaniesState;
 
   getCompaniesAction(page: number): CompaniesReduxAction;
+  addCompanyAction(): CompaniesReduxAction;
   // deleteVenueAction(id?: string): VenueReduxAction;
   changeTempCompanyAction(venue: IBaseCompany): CompaniesReduxAction;
   loadDataAction(title: string, body: JSX.Element, footer: JSX.Element): ModalReduxAction;
   // editVenueAction(): ModalReduxAction;
-  // addVenueAction(): ModalReduxAction;
 }
 
 interface IStateType {
@@ -141,7 +141,7 @@ class CompaniesListView extends React.Component<IPropsType, IStateType> {
     );
   }
 
-  private addCompany() {
+  private addCompany(): void {
     this.props.changeTempCompanyAction({
       _id: '',
       name: ''
@@ -163,12 +163,11 @@ class CompaniesListView extends React.Component<IPropsType, IStateType> {
     if (!tempCompany.name || !tempCompany.name.trim()) {
       swal('Agregar empresa', 'El nombres es requerido', 'error');
     } else {
-      console.log('processAddCompany', tempCompany);
-     // this.props.addVenueAction();
+      this.props.addCompanyAction();
     }
   }
 
-  private editCompany(company: ICompany) {
+  private editCompany(company: ICompany): void {
     this.props.changeTempCompanyAction({
       _id: company._id,
       name: company.name
@@ -185,7 +184,7 @@ class CompaniesListView extends React.Component<IPropsType, IStateType> {
     }, 400);
   }
 
-  private deleteCompany(company: ICompany) {
+  private deleteCompany(company: ICompany): void {
     swal({
       title: '¿Estás seguro?',
       text: `Vas a eliminar la empresa ${company.name} `,
@@ -221,12 +220,12 @@ const mapDispatchToProps = (dispatch: any ) => {
   return {
     dispatch,
     getCompaniesAction: (page: number) => dispatch(getCompaniesAction(page)),
+    addCompanyAction: () => dispatch(addCompanyAction()),
+    // editVenueAction: () => dispatch(editVenueAction()),
     // deleteVenueAction: (id: string) => dispatch(deleteVenueAction(id)),
     changeTempCompanyAction: (company: IBaseCompany) => dispatch(changeTempCompanyAction(company)),
     loadDataAction: (title: string, body: JSX.Element, footer: JSX.Element) => dispatch(loadDataAction(title, body, footer))
-    // editVenueAction: () => dispatch(editVenueAction()),
-    // addVenueAction: () => dispatch(addVenueAction())
   };
 };
 
-export default connect<{}, {}, IPropsType>(mapStateToProps, mapDispatchToProps)(CompaniesListView);
+export default connect<{companies: ICompaniesState}, {dispatch: any}, IPropsType>(mapStateToProps, mapDispatchToProps)(CompaniesListView);

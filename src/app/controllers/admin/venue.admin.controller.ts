@@ -87,7 +87,7 @@ class AdminVenueController {
       });
     }
     const {name, type} = req.body;
-    const company = req.user.company;
+    const {company} = req.user;
     if (!name || !name.trim().length) {
       res.status(400).json({
         message: 'El nombre es requerido.',

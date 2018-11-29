@@ -50,6 +50,7 @@ appRouter.delete('/api/admin/venues/:id', middlewares_1.default.isLoggedIn, venu
 appRouter.get('/settings/companies/', middlewares_1.default.isLoggedIn, company_admin_controller_1.default.index);
 // api companies
 appRouter.get('/api/admin/companies/', middlewares_1.default.isLoggedIn, company_admin_controller_1.default.apiCompanies);
+appRouter.post('/api/admin/companies/', middlewares_1.default.isLoggedIn, company_admin_controller_1.default.apiAddCompany);
 // setting cars
 appRouter.get('/settings/cars/', middlewares_1.default.isLoggedIn, car_admin_controller_1.default.index);
 appRouter.get('/api/admin/cars/', middlewares_1.default.isLoggedIn, car_admin_controller_1.default.apiListCars);

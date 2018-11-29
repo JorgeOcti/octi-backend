@@ -7,10 +7,13 @@ import Axios, {
   CancelTokenStatic
 } from 'axios';
 import * as Raven from 'raven-js';
-import {ITempUser} from '../actions/users.actions';
+import {
+  IBaseCompany
+} from '../../../../../src/interfaces/company.interface';
 import {
   IBaseVenue
 } from '../../../../../src/interfaces/venue.interface';
+import {ITempUser} from '../actions/users.actions';
 // import {IWindow} from '../interfaces/window';
 
 // declare let window: IWindow;
@@ -91,6 +94,11 @@ export default class ApiService {
   public getCompanies(page: number, pageSize?: number): AxiosPromise {
     return this.instance.get(
       `/api/admin/companies/?page=${page}${pageSize ? `&pageSize=${pageSize}` : ''}`
+    );
+  }
+  public addCompanies(company: IBaseCompany): AxiosPromise {
+    return this.instance.post(
+      `/api/admin/companies/`, company
     );
   }
 

@@ -8,6 +8,7 @@ class AdminCompaniesController {
     this.index = this.index.bind(this);
     this.getCompanies = this.getCompanies.bind(this);
     this.apiCompanies = this.apiCompanies.bind(this);
+    this.apiAddCompany = this.apiAddCompany.bind(this);
   }
 
   public async index(req: Request, res: Response) {
@@ -54,6 +55,46 @@ class AdminCompaniesController {
         });
       }
 
+  }
+
+  public async apiAddCompany(req: IRequest, res: Response): Promise<any> {
+    /*if (!req.user.hasPermission('addCompany')) {
+      return res.status(403).json({
+        message: 'No tienes permisos para esta operación'
+      });
+    }*/
+    const {name} = req.body;
+    const {team} = req.user;
+    if (!name || !name.trim().length) {
+      res.status(400).json({
+        message: 'El nombre es requerido.',
+        status: 400
+      });
+    }
+    try {
+      const existCompany = await Company.find({
+        name,
+        team
+      });
+      if (existCompany.length) {
+        res.status(400).json({
+          message: 'Empresa ya existe.',
+          status: 400
+        });
+      } else {
+        const newCompany = await new Company({
+          name,
+          team
+        }).save();
+        res.status(201).json({
+          message: 'Empresa agregada satisfactoriamente.',
+          company: newCompany
+        });
+      }
+    } catch (e) {
+      console.log(e);
+      res.status(500).json(e);
+    }
   }
 
   private getCompanies(filter: any, options: PaginateOptions, search?: string): Promise<PaginateResult<ICompanyModel>> {
