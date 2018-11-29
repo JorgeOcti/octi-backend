@@ -143,7 +143,7 @@ export function changeUserAction(user: IUser): IChangeUser {
   };
 }
 
-export function editUserAction() {
+export function updateUserAction() {
   return (dispatch: Dispatch<UserReduxAction>, getState: () => {users: IUsersState}) => {
     // dispatch(isLoadingAction(true));
     const state = getState();
@@ -171,7 +171,7 @@ export function editUserAction() {
   };
 }
 
-export function addUserAction() {
+export function createUserAction() {
   return (dispatch: Dispatch<UserReduxAction>, getState: () => {users: IUsersState}) => {
     dispatch(isLoadingAction(true));
     const state = getState();

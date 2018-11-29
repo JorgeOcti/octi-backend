@@ -10,10 +10,10 @@ import {Dispatch} from 'redux';
 import {IUser} from '../../../../../../src/interfaces/user.interface';
 import {loadDataAction, ModalReduxAction} from '../../actions/modal.actions';
 import {
-  addUserAction,
+  createUserAction,
   changeTempUserAction,
   deleteUserAction,
-  editUserAction,
+  updateUserAction,
   getUsersAction,
   ITempUser,
   IUsersState,
@@ -90,7 +90,7 @@ class UserListView extends React.Component<IPropsType, IStateType> {
           <div className="box">
             <div className="box-header with-border"><h3 className="box-title">Usuarios <small>{pagination.count}</small></h3>
               {
-                hasPermission(window.user, 'createUser') ?
+                hasPermission(window.user, 'addUser') ?
                   <div className="box-tools pull-right">
                     <button className="btn btn-sm btn-success" onClick={this.createUser}>Agregar</button>
                   </div>
@@ -287,8 +287,8 @@ const mapDispatchToProps = (dispatch: any ) => {
     getUsersAction: (page?: number) => dispatch(getUsersAction(page)),
     deleteUserAction: (id: string) => dispatch(deleteUserAction(id)),
     changeTempUserAction: (user: ITempUser) => dispatch(changeTempUserAction(user)),
-    AddUserAction: () => dispatch(addUserAction()),
-    editUserAction: () => dispatch(editUserAction()),
+    createUserAction: () => dispatch(createUserAction()),
+    updateUserAction: () => dispatch(updateUserAction()),
     loadDataAction: (title: string, body: JSX.Element, footer: JSX.Element) => dispatch(loadDataAction(title, body, footer))
   };
 };
