@@ -16,8 +16,8 @@ import UserController from './controllers/user.controller';
 const appRouter = express.Router();
 
 const csrfProtection = csrf({ cookie: true });
-// robots.txt
 
+// robots.txt
 appRouter.get('/robots.txt', AppController.robots);
 
 // DashBoard Principal
@@ -50,7 +50,7 @@ appRouter.get('/settings/venues/', Middlewares.isLoggedIn, AdminVenuesController
 
 // venue companies
 appRouter.get('/venues/', Middlewares.isLoggedIn, AdminVenuesController.index);
-appRouter.get('/api/admin/venues/', Middlewares.isLoggedIn, AdminVenuesController.apiVenues);
+appRouter.get('/api/admin/venues/', Middlewares.isLoggedIn, AdminVenuesController.apiListVenues);
 appRouter.post('/api/admin/venues/', Middlewares.isLoggedIn, AdminVenuesController.apiCreateVenue);
 appRouter.patch('/api/admin/venues/:id', Middlewares.isLoggedIn, AdminVenuesController.apiUpdateVenue);
 appRouter.delete('/api/admin/venues/:id', Middlewares.isLoggedIn, AdminVenuesController.apiDeleteVenue);
@@ -59,7 +59,7 @@ appRouter.delete('/api/admin/venues/:id', Middlewares.isLoggedIn, AdminVenuesCon
 appRouter.get('/settings/companies/', Middlewares.isLoggedIn, AdminCompaniesController.index);
 
 // api companies
-appRouter.get('/api/admin/companies/', Middlewares.isLoggedIn, AdminCompaniesController.apiCompanies);
+appRouter.get('/api/admin/companies/', Middlewares.isLoggedIn, AdminCompaniesController.apiListCompanies);
 appRouter.post('/api/admin/companies/', Middlewares.isLoggedIn, AdminCompaniesController.apiCreateCompany);
 
 // setting cars
@@ -98,7 +98,7 @@ appRouter.post('/account/recovery/:token', csrfProtection, AppController.process
 
 appRouter.get('/account/logout/', AppController.logout);
 
-// JWT API
+// JWT authentication API
 const jwtRouter = express.Router();
 jwtRouter.post('/login/', JWTController.login);
 jwtRouter.post('/token/', JWTController.token);

@@ -42,14 +42,14 @@ appRouter.delete('/api/admin/users/:id/', middlewares_1.default.isLoggedIn, user
 appRouter.get('/settings/venues/', middlewares_1.default.isLoggedIn, venue_admin_controller_1.default.index);
 // venue companies
 appRouter.get('/venues/', middlewares_1.default.isLoggedIn, venue_admin_controller_1.default.index);
-appRouter.get('/api/admin/venues/', middlewares_1.default.isLoggedIn, venue_admin_controller_1.default.apiVenues);
+appRouter.get('/api/admin/venues/', middlewares_1.default.isLoggedIn, venue_admin_controller_1.default.apiListVenues);
 appRouter.post('/api/admin/venues/', middlewares_1.default.isLoggedIn, venue_admin_controller_1.default.apiCreateVenue);
 appRouter.patch('/api/admin/venues/:id', middlewares_1.default.isLoggedIn, venue_admin_controller_1.default.apiUpdateVenue);
 appRouter.delete('/api/admin/venues/:id', middlewares_1.default.isLoggedIn, venue_admin_controller_1.default.apiDeleteVenue);
 // companies
 appRouter.get('/settings/companies/', middlewares_1.default.isLoggedIn, company_admin_controller_1.default.index);
 // api companies
-appRouter.get('/api/admin/companies/', middlewares_1.default.isLoggedIn, company_admin_controller_1.default.apiCompanies);
+appRouter.get('/api/admin/companies/', middlewares_1.default.isLoggedIn, company_admin_controller_1.default.apiListCompanies);
 appRouter.post('/api/admin/companies/', middlewares_1.default.isLoggedIn, company_admin_controller_1.default.apiCreateCompany);
 // setting cars
 appRouter.get('/settings/cars/', middlewares_1.default.isLoggedIn, car_admin_controller_1.default.index);
@@ -77,7 +77,7 @@ appRouter.post('/account/forgot-password/', csrfProtection, app_controller_1.def
 appRouter.get('/account/recovery/:token', csrfProtection, app_controller_1.default.recovery);
 appRouter.post('/account/recovery/:token', csrfProtection, app_controller_1.default.processRecovery);
 appRouter.get('/account/logout/', app_controller_1.default.logout);
-// JWT API
+// JWT authentication API
 const jwtRouter = express.Router();
 exports.jwtRouter = jwtRouter;
 jwtRouter.post('/login/', jwt_controller_1.default.login);

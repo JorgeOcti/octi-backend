@@ -7,7 +7,7 @@ class AdminCompaniesController {
   constructor() {
     this.index = this.index.bind(this);
     this.getCompanies = this.getCompanies.bind(this);
-    this.apiCompanies = this.apiCompanies.bind(this);
+    this.apiListCompanies = this.apiListCompanies.bind(this);
     this.apiCreateCompany = this.apiCreateCompany.bind(this);
     this.apiUpdateCompany = this.apiUpdateCompany.bind(this);
     this.apiDeleteCompany = this.apiDeleteCompany.bind(this);
@@ -21,7 +21,7 @@ class AdminCompaniesController {
     // }
   }
 
-  public async apiCompanies(req: IRequest, res: Response) {
+  public async apiListCompanies(req: IRequest, res: Response) {
     const {team} = req.user;
     const {page, pageSize, search} = req.query;
     // paginate options

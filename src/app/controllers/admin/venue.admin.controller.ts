@@ -9,7 +9,7 @@ class AdminVenueController {
   constructor() {
     this.index = this.index.bind(this);
     this.getVenues = this.getVenues.bind(this);
-    this.apiVenues = this.apiVenues.bind(this);
+    this.apiListVenues = this.apiListVenues.bind(this);
     this.apiCreateVenue = this.apiCreateVenue.bind(this);
     this.apiUpdateVenue = this.apiUpdateVenue.bind(this);
     this.apiDeleteVenue = this.apiDeleteVenue.bind(this);
@@ -23,7 +23,7 @@ class AdminVenueController {
     }
   }
 
-  public async apiVenues(req: IRequest, res: Response) {
+  public async apiListVenues(req: IRequest, res: Response) {
     const {company} = req.user;
     const {page, pageSize} = req.query;
     // paginate options
@@ -208,7 +208,7 @@ class AdminVenueController {
             });
           } else if (venue.participants && venue.participants.length) {
             res.status(400).json({
-              message: 'La sucursal no ha podido ser eliminada porque aún tiene revisiones asignados.'
+              message: 'La sucursal no ha podido ser eliminada porque aún tiene revisiones asignadas.'
             });
           } else {
             await venue.remove();
