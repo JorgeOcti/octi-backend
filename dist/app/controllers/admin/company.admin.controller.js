@@ -6,7 +6,9 @@ class AdminCompaniesController {
         this.index = this.index.bind(this);
         this.getCompanies = this.getCompanies.bind(this);
         this.apiCompanies = this.apiCompanies.bind(this);
-        this.apiAddCompany = this.apiAddCompany.bind(this);
+        this.apiCreateCompany = this.apiCreateCompany.bind(this);
+        this.apiUpdateCompany = this.apiUpdateCompany.bind(this);
+        this.apiDeleteCompany = this.apiDeleteCompany.bind(this);
     }
     async index(req, res) {
         // if (req.user.hasPermission('viewCompanies')) {
@@ -52,7 +54,7 @@ class AdminCompaniesController {
             });
         }
     }
-    async apiAddCompany(req, res) {
+    async apiCreateCompany(req, res) {
         /*if (!req.user.hasPermission('addCompany')) {
           return res.status(403).json({
             message: 'No tienes permisos para esta operación'
@@ -90,6 +92,86 @@ class AdminCompaniesController {
         }
         catch (e) {
             console.log(e);
+            res.status(500).json(e);
+        }
+    }
+    async apiUpdateCompany(req, res) {
+        // if (!req.user.hasPermission('changeCompany')) {
+        //   return res.status(403).json({
+        //     message: 'No tienes permisos para esta operación'
+        //   });
+        // }
+        const { id } = req.params;
+        const { team } = req.user;
+        const { name } = req.body;
+        if (!name || !name.length) {
+            res.status(400).json({
+                message: 'The name is are required',
+                status: 400
+            });
+        }
+        try {
+            const company = await company_model_1.default.findOneAndUpdate({
+                _id: id,
+                team
+            }, {
+                name
+            }, {
+                new: true
+            });
+            if (company) {
+                const response = {
+                    message: 'Empresa editada satisfactoriamente.',
+                    company
+                };
+                res.status(200).json(response);
+            }
+            else {
+                const response = {
+                    id,
+                    message: 'Empresa no encontrada'
+                };
+                res.status(200).json(response);
+            }
+        }
+        catch (e) {
+            console.log(e);
+            res.status(500).json(e);
+        }
+    }
+    async apiDeleteCompany(req, res) {
+        // if (!req.user.hasPermission('deleteCompany')) {
+        //   return res.status(403).json({
+        //     message: 'No tienes permisos para esta operación'
+        //   });
+        // }
+        const { id } = req.params;
+        const { team } = req.user;
+        try {
+            const company = await company_model_1.default.findOneAndUpdate({
+                _id: id,
+                team
+            }, {
+                deleted: true
+            }, {
+                new: true
+            });
+            if (company) {
+                const response = {
+                    message: 'Empresa eliminada satisfactoriamente.',
+                    company
+                };
+                res.status(200).json(response);
+            }
+            else {
+                const response = {
+                    id,
+                    message: 'Empresa no encontrada'
+                };
+                res.status(200).json(response);
+            }
+        }
+        catch (e) {
             res.status(500).json(e);
         }
     }

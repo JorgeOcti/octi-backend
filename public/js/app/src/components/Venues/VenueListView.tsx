@@ -9,12 +9,12 @@ import {Dispatch} from 'redux';
 import {IBaseVenue, IVenue} from '../../../../../../src/interfaces/venue.interface';
 import {loadDataAction, ModalReduxAction} from '../../actions/modal.actions';
 import {
-  addVenueAction,
   changeTempVenueAction,
+  createVenueAction,
   deleteVenueAction,
-  editVenueAction,
   getVenuesAction,
   IVenuesState,
+  updateVenueAction,
   VenueReduxAction
 } from '../../actions/venues.actions';
 import AppContainer from '../../container/AppContainer';
@@ -29,8 +29,8 @@ interface IPropsType extends RouteComponentProps<{ ticket: string }> {
   venues: IVenuesState;
 
   getVenuesAction(page: number): VenueReduxAction;
-  addVenueAction(): VenueReduxAction;
-  editVenueAction(): VenueReduxAction;
+  createVenueAction(): VenueReduxAction;
+  updateVenueAction(): VenueReduxAction;
   deleteVenueAction(id?: string): VenueReduxAction;
   changeTempVenueAction(venue: IBaseVenue): VenueReduxAction;
   loadDataAction(title: string, body: JSX.Element, footer: JSX.Element): ModalReduxAction;
@@ -187,7 +187,7 @@ class VenuesListView extends React.Component<IPropsType, IStateType> {
     if (!tempVenue.name || !tempVenue.name.trim()) {
       swal('Agregar sucursal', 'El nombres es requerido', 'error');
     } else {
-     this.props.addVenueAction();
+     this.props.createVenueAction();
     }
   }
 
@@ -214,7 +214,7 @@ class VenuesListView extends React.Component<IPropsType, IStateType> {
     if (!tempVenue.name || !tempVenue.name.trim()) {
       swal('Editar sucursal', 'El nombres es requerido', 'error');
     } else {
-      this.props.editVenueAction();
+      this.props.updateVenueAction();
     }
   }
 
@@ -254,12 +254,12 @@ const mapDispatchToProps = (dispatch: any ) => {
   return {
     dispatch,
     getVenuesAction: (page: number) => dispatch(getVenuesAction(page)),
+    createVenueAction: () => dispatch(createVenueAction()),
+    updateVenueAction: () => dispatch(updateVenueAction()),
     deleteVenueAction: (id: string) => dispatch(deleteVenueAction(id)),
     changeTempVenueAction: (venue: IBaseVenue) => dispatch(changeTempVenueAction(venue)),
-    loadDataAction: (title: string, body: JSX.Element, footer: JSX.Element) => dispatch(loadDataAction(title, body, footer)),
-    editVenueAction: () => dispatch(editVenueAction()),
-    addVenueAction: () => dispatch(addVenueAction())
+    loadDataAction: (title: string, body: JSX.Element, footer: JSX.Element) => dispatch(loadDataAction(title, body, footer))
   };
 };
 
-export default connect<{}, {}, IPropsType>(mapStateToProps, mapDispatchToProps)(VenuesListView);
+export default connect<{venues: IVenuesState}, {dispatch: any}, IPropsType>(mapStateToProps, mapDispatchToProps)(VenuesListView);

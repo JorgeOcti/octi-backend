@@ -119,7 +119,7 @@ interface IDeleteVenue {
   };
 }
 
-export function removeVenueAction(id: string): IDeleteVenue {
+export function processDeleteVenueAction(id: string): IDeleteVenue {
   return {
     type: '/VENUES/DELETE_VENUE',
     payload: {
@@ -140,7 +140,7 @@ export function deleteVenueAction(id: string) {
         $(`#venue-${id}`)
           .addClass('deleted-item');
         setTimeout(() => {
-          dispatch(removeVenueAction(id));
+          dispatch(processDeleteVenueAction(id));
         }, 500);
       })
       .catch((err: AxiosError): void => {
@@ -192,34 +192,35 @@ export function changeVenueAction(venue: IBaseVenue): IChangeVenue {
   };
 }
 
-export function editVenueAction() {
+export function updateVenueAction() {
   return (dispatch: Dispatch<VenueReduxAction>, getState: () => {venues: IVenuesState}) => {
     const state = getState();
     const {tempVenue} = state.venues;
+    const $venue = $(`#venue-${tempVenue._id}`);
     const api: ApiService = new ApiService();
     api.editVenue(tempVenue)
       .then((response: AxiosResponse) => {
         statusFooterButttonsModal(false);
         showModal(false);
         dispatch(changeVenueAction(response.data.venue));
-        $(`#venue-${tempVenue._id}`).addClass('editing-item');
+        $venue.addClass('editing-item');
         swal(response.data.message, {
           icon: 'success'
         });
         setTimeout(() => {
-          $(`#venue-${tempVenue._id}`).removeClass('editing-item');
+          $venue.removeClass('editing-item');
         }, 1000);
       })
       .catch((err: AxiosError) => {
         statusFooterButttonsModal(false);
-        $(`#venue-${tempVenue._id}`).removeClass('editing-item');
+        $venue.removeClass('editing-item');
         dispatch(isLoadingAction(false));
         api.errorHandler(err);
       });
   };
 }
 
-export function addVenueAction() {
+export function createVenueAction() {
   return (dispatch: Dispatch<VenueReduxAction>, getState: () => {venues: IVenuesState}) => {
     dispatch(isLoadingAction(true));
     const state = getState();

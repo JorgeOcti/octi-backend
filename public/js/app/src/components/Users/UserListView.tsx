@@ -31,11 +31,11 @@ interface IPropsType extends RouteComponentProps<{ ticket: string }> {
   users: IUsersState;
 
   getUsersAction(page?: number): UserReduxAction;
+  createUserAction(): UserReduxAction;
+  updateUserAction(): UserReduxAction;
   deleteUserAction(id?: string): UserReduxAction;
   changeTempUserAction(user: ITempUser): UserReduxAction;
-  editUserAction(): UserReduxAction;
   loadDataAction(title: string, body: JSX.Element, footer: JSX.Element): ModalReduxAction;
-  AddUserAction(): UserReduxAction;
 }
 
 interface IStateType {
@@ -54,12 +54,12 @@ class UserListView extends React.Component<IPropsType, IStateType> {
 
   constructor(props: IPropsType) {
     super(props);
+    this.createUser = this.createUser.bind(this);
+    this.processCreateUser = this.processCreateUser.bind(this);
+    this.updateUser = this.updateUser.bind(this);
+    this.processUpdateUser = this.processUpdateUser.bind(this);
     this.changePage = this.changePage.bind(this);
     this.changeTempUser = this.changeTempUser.bind(this);
-    this.addUser = this.addUser.bind(this);
-    this.processAddUser = this.processAddUser.bind(this);
-    this.editUser = this.editUser.bind(this);
-    this.processEditUser = this.processEditUser.bind(this);
   }
 
   public componentWillMount(): void {
@@ -90,9 +90,9 @@ class UserListView extends React.Component<IPropsType, IStateType> {
           <div className="box">
             <div className="box-header with-border"><h3 className="box-title">Usuarios <small>{pagination.count}</small></h3>
               {
-                hasPermission(window.user, 'addUser') ?
+                hasPermission(window.user, 'createUser') ?
                   <div className="box-tools pull-right">
-                    <button className="btn btn-sm btn-success" onClick={this.addUser}>Agregar</button>
+                    <button className="btn btn-sm btn-success" onClick={this.createUser}>Agregar</button>
                   </div>
                   : null
               }
@@ -128,7 +128,7 @@ class UserListView extends React.Component<IPropsType, IStateType> {
                           <td className="hidden-xs">{moment(user.updatedAt).format('LLL')}</td>
                           {
                             hasPermission(window.user, 'changeUser') ?
-                              <td className="text-blue pointer" onClick={() => this.editUser(user)}><i className="fa fa-pencil"/></td> : null
+                              <td className="text-blue pointer" onClick={() => this.updateUser(user)}><i className="fa fa-pencil"/></td> : null
                           }
                           {
                             hasPermission(window.user, 'deleteUser') ?
@@ -160,7 +160,7 @@ class UserListView extends React.Component<IPropsType, IStateType> {
     );
   }
 
-  private addUser(): void {
+  private createUser(): void {
     const {changeTempUser} = this;
     const {venues, permissions, forms} = this.props.users;
     this.props.changeTempUserAction({
@@ -178,13 +178,13 @@ class UserListView extends React.Component<IPropsType, IStateType> {
         <UserFormView create={true} changeTempUser={changeTempUser} venues={venues} users={this.props.users} forms={forms} permissions={permissions}/>,
         <React.Fragment>
           <button type="button" className="btn btn-default" data-dismiss="modal">Cancelar</button>
-          <button type="button" className="btn btn-primary" onClick={this.processAddUser}>Grabar</button>
+          <button type="button" className="btn btn-primary" onClick={this.processCreateUser}>Grabar</button>
         </React.Fragment>
       );
     }, 400);
   }
 
-  private processAddUser(): void {
+  private processCreateUser(): void {
     const {firstName, lastName, email, venue} = this.props.users.tempUser;
     if (!firstName || !firstName.trim().length) {
       swal('Agregar usuario', 'El nombres es requerido', 'error');
@@ -196,11 +196,11 @@ class UserListView extends React.Component<IPropsType, IStateType> {
       swal('Agregar usuario', 'El sucursal es requerido', 'error');
     } else {
       statusFooterButttonsModal(true);
-      this.props.AddUserAction();
+      this.props.createUserAction();
     }
   }
 
-  private editUser(user: IUser): void {
+  private updateUser(user: IUser): void {
     const {changeTempUser} = this;
     const {venues, permissions, forms} = this.props.users;
     const tmpUser = {...user};
@@ -212,13 +212,13 @@ class UserListView extends React.Component<IPropsType, IStateType> {
         <UserFormView create={false}  changeTempUser={changeTempUser} venues={venues} users={this.props.users} forms={forms} permissions={permissions} user={user}/>,
         <React.Fragment>
           <button type="button" className="btn btn-default" data-dismiss="modal">Cancelar</button>
-          <button type="button" className="btn btn-primary" onClick={this.processEditUser}>Editar</button>
+          <button type="button" className="btn btn-primary" onClick={this.processUpdateUser}>Editar</button>
         </React.Fragment>
       );
     }, 400);
   }
 
-  private processEditUser() {
+  private processUpdateUser() {
     const {firstName, lastName, email, venue} = this.props.users.tempUser;
     if (!firstName || !firstName.trim().length) {
       swal('Agregar usuario', 'El nombres es requerido', 'error');
@@ -230,7 +230,7 @@ class UserListView extends React.Component<IPropsType, IStateType> {
       swal('Agregar usuario', 'El sucursal es requerido', 'error');
     } else {
       statusFooterButttonsModal(true);
-      this.props.editUserAction();
+      this.props.updateUserAction();
     }
   }
 

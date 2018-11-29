@@ -7,7 +7,7 @@ import {connect} from 'react-redux';
 import {RouteComponentProps} from 'react-router';
 import {Dispatch} from 'redux';
 import {IBaseCompany, ICompany} from '../../../../../../src/interfaces/company.interface';
-import {addCompanyAction, changeTempCompanyAction, CompaniesReduxAction, getCompaniesAction, ICompaniesState} from '../../actions/companies.actions';
+import {changeTempCompanyAction, CompaniesReduxAction, createCompanyAction, getCompaniesAction, ICompaniesState} from '../../actions/companies.actions';
 import {loadDataAction, ModalReduxAction} from '../../actions/modal.actions';
 import AppContainer from '../../container/AppContainer';
 import ModalView from '../Modal/ModalView';
@@ -19,7 +19,7 @@ interface IPropsType extends RouteComponentProps<{ ticket: string }> {
   companies: ICompaniesState;
 
   getCompaniesAction(page: number): CompaniesReduxAction;
-  addCompanyAction(): CompaniesReduxAction;
+  createCompanyAction(): CompaniesReduxAction;
   // deleteVenueAction(id?: string): VenueReduxAction;
   changeTempCompanyAction(venue: IBaseCompany): CompaniesReduxAction;
   loadDataAction(title: string, body: JSX.Element, footer: JSX.Element): ModalReduxAction;
@@ -163,7 +163,7 @@ class CompaniesListView extends React.Component<IPropsType, IStateType> {
     if (!tempCompany.name || !tempCompany.name.trim()) {
       swal('Agregar empresa', 'El nombres es requerido', 'error');
     } else {
-      this.props.addCompanyAction();
+      this.props.createCompanyAction();
     }
   }
 
@@ -220,7 +220,7 @@ const mapDispatchToProps = (dispatch: any ) => {
   return {
     dispatch,
     getCompaniesAction: (page: number) => dispatch(getCompaniesAction(page)),
-    addCompanyAction: () => dispatch(addCompanyAction()),
+    addCompanyAction: () => dispatch(createCompanyAction()),
     // editVenueAction: () => dispatch(editVenueAction()),
     // deleteVenueAction: (id: string) => dispatch(deleteVenueAction(id)),
     changeTempCompanyAction: (company: IBaseCompany) => dispatch(changeTempCompanyAction(company)),

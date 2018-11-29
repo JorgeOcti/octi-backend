@@ -7,8 +7,8 @@ class AdminVenueController {
         this.index = this.index.bind(this);
         this.getVenues = this.getVenues.bind(this);
         this.apiVenues = this.apiVenues.bind(this);
-        this.apiAddVenue = this.apiAddVenue.bind(this);
-        this.apiEditVenue = this.apiEditVenue.bind(this);
+        this.apiCreateVenue = this.apiCreateVenue.bind(this);
+        this.apiUpdateVenue = this.apiUpdateVenue.bind(this);
         this.apiDeleteVenue = this.apiDeleteVenue.bind(this);
     }
     async index(req, res) {
@@ -77,7 +77,7 @@ class AdminVenueController {
             }
         }
     }
-    async apiAddVenue(req, res) {
+    async apiCreateVenue(req, res) {
         if (!req.user.hasPermission('addVenue')) {
             return res.status(403).json({
                 message: 'No tienes permisos para esta operación'
@@ -119,7 +119,7 @@ class AdminVenueController {
             res.status(500).json(e);
         }
     }
-    async apiEditVenue(req, res) {
+    async apiUpdateVenue(req, res) {
         if (!req.user.hasPermission('changeVenue')) {
             return res.status(403).json({
                 message: 'No tienes permisos para esta operación'
@@ -171,7 +171,7 @@ class AdminVenueController {
             });
         }
         const { id } = req.params;
-        const company = req.user.company;
+        const { company } = req.user;
         try {
             const inventories = await inventory_model_1.default.find({
                 $or: [{

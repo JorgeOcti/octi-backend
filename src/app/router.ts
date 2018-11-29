@@ -41,8 +41,8 @@ appRouter.get('/settings/users/', Middlewares.isLoggedIn, AdminUsersController.i
 
 // api admin users
 appRouter.get('/api/admin/users/', Middlewares.isLoggedIn, AdminUsersController.apiUsers);
-appRouter.post('/api/admin/users/', Middlewares.isLoggedIn, AdminUsersController.apiAddUser);
-appRouter.patch('/api/admin/users/:id/', Middlewares.isLoggedIn, AdminUsersController.apiEditUser);
+appRouter.post('/api/admin/users/', Middlewares.isLoggedIn, AdminUsersController.apiCreateUser);
+appRouter.patch('/api/admin/users/:id/', Middlewares.isLoggedIn, AdminUsersController.apiUpdateUser);
 appRouter.delete('/api/admin/users/:id/', Middlewares.isLoggedIn, AdminUsersController.apiDeleteUser);
 
 // admin venues
@@ -51,8 +51,8 @@ appRouter.get('/settings/venues/', Middlewares.isLoggedIn, AdminVenuesController
 // venue companies
 appRouter.get('/venues/', Middlewares.isLoggedIn, AdminVenuesController.index);
 appRouter.get('/api/admin/venues/', Middlewares.isLoggedIn, AdminVenuesController.apiVenues);
-appRouter.post('/api/admin/venues/', Middlewares.isLoggedIn, AdminVenuesController.apiAddVenue);
-appRouter.patch('/api/admin/venues/:id', Middlewares.isLoggedIn, AdminVenuesController.apiEditVenue);
+appRouter.post('/api/admin/venues/', Middlewares.isLoggedIn, AdminVenuesController.apiCreateVenue);
+appRouter.patch('/api/admin/venues/:id', Middlewares.isLoggedIn, AdminVenuesController.apiUpdateVenue);
 appRouter.delete('/api/admin/venues/:id', Middlewares.isLoggedIn, AdminVenuesController.apiDeleteVenue);
 
 // companies
@@ -60,7 +60,7 @@ appRouter.get('/settings/companies/', Middlewares.isLoggedIn, AdminCompaniesCont
 
 // api companies
 appRouter.get('/api/admin/companies/', Middlewares.isLoggedIn, AdminCompaniesController.apiCompanies);
-appRouter.post('/api/admin/companies/', Middlewares.isLoggedIn, AdminCompaniesController.apiAddCompany);
+appRouter.post('/api/admin/companies/', Middlewares.isLoggedIn, AdminCompaniesController.apiCreateCompany);
 
 // setting cars
 appRouter.get('/settings/cars/', Middlewares.isLoggedIn, AdminCarsController.index);

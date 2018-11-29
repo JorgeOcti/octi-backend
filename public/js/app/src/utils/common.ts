@@ -18,6 +18,10 @@ export function maxText(text: string, max: number): string {
   return text;
 }
 
+export function updateTooltip() {
+   $('[data-toggle="tooltip"]').tooltip();
+}
+
 interface IMixpanelProps {
   [index: string]: any;
 }

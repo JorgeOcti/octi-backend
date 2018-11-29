@@ -4,6 +4,7 @@ import {ErrorInfo} from 'react';
 import {connect} from 'react-redux';
 import {IBaseVenue} from '../../../../../../src/interfaces/venue.interface';
 import {changeTempVenueAction, IVenuesState, VenueReduxAction} from '../../actions/venues.actions';
+import {updateTooltip} from '../../utils/common';
 import Checkbox from '../CheckBox';
 
 interface IPropsType {
@@ -23,11 +24,11 @@ class VenueFormView extends React.Component<IPropsType, IStateType> {
   }
 
   public componentDidMount(): void {
-    $('[data-toggle="tooltip"]').tooltip();
+    updateTooltip();
   }
 
   public componentDidUpdate(): void {
-    $('[data-toggle="tooltip"]').tooltip();
+    updateTooltip();
   }
 
   public componentDidCatch(error: Error, errorInfo: ErrorInfo): void {

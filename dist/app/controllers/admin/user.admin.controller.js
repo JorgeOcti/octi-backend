@@ -6,8 +6,8 @@ class AdminUsersController {
     constructor() {
         this.index = this.index.bind(this);
         this.apiUsers = this.apiUsers.bind(this);
-        this.apiAddUser = this.apiAddUser.bind(this);
-        this.apiEditUser = this.apiEditUser.bind(this);
+        this.apiCreateUser = this.apiCreateUser.bind(this);
+        this.apiUpdateUser = this.apiUpdateUser.bind(this);
         this.apiDeleteUser = this.apiDeleteUser.bind(this);
     }
     async index(req, res) {
@@ -82,7 +82,7 @@ class AdminUsersController {
             }
         }
     }
-    async apiAddUser(req, res) {
+    async apiCreateUser(req, res) {
         if (!req.user.hasPermission('addUser')) {
             return res.status(403).json({
                 message: 'No tienes permisos para esta operación'
@@ -162,7 +162,7 @@ class AdminUsersController {
             res.status(500).json(e);
         }
     }
-    async apiEditUser(req, res) {
+    async apiUpdateUser(req, res) {
         if (!req.user.hasPermission('changeUser')) {
             return res.status(403).json({
                 message: 'No tienes permisos para esta operación'

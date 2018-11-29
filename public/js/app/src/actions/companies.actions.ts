@@ -138,7 +138,7 @@ export function getCompaniesAction(nextPage: number) {
   };
 }
 
-export function addCompanyAction() {
+export function createCompanyAction() {
   return (dispatch: Dispatch<CompaniesReduxAction>, getState: () => {companies: ICompaniesState}) => {
     dispatch(isLoadingAction(true));
     const state = getState();
