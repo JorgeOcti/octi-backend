@@ -40,7 +40,7 @@ export function venuesReducer(state = initialState, action: VenueReduxAction): I
     case '/VENUES/CHANGE_VENUE':
       return {
         ...state,
-        venues: state.venues.map((venue) => {
+        venues: state.venues.map((venue: IVenue) => {
           if (venue._id === action.payload.venue._id) {
             venue.name = action.payload.venue.name;
             venue.type = action.payload.venue.type;

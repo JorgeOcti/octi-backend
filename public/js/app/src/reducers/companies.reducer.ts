@@ -1,3 +1,4 @@
+import {ICompany} from '../../../../../src/interfaces/company.interface';
 import {CompaniesReduxAction, ICompaniesState} from '../actions/companies.actions';
 
 const initialState: ICompaniesState = {
@@ -38,6 +39,25 @@ export function companiesReducer(state = initialState, action: CompaniesReduxAct
       return {
         ...state,
         tempCompany: action.payload.company
+      };
+    case '/COMPANIES/CHANGE_COMPANY':
+      return {
+        ...state,
+        companies: state.companies.map((company: ICompany) => {
+          if (company._id === action.payload.company._id) {
+            company.name = action.payload.company.name;
+          }
+          return company;
+        })
+      };
+    case '/COMPANIES/DELETE_COMPANY':
+      return {
+        ...state,
+        companies: state.companies.filter((company: ICompany) => company._id !== action.payload.id),
+        pagination: {
+          ...state.pagination,
+          count: state.pagination.count - 1
+        }
       };
     case '/COMPANIES/LOAD_COMPANIES':
       return {

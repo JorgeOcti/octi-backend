@@ -61,6 +61,8 @@ appRouter.get('/settings/companies/', Middlewares.isLoggedIn, AdminCompaniesCont
 // api companies
 appRouter.get('/api/admin/companies/', Middlewares.isLoggedIn, AdminCompaniesController.apiListCompanies);
 appRouter.post('/api/admin/companies/', Middlewares.isLoggedIn, AdminCompaniesController.apiCreateCompany);
+appRouter.patch('/api/admin/companies/:id', Middlewares.isLoggedIn, AdminCompaniesController.apiUpdateCompany);
+appRouter.delete('/api/admin/companies/:id', Middlewares.isLoggedIn, AdminCompaniesController.apiDeleteCompany);
 
 // setting cars
 appRouter.get('/settings/cars/', Middlewares.isLoggedIn, AdminCarsController.index);

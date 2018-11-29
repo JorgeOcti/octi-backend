@@ -64,6 +64,32 @@ export function changePageAction(page: number): IChangePage {
   };
 }
 
+interface IChangeTempVenue {
+  type: '/VENUES/CHANGE_TEMP_VENUE';
+  payload: {
+    venue: IBaseVenue;
+  };
+  meta: {
+    debounce: {
+      time: number
+    }
+  };
+}
+
+export function changeTempVenueAction(venue: IBaseVenue): IChangeTempVenue {
+  return {
+    type: '/VENUES/CHANGE_TEMP_VENUE',
+    payload: {
+      venue
+    },
+    meta: {
+      debounce: {
+        time: 300
+      }
+    }
+  };
+}
+
 interface ILoadVenues {
   type: '/VENUES/LOAD_VENUES';
   payload: {
@@ -112,6 +138,74 @@ export function getVenuesAction(nextPage: number) {
   };
 }
 
+export function createVenueAction() {
+  return (dispatch: Dispatch<VenueReduxAction>, getState: () => {venues: IVenuesState}) => {
+    dispatch(isLoadingAction(true));
+    const state = getState();
+    const {tempVenue} = state.venues;
+    const api: ApiService = new ApiService();
+    api.createVenue(tempVenue)
+      .then((response: AxiosResponse) => {
+        statusFooterButttonsModal(false);
+        showModal(false);
+        dispatch(getVenuesAction(1) as any);
+        swal(response.data.message, {
+          icon: 'success'
+        });
+      })
+      .catch((err: AxiosError) => {
+        statusFooterButttonsModal(false);
+
+        dispatch(isLoadingAction(false));
+        api.errorHandler(err);
+      });
+  };
+}
+
+interface IChangeVenue {
+  type: '/VENUES/CHANGE_VENUE';
+  payload: {
+    venue: IBaseVenue;
+  };
+}
+
+export function changeVenueAction(venue: IBaseVenue): IChangeVenue {
+  return {
+    type: '/VENUES/CHANGE_VENUE',
+    payload: {
+      venue
+    }
+  };
+}
+
+export function updateVenueAction() {
+  return (dispatch: Dispatch<VenueReduxAction>, getState: () => {venues: IVenuesState}) => {
+    const state = getState();
+    const {tempVenue} = state.venues;
+    const $venue = $(`#venue-${tempVenue._id}`);
+    const api: ApiService = new ApiService();
+    api.updateVenue(tempVenue)
+      .then((response: AxiosResponse) => {
+        statusFooterButttonsModal(false);
+        showModal(false);
+        dispatch(changeVenueAction(response.data.venue));
+        $venue.addClass('editing-item');
+        swal(response.data.message, {
+          icon: 'success'
+        });
+        setTimeout(() => {
+          $venue.removeClass('editing-item');
+        }, 1000);
+      })
+      .catch((err: AxiosError) => {
+        statusFooterButttonsModal(false);
+        $venue.removeClass('editing-item');
+        dispatch(isLoadingAction(false));
+        api.errorHandler(err);
+      });
+  };
+}
+
 interface IDeleteVenue {
   type: '/VENUES/DELETE_VENUE';
   payload: {
@@ -144,100 +238,6 @@ export function deleteVenueAction(id: string) {
         }, 500);
       })
       .catch((err: AxiosError): void => {
-        dispatch(isLoadingAction(false));
-        api.errorHandler(err);
-      });
-  };
-}
-
-interface IChangeTempVenue {
-  type: '/VENUES/CHANGE_TEMP_VENUE';
-  payload: {
-    venue: IBaseVenue;
-  };
-  meta: {
-    debounce: {
-      time: number
-    }
-  };
-}
-
-export function changeTempVenueAction(venue: IBaseVenue): IChangeTempVenue {
-  return {
-    type: '/VENUES/CHANGE_TEMP_VENUE',
-    payload: {
-      venue
-    },
-    meta: {
-      debounce: {
-        time: 300
-      }
-    }
-  };
-}
-
-interface IChangeVenue {
-  type: '/VENUES/CHANGE_VENUE';
-  payload: {
-    venue: IBaseVenue;
-  };
-}
-
-export function changeVenueAction(venue: IBaseVenue): IChangeVenue {
-  return {
-    type: '/VENUES/CHANGE_VENUE',
-    payload: {
-      venue
-    }
-  };
-}
-
-export function updateVenueAction() {
-  return (dispatch: Dispatch<VenueReduxAction>, getState: () => {venues: IVenuesState}) => {
-    const state = getState();
-    const {tempVenue} = state.venues;
-    const $venue = $(`#venue-${tempVenue._id}`);
-    const api: ApiService = new ApiService();
-    api.editVenue(tempVenue)
-      .then((response: AxiosResponse) => {
-        statusFooterButttonsModal(false);
-        showModal(false);
-        dispatch(changeVenueAction(response.data.venue));
-        $venue.addClass('editing-item');
-        swal(response.data.message, {
-          icon: 'success'
-        });
-        setTimeout(() => {
-          $venue.removeClass('editing-item');
-        }, 1000);
-      })
-      .catch((err: AxiosError) => {
-        statusFooterButttonsModal(false);
-        $venue.removeClass('editing-item');
-        dispatch(isLoadingAction(false));
-        api.errorHandler(err);
-      });
-  };
-}
-
-export function createVenueAction() {
-  return (dispatch: Dispatch<VenueReduxAction>, getState: () => {venues: IVenuesState}) => {
-    dispatch(isLoadingAction(true));
-    const state = getState();
-    const {tempVenue} = state.venues;
-    const api: ApiService = new ApiService();
-    api.addVenue(tempVenue)
-      .then((response: AxiosResponse) => {
-        statusFooterButttonsModal(false);
-        showModal(false);
-        dispatch(getVenuesAction(1) as any);
-        swal(response.data.message, {
-          icon: 'success'
-        });
-      })
-      .catch((err: AxiosError) => {
-        statusFooterButttonsModal(false);
-
         dispatch(isLoadingAction(false));
         api.errorHandler(err);
       });

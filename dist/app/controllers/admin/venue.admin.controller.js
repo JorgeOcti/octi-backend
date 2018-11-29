@@ -2,6 +2,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 const inventory_model_1 = require("../../../inventory/models/inventory.model");
 const venue_model_1 = require("../../models/venue.model");
+const company_model_1 = require("../../models/company.model");
 class AdminVenueController {
     constructor() {
         this.index = this.index.bind(this);
@@ -20,7 +21,7 @@ class AdminVenueController {
         }
     }
     async apiListVenues(req, res) {
-        const { company } = req.user;
+        const { team } = req.user;
         const { page, pageSize } = req.query;
         // paginate options
         const options = {
@@ -49,9 +50,10 @@ class AdminVenueController {
             limit: parseInt(pageSize ? pageSize : 20, 10)
         };
         try {
+            const companies = await company_model_1.default.find({ team }, { _id_: true });
             const venues = await this.getVenues({
-                // delete: false,
-                company
+                deleted: false,
+                company: { $in: companies }
             }, options);
             // validate exist page
             if (options.page && venues.pages && venues.pages < options.page) {
@@ -126,7 +128,7 @@ class AdminVenueController {
             });
         }
         const { id } = req.params;
-        const { company } = req.user;
+        const { team } = req.user;
         const { name, type } = req.body;
         if (!name || !name.length) {
             res.status(400).json({
@@ -135,9 +137,10 @@ class AdminVenueController {
             });
         }
         try {
+            const companies = await company_model_1.default.find({ team }, { _id_: true });
             const venue = await venue_model_1.default.findOneAndUpdate({
                 _id: id,
-                company
+                company: { $in: companies }
             }, {
                 name,
                 type
@@ -156,7 +159,7 @@ class AdminVenueController {
                     id,
                     message: 'Sucursal no encontrada'
                 };
-                res.status(200).json(response);
+                res.status(400).json(response);
             }
         }
         catch (e) {

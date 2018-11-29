@@ -85,7 +85,7 @@ class UserListView extends React.Component<IPropsType, IStateType> {
   public render(): React.ReactElement<IPropsType> {
     const {loading, users, pagination} = this.props.users;
     return (
-      <AppContainer title="" cMenu="10" cSubMenu="10.3" cAction="Listado">
+      <AppContainer title="" cMenu="10" cSubMenu="10.5" cAction="Listado">
         <section className="content">
           <div className="box">
             <div className="box-header with-border"><h3 className="box-title">Usuarios <small>{pagination.count}</small></h3>

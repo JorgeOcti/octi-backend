@@ -51,6 +51,8 @@ appRouter.get('/settings/companies/', middlewares_1.default.isLoggedIn, company_
 // api companies
 appRouter.get('/api/admin/companies/', middlewares_1.default.isLoggedIn, company_admin_controller_1.default.apiListCompanies);
 appRouter.post('/api/admin/companies/', middlewares_1.default.isLoggedIn, company_admin_controller_1.default.apiCreateCompany);
+appRouter.patch('/api/admin/companies/:id', middlewares_1.default.isLoggedIn, company_admin_controller_1.default.apiUpdateCompany);
+appRouter.delete('/api/admin/companies/:id', middlewares_1.default.isLoggedIn, company_admin_controller_1.default.apiDeleteCompany);
 // setting cars
 appRouter.get('/settings/cars/', middlewares_1.default.isLoggedIn, car_admin_controller_1.default.index);
 appRouter.get('/api/admin/cars/', middlewares_1.default.isLoggedIn, car_admin_controller_1.default.apiListCars);

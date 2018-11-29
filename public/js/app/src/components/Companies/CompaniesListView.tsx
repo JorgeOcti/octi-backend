@@ -7,7 +7,14 @@ import {connect} from 'react-redux';
 import {RouteComponentProps} from 'react-router';
 import {Dispatch} from 'redux';
 import {IBaseCompany, ICompany} from '../../../../../../src/interfaces/company.interface';
-import {changeTempCompanyAction, CompaniesReduxAction, createCompanyAction, getCompaniesAction, ICompaniesState} from '../../actions/companies.actions';
+import {
+  changeTempCompanyAction,
+  CompaniesReduxAction,
+  createCompanyAction, deleteCompanyAction,
+  getCompaniesAction,
+  ICompaniesState,
+  updateCompanyAction
+} from '../../actions/companies.actions';
 import {loadDataAction, ModalReduxAction} from '../../actions/modal.actions';
 import AppContainer from '../../container/AppContainer';
 import ModalView from '../Modal/ModalView';
@@ -20,10 +27,10 @@ interface IPropsType extends RouteComponentProps<{ ticket: string }> {
 
   getCompaniesAction(page: number): CompaniesReduxAction;
   createCompanyAction(): CompaniesReduxAction;
-  // deleteVenueAction(id?: string): VenueReduxAction;
+  updateCompanyAction(): CompaniesReduxAction;
+  deleteCompanyAction(id?: string): CompaniesReduxAction;
   changeTempCompanyAction(venue: IBaseCompany): CompaniesReduxAction;
   loadDataAction(title: string, body: JSX.Element, footer: JSX.Element): ModalReduxAction;
-  // editVenueAction(): ModalReduxAction;
 }
 
 interface IStateType {
@@ -35,7 +42,8 @@ class CompaniesListView extends React.Component<IPropsType, IStateType> {
     super(props);
     this.addCompany = this.addCompany.bind(this);
     this.processAddCompany = this.processAddCompany.bind(this);
-    this.editCompany = this.editCompany.bind(this);
+    this.udpateCompany = this.udpateCompany.bind(this);
+    this.processUpdateCompany = this.processUpdateCompany.bind(this);
     this.deleteCompany = this.deleteCompany.bind(this);
     this.changePage = this.changePage.bind(this);
   }
@@ -64,7 +72,7 @@ class CompaniesListView extends React.Component<IPropsType, IStateType> {
   public render(): React.ReactElement<IPropsType> {
     const {loading, companies, pagination} = this.props.companies;
     return (
-      <AppContainer title="" cMenu="10" cSubMenu="10.5" cAction="Listado">
+      <AppContainer title="" cMenu="10" cSubMenu="10.3" cAction="Listado">
         <section className="content">
           <div className="box">
             <div className="box-header with-border"><h3 className="box-title">Empresas <small>{pagination.count}</small></h3>
@@ -104,7 +112,7 @@ class CompaniesListView extends React.Component<IPropsType, IStateType> {
                             {/*hasPermission(window.user, 'changeVenue') ?*/}
                           <td
                             className="middle text-blue pointer"
-                            onClick={() => this.editCompany(company)}>
+                            onClick={() => this.udpateCompany(company)}>
                             <i className="fa fa-pencil"/>
                           </td>
                           {/*}*/}
@@ -167,7 +175,7 @@ class CompaniesListView extends React.Component<IPropsType, IStateType> {
     }
   }
 
-  private editCompany(company: ICompany): void {
+  private udpateCompany(company: ICompany): void {
     this.props.changeTempCompanyAction({
       _id: company._id,
       name: company.name
@@ -178,10 +186,19 @@ class CompaniesListView extends React.Component<IPropsType, IStateType> {
         <CompaniesFormView />,
         <React.Fragment>
           <button type="button" className="btn btn-default" data-dismiss="modal">Cancelar</button>
-          <button type="button" className="btn btn-primary" onClick={undefined}>Editar</button>
+          <button type="button" className="btn btn-primary" onClick={this.processUpdateCompany}>Editar</button>
         </React.Fragment>
       );
     }, 400);
+  }
+
+  private processUpdateCompany(): void {
+    const {tempCompany} = this.props.companies;
+    if (!tempCompany.name || !tempCompany.name.trim()) {
+      swal('Editar Empresa', 'El nombres es requerido', 'error');
+    } else {
+      this.props.updateCompanyAction();
+    }
   }
 
   private deleteCompany(company: ICompany): void {
@@ -198,8 +215,7 @@ class CompaniesListView extends React.Component<IPropsType, IStateType> {
       }
     }).then((willDelete) => {
       if (willDelete) {
-        console.log('deleteCompany');
-        // this.props.deleteVenueAction(venue._id);
+        this.props.deleteCompanyAction(company._id);
       }
     });
   }
@@ -220,9 +236,9 @@ const mapDispatchToProps = (dispatch: any ) => {
   return {
     dispatch,
     getCompaniesAction: (page: number) => dispatch(getCompaniesAction(page)),
-    addCompanyAction: () => dispatch(createCompanyAction()),
-    // editVenueAction: () => dispatch(editVenueAction()),
-    // deleteVenueAction: (id: string) => dispatch(deleteVenueAction(id)),
+    createCompanyAction: () => dispatch(createCompanyAction()),
+    updateCompanyAction: () => dispatch(updateCompanyAction()),
+    deleteCompanyAction: (id: string) => dispatch(deleteCompanyAction(id)),
     changeTempCompanyAction: (company: IBaseCompany) => dispatch(changeTempCompanyAction(company)),
     loadDataAction: (title: string, body: JSX.Element, footer: JSX.Element) => dispatch(loadDataAction(title, body, footer))
   };

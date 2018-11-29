@@ -149,7 +149,7 @@ export function editUserAction() {
     const state = getState();
     const {tempUser} = state.users;
     const api: ApiService = new ApiService();
-    api.editUser(tempUser)
+    api.updteUser(tempUser)
       .then((response: AxiosResponse) => {
         statusFooterButttonsModal(false);
         showModal(false);
@@ -177,7 +177,7 @@ export function addUserAction() {
     const state = getState();
     const {tempUser} = state.users;
     const api: ApiService = new ApiService();
-    api.addUser(tempUser)
+    api.createUser(tempUser)
       .then((response: AxiosResponse) => {
         statusFooterButttonsModal(false);
         showModal(false);

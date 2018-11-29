@@ -144,7 +144,7 @@ export function createCompanyAction() {
     const state = getState();
     const {tempCompany} = state.companies;
     const api: ApiService = new ApiService();
-    api.addCompanies(tempCompany)
+    api.createCompany(tempCompany)
       .then((response: AxiosResponse) => {
         statusFooterButttonsModal(false);
         showModal(false);
@@ -162,4 +162,86 @@ export function createCompanyAction() {
   };
 }
 
-export type CompaniesReduxAction = ICancelRequest | IIsLoading | IChangePage | ILoadCompanies | IChangeTempCompany;
+interface IChangeCompany {
+  type: '/COMPANIES/CHANGE_COMPANY';
+  payload: {
+    company: IBaseCompany;
+  };
+}
+
+export function changeCompanyAction(company: IBaseCompany): IChangeCompany {
+  return {
+    type: '/COMPANIES/CHANGE_COMPANY',
+    payload: {
+      company
+    }
+  };
+}
+
+export function updateCompanyAction() {
+  return (dispatch: Dispatch<CompaniesReduxAction>, getState: () => {companies: ICompaniesState}) => {
+    const state = getState();
+    const {tempCompany} = state.companies;
+    const $company = $(`#company-${tempCompany._id}`);
+    const api: ApiService = new ApiService();
+    api.updateCompany(tempCompany)
+      .then((response: AxiosResponse) => {
+        statusFooterButttonsModal(false);
+        showModal(false);
+        dispatch(changeCompanyAction(response.data.company));
+        $company.addClass('editing-item');
+        swal(response.data.message, {
+          icon: 'success'
+        });
+        setTimeout(() => {
+          $company.removeClass('editing-item');
+        }, 1000);
+      })
+      .catch((err: AxiosError) => {
+        statusFooterButttonsModal(false);
+        $company.removeClass('editing-item');
+        dispatch(isLoadingAction(false));
+        api.errorHandler(err);
+      });
+  };
+}
+
+interface IDeleteCompany {
+  type: '/COMPANIES/DELETE_COMPANY';
+  payload: {
+    id: string;
+  };
+}
+
+export function processDeleteCompanyAction(id: string): IDeleteCompany {
+  return {
+    type: '/COMPANIES/DELETE_COMPANY',
+    payload: {
+      id
+    }
+  };
+}
+
+export function deleteCompanyAction(id: string) {
+  return (dispatch: Dispatch<CompaniesReduxAction>) => {
+    const api: ApiService = new ApiService();
+    api.deleteCompany(id)
+      .then((response: AxiosResponse): void => {
+        // effect when removing user
+        swal(response.data.message, {
+          icon: 'success'
+        });
+        $(`#company-${id}`)
+          .addClass('deleted-item');
+        setTimeout(() => {
+          dispatch(processDeleteCompanyAction(id));
+        }, 500);
+      })
+      .catch((err: AxiosError): void => {
+        dispatch(isLoadingAction(false));
+        api.errorHandler(err);
+      });
+  };
+}
+
+export type CompaniesReduxAction = ICancelRequest | IIsLoading | IChangePage | ILoadCompanies | IChangeTempCompany | IChangeCompany |IDeleteCompany;

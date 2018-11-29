@@ -72,14 +72,14 @@ if (hasPermission(window.user, 'viewCar')) {
     url: '/settings/cars/'
   });
 }
-if (hasPermission(window.user, 'viewUser')) {
-  settingItems.push({
-    id: '10.3',
-    icon: 'fa-circle-o',
-    text: 'Usuarios',
-    url: '/settings/users/'
-  });
-}
+
+settingItems.push({
+  id: '10.3',
+  icon: 'fa-circle-o',
+  text: 'Empresas',
+  url: '/settings/companies/'
+});
+
 if (hasPermission(window.user, 'viewVenue')) {
   settingItems.push({
     id: '10.4',
@@ -89,12 +89,14 @@ if (hasPermission(window.user, 'viewVenue')) {
   });
 }
 
-settingItems.push({
+if (hasPermission(window.user, 'viewUser')) {
+  settingItems.push({
     id: '10.5',
     icon: 'fa-circle-o',
-    text: 'Empresas',
-    url: '/settings/companies/'
+    text: 'Usuarios',
+    url: '/settings/users/'
   });
+}
 
 if (settingItems.length) {
   menus.push({

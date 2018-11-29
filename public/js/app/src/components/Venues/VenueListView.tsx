@@ -50,7 +50,7 @@ class VenuesListView extends React.Component<IPropsType, IStateType> {
     this.addVenue = this.addVenue.bind(this);
     this.processAddVenue = this.processAddVenue.bind(this);
     this.editVenue = this.editVenue.bind(this);
-    this.processEditVenue = this.processEditVenue.bind(this);
+    this.processUpdateVenue = this.processUpdateVenue.bind(this);
     this.deleteVenue = this.deleteVenue.bind(this);
   }
 
@@ -203,13 +203,13 @@ class VenuesListView extends React.Component<IPropsType, IStateType> {
         <VenueFormView />,
         <React.Fragment>
           <button type="button" className="btn btn-default" data-dismiss="modal">Cancelar</button>
-          <button type="button" className="btn btn-primary" onClick={this.processEditVenue}>Editar</button>
+          <button type="button" className="btn btn-primary" onClick={this.processUpdateVenue}>Editar</button>
         </React.Fragment>
       );
     }, 400);
   }
 
-  private processEditVenue(): void {
+  private processUpdateVenue(): void {
     const {tempVenue} = this.props.venues;
     if (!tempVenue.name || !tempVenue.name.trim()) {
       swal('Editar sucursal', 'El nombres es requerido', 'error');

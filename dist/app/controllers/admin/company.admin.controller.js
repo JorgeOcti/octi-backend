@@ -34,7 +34,7 @@ class AdminCompaniesController {
             limit: parseInt(pageSize ? pageSize : 20, 10)
         };
         const companies = await this.getCompanies({
-            // delete: false,
+            deleted: false,
             team
         }, options, search);
         if (options.page && companies.pages && companies.pages < options.page) {
@@ -71,7 +71,8 @@ class AdminCompaniesController {
         try {
             const existCompany = await company_model_1.default.find({
                 name,
-                team
+                team,
+                deleted: false
             });
             if (existCompany.length) {
                 res.status(400).json({
@@ -131,7 +132,7 @@ class AdminCompaniesController {
                     id,
                     message: 'Empresa no encontrada'
                 };
-                res.status(200).json(response);
+                res.status(400).json(response);
             }
         }
         catch (e) {

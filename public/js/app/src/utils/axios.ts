@@ -61,14 +61,14 @@ export default class ApiService {
       });
   }
 
-  public addUser(user: ITempUser): AxiosPromise {
+  public createUser(user: ITempUser): AxiosPromise {
     delete user._id;
     return this.instance.post(
       `/api/admin/users/`
       , user);
   }
 
-  public editUser(user: ITempUser): AxiosPromise {
+  public updteUser(user: ITempUser): AxiosPromise {
     return this.instance.patch(
       `/api/admin/users/${user._id}`
       , user);
@@ -96,9 +96,21 @@ export default class ApiService {
       `/api/admin/companies/?page=${page}${pageSize ? `&pageSize=${pageSize}` : ''}`
     );
   }
-  public addCompanies(company: IBaseCompany): AxiosPromise {
+  public createCompany(company: IBaseCompany): AxiosPromise {
     return this.instance.post(
       `/api/admin/companies/`, company
+    );
+  }
+
+  public updateCompany(company: IBaseCompany): AxiosPromise {
+    return this.instance.patch(
+      `/api/admin/companies/${company._id}`, company
+    );
+  }
+
+   public deleteCompany(id: string): AxiosPromise {
+    return this.instance.delete(
+      `/api/admin/companies/${id}`
     );
   }
 
@@ -114,12 +126,13 @@ export default class ApiService {
     );
   }
 
-  public editVenue(venue: IBaseVenue): AxiosPromise {
+  public updateVenue(venue: IBaseVenue): AxiosPromise {
     return this.instance.patch(
       `/api/admin/venues/${venue._id}/`, venue
     );
   }
-  public addVenue(venue: IBaseVenue): AxiosPromise {
+
+  public createVenue(venue: IBaseVenue): AxiosPromise {
     return this.instance.post(
       `/api/admin/venues/`, venue
     );
