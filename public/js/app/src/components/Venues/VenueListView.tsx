@@ -186,8 +186,10 @@ class VenuesListView extends React.Component<IPropsType, IStateType> {
     const {tempVenue} = this.props.venues;
     if (!tempVenue.name || !tempVenue.name.trim()) {
       swal('Agregar sucursal', 'El nombres es requerido', 'error');
+    } else if (!tempVenue.company || !tempVenue.company._id) {
+      swal('Agregar sucursal', 'La empresa es requerida', 'error');
     } else {
-     this.props.createVenueAction();
+      this.props.createVenueAction();
     }
   }
 
@@ -214,6 +216,8 @@ class VenuesListView extends React.Component<IPropsType, IStateType> {
     const {tempVenue} = this.props.venues;
     if (!tempVenue.name || !tempVenue.name.trim()) {
       swal('Editar sucursal', 'El nombres es requerido', 'error');
+    } else if (!tempVenue.company || !tempVenue.company._id) {
+      swal('Editar sucursal', 'La empresa es requerida', 'error');
     } else {
       this.props.updateVenueAction();
     }
