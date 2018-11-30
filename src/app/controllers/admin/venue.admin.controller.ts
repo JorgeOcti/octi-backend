@@ -4,7 +4,6 @@ import {PaginateOptions, PaginateResult} from 'mongoose';
 import {IRequest} from '../../../interfaces/global.interface';
 import Inventory from '../../../inventory/models/inventory.model';
 import Venue, {IVenueModel} from '../../models/venue.model';
-import Company from "../../models/company.model";
 
 class AdminVenueController {
   constructor() {
@@ -54,10 +53,9 @@ class AdminVenueController {
       limit: parseInt(pageSize ? pageSize : 20, 10)
     };
     try {
-      const companies = await Company.find({team}, {_id_: true});
       const venues = await this.getVenues({
         deleted: false,
-        company: {$in: companies}
+        team
       }, options);
       // validate exist page
       if (options.page && venues.pages && venues.pages < options.page) {
@@ -88,8 +86,8 @@ class AdminVenueController {
         message: 'No tienes permisos para esta operación'
       });
     }
-    const {name, type} = req.body;
-    const {company} = req.user;
+    const {name, type, company} = req.body;
+    const {team} = req.user;
     if (!name || !name.trim().length) {
       res.status(400).json({
         message: 'El nombre es requerido.',
@@ -99,7 +97,7 @@ class AdminVenueController {
     try {
       const existVenue = await Venue.find({
         name,
-        company
+        team
       });
       if (existVenue.length) {
         res.status(400).json({
@@ -109,8 +107,9 @@ class AdminVenueController {
       } else {
         const newVenue = await new Venue({
           name,
+          company,
           type,
-          company
+          team
         }).save();
         res.status(201).json({
           message: 'Sucursal agregada satisfactoriamente.',
@@ -131,7 +130,7 @@ class AdminVenueController {
     }
     const {id} = req.params;
     const {team} = req.user;
-    const {name, type} = req.body;
+    const {name, type, company} = req.body;
     if (!name || !name.length) {
       res.status(400).json({
         message: 'The name is are required',
@@ -139,16 +138,19 @@ class AdminVenueController {
       });
     }
     try {
-      const companies = await Company.find({team}, {_id_: true});
       const venue = await Venue.findOneAndUpdate({
-        _id: id
-        , company: {$in: companies}
+        _id: id,
+        team
       }, {
         name,
+        company,
         type
       }, {
         new: true
-      });
+      }).populate([{
+        path: 'company',
+        select: ['name']
+      }]);
       if (venue) {
         const response = {
           message: 'Sucursal editada satisfactoriamente.',
@@ -175,7 +177,7 @@ class AdminVenueController {
       });
     }
     const {id} = req.params;
-    const {company} = req.user;
+    const {company, team} = req.user;
     try {
       const inventories = await Inventory.find({
         $or: [{
@@ -196,7 +198,7 @@ class AdminVenueController {
       } else {
         const venue = await Venue.findOne({
           _id: id,
-          company
+          team
         }).populate([{
           path: 'users',
           select: ['_id']

@@ -1,11 +1,13 @@
 import {AxiosError, AxiosResponse, CancelTokenSource, default as Axios} from 'axios';
 import {Dispatch} from 'redux';
+import {ICompany} from '../../../../../src/interfaces/company.interface';
 import {IBaseVenue, IVenue} from '../../../../../src/interfaces/venue.interface';
 import ApiService from '../utils/axios';
 import {showModal, statusFooterButttonsModal} from '../utils/common';
 
 export interface IVenuesState {
   venues: IVenue[];
+  companies: ICompany[];
   loading: boolean;
   tempVenue: IBaseVenue;
   source: CancelTokenSource | null;
@@ -110,6 +112,22 @@ export function loadVenuesAction(venues: any, count: number, pages: number): ILo
   };
 }
 
+interface ILoadCompaniesVenue {
+  type: '/VENUES/LOAD_COMPANIES_VENUE';
+  payload: {
+    compenies: ICompany[];
+  };
+}
+
+export function loadCompaniesVenueAction(compenies: ICompany[]): ILoadCompaniesVenue {
+  return {
+    type: '/VENUES/LOAD_COMPANIES_VENUE',
+    payload: {
+      compenies
+    }
+  };
+}
+
 export function getVenuesAction(nextPage: number) {
   return (dispatch: Dispatch<VenueReduxAction>, getState: () => {venues: IVenuesState}) => {
     const api: ApiService = new ApiService();
@@ -120,6 +138,15 @@ export function getVenuesAction(nextPage: number) {
     const page = nextPage ? nextPage : state.venues.pagination.page;
     if (nextPage) {
       dispatch(changePageAction(nextPage));
+    }
+    if (!state.venues.companies.length) {
+      api.getCompanies(1, 200)
+        .then((response: AxiosResponse) => {
+          dispatch(loadCompaniesVenueAction(response.data.results));
+        })
+        .catch((err: AxiosError): void => {
+          api.errorHandler(err);
+        });
     }
     api.getVenues(page)
       .then((response: AxiosResponse) => {
@@ -244,4 +271,4 @@ export function deleteVenueAction(id: string) {
   };
 }
 
-export type VenueReduxAction = ICancelRequest | IIsLoading | IChangePage | ILoadVenues | IDeleteVenue | IChangeTempVenue | IChangeVenue;
+export type VenueReduxAction = ICancelRequest | IIsLoading | IChangePage | ILoadVenues | IDeleteVenue | IChangeTempVenue | IChangeVenue | ILoadCompaniesVenue;

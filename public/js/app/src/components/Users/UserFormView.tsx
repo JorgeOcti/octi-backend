@@ -152,14 +152,14 @@ class UserFormView extends React.Component<IPropsType, IStateType> {
                 <div className="form-group">
                   <label htmlFor="id-venue">Sucursal</label>
                   <select
-                    className="form-control"
+                    className="chosen-select form-control"
                     id="id-venue"
                     name="venue"
                     defaultValue={tempUser && tempUser.venue ? tempUser.venue : undefined}
                     onChange={undefined}
-                    // onChange={(e: React.ChangeEvent<HTMLSelectElement>) => changeTempUser({venue: e.target.value})}
+                    data-placeholder={'Seleccione sucursal'}
                   >
-                    <option value="">Seleccione venue</option>
+                    <option value="" />
                     {
                       venues.map((venue) => (
                         <option key={venue._id} value={venue._id}>{venue.name}</option>
@@ -171,8 +171,14 @@ class UserFormView extends React.Component<IPropsType, IStateType> {
               <div className="col-md-12">
                 <div className="form-group">
                   <label>Formularios</label>
-                  <select id="id-forms" className="form-control" style={{minWidth: '200px'}} onChange={undefined}>
-                    <option value="">Seleccione formularios</option>
+                  <select
+                    id="id-forms"
+                    className="chosen-select form-control"
+                    style={{minWidth: '200px'}}
+                    onChange={undefined}
+                    data-placeholder={'Seleccione formularios'}
+                  >
+                    <option value="" />
                     {
                       selectForms.map((form) => {
                         return (
@@ -214,13 +220,13 @@ class UserFormView extends React.Component<IPropsType, IStateType> {
                   <label>Formulario por defecto</label>
                   <select
                     id="id-form-default"
-                    className="form-control"
+                    className="chosen-select form-control"
                     style={{minWidth: '200px'}}
                     defaultValue={tempUser && tempUser.preferred ? tempUser.preferred : undefined}
                     onChange={undefined}
-                    // onChange={(e: React.ChangeEvent<HTMLSelectElement>) => changeTempUser({preferred: e.target.value})}
+                    data-placeholder={'Seleccione formularios'}
                   >
-                    <option value="">Seleccione formularios</option>
+                    <option value="" />
                     {
                       userForms.map((form) => {
                         return (
@@ -239,8 +245,13 @@ class UserFormView extends React.Component<IPropsType, IStateType> {
               <div className="col-md-12">
                 <div className="form-group">
                   <label>Permisos</label>
-                  <select id="id-permissions" className="form-control" style={{minWidth: '200px'}}>
-                    <option value="">Seleccione permisos</option>
+                  <select
+                    id="id-permissions"
+                    className="chosen-select form-control"
+                    style={{minWidth: '200px'}}
+                    data-placeholder={'Seleccione permiso'}
+                  >
+                    <option value="" />
                     {
                       selectPermissions.map((permission) => {
                         return (

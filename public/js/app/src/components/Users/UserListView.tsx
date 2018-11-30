@@ -103,8 +103,8 @@ class UserListView extends React.Component<IPropsType, IStateType> {
                   <tr>
                     <th style={{width: '20%'}}>Nombre</th>
                     <th style={{width: '20%'}}>Apellido</th>
+                    <th style={{width: '20%'}} className="hidden-xs">Empresa</th>
                     <th style={{width: '20%'}} className="hidden-xs">Sucursal</th>
-                    <th style={{width: '20%'}} className="hidden-xs">Email</th>
                     <th style={{width: '20%'}} className="hidden-xs">Modificado</th>
                     {
                       hasPermission(window.user, 'changeUser') ?
@@ -123,8 +123,8 @@ class UserListView extends React.Component<IPropsType, IStateType> {
                         <tr key={user._id} id={`user-${user._id}`}>
                           <td>{user.firstName}</td>
                           <td>{user.lastName}</td>
+                          <td className="hidden-xs">{user.company ? user.company.name : ''}</td>
                           <td className="hidden-xs">{user.venue ? user.venue.name : ''}</td>
-                          <td className="hidden-xs">{user.email}</td>
                           <td className="hidden-xs">{moment(user.updatedAt).format('LLL')}</td>
                           {
                             hasPermission(window.user, 'changeUser') ?

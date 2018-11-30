@@ -195,6 +195,7 @@ class VenuesListView extends React.Component<IPropsType, IStateType> {
     this.props.changeTempVenueAction({
       _id: venue._id,
       name: venue.name,
+      company: venue.company,
       type: venue.type ? venue.type : 'receiver'
     });
     setTimeout(() => {

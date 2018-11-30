@@ -24,11 +24,24 @@ class VenueFormView extends React.Component<IPropsType, IStateType> {
   }
 
   public componentDidMount(): void {
+    const chosenOptions = {
+      no_results_text: 'Sin resultados para:'
+    };
     updateTooltip();
+    ($('#id-company') as any).chosen(chosenOptions).change((e: React.ChangeEvent<HTMLSelectElement>) => {
+      if (this.props.changeTempVenueAction && this.props.venues) {
+        const {tempVenue, companies} = this.props.venues;
+        this.props.changeTempVenueAction({
+          ...tempVenue,
+          company: companies.find((company) => (company._id === e.target.value))
+        });
+      }
+    });
   }
 
   public componentDidUpdate(): void {
     updateTooltip();
+    $('#id-company').trigger('chosen:updated');
   }
 
   public componentDidCatch(error: Error, errorInfo: ErrorInfo): void {
@@ -41,7 +54,7 @@ class VenueFormView extends React.Component<IPropsType, IStateType> {
   render(): React.ReactElement<IPropsType> | null {
     if (this.props.venues && this.props.changeTempVenueAction) {
       const {changeTempVenueAction} = this.props;
-      const {tempVenue} = this.props.venues;
+      const {tempVenue, companies} = this.props.venues;
       return (
         <div className="row">
           <div className="col-md-12">
@@ -60,6 +73,26 @@ class VenueFormView extends React.Component<IPropsType, IStateType> {
                   })
                 }
               />
+            </div>
+          </div>
+          <div className="col-md-12">
+            <div className="form-group">
+              <label htmlFor="id-venue">Empresa</label>
+              <select
+                className="chosen-select form-control"
+                id="id-company"
+                name="company"
+                defaultValue={tempVenue && tempVenue.company ? tempVenue.company._id : undefined}
+                data-placeholder={'Seleccione Empresa'}
+                onChange={undefined}
+              >
+                <option value="" />
+                {
+                  companies.map((company) => (
+                    <option key={company._id} value={company._id}>{company.name}</option>
+                  ))
+                }
+              </select>
             </div>
           </div>
           <div className="col col-md-6">

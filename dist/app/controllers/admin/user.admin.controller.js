@@ -49,6 +49,9 @@ class AdminUsersController {
                 }, {
                     path: 'userForms',
                     select: ['name']
+                }, {
+                    path: 'company',
+                    select: ['name']
                 }],
             sort: {
                 firstName: 1

@@ -3,6 +3,7 @@ import {IVenuesState, VenueReduxAction} from '../actions/venues.actions';
 
 const initialState: IVenuesState = {
   venues: [],
+  companies: [],
   loading: true,
   source: null,
   tempVenue: {
@@ -37,12 +38,18 @@ export function venuesReducer(state = initialState, action: VenueReduxAction): I
           page: action.payload.page
         }
       };
+    case '/VENUES/LOAD_COMPANIES_VENUE':
+      return {
+        ...state,
+        companies: action.payload.compenies
+      };
     case '/VENUES/CHANGE_VENUE':
       return {
         ...state,
         venues: state.venues.map((venue: IVenue) => {
           if (venue._id === action.payload.venue._id) {
             venue.name = action.payload.venue.name;
+            venue.company = action.payload.venue.company;
             venue.type = action.payload.venue.type;
           }
           return venue;

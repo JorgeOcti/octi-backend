@@ -2,7 +2,6 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 const inventory_model_1 = require("../../../inventory/models/inventory.model");
 const venue_model_1 = require("../../models/venue.model");
-const company_model_1 = require("../../models/company.model");
 class AdminVenueController {
     constructor() {
         this.index = this.index.bind(this);
@@ -50,10 +49,9 @@ class AdminVenueController {
             limit: parseInt(pageSize ? pageSize : 20, 10)
         };
         try {
-            const companies = await company_model_1.default.find({ team }, { _id_: true });
             const venues = await this.getVenues({
                 deleted: false,
-                company: { $in: companies }
+                team
             }, options);
             // validate exist page
             if (options.page && venues.pages && venues.pages < options.page) {
@@ -85,8 +83,8 @@ class AdminVenueController {
                 message: 'No tienes permisos para esta operación'
             });
         }
-        const { name, type } = req.body;
-        const { company } = req.user;
+        const { name, type, company } = req.body;
+        const { team } = req.user;
         if (!name || !name.trim().length) {
             res.status(400).json({
                 message: 'El nombre es requerido.',
@@ -96,7 +94,7 @@ class AdminVenueController {
         try {
             const existVenue = await venue_model_1.default.find({
                 name,
-                company
+                team
             });
             if (existVenue.length) {
                 res.status(400).json({
@@ -107,8 +105,9 @@ class AdminVenueController {
             else {
                 const newVenue = await new venue_model_1.default({
                     name,
+                    company,
                     type,
-                    company
+                    team
                 }).save();
                 res.status(201).json({
                     message: 'Sucursal agregada satisfactoriamente.',
@@ -129,7 +128,7 @@ class AdminVenueController {
         }
         const { id } = req.params;
         const { team } = req.user;
-        const { name, type } = req.body;
+        const { name, type, company } = req.body;
         if (!name || !name.length) {
             res.status(400).json({
                 message: 'The name is are required',
@@ -137,16 +136,19 @@ class AdminVenueController {
             });
         }
         try {
-            const companies = await company_model_1.default.find({ team }, { _id_: true });
             const venue = await venue_model_1.default.findOneAndUpdate({
                 _id: id,
-                company: { $in: companies }
+                team
             }, {
                 name,
+                company,
                 type
             }, {
                 new: true
-            });
+            }).populate([{
+                    path: 'company',
+                    select: ['name']
+                }]);
             if (venue) {
                 const response = {
                     message: 'Sucursal editada satisfactoriamente.',
@@ -174,7 +176,7 @@ class AdminVenueController {
             });
         }
         const { id } = req.params;
-        const { company } = req.user;
+        const { company, team } = req.user;
         try {
             const inventories = await inventory_model_1.default.find({
                 $or: [{
@@ -196,7 +198,7 @@ class AdminVenueController {
             else {
                 const venue = await venue_model_1.default.findOne({
                     _id: id,
-                    company
+                    team
                 }).populate([{
                         path: 'users',
                         select: ['_id']
