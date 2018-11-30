@@ -2,6 +2,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 const inventory_model_1 = require("../../../inventory/models/inventory.model");
 const venue_model_1 = require("../../models/venue.model");
+const user_model_1 = require("../../models/user.model");
 class AdminVenueController {
     constructor() {
         this.index = this.index.bind(this);
@@ -147,9 +148,11 @@ class AdminVenueController {
                 new: true
             }).populate([{
                     path: 'company',
-                    select: ['name']
+                    select: ['_id', 'name']
                 }]);
             if (venue) {
+                // fix users in venue
+                await user_model_1.default.update({ venue: id }, { company: venue.company._id }, { multi: true });
                 const response = {
                     message: 'Sucursal editada satisfactoriamente.',
                     venue

@@ -38,7 +38,7 @@ export function venuesReducer(state = initialState, action: VenueReduxAction): I
           page: action.payload.page
         }
       };
-    case '/VENUES/LOAD_COMPANIES_VENUE':
+    case '/VENUES/LOAD_COMPANIES':
       return {
         ...state,
         companies: action.payload.compenies

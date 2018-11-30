@@ -113,7 +113,7 @@ export function loadVenuesAction(venues: any, count: number, pages: number): ILo
 }
 
 interface ILoadCompaniesVenue {
-  type: '/VENUES/LOAD_COMPANIES_VENUE';
+  type: '/VENUES/LOAD_COMPANIES';
   payload: {
     compenies: ICompany[];
   };
@@ -121,7 +121,7 @@ interface ILoadCompaniesVenue {
 
 export function loadCompaniesVenueAction(compenies: ICompany[]): ILoadCompaniesVenue {
   return {
-    type: '/VENUES/LOAD_COMPANIES_VENUE',
+    type: '/VENUES/LOAD_COMPANIES',
     payload: {
       compenies
     }

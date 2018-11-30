@@ -4,6 +4,7 @@ import * as Raven from 'raven-js';
 import * as React from 'react';
 import {ErrorInfo} from 'react';
 import {connect} from 'react-redux';
+import {ICompany} from '../../../../../../src/interfaces/company.interface';
 import {IForm} from '../../../../../../src/interfaces/form.interface';
 import {IPermission} from '../../../../../../src/interfaces/permision.interface';
 import {IUser} from '../../../../../../src/interfaces/user.interface';
@@ -15,6 +16,7 @@ interface IPropsType {
   venues: IVenue[];
   forms: IForm[];
   permissions: IPermission[];
+  companies: ICompany[];
   user?: IUser;
   create: boolean;
   changeTempUser(user: any): void;
@@ -44,7 +46,7 @@ class UserFormView extends React.Component<IPropsType, IStateType> {
   }
 
   public componentDidMount() {
-    const {changeTempUser} = this.props;
+    const {changeTempUser, companies} = this.props;
     const chosenOptions = {
       no_results_text: 'Sin resultados para:'
     };
@@ -56,6 +58,9 @@ class UserFormView extends React.Component<IPropsType, IStateType> {
     });
     ($('#id-venue') as any).chosen(chosenOptions).change((e: React.ChangeEvent<HTMLSelectElement>) => {
       changeTempUser({venue: e.target.value});
+    });
+    ($('#id-company') as any).chosen(chosenOptions).change((e: React.ChangeEvent<HTMLSelectElement>) => {
+      changeTempUser({company: companies.find((company) => company._id === e.target.value)});
     });
     ($('#id-permissions') as any).chosen(chosenOptions).change((e: React.ChangeEvent<HTMLSelectElement>) => {
       this.addPermission(e.target.value);
@@ -74,10 +79,11 @@ class UserFormView extends React.Component<IPropsType, IStateType> {
     $('#id-form-default').trigger('chosen:updated');
     $('#id-venue').trigger('chosen:updated');
     $('#id-permissions').trigger('chosen:updated');
+    $('#id-company').trigger('chosen:updated');
   }
 
   public render(): React.ReactElement<IPropsType> {
-    const {changeTempUser, venues, permissions, forms, create} = this.props;
+    const {changeTempUser, venues, permissions, forms, create, companies} = this.props;
     const {tempUser} = this.props.users;
     const userPermissions: IPermission[] = [];
     const selectPermissions: IPermission[] = [];
@@ -104,6 +110,7 @@ class UserFormView extends React.Component<IPropsType, IStateType> {
         <ul className="nav nav-tabs" style={{marginBottom: '15px'}}>
           <li className="active"><a data-toggle="tab" href="#general">General</a></li>
           <li><a data-toggle="tab" href="#permissions">Permisos</a></li>
+          <li><a data-toggle="tab" href="#access">Accesos</a></li>
         </ul>
         <div className="tab-content">
           <div id="general" className="tab-pane fade in active">
@@ -113,7 +120,7 @@ class UserFormView extends React.Component<IPropsType, IStateType> {
                   <label>Nombres</label>
                   <input
                     type="text"
-                    name="fistName"
+                    name="firstName"
                     className="form-control"
                     maxLength={50}
                     defaultValue={tempUser ? tempUser.firstName : undefined}
@@ -150,6 +157,26 @@ class UserFormView extends React.Component<IPropsType, IStateType> {
               </div>
               <div className="col-md-12">
                 <div className="form-group">
+                  <label htmlFor="id-company">Empresa</label>
+                  <select
+                    className="chosen-select form-control"
+                    id="id-company"
+                    name="venue"
+                    defaultValue={tempUser && tempUser.company ? tempUser.company._id : undefined}
+                    onChange={undefined}
+                    data-placeholder={'Seleccione empresa'}
+                  >
+                    <option value="" />
+                    {
+                      companies.map((company) => (
+                        <option key={company._id} value={company._id}>{company.name}</option>
+                      ))
+                    }
+                  </select>
+                </div>
+              </div>
+              <div className="col-md-12">
+                <div className="form-group">
                   <label htmlFor="id-venue">Sucursal</label>
                   <select
                     className="chosen-select form-control"
@@ -161,9 +188,13 @@ class UserFormView extends React.Component<IPropsType, IStateType> {
                   >
                     <option value="" />
                     {
-                      venues.map((venue) => (
-                        <option key={venue._id} value={venue._id}>{venue.name}</option>
-                      ))
+                      venues
+                        .filter((venue) => (
+                          venue.company && tempUser.company && tempUser.company._id === venue.company._id
+                        ))
+                        .map((venue) => (
+                          <option key={venue._id} value={venue._id}>{venue.name}</option>
+                        ))
                     }
                   </select>
                 </div>
@@ -240,7 +271,6 @@ class UserFormView extends React.Component<IPropsType, IStateType> {
             </div>
           </div>
           <div id="permissions" className="tab-pane fade">
-
             <div className="row">
               <div className="col-md-12">
                 <div className="form-group">
@@ -291,6 +321,8 @@ class UserFormView extends React.Component<IPropsType, IStateType> {
                 </table>
               </div>
             </div>
+          </div>
+          <div id="access" className="tab-pane fade">
           </div>
         </div>
       </React.Fragment>

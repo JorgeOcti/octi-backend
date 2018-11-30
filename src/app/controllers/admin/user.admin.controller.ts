@@ -1,4 +1,3 @@
-import {ObjectID} from 'bson';
 import {Response} from 'express';
 import {
   PaginateOptions,
@@ -37,7 +36,7 @@ class AdminUsersController {
       });
     }
     const {page, pageSize} = req.query;
-    const company = req.user.company;
+    const {team} = req.user;
     // paginate options
     const options: PaginateOptions = {
       select: {
@@ -72,7 +71,9 @@ class AdminUsersController {
       limit: parseInt(pageSize ? pageSize : 20, 10)
     };
     try {
-      const users = await this.getUsers(company, options);
+      const users = await this.getUsers({
+        team
+      }, options);
       // validate exist page
       if (options.page && users.pages && users.pages < options.page) {
         res.status(400).json({
@@ -102,8 +103,8 @@ class AdminUsersController {
         message: 'No tienes permisos para esta operación'
       });
     }
-    const {firstName, lastName, email, venue, userPermissions, userForms, preferred} = req.body;
-    const {company, team} = req.user;
+    const {firstName, lastName, email, venue, userPermissions, userForms, preferred, company} = req.body;
+    const {team} = req.user;
     // validate fields required
     if (!firstName || !firstName.length || !lastName || !lastName.length || !email || !email.length || !venue || !venue.length) {
       res.status(400).json({
@@ -185,8 +186,8 @@ class AdminUsersController {
       });
     }
     const {id} = req.params;
-    const company = req.user.company;
-    const {firstName, lastName, email, venue, userPermissions, userForms, preferred} = req.body;
+    const {team} = req.user;
+    const {firstName, lastName, email, venue, userPermissions, userForms, preferred, company} = req.body;
     // validate fields required
     if (!firstName || !firstName.length || !lastName || !lastName.length || !email || !email.length || !venue || !venue.length) {
       res.status(400).json({
@@ -205,10 +206,11 @@ class AdminUsersController {
       } else {
         let user = await User
           .findOneAndUpdate({
-            _id: id, company
+            _id: id, team
           }, {
             firstName,
             lastName,
+            company,
             preferred,
             userPermissions: userPermissions && userPermissions.length ? userPermissions.map((userPermission: IPermission) => userPermission._id) : [],
             userForms: userForms && userForms.length ? userForms.map((userForm: IForm) => userForm._id) : [],
@@ -217,6 +219,9 @@ class AdminUsersController {
             new: true
           })
           .populate([{
+            path: 'company',
+            select: ['name']
+          }, {
             path: 'venue',
             select: ['name', 'active']
           }, {
@@ -285,9 +290,9 @@ class AdminUsersController {
     }
   }
 
-  private getUsers(company: ObjectID, options: PaginateOptions): Promise<PaginateResult<IUserModel>> {
+  private getUsers(filter: any, options: PaginateOptions): Promise<PaginateResult<IUserModel>> {
     return new Promise((resolve, reject) => {
-      User.paginate({company}, options, (err, result) => {
+      User.paginate(filter, options, (err, result) => {
         if (err) {
           return reject(err);
         }

@@ -173,7 +173,7 @@ class VenuesListView extends React.Component<IPropsType, IStateType> {
     setTimeout(() => {
       this.props.loadDataAction(
         'Agregar Sucursal',
-        <VenueFormView />,
+        <VenueFormView/>,
         <React.Fragment>
           <button type="button" className="btn btn-default" data-dismiss="modal">Cancelar</button>
           <button type="button" className="btn btn-primary" onClick={this.processAddVenue}>Grabar</button>
@@ -203,7 +203,7 @@ class VenuesListView extends React.Component<IPropsType, IStateType> {
     setTimeout(() => {
       this.props.loadDataAction(
         'Editar Sucursal',
-        <VenueFormView />,
+        <VenueFormView update={true} />,
         <React.Fragment>
           <button type="button" className="btn btn-default" data-dismiss="modal">Cancelar</button>
           <button type="button" className="btn btn-primary" onClick={this.processUpdateVenue}>Editar</button>

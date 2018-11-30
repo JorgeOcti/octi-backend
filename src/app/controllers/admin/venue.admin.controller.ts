@@ -4,6 +4,7 @@ import {PaginateOptions, PaginateResult} from 'mongoose';
 import {IRequest} from '../../../interfaces/global.interface';
 import Inventory from '../../../inventory/models/inventory.model';
 import Venue, {IVenueModel} from '../../models/venue.model';
+import User from "../../models/user.model";
 
 class AdminVenueController {
   constructor() {
@@ -149,9 +150,11 @@ class AdminVenueController {
         new: true
       }).populate([{
         path: 'company',
-        select: ['name']
+        select: ['_id', 'name']
       }]);
       if (venue) {
+        // fix users in venue
+        await User.update({venue: id}, {company: venue.company._id}, {multi: true});
         const response = {
           message: 'Sucursal editada satisfactoriamente.',
           venue

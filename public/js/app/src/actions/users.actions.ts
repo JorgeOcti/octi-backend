@@ -1,17 +1,18 @@
 import {AxiosError, AxiosResponse, CancelTokenSource, default as Axios} from 'axios';
 import {Dispatch} from 'redux';
-import ApiService from '../utils/axios';
-import {showModal, statusFooterButttonsModal} from '../utils/common';
-
+import {ICompany} from '../../../../../src/interfaces/company.interface';
 import {IForm} from '../../../../../src/interfaces/form.interface';
 import {IPermission} from '../../../../../src/interfaces/permision.interface';
 import {IUser} from '../../../../../src/interfaces/user.interface';
 import {IVenue} from '../../../../../src/interfaces/venue.interface';
+import ApiService from '../utils/axios';
+import {showModal, statusFooterButttonsModal} from '../utils/common';
 
 export interface IUsersState {
   users: IUser[];
   venues: IVenue[];
   forms: IForm[];
+  companies: ICompany[];
   permissions: IPermission[];
   loading: boolean;
   tempUser: ITempUser;
@@ -79,6 +80,7 @@ export interface ITempUser {
   userForms: IForm[];
   preferred?: string | null;
   userPermissions: IPermission[];
+  company: ICompany | null;
 }
 
 interface IChangeTempUser {
@@ -242,6 +244,22 @@ export function loadFormsUserAction(forms: IForm[]): ILoadFormsUser {
   };
 }
 
+interface ILoadCompaniesUser {
+  type: '/USERS/LOAD_COMPANIES';
+  payload: {
+    companies: ICompany[];
+  };
+}
+
+export function loadCompaniesUserAction(companies: ICompany[]): ILoadCompaniesUser {
+  return {
+    type: '/USERS/LOAD_COMPANIES',
+    payload: {
+      companies
+    }
+  };
+}
+
 export function getUsersAction(nextPage?: number) {
   return (dispatch: Dispatch<UserReduxAction>, getState: () => {users: IUsersState}) => {
     const api: ApiService = new ApiService();
@@ -250,11 +268,13 @@ export function getUsersAction(nextPage?: number) {
     // get venues and permissions
     if (!state.users.venues.length || !state.users.permissions.length || !state.users.forms.length) {
       Axios.all([
+        api.getCompanies(1, 200),
         api.getVenues(1, 200),
         api.getPermissions(1, 200),
         api.getForms(1, 200)
       ])
-        .then(Axios.spread((venues, permissions, forms) => {
+        .then(Axios.spread((companies, venues, permissions, forms) => {
+          dispatch(loadCompaniesUserAction(companies.data.results));
           dispatch(loadVenuesUserAction(venues.data.results));
           dispatch(loadPermissionsUserAction(permissions.data.results));
           dispatch(loadFormsUserAction(forms.data.results));
@@ -325,4 +345,4 @@ export function deleteUserAction(id: string) {
   };
 }
 
-export type UserReduxAction = IIsLoading | ILoadUsers | IChangePage | IDeleteUser | ICancelRequest | IChangeTempUser | IChangeUser | ILoadVenuesUser | ILoadPermissionsUser | ILoadFormsUser;
+export type UserReduxAction = IIsLoading | ILoadUsers | IChangePage | IDeleteUser | ICancelRequest | IChangeTempUser | IChangeUser | ILoadVenuesUser | ILoadPermissionsUser | ILoadFormsUser |ILoadCompaniesUser;

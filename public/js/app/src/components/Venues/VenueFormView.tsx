@@ -9,6 +9,7 @@ import Checkbox from '../CheckBox';
 
 interface IPropsType {
   venues?: IVenuesState;
+  update?: boolean;
   changeTempVenueAction?: (venue: IBaseVenue) => VenueReduxAction;
 }
 
@@ -53,7 +54,7 @@ class VenueFormView extends React.Component<IPropsType, IStateType> {
 
   render(): React.ReactElement<IPropsType> | null {
     if (this.props.venues && this.props.changeTempVenueAction) {
-      const {changeTempVenueAction} = this.props;
+      const {changeTempVenueAction, update} = this.props;
       const {tempVenue, companies} = this.props.venues;
       return (
         <div className="row">
@@ -62,7 +63,7 @@ class VenueFormView extends React.Component<IPropsType, IStateType> {
               <label>Nombre</label>
               <input
                 type="text"
-                name="fistName"
+                name="name"
                 className="form-control"
                 maxLength={50}
                 defaultValue={tempVenue ? tempVenue.name : ''}
@@ -77,13 +78,13 @@ class VenueFormView extends React.Component<IPropsType, IStateType> {
           </div>
           <div className="col-md-12">
             <div className="form-group">
-              <label htmlFor="id-venue">Empresa</label>
+              <label htmlFor="id-company">Empresa</label>
               <select
                 className="chosen-select form-control"
                 id="id-company"
                 name="company"
                 defaultValue={tempVenue && tempVenue.company ? tempVenue.company._id : undefined}
-                data-placeholder={'Seleccione Empresa'}
+                data-placeholder={'Seleccione empresa'}
                 onChange={undefined}
               >
                 <option value="" />
@@ -94,6 +95,14 @@ class VenueFormView extends React.Component<IPropsType, IStateType> {
                 }
               </select>
             </div>
+            {
+              update ?
+                <div className="alert alert-warning alert-dismissible">
+                  {/*<button type="button" className="close" data-dismiss="alert" aria-hidden="true">×</button>*/}
+                  {/*<h4><i className="icon fa fa-warning"></i> Alert!</h4>*/}
+                  Si se modifica la empresa, los usuarios asignados a esta sucursal también se verán afectados.
+                </div> : null
+            }
           </div>
           <div className="col col-md-6">
             <div className="checkbox">

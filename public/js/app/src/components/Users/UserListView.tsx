@@ -162,11 +162,12 @@ class UserListView extends React.Component<IPropsType, IStateType> {
 
   private createUser(): void {
     const {changeTempUser} = this;
-    const {venues, permissions, forms} = this.props.users;
+    const {venues, permissions, forms, companies} = this.props.users;
     this.props.changeTempUserAction({
       _id: '',
       firstName: '',
       lastName: '',
+      company: null,
       email: '',
       venue: '',
       userPermissions: [],
@@ -175,7 +176,7 @@ class UserListView extends React.Component<IPropsType, IStateType> {
     setTimeout(() => {
       this.props.loadDataAction(
         'Agregar Usuario',
-        <UserFormView create={true} changeTempUser={changeTempUser} venues={venues} users={this.props.users} forms={forms} permissions={permissions}/>,
+        <UserFormView create={true} changeTempUser={changeTempUser} venues={venues} companies={companies} users={this.props.users} forms={forms} permissions={permissions}/>,
         <React.Fragment>
           <button type="button" className="btn btn-default" data-dismiss="modal">Cancelar</button>
           <button type="button" className="btn btn-primary" onClick={this.processCreateUser}>Grabar</button>
@@ -202,14 +203,14 @@ class UserListView extends React.Component<IPropsType, IStateType> {
 
   private updateUser(user: IUser): void {
     const {changeTempUser} = this;
-    const {venues, permissions, forms} = this.props.users;
+    const {venues, permissions, forms, companies} = this.props.users;
     const tmpUser = {...user};
     tmpUser.venue = tmpUser.venue ? tmpUser.venue._id : '';
     changeTempUser(tmpUser);
     setTimeout(() => {
       this.props.loadDataAction(
         `Editando a ${user.firstName} ${user.lastName}`,
-        <UserFormView create={false}  changeTempUser={changeTempUser} venues={venues} users={this.props.users} forms={forms} permissions={permissions} user={user}/>,
+        <UserFormView create={false}  changeTempUser={changeTempUser} companies={companies} venues={venues} users={this.props.users} forms={forms} permissions={permissions} user={user}/>,
         <React.Fragment>
           <button type="button" className="btn btn-default" data-dismiss="modal">Cancelar</button>
           <button type="button" className="btn btn-primary" onClick={this.processUpdateUser}>Editar</button>
@@ -234,7 +235,7 @@ class UserListView extends React.Component<IPropsType, IStateType> {
     }
   }
 
-  private changeTempUser({_id, firstName, lastName, email, venue, userPermissions, preferred, userForms}: ITempUser) {
+  private changeTempUser({_id, firstName, lastName, email, venue, userPermissions, preferred, userForms, company}: ITempUser) {
     const tempUser: ITempUser = {
       _id: _id ? _id : this.props.users.tempUser._id,
       firstName: firstName ? firstName : this.props.users.tempUser.firstName,
@@ -243,7 +244,8 @@ class UserListView extends React.Component<IPropsType, IStateType> {
       userPermissions: userPermissions ? userPermissions : this.props.users.tempUser.userPermissions,
       userForms: userForms ? userForms : this.props.users.tempUser.userForms,
       preferred: preferred ? preferred : preferred === undefined ? this.props.users.tempUser.preferred : null,
-      venue: venue ? venue : venue === undefined ? this.props.users.tempUser.venue : null
+      venue: venue ? venue : venue === undefined ? this.props.users.tempUser.venue : null,
+      company: company ? company : company === undefined ? this.props.users.tempUser.company : null
     };
     this.props.changeTempUserAction(tempUser);
   }

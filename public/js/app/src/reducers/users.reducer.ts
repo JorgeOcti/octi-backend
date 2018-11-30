@@ -8,12 +8,14 @@ import {IUser} from '../../../../../src/interfaces/user.interface';
 const initialState: IUsersState = {
   users: [],
   venues: [],
+  companies: [],
   permissions: [],
   forms: [],
   loading: true,
   tempUser: {
     _id: '',
     firstName: '',
+    company: null,
     lastName: '',
     email: '',
     userPermissions: [],
@@ -48,6 +50,11 @@ export function usersReducer(state = initialState, action: UserReduxAction): IUs
       return {
         ...state,
         forms: action.payload.forms
+      };
+    case '/USERS/LOAD_COMPANIES':
+      return {
+        ...state,
+        companies: action.payload.companies
       };
     case '/USERS/CHANGE_TEMP_USER':
       return {
