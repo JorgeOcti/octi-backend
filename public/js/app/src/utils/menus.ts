@@ -98,14 +98,16 @@ if (hasPermission(window.user, 'viewUser')) {
   });
 }
 
-if (settingItems.length) {
-  menus.push({
-    id: '10',
-    text: 'Settings',
-    icon: 'fa-cog',
-    url: '/settings/users/',
-    items: settingItems
-  });
+if (hasPermission(window.user, 'viewCompany')) {
+  if (settingItems.length) {
+    menus.push({
+      id: '10',
+      text: 'Settings',
+      icon: 'fa-cog',
+      url: '/settings/users/',
+      items: settingItems
+    });
+  }
 }
 
 export default menus;
