@@ -1,5 +1,4 @@
 ///<reference path="../../../node_modules/sweetalert/typings/sweetalert.d.ts"/>
-// import * as PropTypes from 'prop-types';
 import * as Raven from 'raven-js';
 import * as React from 'react';
 import {ErrorInfo} from 'react';
@@ -41,6 +40,8 @@ class UserFormView extends React.Component<IPropsType, IStateType> {
     super(props);
     this.addPermission = this.addPermission.bind(this);
     this.deletePermission = this.deletePermission.bind(this);
+    this.addVenueAccess = this.addVenueAccess.bind(this);
+    this.deleteVenueAccess = this.deleteVenueAccess.bind(this);
     this.addForm = this.addForm.bind(this);
     this.deleteForm = this.deleteForm.bind(this);
   }
@@ -65,6 +66,10 @@ class UserFormView extends React.Component<IPropsType, IStateType> {
     ($('#id-permissions') as any).chosen(chosenOptions).change((e: React.ChangeEvent<HTMLSelectElement>) => {
       this.addPermission(e.target.value);
     });
+    ($('#id-venues-access') as any).chosen(chosenOptions).change((e: React.ChangeEvent<HTMLSelectElement>) => {
+      this.addVenueAccess(e.target.value);
+    });
+
   }
 
   public componentDidCatch(error: Error, errorInfo: ErrorInfo) {
@@ -80,6 +85,7 @@ class UserFormView extends React.Component<IPropsType, IStateType> {
     $('#id-venue').trigger('chosen:updated');
     $('#id-permissions').trigger('chosen:updated');
     $('#id-company').trigger('chosen:updated');
+    $('#id-venues-access').trigger('chosen:updated');
   }
 
   public render(): React.ReactElement<IPropsType> {
@@ -90,6 +96,7 @@ class UserFormView extends React.Component<IPropsType, IStateType> {
     const userForms: IForm[] = [];
     const selectForms: IForm[] = [];
     const idsUserPermissions = tempUser && tempUser.userPermissions.length ? tempUser.userPermissions.map((userPermission) => userPermission._id) : [];
+    const idsUserVenueAccess = tempUser && tempUser.venuesAccess.length ? tempUser.venuesAccess.map((venue) => venue._id) : [];
     const idsUserForms = tempUser && tempUser.userForms.length ? tempUser.userForms.map((userForm) => userForm._id) : [];
     permissions.forEach((permission) => {
       if (idsUserPermissions.includes(permission._id)) {
@@ -323,10 +330,79 @@ class UserFormView extends React.Component<IPropsType, IStateType> {
             </div>
           </div>
           <div id="access" className="tab-pane fade">
+            <div className="row">
+              <div className="col-md-12">
+                <div className="form-group">
+                  <label>Sucursales adicionales</label>
+                  <select
+                    id="id-venues-access"
+                    className="chosen-select form-control"
+                    style={{minWidth: '200px'}}
+                    onChange={undefined}
+                    data-placeholder={'Seleccione sucursal'}
+                  >
+                    <option value="" />
+                    {
+                      venues.filter((venue) => !idsUserVenueAccess.includes(venue._id)).map((venue) => {
+                        return (
+                          <option key={venue._id} value={venue._id}>{venue.name}{venue.company ? ` - ${venue.company.name}` : ''}</option>
+                        );
+                      })
+                    }
+                  </select>
+                </div>
+              </div>
+              <div className="col-md-12">
+                <table className="table table-striped">
+                  <thead>
+                  <tr>
+                    <th style={{width: '90%'}}>Sucursal</th>
+                    <th style={{width: '10%'}}/>
+                  </tr>
+                  </thead>
+                  <tbody>
+                    {
+                      tempUser.venuesAccess.length ? tempUser.venuesAccess.map((venue: any) => {
+                          return (
+                            <tr key={venue._id}>
+                              <td>{venue.name}{venue.company ? ` - ${venue.company.name}` : ''}</td>
+                              <td className="text-center text-red pointer" onClick={() => this.deleteVenueAccess(venue._id)}><i
+                                className="fa fa-minus-circle"/></td>
+                            </tr>
+                          );
+                        }) :
+                        <tr>
+                          <td colSpan={1}>Aún no se han seleccionado sucursales.</td>
+                        </tr>
+                    }
+                  </tbody>
+                </table>
+              </div>
+            </div>
           </div>
         </div>
       </React.Fragment>
     );
+  }
+
+  private addVenueAccess(id: string) {
+    const {changeTempUser} = this.props;
+    const {tempUser} = this.props.users;
+    const {venues} = this.props;
+    const findVenue = venues.find((venue) => venue._id === id);
+    if (findVenue) {
+      changeTempUser({
+        venuesAccess: [findVenue, ...tempUser.venuesAccess]
+      });
+    }
+  }
+
+  private deleteVenueAccess(id: string) {
+    const {changeTempUser} = this.props;
+    const {tempUser} = this.props.users;
+    changeTempUser({
+      venuesAccess: tempUser ? tempUser.venuesAccess.filter((venue) => venue._id !== id) : []
+    });
   }
 
   private addPermission(id: string) {

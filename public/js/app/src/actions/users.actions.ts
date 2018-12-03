@@ -1,3 +1,4 @@
+///<reference path="../../node_modules/sweetalert/typings/sweetalert.d.ts"/>
 import {AxiosError, AxiosResponse, CancelTokenSource, default as Axios} from 'axios';
 import {Dispatch} from 'redux';
 import {ICompany} from '../../../../../src/interfaces/company.interface';
@@ -77,6 +78,7 @@ export interface ITempUser {
   lastName?: string;
   email?: string;
   venue?: string | null;
+  venuesAccess: IVenue[];
   userForms: IForm[];
   preferred?: string | null;
   userPermissions: IPermission[];

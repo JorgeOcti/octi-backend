@@ -19,7 +19,8 @@ const initialState: IUsersState = {
     lastName: '',
     email: '',
     userPermissions: [],
-    userForms: []
+    userForms: [],
+    venuesAccess: []
   },
   source: null,
   pagination: {

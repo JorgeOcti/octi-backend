@@ -10,13 +10,13 @@ import {Dispatch} from 'redux';
 import {IUser} from '../../../../../../src/interfaces/user.interface';
 import {loadDataAction, ModalReduxAction} from '../../actions/modal.actions';
 import {
-  createUserAction,
   changeTempUserAction,
+  createUserAction,
   deleteUserAction,
-  updateUserAction,
   getUsersAction,
   ITempUser,
   IUsersState,
+  updateUserAction,
   UserReduxAction
 } from '../../actions/users.actions';
 import AppContainer from '../../container/AppContainer';
@@ -171,6 +171,7 @@ class UserListView extends React.Component<IPropsType, IStateType> {
       email: '',
       venue: '',
       userPermissions: [],
+      venuesAccess: [],
       userForms: []
     });
     setTimeout(() => {
@@ -235,7 +236,7 @@ class UserListView extends React.Component<IPropsType, IStateType> {
     }
   }
 
-  private changeTempUser({_id, firstName, lastName, email, venue, userPermissions, preferred, userForms, company}: ITempUser) {
+  private changeTempUser({_id, firstName, lastName, email, venue, userPermissions, preferred, userForms, company, venuesAccess}: ITempUser) {
     const tempUser: ITempUser = {
       _id: _id ? _id : this.props.users.tempUser._id,
       firstName: firstName ? firstName : this.props.users.tempUser.firstName,
@@ -245,6 +246,7 @@ class UserListView extends React.Component<IPropsType, IStateType> {
       userForms: userForms ? userForms : this.props.users.tempUser.userForms,
       preferred: preferred ? preferred : preferred === undefined ? this.props.users.tempUser.preferred : null,
       venue: venue ? venue : venue === undefined ? this.props.users.tempUser.venue : null,
+      venuesAccess: venuesAccess ? venuesAccess : venuesAccess === undefined ? this.props.users.tempUser.venuesAccess : [],
       company: company ? company : company === undefined ? this.props.users.tempUser.company : null
     };
     this.props.changeTempUserAction(tempUser);

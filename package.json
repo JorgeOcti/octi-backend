@@ -13,6 +13,7 @@
   "license": "ISC",
   "dependencies": {
     "@pusher/push-notifications-server": "^1.0.1",
+    "another-json-schema": "^3.7.0",
     "aws-sdk": "^2.353.0",
     "bcrypt": "^3.0.2",
     "bluebird": "^3.5.3",
