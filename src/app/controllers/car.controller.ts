@@ -113,7 +113,7 @@ class CarController {
         if (inventoryStatus && inventoryStatus.status !== ChoicesStatusInventory.inProcess) {
           res.json({
             message: 'Este inventario ya no se encuentra disponible.',
-            status: 400
+            status: 404
           });
         } else {
           const inventoryQuery: any = {
@@ -189,7 +189,7 @@ class CarController {
             } else {
               res.status(400).json({
                 message: 'Este inventario ya no se encuentra disponible.',
-                status: 400
+                status: 404
               });
             }
           } else {
