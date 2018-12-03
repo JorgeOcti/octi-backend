@@ -107,87 +107,97 @@ class CarController {
     */
     if (inventory) {
       try {
-        const inventoryQuery: any = {
-          company
-        };
-        if (vin) {
-          inventoryQuery.vin = vin;
-        }
-        if (vin2) {
-          if (vin2[0] === '0') {
-            const vinRegex = new RegExp('[a-zA-Z0]' + vin2.substr(vin2.length - 5), 'i');
-            inventoryQuery.vin2 = {$regex: vinRegex};
-          } else {
-            inventoryQuery.vin2 = vin2;
+        const inventoryStatus = await InventoryModel.findOne({
+            _id: inventory
+        }, {status: true});
+        if (inventoryStatus && inventoryStatus.status !== ChoicesStatusInventory.inProcess) {
+          res.json({
+            message: 'Este inventario ya no se encuentra disponible.',
+            status: 400
+          });
+        } else {
+          const inventoryQuery: any = {
+            company
+          };
+          if (vin) {
+            inventoryQuery.vin = vin;
           }
-        }
-        const cars = await CarModel.find(inventoryQuery, {
-          vin: true,
-          vin2: true,
-          brand: true,
-          color: true,
-          denomination: true
-        });
-        if (cars.length) {
-          const carsByID = cars.reduce((acc: any, cur: any) => {
-            acc[cur._id.toString()] = cur;
-            return acc;
-          }, {});
-          const inventoriedCar = await InventoryModel.findOne({
-            _id: inventory,
-            company,
-            status: ChoicesStatusInventory.inProcess
-          }, {
-            'cars.car': true,
-            'cars.status': true,
-            'cars.venue': true
-          }).populate([{
-            path: 'cars.venue',
-            select: ['name']
-          }]);
-          if (inventoriedCar) {
-            const carsInInventory: any[] = [];
-            for (const car of inventoriedCar.cars) {
-              if (carsByID.hasOwnProperty(car.car)) {
-                const carToAdd: any = cars.find((ci) => {
-                  return ci._id.toString() === car.car.toString();
-                });
-                if (carToAdd && car.status !== ChoicesStatusCarInventory.leftover) {
-                  carsInInventory.push({
-                    _id: carToAdd._id,
-                    vin: carToAdd.vin,
-                    vin2: carToAdd.vin2,
-                    color: carToAdd.color,
-                    denomination: carToAdd.denomination,
-                    status: car.status,
-                    venue: car.venue,
-                    brand: carToAdd.brand
+          if (vin2) {
+            if (vin2[0] === '0') {
+              const vinRegex = new RegExp('[a-zA-Z0]' + vin2.substr(vin2.length - 5), 'i');
+              inventoryQuery.vin2 = {$regex: vinRegex};
+            } else {
+              inventoryQuery.vin2 = vin2;
+            }
+          }
+          const cars = await CarModel.find(inventoryQuery, {
+            vin: true,
+            vin2: true,
+            brand: true,
+            color: true,
+            denomination: true
+          });
+          if (cars.length) {
+            const carsByID = cars.reduce((acc: any, cur: any) => {
+              acc[cur._id.toString()] = cur;
+              return acc;
+            }, {});
+            const inventoriedCar = await InventoryModel.findOne({
+              _id: inventory,
+              company,
+              status: ChoicesStatusInventory.inProcess
+            }, {
+              'cars.car': true,
+              'cars.status': true,
+              'cars.venue': true
+            }).populate([{
+              path: 'cars.venue',
+              select: ['name']
+            }]);
+            if (inventoriedCar) {
+              const carsInInventory: any[] = [];
+              for (const car of inventoriedCar.cars) {
+                if (carsByID.hasOwnProperty(car.car)) {
+                  const carToAdd: any = cars.find((ci) => {
+                    return ci._id.toString() === car.car.toString();
                   });
+                  if (carToAdd && car.status !== ChoicesStatusCarInventory.leftover) {
+                    carsInInventory.push({
+                      _id: carToAdd._id,
+                      vin: carToAdd.vin,
+                      vin2: carToAdd.vin2,
+                      color: carToAdd.color,
+                      denomination: carToAdd.denomination,
+                      status: car.status,
+                      venue: car.venue,
+                      brand: carToAdd.brand
+                    });
+                  }
                 }
               }
-            }
-            if (carsInInventory.length) {
-              res.json({
-                data: vin2 ? carsInInventory : carsInInventory[0],
-                status: 200
-              });
+              if (carsInInventory.length) {
+                res.json({
+                  data: vin2 ? carsInInventory : carsInInventory[0],
+                  status: 200
+                });
+              } else {
+                res.status(400).json({
+                  message: 'VIN no válido.',
+                  status: 400
+                });
+              }
             } else {
               res.status(400).json({
-                message: 'VIN no válido.',
+                message: 'Este inventario ya no se encuentra disponible.',
                 status: 400
               });
             }
           } else {
             res.status(400).json({
-              message: 'Este inventario ya no se encuentra disponible.',
+              message: 'VIN no válido.',
               status: 400
             });
           }
-        } else {
-          res.status(400).json({
-            message: 'VIN no válido.',
-            status: 400
-          });
         }
       } catch (e) {
         if (e) {

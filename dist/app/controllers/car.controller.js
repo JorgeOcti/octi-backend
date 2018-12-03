@@ -102,91 +102,102 @@ class CarController {
         */
         if (inventory) {
             try {
-                const inventoryQuery = {
-                    company
-                };
-                if (vin) {
-                    inventoryQuery.vin = vin;
+                const inventoryStatus = await inventory_model_1.default.findOne({
+                    _id: inventory
+                }, { status: true });
+                if (inventoryStatus && inventoryStatus.status !== inventory_model_1.ChoicesStatusInventory.inProcess) {
+                    res.json({
+                        message: 'Este inventario ya no se encuentra disponible.',
+                        status: 400
+                    });
                 }
-                if (vin2) {
-                    if (vin2[0] === '0') {
-                        const vinRegex = new RegExp('[a-zA-Z0]' + vin2.substr(vin2.length - 5), 'i');
-                        inventoryQuery.vin2 = { $regex: vinRegex };
+                else {
+                    const inventoryQuery = {
+                        company
+                    };
+                    if (vin) {
+                        inventoryQuery.vin = vin;
                     }
-                    else {
-                        inventoryQuery.vin2 = vin2;
+                    if (vin2) {
+                        if (vin2[0] === '0') {
+                            const vinRegex = new RegExp('[a-zA-Z0]' + vin2.substr(vin2.length - 5), 'i');
+                            inventoryQuery.vin2 = { $regex: vinRegex };
+                        }
+                        else {
+                            inventoryQuery.vin2 = vin2;
+                        }
                     }
-                }
-                const cars = await car_model_1.default.find(inventoryQuery, {
-                    vin: true,
-                    vin2: true,
-                    brand: true,
-                    color: true,
-                    denomination: true
-                });
-                if (cars.length) {
-                    const carsByID = cars.reduce((acc, cur) => {
-                        acc[cur._id.toString()] = cur;
-                        return acc;
-                    }, {});
-                    const inventoriedCar = await inventory_model_1.default.findOne({
-                        _id: inventory,
-                        company,
-                        status: inventory_model_1.ChoicesStatusInventory.inProcess
-                    }, {
-                        'cars.car': true,
-                        'cars.status': true,
-                        'cars.venue': true
-                    }).populate([{
-                            path: 'cars.venue',
-                            select: ['name']
-                        }]);
-                    if (inventoriedCar) {
-                        const carsInInventory = [];
-                        for (const car of inventoriedCar.cars) {
-                            if (carsByID.hasOwnProperty(car.car)) {
-                                const carToAdd = cars.find((ci) => {
-                                    return ci._id.toString() === car.car.toString();
-                                });
-                                if (carToAdd && car.status !== inventory_model_1.ChoicesStatusCarInventory.leftover) {
-                                    carsInInventory.push({
-                                        _id: carToAdd._id,
-                                        vin: carToAdd.vin,
-                                        vin2: carToAdd.vin2,
-                                        color: carToAdd.color,
-                                        denomination: carToAdd.denomination,
-                                        status: car.status,
-                                        venue: car.venue,
-                                        brand: carToAdd.brand
+                    const cars = await car_model_1.default.find(inventoryQuery, {
+                        vin: true,
+                        vin2: true,
+                        brand: true,
+                        color: true,
+                        denomination: true
+                    });
+                    if (cars.length) {
+                        const carsByID = cars.reduce((acc, cur) => {
+                            acc[cur._id.toString()] = cur;
+                            return acc;
+                        }, {});
+                        const inventoriedCar = await inventory_model_1.default.findOne({
+                            _id: inventory,
+                            company,
+                            status: inventory_model_1.ChoicesStatusInventory.inProcess
+                        }, {
+                            'cars.car': true,
+                            'cars.status': true,
+                            'cars.venue': true
+                        }).populate([{
+                                path: 'cars.venue',
+                                select: ['name']
+                            }]);
+                        if (inventoriedCar) {
+                            const carsInInventory = [];
+                            for (const car of inventoriedCar.cars) {
+                                if (carsByID.hasOwnProperty(car.car)) {
+                                    const carToAdd = cars.find((ci) => {
+                                        return ci._id.toString() === car.car.toString();
                                     });
+                                    if (carToAdd && car.status !== inventory_model_1.ChoicesStatusCarInventory.leftover) {
+                                        carsInInventory.push({
+                                            _id: carToAdd._id,
+                                            vin: carToAdd.vin,
+                                            vin2: carToAdd.vin2,
+                                            color: carToAdd.color,
+                                            denomination: carToAdd.denomination,
+                                            status: car.status,
+                                            venue: car.venue,
+                                            brand: carToAdd.brand
+                                        });
+                                    }
                                 }
                             }
-                        }
-                        if (carsInInventory.length) {
-                            res.json({
-                                data: vin2 ? carsInInventory : carsInInventory[0],
-                                status: 200
-                            });
+                            if (carsInInventory.length) {
+                                res.json({
+                                    data: vin2 ? carsInInventory : carsInInventory[0],
+                                    status: 200
+                                });
+                            }
+                            else {
+                                res.status(400).json({
+                                    message: 'VIN no válido.',
+                                    status: 400
+                                });
+                            }
                         }
                         else {
                             res.status(400).json({
-                                message: 'VIN no válido.',
+                                message: 'Este inventario ya no se encuentra disponible.',
                                 status: 400
                             });
                         }
                     }
                     else {
                         res.status(400).json({
-                            message: 'Este inventario ya no se encuentra disponible.',
+                            message: 'VIN no válido.',
                             status: 400
                         });
                     }
-                }
-                else {
-                    res.status(400).json({
-                        message: 'VIN no válido.',
-                        status: 400
-                    });
                 }
             }
             catch (e) {
