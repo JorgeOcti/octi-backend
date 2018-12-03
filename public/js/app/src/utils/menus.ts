@@ -73,12 +73,14 @@ if (hasPermission(window.user, 'viewCar')) {
   });
 }
 
-settingItems.push({
-  id: '10.3',
-  icon: 'fa-circle-o',
-  text: 'Empresas',
-  url: '/settings/companies/'
-});
+if (hasPermission(window.user, 'viewCompany')) {
+  settingItems.push({
+    id: '10.3',
+    icon: 'fa-circle-o',
+    text: 'Empresas',
+    url: '/settings/companies/'
+  });
+}
 
 if (hasPermission(window.user, 'viewVenue')) {
   settingItems.push({
@@ -98,16 +100,14 @@ if (hasPermission(window.user, 'viewUser')) {
   });
 }
 
-if (hasPermission(window.user, 'viewCompany')) {
-  if (settingItems.length) {
-    menus.push({
-      id: '10',
-      text: 'Settings',
-      icon: 'fa-cog',
-      url: '/settings/users/',
-      items: settingItems
-    });
-  }
+if (settingItems.length) {
+  menus.push({
+    id: '10',
+    text: 'Settings',
+    icon: 'fa-cog',
+    url: '/settings/users/',
+    items: settingItems
+  });
 }
 
 export default menus;
