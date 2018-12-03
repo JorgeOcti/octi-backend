@@ -408,52 +408,52 @@ class CarController {
         }
       }
       /* Update Venue in lastForm*/
-      const carsWithLastForm = await CarModel.find({
-        company,
-        $and: [{
-            lastForm: {
-              $exists: true
-            }
-          }, {
-            lastForm: {
-              $ne: null
-            }
-          }]
-      }, {
-        lastForm: true
-      }).populate({
-        path: 'lastForm',
-        select: ['venue', 'reception', 'shipping', 'createdAt'],
-        options: {
-          sort: {
-            createdAt: -1
-          }
-        },
-        populate: [{
-          path: 'venue',
-          select: 'name'
-        }]
-      });
-      const carsByVenue: any = {
-        inTransit: {
-          cars: []
-        }
-      };
-      for (const car of carsWithLastForm) {
-        if (car.lastForm.venue) {
-          if (car.lastForm.reception) {
-            if (!carsByVenue.hasOwnProperty(car.lastForm.venue.name)) {
-              carsByVenue[car.lastForm.venue.name] = {
-                cars: []
-              };
-            }
-            carsByVenue[car.lastForm.venue.name].cars.push(car._id.toString());
-          // } else if (car.lastForm.shipping) {
-          } else {
-            carsByVenue.inTransit.cars.push(car._id.toString());
-          }
-        }
-      }
+      // const carsWithLastForm = await CarModel.find({
+      //   company,
+      //   $and: [{
+      //       lastForm: {
+      //         $exists: true
+      //       }
+      //     }, {
+      //       lastForm: {
+      //         $ne: null
+      //       }
+      //     }]
+      // }, {
+      //   lastForm: true
+      // }).populate({
+      //   path: 'lastForm',
+      //   select: ['venue', 'reception', 'shipping', 'createdAt'],
+      //   options: {
+      //     sort: {
+      //       createdAt: -1
+      //     }
+      //   },
+      //   populate: [{
+      //     path: 'venue',
+      //     select: 'name'
+      //   }]
+      // });
+      // const carsByVenue: any = {
+      //   inTransit: {
+      //     cars: []
+      //   }
+      // };
+      // for (const car of carsWithLastForm) {
+      //   if (car.lastForm.venue) {
+      //     if (car.lastForm.reception) {
+      //       if (!carsByVenue.hasOwnProperty(car.lastForm.venue.name)) {
+      //         carsByVenue[car.lastForm.venue.name] = {
+      //           cars: []
+      //         };
+      //       }
+      //       carsByVenue[car.lastForm.venue.name].cars.push(car._id.toString());
+      //     // } else if (car.lastForm.shipping) {
+      //     } else {
+      //       carsByVenue.inTransit.cars.push(car._id.toString());
+      //     }
+      //   }
+      // }
       /* END Update Venue in lastForm */
 
       /* search participant and group per range qualification */
@@ -507,7 +507,7 @@ class CarController {
         }]);
 
       res.json({
-        carsByVenue,
+        carsByVenue: [],
         participants,
         participantPerRange,
         cars,
