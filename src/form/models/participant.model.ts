@@ -268,6 +268,7 @@ const participantSchema = new mongoose.Schema({
 participantSchema.index({_id: 1});
 participantSchema.index({form: 1, user: 1 });
 participantSchema.index({company: 1, venue: 1, createdAt: 1 });
+participantSchema.index({_id: 1, company: 1, venue: 1, createdAt: 1 });
 
 const Participant = mongoose.model<IParticipantModel>('Participant', participantSchema);
 
