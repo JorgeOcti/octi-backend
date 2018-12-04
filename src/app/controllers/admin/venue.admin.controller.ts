@@ -1,10 +1,9 @@
-
 import {Response} from 'express';
 import {PaginateOptions, PaginateResult} from 'mongoose';
 import {IRequest} from '../../../interfaces/global.interface';
 import Inventory from '../../../inventory/models/inventory.model';
+import User from '../../models/user.model';
 import Venue, {IVenueModel} from '../../models/venue.model';
-import User from "../../models/user.model";
 
 class AdminVenueController {
   constructor() {

@@ -1,8 +1,8 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 const inventory_model_1 = require("../../../inventory/models/inventory.model");
-const venue_model_1 = require("../../models/venue.model");
 const user_model_1 = require("../../models/user.model");
+const venue_model_1 = require("../../models/venue.model");
 class AdminVenueController {
     constructor() {
         this.index = this.index.bind(this);

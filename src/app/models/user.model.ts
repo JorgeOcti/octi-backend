@@ -42,6 +42,10 @@ const userSchema = new mongoose.Schema({
     ref: 'Venue',
     required: [true, 'La sucursal es requerida']
   },
+  venuesAccess: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Venue'
+  }],
   preferred: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Form',

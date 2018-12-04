@@ -52,6 +52,9 @@ class AdminUsersController {
                 }, {
                     path: 'company',
                     select: ['name']
+                }, {
+                    path: 'venuesAccess',
+                    select: ['name']
                 }],
             sort: {
                 firstName: 1
@@ -93,7 +96,7 @@ class AdminUsersController {
                 message: 'No tienes permisos para esta operación'
             });
         }
-        const { firstName, lastName, email, venue, userPermissions, userForms, preferred, company } = req.body;
+        const { firstName, lastName, email, venue, userPermissions, userForms, preferred, company, venuesAccess } = req.body;
         const { team } = req.user;
         // validate fields required
         if (!firstName || !firstName.length || !lastName || !lastName.length || !email || !email.length || !venue || !venue.length) {
@@ -120,6 +123,7 @@ class AdminUsersController {
                     lastName,
                     username: email,
                     venue,
+                    venuesAccess,
                     preferred,
                     userPermissions: userPermissions && userPermissions.length ? userPermissions.map((userPermission) => userPermission._id) : [],
                     userForms: userForms && userForms.length ? userForms.map((userForm) => userForm._id) : [],
@@ -175,7 +179,7 @@ class AdminUsersController {
         }
         const { id } = req.params;
         const { team } = req.user;
-        const { firstName, lastName, email, venue, userPermissions, userForms, preferred, company } = req.body;
+        const { firstName, lastName, email, venue, venuesAccess, userPermissions, userForms, preferred, company } = req.body;
         // validate fields required
         if (!firstName || !firstName.length || !lastName || !lastName.length || !email || !email.length || !venue || !venue.length) {
             res.status(400).json({
@@ -203,7 +207,8 @@ class AdminUsersController {
                     preferred,
                     userPermissions: userPermissions && userPermissions.length ? userPermissions.map((userPermission) => userPermission._id) : [],
                     userForms: userForms && userForms.length ? userForms.map((userForm) => userForm._id) : [],
-                    venue
+                    venue,
+                    venuesAccess
                 }, {
                     new: true
                 })
@@ -213,6 +218,9 @@ class AdminUsersController {
                     }, {
                         path: 'venue',
                         select: ['name', 'active']
+                    }, {
+                        path: 'venuesAccess',
+                        select: ['name']
                     }, {
                         path: 'userPermissions',
                         select: ['name', 'codeName'],

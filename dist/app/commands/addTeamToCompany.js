@@ -23,14 +23,19 @@ async function addTeamToCompany() {
     await mongoose.connect(MONGODB_URI, {
         useMongoClient: true
     });
-    const companies = await company_model_1.default.find({});
+    const companies = await company_model_1.default.find({ deleted: false });
     try {
         for (const company of companies) {
             console.log('Procesando -->', company.name);
             // search team
             let team = await team_model_1.default.findOne({
-                name: company.name
+                $or: [{
+                        name: company.name
+                    }, {
+                        _id: company.team
+                    }]
             });
+            console.log('team', team);
             // if not existe team
             if (!team) {
                 // create team
@@ -45,6 +50,10 @@ async function addTeamToCompany() {
             await user_model_1.default.update({ company }, { team }, { multi: true });
             // assign Venues
             await venue_model_1.default.update({ company }, { team }, { multi: true });
+            // fix venues
+            await user_model_1.default.update({ deleted: { $exists: false } }, { deleted: false }, { multi: true });
+            // fix companies
+            await company_model_1.default.update({ deleted: { $exists: false } }, { deleted: false }, { multi: true });
         }
     }
     catch (e) {
