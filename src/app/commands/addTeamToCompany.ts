@@ -5,6 +5,7 @@ import * as path from 'path';
 import Company from '../models/company.model';
 import Team from '../models/team.model';
 import User from '../models/user.model';
+import Venue from '../models/venue.model';
 
 async function addTeamToCompany() {
   /*
@@ -39,8 +40,10 @@ async function addTeamToCompany() {
         company.team = team;
         await company.save();
       }
-      // assign users
+      // assign Venues
       await User.update({company}, {team}, {multi: true});
+      // assign Venues
+      await Venue.update({company}, {team}, {multi: true});
     }
   } catch (e) {
     console.log('Ha ocurrido un error en addTeamToCompany');
