@@ -54,7 +54,11 @@ class AdminUsersController {
                     select: ['name']
                 }, {
                     path: 'venuesAccess',
-                    select: ['name']
+                    select: ['name'],
+                    populate: [{
+                            path: 'company',
+                            select: ['name']
+                        }]
                 }],
             sort: {
                 firstName: 1
@@ -220,7 +224,11 @@ class AdminUsersController {
                         select: ['name', 'active']
                     }, {
                         path: 'venuesAccess',
-                        select: ['name']
+                        select: ['name'],
+                        populate: [{
+                                path: 'company',
+                                select: ['name']
+                            }]
                     }, {
                         path: 'userPermissions',
                         select: ['name', 'codeName'],
