@@ -7,6 +7,7 @@ const path = require("path");
 const company_model_1 = require("../models/company.model");
 const team_model_1 = require("../models/team.model");
 const user_model_1 = require("../models/user.model");
+const venue_model_1 = require("../models/venue.model");
 async function addTeamToCompany() {
     /*
     * Generate teams and associate if necessary.
@@ -40,8 +41,10 @@ async function addTeamToCompany() {
                 company.team = team;
                 await company.save();
             }
-            // assign users
+            // assign Venues
             await user_model_1.default.update({ company }, { team }, { multi: true });
+            // assign Venues
+            await venue_model_1.default.update({ company }, { team }, { multi: true });
         }
     }
     catch (e) {
