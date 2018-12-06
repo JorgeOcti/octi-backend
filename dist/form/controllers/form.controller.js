@@ -13,6 +13,7 @@ const form_model_1 = require("../models/form.model");
 const participant_model_1 = require("../models/participant.model");
 const participantFile_model_1 = require("../models/participantFile.model");
 const scale_model_1 = require("../models/scale.model");
+const user_model_2 = require("../../app/models/user.model");
 // import * as cp from 'console-probe';
 class FormController {
     constructor() {
@@ -23,17 +24,29 @@ class FormController {
         this.uploadFile = this.uploadFile.bind(this);
     }
     async list(req, res) {
-        const company = req.user.company;
+        const { company } = req.user;
         try {
-            const forms = await this.getForms(company, {
-                _id: {
-                    $in: req.user.userForms.map((form) => form._id)
-                }
-            });
-            res.json({
-                data: forms,
-                status: 200
-            });
+            const updatedUser = await user_model_2.default.findById(req.user._id).populate([{
+                    path: 'userForms',
+                    select: ['_id']
+                }]);
+            if (updatedUser) {
+                const forms = await this.getForms(company, {
+                    _id: {
+                        $in: updatedUser.userForms.map((form) => form._id)
+                    }
+                });
+                res.json({
+                    data: forms,
+                    status: 200
+                });
+            }
+            else {
+                res.status(400).json({
+                    message: 'Usuario no encontrado',
+                    status: 400
+                });
+            }
         }
         catch (e) {
             res.status(400).json({
@@ -594,7 +607,7 @@ class FormController {
         });
     }
     getForms(company, filter) {
-        const keyCache = `forms${filter ? JSON.stringify(filter) : ''}`;
+        // const keyCache = `forms${filter ? JSON.stringify(filter) : ''}`;
         if (filter) {
             filter = {
                 company,
@@ -607,26 +620,17 @@ class FormController {
             };
         }
         return new Promise((resolve, reject) => {
-            redis_service_1.default.get(keyCache, async (error, result) => {
-                if (result) {
-                    console.log(`cache: ${keyCache}`);
-                    resolve(JSON.parse(result));
+            form_model_1.default
+                .find(filter, {
+                _id: 1,
+                name: 1
+            })
+                .lean()
+                .exec((err, forms) => {
+                if (err) {
+                    return reject(err);
                 }
-                else {
-                    form_model_1.default
-                        .find(filter, {
-                        _id: 1,
-                        name: 1
-                    })
-                        .lean()
-                        .exec((err, forms) => {
-                        if (err) {
-                            return reject(err);
-                        }
-                        redis_service_1.default.setex(keyCache, 60 * 2, JSON.stringify(forms));
-                        return resolve(forms);
-                    });
-                }
+                return resolve(forms);
             });
         });
     }

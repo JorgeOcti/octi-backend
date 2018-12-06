@@ -13,6 +13,7 @@ import FormModel, {IFormModel} from '../models/form.model';
 import ParticipantModel from '../models/participant.model';
 import ParticipantFile from '../models/participantFile.model';
 import ScaleModel, {IScaleModel} from '../models/scale.model';
+import User from "../../app/models/user.model";
 // import * as cp from 'console-probe';
 
 class FormController {
@@ -26,17 +27,28 @@ class FormController {
   }
 
   public async list(req: IRequest, res: Response) {
-    const company = req.user.company;
+    const {company} = req.user;
     try {
-      const forms = await this.getForms(company, {
-        _id: {
-          $in: req.user.userForms.map((form) => form._id)
-        }
-      });
-      res.json({
-        data: forms,
-        status: 200
-      });
+      const updatedUser = await User.findById(req.user._id).populate([{
+        path: 'userForms',
+        select: ['_id']
+      }]);
+      if (updatedUser) {
+        const forms = await this.getForms(company, {
+          _id: {
+            $in: updatedUser.userForms.map((form) => form._id)
+          }
+        });
+        res.json({
+          data: forms,
+          status: 200
+        });
+      } else {
+        res.status(400).json({
+          message: 'Usuario no encontrado',
+          status: 400
+        });
+      }
     } catch (e) {
       res.status(400).json({
         message: 'Ha ocurrido un error',
@@ -618,26 +630,18 @@ class FormController {
       };
     }
     return new Promise((resolve, reject) => {
-      // redisClient.get(keyCache, async (error, result) => {
-      //   if (result) {
-      //     console.log(`cache: ${keyCache}`);
-      //     resolve(JSON.parse(result));
-      //   } else {
-          FormModel
-            .find(filter, {
-              _id: 1,
-              name: 1
-            })
-            .lean()
-            .exec((err, forms: IFormModel[]) => {
-              if (err) {
-                return reject(err);
-              }
-              // redisClient.setex(keyCache, 60 * 2, JSON.stringify(forms));
-              return resolve(forms);
-            });
-        // }
-      // });
+      FormModel
+        .find(filter, {
+          _id: 1,
+          name: 1
+        })
+        .lean()
+        .exec((err, forms: IFormModel[]) => {
+          if (err) {
+            return reject(err);
+          }
+          return resolve(forms);
+        });
     });
   }
 
