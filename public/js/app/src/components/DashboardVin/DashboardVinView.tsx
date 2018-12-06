@@ -121,7 +121,7 @@ class DashboardVinView extends React.Component<IPropsType, IStateType> {
               <div className="box-tools pull-right">
               </div>
             </div>
-            <div className="box-body no-padding">
+            <div className={`box-body ${cars.length ? 'no-padding' : ''}`}>
               {
                 cars.length ?
                   <table className="table table-striped">

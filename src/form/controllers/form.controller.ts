@@ -606,7 +606,7 @@ class FormController {
   }
 
   private getForms(company: ObjectID, filter?: any): Promise<IFormModel[]> {
-    const keyCache = `forms${filter ? JSON.stringify(filter) : ''}`;
+    // const keyCache = `forms${filter ? JSON.stringify(filter) : ''}`;
     if (filter) {
       filter = {
         company,
@@ -618,11 +618,11 @@ class FormController {
       };
     }
     return new Promise((resolve, reject) => {
-      redisClient.get(keyCache, async (error, result) => {
-        if (result) {
-          console.log(`cache: ${keyCache}`);
-          resolve(JSON.parse(result));
-        } else {
+      // redisClient.get(keyCache, async (error, result) => {
+      //   if (result) {
+      //     console.log(`cache: ${keyCache}`);
+      //     resolve(JSON.parse(result));
+      //   } else {
           FormModel
             .find(filter, {
               _id: 1,
@@ -633,11 +633,11 @@ class FormController {
               if (err) {
                 return reject(err);
               }
-              redisClient.setex(keyCache, 60 * 2, JSON.stringify(forms));
+              // redisClient.setex(keyCache, 60 * 2, JSON.stringify(forms));
               return resolve(forms);
             });
-        }
-      });
+        // }
+      // });
     });
   }
 
