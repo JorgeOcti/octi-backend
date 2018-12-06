@@ -1,4 +1,3 @@
-import {ObjectID} from 'bson';
 import {Response} from 'express';
 import {PaginateOptions, PaginateResult} from 'mongoose';
 import {IRequest} from '../../../interfaces/global.interface';
@@ -91,7 +90,7 @@ class AdminCarController {
       });
     }
     const {page, pageSize, search} = req.query;
-    const company = req.user.company;
+    const {team} = req.user;
     // paginate options
     const options: PaginateOptions = {
       select: {
@@ -115,7 +114,12 @@ class AdminCarController {
       limit: parseInt(pageSize ? pageSize : 20, 10)
     };
     try {
-      const cars = await this.getCars(company, options, search);
+      const cars = await this.getCars({
+        team,
+        status: {
+          $eq: ChoicesStatusCar.active
+        }
+      }, options, search);
       // validate exist page
       if (options.page && cars.pages && cars.pages < options.page) {
         res.status(400).json({
@@ -139,9 +143,7 @@ class AdminCarController {
     }
   }
 
-  private getCars(company: ObjectID, options: PaginateOptions, search?: string): Promise<PaginateResult<ICarModel>> {
-    let filter: any = {company, status: {$eq: ChoicesStatusCar.active}};
-
+  private getCars(filter: any, options: PaginateOptions, search?: string): Promise<PaginateResult<ICarModel>> {
     if (search && search.length) {
       const searchText = new RegExp(search, 'i');
       filter = {
@@ -156,7 +158,7 @@ class AdminCarController {
             color: {$regex: searchText}
           }]
         },
-          filter
+          ...filter
         ]
       };
       // filter = {
@@ -175,6 +177,5 @@ class AdminCarController {
     });
   }
 }
-
 
 export default new AdminCarController();

@@ -64,6 +64,7 @@ class JWTController {
           updatedAt: true,
           preferred: true,
           venue: true,
+          team: true,
           company: true,
           userForms: true,
           userPermissions: true,
@@ -71,6 +72,9 @@ class JWTController {
         })
         .populate([{
           path: 'venue',
+          select: ['name']
+        }, {
+          path: 'team',
           select: ['name']
         }, {
           path: 'company',
@@ -127,6 +131,10 @@ class JWTController {
                       _id: user.company ? user.company._id : null,
                       name: user.company ? user.company.name : null
                     },
+                    team: {
+                      _id: user.team ? user.team._id : null,
+                      name: user.team ? user.team.name : null
+                    },
                     count
                   };
                   res.json({
@@ -179,6 +187,7 @@ class JWTController {
               preferred: true,
               venue: true,
               company: true,
+              team: true,
               userForms: true,
               userPermissions: true,
               active: true
@@ -188,6 +197,9 @@ class JWTController {
               select: ['name']
             }, {
               path: 'company',
+              select: ['name']
+            }, {
+              path: 'team',
               select: ['name']
             }, {
               path: 'userPermissions',
@@ -239,6 +251,10 @@ class JWTController {
                         company: {
                           _id: user.company ? user.company._id : null,
                           name: user.company ? user.company.name : null
+                        },
+                        team: {
+                          _id: user.team ? user.team._id : null,
+                          name: user.team ? user.team.name : null
                         },
                         count
                       };

@@ -2,6 +2,7 @@ import {IUserModel} from '../app/models/user.model';
 import {ICar} from './car.interface';
 import {ICompany} from './company.interface';
 import {IInventoryFile} from './inventoryFile.interface';
+import {ITeam} from './team.interface';
 import {IVenue} from './venue.interface';
 
 export interface IInventoryCar {
@@ -16,6 +17,7 @@ export interface IInventoryCar {
 export interface IInventory {
   name: string;
   company: ICompany;
+  team: ITeam;
   venues: IVenue[];
   cars: IInventoryCar[];
   createdBy: IUserModel;

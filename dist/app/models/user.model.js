@@ -114,6 +114,20 @@ userSchema.methods.generateToken = function () {
     };
     return jwt.sign(userInfo, process.env.SECRET_KEY || 'secretKey', { expiresIn: '7 days' });
 };
+userSchema.methods.venuesPermissions = function () {
+    let venuesPermissions = [];
+    const currentVenue = this.venue && this.venue._id ? this.venue._id : this.venue;
+    if (currentVenue) {
+        venuesPermissions.push(currentVenue);
+    }
+    if (this.venuesAccess && this.venuesAccess.length) {
+        venuesPermissions = Array.from(new Set([
+            ...venuesPermissions,
+            ...this.venuesAccess
+        ]));
+    }
+    return venuesPermissions;
+};
 /**
  * Password hash middleware.
  */

@@ -279,13 +279,14 @@ class CarController {
   }
 
   public async apiParticipantsPerDate(req: IRequest, res: Response) {
-    const {company, venue} = req.user;
+    const {company} = req.user;
     try {
       const participantPerDay = await ParticipantModel
         .aggregate([{
           $match: {
-            company,
-            venue: venue._id,
+            venue: {
+              $in: req.user.venuesPermissions()
+            },
             createdAt: {
               $gte: moment().subtract(14, 'd').toDate()
             }
@@ -472,8 +473,9 @@ class CarController {
       const participantPerRange = await ParticipantModel
         .aggregate([{
           $match: {
-            company,
-            venue: venue._id,
+            venue: {
+              $in: req.user.venuesPermissions()
+            },
             createdAt: {
               $gte: moment().subtract(14, 'd').toDate()
             }
@@ -604,13 +606,11 @@ class CarController {
   }
 
   public async apiCarDetail(req: IRequest, res: Response) {
-    const {company, venue} = req.user;
     const {id} = req.params;
     try {
       const car = await CarModel
         .findOne({
-          _id: id,
-          company
+          _id: id
         }, {
           vin: true,
           brand: true,
@@ -622,7 +622,9 @@ class CarController {
           path: 'participants',
           select: ['name', 'user', 'createdAt', 'qualification'],
           match: {
-            venue: venue._id
+            venue: {
+              $in: req.user.venuesPermissions()
+            }
           },
           options: {
             sort: {
@@ -654,7 +656,6 @@ class CarController {
   }
 
   public async apiCars(req: IRequest, res: Response) {
-    const {company, venue} = req.user;
     const {page, pageSize, search} = req.query;
 
     // paginate options
@@ -681,8 +682,18 @@ class CarController {
     };
     try {
       const cars = await this.getCars({
-        company,
-        lastForm: {$in: await ParticipantModel.find({company, venue: venue._id}, {_id: true}), $exists: true, $ne: null}
+        lastForm: {
+          $in: await ParticipantModel.find(
+          {
+            venue: {
+              $in: req.user.venuesPermissions()
+            }
+          }, {
+            _id: true
+          }),
+          $exists: true,
+          $ne: null
+        }
       }, options, search);
 
       // validate exist page

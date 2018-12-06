@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+const company_model_1 = require("../../../app/models/company.model");
 const form_model_1 = require("../../models/form.model");
 class AdminFormsController {
     constructor() {
@@ -11,7 +12,7 @@ class AdminFormsController {
     }
     async apiListForms(req, res) {
         const { page, pageSize } = req.query;
-        const company = req.user.company;
+        const { team } = req.user;
         // paginate options
         const options = {
             select: {
@@ -24,7 +25,11 @@ class AdminFormsController {
             limit: parseInt(pageSize ? pageSize : 20, 10)
         };
         try {
-            const forms = await this.getForms(company, options);
+            const forms = await this.getForms({
+                company: {
+                    $in: await company_model_1.default.find(team, { _id: true })
+                }
+            }, options);
             // validate exist page
             if (options.page && forms.pages && forms.pages < options.page) {
                 res.status(400).json({
@@ -49,9 +54,9 @@ class AdminFormsController {
             }
         }
     }
-    getForms(company, options) {
+    getForms(filter, options) {
         return new Promise((resolve, reject) => {
-            form_model_1.default.paginate({ company }, options, (err, result) => {
+            form_model_1.default.paginate(filter, options, (err, result) => {
                 if (err) {
                     return reject(err);
                 }

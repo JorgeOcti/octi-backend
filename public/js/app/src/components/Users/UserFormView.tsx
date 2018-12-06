@@ -372,7 +372,7 @@ class UserFormView extends React.Component<IPropsType, IStateType> {
                           );
                         }) :
                         <tr>
-                          <td colSpan={1}>Aún no se han seleccionado sucursales.</td>
+                          <td colSpan={2}>Aún no se han seleccionado sucursales.</td>
                         </tr>
                     }
                   </tbody>

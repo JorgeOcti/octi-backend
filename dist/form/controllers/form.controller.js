@@ -14,6 +14,7 @@ const participant_model_1 = require("../models/participant.model");
 const participantFile_model_1 = require("../models/participantFile.model");
 const scale_model_1 = require("../models/scale.model");
 const user_model_2 = require("../../app/models/user.model");
+const company_model_1 = require("../../app/models/company.model");
 // import * as cp from 'console-probe';
 class FormController {
     constructor() {
@@ -227,7 +228,7 @@ class FormController {
         const { id } = req.params;
         let { vin } = req.body;
         const { answers } = req.body;
-        const { company, venue } = req.user;
+        const { team, venue, company } = req.user;
         // validate answers in body
         if (!answers) {
             return res.status(400).json({
@@ -244,12 +245,20 @@ class FormController {
         }
         vin = vin.replace(/[\W_]+/g, '');
         try {
+            const companiesIds = await company_model_1.default.find({ team }, { _id: true });
             const car = await car_model_1.default.findOne({
                 $or: [{ vin: { $eq: vin } }, { vin2: { $eq: vin } }],
-                company
+                company: {
+                    $in: companiesIds
+                }
             });
             if (car) {
-                const form = await this.getFormWithScale(id, company);
+                const form = await this.getFormWithScale({
+                    _id: id,
+                    company: {
+                        $in: companiesIds
+                    }
+                });
                 if (form) {
                     // initialize participant
                     const participantObject = {
@@ -668,10 +677,10 @@ class FormController {
             });
         });
     }
-    getFormWithScale(id, company) {
+    getFormWithScale(filter) {
         return new Promise((resolve, reject) => {
             form_model_1.default
-                .findOne({ _id: id, company })
+                .findOne(filter)
                 .populate('sections.questions.scale')
                 .exec((err, form) => {
                 if (err) {

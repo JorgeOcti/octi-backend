@@ -87,7 +87,7 @@ class AdminCarController {
             });
         }
         const { page, pageSize, search } = req.query;
-        const company = req.user.company;
+        const { team } = req.user;
         // paginate options
         const options = {
             select: {
@@ -111,7 +111,12 @@ class AdminCarController {
             limit: parseInt(pageSize ? pageSize : 20, 10)
         };
         try {
-            const cars = await this.getCars(company, options, search);
+            const cars = await this.getCars({
+                team,
+                status: {
+                    $eq: car_model_1.ChoicesStatusCar.active
+                }
+            }, options, search);
             // validate exist page
             if (options.page && cars.pages && cars.pages < options.page) {
                 res.status(400).json({
@@ -136,8 +141,7 @@ class AdminCarController {
             }
         }
     }
-    getCars(company, options, search) {
-        let filter = { company, status: { $eq: car_model_1.ChoicesStatusCar.active } };
+    getCars(filter, options, search) {
         if (search && search.length) {
             const searchText = new RegExp(search, 'i');
             filter = {
@@ -152,7 +156,7 @@ class AdminCarController {
                                 color: { $regex: searchText }
                             }]
                     },
-                    filter
+                    ...filter
                 ]
             };
             // filter = {

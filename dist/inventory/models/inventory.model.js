@@ -56,6 +56,11 @@ const inventorySchema = new mongoose.Schema({
     name: {
         type: String
     },
+    team: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Team',
+        required: true
+    },
     company: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Company',

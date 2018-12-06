@@ -1,4 +1,5 @@
 import * as mongoose from 'mongoose';
+import * as mongoosePaginate from 'mongoose-paginate';
 import {ITeam} from '../../interfaces/team.interface';
 
 export interface ITeamModel extends ITeam, mongoose.Document {}
@@ -23,6 +24,8 @@ teamSchema.virtual('users', {
   foreignField: 'team', // is equal to field in another model
   justOne: false
 });
+
+teamSchema.plugin(mongoosePaginate);
 
 const Team = mongoose.model<ITeamModel>('Team', teamSchema);
 

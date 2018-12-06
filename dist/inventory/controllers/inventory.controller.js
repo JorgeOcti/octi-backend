@@ -30,10 +30,10 @@ class InventoryController {
         res.render('app/index', { token: await req.user.generateToken() });
     }
     async detail(req, res) {
-        const { company } = req.user;
+        const { team } = req.user;
         const { id } = req.params;
         try {
-            const inventory = await inventory_model_1.default.findOne({ _id: id, company });
+            const inventory = await inventory_model_1.default.findOne({ _id: id, team });
             if (!inventory) {
                 return res.status(404).render('404');
             }
@@ -128,12 +128,12 @@ class InventoryController {
         }
     }
     async list(req, res) {
-        const { company } = req.user;
+        const { team } = req.user;
         try {
             const response = [];
             const inventories = await inventory_model_1.default.aggregate([{
                     $match: {
-                        company
+                        team
                     }
                 }, {
                     $unwind: '$cars'
@@ -311,7 +311,7 @@ class InventoryController {
         }
     }
     async apiFoundCar(req, res) {
-        const { company, venue } = req.user;
+        const { team, company, venue } = req.user;
         const { id } = req.params;
         const { vin, images } = req.body;
         try {
@@ -327,7 +327,7 @@ class InventoryController {
                     $and: [{
                             _id: id
                         }, {
-                            company
+                            team
                         }, {
                             cars: {
                                 $elemMatch: {
@@ -349,7 +349,7 @@ class InventoryController {
                     const inventoryCar = await inventory_model_1.default.findOne({
                         _id: id,
                         ['cars.car']: car._id,
-                        company
+                        team
                     }, {
                         'cars.$': 1
                     });
@@ -359,7 +359,7 @@ class InventoryController {
                             await inventory_model_1.default.update({
                                 _id: id,
                                 ['cars.car']: car._id,
-                                company
+                                team
                             }, {
                                 $set: {
                                     'cars.$.venueFound': venue._id,
@@ -411,7 +411,7 @@ class InventoryController {
                     else {
                         const inventory = await inventory_model_1.default.findOne({
                             _id: id,
-                            company
+                            team
                         });
                         if (inventory) {
                             inventory.cars.push({
@@ -656,13 +656,13 @@ class InventoryController {
     }
     async apiDetaill(req, res) {
         const { id } = req.params;
-        const { company } = req.user;
+        const { team } = req.user;
         try {
             // summary
             const inventory = await inventory_model_1.default.aggregate([
                 {
                     $match: {
-                        company,
+                        team,
                         _id: { $in: [mongoose.Types.ObjectId(id)] }
                     }
                 }, {
@@ -737,7 +737,7 @@ class InventoryController {
             const detailByVenues = await inventory_model_1.default.aggregate([
                 {
                     $match: {
-                        company,
+                        team,
                         _id: { $in: [mongoose.Types.ObjectId(id)] }
                     }
                 }, {
@@ -785,7 +785,7 @@ class InventoryController {
             const detailByBrands = await inventory_model_1.default.aggregate([
                 {
                     $match: {
-                        company,
+                        team,
                         _id: { $in: [mongoose.Types.ObjectId(id)] }
                     }
                 }, {

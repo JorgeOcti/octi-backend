@@ -12,6 +12,7 @@ export interface IUserModel extends IUser, mongoose.Document {
   hasPermission: (permission: string) => boolean;
   fullName: () => string;
   generateToken: () => string;
+  venuesPermissions: () => string[];
 }
 
 const userSchema = new mongoose.Schema({
@@ -129,6 +130,23 @@ userSchema.methods.generateToken = function() {
     // venue: this.venue
   };
   return jwt.sign(userInfo, process.env.SECRET_KEY || 'secretKey', {expiresIn: '7 days'});
+};
+
+userSchema.methods.venuesPermissions = function() {
+  let venuesPermissions = [];
+  const currentVenue = this.venue && this.venue._id ? this.venue._id : this.venue;
+  if (currentVenue) {
+    venuesPermissions.push(currentVenue);
+  }
+  if (this.venuesAccess && this.venuesAccess.length) {
+    venuesPermissions = Array.from(
+      new Set([
+        ...venuesPermissions,
+        ...this.venuesAccess
+      ])
+    );
+  }
+  return venuesPermissions;
 };
 
 /**

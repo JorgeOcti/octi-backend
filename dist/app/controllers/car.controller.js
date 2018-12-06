@@ -285,13 +285,14 @@ class CarController {
         }
     }
     async apiParticipantsPerDate(req, res) {
-        const { company, venue } = req.user;
+        const { company } = req.user;
         try {
             const participantPerDay = await participant_model_1.default
                 .aggregate([{
                     $match: {
-                        company,
-                        venue: venue._id,
+                        venue: {
+                            $in: req.user.venuesPermissions()
+                        },
                         createdAt: {
                             $gte: moment().subtract(14, 'd').toDate()
                         }
@@ -479,8 +480,9 @@ class CarController {
             const participantPerRange = await participant_model_1.default
                 .aggregate([{
                     $match: {
-                        company,
-                        venue: venue._id,
+                        venue: {
+                            $in: req.user.venuesPermissions()
+                        },
                         createdAt: {
                             $gte: moment().subtract(14, 'd').toDate()
                         }
@@ -610,13 +612,11 @@ class CarController {
         }
     }
     async apiCarDetail(req, res) {
-        const { company, venue } = req.user;
         const { id } = req.params;
         try {
             const car = await car_model_1.default
                 .findOne({
-                _id: id,
-                company
+                _id: id
             }, {
                 vin: true,
                 brand: true,
@@ -628,7 +628,9 @@ class CarController {
                     path: 'participants',
                     select: ['name', 'user', 'createdAt', 'qualification'],
                     match: {
-                        venue: venue._id
+                        venue: {
+                            $in: req.user.venuesPermissions()
+                        }
                     },
                     options: {
                         sort: {
@@ -661,7 +663,6 @@ class CarController {
         }
     }
     async apiCars(req, res) {
-        const { company, venue } = req.user;
         const { page, pageSize, search } = req.query;
         // paginate options
         const options = {
@@ -687,8 +688,17 @@ class CarController {
         };
         try {
             const cars = await this.getCars({
-                company,
-                lastForm: { $in: await participant_model_1.default.find({ company, venue: venue._id }, { _id: true }), $exists: true, $ne: null }
+                lastForm: {
+                    $in: await participant_model_1.default.find({
+                        venue: {
+                            $in: req.user.venuesPermissions()
+                        }
+                    }, {
+                        _id: true
+                    }),
+                    $exists: true,
+                    $ne: null
+                }
             }, options, search);
             // validate exist page
             if (options.page && cars.pages && cars.pages < options.page) {

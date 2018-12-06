@@ -1,6 +1,6 @@
-import {ObjectID} from 'bson';
 import {Response} from 'express';
 import {PaginateOptions, PaginateResult} from 'mongoose';
+import Company from '../../../app/models/company.model';
 import {IRequest} from '../../../interfaces/global.interface';
 import Form, {IFormModel} from '../../models/form.model';
 
@@ -17,7 +17,7 @@ class AdminFormsController {
 
   public async apiListForms(req: IRequest, res: Response): Promise<any> {
     const {page, pageSize} = req.query;
-    const company = req.user.company;
+    const {team} = req.user;
     // paginate options
     const options: PaginateOptions = {
       select: {
@@ -30,7 +30,11 @@ class AdminFormsController {
       limit: parseInt(pageSize ? pageSize : 20, 10)
     };
     try {
-      const forms = await this.getForms(company, options);
+      const forms = await this.getForms({
+        company: {
+          $in: await Company.find(team, {_id: true})
+        }
+      }, options);
       // validate exist page
       if (options.page && forms.pages && forms.pages < options.page) {
         res.status(400).json({
@@ -54,9 +58,9 @@ class AdminFormsController {
     }
   }
 
-  private getForms(company: ObjectID, options: PaginateOptions): Promise<PaginateResult<IFormModel>> {
+  private getForms(filter: any, options: PaginateOptions): Promise<PaginateResult<IFormModel>> {
     return new Promise((resolve, reject) => {
-      Form.paginate({company}, options, (err, result) => {
+      Form.paginate(filter, options, (err, result) => {
         if (err) {
           return reject(err);
         }

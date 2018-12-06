@@ -7,6 +7,7 @@ const alert_admin_controller_1 = require("./controllers/admin/alert.admin.contro
 const car_admin_controller_1 = require("./controllers/admin/car.admin.controller");
 const company_admin_controller_1 = require("./controllers/admin/company.admin.controller");
 const permission_admin_controller_1 = require("./controllers/admin/permission.admin.controller");
+const team_admin_controller_1 = require("./controllers/admin/team.admin.controller");
 const user_admin_controller_1 = require("./controllers/admin/user.admin.controller");
 const venue_admin_controller_1 = require("./controllers/admin/venue.admin.controller");
 const app_controller_1 = require("./controllers/app.controller");
@@ -53,6 +54,8 @@ appRouter.get('/api/admin/companies/', middlewares_1.default.isLoggedIn, company
 appRouter.post('/api/admin/companies/', middlewares_1.default.isLoggedIn, company_admin_controller_1.default.apiCreateCompany);
 appRouter.patch('/api/admin/companies/:id', middlewares_1.default.isLoggedIn, company_admin_controller_1.default.apiUpdateCompany);
 appRouter.delete('/api/admin/companies/:id', middlewares_1.default.isLoggedIn, company_admin_controller_1.default.apiDeleteCompany);
+// api team
+appRouter.get('/api/admin/teams/', middlewares_1.default.isLoggedIn, team_admin_controller_1.default.apiListTeams);
 // setting cars
 appRouter.get('/settings/cars/', middlewares_1.default.isLoggedIn, car_admin_controller_1.default.index);
 appRouter.get('/api/admin/cars/', middlewares_1.default.isLoggedIn, car_admin_controller_1.default.apiListCars);

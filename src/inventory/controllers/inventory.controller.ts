@@ -42,10 +42,10 @@ class InventoryController {
   }
 
   public async detail(req: IRequest, res: Response) {
-    const {company} = req.user;
+    const {team} = req.user;
     const {id} = req.params;
     try {
-      const inventory = await InventoryModel.findOne({_id: id, company});
+      const inventory = await InventoryModel.findOne({_id: id, team});
       if (!inventory) {
         return res.status(404).render('404');
       } else {
@@ -144,12 +144,12 @@ class InventoryController {
   }
 
   public async list(req: IRequest, res: Response) {
-    const {company} = req.user;
+    const {team} = req.user;
     try {
       const response: any[] = [];
       const inventories = await InventoryModel.aggregate([{
         $match: {
-          company
+          team
         }
       }, {
         $unwind: '$cars'
@@ -326,7 +326,7 @@ class InventoryController {
   }
 
   public async apiFoundCar(req: IRequest, res: Response) {
-    const {company, venue} = req.user;
+    const {team, company, venue} = req.user;
     const {id} = req.params;
     const {vin, images} = req.body;
     try {
@@ -342,7 +342,7 @@ class InventoryController {
           $and: [{
             _id: id
           }, {
-            company
+            team
           }, {
             cars: {
               $elemMatch: {
@@ -363,7 +363,7 @@ class InventoryController {
           const inventoryCar = await InventoryModel.findOne({
             _id: id,
             ['cars.car']: car._id,
-            company
+            team
           }, {
             'cars.$': 1
           });
@@ -373,7 +373,7 @@ class InventoryController {
               await InventoryModel.update({
                 _id: id,
                 ['cars.car']: car._id,
-                company
+                team
               }, {
                 $set: {
                   'cars.$.venueFound': venue._id,
@@ -423,7 +423,7 @@ class InventoryController {
           } else {
             const inventory = await InventoryModel.findOne({
               _id: id,
-              company
+              team
             });
             if (inventory) {
               inventory.cars.push({
@@ -664,13 +664,13 @@ class InventoryController {
 
   public async apiDetaill(req: IRequest, res: Response) {
     const {id} = req.params;
-    const {company} = req.user;
+    const {team} = req.user;
     try {
       // summary
       const inventory = await InventoryModel.aggregate([
         {
           $match: {
-            company,
+            team,
             _id: {$in: [mongoose.Types.ObjectId(id)]}
           }
         }, {
@@ -744,7 +744,7 @@ class InventoryController {
       const detailByVenues = await InventoryModel.aggregate([
         {
           $match: {
-            company,
+            team,
             _id: {$in: [mongoose.Types.ObjectId(id)]}
           }
         }, {
@@ -791,7 +791,7 @@ class InventoryController {
       const detailByBrands = await InventoryModel.aggregate([
         {
           $match: {
-            company,
+            team,
             _id: {$in: [mongoose.Types.ObjectId(id)]}
           }
         }, {

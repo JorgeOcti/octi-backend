@@ -14,6 +14,7 @@ import ParticipantModel from '../models/participant.model';
 import ParticipantFile from '../models/participantFile.model';
 import ScaleModel, {IScaleModel} from '../models/scale.model';
 import User from "../../app/models/user.model";
+import Company from "../../app/models/company.model";
 // import * as cp from 'console-probe';
 
 class FormController {
@@ -233,7 +234,7 @@ class FormController {
     const {id} = req.params;
     let {vin} = req.body;
     const {answers} = req.body;
-    const {company, venue} = req.user;
+    const {team, venue, company} = req.user;
 
     // validate answers in body
     if (!answers) {
@@ -251,12 +252,20 @@ class FormController {
     }
     vin = vin.replace(/[\W_]+/g, '');
     try {
+      const companiesIds = await Company.find({team}, {_id: true});
       const car = await CarModel.findOne({
         $or: [{vin: {$eq: vin}}, {vin2: {$eq: vin}}],
-        company
+        company: {
+          $in: companiesIds
+        }
       });
       if (car) {
-        const form = await this.getFormWithScale(id, company);
+        const form = await this.getFormWithScale({
+          _id: id,
+          company: {
+            $in: companiesIds
+          }
+        });
         if (form) {
           // initialize participant
           const participantObject: any = {
@@ -679,10 +688,10 @@ class FormController {
     });
   }
 
-  private getFormWithScale(id: string, company: ObjectID): Promise<IFormModel> {
+  private getFormWithScale(filter: any): Promise<IFormModel> {
     return new Promise((resolve, reject) => {
       FormModel
-        .findOne({_id: id, company})
+        .findOne(filter)
         .populate('sections.questions.scale')
         .exec((err, form) => {
           if (err) {

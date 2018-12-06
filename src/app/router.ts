@@ -5,6 +5,7 @@ import AdminAlertsController from './controllers/admin/alert.admin.controller';
 import AdminCarsController from './controllers/admin/car.admin.controller';
 import AdminCompaniesController from './controllers/admin/company.admin.controller';
 import AdminPermissionController from './controllers/admin/permission.admin.controller';
+import AdminTeamsController from './controllers/admin/team.admin.controller';
 import AdminUsersController from './controllers/admin/user.admin.controller';
 import AdminVenuesController from './controllers/admin/venue.admin.controller';
 import AppController from './controllers/app.controller';
@@ -63,6 +64,9 @@ appRouter.get('/api/admin/companies/', Middlewares.isLoggedIn, AdminCompaniesCon
 appRouter.post('/api/admin/companies/', Middlewares.isLoggedIn, AdminCompaniesController.apiCreateCompany);
 appRouter.patch('/api/admin/companies/:id', Middlewares.isLoggedIn, AdminCompaniesController.apiUpdateCompany);
 appRouter.delete('/api/admin/companies/:id', Middlewares.isLoggedIn, AdminCompaniesController.apiDeleteCompany);
+
+// api team
+appRouter.get('/api/admin/teams/', Middlewares.isLoggedIn, AdminTeamsController.apiListTeams);
 
 // setting cars
 appRouter.get('/settings/cars/', Middlewares.isLoggedIn, AdminCarsController.index);
