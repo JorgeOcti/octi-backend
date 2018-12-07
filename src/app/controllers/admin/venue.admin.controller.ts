@@ -107,9 +107,9 @@ class AdminVenueController {
       } else {
         const newVenue = await new Venue({
           name,
+          team,
           company,
-          type,
-          team
+          type
         }).save();
         res.status(201).json({
           message: 'Sucursal agregada satisfactoriamente.',

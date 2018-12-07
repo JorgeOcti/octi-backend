@@ -48,17 +48,19 @@ class InventoryController {
         }
     }
     async create(req, res) {
-        const company = req.user.company;
+        const { company, team } = req.user;
         const { carsByVenue, name } = req.body;
         try {
             const inventoryCars = [];
             const venuesIDs = [];
             for (const venue of carsByVenue) {
                 if (venue.name && venue.name.length) {
-                    let currentVenue = await venue_model_1.default.findOne({ company, name: venue.name });
+                    let currentVenue = await venue_model_1.default.findOne({ team, name: venue.name });
+                    // create venue if no existe
                     if (currentVenue === null) {
                         currentVenue = new venue_model_1.default({
                             name: venue.name,
+                            team,
                             company
                         });
                         await currentVenue.save();
@@ -67,11 +69,12 @@ class InventoryController {
                     if (venue.cars && venue.cars.length) {
                         for (const car of venue.cars) {
                             let currentCar = await car_model_1.default.findOne({
-                                company,
+                                team,
                                 vin: car.vin
                             });
                             if (currentCar === null && car.vin && car.vin.trim().length) {
                                 currentCar = new car_model_1.default({
+                                    team,
                                     company,
                                     vin: car.vin,
                                     vin2: car.vin.substr(car.vin.length - 6),
@@ -97,6 +100,7 @@ class InventoryController {
             const inventory = new inventory_model_1.default({
                 name,
                 company,
+                team,
                 cars: inventoryCars,
                 venues: venuesIDs,
                 createdBy: req.user._id,
@@ -129,14 +133,24 @@ class InventoryController {
     }
     async list(req, res) {
         const { team } = req.user;
+        const venuesPermissions = req.user.venuesPermissions();
         try {
             const response = [];
             const inventories = await inventory_model_1.default.aggregate([{
                     $match: {
-                        team
+                        team,
+                        venues: {
+                            $in: venuesPermissions
+                        }
                     }
                 }, {
                     $unwind: '$cars'
+                }, {
+                    $match: {
+                        'cars.venue': {
+                            $in: venuesPermissions
+                        }
+                    }
                 }, {
                     $group: {
                         _id: {
@@ -311,13 +325,13 @@ class InventoryController {
         }
     }
     async apiFoundCar(req, res) {
-        const { team, company, venue } = req.user;
+        const { team, venue } = req.user;
         const { id } = req.params;
         const { vin, images } = req.body;
         try {
             const car = await car_model_2.default.findOne({
                 vin,
-                company
+                team
             });
             // if car exist
             let textNotification = '';
@@ -380,7 +394,7 @@ class InventoryController {
                         else {
                             const inventory = await inventory_model_1.default.findOne({
                                 _id: id,
-                                company
+                                team
                             });
                             if (inventory) {
                                 inventory.cars.push({
@@ -401,7 +415,7 @@ class InventoryController {
                             });
                         }
                         // send socket messsage
-                        server_1.io.to(`inventory-list-${company._id}`).emit('REFRESH', {
+                        server_1.io.to(`inventory-list-${team._id}`).emit('REFRESH', {
                             update: true
                         });
                         res.json({
@@ -424,7 +438,7 @@ class InventoryController {
                             });
                             await inventory.save();
                             // send socket messsage
-                            server_1.io.to(`inventory-list-${company._id}`).emit('REFRESH', {
+                            server_1.io.to(`inventory-list-${team._id}`).emit('REFRESH', {
                                 update: true
                             });
                             server_1.io.to(`inventory-detail-${inventory._id}`).emit('REFRESH', {
@@ -451,13 +465,13 @@ class InventoryController {
                 // if car no exist
                 const inventory = await inventory_model_1.default.findOne({
                     _id: id,
-                    company
+                    team
                 });
                 if (inventory) {
                     const newCar = new car_model_1.default({
                         vin,
                         vin2: vin.substr(vin.length - 6),
-                        company,
+                        team,
                         status: car_model_1.ChoicesStatusCar.active
                     });
                     await newCar.save();
@@ -472,7 +486,7 @@ class InventoryController {
                     });
                     await inventory.save();
                     // send socket messsage
-                    server_1.io.to(`inventory-list-${company._id}`).emit('REFRESH', {
+                    server_1.io.to(`inventory-list-${team._id}`).emit('REFRESH', {
                         update: true
                     });
                     server_1.io.to(`inventory-detail-${inventory._id}`).emit('REFRESH', {
@@ -502,10 +516,10 @@ class InventoryController {
         }
     }
     async finishInventory(req, res) {
-        const { company } = req.user;
+        const { company, team } = req.user;
         const { id } = req.params;
         try {
-            const inventory = await inventory_model_1.default.findOne({ _id: id, company });
+            const inventory = await inventory_model_1.default.findOne({ _id: id, team });
             if (inventory) {
                 await inventory.update({
                     status: inventory_model_1.ChoicesStatusInventory.finalized,
@@ -569,24 +583,25 @@ class InventoryController {
         }
     }
     async reportCar(req, res) {
-        const { company, venue } = req.user;
+        const { team, company, venue } = req.user;
         const { id } = req.params;
         const { vin, denomination, brand, color, images } = req.body;
         try {
             const inventory = await inventory_model_1.default.findOne({
                 _id: id,
-                company
+                team
             });
             if (inventory) {
                 const car = await car_model_1.default.findOneOrCreate({
                     vin,
-                    company
+                    team
                 }, {
                     vin,
                     vin2: vin.substr(vin.length - 6),
                     brand,
                     denomination,
                     color,
+                    team,
                     company,
                     status: car_model_1.ChoicesStatusCar.inventory
                 });
@@ -606,7 +621,7 @@ class InventoryController {
                     status: inventory_model_1.ChoicesStatusCarInventory.reported,
                     update: true
                 });
-                server_1.io.to(`inventory-list-${company._id}`).emit('REFRESH', {
+                server_1.io.to(`inventory-list-${team._id}`).emit('REFRESH', {
                     update: true
                 });
                 res.json({
@@ -630,10 +645,10 @@ class InventoryController {
         }
     }
     async apiList(req, res) {
-        const { company, venue } = req.user;
+        const { team, venue } = req.user;
         try {
             const inventories = await inventory_model_1.default.find({
-                company,
+                team,
                 venues: venue._id,
                 status: {
                     $in: [inventory_model_1.ChoicesStatusInventory.inProcess]
@@ -657,6 +672,7 @@ class InventoryController {
     async apiDetaill(req, res) {
         const { id } = req.params;
         const { team } = req.user;
+        let venuesPermissions = req.user.venuesPermissions();
         try {
             // summary
             const inventory = await inventory_model_1.default.aggregate([
@@ -667,6 +683,12 @@ class InventoryController {
                     }
                 }, {
                     $unwind: '$cars'
+                }, {
+                    $match: {
+                        'cars.venue': {
+                            $in: venuesPermissions
+                        }
+                    }
                 }, {
                     $group: {
                         _id: {
@@ -743,6 +765,12 @@ class InventoryController {
                 }, {
                     $unwind: '$cars'
                 }, {
+                    $match: {
+                        'cars.venue': {
+                            $in: venuesPermissions
+                        }
+                    }
+                }, {
                     $group: {
                         _id: {
                             category: {
@@ -790,6 +818,12 @@ class InventoryController {
                     }
                 }, {
                     $unwind: '$cars'
+                }, {
+                    $match: {
+                        'cars.venue': {
+                            $in: venuesPermissions
+                        }
+                    }
                 }, {
                     $lookup: {
                         from: 'cars',
@@ -884,7 +918,7 @@ class InventoryController {
                     cars: true
                 }).populate([{
                         path: 'cars.car',
-                        select: ['vin', 'vin2', 'color', 'denomination', 'brand']
+                        select: ['vin', 'vin2', 'color', 'denomination', 'brand', 'venue']
                     }, {
                         path: 'cars.venue',
                         select: ['name']
@@ -897,11 +931,23 @@ class InventoryController {
                         path: 'cars.inventoriedBy',
                         select: ['firstName', 'lastName']
                     }]);
+                venuesPermissions = venuesPermissions.map((ve) => ve.toString());
                 res.json({
                     summary: response,
                     detailByVenue,
                     detailByBrand,
-                    detail: detailInventory,
+                    detail: {
+                        _id: detailInventory ? detailInventory._id : '',
+                        name: detailInventory ? detailInventory.name : '',
+                        status: detailInventory ? detailInventory.status : '',
+                        cars: detailInventory ? detailInventory.cars.filter((car) => {
+                            if (venuesPermissions.includes(car.venue._id.toString())) {
+                                console.log('venuesPermissions', venuesPermissions);
+                                console.log('car.venue._id.toString()', car.venue._id.toString());
+                            }
+                            return venuesPermissions.includes(car.venue._id.toString()) || (car.venueFound && venuesPermissions.includes(car.venueFound._id.toString()));
+                        }) : []
+                    },
                     status: 200
                 });
             }

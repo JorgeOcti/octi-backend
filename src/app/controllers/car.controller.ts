@@ -669,6 +669,11 @@ class CarController {
       populate: [{
         path: 'lastForm',
         select: ['createdAt', 'user', 'qualification', 'venue'],
+        // options: {
+        //   sort: {
+        //     updatedAt: -1
+        //   }
+        // }
         populate: [{
           path: 'user',
           select: ['firstName', 'lastName']

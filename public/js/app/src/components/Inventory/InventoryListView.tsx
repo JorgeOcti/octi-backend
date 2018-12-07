@@ -65,7 +65,7 @@ class InventoryListView extends React.Component<IPropsType, IStateType> {
       query: {token: (window.user as any).token}
     });
     this.socket.on('connect', () => {
-      this.socket.emit('join', {room: `inventory-list-${window.user.company}`});
+      this.socket.emit('join', {room: `inventory-list-${window.user.team}`});
     });
     this.socket.on('REFRESH', (data: any): void => {
       if (data.update) {
