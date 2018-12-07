@@ -7,6 +7,7 @@ import Car, {
   ICarModel
 } from '../../app/models/car.model';
 import UserModel from '../../app/models/user.model';
+import User from '../../app/models/user.model';
 import VenueModel, {
   IVenueModel
 } from '../../app/models/venue.model';
@@ -653,22 +654,30 @@ class InventoryController {
   }
 
   public async apiList(req: IRequest, res: Response) {
-    const {team, venue} = req.user;
+    const {team} = req.user;
     try {
-      const inventories = await InventoryModel.find({
-        team,
-        venues: venue._id,
-        status: {
-          $in: [ChoicesStatusInventory.inProcess]
-        }
-      }, {
-        _id: true,
-        name: true
-      });
-      res.json({
-        data: inventories,
-        status: 200
-      });
+      const updatedUser = await User.findById(req.user._id);
+      if (updatedUser) {
+        const inventories = await InventoryModel.find({
+          team,
+          venues: updatedUser.venue,
+          status: {
+            $in: [ChoicesStatusInventory.inProcess]
+          }
+        }, {
+          _id: true,
+          name: true
+        });
+        res.json({
+          data: inventories,
+          status: 200
+        });
+      } else {
+        res.status(400).json({
+          message: 'Usuario no encontrado',
+          status: 400
+        });
+      }
     } catch (e) {
       res.status(400).json({
         message: e,

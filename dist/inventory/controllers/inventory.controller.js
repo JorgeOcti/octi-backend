@@ -6,6 +6,7 @@ const mongoose = require("mongoose");
 const car_model_1 = require("../../app/models/car.model");
 const car_model_2 = require("../../app/models/car.model");
 const user_model_1 = require("../../app/models/user.model");
+const user_model_2 = require("../../app/models/user.model");
 const venue_model_1 = require("../../app/models/venue.model");
 const server_1 = require("../../server");
 const push_service_1 = require("../../services/push.service");
@@ -645,22 +646,31 @@ class InventoryController {
         }
     }
     async apiList(req, res) {
-        const { team, venue } = req.user;
+        const { team } = req.user;
         try {
-            const inventories = await inventory_model_1.default.find({
-                team,
-                venues: venue._id,
-                status: {
-                    $in: [inventory_model_1.ChoicesStatusInventory.inProcess]
-                }
-            }, {
-                _id: true,
-                name: true
-            });
-            res.json({
-                data: inventories,
-                status: 200
-            });
+            const updatedUser = await user_model_2.default.findById(req.user._id);
+            if (updatedUser) {
+                const inventories = await inventory_model_1.default.find({
+                    team,
+                    venues: updatedUser.venue,
+                    status: {
+                        $in: [inventory_model_1.ChoicesStatusInventory.inProcess]
+                    }
+                }, {
+                    _id: true,
+                    name: true
+                });
+                res.json({
+                    data: inventories,
+                    status: 200
+                });
+            }
+            else {
+                res.status(400).json({
+                    message: 'Usuario no encontrado',
+                    status: 400
+                });
+            }
         }
         catch (e) {
             res.status(400).json({
