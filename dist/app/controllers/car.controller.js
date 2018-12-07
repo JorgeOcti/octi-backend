@@ -87,7 +87,7 @@ class CarController {
         let { vin, vin2 } = req.body;
         const { inventory } = req.body;
         // const {multi} = req.query;
-        const company = req.user.company;
+        const { team, company } = req.user;
         /*
           {
             $group: {
@@ -113,7 +113,7 @@ class CarController {
                 }
                 else {
                     const inventoryQuery = {
-                        company
+                        team
                     };
                     if (vin) {
                         inventoryQuery.vin = vin;
@@ -141,7 +141,7 @@ class CarController {
                         }, {});
                         const inventoriedCar = await inventory_model_1.default.findOne({
                             _id: inventory,
-                            company,
+                            team,
                             status: inventory_model_1.ChoicesStatusInventory.inProcess
                         }, {
                             'cars.car': true,
@@ -216,11 +216,12 @@ class CarController {
                     const brand = this.carBrands.hasOwnProperty(indexBrand) ? this.carBrands[indexBrand] : null;
                     const car = await car_model_1.default.findOneOrCreate({
                         vin,
-                        company
+                        team
                     }, {
                         vin,
                         vin2,
                         company,
+                        team,
                         brand,
                         status: car_model_1.ChoicesStatusCar.active
                     });
@@ -249,7 +250,7 @@ class CarController {
                     const vinRegex = new RegExp('[a-zA-Z0]' + vin2.substr(vin2.length - 5), 'i');
                     const car = await car_model_1.default.find({
                         vin2: vin2 && vin2[0] === '0' ? { $regex: vinRegex } : vin2,
-                        company
+                        team
                     }, {
                         vin: true,
                         vin2: true,

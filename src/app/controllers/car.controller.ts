@@ -92,7 +92,7 @@ class CarController {
     let {vin, vin2} = req.body;
     const {inventory} = req.body;
     // const {multi} = req.query;
-    const company = req.user.company;
+    const {team, company} = req.user;
     /*
       {
         $group: {
@@ -117,7 +117,7 @@ class CarController {
           });
         } else {
           const inventoryQuery: any = {
-            company
+            team
           };
           if (vin) {
             inventoryQuery.vin = vin;
@@ -144,7 +144,7 @@ class CarController {
             }, {});
             const inventoriedCar = await InventoryModel.findOne({
               _id: inventory,
-              company,
+              team,
               status: ChoicesStatusInventory.inProcess
             }, {
               'cars.car': true,
@@ -214,11 +214,12 @@ class CarController {
           const brand = this.carBrands.hasOwnProperty(indexBrand) ? this.carBrands[indexBrand] : null;
           const car = await CarModel.findOneOrCreate({
             vin,
-            company
+            team
           }, {
             vin,
             vin2,
             company,
+            team,
             brand,
             status: ChoicesStatusCar.active
           });
@@ -245,7 +246,7 @@ class CarController {
           const vinRegex = new RegExp('[a-zA-Z0]' + vin2.substr(vin2.length - 5), 'i');
           const car = await CarModel.find({
             vin2: vin2 && vin2[0] === '0' ? {$regex: vinRegex} : vin2,
-            company
+            team
           }, {
             vin: true,
             vin2: true,
