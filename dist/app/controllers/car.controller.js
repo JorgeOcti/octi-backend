@@ -60,7 +60,7 @@ class CarController {
     }
     async vinDashboardDetail(req, res) {
         const { id } = req.params;
-        const company = req.user.company;
+        const { team } = req.user;
         // validate params
         if (!mongoose.Types.ObjectId.isValid(id)) {
             return res.status(404).render('404');
@@ -68,7 +68,19 @@ class CarController {
         try {
             // validate car exist
             const car = await car_model_1.default.findOne({
-                _id: id, company
+                _id: id,
+                lastForm: {
+                    $exists: true,
+                    $ne: null,
+                    $in: await participant_model_1.default.find({
+                        venue: {
+                            $in: req.user.venuesPermissions()
+                        }
+                    }, {
+                        _id: true
+                    })
+                },
+                team
             });
             if (!car) {
                 return res.status(404).render('404');
@@ -559,11 +571,15 @@ class CarController {
     }
     async apiParticipantDetail(req, res) {
         const { id } = req.params;
-        const company = req.user.company;
+        const { team } = req.user;
         try {
             const participant = await participant_model_1.default
                 .findOne({
-                _id: id, company
+                _id: id,
+                team,
+                venue: {
+                    $in: req.user.venuesPermissions()
+                }
             }, {
                 name: true,
                 user: true,
@@ -613,11 +629,13 @@ class CarController {
         }
     }
     async apiCarDetail(req, res) {
+        const { team } = req.user;
         const { id } = req.params;
         try {
             const car = await car_model_1.default
                 .findOne({
-                _id: id
+                _id: id,
+                team
             }, {
                 vin: true,
                 brand: true,
@@ -627,7 +645,7 @@ class CarController {
                 .populate([{
                     // reverse populate
                     path: 'participants',
-                    select: ['name', 'user', 'createdAt', 'qualification'],
+                    select: ['name', 'user', 'createdAt', 'qualification', 'venue'],
                     match: {
                         venue: {
                             $in: req.user.venuesPermissions()
@@ -640,6 +658,9 @@ class CarController {
                     },
                     // deep populate user
                     populate: [{
+                            path: 'venue',
+                            select: ['name']
+                        }, {
                             path: 'user',
                             select: ['firstName', 'lastName']
                         }]
@@ -684,6 +705,9 @@ class CarController {
                     populate: [{
                             path: 'user',
                             select: ['firstName', 'lastName']
+                        }, {
+                            path: 'venue',
+                            select: ['name']
                         }]
                 }],
             sort: {
@@ -695,15 +719,13 @@ class CarController {
         try {
             const cars = await this.getCars({
                 lastForm: {
+                    $exists: true,
+                    $ne: null,
                     $in: await participant_model_1.default.find({
                         venue: {
                             $in: req.user.venuesPermissions()
                         }
-                    }, {
-                        _id: true
-                    }),
-                    $exists: true,
-                    $ne: null
+                    })
                 }
             }, options, search);
             // validate exist page

@@ -270,6 +270,7 @@ class FormController {
           // initialize participant
           const participantObject: any = {
             name: form.name,
+            team,
             company,
             form: form._id,
             car,

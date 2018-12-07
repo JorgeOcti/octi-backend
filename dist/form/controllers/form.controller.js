@@ -263,6 +263,7 @@ class FormController {
                     // initialize participant
                     const participantObject = {
                         name: form.name,
+                        team,
                         company,
                         form: form._id,
                         car,

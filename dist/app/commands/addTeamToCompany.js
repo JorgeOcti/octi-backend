@@ -9,6 +9,7 @@ const scale_model_1 = require("../../form/models/scale.model");
 const inventory_model_1 = require("../../inventory/models/inventory.model");
 const car_model_1 = require("../models/car.model");
 const company_model_1 = require("../models/company.model");
+const participant_model_1 = require("../../form/models/participant.model");
 const team_model_1 = require("../models/team.model");
 const user_model_1 = require("../models/user.model");
 const venue_model_1 = require("../models/venue.model");
@@ -56,6 +57,8 @@ async function addTeamToCompany() {
             await inventory_model_1.default.update({ company }, { team }, { multi: true });
             // assing teams
             await form_model_1.default.update({ company }, { team }, { multi: true });
+            // assing participants
+            await participant_model_1.default.update({ company }, { team }, { multi: true });
             // assing teams
             await scale_model_1.default.update({ company }, { team }, { multi: true });
             // assign Venues

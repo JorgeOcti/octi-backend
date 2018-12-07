@@ -13,6 +13,7 @@ import {
 } from '../form/models/participant.model';
 import {IParticipantFile} from './participantFile.interface';
 import {IVenueModel} from "../app/models/venue.model";
+import {ITeamModel} from "../app/models/team.model";
 
 export interface IParticipantChoices {
   choice: string;
@@ -83,6 +84,7 @@ export interface IParticipant {
   name: string;
 
   form: IFormModel;
+  team: ITeamModel;
   company: ICompanyModel;
 
   user: IUserModel;

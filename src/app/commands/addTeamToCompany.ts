@@ -7,6 +7,7 @@ import Scale from '../../form/models/scale.model';
 import Inventory from '../../inventory/models/inventory.model';
 import Car from '../models/car.model';
 import Company from '../models/company.model';
+import Participant from '../../form/models/participant.model';
 import Team from '../models/team.model';
 import User from '../models/user.model';
 import Venue from '../models/venue.model';
@@ -55,6 +56,8 @@ async function addTeamToCompany() {
       await Inventory.update({company}, {team}, {multi: true});
       // assing teams
       await Form.update({company}, {team}, {multi: true});
+      // assing participants
+      await Participant.update({company}, {team}, {multi: true});
       // assing teams
       await Scale.update({company}, {team}, {multi: true});
       // assign Venues

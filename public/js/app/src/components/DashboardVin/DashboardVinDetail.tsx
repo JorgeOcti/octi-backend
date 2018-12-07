@@ -146,6 +146,7 @@ class DashboardVinDetail extends React.Component<IPropsType, IStateType> {
                     <th>Fecha</th>
                     <th>Formulario</th>
                     <th className="hidden-xs">Supervisor</th>
+                    <th className="hidden-xs">Sucursal</th>
                     <th className="hidden-xs">Calificación</th>
                     <th className="width-10"/>
                   </tr>
@@ -157,6 +158,7 @@ class DashboardVinDetail extends React.Component<IPropsType, IStateType> {
                       <td className="middle">{moment(participant.createdAt).format('LLL')}</td>
                       <td className="middle">{participant.name}</td>
                       <td className="middle hidden-xs">{participant.user ? participant.user.firstName : ''} {participant.user ? participant.user.lastName : ''}</td>
+                      <td className="middle hidden-xs">{participant.venue ? participant.venue.name : '-'}</td>
                       <td className="middle hidden-xs">{Math.round(participant.qualification)}%</td>
                       <td className="middle pointer">
                         <button
