@@ -2,6 +2,7 @@ import * as bluebird from 'bluebird';
 import * as dotenv from 'dotenv';
 import * as mongoose from 'mongoose';
 import * as path from 'path';
+import Form from '../../form/models/form.model';
 import Inventory from '../../inventory/models/inventory.model';
 import Car from '../models/car.model';
 import Company from '../models/company.model';
@@ -51,6 +52,8 @@ async function addTeamToCompany() {
       await Car.update({company}, {team}, {multi: true});
       // assing teams
       await Inventory.update({company}, {team}, {multi: true});
+      // assing teams
+      await Form.update({company}, {team}, {multi: true});
       // assign Venues
       await User.update({company}, {team}, {multi: true});
       // assign Venues

@@ -5,7 +5,9 @@ import * as moment from 'moment-timezone';
 import {queue} from '../../app';
 import Alert from '../../app/models/alert.model';
 import CarModel from '../../app/models/car.model';
+import Company from '../../app/models/company.model';
 import UserModel from '../../app/models/user.model';
+import User from '../../app/models/user.model';
 import {IAnyObject, IRequest} from '../../interfaces/global.interface';
 import {io} from '../../server';
 import redisClient from '../../services/redis.service';
@@ -13,8 +15,6 @@ import FormModel, {IFormModel} from '../models/form.model';
 import ParticipantModel from '../models/participant.model';
 import ParticipantFile from '../models/participantFile.model';
 import ScaleModel, {IScaleModel} from '../models/scale.model';
-import User from "../../app/models/user.model";
-import Company from "../../app/models/company.model";
 // import * as cp from 'console-probe';
 
 class FormController {
@@ -28,17 +28,15 @@ class FormController {
   }
 
   public async list(req: IRequest, res: Response) {
-    const {company} = req.user;
+    const {team} = req.user;
     try {
       const updatedUser = await User.findById(req.user._id).populate([{
         path: 'userForms',
         select: ['_id']
       }]);
       if (updatedUser) {
-        const forms = await this.getForms(company, {
-          _id: {
-            $in: updatedUser.userForms.map((form) => form._id)
-          }
+        const forms = await this.getForms({
+          team
         });
         res.json({
           data: forms,
@@ -60,14 +58,14 @@ class FormController {
 
   public async detail(req: IRequest, res: Response): Promise<any> {
     const {id} = req.params;
-    const company = req.user.company;
+    const {team} = req.user;
     if (req.user.userForms.filter((form) => form._id.toString() === id).length === 0) {
       return res.status(403).json({
         message: 'No tienes permisos para esta operación'
       });
     }
     try {
-      const form = await this.getForm(id, company);
+      const form = await this.getForm({_id: id, team});
       // generate array of scale ids
       const scalesIds: any[] = [];
       form.sections.forEach((section) => {
@@ -205,7 +203,9 @@ class FormController {
           delete (form as any)[key];
         }
       });
-      let scales = await this.getScales(scalesIds, company);
+      let scales = await this.getScales({
+        _id: {$in: scalesIds}, team
+      });
 
       scales = [...scales, ...extraScales];
       if (extraSection.questions.length) {
@@ -626,18 +626,7 @@ class FormController {
     });
   }
 
-  private getForms(company: ObjectID, filter?: any): Promise<IFormModel[]> {
-    // const keyCache = `forms${filter ? JSON.stringify(filter) : ''}`;
-    if (filter) {
-      filter = {
-        company,
-        ...filter
-      };
-    } else {
-      filter = {
-        company
-      };
-    }
+  private getForms(filter: any): Promise<IFormModel[]> {
     return new Promise((resolve, reject) => {
       FormModel
         .find(filter, {
@@ -654,8 +643,8 @@ class FormController {
     });
   }
 
-  private getForm(id: string, company: ObjectID): Promise<IFormModel> {
-    const keyCache = `form-${id}`;
+  private getForm(filter: any): Promise<IFormModel> {
+    const keyCache = `form-${filter._id}`;
     return new Promise((resolve, reject) => {
       redisClient.get(keyCache, async (error, result) => {
         if (result) {
@@ -663,7 +652,7 @@ class FormController {
           resolve(JSON.parse(result));
         } else {
           FormModel
-            .findOne({_id: id, company}, {
+            .findOne(filter, {
               'company': false,
               'updatedAt': false,
               'createdAt': false,
@@ -705,18 +694,15 @@ class FormController {
     });
   }
 
-  private getScales(ids: any[], company: ObjectID): Promise<IScaleModel[]> {
-    const keyCache = `scales-${ids.toString()}`;
+  private getScales(filter: any): Promise<IScaleModel[]> {
+    const keyCache = `scales-${JSON.stringify(filter)}`;
     return new Promise((resolve, reject) => {
       redisClient.get(keyCache, async (error, result) => {
         if (result) {
           resolve(JSON.parse(result));
         } else {
           ScaleModel
-            .find({
-              _id: {$in: ids},
-              company
-            }, {
+            .find(filter, {
               'updatedAt': false,
               'createdAt': false,
               'active': false,

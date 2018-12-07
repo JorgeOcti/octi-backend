@@ -6,15 +6,15 @@ const moment = require("moment-timezone");
 const app_1 = require("../../app");
 const alert_model_1 = require("../../app/models/alert.model");
 const car_model_1 = require("../../app/models/car.model");
+const company_model_1 = require("../../app/models/company.model");
 const user_model_1 = require("../../app/models/user.model");
+const user_model_2 = require("../../app/models/user.model");
 const server_1 = require("../../server");
 const redis_service_1 = require("../../services/redis.service");
 const form_model_1 = require("../models/form.model");
 const participant_model_1 = require("../models/participant.model");
 const participantFile_model_1 = require("../models/participantFile.model");
 const scale_model_1 = require("../models/scale.model");
-const user_model_2 = require("../../app/models/user.model");
-const company_model_1 = require("../../app/models/company.model");
 // import * as cp from 'console-probe';
 class FormController {
     constructor() {
@@ -25,17 +25,15 @@ class FormController {
         this.uploadFile = this.uploadFile.bind(this);
     }
     async list(req, res) {
-        const { company } = req.user;
+        const { team } = req.user;
         try {
             const updatedUser = await user_model_2.default.findById(req.user._id).populate([{
                     path: 'userForms',
                     select: ['_id']
                 }]);
             if (updatedUser) {
-                const forms = await this.getForms(company, {
-                    _id: {
-                        $in: updatedUser.userForms.map((form) => form._id)
-                    }
+                const forms = await this.getForms({
+                    team
                 });
                 res.json({
                     data: forms,
@@ -58,14 +56,14 @@ class FormController {
     }
     async detail(req, res) {
         const { id } = req.params;
-        const company = req.user.company;
+        const { team } = req.user;
         if (req.user.userForms.filter((form) => form._id.toString() === id).length === 0) {
             return res.status(403).json({
                 message: 'No tienes permisos para esta operación'
             });
         }
         try {
-            const form = await this.getForm(id, company);
+            const form = await this.getForm({ _id: id, team });
             // generate array of scale ids
             const scalesIds = [];
             form.sections.forEach((section) => {
@@ -201,7 +199,9 @@ class FormController {
                     delete form[key];
                 }
             });
-            let scales = await this.getScales(scalesIds, company);
+            let scales = await this.getScales({
+                _id: { $in: scalesIds }, team
+            });
             scales = [...scales, ...extraScales];
             if (extraSection.questions.length) {
                 form.sections = [...form.sections, extraSection];
@@ -615,19 +615,7 @@ class FormController {
             });
         });
     }
-    getForms(company, filter) {
-        // const keyCache = `forms${filter ? JSON.stringify(filter) : ''}`;
-        if (filter) {
-            filter = {
-                company,
-                ...filter
-            };
-        }
-        else {
-            filter = {
-                company
-            };
-        }
+    getForms(filter) {
         return new Promise((resolve, reject) => {
             form_model_1.default
                 .find(filter, {
@@ -643,8 +631,8 @@ class FormController {
             });
         });
     }
-    getForm(id, company) {
-        const keyCache = `form-${id}`;
+    getForm(filter) {
+        const keyCache = `form-${filter._id}`;
         return new Promise((resolve, reject) => {
             redis_service_1.default.get(keyCache, async (error, result) => {
                 if (result) {
@@ -653,7 +641,7 @@ class FormController {
                 }
                 else {
                     form_model_1.default
-                        .findOne({ _id: id, company }, {
+                        .findOne(filter, {
                         'company': false,
                         'updatedAt': false,
                         'createdAt': false,
@@ -693,8 +681,8 @@ class FormController {
             });
         });
     }
-    getScales(ids, company) {
-        const keyCache = `scales-${ids.toString()}`;
+    getScales(filter) {
+        const keyCache = `scales-${JSON.stringify(filter)}`;
         return new Promise((resolve, reject) => {
             redis_service_1.default.get(keyCache, async (error, result) => {
                 if (result) {
@@ -702,10 +690,7 @@ class FormController {
                 }
                 else {
                     scale_model_1.default
-                        .find({
-                        _id: { $in: ids },
-                        company
-                    }, {
+                        .find(filter, {
                         'updatedAt': false,
                         'createdAt': false,
                         'active': false,

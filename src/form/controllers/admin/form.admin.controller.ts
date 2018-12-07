@@ -1,6 +1,5 @@
 import {Response} from 'express';
 import {PaginateOptions, PaginateResult} from 'mongoose';
-import Company from '../../../app/models/company.model';
 import {IRequest} from '../../../interfaces/global.interface';
 import Form, {IFormModel} from '../../models/form.model';
 
@@ -31,9 +30,7 @@ class AdminFormsController {
     };
     try {
       const forms = await this.getForms({
-        company: {
-          $in: await Company.find(team, {_id: true})
-        }
+        team
       }, options);
       // validate exist page
       if (options.page && forms.pages && forms.pages < options.page) {

@@ -4,6 +4,7 @@ const bluebird = require("bluebird");
 const dotenv = require("dotenv");
 const mongoose = require("mongoose");
 const path = require("path");
+const form_model_1 = require("../../form/models/form.model");
 const inventory_model_1 = require("../../inventory/models/inventory.model");
 const car_model_1 = require("../models/car.model");
 const company_model_1 = require("../models/company.model");
@@ -52,6 +53,8 @@ async function addTeamToCompany() {
             await car_model_1.default.update({ company }, { team }, { multi: true });
             // assing teams
             await inventory_model_1.default.update({ company }, { team }, { multi: true });
+            // assing teams
+            await form_model_1.default.update({ company }, { team }, { multi: true });
             // assign Venues
             await user_model_1.default.update({ company }, { team }, { multi: true });
             // assign Venues

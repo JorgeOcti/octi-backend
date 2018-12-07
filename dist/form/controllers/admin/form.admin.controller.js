@@ -1,6 +1,5 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-const company_model_1 = require("../../../app/models/company.model");
 const form_model_1 = require("../../models/form.model");
 class AdminFormsController {
     constructor() {
@@ -26,9 +25,7 @@ class AdminFormsController {
         };
         try {
             const forms = await this.getForms({
-                company: {
-                    $in: await company_model_1.default.find(team, { _id: true })
-                }
+                team
             }, options);
             // validate exist page
             if (options.page && forms.pages && forms.pages < options.page) {
