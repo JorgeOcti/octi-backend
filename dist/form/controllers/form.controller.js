@@ -33,6 +33,9 @@ class FormController {
                 }]);
             if (updatedUser) {
                 const forms = await this.getForms({
+                    _id: {
+                        $in: updatedUser.userForms.map((form) => form._id)
+                    },
                     team
                 });
                 res.json({
