@@ -6,7 +6,6 @@ const moment = require("moment-timezone");
 const app_1 = require("../../app");
 const alert_model_1 = require("../../app/models/alert.model");
 const car_model_1 = require("../../app/models/car.model");
-const company_model_1 = require("../../app/models/company.model");
 const user_model_1 = require("../../app/models/user.model");
 const user_model_2 = require("../../app/models/user.model");
 const server_1 = require("../../server");
@@ -251,19 +250,14 @@ class FormController {
         }
         vin = vin.replace(/[\W_]+/g, '');
         try {
-            const companiesIds = await company_model_1.default.find({ team }, { _id: true });
             const car = await car_model_1.default.findOne({
                 $or: [{ vin: { $eq: vin } }, { vin2: { $eq: vin } }],
-                company: {
-                    $in: companiesIds
-                }
+                team
             });
             if (car) {
                 const form = await this.getFormWithScale({
                     _id: id,
-                    company: {
-                        $in: companiesIds
-                    }
+                    team
                 });
                 if (form) {
                     // initialize participant

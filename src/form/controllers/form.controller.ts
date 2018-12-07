@@ -5,7 +5,6 @@ import * as moment from 'moment-timezone';
 import {queue} from '../../app';
 import Alert from '../../app/models/alert.model';
 import CarModel from '../../app/models/car.model';
-import Company from '../../app/models/company.model';
 import UserModel from '../../app/models/user.model';
 import User from '../../app/models/user.model';
 import {IAnyObject, IRequest} from '../../interfaces/global.interface';
@@ -258,19 +257,14 @@ class FormController {
     }
     vin = vin.replace(/[\W_]+/g, '');
     try {
-      const companiesIds = await Company.find({team}, {_id: true});
       const car = await CarModel.findOne({
         $or: [{vin: {$eq: vin}}, {vin2: {$eq: vin}}],
-        company: {
-          $in: companiesIds
-        }
+        team
       });
       if (car) {
         const form = await this.getFormWithScale({
           _id: id,
-          company: {
-            $in: companiesIds
-          }
+          team
         });
         if (form) {
           // initialize participant
