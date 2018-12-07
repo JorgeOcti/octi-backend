@@ -200,7 +200,10 @@ class FormController {
                 }
             });
             let scales = await this.getScales({
-                _id: { $in: scalesIds }, team
+                _id: {
+                    $in: scalesIds
+                },
+                team
             });
             scales = [...scales, ...extraScales];
             if (extraSection.questions.length) {
