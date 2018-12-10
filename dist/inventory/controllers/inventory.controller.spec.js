@@ -3,7 +3,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const chai = require("chai");
 const chaiHttp = require("chai-http");
 require("mocha");
-const server_1 = require("../server");
+const server_1 = require("../../server");
 chai.use(chaiHttp);
 const expect = chai.expect;
 let token = '';
@@ -44,4 +44,4 @@ describe('inventories', () => {
         });
     });
 });
-//# sourceMappingURL=inventory.spec.js.map
+//# sourceMappingURL=inventory.controller.spec.js.map

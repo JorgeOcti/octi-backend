@@ -574,12 +574,12 @@ class FormController {
     }
     async changePreferred(req, res) {
         let { form } = req.body;
-        const company = req.user.company;
+        const { team } = req.user;
         try {
-            const user = await user_model_1.default.findOne({ _id: req.user._id, company, active: true });
+            const user = await user_model_1.default.findOne({ _id: req.user._id, team, active: true });
             // validate exist user
             if (user) {
-                form = await form_model_1.default.findOne({ _id: form, company });
+                form = await form_model_1.default.findOne({ _id: form, team });
                 // validate exist form
                 if (form) {
                     user.preferred = form;

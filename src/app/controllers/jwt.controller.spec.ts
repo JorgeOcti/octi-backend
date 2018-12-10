@@ -1,7 +1,7 @@
 import * as chai from 'chai';
 import chaiHttp = require('chai-http');
 import 'mocha';
-import server from '../server';
+import server from '../../server';
 
 chai.use(chaiHttp);
 const expect = chai.expect;
@@ -38,7 +38,6 @@ describe('login', () => {
           'team',
           'count'
         ]);
-        // token = res.body.data.token;
         done();
       });
   });

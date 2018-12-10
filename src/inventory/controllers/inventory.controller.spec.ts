@@ -1,8 +1,8 @@
 import * as chai from 'chai';
 import chaiHttp = require('chai-http');
 import 'mocha';
-import {IInventory} from '../interfaces/inventory.interface';
-import server from '../server';
+import {IInventory} from '../../interfaces/inventory.interface';
+import server from '../../server';
 
 chai.use(chaiHttp);
 const expect = chai.expect;

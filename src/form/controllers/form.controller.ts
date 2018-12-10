@@ -587,12 +587,12 @@ class FormController {
 
   public async changePreferred(req: IRequest, res: Response) {
     let {form} = req.body;
-    const company = req.user.company;
+    const {team} = req.user;
     try {
-      const user = await UserModel.findOne({_id: req.user._id, company,  active: true});
+      const user = await UserModel.findOne({_id: req.user._id, team,  active: true});
       // validate exist user
       if (user) {
-        form = await FormModel.findOne({_id: form, company});
+        form = await FormModel.findOne({_id: form, team});
         // validate exist form
         if (form) {
           user.preferred = form;
