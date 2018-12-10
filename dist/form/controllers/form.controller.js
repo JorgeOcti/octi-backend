@@ -637,7 +637,7 @@ class FormController {
         return new Promise((resolve, reject) => {
             redis_service_1.default.get(keyCache, async (error, result) => {
                 if (result) {
-                    console.log(`cache: ${keyCache}`);
+                    // console.log(`cache: ${keyCache}`);
                     resolve(JSON.parse(result));
                 }
                 else {
