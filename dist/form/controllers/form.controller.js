@@ -83,6 +83,7 @@ class FormController {
                 _id: '',
                 name: '',
                 questions: [],
+                weight: 0,
                 order: form.sections.length + 1
             };
             const extraScales = [];
@@ -91,7 +92,12 @@ class FormController {
                     _id: 'shipping',
                     question: form.shippingText,
                     scale: 'shipping',
-                    conciliation: false
+                    conciliation: false,
+                    risk: '',
+                    observe: '',
+                    accessories: null,
+                    weight: 0,
+                    order: 1000
                 });
                 extraScales.push({
                     _id: 'shipping',
@@ -118,8 +124,7 @@ class FormController {
                             value: 1,
                             order: 2
                         }
-                    ],
-                    order: extraScales.length + 1
+                    ]
                 });
             }
             if (form.reception) {
@@ -127,7 +132,12 @@ class FormController {
                     _id: 'reception',
                     question: form.receptionText,
                     scale: 'reception',
-                    conciliation: false
+                    conciliation: false,
+                    risk: '',
+                    observe: '',
+                    accessories: null,
+                    weight: 0,
+                    order: 1000
                 });
                 extraScales.push({
                     _id: 'reception',
@@ -154,8 +164,7 @@ class FormController {
                             value: 1,
                             order: 2
                         }
-                    ],
-                    order: extraScales.length + 1
+                    ]
                 });
             }
             if (form.conciliation) {
@@ -163,7 +172,12 @@ class FormController {
                     _id: 'conciliation',
                     question: form.conciliationText,
                     scale: 'conciliation',
-                    conciliation: true
+                    conciliation: false,
+                    risk: '',
+                    observe: '',
+                    accessories: null,
+                    weight: 0,
+                    order: 1000
                 });
                 extraScales.push({
                     _id: 'conciliation',
@@ -190,8 +204,7 @@ class FormController {
                             value: 1,
                             order: 2
                         }
-                    ],
-                    order: extraScales.length + 1
+                    ]
                 });
             }
             // delete keys from object returned by api
@@ -699,6 +712,7 @@ class FormController {
                         'minValue': false,
                         'maxValue': false,
                         'choices.na': false,
+                        'team': false,
                         '__v': false
                     })
                         .lean()

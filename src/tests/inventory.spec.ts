@@ -8,7 +8,7 @@ chai.use(chaiHttp);
 const expect = chai.expect;
 
 let token = '';
-describe('Inventories', () => {
+describe('inventories', () => {
 
   beforeEach((done) => {
     chai.request(server)

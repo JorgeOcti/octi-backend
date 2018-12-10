@@ -6,7 +6,7 @@ require("mocha");
 const server_1 = require("../server");
 chai.use(chaiHttp);
 const expect = chai.expect;
-describe('Login', () => {
+describe('login', () => {
     it('it should login successful', (done) => {
         chai.request(server_1.default)
             .post('/api/v1/login/')

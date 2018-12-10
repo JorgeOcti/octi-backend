@@ -7,7 +7,7 @@ const server_1 = require("../server");
 chai.use(chaiHttp);
 const expect = chai.expect;
 let token = '';
-describe('Inventories', () => {
+describe('inventories', () => {
     beforeEach((done) => {
         chai.request(server_1.default)
             .post('/api/v1/login/')

@@ -8,7 +8,7 @@ const server_1 = require("../server");
 chai.use(chaiHttp);
 const expect = chai.expect;
 let token = '';
-describe('Formularies', () => {
+describe('formularies', () => {
     beforeEach((done) => {
         chai.request(server_1.default)
             .post('/api/v1/login/')
@@ -75,34 +75,39 @@ describe('Formularies', () => {
             ]);
             expect(res.body.data.form.sections).be.a('array');
             // validate sections keys
-            expect(res.body.data.form.sections[0]).to.have.all.keys([
-                '_id',
-                'name',
-                'weight',
-                'questions',
-                'order'
-            ]);
-            // validate question keys
-            expect(res.body.data.form.sections[0].questions).be.a('array');
-            expect(res.body.data.form.sections[0].questions[0]).to.have.all.keys([
-                '_id',
-                'question',
-                'scale',
-                'risk',
-                'accessories',
-                'conciliation',
-                'observe',
-                'weight',
-                'order'
-            ]);
+            for (const section of res.body.data.form.sections) {
+                expect(section).to.have.all.keys([
+                    '_id',
+                    'name',
+                    'weight',
+                    'questions',
+                    'order'
+                ]);
+                // validate question keys
+                expect(section.questions).be.a('array');
+                for (const question of section.questions) {
+                    expect(question).to.have.all.keys([
+                        '_id',
+                        'question',
+                        'scale',
+                        'risk',
+                        'accessories',
+                        'conciliation',
+                        'observe',
+                        'weight',
+                        'order'
+                    ]);
+                }
+            }
             // validate scales keys
             expect(res.body.data.scales).be.a('array');
-            expect(res.body.data.scales[0]).to.have.all.keys([
-                '_id',
-                'name',
-                'choices',
-                'team'
-            ]);
+            for (const scale of res.body.data.scales) {
+                expect(scale).to.have.all.keys([
+                    '_id',
+                    'name',
+                    'choices'
+                ]);
+            }
             // validate choice keys
             expect(res.body.data.scales[0].choices).be.a('array');
             expect(res.body.data.scales[0].choices[0]).to.have.all.keys([

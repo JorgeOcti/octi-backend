@@ -6,7 +6,7 @@ import server from '../server';
 chai.use(chaiHttp);
 const expect = chai.expect;
 
-describe('Login', () => {
+describe('login', () => {
 
   it('it should login successful', (done) => {
     chai.request(server)
