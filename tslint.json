@@ -16,7 +16,7 @@
         }],
         "no-shadowed-variable": false,
         "member-access": true,
-        "max-line-length": [true, 500],
+        "max-line-length": [true, 10000],
         "object-literal-sort-keys": false,
         "no-trailing-whitespace": [true],
         "no-unused-variable": [true, "react"],

@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "nodemon --inspect dist/server.js -e js,jade",
     "watch-ts": "tsc -w",
-    "test": "mocha --recursive --require ts-node/register \"src/tests/**/*.ts\" --timeout 5000 --exit",
+    "test": "ENV=testing ts-mocha -p tsconfig.json --recursive src/tests/*.spec.ts --timeout 5000 --exit",
     "test-with-coverage": "nyc --reporter=html --reporter=text mocha dist/tests --timeout 5000 --exit"
   },
   "author": "",
@@ -113,8 +113,10 @@
     "npm": "^6.4.1",
     "nyc": "^13.1.0",
     "source-map-support": "^0.5.9",
+    "ts-mocha": "^2.0.0",
     "ts-node": "^7.0.1",
-    "typescript": "^3.1.6"
+    "typescript": "^3.1.6",
+    "typings": "^2.1.1"
   },
   "nodemonConfig": {
     "ignore": [

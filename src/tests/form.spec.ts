@@ -1,23 +1,34 @@
 import * as chai from 'chai';
-// import { expect } from 'chai';
 import chaiHttp = require('chai-http');
 import 'mocha';
-process.env.ENV = 'testing';
-import app from '../app';
-app.set('env', 'testing');
 import {IFormModel} from '../form/models/form.model';
 import server from '../server';
 
 // chai.should();
 chai.use(chaiHttp);
 const expect = chai.expect;
+let token = '';
+describe('Formularies', () => {
 
-describe('Forms', () => {
+  beforeEach((done) => {
+    chai.request(server)
+      .post('/api/v1/login/')
+      .send({
+        username: 'gmunoz@osacontrol.com',
+        password: '123'
+      })
+      .end((err, res) => {
+        token = res.body.data.token;
+        done();
+      });
+  });
+
   describe('/GET ', () => {
     let firstForm: any = '';
     it('get apiListAlerts forms', (done) => {
       chai.request(server)
         .get('/api/v1/forms/')
+        .set('Authorization', `JWT ${token}`)
         .end((err, res) => {
 
           expect(res.status).to.equal(200);
@@ -42,6 +53,7 @@ describe('Forms', () => {
     it('get detail form', (done) => {
       chai.request(server)
         .get(`/api/v1/forms/${firstForm._id.toString()}`)
+        .set('Authorization', `JWT ${token}`)
         .end((err, res) => {
           expect(res.status).to.equal(200);
           expect(res.body).have.property('data');
@@ -53,6 +65,7 @@ describe('Forms', () => {
           expect(res.body.status).to.equal(200);
           expect(res.body.data).be.a('object');
           expect(res.body.data).to.have.all.keys([
+            'extra',
             'form',
             'scales'
           ]);
@@ -61,7 +74,8 @@ describe('Forms', () => {
             '_id',
             'name',
             'description',
-            'sections'
+            'sections',
+            'team'
           ]);
           expect(res.body.data.form.sections).be.a('array');
           // validate sections keys
@@ -79,6 +93,8 @@ describe('Forms', () => {
             'question',
             'scale',
             'risk',
+            'accessories',
+            'conciliation',
             'observe',
             'weight',
             'order'
@@ -88,7 +104,8 @@ describe('Forms', () => {
           expect(res.body.data.scales[0]).to.have.all.keys([
             '_id',
             'name',
-            'choices'
+            'choices',
+            'team'
           ]);
           // validate choice keys
           expect(res.body.data.scales[0].choices).be.a('array');
@@ -97,7 +114,9 @@ describe('Forms', () => {
             'choice',
             'requireImage',
             'backgroundColor',
+            'requireAccesories',
             'requireComment',
+            'requireConciliation',
             'value',
             'order'
           ]);

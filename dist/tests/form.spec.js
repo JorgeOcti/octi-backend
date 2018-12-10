@@ -1,22 +1,32 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 const chai = require("chai");
-// import { expect } from 'chai';
 const chaiHttp = require("chai-http");
 require("mocha");
-process.env.ENV = 'testing';
-const app_1 = require("../app");
-app_1.default.set('env', 'testing');
 const server_1 = require("../server");
 // chai.should();
 chai.use(chaiHttp);
 const expect = chai.expect;
-describe('Forms', () => {
+let token = '';
+describe('Formularies', () => {
+    beforeEach((done) => {
+        chai.request(server_1.default)
+            .post('/api/v1/login/')
+            .send({
+            username: 'gmunoz@osacontrol.com',
+            password: '123'
+        })
+            .end((err, res) => {
+            token = res.body.data.token;
+            done();
+        });
+    });
     describe('/GET ', () => {
         let firstForm = '';
         it('get apiListAlerts forms', (done) => {
             chai.request(server_1.default)
                 .get('/api/v1/forms/')
+                .set('Authorization', `JWT ${token}`)
                 .end((err, res) => {
                 expect(res.status).to.equal(200);
                 expect(res.body).to.have.all.keys([
@@ -40,6 +50,7 @@ describe('Forms', () => {
         it('get detail form', (done) => {
             chai.request(server_1.default)
                 .get(`/api/v1/forms/${firstForm._id.toString()}`)
+                .set('Authorization', `JWT ${token}`)
                 .end((err, res) => {
                 expect(res.status).to.equal(200);
                 expect(res.body).have.property('data');
@@ -51,6 +62,7 @@ describe('Forms', () => {
                 expect(res.body.status).to.equal(200);
                 expect(res.body.data).be.a('object');
                 expect(res.body.data).to.have.all.keys([
+                    'extra',
                     'form',
                     'scales'
                 ]);
@@ -59,7 +71,8 @@ describe('Forms', () => {
                     '_id',
                     'name',
                     'description',
-                    'sections'
+                    'sections',
+                    'team'
                 ]);
                 expect(res.body.data.form.sections).be.a('array');
                 // validate sections keys
@@ -77,6 +90,8 @@ describe('Forms', () => {
                     'question',
                     'scale',
                     'risk',
+                    'accessories',
+                    'conciliation',
                     'observe',
                     'weight',
                     'order'
@@ -86,7 +101,8 @@ describe('Forms', () => {
                 expect(res.body.data.scales[0]).to.have.all.keys([
                     '_id',
                     'name',
-                    'choices'
+                    'choices',
+                    'team'
                 ]);
                 // validate choice keys
                 expect(res.body.data.scales[0].choices).be.a('array');
@@ -95,7 +111,9 @@ describe('Forms', () => {
                     'choice',
                     'requireImage',
                     'backgroundColor',
+                    'requireAccesories',
                     'requireComment',
+                    'requireConciliation',
                     'value',
                     'order'
                 ]);

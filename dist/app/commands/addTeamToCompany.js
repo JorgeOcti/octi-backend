@@ -4,21 +4,22 @@ const bluebird = require("bluebird");
 const dotenv = require("dotenv");
 const mongoose = require("mongoose");
 const path = require("path");
-const form_model_1 = require("../../form/models/form.model");
-const scale_model_1 = require("../../form/models/scale.model");
-const inventory_model_1 = require("../../inventory/models/inventory.model");
-const car_model_1 = require("../models/car.model");
 const company_model_1 = require("../models/company.model");
-const participant_model_1 = require("../../form/models/participant.model");
 const team_model_1 = require("../models/team.model");
 const user_model_1 = require("../models/user.model");
-const venue_model_1 = require("../models/venue.model");
 async function addTeamToCompany() {
     /*
     * Generate teams and associate if necessary.
     * - Create Team
+    * - Assing cars to team
+    * - Assing forms to team
+    * - Assing participant to team
+    * - Assing scalas to team
     * - Assign users to team
+    * - Assign venes to team
     * - Assing company to team
+    *
+    * fixed does not change field updatedAt in collections
     * */
     dotenv.config({
         path: path.join(__dirname, '../../../.env')
@@ -28,6 +29,7 @@ async function addTeamToCompany() {
     await mongoose.connect(MONGODB_URI, {
         useMongoClient: true
     });
+    mongoose.set('debug', false);
     const companies = await company_model_1.default.find({ deleted: false });
     try {
         for (const company of companies) {
@@ -52,19 +54,26 @@ async function addTeamToCompany() {
                 await company.save();
             }
             // assing teams
-            await car_model_1.default.update({ company }, { team }, { multi: true });
+            // await Car.update({company}, {team}, {multi: true});
+            await mongoose.connection.db.collection('cars').updateMany({ company: company._id }, { $set: { team: team._id } });
             // assing teams
-            await inventory_model_1.default.update({ company }, { team }, { multi: true });
+            // await Inventory.update({company}, {team}, {multi: true});
+            await mongoose.connection.db.collection('inventories').updateMany({ company: company._id }, { $set: { team: team._id } });
             // assing teams
-            await form_model_1.default.update({ company }, { team }, { multi: true });
+            // await Form.update({company}, {team}, {multi: true});
+            await mongoose.connection.db.collection('forms').updateMany({ company: company._id }, { $set: { team: team._id } });
             // assing participants
-            await participant_model_1.default.update({ company }, { team }, { multi: true });
+            // await Participant.update({company}, {team}, {multi: true});
+            await mongoose.connection.db.collection('participants').updateMany({ company: company._id }, { $set: { team: team._id } });
             // assing teams
-            await scale_model_1.default.update({ company }, { team }, { multi: true });
+            // await Scale.update({company}, {team}, {multi: true});
+            await mongoose.connection.db.collection('scales').updateMany({ company: company._id }, { $set: { team: team._id } });
             // assign Venues
-            await user_model_1.default.update({ company }, { team }, { multi: true });
+            // await User.update({company}, {team}, {multi: true});
+            await mongoose.connection.db.collection('users').updateMany({ company: company._id }, { $set: { team: team._id } });
             // assign Venues
-            await venue_model_1.default.update({ company }, { team }, { multi: true });
+            // await Venue.update({company}, {team}, {multi: true});
+            await mongoose.connection.db.collection('venues').updateMany({ company: company._id }, { $set: { team: team._id } });
             // fix venues
             await user_model_1.default.update({ deleted: { $exists: false } }, { deleted: false }, { multi: true });
             // fix companies

@@ -1,7 +1,9 @@
 import * as mongoose from 'mongoose';
 import {ICarModel} from '../app/models/car.model';
 import {ICompanyModel} from '../app/models/company.model';
+import {ITeamModel} from '../app/models/team.model';
 import {IUserModel} from '../app/models/user.model';
+import {IVenueModel} from '../app/models/venue.model';
 import {IFormModel} from '../form/models/form.model';
 import {
   IParticipantAccesoryModel,
@@ -12,8 +14,6 @@ import {
   IScaleParticipantModel
 } from '../form/models/participant.model';
 import {IParticipantFile} from './participantFile.interface';
-import {IVenueModel} from "../app/models/venue.model";
-import {ITeamModel} from "../app/models/team.model";
 
 export interface IParticipantChoices {
   choice: string;
