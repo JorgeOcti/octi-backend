@@ -776,7 +776,7 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
     if (!update) {
       optionVenues.dataZoom = [
         {
-          show: true,
+          show: venuesNames.length > 10,
           realtime: true,
           start: 50,
           end: 100
@@ -893,7 +893,7 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
     if (!update) {
       optionBrands.dataZoom = [
         {
-          show: true,
+          show: brandNames.length > 10,
           realtime: true,
           start: 50,
           end: 100
@@ -909,13 +909,13 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
   }
 
   private resizeCharts(): void {
-    if (this.venuesDetailChart && this.venuesDetailChart !== undefined) {
+    if (this.venuesDetailChart) {
       this.venuesDetailChart.resize();
       setTimeout(() => {
         this.venuesDetailChart.resize();
       }, 400);
     }
-    if (this.brandDetailChart && this.brandDetailChart !== undefined) {
+    if (this.brandDetailChart) {
       this.brandDetailChart.resize();
       setTimeout(() => {
         this.brandDetailChart.resize();

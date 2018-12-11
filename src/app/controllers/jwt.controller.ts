@@ -2,7 +2,7 @@ import {NextFunction, Request, Response} from 'express';
 import * as jwt from 'jsonwebtoken';
 import * as moment from 'moment-timezone';
 import * as uuid from 'uuid';
-import {queue} from '../../app';
+import app, {queue} from '../../app';
 import ParticipantModel from '../../form/models/participant.model';
 import {IRequest} from '../../interfaces/global.interface';
 import GeneralUtils from '../../utils/general.utils';
@@ -290,13 +290,19 @@ class JWTController {
         user.passwordResetToken = token;
         user.passwordResetExpires = moment().add(2, 'days').toDate();
         await user.save();
-        console.log('Se ha reestablecido ', username);
+        /* istanbul ignore next */
+        if (app.get('env') !== 'testing') {
+          console.log('Se ha reestablecido ', username);
+        }
         res.json({
           message: 'Se ha enviado un e-mail para reestablecer tú contraseña',
           status: 200
         });
       } else {
-        console.log('No se encontro ', username);
+        /* istanbul ignore next */
+        if (app.get('env') !== 'testing') {
+          console.log('No se encontro ', username);
+        }
         res.json({
           message: 'Se ha enviado un e-mail para reestablecer tú contraseña',
           status: 200

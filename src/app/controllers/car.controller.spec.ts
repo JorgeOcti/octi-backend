@@ -130,7 +130,7 @@ describe('cars', () => {
       });
   });
 
-  it('it should faile by bad id when get dashboard car detail', (done) => {
+  it('it should fail by bad id when get dashboard car detail', (done) => {
     authenticatedUser
       .get(`/cars/0af487b4f6a4c95ccd991400`)
       .end((err, res) => {
@@ -148,11 +148,30 @@ describe('cars', () => {
       });
   });
 
+  it('it should fail get data to dashboard car detail', (done) => {
+    authenticatedUser
+      .get(`/api/cars/0af487b4f6a4c95ccd991400`)
+      .end((err, res) => {
+        expect(res.status).to.equal(404);
+        done();
+      });
+  });
+
   it('it should get data to participant detail', (done) => {
     authenticatedUser
       .get(`/api/participant/${cars[0].lastForm._id}`)
       .end((err, res) => {
         expect(res.status).to.equal(200);
+        cars = res.body.results;
+        done();
+      });
+  });
+
+  it('it should fail get data to participant detail', (done) => {
+    authenticatedUser
+      .get(`/api/participant/0af487b4f6a4c95ccd991400`)
+      .end((err, res) => {
+        expect(res.status).to.equal(404);
         cars = res.body.results;
         done();
       });

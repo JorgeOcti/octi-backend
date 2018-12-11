@@ -13,6 +13,7 @@ const MONGODB_URI: string = process.env.MONGODB_URI || '';
 (mongoose as any).Promise = bluebird;
 mongoose.connect(MONGODB_URI, {useMongoClient: true}, (err) => {
   if (err) {
+    /* istanbul ignore next */
     console.log('Unable to connect to the mongodb instance. Error: ', err);
     // throw err;
   }
@@ -47,6 +48,7 @@ io.adapter(socketRedis({
   port: 6379
 }));
 
+/* istanbul ignore next */
 io.use( async (socket, next) => {
   // validate token to use socket
   const token = socket.handshake.query.token;
@@ -78,6 +80,7 @@ io.use( async (socket, next) => {
   // return next(new Error('authentication error'));
 });
 
+/* istanbul ignore next */
 io.on( 'connection', ( socket ) => {
   console.log('---------------------');
   console.log('A user connected');

@@ -13,6 +13,7 @@ const MONGODB_URI = process.env.MONGODB_URI || '';
 mongoose.Promise = bluebird;
 mongoose.connect(MONGODB_URI, { useMongoClient: true }, (err) => {
     if (err) {
+        /* istanbul ignore next */
         console.log('Unable to connect to the mongodb instance. Error: ', err);
         // throw err;
     }
@@ -40,6 +41,7 @@ exports.io.adapter(socketRedis({
     host: process.env.REDIS_HOST ? process.env.REDIS_HOST : 'localhost',
     port: 6379
 }));
+/* istanbul ignore next */
 exports.io.use(async (socket, next) => {
     // validate token to use socket
     const token = socket.handshake.query.token;
@@ -73,6 +75,7 @@ exports.io.use(async (socket, next) => {
     // }
     // return next(new Error('authentication error'));
 });
+/* istanbul ignore next */
 exports.io.on('connection', (socket) => {
     console.log('---------------------');
     console.log('A user connected');
