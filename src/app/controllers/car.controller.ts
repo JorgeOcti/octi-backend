@@ -7,6 +7,7 @@ import {IRequest} from '../../interfaces/global.interface';
 import InventoryModel, {ChoicesStatusCarInventory, ChoicesStatusInventory} from '../../inventory/models/inventory.model';
 import VINService from '../../services/vin.service';
 import CarModel, {ChoicesStatusCar, ICarModel} from '../models/car.model';
+import app from "../../app";
 
 class CarController {
   protected carBrands: any = {
@@ -221,7 +222,11 @@ class CarController {
       if (vin) {
         vin = vin.replace(/[\W_]+/g, '');
         try {
-          console.log('vin', VINService.decode(vin));
+          const testDecode = VINService.decode(vin);
+          /* istanbul ignore next */
+          if (app.get('env') !== 'testing') {
+            console.log('vin', testDecode);
+          }
           const indexBrand: string = vin.slice(0, 3);
           vin2 = vin.substr(vin.length - 6);
           const brand = this.carBrands.hasOwnProperty(indexBrand) ? this.carBrands[indexBrand] : null;

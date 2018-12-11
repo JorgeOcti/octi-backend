@@ -29,6 +29,7 @@ class AdminFormsController {
             }, options);
             // validate exist page
             if (options.page && forms.pages && forms.pages < options.page) {
+                /* istanbul ignore next */
                 res.status(400).json({
                     error: 'La página solicitada no existe.',
                     status: 200
@@ -46,6 +47,7 @@ class AdminFormsController {
             }
         }
         catch (e) {
+            /* istanbul ignore next */
             if (e) {
                 res.status(500).json(e);
             }
@@ -55,6 +57,7 @@ class AdminFormsController {
         return new Promise((resolve, reject) => {
             form_model_1.default.paginate(filter, options, (err, result) => {
                 if (err) {
+                    /* istanbul ignore next */
                     return reject(err);
                 }
                 return resolve(result);

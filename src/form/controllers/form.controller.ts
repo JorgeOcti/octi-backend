@@ -45,12 +45,14 @@ class FormController {
           status: 200
         });
       } else {
+        /* istanbul ignore next */
         res.status(400).json({
           message: 'Usuario no encontrado',
           status: 400
         });
       }
     } catch (e) {
+      /* istanbul ignore next */
       res.status(400).json({
         message: 'Ha ocurrido un error',
         status: 400
@@ -240,7 +242,9 @@ class FormController {
         status: 200
       });
     } catch (e) {
+      /* istanbul ignore next */
       console.log('e', e);
+      /* istanbul ignore next */
       res.status(400).json({
         message: 'No se encontro formularío',
         status: 400
@@ -500,8 +504,10 @@ class FormController {
               status: 200
             });
           } catch (e) {
+            /* istanbul ignore next */
             console.log(e);
             // return error, if the form could not be recorded
+            /* istanbul ignore next */
             return res.status(400).json({
               message: e,
               status: 400
@@ -521,6 +527,7 @@ class FormController {
         });
       }
     } catch (e) {
+      /* istanbul ignore next */
       return res.status(400).json({
         message: e,
         status: 400
@@ -561,6 +568,7 @@ class FormController {
         participantFile.company = company._id;
         participantFile.attach('file', file, async (error: any) => {
           if (error) {
+            /* istanbul ignore next */
             res.status(400).json(error);
           } else {
             await participantFile.save();
@@ -574,6 +582,7 @@ class FormController {
           }
         });
       } catch (e) {
+        /* istanbul ignore next */
         res.status(400).json(e);
       }
 
@@ -632,6 +641,7 @@ class FormController {
         .autoOrient()
         .write(path, (err) => {
           if (err) {
+            /* istanbul ignore next */
             reject(err);
           } else {
             resolve();
@@ -650,6 +660,7 @@ class FormController {
         .lean()
         .exec((err, forms: IFormModel[]) => {
           if (err) {
+            /* istanbul ignore next */
             return reject(err);
           }
           return resolve(forms);
@@ -678,6 +689,7 @@ class FormController {
             .lean()
             .exec((err, form: IFormModel) => {
               if (err) {
+                /* istanbul ignore next */
                 return reject(err);
               }
               if (form) {
@@ -698,6 +710,7 @@ class FormController {
         .populate('sections.questions.scale')
         .exec((err, form) => {
           if (err) {
+            /* istanbul ignore next */
             return reject(err);
           }
           if (form) {
@@ -730,6 +743,7 @@ class FormController {
             .lean()
             .exec((err, scales: IScaleModel[]) => {
               if (err) {
+                /* istanbul ignore next */
                 return reject(err);
               }
               redisClient.setex(keyCache, 30, JSON.stringify(scales));
