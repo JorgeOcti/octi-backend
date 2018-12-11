@@ -14,6 +14,7 @@ class Middlewares {
                 res.locals.user = await req.user;
             }
             else {
+                /* istanbul ignore next */
                 res.locals.user = null;
             }
             return next();
@@ -29,6 +30,7 @@ class Middlewares {
                 res.locals.user = req.user;
             }
             else {
+                /* istanbul ignore next */
                 res.locals.user = null;
             }
             return next();
@@ -36,6 +38,7 @@ class Middlewares {
         else if (req.headers && req.headers.authorization && req.headers.authorization.split(' ')[0] === 'JWT') {
             jwt.verify(req.headers.authorization.split(' ')[1], req.app.locals.secretKey, (err, decode) => {
                 if (err) {
+                    /* istanbul ignore next */
                     res.status(401).json({
                         error: err.message,
                         status: 401

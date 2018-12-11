@@ -6,6 +6,7 @@ const client = redis.createClient({
   port: 6379
 });
 
+/* istanbul ignore next */
 client.on('error', (err) => {
   console.log('Redis Error ' + err);
 });

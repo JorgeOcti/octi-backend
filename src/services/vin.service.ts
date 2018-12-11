@@ -52,6 +52,7 @@ class VINService {
       };
 
     } else {
+      /* istanbul ignore next */
       return 'Este VIN no ha podido ser procesado. =(';
     }
   }

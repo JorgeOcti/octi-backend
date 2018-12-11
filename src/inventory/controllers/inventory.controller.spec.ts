@@ -198,7 +198,7 @@ describe('inventories', () => {
       .post(`/api/v1/inventory/${inventoryID}/`)
       .send({
         vin: inventoryData.carsByVenue[0].cars[0].vin,
-        images: []
+        images: ['5b88332bd99c9365a40e0b63']
       })
       .end((err, res) => {
         expect(res.status).to.equal(200);
@@ -253,7 +253,7 @@ describe('inventories', () => {
         brand: 'GONZALO',
         denomination: 'DUSTER ZEN 2,0L 6MT 4X4',
         color: 'Blanco',
-        images: []
+        images: ['5b88332bd99c9365a40e0b63']
       })
       .end((err, res) => {
         expect(res.status).to.equal(200);

@@ -851,7 +851,7 @@ class InventoryController {
           }
         }, {
           $unwind: '$cars'
-        },{
+        }, {
           $match: {
             'cars.venue': {
               $in: venuesPermissions
