@@ -19,4 +19,5 @@ block js
   script.
     window.user = {_id: '!{`${user.id}`}', firstName: '!{`${user.firstName}`}', lastName: '!{`${user.lastName}`}', email: '!{`${user.email}`}', company: '!{`${user.company}`}', team: '!{`${user.team}`}', userPermissions: !{`${JSON.stringify(user.userPermissions.toObject())}`}, token: '!{`${token}`}'}
   //- React App
-  script(src = `/static${getVersionedPath('/js/app/dist/main.js')}`)
+  script(src = `/static${getVersionedPath('/js/app/dist/main.bundle.js')}`)
+  script(src = `/static${getVersionedPath('/js/app/dist/vendors~main.bundle.js')}`)
