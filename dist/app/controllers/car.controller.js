@@ -2,11 +2,11 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 const moment = require("moment");
 const mongoose = require("mongoose");
+const app_1 = require("../../app");
 const participant_model_1 = require("../../form/models/participant.model");
 const inventory_model_1 = require("../../inventory/models/inventory.model");
 const vin_service_1 = require("../../services/vin.service");
 const car_model_1 = require("../models/car.model");
-const app_1 = require("../../app");
 class CarController {
     constructor() {
         this.carBrands = {
@@ -63,6 +63,7 @@ class CarController {
         const { id } = req.params;
         const { team } = req.user;
         // validate params
+        /* istanbul ignore next */
         if (!mongoose.Types.ObjectId.isValid(id)) {
             return res.status(404).render('404');
         }
@@ -91,6 +92,7 @@ class CarController {
             }
         }
         catch (e) {
+            /* istanbul ignore next */
             if (e) {
                 res.status(500).send(e);
             }
@@ -214,6 +216,7 @@ class CarController {
                 }
             }
             catch (e) {
+                /* istanbul ignore next */
                 if (e) {
                     res.status(500).json(e);
                 }
@@ -255,7 +258,9 @@ class CarController {
                     });
                 }
                 catch (e) {
+                    /* istanbul ignore next */
                     console.log(e);
+                    /* istanbul ignore next */
                     if (e) {
                         res.status(500).send(e);
                     }
@@ -289,6 +294,7 @@ class CarController {
                     }
                 }
                 catch (e) {
+                    /* istanbul ignore next */
                     if (e) {
                         res.status(500).send(e);
                     }
@@ -542,12 +548,15 @@ class CarController {
             });
         }
         catch (e) {
+            /* istanbul ignore next */
             console.log('e', e);
+            /* istanbul ignore next */
             if (e) {
                 res.status(500).json(e);
             }
         }
     }
+    /* istanbul ignore next */
     async apiParticipantCSV(req, res) {
         const participants = await participant_model_1.default.find({}).populate([{
                 path: 'car'
@@ -628,6 +637,7 @@ class CarController {
             }
         }
         catch (e) {
+            /* istanbul ignore next */
             if (e) {
                 res.status(500).json(e);
             }
@@ -753,6 +763,7 @@ class CarController {
             }
         }
         catch (e) {
+            /* istanbul ignore next */
             if (e) {
                 res.status(500).json(e);
             }
@@ -780,6 +791,7 @@ class CarController {
         return new Promise((resolve, reject) => {
             car_model_1.default.paginate(filter, options, (err, result) => {
                 if (err) {
+                    /* istanbul ignore next */
                     return reject(err);
                 }
                 return resolve(result);

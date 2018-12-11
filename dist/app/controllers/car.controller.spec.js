@@ -49,12 +49,98 @@ describe('cars', () => {
         })
             .end((err, res) => {
             expect(res.status).to.equal(200);
-            // expect(res.body).have.property('message');
-            // expect(res.body).have.property('status');
-            // expect(res.body).to.have.all.keys([
-            //   'message',
-            //   'status'
-            // ]);
+            done();
+        });
+    });
+    it('it should check vin with vin2', (done) => {
+        chai.request(server_1.default)
+            .post('/api/v1/check-vin/')
+            .set('Authorization', `JWT ${token}`)
+            .send({
+            vin2: '590498'
+        })
+            .end((err, res) => {
+            expect(res.status).to.equal(200);
+            done();
+        });
+    });
+    it('it should fail check vin fake inventory', (done) => {
+        chai.request(server_1.default)
+            .post('/api/v1/check-vin/')
+            .set('Authorization', `JWT ${token}`)
+            .send({
+            vin: '3BRBD33B7JK590498',
+            inventory: '0af487b4f6a4c95ccd991400'
+        })
+            .end((err, res) => {
+            expect(res.status).to.equal(404);
+            done();
+        });
+    });
+    it('it should get dashboard principal', (done) => {
+        authenticatedUser
+            .get('/')
+            .end((err, res) => {
+            expect(res.status).to.equal(200);
+            done();
+        });
+    });
+    it('it should get data to dashboard principal', (done) => {
+        authenticatedUser
+            .get(`/api/participants-per-date/`)
+            .end((err, res) => {
+            expect(res.status).to.equal(200);
+            done();
+        });
+    });
+    it('it should get dashboard cars', (done) => {
+        authenticatedUser
+            .get('/cars/')
+            .end((err, res) => {
+            expect(res.status).to.equal(200);
+            done();
+        });
+    });
+    let cars = [];
+    it('it should get data to dashboard cars', (done) => {
+        authenticatedUser
+            .get('/api/cars/')
+            .end((err, res) => {
+            expect(res.status).to.equal(200);
+            cars = res.body.results;
+            done();
+        });
+    });
+    it('it should get dashboard car detail', (done) => {
+        authenticatedUser
+            .get(`/cars/${cars[0]._id}`)
+            .end((err, res) => {
+            expect(res.status).to.equal(200);
+            done();
+        });
+    });
+    it('it should faile by bad id when get dashboard car detail', (done) => {
+        authenticatedUser
+            .get(`/cars/0af487b4f6a4c95ccd991400`)
+            .end((err, res) => {
+            expect(res.status).to.equal(404);
+            done();
+        });
+    });
+    it('it should get data to dashboard car detail', (done) => {
+        authenticatedUser
+            .get(`/api/cars/${cars[0]._id}`)
+            .end((err, res) => {
+            expect(res.status).to.equal(200);
+            done();
+        });
+    });
+    it('it should get data to participant detail', (done) => {
+        authenticatedUser
+            .get(`/api/participant/${cars[0].lastForm._id}`)
+            .end((err, res) => {
+            expect(res.status).to.equal(200);
+            cars = res.body.results;
             done();
         });
     });
