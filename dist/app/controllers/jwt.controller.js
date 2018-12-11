@@ -85,6 +85,7 @@ class JWTController {
                 }])
                 .exec((err, user) => {
                 if (err) {
+                    /* istanbul ignore next */
                     res.status(500).send(err);
                 }
                 if (!user || !user.comparePasswordSync(req.body.password)) {
@@ -103,6 +104,7 @@ class JWTController {
                     user.lastLogin = new Date();
                     user.save((err) => {
                         if (err) {
+                            /* istanbul ignore next */
                             res.status(500).json(err);
                         }
                         else {
@@ -211,6 +213,7 @@ class JWTController {
                         }])
                         .exec((err, user) => {
                         if (err) {
+                            /* istanbul ignore next */
                             res.status(500).json(err);
                         }
                         else if (!user) {
@@ -229,6 +232,7 @@ class JWTController {
                             user.lastLogin = new Date();
                             user.save((err) => {
                                 if (err) {
+                                    /* istanbul ignore next */
                                     res.status(500).json(err);
                                 }
                                 else {
@@ -333,14 +337,18 @@ class JWTController {
             }
         }
         catch (e) {
+            /* istanbul ignore next */
             console.log(e);
+            /* istanbul ignore next */
             console.log('ocurrio un error ', username);
+            /* istanbul ignore next */
             res.json({
                 message: 'Se ha enviado un e-mail para reestablecer tú contraseña',
                 status: 200
             });
         }
     }
+    /* istanbul ignore next */
     isJWTAuthenticated(req, res, next) {
         console.log('test');
         if (req.headers && req.headers.authorization && req.headers.authorization.split(' ')[0] === 'JWT') {
@@ -363,6 +371,7 @@ class JWTController {
             next();
         }
     }
+    /* istanbul ignore next */
     test(req, res) {
         res.json({
             data: {

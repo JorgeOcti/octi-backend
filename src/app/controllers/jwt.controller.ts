@@ -88,6 +88,7 @@ class JWTController {
         }])
         .exec((err, user: IUserModel) => {
           if (err) {
+            /* istanbul ignore next */
             res.status(500).send(err);
           }
           if (!user || !user.comparePasswordSync(req.body.password)) {
@@ -104,6 +105,7 @@ class JWTController {
             user.lastLogin = new Date();
             user.save((err: any) => {
               if (err) {
+                /* istanbul ignore next */
                 res.status(500).json(err);
               } else {
                 const today = moment().startOf('day');
@@ -210,6 +212,7 @@ class JWTController {
             }])
             .exec((err, user: IUserModel) => {
               if (err) {
+                /* istanbul ignore next */
                 res.status(500).json(err);
               } else if (!user) {
                 res.status(401).json({
@@ -225,6 +228,7 @@ class JWTController {
                 user.lastLogin = new Date();
                 user.save( (err: any) => {
                   if (err) {
+                    /* istanbul ignore next */
                     res.status(500).json(err);
                   } else {
                     const today = moment().startOf('day');
@@ -328,8 +332,11 @@ class JWTController {
         });
       }
     } catch (e) {
+      /* istanbul ignore next */
       console.log(e);
+      /* istanbul ignore next */
       console.log('ocurrio un error ', username);
+      /* istanbul ignore next */
       res.json({
           message: 'Se ha enviado un e-mail para reestablecer tú contraseña',
           status: 200
@@ -337,6 +344,7 @@ class JWTController {
     }
   }
 
+  /* istanbul ignore next */
   public isJWTAuthenticated(req: IRequest, res: Response, next: NextFunction) {
     console.log('test');
     if (req.headers && req.headers.authorization && req.headers.authorization.split(' ')[0] === 'JWT') {
@@ -359,6 +367,7 @@ class JWTController {
     }
   }
 
+  /* istanbul ignore next */
   public test(req: IRequest, res: Response) {
     res.json({
       data: {

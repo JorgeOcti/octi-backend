@@ -677,6 +677,7 @@ class CarController {
         });
       }
     } catch (e) {
+      /* istanbul ignore next */
       if (e) {
         res.status(500).json(e);
       }
