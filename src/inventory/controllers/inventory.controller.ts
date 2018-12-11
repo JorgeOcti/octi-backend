@@ -53,6 +53,7 @@ class InventoryController {
         res.render('app/index', {token: await req.user.generateToken()});
       }
     } catch (e) {
+      /* istanbul ignore next */
       if (e) {
         res.status(500).send(e);
       }
@@ -137,10 +138,12 @@ class InventoryController {
         update: true
       });
       res.json({
+        _id: inventory._id.toString(),
         message: 'Inventario creado satisfactoriamente',
         status: 200
       });
     } catch (e) {
+      /* istanbul ignore next */
       res.status(400).json({
         message: e,
         status: 400
@@ -276,7 +279,9 @@ class InventoryController {
         status: 200
       });
     } catch (e) {
+      /* istanbul ignore next */
       console.log(e);
+      /* istanbul ignore next */
       res.status(400).json({
         message: e,
         status: 400
@@ -317,6 +322,7 @@ class InventoryController {
         inventoryFile.company = company._id;
         inventoryFile.attach('file', file, async (error: any) => {
           if (error) {
+            /* istanbul ignore next */
             res.status(400).json(error);
           } else {
             await inventoryFile.save();
@@ -330,9 +336,11 @@ class InventoryController {
           }
         });
       } catch (e) {
+        /* istanbul ignore next */
         res.status(400).json(e);
       }
     } else {
+      /* istanbul ignore next */
       res.status(400).json({
         message: 'La imagen es obligatoria.',
         status: 400
@@ -517,7 +525,9 @@ class InventoryController {
         }
       }
     } catch (e) {
+      /* istanbul ignore next */
       console.log(e);
+      /* istanbul ignore next */
       res.status(400).json({
         message: e,
         status: 400
@@ -526,7 +536,7 @@ class InventoryController {
   }
 
   public async finishInventory(req: IRequest, res: Response) {
-    const {company, team} = req.user;
+    const {team} = req.user;
     const {id} = req.params;
     try {
       const inventory = await InventoryModel.findOne({_id: id, team});
@@ -536,7 +546,7 @@ class InventoryController {
           finalizedAt: new Date(),
           finalizedBy: req.user._id
         });
-        io.to(`inventory-list-${company}`).emit('REFRESH', {
+        io.to(`inventory-list-${team}`).emit('REFRESH', {
           update: true
         });
         res.json({
@@ -551,7 +561,9 @@ class InventoryController {
       }
 
     } catch (e) {
+      /* istanbul ignore next */
       console.log('e', e);
+      /* istanbul ignore next */
       res.status(400).json({
         message: 'Ha ocurrido un error',
         status: 400
@@ -584,7 +596,9 @@ class InventoryController {
       }
 
     } catch (e) {
+      /* istanbul ignore next */
       console.log('e', e);
+      /* istanbul ignore next */
       res.status(400).json({
         message: 'Ha ocurrido un error',
         status: 400
@@ -645,7 +659,9 @@ class InventoryController {
         });
       }
     } catch (e) {
+      /* istanbul ignore next */
       console.log(e);
+      /* istanbul ignore next */
       res.status(400).json({
         message: e,
         status: 400
@@ -673,12 +689,14 @@ class InventoryController {
           status: 200
         });
       } else {
+        /* istanbul ignore next */
         res.status(400).json({
           message: 'Usuario no encontrado',
           status: 400
         });
       }
     } catch (e) {
+      /* istanbul ignore next */
       res.status(400).json({
         message: e,
         status: 400
@@ -958,10 +976,6 @@ class InventoryController {
             name: detailInventory ? detailInventory.name : '',
             status: detailInventory ? detailInventory.status : '',
             cars: detailInventory ? detailInventory.cars.filter((car) => {
-              if (venuesPermissions.includes(car.venue._id.toString())) {
-                console.log('venuesPermissions', venuesPermissions);
-                console.log('car.venue._id.toString()', car.venue._id.toString());
-              }
               return venuesPermissions.includes(car.venue._id.toString()) || (car.venueFound && venuesPermissions.includes(car.venueFound._id.toString()));
             }) : []
           },
@@ -974,7 +988,9 @@ class InventoryController {
         });
       }
     } catch (e) {
+      /* istanbul ignore next */
       console.log(e);
+      /* istanbul ignore next */
       res.status(400).json({
         message: e,
         status: 400
@@ -993,6 +1009,7 @@ class InventoryController {
         .autoOrient()
         .write(path, (err) => {
           if (err) {
+            /* istanbul ignore next */
             reject(err);
           } else {
             resolve();

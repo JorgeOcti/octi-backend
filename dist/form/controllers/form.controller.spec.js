@@ -23,6 +23,9 @@ describe('formularies', () => {
             done();
         });
     });
+    afterEach((done) => {
+        done();
+    });
     let firstForm = '';
     it('it should return list of forms', (done) => {
         chai.request(server_1.default)
@@ -211,7 +214,7 @@ describe('formularies', () => {
             expect(res.body).have.property('data');
             expect(res.body).have.property('status');
             expect(res.body.data).to.have.all.keys([
-                '_id',
+                'id',
                 'count',
                 'vin',
                 'qualification'
