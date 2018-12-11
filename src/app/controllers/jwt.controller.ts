@@ -5,6 +5,7 @@ import * as uuid from 'uuid';
 import {queue} from '../../app';
 import ParticipantModel from '../../form/models/participant.model';
 import {IRequest} from '../../interfaces/global.interface';
+import GeneralUtils from '../../utils/general.utils';
 import User from '../models/user.model';
 import UserModel, {IUserModel} from '../models/user.model';
 
@@ -13,41 +14,9 @@ class JWTController {
   constructor() {
     this.login = this.login.bind(this);
     this.token = this.token.bind(this);
-    // this.createUser = this.createUser.bind(this);
     this.isJWTAuthenticated = this.isJWTAuthenticated.bind(this);
     this.forgotPassword = this.forgotPassword.bind(this);
   }
-
-  // public createUser(req: Request, res: Response) {
-  //   const {username, password, firstName, lastName} = req.body;
-  //   if (username && username.length && password && password.length) {
-  //     const newUser = new User({
-  //       username,
-  //       firstName,
-  //       lastName,
-  //       email: username,
-  //       password,
-  //       active: true
-  //     });
-  //     newUser.save((err, user: IUserModel) => {
-  //       if (err) {
-  //         throw err;
-  //       }
-  //       console.log(JSON.stringify(user));
-  //     });
-  //     res.json({
-  //       data: {
-  //         username
-  //       },
-  //       status: 200
-  //     });
-  //   } else {
-  //     res.status(400).json({
-  //       message: 'username and password are required',
-  //       status: 400
-  //     });
-  //   }
-  // }
 
   public login(req: Request, res: Response) {
     if (req.body.username === null || req.body.username === undefined || req.body.password === null || req.body.password === undefined) {
@@ -117,6 +86,7 @@ class JWTController {
                     $lt: tomorrow.toDate()
                   }
                 }, (err, count) => {
+                  user = user.toObject();
                   const userInfo = {
                     _id: user._id,
                     firstName: user.firstName,
@@ -126,16 +96,16 @@ class JWTController {
                     userPermissions: user.userPermissions,
                     userForms: user.userForms,
                     venue: {
-                      _id: user.venue ? user.venue._id : null,
-                      name: user.venue ? user.venue.name : null
+                      _id: GeneralUtils.getObjectAttribute(user.venue, '_id', null),
+                      name: GeneralUtils.getObjectAttribute(user.venue, 'name', null)
                     },
                     company: {
-                      _id: user.company ? user.company._id : null,
-                      name: user.company ? user.company.name : null
+                      _id: GeneralUtils.getObjectAttribute(user.company, '_id', null),
+                      name: GeneralUtils.getObjectAttribute(user.company, 'name', null)
                     },
                     team: {
-                      _id: user.team ? user.team._id : null,
-                      name: user.team ? user.team.name : null
+                      _id: GeneralUtils.getObjectAttribute(user.team, '_id', null),
+                      name: GeneralUtils.getObjectAttribute(user.team, 'name', null)
                     },
                     count
                   };
@@ -240,6 +210,7 @@ class JWTController {
                         $lt: tomorrow.toDate()
                       }
                     }, (err, count) => {
+                      user = user.toObject();
                       const userInfo = {
                         _id: user._id,
                         firstName: user.firstName,
@@ -249,16 +220,16 @@ class JWTController {
                         userPermissions: user.userPermissions,
                         userForms: user.userForms,
                         venue: {
-                          _id: user.venue ? user.venue._id : null,
-                          name: user.venue ? user.venue.name : null
+                          _id: GeneralUtils.getObjectAttribute(user.venue, '_id', null),
+                          name: GeneralUtils.getObjectAttribute(user.venue, 'name', null)
                         },
                         company: {
-                          _id: user.company ? user.company._id : null,
-                          name: user.company ? user.company.name : null
+                          _id: GeneralUtils.getObjectAttribute(user.company, '_id', null),
+                          name: GeneralUtils.getObjectAttribute(user.company, 'name', null)
                         },
                         team: {
-                          _id: user.team ? user.team._id : null,
-                          name: user.team ? user.team.name : null
+                          _id: GeneralUtils.getObjectAttribute(user.team, '_id', null),
+                          name: GeneralUtils.getObjectAttribute(user.team, 'name', null)
                         },
                         count
                       };

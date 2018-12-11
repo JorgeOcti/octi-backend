@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+const general_utils_1 = require("../utils/general.utils");
 const countries_1 = require("./data/countries");
 const manufacters_1 = require("./data/manufacters");
 const years_1 = require("./data/years");
@@ -50,13 +51,13 @@ class VINService {
         };
     }
     getManufacturer(code) {
-        return this.manufacturers.hasOwnProperty(code) ? this.manufacturers[code] : '';
+        return general_utils_1.default.getObjectAttribute(this.manufacturers, 'code', '');
     }
     getYear(code) {
-        return this.years.hasOwnProperty(code) ? this.years[code] : '';
+        return general_utils_1.default.getObjectAttribute(this.years, 'code', '');
     }
     getCountry(code) {
-        return this.countries.hasOwnProperty(code) ? this.countries[code] : '';
+        return general_utils_1.default.getObjectAttribute(this.countries, 'code', '');
     }
 }
 exports.default = new VINService();

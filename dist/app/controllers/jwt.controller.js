@@ -5,46 +5,16 @@ const moment = require("moment-timezone");
 const uuid = require("uuid");
 const app_1 = require("../../app");
 const participant_model_1 = require("../../form/models/participant.model");
+const general_utils_1 = require("../../utils/general.utils");
 const user_model_1 = require("../models/user.model");
 const user_model_2 = require("../models/user.model");
 class JWTController {
     constructor() {
         this.login = this.login.bind(this);
         this.token = this.token.bind(this);
-        // this.createUser = this.createUser.bind(this);
         this.isJWTAuthenticated = this.isJWTAuthenticated.bind(this);
         this.forgotPassword = this.forgotPassword.bind(this);
     }
-    // public createUser(req: Request, res: Response) {
-    //   const {username, password, firstName, lastName} = req.body;
-    //   if (username && username.length && password && password.length) {
-    //     const newUser = new User({
-    //       username,
-    //       firstName,
-    //       lastName,
-    //       email: username,
-    //       password,
-    //       active: true
-    //     });
-    //     newUser.save((err, user: IUserModel) => {
-    //       if (err) {
-    //         throw err;
-    //       }
-    //       console.log(JSON.stringify(user));
-    //     });
-    //     res.json({
-    //       data: {
-    //         username
-    //       },
-    //       status: 200
-    //     });
-    //   } else {
-    //     res.status(400).json({
-    //       message: 'username and password are required',
-    //       status: 400
-    //     });
-    //   }
-    // }
     login(req, res) {
         if (req.body.username === null || req.body.username === undefined || req.body.password === null || req.body.password === undefined) {
             res.status(401).json({ message: 'Authentication failed. Invalid user or password.' });
@@ -117,6 +87,7 @@ class JWTController {
                                     $lt: tomorrow.toDate()
                                 }
                             }, (err, count) => {
+                                user = user.toObject();
                                 const userInfo = {
                                     _id: user._id,
                                     firstName: user.firstName,
@@ -126,16 +97,16 @@ class JWTController {
                                     userPermissions: user.userPermissions,
                                     userForms: user.userForms,
                                     venue: {
-                                        _id: user.venue ? user.venue._id : null,
-                                        name: user.venue ? user.venue.name : null
+                                        _id: general_utils_1.default.getObjectAttribute(user.venue, '_id', null),
+                                        name: general_utils_1.default.getObjectAttribute(user.venue, 'name', null)
                                     },
                                     company: {
-                                        _id: user.company ? user.company._id : null,
-                                        name: user.company ? user.company.name : null
+                                        _id: general_utils_1.default.getObjectAttribute(user.company, '_id', null),
+                                        name: general_utils_1.default.getObjectAttribute(user.company, 'name', null)
                                     },
                                     team: {
-                                        _id: user.team ? user.team._id : null,
-                                        name: user.team ? user.team.name : null
+                                        _id: general_utils_1.default.getObjectAttribute(user.team, '_id', null),
+                                        name: general_utils_1.default.getObjectAttribute(user.team, 'name', null)
                                     },
                                     count
                                 };
@@ -245,6 +216,7 @@ class JWTController {
                                             $lt: tomorrow.toDate()
                                         }
                                     }, (err, count) => {
+                                        user = user.toObject();
                                         const userInfo = {
                                             _id: user._id,
                                             firstName: user.firstName,
@@ -254,16 +226,16 @@ class JWTController {
                                             userPermissions: user.userPermissions,
                                             userForms: user.userForms,
                                             venue: {
-                                                _id: user.venue ? user.venue._id : null,
-                                                name: user.venue ? user.venue.name : null
+                                                _id: general_utils_1.default.getObjectAttribute(user.venue, '_id', null),
+                                                name: general_utils_1.default.getObjectAttribute(user.venue, 'name', null)
                                             },
                                             company: {
-                                                _id: user.company ? user.company._id : null,
-                                                name: user.company ? user.company.name : null
+                                                _id: general_utils_1.default.getObjectAttribute(user.company, '_id', null),
+                                                name: general_utils_1.default.getObjectAttribute(user.company, 'name', null)
                                             },
                                             team: {
-                                                _id: user.team ? user.team._id : null,
-                                                name: user.team ? user.team.name : null
+                                                _id: general_utils_1.default.getObjectAttribute(user.team, '_id', null),
+                                                name: general_utils_1.default.getObjectAttribute(user.team, 'name', null)
                                             },
                                             count
                                         };

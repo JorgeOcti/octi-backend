@@ -10,6 +10,7 @@ const user_model_1 = require("../../app/models/user.model");
 const user_model_2 = require("../../app/models/user.model");
 const server_1 = require("../../server");
 const redis_service_1 = require("../../services/redis.service");
+const general_utils_1 = require("../../utils/general.utils");
 const form_model_1 = require("../models/form.model");
 const participant_model_1 = require("../models/participant.model");
 const participantFile_model_1 = require("../models/participantFile.model");
@@ -329,7 +330,7 @@ class FormController {
                             // calculate qualification and set vars of the answer
                             const questionID = question._id.toString();
                             // get selected answer
-                            const answer = answers.hasOwnProperty(questionID) ? answers[questionID] : null;
+                            const answer = general_utils_1.default.getObjectAttribute(answers, questionID, null);
                             // find choice selected
                             const choice = question.scale.choices.find((choice) => {
                                 return answer ? choice._id.toString() === answer.value : false;

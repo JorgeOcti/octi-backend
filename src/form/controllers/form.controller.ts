@@ -10,6 +10,7 @@ import User from '../../app/models/user.model';
 import {IAnyObject, IRequest} from '../../interfaces/global.interface';
 import {io} from '../../server';
 import redisClient from '../../services/redis.service';
+import GeneralUtils from '../../utils/general.utils';
 import FormModel, {IFormModel} from '../models/form.model';
 import ParticipantModel from '../models/participant.model';
 import ParticipantFile from '../models/participantFile.model';
@@ -336,7 +337,7 @@ class FormController {
               // calculate qualification and set vars of the answer
               const questionID = question._id.toString();
               // get selected answer
-              const answer = answers.hasOwnProperty(questionID) ? answers[questionID] : null;
+              const answer = GeneralUtils.getObjectAttribute(answers, questionID, null);
               // find choice selected
               const choice = question.scale.choices.find((choice) => {
                 return answer ? choice._id.toString() === answer.value : false;
