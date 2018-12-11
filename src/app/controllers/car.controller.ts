@@ -737,7 +737,7 @@ class CarController {
             venue: {
               $in: req.user.venuesPermissions()
             }
-          })
+          }, {_id: true})
         }
       }, options, search);
 

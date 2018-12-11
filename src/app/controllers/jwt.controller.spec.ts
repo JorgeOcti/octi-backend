@@ -45,10 +45,10 @@ describe('login', () => {
 
   it('it should refresh token successful', (done) => {
     chai.request(server)
-    .post('/api/v1/token/')
-    .send({
-      refreshToken: token
-    })
+      .post('/api/v1/token/')
+      .send({
+        refreshToken: token
+      })
       .end((err, res) => {
         expect(res.status).to.equal(200);
         expect(res.body).have.property('data');
