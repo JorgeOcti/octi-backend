@@ -780,11 +780,6 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
           realtime: true,
           start: 50,
           end: 100
-        }, {
-          type: 'inside',
-          realtime: true,
-          start: 50,
-          end: 100
         }
       ];
     }
@@ -894,11 +889,6 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
       optionBrands.dataZoom = [
         {
           show: brandNames.length > 10,
-          realtime: true,
-          start: 50,
-          end: 100
-        }, {
-          type: 'inside',
           realtime: true,
           start: 50,
           end: 100
