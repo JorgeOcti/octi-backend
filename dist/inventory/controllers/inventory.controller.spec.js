@@ -141,14 +141,6 @@ describe('inventories', () => {
             done();
         });
     });
-    it('it should enter in detail of inventories', (done) => {
-        authenticatedUser
-            .get(`/inventory/${firstInventory._id}`)
-            .end((err, res) => {
-            expect(res.status).to.equal(200);
-            done();
-        });
-    });
     it('it should fail when enter in detail of inventories', (done) => {
         authenticatedUser
             .get(`/inventory/0af487b4f6a4c95ccd991400`)

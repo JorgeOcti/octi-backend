@@ -6,6 +6,7 @@ class AdminPermissionController {
         this.index = this.index.bind(this);
         this.apiListPermissions = this.apiListPermissions.bind(this);
     }
+    /* istanbul ignore next */
     async index(req, res) {
         res.render('app/index', { token: await req.user.generateToken() });
     }
@@ -31,6 +32,7 @@ class AdminPermissionController {
         try {
             const permissions = await this.getPermissions(options, search);
             // validate exist page
+            /* istanbul ignore if */
             if (options.page && permissions.pages && permissions.pages < options.page) {
                 res.status(400).json({
                     error: 'La página solicitada no existe.',
@@ -49,6 +51,7 @@ class AdminPermissionController {
             }
         }
         catch (e) {
+            /* istanbul ignore next */
             if (e) {
                 res.status(500).json(e);
             }
@@ -57,6 +60,7 @@ class AdminPermissionController {
     getPermissions(options, search) {
         return new Promise((resolve, reject) => {
             permision_model_1.default.paginate({}, options, (err, result) => {
+                /* istanbul ignore next */
                 if (err) {
                     return reject(err);
                 }
