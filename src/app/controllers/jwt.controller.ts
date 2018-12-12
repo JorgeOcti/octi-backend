@@ -96,16 +96,16 @@ class JWTController {
                     userPermissions: user.userPermissions,
                     userForms: user.userForms,
                     venue: {
-                      _id: GeneralUtils.getObjectAttribute(user.venue, '_id', null),
-                      name: GeneralUtils.getObjectAttribute(user.venue, 'name', null)
+                      _id: GeneralUtils.getObjectProperty(user.venue, '_id', null),
+                      name: GeneralUtils.getObjectProperty(user.venue, 'name', null)
                     },
                     company: {
-                      _id: GeneralUtils.getObjectAttribute(user.company, '_id', null),
-                      name: GeneralUtils.getObjectAttribute(user.company, 'name', null)
+                      _id: GeneralUtils.getObjectProperty(user.company, '_id', null),
+                      name: GeneralUtils.getObjectProperty(user.company, 'name', null)
                     },
                     team: {
-                      _id: GeneralUtils.getObjectAttribute(user.team, '_id', null),
-                      name: GeneralUtils.getObjectAttribute(user.team, 'name', null)
+                      _id: GeneralUtils.getObjectProperty(user.team, '_id', null),
+                      name: GeneralUtils.getObjectProperty(user.team, 'name', null)
                     },
                     count
                   };
@@ -220,16 +220,16 @@ class JWTController {
                         userPermissions: user.userPermissions,
                         userForms: user.userForms,
                         venue: {
-                          _id: GeneralUtils.getObjectAttribute(user.venue, '_id', null),
-                          name: GeneralUtils.getObjectAttribute(user.venue, 'name', null)
+                          _id: GeneralUtils.getObjectProperty(user.venue, '_id', null),
+                          name: GeneralUtils.getObjectProperty(user.venue, 'name', null)
                         },
                         company: {
-                          _id: GeneralUtils.getObjectAttribute(user.company, '_id', null),
-                          name: GeneralUtils.getObjectAttribute(user.company, 'name', null)
+                          _id: GeneralUtils.getObjectProperty(user.company, '_id', null),
+                          name: GeneralUtils.getObjectProperty(user.company, 'name', null)
                         },
                         team: {
-                          _id: GeneralUtils.getObjectAttribute(user.team, '_id', null),
-                          name: GeneralUtils.getObjectAttribute(user.team, 'name', null)
+                          _id: GeneralUtils.getObjectProperty(user.team, '_id', null),
+                          name: GeneralUtils.getObjectProperty(user.team, 'name', null)
                         },
                         count
                       };

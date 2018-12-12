@@ -12,11 +12,12 @@ class Middlewares {
 
   public async isLoggedIn(req: IRequest, res: Response, next: NextFunction) {
     // if user is authenticated in the session, carry on
+    /* istanbul ignore else */
     if (req.isAuthenticated()) {
+      /* istanbul ignore else */
       if (req.user) {
         res.locals.user = await req.user;
       } else {
-        /* istanbul ignore next */
         res.locals.user = null;
       }
       return next();
@@ -28,17 +29,17 @@ class Middlewares {
 
   public isJWTAuthenticated(req: IRequest, res: Response, next: NextFunction) {
     if (req.isAuthenticated()) {
+      /* istanbul ignore else */
       if (req.user) {
         res.locals.user = req.user;
       } else {
-        /* istanbul ignore next */
         res.locals.user = null;
       }
       return next();
     } else if (req.headers && req.headers.authorization && req.headers.authorization.split(' ')[0] === 'JWT') {
       jwt.verify(req.headers.authorization.split(' ')[1], req.app.locals.secretKey, (err: any, decode: any) => {
+        /* istanbul ignore if */
         if (err) {
-          /* istanbul ignore next */
           res.status(401).json({
             error: err.message,
             status: 401
@@ -49,6 +50,7 @@ class Middlewares {
         }
       });
     } else {
+      /* istanbul ignore next */
       res.status(401).json({
         error: 'Debes estar autenticado para este recurso.',
         status: 401

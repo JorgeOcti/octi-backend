@@ -41,6 +41,7 @@ class VINService {
   }
 
   public decode(vin: string) {
+    /* istanbul ignore else */
     if (vin && vin.length > 12) {
       const codeValues = this.split(vin);
       return {
@@ -51,9 +52,7 @@ class VINService {
         details: codeValues.details,
         manufacturer: this.getManufacturer(codeValues.manufacturer)
       };
-
     } else {
-      /* istanbul ignore next */
       return 'Este VIN no ha podido ser procesado. =(';
     }
   }
@@ -71,15 +70,15 @@ class VINService {
   }
 
   protected getManufacturer(code: string) {
-    return GeneralUtils.getObjectAttribute(this.manufacturers, 'code', '');
+    return GeneralUtils.getObjectProperty(this.manufacturers, 'code', '');
   }
 
   protected getYear(code: string) {
-    return GeneralUtils.getObjectAttribute(this.years, 'code', '');
+    return GeneralUtils.getObjectProperty(this.years, 'code', '');
   }
 
   protected getCountry(code: string) {
-    return GeneralUtils.getObjectAttribute(this.countries, 'code', '');
+    return GeneralUtils.getObjectProperty(this.countries, 'code', '');
   }
 }
 

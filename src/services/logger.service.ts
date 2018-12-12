@@ -1,6 +1,7 @@
 import * as moment from 'moment';
 import * as Raven from 'raven';
 import {accessLogStream} from '../app';
+import GeneralUtils from '../utils/general.utils';
 
 export interface Icolors {
   [key: string]: any;
@@ -14,7 +15,7 @@ class LoggerService {
 
   constructor() {
     this.message = '';
-    this.env = process.env.ENV || 'development';
+    this.env = GeneralUtils.getFromEnviroment('ENV', 'development');
     // https://github.com/shiena/ansicolor/blob/master/README.md
     this.colors = {
       brightBlack: '\x1b[90m',

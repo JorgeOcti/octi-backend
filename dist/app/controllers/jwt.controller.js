@@ -97,16 +97,16 @@ class JWTController {
                                     userPermissions: user.userPermissions,
                                     userForms: user.userForms,
                                     venue: {
-                                        _id: general_utils_1.default.getObjectAttribute(user.venue, '_id', null),
-                                        name: general_utils_1.default.getObjectAttribute(user.venue, 'name', null)
+                                        _id: general_utils_1.default.getObjectProperty(user.venue, '_id', null),
+                                        name: general_utils_1.default.getObjectProperty(user.venue, 'name', null)
                                     },
                                     company: {
-                                        _id: general_utils_1.default.getObjectAttribute(user.company, '_id', null),
-                                        name: general_utils_1.default.getObjectAttribute(user.company, 'name', null)
+                                        _id: general_utils_1.default.getObjectProperty(user.company, '_id', null),
+                                        name: general_utils_1.default.getObjectProperty(user.company, 'name', null)
                                     },
                                     team: {
-                                        _id: general_utils_1.default.getObjectAttribute(user.team, '_id', null),
-                                        name: general_utils_1.default.getObjectAttribute(user.team, 'name', null)
+                                        _id: general_utils_1.default.getObjectProperty(user.team, '_id', null),
+                                        name: general_utils_1.default.getObjectProperty(user.team, 'name', null)
                                     },
                                     count
                                 };
@@ -226,16 +226,16 @@ class JWTController {
                                             userPermissions: user.userPermissions,
                                             userForms: user.userForms,
                                             venue: {
-                                                _id: general_utils_1.default.getObjectAttribute(user.venue, '_id', null),
-                                                name: general_utils_1.default.getObjectAttribute(user.venue, 'name', null)
+                                                _id: general_utils_1.default.getObjectProperty(user.venue, '_id', null),
+                                                name: general_utils_1.default.getObjectProperty(user.venue, 'name', null)
                                             },
                                             company: {
-                                                _id: general_utils_1.default.getObjectAttribute(user.company, '_id', null),
-                                                name: general_utils_1.default.getObjectAttribute(user.company, 'name', null)
+                                                _id: general_utils_1.default.getObjectProperty(user.company, '_id', null),
+                                                name: general_utils_1.default.getObjectProperty(user.company, 'name', null)
                                             },
                                             team: {
-                                                _id: general_utils_1.default.getObjectAttribute(user.team, '_id', null),
-                                                name: general_utils_1.default.getObjectAttribute(user.team, 'name', null)
+                                                _id: general_utils_1.default.getObjectProperty(user.team, '_id', null),
+                                                name: general_utils_1.default.getObjectProperty(user.team, 'name', null)
                                             },
                                             count
                                         };

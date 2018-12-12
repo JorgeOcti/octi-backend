@@ -10,6 +10,7 @@ class AdminFormsController {
     this.apiListForms = this.apiListForms.bind(this);
   }
 
+  /* istanbul ignore next */
   public async index(req: IRequest, res: Response) {
     res.render('app/index', {token: await req.user.generateToken()});
   }

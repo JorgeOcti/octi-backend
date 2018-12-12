@@ -46,6 +46,7 @@ class AdminAlertController {
         users
       });
     } catch (e) {
+      /* istanbul ignore next */
       res.status(400).json({
         message: e,
         status: 400
@@ -54,7 +55,6 @@ class AdminAlertController {
   }
 
   public async apiCreateAlert(req: IRequest, res: Response) {
-    console.log('req.body', req.body);
     const {name, gte, lte, users} = req.body;
     const company = req.user.company;
     try {
@@ -82,11 +82,13 @@ class AdminAlertController {
             }])
         });
       } else {
+        /* istanbul ignore next */
         res.status(400).json({
           message: 'No se a podido crear a alerta'
         });
       }
     } catch (e) {
+      /* istanbul ignore next */
       res.status(400).json({
         message: e,
         status: 400
@@ -114,6 +116,7 @@ class AdminAlertController {
         res.status(200).json(response);
       }
     } catch (e) {
+      /* istanbul ignore next */
       res.status(500).json(e);
     }
   }

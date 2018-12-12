@@ -50,7 +50,7 @@ appRouter.delete('/api/admin/users/:id/', Middlewares.isLoggedIn, AdminUsersCont
 appRouter.get('/settings/venues/', Middlewares.isLoggedIn, AdminVenuesController.index);
 
 // venue companies
-appRouter.get('/venues/', Middlewares.isLoggedIn, AdminVenuesController.index);
+// appRouter.get('/venues/', Middlewares.isLoggedIn, AdminVenuesController.index);
 appRouter.get('/api/admin/venues/', Middlewares.isLoggedIn, AdminVenuesController.apiListVenues);
 appRouter.post('/api/admin/venues/', Middlewares.isLoggedIn, AdminVenuesController.apiCreateVenue);
 appRouter.patch('/api/admin/venues/:id', Middlewares.isLoggedIn, AdminVenuesController.apiUpdateVenue);

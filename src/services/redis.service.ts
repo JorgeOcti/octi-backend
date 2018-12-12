@@ -1,8 +1,9 @@
 import * as bluebird from 'bluebird';
 import * as redis from 'redis';
+import GeneralUtils from '../utils/general.utils';
 
 const client = redis.createClient({
-  host: process.env.REDIS_HOST ? process.env.REDIS_HOST : 'localhost',
+  host: GeneralUtils.getFromEnviroment('REDIS_HOST', 'localhost'),
   port: 6379
 });
 

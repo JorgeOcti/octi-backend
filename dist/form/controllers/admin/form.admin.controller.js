@@ -6,6 +6,7 @@ class AdminFormsController {
         this.index = this.index.bind(this);
         this.apiListForms = this.apiListForms.bind(this);
     }
+    /* istanbul ignore next */
     async index(req, res) {
         res.render('app/index', { token: await req.user.generateToken() });
     }

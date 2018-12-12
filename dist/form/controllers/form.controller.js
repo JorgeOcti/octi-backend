@@ -330,7 +330,7 @@ class FormController {
                             // calculate qualification and set vars of the answer
                             const questionID = question._id.toString();
                             // get selected answer
-                            const answer = general_utils_1.default.getObjectAttribute(answers, questionID, null);
+                            const answer = general_utils_1.default.getObjectProperty(answers, questionID, null);
                             // find choice selected
                             const choice = question.scale.choices.find((choice) => {
                                 return answer ? choice._id.toString() === answer.value : false;

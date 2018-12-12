@@ -3,6 +3,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const PushNotifications = require("@pusher/push-notifications-server");
 const dotenv = require("dotenv");
 const path = require("path");
+const general_utils_1 = require("../utils/general.utils");
 const logger_service_1 = require("./logger.service");
 class PushService {
     constructor() {
@@ -10,8 +11,8 @@ class PushService {
             path: path.join(__dirname, '../../.env')
         });
         this.pushNotifications = new PushNotifications({
-            instanceId: process.env.PUSHER_INSTANCE_ID ? process.env.PUSHER_INSTANCE_ID : '',
-            secretKey: process.env.PUHSER_SECRET_KEY ? process.env.PUHSER_SECRET_KEY : ''
+            instanceId: general_utils_1.default.getFromEnviroment('PUSHER_INSTANCE_ID', ''),
+            secretKey: general_utils_1.default.getFromEnviroment('PUHSER_SECRET_KEY', '')
         });
     }
     send(title, subtitle, body, interests) {
@@ -43,6 +44,7 @@ class PushService {
     }
     massiveSend(title, subtitle, body, interests) {
         const total = interests.length;
+        /* istanbul ignore if */
         if (total > 100) {
             while (interests.length) {
                 this.send(title, subtitle, body, interests.splice(0, 100));
