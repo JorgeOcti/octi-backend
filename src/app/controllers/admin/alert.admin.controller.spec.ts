@@ -51,4 +51,32 @@ describe('amin alert', () => {
       });
   });
 
+  let alertTest: any = {};
+  it('it should create alerts', (done) => {
+    authenticatedUser
+      .post('/api/admin/alerts/')
+      .send({
+        gte: 0,
+        lte: 10,
+        name: 'prueba',
+        type: 'lte',
+        users: ['5af487b4f6a4c95ccd991466']
+      })
+      .end((err, res) => {
+        expect(res.status).to.equal(201);
+        alertTest = res.body.alert;
+        done();
+      });
+  });
+
+  it('it should delete alerts', (done) => {
+    authenticatedUser
+      .delete(`/api/admin/alerts/${alertTest._id}`)
+      .end((err, res) => {
+        alertTest = res.body.alert;
+        expect(res.status).to.equal(200);
+        done();
+      });
+  });
+
 });

@@ -67,7 +67,7 @@ class AdminAlertController {
             users,
             company
           });
-        res.json({
+        res.status(201).json({
           message: 'Alerta agregada satisfactoriamente',
           alert: await Alert
             .findOne({_id: alert._id, company}, {
