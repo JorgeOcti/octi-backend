@@ -19,6 +19,7 @@ describe('formularies', () => {
             password: '123'
         })
             .end((err, res) => {
+            expect(res.status).to.equal(200);
             token = res.body.data.token;
             done();
         });

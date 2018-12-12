@@ -441,7 +441,8 @@ class InventoryController {
               update: true
             });
             res.json({
-              id
+              id,
+              status: 200
             });
           } else {
             const inventory = await InventoryModel.findOne({
@@ -468,8 +469,9 @@ class InventoryController {
                 status: ChoicesStatusCarInventory.leftover,
                 update: true
               });
-              res.json({
-                id
+              res.status(200).json({
+                id,
+                status: 200
               });
             } else {
               // if inventory no exist
@@ -513,8 +515,9 @@ class InventoryController {
               text: textNotification,
               update: true
             });
-          res.json({
-            id
+          res.status(200).json({
+            id,
+            status: 200
           });
         } else {
           // if inventory no exist

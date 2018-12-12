@@ -428,7 +428,8 @@ class InventoryController {
                             update: true
                         });
                         res.json({
-                            id
+                            id,
+                            status: 200
                         });
                     }
                     else {
@@ -456,8 +457,9 @@ class InventoryController {
                                 status: inventory_model_1.ChoicesStatusCarInventory.leftover,
                                 update: true
                             });
-                            res.json({
-                                id
+                            res.status(200).json({
+                                id,
+                                status: 200
                             });
                         }
                         else {
@@ -503,8 +505,9 @@ class InventoryController {
                         text: textNotification,
                         update: true
                     });
-                    res.json({
-                        id
+                    res.status(200).json({
+                        id,
+                        status: 200
                     });
                 }
                 else {

@@ -62,19 +62,20 @@ describe('inventories', () => {
         token = res.body.data.token;
         authenticatedUser
           .get('/account/login/')
-          .end((err, response) => {
-            const $html = cheerio(response.text);
+          .end((err, res) => {
+            expect(res.status).to.equal(200);
+            const $html = cheerio(res.text);
             const csrf = $html.find('input[name=_csrf]').val();
             authenticatedUser
               .post('/account/login/')
-              .set('cookie', response.header['set-cookie'][0])
+              .set('cookie', res.header['set-cookie'][0])
               .send({
                 username: 'gmunoz@osacontrol.com',
                 password: '123',
                 _csrf: csrf
               })
-              .end((err, response) => {
-                expect(response.status).to.equal(302);
+              .end((err, res) => {
+                expect(res.status).to.equal(302);
                 done();
               });
           });
@@ -88,13 +89,13 @@ describe('inventories', () => {
       .end((err, res) => {
 
         expect(res.status).to.equal(200);
+        expect(res.body).have.property('status');
+        expect(res.body.status).to.equal(200);
+        expect(res.body).have.property('data');
         expect(res.body).to.have.all.keys([
           'data',
           'status'
         ]);
-        expect(res.body).have.property('data');
-        expect(res.body).have.property('status');
-        expect(res.body.status).to.equal(200);
         expect(res.body.data).be.a('array');
         res.body.data.forEach((item: IInventory) => {
           expect(item).to.have.all.keys([
@@ -193,6 +194,8 @@ describe('inventories', () => {
       })
       .end((err, res) => {
         expect(res.status).to.equal(200);
+        expect(res.body).have.property('status');
+        expect(res.body.status).to.equal(200);
         done();
       });
   });
@@ -206,6 +209,7 @@ describe('inventories', () => {
       })
       .end((err, res) => {
         expect(res.status).to.equal(400);
+        expect(res.body.status).to.equal(400);
         done();
       });
   });
@@ -219,6 +223,7 @@ describe('inventories', () => {
       })
       .end((err, res) => {
         expect(res.status).to.equal(400);
+        expect(res.body.status).to.equal(400);
         done();
       });
   });
@@ -232,6 +237,8 @@ describe('inventories', () => {
       })
       .end((err, res) => {
         expect(res.status).to.equal(200);
+        expect(res.body).have.property('status');
+        expect(res.body.status).to.equal(200);
         done();
       });
   });
@@ -248,6 +255,8 @@ describe('inventories', () => {
       })
       .end((err, res) => {
         expect(res.status).to.equal(200);
+        expect(res.body).have.property('status');
+        expect(res.body.status).to.equal(200);
         done();
       });
   });
@@ -276,6 +285,8 @@ describe('inventories', () => {
       ), 't_head_bg_america.jpg')
       .end((err, res) => {
         expect(res.status).to.equal(201);
+        expect(res.body).have.property('status');
+        expect(res.body.status).to.equal(201);
         done();
       });
   });
