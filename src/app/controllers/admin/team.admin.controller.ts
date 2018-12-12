@@ -54,6 +54,7 @@ class AdminsTeamController {
   private getTeams(filter: any, options: PaginateOptions, search?: string): Promise<PaginateResult<ITeamModel>> {
     return new Promise((resolve, reject) => {
       Team.paginate(filter, options, (err, result) => {
+        /* istanbul ignore if */
         if (err) {
           return reject(err);
         }

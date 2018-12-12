@@ -15,19 +15,19 @@ describe('app', () => {
   before((done) => {
     authenticatedUser
       .get('/account/login/')
-      .end((err, response) => {
-        const $html = cheerio(response.text);
+      .end((err, res) => {
+        const $html = cheerio(res.text);
         const csrf = $html.find('input[name=_csrf]').val();
         authenticatedUser
           .post('/account/login/')
-          .set('cookie', response.header['set-cookie'][0])
+          .set('cookie', res.header['set-cookie'][0])
           .send({
             username: 'gmunoz@osacontrol.com',
             password: '123',
             _csrf: csrf
           })
-          .end((err, response) => {
-            expect(response.status).to.equal(302);
+          .end((err, res) => {
+            expect(res.status).to.equal(302);
             done();
           });
       });
@@ -65,7 +65,19 @@ describe('app', () => {
       .get('/account/forgot-password/')
       .end((err, res) => {
         expect(res.status).to.equal(200);
-        done();
+        const $html = cheerio(res.text);
+        const csrf = $html.find('input[name=_csrf]').val();
+        chai.request(server)
+          .post('/account/forgot-password/')
+          .set('cookie', res.header['set-cookie'][0])
+          .send({
+            username: 'gmunoz@osacontrol.com',
+            _csrf: csrf
+          })
+          .end((err, res) => {
+            expect(res.status).to.equal(200);
+            done();
+          });
       });
   });
 

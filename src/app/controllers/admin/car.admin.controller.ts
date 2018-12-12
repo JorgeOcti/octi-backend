@@ -14,6 +14,7 @@ class AdminCarController {
   }
 
   public async index(req: IRequest, res: Response) {
+    /* istanbul ignore else */
     if (req.user.hasPermission('viewCar')) {
       res.render('app/index', {token: await req.user.generateToken()});
     } else {
@@ -22,6 +23,7 @@ class AdminCarController {
   }
 
   public async imports(req: IRequest, res: Response): Promise<any> {
+    /* istanbul ignore else */
     if (req.user.hasPermission('addCar')) {
       res.render('app/index', {
         token: await req.user.generateToken()
@@ -37,7 +39,7 @@ class AdminCarController {
         message: 'No tienes permisos para esta operación'
       });
     }
-    const company = req.user.company;
+    const {company, team} = req.user;
     const cars = req.body;
     if (cars && cars.length) {
       for (const car of cars) {
@@ -46,7 +48,7 @@ class AdminCarController {
           try {
             const newCar = await Car.findOne({
               vin: car.vin,
-              company
+              team
             });
             if (newCar) {
               newCar.vin2 = vin2;
@@ -67,11 +69,13 @@ class AdminCarController {
                 internalNumber: car.NInterno ? car.NInterno : '',
                 destination: car.destino ? car.destino : '',
                 company,
+                team,
                 status: ChoicesStatusCar.active
               });
             }
             // io.to(req.user._id).emit('STATUS-CARS', {newCar});
           } catch (e) {
+            /* istanbul ignore next */
             console.log(e);
           }
         }
@@ -84,6 +88,7 @@ class AdminCarController {
   }
 
   public async apiListCars(req: IRequest, res: Response): Promise<any> {
+    /* istanbul ignore next */
     if (!req.user.hasPermission('viewCar')) {
       return res.status(403).json({
         message: 'No tienes permisos para esta operación'
@@ -137,6 +142,7 @@ class AdminCarController {
         });
       }
     } catch (e) {
+      /* istanbul ignore if */
       if (e) {
         res.status(500).json(e);
       }
@@ -161,14 +167,11 @@ class AdminCarController {
           ...filter
         ]
       };
-      // filter = {
-      //   $text: { $search: search }, company
-      // };
-      /* {score: {$meta: "toextScore"} */
     }
 
     return new Promise((resolve, reject) => {
       Car.paginate(filter, options, (err, result) => {
+        /* istanbul ignore if */
         if (err) {
           return reject(err);
         }

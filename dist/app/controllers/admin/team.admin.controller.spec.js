@@ -9,7 +9,7 @@ const request = require('supertest');
 chai.use(chaiHttp);
 const expect = chai.expect;
 const authenticatedUser = request.agent(server_1.default);
-describe('admin cars', () => {
+describe('admin teams', () => {
     before((done) => {
         authenticatedUser
             .get('/account/login/')
@@ -30,29 +30,13 @@ describe('admin cars', () => {
             });
         });
     });
-    it('it should enter in list cars', (done) => {
+    it('it should get data in list teams', (done) => {
         authenticatedUser
-            .get('/settings/cars/')
-            .end((err, res) => {
-            expect(res.status).to.equal(200);
-            done();
-        });
-    });
-    it('it should enter in import cars', (done) => {
-        authenticatedUser
-            .get('/settings/cars/import/')
-            .end((err, res) => {
-            expect(res.status).to.equal(200);
-            done();
-        });
-    });
-    it('it should get data in list cars', (done) => {
-        authenticatedUser
-            .get('/api/admin/cars/')
+            .get('/api/admin/teams/')
             .end((err, res) => {
             expect(res.status).to.equal(200);
             done();
         });
     });
 });
-//# sourceMappingURL=car.admin.controller.spec.js.map
+//# sourceMappingURL=team.admin.controller.spec.js.map

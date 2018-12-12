@@ -49,6 +49,7 @@ class AdminsTeamController {
     getTeams(filter, options, search) {
         return new Promise((resolve, reject) => {
             team_model_1.default.paginate(filter, options, (err, result) => {
+                /* istanbul ignore if */
                 if (err) {
                     return reject(err);
                 }

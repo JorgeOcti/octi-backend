@@ -10,6 +10,7 @@ class AdminCarController {
         this.apiListCars = this.apiListCars.bind(this);
     }
     async index(req, res) {
+        /* istanbul ignore else */
         if (req.user.hasPermission('viewCar')) {
             res.render('app/index', { token: await req.user.generateToken() });
         }
@@ -18,6 +19,7 @@ class AdminCarController {
         }
     }
     async imports(req, res) {
+        /* istanbul ignore else */
         if (req.user.hasPermission('addCar')) {
             res.render('app/index', {
                 token: await req.user.generateToken()
@@ -33,7 +35,7 @@ class AdminCarController {
                 message: 'No tienes permisos para esta operación'
             });
         }
-        const company = req.user.company;
+        const { company, team } = req.user;
         const cars = req.body;
         if (cars && cars.length) {
             for (const car of cars) {
@@ -42,7 +44,7 @@ class AdminCarController {
                     try {
                         const newCar = await car_model_1.default.findOne({
                             vin: car.vin,
-                            company
+                            team
                         });
                         if (newCar) {
                             newCar.vin2 = vin2;
@@ -64,12 +66,14 @@ class AdminCarController {
                                 internalNumber: car.NInterno ? car.NInterno : '',
                                 destination: car.destino ? car.destino : '',
                                 company,
+                                team,
                                 status: car_model_1.ChoicesStatusCar.active
                             });
                         }
                         // io.to(req.user._id).emit('STATUS-CARS', {newCar});
                     }
                     catch (e) {
+                        /* istanbul ignore next */
                         console.log(e);
                     }
                 }
@@ -81,6 +85,7 @@ class AdminCarController {
         });
     }
     async apiListCars(req, res) {
+        /* istanbul ignore next */
         if (!req.user.hasPermission('viewCar')) {
             return res.status(403).json({
                 message: 'No tienes permisos para esta operación'
@@ -136,6 +141,7 @@ class AdminCarController {
             }
         }
         catch (e) {
+            /* istanbul ignore if */
             if (e) {
                 res.status(500).json(e);
             }
@@ -159,13 +165,10 @@ class AdminCarController {
                     ...filter
                 ]
             };
-            // filter = {
-            //   $text: { $search: search }, company
-            // };
-            /* {score: {$meta: "toextScore"} */
         }
         return new Promise((resolve, reject) => {
             car_model_1.default.paginate(filter, options, (err, result) => {
+                /* istanbul ignore if */
                 if (err) {
                     return reject(err);
                 }

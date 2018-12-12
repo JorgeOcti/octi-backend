@@ -10,7 +10,7 @@ chai.use(chaiHttp);
 const expect = chai.expect;
 
 const authenticatedUser: SuperTest<Test> = request.agent(server);
-describe('admin cars', () => {
+describe('admin teams', () => {
 
   before((done) => {
     authenticatedUser
@@ -33,27 +33,9 @@ describe('admin cars', () => {
       });
   });
 
-  it('it should enter in list cars', (done) => {
+  it('it should get data in list teams', (done) => {
     authenticatedUser
-      .get('/settings/cars/')
-      .end((err, res) => {
-        expect(res.status).to.equal(200);
-        done();
-      });
-  });
-
-  it('it should enter in import cars', (done) => {
-    authenticatedUser
-      .get('/settings/cars/import/')
-      .end((err, res) => {
-        expect(res.status).to.equal(200);
-        done();
-      });
-  });
-
-  it('it should get data in list cars', (done) => {
-    authenticatedUser
-      .get('/api/admin/cars/')
+      .get('/api/admin/teams/')
       .end((err, res) => {
         expect(res.status).to.equal(200);
         done();
