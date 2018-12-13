@@ -13,11 +13,11 @@ class AdminAlertController {
         res.render('app/index', { token: await req.user.generateToken() });
     }
     async apiListAlerts(req, res) {
-        const company = req.user.company;
+        const { team } = req.user;
         try {
             const alerts = await alert_model_1.default
                 .find({
-                company
+                team
             }, {
                 name: 1,
                 users: 1,
@@ -32,7 +32,7 @@ class AdminAlertController {
                 createdAt: -1
             });
             const users = await user_model_1.default
-                .find({ company }, {
+                .find({ team }, {
                 firstName: 1,
                 lastName: 1,
                 email: 1
@@ -52,7 +52,7 @@ class AdminAlertController {
     }
     async apiCreateAlert(req, res) {
         const { name, gte, lte, users } = req.body;
-        const company = req.user.company;
+        const { team, company } = req.user;
         try {
             if (name && users && users.length) {
                 const alert = await alert_model_1.default
@@ -61,14 +61,15 @@ class AdminAlertController {
                     gte,
                     lte,
                     users,
-                    company
+                    company,
+                    team
                 });
                 res.status(201).json({
                     message: 'Alerta agregada satisfactoriamente',
                     alert: await alert_model_1.default
                         .findOne({
                         _id: alert._id,
-                        company
+                        team
                     }, {
                         name: 1,
                         users: 1,
@@ -98,9 +99,9 @@ class AdminAlertController {
     }
     async apiDeleteAlert(req, res) {
         const { id } = req.params;
-        const company = req.user.company;
+        const { team } = req.user;
         try {
-            const alert = await alert_model_1.default.findOneAndRemove({ _id: id, company });
+            const alert = await alert_model_1.default.findOneAndRemove({ _id: id, team });
             if (alert) {
                 const response = {
                     message: 'Alerta eliminada satisfactoriamente.',

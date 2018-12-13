@@ -7,6 +7,7 @@ require("mocha");
 const server_1 = require("../../../server");
 const request = require('supertest');
 const randomstring = require("randomstring");
+const car_model_1 = require("../../models/car.model");
 chai.use(chaiHttp);
 const expect = chai.expect;
 const dataImportCar = [{
@@ -42,6 +43,14 @@ describe('admin cars', () => {
                 expect(response.status).to.equal(302);
                 done();
             });
+        });
+    });
+    after((done) => {
+        car_model_1.default.find({ denomination: 'Prueba' }).remove((err) => {
+            if (err) {
+                console.log(err);
+            }
+            done();
         });
     });
     it('it should enter in list cars', (done) => {

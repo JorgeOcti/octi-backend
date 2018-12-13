@@ -11,6 +11,7 @@ class AdminUsersController {
         this.apiDeleteUser = this.apiDeleteUser.bind(this);
     }
     async index(req, res) {
+        /* istanbul ignore else  */
         if (req.user.hasPermission('viewUser')) {
             res.render('app/index', { token: await req.user.generateToken() });
         }
@@ -71,6 +72,7 @@ class AdminUsersController {
                 team
             }, options);
             // validate exist page
+            /* istanbul ignore if  */
             if (options.page && users.pages && users.pages < options.page) {
                 res.status(400).json({
                     error: 'La página solicitada no existe.',
@@ -89,12 +91,14 @@ class AdminUsersController {
             }
         }
         catch (e) {
+            /* istanbul ignore next  */
             if (e) {
                 res.status(500).json(e);
             }
         }
     }
     async apiCreateUser(req, res) {
+        /* istanbul ignore next  */
         if (!req.user.hasPermission('addUser')) {
             return res.status(403).json({
                 message: 'No tienes permisos para esta operación'
@@ -172,10 +176,12 @@ class AdminUsersController {
             }
         }
         catch (e) {
+            /* istanbul ignore next  */
             res.status(500).json(e);
         }
     }
     async apiUpdateUser(req, res) {
+        /* istanbul ignore next  */
         if (!req.user.hasPermission('changeUser')) {
             return res.status(403).json({
                 message: 'No tienes permisos para esta operación'
@@ -263,7 +269,9 @@ class AdminUsersController {
             }
         }
         catch (e) {
+            /* istanbul ignore next  */
             console.log(e);
+            /* istanbul ignore next  */
             res.status(500).json(e);
         }
     }
@@ -293,12 +301,14 @@ class AdminUsersController {
             }
         }
         catch (e) {
+            /* istanbul ignore next  */
             res.status(500).json(e);
         }
     }
     getUsers(filter, options) {
         return new Promise((resolve, reject) => {
             user_model_1.default.paginate(filter, options, (err, result) => {
+                /* istanbul ignore next  */
                 if (err) {
                     return reject(err);
                 }

@@ -6,6 +6,7 @@ import {SuperTest, Test} from 'supertest';
 import server from '../../../server';
 const request = require('supertest');
 import * as randomstring from 'randomstring';
+import Car from '../../models/car.model';
 
 chai.use(chaiHttp);
 const expect = chai.expect;
@@ -46,6 +47,15 @@ describe('admin cars', () => {
             done();
           });
       });
+  });
+
+  after( (done) => {
+    Car.find({denomination: 'Prueba'}).remove((err) => {
+      if (err) {
+        console.log(err);
+      }
+      done();
+    });
   });
 
   it('it should enter in list cars', (done) => {

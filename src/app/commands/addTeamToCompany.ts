@@ -94,6 +94,12 @@ async function addTeamToCompany() {
         {company: company._id},
         {$set: {team: team._id}}
       );
+      // assign alerts
+      // await Alert.update({company}, {team}, {multi: true});
+      await mongoose.connection.db.collection('alerts').updateMany(
+        {company: company._id},
+        {$set: {team: team._id}}
+      );
       // fix venues
       await User.update({deleted: {$exists: false}}, {deleted: false}, {multi: true});
       // fix companies

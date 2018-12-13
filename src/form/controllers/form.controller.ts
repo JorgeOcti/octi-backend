@@ -434,7 +434,7 @@ class FormController {
             /* Search alerts */
             const alerts = await Alert
               .find({
-                company,
+                team,
                 $or: [
                   {$and: [{lte: {$gte: formQualification}}, {lte: {$gt: 0}}]},
                   {$and: [{gte: {$lte: formQualification}}, {gte: {$gt: 0}}]}

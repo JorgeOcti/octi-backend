@@ -90,6 +90,7 @@ class AppController {
         try {
             // prevent duplicate request
             const csrfUsed = await redis_service_1.default.getAsync(_csrf);
+            /* istanbul ignore next */
             if (csrfUsed) {
                 return res.redirect('/account/forgot-password/');
             }
@@ -136,6 +137,7 @@ class AppController {
     }
     async recovery(req, res) {
         const { token } = req.params;
+        /* istanbul ignore next */
         if (!isuuid.anyNonNil(token)) {
             return res.status(404).render('404');
         }
@@ -160,17 +162,20 @@ class AppController {
     async processRecovery(req, res, next) {
         const { token } = req.params;
         const { password, password2 } = req.body;
+        /* istanbul ignore next */
         if (!isuuid.anyNonNil(token)) {
             return res.status(404).render('404');
         }
         if (req.user) {
             return res.redirect(`/`);
         }
+        /* istanbul ignore next */
         if (!password.trim().length || !password2.trim().length || password !== password2) {
             return res.redirect(`/account/recovery/${token}`);
         }
         try {
             const user = await user_model_1.default.findOne({ passwordResetToken: token });
+            /* istanbul ignore else */
             if (user && user.active) {
                 user.password = password;
                 user.passwordResetToken = undefined;
