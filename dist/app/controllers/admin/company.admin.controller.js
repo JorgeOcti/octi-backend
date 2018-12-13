@@ -37,6 +37,7 @@ class AdminCompaniesController {
             deleted: false,
             team
         }, options, search);
+        /* istanbul ignore if  */
         if (options.page && companies.pages && companies.pages < options.page) {
             res.status(400).json({
                 error: 'La página solicitada no existe.',
@@ -92,7 +93,9 @@ class AdminCompaniesController {
             }
         }
         catch (e) {
+            /* istanbul ignore next  */
             console.log(e);
+            /* istanbul ignore next  */
             res.status(500).json(e);
         }
     }
@@ -136,7 +139,9 @@ class AdminCompaniesController {
             }
         }
         catch (e) {
+            /* istanbul ignore next  */
             console.log(e);
+            /* istanbul ignore next  */
             res.status(500).json(e);
         }
     }
@@ -173,12 +178,14 @@ class AdminCompaniesController {
             }
         }
         catch (e) {
+            /* istanbul ignore next  */
             res.status(500).json(e);
         }
     }
     getCompanies(filter, options, search) {
         return new Promise((resolve, reject) => {
             company_model_1.default.paginate(filter, options, (err, result) => {
+                /* istanbul ignore next  */
                 if (err) {
                     return reject(err);
                 }

@@ -6,6 +6,7 @@ const cheerio = require("cheerio");
 require("mocha");
 const server_1 = require("../../../server");
 const request = require('supertest');
+const randomstring = require("randomstring");
 chai.use(chaiHttp);
 const expect = chai.expect;
 const authenticatedUser = request.agent(server_1.default);
@@ -41,6 +42,58 @@ describe('admin venues', () => {
     it('it should get data in list venues', (done) => {
         authenticatedUser
             .get('/api/admin/venues/')
+            .end((err, res) => {
+            expect(res.status).to.equal(200);
+            done();
+        });
+    });
+    let testVenue = {};
+    it('it should create venue', (done) => {
+        authenticatedUser
+            .post('/api/admin/venues/')
+            .send({
+            company: {
+                _id: '5b17f8f0346a450658b5721e'
+            },
+            name: randomstring.generate({
+                length: 17,
+                charset: 'alphanumeric'
+            }),
+            type: 'receiver'
+        })
+            .end((err, res) => {
+            expect(res.status).to.equal(201);
+            testVenue = res.body.venue;
+            done();
+        });
+    });
+    it('it should update venue', (done) => {
+        authenticatedUser
+            .patch(`/api/admin/venues/${testVenue._id}`)
+            .send({
+            company: '5b17f8f0346a450658b5721e',
+            name: randomstring.generate({
+                length: 17,
+                charset: 'alphanumeric'
+            }),
+            type: 'receiver'
+        })
+            .end((err, res) => {
+            expect(res.status).to.equal(200);
+            done();
+        });
+    });
+    it('it should delete venue', (done) => {
+        authenticatedUser
+            .delete(`/api/admin/venues/${testVenue._id}`)
+            .end((err, res) => {
+            expect(res.status).to.equal(200);
+            done();
+        });
+    });
+    it('it should delete venue again', (done) => {
+        authenticatedUser
+            .delete(`/api/admin/venues/${testVenue._id}`)
             .end((err, res) => {
             expect(res.status).to.equal(200);
             done();

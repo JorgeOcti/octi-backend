@@ -41,21 +41,22 @@ class AdminCompaniesController {
       deleted: false,
       team
     }, options, search);
+    /* istanbul ignore if  */
     if (options.page && companies.pages && companies.pages < options.page) {
-        res.status(400).json({
-          error: 'La página solicitada no existe.',
-          status: 200
-        });
-      } else {
-        res.json({
-          count: companies.total,
-          pages: companies.pages,
-          hasPrevious: options.page && options.page > 1 && companies.pages && companies.pages >= options.page,
-          hasNext: options.page && companies.pages && companies.pages > options.page,
-          results: companies.docs,
-          status: 200
-        });
-      }
+      res.status(400).json({
+        error: 'La página solicitada no existe.',
+        status: 200
+      });
+    } else {
+      res.json({
+        count: companies.total,
+        pages: companies.pages,
+        hasPrevious: options.page && options.page > 1 && companies.pages && companies.pages >= options.page,
+        hasNext: options.page && companies.pages && companies.pages > options.page,
+        results: companies.docs,
+        status: 200
+      });
+    }
 
   }
 
@@ -95,7 +96,9 @@ class AdminCompaniesController {
         });
       }
     } catch (e) {
+      /* istanbul ignore next  */
       console.log(e);
+      /* istanbul ignore next  */
       res.status(500).json(e);
     }
   }
@@ -138,7 +141,9 @@ class AdminCompaniesController {
         res.status(400).json(response);
       }
     } catch (e) {
+      /* istanbul ignore next  */
       console.log(e);
+      /* istanbul ignore next  */
       res.status(500).json(e);
     }
   }
@@ -174,6 +179,7 @@ class AdminCompaniesController {
         res.status(200).json(response);
       }
     } catch (e) {
+      /* istanbul ignore next  */
       res.status(500).json(e);
     }
   }
@@ -181,6 +187,7 @@ class AdminCompaniesController {
   private getCompanies(filter: any, options: PaginateOptions, search?: string): Promise<PaginateResult<ICompanyModel>> {
     return new Promise((resolve, reject) => {
       Company.paginate(filter, options, (err, result) => {
+        /* istanbul ignore next  */
         if (err) {
           return reject(err);
         }
