@@ -301,7 +301,7 @@ class ImportCarsView extends React.Component<IPropsType, IStateType> {
           api
             .getSource();
           api
-            .sendImportCars(cars)
+            .sendImportCars({cars})
             .then(() => {
               swal('Importador de autos', 'La carga a finalizado exitosamente.', 'success');
               this.setState({

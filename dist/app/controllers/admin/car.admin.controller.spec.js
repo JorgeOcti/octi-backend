@@ -6,8 +6,22 @@ const cheerio = require("cheerio");
 require("mocha");
 const server_1 = require("../../../server");
 const request = require('supertest');
+const randomstring = require("randomstring");
 chai.use(chaiHttp);
 const expect = chai.expect;
+const dataImportCar = [{
+        NInterno: '1020',
+        color: 'Rojo',
+        denominacion: 'Prueba',
+        destino: '',
+        id: '9e5f05b0-feea-11e8-a20e-e7aa870cc5aa',
+        marca: 'Prueba',
+        status: 1,
+        vin: randomstring.generate({
+            length: 17,
+            charset: 'alphanumeric'
+        })
+    }];
 const authenticatedUser = request.agent(server_1.default);
 describe('admin cars', () => {
     before((done) => {
@@ -41,6 +55,24 @@ describe('admin cars', () => {
     it('it should enter in import cars', (done) => {
         authenticatedUser
             .get('/settings/cars/import/')
+            .end((err, res) => {
+            expect(res.status).to.equal(200);
+            done();
+        });
+    });
+    it('it should import cars', (done) => {
+        authenticatedUser
+            .post('/api/admin/import-cars/')
+            .send({ cars: dataImportCar })
+            .end((err, res) => {
+            expect(res.status).to.equal(200);
+            done();
+        });
+    });
+    it('it should re import cars', (done) => {
+        authenticatedUser
+            .post('/api/admin/import-cars/')
+            .send({ cars: dataImportCar })
             .end((err, res) => {
             expect(res.status).to.equal(200);
             done();

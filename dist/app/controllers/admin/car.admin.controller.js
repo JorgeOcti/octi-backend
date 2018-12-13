@@ -30,13 +30,14 @@ class AdminCarController {
         }
     }
     async importCars(req, res) {
+        /* istanbul ignore next  */
         if (!req.user.hasPermission('addCar')) {
             return res.status(403).json({
                 message: 'No tienes permisos para esta operación'
             });
         }
         const { company, team } = req.user;
-        const cars = req.body;
+        const { cars } = req.body;
         if (cars && cars.length) {
             for (const car of cars) {
                 if (car.vin && car.vin.length) {
@@ -123,6 +124,7 @@ class AdminCarController {
                 }
             }, options, search);
             // validate exist page
+            /* istanbul ignore if  */
             if (options.page && cars.pages && cars.pages < options.page) {
                 res.status(400).json({
                     error: 'La página solicitada no existe.',
@@ -141,7 +143,7 @@ class AdminCarController {
             }
         }
         catch (e) {
-            /* istanbul ignore if */
+            /* istanbul ignore next  */
             if (e) {
                 res.status(500).json(e);
             }
