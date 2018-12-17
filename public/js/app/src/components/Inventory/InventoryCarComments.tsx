@@ -15,6 +15,7 @@ interface IPropsType {
 interface IStateType {
   error: Error | null;
   comment: string;
+  resetRender: boolean;
 }
 
 declare let window: IWindow;
@@ -23,8 +24,11 @@ class InventoryCarComments extends React.Component<IPropsType, IStateType> {
 
   state = {
     error: null,
-    comment: ''
+    comment: '',
+    resetRender: true
   };
+
+  interval: any;
 
   constructor(props: IPropsType) {
     super(props);
@@ -58,9 +62,15 @@ class InventoryCarComments extends React.Component<IPropsType, IStateType> {
         $comments.scrollTop = $comments.scrollHeight;
       }
     }, 300);
+    this.interval = setInterval(() => {
+      this.setState({
+        resetRender: !this.state.resetRender
+      });
+    }, 10000);
   }
 
   public componentWillUnmount(): void {
+    clearInterval(this.interval);
     this.props.socket.off('NEW_COMMENT');
     this.props.socket.emit('leave', {room: `inventory-comment-5c0e76ab982e7f2cae2f6a8c`});
   }
