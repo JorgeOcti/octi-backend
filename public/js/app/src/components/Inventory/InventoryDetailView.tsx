@@ -29,6 +29,7 @@ import {IWindow} from '../../interfaces/window';
 import ImageLazyLoad from '../ImageLazyLoad';
 import ModalView from '../Modal/ModalView';
 import InventoryCarComments from './InventoryCarComments';
+import {maxText} from "../../utils/common";
 
 declare let window: IWindow;
 
@@ -210,11 +211,22 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
   }
 
   public vinFormatter(cell: any, row: any) {
-    return (
-      <button className={'btn btn-default btn-xs'} onClick={() => this.carComments(row)}>
-        {row.comments.length} <i className={'fa fa-comments'}/>
-      </button>
-    );
+    if (row.comments.length) {
+      return (
+        <React.Fragment>
+          {maxText(row.comments[row.comments.length - 1].comment, 60)}<br />
+          <button className={'btn btn-default btn-xs'} onClick={() => this.carComments(row)}>
+            {row.comments.length} <i className={'fa fa-comments'}/>
+          </button>
+        </React.Fragment>
+      );
+    } else {
+      return (
+        <button className={'btn btn-default btn-xs'} onClick={() => this.carComments(row)}>
+          Agregar <i className={'fa fa-comments'}/>
+        </button>
+      );
+    }
   }
 
   public render(): React.ReactElement<IPropsType> {
@@ -295,35 +307,26 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
       headerClasses: 'hidden-xs hidden-sm hidden-md pointer',
       sort: true
     },
-    {
-      dataField: 'inventoriedBy',
-      text: 'Encontrado por',
-      filter: textFilter({
-        className: 'input-sm',
-        placeholder: ' Buscar'
-      }),
-      classes: 'hidden-xs hidden-sm hidden-md',
-      headerClasses: 'hidden-xs hidden-sm hidden-md pointer',
-      sort: true
-    }, {
-      dataField: 'images',
-      text: 'Imágenes',
-      classes: 'hidden-xs',
-      headerClasses: 'hidden-xs',
-      formatter: this.imagesFormatter,
-      headerStyle: {
-        verticalAlign: 'top'
-      }
-    }, {
-      dataField: 'countComments',
-      text: 'Comentarios',
-      classes: 'hidden-xs text-center',
-      formatter: this.vinFormatter,
-      headerClasses: 'hidden-xs',
+      {
+        dataField: 'inventoriedBy',
+        text: 'Encontrado por',
+        filter: textFilter({
+          className: 'input-sm',
+          placeholder: ' Buscar'
+        }),
+        classes: 'hidden-xs hidden-sm hidden-md',
+        headerClasses: 'hidden-xs hidden-sm hidden-md pointer',
+        sort: true
+      }, {
+        dataField: 'images',
+        text: 'Imágenes',
+        classes: 'hidden-xs',
+        headerClasses: 'hidden-xs',
+        formatter: this.imagesFormatter,
         headerStyle: {
-        verticalAlign: 'top'
-      }
-    }];
+          verticalAlign: 'top'
+        }
+      }];
     const columns = [...defaultColumns, {
       dataField: 'status',
       text: 'Status',
@@ -342,10 +345,22 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
         minWidth: '100px'
       },
       classes: (cell: any) => {
-        return `text-center ${classStatus.hasOwnProperty(cell) ? classStatus[cell] : ''}`;
+        return `middle-center ${classStatus.hasOwnProperty(cell) ? classStatus[cell] : ''}`;
       }
     }];
     const columnsReported = [...defaultColumns, {
+      dataField: 'countComments',
+      text: 'Comentarios',
+      classes: 'hidden-xs text-ellipsis',
+      formatter: this.vinFormatter,
+      headerClasses: 'hidden-xs',
+      headerStyle: {
+        verticalAlign: 'top'
+      },
+      style: {
+        maxWidth: '150px'
+      }
+    }, {
       dataField: 'status',
       text: 'Status',
       sort: true,
