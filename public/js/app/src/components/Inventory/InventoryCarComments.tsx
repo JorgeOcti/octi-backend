@@ -1,0 +1,131 @@
+import * as moment from 'moment';
+import * as React from 'react';
+import {connect} from 'react-redux';
+import {IInventoryComment} from '../../../../../../src/interfaces/inventoryComment.interface';
+import {addCommentAction, IInventoryState, sendCommentAction} from '../../actions/inventory.actions';
+import {IWindow} from '../../interfaces/window';
+
+interface IPropsType {
+  inventories: IInventoryState;
+  socket: SocketIOClient.Socket;
+  addCommentAction(inventoryComment: IInventoryComment): void;
+  sendCommentAction(carId: string, comment: string): void;
+}
+
+interface IStateType {
+  error: Error | null;
+  comment: string;
+}
+
+declare let window: IWindow;
+
+class InventoryCarComments extends React.Component<IPropsType, IStateType> {
+
+  state = {
+    error: null,
+    comment: ''
+  };
+
+  constructor(props: IPropsType) {
+    super(props);
+    this.handlerComment = this.handlerComment.bind(this);
+    this.sendComment = this.sendComment.bind(this);
+  }
+
+  public componentWillMount(): void {
+    const {inventoryCar} = this.props.inventories;
+    if (inventoryCar) {
+      const id = (inventoryCar as any)._id;
+      this.props.socket.emit('join', {room: `inventory-comment-${id}`});
+      this.props.socket.on('connect', () => {
+        this.props.socket.emit('join', {room: `inventory-comment-${id}`});
+      });
+      this.props.socket.on('NEW_COMMENT', (data: any): void => {
+        this.props.addCommentAction(data);
+        const $comments = document.getElementById('comments');
+        if ($comments) {
+          $comments.scrollTop = $comments.scrollHeight;
+        }
+      });
+    }
+  }
+
+  public componentDidMount(): void {
+    setTimeout(() => {
+      const $comments = document.getElementById('comments');
+      if ($comments) {
+        $comments.scrollTop = $comments.scrollHeight;
+      }
+    }, 300);
+  }
+
+  public componentWillUnmount(): void {
+    this.props.socket.off('NEW_COMMENT');
+    this.props.socket.emit('leave', {room: `inventory-comment-5c0e76ab982e7f2cae2f6a8c`});
+  }
+
+  public render(): React.ReactElement<IPropsType> {
+    const {inventoryCar} = this.props.inventories;
+    return (
+      <div className="direct-chat-info">
+        <div className="direct-chat-messages" id={'comments'} style={{height: '400px'}}>
+          {
+            inventoryCar ? inventoryCar.comments.map((comment) => {
+              return (
+                <div className={`direct-chat-msg ${comment.user && comment.user._id === window.user._id ? 'right' : ''}`} key={comment._id}>
+                  <div className="direct-chat-info clearfix">
+                    <span className="direct-chat-name pull-left">{comment.user ? `${comment.user.firstName} ${comment.user.lastName}` : '-'}</span>
+                    <span className="direct-chat-timestamp pull-right">{moment(comment.createdAt).fromNow()}</span>
+                  </div>
+                  <img className="direct-chat-img" src="https://adminlte.io/themes/AdminLTE/dist/img/user1-128x128.jpg" alt="message user image"/>
+                  <div className="direct-chat-text">
+                    {comment.comment}
+                  </div>
+                </div>
+              );
+            }) : null
+          }
+        </div>
+        <div className="form-group">
+          <label htmlFor="comment">Comentario:</label>
+          <textarea className="form-control" rows={4} id="comment" onChange={this.handlerComment} value={this.state.comment} />
+        </div>
+        <div className="form-group text-right">
+          <button type="button" className="btn btn-sm btn-primary" onClick={this.sendComment}>Comentar</button>
+        </div>
+      </div>
+    );
+  }
+
+  private handlerComment(e: React.ChangeEvent<HTMLTextAreaElement>): void {
+    this.setState({
+      comment: e.target.value
+    });
+  }
+
+  private sendComment() {
+    const {inventoryCar} = this.props.inventories;
+    if (inventoryCar && this.state.comment.trim().length) {
+      this.props.sendCommentAction((inventoryCar as any)._id, this.state.comment);
+      this.setState({
+        comment: ''
+      });
+    }
+  }
+}
+
+const mapStateToProps = (state: { inventories: IInventoryState }) => {
+  return {
+    inventories: state.inventories
+  };
+};
+
+const mapDispatchToProps = (dispatch: any ) => {
+  return {
+    dispatch,
+    addCommentAction: (inventoryComment: IInventoryComment) => dispatch(addCommentAction(inventoryComment)),
+    sendCommentAction: (carId: string, comment: string) => dispatch(sendCommentAction(carId, comment))
+  };
+};
+
+export default connect<{}, {}, IPropsType>(mapStateToProps, mapDispatchToProps)(InventoryCarComments);

@@ -36,6 +36,7 @@ class InventoryController {
     this.finishInventory = this.finishInventory.bind(this);
     this.deleteInventory = this.deleteInventory.bind(this);
     this.reportCar = this.reportCar.bind(this);
+    this.addComment = this.addComment.bind(this);
   }
 
   public async index(req: IRequest, res: Response) {
@@ -103,6 +104,7 @@ class InventoryController {
                 inventoryCars.push({
                   venue: currentVenue._id,
                   car: currentCar._id,
+                  comments: [],
                   images: []
                 });
               }
@@ -421,6 +423,7 @@ class InventoryController {
               if (inventory) {
                 inventory.cars.push({
                   car: car._id,
+                  comments: [],
                   venue: inventoryCar.cars[0].venue ? inventoryCar.cars[0].venue : req.user.venue._id,
                   venueFound: req.user.venue._id,
                   images: images ? images.map((image: string) => (new ObjectID(image))) : [],
@@ -453,6 +456,7 @@ class InventoryController {
               inventory.cars.push({
                 car: car._id,
                 venue: venue._id,
+                comments: [],
                 venueFound: venue._id,
                 status: ChoicesStatusCarInventory.leftover,
                 inventoriedBy: req.user._id,
@@ -499,6 +503,7 @@ class InventoryController {
           textNotification = `${req.user.firstName} ${req.user.lastName} encontró ${vin} en ${venue.name}.`;
           inventory.cars.push({
             car: newCar._id,
+            comments: [],
             venue: venue._id,
             venueFound: venue._id,
             status: ChoicesStatusCarInventory.leftover,
@@ -609,6 +614,54 @@ class InventoryController {
     }
   }
 
+  public async addComment(req: IRequest, res: Response) {
+    const {team} = req.user;
+    const {id} = req.params;
+    const {_id, comment} = req.body;
+    try {
+
+      await InventoryModel.update({
+        _id: id,
+        ['cars._id']: _id,
+        team
+      }, {
+        $push: {
+          'cars.$.comments': {
+            user: req.user._id,
+            comment,
+            createdAt: new Date()
+          }
+        }
+      }, {
+        upsert: true
+      });
+      io.to(`inventory-detail-${id}`).emit('REFRESH', {
+        update: true
+      });
+      io.to(`inventory-comment-${_id}`).emit('NEW_COMMENT', {
+        _id: new ObjectID(),
+        user: {
+          _id: req.user._id,
+          firstName: req.user.firstName,
+          lastName: req.user.lastName
+        },
+        comment
+      });
+      res.status(200).json({
+        message: 'Comentario agregado satisfactoriamente.',
+        status: 200
+      });
+    } catch (e) {
+      /* istanbul ignore next */
+      console.log('e', e);
+      /* istanbul ignore next */
+      res.status(400).json({
+        message: 'Ha ocurrido un error',
+        status: 400
+      });
+    }
+  }
+
   public async reportCar(req: IRequest, res: Response) {
     const {team, company, venue} = req.user;
     const {id} = req.params;
@@ -636,6 +689,7 @@ class InventoryController {
           car,
           venue,
           venueFound: venue,
+          comments: [],
           inventoriedBy: req.user._id,
           images:  images ? images.map((image: string) => (new ObjectID(image))) : [],
           status: ChoicesStatusCarInventory.reported
@@ -968,6 +1022,9 @@ class InventoryController {
         }, {
           path: 'cars.inventoriedBy',
           select: ['firstName', 'lastName']
+        }, {
+          path: 'cars.comments.user',
+          select: ['_id', 'firstName', 'lastName']
         }]);
         venuesPermissions = venuesPermissions.map((ve) => ve.toString());
         res.json({

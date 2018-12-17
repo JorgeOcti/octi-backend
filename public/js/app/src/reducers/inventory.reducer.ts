@@ -3,6 +3,7 @@ import {IInventoryState, InventoryReduxAction} from '../actions/inventory.action
 const initialState: IInventoryState = {
   inventories: [],
   loading: true,
+  inventoryCar: null,
   source: null,
   loadingDetail: true,
   summary: {
@@ -39,6 +40,11 @@ export function inventoriesReducer(state = initialState, action: InventoryReduxA
         ...state,
         inventories: action.payload.inventories
       };
+    case '/INVENTORORIES/UPDATE_INVENTORY_CAR':
+      return {
+        ...state,
+        inventoryCar: action.payload.inventoryCar
+      };
     case '/INVENTORORIES/LOADING_INVENTORY_DETAIL':
       return {
         ...state,
@@ -52,6 +58,18 @@ export function inventoriesReducer(state = initialState, action: InventoryReduxA
         detail: action.payload.detail,
         detailByBrand: action.payload.detailByBrand
       };
+    case '/INVENTORORIES/ADD_COMMENT':
+      if (state.inventoryCar) {
+        return {
+          ...state,
+          inventoryCar: {
+            ...state.inventoryCar,
+            comments: [...state.inventoryCar.comments, action.payload.inventoryComment]
+          }
+        };
+      } else {
+        return state;
+      }
     default:
       return state;
   }

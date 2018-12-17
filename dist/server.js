@@ -85,6 +85,10 @@ exports.io.on('connection', (socket) => {
         console.log(`join ${data.room}`);
         socket.join(data.room);
     });
+    socket.on('leave', (data) => {
+        console.log(`leave ${data.room}`);
+        socket.leave(data.room);
+    });
     socket.on('disconnect', () => {
         console.log('---------------------');
         console.log('user disconnected');

@@ -92,6 +92,11 @@ io.on( 'connection', ( socket ) => {
     socket.join(data.room);
   });
 
+  socket.on('leave', (data) => {
+    console.log(`leave ${data.room}`);
+    socket.leave(data.room);
+  });
+
   socket.on('disconnect',  () => {
     console.log('---------------------');
     console.log('user disconnected');

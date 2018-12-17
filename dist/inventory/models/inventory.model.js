@@ -1,6 +1,19 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 const mongoose = require("mongoose");
+const invetoryCommentCars = new mongoose.Schema({
+    user: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User'
+    },
+    comment: {
+        type: String
+    },
+    createdAt: {
+        type: Date,
+        default: new Date()
+    }
+});
 var ChoicesStatusCarInventory;
 (function (ChoicesStatusCarInventory) {
     ChoicesStatusCarInventory["pending"] = "pending";
@@ -35,11 +48,14 @@ const inventoryCarSchema = new mongoose.Schema({
             type: mongoose.Schema.Types.ObjectId,
             ref: 'InventoryFile'
         }],
+    comments: [invetoryCommentCars],
     status: {
         type: String,
         enum: exports.choicesStatusCarInventory,
         default: ChoicesStatusCarInventory.pending
     }
+}, {
+    timestamps: true
 });
 var ChoicesStatusInventory;
 (function (ChoicesStatusInventory) {

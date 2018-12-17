@@ -198,6 +198,15 @@ export default class ApiService {
     );
   }
 
+  public addComment(id: string, carId: string, comment: string): AxiosPromise {
+    return this.instance.post(
+      `/api/inventory/${id}/comment/`, {
+        _id: carId,
+        comment
+      }
+    );
+  }
+
   public createInventory(data: any, name: string): AxiosPromise {
     return this.instance.post(
       `/api/inventory/`, {carsByVenue: data, name}, {

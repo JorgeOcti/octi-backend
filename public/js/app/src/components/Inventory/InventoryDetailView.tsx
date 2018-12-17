@@ -3,8 +3,8 @@
 ///<reference path="../../../src/types/react-bootstrap-table2-filter.d.ts"/>
 ///<reference path="../../../src/types/react-bootstrap-table2-paginator.d.ts"/>
 import * as Raven from 'raven-js';
-import * as React from 'react';
 import {ErrorInfo} from 'react';
+import * as React from 'react';
 import BootstrapTable from 'react-bootstrap-table-next';
 import filterFactory, { selectFilter, textFilter } from 'react-bootstrap-table2-filter';
 import paginationFactory from 'react-bootstrap-table2-paginator';
@@ -13,17 +13,32 @@ import {RouteComponentProps} from 'react-router';
 import {Dispatch} from 'redux';
 import * as io from 'socket.io-client';
 import * as XLSX from 'xlsx';
-import {getInventoryDetailAction, IDetailByBrand, IDetailByVenue, IInventoryState, InventoryReduxAction} from '../../actions/inventory.actions';
+import {IInventoryCar} from '../../../../../../src/interfaces/inventory.interface';
+import {
+  addCommentAction,
+  getInventoryDetailAction,
+  IDetailByBrand,
+  IDetailByVenue,
+  IInventoryState,
+  InventoryReduxAction, sendCommentAction,
+  updateInventoryCarAction
+} from '../../actions/inventory.actions';
+import {loadDataAction, ModalReduxAction} from '../../actions/modal.actions';
 import AppContainer from '../../container/AppContainer';
 import {IWindow} from '../../interfaces/window';
 import ImageLazyLoad from '../ImageLazyLoad';
+import ModalView from '../Modal/ModalView';
+import InventoryCarComments from './InventoryCarComments';
 
 declare let window: IWindow;
 
 interface IPropsType extends RouteComponentProps<{ id: string }> {
   inventories: IInventoryState;
   dispatch: Dispatch<InventoryReduxAction>;
+
+  updateCommentsAction(inventoryCar: IInventoryCar): InventoryReduxAction;
   getInventoryDetailAction(id: string, update: boolean): InventoryReduxAction;
+  loadDataAction(title: string, body: JSX.Element, footer?: JSX.Element): ModalReduxAction;
 }
 
 interface IStateType {
@@ -75,7 +90,9 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
   constructor(props: IPropsType) {
     super(props);
     this.resizeCharts = this.resizeCharts.bind(this);
-    this.export = this.export.bind(this);
+    this.xlsExport = this.xlsExport.bind(this);
+    this.carComments = this.carComments.bind(this);
+    this.vinFormatter = this.vinFormatter.bind(this);
     this.imagesFormatter = this.imagesFormatter.bind(this);
   }
 
@@ -101,20 +118,22 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
     });
     this.socket.on('REFRESH', (data: any): void => {
       if (data.update) {
-        const status: any = {
-          found: 'success',
-          leftover: 'warning',
-          reported: 'grey'
-        };
-        ($ as any).toast({
-          heading: data.title,
-          text: data.text,
-          position: 'top-right',
-          loaderBg: '#e2e2e2',
-          icon: status[data.status],
-          hideAfter: 5000,
-          stack: 6
-        });
+        if (data.title) {
+          const status: any = {
+            found: 'success',
+            leftover: 'warning',
+            reported: 'grey'
+          };
+          ($ as any).toast({
+            heading: data.title,
+            text: data.text,
+            position: 'top-right',
+            loaderBg: '#e2e2e2',
+            icon: status[data.status],
+            hideAfter: 5000,
+            stack: 6
+          });
+        }
         this.props.getInventoryDetailAction(id, true);
       }
     });
@@ -188,6 +207,14 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
         '-'
       );
     }
+  }
+
+  public vinFormatter(cell: any, row: any) {
+    return (
+      <button className={'btn btn-default btn-xs'} onClick={() => this.carComments(row)}>
+        {row.comments.length} <i className={'fa fa-comments'}/>
+      </button>
+    );
   }
 
   public render(): React.ReactElement<IPropsType> {
@@ -278,14 +305,22 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
       classes: 'hidden-xs hidden-sm hidden-md',
       headerClasses: 'hidden-xs hidden-sm hidden-md pointer',
       sort: true
-    },
-    {
+    }, {
       dataField: 'images',
       text: 'Imágenes',
       classes: 'hidden-xs',
       headerClasses: 'hidden-xs',
       formatter: this.imagesFormatter,
       headerStyle: {
+        verticalAlign: 'top'
+      }
+    }, {
+      dataField: 'countComments',
+      text: 'Comentarios',
+      classes: 'hidden-xs text-center',
+      formatter: this.vinFormatter,
+      headerClasses: 'hidden-xs',
+        headerStyle: {
         verticalAlign: 'top'
       }
     }];
@@ -306,7 +341,7 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
         maxWidth: '100px',
         minWidth: '100px'
       },
-      classes: (cell: any, row: any, rowIndex: any, colIndex: any) => {
+      classes: (cell: any) => {
         return `text-center ${classStatus.hasOwnProperty(cell) ? classStatus[cell] : ''}`;
       }
     }];
@@ -327,7 +362,7 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
         maxWidth: '100px',
         minWidth: '100px'
       },
-      classes: (cell: any, row: any, rowIndex: any, colIndex: any) => {
+      classes: (cell: any) => {
         return `text-center ${classStatus.hasOwnProperty(cell) ? classStatus[cell] : ''}`;
       }
     }];
@@ -344,6 +379,8 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
             denomination: car.car.denomination,
             venue: car.venue ? car.venue.name : '-',
             images: car.images && car.images.length ? car.images : [],
+            comments: car.comments && car.comments.length ? car.comments : [],
+            countComments: car.comments && car.comments.length ? car.comments.length : 0,
             venueFound: car.venueFound ? car.venueFound.name : '-',
             inventoriedBy: car.inventoriedBy ? `${car.inventoriedBy.firstName} ${car.inventoriedBy.lastName}` : '-',
             status: car.status
@@ -356,6 +393,8 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
             denomination: car.car.denomination,
             venue: car.venue ? car.venue.name : '-',
             images: car.images && car.images.length ? car.images : [],
+            comments: car.comments && car.comments.length ? car.comments : [],
+            countComments: car.comments && car.comments.length ? car.comments.length : 0,
             venueFound: car.venueFound ? car.venueFound.name : '-',
             inventoriedBy: car.inventoriedBy ? `${car.inventoriedBy.firstName} ${car.inventoriedBy.lastName}` : '-',
             status: car.status
@@ -504,7 +543,7 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
                 <div className="box-body">
                   <div className="row">
                     <div className="col-md-12 text-right hidden-xs hidden-sm ">
-                      <p><button className="btn btn-sm btn-primary" onClick={() => this.export(['pending', 'found', 'leftover'])}>
+                      <p><button className="btn btn-sm btn-primary" onClick={() => this.xlsExport(['pending', 'found', 'leftover'])}>
                         <i className="fa fa-fw fa-download" /> Exportart excel
                       </button></p>
                     </div>
@@ -532,13 +571,11 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
               <div className="box box-info">
                 <div className="box-header with-border">
                   <h3 className="box-title">Detalle Reportados</h3>
-                  {/*<div className="box-tools pull-right">*/}
-                  {/*</div>*/}
                 </div>
                 <div className="box-body">
                   <div className="row">
                     <div className="col-md-12 text-right hidden-xs hidden-sm ">
-                      <p><button className="btn btn-sm btn-primary" onClick={() => this.export(['reported'])}>
+                      <p><button className="btn btn-sm btn-primary" onClick={() => this.xlsExport(['reported'])}>
                         <i className="fa fa-fw fa-download" /> Exportart excel
                       </button></p>
                     </div>
@@ -564,79 +601,29 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
               </div>
             </div>
           </div>
-          {/*<h2 className="page-header">Detalle sucursales</h2>*/}
-          {/*<div className="row">*/}
-            {/*<div className="col-md-6">*/}
-              {/*<div className="box box-warning collapsed-box">*/}
-                {/*<div className="box-header with-border">*/}
-                  {/*<h3 className="box-title">Sucursal 1</h3>*/}
-                  {/*<div className="box-tools pull-right">*/}
-                    {/*<button type="button" className="btn btn-box-tool" data-widget="collapse"><i className="fa fa-plus" /></button>*/}
-                  {/*</div>*/}
-                {/*</div>*/}
-                {/*<div className="box-body" style={{display: 'none'}}>*/}
-                  {/*<p>&nbsp;</p>*/}
-                  {/*<p>&nbsp;</p>*/}
-                  {/*<p>&nbsp;</p>*/}
-                  {/*<p>&nbsp;</p>*/}
-                {/*</div>*/}
-              {/*</div>*/}
-            {/*</div>*/}
-            {/*<div className="col-md-6">*/}
-              {/*<div className="box box-warning collapsed-box">*/}
-                {/*<div className="box-header">*/}
-                  {/*<h3 className="box-title">Sucursal 2</h3>*/}
-                  {/*<div className="box-tools pull-right">*/}
-                    {/*<button type="button" className="btn btn-box-tool" data-widget="collapse"><i className="fa fa-plus" /></button>*/}
-                  {/*</div>*/}
-                {/*</div>*/}
-                {/*<div className="box-body">*/}
-                  {/*<p>&nbsp;</p>*/}
-                  {/*<p>&nbsp;</p>*/}
-                  {/*<p>&nbsp;</p>*/}
-                  {/*<p>&nbsp;</p>*/}
-                {/*</div>*/}
-              {/*</div>*/}
-            {/*</div>*/}
-            {/*<div className="col-md-6">*/}
-              {/*<div className="box box-warning collapsed-box">*/}
-                {/*<div className="box-header">*/}
-                  {/*<h3 className="box-title">Sucursal 3</h3>*/}
-                  {/*<div className="box-tools pull-right">*/}
-                    {/*<button type="button" className="btn btn-box-tool" data-widget="collapse"><i className="fa fa-plus" /></button>*/}
-                  {/*</div>*/}
-                {/*</div>*/}
-                {/*<div className="box-body">*/}
-                  {/*<p>&nbsp;</p>*/}
-                  {/*<p>&nbsp;</p>*/}
-                  {/*<p>&nbsp;</p>*/}
-                  {/*<p>&nbsp;</p>*/}
-                {/*</div>*/}
-              {/*</div>*/}
-            {/*</div>*/}
-            {/*<div className="col-md-6">*/}
-              {/*<div className="box box-warning collapsed-box">*/}
-                {/*<div className="box-header">*/}
-                  {/*<h3 className="box-title">Sucursal 4</h3>*/}
-                  {/*<div className="box-tools pull-right">*/}
-                    {/*<button type="button" className="btn btn-box-tool" data-widget="collapse"><i className="fa fa-plus" /></button>*/}
-                  {/*</div>*/}
-                {/*</div>*/}
-                {/*<div className="box-body" style={{display: 'none'}}>*/}
-                  {/*<p>&nbsp;</p>*/}
-                  {/*<p>&nbsp;</p>*/}
-                  {/*<p>&nbsp;</p>*/}
-                  {/*<p>&nbsp;</p>*/}
-                {/*</div>*/}
-              {/*</div>*/}
-            {/*</div>*/}
-          {/*</div>*/}
+          <ModalView />
         </section>
       </AppContainer>
     );
   }
 
-  private export(status: string[]) {
+  private carComments(inventoryCar: IInventoryCar) {
+    const { inventories} = this.props;
+    this.props.updateCommentsAction(inventoryCar);
+    setTimeout(() => {
+      this.props.loadDataAction(
+        `Commentarios`,
+        <InventoryCarComments
+          inventories={inventories}
+          socket={this.socket}
+          addCommentAction={addCommentAction}
+          sendCommentAction={sendCommentAction}
+        />
+      );
+    }, 400);
+  }
+
+  private xlsExport(status: string[]) {
     const {detail} = this.props.inventories;
     const data: any = [];
     // Order data
@@ -923,6 +910,8 @@ const mapStateToProps = (state: { inventories: IInventoryState }) => {
 const mapDispatchToProps = (dispatch: any ) => {
   return {
     dispatch,
+    loadDataAction: (title: string, body: JSX.Element, footer: JSX.Element) => dispatch(loadDataAction(title, body, footer)),
+    updateCommentsAction: (inventoryCar: IInventoryCar) => dispatch(updateInventoryCarAction(inventoryCar)),
     getInventoryDetailAction: (id: string, update: boolean) => dispatch(getInventoryDetailAction(id, update))
   };
 };

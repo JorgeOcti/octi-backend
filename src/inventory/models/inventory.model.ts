@@ -3,6 +3,23 @@ import {
   IInventory,
   IInventoryCar
 } from '../../interfaces/inventory.interface';
+import {IInventoryComment} from '../../interfaces/inventoryComment.interface';
+
+export interface IIventoryCommentModel extends IInventoryComment, mongoose.Types.Subdocument {}
+
+const invetoryCommentCars = new mongoose.Schema({
+  user: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User'
+  },
+  comment: {
+    type: String
+  },
+  createdAt: {
+    type: Date,
+    default: new Date()
+  }
+});
 
 export interface IInventoryCarModel extends IInventoryCar, mongoose.Types.Subdocument {}
 
@@ -39,11 +56,14 @@ const inventoryCarSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: 'InventoryFile'
   }],
+  comments: [invetoryCommentCars],
   status: {
     type: String,
     enum: choicesStatusCarInventory,
     default: ChoicesStatusCarInventory.pending
   }
+}, {
+  timestamps: true
 });
 
 export interface IInventoryModel extends IInventory, mongoose.Document {}
