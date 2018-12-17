@@ -72,42 +72,78 @@ class InventoryCarComments extends React.Component<IPropsType, IStateType> {
   public componentWillUnmount(): void {
     clearInterval(this.interval);
     this.props.socket.off('NEW_COMMENT');
-    this.props.socket.emit('leave', {room: `inventory-comment-5c0e76ab982e7f2cae2f6a8c`});
+    const {inventoryCar} = this.props.inventories;
+    if (inventoryCar) {
+      const id = (inventoryCar as any)._id;
+      this.props.socket.emit('leave', {room: `inventory-comment-${id}`});
+    }
   }
 
   public render(): React.ReactElement<IPropsType> {
     const {inventoryCar} = this.props.inventories;
     return (
-      <div className="direct-chat-info">
-        <div className="direct-chat-messages" id={'comments'} style={{height: '400px'}}>
-          {
-            inventoryCar ? inventoryCar.comments.map((comment) => {
-              return (
-                <div className={`direct-chat-msg ${comment.user && comment.user._id === window.user._id ? 'right' : ''}`} key={comment._id}>
-                  <div className="direct-chat-info clearfix">
-                    <span className="direct-chat-name pull-left">{comment.user ? `${comment.user.firstName} ${comment.user.lastName}` : '-'}</span>
-                    <span className="direct-chat-timestamp pull-right">{moment(comment.createdAt).fromNow()}</span>
-                  </div>
-                  <img className="direct-chat-img" src="/static/images/icon_circular.png" alt="message user image"/>
-                  <div className="direct-chat-text">
-                    {
-                      comment.comment.split('\n').map((item, key) => {
-                        return (
-                          <span key={key}>{item}<br/></span>
-                        );
-                      })}
-                  </div>
-                </div>
-              );
-            }) : null
-          }
+      <div className={'row'}>
+        <div className={'col-md-12'}>
+          <strong>Detalle del vehiculo</strong>
         </div>
-        <div className="form-group">
-          <label htmlFor="comment">Comentario:</label>
-          <textarea className="form-control" rows={4} id="comment" onChange={this.handlerComment} onKeyPress={this.keyPressComment} value={this.state.comment} />
+        <div className={'col-md-3'}>
+          <strong>VIN</strong>
         </div>
-        <div className="form-group text-right">
-          <button type="button" className="btn btn-sm btn-primary" onClick={this.sendComment}>Comentar</button>
+        <div className={'col-md-9'}>
+          { (inventoryCar as any).vin}
+        </div>
+        <div className={'col-md-3'}>
+          <strong>Marca</strong>
+        </div>
+        <div className={'col-md-9'}>
+          { (inventoryCar as any).brand}
+        </div>
+        <div className={'col-md-3'}>
+          <strong>Denominación</strong>
+        </div>
+        <div className={'col-md-9'}>
+          { (inventoryCar as any).denomination}
+        </div>
+        <div className={'col-md-12'}>
+          &nbsp;
+        </div>
+        <div className={'col-md-12'}>
+          <div className="direct-chat-info">
+            <div className="direct-chat-messages" id={'comments'} style={{height: '400px'}}>
+              {
+                inventoryCar ? inventoryCar.comments.map((comment) => {
+                  return (
+                    <div className={`direct-chat-msg ${comment.user && comment.user._id === window.user._id ? 'right' : ''}`} key={comment._id}>
+                      <div className="direct-chat-info clearfix">
+                        <span
+                          className="direct-chat-name pull-left">{comment.user ? `${comment.user.firstName} ${comment.user.lastName}` : '-'}</span>
+                        <span className="direct-chat-timestamp pull-right">{moment(comment.createdAt).fromNow()}</span>
+                      </div>
+                      <img className="direct-chat-img" src="/static/images/icon_circular.png" alt="message user image"/>
+                      <div className="direct-chat-text">
+                        {
+                          comment.comment.split('\n').map((item, key) => {
+                            return (
+                              <span key={key}>{item}<br/></span>
+                            );
+                          })}
+                      </div>
+                    </div>
+                  );
+                }) : null
+              }
+            </div>
+          </div>
+          <div className={'col-md-12'}>
+            <div className="form-group">
+              <label htmlFor="comment">Comentario:</label>
+              <textarea className="form-control" rows={4} id="comment" onChange={this.handlerComment} onKeyPress={this.keyPressComment}
+                        value={this.state.comment}/>
+            </div>
+            <div className="form-group text-right">
+              <button type="button" className="btn btn-sm btn-primary" onClick={this.sendComment}>Comentar</button>
+            </div>
+          </div>
         </div>
       </div>
     );
