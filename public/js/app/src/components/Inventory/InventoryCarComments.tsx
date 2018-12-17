@@ -30,6 +30,7 @@ class InventoryCarComments extends React.Component<IPropsType, IStateType> {
     super(props);
     this.handlerComment = this.handlerComment.bind(this);
     this.sendComment = this.sendComment.bind(this);
+    this.keyPressComment = this.keyPressComment.bind(this);
   }
 
   public componentWillMount(): void {
@@ -77,9 +78,14 @@ class InventoryCarComments extends React.Component<IPropsType, IStateType> {
                     <span className="direct-chat-name pull-left">{comment.user ? `${comment.user.firstName} ${comment.user.lastName}` : '-'}</span>
                     <span className="direct-chat-timestamp pull-right">{moment(comment.createdAt).fromNow()}</span>
                   </div>
-                  <img className="direct-chat-img" src="https://adminlte.io/themes/AdminLTE/dist/img/user1-128x128.jpg" alt="message user image"/>
+                  <img className="direct-chat-img" src="/static/images/icon_circular.png" alt="message user image"/>
                   <div className="direct-chat-text">
-                    {comment.comment}
+                    {
+                      comment.comment.split('\n').map((item, key) => {
+                        return (
+                          <span key={key}>{item}<br/></span>
+                        );
+                      })}
                   </div>
                 </div>
               );
@@ -88,7 +94,7 @@ class InventoryCarComments extends React.Component<IPropsType, IStateType> {
         </div>
         <div className="form-group">
           <label htmlFor="comment">Comentario:</label>
-          <textarea className="form-control" rows={4} id="comment" onChange={this.handlerComment} value={this.state.comment} />
+          <textarea className="form-control" rows={4} id="comment" onChange={this.handlerComment} onKeyPress={this.keyPressComment} value={this.state.comment} />
         </div>
         <div className="form-group text-right">
           <button type="button" className="btn btn-sm btn-primary" onClick={this.sendComment}>Comentar</button>
@@ -101,6 +107,17 @@ class InventoryCarComments extends React.Component<IPropsType, IStateType> {
     this.setState({
       comment: e.target.value
     });
+  }
+
+  private keyPressComment(e: React.KeyboardEvent<HTMLTextAreaElement>): void {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      this.sendComment();
+      setTimeout(() => {
+        this.setState({
+          comment: ''
+        });
+      }, 100);
+    }
   }
 
   private sendComment() {
