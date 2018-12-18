@@ -108,7 +108,7 @@ class InventoryCarComments extends React.Component<IPropsType, IStateType> {
           &nbsp;
         </div>
         <div className={'col-md-12'}>
-          <div className="direct-chat-info">
+          <div className="direct-chat-info" style={{border: '1px solid #efefef'}}>
             <div className="direct-chat-messages" id={'comments'} style={{height: '400px'}}>
               {
                 inventoryCar ? inventoryCar.comments.map((comment) => {
@@ -134,16 +134,16 @@ class InventoryCarComments extends React.Component<IPropsType, IStateType> {
               }
             </div>
           </div>
-          <div className={'col-md-12'}>
-            <div className="form-group">
-              <label htmlFor="comment">Comentario:</label>
-              <textarea className="form-control" rows={4} id="comment" onChange={this.handlerComment} onKeyPress={this.keyPressComment}
-                        value={this.state.comment}/>
-            </div>
-            <div className="form-group text-right">
-              <button type="button" className="btn btn-sm btn-primary" onClick={this.sendComment}>Comentar</button>
-            </div>
+          <div className="form-group">
+            <label htmlFor="comment">Comentario:</label>
+            <textarea className="form-control" rows={4} id="comment" onChange={this.handlerComment} onKeyPress={this.keyPressComment}
+                      value={this.state.comment}/>
           </div>
+          <div className="form-group text-right">
+            <button type="button" className="btn btn-sm btn-primary" onClick={this.sendComment}>Comentar</button>
+          </div>
+          {/*<div className={'col-md-12'}>*/}
+          {/*</div>*/}
         </div>
       </div>
     );
