@@ -458,7 +458,7 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
                     }} />
                   </div>
                   <span className="progress-description">
-                    {`${percentageFound.toFixed(3)}% encontrados.`}
+                    {`${percentageFound.toFixed(1)}% encontrados.`}
                   </span>
                 </div>
               </div>
@@ -475,7 +475,7 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
                     }} />
                   </div>
                   <span className="progress-description">
-                    {`${percentagePending.toFixed(3)}% faltantes.`}
+                    {`${percentagePending.toFixed(1)}% faltantes.`}
                   </span>
                 </div>
               </div>
@@ -492,7 +492,7 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
                     }} />
                   </div>
                   <span className="progress-description">
-                    {`${percentageLeftover.toFixed(3)}% sobrantes.`}
+                    {`${percentageLeftover.toFixed(1)}% sobrantes.`}
                   </span>
                 </div>
               </div>
@@ -509,7 +509,7 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
                     }} />
                   </div>
                   <span className="progress-description">
-                    {`${percentageReported.toFixed(3)}% sobrantes.`}
+                    {`${percentageReported.toFixed(1)}% reportados.`}
                   </span>
                 </div>
               </div>

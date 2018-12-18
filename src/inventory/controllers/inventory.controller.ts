@@ -69,7 +69,8 @@ class InventoryController {
       const venuesIDs: string[] = [];
       for (const venue of carsByVenue) {
         if (venue.name && venue.name.length) {
-          let currentVenue: IVenueModel | null = await VenueModel.findOne({team, name: venue.name});
+          const venueRegExp = new RegExp(venue.name, 'i');
+          let currentVenue: IVenueModel | null = await VenueModel.findOne({team, name: venueRegExp});
           // create venue if no existe
           if (currentVenue === null) {
             currentVenue = new VenueModel({
