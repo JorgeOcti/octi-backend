@@ -7,6 +7,7 @@ import * as path from 'path';
 import {SuperTest, Test} from 'supertest';
 import {IInventory} from '../../interfaces/inventory.interface';
 import server from '../../server';
+import Inventory from "../models/inventory.model";
 const request = require('supertest');
 
 chai.use(chaiHttp);
@@ -241,6 +242,29 @@ describe('inventories', () => {
         expect(res.body.status).to.equal(200);
         done();
       });
+  });
+
+  it('it should comment car', (done) => {
+    Inventory.findById(inventoryID).exec((err, invetory) => {
+      if (err) {
+        console.log(err);
+      }
+      if (invetory) {
+        authenticatedUser
+          .post(`/api/inventory/${inventoryID}/comment/`)
+          .send({
+            _id: (invetory.cars[0] as any)._id,
+            comment: 'Prueba comentario'
+          })
+          .end((err, res) => {
+            expect(res.status).to.equal(200);
+            expect(res.body).have.property('message');
+            expect(res.body).have.property('status');
+            expect(res.body.status).to.equal(200);
+            done();
+          });
+      }
+    });
   });
 
   it('it should report found car', (done) => {

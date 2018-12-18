@@ -104,6 +104,18 @@ class InventoryCarComments extends React.Component<IPropsType, IStateType> {
         <div className={'col-md-9'}>
           { (inventoryCar as any).denomination}
         </div>
+        <div className={'col-md-3'}>
+          <strong>Reportado en</strong>
+        </div>
+        <div className={'col-md-9'}>
+          { (inventoryCar as any).venueFound}
+        </div>
+        <div className={'col-md-3'}>
+          <strong>Reportado por</strong>
+        </div>
+        <div className={'col-md-9'}>
+          { (inventoryCar as any).inventoriedBy}
+        </div>
         <div className={'col-md-12'}>
           &nbsp;
         </div>
@@ -113,10 +125,16 @@ class InventoryCarComments extends React.Component<IPropsType, IStateType> {
               {
                 inventoryCar ? inventoryCar.comments.map((comment) => {
                   return (
-                    <div className={`direct-chat-msg ${comment.user && comment.user._id === window.user._id ? 'right' : ''}`} key={comment._id}>
+                    <div
+                      className={`direct-chat-msg ${comment.user && comment.user._id === window.user._id ? 'right' : ''}`}
+                      key={comment._id}
+                    >
                       <div className="direct-chat-info clearfix">
                         <span
-                          className="direct-chat-name pull-left">{comment.user ? `${comment.user.firstName} ${comment.user.lastName}` : '-'}</span>
+                          className="direct-chat-name pull-left"
+                        >
+                          {comment.user ? `${comment.user.firstName} ${comment.user.lastName}` : '-'}
+                        </span>
                         <span className="direct-chat-timestamp pull-right">{moment(comment.createdAt).fromNow()}</span>
                       </div>
                       <img className="direct-chat-img" src="/static/images/icon_circular.png" alt="message user image"/>
@@ -136,14 +154,18 @@ class InventoryCarComments extends React.Component<IPropsType, IStateType> {
           </div>
           <div className="form-group">
             <label htmlFor="comment">Comentario:</label>
-            <textarea className="form-control" rows={4} id="comment" onChange={this.handlerComment} onKeyPress={this.keyPressComment}
-                      value={this.state.comment}/>
+            <textarea
+              className="form-control"
+              rows={4}
+              id="comment"
+              onChange={this.handlerComment}
+              onKeyPress={this.keyPressComment}
+              value={this.state.comment}
+            />
           </div>
           <div className="form-group text-right">
             <button type="button" className="btn btn-sm btn-primary" onClick={this.sendComment}>Comentar</button>
           </div>
-          {/*<div className={'col-md-12'}>*/}
-          {/*</div>*/}
         </div>
       </div>
     );

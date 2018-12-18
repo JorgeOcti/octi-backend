@@ -7,6 +7,7 @@ const fs = require("fs");
 require("mocha");
 const path = require("path");
 const server_1 = require("../../server");
+const inventory_model_1 = require("../models/inventory.model");
 const request = require('supertest');
 chai.use(chaiHttp);
 const expect = chai.expect;
@@ -223,6 +224,28 @@ describe('inventories', () => {
             expect(res.body).have.property('status');
             expect(res.body.status).to.equal(200);
             done();
+        });
+    });
+    it('it should comment car', (done) => {
+        inventory_model_1.default.findById(inventoryID).exec((err, invetory) => {
+            if (err) {
+                console.log(err);
+            }
+            if (invetory) {
+                authenticatedUser
+                    .post(`/api/inventory/${inventoryID}/comment/`)
+                    .send({
+                    _id: invetory.cars[0]._id,
+                    comment: 'Prueba comentario'
+                })
+                    .end((err, res) => {
+                    expect(res.status).to.equal(200);
+                    expect(res.body).have.property('message');
+                    expect(res.body).have.property('status');
+                    expect(res.body.status).to.equal(200);
+                    done();
+                });
+            }
         });
     });
     it('it should report found car', (done) => {
