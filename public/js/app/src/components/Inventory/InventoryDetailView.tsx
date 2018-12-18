@@ -627,7 +627,7 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
     this.props.updateCommentsAction(inventoryCar);
     setTimeout(() => {
       this.props.loadDataAction(
-        `Commentarios`,
+        `Comentarios`,
         <InventoryCarComments
           inventories={inventories}
           socket={this.socket}
