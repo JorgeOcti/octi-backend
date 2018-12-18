@@ -7,6 +7,7 @@ const socketIO = require("socket.io");
 const socketRedis = require("socket.io-redis");
 const app_1 = require("./app");
 const logger_service_1 = require("./services/logger.service");
+const redis_service_1 = require("./services/redis.service");
 // Mongoose setting
 const MONGODB_URI = process.env.MONGODB_URI || '';
 // Mongoose connect
@@ -76,18 +77,58 @@ exports.io.use(async (socket, next) => {
     // return next(new Error('authentication error'));
 });
 /* istanbul ignore next */
-exports.io.on('connection', (socket) => {
+exports.io.on('connection', async (socket) => {
     console.log('---------------------');
     console.log('A user connected');
     console.log('socket.id', socket.id);
     console.log('socket.user\n', socket.user);
     socket.on('join', (data) => {
-        console.log(`join ${data.room}`);
-        socket.join(data.room);
+        const { room } = data;
+        redis_service_1.default.get(room, async (error, result) => {
+            let data;
+            if (result) {
+                data = JSON.parse(result);
+                if (!result.hasOwnProperty(socket.user._id)) {
+                    data = {
+                        ...data,
+                        [socket.user._id]: {
+                            firstName: socket.user.firstName,
+                            lastName: socket.user.lastName
+                        }
+                    };
+                    redis_service_1.default.setex(room, 60 * 60 * 24, JSON.stringify(data));
+                }
+            }
+            else {
+                data = {
+                    [socket.user._id]: {
+                        firstName: socket.user.firstName,
+                        lastName: socket.user.lastName
+                    }
+                };
+                redis_service_1.default.setex(room, 60 * 60 * 24, JSON.stringify(data));
+            }
+            console.log(`join ${room}`);
+            socket.join(room);
+            exports.io.to(room).emit('USERS_IN_CHANNEL', data);
+        });
     });
     socket.on('leave', (data) => {
-        console.log(`leave ${data.room}`);
-        socket.leave(data.room);
+        const { room } = data;
+        redis_service_1.default.get(room, async (error, result) => {
+            let data;
+            if (result) {
+                data = JSON.parse(result);
+                const key = socket.user._id;
+                if (data.hasOwnProperty(key)) {
+                    delete data[key];
+                    redis_service_1.default.setex(room, 60 * 60 * 24, JSON.stringify(data));
+                }
+            }
+            exports.io.to(room).emit('USERS_IN_CHANNEL', data);
+            console.log(`leave ${room}`);
+            socket.leave(room);
+        });
     });
     socket.on('disconnect', () => {
         console.log('---------------------');

@@ -122,9 +122,9 @@ userSchema.methods.hasPermission = function(permission: string): boolean {
 // used by sockets
 userSchema.methods.generateToken = function() {
   const userInfo = {
-    _id: this._id
-    // firstName: this.firstName,
-    // lastName: this.lastName,
+    _id: this._id,
+    firstName: this.firstName,
+    lastName: this.lastName,
     // email: this.email,
     // company: this.company,
     // venue: this.venue

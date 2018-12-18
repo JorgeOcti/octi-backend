@@ -105,12 +105,9 @@ userSchema.methods.hasPermission = function (permission) {
 // used by sockets
 userSchema.methods.generateToken = function () {
     const userInfo = {
-        _id: this._id
-        // firstName: this.firstName,
-        // lastName: this.lastName,
-        // email: this.email,
-        // company: this.company,
-        // venue: this.venue
+        _id: this._id,
+        firstName: this.firstName,
+        lastName: this.lastName,
     };
     return jwt.sign(userInfo, process.env.SECRET_KEY || 'secretKey', { expiresIn: '7 days' });
 };
