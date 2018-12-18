@@ -43,6 +43,7 @@ appRouter.get('/settings/users/', Middlewares.isLoggedIn, AdminUsersController.i
 // api admin users
 appRouter.get('/api/admin/users/', Middlewares.isLoggedIn, AdminUsersController.apiUsers);
 appRouter.post('/api/admin/users/', Middlewares.isLoggedIn, AdminUsersController.apiCreateUser);
+appRouter.post('/api/admin/users/change-password/', Middlewares.isLoggedIn, AdminUsersController.apiChangePasswordUser);
 appRouter.patch('/api/admin/users/:id/', Middlewares.isLoggedIn, AdminUsersController.apiUpdateUser);
 appRouter.delete('/api/admin/users/:id/', Middlewares.isLoggedIn, AdminUsersController.apiDeleteUser);
 

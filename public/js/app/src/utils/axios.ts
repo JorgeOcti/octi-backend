@@ -68,6 +68,15 @@ export default class ApiService {
       , user);
   }
 
+  public changePasswordUser(user: string, password: string): AxiosPromise {
+    return this.instance.post(
+      `/api/admin/users/change-password/`
+      , {
+        user,
+        password
+      });
+  }
+
   public updteUser(user: ITempUser): AxiosPromise {
     return this.instance.patch(
       `/api/admin/users/${user._id}`

@@ -13,7 +13,7 @@ import {
   changeTempUserAction,
   createUserAction,
   deleteUserAction,
-  getUsersAction,
+  getUsersAction, isLoadingAction,
   ITempUser,
   IUsersState,
   updateUserAction,
@@ -21,10 +21,13 @@ import {
 } from '../../actions/users.actions';
 import AppContainer from '../../container/AppContainer';
 import {IWindow} from '../../interfaces/window';
-import {hasPermission, statusFooterButttonsModal} from '../../utils/common';
+import {hasPermission, showModal, statusFooterButttonsModal} from '../../utils/common';
 import ModalView from '../Modal/ModalView';
 import Paginator from '../Paginator';
+import UserFormChangePasswordView from './UserFormChangePasswordView';
 import UserFormView from './UserFormView';
+import ApiService from "../../utils/axios";
+import {AxiosError} from "axios";
 
 interface IPropsType extends RouteComponentProps<{ ticket: string }> {
   dispatch: Dispatch<UserReduxAction>;
@@ -60,6 +63,8 @@ class UserListView extends React.Component<IPropsType, IStateType> {
     this.processUpdateUser = this.processUpdateUser.bind(this);
     this.changePage = this.changePage.bind(this);
     this.changeTempUser = this.changeTempUser.bind(this);
+    this.changePassword = this.changePassword.bind(this);
+    this.processChangePassword = this.processChangePassword.bind(this);
   }
 
   public componentWillMount(): void {
@@ -111,6 +116,10 @@ class UserListView extends React.Component<IPropsType, IStateType> {
                         <th style={{width: '1%'}} className="width-10"/> : null
                     }
                     {
+                      hasPermission(window.user, 'changeUser') ?
+                        <th style={{width: '1%'}} className="width-10"/> : null
+                    }
+                    {
                       hasPermission(window.user, 'deleteUser') ?
                       <th style={{width: '1%'}} className="width-10"/> : null
                     }
@@ -126,6 +135,10 @@ class UserListView extends React.Component<IPropsType, IStateType> {
                           <td className="hidden-xs">{user.company ? user.company.name : ''}</td>
                           <td className="hidden-xs">{user.venue ? user.venue.name : ''}</td>
                           <td className="hidden-xs">{moment(user.updatedAt).format('LLL')}</td>
+                          {
+                            hasPermission(window.user, 'changeUser') ?
+                              <td className="text-yellow pointer" onClick={() => this.changePassword(user)}><i className="fa fa-lock"/></td> : null
+                          }
                           {
                             hasPermission(window.user, 'changeUser') ?
                               <td className="text-blue pointer" onClick={() => this.updateUser(user)}><i className="fa fa-pencil"/></td> : null
@@ -202,6 +215,48 @@ class UserListView extends React.Component<IPropsType, IStateType> {
     }
   }
 
+  private changePassword(user: IUser): void {
+    const {changeTempUser} = this;
+    const tmpUser = {
+      ...user,
+      password: ''
+    };
+    changeTempUser(tmpUser);
+    setTimeout(() => {
+      this.props.loadDataAction(
+        `Cambiando contraseña a ${user.firstName} ${user.lastName}`,
+        <UserFormChangePasswordView changeTempUser={changeTempUser} users={this.props.users} user={user}/>,
+        <React.Fragment>
+          <button type="button" className="btn btn-default" data-dismiss="modal">Cancelar</button>
+          <button type="button" className="btn btn-primary" onClick={this.processChangePassword}>Cambiar</button>
+        </React.Fragment>
+      );
+    }, 400);
+  }
+
+  private processChangePassword() {
+    const {password, _id} = this.props.users.tempUser;
+    statusFooterButttonsModal(true);
+    if (password && password.trim().length >= 6 && _id) {
+      const api: ApiService = new ApiService();
+      api.changePasswordUser(_id, password)
+        .then((response) => {
+          statusFooterButttonsModal(false);
+          showModal(false);
+          swal(response.data.message, {
+            icon: 'success'
+          });
+        })
+        .catch((err: AxiosError) => {
+          statusFooterButttonsModal(false);
+          api.errorHandler(err);
+        });
+    } else {
+      swal('Cambiar contraseña', 'La contraseña debe tener al menos 6 caracteres.', 'error');
+      statusFooterButttonsModal(false);
+    }
+  }
+
   private updateUser(user: IUser): void {
     const {changeTempUser} = this;
     const {venues, permissions, forms, companies} = this.props.users;
@@ -236,11 +291,12 @@ class UserListView extends React.Component<IPropsType, IStateType> {
     }
   }
 
-  private changeTempUser({_id, firstName, lastName, email, venue, userPermissions, preferred, userForms, company, venuesAccess}: ITempUser) {
+  private changeTempUser({_id, firstName, lastName, email, venue, userPermissions, preferred, userForms, company, venuesAccess, password}: ITempUser) {
     const tempUser: ITempUser = {
       _id: _id ? _id : this.props.users.tempUser._id,
       firstName: firstName ? firstName : this.props.users.tempUser.firstName,
       lastName: lastName ? lastName : this.props.users.tempUser.lastName,
+      password: password ? password : '',
       email: email ? email : this.props.users.tempUser.email,
       userPermissions: userPermissions ? userPermissions : this.props.users.tempUser.userPermissions,
       userForms: userForms ? userForms : this.props.users.tempUser.userForms,

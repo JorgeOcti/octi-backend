@@ -9,6 +9,7 @@ class AdminUsersController {
         this.apiCreateUser = this.apiCreateUser.bind(this);
         this.apiUpdateUser = this.apiUpdateUser.bind(this);
         this.apiDeleteUser = this.apiDeleteUser.bind(this);
+        this.apiChangePasswordUser = this.apiChangePasswordUser.bind(this);
     }
     async index(req, res) {
         /* istanbul ignore else  */
@@ -298,6 +299,44 @@ class AdminUsersController {
                     message: 'Este usuario ya fue eliminado.'
                 };
                 res.status(200).json(response);
+            }
+        }
+        catch (e) {
+            /* istanbul ignore next  */
+            res.status(500).json(e);
+        }
+    }
+    async apiChangePasswordUser(req, res) {
+        const { user, password } = req.body;
+        const { team } = req.user;
+        if (!req.user.hasPermission('changeUser')) {
+            return res.status(403).json({
+                message: 'No tienes permisos para esta operación'
+            });
+        }
+        try {
+            if (password && password.length >= 6) {
+                const affectedUser = await user_model_1.default.findOne({ _id: user, team });
+                if (affectedUser) {
+                    affectedUser.password = password;
+                    affectedUser.save();
+                    res.status(200).json({
+                        message: 'Contraseña cambiada satisfactoriamente.',
+                        status: 200
+                    });
+                }
+                else {
+                    res.status(400).json({
+                        message: 'No se ha podido cambiar la contraseña',
+                        status: 400
+                    });
+                }
+            }
+            else {
+                res.status(400).json({
+                    message: 'La contraseña no cumple los requisitos mínimos.',
+                    status: 400
+                });
             }
         }
         catch (e) {

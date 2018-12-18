@@ -75,6 +75,7 @@ export function changePageAction(page: number): IChangePage {
 export interface ITempUser {
   _id?: string;
   firstName?: string;
+  password?: string;
   lastName?: string;
   email?: string;
   venue?: string | null;

@@ -37,6 +37,7 @@ appRouter.get('/settings/users/', middlewares_1.default.isLoggedIn, user_admin_c
 // api admin users
 appRouter.get('/api/admin/users/', middlewares_1.default.isLoggedIn, user_admin_controller_1.default.apiUsers);
 appRouter.post('/api/admin/users/', middlewares_1.default.isLoggedIn, user_admin_controller_1.default.apiCreateUser);
+appRouter.post('/api/admin/users/change-password/', middlewares_1.default.isLoggedIn, user_admin_controller_1.default.apiChangePasswordUser);
 appRouter.patch('/api/admin/users/:id/', middlewares_1.default.isLoggedIn, user_admin_controller_1.default.apiUpdateUser);
 appRouter.delete('/api/admin/users/:id/', middlewares_1.default.isLoggedIn, user_admin_controller_1.default.apiDeleteUser);
 // admin venues
