@@ -12,14 +12,16 @@ const server_1 = require("../../server");
 const push_service_1 = require("../../services/push.service");
 const inventory_model_1 = require("../models/inventory.model");
 const inventoryFile_model_1 = require("../models/inventoryFile.model");
+const inventory_model_2 = require("../models/inventory.model");
 class InventoryController {
     constructor() {
         this.index = this.index.bind(this);
         this.detail = this.detail.bind(this);
         this.create = this.create.bind(this);
         this.list = this.list.bind(this);
+        this.detaill = this.detaill.bind(this);
         this.apiList = this.apiList.bind(this);
-        this.apiDetaill = this.apiDetaill.bind(this);
+        this.apiDetail = this.apiDetail.bind(this);
         this.apiFoundCar = this.apiFoundCar.bind(this);
         this.uploadFile = this.uploadFile.bind(this);
         this.autoRotate = this.autoRotate.bind(this);
@@ -274,6 +276,37 @@ class InventoryController {
                 message: e,
                 status: 400
             });
+        }
+    }
+    async apiDetail(req, res) {
+        const { team } = req.user;
+        const { id } = req.params;
+        try {
+            const inventory = await inventory_model_2.default
+                .findOne({ _id: id, team })
+                .populate([{
+                    path: 'cars.car',
+                    select: ['vin', 'vin2', 'color', 'denomination', 'brand']
+                }]);
+            if (inventory) {
+                res.status(200).json({
+                    cars: inventory.cars.map((car) => {
+                        return car.car;
+                    }),
+                    reasons: [],
+                    status: 200
+                });
+            }
+            else {
+                res.status(400).json({
+                    message: 'La imagen es obligatoria.',
+                    status: 400
+                });
+            }
+        }
+        catch (e) {
+            /* istanbul ignore next */
+            res.status(400).json(e);
         }
     }
     async uploadFile(req, res) {
@@ -754,7 +787,7 @@ class InventoryController {
             });
         }
     }
-    async apiDetaill(req, res) {
+    async detaill(req, res) {
         const { id } = req.params;
         const { team } = req.user;
         let venuesPermissions = req.user.venuesPermissions();
