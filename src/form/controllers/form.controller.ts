@@ -441,7 +441,7 @@ class FormController {
                 ]
               }).populate([{
                 path: 'users',
-                select: ['firstName', 'lastName', 'email', 'venue']
+                select: ['firstName', 'lastName', 'email', 'venue', 'venuesAccess']
               }]);
             /* Send alerts if exist */
             if (alerts.length) {
