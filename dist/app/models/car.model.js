@@ -25,7 +25,8 @@ const carSchema = new mongoose.Schema({
         type: Number
     },
     patent: {
-        type: String
+        type: String,
+        default: ''
     },
     destination: {
         type: String,
