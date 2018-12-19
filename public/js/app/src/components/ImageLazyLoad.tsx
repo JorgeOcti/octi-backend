@@ -129,15 +129,14 @@ class ImageLazyLoad extends React.Component<IPropsType, IStateType> {
     this.setState({
       eventRuning: true
     });
-    const modal = document.getElementById('andesModal');
+    // const modal = document.getElementById('andesModal');
+    const modal = ($('#andesModal').data('bs.modal') || {}).isShown;
     if (modal) {
       modal.addEventListener('scroll', this.isInViewport, false);
       modal.addEventListener('rezise', this.isInViewport, false);
       setTimeout(() => {
         this.isInViewport();
       }, 1000);
-      window.addEventListener('scroll', this.isInViewport, false);
-      window.addEventListener('rezise', this.isInViewport, false);
     } else {
       window.addEventListener('scroll', this.isInViewport, false);
       window.addEventListener('rezise', this.isInViewport, false);
@@ -149,12 +148,11 @@ class ImageLazyLoad extends React.Component<IPropsType, IStateType> {
     this.setState({
       eventRuning: false
     });
-    const modal = document.getElementById('andesModal');
+    // const modal = document.getElementById('andesModal');
+    const modal = ($('#andesModal').data('bs.modal') || {}).isShown;
     if (modal) {
       modal.removeEventListener('scroll', this.isInViewport, false);
       modal.removeEventListener('rezise', this.isInViewport, false);
-      window.removeEventListener('scroll', this.isInViewport, false);
-      window.removeEventListener('rezise', this.isInViewport, false);
     } else {
       window.removeEventListener('scroll', this.isInViewport, false);
       window.removeEventListener('rezise', this.isInViewport, false);
