@@ -5,7 +5,7 @@ import * as moment from 'moment-timezone';
 import {queue} from '../../app';
 import Alert from '../../app/models/alert.model';
 import CarModel from '../../app/models/car.model';
-import UserModel from '../../app/models/user.model';
+import UserModel, {IUserModel} from '../../app/models/user.model';
 import User from '../../app/models/user.model';
 import {IAnyObject, IRequest} from '../../interfaces/global.interface';
 import {io} from '../../server';
@@ -446,11 +446,11 @@ class FormController {
             /* Send alerts if exist */
             if (alerts.length) {
               alerts.forEach((alert) => {
-                alert.users.forEach((user) => {
+                alert.users.forEach((user: IUserModel) => {
                   const userName = `${user.firstName} ${user.lastName}`;
                   // console.log('venue._id.toString()', venue._id.toString());
                   // console.log('user.venue.toString()', user.venue.toString());
-                  if (venue._id.toString() === user.venue.toString() && user.email && user.email.length) {
+                  if (user.venuesPermissions().includes(venue._id.toString()) && user.email && user.email.length) {
                     queue.create('email', {
                       from: '',
                       title: `Alert qualification`,

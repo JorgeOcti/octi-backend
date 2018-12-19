@@ -44,6 +44,7 @@ const carSchema = new mongoose.Schema({
   },
   color: {
     type: String,
+    default: '',
     trim: true
   },
   team: {

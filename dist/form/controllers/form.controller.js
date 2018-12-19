@@ -437,7 +437,7 @@ class FormController {
                                     const userName = `${user.firstName} ${user.lastName}`;
                                     // console.log('venue._id.toString()', venue._id.toString());
                                     // console.log('user.venue.toString()', user.venue.toString());
-                                    if (venue._id.toString() === user.venue.toString() && user.email && user.email.length) {
+                                    if (user.venuesPermissions().includes(venue._id.toString()) && user.email && user.email.length) {
                                         app_1.queue.create('email', {
                                             from: '',
                                             title: `Alert qualification`,
