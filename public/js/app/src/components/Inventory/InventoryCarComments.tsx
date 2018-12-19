@@ -90,31 +90,31 @@ class InventoryCarComments extends React.Component<IPropsType, IStateType> {
           <strong>VIN</strong>
         </div>
         <div className={'col-md-9'}>
-          { (inventoryCar as any).vin}
+          {(inventoryCar as any).vin ? (inventoryCar as any).vin : '-'}
         </div>
         <div className={'col-md-3'}>
           <strong>Marca</strong>
         </div>
         <div className={'col-md-9'}>
-          { (inventoryCar as any).brand}
+          {(inventoryCar as any).brand ? (inventoryCar as any).brand : '-'}
         </div>
         <div className={'col-md-3'}>
           <strong>Denominación</strong>
         </div>
         <div className={'col-md-9'}>
-          { (inventoryCar as any).denomination}
+          {(inventoryCar as any).denomination ? (inventoryCar as any).denomination : '-'}
         </div>
         <div className={'col-md-3'}>
           <strong>Reportado en</strong>
         </div>
         <div className={'col-md-9'}>
-          { (inventoryCar as any).venueFound}
+          {(inventoryCar as any).venueFound ? (inventoryCar as any).venueFound : '-'}
         </div>
         <div className={'col-md-3'}>
           <strong>Reportado por</strong>
         </div>
         <div className={'col-md-9'}>
-          { (inventoryCar as any).inventoriedBy}
+          {(inventoryCar as any).inventoriedBy ? (inventoryCar as any).inventoriedBy : '-'}
         </div>
         <div className={'col-md-12'}>
           &nbsp;
