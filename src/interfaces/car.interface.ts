@@ -1,5 +1,6 @@
 import {ICompany} from './company.interface';
 import {IParticipant} from './participant.interface';
+import {ITeam} from './team.interface';
 
 export interface ICar {
   _id: any;
@@ -11,6 +12,7 @@ export interface ICar {
   denomination: string;
   destination: string;
   color: string;
+  team: ITeam | any;
   company: ICompany | any;
   lastForm: IParticipant | any;
   participants?: IParticipant[];

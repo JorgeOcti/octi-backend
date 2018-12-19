@@ -7,6 +7,7 @@ import Car, {
   ICarModel
 } from '../../app/models/car.model';
 import UserModel from '../../app/models/user.model';
+import User from '../../app/models/user.model';
 import VenueModel, {
   IVenueModel
 } from '../../app/models/venue.model';
@@ -18,6 +19,7 @@ import InventoryModel, {
   ChoicesStatusCarInventory,
   ChoicesStatusInventory
 } from '../models/inventory.model';
+import Inventory from '../models/inventory.model';
 import InventoryFileModel from '../models/inventoryFile.model';
 
 class InventoryController {
@@ -27,14 +29,16 @@ class InventoryController {
     this.detail = this.detail.bind(this);
     this.create = this.create.bind(this);
     this.list = this.list.bind(this);
+    this.detaill = this.detaill.bind(this);
     this.apiList = this.apiList.bind(this);
-    this.apiDetaill = this.apiDetaill.bind(this);
+    this.apiDetail = this.apiDetail.bind(this);
     this.apiFoundCar = this.apiFoundCar.bind(this);
     this.uploadFile = this.uploadFile.bind(this);
     this.autoRotate = this.autoRotate.bind(this);
     this.finishInventory = this.finishInventory.bind(this);
     this.deleteInventory = this.deleteInventory.bind(this);
     this.reportCar = this.reportCar.bind(this);
+    this.addComment = this.addComment.bind(this);
   }
 
   public async index(req: IRequest, res: Response) {
@@ -42,16 +46,17 @@ class InventoryController {
   }
 
   public async detail(req: IRequest, res: Response) {
-    const {company} = req.user;
+    const {team} = req.user;
     const {id} = req.params;
     try {
-      const inventory = await InventoryModel.findOne({_id: id, company});
+      const inventory = await InventoryModel.findOne({_id: id, team});
       if (!inventory) {
         return res.status(404).render('404');
       } else {
         res.render('app/index', {token: await req.user.generateToken()});
       }
     } catch (e) {
+      /* istanbul ignore next */
       if (e) {
         res.status(500).send(e);
       }
@@ -59,17 +64,20 @@ class InventoryController {
   }
 
   public async create(req: IRequest, res: Response) {
-    const company = req.user.company;
+    const {company, team} = req.user;
     const {carsByVenue, name} = req.body;
     try {
       const inventoryCars: IInventoryCar[] = [];
       const venuesIDs: string[] = [];
       for (const venue of carsByVenue) {
         if (venue.name && venue.name.length) {
-          let currentVenue: IVenueModel | null = await VenueModel.findOne({company, name: venue.name});
+          const venueRegExp = new RegExp(venue.name, 'i');
+          let currentVenue: IVenueModel | null = await VenueModel.findOne({team, name: venueRegExp});
+          // create venue if no existe
           if (currentVenue === null) {
             currentVenue = new VenueModel({
               name: venue.name,
+              team,
               company
             });
             await currentVenue.save();
@@ -78,11 +86,12 @@ class InventoryController {
           if (venue.cars && venue.cars.length) {
             for (const car of venue.cars) {
               let currentCar: ICarModel | null = await CarModel.findOne({
-                company,
+                team,
                 vin: car.vin
               });
               if (currentCar === null && car.vin && car.vin.trim().length) {
                 currentCar = new CarModel({
+                  team,
                   company,
                   vin: car.vin,
                   vin2: car.vin.substr(car.vin.length - 6),
@@ -98,6 +107,7 @@ class InventoryController {
                 inventoryCars.push({
                   venue: currentVenue._id,
                   car: currentCar._id,
+                  comments: [],
                   images: []
                 });
               }
@@ -108,6 +118,7 @@ class InventoryController {
       const inventory = new InventoryModel({
         name,
         company,
+        team,
         cars: inventoryCars,
         venues: venuesIDs,
         createdBy: req.user._id,
@@ -132,10 +143,12 @@ class InventoryController {
         update: true
       });
       res.json({
+        _id: inventory._id.toString(),
         message: 'Inventario creado satisfactoriamente',
         status: 200
       });
     } catch (e) {
+      /* istanbul ignore next */
       res.status(400).json({
         message: e,
         status: 400
@@ -144,15 +157,25 @@ class InventoryController {
   }
 
   public async list(req: IRequest, res: Response) {
-    const {company} = req.user;
+    const {team} = req.user;
+    const venuesPermissions = req.user.venuesPermissions();
     try {
       const response: any[] = [];
       const inventories = await InventoryModel.aggregate([{
         $match: {
-          company
+          team,
+          venues: {
+            $in: venuesPermissions
+          }
         }
       }, {
         $unwind: '$cars'
+      }, {
+        $match: {
+          'cars.venue': {
+            $in: venuesPermissions
+          }
+        }
       }, {
         $group: {
           _id: {
@@ -261,11 +284,43 @@ class InventoryController {
         status: 200
       });
     } catch (e) {
+      /* istanbul ignore next */
       console.log(e);
+      /* istanbul ignore next */
       res.status(400).json({
         message: e,
         status: 400
       });
+    }
+  }
+
+  public async apiDetail(req: IRequest, res: Response) {
+    const {team} = req.user;
+    const {id} = req.params;
+    try {
+      const inventory = await Inventory
+        .findOne({_id: id, team})
+        .populate([{
+          path: 'cars.car',
+          select: ['vin', 'vin2', 'color', 'denomination', 'brand']
+        }]);
+      if (inventory) {
+        res.status(200).json({
+          cars: inventory.cars.map((car) => {
+            return car.car;
+          }),
+          reasons: [],
+          status: 200
+        });
+      } else {
+        res.status(400).json({
+          message: 'La imagen es obligatoria.',
+          status: 400
+        });
+      }
+    } catch (e) {
+      /* istanbul ignore next */
+      res.status(400).json(e);
     }
   }
 
@@ -302,6 +357,7 @@ class InventoryController {
         inventoryFile.company = company._id;
         inventoryFile.attach('file', file, async (error: any) => {
           if (error) {
+            /* istanbul ignore next */
             res.status(400).json(error);
           } else {
             await inventoryFile.save();
@@ -315,9 +371,11 @@ class InventoryController {
           }
         });
       } catch (e) {
+        /* istanbul ignore next */
         res.status(400).json(e);
       }
     } else {
+      /* istanbul ignore next */
       res.status(400).json({
         message: 'La imagen es obligatoria.',
         status: 400
@@ -326,13 +384,13 @@ class InventoryController {
   }
 
   public async apiFoundCar(req: IRequest, res: Response) {
-    const {company, venue} = req.user;
+    const {team, venue} = req.user;
     const {id} = req.params;
     const {vin, images} = req.body;
     try {
       const car = await Car.findOne({
         vin,
-        company
+        team
       });
       // if car exist
       let textNotification = '';
@@ -342,7 +400,7 @@ class InventoryController {
           $and: [{
             _id: id
           }, {
-            company
+            team
           }, {
             cars: {
               $elemMatch: {
@@ -363,7 +421,7 @@ class InventoryController {
           const inventoryCar = await InventoryModel.findOne({
             _id: id,
             ['cars.car']: car._id,
-            company
+            team
           }, {
             'cars.$': 1
           });
@@ -373,7 +431,7 @@ class InventoryController {
               await InventoryModel.update({
                 _id: id,
                 ['cars.car']: car._id,
-                company
+                team
               }, {
                 $set: {
                   'cars.$.venueFound': venue._id,
@@ -393,11 +451,12 @@ class InventoryController {
             } else {
               const inventory = await InventoryModel.findOne({
                 _id: id,
-                company
+                team
               });
               if (inventory) {
                 inventory.cars.push({
                   car: car._id,
+                  comments: [],
                   venue: inventoryCar.cars[0].venue ? inventoryCar.cars[0].venue : req.user.venue._id,
                   venueFound: req.user.venue._id,
                   images: images ? images.map((image: string) => (new ObjectID(image))) : [],
@@ -414,21 +473,23 @@ class InventoryController {
               });
             }
             // send socket messsage
-            io.to(`inventory-list-${company._id}`).emit('REFRESH', {
+            io.to(`inventory-list-${team._id}`).emit('REFRESH', {
               update: true
             });
             res.json({
-              id
+              id,
+              status: 200
             });
           } else {
             const inventory = await InventoryModel.findOne({
               _id: id,
-              company
+              team
             });
             if (inventory) {
               inventory.cars.push({
                 car: car._id,
                 venue: venue._id,
+                comments: [],
                 venueFound: venue._id,
                 status: ChoicesStatusCarInventory.leftover,
                 inventoriedBy: req.user._id,
@@ -436,7 +497,7 @@ class InventoryController {
               });
               await inventory.save();
               // send socket messsage
-              io.to(`inventory-list-${company._id}`).emit('REFRESH', {
+              io.to(`inventory-list-${team._id}`).emit('REFRESH', {
                 update: true
               });
               io.to(`inventory-detail-${inventory._id}`).emit('REFRESH', {
@@ -445,8 +506,9 @@ class InventoryController {
                 status: ChoicesStatusCarInventory.leftover,
                 update: true
               });
-              res.json({
-                id
+              res.status(200).json({
+                id,
+                status: 200
               });
             } else {
               // if inventory no exist
@@ -461,19 +523,20 @@ class InventoryController {
         // if car no exist
         const inventory = await InventoryModel.findOne({
           _id: id,
-          company
+          team
         });
         if (inventory) {
           const newCar = new CarModel({
             vin,
             vin2: vin.substr(vin.length - 6),
-            company,
+            team,
             status: ChoicesStatusCar.active
           });
           await newCar.save();
           textNotification = `${req.user.firstName} ${req.user.lastName} encontró ${vin} en ${venue.name}.`;
           inventory.cars.push({
             car: newCar._id,
+            comments: [],
             venue: venue._id,
             venueFound: venue._id,
             status: ChoicesStatusCarInventory.leftover,
@@ -482,7 +545,7 @@ class InventoryController {
           });
           await inventory.save();
           // send socket messsage
-          io.to(`inventory-list-${company._id}`).emit('REFRESH', {
+          io.to(`inventory-list-${team._id}`).emit('REFRESH', {
             update: true
           });
           io.to(`inventory-detail-${inventory._id}`).emit('REFRESH', {
@@ -490,8 +553,9 @@ class InventoryController {
               text: textNotification,
               update: true
             });
-          res.json({
-            id
+          res.status(200).json({
+            id,
+            status: 200
           });
         } else {
           // if inventory no exist
@@ -502,7 +566,9 @@ class InventoryController {
         }
       }
     } catch (e) {
+      /* istanbul ignore next */
       console.log(e);
+      /* istanbul ignore next */
       res.status(400).json({
         message: e,
         status: 400
@@ -511,17 +577,17 @@ class InventoryController {
   }
 
   public async finishInventory(req: IRequest, res: Response) {
-    const {company} = req.user;
+    const {team} = req.user;
     const {id} = req.params;
     try {
-      const inventory = await InventoryModel.findOne({_id: id, company});
+      const inventory = await InventoryModel.findOne({_id: id, team});
       if (inventory) {
         await inventory.update({
           status: ChoicesStatusInventory.finalized,
           finalizedAt: new Date(),
           finalizedBy: req.user._id
         });
-        io.to(`inventory-list-${company}`).emit('REFRESH', {
+        io.to(`inventory-list-${team}`).emit('REFRESH', {
           update: true
         });
         res.json({
@@ -536,7 +602,9 @@ class InventoryController {
       }
 
     } catch (e) {
+      /* istanbul ignore next */
       console.log('e', e);
+      /* istanbul ignore next */
       res.status(400).json({
         message: 'Ha ocurrido un error',
         status: 400
@@ -569,7 +637,57 @@ class InventoryController {
       }
 
     } catch (e) {
+      /* istanbul ignore next */
       console.log('e', e);
+      /* istanbul ignore next */
+      res.status(400).json({
+        message: 'Ha ocurrido un error',
+        status: 400
+      });
+    }
+  }
+
+  public async addComment(req: IRequest, res: Response) {
+    const {team} = req.user;
+    const {id} = req.params;
+    const {_id, comment} = req.body;
+    try {
+
+      await InventoryModel.update({
+        _id: id,
+        ['cars._id']: _id,
+        team
+      }, {
+        $push: {
+          'cars.$.comments': {
+            user: req.user._id,
+            comment,
+            createdAt: new Date()
+          }
+        }
+      }, {
+        upsert: true
+      });
+      io.to(`inventory-detail-${id}`).emit('REFRESH', {
+        update: true
+      });
+      io.to(`inventory-comment-${_id}`).emit('NEW_COMMENT', {
+        _id: new ObjectID(),
+        user: {
+          _id: req.user._id,
+          firstName: req.user.firstName,
+          lastName: req.user.lastName
+        },
+        comment
+      });
+      res.status(200).json({
+        message: 'Comentario agregado satisfactoriamente.',
+        status: 200
+      });
+    } catch (e) {
+      /* istanbul ignore next */
+      console.log('e', e);
+      /* istanbul ignore next */
       res.status(400).json({
         message: 'Ha ocurrido un error',
         status: 400
@@ -578,24 +696,25 @@ class InventoryController {
   }
 
   public async reportCar(req: IRequest, res: Response) {
-    const {company, venue} = req.user;
+    const {team, company, venue} = req.user;
     const {id} = req.params;
     const {vin, denomination, brand, color, images} = req.body;
     try {
       const inventory = await InventoryModel.findOne({
         _id: id,
-        company
+        team
       });
       if (inventory) {
         const car = await CarModel.findOneOrCreate({
           vin,
-          company
+          team
         }, {
           vin,
           vin2: vin.substr(vin.length - 6),
           brand,
           denomination,
           color,
+          team,
           company,
           status: ChoicesStatusCar.inventory
         });
@@ -603,6 +722,7 @@ class InventoryController {
           car,
           venue,
           venueFound: venue,
+          comments: [],
           inventoriedBy: req.user._id,
           images:  images ? images.map((image: string) => (new ObjectID(image))) : [],
           status: ChoicesStatusCarInventory.reported
@@ -615,7 +735,7 @@ class InventoryController {
           status: ChoicesStatusCarInventory.reported,
           update: true
         });
-        io.to(`inventory-list-${company._id}`).emit('REFRESH', {
+        io.to(`inventory-list-${team._id}`).emit('REFRESH', {
           update: true
         });
         res.json({
@@ -629,7 +749,9 @@ class InventoryController {
         });
       }
     } catch (e) {
+      /* istanbul ignore next */
       console.log(e);
+      /* istanbul ignore next */
       res.status(400).json({
         message: e,
         status: 400
@@ -638,23 +760,33 @@ class InventoryController {
   }
 
   public async apiList(req: IRequest, res: Response) {
-    const {company, venue} = req.user;
+    const {team} = req.user;
     try {
-      const inventories = await InventoryModel.find({
-        company,
-        venues: venue._id,
-        status: {
-          $in: [ChoicesStatusInventory.inProcess]
-        }
-      }, {
-        _id: true,
-        name: true
-      });
-      res.json({
-        data: inventories,
-        status: 200
-      });
+      const updatedUser = await User.findById(req.user._id);
+      if (updatedUser) {
+        const inventories = await InventoryModel.find({
+          team,
+          venues: updatedUser.venue,
+          status: {
+            $in: [ChoicesStatusInventory.inProcess]
+          }
+        }, {
+          _id: true,
+          name: true
+        });
+        res.json({
+          data: inventories,
+          status: 200
+        });
+      } else {
+        /* istanbul ignore next */
+        res.status(400).json({
+          message: 'Usuario no encontrado',
+          status: 400
+        });
+      }
     } catch (e) {
+      /* istanbul ignore next */
       res.status(400).json({
         message: e,
         status: 400
@@ -662,19 +794,26 @@ class InventoryController {
     }
   }
 
-  public async apiDetaill(req: IRequest, res: Response) {
+  public async detaill(req: IRequest, res: Response) {
     const {id} = req.params;
-    const {company} = req.user;
+    const {team} = req.user;
+    let venuesPermissions = req.user.venuesPermissions();
     try {
       // summary
       const inventory = await InventoryModel.aggregate([
         {
           $match: {
-            company,
+            team,
             _id: {$in: [mongoose.Types.ObjectId(id)]}
           }
         }, {
           $unwind: '$cars'
+        }, {
+          $match: {
+            'cars.venue': {
+              $in: venuesPermissions
+            }
+          }
         }, {
           $group: {
             _id: {
@@ -744,11 +883,17 @@ class InventoryController {
       const detailByVenues = await InventoryModel.aggregate([
         {
           $match: {
-            company,
+            team,
             _id: {$in: [mongoose.Types.ObjectId(id)]}
           }
         }, {
           $unwind: '$cars'
+        }, {
+          $match: {
+            'cars.venue': {
+              $in: venuesPermissions
+            }
+          }
         }, {
           $group: {
             _id: {
@@ -791,11 +936,17 @@ class InventoryController {
       const detailByBrands = await InventoryModel.aggregate([
         {
           $match: {
-            company,
+            team,
             _id: {$in: [mongoose.Types.ObjectId(id)]}
           }
         }, {
           $unwind: '$cars'
+        }, {
+          $match: {
+            'cars.venue': {
+              $in: venuesPermissions
+            }
+          }
         }, {
           $lookup: {
             from: 'cars',
@@ -892,7 +1043,7 @@ class InventoryController {
           cars: true
         }).populate([{
           path: 'cars.car',
-          select: ['vin', 'vin2', 'color', 'denomination', 'brand']
+          select: ['vin', 'vin2', 'color', 'denomination', 'brand', 'venue']
         }, {
           path: 'cars.venue',
           select: ['name']
@@ -904,12 +1055,23 @@ class InventoryController {
         }, {
           path: 'cars.inventoriedBy',
           select: ['firstName', 'lastName']
+        }, {
+          path: 'cars.comments.user',
+          select: ['_id', 'firstName', 'lastName']
         }]);
+        venuesPermissions = venuesPermissions.map((ve) => ve.toString());
         res.json({
           summary: response,
           detailByVenue,
           detailByBrand,
-          detail: detailInventory,
+          detail: {
+            _id: detailInventory ? detailInventory._id : '',
+            name: detailInventory ? detailInventory.name : '',
+            status: detailInventory ? detailInventory.status : '',
+            cars: detailInventory ? detailInventory.cars.filter((car) => {
+              return venuesPermissions.includes(car.venue._id.toString()) || (car.venueFound && venuesPermissions.includes(car.venueFound._id.toString()));
+            }) : []
+          },
           status: 200
         });
       } else {
@@ -919,7 +1081,9 @@ class InventoryController {
         });
       }
     } catch (e) {
+      /* istanbul ignore next */
       console.log(e);
+      /* istanbul ignore next */
       res.status(400).json({
         message: e,
         status: 400
@@ -938,6 +1102,7 @@ class InventoryController {
         .autoOrient()
         .write(path, (err) => {
           if (err) {
+            /* istanbul ignore next */
             reject(err);
           } else {
             resolve();

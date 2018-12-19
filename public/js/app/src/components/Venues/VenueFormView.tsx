@@ -1,11 +1,15 @@
+import * as Raven from 'raven-js';
 import * as React from 'react';
+import {ErrorInfo} from 'react';
 import {connect} from 'react-redux';
 import {IBaseVenue} from '../../../../../../src/interfaces/venue.interface';
 import {changeTempVenueAction, IVenuesState, VenueReduxAction} from '../../actions/venues.actions';
+import {updateTooltip} from '../../utils/common';
 import Checkbox from '../CheckBox';
 
 interface IPropsType {
   venues?: IVenuesState;
+  update?: boolean;
   changeTempVenueAction?: (venue: IBaseVenue) => VenueReduxAction;
 }
 
@@ -21,18 +25,37 @@ class VenueFormView extends React.Component<IPropsType, IStateType> {
   }
 
   public componentDidMount(): void {
-    $('[data-toggle="tooltip"]').tooltip();
+    const chosenOptions = {
+      no_results_text: 'Sin resultados para:'
+    };
+    updateTooltip();
+    ($('#id-company') as any).chosen(chosenOptions).change((e: React.ChangeEvent<HTMLSelectElement>) => {
+      if (this.props.changeTempVenueAction && this.props.venues) {
+        const {tempVenue, companies} = this.props.venues;
+        this.props.changeTempVenueAction({
+          ...tempVenue,
+          company: companies.find((company) => (company._id === e.target.value))
+        });
+      }
+    });
   }
 
   public componentDidUpdate(): void {
-    $('[data-toggle="tooltip"]').tooltip();
+    updateTooltip();
+    $('#id-company').trigger('chosen:updated');
   }
 
-  render() {
-    if (this.props.venues && this.props.changeTempVenueAction) {
-      const {changeTempVenueAction} = this.props;
-      const {tempVenue} = this.props.venues;
+  public componentDidCatch(error: Error, errorInfo: ErrorInfo): void {
+    this.setState({error});
+    Raven.captureException(error, {
+      extra: errorInfo
+    });
+  }
 
+  render(): React.ReactElement<IPropsType> | null {
+    if (this.props.venues && this.props.changeTempVenueAction) {
+      const {changeTempVenueAction, update} = this.props;
+      const {tempVenue, companies} = this.props.venues;
       return (
         <div className="row">
           <div className="col-md-12">
@@ -40,7 +63,7 @@ class VenueFormView extends React.Component<IPropsType, IStateType> {
               <label>Nombre</label>
               <input
                 type="text"
-                name="fistName"
+                name="name"
                 className="form-control"
                 maxLength={50}
                 defaultValue={tempVenue ? tempVenue.name : ''}
@@ -52,6 +75,34 @@ class VenueFormView extends React.Component<IPropsType, IStateType> {
                 }
               />
             </div>
+          </div>
+          <div className="col-md-12">
+            <div className="form-group">
+              <label htmlFor="id-company">Empresa</label>
+              <select
+                className="chosen-select form-control"
+                id="id-company"
+                name="company"
+                defaultValue={tempVenue && tempVenue.company ? tempVenue.company._id : undefined}
+                data-placeholder={'Seleccione empresa'}
+                onChange={undefined}
+              >
+                <option value="" />
+                {
+                  companies.map((company) => (
+                    <option key={company._id} value={company._id}>{company.name}</option>
+                  ))
+                }
+              </select>
+            </div>
+            {
+              update ?
+                <div className="alert alert-warning alert-dismissible">
+                  {/*<button type="button" className="close" data-dismiss="alert" aria-hidden="true">×</button>*/}
+                  {/*<h4><i className="icon fa fa-warning"></i> Alert!</h4>*/}
+                  Si se modifica la empresa, los usuarios asignados a esta sucursal también se verán afectados.
+                </div> : null
+            }
           </div>
           <div className="col col-md-6">
             <div className="checkbox">

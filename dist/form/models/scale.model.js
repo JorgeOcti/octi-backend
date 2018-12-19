@@ -19,6 +19,11 @@ const choiceSchema = new mongoose.Schema({
 });
 exports.scaleSchema = new mongoose.Schema({
     name: String,
+    team: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Team',
+        require: true
+    },
     company: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Company',

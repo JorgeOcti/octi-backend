@@ -7,10 +7,13 @@ import Axios, {
   CancelTokenStatic
 } from 'axios';
 import * as Raven from 'raven-js';
-import {ITempUser} from '../actions/users.actions';
+import {
+  IBaseCompany
+} from '../../../../../src/interfaces/company.interface';
 import {
   IBaseVenue
 } from '../../../../../src/interfaces/venue.interface';
+import {ITempUser} from '../actions/users.actions';
 // import {IWindow} from '../interfaces/window';
 
 // declare let window: IWindow;
@@ -58,14 +61,23 @@ export default class ApiService {
       });
   }
 
-  public addUser(user: ITempUser): AxiosPromise {
+  public createUser(user: ITempUser): AxiosPromise {
     delete user._id;
     return this.instance.post(
       `/api/admin/users/`
       , user);
   }
 
-  public editUser(user: ITempUser): AxiosPromise {
+  public changePasswordUser(user: string, password: string): AxiosPromise {
+    return this.instance.post(
+      `/api/admin/users/change-password/`
+      , {
+        user,
+        password
+      });
+  }
+
+  public updteUser(user: ITempUser): AxiosPromise {
     return this.instance.patch(
       `/api/admin/users/${user._id}`
       , user);
@@ -88,6 +100,29 @@ export default class ApiService {
     );
   }
 
+  public getCompanies(page: number, pageSize?: number): AxiosPromise {
+    return this.instance.get(
+      `/api/admin/companies/?page=${page}${pageSize ? `&pageSize=${pageSize}` : ''}`
+    );
+  }
+  public createCompany(company: IBaseCompany): AxiosPromise {
+    return this.instance.post(
+      `/api/admin/companies/`, company
+    );
+  }
+
+  public updateCompany(company: IBaseCompany): AxiosPromise {
+    return this.instance.patch(
+      `/api/admin/companies/${company._id}`, company
+    );
+  }
+
+   public deleteCompany(id: string): AxiosPromise {
+    return this.instance.delete(
+      `/api/admin/companies/${id}`
+    );
+  }
+
   public getVenues(page: number, pageSize?: number): AxiosPromise {
     return this.instance.get(
       `/api/admin/venues/?page=${page}${pageSize ? `&pageSize=${pageSize}` : ''}`
@@ -100,12 +135,13 @@ export default class ApiService {
     );
   }
 
-  public editVenue(venue: IBaseVenue): AxiosPromise {
+  public updateVenue(venue: IBaseVenue): AxiosPromise {
     return this.instance.patch(
       `/api/admin/venues/${venue._id}/`, venue
     );
   }
-  public addVenue(venue: IBaseVenue): AxiosPromise {
+
+  public createVenue(venue: IBaseVenue): AxiosPromise {
     return this.instance.post(
       `/api/admin/venues/`, venue
     );
@@ -167,6 +203,15 @@ export default class ApiService {
     return this.instance.get(
       `/api/inventory/${id}`,  {
         cancelToken: this.source.token
+      }
+    );
+  }
+
+  public addComment(id: string, carId: string, comment: string): AxiosPromise {
+    return this.instance.post(
+      `/api/inventory/${id}/comment/`, {
+        _id: carId,
+        comment
       }
     );
   }

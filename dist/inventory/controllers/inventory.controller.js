@@ -6,10 +6,12 @@ const mongoose = require("mongoose");
 const car_model_1 = require("../../app/models/car.model");
 const car_model_2 = require("../../app/models/car.model");
 const user_model_1 = require("../../app/models/user.model");
+const user_model_2 = require("../../app/models/user.model");
 const venue_model_1 = require("../../app/models/venue.model");
 const server_1 = require("../../server");
 const push_service_1 = require("../../services/push.service");
 const inventory_model_1 = require("../models/inventory.model");
+const inventory_model_2 = require("../models/inventory.model");
 const inventoryFile_model_1 = require("../models/inventoryFile.model");
 class InventoryController {
     constructor() {
@@ -17,23 +19,25 @@ class InventoryController {
         this.detail = this.detail.bind(this);
         this.create = this.create.bind(this);
         this.list = this.list.bind(this);
+        this.detaill = this.detaill.bind(this);
         this.apiList = this.apiList.bind(this);
-        this.apiDetaill = this.apiDetaill.bind(this);
+        this.apiDetail = this.apiDetail.bind(this);
         this.apiFoundCar = this.apiFoundCar.bind(this);
         this.uploadFile = this.uploadFile.bind(this);
         this.autoRotate = this.autoRotate.bind(this);
         this.finishInventory = this.finishInventory.bind(this);
         this.deleteInventory = this.deleteInventory.bind(this);
         this.reportCar = this.reportCar.bind(this);
+        this.addComment = this.addComment.bind(this);
     }
     async index(req, res) {
         res.render('app/index', { token: await req.user.generateToken() });
     }
     async detail(req, res) {
-        const { company } = req.user;
+        const { team } = req.user;
         const { id } = req.params;
         try {
-            const inventory = await inventory_model_1.default.findOne({ _id: id, company });
+            const inventory = await inventory_model_1.default.findOne({ _id: id, team });
             if (!inventory) {
                 return res.status(404).render('404');
             }
@@ -42,23 +46,27 @@ class InventoryController {
             }
         }
         catch (e) {
+            /* istanbul ignore next */
             if (e) {
                 res.status(500).send(e);
             }
         }
     }
     async create(req, res) {
-        const company = req.user.company;
+        const { company, team } = req.user;
         const { carsByVenue, name } = req.body;
         try {
             const inventoryCars = [];
             const venuesIDs = [];
             for (const venue of carsByVenue) {
                 if (venue.name && venue.name.length) {
-                    let currentVenue = await venue_model_1.default.findOne({ company, name: venue.name });
+                    const venueRegExp = new RegExp(venue.name, 'i');
+                    let currentVenue = await venue_model_1.default.findOne({ team, name: venueRegExp });
+                    // create venue if no existe
                     if (currentVenue === null) {
                         currentVenue = new venue_model_1.default({
                             name: venue.name,
+                            team,
                             company
                         });
                         await currentVenue.save();
@@ -67,11 +75,12 @@ class InventoryController {
                     if (venue.cars && venue.cars.length) {
                         for (const car of venue.cars) {
                             let currentCar = await car_model_1.default.findOne({
-                                company,
+                                team,
                                 vin: car.vin
                             });
                             if (currentCar === null && car.vin && car.vin.trim().length) {
                                 currentCar = new car_model_1.default({
+                                    team,
                                     company,
                                     vin: car.vin,
                                     vin2: car.vin.substr(car.vin.length - 6),
@@ -87,6 +96,7 @@ class InventoryController {
                                 inventoryCars.push({
                                     venue: currentVenue._id,
                                     car: currentCar._id,
+                                    comments: [],
                                     images: []
                                 });
                             }
@@ -97,6 +107,7 @@ class InventoryController {
             const inventory = new inventory_model_1.default({
                 name,
                 company,
+                team,
                 cars: inventoryCars,
                 venues: venuesIDs,
                 createdBy: req.user._id,
@@ -116,11 +127,13 @@ class InventoryController {
                 update: true
             });
             res.json({
+                _id: inventory._id.toString(),
                 message: 'Inventario creado satisfactoriamente',
                 status: 200
             });
         }
         catch (e) {
+            /* istanbul ignore next */
             res.status(400).json({
                 message: e,
                 status: 400
@@ -128,15 +141,25 @@ class InventoryController {
         }
     }
     async list(req, res) {
-        const { company } = req.user;
+        const { team } = req.user;
+        const venuesPermissions = req.user.venuesPermissions();
         try {
             const response = [];
             const inventories = await inventory_model_1.default.aggregate([{
                     $match: {
-                        company
+                        team,
+                        venues: {
+                            $in: venuesPermissions
+                        }
                     }
                 }, {
                     $unwind: '$cars'
+                }, {
+                    $match: {
+                        'cars.venue': {
+                            $in: venuesPermissions
+                        }
+                    }
                 }, {
                     $group: {
                         _id: {
@@ -246,11 +269,44 @@ class InventoryController {
             });
         }
         catch (e) {
+            /* istanbul ignore next */
             console.log(e);
+            /* istanbul ignore next */
             res.status(400).json({
                 message: e,
                 status: 400
             });
+        }
+    }
+    async apiDetail(req, res) {
+        const { team } = req.user;
+        const { id } = req.params;
+        try {
+            const inventory = await inventory_model_2.default
+                .findOne({ _id: id, team })
+                .populate([{
+                    path: 'cars.car',
+                    select: ['vin', 'vin2', 'color', 'denomination', 'brand']
+                }]);
+            if (inventory) {
+                res.status(200).json({
+                    cars: inventory.cars.map((car) => {
+                        return car.car;
+                    }),
+                    reasons: [],
+                    status: 200
+                });
+            }
+            else {
+                res.status(400).json({
+                    message: 'La imagen es obligatoria.',
+                    status: 400
+                });
+            }
+        }
+        catch (e) {
+            /* istanbul ignore next */
+            res.status(400).json(e);
         }
     }
     async uploadFile(req, res) {
@@ -285,6 +341,7 @@ class InventoryController {
                 inventoryFile.company = company._id;
                 inventoryFile.attach('file', file, async (error) => {
                     if (error) {
+                        /* istanbul ignore next */
                         res.status(400).json(error);
                     }
                     else {
@@ -300,10 +357,12 @@ class InventoryController {
                 });
             }
             catch (e) {
+                /* istanbul ignore next */
                 res.status(400).json(e);
             }
         }
         else {
+            /* istanbul ignore next */
             res.status(400).json({
                 message: 'La imagen es obligatoria.',
                 status: 400
@@ -311,13 +370,13 @@ class InventoryController {
         }
     }
     async apiFoundCar(req, res) {
-        const { company, venue } = req.user;
+        const { team, venue } = req.user;
         const { id } = req.params;
         const { vin, images } = req.body;
         try {
             const car = await car_model_2.default.findOne({
                 vin,
-                company
+                team
             });
             // if car exist
             let textNotification = '';
@@ -327,7 +386,7 @@ class InventoryController {
                     $and: [{
                             _id: id
                         }, {
-                            company
+                            team
                         }, {
                             cars: {
                                 $elemMatch: {
@@ -349,7 +408,7 @@ class InventoryController {
                     const inventoryCar = await inventory_model_1.default.findOne({
                         _id: id,
                         ['cars.car']: car._id,
-                        company
+                        team
                     }, {
                         'cars.$': 1
                     });
@@ -359,7 +418,7 @@ class InventoryController {
                             await inventory_model_1.default.update({
                                 _id: id,
                                 ['cars.car']: car._id,
-                                company
+                                team
                             }, {
                                 $set: {
                                     'cars.$.venueFound': venue._id,
@@ -380,11 +439,12 @@ class InventoryController {
                         else {
                             const inventory = await inventory_model_1.default.findOne({
                                 _id: id,
-                                company
+                                team
                             });
                             if (inventory) {
                                 inventory.cars.push({
                                     car: car._id,
+                                    comments: [],
                                     venue: inventoryCar.cars[0].venue ? inventoryCar.cars[0].venue : req.user.venue._id,
                                     venueFound: req.user.venue._id,
                                     images: images ? images.map((image) => (new bson_1.ObjectID(image))) : [],
@@ -401,22 +461,24 @@ class InventoryController {
                             });
                         }
                         // send socket messsage
-                        server_1.io.to(`inventory-list-${company._id}`).emit('REFRESH', {
+                        server_1.io.to(`inventory-list-${team._id}`).emit('REFRESH', {
                             update: true
                         });
                         res.json({
-                            id
+                            id,
+                            status: 200
                         });
                     }
                     else {
                         const inventory = await inventory_model_1.default.findOne({
                             _id: id,
-                            company
+                            team
                         });
                         if (inventory) {
                             inventory.cars.push({
                                 car: car._id,
                                 venue: venue._id,
+                                comments: [],
                                 venueFound: venue._id,
                                 status: inventory_model_1.ChoicesStatusCarInventory.leftover,
                                 inventoriedBy: req.user._id,
@@ -424,7 +486,7 @@ class InventoryController {
                             });
                             await inventory.save();
                             // send socket messsage
-                            server_1.io.to(`inventory-list-${company._id}`).emit('REFRESH', {
+                            server_1.io.to(`inventory-list-${team._id}`).emit('REFRESH', {
                                 update: true
                             });
                             server_1.io.to(`inventory-detail-${inventory._id}`).emit('REFRESH', {
@@ -433,8 +495,9 @@ class InventoryController {
                                 status: inventory_model_1.ChoicesStatusCarInventory.leftover,
                                 update: true
                             });
-                            res.json({
-                                id
+                            res.status(200).json({
+                                id,
+                                status: 200
                             });
                         }
                         else {
@@ -451,19 +514,20 @@ class InventoryController {
                 // if car no exist
                 const inventory = await inventory_model_1.default.findOne({
                     _id: id,
-                    company
+                    team
                 });
                 if (inventory) {
                     const newCar = new car_model_1.default({
                         vin,
                         vin2: vin.substr(vin.length - 6),
-                        company,
+                        team,
                         status: car_model_1.ChoicesStatusCar.active
                     });
                     await newCar.save();
                     textNotification = `${req.user.firstName} ${req.user.lastName} encontró ${vin} en ${venue.name}.`;
                     inventory.cars.push({
                         car: newCar._id,
+                        comments: [],
                         venue: venue._id,
                         venueFound: venue._id,
                         status: inventory_model_1.ChoicesStatusCarInventory.leftover,
@@ -472,7 +536,7 @@ class InventoryController {
                     });
                     await inventory.save();
                     // send socket messsage
-                    server_1.io.to(`inventory-list-${company._id}`).emit('REFRESH', {
+                    server_1.io.to(`inventory-list-${team._id}`).emit('REFRESH', {
                         update: true
                     });
                     server_1.io.to(`inventory-detail-${inventory._id}`).emit('REFRESH', {
@@ -480,8 +544,9 @@ class InventoryController {
                         text: textNotification,
                         update: true
                     });
-                    res.json({
-                        id
+                    res.status(200).json({
+                        id,
+                        status: 200
                     });
                 }
                 else {
@@ -494,7 +559,9 @@ class InventoryController {
             }
         }
         catch (e) {
+            /* istanbul ignore next */
             console.log(e);
+            /* istanbul ignore next */
             res.status(400).json({
                 message: e,
                 status: 400
@@ -502,17 +569,17 @@ class InventoryController {
         }
     }
     async finishInventory(req, res) {
-        const { company } = req.user;
+        const { team } = req.user;
         const { id } = req.params;
         try {
-            const inventory = await inventory_model_1.default.findOne({ _id: id, company });
+            const inventory = await inventory_model_1.default.findOne({ _id: id, team });
             if (inventory) {
                 await inventory.update({
                     status: inventory_model_1.ChoicesStatusInventory.finalized,
                     finalizedAt: new Date(),
                     finalizedBy: req.user._id
                 });
-                server_1.io.to(`inventory-list-${company}`).emit('REFRESH', {
+                server_1.io.to(`inventory-list-${team}`).emit('REFRESH', {
                     update: true
                 });
                 res.json({
@@ -528,7 +595,9 @@ class InventoryController {
             }
         }
         catch (e) {
+            /* istanbul ignore next */
             console.log('e', e);
+            /* istanbul ignore next */
             res.status(400).json({
                 message: 'Ha ocurrido un error',
                 status: 400
@@ -561,7 +630,56 @@ class InventoryController {
             }
         }
         catch (e) {
+            /* istanbul ignore next */
             console.log('e', e);
+            /* istanbul ignore next */
+            res.status(400).json({
+                message: 'Ha ocurrido un error',
+                status: 400
+            });
+        }
+    }
+    async addComment(req, res) {
+        const { team } = req.user;
+        const { id } = req.params;
+        const { _id, comment } = req.body;
+        try {
+            await inventory_model_1.default.update({
+                _id: id,
+                ['cars._id']: _id,
+                team
+            }, {
+                $push: {
+                    'cars.$.comments': {
+                        user: req.user._id,
+                        comment,
+                        createdAt: new Date()
+                    }
+                }
+            }, {
+                upsert: true
+            });
+            server_1.io.to(`inventory-detail-${id}`).emit('REFRESH', {
+                update: true
+            });
+            server_1.io.to(`inventory-comment-${_id}`).emit('NEW_COMMENT', {
+                _id: new bson_1.ObjectID(),
+                user: {
+                    _id: req.user._id,
+                    firstName: req.user.firstName,
+                    lastName: req.user.lastName
+                },
+                comment
+            });
+            res.status(200).json({
+                message: 'Comentario agregado satisfactoriamente.',
+                status: 200
+            });
+        }
+        catch (e) {
+            /* istanbul ignore next */
+            console.log('e', e);
+            /* istanbul ignore next */
             res.status(400).json({
                 message: 'Ha ocurrido un error',
                 status: 400
@@ -569,24 +687,25 @@ class InventoryController {
         }
     }
     async reportCar(req, res) {
-        const { company, venue } = req.user;
+        const { team, company, venue } = req.user;
         const { id } = req.params;
         const { vin, denomination, brand, color, images } = req.body;
         try {
             const inventory = await inventory_model_1.default.findOne({
                 _id: id,
-                company
+                team
             });
             if (inventory) {
                 const car = await car_model_1.default.findOneOrCreate({
                     vin,
-                    company
+                    team
                 }, {
                     vin,
                     vin2: vin.substr(vin.length - 6),
                     brand,
                     denomination,
                     color,
+                    team,
                     company,
                     status: car_model_1.ChoicesStatusCar.inventory
                 });
@@ -594,6 +713,7 @@ class InventoryController {
                     car,
                     venue,
                     venueFound: venue,
+                    comments: [],
                     inventoriedBy: req.user._id,
                     images: images ? images.map((image) => (new bson_1.ObjectID(image))) : [],
                     status: inventory_model_1.ChoicesStatusCarInventory.reported
@@ -606,7 +726,7 @@ class InventoryController {
                     status: inventory_model_1.ChoicesStatusCarInventory.reported,
                     update: true
                 });
-                server_1.io.to(`inventory-list-${company._id}`).emit('REFRESH', {
+                server_1.io.to(`inventory-list-${team._id}`).emit('REFRESH', {
                     update: true
                 });
                 res.json({
@@ -622,7 +742,9 @@ class InventoryController {
             }
         }
         catch (e) {
+            /* istanbul ignore next */
             console.log(e);
+            /* istanbul ignore next */
             res.status(400).json({
                 message: e,
                 status: 400
@@ -630,43 +752,61 @@ class InventoryController {
         }
     }
     async apiList(req, res) {
-        const { company, venue } = req.user;
+        const { team } = req.user;
         try {
-            const inventories = await inventory_model_1.default.find({
-                company,
-                venues: venue._id,
-                status: {
-                    $in: [inventory_model_1.ChoicesStatusInventory.inProcess]
-                }
-            }, {
-                _id: true,
-                name: true
-            });
-            res.json({
-                data: inventories,
-                status: 200
-            });
+            const updatedUser = await user_model_2.default.findById(req.user._id);
+            if (updatedUser) {
+                const inventories = await inventory_model_1.default.find({
+                    team,
+                    venues: updatedUser.venue,
+                    status: {
+                        $in: [inventory_model_1.ChoicesStatusInventory.inProcess]
+                    }
+                }, {
+                    _id: true,
+                    name: true
+                });
+                res.json({
+                    data: inventories,
+                    status: 200
+                });
+            }
+            else {
+                /* istanbul ignore next */
+                res.status(400).json({
+                    message: 'Usuario no encontrado',
+                    status: 400
+                });
+            }
         }
         catch (e) {
+            /* istanbul ignore next */
             res.status(400).json({
                 message: e,
                 status: 400
             });
         }
     }
-    async apiDetaill(req, res) {
+    async detaill(req, res) {
         const { id } = req.params;
-        const { company } = req.user;
+        const { team } = req.user;
+        let venuesPermissions = req.user.venuesPermissions();
         try {
             // summary
             const inventory = await inventory_model_1.default.aggregate([
                 {
                     $match: {
-                        company,
+                        team,
                         _id: { $in: [mongoose.Types.ObjectId(id)] }
                     }
                 }, {
                     $unwind: '$cars'
+                }, {
+                    $match: {
+                        'cars.venue': {
+                            $in: venuesPermissions
+                        }
+                    }
                 }, {
                     $group: {
                         _id: {
@@ -737,11 +877,17 @@ class InventoryController {
             const detailByVenues = await inventory_model_1.default.aggregate([
                 {
                     $match: {
-                        company,
+                        team,
                         _id: { $in: [mongoose.Types.ObjectId(id)] }
                     }
                 }, {
                     $unwind: '$cars'
+                }, {
+                    $match: {
+                        'cars.venue': {
+                            $in: venuesPermissions
+                        }
+                    }
                 }, {
                     $group: {
                         _id: {
@@ -785,11 +931,17 @@ class InventoryController {
             const detailByBrands = await inventory_model_1.default.aggregate([
                 {
                     $match: {
-                        company,
+                        team,
                         _id: { $in: [mongoose.Types.ObjectId(id)] }
                     }
                 }, {
                     $unwind: '$cars'
+                }, {
+                    $match: {
+                        'cars.venue': {
+                            $in: venuesPermissions
+                        }
+                    }
                 }, {
                     $lookup: {
                         from: 'cars',
@@ -884,7 +1036,7 @@ class InventoryController {
                     cars: true
                 }).populate([{
                         path: 'cars.car',
-                        select: ['vin', 'vin2', 'color', 'denomination', 'brand']
+                        select: ['vin', 'vin2', 'color', 'denomination', 'brand', 'venue']
                     }, {
                         path: 'cars.venue',
                         select: ['name']
@@ -896,12 +1048,23 @@ class InventoryController {
                     }, {
                         path: 'cars.inventoriedBy',
                         select: ['firstName', 'lastName']
+                    }, {
+                        path: 'cars.comments.user',
+                        select: ['_id', 'firstName', 'lastName']
                     }]);
+                venuesPermissions = venuesPermissions.map((ve) => ve.toString());
                 res.json({
                     summary: response,
                     detailByVenue,
                     detailByBrand,
-                    detail: detailInventory,
+                    detail: {
+                        _id: detailInventory ? detailInventory._id : '',
+                        name: detailInventory ? detailInventory.name : '',
+                        status: detailInventory ? detailInventory.status : '',
+                        cars: detailInventory ? detailInventory.cars.filter((car) => {
+                            return venuesPermissions.includes(car.venue._id.toString()) || (car.venueFound && venuesPermissions.includes(car.venueFound._id.toString()));
+                        }) : []
+                    },
                     status: 200
                 });
             }
@@ -913,7 +1076,9 @@ class InventoryController {
             }
         }
         catch (e) {
+            /* istanbul ignore next */
             console.log(e);
+            /* istanbul ignore next */
             res.status(400).json({
                 message: e,
                 status: 400
@@ -931,6 +1096,7 @@ class InventoryController {
                 .autoOrient()
                 .write(path, (err) => {
                 if (err) {
+                    /* istanbul ignore next */
                     reject(err);
                 }
                 else {

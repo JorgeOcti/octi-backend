@@ -13,17 +13,33 @@ import {RouteComponentProps} from 'react-router';
 import {Dispatch} from 'redux';
 import * as io from 'socket.io-client';
 import * as XLSX from 'xlsx';
-import {getInventoryDetailAction, IDetailByBrand, IDetailByVenue, IInventoryState, InventoryReduxAction} from '../../actions/inventory.actions';
+import {IInventoryCar} from '../../../../../../src/interfaces/inventory.interface';
+import {
+  addCommentAction,
+  getInventoryDetailAction,
+  IDetailByBrand,
+  IDetailByVenue,
+  IInventoryState,
+  InventoryReduxAction, sendCommentAction,
+  updateInventoryCarAction
+} from '../../actions/inventory.actions';
+import {loadDataAction, ModalReduxAction} from '../../actions/modal.actions';
 import AppContainer from '../../container/AppContainer';
 import {IWindow} from '../../interfaces/window';
+import {maxText} from '../../utils/common';
 import ImageLazyLoad from '../ImageLazyLoad';
+import ModalView from '../Modal/ModalView';
+import InventoryCarComments from './InventoryCarComments';
 
 declare let window: IWindow;
 
 interface IPropsType extends RouteComponentProps<{ id: string }> {
   inventories: IInventoryState;
   dispatch: Dispatch<InventoryReduxAction>;
+
+  updateCommentsAction(inventoryCar: IInventoryCar): InventoryReduxAction;
   getInventoryDetailAction(id: string, update: boolean): InventoryReduxAction;
+  loadDataAction(title: string, body: JSX.Element, footer?: JSX.Element): ModalReduxAction;
 }
 
 interface IStateType {
@@ -75,7 +91,9 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
   constructor(props: IPropsType) {
     super(props);
     this.resizeCharts = this.resizeCharts.bind(this);
-    this.export = this.export.bind(this);
+    this.xlsExport = this.xlsExport.bind(this);
+    this.carComments = this.carComments.bind(this);
+    this.vinFormatter = this.vinFormatter.bind(this);
     this.imagesFormatter = this.imagesFormatter.bind(this);
   }
 
@@ -101,20 +119,22 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
     });
     this.socket.on('REFRESH', (data: any): void => {
       if (data.update) {
-        const status: any = {
-          found: 'success',
-          leftover: 'warning',
-          reported: 'grey'
-        };
-        ($ as any).toast({
-          heading: data.title,
-          text: data.text,
-          position: 'top-right',
-          loaderBg: '#e2e2e2',
-          icon: status[data.status],
-          hideAfter: 5000,
-          stack: 6
-        });
+        if (data.title) {
+          const status: any = {
+            found: 'success',
+            leftover: 'warning',
+            reported: 'grey'
+          };
+          ($ as any).toast({
+            heading: data.title,
+            text: data.text,
+            position: 'top-right',
+            loaderBg: '#e2e2e2',
+            icon: status[data.status],
+            hideAfter: 5000,
+            stack: 6
+          });
+        }
         this.props.getInventoryDetailAction(id, true);
       }
     });
@@ -186,6 +206,25 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
     } else {
       return (
         '-'
+      );
+    }
+  }
+
+  public vinFormatter(cell: any, row: any) {
+    if (row.comments.length) {
+      return (
+        <React.Fragment>
+          {maxText(row.comments[row.comments.length - 1].comment, 60)}<br />
+          <button className={'btn btn-default btn-xs'} onClick={() => this.carComments(row)}>
+            {row.comments.length} <i className={'fa fa-comments'}/>
+          </button>
+        </React.Fragment>
+      );
+    } else {
+      return (
+        <button className={'btn btn-default btn-xs'} onClick={() => this.carComments(row)}>
+          Agregar <i className={'fa fa-comments'}/>
+        </button>
       );
     }
   }
@@ -268,27 +307,26 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
       headerClasses: 'hidden-xs hidden-sm hidden-md pointer',
       sort: true
     },
-    {
-      dataField: 'inventoriedBy',
-      text: 'Encontrado por',
-      filter: textFilter({
-        className: 'input-sm',
-        placeholder: ' Buscar'
-      }),
-      classes: 'hidden-xs hidden-sm hidden-md',
-      headerClasses: 'hidden-xs hidden-sm hidden-md pointer',
-      sort: true
-    },
-    {
-      dataField: 'images',
-      text: 'Imágenes',
-      classes: 'hidden-xs',
-      headerClasses: 'hidden-xs',
-      formatter: this.imagesFormatter,
-      headerStyle: {
-        verticalAlign: 'top'
-      }
-    }];
+      {
+        dataField: 'inventoriedBy',
+        text: 'Encontrado por',
+        filter: textFilter({
+          className: 'input-sm',
+          placeholder: ' Buscar'
+        }),
+        classes: 'hidden-xs hidden-sm hidden-md',
+        headerClasses: 'hidden-xs hidden-sm hidden-md pointer',
+        sort: true
+      }, {
+        dataField: 'images',
+        text: 'Imágenes',
+        classes: 'hidden-xs',
+        headerClasses: 'hidden-xs',
+        formatter: this.imagesFormatter,
+        headerStyle: {
+          verticalAlign: 'top'
+        }
+      }];
     const columns = [...defaultColumns, {
       dataField: 'status',
       text: 'Status',
@@ -306,11 +344,23 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
         maxWidth: '100px',
         minWidth: '100px'
       },
-      classes: (cell: any, row: any, rowIndex: any, colIndex: any) => {
-        return `text-center ${classStatus.hasOwnProperty(cell) ? classStatus[cell] : ''}`;
+      classes: (cell: any) => {
+        return `middle-center ${classStatus.hasOwnProperty(cell) ? classStatus[cell] : ''}`;
       }
     }];
     const columnsReported = [...defaultColumns, {
+      dataField: 'countComments',
+      text: 'Comentarios',
+      classes: 'hidden-xs text-ellipsis',
+      formatter: this.vinFormatter,
+      headerClasses: 'hidden-xs',
+      headerStyle: {
+        verticalAlign: 'top'
+      },
+      style: {
+        maxWidth: '150px'
+      }
+    }, {
       dataField: 'status',
       text: 'Status',
       sort: true,
@@ -327,7 +377,7 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
         maxWidth: '100px',
         minWidth: '100px'
       },
-      classes: (cell: any, row: any, rowIndex: any, colIndex: any) => {
+      classes: (cell: any) => {
         return `text-center ${classStatus.hasOwnProperty(cell) ? classStatus[cell] : ''}`;
       }
     }];
@@ -344,6 +394,8 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
             denomination: car.car.denomination,
             venue: car.venue ? car.venue.name : '-',
             images: car.images && car.images.length ? car.images : [],
+            comments: car.comments && car.comments.length ? car.comments : [],
+            countComments: car.comments && car.comments.length ? car.comments.length : 0,
             venueFound: car.venueFound ? car.venueFound.name : '-',
             inventoriedBy: car.inventoriedBy ? `${car.inventoriedBy.firstName} ${car.inventoriedBy.lastName}` : '-',
             status: car.status
@@ -356,6 +408,8 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
             denomination: car.car.denomination,
             venue: car.venue ? car.venue.name : '-',
             images: car.images && car.images.length ? car.images : [],
+            comments: car.comments && car.comments.length ? car.comments : [],
+            countComments: car.comments && car.comments.length ? car.comments.length : 0,
             venueFound: car.venueFound ? car.venueFound.name : '-',
             inventoriedBy: car.inventoriedBy ? `${car.inventoriedBy.firstName} ${car.inventoriedBy.lastName}` : '-',
             status: car.status
@@ -404,7 +458,7 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
                     }} />
                   </div>
                   <span className="progress-description">
-                    {`${percentageFound.toFixed(3)}% encontrados.`}
+                    {`${percentageFound.toFixed(1)}% encontrados.`}
                   </span>
                 </div>
               </div>
@@ -421,7 +475,7 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
                     }} />
                   </div>
                   <span className="progress-description">
-                    {`${percentagePending.toFixed(3)}% faltantes.`}
+                    {`${percentagePending.toFixed(1)}% faltantes.`}
                   </span>
                 </div>
               </div>
@@ -438,7 +492,7 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
                     }} />
                   </div>
                   <span className="progress-description">
-                    {`${percentageLeftover.toFixed(3)}% sobrantes.`}
+                    {`${percentageLeftover.toFixed(1)}% sobrantes.`}
                   </span>
                 </div>
               </div>
@@ -455,7 +509,7 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
                     }} />
                   </div>
                   <span className="progress-description">
-                    {`${percentageReported.toFixed(3)}% sobrantes.`}
+                    {`${percentageReported.toFixed(1)}% reportados.`}
                   </span>
                 </div>
               </div>
@@ -504,7 +558,7 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
                 <div className="box-body">
                   <div className="row">
                     <div className="col-md-12 text-right hidden-xs hidden-sm ">
-                      <p><button className="btn btn-sm btn-primary" onClick={() => this.export(['pending', 'found', 'leftover'])}>
+                      <p><button className="btn btn-sm btn-primary" onClick={() => this.xlsExport(['pending', 'found', 'leftover'])}>
                         <i className="fa fa-fw fa-download" /> Exportart excel
                       </button></p>
                     </div>
@@ -532,13 +586,11 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
               <div className="box box-info">
                 <div className="box-header with-border">
                   <h3 className="box-title">Detalle Reportados</h3>
-                  {/*<div className="box-tools pull-right">*/}
-                  {/*</div>*/}
                 </div>
                 <div className="box-body">
                   <div className="row">
                     <div className="col-md-12 text-right hidden-xs hidden-sm ">
-                      <p><button className="btn btn-sm btn-primary" onClick={() => this.export(['reported'])}>
+                      <p><button className="btn btn-sm btn-primary" onClick={() => this.xlsExport(['reported'])}>
                         <i className="fa fa-fw fa-download" /> Exportart excel
                       </button></p>
                     </div>
@@ -564,79 +616,29 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
               </div>
             </div>
           </div>
-          {/*<h2 className="page-header">Detalle sucursales</h2>*/}
-          {/*<div className="row">*/}
-            {/*<div className="col-md-6">*/}
-              {/*<div className="box box-warning collapsed-box">*/}
-                {/*<div className="box-header with-border">*/}
-                  {/*<h3 className="box-title">Sucursal 1</h3>*/}
-                  {/*<div className="box-tools pull-right">*/}
-                    {/*<button type="button" className="btn btn-box-tool" data-widget="collapse"><i className="fa fa-plus" /></button>*/}
-                  {/*</div>*/}
-                {/*</div>*/}
-                {/*<div className="box-body" style={{display: 'none'}}>*/}
-                  {/*<p>&nbsp;</p>*/}
-                  {/*<p>&nbsp;</p>*/}
-                  {/*<p>&nbsp;</p>*/}
-                  {/*<p>&nbsp;</p>*/}
-                {/*</div>*/}
-              {/*</div>*/}
-            {/*</div>*/}
-            {/*<div className="col-md-6">*/}
-              {/*<div className="box box-warning collapsed-box">*/}
-                {/*<div className="box-header">*/}
-                  {/*<h3 className="box-title">Sucursal 2</h3>*/}
-                  {/*<div className="box-tools pull-right">*/}
-                    {/*<button type="button" className="btn btn-box-tool" data-widget="collapse"><i className="fa fa-plus" /></button>*/}
-                  {/*</div>*/}
-                {/*</div>*/}
-                {/*<div className="box-body">*/}
-                  {/*<p>&nbsp;</p>*/}
-                  {/*<p>&nbsp;</p>*/}
-                  {/*<p>&nbsp;</p>*/}
-                  {/*<p>&nbsp;</p>*/}
-                {/*</div>*/}
-              {/*</div>*/}
-            {/*</div>*/}
-            {/*<div className="col-md-6">*/}
-              {/*<div className="box box-warning collapsed-box">*/}
-                {/*<div className="box-header">*/}
-                  {/*<h3 className="box-title">Sucursal 3</h3>*/}
-                  {/*<div className="box-tools pull-right">*/}
-                    {/*<button type="button" className="btn btn-box-tool" data-widget="collapse"><i className="fa fa-plus" /></button>*/}
-                  {/*</div>*/}
-                {/*</div>*/}
-                {/*<div className="box-body">*/}
-                  {/*<p>&nbsp;</p>*/}
-                  {/*<p>&nbsp;</p>*/}
-                  {/*<p>&nbsp;</p>*/}
-                  {/*<p>&nbsp;</p>*/}
-                {/*</div>*/}
-              {/*</div>*/}
-            {/*</div>*/}
-            {/*<div className="col-md-6">*/}
-              {/*<div className="box box-warning collapsed-box">*/}
-                {/*<div className="box-header">*/}
-                  {/*<h3 className="box-title">Sucursal 4</h3>*/}
-                  {/*<div className="box-tools pull-right">*/}
-                    {/*<button type="button" className="btn btn-box-tool" data-widget="collapse"><i className="fa fa-plus" /></button>*/}
-                  {/*</div>*/}
-                {/*</div>*/}
-                {/*<div className="box-body" style={{display: 'none'}}>*/}
-                  {/*<p>&nbsp;</p>*/}
-                  {/*<p>&nbsp;</p>*/}
-                  {/*<p>&nbsp;</p>*/}
-                  {/*<p>&nbsp;</p>*/}
-                {/*</div>*/}
-              {/*</div>*/}
-            {/*</div>*/}
-          {/*</div>*/}
+          <ModalView />
         </section>
       </AppContainer>
     );
   }
 
-  private export(status: string[]) {
+  private carComments(inventoryCar: IInventoryCar) {
+    const { inventories} = this.props;
+    this.props.updateCommentsAction(inventoryCar);
+    setTimeout(() => {
+      this.props.loadDataAction(
+        `Comentarios`,
+        <InventoryCarComments
+          inventories={inventories}
+          socket={this.socket}
+          addCommentAction={addCommentAction}
+          sendCommentAction={sendCommentAction}
+        />
+      );
+    }, 400);
+  }
+
+  private xlsExport(status: string[]) {
     const {detail} = this.props.inventories;
     const data: any = [];
     // Order data
@@ -776,12 +778,7 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
     if (!update) {
       optionVenues.dataZoom = [
         {
-          show: true,
-          realtime: true,
-          start: 50,
-          end: 100
-        }, {
-          type: 'inside',
+          show: venuesNames.length > 10,
           realtime: true,
           start: 50,
           end: 100
@@ -893,12 +890,7 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
     if (!update) {
       optionBrands.dataZoom = [
         {
-          show: true,
-          realtime: true,
-          start: 50,
-          end: 100
-        }, {
-          type: 'inside',
+          show: brandNames.length > 10,
           realtime: true,
           start: 50,
           end: 100
@@ -909,13 +901,13 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
   }
 
   private resizeCharts(): void {
-    if (this.venuesDetailChart && this.venuesDetailChart !== undefined) {
+    if (this.venuesDetailChart) {
       this.venuesDetailChart.resize();
       setTimeout(() => {
         this.venuesDetailChart.resize();
       }, 400);
     }
-    if (this.brandDetailChart && this.brandDetailChart !== undefined) {
+    if (this.brandDetailChart) {
       this.brandDetailChart.resize();
       setTimeout(() => {
         this.brandDetailChart.resize();
@@ -933,6 +925,8 @@ const mapStateToProps = (state: { inventories: IInventoryState }) => {
 const mapDispatchToProps = (dispatch: any ) => {
   return {
     dispatch,
+    loadDataAction: (title: string, body: JSX.Element, footer: JSX.Element) => dispatch(loadDataAction(title, body, footer)),
+    updateCommentsAction: (inventoryCar: IInventoryCar) => dispatch(updateInventoryCarAction(inventoryCar)),
     getInventoryDetailAction: (id: string, update: boolean) => dispatch(getInventoryDetailAction(id, update))
   };
 };

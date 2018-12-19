@@ -170,6 +170,7 @@ passport.deserializeUser(async (email, done) => {
         }
     }
     catch (e) {
+        /* istanbul ignore next */
         done(e);
     }
 });
@@ -232,8 +233,10 @@ app.use((req, res, next) => {
         message: 'Not Found',
         status: 404
     };
+    /* istanbul ignore next */
     next(err);
 });
+/* istanbul ignore next */
 app.use((err, req, res, next) => {
     // set locals, only providing error in development
     res.locals.message = err.message;

@@ -1,21 +1,22 @@
-import {ObjectID} from 'bson';
 import {Response} from 'express';
 import {PaginateOptions, PaginateResult} from 'mongoose';
 import {IRequest} from '../../../interfaces/global.interface';
 import Inventory from '../../../inventory/models/inventory.model';
+import User from '../../models/user.model';
 import Venue, {IVenueModel} from '../../models/venue.model';
 
 class AdminVenueController {
   constructor() {
     this.index = this.index.bind(this);
     this.getVenues = this.getVenues.bind(this);
-    this.apiVenues = this.apiVenues.bind(this);
-    this.apiAddVenue = this.apiAddVenue.bind(this);
-    this.apiEditVenue = this.apiEditVenue.bind(this);
+    this.apiListVenues = this.apiListVenues.bind(this);
+    this.apiCreateVenue = this.apiCreateVenue.bind(this);
+    this.apiUpdateVenue = this.apiUpdateVenue.bind(this);
     this.apiDeleteVenue = this.apiDeleteVenue.bind(this);
   }
 
   public async index(req: IRequest, res: Response) {
+    /* istanbul ignore else  */
     if (req.user.hasPermission('viewVenue')) {
       res.render('app/index', {token: await req.user.generateToken()});
     } else {
@@ -23,8 +24,8 @@ class AdminVenueController {
     }
   }
 
-  public async apiVenues(req: IRequest, res: Response) {
-    const company = req.user.company;
+  public async apiListVenues(req: IRequest, res: Response) {
+    const {team} = req.user;
     const {page, pageSize} = req.query;
     // paginate options
     const options: PaginateOptions = {
@@ -41,6 +42,9 @@ class AdminVenueController {
       }, {
         path: 'participants',
         select: ['_id']
+      }, {
+        path: 'company',
+        select: ['name']
       }],
       lean: true,
       sort: {
@@ -50,8 +54,11 @@ class AdminVenueController {
       limit: parseInt(pageSize ? pageSize : 20, 10)
     };
     try {
-      const venues = await this.getVenues(company, options);
-      // validate exist page
+      const venues = await this.getVenues({
+        deleted: false,
+        team
+      }, options);
+      /* istanbul ignore if  */
       if (options.page && venues.pages && venues.pages < options.page) {
         res.status(400).json({
           message: 'La página solicitada no existe.',
@@ -68,20 +75,21 @@ class AdminVenueController {
         });
       }
     } catch (e) {
+      /* istanbul ignore next  */
       if (e) {
         res.status(500).json(e);
       }
     }
   }
 
-  public async apiAddVenue(req: IRequest, res: Response): Promise<any> {
+  public async apiCreateVenue(req: IRequest, res: Response): Promise<any> {
     if (!req.user.hasPermission('addVenue')) {
       return res.status(403).json({
         message: 'No tienes permisos para esta operación'
       });
     }
-    const {name, type} = req.body;
-    const company = req.user.company;
+    const {name, type, company} = req.body;
+    const {team} = req.user;
     if (!name || !name.trim().length) {
       res.status(400).json({
         message: 'El nombre es requerido.',
@@ -91,7 +99,7 @@ class AdminVenueController {
     try {
       const existVenue = await Venue.find({
         name,
-        company
+        team
       });
       if (existVenue.length) {
         res.status(400).json({
@@ -101,8 +109,9 @@ class AdminVenueController {
       } else {
         const newVenue = await new Venue({
           name,
-          type,
-          company
+          team,
+          company,
+          type
         }).save();
         res.status(201).json({
           message: 'Sucursal agregada satisfactoriamente.',
@@ -110,20 +119,23 @@ class AdminVenueController {
         });
       }
     } catch (e) {
+      /* istanbul ignore next  */
       console.log(e);
+      /* istanbul ignore next  */
       res.status(500).json(e);
     }
   }
 
-  public async apiEditVenue(req: IRequest, res: Response): Promise<any> {
+  public async apiUpdateVenue(req: IRequest, res: Response): Promise<any> {
+    /* istanbul ignore next  */
     if (!req.user.hasPermission('changeVenue')) {
       return res.status(403).json({
         message: 'No tienes permisos para esta operación'
       });
     }
     const {id} = req.params;
-    const {company} = req.user;
-    const {name, type} = req.body;
+    const {team} = req.user;
+    const {name, type, company} = req.body;
     if (!name || !name.length) {
       res.status(400).json({
         message: 'The name is are required',
@@ -132,15 +144,21 @@ class AdminVenueController {
     }
     try {
       const venue = await Venue.findOneAndUpdate({
-        _id: id
-        , company
+        _id: id,
+        team
       }, {
         name,
+        company,
         type
       }, {
         new: true
-      });
+      }).populate([{
+        path: 'company',
+        select: ['_id', 'name']
+      }]);
       if (venue) {
+        // fix users in venue
+        await User.update({venue: id}, {company: venue.company._id}, {multi: true});
         const response = {
           message: 'Sucursal editada satisfactoriamente.',
           venue
@@ -151,10 +169,12 @@ class AdminVenueController {
           id,
           message: 'Sucursal no encontrada'
         };
-        res.status(200).json(response);
+        res.status(400).json(response);
       }
     } catch (e) {
+      /* istanbul ignore next  */
       console.log(e);
+      /* istanbul ignore next  */
       res.status(500).json(e);
     }
   }
@@ -166,7 +186,7 @@ class AdminVenueController {
       });
     }
     const {id} = req.params;
-    const company = req.user.company;
+    const {company, team} = req.user;
     try {
       const inventories = await Inventory.find({
         $or: [{
@@ -187,7 +207,7 @@ class AdminVenueController {
       } else {
         const venue = await Venue.findOne({
           _id: id,
-          company
+          team
         }).populate([{
           path: 'users',
           select: ['_id']
@@ -202,7 +222,7 @@ class AdminVenueController {
             });
           } else if (venue.participants && venue.participants.length) {
             res.status(400).json({
-              message: 'La sucursal no ha podido ser eliminada porque aún tiene revisiones asignados.'
+              message: 'La sucursal no ha podido ser eliminada porque aún tiene revisiones asignadas.'
             });
           } else {
             await venue.remove();
@@ -221,13 +241,15 @@ class AdminVenueController {
         }
       }
     } catch (e) {
+      /* istanbul ignore next  */
       res.status(500).json(e);
     }
   }
 
-  private getVenues(company: ObjectID, options: PaginateOptions): Promise<PaginateResult<IVenueModel>> {
+  private getVenues(filter: any, options: PaginateOptions): Promise<PaginateResult<IVenueModel>> {
     return new Promise((resolve, reject) => {
-      Venue.paginate({company}, options, (err, result) => {
+      Venue.paginate(filter, options, (err, result) => {
+        /* istanbul ignore next  */
         if (err) {
           return reject(err);
         }

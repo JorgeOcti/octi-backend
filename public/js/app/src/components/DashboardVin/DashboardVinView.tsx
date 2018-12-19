@@ -1,5 +1,4 @@
 import * as moment from 'moment';
-// import * as PropTypes from 'prop-types';
 import * as Raven from 'raven-js';
 import {ErrorInfo} from 'react';
 import * as React from 'react';
@@ -121,16 +120,17 @@ class DashboardVinView extends React.Component<IPropsType, IStateType> {
               <div className="box-tools pull-right">
               </div>
             </div>
-            <div className="box-body no-padding">
+            <div className={`box-body ${cars.length ? 'no-padding' : ''}`}>
               {
                 cars.length ?
                   <table className="table table-striped">
                     <thead>
                     <tr>
                       <th style={{width: '20%'}} className="middle">VIN</th>
-                      <th style={{width: '20%'}} className="middle hidden-xs">Marca</th>
+                      <th style={{width: '10%'}} className="middle hidden-xs">Marca</th>
                       <th style={{width: '20%'}} className="middle hidden-xs">Supervisor</th>
-                      <th style={{width: '20%'}} className="hidden-xs">Calificación</th>
+                      <th style={{width: '20%'}} className="middle hidden-xs">Sucursal</th>
+                      <th style={{width: '10%'}} className="hidden-xs">Calificación</th>
                       <th style={{width: '20%'}} className="hidden-xs">Último checkeo</th>
                       <th className="width-10"/>
                     </tr>
@@ -147,6 +147,9 @@ class DashboardVinView extends React.Component<IPropsType, IStateType> {
                             <td className="middle hidden-xs">{car.brand}</td>
                             <td className="middle">
                               {`${car.lastForm.user ? `${car.lastForm.user.firstName} ${car.lastForm.user.lastName}` : ''}`}
+                            </td>
+                            <td className="middle">
+                              {`${car.lastForm.venue ? `${car.lastForm.venue.name}` : '-'}`}
                             </td>
                             <td className="middle">
                               {`${car.lastForm && car.lastForm.hasOwnProperty('qualification') ? `${Math.round(car.lastForm.qualification)}%` : ''}`}

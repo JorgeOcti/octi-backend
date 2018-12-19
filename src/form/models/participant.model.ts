@@ -186,6 +186,11 @@ const participantSchema = new mongoose.Schema({
     ref: 'Form',
     index: true
   },
+  team: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Team',
+    required: true
+  },
   company: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Company',

@@ -1,6 +1,7 @@
 import * as PushNotifications from '@pusher/push-notifications-server';
 import * as dotenv from 'dotenv';
 import * as path from 'path';
+import GeneralUtils from '../utils/general.utils';
 import logger from './logger.service';
 
 class PushService {
@@ -11,8 +12,8 @@ class PushService {
       path: path.join(__dirname, '../../.env')
     });
     this.pushNotifications = new PushNotifications({
-      instanceId: process.env.PUSHER_INSTANCE_ID ? process.env.PUSHER_INSTANCE_ID : '',
-      secretKey: process.env.PUHSER_SECRET_KEY ? process.env.PUHSER_SECRET_KEY : ''
+      instanceId: GeneralUtils.getFromEnviroment('PUSHER_INSTANCE_ID', ''),
+      secretKey: GeneralUtils.getFromEnviroment('PUHSER_SECRET_KEY', '')
     });
   }
 
@@ -46,6 +47,7 @@ class PushService {
 
   public massiveSend(title: string, subtitle: string, body: string, interests: string[]) {
     const total = interests.length;
+    /* istanbul ignore if */
     if (total > 100) {
       while (interests.length) {
         this.send(title, subtitle, body, interests.splice(0, 100));

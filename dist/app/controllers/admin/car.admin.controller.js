@@ -5,11 +5,12 @@ const car_model_1 = require("../../models/car.model");
 class AdminCarController {
     constructor() {
         this.index = this.index.bind(this);
-        this.import = this.import.bind(this);
+        this.imports = this.imports.bind(this);
         this.importCars = this.importCars.bind(this);
         this.apiListCars = this.apiListCars.bind(this);
     }
     async index(req, res) {
+        /* istanbul ignore else */
         if (req.user.hasPermission('viewCar')) {
             res.render('app/index', { token: await req.user.generateToken() });
         }
@@ -17,7 +18,8 @@ class AdminCarController {
             res.status(403).render('403');
         }
     }
-    async import(req, res) {
+    async imports(req, res) {
+        /* istanbul ignore else */
         if (req.user.hasPermission('addCar')) {
             res.render('app/index', {
                 token: await req.user.generateToken()
@@ -28,13 +30,14 @@ class AdminCarController {
         }
     }
     async importCars(req, res) {
+        /* istanbul ignore next  */
         if (!req.user.hasPermission('addCar')) {
             return res.status(403).json({
                 message: 'No tienes permisos para esta operación'
             });
         }
-        const company = req.user.company;
-        const cars = req.body;
+        const { company, team } = req.user;
+        const { cars } = req.body;
         if (cars && cars.length) {
             for (const car of cars) {
                 if (car.vin && car.vin.length) {
@@ -42,13 +45,14 @@ class AdminCarController {
                     try {
                         const newCar = await car_model_1.default.findOne({
                             vin: car.vin,
-                            company
+                            team
                         });
                         if (newCar) {
                             newCar.vin2 = vin2;
                             newCar.brand = car.marca ? car.marca : newCar.brand;
                             newCar.denomination = car.denominacion ? car.denominacion : newCar.denomination;
-                            newCar.color = car.denominacion ? car.color : newCar.color;
+                            newCar.color = car.color ? car.color : newCar.color;
+                            newCar.patent = car.patente ? car.patente : newCar.patent;
                             newCar.internalNumber = car.NInterno ? car.NInterno : newCar.internalNumber;
                             newCar.destination = car.destino ? car.destino : newCar.destination;
                             newCar.status = car_model_1.ChoicesStatusCar.active;
@@ -63,13 +67,16 @@ class AdminCarController {
                                 color: car.color ? car.color : '',
                                 internalNumber: car.NInterno ? car.NInterno : '',
                                 destination: car.destino ? car.destino : '',
+                                patent: car.patente ? car.patente : '',
                                 company,
+                                team,
                                 status: car_model_1.ChoicesStatusCar.active
                             });
                         }
                         // io.to(req.user._id).emit('STATUS-CARS', {newCar});
                     }
                     catch (e) {
+                        /* istanbul ignore next */
                         console.log(e);
                     }
                 }
@@ -81,19 +88,21 @@ class AdminCarController {
         });
     }
     async apiListCars(req, res) {
+        /* istanbul ignore next */
         if (!req.user.hasPermission('viewCar')) {
             return res.status(403).json({
                 message: 'No tienes permisos para esta operación'
             });
         }
         const { page, pageSize, search } = req.query;
-        const company = req.user.company;
+        const { team } = req.user;
         // paginate options
         const options = {
             select: {
                 vin: true,
                 vin2: true,
                 brand: true,
+                patent: true,
                 denomination: true,
                 color: true,
                 internalNumber: true,
@@ -111,8 +120,14 @@ class AdminCarController {
             limit: parseInt(pageSize ? pageSize : 20, 10)
         };
         try {
-            const cars = await this.getCars(company, options, search);
+            const cars = await this.getCars({
+                team,
+                status: {
+                    $eq: car_model_1.ChoicesStatusCar.active
+                }
+            }, options, search);
             // validate exist page
+            /* istanbul ignore if  */
             if (options.page && cars.pages && cars.pages < options.page) {
                 res.status(400).json({
                     error: 'La página solicitada no existe.',
@@ -131,13 +146,13 @@ class AdminCarController {
             }
         }
         catch (e) {
+            /* istanbul ignore next  */
             if (e) {
                 res.status(500).json(e);
             }
         }
     }
-    getCars(company, options, search) {
-        let filter = { company, status: { $eq: car_model_1.ChoicesStatusCar.active } };
+    getCars(filter, options, search) {
         if (search && search.length) {
             const searchText = new RegExp(search, 'i');
             filter = {
@@ -152,16 +167,13 @@ class AdminCarController {
                                 color: { $regex: searchText }
                             }]
                     },
-                    filter
+                    ...filter
                 ]
             };
-            // filter = {
-            //   $text: { $search: search }, company
-            // };
-            /* {score: {$meta: "toextScore"} */
         }
         return new Promise((resolve, reject) => {
             car_model_1.default.paginate(filter, options, (err, result) => {
+                /* istanbul ignore if */
                 if (err) {
                     return reject(err);
                 }

@@ -2,6 +2,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 const moment = require("moment");
 const mongoose = require("mongoose");
+const app_1 = require("../../app");
 const participant_model_1 = require("../../form/models/participant.model");
 const inventory_model_1 = require("../../inventory/models/inventory.model");
 const vin_service_1 = require("../../services/vin.service");
@@ -60,15 +61,28 @@ class CarController {
     }
     async vinDashboardDetail(req, res) {
         const { id } = req.params;
-        const company = req.user.company;
+        const { team } = req.user;
         // validate params
+        /* istanbul ignore next */
         if (!mongoose.Types.ObjectId.isValid(id)) {
             return res.status(404).render('404');
         }
         try {
             // validate car exist
             const car = await car_model_1.default.findOne({
-                _id: id, company
+                _id: id,
+                lastForm: {
+                    $exists: true,
+                    $ne: null,
+                    $in: await participant_model_1.default.find({
+                        venue: {
+                            $in: req.user.venuesPermissions()
+                        }
+                    }, {
+                        _id: true
+                    })
+                },
+                team
             });
             if (!car) {
                 return res.status(404).render('404');
@@ -78,6 +92,7 @@ class CarController {
             }
         }
         catch (e) {
+            /* istanbul ignore next */
             if (e) {
                 res.status(500).send(e);
             }
@@ -87,7 +102,7 @@ class CarController {
         let { vin, vin2 } = req.body;
         const { inventory } = req.body;
         // const {multi} = req.query;
-        const company = req.user.company;
+        const { team, company } = req.user;
         /*
           {
             $group: {
@@ -113,7 +128,7 @@ class CarController {
                 }
                 else {
                     const inventoryQuery = {
-                        company
+                        team
                     };
                     if (vin) {
                         inventoryQuery.vin = vin;
@@ -124,7 +139,8 @@ class CarController {
                             inventoryQuery.vin2 = { $regex: vinRegex };
                         }
                         else {
-                            inventoryQuery.vin2 = vin2;
+                            const patentRegex = new RegExp(vin2, 'i');
+                            inventoryQuery.$or = [{ vin2 }, { patent: patentRegex }];
                         }
                     }
                     const cars = await car_model_1.default.find(inventoryQuery, {
@@ -132,6 +148,7 @@ class CarController {
                         vin2: true,
                         brand: true,
                         color: true,
+                        patent: true,
                         denomination: true
                     });
                     if (cars.length) {
@@ -141,7 +158,7 @@ class CarController {
                         }, {});
                         const inventoriedCar = await inventory_model_1.default.findOne({
                             _id: inventory,
-                            company,
+                            team,
                             status: inventory_model_1.ChoicesStatusInventory.inProcess
                         }, {
                             'cars.car': true,
@@ -201,6 +218,7 @@ class CarController {
                 }
             }
             catch (e) {
+                /* istanbul ignore next */
                 if (e) {
                     res.status(500).json(e);
                 }
@@ -210,17 +228,22 @@ class CarController {
             if (vin) {
                 vin = vin.replace(/[\W_]+/g, '');
                 try {
-                    console.log('vin', vin_service_1.default.decode(vin));
+                    const testDecode = vin_service_1.default.decode(vin);
+                    /* istanbul ignore next */
+                    if (app_1.default.get('env') !== 'testing') {
+                        console.log('vin', testDecode);
+                    }
                     const indexBrand = vin.slice(0, 3);
                     vin2 = vin.substr(vin.length - 6);
                     const brand = this.carBrands.hasOwnProperty(indexBrand) ? this.carBrands[indexBrand] : null;
                     const car = await car_model_1.default.findOneOrCreate({
                         vin,
-                        company
+                        team
                     }, {
                         vin,
                         vin2,
                         company,
+                        team,
                         brand,
                         status: car_model_1.ChoicesStatusCar.active
                     });
@@ -230,6 +253,7 @@ class CarController {
                             vin: car.vin,
                             vin2: car.vin2,
                             brand: car.brand,
+                            patent: car.patent,
                             color: car.color,
                             denomination: car.denomination
                         },
@@ -237,7 +261,9 @@ class CarController {
                     });
                 }
                 catch (e) {
+                    /* istanbul ignore next */
                     console.log(e);
+                    /* istanbul ignore next */
                     if (e) {
                         res.status(500).send(e);
                     }
@@ -247,14 +273,16 @@ class CarController {
                 // vin2 = vin2.replace(/[\W_]+/g, '');
                 try {
                     const vinRegex = new RegExp('[a-zA-Z0]' + vin2.substr(vin2.length - 5), 'i');
+                    const patentRegex = new RegExp(vin2, 'i');
                     const car = await car_model_1.default.find({
-                        vin2: vin2 && vin2[0] === '0' ? { $regex: vinRegex } : vin2,
-                        company
+                        $or: [{ vin2: vin2 && vin2[0] === '0' ? { $regex: vinRegex } : vin2 }, { patent: patentRegex }],
+                        team
                     }, {
                         vin: true,
                         vin2: true,
                         brand: true,
                         color: true,
+                        patent: true,
                         denomination: true
                     });
                     if (car.length) {
@@ -271,6 +299,7 @@ class CarController {
                     }
                 }
                 catch (e) {
+                    /* istanbul ignore next */
                     if (e) {
                         res.status(500).send(e);
                     }
@@ -285,13 +314,14 @@ class CarController {
         }
     }
     async apiParticipantsPerDate(req, res) {
-        const { company, venue } = req.user;
+        const { company } = req.user;
         try {
             const participantPerDay = await participant_model_1.default
                 .aggregate([{
                     $match: {
-                        company,
-                        venue: venue._id,
+                        venue: {
+                            $in: req.user.venuesPermissions()
+                        },
                         createdAt: {
                             $gte: moment().subtract(14, 'd').toDate()
                         }
@@ -479,8 +509,9 @@ class CarController {
             const participantPerRange = await participant_model_1.default
                 .aggregate([{
                     $match: {
-                        company,
-                        venue: venue._id,
+                        venue: {
+                            $in: req.user.venuesPermissions()
+                        },
                         createdAt: {
                             $gte: moment().subtract(14, 'd').toDate()
                         }
@@ -522,12 +553,15 @@ class CarController {
             });
         }
         catch (e) {
+            /* istanbul ignore next */
             console.log('e', e);
+            /* istanbul ignore next */
             if (e) {
                 res.status(500).json(e);
             }
         }
     }
+    /* istanbul ignore next */
     async apiParticipantCSV(req, res) {
         const participants = await participant_model_1.default.find({}).populate([{
                 path: 'car'
@@ -556,11 +590,15 @@ class CarController {
     }
     async apiParticipantDetail(req, res) {
         const { id } = req.params;
-        const company = req.user.company;
+        const { team } = req.user;
         try {
             const participant = await participant_model_1.default
                 .findOne({
-                _id: id, company
+                _id: id,
+                team,
+                venue: {
+                    $in: req.user.venuesPermissions()
+                }
             }, {
                 name: true,
                 user: true,
@@ -604,19 +642,20 @@ class CarController {
             }
         }
         catch (e) {
+            /* istanbul ignore next */
             if (e) {
                 res.status(500).json(e);
             }
         }
     }
     async apiCarDetail(req, res) {
-        const { company, venue } = req.user;
+        const { team } = req.user;
         const { id } = req.params;
         try {
             const car = await car_model_1.default
                 .findOne({
                 _id: id,
-                company
+                team
             }, {
                 vin: true,
                 brand: true,
@@ -626,9 +665,11 @@ class CarController {
                 .populate([{
                     // reverse populate
                     path: 'participants',
-                    select: ['name', 'user', 'createdAt', 'qualification'],
+                    select: ['name', 'user', 'createdAt', 'qualification', 'venue'],
                     match: {
-                        venue: venue._id
+                        venue: {
+                            $in: req.user.venuesPermissions()
+                        }
                     },
                     options: {
                         sort: {
@@ -637,6 +678,9 @@ class CarController {
                     },
                     // deep populate user
                     populate: [{
+                            path: 'venue',
+                            select: ['name']
+                        }, {
                             path: 'user',
                             select: ['firstName', 'lastName']
                         }]
@@ -655,13 +699,13 @@ class CarController {
             }
         }
         catch (e) {
+            /* istanbul ignore next */
             if (e) {
                 res.status(500).json(e);
             }
         }
     }
     async apiCars(req, res) {
-        const { company, venue } = req.user;
         const { page, pageSize, search } = req.query;
         // paginate options
         const options = {
@@ -674,9 +718,17 @@ class CarController {
             populate: [{
                     path: 'lastForm',
                     select: ['createdAt', 'user', 'qualification', 'venue'],
+                    // options: {
+                    //   sort: {
+                    //     updatedAt: -1
+                    //   }
+                    // }
                     populate: [{
                             path: 'user',
                             select: ['firstName', 'lastName']
+                        }, {
+                            path: 'venue',
+                            select: ['name']
                         }]
                 }],
             sort: {
@@ -687,8 +739,15 @@ class CarController {
         };
         try {
             const cars = await this.getCars({
-                company,
-                lastForm: { $in: await participant_model_1.default.find({ company, venue: venue._id }, { _id: true }), $exists: true, $ne: null }
+                lastForm: {
+                    $exists: true,
+                    $ne: null,
+                    $in: await participant_model_1.default.find({
+                        venue: {
+                            $in: req.user.venuesPermissions()
+                        }
+                    }, { _id: true })
+                }
             }, options, search);
             // validate exist page
             if (options.page && cars.pages && cars.pages < options.page) {
@@ -709,6 +768,7 @@ class CarController {
             }
         }
         catch (e) {
+            /* istanbul ignore next */
             if (e) {
                 res.status(500).json(e);
             }
@@ -736,6 +796,7 @@ class CarController {
         return new Promise((resolve, reject) => {
             car_model_1.default.paginate(filter, options, (err, result) => {
                 if (err) {
+                    /* istanbul ignore next */
                     return reject(err);
                 }
                 return resolve(result);

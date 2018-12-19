@@ -7,8 +7,10 @@ const app_1 = require("../../app");
 const alert_model_1 = require("../../app/models/alert.model");
 const car_model_1 = require("../../app/models/car.model");
 const user_model_1 = require("../../app/models/user.model");
+const user_model_2 = require("../../app/models/user.model");
 const server_1 = require("../../server");
 const redis_service_1 = require("../../services/redis.service");
+const general_utils_1 = require("../../utils/general.utils");
 const form_model_1 = require("../models/form.model");
 const participant_model_1 = require("../models/participant.model");
 const participantFile_model_1 = require("../models/participantFile.model");
@@ -23,19 +25,34 @@ class FormController {
         this.uploadFile = this.uploadFile.bind(this);
     }
     async list(req, res) {
-        const company = req.user.company;
+        const { team } = req.user;
         try {
-            const forms = await this.getForms(company, {
-                _id: {
-                    $in: req.user.userForms.map((form) => form._id)
-                }
-            });
-            res.json({
-                data: forms,
-                status: 200
-            });
+            const updatedUser = await user_model_2.default.findById(req.user._id).populate([{
+                    path: 'userForms',
+                    select: ['_id']
+                }]);
+            if (updatedUser) {
+                const forms = await this.getForms({
+                    _id: {
+                        $in: updatedUser.userForms.map((form) => form._id)
+                    },
+                    team
+                });
+                res.json({
+                    data: forms,
+                    status: 200
+                });
+            }
+            else {
+                /* istanbul ignore next */
+                res.status(400).json({
+                    message: 'Usuario no encontrado',
+                    status: 400
+                });
+            }
         }
         catch (e) {
+            /* istanbul ignore next */
             res.status(400).json({
                 message: 'Ha ocurrido un error',
                 status: 400
@@ -44,14 +61,14 @@ class FormController {
     }
     async detail(req, res) {
         const { id } = req.params;
-        const company = req.user.company;
+        const { team } = req.user;
         if (req.user.userForms.filter((form) => form._id.toString() === id).length === 0) {
             return res.status(403).json({
                 message: 'No tienes permisos para esta operación'
             });
         }
         try {
-            const form = await this.getForm(id, company);
+            const form = await this.getForm({ _id: id, team });
             // generate array of scale ids
             const scalesIds = [];
             form.sections.forEach((section) => {
@@ -69,6 +86,7 @@ class FormController {
                 _id: '',
                 name: '',
                 questions: [],
+                weight: 0,
                 order: form.sections.length + 1
             };
             const extraScales = [];
@@ -77,7 +95,12 @@ class FormController {
                     _id: 'shipping',
                     question: form.shippingText,
                     scale: 'shipping',
-                    conciliation: false
+                    conciliation: false,
+                    risk: '',
+                    observe: '',
+                    accessories: null,
+                    weight: 0,
+                    order: 1000
                 });
                 extraScales.push({
                     _id: 'shipping',
@@ -104,8 +127,7 @@ class FormController {
                             value: 1,
                             order: 2
                         }
-                    ],
-                    order: extraScales.length + 1
+                    ]
                 });
             }
             if (form.reception) {
@@ -113,7 +135,12 @@ class FormController {
                     _id: 'reception',
                     question: form.receptionText,
                     scale: 'reception',
-                    conciliation: false
+                    conciliation: false,
+                    risk: '',
+                    observe: '',
+                    accessories: null,
+                    weight: 0,
+                    order: 1000
                 });
                 extraScales.push({
                     _id: 'reception',
@@ -140,8 +167,7 @@ class FormController {
                             value: 1,
                             order: 2
                         }
-                    ],
-                    order: extraScales.length + 1
+                    ]
                 });
             }
             if (form.conciliation) {
@@ -149,7 +175,12 @@ class FormController {
                     _id: 'conciliation',
                     question: form.conciliationText,
                     scale: 'conciliation',
-                    conciliation: true
+                    conciliation: false,
+                    risk: '',
+                    observe: '',
+                    accessories: null,
+                    weight: 0,
+                    order: 1000
                 });
                 extraScales.push({
                     _id: 'conciliation',
@@ -176,8 +207,7 @@ class FormController {
                             value: 1,
                             order: 2
                         }
-                    ],
-                    order: extraScales.length + 1
+                    ]
                 });
             }
             // delete keys from object returned by api
@@ -187,7 +217,12 @@ class FormController {
                     delete form[key];
                 }
             });
-            let scales = await this.getScales(scalesIds, company);
+            let scales = await this.getScales({
+                _id: {
+                    $in: scalesIds
+                },
+                team
+            });
             scales = [...scales, ...extraScales];
             if (extraSection.questions.length) {
                 form.sections = [...form.sections, extraSection];
@@ -203,7 +238,9 @@ class FormController {
             });
         }
         catch (e) {
+            /* istanbul ignore next */
             console.log('e', e);
+            /* istanbul ignore next */
             res.status(400).json({
                 message: 'No se encontro formularío',
                 status: 400
@@ -214,7 +251,7 @@ class FormController {
         const { id } = req.params;
         let { vin } = req.body;
         const { answers } = req.body;
-        const { company, venue } = req.user;
+        const { team, venue, company } = req.user;
         // validate answers in body
         if (!answers) {
             return res.status(400).json({
@@ -233,14 +270,18 @@ class FormController {
         try {
             const car = await car_model_1.default.findOne({
                 $or: [{ vin: { $eq: vin } }, { vin2: { $eq: vin } }],
-                company
+                team
             });
             if (car) {
-                const form = await this.getFormWithScale(id, company);
+                const form = await this.getFormWithScale({
+                    _id: id,
+                    team
+                });
                 if (form) {
                     // initialize participant
                     const participantObject = {
                         name: form.name,
+                        team,
                         company,
                         form: form._id,
                         car,
@@ -289,7 +330,7 @@ class FormController {
                             // calculate qualification and set vars of the answer
                             const questionID = question._id.toString();
                             // get selected answer
-                            const answer = answers.hasOwnProperty(questionID) ? answers[questionID] : null;
+                            const answer = general_utils_1.default.getObjectProperty(answers, questionID, null);
                             // find choice selected
                             const choice = question.scale.choices.find((choice) => {
                                 return answer ? choice._id.toString() === answer.value : false;
@@ -380,7 +421,7 @@ class FormController {
                         /* Search alerts */
                         const alerts = await alert_model_1.default
                             .find({
-                            company,
+                            team,
                             $or: [
                                 { $and: [{ lte: { $gte: formQualification } }, { lte: { $gt: 0 } }] },
                                 { $and: [{ gte: { $lte: formQualification } }, { gte: { $gt: 0 } }] }
@@ -449,8 +490,10 @@ class FormController {
                         });
                     }
                     catch (e) {
+                        /* istanbul ignore next */
                         console.log(e);
                         // return error, if the form could not be recorded
+                        /* istanbul ignore next */
                         return res.status(400).json({
                             message: e,
                             status: 400
@@ -473,6 +516,7 @@ class FormController {
             }
         }
         catch (e) {
+            /* istanbul ignore next */
             return res.status(400).json({
                 message: e,
                 status: 400
@@ -511,6 +555,7 @@ class FormController {
                 participantFile.company = company._id;
                 participantFile.attach('file', file, async (error) => {
                     if (error) {
+                        /* istanbul ignore next */
                         res.status(400).json(error);
                     }
                     else {
@@ -526,6 +571,7 @@ class FormController {
                 });
             }
             catch (e) {
+                /* istanbul ignore next */
                 res.status(400).json(e);
             }
         }
@@ -538,12 +584,12 @@ class FormController {
     }
     async changePreferred(req, res) {
         let { form } = req.body;
-        const company = req.user.company;
+        const { team } = req.user;
         try {
-            const user = await user_model_1.default.findOne({ _id: req.user._id, company, active: true });
+            const user = await user_model_1.default.findOne({ _id: req.user._id, team, active: true });
             // validate exist user
             if (user) {
-                form = await form_model_1.default.findOne({ _id: form, company });
+                form = await form_model_1.default.findOne({ _id: form, team });
                 // validate exist form
                 if (form) {
                     user.preferred = form;
@@ -585,6 +631,7 @@ class FormController {
                 .autoOrient()
                 .write(path, (err) => {
                 if (err) {
+                    /* istanbul ignore next */
                     reject(err);
                 }
                 else {
@@ -593,54 +640,34 @@ class FormController {
             });
         });
     }
-    getForms(company, filter) {
-        const keyCache = `forms${filter ? JSON.stringify(filter) : ''}`;
-        if (filter) {
-            filter = {
-                company,
-                ...filter
-            };
-        }
-        else {
-            filter = {
-                company
-            };
-        }
+    getForms(filter) {
         return new Promise((resolve, reject) => {
-            redis_service_1.default.get(keyCache, async (error, result) => {
-                if (result) {
-                    console.log(`cache: ${keyCache}`);
-                    resolve(JSON.parse(result));
+            form_model_1.default
+                .find(filter, {
+                _id: 1,
+                name: 1
+            })
+                .lean()
+                .exec((err, forms) => {
+                if (err) {
+                    /* istanbul ignore next */
+                    return reject(err);
                 }
-                else {
-                    form_model_1.default
-                        .find(filter, {
-                        _id: 1,
-                        name: 1
-                    })
-                        .lean()
-                        .exec((err, forms) => {
-                        if (err) {
-                            return reject(err);
-                        }
-                        redis_service_1.default.setex(keyCache, 60 * 2, JSON.stringify(forms));
-                        return resolve(forms);
-                    });
-                }
+                return resolve(forms);
             });
         });
     }
-    getForm(id, company) {
-        const keyCache = `form-${id}`;
+    getForm(filter) {
+        const keyCache = `form-${filter._id}`;
         return new Promise((resolve, reject) => {
             redis_service_1.default.get(keyCache, async (error, result) => {
                 if (result) {
-                    console.log(`cache: ${keyCache}`);
+                    // console.log(`cache: ${keyCache}`);
                     resolve(JSON.parse(result));
                 }
                 else {
                     form_model_1.default
-                        .findOne({ _id: id, company }, {
+                        .findOne(filter, {
                         'company': false,
                         'updatedAt': false,
                         'createdAt': false,
@@ -652,6 +679,7 @@ class FormController {
                         .lean()
                         .exec((err, form) => {
                         if (err) {
+                            /* istanbul ignore next */
                             return reject(err);
                         }
                         if (form) {
@@ -664,13 +692,14 @@ class FormController {
             });
         });
     }
-    getFormWithScale(id, company) {
+    getFormWithScale(filter) {
         return new Promise((resolve, reject) => {
             form_model_1.default
-                .findOne({ _id: id, company })
+                .findOne(filter)
                 .populate('sections.questions.scale')
                 .exec((err, form) => {
                 if (err) {
+                    /* istanbul ignore next */
                     return reject(err);
                 }
                 if (form) {
@@ -680,8 +709,8 @@ class FormController {
             });
         });
     }
-    getScales(ids, company) {
-        const keyCache = `scales-${ids.toString()}`;
+    getScales(filter) {
+        const keyCache = `scales-${JSON.stringify(filter)}`;
         return new Promise((resolve, reject) => {
             redis_service_1.default.get(keyCache, async (error, result) => {
                 if (result) {
@@ -689,10 +718,7 @@ class FormController {
                 }
                 else {
                     scale_model_1.default
-                        .find({
-                        _id: { $in: ids },
-                        company
-                    }, {
+                        .find(filter, {
                         'updatedAt': false,
                         'createdAt': false,
                         'active': false,
@@ -700,11 +726,13 @@ class FormController {
                         'minValue': false,
                         'maxValue': false,
                         'choices.na': false,
+                        'team': false,
                         '__v': false
                     })
                         .lean()
                         .exec((err, scales) => {
                         if (err) {
+                            /* istanbul ignore next */
                             return reject(err);
                         }
                         redis_service_1.default.setex(keyCache, 30, JSON.stringify(scales));

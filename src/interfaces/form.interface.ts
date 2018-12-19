@@ -9,6 +9,7 @@ import {
   IScaleModel
 } from '../form/models/scale.model';
 import {ICompany} from './company.interface';
+import {ITeam} from './team.interface';
 
 export interface IFormItems {
   _id: any;
@@ -52,6 +53,7 @@ export interface IFormSection {
 export interface IForm {
   _id: any;
   name: string;
+  team: ITeam | any;
   company: ICompany | any;
   description: string;
 

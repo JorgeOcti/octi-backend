@@ -1,6 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 const mongoose = require("mongoose");
+const mongoosePaginate = require("mongoose-paginate");
 const teamSchema = new mongoose.Schema({
     name: {
         type: String,
@@ -20,6 +21,7 @@ teamSchema.virtual('users', {
     foreignField: 'team',
     justOne: false
 });
+teamSchema.plugin(mongoosePaginate);
 const Team = mongoose.model('Team', teamSchema);
 exports.default = Team;
 //# sourceMappingURL=team.model.js.map

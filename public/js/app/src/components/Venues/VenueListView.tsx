@@ -9,12 +9,12 @@ import {Dispatch} from 'redux';
 import {IBaseVenue, IVenue} from '../../../../../../src/interfaces/venue.interface';
 import {loadDataAction, ModalReduxAction} from '../../actions/modal.actions';
 import {
-  addVenueAction,
   changeTempVenueAction,
+  createVenueAction,
   deleteVenueAction,
-  editVenueAction,
   getVenuesAction,
   IVenuesState,
+  updateVenueAction,
   VenueReduxAction
 } from '../../actions/venues.actions';
 import AppContainer from '../../container/AppContainer';
@@ -29,11 +29,11 @@ interface IPropsType extends RouteComponentProps<{ ticket: string }> {
   venues: IVenuesState;
 
   getVenuesAction(page: number): VenueReduxAction;
+  createVenueAction(): VenueReduxAction;
+  updateVenueAction(): VenueReduxAction;
   deleteVenueAction(id?: string): VenueReduxAction;
   changeTempVenueAction(venue: IBaseVenue): VenueReduxAction;
   loadDataAction(title: string, body: JSX.Element, footer: JSX.Element): ModalReduxAction;
-  editVenueAction(): ModalReduxAction;
-  addVenueAction(): ModalReduxAction;
 }
 
 interface IStateType {
@@ -50,7 +50,7 @@ class VenuesListView extends React.Component<IPropsType, IStateType> {
     this.addVenue = this.addVenue.bind(this);
     this.processAddVenue = this.processAddVenue.bind(this);
     this.editVenue = this.editVenue.bind(this);
-    this.processEditVenue = this.processEditVenue.bind(this);
+    this.processUpdateVenue = this.processUpdateVenue.bind(this);
     this.deleteVenue = this.deleteVenue.bind(this);
   }
 
@@ -114,7 +114,9 @@ class VenuesListView extends React.Component<IPropsType, IStateType> {
                       const canDelete = venue.users && venue.users.length === 0 && venue.participants && venue.participants.length === 0;
                       return (
                         <tr key={venue._id} id={`venue-${venue._id}`}>
-                          <td className="middle">{venue.name}</td>
+                          <td className="middle">{venue.name}<br/>
+                            {venue.company ? <span className={'text-sm text-muted'}>{venue.company.name}</span> : null}
+                          </td>
                           <td className="middle-center">{venue.type === 'distributor' ? <i className="fa fa-check-circle text-green" /> : <i className="fa fa-times-circle text-blue" /> }</td>
                           <td className="text-sm">
                             Usuarios: {venue.users ? venue.users.length : 0}<br/>
@@ -171,21 +173,23 @@ class VenuesListView extends React.Component<IPropsType, IStateType> {
     setTimeout(() => {
       this.props.loadDataAction(
         'Agregar Sucursal',
-        <VenueFormView />,
+        <VenueFormView/>,
         <React.Fragment>
           <button type="button" className="btn btn-default" data-dismiss="modal">Cancelar</button>
           <button type="button" className="btn btn-primary" onClick={this.processAddVenue}>Grabar</button>
         </React.Fragment>
       );
-    }, 200);
+    }, 400);
   }
 
   private processAddVenue(): void {
     const {tempVenue} = this.props.venues;
     if (!tempVenue.name || !tempVenue.name.trim()) {
       swal('Agregar sucursal', 'El nombres es requerido', 'error');
+    } else if (!tempVenue.company || !tempVenue.company._id) {
+      swal('Agregar sucursal', 'La empresa es requerida', 'error');
     } else {
-     this.props.addVenueAction();
+      this.props.createVenueAction();
     }
   }
 
@@ -193,30 +197,33 @@ class VenuesListView extends React.Component<IPropsType, IStateType> {
     this.props.changeTempVenueAction({
       _id: venue._id,
       name: venue.name,
+      company: venue.company,
       type: venue.type ? venue.type : 'receiver'
     });
     setTimeout(() => {
       this.props.loadDataAction(
         'Editar Sucursal',
-        <VenueFormView />,
+        <VenueFormView update={true} />,
         <React.Fragment>
           <button type="button" className="btn btn-default" data-dismiss="modal">Cancelar</button>
-          <button type="button" className="btn btn-primary" onClick={this.processEditVenue}>Editar</button>
+          <button type="button" className="btn btn-primary" onClick={this.processUpdateVenue}>Editar</button>
         </React.Fragment>
       );
-    }, 200);
+    }, 400);
   }
 
-  private processEditVenue(): void {
+  private processUpdateVenue(): void {
     const {tempVenue} = this.props.venues;
     if (!tempVenue.name || !tempVenue.name.trim()) {
       swal('Editar sucursal', 'El nombres es requerido', 'error');
+    } else if (!tempVenue.company || !tempVenue.company._id) {
+      swal('Editar sucursal', 'La empresa es requerida', 'error');
     } else {
-      this.props.editVenueAction();
+      this.props.updateVenueAction();
     }
   }
 
-  private deleteVenue(venue: IVenue) {
+  private deleteVenue(venue: IVenue): void {
     // ask if you are sure that you are going to delete the user?
     swal({
       title: '¿Estás seguro?',
@@ -252,12 +259,12 @@ const mapDispatchToProps = (dispatch: any ) => {
   return {
     dispatch,
     getVenuesAction: (page: number) => dispatch(getVenuesAction(page)),
+    createVenueAction: () => dispatch(createVenueAction()),
+    updateVenueAction: () => dispatch(updateVenueAction()),
     deleteVenueAction: (id: string) => dispatch(deleteVenueAction(id)),
     changeTempVenueAction: (venue: IBaseVenue) => dispatch(changeTempVenueAction(venue)),
-    loadDataAction: (title: string, body: JSX.Element, footer: JSX.Element) => dispatch(loadDataAction(title, body, footer)),
-    editVenueAction: () => dispatch(editVenueAction()),
-    addVenueAction: () => dispatch(addVenueAction())
+    loadDataAction: (title: string, body: JSX.Element, footer: JSX.Element) => dispatch(loadDataAction(title, body, footer))
   };
 };
 
-export default connect<{}, {}, IPropsType>(mapStateToProps, mapDispatchToProps)(VenuesListView);
+export default connect<{venues: IVenuesState}, {dispatch: any}, IPropsType>(mapStateToProps, mapDispatchToProps)(VenuesListView);

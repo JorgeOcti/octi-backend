@@ -20,7 +20,7 @@ class ImageLazyLoad extends React.Component<IPropsType, IStateType> {
   readonly state = {
     loading: true,
     inViewPort: false,
-    error: false,
+    error: false
   };
 
   private element: RefObject<HTMLDivElement>;
@@ -93,12 +93,13 @@ class ImageLazyLoad extends React.Component<IPropsType, IStateType> {
     if (!this.state.inViewPort && this.element.current) {
       const bounding = this.element.current.getBoundingClientRect();
       // start load distance
-      const distance = 300;
+      const distance = 500;
       const clientWidth: number = document && document.documentElement ? document.documentElement.clientWidth : 0;
+      const clientHeight: number = document && document.documentElement ? document.documentElement.clientHeight : 0;
       const isInViewPort = (
         bounding.top >= 0 &&
         bounding.left >= 0 &&
-        (bounding.bottom - distance) <= (window && window.innerHeight || clientWidth) &&
+        (bounding.bottom - distance) <= (window && window.innerHeight || clientHeight) &&
         bounding.right <= (window.innerWidth || clientWidth)
       );
       if (isInViewPort) {

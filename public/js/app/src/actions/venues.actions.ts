@@ -1,11 +1,13 @@
 import {AxiosError, AxiosResponse, CancelTokenSource, default as Axios} from 'axios';
 import {Dispatch} from 'redux';
+import {ICompany} from '../../../../../src/interfaces/company.interface';
 import {IBaseVenue, IVenue} from '../../../../../src/interfaces/venue.interface';
 import ApiService from '../utils/axios';
 import {showModal, statusFooterButttonsModal} from '../utils/common';
 
 export interface IVenuesState {
   venues: IVenue[];
+  companies: ICompany[];
   loading: boolean;
   tempVenue: IBaseVenue;
   source: CancelTokenSource | null;
@@ -64,92 +66,6 @@ export function changePageAction(page: number): IChangePage {
   };
 }
 
-interface ILoadVenues {
-  type: '/VENUES/LOAD_VENUES';
-  payload: {
-    venues: any;
-    count: number;
-    pages: number
-  };
-}
-
-export function loadVenuesAction(venues: any, count: number, pages: number): ILoadVenues {
-  return {
-    type: '/VENUES/LOAD_VENUES',
-    payload: {
-      venues,
-      count,
-      pages
-    }
-  };
-}
-
-export function getVenuesAction(nextPage: number) {
-  return (dispatch: Dispatch<VenueReduxAction>, getState: () => {venues: IVenuesState}) => {
-    const api: ApiService = new ApiService();
-    const state = getState();
-
-    dispatch(isLoadingAction(true));
-    dispatch(cancelRequestAction(api.getSource()));
-    const page = nextPage ? nextPage : state.venues.pagination.page;
-    if (nextPage) {
-      dispatch(changePageAction(nextPage));
-    }
-    api.getVenues(page)
-      .then((response: AxiosResponse) => {
-        dispatch(loadVenuesAction(response.data.results, response.data.count, response.data.pages));
-        dispatch(isLoadingAction(false));
-      })
-      .catch((err: AxiosError) => {
-        // if the request is canceled
-        if (Axios.isCancel(err)) {
-          dispatch(isLoadingAction(true));
-        } else {
-          dispatch(isLoadingAction(false));
-          api.errorHandler(err);
-        }
-      });
-  };
-}
-
-interface IDeleteVenue {
-  type: '/VENUES/DELETE_VENUE';
-  payload: {
-    id: string;
-  };
-}
-
-export function removeVenueAction(id: string): IDeleteVenue {
-  return {
-    type: '/VENUES/DELETE_VENUE',
-    payload: {
-      id
-    }
-  };
-}
-
-export function deleteVenueAction(id: string) {
-  return (dispatch: Dispatch<VenueReduxAction>) => {
-    const api: ApiService = new ApiService();
-    api.deleteVenue(id)
-      .then((response: AxiosResponse): void => {
-        // effect when removing user
-        swal(response.data.message, {
-          icon: 'success'
-        });
-        $(`#venue-${id}`)
-          .addClass('deleted-item');
-        setTimeout(() => {
-          dispatch(removeVenueAction(id));
-        }, 500);
-      })
-      .catch((err: AxiosError): void => {
-        dispatch(isLoadingAction(false));
-        api.errorHandler(err);
-      });
-  };
-}
-
 interface IChangeTempVenue {
   type: '/VENUES/CHANGE_TEMP_VENUE';
   payload: {
@@ -170,9 +86,106 @@ export function changeTempVenueAction(venue: IBaseVenue): IChangeTempVenue {
     },
     meta: {
       debounce: {
-        time: 100
+        time: 300
       }
     }
+  };
+}
+
+interface ILoadVenues {
+  type: '/VENUES/LOAD_VENUES';
+  payload: {
+    venues: any;
+    count: number;
+    pages: number
+  };
+}
+
+export function loadVenuesAction(venues: any, count: number, pages: number): ILoadVenues {
+  return {
+    type: '/VENUES/LOAD_VENUES',
+    payload: {
+      venues,
+      count,
+      pages
+    }
+  };
+}
+
+interface ILoadCompaniesVenue {
+  type: '/VENUES/LOAD_COMPANIES';
+  payload: {
+    compenies: ICompany[];
+  };
+}
+
+export function loadCompaniesVenueAction(compenies: ICompany[]): ILoadCompaniesVenue {
+  return {
+    type: '/VENUES/LOAD_COMPANIES',
+    payload: {
+      compenies
+    }
+  };
+}
+
+export function getVenuesAction(nextPage: number) {
+  return (dispatch: Dispatch<VenueReduxAction>, getState: () => {venues: IVenuesState}) => {
+    const api: ApiService = new ApiService();
+    const state = getState();
+
+    dispatch(isLoadingAction(true));
+    dispatch(cancelRequestAction(api.getSource()));
+    const page = nextPage ? nextPage : state.venues.pagination.page;
+    if (nextPage) {
+      dispatch(changePageAction(nextPage));
+    }
+    if (!state.venues.companies.length) {
+      api.getCompanies(1, 200)
+        .then((response: AxiosResponse) => {
+          dispatch(loadCompaniesVenueAction(response.data.results));
+        })
+        .catch((err: AxiosError): void => {
+          api.errorHandler(err);
+        });
+    }
+    api.getVenues(page)
+      .then((response: AxiosResponse) => {
+        dispatch(loadVenuesAction(response.data.results, response.data.count, response.data.pages));
+        dispatch(isLoadingAction(false));
+      })
+      .catch((err: AxiosError) => {
+        // if the request is canceled
+        if (Axios.isCancel(err)) {
+          dispatch(isLoadingAction(true));
+        } else {
+          dispatch(isLoadingAction(false));
+          api.errorHandler(err);
+        }
+      });
+  };
+}
+
+export function createVenueAction() {
+  return (dispatch: Dispatch<VenueReduxAction>, getState: () => {venues: IVenuesState}) => {
+    dispatch(isLoadingAction(true));
+    const state = getState();
+    const {tempVenue} = state.venues;
+    const api: ApiService = new ApiService();
+    api.createVenue(tempVenue)
+      .then((response: AxiosResponse) => {
+        statusFooterButttonsModal(false);
+        showModal(false);
+        dispatch(getVenuesAction(1) as any);
+        swal(response.data.message, {
+          icon: 'success'
+        });
+      })
+      .catch((err: AxiosError) => {
+        statusFooterButttonsModal(false);
+
+        dispatch(isLoadingAction(false));
+        api.errorHandler(err);
+      });
   };
 }
 
@@ -192,55 +205,70 @@ export function changeVenueAction(venue: IBaseVenue): IChangeVenue {
   };
 }
 
-export function editVenueAction() {
+export function updateVenueAction() {
   return (dispatch: Dispatch<VenueReduxAction>, getState: () => {venues: IVenuesState}) => {
     const state = getState();
     const {tempVenue} = state.venues;
+    const $venue = $(`#venue-${tempVenue._id}`);
     const api: ApiService = new ApiService();
-    api.editVenue(tempVenue)
+    api.updateVenue(tempVenue)
       .then((response: AxiosResponse) => {
         statusFooterButttonsModal(false);
         showModal(false);
         dispatch(changeVenueAction(response.data.venue));
-        $(`#venue-${tempVenue._id}`).addClass('editing-item');
+        $venue.addClass('editing-item');
         swal(response.data.message, {
           icon: 'success'
         });
         setTimeout(() => {
-          $(`#venue-${tempVenue._id}`).removeClass('editing-item');
+          $venue.removeClass('editing-item');
         }, 1000);
       })
       .catch((err: AxiosError) => {
         statusFooterButttonsModal(false);
-        $(`#venue-${tempVenue._id}`).removeClass('editing-item');
+        $venue.removeClass('editing-item');
         dispatch(isLoadingAction(false));
         api.errorHandler(err);
       });
   };
 }
 
-export function addVenueAction() {
-  return (dispatch: Dispatch<VenueReduxAction>, getState: () => {venues: IVenuesState}) => {
-    dispatch(isLoadingAction(true));
-    const state = getState();
-    const {tempVenue} = state.venues;
+interface IDeleteVenue {
+  type: '/VENUES/DELETE_VENUE';
+  payload: {
+    id: string;
+  };
+}
+
+export function processDeleteVenueAction(id: string): IDeleteVenue {
+  return {
+    type: '/VENUES/DELETE_VENUE',
+    payload: {
+      id
+    }
+  };
+}
+
+export function deleteVenueAction(id: string) {
+  return (dispatch: Dispatch<VenueReduxAction>) => {
     const api: ApiService = new ApiService();
-    api.addVenue(tempVenue)
-      .then((response: AxiosResponse) => {
-        statusFooterButttonsModal(false);
-        showModal(false);
-        dispatch(getVenuesAction(1) as any);
+    api.deleteVenue(id)
+      .then((response: AxiosResponse): void => {
+        // effect when removing user
         swal(response.data.message, {
           icon: 'success'
         });
+        $(`#venue-${id}`)
+          .addClass('deleted-item');
+        setTimeout(() => {
+          dispatch(processDeleteVenueAction(id));
+        }, 500);
       })
-      .catch((err: AxiosError) => {
-        statusFooterButttonsModal(false);
-
+      .catch((err: AxiosError): void => {
         dispatch(isLoadingAction(false));
         api.errorHandler(err);
       });
   };
 }
 
-export type VenueReduxAction = ICancelRequest | IIsLoading | IChangePage | ILoadVenues | IDeleteVenue | IChangeTempVenue | IChangeVenue;
+export type VenueReduxAction = ICancelRequest | IIsLoading | IChangePage | ILoadVenues | IDeleteVenue | IChangeTempVenue | IChangeVenue | ILoadCompaniesVenue;

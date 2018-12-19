@@ -2,6 +2,7 @@ import {Response} from 'express';
 import * as moment from 'moment';
 import * as mongoose from 'mongoose';
 import {PaginateOptions, PaginateResult} from 'mongoose';
+import app from '../../app';
 import ParticipantModel from '../../form/models/participant.model';
 import {IRequest} from '../../interfaces/global.interface';
 import InventoryModel, {ChoicesStatusCarInventory, ChoicesStatusInventory} from '../../inventory/models/inventory.model';
@@ -66,15 +67,29 @@ class CarController {
 
   public async vinDashboardDetail(req: IRequest, res: Response) {
     const {id} = req.params;
-    const company = req.user.company;
+    const {team} = req.user;
     // validate params
+    /* istanbul ignore next */
     if (!mongoose.Types.ObjectId.isValid(id)) {
       return res.status(404).render('404');
     }
     try {
       // validate car exist
       const car = await CarModel.findOne({
-        _id: id, company
+        _id: id,
+        lastForm: {
+          $exists: true,
+          $ne: null,
+          $in: await ParticipantModel.find(
+          {
+            venue: {
+              $in: req.user.venuesPermissions()
+            }
+          }, {
+            _id: true
+          })
+        },
+        team
       });
       if (!car) {
         return res.status(404).render('404');
@@ -82,6 +97,7 @@ class CarController {
         res.render('app/index', {token: await req.user.generateToken()});
       }
     } catch (e) {
+      /* istanbul ignore next */
       if (e) {
         res.status(500).send(e);
       }
@@ -92,7 +108,7 @@ class CarController {
     let {vin, vin2} = req.body;
     const {inventory} = req.body;
     // const {multi} = req.query;
-    const company = req.user.company;
+    const {team, company} = req.user;
     /*
       {
         $group: {
@@ -117,7 +133,7 @@ class CarController {
           });
         } else {
           const inventoryQuery: any = {
-            company
+            team
           };
           if (vin) {
             inventoryQuery.vin = vin;
@@ -127,7 +143,8 @@ class CarController {
               const vinRegex = new RegExp('[a-zA-Z0]' + vin2.substr(vin2.length - 5), 'i');
               inventoryQuery.vin2 = {$regex: vinRegex};
             } else {
-              inventoryQuery.vin2 = vin2;
+              const patentRegex = new RegExp(vin2, 'i');
+              inventoryQuery.$or = [{vin2}, {patent: patentRegex}];
             }
           }
           const cars = await CarModel.find(inventoryQuery, {
@@ -135,6 +152,7 @@ class CarController {
             vin2: true,
             brand: true,
             color: true,
+            patent: true,
             denomination: true
           });
           if (cars.length) {
@@ -144,7 +162,7 @@ class CarController {
             }, {});
             const inventoriedCar = await InventoryModel.findOne({
               _id: inventory,
-              company,
+              team,
               status: ChoicesStatusInventory.inProcess
             }, {
               'cars.car': true,
@@ -200,6 +218,7 @@ class CarController {
           }
         }
       } catch (e) {
+        /* istanbul ignore next */
         if (e) {
           res.status(500).json(e);
         }
@@ -208,17 +227,22 @@ class CarController {
       if (vin) {
         vin = vin.replace(/[\W_]+/g, '');
         try {
-          console.log('vin', VINService.decode(vin));
+          const testDecode = VINService.decode(vin);
+          /* istanbul ignore next */
+          if (app.get('env') !== 'testing') {
+            console.log('vin', testDecode);
+          }
           const indexBrand: string = vin.slice(0, 3);
           vin2 = vin.substr(vin.length - 6);
           const brand = this.carBrands.hasOwnProperty(indexBrand) ? this.carBrands[indexBrand] : null;
           const car = await CarModel.findOneOrCreate({
             vin,
-            company
+            team
           }, {
             vin,
             vin2,
             company,
+            team,
             brand,
             status: ChoicesStatusCar.active
           });
@@ -228,13 +252,16 @@ class CarController {
               vin: car.vin,
               vin2: car.vin2,
               brand: car.brand,
+              patent: car.patent,
               color: car.color,
               denomination: car.denomination
             },
             status: 200
           });
         } catch (e) {
+          /* istanbul ignore next */
           console.log(e);
+          /* istanbul ignore next */
           if (e) {
             res.status(500).send(e);
           }
@@ -243,14 +270,16 @@ class CarController {
         // vin2 = vin2.replace(/[\W_]+/g, '');
         try {
           const vinRegex = new RegExp('[a-zA-Z0]' + vin2.substr(vin2.length - 5), 'i');
+          const patentRegex = new RegExp(vin2, 'i');
           const car = await CarModel.find({
-            vin2: vin2 && vin2[0] === '0' ? {$regex: vinRegex} : vin2,
-            company
+            $or: [{vin2: vin2 && vin2[0] === '0' ? {$regex: vinRegex} : vin2}, {patent: patentRegex}],
+            team
           }, {
             vin: true,
             vin2: true,
             brand: true,
             color: true,
+            patent: true,
             denomination: true
           });
           if (car.length) {
@@ -265,6 +294,7 @@ class CarController {
             });
           }
         } catch (e) {
+          /* istanbul ignore next */
           if (e) {
             res.status(500).send(e);
           }
@@ -279,13 +309,14 @@ class CarController {
   }
 
   public async apiParticipantsPerDate(req: IRequest, res: Response) {
-    const {company, venue} = req.user;
+    const {company} = req.user;
     try {
       const participantPerDay = await ParticipantModel
         .aggregate([{
           $match: {
-            company,
-            venue: venue._id,
+            venue: {
+              $in: req.user.venuesPermissions()
+            },
             createdAt: {
               $gte: moment().subtract(14, 'd').toDate()
             }
@@ -472,8 +503,9 @@ class CarController {
       const participantPerRange = await ParticipantModel
         .aggregate([{
           $match: {
-            company,
-            venue: venue._id,
+            venue: {
+              $in: req.user.venuesPermissions()
+            },
             createdAt: {
               $gte: moment().subtract(14, 'd').toDate()
             }
@@ -515,13 +547,16 @@ class CarController {
         status: 200
       });
     } catch (e) {
+      /* istanbul ignore next */
       console.log('e', e);
+      /* istanbul ignore next */
       if (e) {
         res.status(500).json(e);
       }
     }
   }
 
+  /* istanbul ignore next */
   public async apiParticipantCSV(req: IRequest, res: Response) {
     const participants = await ParticipantModel.find({}).populate([{
       path: 'car'
@@ -551,11 +586,15 @@ class CarController {
 
   public async apiParticipantDetail(req: IRequest, res: Response) {
     const {id} = req.params;
-    const company = req.user.company;
+    const {team} = req.user;
     try {
       const participant = await ParticipantModel
         .findOne({
-          _id: id, company
+          _id: id,
+          team,
+          venue: {
+            $in: req.user.venuesPermissions()
+          }
         }, {
           name: true,
           user: true,
@@ -597,6 +636,7 @@ class CarController {
         });
       }
     } catch (e) {
+      /* istanbul ignore next */
       if (e) {
         res.status(500).json(e);
       }
@@ -604,13 +644,13 @@ class CarController {
   }
 
   public async apiCarDetail(req: IRequest, res: Response) {
-    const {company, venue} = req.user;
+    const {team} = req.user;
     const {id} = req.params;
     try {
       const car = await CarModel
         .findOne({
           _id: id,
-          company
+          team
         }, {
           vin: true,
           brand: true,
@@ -620,9 +660,11 @@ class CarController {
         .populate([{
           // reverse populate
           path: 'participants',
-          select: ['name', 'user', 'createdAt', 'qualification'],
+          select: ['name', 'user', 'createdAt', 'qualification', 'venue'],
           match: {
-            venue: venue._id
+            venue: {
+              $in: req.user.venuesPermissions()
+            }
           },
           options: {
             sort: {
@@ -631,6 +673,9 @@ class CarController {
           },
           // deep populate user
           populate: [{
+            path: 'venue',
+            select: ['name']
+          }, {
             path: 'user',
             select: ['firstName', 'lastName']
           }]
@@ -647,6 +692,7 @@ class CarController {
         });
       }
     } catch (e) {
+      /* istanbul ignore next */
       if (e) {
         res.status(500).json(e);
       }
@@ -654,7 +700,6 @@ class CarController {
   }
 
   public async apiCars(req: IRequest, res: Response) {
-    const {company, venue} = req.user;
     const {page, pageSize, search} = req.query;
 
     // paginate options
@@ -668,9 +713,17 @@ class CarController {
       populate: [{
         path: 'lastForm',
         select: ['createdAt', 'user', 'qualification', 'venue'],
+        // options: {
+        //   sort: {
+        //     updatedAt: -1
+        //   }
+        // }
         populate: [{
           path: 'user',
           select: ['firstName', 'lastName']
+        }, {
+          path: 'venue',
+          select: ['name']
         }]
       }],
       sort: {
@@ -681,8 +734,16 @@ class CarController {
     };
     try {
       const cars = await this.getCars({
-        company,
-        lastForm: {$in: await ParticipantModel.find({company, venue: venue._id}, {_id: true}), $exists: true, $ne: null}
+        lastForm: {
+          $exists: true,
+          $ne: null,
+          $in: await ParticipantModel.find(
+          {
+            venue: {
+              $in: req.user.venuesPermissions()
+            }
+          }, {_id: true})
+        }
       }, options, search);
 
       // validate exist page
@@ -702,6 +763,7 @@ class CarController {
         });
       }
     } catch (e) {
+      /* istanbul ignore next */
       if (e) {
         res.status(500).json(e);
       }
@@ -732,6 +794,7 @@ class CarController {
     return new Promise((resolve, reject) => {
       CarModel.paginate(filter, options, (err, result) => {
         if (err) {
+          /* istanbul ignore next */
           return reject(err);
         }
         return resolve(result);

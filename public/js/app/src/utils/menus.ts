@@ -72,20 +72,31 @@ if (hasPermission(window.user, 'viewCar')) {
     url: '/settings/cars/'
   });
 }
-if (hasPermission(window.user, 'viewUser')) {
+
+if (hasPermission(window.user, 'viewCompany')) {
   settingItems.push({
     id: '10.3',
     icon: 'fa-circle-o',
-    text: 'Usuarios',
-    url: '/settings/users/'
+    text: 'Empresas',
+    url: '/settings/companies/'
   });
 }
+
 if (hasPermission(window.user, 'viewVenue')) {
   settingItems.push({
     id: '10.4',
     icon: 'fa-circle-o',
     text: 'Sucursales',
     url: '/settings/venues/'
+  });
+}
+
+if (hasPermission(window.user, 'viewUser')) {
+  settingItems.push({
+    id: '10.5',
+    icon: 'fa-circle-o',
+    text: 'Usuarios',
+    url: '/settings/users/'
   });
 }
 

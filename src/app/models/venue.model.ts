@@ -19,6 +19,10 @@ const venueSchema = new mongoose.Schema({
     type: String,
     required: true
   },
+  team: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Team'
+  },
   company: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Company'
@@ -27,6 +31,10 @@ const venueSchema = new mongoose.Schema({
     type: String,
     enum: choicesStatusCarInventory,
     default: ChoicesTypeVenue.receiver
+  },
+  deleted: {
+    type: Boolean,
+    default: false
   },
   active: {
     type: Boolean,

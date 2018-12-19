@@ -1,5 +1,7 @@
 import {AxiosError, AxiosResponse, CancelTokenSource} from 'axios';
 import {Dispatch} from 'redux';
+import {IInventoryCar} from '../../../../../src/interfaces/inventory.interface';
+import {IInventoryComment} from '../../../../../src/interfaces/inventoryComment.interface';
 import ApiService from '../utils/axios';
 
 export interface IInventorySummary {
@@ -42,6 +44,7 @@ export interface IDetailByBrand {
 export interface IInventoryState {
   inventories: any[];
   loading: boolean;
+  inventoryCar: IInventoryCar | null;
   source: CancelTokenSource | null;
   loadingDetail: boolean;
   summary: IInventorySummary;
@@ -52,6 +55,38 @@ export interface IInventoryState {
     count: number;
     page: number;
     pages: number;
+  };
+}
+
+interface IUpdateInventoryCar {
+  type: '/INVENTORORIES/UPDATE_INVENTORY_CAR';
+  payload: {
+    inventoryCar: IInventoryCar;
+  };
+}
+
+export function updateInventoryCarAction(inventoryCar: IInventoryCar): IUpdateInventoryCar {
+  return {
+    type: '/INVENTORORIES/UPDATE_INVENTORY_CAR',
+    payload: {
+      inventoryCar
+    }
+  };
+}
+
+interface IAddComment {
+  type: '/INVENTORORIES/ADD_COMMENT';
+  payload: {
+    inventoryComment: IInventoryComment;
+  };
+}
+
+export function addCommentAction(inventoryComment: IInventoryComment): IAddComment {
+  return {
+    type: '/INVENTORORIES/ADD_COMMENT',
+    payload: {
+      inventoryComment
+    }
   };
 }
 
@@ -218,4 +253,15 @@ export function getInventoryDetailAction(id: string, update: boolean) {
   };
 }
 
-export type InventoryReduxAction = ICancelRequest | IIsLoading | ILoadInventories | ILoadInventory | ILoadingDetailInventory;
+export function sendCommentAction(carId: string, comment: string) {
+  return (dispatch: Dispatch<InventoryReduxAction>, getState: () => {inventories: IInventoryState}) => {
+    const state = getState();
+    const api: ApiService = new ApiService();
+    api.addComment(state.inventories.detail._id, carId, comment)
+      .catch((err: AxiosError) => {
+        api.errorHandler(err);
+      });
+  };
+}
+
+export type InventoryReduxAction = ICancelRequest | IIsLoading | ILoadInventories | ILoadInventory | ILoadingDetailInventory | IUpdateInventoryCar | IAddComment;

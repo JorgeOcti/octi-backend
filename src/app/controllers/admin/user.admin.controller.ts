@@ -1,4 +1,3 @@
-import {ObjectID} from 'bson';
 import {Response} from 'express';
 import {
   PaginateOptions,
@@ -17,12 +16,14 @@ class AdminUsersController {
   constructor() {
     this.index = this.index.bind(this);
     this.apiUsers = this.apiUsers.bind(this);
-    this.apiAddUser = this.apiAddUser.bind(this);
-    this.apiEditUser = this.apiEditUser.bind(this);
+    this.apiCreateUser = this.apiCreateUser.bind(this);
+    this.apiUpdateUser = this.apiUpdateUser.bind(this);
     this.apiDeleteUser = this.apiDeleteUser.bind(this);
+    this.apiChangePasswordUser = this.apiChangePasswordUser.bind(this);
   }
 
   public async index(req: IRequest, res: Response) {
+    /* istanbul ignore else  */
     if (req.user.hasPermission('viewUser')) {
       res.render('app/index', {token: await req.user.generateToken()});
     } else {
@@ -37,7 +38,7 @@ class AdminUsersController {
       });
     }
     const {page, pageSize} = req.query;
-    const company = req.user.company;
+    const {team} = req.user;
     // paginate options
     const options: PaginateOptions = {
       select: {
@@ -61,6 +62,16 @@ class AdminUsersController {
       }, {
         path: 'userForms',
         select: ['name']
+      }, {
+        path: 'company',
+        select: ['name']
+      }, {
+        path: 'venuesAccess',
+        select: ['name'],
+        populate: [{
+          path: 'company',
+          select: ['name']
+        }]
       }],
       sort: {
         firstName: 1
@@ -69,8 +80,11 @@ class AdminUsersController {
       limit: parseInt(pageSize ? pageSize : 20, 10)
     };
     try {
-      const users = await this.getUsers(company, options);
+      const users = await this.getUsers({
+        team
+      }, options);
       // validate exist page
+      /* istanbul ignore if  */
       if (options.page && users.pages && users.pages < options.page) {
         res.status(400).json({
           error: 'La página solicitada no existe.',
@@ -87,20 +101,22 @@ class AdminUsersController {
         });
       }
     } catch (e) {
+      /* istanbul ignore next  */
       if (e) {
         res.status(500).json(e);
       }
     }
   }
 
-  public async apiAddUser(req: IRequest, res: Response): Promise<any> {
+  public async apiCreateUser(req: IRequest, res: Response): Promise<any> {
+    /* istanbul ignore next  */
     if (!req.user.hasPermission('addUser')) {
       return res.status(403).json({
         message: 'No tienes permisos para esta operación'
       });
     }
-    const {firstName, lastName, email, venue, userPermissions, userForms, preferred} = req.body;
-    const {company, team} = req.user;
+    const {firstName, lastName, email, venue, userPermissions, userForms, preferred, company, venuesAccess} = req.body;
+    const {team} = req.user;
     // validate fields required
     if (!firstName || !firstName.length || !lastName || !lastName.length || !email || !email.length || !venue || !venue.length) {
       res.status(400).json({
@@ -125,6 +141,7 @@ class AdminUsersController {
           lastName,
           username: email,
           venue,
+          venuesAccess,
           preferred,
           userPermissions: userPermissions && userPermissions.length ? userPermissions.map((userPermission: IPermission) => userPermission._id) : [],
           userForms: userForms && userForms.length ? userForms.map((userForm: IForm) => userForm._id) : [],
@@ -171,19 +188,21 @@ class AdminUsersController {
         });
       }
     } catch (e) {
+      /* istanbul ignore next  */
       res.status(500).json(e);
     }
   }
 
-  public async apiEditUser(req: IRequest, res: Response): Promise<any> {
+  public async apiUpdateUser(req: IRequest, res: Response): Promise<any> {
+    /* istanbul ignore next  */
     if (!req.user.hasPermission('changeUser')) {
       return res.status(403).json({
         message: 'No tienes permisos para esta operación'
       });
     }
     const {id} = req.params;
-    const company = req.user.company;
-    const {firstName, lastName, email, venue, userPermissions, userForms, preferred} = req.body;
+    const {team} = req.user;
+    const {firstName, lastName, email, venue, venuesAccess, userPermissions, userForms, preferred, company} = req.body;
     // validate fields required
     if (!firstName || !firstName.length || !lastName || !lastName.length || !email || !email.length || !venue || !venue.length) {
       res.status(400).json({
@@ -202,20 +221,32 @@ class AdminUsersController {
       } else {
         let user = await User
           .findOneAndUpdate({
-            _id: id, company
+            _id: id, team
           }, {
             firstName,
             lastName,
+            company,
             preferred,
             userPermissions: userPermissions && userPermissions.length ? userPermissions.map((userPermission: IPermission) => userPermission._id) : [],
             userForms: userForms && userForms.length ? userForms.map((userForm: IForm) => userForm._id) : [],
-            venue
+            venue,
+            venuesAccess
           }, {
             new: true
           })
           .populate([{
+            path: 'company',
+            select: ['name']
+          }, {
             path: 'venue',
             select: ['name', 'active']
+          }, {
+            path: 'venuesAccess',
+            select: ['name'],
+            populate: [{
+              path: 'company',
+              select: ['name']
+            }]
           }, {
             path: 'userPermissions',
             select: ['name', 'codeName'],
@@ -249,7 +280,9 @@ class AdminUsersController {
         }
       }
     } catch (e) {
+      /* istanbul ignore next  */
       console.log(e);
+      /* istanbul ignore next  */
       res.status(500).json(e);
     }
   }
@@ -278,13 +311,51 @@ class AdminUsersController {
         res.status(200).json(response);
       }
     } catch (e) {
+      /* istanbul ignore next  */
       res.status(500).json(e);
     }
   }
 
-  private getUsers(company: ObjectID, options: PaginateOptions): Promise<PaginateResult<IUserModel>> {
+  public async apiChangePasswordUser(req: IRequest, res: Response): Promise<any> {
+    const {user, password} = req.body;
+    const {team} = req.user;
+    if (!req.user.hasPermission('changeUser')) {
+      return res.status(403).json({
+        message: 'No tienes permisos para esta operación'
+      });
+    }
+    try {
+      if (password && password.length >= 6) {
+        const affectedUser = await User.findOne({_id: user, team});
+        if (affectedUser) {
+          affectedUser.password = password;
+          affectedUser.save();
+          res.status(200).json({
+            message: 'Contraseña cambiada satisfactoriamente.',
+            status: 200
+          });
+        } else {
+          res.status(400).json({
+            message: 'No se ha podido cambiar la contraseña',
+            status: 400
+          });
+        }
+      } else {
+        res.status(400).json({
+          message: 'La contraseña no cumple los requisitos mínimos.',
+          status: 400
+        });
+      }
+    } catch (e) {
+      /* istanbul ignore next  */
+      res.status(500).json(e);
+    }
+  }
+
+  private getUsers(filter: any, options: PaginateOptions): Promise<PaginateResult<IUserModel>> {
     return new Promise((resolve, reject) => {
-      User.paginate({company}, options, (err, result) => {
+      User.paginate(filter, options, (err, result) => {
+        /* istanbul ignore next  */
         if (err) {
           return reject(err);
         }

@@ -1,4 +1,5 @@
 import * as mongoose from 'mongoose';
+import * as mongoosePaginate from 'mongoose-paginate';
 import {ICompany} from '../../interfaces/company.interface';
 
 export interface ICompanyModel extends ICompany, mongoose.Document {}
@@ -13,6 +14,10 @@ const companySchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Team'
   },
+  deleted: {
+    type: Boolean,
+    default: false
+  },
   active: {
     type: Boolean,
     default: true
@@ -20,6 +25,8 @@ const companySchema = new mongoose.Schema({
 }, {
   timestamps: true
 });
+
+companySchema.plugin(mongoosePaginate);
 
 companySchema.virtual('users', {
   ref: 'User', // The model to use

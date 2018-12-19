@@ -3,10 +3,11 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const moment = require("moment");
 const Raven = require("raven");
 const app_1 = require("../app");
+const general_utils_1 = require("../utils/general.utils");
 class LoggerService {
     constructor() {
         this.message = '';
-        this.env = process.env.ENV || 'development';
+        this.env = general_utils_1.default.getFromEnviroment('ENV', 'development');
         // https://github.com/shiena/ansicolor/blob/master/README.md
         this.colors = {
             brightBlack: '\x1b[90m',

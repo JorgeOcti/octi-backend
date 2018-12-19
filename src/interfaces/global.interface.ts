@@ -34,4 +34,6 @@ export interface IRequest extends Request {
 
 export interface IAnyObject {
   [key: string]: any;
+
+  hasOwnProperty(property: string): boolean;
 }

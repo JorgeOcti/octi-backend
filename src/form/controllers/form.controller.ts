@@ -6,9 +6,11 @@ import {queue} from '../../app';
 import Alert from '../../app/models/alert.model';
 import CarModel from '../../app/models/car.model';
 import UserModel from '../../app/models/user.model';
+import User from '../../app/models/user.model';
 import {IAnyObject, IRequest} from '../../interfaces/global.interface';
 import {io} from '../../server';
 import redisClient from '../../services/redis.service';
+import GeneralUtils from '../../utils/general.utils';
 import FormModel, {IFormModel} from '../models/form.model';
 import ParticipantModel from '../models/participant.model';
 import ParticipantFile from '../models/participantFile.model';
@@ -26,18 +28,32 @@ class FormController {
   }
 
   public async list(req: IRequest, res: Response) {
-    const company = req.user.company;
+    const {team} = req.user;
     try {
-      const forms = await this.getForms(company, {
-        _id: {
-          $in: req.user.userForms.map((form) => form._id)
-        }
-      });
-      res.json({
-        data: forms,
-        status: 200
-      });
+      const updatedUser = await User.findById(req.user._id).populate([{
+        path: 'userForms',
+        select: ['_id']
+      }]);
+      if (updatedUser) {
+        const forms = await this.getForms({
+          _id: {
+            $in: updatedUser.userForms.map((form) => form._id)
+          },
+          team
+        });
+        res.json({
+          data: forms,
+          status: 200
+        });
+      } else {
+        /* istanbul ignore next */
+        res.status(400).json({
+          message: 'Usuario no encontrado',
+          status: 400
+        });
+      }
     } catch (e) {
+      /* istanbul ignore next */
       res.status(400).json({
         message: 'Ha ocurrido un error',
         status: 400
@@ -47,14 +63,14 @@ class FormController {
 
   public async detail(req: IRequest, res: Response): Promise<any> {
     const {id} = req.params;
-    const company = req.user.company;
+    const {team} = req.user;
     if (req.user.userForms.filter((form) => form._id.toString() === id).length === 0) {
       return res.status(403).json({
         message: 'No tienes permisos para esta operación'
       });
     }
     try {
-      const form = await this.getForm(id, company);
+      const form = await this.getForm({_id: id, team});
       // generate array of scale ids
       const scalesIds: any[] = [];
       form.sections.forEach((section) => {
@@ -73,6 +89,7 @@ class FormController {
         _id: '',
         name: '',
         questions: [],
+        weight: 0,
         order: form.sections.length + 1
       };
       const extraScales: any = [];
@@ -81,7 +98,12 @@ class FormController {
           _id: 'shipping',
           question: form.shippingText,
           scale: 'shipping',
-          conciliation: false
+          conciliation: false,
+          risk: '',
+          observe: '',
+          accessories: null,
+          weight: 0,
+          order: 1000
         });
         extraScales.push({
           _id: 'shipping',
@@ -108,8 +130,7 @@ class FormController {
               value: 1,
               order: 2
             }
-          ],
-          order: extraScales.length + 1
+          ]
         });
       }
       if (form.reception) {
@@ -117,7 +138,12 @@ class FormController {
           _id: 'reception',
           question: form.receptionText,
           scale: 'reception',
-          conciliation: false
+          conciliation: false,
+          risk: '',
+          observe: '',
+          accessories: null,
+          weight: 0,
+          order: 1000
         });
         extraScales.push({
           _id: 'reception',
@@ -144,8 +170,7 @@ class FormController {
               value: 1,
               order: 2
             }
-          ],
-          order: extraScales.length + 1
+          ]
         });
       }
       if (form.conciliation) {
@@ -153,7 +178,12 @@ class FormController {
           _id: 'conciliation',
           question: form.conciliationText,
           scale: 'conciliation',
-          conciliation: true
+          conciliation: false,
+          risk: '',
+          observe: '',
+          accessories: null,
+          weight: 0,
+          order: 1000
         });
         extraScales.push({
           _id: 'conciliation',
@@ -180,8 +210,7 @@ class FormController {
               value: 1,
               order: 2
             }
-          ],
-          order: extraScales.length + 1
+          ]
         });
       }
 
@@ -192,7 +221,12 @@ class FormController {
           delete (form as any)[key];
         }
       });
-      let scales = await this.getScales(scalesIds, company);
+      let scales = await this.getScales({
+        _id: {
+          $in: scalesIds
+        },
+        team
+      });
 
       scales = [...scales, ...extraScales];
       if (extraSection.questions.length) {
@@ -209,7 +243,9 @@ class FormController {
         status: 200
       });
     } catch (e) {
+      /* istanbul ignore next */
       console.log('e', e);
+      /* istanbul ignore next */
       res.status(400).json({
         message: 'No se encontro formularío',
         status: 400
@@ -221,7 +257,7 @@ class FormController {
     const {id} = req.params;
     let {vin} = req.body;
     const {answers} = req.body;
-    const {company, venue} = req.user;
+    const {team, venue, company} = req.user;
 
     // validate answers in body
     if (!answers) {
@@ -241,14 +277,18 @@ class FormController {
     try {
       const car = await CarModel.findOne({
         $or: [{vin: {$eq: vin}}, {vin2: {$eq: vin}}],
-        company
+        team
       });
       if (car) {
-        const form = await this.getFormWithScale(id, company);
+        const form = await this.getFormWithScale({
+          _id: id,
+          team
+        });
         if (form) {
           // initialize participant
           const participantObject: any = {
             name: form.name,
+            team,
             company,
             form: form._id,
             car,
@@ -297,7 +337,7 @@ class FormController {
               // calculate qualification and set vars of the answer
               const questionID = question._id.toString();
               // get selected answer
-              const answer = answers.hasOwnProperty(questionID) ? answers[questionID] : null;
+              const answer = GeneralUtils.getObjectProperty(answers, questionID, null);
               // find choice selected
               const choice = question.scale.choices.find((choice) => {
                 return answer ? choice._id.toString() === answer.value : false;
@@ -394,7 +434,7 @@ class FormController {
             /* Search alerts */
             const alerts = await Alert
               .find({
-                company,
+                team,
                 $or: [
                   {$and: [{lte: {$gte: formQualification}}, {lte: {$gt: 0}}]},
                   {$and: [{gte: {$lte: formQualification}}, {gte: {$gt: 0}}]}
@@ -465,8 +505,10 @@ class FormController {
               status: 200
             });
           } catch (e) {
+            /* istanbul ignore next */
             console.log(e);
             // return error, if the form could not be recorded
+            /* istanbul ignore next */
             return res.status(400).json({
               message: e,
               status: 400
@@ -486,6 +528,7 @@ class FormController {
         });
       }
     } catch (e) {
+      /* istanbul ignore next */
       return res.status(400).json({
         message: e,
         status: 400
@@ -526,6 +569,7 @@ class FormController {
         participantFile.company = company._id;
         participantFile.attach('file', file, async (error: any) => {
           if (error) {
+            /* istanbul ignore next */
             res.status(400).json(error);
           } else {
             await participantFile.save();
@@ -539,6 +583,7 @@ class FormController {
           }
         });
       } catch (e) {
+        /* istanbul ignore next */
         res.status(400).json(e);
       }
 
@@ -552,12 +597,12 @@ class FormController {
 
   public async changePreferred(req: IRequest, res: Response) {
     let {form} = req.body;
-    const company = req.user.company;
+    const {team} = req.user;
     try {
-      const user = await UserModel.findOne({_id: req.user._id, company,  active: true});
+      const user = await UserModel.findOne({_id: req.user._id, team,  active: true});
       // validate exist user
       if (user) {
-        form = await FormModel.findOne({_id: form, company});
+        form = await FormModel.findOne({_id: form, team});
         // validate exist form
         if (form) {
           user.preferred = form;
@@ -597,6 +642,7 @@ class FormController {
         .autoOrient()
         .write(path, (err) => {
           if (err) {
+            /* istanbul ignore next */
             reject(err);
           } else {
             resolve();
@@ -605,52 +651,34 @@ class FormController {
     });
   }
 
-  private getForms(company: ObjectID, filter?: any): Promise<IFormModel[]> {
-    const keyCache = `forms${filter ? JSON.stringify(filter) : ''}`;
-    if (filter) {
-      filter = {
-        company,
-        ...filter
-      };
-    } else {
-      filter = {
-        company
-      };
-    }
+  private getForms(filter: any): Promise<IFormModel[]> {
     return new Promise((resolve, reject) => {
-      redisClient.get(keyCache, async (error, result) => {
-        if (result) {
-          console.log(`cache: ${keyCache}`);
-          resolve(JSON.parse(result));
-        } else {
-          FormModel
-            .find(filter, {
-              _id: 1,
-              name: 1
-            })
-            .lean()
-            .exec((err, forms: IFormModel[]) => {
-              if (err) {
-                return reject(err);
-              }
-              redisClient.setex(keyCache, 60 * 2, JSON.stringify(forms));
-              return resolve(forms);
-            });
-        }
-      });
+      FormModel
+        .find(filter, {
+          _id: 1,
+          name: 1
+        })
+        .lean()
+        .exec((err, forms: IFormModel[]) => {
+          if (err) {
+            /* istanbul ignore next */
+            return reject(err);
+          }
+          return resolve(forms);
+        });
     });
   }
 
-  private getForm(id: string, company: ObjectID): Promise<IFormModel> {
-    const keyCache = `form-${id}`;
+  private getForm(filter: any): Promise<IFormModel> {
+    const keyCache = `form-${filter._id}`;
     return new Promise((resolve, reject) => {
       redisClient.get(keyCache, async (error, result) => {
         if (result) {
-          console.log(`cache: ${keyCache}`);
+          // console.log(`cache: ${keyCache}`);
           resolve(JSON.parse(result));
         } else {
           FormModel
-            .findOne({_id: id, company}, {
+            .findOne(filter, {
               'company': false,
               'updatedAt': false,
               'createdAt': false,
@@ -662,6 +690,7 @@ class FormController {
             .lean()
             .exec((err, form: IFormModel) => {
               if (err) {
+                /* istanbul ignore next */
                 return reject(err);
               }
               if (form) {
@@ -675,13 +704,14 @@ class FormController {
     });
   }
 
-  private getFormWithScale(id: string, company: ObjectID): Promise<IFormModel> {
+  private getFormWithScale(filter: any): Promise<IFormModel> {
     return new Promise((resolve, reject) => {
       FormModel
-        .findOne({_id: id, company})
+        .findOne(filter)
         .populate('sections.questions.scale')
         .exec((err, form) => {
           if (err) {
+            /* istanbul ignore next */
             return reject(err);
           }
           if (form) {
@@ -692,18 +722,15 @@ class FormController {
     });
   }
 
-  private getScales(ids: any[], company: ObjectID): Promise<IScaleModel[]> {
-    const keyCache = `scales-${ids.toString()}`;
+  private getScales(filter: any): Promise<IScaleModel[]> {
+    const keyCache = `scales-${JSON.stringify(filter)}`;
     return new Promise((resolve, reject) => {
       redisClient.get(keyCache, async (error, result) => {
         if (result) {
           resolve(JSON.parse(result));
         } else {
           ScaleModel
-            .find({
-              _id: {$in: ids},
-              company
-            }, {
+            .find(filter, {
               'updatedAt': false,
               'createdAt': false,
               'active': false,
@@ -711,11 +738,13 @@ class FormController {
               'minValue': false,
               'maxValue': false,
               'choices.na': false,
+              'team': false,
               '__v': false
             })
             .lean()
             .exec((err, scales: IScaleModel[]) => {
               if (err) {
+                /* istanbul ignore next */
                 return reject(err);
               }
               redisClient.setex(keyCache, 30, JSON.stringify(scales));

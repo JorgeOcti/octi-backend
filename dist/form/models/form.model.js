@@ -83,6 +83,11 @@ const formSchema = new mongoose.Schema({
         required: true,
         trim: true
     },
+    team: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Team',
+        required: true
+    },
     company: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Company',

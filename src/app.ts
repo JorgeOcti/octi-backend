@@ -184,6 +184,7 @@ passport.deserializeUser(async (email, done) => {
       done(new Error('User not found'));
     }
   } catch (e) {
+    /* istanbul ignore next */
     done(e);
   }
 });
@@ -263,9 +264,11 @@ app.use((req: express.Request, res: express.Response, next: express.NextFunction
     message: 'Not Found',
     status: 404
   };
+  /* istanbul ignore next */
   next(err);
 });
 
+/* istanbul ignore next */
 app.use((err: IResponseError, req: express.Request, res: express.Response, next: express.NextFunction) => {
   // set locals, only providing error in development
   res.locals.message = err.message;

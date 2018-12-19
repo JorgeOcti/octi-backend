@@ -1,4 +1,3 @@
-import {ObjectID} from 'bson';
 import {Response} from 'express';
 import {PaginateOptions, PaginateResult} from 'mongoose';
 import {IRequest} from '../../../interfaces/global.interface';
@@ -11,13 +10,14 @@ class AdminFormsController {
     this.apiListForms = this.apiListForms.bind(this);
   }
 
+  /* istanbul ignore next */
   public async index(req: IRequest, res: Response) {
     res.render('app/index', {token: await req.user.generateToken()});
   }
 
   public async apiListForms(req: IRequest, res: Response): Promise<any> {
     const {page, pageSize} = req.query;
-    const company = req.user.company;
+    const {team} = req.user;
     // paginate options
     const options: PaginateOptions = {
       select: {
@@ -30,9 +30,12 @@ class AdminFormsController {
       limit: parseInt(pageSize ? pageSize : 20, 10)
     };
     try {
-      const forms = await this.getForms(company, options);
+      const forms = await this.getForms({
+        team
+      }, options);
       // validate exist page
       if (options.page && forms.pages && forms.pages < options.page) {
+        /* istanbul ignore next */
         res.status(400).json({
           error: 'La página solicitada no existe.',
           status: 200
@@ -48,16 +51,18 @@ class AdminFormsController {
         });
       }
     } catch (e) {
+      /* istanbul ignore next */
       if (e) {
         res.status(500).json(e);
       }
     }
   }
 
-  private getForms(company: ObjectID, options: PaginateOptions): Promise<PaginateResult<IFormModel>> {
+  private getForms(filter: any, options: PaginateOptions): Promise<PaginateResult<IFormModel>> {
     return new Promise((resolve, reject) => {
-      Form.paginate({company}, options, (err, result) => {
+      Form.paginate(filter, options, (err, result) => {
         if (err) {
+          /* istanbul ignore next */
           return reject(err);
         }
         return resolve(result);

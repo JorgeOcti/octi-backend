@@ -22,6 +22,11 @@ const choiceSchema = new mongoose.Schema({
 export interface IScaleModel extends IScale, mongoose.Document {}
 export const scaleSchema = new mongoose.Schema({
   name: String,
+  team: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Team',
+    require: true
+  },
   company: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Company',

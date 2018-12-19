@@ -14,6 +14,7 @@ export interface IUser {
   team: ITeamModel | ITeam;
   company: ICompany | any;
   venue: IVenue | any;
+  venuesAccess: IVenue | any;
   preferred: IForm | any;
   email: string;
   password: string;

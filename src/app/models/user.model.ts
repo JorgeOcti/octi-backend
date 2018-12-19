@@ -12,6 +12,7 @@ export interface IUserModel extends IUser, mongoose.Document {
   hasPermission: (permission: string) => boolean;
   fullName: () => string;
   generateToken: () => string;
+  venuesPermissions: () => string[];
 }
 
 const userSchema = new mongoose.Schema({
@@ -42,6 +43,10 @@ const userSchema = new mongoose.Schema({
     ref: 'Venue',
     required: [true, 'La sucursal es requerida']
   },
+  venuesAccess: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Venue'
+  }],
   preferred: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Form',
@@ -117,14 +122,31 @@ userSchema.methods.hasPermission = function(permission: string): boolean {
 // used by sockets
 userSchema.methods.generateToken = function() {
   const userInfo = {
-    _id: this._id
-    // firstName: this.firstName,
-    // lastName: this.lastName,
+    _id: this._id,
+    firstName: this.firstName,
+    lastName: this.lastName,
     // email: this.email,
     // company: this.company,
     // venue: this.venue
   };
   return jwt.sign(userInfo, process.env.SECRET_KEY || 'secretKey', {expiresIn: '7 days'});
+};
+
+userSchema.methods.venuesPermissions = function() {
+  let venuesPermissions = [];
+  const currentVenue = this.venue && this.venue._id ? this.venue._id : this.venue;
+  if (currentVenue) {
+    venuesPermissions.push(currentVenue);
+  }
+  if (this.venuesAccess && this.venuesAccess.length) {
+    venuesPermissions = Array.from(
+      new Set([
+        ...venuesPermissions,
+        ...this.venuesAccess
+      ])
+    );
+  }
+  return venuesPermissions;
 };
 
 /**

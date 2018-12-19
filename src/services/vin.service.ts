@@ -1,3 +1,4 @@
+import GeneralUtils from '../utils/general.utils';
 import Countries from './data/countries';
 import Manufacturers from './data/manufacters';
 import Years from './data/years';
@@ -40,6 +41,7 @@ class VINService {
   }
 
   public decode(vin: string) {
+    /* istanbul ignore else */
     if (vin && vin.length > 12) {
       const codeValues = this.split(vin);
       return {
@@ -50,7 +52,6 @@ class VINService {
         details: codeValues.details,
         manufacturer: this.getManufacturer(codeValues.manufacturer)
       };
-
     } else {
       return 'Este VIN no ha podido ser procesado. =(';
     }
@@ -69,15 +70,15 @@ class VINService {
   }
 
   protected getManufacturer(code: string) {
-    return this.manufacturers.hasOwnProperty(code) ? this.manufacturers[code] : '';
+    return GeneralUtils.getObjectProperty(this.manufacturers, 'code', '');
   }
 
   protected getYear(code: string) {
-    return this.years.hasOwnProperty(code) ? this.years[code] : '';
+    return GeneralUtils.getObjectProperty(this.years, 'code', '');
   }
 
   protected getCountry(code: string) {
-    return this.countries.hasOwnProperty(code) ? this.countries[code] : '';
+    return GeneralUtils.getObjectProperty(this.countries, 'code', '');
   }
 }
 

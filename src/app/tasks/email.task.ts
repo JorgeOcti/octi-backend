@@ -4,6 +4,7 @@ import * as path from 'path';
 import * as pug from 'pug';
 import {compileTemplate} from 'pug';
 import nodemailerTransporter from '../../services/aws-ses.service';
+import app from "../../app";
 
 class EmailQueue {
   private queue: Queue;
@@ -54,7 +55,10 @@ class EmailQueue {
         }
         done(null, {});
         job.log(`Message ${info.messageId} sent: ${info.response}`);
-        console.log('Message %s sent: %s', info.messageId, info.response);
+        /* istanbul ignore next */
+        if (app.get('env') !== 'testing') {
+          console.log('Message %s sent: %s', info.messageId, info.response);
+        }
         // console.log('Preview URL: %s', nodemailer.getTestMessageUrl(info));
       });
     }

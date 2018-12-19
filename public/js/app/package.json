@@ -82,6 +82,7 @@
     "@types/redux-logger": "^3.0.5",
     "@types/redux-thunk": "^2.1.0",
     "@types/validator": "^9.4.2",
+    "another-json-schema": "^3.7.0",
     "autoprefixer": "^9.3.1",
     "babel-polyfill": "^6.26.0",
     "echarts": "^4.1.0",

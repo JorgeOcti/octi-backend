@@ -5,6 +5,7 @@ import * as socketIO from 'socket.io';
 import * as socketRedis from 'socket.io-redis';
 import app from './app';
 import logger from './services/logger.service';
+import redisClient from './services/redis.service';
 
 // Mongoose setting
 const MONGODB_URI: string = process.env.MONGODB_URI || '';
@@ -13,6 +14,7 @@ const MONGODB_URI: string = process.env.MONGODB_URI || '';
 (mongoose as any).Promise = bluebird;
 mongoose.connect(MONGODB_URI, {useMongoClient: true}, (err) => {
   if (err) {
+    /* istanbul ignore next */
     console.log('Unable to connect to the mongodb instance. Error: ', err);
     // throw err;
   }
@@ -47,6 +49,7 @@ io.adapter(socketRedis({
   port: 6379
 }));
 
+/* istanbul ignore next */
 io.use( async (socket, next) => {
   // validate token to use socket
   const token = socket.handshake.query.token;
@@ -78,15 +81,60 @@ io.use( async (socket, next) => {
   // return next(new Error('authentication error'));
 });
 
-io.on( 'connection', ( socket ) => {
+/* istanbul ignore next */
+io.on( 'connection', async ( socket ) => {
   console.log('---------------------');
   console.log('A user connected');
   console.log('socket.id', socket.id);
   console.log('socket.user\n', (socket as any).user);
 
   socket.on('join', (data) => {
-    console.log(`join ${data.room}`);
-    socket.join(data.room);
+    const {room} = data;
+    redisClient.get(room, async (error, result) => {
+      let data: any;
+      if (result) {
+        data = JSON.parse(result);
+        if (!result.hasOwnProperty((socket as any).user._id)) {
+          data = {
+            ...data,
+            [(socket as any).user._id]: {
+              firstName: (socket as any).user.firstName,
+              lastName: (socket as any).user.lastName
+            }
+          };
+          redisClient.setex(room, 60 * 60 * 24, JSON.stringify(data));
+        }
+      } else {
+        data = {
+          [(socket as any).user._id]: {
+            firstName: (socket as any).user.firstName,
+            lastName: (socket as any).user.lastName
+          }
+        };
+        redisClient.setex(room, 60 * 60 * 24, JSON.stringify(data));
+      }
+      console.log(`join ${room}`);
+      socket.join(room);
+      io.to(room).emit('USERS_IN_CHANNEL', data);
+    });
+  });
+
+  socket.on('leave', (data) => {
+    const {room} = data;
+    redisClient.get(room, async (error, result) => {
+      let data: any;
+      if (result) {
+        data = JSON.parse(result);
+        const key = (socket as any).user._id;
+        if (data.hasOwnProperty(key)) {
+          delete data[key];
+          redisClient.setex(room, 60 * 60 * 24, JSON.stringify(data));
+        }
+      }
+      io.to(room).emit('USERS_IN_CHANNEL', data);
+      console.log(`leave ${room}`);
+      socket.leave(room);
+    });
   });
 
   socket.on('disconnect',  () => {

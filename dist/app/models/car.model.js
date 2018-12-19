@@ -43,10 +43,13 @@ const carSchema = new mongoose.Schema({
         type: String,
         trim: true
     },
+    team: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Team'
+    },
     company: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: 'Company',
-        required: true
+        ref: 'Company'
     },
     lastForm: {
         type: mongoose.Schema.Types.ObjectId,
