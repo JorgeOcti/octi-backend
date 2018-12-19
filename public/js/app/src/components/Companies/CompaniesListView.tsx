@@ -17,6 +17,8 @@ import {
 } from '../../actions/companies.actions';
 import {loadDataAction, ModalReduxAction} from '../../actions/modal.actions';
 import AppContainer from '../../container/AppContainer';
+import {IWindow} from '../../interfaces/window';
+import {hasPermission} from '../../utils/common';
 import ModalView from '../Modal/ModalView';
 import Paginator from '../Paginator';
 import CompaniesFormView from './CompaniesFormView';
@@ -36,6 +38,9 @@ interface IPropsType extends RouteComponentProps<{ ticket: string }> {
 interface IStateType {
   error: Error | null;
 }
+
+declare let window: IWindow;
+
 class CompaniesListView extends React.Component<IPropsType, IStateType> {
 
   constructor(props: IPropsType) {
@@ -76,13 +81,13 @@ class CompaniesListView extends React.Component<IPropsType, IStateType> {
         <section className="content">
           <div className="box">
             <div className="box-header with-border"><h3 className="box-title">Empresas <small>{pagination.count}</small></h3>
-              {/*{*/}
-                {/*hasPermission(window.user, 'addVenue') ?*/}
+              {
+                hasPermission(window.user, 'addCompany') ?
                   <div className="box-tools pull-right">
                     <button className="btn btn-sm btn-success" onClick={this.addCompany}>Agregar</button>
                   </div>
-                  {/*: null*/}
-              {/*}*/}
+                  : null
+              }
             </div>
             <div className="box-body no-padding">
               <table className="table table-striped">
@@ -90,39 +95,38 @@ class CompaniesListView extends React.Component<IPropsType, IStateType> {
                   <tr>
                     <th style={{width: '60%'}} className="middle">Nombre</th>
                     <th style={{width: '20%'}} className="middle hidden-xs">Modificado</th>
-                    {/*{*/}
-                      {/*hasPermission(window.user, 'changeVenue') ?*/}
-                        <th style={{width: '1%'}} className="width-10"/>
-                    {/*}*/}
-                    {/*{*/}
-                      {/*hasPermission(window.user, 'deleteVenue') ?*/}
-                        <th style={{width: '1%'}} className="width-10"/>
-                    {/*}*/}
+                    {
+                      hasPermission(window.user, 'changeCompany') ?
+                        <th style={{width: '1%'}} className="width-10"/> : null
+                    }
+                    {
+                      hasPermission(window.user, 'deleteCompany') ?
+                        <th style={{width: '1%'}} className="width-10"/> : null
+                    }
                   </tr>
                 </thead>
                 <tbody>
                   {
                     companies.map((company: ICompany) => {
-                      {/*const canDelete = company.users && company.users.length === 0 && company.participants && company.participants.length === 0;*/}
                       return (
                         <tr key={company._id} id={`company-${company._id}`}>
                           <td className="middle">{company.name}</td>
                           <td className="middle hidden-xs">{moment(company.updatedAt).format('LLL')}</td>
-                          {/*{*/}
-                            {/*hasPermission(window.user, 'changeVenue') ?*/}
-                          <td
-                            className="middle text-blue pointer"
-                            onClick={() => this.udpateCompany(company)}>
-                            <i className="fa fa-pencil"/>
-                          </td>
-                          {/*}*/}
-                          {/*{*/}
-                            {/*hasPermission(window.user, 'deleteVenue') ?*/}
-                          <td
-                            className={'middle text-red pointer'}
-                            onClick={() => this.deleteCompany(company)}
-                          ><i className="fa fa-minus-circle"/></td>
-                          {/*}*/}
+                          {
+                            hasPermission(window.user, 'changeCompany') ?
+                              <td
+                                className="middle text-blue pointer"
+                                onClick={() => this.udpateCompany(company)}>
+                                <i className="fa fa-pencil"/>
+                              </td> : null
+                          }
+                          {
+                            hasPermission(window.user, 'deleteCompany') ?
+                              <td
+                                className={'middle text-red pointer'}
+                                onClick={() => this.deleteCompany(company)}
+                              ><i className="fa fa-minus-circle"/></td> : null
+                          }
                         </tr>
                       );
                     })

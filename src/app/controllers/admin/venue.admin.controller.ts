@@ -24,7 +24,12 @@ class AdminVenueController {
     }
   }
 
-  public async apiListVenues(req: IRequest, res: Response) {
+  public async apiListVenues(req: IRequest, res: Response): Promise<any> {
+    if (!req.user.hasPermission('viewVenue') && !req.user.hasPermission('viewUser')) {
+      return res.status(403).json({
+        message: 'No tienes permisos para esta operación'
+      });
+    }
     const {team} = req.user;
     const {page, pageSize} = req.query;
     // paginate options

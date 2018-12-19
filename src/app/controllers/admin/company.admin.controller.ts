@@ -14,14 +14,19 @@ class AdminCompaniesController {
   }
 
   public async index(req: Request, res: Response) {
-    // if (req.user.hasPermission('viewCompanies')) {
+    if (req.user.hasPermission('viewCompany')) {
       res.render('app/index', {token: await req.user.generateToken()});
-    // } else {
-    //   res.status(403).render('403');
-    // }
+    } else {
+      res.status(403).render('403');
+    }
   }
 
-  public async apiListCompanies(req: IRequest, res: Response) {
+  public async apiListCompanies(req: IRequest, res: Response): Promise<any> {
+    if (!req.user.hasPermission('viewCompany') && !req.user.hasPermission('viewUser')) {
+      return res.status(403).json({
+        message: 'No tienes permisos para esta operación'
+      });
+    }
     const {team} = req.user;
     const {page, pageSize, search} = req.query;
     // paginate options
@@ -57,15 +62,14 @@ class AdminCompaniesController {
         status: 200
       });
     }
-
   }
 
   public async apiCreateCompany(req: IRequest, res: Response): Promise<any> {
-    /*if (!req.user.hasPermission('addCompany')) {
+    if (!req.user.hasPermission('addCompany')) {
       return res.status(403).json({
         message: 'No tienes permisos para esta operación'
       });
-    }*/
+    }
     const {name} = req.body;
     const {team} = req.user;
     if (!name || !name.trim().length) {
@@ -104,11 +108,11 @@ class AdminCompaniesController {
   }
 
   public async apiUpdateCompany(req: IRequest, res: Response): Promise<any> {
-    // if (!req.user.hasPermission('changeCompany')) {
-    //   return res.status(403).json({
-    //     message: 'No tienes permisos para esta operación'
-    //   });
-    // }
+    if (!req.user.hasPermission('changeCompany')) {
+      return res.status(403).json({
+        message: 'No tienes permisos para esta operación'
+      });
+    }
     const {id} = req.params;
     const {team} = req.user;
     const {name} = req.body;
@@ -149,11 +153,11 @@ class AdminCompaniesController {
   }
 
   public async apiDeleteCompany(req: IRequest, res: Response): Promise<any> {
-    // if (!req.user.hasPermission('deleteCompany')) {
-    //   return res.status(403).json({
-    //     message: 'No tienes permisos para esta operación'
-    //   });
-    // }
+    if (!req.user.hasPermission('deleteCompany')) {
+      return res.status(403).json({
+        message: 'No tienes permisos para esta operación'
+      });
+    }
     const {id} = req.params;
     const {team} = req.user;
     try {

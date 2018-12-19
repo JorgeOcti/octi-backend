@@ -11,13 +11,19 @@ class AdminCompaniesController {
         this.apiDeleteCompany = this.apiDeleteCompany.bind(this);
     }
     async index(req, res) {
-        // if (req.user.hasPermission('viewCompanies')) {
-        res.render('app/index', { token: await req.user.generateToken() });
-        // } else {
-        //   res.status(403).render('403');
-        // }
+        if (req.user.hasPermission('viewCompany')) {
+            res.render('app/index', { token: await req.user.generateToken() });
+        }
+        else {
+            res.status(403).render('403');
+        }
     }
     async apiListCompanies(req, res) {
+        if (!req.user.hasPermission('viewCompany') && !req.user.hasPermission('viewUser')) {
+            return res.status(403).json({
+                message: 'No tienes permisos para esta operación'
+            });
+        }
         const { team } = req.user;
         const { page, pageSize, search } = req.query;
         // paginate options
@@ -56,11 +62,11 @@ class AdminCompaniesController {
         }
     }
     async apiCreateCompany(req, res) {
-        /*if (!req.user.hasPermission('addCompany')) {
-          return res.status(403).json({
-            message: 'No tienes permisos para esta operación'
-          });
-        }*/
+        if (!req.user.hasPermission('addCompany')) {
+            return res.status(403).json({
+                message: 'No tienes permisos para esta operación'
+            });
+        }
         const { name } = req.body;
         const { team } = req.user;
         if (!name || !name.trim().length) {
@@ -100,11 +106,11 @@ class AdminCompaniesController {
         }
     }
     async apiUpdateCompany(req, res) {
-        // if (!req.user.hasPermission('changeCompany')) {
-        //   return res.status(403).json({
-        //     message: 'No tienes permisos para esta operación'
-        //   });
-        // }
+        if (!req.user.hasPermission('changeCompany')) {
+            return res.status(403).json({
+                message: 'No tienes permisos para esta operación'
+            });
+        }
         const { id } = req.params;
         const { team } = req.user;
         const { name } = req.body;
@@ -146,11 +152,11 @@ class AdminCompaniesController {
         }
     }
     async apiDeleteCompany(req, res) {
-        // if (!req.user.hasPermission('deleteCompany')) {
-        //   return res.status(403).json({
-        //     message: 'No tienes permisos para esta operación'
-        //   });
-        // }
+        if (!req.user.hasPermission('deleteCompany')) {
+            return res.status(403).json({
+                message: 'No tienes permisos para esta operación'
+            });
+        }
         const { id } = req.params;
         const { team } = req.user;
         try {

@@ -1,4 +1,5 @@
 ///<reference path="../../../node_modules/sweetalert/typings/sweetalert.d.ts"/>
+import {AxiosError} from 'axios';
 import * as moment from 'moment';
 // import * as PropTypes from 'prop-types';
 import * as Raven from 'raven-js';
@@ -13,7 +14,7 @@ import {
   changeTempUserAction,
   createUserAction,
   deleteUserAction,
-  getUsersAction, isLoadingAction,
+  getUsersAction,
   ITempUser,
   IUsersState,
   updateUserAction,
@@ -21,13 +22,12 @@ import {
 } from '../../actions/users.actions';
 import AppContainer from '../../container/AppContainer';
 import {IWindow} from '../../interfaces/window';
+import ApiService from '../../utils/axios';
 import {hasPermission, showModal, statusFooterButttonsModal} from '../../utils/common';
 import ModalView from '../Modal/ModalView';
 import Paginator from '../Paginator';
 import UserFormChangePasswordView from './UserFormChangePasswordView';
 import UserFormView from './UserFormView';
-import ApiService from "../../utils/axios";
-import {AxiosError} from "axios";
 
 interface IPropsType extends RouteComponentProps<{ ticket: string }> {
   dispatch: Dispatch<UserReduxAction>;
