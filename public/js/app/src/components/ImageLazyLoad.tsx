@@ -99,7 +99,7 @@ class ImageLazyLoad extends React.Component<IPropsType, IStateType> {
     if (!this.state.inViewPort && this.element.current) {
       const bounding = this.element.current.getBoundingClientRect();
       // start load distance
-      const distance = 500;
+      const distance = 300;
       const clientHeight: number = document && document.documentElement ? document.documentElement.clientHeight : 0;
       const height = window.innerHeight || clientHeight;
       const isInViewPort = (
@@ -136,6 +136,8 @@ class ImageLazyLoad extends React.Component<IPropsType, IStateType> {
       setTimeout(() => {
         this.isInViewport();
       }, 1000);
+      window.addEventListener('scroll', this.isInViewport, false);
+      window.addEventListener('rezise', this.isInViewport, false);
     } else {
       window.addEventListener('scroll', this.isInViewport, false);
       window.addEventListener('rezise', this.isInViewport, false);
@@ -151,6 +153,8 @@ class ImageLazyLoad extends React.Component<IPropsType, IStateType> {
     if (modal) {
       modal.removeEventListener('scroll', this.isInViewport, false);
       modal.removeEventListener('rezise', this.isInViewport, false);
+      window.removeEventListener('scroll', this.isInViewport, false);
+      window.removeEventListener('rezise', this.isInViewport, false);
     } else {
       window.removeEventListener('scroll', this.isInViewport, false);
       window.removeEventListener('rezise', this.isInViewport, false);
