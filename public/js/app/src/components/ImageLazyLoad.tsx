@@ -13,6 +13,8 @@ interface IStateType {
   loading: boolean;
   inViewPort: boolean;
   error: boolean;
+  bounding: any;
+  height: any;
 }
 
 class ImageLazyLoad extends React.Component<IPropsType, IStateType> {
@@ -20,7 +22,9 @@ class ImageLazyLoad extends React.Component<IPropsType, IStateType> {
   readonly state = {
     loading: true,
     inViewPort: false,
-    error: false
+    error: false,
+    bounding: null,
+    height: null
   };
 
   private element: RefObject<HTMLDivElement>;
@@ -95,11 +99,16 @@ class ImageLazyLoad extends React.Component<IPropsType, IStateType> {
       // start load distance
       const distance = 500;
       const clientHeight: number = document && document.documentElement ? document.documentElement.clientHeight : 0;
+      const height = window.innerHeight || clientHeight;
       const isInViewPort = (
         bounding.top >= 0 &&
         bounding.left >= 0 &&
-        (bounding.bottom - distance) <= (window.innerHeight || clientHeight)
+        (bounding.bottom - distance) <= height
       );
+      this.setState({
+        bounding,
+        height
+      });
       if (isInViewPort) {
         this.removeEventListener();
         this.setState({
