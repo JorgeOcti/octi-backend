@@ -19,8 +19,8 @@ import InventoryModel, {
   ChoicesStatusCarInventory,
   ChoicesStatusInventory
 } from '../models/inventory.model';
-import InventoryFileModel from '../models/inventoryFile.model';
 import Inventory from '../models/inventory.model';
+import InventoryFileModel from '../models/inventoryFile.model';
 
 class InventoryController {
 

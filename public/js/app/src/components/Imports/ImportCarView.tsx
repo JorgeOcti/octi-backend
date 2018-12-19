@@ -1,22 +1,17 @@
 ///<reference path="../../../node_modules/sweetalert/typings/sweetalert.d.ts"/>
 import {AxiosError} from 'axios';
-import * as PropTypes from 'prop-types';
 import * as Raven from 'raven-js';
 import * as React from 'react';
 import {ErrorInfo, RefObject} from 'react';
 import {connect} from 'react-redux';
 import {RouteComponentProps} from 'react-router';
 import {Dispatch} from 'redux';
-// import * as io from 'socket.io-client';
 import * as uuid from 'uuid';
 import * as XLSX from 'xlsx';
 import {IUsersState, UserReduxAction} from '../../actions/users.actions';
 import AppContainer from '../../container/AppContainer';
-// import {IWindow} from '../../interfaces/window';
 import ApiService from '../../utils/axios';
 import ModalView from '../Modal/ModalView';
-
-// declare let window: IWindow;
 
 enum carStatus {
   Error,
@@ -29,6 +24,7 @@ interface IImportCar {
   vin: string;
   marca: string;
   denominacion: string;
+  patente: string;
   color: string;
   destino: string;
   status: number;
@@ -78,36 +74,6 @@ class ImportCarsView extends React.Component<IPropsType, IStateType> {
     this.dragEndHandler = this.dragEndHandler.bind(this);
     this.dragLeaveHandler = this.dragLeaveHandler.bind(this);
     this.inputFile = React.createRef();
-
-    // socket
-    /*this.socket = io.connect(`${location.protocol}//${location.host}`, {
-      secure: location.protocol === 'https:',
-      reconnection: true,
-      query: {token: (window.user as any).token}
-    });
-    this.socket.on('STATUS-CARS', (data: any): void => {
-      if (data.hasOwnProperty('newCar')) {
-        this.setState({
-          carsObj: {
-            ...this.state.carsObj,
-            [data.newCar.vin]: {
-              ...(this.state.carsObj as any)[data.newCar.vin],
-              status: carStatus.Finish
-            }
-          }
-        });
-      }
-    });
-    this.socket.on('FINISH-IMPORT', (data: any): void => {
-      swal('Importador de autos', 'La carga a finalizado exitosamente.', 'success');
-      this.setState({
-        loadFile: false,
-        cars: this.state.cars.map((car: IImportCar) => {
-          car.status = carStatus.Finish;
-          return car;
-        })
-      });
-    });*/
   }
 
   public componentWillMount() {
@@ -176,6 +142,7 @@ class ImportCarsView extends React.Component<IPropsType, IStateType> {
                         <tr>
                           <th>Nº Interno</th>
                           <th>VIN</th>
+                          <th>Patente</th>
                           <th>Marca</th>
                           <th>Denominación</th>
                           <th>Color</th>
@@ -184,7 +151,7 @@ class ImportCarsView extends React.Component<IPropsType, IStateType> {
                         </thead>
                         <tbody>
                         {
-                          cars.map((car: IImportCar, index) => {
+                          cars.map((car: IImportCar) => {
                             let classTR = '';
                             if (car.status === carStatus.Finish) {
                               classTR = 'success';
@@ -195,6 +162,7 @@ class ImportCarsView extends React.Component<IPropsType, IStateType> {
                               <tr key={car.id} className={classTR}>
                                 <td>{car.NInterno}</td>
                                 <td>{car.vin}</td>
+                                <td>{car.patente}</td>
                                 <td>{car.marca}</td>
                                 <td>{car.denominacion}</td>
                                 <td>{car.color}</td>
@@ -331,6 +299,7 @@ class ImportCarsView extends React.Component<IPropsType, IStateType> {
     const data = [{
       NInterno: '',
       vin: '',
+      patente: '',
       marca: '',
       denominacion: '',
       color: '',

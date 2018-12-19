@@ -11,8 +11,8 @@ const venue_model_1 = require("../../app/models/venue.model");
 const server_1 = require("../../server");
 const push_service_1 = require("../../services/push.service");
 const inventory_model_1 = require("../models/inventory.model");
-const inventoryFile_model_1 = require("../models/inventoryFile.model");
 const inventory_model_2 = require("../models/inventory.model");
+const inventoryFile_model_1 = require("../models/inventoryFile.model");
 class InventoryController {
     constructor() {
         this.index = this.index.bind(this);

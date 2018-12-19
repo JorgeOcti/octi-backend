@@ -139,7 +139,8 @@ class CarController {
                             inventoryQuery.vin2 = { $regex: vinRegex };
                         }
                         else {
-                            inventoryQuery.vin2 = vin2;
+                            const patentRegex = new RegExp(vin2, 'i');
+                            inventoryQuery.$or = [{ vin2 }, { patent: patentRegex }];
                         }
                     }
                     const cars = await car_model_1.default.find(inventoryQuery, {
@@ -147,6 +148,7 @@ class CarController {
                         vin2: true,
                         brand: true,
                         color: true,
+                        patent: true,
                         denomination: true
                     });
                     if (cars.length) {
@@ -251,6 +253,7 @@ class CarController {
                             vin: car.vin,
                             vin2: car.vin2,
                             brand: car.brand,
+                            patent: car.patent,
                             color: car.color,
                             denomination: car.denomination
                         },
@@ -270,14 +273,16 @@ class CarController {
                 // vin2 = vin2.replace(/[\W_]+/g, '');
                 try {
                     const vinRegex = new RegExp('[a-zA-Z0]' + vin2.substr(vin2.length - 5), 'i');
+                    const patentRegex = new RegExp(vin2, 'i');
                     const car = await car_model_1.default.find({
-                        vin2: vin2 && vin2[0] === '0' ? { $regex: vinRegex } : vin2,
+                        $or: [{ vin2: vin2 && vin2[0] === '0' ? { $regex: vinRegex } : vin2 }, { patent: patentRegex }],
                         team
                     }, {
                         vin: true,
                         vin2: true,
                         brand: true,
                         color: true,
+                        patent: true,
                         denomination: true
                     });
                     if (car.length) {

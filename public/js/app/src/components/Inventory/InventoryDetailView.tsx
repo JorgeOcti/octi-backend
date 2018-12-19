@@ -3,8 +3,8 @@
 ///<reference path="../../../src/types/react-bootstrap-table2-filter.d.ts"/>
 ///<reference path="../../../src/types/react-bootstrap-table2-paginator.d.ts"/>
 import * as Raven from 'raven-js';
-import {ErrorInfo} from 'react';
 import * as React from 'react';
+import {ErrorInfo} from 'react';
 import BootstrapTable from 'react-bootstrap-table-next';
 import filterFactory, { selectFilter, textFilter } from 'react-bootstrap-table2-filter';
 import paginationFactory from 'react-bootstrap-table2-paginator';
@@ -26,10 +26,10 @@ import {
 import {loadDataAction, ModalReduxAction} from '../../actions/modal.actions';
 import AppContainer from '../../container/AppContainer';
 import {IWindow} from '../../interfaces/window';
+import {maxText} from '../../utils/common';
 import ImageLazyLoad from '../ImageLazyLoad';
 import ModalView from '../Modal/ModalView';
 import InventoryCarComments from './InventoryCarComments';
-import {maxText} from "../../utils/common";
 
 declare let window: IWindow;
 

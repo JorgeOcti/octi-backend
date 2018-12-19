@@ -51,7 +51,8 @@ class AdminCarController {
                             newCar.vin2 = vin2;
                             newCar.brand = car.marca ? car.marca : newCar.brand;
                             newCar.denomination = car.denominacion ? car.denominacion : newCar.denomination;
-                            newCar.color = car.denominacion ? car.color : newCar.color;
+                            newCar.color = car.color ? car.color : newCar.color;
+                            newCar.patent = car.patente ? car.patente : newCar.patent;
                             newCar.internalNumber = car.NInterno ? car.NInterno : newCar.internalNumber;
                             newCar.destination = car.destino ? car.destino : newCar.destination;
                             newCar.status = car_model_1.ChoicesStatusCar.active;
@@ -66,6 +67,7 @@ class AdminCarController {
                                 color: car.color ? car.color : '',
                                 internalNumber: car.NInterno ? car.NInterno : '',
                                 destination: car.destino ? car.destino : '',
+                                patent: car.patente ? car.patente : '',
                                 company,
                                 team,
                                 status: car_model_1.ChoicesStatusCar.active
@@ -100,6 +102,7 @@ class AdminCarController {
                 vin: true,
                 vin2: true,
                 brand: true,
+                patent: true,
                 denomination: true,
                 color: true,
                 internalNumber: true,

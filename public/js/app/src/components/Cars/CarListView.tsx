@@ -106,7 +106,8 @@ class CarListView extends React.Component<IPropsType, IStateType> {
                 <thead>
                   <tr>
                     <th style={{width: '20%'}}>VIN</th>
-                    <th style={{width: '20%'}}>Marca</th>
+                    <th style={{width: '10%'}}>Patente</th>
+                    <th style={{width: '10%'}}>Marca</th>
                     <th style={{width: '20%'}} className="hidden-xs">Denominación</th>
                     <th style={{width: '20%'}} className="hidden-xs">Color</th>
                     <th style={{width: '20%'}} className="hidden-xs">Creado</th>
@@ -124,6 +125,7 @@ class CarListView extends React.Component<IPropsType, IStateType> {
                       return (
                         <tr key={car._id} id={`car-${car._id}`}>
                           <td>{car.vin}</td>
+                          <td>{car.patent}</td>
                           <td>{car.brand}</td>
                           <td className="hidden-xs text-ellipsis">{car.denomination}</td>
                           <td className="hidden-xs text-ellipsis">{car.color}</td>
