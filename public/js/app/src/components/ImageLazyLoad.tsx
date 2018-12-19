@@ -13,6 +13,7 @@ interface IStateType {
   loading: boolean;
   inViewPort: boolean;
   error: boolean;
+  eventRuning: boolean;
   bounding: any;
   height: any;
 }
@@ -21,6 +22,7 @@ class ImageLazyLoad extends React.Component<IPropsType, IStateType> {
 
   readonly state = {
     loading: true,
+    eventRuning: false,
     inViewPort: false,
     error: false,
     bounding: null,
@@ -124,6 +126,9 @@ class ImageLazyLoad extends React.Component<IPropsType, IStateType> {
   }
 
   private addEventListener() {
+    this.setState({
+      eventRuning: true
+    });
     const modal = document.getElementById('andesModal');
     if (modal) {
       modal.addEventListener('scroll', this.isInViewport, false);
@@ -139,6 +144,9 @@ class ImageLazyLoad extends React.Component<IPropsType, IStateType> {
   }
 
   private removeEventListener() {
+    this.setState({
+      eventRuning: false
+    });
     const modal = document.getElementById('andesModal');
     if (modal) {
       modal.removeEventListener('scroll', this.isInViewport, false);
