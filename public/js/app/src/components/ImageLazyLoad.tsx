@@ -106,7 +106,12 @@ class ImageLazyLoad extends React.Component<IPropsType, IStateType> {
         (bounding.bottom - distance) <= height
       );
       this.setState({
-        bounding,
+        bounding: {
+          top: bounding.top,
+          left: bounding.left,
+          right: bounding.right,
+          bottom: bounding.bottom
+        },
         height
       });
       if (isInViewPort) {
