@@ -286,7 +286,7 @@ class InventoryController {
                 .findOne({ _id: id, team })
                 .populate([{
                     path: 'cars.car',
-                    select: ['vin', 'vin2', 'color', 'denomination', 'brand']
+                    select: ['vin', 'vin2', 'color', 'denomination', 'brand', 'patent']
                 }]);
             if (inventory) {
                 res.status(200).json({
