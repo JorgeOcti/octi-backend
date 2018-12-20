@@ -1069,7 +1069,7 @@ class InventoryController {
             name: detailInventory ? detailInventory.name : '',
             status: detailInventory ? detailInventory.status : '',
             cars: detailInventory ? detailInventory.cars.filter((car) => {
-              return venuesPermissions.includes(car.venue._id.toString()) || (car.venueFound && venuesPermissions.includes(car.venueFound._id.toString()));
+              return car.venue && venuesPermissions.includes(car.venue._id.toString()) || (car.venueFound && venuesPermissions.includes(car.venueFound._id.toString()));
             }) : []
           },
           status: 200
