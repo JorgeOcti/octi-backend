@@ -238,13 +238,17 @@ class UserFormView extends React.Component<IPropsType, IStateType> {
                   <tbody>
                   {
                     userForms.length ? userForms.map((form: any) => {
-                        return (
-                          <tr key={form._id}>
-                            <td>{form.name}</td>
-                            <td className="text-center text-red pointer" onClick={() => this.deleteForm(form._id)}><i
-                              className="fa fa-minus-circle"/></td>
-                          </tr>
-                        );
+                      return (
+                        <tr key={form._id}>
+                          <td>{form.name}</td>
+                          <td
+                            className="text-center text-red pointer"
+                            onClick={() => this.deleteForm(form._id)}
+                          >
+                            <i className="fa fa-minus-circle"/>
+                          </td>
+                        </tr>
+                      );
                       }) :
                       <tr>
                         <td colSpan={2}>Aún no se han seleccionado permisos.</td>
@@ -343,11 +347,17 @@ class UserFormView extends React.Component<IPropsType, IStateType> {
                   >
                     <option value="" />
                     {
-                      venues.filter((venue) => !idsUserVenueAccess.includes(venue._id)).map((venue) => {
-                        return (
-                          <option key={venue._id} value={venue._id}>{venue.name}{venue.company ? ` - ${venue.company.name}` : ''}</option>
-                        );
-                      })
+                      venues
+                        .filter((venue) => (
+                          !idsUserVenueAccess.includes(venue._id) && venue._id !== tempUser.venue)
+                        )
+                        .map((venue) => {
+                          return (
+                            <option key={venue._id} value={venue._id}>
+                              {venue.name}{venue.company ? ` - ${venue.company.name}` : ''}
+                            </option>
+                          );
+                        })
                     }
                   </select>
                 </div>
@@ -362,7 +372,21 @@ class UserFormView extends React.Component<IPropsType, IStateType> {
                   </thead>
                   <tbody>
                     {
-                      tempUser.venuesAccess.length ? tempUser.venuesAccess.map((venue: any) => {
+                      tempUser.venue ?
+                        venues
+                          .filter((venue: any) => (venue._id === tempUser.venue))
+                          .map((venue: any) => (
+                            <tr key={venue._id} className="bg-aqua-active">
+                              <td colSpan={2}>{venue.name}{venue.company ? ` - ${venue.company.name}` : ''}</td>
+                            </tr>
+                          ))
+                        : null
+                    }
+                    {
+                      tempUser.venuesAccess.length ?
+                        tempUser.venuesAccess
+                          .filter((venue: any) => (venue._id !== tempUser.venue))
+                          .map((venue: any) => {
                           return (
                             <tr key={venue._id}>
                               <td>{venue.name}{venue.company ? ` - ${venue.company.name}` : ''}</td>
@@ -372,7 +396,7 @@ class UserFormView extends React.Component<IPropsType, IStateType> {
                           );
                         }) :
                         <tr>
-                          <td colSpan={2}>Aún no se han seleccionado sucursales.</td>
+                          <td colSpan={2}>Aún no se han seleccionado sucursales adicionales.</td>
                         </tr>
                     }
                   </tbody>
