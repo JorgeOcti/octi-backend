@@ -287,11 +287,17 @@ class InventoryController {
                 .populate([{
                     path: 'cars.car',
                     select: ['vin', 'vin2', 'color', 'denomination', 'brand', 'patent']
-                }]);
+                }, {
+                    path: 'cars.venue',
+                    select: ['name']
+                }]).lean();
             if (inventory) {
                 res.status(200).json({
                     cars: inventory.cars.map((car) => {
-                        return car.car;
+                        return {
+                            ...car.car,
+                            venue: car.venue
+                        };
                     }),
                     reasons: [],
                     status: 200
