@@ -49,7 +49,10 @@ Raven.config(process.env.SENTRY_DNS, {
   environment: process.env.ENV,
   parseUser: (req) => {
     // custom user parsing logic
-    const username = req.user ? req.user : {username: 'anonymous', id: 0};
+    const username = req.user ? req.user : {
+      id: 0,
+      username: 'anonymous'
+    };
     return {
       username: username.username,
       id: username.id
@@ -212,14 +215,6 @@ export const accessLogStream = fileStreamRotator.getStream({
   verbose: false
 });
 
-// export const mongooseCrateConfig: any = {
-//   key: process.env.S3_KEY || 'key',
-//   secret: process.env.S3_SECRET || 'secret',
-//   bucket: process.env.S3_BUCKET || 'bucket',
-//   acl: 'public-read', // defaults to public-read
-//   region: process.env.S3_REGION || 'region', // defaults to us-standard
-// };
-
 /* istanbul ignore if */
 if (app.get('env') !== 'testing') {
   morgan.token('remote-addr', (req: express.Request): string => {
@@ -246,6 +241,7 @@ export const queue = kue.createQueue({
     port: 6379
   }
 });
+
 new EmailQueue(queue).run();
 kue.app.listen((parseInt(process.env.PORT as string, 10) || 3000) + 40);
 

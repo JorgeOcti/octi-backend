@@ -51,24 +51,34 @@ class UserFormView extends React.Component<IPropsType, IStateType> {
     const chosenOptions = {
       no_results_text: 'Sin resultados para:'
     };
-    ($('#id-forms') as any).chosen(chosenOptions).change((e: React.ChangeEvent<HTMLSelectElement>) => {
-      this.addForm(e.target.value);
-    });
-    ($('#id-form-default') as any).chosen(chosenOptions).change((e: React.ChangeEvent<HTMLSelectElement>) => {
-      changeTempUser({preferred: e.target.value});
-    });
-    ($('#id-venue') as any).chosen(chosenOptions).change((e: React.ChangeEvent<HTMLSelectElement>) => {
-      changeTempUser({venue: e.target.value});
-    });
-    ($('#id-company') as any).chosen(chosenOptions).change((e: React.ChangeEvent<HTMLSelectElement>) => {
-      changeTempUser({company: companies.find((company) => company._id === e.target.value)});
-    });
-    ($('#id-permissions') as any).chosen(chosenOptions).change((e: React.ChangeEvent<HTMLSelectElement>) => {
-      this.addPermission(e.target.value);
-    });
-    ($('#id-venues-access') as any).chosen(chosenOptions).change((e: React.ChangeEvent<HTMLSelectElement>) => {
-      this.addVenueAccess(e.target.value);
-    });
+    ($('#id-forms') as any).chosen(chosenOptions)
+      .change((e: React.ChangeEvent<HTMLSelectElement>) => {
+        this.addForm(e.target.value);
+      });
+    ($('#id-form-default') as any).chosen(chosenOptions)
+      .change((e: React.ChangeEvent<HTMLSelectElement>) => {
+        changeTempUser({preferred: e.target.value});
+      });
+    ($('#id-venue') as any).chosen(chosenOptions)
+      .change((e: React.ChangeEvent<HTMLSelectElement>) => {
+        changeTempUser({venue: e.target.value});
+      });
+    ($('#id-company') as any).chosen(chosenOptions)
+      .change((e: React.ChangeEvent<HTMLSelectElement>) => {
+        changeTempUser({
+          company: companies.find((company) => (
+            company._id === e.target.value
+          ))
+        });
+      });
+    ($('#id-permissions') as any).chosen(chosenOptions)
+      .change((e: React.ChangeEvent<HTMLSelectElement>) => {
+          this.addPermission(e.target.value);
+        });
+    ($('#id-venues-access') as any).chosen(chosenOptions)
+      .change((e: React.ChangeEvent<HTMLSelectElement>) => {
+        this.addVenueAccess(e.target.value);
+      });
 
   }
 

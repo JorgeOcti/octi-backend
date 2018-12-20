@@ -108,6 +108,8 @@ userSchema.methods.generateToken = function () {
         _id: this._id,
         firstName: this.firstName,
         lastName: this.lastName,
+        company: this.company,
+        venue: this.venue
     };
     return jwt.sign(userInfo, process.env.SECRET_KEY || 'secretKey', { expiresIn: '7 days' });
 };

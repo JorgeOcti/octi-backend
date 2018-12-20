@@ -1,6 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 const bluebird = require("bluebird");
+const cp = require("console-probe");
 const jwt = require("jsonwebtoken");
 const mongoose = require("mongoose");
 const socketIO = require("socket.io");
@@ -16,16 +17,14 @@ mongoose.connect(MONGODB_URI, { useMongoClient: true }, (err) => {
     if (err) {
         /* istanbul ignore next */
         console.log('Unable to connect to the mongodb instance. Error: ', err);
-        // throw err;
+        throw err;
     }
     /* istanbul ignore if */
     if (app_1.default.get('env') !== 'testing') {
         console.log('Mongoose Successfully connected');
     }
 });
-// mongoose.Promise = global.Promise;
 mongoose.set('debug', app_1.default.get('env') !== 'testing');
-// mongoose.set('debug', false);
 const NODE_APP_INSTANCE = parseInt(process.env.NODE_APP_INSTANCE, 10) || 0;
 const server = app_1.default.listen(parseInt(app_1.default.get('port'), 10) + NODE_APP_INSTANCE, () => {
     /* istanbul ignore if */
@@ -81,7 +80,7 @@ exports.io.on('connection', async (socket) => {
     console.log('---------------------');
     console.log('A user connected');
     console.log('socket.id', socket.id);
-    console.log('socket.user\n', socket.user);
+    cp.json(socket.user);
     socket.on('join', (data) => {
         const { room } = data;
         redis_service_1.default.get(room, async (error, result) => {
@@ -133,7 +132,7 @@ exports.io.on('connection', async (socket) => {
     socket.on('disconnect', () => {
         console.log('---------------------');
         console.log('user disconnected');
-        console.log('socket.user\n', socket.user);
+        cp.json(socket.user);
         // io.emit('user disconnected');
     });
 });
