@@ -298,31 +298,46 @@ class InventoryController {
     const {team} = req.user;
     const {id} = req.params;
     try {
-      const inventory = await Inventory
-        .findOne({_id: id, team})
-        .populate([{
-          path: 'cars.car',
-          select: ['vin', 'vin2', 'color', 'denomination', 'brand', 'patent']
-        }, {
-          path: 'cars.venue',
-          select: ['name']
-        }]).lean();
-      if (inventory) {
-        res.status(200).json({
-          cars: inventory.cars.map((car: IInventoryCar) => {
-            return {
-              ...car.car,
-              venue: car.venue
-            };
-          }),
-          reasons: [],
-          status: 200
+      const updatedUser = await User.findById(req.user._id);
+      if (!updatedUser) {
+        res.status(404).json({
+          message: 'No se ha encontrado el inventario solicitado.',
+          status: 404
         });
       } else {
-        res.status(400).json({
-          message: 'La imagen es obligatoria.',
-          status: 400
-        });
+        const inventory = await Inventory
+          .findOne({
+            _id: id,
+            venues: updatedUser.venue,
+            status: {
+              $in: [ChoicesStatusInventory.inProcess]
+            },
+            team
+          })
+          .populate([{
+            path: 'cars.car',
+            select: ['vin', 'vin2', 'color', 'denomination', 'brand', 'patent']
+          }, {
+            path: 'cars.venue',
+            select: ['name']
+          }]).lean();
+        if (inventory) {
+          res.status(200).json({
+            cars: inventory.cars.map((car: IInventoryCar) => {
+              return {
+                ...car.car,
+                venue: car.venue
+              };
+            }),
+            reasons: [],
+            status: 200
+          });
+        } else {
+          res.status(404).json({
+            message: 'No se ha encontrado el inventario solicitado.',
+            status: 404
+          });
+        }
       }
     } catch (e) {
       /* istanbul ignore next */
