@@ -1,5 +1,8 @@
 import * as React from 'react';
-import {CSSProperties, RefObject} from 'react';
+import {
+  CSSProperties,
+  RefObject
+} from 'react';
 
 interface IPropsType {
   url: string;
@@ -75,7 +78,15 @@ class ImageLazyLoad extends React.Component<IPropsType, IStateType> {
         }
         {
           loading ?
-            <div style={{height, display: 'table-cell', verticalAlign: 'middle'}} className={'text-center'} ref={this.element}>
+            <div
+              style={{
+                height,
+                display: 'table-cell',
+                verticalAlign: 'middle'
+              }}
+              className={'text-center'}
+              ref={this.element}
+            >
               {small ? <i className={'fa fa-circle-o-notch fa-spin'}/> : <i className={'fa fa-circle-o-notch fa-spin fa-2x'}/>}
             </div>
           : null
@@ -95,7 +106,6 @@ class ImageLazyLoad extends React.Component<IPropsType, IStateType> {
   }
 
   private isInViewport() {
-    // console.log('isInViewport');
     if (!this.state.inViewPort && this.element.current) {
       const bounding = this.element.current.getBoundingClientRect();
       // start load distance
