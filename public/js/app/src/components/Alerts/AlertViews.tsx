@@ -104,10 +104,10 @@ class AlertViews extends React.Component<IPropsType, IStateType> {
               <table className="table table-striped">
                 <thead>
                   <tr>
-                    <th style={{width: '20%'}} className="middle">Nombre</th>
-                    <th style={{width: '20%'}} className="middle text-center">Menor igual que</th>
-                    <th style={{width: '20%'}} className="middle text-center">Mayor igual que</th>
-                    <th style={{width: '40%'}} className="middle">Usuarios</th>
+                    <th className="middle">Nombre</th>
+                    <th className="middle text-center">Menor igual que</th>
+                    <th className="middle text-center">Mayor igual que</th>
+                    <th style={{width: '40%'}} className="middle hidden-xs">Usuarios</th>
                     {/*<th className="width-10" />*/}
                     <th className="middle width-10" />
                   </tr>
@@ -121,7 +121,7 @@ class AlertViews extends React.Component<IPropsType, IStateType> {
                           <td className="middle">{alert.name}</td>
                           <td className="middle text-center">{alert.lte !== 0 ? alert.lte : '-'}</td>
                           <td className="middle text-center">{alert.gte !== 0 ? alert.gte : '-'}</td>
-                          <td>
+                          <td className="hidden-xs">
                             {
                               alert.users.map((user) => {
                                 return (
