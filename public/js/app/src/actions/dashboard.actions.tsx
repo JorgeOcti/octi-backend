@@ -134,9 +134,9 @@ export function getCarsAction(nextPage?: number, loading: boolean = true) {
     const api: ApiService = new ApiService();
     const state = getState();
     dispatch(cancelRequestAction(api.getSource()));
-    if (loading) {
-      dispatch(isLoadingAction(true));
-    }
+    // if (loading) {
+    //   dispatch(isLoadingAction(true));
+    // }
     const page = nextPage ? nextPage : state.dashboard.pagination.page;
     if (nextPage) {
       dispatch(changePageAction(nextPage));
@@ -428,7 +428,7 @@ interface ILoadParticipantsPerDate {
   };
 }
 
-export function loadParticipantsPerDateAction(participantsPerDate: any, carsPerDate: any, totalCars: number, carsByVenue: any, participantPerRange:any): ILoadParticipantsPerDate {
+export function loadParticipantsPerDateAction(participantsPerDate: any, carsPerDate: any, totalCars: number, carsByVenue: any, participantPerRange: any): ILoadParticipantsPerDate {
   return {
     type: '/DASHBOARD/LOAD_PARTICIPANTS_PER_DATE',
     payload: {
@@ -445,7 +445,7 @@ export function getParticipantsPerDateAction() {
   return (dispatch: Dispatch<DashboardReduxAction>) => {
     const api: ApiService = new ApiService();
     dispatch(cancelRequestAction(api.getSource()));
-    dispatch(isLoadingAction(true));
+    // dispatch(isLoadingAction(true));
     api.getParticipantsPerDate()
       .then((response: AxiosResponse) => {
         dispatch(loadParticipantsPerDateAction(response.data.participants, response.data.cars, response.data.totalCars, response.data.carsByVenue, response.data.participantPerRange));

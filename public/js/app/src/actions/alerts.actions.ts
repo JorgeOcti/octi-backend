@@ -144,7 +144,7 @@ export function loadAlertsAction(alerts: IAlert[], users: IUser[]): ILoadAlerts 
 export function getAlertsAction() {
   return (dispatch: Dispatch<AlertReduxAction>) => {
     const api: ApiService = new ApiService();
-    dispatch(isLoadingAction(true));
+    // dispatch(isLoadingAction(true));
     dispatch(cancelRequestAction(api.getSource()));
     api.getAlerts()
       .then((response: AxiosResponse) => {
