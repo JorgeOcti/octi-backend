@@ -140,9 +140,9 @@ export function loadInventoriesAction(inventories: any[]): ILoadInventories {
 export function getInventoriesAction(loading: boolean) {
   return (dispatch: Dispatch<InventoryReduxAction>) => {
     const api: ApiService = new ApiService();
-    if (loading) {
-      dispatch(isLoadingAction(true));
-    }
+    // if (loading) {
+    //   dispatch(isLoadingAction(true));
+    // }
     dispatch(cancelRequestAction(api.getSource()));
     api.getInventories()
       .then((response: AxiosResponse) => {
@@ -235,9 +235,9 @@ export function loadInventoryAction(summary: IInventorySummary, detailByVenue: I
 
 export function getInventoryDetailAction(id: string, update: boolean) {
   return (dispatch: Dispatch<InventoryReduxAction>) => {
-    // if (!update) {
-    //   dispatch(loadingInventoryDetaillAction(true));
-    // }
+    if (!update) {
+      dispatch(loadingInventoryDetaillAction(true));
+    }
     const api: ApiService = new ApiService();
     api.getSource();
     api.getInventory(id)
