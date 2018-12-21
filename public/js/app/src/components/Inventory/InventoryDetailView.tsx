@@ -261,9 +261,9 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
       found: 'Encontrado',
       leftover: 'Sobrante'
     };
-    const selectOptionsReported: any = {
-      reported: 'Reportado'
-    };
+    // const selectOptionsReported: any = {
+    //   reported: 'Reportado'
+    // };
     const classStatus: any = {
       pending: 'bg-red',
       found: 'bg-green',
@@ -445,7 +445,7 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
 
     const customTotal = (from: any, to: any, size: any) => (
       <span className="react-bootstrap-table-pagination-total text-ellipsis" style={{fontSize: '75%'}}>
-        &nbsp;&nbsp;Mostrando registros del {from} al {to} de un total de {size} registros.
+        &nbsp;&nbsp;Mostrando registros del {from} al {to} de {size} registros.
       </span>
     );
     const paginationOption: any = {
