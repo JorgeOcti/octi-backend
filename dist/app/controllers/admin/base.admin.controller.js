@@ -12,16 +12,19 @@ class BaseAdminController {
     async apiList(req, res) {
         const { page, pageSize } = req.query;
         // paginate options
-        this.paginateOptions.page = parseInt(page ? page : 1, 10);
-        this.paginateOptions.limit = parseInt(pageSize ? pageSize : 20, 10);
+        this.paginateOptions = {
+            ...this.paginateOptions,
+            page: parseInt(page ? page : 1, 10),
+            limit: parseInt(pageSize ? pageSize : 20, 10)
+        };
         try {
             const data = await this.getDataPaginated(this.filter);
             // validate exist page
             /* istanbul ignore if  */
             if (this.paginateOptions.page && data.pages && data.pages < this.paginateOptions.page) {
-                res.status(400).json({
-                    error: 'La página solicitada no existe.',
-                    status: 200
+                res.status(404).json({
+                    message: 'La página solicitada no existe.',
+                    status: 404
                 });
             }
             else {

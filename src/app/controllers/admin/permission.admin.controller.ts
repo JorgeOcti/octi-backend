@@ -7,6 +7,7 @@ class AdminPermissionController extends BaseAdminController<PermissionSchema> {
 
   constructor() {
     super(Permission);
+    this.apiList = this.apiList.bind(this);
   }
 
   public async apiList(req: IRequest, res: Response): Promise<any> {
@@ -17,9 +18,7 @@ class AdminPermissionController extends BaseAdminController<PermissionSchema> {
       },
       sort: {
         name: 1
-      },
-      page: 1,
-      limit: 20
+      }
     };
     this.filter = {};
     super.apiList(req, res);

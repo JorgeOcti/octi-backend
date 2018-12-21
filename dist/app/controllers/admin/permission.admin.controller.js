@@ -5,6 +5,7 @@ const base_admin_controller_1 = require("./base.admin.controller");
 class AdminPermissionController extends base_admin_controller_1.default {
     constructor() {
         super(permision_model_1.default);
+        this.apiList = this.apiList.bind(this);
     }
     async apiList(req, res) {
         this.paginateOptions = {
@@ -14,9 +15,7 @@ class AdminPermissionController extends base_admin_controller_1.default {
             },
             sort: {
                 name: 1
-            },
-            page: 1,
-            limit: 20
+            }
         };
         this.filter = {};
         super.apiList(req, res);
