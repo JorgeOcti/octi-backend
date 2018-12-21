@@ -445,7 +445,7 @@ export function getParticipantsPerDateAction() {
   return (dispatch: Dispatch<DashboardReduxAction>) => {
     const api: ApiService = new ApiService();
     dispatch(cancelRequestAction(api.getSource()));
-    // dispatch(isLoadingAction(true));
+    dispatch(isLoadingAction(true));
     api.getParticipantsPerDate()
       .then((response: AxiosResponse) => {
         dispatch(loadParticipantsPerDateAction(response.data.participants, response.data.cars, response.data.totalCars, response.data.carsByVenue, response.data.participantPerRange));
