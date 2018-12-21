@@ -132,8 +132,9 @@ export function getVenuesAction(nextPage: number) {
   return (dispatch: Dispatch<VenueReduxAction>, getState: () => {venues: IVenuesState}) => {
     const api: ApiService = new ApiService();
     const state = getState();
-
-    dispatch(isLoadingAction(true));
+    if (nextPage && nextPage !== state.venues.pagination.page) {
+      dispatch(isLoadingAction(true));
+    }
     dispatch(cancelRequestAction(api.getSource()));
     const page = nextPage ? nextPage : state.venues.pagination.page;
     if (nextPage) {

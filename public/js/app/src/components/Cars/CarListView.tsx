@@ -48,9 +48,10 @@ class CarListView extends React.Component<IPropsType, IStateType> {
   }
 
   public componentWillMount() {
+    const {pagination} = this.props.cars;
     // set the title of the page
     document.title = 'OSA Andes | Listado de autos';
-    this.props.getCarsAction(1);
+    this.props.getCarsAction(pagination.page);
   }
 
   public componentDidCatch(error: Error, errorInfo: ErrorInfo) {

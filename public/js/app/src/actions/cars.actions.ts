@@ -85,8 +85,9 @@ export function getCarsAction(nextPage: number, search?: string) {
   return (dispatch: Dispatch<CarReduxAction>, getState: () => {cars: ICarsState}) => {
     const api: ApiService = new ApiService();
     const state = getState();
-
-    dispatch(isLoadingAction(true));
+    if (nextPage && nextPage !== state.cars.pagination.page) {
+      dispatch(isLoadingAction(true));
+    }
     dispatch(cancelRequestAction(api.getSource()));
     const page = nextPage ? nextPage : state.cars.pagination.page;
     if (nextPage) {

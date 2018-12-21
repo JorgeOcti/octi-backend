@@ -68,9 +68,10 @@ class UserListView extends React.Component<IPropsType, IStateType> {
   }
 
   public componentWillMount(): void {
+    const {pagination} = this.props.users;
     // set the title of the page
     document.title = 'OSA Andes | Listado de usuarios';
-    this.props.getUsersAction();
+    this.props.getUsersAction(pagination.page);
   }
 
   public componentDidCatch(error: Error, errorInfo: ErrorInfo): void {

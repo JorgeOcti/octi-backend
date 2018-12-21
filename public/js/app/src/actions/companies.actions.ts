@@ -111,13 +111,15 @@ export function loadCompaniesAction(companies: any, count: number, pages: number
 }
 
 export function getCompaniesAction(nextPage: number) {
-  return (dispatch: Dispatch<CompaniesReduxAction>, getState: () => {venues: ICompaniesState}) => {
+  return (dispatch: Dispatch<CompaniesReduxAction>, getState: () => {companies: ICompaniesState}) => {
     const api: ApiService = new ApiService();
     const state = getState();
 
-    dispatch(isLoadingAction(true));
+    if (nextPage && nextPage !== state.companies.pagination.page) {
+      dispatch(isLoadingAction(true));
+    }
     dispatch(cancelRequestAction(api.getSource()));
-    const page = nextPage ? nextPage : state.venues.pagination.page;
+    const page = nextPage ? nextPage : state.companies.pagination.page;
     if (nextPage) {
       dispatch(changePageAction(nextPage));
     }

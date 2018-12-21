@@ -268,6 +268,9 @@ export function getUsersAction(nextPage?: number) {
     const api: ApiService = new ApiService();
     const state = getState();
 
+    if (nextPage && nextPage !== state.users.pagination.page) {
+      dispatch(isLoadingAction(true));
+    }
     // get venues and permissions
     if (!state.users.venues.length || !state.users.permissions.length || !state.users.forms.length) {
       Axios.all([
@@ -287,7 +290,6 @@ export function getUsersAction(nextPage?: number) {
         });
     }
 
-    dispatch(isLoadingAction(true));
     dispatch(cancelRequestAction(api.getSource()));
     const page = nextPage ? nextPage : state.users.pagination.page;
     if (nextPage) {
