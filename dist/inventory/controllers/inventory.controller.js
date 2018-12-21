@@ -308,13 +308,15 @@ class InventoryController {
                     }]).lean();
                 if (inventory) {
                     res.status(200).json({
-                        cars: inventory.cars.map((car) => {
-                            return {
-                                ...car.car,
-                                venue: car.venue
-                            };
-                        }),
-                        reasons: [],
+                        data: {
+                            cars: inventory.cars.map((car) => {
+                                return {
+                                    ...car.car,
+                                    venue: car.venue
+                                };
+                            }),
+                            reasons: []
+                        },
                         status: 200
                     });
                 }
