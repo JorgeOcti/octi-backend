@@ -105,6 +105,9 @@ class InventoryListView extends React.Component<IPropsType, IStateType> {
               <div className="row">
                 <div className="col-md-12">
                   {
+                    !inventories.length && !loading ? 'Aún no se han creado inventarios.' : null
+                  }
+                  {
                     inventories.map((inventory: any) => {
                       return (
                         <div className="inventory" key={inventory._id} id={`inventory-${inventory._id}`}>
