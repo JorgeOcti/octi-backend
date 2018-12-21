@@ -94,6 +94,8 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
     this.xlsExport = this.xlsExport.bind(this);
     this.carComments = this.carComments.bind(this);
     this.vinFormatter = this.vinFormatter.bind(this);
+    this.brandFormatter = this.brandFormatter.bind(this);
+    this.commentFormatter = this.commentFormatter.bind(this);
     this.imagesFormatter = this.imagesFormatter.bind(this);
   }
 
@@ -210,7 +212,24 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
     }
   }
 
+  public brandFormatter(cell: any, row: any) {
+    return (
+      <React.Fragment>
+        {cell}<br/>{row.denomination}
+      </React.Fragment>
+    );
+  }
+
   public vinFormatter(cell: any, row: any) {
+    return (
+      <React.Fragment>
+        {row.patent && row.patent.length ? <React.Fragment>{row.patent}<br /></React.Fragment> : null}
+        {cell}
+      </React.Fragment>
+    );
+  }
+
+  public commentFormatter(cell: any, row: any) {
     if (row.comments.length) {
       return (
         <React.Fragment>
@@ -258,42 +277,46 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
 
     const defaultColumns = [{
       dataField: 'vin',
-      text: 'VIN',
+      text: 'VIN / Patente',
+      formatter: this.vinFormatter,
       filter: textFilter({
         className: 'input-sm',
         placeholder: ' Buscar'
       }),
-      classes: 'text-ellipsis',
+      filterValue: (cell: any, row: any) => `${cell}${row.patent}`,
+      classes: 'middle text-ellipsis',
       headerClasses: 'pointer',
       sort: true
     }, {
       dataField: 'brand',
-      text: 'Marca',
+      text: 'Marca / Denominación',
+      formatter: this.brandFormatter,
       filter: textFilter({
         className: 'input-sm',
         placeholder: ' Buscar'
       }),
-      classes: 'hidden-xs',
+      filterValue: (cell: any, row: any) => `${cell}${row.denomination}`,
+      classes: 'middle hidden-xs',
       headerClasses: 'hidden-xs pointer',
       sort: true
-    }, {
+    }, /* {
       dataField: 'denomination',
       text: 'Denominación',
       filter: textFilter({
         className: 'input-sm',
         placeholder: ' Buscar'
       }),
-      classes: 'hidden-xs hidden-sm',
+      classes: 'middle hidden-xs hidden-sm',
       headerClasses: 'hidden-xs hidden-sm pointer',
       sort: true
-    }, {
+    },*/ {
       dataField: 'venue',
       text: 'Sucursal',
       filter: textFilter({
         className: 'input-sm',
         placeholder: ' Buscar'
       }),
-      classes: 'hidden-xs hidden-sm',
+      classes: 'middle hidden-xs hidden-sm',
       headerClasses: 'hidden-xs hidden-sm pointer',
       sort: true
     }, {
@@ -303,7 +326,7 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
         className: 'input-sm',
         placeholder: ' Buscar'
       }),
-      classes: 'hidden-xs hidden-sm hidden-md',
+      classes: 'middle hidden-xs hidden-sm hidden-md',
       headerClasses: 'hidden-xs hidden-sm hidden-md pointer',
       sort: true
     },
@@ -314,19 +337,31 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
           className: 'input-sm',
           placeholder: ' Buscar'
         }),
-        classes: 'hidden-xs hidden-sm hidden-md',
+        classes: 'middle hidden-xs hidden-sm hidden-md',
         headerClasses: 'hidden-xs hidden-sm hidden-md pointer',
         sort: true
       }, {
         dataField: 'images',
         text: 'Imágenes',
-        classes: 'hidden-xs',
+        classes: 'middle hidden-xs',
         headerClasses: 'hidden-xs',
         formatter: this.imagesFormatter,
         headerStyle: {
           verticalAlign: 'top'
         }
-      }];
+      }, {
+      dataField: 'countComments',
+      text: 'Comentarios',
+      classes: 'middle hidden-xs text-ellipsis',
+      formatter: this.commentFormatter,
+      headerClasses: 'hidden-xs',
+      headerStyle: {
+        verticalAlign: 'top'
+      },
+      style: {
+        maxWidth: '150px'
+      }
+    }];
     const columns = [...defaultColumns, {
       dataField: 'status',
       text: 'Status',
@@ -349,36 +384,24 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
       }
     }];
     const columnsReported = [...defaultColumns, {
-      dataField: 'countComments',
-      text: 'Comentarios',
-      classes: 'hidden-xs text-ellipsis',
-      formatter: this.vinFormatter,
-      headerClasses: 'hidden-xs',
-      headerStyle: {
-        verticalAlign: 'top'
-      },
-      style: {
-        maxWidth: '150px'
-      }
-    }, {
       dataField: 'status',
       text: 'Status',
-      sort: true,
-      formatter: (cell: string) => (selectOptionsReported[cell]),
-      filter: selectFilter({
-        options: selectOptionsReported,
-        // withoutEmptyOption: true,
-        className: 'input-sm',
-        placeholder: 'Seleccione tipo',
-        id: 'custom-filter'
-      }),
+      // formatter: (cell: string) => (selectOptionsReported[cell]),
+      // filter: selectFilter({
+      //   options: selectOptionsReported,
+      //   // withoutEmptyOption: true,
+      //   className: 'input-sm',
+      //   placeholder: 'Seleccione tipo',
+      //   id: 'custom-filter'
+      // }),
       headerClasses: 'pointer',
       headerStyle: {
+        verticalAlign: 'top',
         maxWidth: '100px',
         minWidth: '100px'
       },
       classes: (cell: any) => {
-        return `text-center ${classStatus.hasOwnProperty(cell) ? classStatus[cell] : ''}`;
+        return `middle-center text-center ${classStatus.hasOwnProperty(cell) ? classStatus[cell] : ''}`;
       }
     }];
 
@@ -397,6 +420,7 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
             comments: car.comments && car.comments.length ? car.comments : [],
             countComments: car.comments && car.comments.length ? car.comments.length : 0,
             venueFound: car.venueFound ? car.venueFound.name : '-',
+            patent: car.car.patent ? car.car.patent : '',
             inventoriedBy: car.inventoriedBy ? `${car.inventoriedBy.firstName} ${car.inventoriedBy.lastName}` : '-',
             status: car.status
           });
@@ -411,6 +435,7 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
             comments: car.comments && car.comments.length ? car.comments : [],
             countComments: car.comments && car.comments.length ? car.comments.length : 0,
             venueFound: car.venueFound ? car.venueFound.name : '-',
+            patent: car.car.patent ? car.car.patent : '',
             inventoriedBy: car.inventoriedBy ? `${car.inventoriedBy.firstName} ${car.inventoriedBy.lastName}` : '-',
             status: car.status
           });

@@ -1058,7 +1058,7 @@ class InventoryController {
                     cars: true
                 }).populate([{
                         path: 'cars.car',
-                        select: ['vin', 'vin2', 'color', 'denomination', 'brand', 'venue']
+                        select: ['vin', 'vin2', 'color', 'denomination', 'brand', 'venue', 'patent']
                     }, {
                         path: 'cars.venue',
                         select: ['name']
