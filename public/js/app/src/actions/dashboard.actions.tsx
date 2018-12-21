@@ -134,9 +134,9 @@ export function getCarsAction(nextPage?: number, loading: boolean = true) {
     const api: ApiService = new ApiService();
     const state = getState();
     dispatch(cancelRequestAction(api.getSource()));
-    // if (loading) {
-    //   dispatch(isLoadingAction(true));
-    // }
+    if (loading && nextPage && nextPage !== state.dashboard.pagination.page) {
+      dispatch(isLoadingAction(true));
+    }
     const page = nextPage ? nextPage : state.dashboard.pagination.page;
     if (nextPage) {
       dispatch(changePageAction(nextPage));
