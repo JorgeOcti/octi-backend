@@ -4,6 +4,13 @@ import {IInventoryCar} from '../../../../../src/interfaces/inventory.interface';
 import {IInventoryComment} from '../../../../../src/interfaces/inventoryComment.interface';
 import ApiService from '../utils/axios';
 
+export interface IInventorySummaryResult {
+  pending: number;
+  found: number;
+  leftover: number;
+  reported: number;
+}
+
 export interface IInventorySummary {
   _id: string;
   name: string;
@@ -12,12 +19,7 @@ export interface IInventorySummary {
     firstName: string;
     fullName: string;
   };
-  results?: {
-    pending: number;
-    found: number;
-    leftover: number;
-    reported: number;
-  };
+  results?: IInventorySummaryResult;
   status: string;
   createdAt: Date | null;
   finalizedAt: Date | null;

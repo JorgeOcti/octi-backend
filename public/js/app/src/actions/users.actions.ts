@@ -272,23 +272,21 @@ export function getUsersAction(nextPage?: number) {
       dispatch(isLoadingAction(true));
     }
     // get venues and permissions
-    if (!state.users.venues.length || !state.users.permissions.length || !state.users.forms.length) {
-      Axios.all([
-        api.getCompanies(1, 200),
-        api.getVenues(1, 200),
-        api.getPermissions(1, 200),
-        api.getForms(1, 200)
-      ])
-        .then(Axios.spread((companies, venues, permissions, forms) => {
-          dispatch(loadCompaniesUserAction(companies.data.results));
-          dispatch(loadVenuesUserAction(venues.data.results));
-          dispatch(loadPermissionsUserAction(permissions.data.results));
-          dispatch(loadFormsUserAction(forms.data.results));
-        }))
-        .catch((err: AxiosError): void => {
-          api.errorHandler(err);
-        });
-    }
+    Axios.all([
+      api.getCompanies(1, 200),
+      api.getVenues(1, 200),
+      api.getPermissions(1, 200),
+      api.getForms(1, 200)
+    ])
+      .then(Axios.spread((companies, venues, permissions, forms) => {
+        dispatch(loadCompaniesUserAction(companies.data.results));
+        dispatch(loadVenuesUserAction(venues.data.results));
+        dispatch(loadPermissionsUserAction(permissions.data.results));
+        dispatch(loadFormsUserAction(forms.data.results));
+      }))
+      .catch((err: AxiosError): void => {
+        api.errorHandler(err);
+      });
 
     dispatch(cancelRequestAction(api.getSource()));
     const page = nextPage ? nextPage : state.users.pagination.page;

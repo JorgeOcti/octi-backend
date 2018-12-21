@@ -13,7 +13,9 @@ const initialState: IInventoryState = {
     createdAt: null,
     finalizedAt: null
   },
-  detail: null,
+  detail: {
+    cars: []
+  },
   detailByVenue: [],
   detailByBrand: [],
   pagination: {

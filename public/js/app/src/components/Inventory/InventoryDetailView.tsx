@@ -13,14 +13,18 @@ import {RouteComponentProps} from 'react-router';
 import {Dispatch} from 'redux';
 import * as io from 'socket.io-client';
 import * as XLSX from 'xlsx';
-import {IInventoryCar} from '../../../../../../src/interfaces/inventory.interface';
+import {
+  IInventoryCar
+} from '../../../../../../src/interfaces/inventory.interface';
 import {
   addCommentAction,
   getInventoryDetailAction,
   IDetailByBrand,
   IDetailByVenue,
   IInventoryState,
-  InventoryReduxAction, sendCommentAction,
+  IInventorySummaryResult,
+  InventoryReduxAction,
+  sendCommentAction,
   updateInventoryCarAction
 } from '../../actions/inventory.actions';
 import {loadDataAction, ModalReduxAction} from '../../actions/modal.actions';
@@ -69,7 +73,7 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
       align: 'left',
       verticalAlign: 'middle',
       rotate: 90,
-      formatter: '{c}  {name|{a}}',
+      formatter: '{c} {name|{a}}',
       fontSize: 16,
       rich: {
         name: {
@@ -85,6 +89,41 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
     leftover: 'Sobrante',
     reported: 'Reportado'
   };
+
+  private classStatus: any = {
+    pending: 'bg-red',
+    found: 'bg-green',
+    leftover: 'bg-yellow',
+    reported: 'bg-gray'
+  };
+
+  private selectOptions: any = {
+    pending: 'Pendiente',
+    found: 'Encontrado',
+    leftover: 'Sobrante'
+  };
+
+  private paginationOption: any = {
+    // paginationSize: 4,
+    showTotal: true,
+    paginationTotalRenderer: this.customTotal,
+    sizePerPageList: [{
+      text: '15', value: 15
+    }, {
+      text: '20', value: 20
+    }, {
+      text: '30', value: 30
+    }, {
+      text: '50', value: 50
+    }, {
+      text: '100', value: 100
+    }]
+  };
+
+  private defaultSorted = [{
+    dataField: 'status',
+    order: 'asc'
+  }];
 
   private socket: SocketIOClient.Socket;
 
@@ -159,16 +198,11 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
     });
   }
 
-  // public componentDidUpdate(prevProps: IPropsType, prevState: IStateType): void {
   public componentDidMount(): void {
     const $venuesDetail = document.getElementById('chart-venues-detail') as HTMLDivElement;
     const $brandDetail = document.getElementById('chart-brand-detail') as HTMLDivElement;
     this.venuesDetailChart = echarts.init($venuesDetail);
     this.brandDetailChart = echarts.init($brandDetail);
-    // ($('#custom-filter') as any).chosen().change((e: React.ChangeEvent<HTMLSelectElement>) => {
-    //   console.log('e.target.value', e.target.value);
-    //   // this.addForm(e.target.value);
-    // });;
   }
 
   public componentDidUpdate() {
@@ -178,7 +212,6 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
     $('.react-bootstrap-table-pagination div:last-child').removeClass('text-right').addClass('text-right');
     $('#pageDropDown').removeClass('btn-sm').addClass('btn-sm');
     $('.pagination').removeClass('pagination-sm').addClass('pagination-sm').css({margin: 0});
-    // $('#custom-filter').trigger('chosen:updated');
     const {setCharts} = this.state;
     if (!loadingDetail && !setCharts) {
       this.updateVenueChart(detailByVenue);
@@ -249,31 +282,24 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
   }
 
   public render(): React.ReactElement<IPropsType> {
-    const {loadingDetail, summary, detail} = this.props.inventories;
-    const totalCars = summary.results ? summary.results.found + summary.results.pending + summary.results.leftover + summary.results.reported : 0;
-    const percentagePending = summary.results ? (100 / totalCars) * summary.results.pending : 0;
-    const percentageFound = summary.results ? (100 / totalCars) * summary.results.found : 0;
-    const percentageLeftover = summary.results ? (100 / totalCars) * summary.results.leftover : 0;
-    const percentageReported = summary.results ? (100 / totalCars) * summary.results.reported : 0;
+    const {
+      loadingDetail,
+      summary,
+      detail
+    } = this.props.inventories;
+    const {
+      percentagePending,
+      percentageFound,
+      percentageLeftover,
+      percentageReported
+    } = this.calculateDetails(summary.results);
 
-    const selectOptions: any = {
-      pending: 'Pendiente',
-      found: 'Encontrado',
-      leftover: 'Sobrante'
-    };
+    // order cars in products and reported
+    const {products, reported} = this.processCars(detail.cars);
+
     // const selectOptionsReported: any = {
     //   reported: 'Reportado'
     // };
-    const classStatus: any = {
-      pending: 'bg-red',
-      found: 'bg-green',
-      leftover: 'bg-yellow',
-      reported: 'bg-gray'
-    };
-    const defaultSorted = [{
-      dataField: 'status',
-      order: 'asc'
-    }];
 
     const defaultColumns = [{
       dataField: 'vin',
@@ -299,17 +325,7 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
       classes: 'middle hidden-xs',
       headerClasses: 'hidden-xs pointer',
       sort: true
-    }, /* {
-      dataField: 'denomination',
-      text: 'Denominación',
-      filter: textFilter({
-        className: 'input-sm',
-        placeholder: ' Buscar'
-      }),
-      classes: 'middle hidden-xs hidden-sm',
-      headerClasses: 'hidden-xs hidden-sm pointer',
-      sort: true
-    },*/ {
+    }, {
       dataField: 'venue',
       text: 'Sucursal',
       filter: textFilter({
@@ -366,9 +382,9 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
       dataField: 'status',
       text: 'Status',
       sort: true,
-      formatter: (cell: string) => (selectOptions[cell]),
+      formatter: (cell: string) => (this.selectOptions[cell]),
       filter: selectFilter({
-        options: selectOptions,
+        options: this.selectOptions,
         // withoutEmptyOption: true,
         className: 'input-sm',
         placeholder: 'Seleccione tipo',
@@ -380,20 +396,12 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
         minWidth: '100px'
       },
       classes: (cell: any) => {
-        return `middle-center ${classStatus.hasOwnProperty(cell) ? classStatus[cell] : ''}`;
+        return `middle-center ${this.classStatus.hasOwnProperty(cell) ? this.classStatus[cell] : ''}`;
       }
     }];
     const columnsReported = [...defaultColumns, {
       dataField: 'status',
       text: 'Status',
-      // formatter: (cell: string) => (selectOptionsReported[cell]),
-      // filter: selectFilter({
-      //   options: selectOptionsReported,
-      //   // withoutEmptyOption: true,
-      //   className: 'input-sm',
-      //   placeholder: 'Seleccione tipo',
-      //   id: 'custom-filter'
-      // }),
       headerClasses: 'pointer',
       headerStyle: {
         verticalAlign: 'top',
@@ -401,71 +409,9 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
         minWidth: '100px'
       },
       classes: (cell: any) => {
-        return `middle-center text-center ${classStatus.hasOwnProperty(cell) ? classStatus[cell] : ''}`;
+        return `middle-center text-center ${this.classStatus.hasOwnProperty(cell) ? this.classStatus[cell] : ''}`;
       }
     }];
-
-    const products: any[] = [];
-    const reported: any[] = [];
-    if (detail && detail.cars && detail.cars.length) {
-      for (const car of detail.cars) {
-        if (car.status === 'reported') {
-          reported.push({
-            _id: car._id,
-            vin: car.car.vin,
-            brand: car.car.brand,
-            denomination: car.car.denomination,
-            venue: car.venue ? car.venue.name : '-',
-            images: car.images && car.images.length ? car.images : [],
-            comments: car.comments && car.comments.length ? car.comments : [],
-            countComments: car.comments && car.comments.length ? car.comments.length : 0,
-            venueFound: car.venueFound ? car.venueFound.name : '-',
-            patent: car.car.patent ? car.car.patent : '',
-            inventoriedBy: car.inventoriedBy ? `${car.inventoriedBy.firstName} ${car.inventoriedBy.lastName}` : '-',
-            status: car.status
-          });
-        } else {
-          products.push({
-            _id: car._id,
-            vin: car.car.vin,
-            brand: car.car.brand,
-            denomination: car.car.denomination,
-            venue: car.venue ? car.venue.name : '-',
-            images: car.images && car.images.length ? car.images : [],
-            comments: car.comments && car.comments.length ? car.comments : [],
-            countComments: car.comments && car.comments.length ? car.comments.length : 0,
-            venueFound: car.venueFound ? car.venueFound.name : '-',
-            patent: car.car.patent ? car.car.patent : '',
-            inventoriedBy: car.inventoriedBy ? `${car.inventoriedBy.firstName} ${car.inventoriedBy.lastName}` : '-',
-            status: car.status
-          });
-        }
-      }
-    }
-
-    const customTotal = (from: any, to: any, size: any) => (
-      <span className="react-bootstrap-table-pagination-total text-ellipsis" style={{fontSize: '75%'}}>
-        &nbsp;&nbsp;Mostrando registros del {from} al {to} de {size} registros.
-      </span>
-    );
-    const paginationOption: any = {
-      // paginationSize: 4,
-      showTotal: true,
-      paginationTotalRenderer: customTotal,
-      sizePerPageList: [{
-        text: '15', value: 15
-      }, {
-        text: '20', value: 20
-      }, {
-        text: '30', value: 30
-      }, {
-        text: '50', value: 50
-      }, {
-        text: '100', value: 100
-      }/*, {
-        text: 'All', value: products.length
-      }*/]
-    };
 
     return (
       <AppContainer title={summary.name} cMenu="2" cSubMenu="2.1" cAction="Detalle">
@@ -593,8 +539,8 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
                         data={products}
                         columns={columns}
                         filter={filterFactory()}
-                        pagination={paginationFactory(paginationOption)}
-                        defaultSorted={defaultSorted}
+                        pagination={paginationFactory(this.paginationOption)}
+                        defaultSorted={this.defaultSorted}
                       />
                     </div>
                   </div>
@@ -625,8 +571,8 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
                         data={reported}
                         columns={columnsReported}
                         filter={filterFactory()}
-                        pagination={paginationFactory(paginationOption)}
-                        defaultSorted={defaultSorted}
+                        pagination={paginationFactory(this.paginationOption)}
+                        defaultSorted={this.defaultSorted}
                         noDataIndication={'No hay vehiculos reportados aún.'}
                       />
                     </div>
@@ -645,6 +591,59 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
         </section>
       </AppContainer>
     );
+  }
+
+  private calculateDetails(results: IInventorySummaryResult | undefined) {
+    const totalCars = results ? results.found + results.pending + results.leftover + results.reported : 0;
+    return {
+      totalCars,
+      percentagePending: results ? (100 / totalCars) * results.pending : 0,
+      percentageFound: results ? (100 / totalCars) * results.found : 0,
+      percentageLeftover: results ? (100 / totalCars) * results.leftover : 0,
+      percentageReported: results ? (100 / totalCars) * results.reported : 0
+    };
+  }
+
+  private processCars(cars: IInventoryCar[]) {
+    const products: any[] = [];
+    const reported: any[] = [];
+    for (const car of cars) {
+      if (car.status === 'reported') {
+        reported.push({
+          _id: (car as any)._id,
+          vin: car.car.vin,
+          brand: car.car.brand,
+          denomination: car.car.denomination,
+          venue: car.venue ? car.venue.name : '-',
+          images: car.images && car.images.length ? car.images : [],
+          comments: car.comments && car.comments.length ? car.comments : [],
+          countComments: car.comments && car.comments.length ? car.comments.length : 0,
+          venueFound: car.venueFound ? car.venueFound.name : '-',
+          patent: car.car.patent ? car.car.patent : '',
+          inventoriedBy: car.inventoriedBy ? `${car.inventoriedBy.firstName} ${car.inventoriedBy.lastName}` : '-',
+          status: car.status
+        });
+      } else {
+        products.push({
+          _id: (car as any)._id,
+          vin: car.car.vin,
+          brand: car.car.brand,
+          denomination: car.car.denomination,
+          venue: car.venue ? car.venue.name : '-',
+          images: car.images && car.images.length ? car.images : [],
+          comments: car.comments && car.comments.length ? car.comments : [],
+          countComments: car.comments && car.comments.length ? car.comments.length : 0,
+          venueFound: car.venueFound ? car.venueFound.name : '-',
+          patent: car.car.patent ? car.car.patent : '',
+          inventoriedBy: car.inventoriedBy ? `${car.inventoriedBy.firstName} ${car.inventoriedBy.lastName}` : '-',
+          status: car.status
+        });
+      }
+    }
+    return {
+      products,
+      reported
+    };
   }
 
   private carComments(inventoryCar: IInventoryCar) {
@@ -672,12 +671,14 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
         if (status.includes(car.status)) {
           data.push({
             VIN: car.car.vin,
-            Marca: car.car.brand ? car.car.brand : '-',
-            ['Denominación']: car.car.denomination ? car.car.denomination : '-',
-            Color: car.car.color ? car.car.color : '-',
-            Sucursal: car.venue ? car.venue.name : '-',
-            ['Sucursal encontrado']: car.venueFound ? car.venueFound.name : '-',
+            Patente: car.car.patent && car.car.patent.length ? car.car.patent : '-',
+            Marca: car.car.brand && car.car.brand.length ? car.car.brand : '-',
+            ['Denominación']: car.car.denomination && car.car.denomination.length ? car.car.denomination : '-',
+            Color: car.car.color && car.car.color.length ? car.car.color : '-',
+            Sucursal: car.venue && car.venue.hasOwnProperty('name') ? car.venue.name : '-',
+            ['Sucursal encontrado']: car.venueFound && car.venueFound.hasOwnProperty('name') ? car.venueFound.name : '-',
             ['Encontrado por']: car.inventoriedBy ? `${car.inventoriedBy.firstName} ${car.inventoriedBy.lastName}` : '-',
+            ['Comentario']: car.comments && car.comments.length ? `${car.comments[car.comments.length - 1].comment}` : '-',
             Status: this.statusText.hasOwnProperty(car.status) ? this.statusText[car.status] : '-'
           });
         }
@@ -939,6 +940,15 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
       }, 400);
     }
   }
+
+  private customTotal(from: any, to: any, size: any) {
+    return(
+      <span className="react-bootstrap-table-pagination-total text-ellipsis" style={{fontSize: '75%'}}>
+        &nbsp;&nbsp;Mostrando registros del {from} al {to} de {size} registros.
+      </span>
+    );
+  }
+
 }
 
 const mapStateToProps = (state: { inventories: IInventoryState }) => {
