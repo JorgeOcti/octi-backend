@@ -195,7 +195,8 @@ class DashboardGeneralView extends React.Component<IPropsType, IStateType> {
         totalsCars.push(day.total);
       });
     }
-    const option: echarts.EChartOption = {
+    // const option: echarts.EChartOption = {
+    const option: any = {
       // title: {
       //   text: 'Revisiones y cargas realizadas por día',
       //   x: 'center',
@@ -292,7 +293,8 @@ class DashboardGeneralView extends React.Component<IPropsType, IStateType> {
       }
       // proyection.push({$cond: [{$and: [{$gte: ['$qualification', i]}, {$lte: ['$qualification', max]}]}, `${i}-${max}`, '']});
     }
-    const option: echarts.EChartOption = {
+    // const option: echarts.EChartOption | any = {
+    const option: any = {
       tooltip: {
         trigger: 'axis'
       },
