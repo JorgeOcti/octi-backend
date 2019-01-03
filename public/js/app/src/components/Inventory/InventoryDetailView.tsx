@@ -100,7 +100,8 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
   private selectOptions: any = {
     pending: 'Pendiente',
     found: 'Encontrado',
-    leftover: 'Sobrante'
+    leftover: 'Sobrante',
+    reported: 'Reportado'
   };
 
   private paginationOption: any = {
@@ -403,6 +404,7 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
       dataField: 'status',
       text: 'Status',
       headerClasses: 'pointer',
+      formatter: (cell: string) => (this.selectOptions[cell]),
       headerStyle: {
         verticalAlign: 'top',
         maxWidth: '100px',
@@ -709,7 +711,8 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
       venuesLeftover.push(venue.results ? venue.results.leftover : 0);
       venuesReported.push(venue.results ? venue.results.reported : 0);
     }
-    const optionVenues: echarts.EChartOption = {
+    // const optionVenues: echarts.EChartOption = {
+    const optionVenues: any = {
       tooltip: {
         trigger: 'axis',
         axisPointer: {
@@ -830,7 +833,8 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
       brandLeftover.push(brand.results ? brand.results.leftover : 0);
       brandReported.push(brand.results ? brand.results.reported : 0);
     }
-    const optionBrands: echarts.EChartOption = {
+    // const optionBrands: echarts.EChartOption = {
+    const optionBrands: any = {
       tooltip: {
         trigger: 'axis',
         axisPointer: {
