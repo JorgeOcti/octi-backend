@@ -806,7 +806,7 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
         {
           show: venuesNames.length > 10,
           realtime: true,
-          start: 50,
+          start: venuesNames.length > 10 ? 50 : 0,
           end: 100
         }
       ];
@@ -918,7 +918,7 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
         {
           show: brandNames.length > 10,
           realtime: true,
-          start: 50,
+          start: brandNames.length > 10 ? 50 : 0,
           end: 100
         }
       ];
