@@ -324,10 +324,13 @@ class InventoryController {
         if (inventory) {
           res.status(200).json({
             data: {
-              cars: inventory.cars.map((car: IInventoryCar) => {
+              cars: inventory.cars
+                .filter((car: IInventoryCar) => (car.status !== ChoicesStatusCarInventory.reported))
+                .map((car: IInventoryCar) => {
                 return {
                   ...car.car,
-                  venue: car.venue
+                  venue: car.venue,
+                  status: car.status
                 };
               }),
               reasons: []
@@ -427,8 +430,14 @@ class InventoryController {
           }, {
             cars: {
               $elemMatch: {
-                car: car._id,
-                status: ChoicesStatusCarInventory.found
+                $or: [{
+                  car: car._id,
+                  status: ChoicesStatusCarInventory.found
+                }, {
+                  car: car._id,
+                  venueFound: venue._id,
+                  status: ChoicesStatusCarInventory.leftover
+                }]
               }
             }
           }]
@@ -500,7 +509,7 @@ class InventoryController {
               update: true
             });
             res.json({
-              id,
+              vin: car.vin,
               status: 200
             });
           } else {
@@ -530,7 +539,7 @@ class InventoryController {
                 update: true
               });
               res.status(200).json({
-                id,
+                vin: car.vin,
                 status: 200
               });
             } else {
@@ -763,6 +772,7 @@ class InventoryController {
         });
         res.json({
           message: 'Se ha generado el reporte correctamente.',
+          vin,
           status: 200
         });
       } else {

@@ -309,10 +309,13 @@ class InventoryController {
                 if (inventory) {
                     res.status(200).json({
                         data: {
-                            cars: inventory.cars.map((car) => {
+                            cars: inventory.cars
+                                .filter((car) => (car.status !== inventory_model_1.ChoicesStatusCarInventory.reported))
+                                .map((car) => {
                                 return {
                                     ...car.car,
-                                    venue: car.venue
+                                    venue: car.venue,
+                                    status: car.status
                                 };
                             }),
                             reasons: []
@@ -414,8 +417,14 @@ class InventoryController {
                         }, {
                             cars: {
                                 $elemMatch: {
-                                    car: car._id,
-                                    status: inventory_model_1.ChoicesStatusCarInventory.found
+                                    $or: [{
+                                            car: car._id,
+                                            status: inventory_model_1.ChoicesStatusCarInventory.found
+                                        }, {
+                                            car: car._id,
+                                            venueFound: venue._id,
+                                            status: inventory_model_1.ChoicesStatusCarInventory.leftover
+                                        }]
                                 }
                             }
                         }]
@@ -489,7 +498,7 @@ class InventoryController {
                             update: true
                         });
                         res.json({
-                            id,
+                            vin: car.vin,
                             status: 200
                         });
                     }
@@ -520,7 +529,7 @@ class InventoryController {
                                 update: true
                             });
                             res.status(200).json({
-                                id,
+                                vin: car.vin,
                                 status: 200
                             });
                         }
@@ -755,6 +764,7 @@ class InventoryController {
                 });
                 res.json({
                     message: 'Se ha generado el reporte correctamente.',
+                    vin,
                     status: 200
                 });
             }
