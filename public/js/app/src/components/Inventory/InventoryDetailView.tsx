@@ -2,9 +2,10 @@
 ///<reference path="../../../src/types/react-bootstrap-table-next.d.ts"/>
 ///<reference path="../../../src/types/react-bootstrap-table2-filter.d.ts"/>
 ///<reference path="../../../src/types/react-bootstrap-table2-paginator.d.ts"/>
+import * as moment from 'moment';
 import * as Raven from 'raven-js';
-import * as React from 'react';
 import {ErrorInfo} from 'react';
+import * as React from 'react';
 import BootstrapTable from 'react-bootstrap-table-next';
 import filterFactory, { selectFilter, textFilter } from 'react-bootstrap-table2-filter';
 import paginationFactory from 'react-bootstrap-table2-paginator';
@@ -33,6 +34,7 @@ import {IWindow} from '../../interfaces/window';
 import {maxText} from '../../utils/common';
 import ImageLazyLoad from '../ImageLazyLoad';
 import ModalView from '../Modal/ModalView';
+import Row from '../Row';
 import InventoryCarComments from './InventoryCarComments';
 
 declare let window: IWindow;
@@ -68,31 +70,42 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
   private labelOption: any = {
     normal: {
       show: true,
-      position: 'insideBottom',
-      distance: 15,
-      align: 'left',
+      position: 'inside',
+      // distance: 5,
+      align: 'center',
       verticalAlign: 'middle',
       rotate: 90,
-      formatter: '{c} {name|{a}}',
-      fontSize: 16,
+      // formatter: '{c} {name|{a}}',
+      formatter: '{c}',
+      fontSize: 12,
       rich: {
         name: {
           textBorderColor: '#fff'
         }
       }
     }
+    // show: true,
+    // position: 'insideBottom',
+    // fontStyle: 'bold',
+    // distance: 15,
+    // rotate: 90,
+    // verticalAlign: 'middle',
+    // fontSize: 12,
+    // color: '#fff'
   };
 
   private statusText: any = {
     pending: 'Pendiente',
     found: 'Encontrado',
     leftover: 'Sobrante',
+    missing: 'Faltante',
     reported: 'Reportado'
   };
 
   private classStatus: any = {
-    pending: 'bg-red',
+    pending: 'bg-aqua',
     found: 'bg-green',
+    missing: 'bg-red',
     leftover: 'bg-yellow',
     reported: 'bg-gray'
   };
@@ -100,8 +113,7 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
   private selectOptions: any = {
     pending: 'Pendiente',
     found: 'Encontrado',
-    leftover: 'Sobrante',
-    reported: 'Reportado'
+    leftover: 'Sobrante'
   };
 
   private paginationOption: any = {
@@ -126,6 +138,10 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
     order: 'asc'
   }];
 
+  private defaultColumns: any[] = [];
+  private columns: any[] = [];
+  private columnsReported: any[] = [];
+
   private socket: SocketIOClient.Socket;
 
   constructor(props: IPropsType) {
@@ -136,16 +152,126 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
     this.vinFormatter = this.vinFormatter.bind(this);
     this.brandFormatter = this.brandFormatter.bind(this);
     this.commentFormatter = this.commentFormatter.bind(this);
+    this.calculateDetails = this.calculateDetails.bind(this);
     this.imagesFormatter = this.imagesFormatter.bind(this);
+    this.defaultColumns = [{
+    dataField: 'vin',
+    text: 'VIN / Patente',
+    formatter: this.vinFormatter,
+    filter: textFilter({
+      className: 'input-sm',
+      placeholder: ' Buscar'
+    }),
+    filterValue: (cell: any, row: any) => `${cell}${row.patent}`,
+    classes: 'middle text-ellipsis',
+    headerClasses: 'pointer',
+    sort: true
+  }, {
+    dataField: 'brand',
+    text: 'Marca / Denominación',
+    formatter: this.brandFormatter,
+    filter: textFilter({
+      className: 'input-sm',
+      placeholder: ' Buscar'
+    }),
+    filterValue: (cell: any, row: any) => `${cell}${row.denomination}`,
+    classes: 'middle hidden-xs',
+    headerClasses: 'hidden-xs pointer',
+    sort: true
+  }, {
+    dataField: 'venue',
+    text: 'Sucursal',
+    filter: textFilter({
+      className: 'input-sm',
+      placeholder: ' Buscar'
+    }),
+    classes: 'middle hidden-xs hidden-sm',
+    headerClasses: 'hidden-xs hidden-sm pointer',
+    sort: true
+  }, {
+    dataField: 'venueFound',
+    text: 'Encontrado en',
+    filter: textFilter({
+      className: 'input-sm',
+      placeholder: ' Buscar'
+    }),
+    classes: 'middle hidden-xs hidden-sm hidden-md',
+    headerClasses: 'hidden-xs hidden-sm hidden-md pointer',
+    sort: true
+  },
+    {
+      dataField: 'inventoriedBy',
+      text: 'Encontrado por',
+      filter: textFilter({
+        className: 'input-sm',
+        placeholder: ' Buscar'
+      }),
+      classes: 'middle hidden-xs hidden-sm hidden-md',
+      headerClasses: 'hidden-xs hidden-sm hidden-md pointer',
+      sort: true
+    }, {
+      dataField: 'images',
+      text: 'Imágenes',
+      classes: 'middle hidden-xs',
+      headerClasses: 'hidden-xs',
+      formatter: this.imagesFormatter,
+      headerStyle: {
+        verticalAlign: 'top'
+      }
+    }, {
+      dataField: 'countComments',
+      text: 'Comentarios',
+      classes: 'middle hidden-xs text-ellipsis',
+      formatter: this.commentFormatter,
+      headerClasses: 'hidden-xs',
+      headerStyle: {
+        verticalAlign: 'top'
+      },
+      style: {
+        maxWidth: '150px'
+      }
+    }];
+    this.columns = [...this.defaultColumns, {
+      dataField: 'status',
+      text: 'Status',
+      sort: true,
+      formatter: (cell: string) => (this.selectOptions[cell]),
+      filter: selectFilter({
+        options: this.selectOptions,
+        // withoutEmptyOption: true,
+        className: 'input-sm',
+        placeholder: 'Seleccione tipo',
+        id: 'custom-filter'
+      }),
+      headerClasses: 'pointer',
+      headerStyle: {
+        maxWidth: '100px',
+        minWidth: '100px'
+      },
+      classes: (cell: any) => {
+        return `middle-center ${this.classStatus.hasOwnProperty(cell) ? this.classStatus[cell] : ''}`;
+      }
+    }];
+    this.columnsReported = [...this.defaultColumns, {
+      dataField: 'status',
+      text: 'Status',
+      headerClasses: 'pointer',
+      formatter: () => ('Reportado'),
+      headerStyle: {
+        verticalAlign: 'top',
+        maxWidth: '100px',
+        minWidth: '100px'
+      },
+      classes: (cell: any) => {
+        return `middle-center text-center ${this.classStatus.hasOwnProperty(cell) ? this.classStatus[cell] : ''}`;
+      }
+    }];
   }
 
   public componentWillMount() {
     // get data
     const {id} = this.props.match.params;
     this.props.getInventoryDetailAction(id, false);
-    // setTimeout(() => {
-    //   this.props.getInventoryDetailAction(id, true);
-    // }, 10000);
     // set the title of the page
     document.title = 'OSA Andes | Detalle Inventario';
     // add listeners
@@ -215,8 +341,8 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
     $('.pagination').removeClass('pagination-sm').addClass('pagination-sm').css({margin: 0});
     const {setCharts} = this.state;
     if (!loadingDetail && !setCharts) {
-      this.updateVenueChart(detailByVenue);
-      this.updateBrandChart(detailByBrand);
+      this.updateVenueChart(detailByVenue, false);
+      this.updateBrandChart(detailByBrand, false);
       this.setState({
         setCharts: true
       });
@@ -264,7 +390,7 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
   }
 
   public commentFormatter(cell: any, row: any) {
-    if (row.comments.length) {
+    if (row.comments && row.comments.length) {
       return (
         <React.Fragment>
           {maxText(row.comments[row.comments.length - 1].comment, 60)}<br />
@@ -292,139 +418,25 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
       percentagePending,
       percentageFound,
       percentageLeftover,
-      percentageReported
+      percentageReported,
+      percentageMissing
     } = this.calculateDetails(summary.results);
 
     // order cars in products and reported
     const {products, reported} = this.processCars(detail.cars);
 
-    // const selectOptionsReported: any = {
-    //   reported: 'Reportado'
-    // };
-
-    const defaultColumns = [{
-      dataField: 'vin',
-      text: 'VIN / Patente',
-      formatter: this.vinFormatter,
-      filter: textFilter({
-        className: 'input-sm',
-        placeholder: ' Buscar'
-      }),
-      filterValue: (cell: any, row: any) => `${cell}${row.patent}`,
-      classes: 'middle text-ellipsis',
-      headerClasses: 'pointer',
-      sort: true
-    }, {
-      dataField: 'brand',
-      text: 'Marca / Denominación',
-      formatter: this.brandFormatter,
-      filter: textFilter({
-        className: 'input-sm',
-        placeholder: ' Buscar'
-      }),
-      filterValue: (cell: any, row: any) => `${cell}${row.denomination}`,
-      classes: 'middle hidden-xs',
-      headerClasses: 'hidden-xs pointer',
-      sort: true
-    }, {
-      dataField: 'venue',
-      text: 'Sucursal',
-      filter: textFilter({
-        className: 'input-sm',
-        placeholder: ' Buscar'
-      }),
-      classes: 'middle hidden-xs hidden-sm',
-      headerClasses: 'hidden-xs hidden-sm pointer',
-      sort: true
-    }, {
-      dataField: 'venueFound',
-      text: 'Encontrado en',
-      filter: textFilter({
-        className: 'input-sm',
-        placeholder: ' Buscar'
-      }),
-      classes: 'middle hidden-xs hidden-sm hidden-md',
-      headerClasses: 'hidden-xs hidden-sm hidden-md pointer',
-      sort: true
-    },
-      {
-        dataField: 'inventoriedBy',
-        text: 'Encontrado por',
-        filter: textFilter({
-          className: 'input-sm',
-          placeholder: ' Buscar'
-        }),
-        classes: 'middle hidden-xs hidden-sm hidden-md',
-        headerClasses: 'hidden-xs hidden-sm hidden-md pointer',
-        sort: true
-      }, {
-        dataField: 'images',
-        text: 'Imágenes',
-        classes: 'middle hidden-xs',
-        headerClasses: 'hidden-xs',
-        formatter: this.imagesFormatter,
-        headerStyle: {
-          verticalAlign: 'top'
-        }
-      }, {
-      dataField: 'countComments',
-      text: 'Comentarios',
-      classes: 'middle hidden-xs text-ellipsis',
-      formatter: this.commentFormatter,
-      headerClasses: 'hidden-xs',
-      headerStyle: {
-        verticalAlign: 'top'
-      },
-      style: {
-        maxWidth: '150px'
-      }
-    }];
-    const columns = [...defaultColumns, {
-      dataField: 'status',
-      text: 'Status',
-      sort: true,
-      formatter: (cell: string) => (this.selectOptions[cell]),
-      filter: selectFilter({
-        options: this.selectOptions,
-        // withoutEmptyOption: true,
-        className: 'input-sm',
-        placeholder: 'Seleccione tipo',
-        id: 'custom-filter'
-      }),
-      headerClasses: 'pointer',
-      headerStyle: {
-        maxWidth: '100px',
-        minWidth: '100px'
-      },
-      classes: (cell: any) => {
-        return `middle-center ${this.classStatus.hasOwnProperty(cell) ? this.classStatus[cell] : ''}`;
-      }
-    }];
-    const columnsReported = [...defaultColumns, {
-      dataField: 'status',
-      text: 'Status',
-      headerClasses: 'pointer',
-      formatter: (cell: string) => (this.selectOptions[cell]),
-      headerStyle: {
-        verticalAlign: 'top',
-        maxWidth: '100px',
-        minWidth: '100px'
-      },
-      classes: (cell: any) => {
-        return `middle-center text-center ${this.classStatus.hasOwnProperty(cell) ? this.classStatus[cell] : ''}`;
-      }
-    }];
-
     return (
       <AppContainer title={summary.name} cMenu="2" cSubMenu="2.1" cAction="Detalle">
         <section className="content">
-          <div className="row">
-            <div className="col-md-6 col-lg-3">
+          <Row>
+            <div className="col-md-6 col-lg-5th-1">
               <div className="info-box bg-green">
                 <span className="info-box-icon"><i className="fa fa-check" /></span>
                 <div className="info-box-content">
                   <span className="info-box-text">Encontrados</span>
-                  <span className="info-box-number">{summary.results ? summary.results.found : 0}</span>
+                  <span className="info-box-number">
+                    {!loadingDetail && summary.results && summary.results.found ? summary.results.found : 0}
+                  </span>
                   <div className="progress">
                     <div className="progress-bar" style={{
                       width: `${percentageFound}%`
@@ -436,29 +448,33 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
                 </div>
               </div>
             </div>
-            <div className="col-md-6 col-lg-3">
-              <div className="info-box bg-red">
-                <span className="info-box-icon"><i className="fa fa-close" /></span>
+            <div className="col-md-6 col-lg-5th-1">
+              <div className="info-box bg-aqua">
+                <span className="info-box-icon"><i className="fa fa-clock-o" /></span>
                 <div className="info-box-content">
-                  <span className="info-box-text">Faltantes</span>
-                  <span className="info-box-number">{summary.results ? summary.results.pending : 0}</span>
+                  <span className="info-box-text">Pendientes</span>
+                  <span className="info-box-number">
+                    {!loadingDetail && summary.results && summary.results.pending ? summary.results.pending : 0}
+                  </span>
                   <div className="progress">
                     <div className="progress-bar" style={{
                       width: `${percentagePending}%`
                     }} />
                   </div>
                   <span className="progress-description">
-                    {`${percentagePending.toFixed(1)}% faltantes.`}
+                    {`${percentagePending.toFixed(1)}% pendientes.`}
                   </span>
                 </div>
               </div>
             </div>
-            <div className="col-md-6 col-lg-3">
+            <div className="col-md-6 col-lg-5th-1">
               <div className="info-box bg-yellow">
-                <span className="info-box-icon"><i className="fa fa-bookmark" /></span>
+                <span className="info-box-icon"><i className="fa fa-arrow-up" /></span>
                 <div className="info-box-content">
                   <span className="info-box-text">Sobrantes</span>
-                  <span className="info-box-number">{summary.results ? summary.results.leftover : 0}</span>
+                  <span className="info-box-number">
+                    {!loadingDetail && summary.results && summary.results.leftover ? summary.results.leftover : 0}
+                  </span>
                   <div className="progress">
                     <div className="progress-bar" style={{
                       width: `${percentageLeftover}%`
@@ -470,12 +486,33 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
                 </div>
               </div>
             </div>
-            <div className="col-md-6 col-lg-3">
+            <div className="col-md-6 col-lg-5th-1">
+              <div className="info-box bg-red">
+                <span className="info-box-icon"><i className="fa fa-arrow-down" /></span>
+                <div className="info-box-content">
+                  <span className="info-box-text">Faltantes</span>
+                  <span className="info-box-number">
+                    {!loadingDetail && summary.results && summary.results.missing ? summary.results.missing : 0}
+                  </span>
+                  <div className="progress">
+                    <div className="progress-bar" style={{
+                      width: `${percentageMissing}%`
+                    }} />
+                  </div>
+                  <span className="progress-description">
+                    {`${percentageMissing.toFixed(1)}% faltantes.`}
+                  </span>
+                </div>
+              </div>
+            </div>
+            <div className="col-md-6 col-lg-5th-1">
               <div className="info-box bg-gray-dark">
-                <span className="info-box-icon"><i className="fa fa-bookmark" /></span>
+                <span className="info-box-icon"><i className="fa fa-cogs" /></span>
                 <div className="info-box-content">
                   <span className="info-box-text">Reportados</span>
-                  <span className="info-box-number">{summary.results ? summary.results.reported : 0}</span>
+                  <span className="info-box-number">
+                    {!loadingDetail && summary.results && summary.results.reported ? summary.results.reported : 0}
+                  </span>
                   <div className="progress">
                     <div className="progress-bar" style={{
                       width: `${percentageReported}%`
@@ -487,31 +524,84 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
                 </div>
               </div>
             </div>
-          </div>
-          <div className="box">
-            <div className="box-header with-border">
-              <h3 className="box-title">Detalle de inventario por sucursal</h3>
-            </div>
-            <div className="box-body">
-              <div id="chart-venues-detail" style={{height: '500px', maxWidth: '100%'}}/>
-            </div>
-            {
-              loadingDetail &&
-              <div className="overlay">
-                <i className="fa fa-spinner fa-spin text-purple"/>
-              </div>
-            }
-          </div>
-          <div className="row">
-            <div className="col-md-12">
-              <div className="box box-success">
+          </Row>
+          <Row>
+            <div className="col-md-6 col-lg-3">
+              <div className="box box-primary">
                 <div className="box-header with-border">
-                  <h3 className="box-title">Detalle de inventario por Marca</h3>
-                  {/*<div className="box-tools pull-right">*/}
-                  {/*</div>*/}
+                  <h3 className="box-title">Resumen General</h3>
                 </div>
                 <div className="box-body">
-                  <div id="chart-brand-detail" style={{height: '400px', maxWidth: '100%'}}/>
+                  <ul className="list-group list-group-unbordered">
+                    <li className="list-group-item" style={{borderTop: 0}}>
+                      <strong><i className="fa fa-fw fa-user margin-r-5"/> Creado por</strong>
+                      <p className="pull-right">
+                        {!loadingDetail && summary && summary.createdBy ? summary.createdBy.fullName : null}
+                      </p>
+                    </li>
+                    <li className="list-group-item">
+                      <strong><i className="fa fa-fw fa-clock-o  margin-r-5"/> Fecha creación</strong>
+                      <p className="pull-right">
+                         {!loadingDetail && summary && summary.createdAt ? moment(summary.createdAt).format('LLL') : null}
+                      </p>
+                    </li>
+                    <li className="list-group-item">
+                      <strong><i className="fa fa-fw fa-caret-right margin-r-5"/> Estado</strong>
+                      <p className="pull-right">
+                        {!loadingDetail ? this.labelStatus(detail.status) : null}
+                      </p>
+                    </li>
+                    <li className="list-group-item">
+                      <strong><i className="fa fa-fw fa-car margin-r-5" /> Vehículos del inventario</strong>
+                    </li>
+                    <li className="list-group-item">
+                      <strong>Encontrados</strong>
+                      <span className="pull-right label label-success" style={{padding: '5px 10px', fontSize: '12px'}}>
+                        {
+                          !loadingDetail && summary.results ?
+                            summary.results.found + summary.results.leftover
+                            : 0
+                        }
+                      </span>
+                    </li>
+                    <li className="list-group-item">
+                      <strong>Faltantes</strong>
+                      <span className="pull-right label label-danger" style={{padding: '5px 10px', fontSize: '12px'}}>
+                        {
+                          !loadingDetail && summary.results ?
+                            summary.results.pending - summary.results.leftover
+                            : 0
+                        }
+                      </span>
+                    </li>
+                    <li className="list-group-item">
+                      <strong>Total</strong>
+                      <span className="pull-right label label-primary" style={{padding: '5px 10px', fontSize: '12px'}}>
+                        {
+                          !loadingDetail && summary.results ?
+                            (summary.results.found + summary.results.leftover) + (summary.results.pending - summary.results.leftover)
+                            : 0
+                        }
+                      </span>
+                    </li>
+                    <li className="list-group-item text-muted"  style={{borderBottom: 0}}>
+                      <strong>Reportados</strong>
+                      <span className="pull-right label label-default" style={{padding: '5px 10px', fontSize: '12px'}}>
+                        {
+                          !loadingDetail && summary.results ?
+                            summary.results.reported
+                            : 0
+                        }
+                      </span>
+                    </li>
+                  </ul>
+                  {/*<a href="#" className="btn btn-primary btn-block"><b>Follow</b></a>*/}
+                  <button
+                      className="btn btn-sm btn-block btn-primary hidden-xs hidden-sm"
+                      onClick={() => this.xlsExport(['pending', 'found', 'leftover', 'missing', 'reported'])}
+                    >
+                      <i className="fa fa-fw fa-download"/> Exportar excel General
+                    </button>
                 </div>
                 {
                   loadingDetail &&
@@ -521,25 +611,66 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
                 }
               </div>
             </div>
-            <div className="col-md-12">
-              <div className="box box-info">
+            <div className="col-md-6 col-lg-9">
+              <div className="box box-primary">
                 <div className="box-header with-border">
-                  <h3 className="box-title">Detalle de inventario</h3>
+                  <h3 className="box-title">Detalle de inventario por sucursal</h3>
                   {/*<div className="box-tools pull-right">*/}
                   {/*</div>*/}
                 </div>
                 <div className="box-body">
+                  <div id="chart-venues-detail" style={{height: '600px', maxWidth: '100%'}}/>
+                </div>
+                {
+                  loadingDetail &&
+                  <div className="overlay">
+                    <i className="fa fa-spinner fa-spin text-purple"/>
+                  </div>
+                }
+              </div>
+            </div>
+          </Row>
+          <Row>
+            <div className="col-md-12">
+              <div className="box box-success">
+                <div className="box-header with-border">
+                  <h3 className="box-title">Detalle de inventario por Marca</h3>
+                  {/*<div className="box-tools pull-right">*/}
+                  {/*</div>*/}
+                </div>
+                <div className="box-body">
+                  <div id="chart-brand-detail" style={{height: '600px', maxWidth: '100%'}}/>
+                </div>
+                {
+                  loadingDetail &&
+                  <div className="overlay">
+                    <i className="fa fa-spinner fa-spin text-purple"/>
+                  </div>
+                }
+              </div>
+            </div>
+          </Row>
+          <Row>
+            <div className="col-md-12">
+              <div className="box box-info">
+                <div className="box-header with-border">
+                  <h3 className="box-title">Detalle de inventario</h3>
+                  <div className="box-tools pull-right">
+                    <button
+                      className="btn btn-sm btn-primary hidden-xs hidden-sm"
+                      onClick={() => this.xlsExport(['pending', 'found', 'leftover', 'missing'])}
+                    >
+                      <i className="fa fa-fw fa-download"/> Exportar en Excel
+                    </button>
+                  </div>
+                </div>
+                <div className="box-body">
                   <div className="row">
-                    <div className="col-md-12 text-right hidden-xs hidden-sm ">
-                      <p><button className="btn btn-sm btn-primary" onClick={() => this.xlsExport(['pending', 'found', 'leftover'])}>
-                        <i className="fa fa-fw fa-download" /> Exportart excel
-                      </button></p>
-                    </div>
                     <div className="col-md-12">
                       <BootstrapTable
                         keyField="_id"
                         data={products}
-                        columns={columns}
+                        columns={this.columns}
                         filter={filterFactory()}
                         pagination={paginationFactory(this.paginationOption)}
                         defaultSorted={this.defaultSorted}
@@ -555,23 +686,25 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
                 }
               </div>
             </div>
+          </Row>
+          <Row>
             <div className="col-md-12">
               <div className="box box-info">
                 <div className="box-header with-border">
                   <h3 className="box-title">Detalle Reportados</h3>
+                  <div className="box-tools pull-right">
+                    <button className="btn btn-sm btn-primary hidden-xs hidden-sm" onClick={() => this.xlsExport(['reported'])}>
+                      <i className="fa fa-fw fa-download" /> Exportar en Excel
+                    </button>
+                  </div>
                 </div>
                 <div className="box-body">
                   <div className="row">
-                    <div className="col-md-12 text-right hidden-xs hidden-sm ">
-                      <p><button className="btn btn-sm btn-primary" onClick={() => this.xlsExport(['reported'])}>
-                        <i className="fa fa-fw fa-download" /> Exportart excel
-                      </button></p>
-                    </div>
                     <div className="col-md-12">
                       <BootstrapTable
                         keyField="_id"
                         data={reported}
-                        columns={columnsReported}
+                        columns={this.columnsReported}
                         filter={filterFactory()}
                         pagination={paginationFactory(this.paginationOption)}
                         defaultSorted={this.defaultSorted}
@@ -588,7 +721,7 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
                 }
               </div>
             </div>
-          </div>
+          </Row>
           <ModalView />
         </section>
       </AppContainer>
@@ -596,13 +729,25 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
   }
 
   private calculateDetails(results: IInventorySummaryResult | undefined) {
-    const totalCars = results ? results.found + results.pending + results.leftover + results.reported : 0;
+    const {loadingDetail} = this.props.inventories;
+    if (!loadingDetail) {
+      const totalCars = results ? results.missing + results.found + results.pending + results.leftover + results.reported : 0;
+      return {
+        totalCars,
+        percentagePending: results && results.pending ? (100 / totalCars) * results.pending : 0,
+        percentageFound: results && results.found ? (100 / totalCars) * results.found : 0,
+        percentageLeftover: results && results.leftover ? (100 / totalCars) * results.leftover : 0,
+        percentageMissing: results && results.missing ? (100 / totalCars) * results.missing : 0,
+        percentageReported: results && results.reported ? (100 / totalCars) * results.reported : 0
+      };
+    }
     return {
-      totalCars,
-      percentagePending: results ? (100 / totalCars) * results.pending : 0,
-      percentageFound: results ? (100 / totalCars) * results.found : 0,
-      percentageLeftover: results ? (100 / totalCars) * results.leftover : 0,
-      percentageReported: results ? (100 / totalCars) * results.reported : 0
+      totalCars: 0,
+      percentagePending: 0,
+      percentageFound: 0,
+      percentageLeftover: 0,
+      percentageMissing: 0,
+      percentageReported: 0
     };
   }
 
@@ -696,23 +841,31 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
   }
 
   private updateVenueChart(detailByVenue: IDetailByVenue[], update?: boolean) {
+    const {loadingDetail} = this.props.inventories;
     const venuesNames: string[] = [];
-    const venuesFound: number[] = [];
-    const venuesPending: number[] = [];
-    const venuesLeftover: number[] = [];
-    const venuesReported: number[] = [];
-    detailByVenue.sort((a, b) => {
-      return a.name.localeCompare(b.name);
+    const venuesFound: any[] = [];
+    const venuesPending: any[] = [];
+    const venuesLeftover: any[] = [];
+    const venuesReported: any[] = [];
+    const venuesMissing: any[] = [];
+    // detailByVenue.sort((a, b) => {
+    //   return a.name.localeCompare(b.name);
+    // });
+    detailByVenue.sort((a: any, b: any) => {
+      const suma = a.results.leftover + a.results.missing + a.results.reported;
+      const sumb = b.results.leftover + b.results.missing + b.results.reported;
+      return sumb - suma;
     });
+
     for (const venue of detailByVenue) {
       venuesNames.push(venue.name);
-      venuesFound.push(venue.results ? venue.results.found : 0);
-      venuesPending.push(venue.results ? venue.results.pending : 0);
-      venuesLeftover.push(venue.results ? venue.results.leftover : 0);
-      venuesReported.push(venue.results ? venue.results.reported : 0);
+      venuesFound.push(venue.results && venue.results.found > 0 ? venue.results.found : null);
+      venuesPending.push(venue.results && venue.results.pending > 0 ? venue.results.pending : null);
+      venuesLeftover.push(venue.results && venue.results.leftover > 0 ? venue.results.leftover : null);
+      venuesReported.push(venue.results && venue.results.reported > 0 ? venue.results.reported : null);
+      venuesMissing.push(venue.results && venue.results.missing > 0 ? venue.results.missing : null);
     }
-    // const optionVenues: echarts.EChartOption = {
-    const optionVenues: any = {
+    const optionVenues: echarts.EChartOption = {
       tooltip: {
         trigger: 'axis',
         axisPointer: {
@@ -723,7 +876,7 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
         x: 'center',
         // y: 'bottom',
         bottom: 50,
-        data: ['Encontrados', 'Faltantes', 'Sobrantes', 'Reportados']
+        data: ['Encontrados', 'Pendientes', 'Sobrantes', 'Faltantes', 'Reportados']
       },
       xAxis: {
         type: 'category',
@@ -735,7 +888,7 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
           }
         },
         axisLabel: {
-          rotate: 45
+          rotate: 60
           // fontSize: 10
         }
       },
@@ -766,21 +919,43 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
         containLabel: true
         // borderColor: '#FF0000'
       },
+      color: ['#00aa51', '#00c2f4', '#ff9600', '#f1392c', '#96a4b3'],
       series: [{
         data: venuesFound,
         name: 'Encontrados',
         type: 'bar',
-        color: '#00aa51',
-        label: this.labelOption,
+        stack: 'cars',
+        // barMinHeight: 20,
+        label: {
+          normal: {
+            ...this.labelOption.normal
+            // rich: {
+            //   name: {
+            //     textBorderColor: '#fff'
+            //   }
+            // }
+          }
+        },
         barGap: 0
         // areaStyle: {}
         // smooth: true
       }, {
         data: venuesPending,
-        name: 'Faltantes',
+        name: 'Pendientes',
         type: 'bar',
-        color: '#f1392c',
-        // label: labelOption,
+        stack: 'cars',
+        // barMinHeight: 20,
+        label: {
+          normal: {
+            ...this.labelOption.normal
+            // rich: {
+            //   name: {
+            //     textBorderColor: '#fff',
+            //     // textBorderWidth: 0
+            //   }
+            // }
+          }
+        },
         barGap: 0
         // areaStyle: {}
         // smooth: true
@@ -788,8 +963,33 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
         data: venuesLeftover,
         name: 'Sobrantes',
         type: 'bar',
-        color: '#ff9600',
-        // label: labelOption,
+        stack: 'cars',
+        // color: '#ff9600',
+        // barMinHeight: 20,
+        label: {
+          normal: {
+            ...this.labelOption.normal
+            // rich: {
+            //   name: {
+            //     textBorderColor: '#fff'
+            //   }
+            // }
+          }
+        },
+        barGap: 0
+        // areaStyle: {}
+        // smooth: true
+      }, {
+        data: venuesMissing,
+        name: 'Faltantes',
+        type: 'bar',
+        stack: 'cars',
+        // barMinHeight: 20,
+        label: {
+          normal: {
+            ...this.labelOption.normal
+          }
+        },
         barGap: 0
         // areaStyle: {}
         // smooth: true
@@ -797,44 +997,66 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
         data: venuesReported,
         name: 'Reportados',
         type: 'bar',
-        color: '#96a4b3',
-        // label: labelOption,
+        stack: 'cars',
+        // color: '#96a4b3',
+        // barMinHeight: 20,
+        label: {
+          normal: {
+            ...this.labelOption.normal
+          }
+        },
         barGap: 0
         // areaStyle: {}
         // smooth: true
       }]
     };
     if (!update) {
+      optionVenues.legend = {
+        ...optionVenues,
+        selected: {
+          Encontrados: false,
+          Pendientes: false
+        }
+      };
       optionVenues.dataZoom = [
         {
-          show: venuesNames.length > 10,
+          show: venuesNames.length > 12,
           realtime: true,
-          start: venuesNames.length > 10 ? 50 : 0,
-          end: 100
+          start: 0,
+          end: venuesNames.length > 12 ? 80 : 100
         }
       ];
     }
-    this.venuesDetailChart.setOption(optionVenues);
+    if (!loadingDetail) {
+      this.venuesDetailChart.setOption(optionVenues);
+    }
   }
 
   private updateBrandChart(detailByBrand: IDetailByBrand[], update?: boolean) {
+    const {loadingDetail} = this.props.inventories;
     const brandNames: string[] = [];
-    const brandFound: number[] = [];
-    const brandPending: number[] = [];
-    const brandLeftover: number[] = [];
-    const brandReported: number[] = [];
-    detailByBrand.sort((a, b) => {
-      return a.name.localeCompare(b.name);
+    const brandFound: any[] = [];
+    const brandPending: any[] = [];
+    const brandLeftover: any[] = [];
+    const brandReported: any[] = [];
+    const brandMissing: any[] = [];
+    // detailByBrand.sort((a, b) => {
+    //   return a.name.localeCompare(b.name);
+    // });
+    detailByBrand.sort((a: any, b: any) => {
+      const suma = a.results.leftover + a.results.missing + a.results.reported;
+      const sumb = b.results.leftover + b.results.missing + b.results.reported;
+      return sumb - suma;
     });
     for (const brand of detailByBrand) {
       brandNames.push(brand.name);
-      brandFound.push(brand.results ? brand.results.found : 0);
-      brandPending.push(brand.results ? brand.results.pending : 0);
-      brandLeftover.push(brand.results ? brand.results.leftover : 0);
-      brandReported.push(brand.results ? brand.results.reported : 0);
+      brandFound.push(brand.results && brand.results.found > 0 ? brand.results.found : null);
+      brandPending.push(brand.results && brand.results.pending > 0 ? brand.results.pending : null);
+      brandLeftover.push(brand.results && brand.results.leftover > 0 ? brand.results.leftover : null);
+      brandReported.push(brand.results && brand.results.reported > 0 ? brand.results.reported : null);
+      brandMissing.push(brand.results && brand.results.missing > 0 ? brand.results.missing : null);
     }
-    // const optionBrands: echarts.EChartOption = {
-    const optionBrands: any = {
+    const optionBrands: echarts.EChartOption = {
       tooltip: {
         trigger: 'axis',
         axisPointer: {
@@ -844,7 +1066,7 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
       legend: {
         x: 'center',
         bottom: 50,
-        data: ['Encontrados', 'Faltantes', 'Sobrantes', 'Reportados']
+        data: ['Encontrados', 'Pendientes', 'Sobrantes', 'Faltantes', 'Reportados']
       },
       xAxis: {
         type: 'category',
@@ -886,48 +1108,70 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
         containLabel: true
         // borderColor: '#FF0000'
       },
+      color: ['#00aa51', '#00c2f4', '#ff9600', '#f1392c', '#96a4b3'],
       series: [{
         data: brandFound,
         name: 'Encontrados',
         // label: labelOption,
         type: 'bar',
-        color: '#00aa51',
-        areaStyle: {}
+        stack: 'cars',
+        // areaStyle: {},
+        barGap: 0
         // smooth: true
       }, {
         data: brandPending,
-        name: 'Faltantes',
+        name: 'Pendientes',
         type: 'bar',
-        color: '#f1392c',
-        areaStyle: {}
+        stack: 'cars',
+        // areaStyle: {},
+        barGap: 0
         // smooth: true
       }, {
         data: brandLeftover,
         name: 'Sobrantes',
         type: 'bar',
-        color: '#ff9600',
-        areaStyle: {}
+        stack: 'cars',
+        // areaStyle: {},
+        barGap: 0
+        // smooth: true
+      }, {
+        data: brandMissing,
+        name: 'Faltantes',
+        type: 'bar',
+        stack: 'cars',
+        // areaStyle: {},
+        barGap: 0
         // smooth: true
       }, {
         data: brandReported,
         name: 'Reportados',
         type: 'bar',
-        color: '#96a4b3',
-        areaStyle: {}
+        stack: 'cars',
+        // areaStyle: {},
+        barGap: 0
         // smooth: true
       }]
     };
     if (!update) {
+      optionBrands.legend = {
+        ...optionBrands,
+        selected: {
+          Encontrados: false,
+          Pendientes: false
+        }
+      };
       optionBrands.dataZoom = [
         {
-          show: brandNames.length > 10,
+          show: brandNames.length > 12,
           realtime: true,
-          start: brandNames.length > 10 ? 50 : 0,
-          end: 100
+          start: 0,
+          end: brandNames.length > 12 ? 80 : 100
         }
       ];
     }
-    this.brandDetailChart.setOption(optionBrands);
+    if (!loadingDetail) {
+      this.brandDetailChart.setOption(optionBrands);
+    }
   }
 
   private resizeCharts(): void {
@@ -951,6 +1195,16 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
         &nbsp;&nbsp;Mostrando registros del {from} al {to} de {size} registros.
       </span>
     );
+  }
+
+  private labelStatus(option: string): React.ReactElement<IPropsType> | null {
+    if (option === 'finalized') {
+      return <span className="label label-success" style={{padding: '5px 10px', fontSize: '11px'}}><i className="fa fa-fw fa-check"/> Finalizado</span>;
+    } else if (option === 'inProcess') {
+      return <span className="label label-primary" style={{padding: '5px 10px', fontSize: '11px'}}><i className="fa fa-fw fa-spin fa-spinner"/> En progreso</span>;
+    } else {
+      return null;
+    }
   }
 
 }

@@ -9,6 +9,7 @@ export interface IInventorySummaryResult {
   found: number;
   leftover: number;
   reported: number;
+  missing: number;
 }
 
 export interface IInventorySummary {
@@ -30,6 +31,7 @@ export interface IDetailByVenue {
     pending: number;
     found: number;
     leftover: number;
+    missing: number;
     reported: number;
   };
 }
@@ -38,6 +40,7 @@ export interface IDetailByBrand {
   results: {
     pending: number;
     found: number;
+    missing: number;
     leftover: number;
     reported: number;
   };

@@ -4,6 +4,7 @@ import {connect} from 'react-redux';
 import {IInventoryComment} from '../../../../../../src/interfaces/inventoryComment.interface';
 import {addCommentAction, IInventoryState, sendCommentAction} from '../../actions/inventory.actions';
 import {IWindow} from '../../interfaces/window';
+import Row from '../Row';
 
 interface IPropsType {
   inventories: IInventoryState;
@@ -82,7 +83,7 @@ class InventoryCarComments extends React.Component<IPropsType, IStateType> {
   public render(): React.ReactElement<IPropsType> {
     const {inventoryCar} = this.props.inventories;
     return (
-      <div className={'row'}>
+      <Row>
         <div className={'col-md-12'}>
           <strong>Detalle del vehiculo</strong>
         </div>
@@ -167,7 +168,7 @@ class InventoryCarComments extends React.Component<IPropsType, IStateType> {
             <button type="button" className="btn btn-sm btn-primary" onClick={this.sendComment}>Comentar</button>
           </div>
         </div>
-      </div>
+      </Row>
     );
   }
 

@@ -16,6 +16,7 @@ import {
 } from '../../actions/inventory.actions';
 import AppContainer from '../../container/AppContainer';
 import {IWindow} from '../../interfaces/window';
+import Row from '../Row';
 
 declare let window: IWindow;
 
@@ -102,7 +103,7 @@ class InventoryListView extends React.Component<IPropsType, IStateType> {
               </div>
             </div>
             <div className="box-body">
-              <div className="row">
+              <Row>
                 <div className="col-md-12">
                   {
                     !inventories.length && !loading ? 'Aún no se han creado inventarios.' : null
@@ -111,15 +112,15 @@ class InventoryListView extends React.Component<IPropsType, IStateType> {
                     inventories.map((inventory: any) => {
                       return (
                         <div className="inventory" key={inventory._id} id={`inventory-${inventory._id}`}>
-                          <div className="row">
+                          <Row>
                             <div className="col-md-8 col-xs-8">
                               <h4 className="text-primary pointer" onClick={() => this.goToDetail(inventory._id)}>{inventory.name}</h4>
                             </div>
                             <div className="col-md-4 col-xs-4 text-right">
                               {this.labelStatus(inventory.status)}
                             </div>
-                          </div>
-                          <div className="row">
+                          </Row>
+                          <Row>
                             <div className="col-lg-3 col-md-4 col-xs-12 text-muted text-detail-user">
                               <p>
                                 <i className="fa fa-fw fa-clock-o text-success"/>Creado el {moment(inventory.createdAt).format('LLL')}<br/>
@@ -140,21 +141,25 @@ class InventoryListView extends React.Component<IPropsType, IStateType> {
                             </div>
                             <div className="col-lg-7 col-md-8">
                               <div className="row right-border">
-                                <div className="col-md-3 col-xs-4 text-center text-success">
-                                  <strong>Encontrados</strong>
-                                  <h2>{inventory.results.found}</h2>
+                                <div className="col-md-5th-1 col-xs-3 text-center text-green">
+                                  <strong style={{fontSize: '80%'}}>Encontrados</strong>
+                                  <h2 style={{marginTop: '10px'}}>{inventory.results.found}</h2>
                                 </div>
-                                <div className="col-md-3 col-xs-4 text-center text-danger">
-                                  <strong>Faltantes</strong>
-                                  <h2>{inventory.results.pending}</h2>
+                                <div className="col-md-5th-1 col-xs-3 text-center text-aqua">
+                                  <strong style={{fontSize: '80%'}}>Pendientes</strong>
+                                  <h2 style={{marginTop: '10px'}}>{inventory.results.pending}</h2>
                                 </div>
-                                <div className="col-md-3 col-xs-4 text-center text-warning no-right-border-mobile">
-                                  <strong>Sobrantes</strong>
-                                  <h2>{inventory.results.leftover}</h2>
+                                <div className="col-md-5th-1 col-xs-3 text-center text-yellow">
+                                  <strong style={{fontSize: '80%'}}>Sobrantes</strong>
+                                  <h2 style={{marginTop: '10px'}}>{inventory.results.leftover}</h2>
                                 </div>
-                                <div className="col-md-3 text-center text-muted hidden-xs hidden-sm">
-                                  <strong>Reportados</strong>
-                                  <h2>{inventory.results.reported}</h2>
+                                <div className="col-md-5th-1 col-xs-3 text-center text-red no-right-border-mobile">
+                                  <strong style={{fontSize: '80%'}}>Faltantes</strong>
+                                  <h2 style={{marginTop: '10px'}}>{inventory.results.missing}</h2>
+                                </div>
+                                <div className="col-md-5th-1 text-center text-muted hidden-xs hidden-sm">
+                                  <strong style={{fontSize: '80%'}}>Reportados</strong>
+                                  <h2 style={{marginTop: '10px'}}>{inventory.results.reported}</h2>
                                 </div>
                               </div>
                             </div>
@@ -184,13 +189,13 @@ class InventoryListView extends React.Component<IPropsType, IStateType> {
                                 </ul>
                               </div>
                             </div>
-                          </div>
+                          </Row>
                         </div>
                       );
                     })
                   }
                 </div>
-              </div>
+              </Row>
             </div>
             {
               loading &&

@@ -216,9 +216,13 @@ export default class ApiService {
     );
   }
 
-  public createInventory(data: any, name: string): AxiosPromise {
+  public createInventory(carsByVenue: any, name: string, notification: boolean): AxiosPromise {
     return this.instance.post(
-      `/api/inventory/`, {carsByVenue: data, name}, {
+      `/api/inventory/`, {
+        carsByVenue,
+        name,
+        notification
+      }, {
         cancelToken: this.source.token
       }
     );

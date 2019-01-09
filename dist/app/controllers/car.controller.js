@@ -115,6 +115,9 @@ class CarController {
             }
           }
         */
+        if (vin) {
+            vin = vin.replace(/[\W_]+/g, '');
+        }
         if (inventory) {
             try {
                 const inventoryStatus = await inventory_model_1.default.findOne({
@@ -226,7 +229,6 @@ class CarController {
         }
         else {
             if (vin) {
-                vin = vin.replace(/[\W_]+/g, '');
                 try {
                     const testDecode = vin_service_1.default.decode(vin);
                     /* istanbul ignore next */

@@ -54,7 +54,7 @@ class InventoryController {
     }
     async create(req, res) {
         const { company, team } = req.user;
-        const { carsByVenue, name } = req.body;
+        const { carsByVenue, name, notification } = req.body;
         try {
             const inventoryCars = [];
             const venuesIDs = [];
@@ -114,15 +114,17 @@ class InventoryController {
                 status: inventory_model_1.ChoicesStatusInventory.inProcess
             });
             await inventory.save();
-            const usersIDs = await user_model_1.default.find({
-                venue: {
-                    $in: venuesIDs
-                },
-                company
-            }, {
-                _id: true
-            });
-            push_service_1.default.massiveSend('Nuevo inventario', `Se ha iniciado el inventario "${inventory.name}"`, 'Ya puedes empezar a escanear', usersIDs.map((user) => user._id.toString()));
+            if (notification) {
+                const usersIDs = await user_model_1.default.find({
+                    venue: {
+                        $in: venuesIDs
+                    },
+                    company
+                }, {
+                    _id: true
+                });
+                push_service_1.default.massiveSend('Nuevo inventario', `Se ha iniciado el inventario "${inventory.name}"`, 'Ya puedes empezar a escanear', usersIDs.map((user) => user._id.toString()));
+            }
             server_1.io.to(`inventory-list-${company}`).emit('REFRESH', {
                 update: true
             });
@@ -240,6 +242,7 @@ class InventoryController {
                 const defaultResults = {
                     [inventory_model_1.ChoicesStatusCarInventory.pending]: 0,
                     [inventory_model_1.ChoicesStatusCarInventory.found]: 0,
+                    [inventory_model_1.ChoicesStatusCarInventory.missing]: 0,
                     [inventory_model_1.ChoicesStatusCarInventory.reported]: 0,
                     [inventory_model_1.ChoicesStatusCarInventory.leftover]: 0
                 };
@@ -1020,6 +1023,7 @@ class InventoryController {
                 [inventory_model_1.ChoicesStatusCarInventory.pending]: 0,
                 [inventory_model_1.ChoicesStatusCarInventory.found]: 0,
                 [inventory_model_1.ChoicesStatusCarInventory.leftover]: 0,
+                [inventory_model_1.ChoicesStatusCarInventory.missing]: 0,
                 [inventory_model_1.ChoicesStatusCarInventory.reported]: 0
             };
             for (const db of detailByBrands) {

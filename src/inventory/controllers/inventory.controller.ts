@@ -65,7 +65,7 @@ class InventoryController {
 
   public async create(req: IRequest, res: Response) {
     const {company, team} = req.user;
-    const {carsByVenue, name} = req.body;
+    const {carsByVenue, name, notification} = req.body;
     try {
       const inventoryCars: IInventoryCar[] = [];
       const venuesIDs: string[] = [];
@@ -125,20 +125,22 @@ class InventoryController {
         status: ChoicesStatusInventory.inProcess
       });
       await inventory.save();
-      const usersIDs = await UserModel.find({
-        venue: {
-          $in: venuesIDs
-        },
-        company
-      }, {
-        _id: true
-      });
-      PushService.massiveSend(
-        'Nuevo inventario',
-        `Se ha iniciado el inventario "${inventory.name}"`,
-        'Ya puedes empezar a escanear',
-         usersIDs.map((user) => user._id.toString())
-      );
+      if (notification) {
+        const usersIDs = await UserModel.find({
+          venue: {
+            $in: venuesIDs
+          },
+          company
+        }, {
+          _id: true
+        });
+        PushService.massiveSend(
+          'Nuevo inventario',
+          `Se ha iniciado el inventario "${inventory.name}"`,
+          'Ya puedes empezar a escanear',
+           usersIDs.map((user) => user._id.toString())
+        );
+      }
       io.to(`inventory-list-${company}`).emit('REFRESH', {
         update: true
       });
@@ -256,6 +258,7 @@ class InventoryController {
         const defaultResults = {
           [ChoicesStatusCarInventory.pending]: 0,
           [ChoicesStatusCarInventory.found]: 0,
+          [ChoicesStatusCarInventory.missing]: 0,
           [ChoicesStatusCarInventory.reported]: 0,
           [ChoicesStatusCarInventory.leftover]: 0
         };
@@ -1025,6 +1028,7 @@ class InventoryController {
         [ChoicesStatusCarInventory.pending]: 0,
         [ChoicesStatusCarInventory.found]: 0,
         [ChoicesStatusCarInventory.leftover]: 0,
+        [ChoicesStatusCarInventory.missing]: 0,
         [ChoicesStatusCarInventory.reported]: 0
       };
 

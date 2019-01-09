@@ -409,7 +409,7 @@ class InventoryCreateView extends React.Component<IPropsType, IStateType> {
   }
 
   private sendCreate(): void {
-    const {carsByVenue, name} = this.state;
+    const {carsByVenue, name, notification} = this.state;
     const { history } = this.props;
     this.setState({
       sending: true
@@ -428,7 +428,7 @@ class InventoryCreateView extends React.Component<IPropsType, IStateType> {
       const api = new ApiService();
       api.getSource();
       api
-        .createInventory(carsByVenue, name)
+        .createInventory(carsByVenue, name, notification)
         .then((response) => {
           const { message } = response.data;
           setTimeout(() => {

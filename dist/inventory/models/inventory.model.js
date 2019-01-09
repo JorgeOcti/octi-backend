@@ -18,6 +18,7 @@ var ChoicesStatusCarInventory;
 (function (ChoicesStatusCarInventory) {
     ChoicesStatusCarInventory["pending"] = "pending";
     ChoicesStatusCarInventory["found"] = "found";
+    ChoicesStatusCarInventory["missing"] = "missing";
     ChoicesStatusCarInventory["leftover"] = "leftover";
     ChoicesStatusCarInventory["reported"] = "reported";
 })(ChoicesStatusCarInventory = exports.ChoicesStatusCarInventory || (exports.ChoicesStatusCarInventory = {}));
@@ -25,6 +26,7 @@ exports.choicesStatusCarInventory = [
     ChoicesStatusCarInventory.pending,
     ChoicesStatusCarInventory.found,
     ChoicesStatusCarInventory.leftover,
+    ChoicesStatusCarInventory.missing,
     ChoicesStatusCarInventory.reported
 ];
 const inventoryCarSchema = new mongoose.Schema({
@@ -49,6 +51,14 @@ const inventoryCarSchema = new mongoose.Schema({
             ref: 'InventoryFile'
         }],
     comments: [invetoryCommentCars],
+    customizedStatus: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User'
+    },
+    customizedStatusText: {
+        type: String,
+        default: ''
+    },
     status: {
         type: String,
         enum: exports.choicesStatusCarInventory,
