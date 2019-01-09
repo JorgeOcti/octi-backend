@@ -849,7 +849,7 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
   }
 
   private updateVenueChart(detailByVenue: IDetailByVenue[], update?: boolean) {
-    const {loadingDetail} = this.props.inventories;
+    const {loadingDetail, detail} = this.props.inventories;
     const venuesNames: string[] = [];
     const venuesFound: any[] = [];
     const venuesPending: any[] = [];
@@ -859,11 +859,20 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
     // detailByVenue.sort((a, b) => {
     //   return a.name.localeCompare(b.name);
     // });
-    detailByVenue.sort((a: any, b: any) => {
-      const suma = a.results.leftover + a.results.missing + a.results.reported;
-      const sumb = b.results.leftover + b.results.missing + b.results.reported;
-      return sumb - suma;
-    });
+    if (detail.status === 'inProcess') {
+      detailByVenue.sort((a: any, b: any) => {
+        return b.results.pending - a.results.pending;
+      });
+    } else {
+      detailByVenue.sort((a: any, b: any) => {
+        return b.results.pending - a.results.pending;
+      });
+      detailByVenue.sort((a: any, b: any) => {
+        const suma = a.results.leftover + a.results.missing + a.results.reported;
+        const sumb = b.results.leftover + b.results.missing + b.results.reported;
+        return sumb - suma;
+      });
+    }
 
     for (const venue of detailByVenue) {
       venuesNames.push(venue.name);
@@ -1022,10 +1031,15 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
       optionVenues.legend = {
         ...optionVenues,
         selected: {
-          Encontrados: false,
-          Pendientes: false
+          Encontrados: false
         }
       };
+      if (detail.status === 'finalized') {
+        (optionVenues.legend as any).selected = {
+          ...(optionVenues.legend as any).selected,
+          Pendientes: false
+        };
+      }
       optionVenues.dataZoom = [
         {
           show: venuesNames.length > 12,
@@ -1041,7 +1055,7 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
   }
 
   private updateBrandChart(detailByBrand: IDetailByBrand[], update?: boolean) {
-    const {loadingDetail} = this.props.inventories;
+    const {loadingDetail, detail} = this.props.inventories;
     const brandNames: string[] = [];
     const brandFound: any[] = [];
     const brandPending: any[] = [];
@@ -1051,11 +1065,21 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
     // detailByBrand.sort((a, b) => {
     //   return a.name.localeCompare(b.name);
     // });
-    detailByBrand.sort((a: any, b: any) => {
-      const suma = a.results.leftover + a.results.missing + a.results.reported;
-      const sumb = b.results.leftover + b.results.missing + b.results.reported;
-      return sumb - suma;
-    });
+    if (detail.status === 'inProcess') {
+      detailByBrand.sort((a: any, b: any) => {
+        return b.results.pending - a.results.pending;
+      });
+    } else {
+      detailByBrand.sort((a: any, b: any) => {
+        return b.results.pending - a.results.pending;
+      });
+      detailByBrand.sort((a: any, b: any) => {
+        const suma = a.results.leftover + a.results.missing + a.results.reported;
+        const sumb = b.results.leftover + b.results.missing + b.results.reported;
+        return sumb - suma;
+      });
+    }
+
     for (const brand of detailByBrand) {
       brandNames.push(brand.name);
       brandFound.push(brand.results && brand.results.found > 0 ? brand.results.found : null);
@@ -1164,10 +1188,15 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
       optionBrands.legend = {
         ...optionBrands,
         selected: {
-          Encontrados: false,
-          Pendientes: false
+          Encontrados: false
         }
       };
+      if (detail.status === 'finalized') {
+        (optionBrands.legend as any).selected = {
+          ...(optionBrands.legend as any).selected,
+          Pendientes: false
+        };
+      }
       optionBrands.dataZoom = [
         {
           show: brandNames.length > 12,
