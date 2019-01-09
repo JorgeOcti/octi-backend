@@ -149,6 +149,7 @@ class AdminCarController {
     } catch (e) {
       /* istanbul ignore next  */
       if (e) {
+        console.log('e', e)
         res.status(500).json(e);
       }
     }
@@ -168,9 +169,7 @@ class AdminCarController {
           }, {
             color: {$regex: searchText}
           }]
-        },
-          ...filter
-        ]
+        }, filter]
       };
     }
 
