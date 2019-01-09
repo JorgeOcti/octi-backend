@@ -198,8 +198,7 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
     classes: 'middle hidden-xs hidden-sm hidden-md',
     headerClasses: 'hidden-xs hidden-sm hidden-md pointer',
     sort: true
-  },
-    {
+    }, /* {
       dataField: 'inventoriedBy',
       text: 'Encontrado por',
       filter: textFilter({
@@ -209,7 +208,7 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
       classes: 'middle hidden-xs hidden-sm hidden-md',
       headerClasses: 'hidden-xs hidden-sm hidden-md pointer',
       sort: true
-    }, {
+    },*/ {
       dataField: 'images',
       text: 'Imágenes',
       classes: 'middle hidden-xs',
@@ -330,9 +329,10 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
     const $brandDetail = document.getElementById('chart-brand-detail') as HTMLDivElement;
     this.venuesDetailChart = echarts.init($venuesDetail);
     this.brandDetailChart = echarts.init($brandDetail);
+    window.scrollTo(0, 0);
   }
 
-  public componentDidUpdate() {
+  public componentDidUpdate(prevProps: IPropsType): void {
     const {loadingDetail, detailByVenue, detailByBrand} = this.props.inventories;
     // style react boostrap table
     $('.react-bootstrap-table-pagination div').removeClass('col-xs-6').addClass('col-xs-12').css({padding: '3px 15px'});
@@ -349,6 +349,9 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
     } else {
       this.updateVenueChart(detailByVenue, true);
       this.updateBrandChart(detailByBrand, true);
+    }
+    if (this.props.location !== prevProps.location) {
+      window.scrollTo(0, 0);
     }
   }
 
@@ -434,12 +437,13 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
                 <span className="info-box-icon"><i className="fa fa-check" /></span>
                 <div className="info-box-content">
                   <span className="info-box-text">Encontrados</span>
-                  <span className="info-box-number">
+                  <span className="info-box-number count">
                     {!loadingDetail && summary.results && summary.results.found ? summary.results.found : 0}
                   </span>
                   <div className="progress">
                     <div className="progress-bar" style={{
-                      width: `${percentageFound}%`
+                      width: `${!loadingDetail ? percentageFound : 0}%`,
+                      transition: loadingDetail ? 'none' : 'width .6s ease'
                     }} />
                   </div>
                   <span className="progress-description">
@@ -453,12 +457,13 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
                 <span className="info-box-icon"><i className="fa fa-clock-o" /></span>
                 <div className="info-box-content">
                   <span className="info-box-text">Pendientes</span>
-                  <span className="info-box-number">
+                  <span className="info-box-number count">
                     {!loadingDetail && summary.results && summary.results.pending ? summary.results.pending : 0}
                   </span>
                   <div className="progress">
                     <div className="progress-bar" style={{
-                      width: `${percentagePending}%`
+                      width: `${!loadingDetail ? percentagePending : 0}%`,
+                      transition: loadingDetail ? 'none' : 'width .6s ease'
                     }} />
                   </div>
                   <span className="progress-description">
@@ -472,12 +477,13 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
                 <span className="info-box-icon"><i className="fa fa-arrow-up" /></span>
                 <div className="info-box-content">
                   <span className="info-box-text">Sobrantes</span>
-                  <span className="info-box-number">
+                  <span className="info-box-number count">
                     {!loadingDetail && summary.results && summary.results.leftover ? summary.results.leftover : 0}
                   </span>
                   <div className="progress">
                     <div className="progress-bar" style={{
-                      width: `${percentageLeftover}%`
+                      width: `${!loadingDetail ? percentageLeftover : 0}%`,
+                      transition: loadingDetail ? 'none' : 'width .6s ease'
                     }} />
                   </div>
                   <span className="progress-description">
@@ -491,12 +497,13 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
                 <span className="info-box-icon"><i className="fa fa-arrow-down" /></span>
                 <div className="info-box-content">
                   <span className="info-box-text">Faltantes</span>
-                  <span className="info-box-number">
+                  <span className="info-box-number count">
                     {!loadingDetail && summary.results && summary.results.missing ? summary.results.missing : 0}
                   </span>
                   <div className="progress">
                     <div className="progress-bar" style={{
-                      width: `${percentageMissing}%`
+                      width: `${!loadingDetail ? percentageMissing : 0}%`,
+                      transition: loadingDetail ? 'none' : 'width .6s ease'
                     }} />
                   </div>
                   <span className="progress-description">
@@ -510,12 +517,13 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
                 <span className="info-box-icon"><i className="fa fa-cogs" /></span>
                 <div className="info-box-content">
                   <span className="info-box-text">Reportados</span>
-                  <span className="info-box-number">
+                  <span className="info-box-number count">
                     {!loadingDetail && summary.results && summary.results.reported ? summary.results.reported : 0}
                   </span>
                   <div className="progress">
                     <div className="progress-bar" style={{
-                      width: `${percentageReported}%`
+                      width: `${!loadingDetail ? percentageReported : 0}%`,
+                      transition: loadingDetail ? 'none' : 'width .6s ease'
                     }} />
                   </div>
                   <span className="progress-description">
@@ -556,7 +564,7 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
                     </li>
                     <li className="list-group-item">
                       <strong>Encontrados</strong>
-                      <span className="pull-right label label-success" style={{padding: '5px 10px', fontSize: '12px'}}>
+                      <span className="pull-right label label-success count" style={{padding: '5px 10px', fontSize: '12px'}}>
                         {
                           !loadingDetail && summary.results ?
                             summary.results.found + summary.results.leftover
@@ -566,7 +574,7 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
                     </li>
                     <li className="list-group-item">
                       <strong>Faltantes</strong>
-                      <span className="pull-right label label-danger" style={{padding: '5px 10px', fontSize: '12px'}}>
+                      <span className="pull-right label label-danger count" style={{padding: '5px 10px', fontSize: '12px'}}>
                         {
                           !loadingDetail && summary.results ?
                             summary.results.pending - summary.results.leftover
@@ -576,7 +584,7 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
                     </li>
                     <li className="list-group-item">
                       <strong>Total</strong>
-                      <span className="pull-right label label-primary" style={{padding: '5px 10px', fontSize: '12px'}}>
+                      <span className="pull-right label label-primary count" style={{padding: '5px 10px', fontSize: '12px'}}>
                         {
                           !loadingDetail && summary.results ?
                             (summary.results.found + summary.results.leftover) + (summary.results.pending - summary.results.leftover)
@@ -586,7 +594,7 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
                     </li>
                     <li className="list-group-item text-muted"  style={{borderBottom: 0}}>
                       <strong>Reportados</strong>
-                      <span className="pull-right label label-default" style={{padding: '5px 10px', fontSize: '12px'}}>
+                      <span className="pull-right label label-default count" style={{padding: '5px 10px', fontSize: '12px'}}>
                         {
                           !loadingDetail && summary.results ?
                             summary.results.reported

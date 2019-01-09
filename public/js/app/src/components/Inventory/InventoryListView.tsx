@@ -52,9 +52,10 @@ class InventoryListView extends React.Component<IPropsType, IStateType> {
     this.goToDetail = this.goToDetail.bind(this);
   }
 
-  public componentWillMount() {
+  public componentWillMount(): void {
     // set the title of the page
     document.title = 'OSA Andes | Inventarios';
+    window.scrollTo(0, 0);
 
     // get data
     this.props.getInventoriesAction(true);
@@ -75,7 +76,7 @@ class InventoryListView extends React.Component<IPropsType, IStateType> {
     });
   }
 
-  public componentWillUnmount() {
+  public componentWillUnmount(): void {
     // cancel request if component is inmounted
     if (this.props.inventories.source) {
       this.props.inventories.source.cancel('Operation canceled by the user.');
@@ -83,7 +84,11 @@ class InventoryListView extends React.Component<IPropsType, IStateType> {
     this.socket.disconnect();
   }
 
-  public componentDidCatch(error: Error, errorInfo: ErrorInfo) {
+  public componentDidMount(): void {
+    window.scrollTo(0, 0);
+  }
+
+  public componentDidCatch(error: Error, errorInfo: ErrorInfo): void {
     this.setState({error});
     Raven.captureException(error, {
       extra: errorInfo
