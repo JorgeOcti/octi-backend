@@ -51,6 +51,7 @@ interface IPropsType extends RouteComponentProps<{ id: string }> {
 interface IStateType {
   error: Error | null;
   setCharts: boolean;
+  tab: string;
 }
 
 class InventoryDetailView extends React.Component<IPropsType, IStateType> {
@@ -61,7 +62,8 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
 
   state = {
     error: null,
-    setCharts: false
+    setCharts: false,
+    tab: 'summary'
   };
 
   venuesDetailChart: echarts.ECharts;
@@ -154,6 +156,7 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
     this.commentFormatter = this.commentFormatter.bind(this);
     this.calculateDetails = this.calculateDetails.bind(this);
     this.imagesFormatter = this.imagesFormatter.bind(this);
+    this.changeTab = this.changeTab.bind(this);
     this.defaultColumns = [{
     dataField: 'vin',
     text: 'VIN / Patente',
@@ -417,6 +420,7 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
       summary,
       detail
     } = this.props.inventories;
+    const { tab } = this.state;
     const {
       percentagePending,
       percentageFound,
@@ -432,6 +436,28 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
       <AppContainer title={summary.name} cMenu="2" cSubMenu="2.1" cAction="Detalle">
         <section className="content">
           <Row>
+            <div className="col-md-12 col-lg-12">
+              <div className="box box-solid">
+                <ul className="nav nav-pills nav-justified">
+                  <li className={tab === 'summary' ? 'active' : ''}>
+                    <a
+                      href="javascript:void(0);"
+                      style={{borderTop: '0', marginBottom: '0'}}
+                      onClick={() => this.changeTab('summary')}
+                    >Consolidado</a>
+                  </li>
+                  <li className={tab === 'operation' ? 'active' : ''}>
+                    <a
+                      href="javascript:void(0);"
+                      style={{borderTop: '0', marginBottom: '0'}}
+                      onClick={() => this.changeTab('operation')}
+                    >Operación</a>
+                  </li>
+                </ul>
+              </div>
+            </div>
+          </Row>
+          <Row style={{display: tab === 'summary' ? 'block' : 'none'}}>
             <div className="col-md-6 col-lg-4">
               <div className="info-box bg-green">
                 <span className="info-box-icon"><i className="fa fa-check" /></span>
@@ -493,103 +519,31 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
               </div>
             </div>
           </Row>
-          <Row>
-            <div className="col-md-6 col-lg-4">
-              <div className="box box-primary">
+          <Row style={{display: tab === 'summary' ? 'block' : 'none'}}>
+            <div className="col-md-12 col-lg-12">
+              <div className="box box-default">
                 <div className="box-header with-border">
-                  <h3 className="box-title">Resumen General</h3>
-                </div>
-                <div className="box-body">
-                  <ul className="list-group list-group-unbordered">
-                    <li className="list-group-item">
-                      <strong><i className="fa fa-fw fa-clock-o  margin-r-5"/> Fecha creación</strong>
-                      <p className="pull-right">
-                         {!loadingDetail && summary && summary.createdAt ? moment(summary.createdAt).format('LLL') : null}
-                      </p>
-                    </li>
-                    <li className="list-group-item" style={{borderTop: 0}}>
-                      <strong><i className="fa fa-fw fa-user margin-r-5"/> Creado por</strong>
-                      <p className="pull-right">
-                        {!loadingDetail && summary && summary.createdBy ? summary.createdBy.fullName : null}
-                      </p>
-                    </li>
-                    <li className="list-group-item">
-                      <strong><i className="fa fa-fw fa-bookmark-o margin-r-5"/> Estado</strong>
-                      <p className="pull-right">
-                        {!loadingDetail ? this.labelStatus(detail.status) : null}
-                      </p>
-                    </li>
-                    <li className="list-group-item">
-                      <strong><i className="fa fa-fw fa-car margin-r-5" /> Vehículos del inventario</strong>
-                    </li>
-                    <li className="list-group-item">
-                      <strong>Encontrados</strong>
-                      <span className="pull-right label label-success count" style={{padding: '5px 10px', fontSize: '12px'}}>
-                        {
-                          !loadingDetail && summary.results ?
-                            summary.results.found
-                            : 0
-                        }
-                      </span>
-                    </li>
-                    <li className="list-group-item">
-                      <strong>Faltantes</strong>
-                      <span className="pull-right label label-danger count" style={{padding: '5px 10px', fontSize: '12px'}}>
-                        {
-                          !loadingDetail && summary.results ?
-                            summary.results.missing
-                            : 0
-                        }
-                      </span>
-                    </li>
-                    <li className="list-group-item">
-                      <strong>Total</strong>
-                      <span className="pull-right label label-primary count" style={{padding: '5px 10px', fontSize: '12px'}}>
-                        {
-                          !loadingDetail && summary.results ?
-                            (summary.results.found + summary.results.leftover) + (summary.results.pending - summary.results.leftover)
-                            : 0
-                        }
-                      </span>
-                    </li>
-                    <li className="list-group-item text-muted"  style={{borderBottom: 0}}>
-                      <strong>Pendientes</strong>
-                      <span className="pull-right label label-info count" style={{padding: '5px 10px', fontSize: '12px'}}>
-                        {
-                          !loadingDetail && summary.results ?
-                            summary.results.pending
-                            : 0
-                        }
-                      </span>
-                    </li>
-                    <li className="list-group-item text-muted"  style={{borderBottom: 0}}>
-                      <strong>Sobrantes</strong>
-                      <span className="pull-right label label-warning count" style={{padding: '5px 10px', fontSize: '12px'}}>
-                        {
-                          !loadingDetail && summary.results ?
-                            summary.results.leftover
-                            : 0
-                        }
-                      </span>
-                    </li>
-                    <li className="list-group-item text-muted"  style={{borderBottom: 0}}>
-                      <strong>Reportados</strong>
-                      <span className="pull-right label label-default count" style={{padding: '5px 10px', fontSize: '12px'}}>
-                        {
-                          !loadingDetail && summary.results ?
-                            summary.results.reported
-                            : 0
-                        }
-                      </span>
-                    </li>
-                  </ul>
-                  {/*<a href="#" className="btn btn-primary btn-block"><b>Follow</b></a>*/}
-                  <button
-                      className="btn btn-sm btn-block btn-primary hidden-xs hidden-sm"
-                      onClick={() => this.xlsExport(['pending', 'found', 'leftover', 'missing', 'reported'])}
-                    >
-                      <i className="fa fa-fw fa-download"/> Exportar excel General
-                    </button>
+                <Row className="vertical-line-mobile">
+                  <div className="col-md-6 col-lg-3">
+                    <i className="fa fa-fw fa-user text-primary"/>
+                    {
+                      !loadingDetail && summary && summary.createdBy ?
+                        summary.createdBy.fullName
+                        : '-'
+                    }
+                  </div>
+                  <div className="col-md-6 col-lg-3">
+                    <i className="fa fa-fw fa-clock-o text-green"/>
+                    {!loadingDetail && summary && summary.createdAt ? moment(summary.createdAt).format('LLL') : '-'}
+                  </div>
+                  <div className="col-md-6 col-lg-3">
+                    <i className="fa fa-fw fa-clock-o text-red"/>
+                    {!loadingDetail && summary && summary.finalizedAt ? moment(summary.finalizedAt).format('LLL') : '-'}
+                  </div>
+                  <div className="col-md-6 col-lg-3 text-right">
+                    {!loadingDetail ? this.labelStatus(detail.status) : null}
+                  </div>
+                </Row>
                 </div>
                 {
                   loadingDetail &&
@@ -599,12 +553,20 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
                 }
               </div>
             </div>
-            <div className="col-md-6 col-lg-8">
+          </Row>
+          <Row style={{display: tab === 'summary' ? 'block' : 'none'}}>
+            <div className="col-md-12 col-lg-12">
               <div className="box box-primary">
                 <div className="box-header with-border">
                   <h3 className="box-title">Detalle de inventario por sucursal</h3>
-                  {/*<div className="box-tools pull-right">*/}
-                  {/*</div>*/}
+                  <div className="box-tools pull-right">
+                    <button
+                      className="btn btn-sm btn-primary hidden-xs hidden-sm"
+                      onClick={() => this.xlsExport(['pending', 'found', 'leftover', 'missing', 'reported'])}
+                    >
+                      <i className="fa fa-fw fa-download"/> Exportar excel General
+                    </button>
+                  </div>
                 </div>
                 <div className="box-body">
                   <div id="chart-venues-detail" style={{height: '600px', maxWidth: '100%'}}/>
@@ -618,7 +580,7 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
               </div>
             </div>
           </Row>
-          <Row>
+          <Row style={{display: tab === 'summary' ? 'block' : 'none'}}>
             <div className="col-md-12">
               <div className="box box-success">
                 <div className="box-header with-border">
@@ -638,8 +600,7 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
               </div>
             </div>
           </Row>
-          <hr />
-          <Row>
+          <Row style={{display: tab === 'operation' ? 'block' : 'none'}}>
             <div className="col-md-6 col-lg-6">
               <div className="info-box bg-aqua">
                 <span className="info-box-icon"><i className="fa fa-clock-o" /></span>
@@ -681,7 +642,7 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
               </div>
             </div>
           </Row>
-          <Row>
+          <Row style={{display: tab === 'operation' ? 'block' : 'none'}}>
             <div className="col-md-12">
               <div className="box box-info">
                 <div className="box-header with-border">
@@ -718,7 +679,7 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
               </div>
             </div>
           </Row>
-          <Row>
+          <Row style={{display: tab === 'operation' ? 'block' : 'none'}}>
             <div className="col-md-12">
               <div className="box box-info">
                 <div className="box-header with-border">
@@ -757,6 +718,12 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
         </section>
       </AppContainer>
     );
+  }
+
+  private changeTab(name: string): void {
+    this.setState({
+      tab: name
+    });
   }
 
   private calculateDetails(results: IInventorySummaryResult | undefined) {
