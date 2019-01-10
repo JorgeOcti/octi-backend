@@ -56,10 +56,6 @@ interface IStateType {
 
 class InventoryDetailView extends React.Component<IPropsType, IStateType> {
 
-  // static propTypes = {
-  //   dispatch: PropTypes.func.isRequired
-  // };
-
   state = {
     error: null,
     setCharts: false,
@@ -112,12 +108,6 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
     reported: 'bg-gray'
   };
 
-  private selectOptions: any = {
-    pending: 'Pendiente',
-    found: 'Encontrado',
-    leftover: 'Sobrante'
-  };
-
   private paginationOption: any = {
     // paginationSize: 4,
     showTotal: true,
@@ -142,7 +132,6 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
 
   private defaultColumns: any[] = [];
   private columns: any[] = [];
-  private columnsReported: any[] = [];
 
   private socket: SocketIOClient.Socket;
 
@@ -201,17 +190,7 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
     classes: 'middle hidden-xs hidden-sm hidden-md',
     headerClasses: 'hidden-xs hidden-sm hidden-md pointer',
     sort: true
-    }, /* {
-      dataField: 'inventoriedBy',
-      text: 'Encontrado por',
-      filter: textFilter({
-        className: 'input-sm',
-        placeholder: ' Buscar'
-      }),
-      classes: 'middle hidden-xs hidden-sm hidden-md',
-      headerClasses: 'hidden-xs hidden-sm hidden-md pointer',
-      sort: true
-    },*/ {
+    }, {
       dataField: 'images',
       text: 'Imágenes',
       classes: 'middle hidden-xs',
@@ -237,9 +216,9 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
       dataField: 'status',
       text: 'Status',
       sort: true,
-      formatter: (cell: string) => (this.selectOptions[cell]),
+      formatter: (cell: string) => (this.statusText[cell]),
       filter: selectFilter({
-        options: this.selectOptions,
+        options: this.statusText,
         // withoutEmptyOption: true,
         className: 'input-sm',
         placeholder: 'Seleccione tipo',
@@ -252,20 +231,6 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
       },
       classes: (cell: any) => {
         return `middle-center ${this.classStatus.hasOwnProperty(cell) ? this.classStatus[cell] : ''}`;
-      }
-    }];
-    this.columnsReported = [...this.defaultColumns, {
-      dataField: 'status',
-      text: 'Status',
-      headerClasses: 'pointer',
-      formatter: () => ('Reportado'),
-      headerStyle: {
-        verticalAlign: 'top',
-        maxWidth: '100px',
-        minWidth: '100px'
-      },
-      classes: (cell: any) => {
-        return `middle-center text-center ${this.classStatus.hasOwnProperty(cell) ? this.classStatus[cell] : ''}`;
       }
     }];
   }
@@ -458,6 +423,44 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
             </div>
           </Row>
           <Row style={{display: tab === 'summary' ? 'block' : 'none'}}>
+            <div className="col-md-12 col-lg-12">
+              <div className="box box-default">
+                <div className="box-header with-border">
+                <Row className="vertical-line-mobile">
+                  <div className="col-md-6 col-lg-3">
+                    <i className="fa fa-fw fa-user text-primary"/>
+                    <strong>
+                      {
+                      !loadingDetail && summary && summary.createdBy ?
+                        summary.createdBy.fullName
+                        : '-'
+                    }
+                    </strong>
+
+                  </div>
+                  <div className="col-md-6 col-lg-3">
+                    <i className="fa fa-fw fa-clock-o text-green"/>
+                    <strong>{!loadingDetail && summary && summary.createdAt ? moment(summary.createdAt).format('LLL') : '-'}</strong>
+                  </div>
+                  <div className="col-md-6 col-lg-3">
+                    <i className="fa fa-fw fa-clock-o text-red"/>
+                    <strong>{!loadingDetail && summary && summary.finalizedAt ? moment(summary.finalizedAt).format('LLL') : '-'}</strong>
+                  </div>
+                  <div className="col-md-6 col-lg-3 text-right">
+                    {!loadingDetail ? this.labelStatus(detail.status) : null}
+                  </div>
+                </Row>
+                </div>
+                {
+                  loadingDetail &&
+                  <div className="overlay">
+                    <i className="fa fa-spinner fa-spin text-purple"/>
+                  </div>
+                }
+              </div>
+            </div>
+          </Row>
+          <Row style={{display: tab === 'summary' ? 'block' : 'none'}}>
             <div className="col-md-6 col-lg-4">
               <div className="info-box bg-green">
                 <span className="info-box-icon"><i className="fa fa-check" /></span>
@@ -521,41 +524,6 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
           </Row>
           <Row style={{display: tab === 'summary' ? 'block' : 'none'}}>
             <div className="col-md-12 col-lg-12">
-              <div className="box box-default">
-                <div className="box-header with-border">
-                <Row className="vertical-line-mobile">
-                  <div className="col-md-6 col-lg-3">
-                    <i className="fa fa-fw fa-user text-primary"/>
-                    {
-                      !loadingDetail && summary && summary.createdBy ?
-                        summary.createdBy.fullName
-                        : '-'
-                    }
-                  </div>
-                  <div className="col-md-6 col-lg-3">
-                    <i className="fa fa-fw fa-clock-o text-green"/>
-                    {!loadingDetail && summary && summary.createdAt ? moment(summary.createdAt).format('LLL') : '-'}
-                  </div>
-                  <div className="col-md-6 col-lg-3">
-                    <i className="fa fa-fw fa-clock-o text-red"/>
-                    {!loadingDetail && summary && summary.finalizedAt ? moment(summary.finalizedAt).format('LLL') : '-'}
-                  </div>
-                  <div className="col-md-6 col-lg-3 text-right">
-                    {!loadingDetail ? this.labelStatus(detail.status) : null}
-                  </div>
-                </Row>
-                </div>
-                {
-                  loadingDetail &&
-                  <div className="overlay">
-                    <i className="fa fa-spinner fa-spin text-purple"/>
-                  </div>
-                }
-              </div>
-            </div>
-          </Row>
-          <Row style={{display: tab === 'summary' ? 'block' : 'none'}}>
-            <div className="col-md-12 col-lg-12">
               <div className="box box-primary">
                 <div className="box-header with-border">
                   <h3 className="box-title">Detalle de inventario por sucursal</h3>
@@ -564,7 +532,7 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
                       className="btn btn-sm btn-primary hidden-xs hidden-sm"
                       onClick={() => this.xlsExport(['pending', 'found', 'leftover', 'missing', 'reported'])}
                     >
-                      <i className="fa fa-fw fa-download"/> Exportar excel General
+                      <i className="fa fa-fw fa-download"/> Exportar Excel
                     </button>
                   </div>
                 </div>
@@ -652,8 +620,22 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
                       className="btn btn-sm btn-primary hidden-xs hidden-sm"
                       onClick={() => this.xlsExport(['pending', 'found', 'leftover', 'missing'])}
                     >
-                      <i className="fa fa-fw fa-download"/> Exportar en Excel
+                      <i className="fa fa-fw fa-download"/> Exportar Excel
                     </button>
+                    <div className="btn-group btn-group-sm" style={{marginLeft: '5px'}}>
+                      <button type="button" className="btn btn-success"><i className="fa fa-fw fa-cogs"/> Acciones</button>
+                      <button type="button" className="btn btn-success dropdown-toggle" data-toggle="dropdown">
+                        <span className="caret"/>
+                        <span className="sr-only">Toggle Dropdown</span>
+                      </button>
+                      <ul className="dropdown-menu" role="menu">
+                        <li><a href="#"><i className="fa fa-fw fa-copy"/> Copiar</a></li>
+                        <li><a href="#"><i className="fa fa-fw fa-paste"/> Pegar</a></li>
+                        <li><a href="#"><i className="fa fa-fw fa-close"/> Eliminar</a></li>
+                        <li className="divider"/>
+                        <li><a href="#"><i className="fa fa-fw fa-certificate"/> Etiqueta</a></li>
+                      </ul>
+                    </div>
                   </div>
                 </div>
                 <div className="box-body">
@@ -666,41 +648,6 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
                         filter={filterFactory()}
                         pagination={paginationFactory(this.paginationOption)}
                         defaultSorted={this.defaultSorted}
-                      />
-                    </div>
-                  </div>
-                </div>
-                {
-                  loadingDetail &&
-                  <div className="overlay">
-                    <i className="fa fa-spinner fa-spin text-purple"/>
-                  </div>
-                }
-              </div>
-            </div>
-          </Row>
-          <Row style={{display: tab === 'operation' ? 'block' : 'none'}}>
-            <div className="col-md-12">
-              <div className="box box-info">
-                <div className="box-header with-border">
-                  <h3 className="box-title">Detalle Reportados</h3>
-                  <div className="box-tools pull-right">
-                    <button className="btn btn-sm btn-primary hidden-xs hidden-sm" onClick={() => this.xlsExport(['reported'])}>
-                      <i className="fa fa-fw fa-download" /> Exportar en Excel
-                    </button>
-                  </div>
-                </div>
-                <div className="box-body">
-                  <div className="row">
-                    <div className="col-md-12">
-                      <BootstrapTable
-                        keyField="_id"
-                        data={reported}
-                        columns={this.columnsReported}
-                        filter={filterFactory()}
-                        pagination={paginationFactory(this.paginationOption)}
-                        defaultSorted={this.defaultSorted}
-                        noDataIndication={'No hay vehiculos reportados aún.'}
                       />
                     </div>
                   </div>
@@ -753,37 +700,37 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
     const products: any[] = [];
     const reported: any[] = [];
     for (const car of cars) {
-      if (car.status === 'reported') {
-        reported.push({
-          _id: (car as any)._id,
-          vin: car.car.vin,
-          brand: car.car.brand,
-          denomination: car.car.denomination,
-          venue: car.venue ? car.venue.name : '-',
-          images: car.images && car.images.length ? car.images : [],
-          comments: car.comments && car.comments.length ? car.comments : [],
-          countComments: car.comments && car.comments.length ? car.comments.length : 0,
-          venueFound: car.venueFound ? car.venueFound.name : '-',
-          patent: car.car.patent ? car.car.patent : '',
-          inventoriedBy: car.inventoriedBy ? `${car.inventoriedBy.firstName} ${car.inventoriedBy.lastName}` : '-',
-          status: car.status
-        });
-      } else {
-        products.push({
-          _id: (car as any)._id,
-          vin: car.car.vin,
-          brand: car.car.brand,
-          denomination: car.car.denomination,
-          venue: car.venue ? car.venue.name : '-',
-          images: car.images && car.images.length ? car.images : [],
-          comments: car.comments && car.comments.length ? car.comments : [],
-          countComments: car.comments && car.comments.length ? car.comments.length : 0,
-          venueFound: car.venueFound ? car.venueFound.name : '-',
-          patent: car.car.patent ? car.car.patent : '',
-          inventoriedBy: car.inventoriedBy ? `${car.inventoriedBy.firstName} ${car.inventoriedBy.lastName}` : '-',
-          status: car.status
-        });
-      }
+      // if (car.status === 'reported') {
+      //   reported.push({
+      //     _id: (car as any)._id,
+      //     vin: car.car.vin,
+      //     brand: car.car.brand,
+      //     denomination: car.car.denomination,
+      //     venue: car.venue ? car.venue.name : '-',
+      //     images: car.images && car.images.length ? car.images : [],
+      //     comments: car.comments && car.comments.length ? car.comments : [],
+      //     countComments: car.comments && car.comments.length ? car.comments.length : 0,
+      //     venueFound: car.venueFound ? car.venueFound.name : '-',
+      //     patent: car.car.patent ? car.car.patent : '',
+      //     inventoriedBy: car.inventoriedBy ? `${car.inventoriedBy.firstName} ${car.inventoriedBy.lastName}` : '-',
+      //     status: car.status
+      //   });
+      // } else {
+      products.push({
+        _id: (car as any)._id,
+        vin: car.car.vin,
+        brand: car.car.brand,
+        denomination: car.car.denomination,
+        venue: car.venue ? car.venue.name : '-',
+        images: car.images && car.images.length ? car.images : [],
+        comments: car.comments && car.comments.length ? car.comments : [],
+        countComments: car.comments && car.comments.length ? car.comments.length : 0,
+        venueFound: car.venueFound ? car.venueFound.name : '-',
+        patent: car.car.patent ? car.car.patent : '',
+        inventoriedBy: car.inventoriedBy ? `${car.inventoriedBy.firstName} ${car.inventoriedBy.lastName}` : '-',
+        status: car.status
+      });
+      // }
     }
     return {
       products,
