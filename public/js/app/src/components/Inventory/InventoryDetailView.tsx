@@ -4,8 +4,8 @@
 ///<reference path="../../../src/types/react-bootstrap-table2-paginator.d.ts"/>
 import * as moment from 'moment';
 import * as Raven from 'raven-js';
-import {ErrorInfo} from 'react';
 import * as React from 'react';
+import {ErrorInfo} from 'react';
 import BootstrapTable from 'react-bootstrap-table-next';
 import filterFactory, { selectFilter, textFilter } from 'react-bootstrap-table2-filter';
 import paginationFactory from 'react-bootstrap-table2-paginator';
@@ -32,6 +32,7 @@ import {loadDataAction, ModalReduxAction} from '../../actions/modal.actions';
 import AppContainer from '../../container/AppContainer';
 import {IWindow} from '../../interfaces/window';
 import {maxText} from '../../utils/common';
+import Checkbox from '../CheckBox';
 import ImageLazyLoad from '../ImageLazyLoad';
 import ModalView from '../Modal/ModalView';
 import Row from '../Row';
@@ -147,49 +148,47 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
     this.imagesFormatter = this.imagesFormatter.bind(this);
     this.changeTab = this.changeTab.bind(this);
     this.defaultColumns = [{
-    dataField: 'vin',
-    text: 'VIN / Patente',
-    formatter: this.vinFormatter,
-    filter: textFilter({
-      className: 'input-sm',
-      placeholder: ' Buscar'
-    }),
-    filterValue: (cell: any, row: any) => `${cell}${row.patent}`,
-    classes: 'middle text-ellipsis',
-    headerClasses: 'pointer',
-    sort: true
-  }, {
-    dataField: 'brand',
-    text: 'Marca / Denominación',
-    formatter: this.brandFormatter,
-    filter: textFilter({
-      className: 'input-sm',
-      placeholder: ' Buscar'
-    }),
-    filterValue: (cell: any, row: any) => `${cell}${row.denomination}`,
-    classes: 'middle hidden-xs',
-    headerClasses: 'hidden-xs pointer',
-    sort: true
-  }, {
-    dataField: 'venue',
-    text: 'Sucursal',
-    filter: textFilter({
-      className: 'input-sm',
-      placeholder: ' Buscar'
-    }),
-    classes: 'middle hidden-xs hidden-sm',
-    headerClasses: 'hidden-xs hidden-sm pointer',
-    sort: true
-  }, {
-    dataField: 'venueFound',
-    text: 'Encontrado en',
-    filter: textFilter({
-      className: 'input-sm',
-      placeholder: ' Buscar'
-    }),
-    classes: 'middle hidden-xs hidden-sm hidden-md',
-    headerClasses: 'hidden-xs hidden-sm hidden-md pointer',
-    sort: true
+      dataField: 'vin',
+      text: '',
+      formatter: this.vinFormatter,
+      classes: 'middle text-ellipsis',
+      style: {
+        maxWidth: '36px',
+        minWidth: '36px',
+        width: '36px'
+      }
+    }, {
+      dataField: 'brand',
+      text: 'Vehículo',
+      formatter: this.brandFormatter,
+      filter: textFilter({
+        className: 'input-sm',
+        placeholder: ' Buscar'
+      }),
+      filterValue: (cell: any, row: any) => `${cell}${row.denomination}${row.vin}${row.patent}`,
+      classes: 'middle',
+      headerClasses: ' pointer',
+      sort: true
+    }, {
+      dataField: 'venue',
+      text: 'Sucursal',
+      filter: textFilter({
+        className: 'input-sm',
+        placeholder: ' Buscar'
+      }),
+      classes: 'middle hidden-xs hidden-sm',
+      headerClasses: 'hidden-xs hidden-sm pointer',
+      sort: true
+    }, {
+      dataField: 'venueFound',
+      text: 'Encontrado en',
+      filter: textFilter({
+        className: 'input-sm',
+        placeholder: ' Buscar'
+      }),
+      classes: 'middle hidden-xs hidden-sm hidden-md',
+      headerClasses: 'hidden-xs hidden-sm hidden-md pointer',
+      sort: true
     }, {
       dataField: 'images',
       text: 'Imágenes',
@@ -303,6 +302,7 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
   public componentDidUpdate(prevProps: IPropsType): void {
     const {loadingDetail, detailByVenue, detailByBrand} = this.props.inventories;
     // style react boostrap table
+    $('.react-bootstrap-table-pagination').css({padding: '3px 15px'});
     $('.react-bootstrap-table-pagination div').removeClass('col-xs-6').addClass('col-xs-12').css({padding: '3px 15px'});
     $('.react-bootstrap-table-pagination div:last-child').removeClass('text-right').addClass('text-right');
     $('#pageDropDown').removeClass('btn-sm').addClass('btn-sm');
@@ -346,17 +346,21 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
   public brandFormatter(cell: any, row: any) {
     return (
       <React.Fragment>
-        {cell}<br/>{row.denomination}
+        {
+          row.patent && row.patent.length ?
+            <React.Fragment>
+              <strong>{row.patent}</strong> <span className="text-muted" style={{fontSize: '70%'}}>{row.vin}</span>
+            </React.Fragment>
+          : <strong>{row.vin}</strong>
+        }<br/>
+        <span className="text-muted" style={{fontSize: '80%'}}>{cell} / {row.denomination}</span>
       </React.Fragment>
     );
   }
 
   public vinFormatter(cell: any, row: any) {
     return (
-      <React.Fragment>
-        {row.patent && row.patent.length ? <React.Fragment>{row.patent}<br /></React.Fragment> : null}
-        {cell}
-      </React.Fragment>
+      <Checkbox active={false} action={undefined} classes="icheck-in-checkbox"/>
     );
   }
 
@@ -638,7 +642,7 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
                     </div>
                   </div>
                 </div>
-                <div className="box-body">
+                <div className="box-body no-padding">
                   <div className="row">
                     <div className="col-md-12">
                       <BootstrapTable
@@ -670,7 +674,7 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
   private changeTab(name: string): void {
     this.setState({
       tab: name
-    });
+    }, this.resizeCharts);
   }
 
   private calculateDetails(results: IInventorySummaryResult | undefined) {
@@ -830,7 +834,7 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
         x: 'center',
         // y: 'bottom',
         bottom: 50,
-        data: ['Encontrados', 'Pendientes', 'Sobrantes', 'Faltantes', 'Reportados']
+        data: ['Encontrados', 'Sobrantes', 'Faltantes', 'Pendientes', 'Reportados']
       },
       xAxis: {
         type: 'category',
@@ -873,7 +877,7 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
         containLabel: true
         // borderColor: '#FF0000'
       },
-      color: ['#00aa51', '#00c2f4', '#ff9600', '#f1392c', '#96a4b3'],
+      color: ['#00aa51', '#ff9600', '#f1392c', '#00c2f4', '#96a4b3'],
       series: [{
         data: venuesFound,
         name: 'Encontrados',
@@ -886,26 +890,6 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
             // rich: {
             //   name: {
             //     textBorderColor: '#fff'
-            //   }
-            // }
-          }
-        },
-        barGap: 0
-        // areaStyle: {}
-        // smooth: true
-      }, {
-        data: venuesPending,
-        name: 'Pendientes',
-        type: 'bar',
-        stack: 'cars',
-        // barMinHeight: 20,
-        label: {
-          normal: {
-            ...this.labelOption.normal
-            // rich: {
-            //   name: {
-            //     textBorderColor: '#fff',
-            //     // textBorderWidth: 0
             //   }
             // }
           }
@@ -948,6 +932,26 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
         // areaStyle: {}
         // smooth: true
       }, {
+        data: venuesPending,
+        name: 'Pendientes',
+        type: 'bar',
+        stack: 'cars',
+        // barMinHeight: 20,
+        label: {
+          normal: {
+            ...this.labelOption.normal
+            // rich: {
+            //   name: {
+            //     textBorderColor: '#fff',
+            //     // textBorderWidth: 0
+            //   }
+            // }
+          }
+        },
+        barGap: 0
+        // areaStyle: {}
+        // smooth: true
+      }, {
         data: venuesReported,
         name: 'Reportados',
         type: 'bar',
@@ -968,7 +972,8 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
       optionVenues.legend = {
         ...optionVenues,
         selected: {
-          Encontrados: false
+          Encontrados: false,
+          Reportados: false
         }
       };
       if (detail.status === 'finalized') {
@@ -1035,7 +1040,7 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
       legend: {
         x: 'center',
         bottom: 50,
-        data: ['Encontrados', 'Pendientes', 'Sobrantes', 'Faltantes', 'Reportados']
+        data: ['Encontrados', 'Sobrantes', 'Faltantes', 'Pendientes', 'Reportados']
       },
       xAxis: {
         type: 'category',
@@ -1077,19 +1082,11 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
         containLabel: true
         // borderColor: '#FF0000'
       },
-      color: ['#00aa51', '#00c2f4', '#ff9600', '#f1392c', '#96a4b3'],
+      color: ['#00aa51', '#ff9600', '#f1392c', '#00c2f4', '#96a4b3'],
       series: [{
         data: brandFound,
         name: 'Encontrados',
         // label: labelOption,
-        type: 'bar',
-        stack: 'cars',
-        // areaStyle: {},
-        barGap: 0
-        // smooth: true
-      }, {
-        data: brandPending,
-        name: 'Pendientes',
         type: 'bar',
         stack: 'cars',
         // areaStyle: {},
@@ -1112,6 +1109,14 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
         barGap: 0
         // smooth: true
       }, {
+        data: brandPending,
+        name: 'Pendientes',
+        type: 'bar',
+        stack: 'cars',
+        // areaStyle: {},
+        barGap: 0
+        // smooth: true
+      }, {
         data: brandReported,
         name: 'Reportados',
         type: 'bar',
@@ -1125,7 +1130,8 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
       optionBrands.legend = {
         ...optionBrands,
         selected: {
-          Encontrados: false
+          Encontrados: false,
+          Reportados: false
         }
       };
       if (detail.status === 'finalized') {
