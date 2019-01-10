@@ -53,6 +53,9 @@ interface IStateType {
   error: Error | null;
   setCharts: boolean;
   tab: string;
+  selectedItems: {
+    [key: string]: any
+  };
 }
 
 class InventoryDetailView extends React.Component<IPropsType, IStateType> {
@@ -60,7 +63,8 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
   state = {
     error: null,
     setCharts: false,
-    tab: 'summary'
+    tab: 'summary',
+    selectedItems: {}
   };
 
   venuesDetailChart: echarts.ECharts;
@@ -140,22 +144,28 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
     super(props);
     this.resizeCharts = this.resizeCharts.bind(this);
     this.xlsExport = this.xlsExport.bind(this);
+    this.clearSelected = this.clearSelected.bind(this);
     this.carComments = this.carComments.bind(this);
     this.vinFormatter = this.vinFormatter.bind(this);
+    this.selectedHeaderFormatter = this.selectedHeaderFormatter.bind(this);
     this.brandFormatter = this.brandFormatter.bind(this);
     this.commentFormatter = this.commentFormatter.bind(this);
     this.calculateDetails = this.calculateDetails.bind(this);
     this.imagesFormatter = this.imagesFormatter.bind(this);
+    this.changeSelected = this.changeSelected.bind(this);
+    this.processCars = this.processCars.bind(this);
     this.changeTab = this.changeTab.bind(this);
     this.defaultColumns = [{
-      dataField: 'vin',
+      dataField: 'selected',
       text: '',
+      headerFormatter: this.selectedHeaderFormatter,
       formatter: this.vinFormatter,
-      classes: 'middle text-ellipsis',
+      headerClasses: 'middle-center',
+      classes: 'middle-center',
       style: {
-        maxWidth: '36px',
-        minWidth: '36px',
-        width: '36px'
+        maxWidth: '35px',
+        minWidth: '35px',
+        width: '35px'
       }
     }, {
       dataField: 'brand',
@@ -360,7 +370,12 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
 
   public vinFormatter(cell: any, row: any) {
     return (
-      <Checkbox active={false} action={undefined} classes="icheck-in-checkbox"/>
+      <Checkbox
+        active={cell}
+        action={() => this.changeSelected(row._id)}
+        classes="icheck-in-checkbox"
+        style={{margin: '5px'}}
+      />
     );
   }
 
@@ -389,7 +404,8 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
       summary,
       detail
     } = this.props.inventories;
-    const { tab } = this.state;
+    const { tab, selectedItems } = this.state;
+    const selected = Object.keys(selectedItems);
     const {
       percentagePending,
       percentageFound,
@@ -399,7 +415,7 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
     } = this.calculateDetails(summary.results);
 
     // order cars in products and reported
-    const {products, reported} = this.processCars(detail.cars);
+    const {products} = this.processCars(detail.cars);
 
     return (
       <AppContainer title={summary.name} cMenu="2" cSubMenu="2.1" cAction="Detalle">
@@ -618,7 +634,9 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
             <div className="col-md-12">
               <div className="box box-info">
                 <div className="box-header with-border">
-                  <h3 className="box-title">Detalle de inventario</h3>
+                  <h3 className="box-title">
+                    Detalle de inventario {selected.length ? <small className="hidden-sm hidden-xs">{selected.length} {selected.length > 1 ? 'seleccionados' : 'seleccionado'} de {products.length}.</small> : <small>{products.length}</small>}
+                  </h3>
                   <div className="box-tools pull-right">
                     <button
                       className="btn btn-sm btn-primary hidden-xs hidden-sm"
@@ -633,11 +651,11 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
                         <span className="sr-only">Toggle Dropdown</span>
                       </button>
                       <ul className="dropdown-menu" role="menu">
-                        <li><a href="#"><i className="fa fa-fw fa-copy"/> Copiar</a></li>
-                        <li><a href="#"><i className="fa fa-fw fa-paste"/> Pegar</a></li>
-                        <li><a href="#"><i className="fa fa-fw fa-close"/> Eliminar</a></li>
-                        <li className="divider"/>
-                        <li><a href="#"><i className="fa fa-fw fa-certificate"/> Etiqueta</a></li>
+                        <li><a href="javascript:void(0)"><i className="fa fa-fw fa-copy"/> Copiar</a></li>
+                        <li><a href="javascript:void(0)"><i className="fa fa-fw fa-paste"/> Pegar</a></li>
+                        <li><a href="javascript:void(0)"><i className="fa fa-fw fa-close"/> Eliminar</a></li>
+                        {/*<li className="divider"/>*/}
+                        {/*<li><a href="javascript:void(0)" onClick={this.clearSelected}><i className="fa fa-fw fa-certificate"/> Limpiar seleccionados.</a></li>*/}
                       </ul>
                     </div>
                   </div>
@@ -674,7 +692,20 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
   private changeTab(name: string): void {
     this.setState({
       tab: name
-    }, this.resizeCharts);
+    }, () => {
+      this.resizeCharts();
+    });
+  }
+
+  private selectedHeaderFormatter() {
+    return (
+      <Checkbox
+        active={false}
+        action={undefined}
+        classes="icheck-in-checkbox"
+        style={{margin: '5px'}}
+      />
+    );
   }
 
   private calculateDetails(results: IInventorySummaryResult | undefined) {
@@ -701,6 +732,7 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
   }
 
   private processCars(cars: IInventoryCar[]) {
+    const {selectedItems} = this.state;
     const products: any[] = [];
     const reported: any[] = [];
     for (const car of cars) {
@@ -732,6 +764,7 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
         venueFound: car.venueFound ? car.venueFound.name : '-',
         patent: car.car.patent ? car.car.patent : '',
         inventoriedBy: car.inventoriedBy ? `${car.inventoriedBy.firstName} ${car.inventoriedBy.lastName}` : '-',
+        selected: selectedItems.hasOwnProperty((car as any)._id),
         status: car.status
       });
       // }
@@ -994,6 +1027,27 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
     if (!loadingDetail) {
       this.venuesDetailChart.setOption(optionVenues);
     }
+  }
+
+  private changeSelected(item: string) {
+    let {selectedItems} = this.state;
+    if (selectedItems.hasOwnProperty(item)) {
+      delete (selectedItems as any)[item];
+    } else {
+      selectedItems = {
+        ...selectedItems,
+        [item]: true
+      };
+    }
+    this.setState({
+      selectedItems
+    });
+  }
+
+  private clearSelected() {
+    this.setState({
+      selectedItems: {}
+    });
   }
 
   private updateBrandChart(detailByBrand: IDetailByBrand[], update?: boolean) {

@@ -6,6 +6,7 @@ interface IPropsType {
   active?: boolean;
   action: any;
   classes?: string;
+  style?: React.CSSProperties;
 }
 
 interface IStateType {
@@ -38,7 +39,7 @@ class Checkbox extends React.Component<IPropsType, IStateType> {
 
   render(): React.ReactElement<IPropsType> {
     const {hover} = this.state;
-    const {color, active, action, classes} = this.props;
+    const {color, active, action, classes, style} = this.props;
     const classIcheck: string[] = [];
 
     // set color
@@ -68,6 +69,7 @@ class Checkbox extends React.Component<IPropsType, IStateType> {
         onMouseOver={this.mouseOver}
         onMouseOut={this.mouseOut}
         onClick={action}
+        style={style ? style : {}}
       >
       </div>
     );
