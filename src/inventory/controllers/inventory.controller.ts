@@ -325,7 +325,7 @@ class InventoryController {
           res.status(200).json({
             data: {
               cars: inventory.cars
-                .filter((car: IInventoryCar) => (car.status !== ChoicesStatusCarInventory.reported))
+                .filter((car: IInventoryCar) => (![ChoicesStatusCarInventory.reported, ChoicesStatusCarInventory.leftover].includes(car.status as any)))
                 .map((car: IInventoryCar) => {
                 return {
                   ...car.car,
