@@ -251,7 +251,8 @@ export function getInventoryDetailAction(id: string, update: boolean) {
         dispatch(loadInventoryAction(data.summary, data.detailByVenue, data.detailByBrand, data.detail));
         dispatch(loadingInventoryDetaillAction(false));
         if (!update) {
-          ($('#venues') as any).selectpicker('refresh')
+          ($('#venues') as any).selectpicker('refresh');
+          ($('#states') as any).selectpicker('refresh');
           $('.count').each(function() {
             $(this).prop('Counter', 0).animate({
               Counter: $(this).text()
