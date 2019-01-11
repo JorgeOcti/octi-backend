@@ -366,7 +366,12 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
         });
       }
     });
-    const $states = $('#states');
+    const $states: any = $('#states');
+    setTimeout(() => {
+      if ($states && $states.length) {
+        $states.selectpicker('refresh');
+      }
+    }, 200);
     $states.on('changed.bs.select', () => {
       if ($states) {
         this.setState({
@@ -402,7 +407,6 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
     if (this.props.location !== prevProps.location) {
       window.scrollTo(0, 0);
     }
-    // ($('#venues') as any).selectpicker('refresh');
   }
 
   public imagesFormatter(cell: string, row: any) {
