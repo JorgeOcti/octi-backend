@@ -816,7 +816,7 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
                   <Row>
                     <div className="col-md-12">
                       {
-                        products.length?
+                        products.length ?
                           <BootstrapTable
                             keyField="_id"
                             data={products}
@@ -850,7 +850,7 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
     this.setState({
       filter: {
         ...this.state.filter,
-        text: value
+        text: value ? e.target.value : ''
       }
     });
   }
@@ -919,10 +919,17 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
         add = (filter.states as any).includes(car.status);
       }
       if (add && filter.text && filter.text.length) {
-        add = `${car.car.vin}${car.car.brand}${car.car.denomination}${car.car.patent}`.normalize('NFD')
-          .replace(/[\u0300-\u036f]/g, '')
-          .toLowerCase()
-          .includes(filter.text.toLowerCase());
+       /* const result: boolean[] = filter.text.toLowerCase().split(' ').map((text) => (
+          `${car.car.vin}${car.car.brand}${car.car.denomination}${car.car.patent}`.normalize('NFD')
+            .replace(/[\u0300-\u036f]/g, '')
+            .toLowerCase()
+            .includes(filter.text.toLowerCase())
+        ));
+        add = result.some((element: boolean) => element === false) === true;*/
+       add = `${car.car.vin}${car.car.brand}${car.car.denomination}${car.car.patent}`.normalize('NFD')
+         .replace(/[\u0300-\u036f]/g, '')
+         .toLowerCase()
+         .includes(filter.text.toLowerCase());
       }
       if (add) {
         products.push({
