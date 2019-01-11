@@ -14,6 +14,7 @@ const initialState: IInventoryState = {
     finalizedAt: null
   },
   detail: {
+    venues: [],
     cars: []
   },
   detailByVenue: [],

@@ -206,7 +206,12 @@ class InventoryCreateView extends React.Component<IPropsType, IStateType> {
                 <div className="col col-md-6">
                   <div className="checkbox">
                     <label style={{paddingLeft: '0'}} onClick={this.handleChangeNotification}>
-                      <Checkbox active={notification} action={this.handleChangeNotification} classes="icheck-in-checkbox"/>
+                      <Checkbox
+                        active={notification}
+                        action={this.handleChangeNotification}
+                        classes="icheck-in-checkbox"
+                        style={{marginTop: '-4px', marginRight: '5px'}}
+                      />
                       Enviar notificaciones push
                     </label>
                   </div>

@@ -70,8 +70,8 @@
     color: #2372bb
 
 .icheck-in-checkbox
-  margin-top: -4px !important
-  margin-right: 5px !important
+  margin-top: -4px
+  margin-right: 5px
 
 // miniature in detaill inventory
 .images-25
@@ -102,3 +102,17 @@
       padding-top: 5px
       &:last-child
         border-bottom: none
+
+.btn-filter
+  &.btn-default
+    &:focus
+      outline: 1px auto -webkit-focus-ring-color!important
+      outline-color: #3c8dbc !important
+    border-color: #d2d6de
+    .filter-option
+      color: #777 !important
+      background: #FFF !important
+.open
+  .btn-filter
+    border-color: #3c8dbc !important
+    box-shadow: none

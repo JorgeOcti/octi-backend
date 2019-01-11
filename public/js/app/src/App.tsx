@@ -36,6 +36,7 @@ const App = () => (
                 <Route exact path="/inventory/" component={ InventoryListView }/>
                 <Route exact path="/inventory/create/" component={ InventoryCreateView }/>
                 <Route exact path="/inventory/:id/" component={ InventoryDetailView }/>
+                <Route exact path="/inventory/:id/:tab/" component={ InventoryDetailView }/>
                 <Route exact path="/settings/users/" component={ UsersListView }/>
                 <Route exact path="/settings/cars/" component={ CarsListView }/>
                 <Route exact path="/settings/venues/" component={ VenuesListView }/>

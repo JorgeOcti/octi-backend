@@ -1077,7 +1077,8 @@ class InventoryController {
         const detailInventory = await InventoryModel.findById(id, {
           name: true,
           status: true,
-          cars: true
+          cars: true,
+          venues: true
         }).populate([{
           path: 'cars.car',
           select: ['vin', 'vin2', 'color', 'denomination', 'brand', 'venue', 'patent']
@@ -1095,6 +1096,14 @@ class InventoryController {
         }, {
           path: 'cars.comments.user',
           select: ['_id', 'firstName', 'lastName']
+        }, {
+          path: 'venues',
+          select: ['_id', 'name'],
+          options: {
+            sort: {
+              name: 1
+            }
+          }
         }]);
         venuesPermissions = venuesPermissions.map((ve) => ve.toString());
         res.json({
@@ -1107,6 +1116,9 @@ class InventoryController {
             status: detailInventory ? detailInventory.status : '',
             cars: detailInventory ? detailInventory.cars.filter((car) => {
               return car.venue && venuesPermissions.includes(car.venue._id.toString()) || (car.venueFound && venuesPermissions.includes(car.venueFound._id.toString()));
+            }) : [],
+            venues: detailInventory ? detailInventory.venues.filter((venue) => {
+              return venuesPermissions.includes(venue._id.toString());
             }) : []
           },
           status: 200

@@ -40,7 +40,7 @@ import InventoryCarComments from './InventoryCarComments';
 
 declare let window: IWindow;
 
-interface IPropsType extends RouteComponentProps<{ id: string }> {
+interface IPropsType extends RouteComponentProps<{ id: string, tab?: string }> {
   inventories: IInventoryState;
   dispatch: Dispatch<InventoryReduxAction>;
 
@@ -56,6 +56,14 @@ interface IStateType {
   selectedItems: {
     [key: string]: any
   };
+  selectFilters: {
+    venues: any[];
+  };
+  filter: {
+    text: string;
+    venues: string[];
+    states: string[];
+  };
 }
 
 class InventoryDetailView extends React.Component<IPropsType, IStateType> {
@@ -64,7 +72,16 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
     error: null,
     setCharts: false,
     tab: 'summary',
-    selectedItems: {}
+    venues: [],
+    selectedItems: {},
+    selectFilters: {
+      venues: []
+    },
+    filter: {
+      text: '',
+      venues: [],
+      states: []
+    }
   };
 
   venuesDetailChart: echarts.ECharts;
@@ -113,20 +130,24 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
     reported: 'bg-gray'
   };
 
+  private classLabelStatus: any = {
+    pending: 'label-info',
+    found: 'label-success',
+    missing: 'label-danger',
+    leftover: 'label-warning',
+    reported: 'label-default'
+  };
+
   private paginationOption: any = {
     // paginationSize: 4,
     showTotal: true,
     paginationTotalRenderer: this.customTotal,
     sizePerPageList: [{
-      text: '15', value: 15
-    }, {
-      text: '20', value: 20
-    }, {
-      text: '30', value: 30
+      text: '10', value: 10
     }, {
       text: '50', value: 50
     }, {
-      text: '100', value: 100
+      text: '200', value: 200
     }]
   };
 
@@ -146,7 +167,7 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
     this.xlsExport = this.xlsExport.bind(this);
     this.clearSelected = this.clearSelected.bind(this);
     this.carComments = this.carComments.bind(this);
-    this.vinFormatter = this.vinFormatter.bind(this);
+    this.selectedFormatter = this.selectedFormatter.bind(this);
     this.selectedHeaderFormatter = this.selectedHeaderFormatter.bind(this);
     this.brandFormatter = this.brandFormatter.bind(this);
     this.commentFormatter = this.commentFormatter.bind(this);
@@ -155,56 +176,77 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
     this.changeSelected = this.changeSelected.bind(this);
     this.processCars = this.processCars.bind(this);
     this.changeTab = this.changeTab.bind(this);
+    const {tab} = this.props.match.params;
+    if (tab && tab === 'detail') {
+      this.state.tab = 'detail';
+    }
     this.defaultColumns = [{
       dataField: 'selected',
       text: '',
       headerFormatter: this.selectedHeaderFormatter,
-      formatter: this.vinFormatter,
+      formatter: this.selectedFormatter,
       headerClasses: 'middle-center',
       classes: 'middle-center',
+      headerStyle: {
+        maxWidth: '50px',
+        minWidth: '50px',
+        width: '50px'
+      },
       style: {
-        maxWidth: '35px',
-        minWidth: '35px',
-        width: '35px'
+        maxWidth: '50px',
+        minWidth: '50px',
+        width: '50px'
       }
     }, {
       dataField: 'brand',
       text: 'Vehículo',
       formatter: this.brandFormatter,
-      filter: textFilter({
-        className: 'input-sm',
-        placeholder: ' Buscar'
-      }),
+      // filter: textFilter({
+      //   className: 'input-sm',
+      //   placeholder: ' Buscar'
+      // }),
       filterValue: (cell: any, row: any) => `${cell}${row.denomination}${row.vin}${row.patent}`,
       classes: 'middle',
-      headerClasses: ' pointer',
+      headerClasses: 'middle pointer',
+      style: {
+        width: '20%'
+      },
       sort: true
     }, {
       dataField: 'venue',
       text: 'Sucursal',
-      filter: textFilter({
-        className: 'input-sm',
-        placeholder: ' Buscar'
-      }),
+      // filter: textFilter({
+      //   className: 'input-sm',
+      //   placeholder: ' Buscar'
+      // }),
       classes: 'middle hidden-xs hidden-sm',
-      headerClasses: 'hidden-xs hidden-sm pointer',
+      headerClasses: 'middle hidden-xs hidden-sm pointer',
+      style: {
+        width: '20%'
+      },
       sort: true
     }, {
       dataField: 'venueFound',
       text: 'Encontrado en',
-      filter: textFilter({
-        className: 'input-sm',
-        placeholder: ' Buscar'
-      }),
+      // filter: textFilter({
+      //   className: 'input-sm',
+      //   placeholder: ' Buscar'
+      // }),
       classes: 'middle hidden-xs hidden-sm hidden-md',
-      headerClasses: 'hidden-xs hidden-sm hidden-md pointer',
+      headerClasses: 'middle hidden-xs hidden-sm hidden-md pointer',
+      style: {
+        width: '20%'
+      },
       sort: true
     }, {
       dataField: 'images',
       text: 'Imágenes',
       classes: 'middle hidden-xs',
-      headerClasses: 'hidden-xs',
+      headerClasses: 'middle hidden-xs',
       formatter: this.imagesFormatter,
+      style: {
+        width: '20%'
+      },
       headerStyle: {
         verticalAlign: 'top'
       }
@@ -213,12 +255,12 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
       text: 'Comentarios',
       classes: 'middle hidden-xs text-ellipsis',
       formatter: this.commentFormatter,
-      headerClasses: 'hidden-xs',
+      headerClasses: 'middle hidden-xs',
+      style: {
+        width: '20%'
+      },
       headerStyle: {
         verticalAlign: 'top'
-      },
-      style: {
-        maxWidth: '150px'
       }
     }];
     this.columns = [...this.defaultColumns, {
@@ -226,17 +268,23 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
       text: 'Status',
       sort: true,
       formatter: (cell: string) => (this.statusText[cell]),
-      filter: selectFilter({
-        options: this.statusText,
-        // withoutEmptyOption: true,
-        className: 'input-sm',
-        placeholder: 'Seleccione tipo',
-        id: 'custom-filter'
-      }),
-      headerClasses: 'pointer',
+      // filter: selectFilter({
+      //   options: this.statusText,
+      //   // withoutEmptyOption: true,
+      //   className: 'input-sm',
+      //   placeholder: 'Seleccione tipo',
+      //   id: 'custom-filter'
+      // }),
+      headerClasses: 'middle pointer',
       headerStyle: {
         maxWidth: '100px',
-        minWidth: '100px'
+        minWidth: '100px',
+        width: '100px'
+      },
+      style: {
+        maxWidth: '100px',
+        minWidth: '100px',
+        width: '100px'
       },
       classes: (cell: any) => {
         return `middle-center ${this.classStatus.hasOwnProperty(cell) ? this.classStatus[cell] : ''}`;
@@ -307,6 +355,28 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
     this.venuesDetailChart = echarts.init($venuesDetail);
     this.brandDetailChart = echarts.init($brandDetail);
     window.scrollTo(0, 0);
+    const $venues = $('#venues');
+    $venues.on('changed.bs.select', () => {
+      if ($venues) {
+        this.setState({
+          filter: {
+            ...this.state.filter,
+            venues: $venues.val() as string[]
+          }
+        });
+      }
+    });
+    const $states = $('#states');
+    $states.on('changed.bs.select', () => {
+      if ($states) {
+        this.setState({
+          filter: {
+            ...this.state.filter,
+            states: $states.val() as string[]
+          }
+        });
+      }
+    });
   }
 
   public componentDidUpdate(prevProps: IPropsType): void {
@@ -316,6 +386,7 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
     $('.react-bootstrap-table-pagination div').removeClass('col-xs-6').addClass('col-xs-12').css({padding: '3px 15px'});
     $('.react-bootstrap-table-pagination div:last-child').removeClass('text-right').addClass('text-right');
     $('#pageDropDown').removeClass('btn-sm').addClass('btn-sm');
+    $('.bs-searchbox input').removeClass('input-sm').addClass('input-sm');
     $('.pagination').removeClass('pagination-sm').addClass('pagination-sm').css({margin: 0});
     const {setCharts} = this.state;
     if (!loadingDetail && !setCharts) {
@@ -331,6 +402,7 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
     if (this.props.location !== prevProps.location) {
       window.scrollTo(0, 0);
     }
+    // ($('#venues') as any).selectpicker('refresh');
   }
 
   public imagesFormatter(cell: string, row: any) {
@@ -368,13 +440,13 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
     );
   }
 
-  public vinFormatter(cell: any, row: any) {
+  public selectedFormatter(cell: any, row: any) {
     return (
       <Checkbox
         active={cell}
         action={() => this.changeSelected(row._id)}
         classes="icheck-in-checkbox"
-        style={{margin: '5px'}}
+        style={{margin: '5px', marginTop: '5px'}}
       />
     );
   }
@@ -383,7 +455,7 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
     if (row.comments && row.comments.length) {
       return (
         <React.Fragment>
-          {maxText(row.comments[row.comments.length - 1].comment, 60)}<br />
+          {maxText(row.comments[row.comments.length - 1].comment, 20)}<br />
           <button className={'btn btn-default btn-xs'} onClick={() => this.carComments(row)}>
             {row.comments.length} <i className={'fa fa-comments'}/>
           </button>
@@ -418,7 +490,7 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
     const {products} = this.processCars(detail.cars);
 
     return (
-      <AppContainer title={summary.name} cMenu="2" cSubMenu="2.1" cAction="Detalle">
+      <AppContainer title={summary.name} cMenu="2" cSubMenu="2.1" cAction={tab === 'summary' ? 'Consolidado' : 'Detalle'}>
         <section className="content">
           <Row>
             <div className="col-md-12 col-lg-12">
@@ -431,12 +503,12 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
                       onClick={() => this.changeTab('summary')}
                     >Consolidado</a>
                   </li>
-                  <li className={tab === 'operation' ? 'active' : ''}>
+                  <li className={tab === 'detail' ? 'active' : ''}>
                     <a
                       href="javascript:void(0);"
                       style={{borderTop: '0', marginBottom: '0'}}
-                      onClick={() => this.changeTab('operation')}
-                    >Operación</a>
+                      onClick={() => this.changeTab('detail')}
+                    >Detalle</a>
                   </li>
                 </ul>
               </div>
@@ -557,7 +629,7 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
                   </div>
                 </div>
                 <div className="box-body">
-                  <div id="chart-venues-detail" style={{height: '600px', maxWidth: '100%'}}/>
+                  <div id="chart-venues-detail" style={{height: '550px', maxWidth: '100%'}}/>
                 </div>
                 {
                   loadingDetail &&
@@ -577,7 +649,7 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
                   {/*</div>*/}
                 </div>
                 <div className="box-body">
-                  <div id="chart-brand-detail" style={{height: '600px', maxWidth: '100%'}}/>
+                  <div id="chart-brand-detail" style={{height: '550px', maxWidth: '100%'}}/>
                 </div>
                 {
                   loadingDetail &&
@@ -588,7 +660,7 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
               </div>
             </div>
           </Row>
-          <Row style={{display: tab === 'operation' ? 'block' : 'none'}}>
+          <Row style={{display: tab === 'detail' ? 'block' : 'none'}}>
             <div className="col-md-6 col-lg-6">
               <div className="info-box bg-aqua">
                 <span className="info-box-icon"><i className="fa fa-clock-o" /></span>
@@ -630,7 +702,7 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
               </div>
             </div>
           </Row>
-          <Row style={{display: tab === 'operation' ? 'block' : 'none'}}>
+          <Row style={{display: tab === 'detail' ? 'block' : 'none'}}>
             <div className="col-md-12">
               <div className="box box-info">
                 <div className="box-header with-border">
@@ -661,7 +733,74 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
                   </div>
                 </div>
                 <div className="box-body no-padding">
-                  <div className="row">
+                  <Row style={{margin: '5px 0'}}>
+                    <div className="col-md-6">
+                      <div className="form-group">
+                        <label htmlFor="cars" className="control-label">Vehículos</label>
+                        <input type="text" className="form-control" id="cars" placeholder="Busca por VIN, patente, marca o modelo." />
+                      </div>
+                    </div>
+                    <div className="col-md-3">
+                      <div className="form-group">
+                        <label htmlFor="venues" className="control-label">Sucursales</label>
+                        <select
+                          className="selectpicker form-control"
+                          id="venues"
+                          multiple
+                          data-mobile="true"
+                          data-style="btn-filter btn-default"
+                          data-none-selected-text="Todos"
+                          data-live-search="true"
+                          data-count-selected-text="{0} sucursales seleccionadas."
+                          data-selected-text-format="count > 2"
+                        >
+                          {
+                            detail.venues.map((venue: any) => (
+                              <option
+                                value={venue._id}
+                                key={venue._id}
+                              >
+                                {venue.name}
+                              </option>
+                            ))
+                          }
+                        </select>
+                      </div>
+                    </div>
+                    <div className="col-md-3">
+                      <div className="form-group">
+                        <label htmlFor="states" className="control-label">Estados</label>
+                        <select
+                          className="selectpicker form-control"
+                          id="states"
+                          multiple
+                          data-mobile="true"
+                          data-style="btn-filter btn-default"
+                          data-none-selected-text="Todos"
+                          data-multiple-separator=" - "
+                          data-count-selected-text="{0} estados seleccionados."
+                          data-selected-text-format="count > 4"
+                        >
+                          {
+                            Object
+                              .keys(this.statusText)
+                              .map((status) => (
+                                <option
+                                  value={status}
+                                  key={status}
+                                  data-content={
+                                    `<span class='label ${this.classLabelStatus[status]}'>${this.statusText[status]}</span>`
+                                  }
+                                >
+                                  {this.statusText[status]}
+                                </option>
+                              ))
+                          }
+                        </select>
+                      </div>
+                    </div>
+                  </Row>
+                  <Row>
                     <div className="col-md-12">
                       <BootstrapTable
                         keyField="_id"
@@ -672,7 +811,7 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
                         defaultSorted={this.defaultSorted}
                       />
                     </div>
-                  </div>
+                  </Row>
                 </div>
                 {
                   loadingDetail &&
@@ -690,6 +829,12 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
   }
 
   private changeTab(name: string): void {
+    const {id} = this.props.match.params;
+    if (name === 'detail') {
+      this.props.history.replace(`/inventory/${id}/detail/`);
+    } else {
+      this.props.history.replace(`/inventory/${id}/`);
+    }
     this.setState({
       tab: name
     }, () => {
@@ -703,7 +848,7 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
         active={false}
         action={undefined}
         classes="icheck-in-checkbox"
-        style={{margin: '5px'}}
+        style={{margin: '5px', marginTop: '5px'}}
       />
     );
   }
@@ -732,42 +877,34 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
   }
 
   private processCars(cars: IInventoryCar[]) {
-    const {selectedItems} = this.state;
+    const {selectedItems, filter} = this.state;
     const products: any[] = [];
     const reported: any[] = [];
     for (const car of cars) {
-      // if (car.status === 'reported') {
-      //   reported.push({
-      //     _id: (car as any)._id,
-      //     vin: car.car.vin,
-      //     brand: car.car.brand,
-      //     denomination: car.car.denomination,
-      //     venue: car.venue ? car.venue.name : '-',
-      //     images: car.images && car.images.length ? car.images : [],
-      //     comments: car.comments && car.comments.length ? car.comments : [],
-      //     countComments: car.comments && car.comments.length ? car.comments.length : 0,
-      //     venueFound: car.venueFound ? car.venueFound.name : '-',
-      //     patent: car.car.patent ? car.car.patent : '',
-      //     inventoriedBy: car.inventoriedBy ? `${car.inventoriedBy.firstName} ${car.inventoriedBy.lastName}` : '-',
-      //     status: car.status
-      //   });
-      // } else {
-      products.push({
-        _id: (car as any)._id,
-        vin: car.car.vin,
-        brand: car.car.brand,
-        denomination: car.car.denomination,
-        venue: car.venue ? car.venue.name : '-',
-        images: car.images && car.images.length ? car.images : [],
-        comments: car.comments && car.comments.length ? car.comments : [],
-        countComments: car.comments && car.comments.length ? car.comments.length : 0,
-        venueFound: car.venueFound ? car.venueFound.name : '-',
-        patent: car.car.patent ? car.car.patent : '',
-        inventoriedBy: car.inventoriedBy ? `${car.inventoriedBy.firstName} ${car.inventoriedBy.lastName}` : '-',
-        selected: selectedItems.hasOwnProperty((car as any)._id),
-        status: car.status
-      });
-      // }
+      let add = true;
+      if (filter.venues && filter.venues.length && car.venue) {
+        add = (filter.venues as any).includes(car.venue._id);
+      }
+      if (add && filter.states && filter.states.length && car.status) {
+        add = (filter.states as any).includes(car.status);
+      }
+      if (add) {
+        products.push({
+          _id: (car as any)._id,
+          vin: car.car.vin,
+          brand: car.car.brand,
+          denomination: car.car.denomination,
+          venue: car.venue ? car.venue.name : '-',
+          images: car.images && car.images.length ? car.images : [],
+          comments: car.comments && car.comments.length ? car.comments : [],
+          countComments: car.comments && car.comments.length ? car.comments.length : 0,
+          venueFound: car.venueFound ? car.venueFound.name : '-',
+          patent: car.car.patent ? car.car.patent : '',
+          inventoriedBy: car.inventoriedBy ? `${car.inventoriedBy.firstName} ${car.inventoriedBy.lastName}` : '-',
+          selected: selectedItems.hasOwnProperty((car as any)._id),
+          status: car.status
+        });
+      }
     }
     return {
       products,

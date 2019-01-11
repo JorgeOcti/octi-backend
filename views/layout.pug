@@ -22,6 +22,8 @@ html
     script(src='https://oss.maxcdn.com/html5shiv/3.7.3/html5shiv.min.js')
     script(src='https://oss.maxcdn.com/respond/1.4.2/respond.min.js')
     <![endif]-->
+    //- bootstrap-select
+    link(rel='stylesheet', href=`/static${getVersionedPath('/css/vendor/bootstrap-select/bootstrap-select.min.css')}`)
     link(rel='stylesheet', href=`/static${getVersionedPath('/css/style.css')}`)
     block head
   body.skin-purple.fixed.sidebar-mini.sidebar-mini-expand-feature
@@ -46,6 +48,8 @@ html
       script(src=`/static${getVersionedPath('/js/vendor/echarts/echarts.min.js')}`)
       //- lighbox
       script(src=`/static${getVersionedPath('/js/vendor/lightbox/ekko-lightbox.min.js')}`)
+      //- bostrap-select
+      script(src=`/static${getVersionedPath('/js/vendor/bootstrap-select/bootstrap-select.min.js')}`)
       //- toas
       script(src=`/static${getVersionedPath('/js/vendor/toast/toast.js')}`)
       //- socket io

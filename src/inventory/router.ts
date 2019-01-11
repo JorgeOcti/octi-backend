@@ -8,6 +8,7 @@ const inventoryRouter = express.Router();
 inventoryRouter.get('/inventory/', Middlewares.isLoggedIn, InventoryController.index);
 inventoryRouter.get('/inventory/create/', Middlewares.isLoggedIn, InventoryController.index);
 inventoryRouter.get('/inventory/:id/', Middlewares.isLoggedIn, InventoryController.detail);
+inventoryRouter.get('/inventory/:id/:tab/', Middlewares.isLoggedIn, InventoryController.detail);
 inventoryRouter.get('/api/inventory/', Middlewares.isLoggedIn, InventoryController.list);
 inventoryRouter.post('/api/inventory/', Middlewares.isLoggedIn, InventoryController.create);
 inventoryRouter.post('/api/inventory/:id/comment/', Middlewares.isJWTAuthenticated, InventoryController.addComment);

@@ -9,6 +9,7 @@ exports.inventoryRouter = inventoryRouter;
 inventoryRouter.get('/inventory/', middlewares_1.default.isLoggedIn, inventory_controller_1.default.index);
 inventoryRouter.get('/inventory/create/', middlewares_1.default.isLoggedIn, inventory_controller_1.default.index);
 inventoryRouter.get('/inventory/:id/', middlewares_1.default.isLoggedIn, inventory_controller_1.default.detail);
+inventoryRouter.get('/inventory/:id/:tab/', middlewares_1.default.isLoggedIn, inventory_controller_1.default.detail);
 inventoryRouter.get('/api/inventory/', middlewares_1.default.isLoggedIn, inventory_controller_1.default.list);
 inventoryRouter.post('/api/inventory/', middlewares_1.default.isLoggedIn, inventory_controller_1.default.create);
 inventoryRouter.post('/api/inventory/:id/comment/', middlewares_1.default.isJWTAuthenticated, inventory_controller_1.default.addComment);
