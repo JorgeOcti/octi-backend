@@ -750,6 +750,7 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
                           data-style="btn-filter btn-default"
                           data-none-selected-text="Todos"
                           data-live-search="true"
+                          data-dropup-auto="false"
                           data-count-selected-text="{0} sucursales seleccionadas."
                           data-selected-text-format="count > 2"
                         >
@@ -774,6 +775,7 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
                           id="states"
                           multiple
                           data-style="btn-filter btn-default"
+                          data-dropup-auto="false"
                           data-none-selected-text="Todos"
                           data-multiple-separator=" - "
                           data-count-selected-text="{0} estados seleccionados."
