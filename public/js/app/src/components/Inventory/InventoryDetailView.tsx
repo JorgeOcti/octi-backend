@@ -173,6 +173,7 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
     this.commentFormatter = this.commentFormatter.bind(this);
     this.calculateDetails = this.calculateDetails.bind(this);
     this.imagesFormatter = this.imagesFormatter.bind(this);
+    this.handleChangeSearchText = this.handleChangeSearchText.bind(this);
     this.changeSelected = this.changeSelected.bind(this);
     this.processCars = this.processCars.bind(this);
     this.changeTab = this.changeTab.bind(this);
@@ -183,14 +184,15 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
     this.defaultColumns = [{
       dataField: 'selected',
       text: '',
-      headerFormatter: this.selectedHeaderFormatter,
+      // headerFormatter: this.selectedHeaderFormatter,
       formatter: this.selectedFormatter,
-      headerClasses: 'middle-center',
+      sort: true,
+      headerClasses: 'pointer middle-center',
       classes: 'middle-center',
       headerStyle: {
-        maxWidth: '50px',
-        minWidth: '50px',
-        width: '50px'
+        maxWidth: '60px',
+        minWidth: '60px',
+        width: '60px'
       },
       style: {
         maxWidth: '50px',
@@ -741,7 +743,14 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
                     <div className="col-md-6">
                       <div className="form-group">
                         <label htmlFor="cars" className="control-label">Vehículos</label>
-                        <input type="text" className="form-control" id="cars" placeholder="Busca por VIN, patente, marca o modelo." />
+                        <input
+                          type="text"
+                          className="form-control"
+                          id="cars"
+                          placeholder="Busca por VIN, patente, marca o modelo."
+                          value={this.state.filter.text}
+                          onChange={this.handleChangeSearchText}
+                        />
                       </div>
                     </div>
                     <div className="col-md-3">
@@ -806,14 +815,17 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
                   </Row>
                   <Row>
                     <div className="col-md-12">
-                      <BootstrapTable
-                        keyField="_id"
-                        data={products}
-                        columns={this.columns}
-                        filter={filterFactory()}
-                        pagination={paginationFactory(this.paginationOption)}
-                        defaultSorted={this.defaultSorted}
-                      />
+                      {
+                        products.length?
+                          <BootstrapTable
+                            keyField="_id"
+                            data={products}
+                            columns={this.columns}
+                            filter={filterFactory()}
+                            pagination={paginationFactory(this.paginationOption)}
+                            defaultSorted={this.defaultSorted}
+                          /> : <p className="text-center"><strong>No hay información para mostrar</strong></p>
+                      }
                     </div>
                   </Row>
                 </div>
@@ -832,6 +844,17 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
     );
   }
 
+  private handleChangeSearchText(e: React.ChangeEvent<HTMLInputElement>) {
+    e.preventDefault();
+    const value = e.target.value.trim();
+    this.setState({
+      filter: {
+        ...this.state.filter,
+        text: value
+      }
+    });
+  }
+
   private changeTab(name: string): void {
     const {id} = this.props.match.params;
     if (name === 'detail') {
@@ -848,12 +871,15 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
 
   private selectedHeaderFormatter() {
     return (
-      <Checkbox
-        active={false}
-        action={undefined}
-        classes="icheck-in-checkbox"
-        style={{margin: '5px', marginTop: '5px'}}
-      />
+      <React.Fragment>
+        <Checkbox
+          active={false}
+          action={undefined}
+          classes="icheck-in-checkbox"
+          style={{margin: '5px', marginTop: '5px'}}
+        />
+        <i className="fa fa-order" />
+      </React.Fragment>
     );
   }
 
@@ -891,6 +917,12 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
       }
       if (add && filter.states && filter.states.length && car.status) {
         add = (filter.states as any).includes(car.status);
+      }
+      if (add && filter.text && filter.text.length) {
+        add = `${car.car.vin}${car.car.brand}${car.car.denomination}${car.car.patent}`.normalize('NFD')
+          .replace(/[\u0300-\u036f]/g, '')
+          .toLowerCase()
+          .includes(filter.text.toLowerCase());
       }
       if (add) {
         products.push({
