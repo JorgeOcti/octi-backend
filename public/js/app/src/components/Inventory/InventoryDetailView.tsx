@@ -713,7 +713,7 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
               <div className="box box-info">
                 <div className="box-header with-border">
                   <h3 className="box-title">
-                    Detalle de inventario {selected.length ? <small className="hidden-sm hidden-xs">{selected.length} {selected.length > 1 ? 'seleccionados' : 'seleccionado'} de {products.length}.</small> : <small>{products.length}</small>}
+                    Detalle de inventario {selected.length ? <small className="hidden-sm hidden-xs text-primary">{selected.length} {selected.length > 1 ? 'seleccionados' : 'seleccionado'}.</small> : <small>{products.length}</small>}
                   </h3>
                   <div className="box-tools pull-right">
                     <button
@@ -764,6 +764,10 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
                           data-none-selected-text="Todos"
                           data-live-search="true"
                           data-dropup-auto="false"
+                          data-actions-box="true"
+                          data-select-all-text="Seleccionar todo"
+                          data-none-results-text="No hay resultados para {0}"
+                          data-deselect-all-text="Deseleccionar todo"
                           data-count-selected-text="{0} sucursales seleccionadas."
                           data-selected-text-format="count > 2"
                         >
