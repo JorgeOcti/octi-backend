@@ -747,7 +747,6 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
                           className="selectpicker form-control"
                           id="venues"
                           multiple
-                          data-mobile="true"
                           data-style="btn-filter btn-default"
                           data-none-selected-text="Todos"
                           data-live-search="true"
@@ -774,7 +773,6 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
                           className="selectpicker form-control"
                           id="states"
                           multiple
-                          data-mobile="true"
                           data-style="btn-filter btn-default"
                           data-none-selected-text="Todos"
                           data-multiple-separator=" - "
