@@ -176,6 +176,7 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
     this.handleChangeSearchText = this.handleChangeSearchText.bind(this);
     this.changeSelected = this.changeSelected.bind(this);
     this.processCars = this.processCars.bind(this);
+    this.sendToDetailFilteredBy = this.sendToDetailFilteredBy.bind(this);
     this.changeTab = this.changeTab.bind(this);
     const {tab} = this.props.match.params;
     if (tab && tab === 'detail') {
@@ -559,7 +560,7 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
             </div>
           </Row>
           <Row style={{display: tab === 'summary' ? 'block' : 'none'}}>
-            <div className="col-md-6 col-lg-4">
+            <div className="col-md-6 col-lg-4 pointer" onClick={() => this.sendToDetailFilteredBy('found')}>
               <div className="info-box bg-green">
                 <span className="info-box-icon"><i className="fa fa-check" /></span>
                 <div className="info-box-content">
@@ -579,7 +580,7 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
                 </div>
               </div>
             </div>
-            <div className="col-md-6 col-lg-4">
+            <div className="col-md-6 col-lg-4 pointer" onClick={() => this.sendToDetailFilteredBy('leftover')}>
               <div className="info-box bg-yellow">
                 <span className="info-box-icon"><i className="fa fa-arrow-up" /></span>
                 <div className="info-box-content">
@@ -599,7 +600,7 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
                 </div>
               </div>
             </div>
-            <div className="col-md-6 col-lg-4">
+            <div className="col-md-6 col-lg-4 pointer" onClick={() => this.sendToDetailFilteredBy('missing')}>
               <div className="info-box bg-red">
                 <span className="info-box-icon"><i className="fa fa-arrow-down" /></span>
                 <div className="info-box-content">
@@ -667,7 +668,7 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
             </div>
           </Row>
           <Row style={{display: tab === 'detail' ? 'block' : 'none'}}>
-            <div className="col-md-6 col-lg-6">
+            <div className="col-md-6 col-lg-6 pointer" onClick={() => this.sendToDetailFilteredBy('pending')}>
               <div className="info-box bg-aqua">
                 <span className="info-box-icon"><i className="fa fa-clock-o" /></span>
                 <div className="info-box-content">
@@ -687,9 +688,9 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
                 </div>
               </div>
             </div>
-            <div className="col-md-6 col-lg-6">
+            <div className="col-md-6 col-lg-6 pointer" onClick={() => this.sendToDetailFilteredBy('reported')}>
               <div className="info-box bg-gray-dark">
-                <span className="info-box-icon"><strong>!</strong></span>
+                <span className="info-box-icon"><i className="fa fa-exclamation" /></span>
                 <div className="info-box-content">
                   <span className="info-box-text">Reportados</span>
                   <span className="info-box-number count">
@@ -797,6 +798,9 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
                           data-multiple-separator=" - "
                           data-count-selected-text="{0} estados seleccionados."
                           data-selected-text-format="count > 4"
+                          value={this.state.filter.states}
+                          onChange={() => {
+                          }}
                         >
                           {
                             Object
@@ -828,7 +832,17 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
                             filter={filterFactory()}
                             pagination={paginationFactory(this.paginationOption)}
                             defaultSorted={this.defaultSorted}
-                          /> : <p className="text-center"><strong>No hay información para mostrar</strong></p>
+                          /> : !loadingDetail ? <p className="text-center text-muted">
+                            <img
+                              src="/images/not_found.png"
+                              style={{
+                                opacity: 0.5,
+                                maxHeight: '200px',
+                                marginBottom: '10px'
+                              }}
+                            /><br />
+                            <strong>No hay información para mostrar</strong>
+                          </p> : null
                       }
                     </div>
                   </Row>
@@ -846,6 +860,21 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
         </section>
       </AppContainer>
     );
+  }
+
+  private sendToDetailFilteredBy(state: string) {
+    this.setState({
+      filter: {
+        // text: '',
+        // venues: [],
+        ...this.state.filter,
+        states: [state]
+      },
+      tab: 'detail'
+    }, () => {
+      const $states: any = $('#states');
+      $states.selectpicker('refresh');
+    });
   }
 
   private handleChangeSearchText(e: React.ChangeEvent<HTMLInputElement>) {
@@ -923,17 +952,17 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
         add = (filter.states as any).includes(car.status);
       }
       if (add && filter.text && filter.text.length) {
-       /* const result: boolean[] = filter.text.toLowerCase().split(' ').map((text) => (
+        const result: boolean[] = filter.text.toLowerCase().split(' ').map((text) => (
           `${car.car.vin}${car.car.brand}${car.car.denomination}${car.car.patent}`.normalize('NFD')
             .replace(/[\u0300-\u036f]/g, '')
             .toLowerCase()
-            .includes(filter.text.toLowerCase())
+            .includes(text.toLowerCase())
         ));
-        add = result.some((element: boolean) => element === false) === true;*/
-       add = `${car.car.vin}${car.car.brand}${car.car.denomination}${car.car.patent}`.normalize('NFD')
-         .replace(/[\u0300-\u036f]/g, '')
-         .toLowerCase()
-         .includes(filter.text.toLowerCase());
+        add = result.every((element: boolean) => element === true) === true;
+        /*add = `${car.car.vin}${car.car.brand}${car.car.denomination}${car.car.patent}`.normalize('NFD')
+          .replace(/[\u0300-\u036f]/g, '')
+          .toLowerCase()
+          .includes(filter.text.toLowerCase());*/
       }
       if (add) {
         products.push({
