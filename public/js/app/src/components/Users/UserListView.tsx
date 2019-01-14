@@ -107,10 +107,8 @@ class UserListView extends React.Component<IPropsType, IStateType> {
               <table className="table table-striped">
                 <thead>
                   <tr>
-                    <th style={{width: '20%'}}>Nombre</th>
-                    <th style={{width: '20%'}}>Apellido</th>
-                    <th style={{width: '20%'}} className="hidden-xs">Empresa</th>
-                    <th style={{width: '20%'}} className="hidden-xs">Sucursal</th>
+                    <th style={{width: '50%'}}>Usuario</th>
+                    <th style={{width: '30%'}} className="hidden-xs">Sucursal</th>
                     <th style={{width: '20%'}} className="hidden-xs">Modificado</th>
                     {
                       hasPermission(window.user, 'changeUser') ?
@@ -131,22 +129,27 @@ class UserListView extends React.Component<IPropsType, IStateType> {
                     users.map((user: IUser) => {
                       return (
                         <tr key={user._id} id={`user-${user._id}`}>
-                          <td>{user.firstName}</td>
-                          <td>{user.lastName}</td>
-                          <td className="hidden-xs">{user.company ? user.company.name : ''}</td>
-                          <td className="hidden-xs">{user.venue ? user.venue.name : ''}</td>
+                          <td className="middle">{user.firstName} {user.lastName}<br />
+                            <span className="text-sm text-muted">{user.email}</span>
+                            <div className="hidden-lg hidden-md hidden-sm text-sm">
+                              <span className="text-sm text-muted">{user.venue ? user.venue.name : ''} - {user.company ? user.company.name : ''}</span>
+                            </div>
+                          </td>
+                          <td className="hidden-xs">{user.venue ? user.venue.name : ''}<br />
+                            <span className="text-sm text-muted">{user.company ? user.company.name : ''}</span>
+                          </td>
                           <td className="hidden-xs">{moment(user.updatedAt).format('LLL')}</td>
                           {
                             hasPermission(window.user, 'changeUser') ?
-                              <td className="text-yellow pointer" onClick={() => this.changePassword(user)}><i className="fa fa-lock"/></td> : null
+                              <td className="middle-center text-yellow pointer" onClick={() => this.changePassword(user)}><i className="fa fa-lock"/></td> : null
                           }
                           {
                             hasPermission(window.user, 'changeUser') ?
-                              <td className="text-blue pointer" onClick={() => this.updateUser(user)}><i className="fa fa-pencil"/></td> : null
+                              <td className="middle-center text-blue pointer" onClick={() => this.updateUser(user)}><i className="fa fa-pencil"/></td> : null
                           }
                           {
                             hasPermission(window.user, 'deleteUser') ?
-                              <td className="text-red pointer" onClick={() => this.deleteUser(user)}><i className="fa fa-minus-circle"/></td> : null
+                              <td className="middle-center text-red pointer" onClick={() => this.deleteUser(user)}><i className="fa fa-minus-circle"/></td> : null
                           }
                         </tr>
                       );

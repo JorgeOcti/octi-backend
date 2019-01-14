@@ -777,14 +777,14 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
                           data-selected-text-format="count > 2"
                         >
                           {
-                            !loadingDetail?detail.venues.map((venue: any) => (
+                            !loadingDetail ? detail.venues.map((venue: any) => (
                               <option
                                 value={venue._id}
                                 key={venue._id}
                               >
                                 {venue.name}
                               </option>
-                            )): <option value="">Cargando...</option>
+                            )) : <option value="">Cargando...</option>
                           }
                         </select>
                       </div>
