@@ -766,6 +766,7 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
                           data-live-search="true"
                           data-dropup-auto="false"
                           data-actions-box="true"
+                          data-mobile="true"
                           data-select-all-text="Seleccionar todo"
                           data-none-results-text="No hay resultados para {0}"
                           data-deselect-all-text="Deseleccionar todo"
