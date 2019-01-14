@@ -863,14 +863,14 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
   }
 
   private sendToDetailFilteredBy(state: string) {
+    this.changeTab('detail');
     this.setState({
       filter: {
         // text: '',
         // venues: [],
         ...this.state.filter,
         states: [state]
-      },
-      tab: 'detail'
+      }
     }, () => {
       const $states: any = $('#states');
       $states.selectpicker('refresh');
