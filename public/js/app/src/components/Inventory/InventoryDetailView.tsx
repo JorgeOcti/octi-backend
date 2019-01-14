@@ -719,7 +719,7 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
                   <div className="box-tools pull-right">
                     <button
                       className="btn btn-sm btn-primary hidden-xs hidden-sm"
-                      onClick={() => this.xlsExport(['pending', 'found', 'leftover', 'missing'])}
+                      onClick={() => this.xlsExport(['pending', 'found', 'leftover', 'missing', 'reported'])}
                     >
                       <i className="fa fa-fw fa-download"/> Exportar Excel
                     </button>
@@ -1025,6 +1025,8 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
             ['Sucursal encontrado']: car.venueFound && car.venueFound.hasOwnProperty('name') ? car.venueFound.name : '-',
             ['Encontrado por']: car.inventoriedBy ? `${car.inventoriedBy.firstName} ${car.inventoriedBy.lastName}` : '-',
             ['Comentario']: car.comments && car.comments.length ? `${car.comments[car.comments.length - 1].comment}` : '-',
+            ['Imágenes']: car.images.length ? car.images.length : '-',
+            // ['Imágenes']: car.images.length ? car.images.map((image: any) => `${image.file.url}`).join('\n') : '-',
             Status: this.statusText.hasOwnProperty(car.status) ? this.statusText[car.status] : '-'
           });
         }

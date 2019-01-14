@@ -18,5 +18,9 @@ block js
   script.
     window.user = {_id: '!{`${user.id}`}', firstName: '!{`${user.firstName}`}', lastName: '!{`${user.lastName}`}', email: '!{`${user.email}`}', company: '!{`${user.company}`}', team: '!{`${user.team}`}', userPermissions: !{`${JSON.stringify(user.userPermissions.toObject())}`}, token: '!{`${token}`}'}
   //- React App
+  //- bostrap-select
+  script(src=`/static${getVersionedPath('/js/vendor/bootstrap-select/bootstrap-select.min.js')}`)
+  //- bootstrap-select
+  link(rel='stylesheet', href=`/static${getVersionedPath('/css/vendor/bootstrap-select/bootstrap-select.min.css')}`)
   script(src = `/static${getVersionedPath('/js/app/dist/main.bundle.js')}`)
   script(src = `/static${getVersionedPath('/js/app/dist/vendors~main.bundle.js')}`)
