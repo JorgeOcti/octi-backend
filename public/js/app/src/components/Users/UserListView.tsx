@@ -107,9 +107,9 @@ class UserListView extends React.Component<IPropsType, IStateType> {
               <table className="table table-striped">
                 <thead>
                   <tr>
-                    <th style={{width: '50%'}}>Usuario</th>
-                    <th style={{width: '30%'}} className="hidden-xs">Sucursal</th>
-                    <th style={{width: '20%'}} className="hidden-xs">Modificado</th>
+                    <th style={{width: '33%'}}>Usuario</th>
+                    <th style={{width: '33%'}} className="hidden-xs">Sucursal</th>
+                    <th style={{width: '33%'}} className="hidden-xs">Modificado</th>
                     {
                       hasPermission(window.user, 'changeUser') ?
                         <th style={{width: '1%'}} className="width-10"/> : null
@@ -138,7 +138,7 @@ class UserListView extends React.Component<IPropsType, IStateType> {
                           <td className="hidden-xs">{user.venue ? user.venue.name : ''}<br />
                             <span className="text-sm text-muted">{user.company ? user.company.name : ''}</span>
                           </td>
-                          <td className="hidden-xs">{moment(user.updatedAt).format('LLL')}</td>
+                          <td className="middle hidden-xs text-muted">{moment(user.updatedAt).format('LLL')}</td>
                           {
                             hasPermission(window.user, 'changeUser') ?
                               <td className="middle-center text-yellow pointer" onClick={() => this.changePassword(user)}><i className="fa fa-lock"/></td> : null

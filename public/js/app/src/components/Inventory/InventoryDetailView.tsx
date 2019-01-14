@@ -441,11 +441,11 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
         {
           row.patent && row.patent.length ?
             <React.Fragment>
-              <strong>{row.patent}</strong> <span className="text-muted" style={{fontSize: '70%'}}>{row.vin}</span>
+              <strong>{row.patent}</strong> <span className="text-muted text-sm">{row.vin}</span>
             </React.Fragment>
           : <strong>{row.vin}</strong>
         }<br/>
-        <span className="text-muted" style={{fontSize: '80%'}}>{cell} / {row.denomination}</span>
+        <span className="text-muted text-sm">{cell} / {row.denomination}</span>
       </React.Fragment>
     );
   }
