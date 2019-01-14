@@ -36,6 +36,15 @@ export function showModal(show: boolean) {
   ($('#andesModal') as any).modal(show ? 'show' : 'hide');
 }
 
+export function goToSection(id: string) {
+  const $id = $(id);
+  if ($id && $id.length) {
+    $('html, body').animate({
+      scrollTop: ($id as any).offset().top - ($('.main-header') as any).height() - 50
+    }, 500);
+  }
+}
+
 export function reactTrackMixpanel(event: string, props: IMixpanelProps): void {
   if (typeof(window.mixpanel) === 'object') {
     mixpanel.register({

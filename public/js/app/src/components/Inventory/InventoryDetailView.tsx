@@ -31,7 +31,7 @@ import {
 import {loadDataAction, ModalReduxAction} from '../../actions/modal.actions';
 import AppContainer from '../../container/AppContainer';
 import {IWindow} from '../../interfaces/window';
-import {maxText} from '../../utils/common';
+import {goToSection, maxText} from '../../utils/common';
 import Checkbox from '../CheckBox';
 import ImageLazyLoad from '../ImageLazyLoad';
 import ModalView from '../Modal/ModalView';
@@ -374,7 +374,7 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
       if ($states && $states.length) {
         $states.selectpicker('refresh');
       }
-    }, 200);
+    }, 300);
     $states.on('changed.bs.select', () => {
       if ($states) {
         this.setState({
@@ -739,7 +739,7 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
                     </div>
                   </div>
                 </div>
-                <div className="box-body no-padding">
+                <div className="box-body no-padding" id="table-detail-inventory">
                   <Row style={{margin: '5px 0'}}>
                     <div className="col-md-6">
                       <div className="form-group">
@@ -758,7 +758,7 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
                       <div className="form-group">
                         <label htmlFor="venues" className="control-label">Sucursales</label>
                         <select
-                          className="selectpicker form-control"
+                          className="form-control"
                           id="venues"
                           multiple
                           data-style="btn-filter btn-default"
@@ -789,7 +789,7 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
                       <div className="form-group">
                         <label htmlFor="states" className="control-label">Estados</label>
                         <select
-                          className="selectpicker form-control"
+                          className="form-control"
                           id="states"
                           multiple
                           data-style="btn-filter btn-default"
@@ -799,8 +799,7 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
                           data-count-selected-text="{0} estados seleccionados."
                           data-selected-text-format="count > 4"
                           value={this.state.filter.states}
-                          onChange={() => {
-                          }}
+                          onChange={() => undefined}
                         >
                           {
                             Object
@@ -872,8 +871,13 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
         states: [state]
       }
     }, () => {
+      goToSection('#table-detail-inventory');
       const $states: any = $('#states');
-      $states.selectpicker('refresh');
+      setTimeout(() => {
+        if ($states && $states.length) {
+          $states.selectpicker('refresh');
+        }
+      }, 200);
     });
   }
 
