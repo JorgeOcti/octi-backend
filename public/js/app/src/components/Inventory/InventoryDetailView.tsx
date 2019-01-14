@@ -358,7 +358,7 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
     this.venuesDetailChart = echarts.init($venuesDetail);
     this.brandDetailChart = echarts.init($brandDetail);
     window.scrollTo(0, 0);
-    const $venues = $('#venues');
+    const $venues: any = $('#venues');
     $venues.on('changed.bs.select', () => {
       if ($venues) {
         this.setState({
@@ -370,11 +370,6 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
       }
     });
     const $states: any = $('#states');
-    setTimeout(() => {
-      if ($states && $states.length) {
-        $states.selectpicker('refresh');
-      }
-    }, 300);
     $states.on('changed.bs.select', () => {
       if ($states) {
         this.setState({
@@ -385,6 +380,14 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
         });
       }
     });
+    setTimeout(() => {
+      if ($venues && $venues.length) {
+        $venues.selectpicker('refresh');
+      }
+      if ($states && $states.length) {
+        $states.selectpicker('refresh');
+      }
+    }, 300);
   }
 
   public componentDidUpdate(prevProps: IPropsType): void {
@@ -766,6 +769,7 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
                           data-live-search="true"
                           data-dropup-auto="false"
                           data-actions-box="true"
+                          // data-header="&nbsp;"
                           data-select-all-text="Seleccionar todo"
                           data-none-results-text="No hay resultados para {0}"
                           data-deselect-all-text="Deseleccionar todo"
@@ -773,14 +777,14 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
                           data-selected-text-format="count > 2"
                         >
                           {
-                            detail.venues.map((venue: any) => (
+                            !loadingDetail?detail.venues.map((venue: any) => (
                               <option
                                 value={venue._id}
                                 key={venue._id}
                               >
                                 {venue.name}
                               </option>
-                            ))
+                            )): <option value="">Cargando...</option>
                           }
                         </select>
                       </div>
@@ -794,6 +798,7 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
                           multiple
                           data-style="btn-filter btn-default"
                           data-dropup-auto="false"
+                          // data-header="&nbsp;"
                           data-none-selected-text="Todos"
                           data-multiple-separator=" - "
                           data-count-selected-text="{0} estados seleccionados."
