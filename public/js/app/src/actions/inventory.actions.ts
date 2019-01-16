@@ -56,6 +56,15 @@ export interface IInventoryState {
   detail: any | null;
   detailByVenue: IDetailByVenue[];
   detailByBrand: IDetailByBrand[];
+  carsTable: any[];
+  selectedItems: {
+    [key: string]: any
+  };
+  filter: {
+    text: string;
+    venues: string[];
+    states: string[];
+  };
   pagination: {
     count: number;
     page: number;
@@ -216,6 +225,74 @@ export function loadingInventoryDetaillAction(loadingDetail: boolean): ILoadingD
   };
 }
 
+interface IDetailInventorySelected {
+  type: '/INVENTORORIES/CHANGE_SELECTED';
+  payload: {
+    item: string;
+  };
+}
+
+export function inventoryDetailChangeSelected(item: string): IDetailInventorySelected {
+  return {
+    type: '/INVENTORORIES/CHANGE_SELECTED',
+    payload: {
+      item
+    }
+  };
+}
+
+interface IDetailChangeFilter {
+  type: '/INVENTORORIES/CHANGE_FILTER';
+  payload: {
+    filter: {
+      text: string
+      venues: string[];
+      states: string[];
+    };
+  };
+  meta: {
+    debounce: {
+      time: number
+    }
+  };
+}
+
+export function inventoryDetailChangeFilter(filter: {
+  text: string
+  venues: string[];
+  states: string[];
+}): IDetailChangeFilter {
+  return {
+    type: '/INVENTORORIES/CHANGE_FILTER',
+    payload: {
+      filter
+    },
+    meta: {
+      debounce: {
+        time: 0
+      }
+    }
+  };
+}
+
+export function inventoryDetailChangeFilterText(filter: {
+  text: string
+  venues: string[];
+  states: string[];
+}): IDetailChangeFilter {
+  return {
+    type: '/INVENTORORIES/CHANGE_FILTER',
+    payload: {
+      filter
+    },
+    meta: {
+      debounce: {
+        time: 300
+      }
+    }
+  };
+}
+
 interface ILoadInventory {
   type: '/INVENTORORIES/LOAD_INVENTORY_DATA';
   payload: {
@@ -223,13 +300,17 @@ interface ILoadInventory {
     detailByVenue: IDetailByVenue[];
     detailByBrand: IDetailByBrand[];
     detail: any;
+    resetFilter: boolean;
   };
 }
 
-export function loadInventoryAction(summary: IInventorySummary, detailByVenue: IDetailByVenue[], detailByBrand: IDetailByBrand[], detail: any): ILoadInventory {
+export function loadInventoryAction(
+  summary: IInventorySummary, detailByVenue: IDetailByVenue[], detailByBrand: IDetailByBrand[], detail: any, resetFilter: boolean
+): ILoadInventory {
   return {
     type: '/INVENTORORIES/LOAD_INVENTORY_DATA',
     payload: {
+      resetFilter,
       summary,
       detailByVenue,
       detailByBrand,
@@ -248,7 +329,7 @@ export function getInventoryDetailAction(id: string, update: boolean) {
     api.getInventory(id)
       .then((response: AxiosResponse) => {
         const {data} = response;
-        dispatch(loadInventoryAction(data.summary, data.detailByVenue, data.detailByBrand, data.detail));
+        dispatch(loadInventoryAction(data.summary, data.detailByVenue, data.detailByBrand, data.detail, update));
         dispatch(loadingInventoryDetaillAction(false));
         if (!update) {
           ($('#venues') as any).selectpicker('refresh');
@@ -284,4 +365,4 @@ export function sendCommentAction(carId: string, comment: string) {
   };
 }
 
-export type InventoryReduxAction = ICancelRequest | IIsLoading | ILoadInventories | ILoadInventory | ILoadingDetailInventory | IUpdateInventoryCar | IAddComment;
+export type InventoryReduxAction = ICancelRequest | IIsLoading | ILoadInventories | ILoadInventory | ILoadingDetailInventory | IUpdateInventoryCar | IAddComment | IDetailChangeFilter| IDetailInventorySelected;

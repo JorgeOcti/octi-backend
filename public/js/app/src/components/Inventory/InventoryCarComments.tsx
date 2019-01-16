@@ -122,7 +122,7 @@ class InventoryCarComments extends React.Component<IPropsType, IStateType> {
         </div>
         <div className={'col-md-12'}>
           <div className="direct-chat-info" style={{border: '1px solid #efefef'}}>
-            <div className="direct-chat-messages" id={'comments'} style={{height: '400px'}}>
+            <div className="direct-chat-messages" id={'comments'} style={{height: '20vh'}}>
               {
                 inventoryCar ? inventoryCar.comments.map((comment) => {
                   return (

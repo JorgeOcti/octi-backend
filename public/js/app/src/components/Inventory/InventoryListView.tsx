@@ -185,12 +185,21 @@ class InventoryListView extends React.Component<IPropsType, IStateType> {
                                   <span className="sr-only">Toggle Dropdown</span>
                                 </button>
                                 <ul className="dropdown-menu pull-right" role="menu">
+                                  <li>
+                                    <a href="javascript:void(0);" onClick={() => this.goToDetail(inventory._id, true)}>
+                                      <i className="fa fa-fw fa-table" />Ver Detalle
+                                    </a>
+                                  </li>
                                   {
                                     inventory.status === 'inProcess' ?
-                                        <li><a href="javascript:void(0);" onClick={() => this.finishInventoryAction(inventory)}><i className="fa fa-fw fa-stop" />Finalizar</a></li>
+                                        <li>
+                                          <a href="javascript:void(0);" onClick={() => this.finishInventoryAction(inventory)}>
+                                            <i className="fa fa-fw fa-stop" />Finalizar
+                                          </a>
+                                        </li>
                                       : null
                                   }
-                                  <li><a href="javascript:void(0);" onClick={() => this.deleteInventoryAction(inventory)}><i className="fa fa-fw fa-close" />Eliminar</a></li>
+                                  {/*<li><a href="javascript:void(0);" onClick={() => this.deleteInventoryAction(inventory)}><i className="fa fa-fw fa-close" />Eliminar</a></li>*/}
                                 </ul>
                               </div>
                             </div>
@@ -214,9 +223,9 @@ class InventoryListView extends React.Component<IPropsType, IStateType> {
     );
   }
 
-  private goToDetail(id: string): void {
+  private goToDetail(id: string, detail?: boolean): void {
     const {history} = this.props;
-    history.push(`/inventory/${id}/`);
+    history.push(`/inventory/${id}/${detail ? 'detail/' : ''}`);
   }
 
   private finishInventoryAction(inventory: any): void {

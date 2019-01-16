@@ -7,7 +7,7 @@ import * as Raven from 'raven-js';
 import * as React from 'react';
 import {ErrorInfo} from 'react';
 import BootstrapTable from 'react-bootstrap-table-next';
-import filterFactory, { selectFilter, textFilter } from 'react-bootstrap-table2-filter';
+import filterFactory from 'react-bootstrap-table2-filter';
 import paginationFactory from 'react-bootstrap-table2-paginator';
 import {connect} from 'react-redux';
 import {RouteComponentProps} from 'react-router';
@@ -24,6 +24,8 @@ import {
   IDetailByVenue,
   IInventoryState,
   IInventorySummaryResult,
+  inventoryDetailChangeFilter,
+  inventoryDetailChangeFilterText, inventoryDetailChangeSelected,
   InventoryReduxAction,
   sendCommentAction,
   updateInventoryCarAction
@@ -33,7 +35,7 @@ import AppContainer from '../../container/AppContainer';
 import {IWindow} from '../../interfaces/window';
 import {goToSection, maxText} from '../../utils/common';
 import Checkbox from '../CheckBox';
-import ImageLazyLoad from '../ImageLazyLoad';
+// import ImageLazyLoad from '../ImageLazyLoad';
 import ModalView from '../Modal/ModalView';
 import Row from '../Row';
 import InventoryCarComments from './InventoryCarComments';
@@ -44,7 +46,10 @@ interface IPropsType extends RouteComponentProps<{ id: string, tab?: string }> {
   inventories: IInventoryState;
   dispatch: Dispatch<InventoryReduxAction>;
 
+  inventoryDetailChangeSelected(item: string): InventoryReduxAction;
   updateCommentsAction(inventoryCar: IInventoryCar): InventoryReduxAction;
+  inventoryDetailChangeFilter(filter: { text: string; venues: string[]; states: string[]; }): InventoryReduxAction;
+  inventoryDetailChangeFilterText(filter: { text: string; venues: string[]; states: string[]; }): InventoryReduxAction;
   getInventoryDetailAction(id: string, update: boolean): InventoryReduxAction;
   loadDataAction(title: string, body: JSX.Element, footer?: JSX.Element): ModalReduxAction;
 }
@@ -53,17 +58,6 @@ interface IStateType {
   error: Error | null;
   setCharts: boolean;
   tab: string;
-  selectedItems: {
-    [key: string]: any
-  };
-  selectFilters: {
-    venues: any[];
-  };
-  filter: {
-    text: string;
-    venues: string[];
-    states: string[];
-  };
 }
 
 class InventoryDetailView extends React.Component<IPropsType, IStateType> {
@@ -71,17 +65,7 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
   state = {
     error: null,
     setCharts: false,
-    tab: 'summary',
-    venues: [],
-    selectedItems: {},
-    selectFilters: {
-      venues: []
-    },
-    filter: {
-      text: '',
-      venues: [],
-      states: []
-    }
+    tab: 'summary'
   };
 
   venuesDetailChart: echarts.ECharts;
@@ -91,11 +75,9 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
     normal: {
       show: true,
       position: 'inside',
-      // distance: 5,
       align: 'center',
       verticalAlign: 'middle',
       rotate: 90,
-      // formatter: '{c} {name|{a}}',
       formatter: '{c}',
       fontSize: 12,
       rich: {
@@ -104,14 +86,6 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
         }
       }
     }
-    // show: true,
-    // position: 'insideBottom',
-    // fontStyle: 'bold',
-    // distance: 15,
-    // rotate: 90,
-    // verticalAlign: 'middle',
-    // fontSize: 12,
-    // color: '#fff'
   };
 
   private statusText: any = {
@@ -165,7 +139,6 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
     super(props);
     this.resizeCharts = this.resizeCharts.bind(this);
     this.xlsExport = this.xlsExport.bind(this);
-    this.clearSelected = this.clearSelected.bind(this);
     this.carComments = this.carComments.bind(this);
     this.selectedFormatter = this.selectedFormatter.bind(this);
     this.selectedHeaderFormatter = this.selectedHeaderFormatter.bind(this);
@@ -174,8 +147,7 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
     this.calculateDetails = this.calculateDetails.bind(this);
     this.imagesFormatter = this.imagesFormatter.bind(this);
     this.handleChangeSearchText = this.handleChangeSearchText.bind(this);
-    this.changeSelected = this.changeSelected.bind(this);
-    this.processCars = this.processCars.bind(this);
+    this.clearFilter = this.clearFilter.bind(this);
     this.sendToDetailFilteredBy = this.sendToDetailFilteredBy.bind(this);
     this.changeTab = this.changeTab.bind(this);
     const {tab} = this.props.match.params;
@@ -196,18 +168,14 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
         width: '60px'
       },
       style: {
-        maxWidth: '50px',
-        minWidth: '50px',
-        width: '50px'
+        maxWidth: '60px',
+        minWidth: '60px',
+        width: '60px'
       }
     }, {
       dataField: 'brand',
       text: 'Vehículo',
       formatter: this.brandFormatter,
-      // filter: textFilter({
-      //   className: 'input-sm',
-      //   placeholder: ' Buscar'
-      // }),
       filterValue: (cell: any, row: any) => `${cell}${row.denomination}${row.vin}${row.patent}`,
       classes: 'middle',
       headerClasses: 'middle pointer',
@@ -218,10 +186,6 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
     }, {
       dataField: 'venue',
       text: 'Sucursal',
-      // filter: textFilter({
-      //   className: 'input-sm',
-      //   placeholder: ' Buscar'
-      // }),
       classes: 'middle hidden-xs hidden-sm',
       headerClasses: 'middle hidden-xs hidden-sm pointer',
       style: {
@@ -231,10 +195,6 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
     }, {
       dataField: 'venueFound',
       text: 'Encontrado en',
-      // filter: textFilter({
-      //   className: 'input-sm',
-      //   placeholder: ' Buscar'
-      // }),
       classes: 'middle hidden-xs hidden-sm hidden-md',
       headerClasses: 'middle hidden-xs hidden-sm hidden-md pointer',
       style: {
@@ -247,11 +207,15 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
       classes: 'middle hidden-xs',
       headerClasses: 'middle hidden-xs',
       formatter: this.imagesFormatter,
-      style: {
-        width: '20%'
-      },
       headerStyle: {
-        verticalAlign: 'top'
+        maxWidth: '60px',
+        minWidth: '60px',
+        width: '60px'
+      },
+      style: {
+        maxWidth: '60px',
+        minWidth: '60px',
+        width: '60px'
       }
     }, {
       dataField: 'countComments',
@@ -271,13 +235,6 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
       text: 'Status',
       sort: true,
       formatter: (cell: string) => (this.statusText[cell]),
-      // filter: selectFilter({
-      //   options: this.statusText,
-      //   // withoutEmptyOption: true,
-      //   className: 'input-sm',
-      //   placeholder: 'Seleccione tipo',
-      //   id: 'custom-filter'
-      // }),
       headerClasses: 'middle pointer',
       headerStyle: {
         maxWidth: '100px',
@@ -360,23 +317,21 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
     window.scrollTo(0, 0);
     const $venues: any = $('#venues');
     $venues.on('changed.bs.select', () => {
+      const {filter} = this.props.inventories;
       if ($venues) {
-        this.setState({
-          filter: {
-            ...this.state.filter,
-            venues: $venues.val() as string[]
-          }
+        this.props.inventoryDetailChangeFilter({
+          ...filter,
+          venues: $venues.val() as string[]
         });
       }
     });
     const $states: any = $('#states');
     $states.on('changed.bs.select', () => {
+      const {filter} = this.props.inventories;
       if ($states) {
-        this.setState({
-          filter: {
-            ...this.state.filter,
-            states: $states.val() as string[]
-          }
+        this.props.inventoryDetailChangeFilter({
+          ...filter,
+          states: $states.val() as string[]
         });
       }
     });
@@ -419,10 +374,13 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
     if (row.images && row.images.length) {
       return (
         <div className="row">{
-          row.images.map((image: any) => (
-            <div key={image._id} className={'col-md-3 images-25 text-center'}>
+          row.images.map((image: any, index: number) => (
+            <div key={image._id} className={'col-md-3 images-25 text-center'} style={{display: index === 0 ? '' : 'none'}}>
               <a href={decodeURI(image.file.url)} data-toggle="lightbox" data-gallery={row._id}>
-                <ImageLazyLoad url={decodeURI(image.file.url)} height={'10px'} maxHeight={'35px'} maxWidth={'35px'} small={true}/>
+                <button className="btn btn-xs btn-default">
+                  <i className="fa fa-fw fa-image" /> {row.images.length}
+                </button>
+                {/*<ImageLazyLoad url={decodeURI(image.file.url)} height={'10px'} maxHeight={'35px'} maxWidth={'35px'} small={true}/>*/}
               </a>
             </div>
           ))
@@ -454,7 +412,7 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
     return (
       <Checkbox
         active={cell}
-        action={() => this.changeSelected(row._id)}
+        action={() => this.props.inventoryDetailChangeSelected(row._id)}
         classes="icheck-in-checkbox"
         style={{margin: '5px', marginTop: '5px'}}
       />
@@ -484,9 +442,12 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
     const {
       loadingDetail,
       summary,
-      detail
+      detail,
+      carsTable,
+      filter,
+      selectedItems
     } = this.props.inventories;
-    const { tab, selectedItems } = this.state;
+    const { tab } = this.state;
     const selected = Object.keys(selectedItems);
     const {
       percentagePending,
@@ -495,9 +456,6 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
       percentageReported,
       percentageMissing
     } = this.calculateDetails(summary.results);
-
-    // order cars in products and reported
-    const {products} = this.processCars(detail.cars);
 
     return (
       <AppContainer title={summary.name} cMenu="2" cSubMenu="2.1" cAction={tab === 'summary' ? 'Consolidado' : 'Detalle'}>
@@ -717,7 +675,7 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
               <div className="box box-info">
                 <div className="box-header with-border">
                   <h3 className="box-title">
-                    Detalle de inventario {selected.length ? <small className="hidden-sm hidden-xs text-primary">{selected.length} {selected.length > 1 ? 'seleccionados' : 'seleccionado'}.</small> : <small>{products.length}</small>}
+                    Detalle de inventario {selected.length ? <small className="hidden-sm hidden-xs text-primary">{selected.length} {selected.length > 1 ? 'seleccionados' : 'seleccionado'}.</small> : <small>{carsTable.length}</small>}
                   </h3>
                   <div className="box-tools pull-right">
                     <button
@@ -742,9 +700,11 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
                     </div>
                   </div>
                 </div>
-                <div className="box-body no-padding" id="table-detail-inventory">
+                <div className="box-body no-padding" id="table-detail-inventory" style={{
+                  display: loadingDetail ? 'none' : ''
+                }}>
                   <Row style={{margin: '5px 0'}}>
-                    <div className="col-md-6">
+                    <div className="col-md-5">
                       <div className="form-group">
                         <label htmlFor="cars" className="control-label">Vehículos</label>
                         <input
@@ -752,7 +712,7 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
                           className="form-control"
                           id="cars"
                           placeholder="Busca por VIN, patente, marca o modelo."
-                          value={this.state.filter.text}
+                          // value={filter.text}
                           onChange={this.handleChangeSearchText}
                         />
                       </div>
@@ -775,6 +735,8 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
                           data-deselect-all-text="Deseleccionar todo"
                           data-count-selected-text="{0} sucursales seleccionadas."
                           data-selected-text-format="count > 2"
+                          value={filter.venues}
+                          onChange={() => undefined}
                         >
                           {
                             !loadingDetail ? detail.venues.map((venue: any) => (
@@ -798,12 +760,13 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
                           multiple
                           data-style="btn-filter btn-default"
                           data-dropup-auto="false"
+                          // data-live-search="true"
                           // data-header="&nbsp;"
                           data-none-selected-text="Todos"
                           data-multiple-separator=" - "
                           data-count-selected-text="{0} estados seleccionados."
                           data-selected-text-format="count > 4"
-                          value={this.state.filter.states}
+                          value={filter.states}
                           onChange={() => undefined}
                         >
                           {
@@ -824,14 +787,28 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
                         </select>
                       </div>
                     </div>
+                    <div className="col-md-1">
+                      <div className="form-group">
+                        <label className="control-label hidden-xs">&nbsp;</label>
+                        <button
+                          className="btn btn-default btn-sm form-control"
+                          onClick={this.clearFilter}
+                          style={{paddingLeft: '5px'}}
+                          disabled={
+                            filter.states.length || filter.text.length || filter.venues.length ? false : true}
+                        >
+                          <i className="fa fa-fw fa-eraser"/> Limpiar
+                        </button>
+                      </div>
+                    </div>
                   </Row>
                   <Row>
                     <div className="col-md-12">
                       {
-                        products.length ?
+                        !loadingDetail && carsTable.length ?
                           <BootstrapTable
                             keyField="_id"
-                            data={products}
+                            data={carsTable}
                             columns={this.columns}
                             filter={filterFactory()}
                             pagination={paginationFactory(this.paginationOption)}
@@ -868,32 +845,45 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
 
   private sendToDetailFilteredBy(state: string) {
     this.changeTab('detail');
-    this.setState({
-      filter: {
-        // text: '',
-        // venues: [],
-        ...this.state.filter,
-        states: [state]
-      }
-    }, () => {
-      goToSection('#table-detail-inventory');
-      const $states: any = $('#states');
-      setTimeout(() => {
-        if ($states && $states.length) {
-          $states.selectpicker('refresh');
-        }
-      }, 200);
+    const {filter} = this.props.inventories;
+    this.props.inventoryDetailChangeFilter({
+      ...filter,
+      states: [state]
     });
+    goToSection('#table-detail-inventory');
+    const $states: any = $('#states');
+    setTimeout(() => {
+      if ($states && $states.length) {
+        $states.selectpicker('refresh');
+      }
+    }, 200);
+  }
+
+  private clearFilter() {
+    this.props.inventoryDetailChangeFilter({
+      venues: [],
+      states: [],
+      text: ''
+    });
+    setTimeout(() => {
+      const $states: any = $('#states');
+      if ($states && $states.length) {
+        $states.selectpicker('refresh');
+      }
+      const $venues: any = $('#venues');
+      if ($venues && $venues.length) {
+        $venues.selectpicker('refresh');
+      }
+    }, 200);
   }
 
   private handleChangeSearchText(e: React.ChangeEvent<HTMLInputElement>) {
     e.preventDefault();
     const value = e.target.value.trim();
-    this.setState({
-      filter: {
-        ...this.state.filter,
-        text: value ? e.target.value : ''
-      }
+    const {filter} = this.props.inventories;
+    this.props.inventoryDetailChangeFilterText({
+      ...filter,
+      text: value ? e.target.value : ''
     });
   }
 
@@ -945,55 +935,6 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
       percentageLeftover: 0,
       percentageMissing: 0,
       percentageReported: 0
-    };
-  }
-
-  private processCars(cars: IInventoryCar[]) {
-    const {selectedItems, filter} = this.state;
-    const products: any[] = [];
-    const reported: any[] = [];
-    for (const car of cars) {
-      let add = true;
-      if (filter.venues && filter.venues.length && car.venue) {
-        add = (filter.venues as any).includes(car.venue._id);
-      }
-      if (add && filter.states && filter.states.length && car.status) {
-        add = (filter.states as any).includes(car.status);
-      }
-      if (add && filter.text && filter.text.length) {
-        const result: boolean[] = filter.text.toLowerCase().split(' ').map((text) => (
-          `${car.car.vin}${car.car.brand}${car.car.denomination}${car.car.patent}`.normalize('NFD')
-            .replace(/[\u0300-\u036f]/g, '')
-            .toLowerCase()
-            .includes(text.toLowerCase())
-        ));
-        add = result.every((element: boolean) => element === true) === true;
-        /*add = `${car.car.vin}${car.car.brand}${car.car.denomination}${car.car.patent}`.normalize('NFD')
-          .replace(/[\u0300-\u036f]/g, '')
-          .toLowerCase()
-          .includes(filter.text.toLowerCase());*/
-      }
-      if (add) {
-        products.push({
-          _id: (car as any)._id,
-          vin: car.car.vin,
-          brand: car.car.brand,
-          denomination: car.car.denomination,
-          venue: car.venue ? car.venue.name : '-',
-          images: car.images && car.images.length ? car.images : [],
-          comments: car.comments && car.comments.length ? car.comments : [],
-          countComments: car.comments && car.comments.length ? car.comments.length : 0,
-          venueFound: car.venueFound ? car.venueFound.name : '-',
-          patent: car.car.patent ? car.car.patent : '',
-          inventoriedBy: car.inventoriedBy ? `${car.inventoriedBy.firstName} ${car.inventoriedBy.lastName}` : '-',
-          selected: selectedItems.hasOwnProperty((car as any)._id),
-          status: car.status
-        });
-      }
-    }
-    return {
-      products,
-      reported
     };
   }
 
@@ -1089,13 +1030,11 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
       },
       legend: {
         x: 'center',
-        // y: 'bottom',
         bottom: 50,
         data: ['Encontrados', 'Sobrantes', 'Faltantes', 'Pendientes', 'Reportados']
       },
       xAxis: {
         type: 'category',
-        // boundaryGap: false,
         data: venuesNames,
         axisLine: {
           lineStyle: {
@@ -1104,7 +1043,6 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
         },
         axisLabel: {
           rotate: 60
-          // fontSize: 10
         }
       },
       yAxis: {
@@ -1119,7 +1057,6 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
           show: true,
           lineStyle: {
             type: 'dashed',
-            // color: 'rgba(0, 0, 0, 0.5)'
             color: 'rgba(150, 150, 150, 0.5)'
           }
         }
@@ -1132,7 +1069,6 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
         // right
         x2: 10,
         containLabel: true
-        // borderColor: '#FF0000'
       },
       color: ['#00aa51', '#ff9600', '#f1392c', '#00c2f4', '#96a4b3'],
       series: [{
@@ -1140,54 +1076,35 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
         name: 'Encontrados',
         type: 'bar',
         stack: 'cars',
-        // barMinHeight: 20,
         label: {
           normal: {
             ...this.labelOption.normal
-            // rich: {
-            //   name: {
-            //     textBorderColor: '#fff'
-            //   }
-            // }
           }
         },
         barGap: 0
-        // areaStyle: {}
-        // smooth: true
       }, {
         data: venuesLeftover,
         name: 'Sobrantes',
         type: 'bar',
         stack: 'cars',
-        // color: '#ff9600',
-        // barMinHeight: 20,
         label: {
           normal: {
             ...this.labelOption.normal
-            // rich: {
-            //   name: {
-            //     textBorderColor: '#fff'
-            //   }
-            // }
+
           }
         },
         barGap: 0
-        // areaStyle: {}
-        // smooth: true
       }, {
         data: venuesMissing,
         name: 'Faltantes',
         type: 'bar',
         stack: 'cars',
-        // barMinHeight: 20,
         label: {
           normal: {
             ...this.labelOption.normal
           }
         },
         barGap: 0
-        // areaStyle: {}
-        // smooth: true
       }, {
         data: venuesPending,
         name: 'Pendientes',
@@ -1197,32 +1114,20 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
         label: {
           normal: {
             ...this.labelOption.normal
-            // rich: {
-            //   name: {
-            //     textBorderColor: '#fff',
-            //     // textBorderWidth: 0
-            //   }
-            // }
           }
         },
         barGap: 0
-        // areaStyle: {}
-        // smooth: true
       }, {
         data: venuesReported,
         name: 'Reportados',
         type: 'bar',
         stack: 'cars',
-        // color: '#96a4b3',
-        // barMinHeight: 20,
         label: {
           normal: {
             ...this.labelOption.normal
           }
         },
         barGap: 0
-        // areaStyle: {}
-        // smooth: true
       }]
     };
     if (!update) {
@@ -1251,27 +1156,6 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
     if (!loadingDetail) {
       this.venuesDetailChart.setOption(optionVenues);
     }
-  }
-
-  private changeSelected(item: string) {
-    let {selectedItems} = this.state;
-    if (selectedItems.hasOwnProperty(item)) {
-      delete (selectedItems as any)[item];
-    } else {
-      selectedItems = {
-        ...selectedItems,
-        [item]: true
-      };
-    }
-    this.setState({
-      selectedItems
-    });
-  }
-
-  private clearSelected() {
-    this.setState({
-      selectedItems: {}
-    });
   }
 
   private updateBrandChart(detailByBrand: IDetailByBrand[], update?: boolean) {
@@ -1322,7 +1206,6 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
       },
       xAxis: {
         type: 'category',
-        // boundaryGap: false,
         data: brandNames,
         axisLine: {
           lineStyle: {
@@ -1331,7 +1214,6 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
         },
         axisLabel: {
           rotate: 90
-          // fontSize: 10
         }
       },
       yAxis: {
@@ -1345,7 +1227,6 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
         splitLine: {
           show: true,
           lineStyle: {
-            // type: 'dashed',
             color: 'rgba(150, 150, 150, 0.5)'
           }
         }
@@ -1358,50 +1239,38 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
         // right
         x2: 5,
         containLabel: true
-        // borderColor: '#FF0000'
       },
       color: ['#00aa51', '#ff9600', '#f1392c', '#00c2f4', '#96a4b3'],
       series: [{
         data: brandFound,
         name: 'Encontrados',
-        // label: labelOption,
         type: 'bar',
         stack: 'cars',
-        // areaStyle: {},
         barGap: 0
-        // smooth: true
       }, {
         data: brandLeftover,
         name: 'Sobrantes',
         type: 'bar',
         stack: 'cars',
-        // areaStyle: {},
         barGap: 0
-        // smooth: true
       }, {
         data: brandMissing,
         name: 'Faltantes',
         type: 'bar',
         stack: 'cars',
-        // areaStyle: {},
         barGap: 0
-        // smooth: true
       }, {
         data: brandPending,
         name: 'Pendientes',
         type: 'bar',
         stack: 'cars',
-        // areaStyle: {},
         barGap: 0
-        // smooth: true
       }, {
         data: brandReported,
         name: 'Reportados',
         type: 'bar',
         stack: 'cars',
-        // areaStyle: {},
         barGap: 0
-        // smooth: true
       }]
     };
     if (!update) {
@@ -1478,7 +1347,10 @@ const mapDispatchToProps = (dispatch: any ) => {
     dispatch,
     loadDataAction: (title: string, body: JSX.Element, footer: JSX.Element) => dispatch(loadDataAction(title, body, footer)),
     updateCommentsAction: (inventoryCar: IInventoryCar) => dispatch(updateInventoryCarAction(inventoryCar)),
-    getInventoryDetailAction: (id: string, update: boolean) => dispatch(getInventoryDetailAction(id, update))
+    inventoryDetailChangeSelected: (item: string) => dispatch(inventoryDetailChangeSelected(item)),
+    getInventoryDetailAction: (id: string, update: boolean) => dispatch(getInventoryDetailAction(id, update)),
+    inventoryDetailChangeFilter: (filter: { text: string; venues: string[]; states: string[]; }) => dispatch(inventoryDetailChangeFilter(filter)),
+    inventoryDetailChangeFilterText: (filter: { text: string; venues: string[]; states: string[]; }) => dispatch(inventoryDetailChangeFilterText(filter))
   };
 };
 
