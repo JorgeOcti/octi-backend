@@ -44,6 +44,10 @@ class ImageLazyLoad extends React.Component<IPropsType, IStateType> {
     this.error = this.error.bind(this);
   }
 
+  public componentWillMount(): void {
+    this.isInViewport();
+  }
+
   public componentDidMount() {
     this.addEventListener();
   }
