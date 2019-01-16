@@ -35,7 +35,7 @@ import AppContainer from '../../container/AppContainer';
 import {IWindow} from '../../interfaces/window';
 import {goToSection, maxText} from '../../utils/common';
 import Checkbox from '../CheckBox';
-// import ImageLazyLoad from '../ImageLazyLoad';
+import ImageLazyLoad from '../ImageLazyLoad';
 import ModalView from '../Modal/ModalView';
 import Row from '../Row';
 import InventoryCarComments from './InventoryCarComments';
@@ -816,14 +816,19 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
                             pagination={paginationFactory(this.paginationOption)}
                             defaultSorted={this.defaultSorted}
                           /> : !loadingDetail ? <p className="text-center text-muted">
-                            <img
-                              src="/images/not_found.png"
+                            <ImageLazyLoad
+                              url="/images/not_found.png"
+                              height={'200px'}
                               style={{
                                 opacity: 0.5,
                                 maxHeight: '200px',
                                 marginBottom: '10px'
                               }}
-                            /><br />
+                              replaceLoading={<i
+                                className={'fa fa-2x fa-circle-o-notch text-primary fa-spin'}
+                                style={{padding: '30px'}}
+                              /> }
+                            /><br/>
                             <strong>No hay información para mostrar</strong>
                           </p> : null
                       }
@@ -852,9 +857,9 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
       ...filter,
       states: [state]
     });
-    goToSection('#table-detail-inventory');
     const $states: any = $('#states');
     setTimeout(() => {
+      goToSection('#table-detail-inventory');
       if ($states && $states.length) {
         $states.selectpicker('refresh');
       }
