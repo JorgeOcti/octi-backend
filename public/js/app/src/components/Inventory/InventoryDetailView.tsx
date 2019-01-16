@@ -701,7 +701,9 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
                   </div>
                 </div>
                 <div className="box-body no-padding" id="table-detail-inventory" style={{
-                  display: loadingDetail ? 'none' : ''
+                  display: loadingDetail ? 'none' : '',
+                  transition: 'max-height 1s ease-in-out',
+                  maxHeight: '2000px'
                 }}>
                   <Row style={{margin: '5px 0'}}>
                     <div className="col-md-5">
@@ -865,6 +867,7 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
       states: [],
       text: ''
     });
+    $('#cars').val('');
     setTimeout(() => {
       const $states: any = $('#states');
       if ($states && $states.length) {
