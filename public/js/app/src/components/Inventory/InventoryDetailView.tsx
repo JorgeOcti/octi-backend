@@ -856,7 +856,7 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
       if ($states && $states.length) {
         $states.selectpicker('refresh');
       }
-    }, 200);
+    }, 100);
   }
 
   private clearFilter() {
