@@ -310,7 +310,7 @@ export function loadInventoryAction(
   return {
     type: '/INVENTORORIES/LOAD_INVENTORY_DATA',
     payload: {
-      resetFilter,
+      resetFilter: !resetFilter,
       summary,
       detailByVenue,
       detailByBrand,

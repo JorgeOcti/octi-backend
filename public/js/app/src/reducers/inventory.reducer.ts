@@ -82,11 +82,13 @@ export function inventoriesReducer(state = initialState, action: InventoryReduxA
         loadingDetail: action.payload.loadingDetail
       };
     case '/INVENTORORIES/LOAD_INVENTORY_DATA':
+      const selectedItems = action.payload.resetFilter ? initialState.selectedItems : state.selectedItems;
+      const filter = action.payload.resetFilter ? initialState.filter : state.filter;
       return {
         ...state,
-        carsTable: processCars(action.payload.detail.cars, initialState.selectedItems, initialState.filter),
-        selectedItems: action.payload.resetFilter ? initialState.selectedItems : state.selectedItems,
-        filter: action.payload.resetFilter ? initialState.filter : state.filter,
+        carsTable: processCars(action.payload.detail.cars, selectedItems, filter),
+        selectedItems,
+        filter,
         summary: action.payload.summary,
         detailByVenue: action.payload.detailByVenue,
         detail: action.payload.detail,
