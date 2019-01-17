@@ -123,7 +123,13 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
       text: '50', value: 50
     }, {
       text: '200', value: 200
-    }]
+    }],
+    onPageChange: () => {
+      setTimeout(() => {
+        $('[data-toggle="tooltip"]').tooltip();
+
+      }, 200);
+    }
   };
 
   private defaultSorted = [{
