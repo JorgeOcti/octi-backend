@@ -44,10 +44,6 @@ class ImageLazyLoad extends React.Component<IPropsType, IStateType> {
     this.error = this.error.bind(this);
   }
 
-  public componentWillMount(): void {
-    this.isInViewport();
-  }
-
   public componentDidMount() {
     this.addEventListener();
   }
@@ -70,13 +66,13 @@ class ImageLazyLoad extends React.Component<IPropsType, IStateType> {
     return (
       <React.Fragment>
         {
-          inViewPort &&
+          inViewPort ?
             <img
               src={url}
               onLoad={this.handleImageLoaded}
               onError={this.error}
               style={imageStyle}
-            />
+            /> : null
         }
         {
           loading ?
@@ -105,6 +101,8 @@ class ImageLazyLoad extends React.Component<IPropsType, IStateType> {
     });
   }
   private handleImageLoaded() {
+    const { url} = this.props;
+    sessionStorage.setItem(url, 'true');
     this.setState({
       loading: false
     });

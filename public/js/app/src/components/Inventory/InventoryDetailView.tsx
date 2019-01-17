@@ -35,6 +35,7 @@ import AppContainer from '../../container/AppContainer';
 import {IWindow} from '../../interfaces/window';
 import {goToSection, maxText} from '../../utils/common';
 import Checkbox from '../CheckBox';
+import CopyText from '../CopyText';
 import ImageLazyLoad from '../ImageLazyLoad';
 import ModalView from '../Modal/ModalView';
 import Row from '../Row';
@@ -399,9 +400,9 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
         {
           row.patent && row.patent.length ?
             <React.Fragment>
-              <strong>{row.patent}</strong> <span className="text-muted text-sm">{row.vin}</span>
+              <CopyText value={row.patent}><strong>{row.patent}</strong></CopyText> <CopyText value={row.vin} className="text-muted text-sm">{row.vin}</CopyText>
             </React.Fragment>
-          : <strong>{row.vin}</strong>
+            : <CopyText value={row.vin}><strong>{row.vin}</strong></CopyText>
         }<br/>
         <span className="text-muted text-sm">{cell} / {row.denomination}</span>
       </React.Fragment>
@@ -701,9 +702,7 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
                   </div>
                 </div>
                 <div className="box-body no-padding" id="table-detail-inventory" style={{
-                  display: loadingDetail ? 'none' : '',
-                  transition: 'max-height 1s ease-in-out',
-                  maxHeight: '2000px'
+                  display: loadingDetail ? 'none' : ''
                 }}>
                   <Row style={{margin: '5px 0'}}>
                     <div className="col-md-5">
