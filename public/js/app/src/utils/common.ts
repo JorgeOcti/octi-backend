@@ -38,9 +38,10 @@ export function showModal(show: boolean) {
 
 export function goToSection(id: string) {
   const $id = $(id);
+  const distance = ($id as any).offset().top - ($('.main-header') as any).height() - 50;
   if ($id && $id.length) {
-    $('html, body').animate({
-      scrollTop: ($id as any).offset().top - ($('.main-header') as any).height() - 50
+    $('html, body').stop().animate({
+      scrollTop: distance
     }, 500);
   }
 }

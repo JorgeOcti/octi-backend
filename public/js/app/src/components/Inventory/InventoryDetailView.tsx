@@ -373,7 +373,7 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
       this.updateBrandChart(detailByBrand, true);
     }
     $('[data-toggle="tooltip"]').tooltip();
-    if (this.props.location !== prevProps.location) {
+    if (this.props.location.pathname !== prevProps.location.pathname) {
       window.scrollTo(0, 0);
     }
   }
