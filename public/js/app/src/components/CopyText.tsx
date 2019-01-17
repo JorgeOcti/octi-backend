@@ -12,20 +12,13 @@ class CopyText extends React.Component<IPropsType, {}> {
     this.copyToClipboard = this.copyToClipboard.bind(this);
   }
 
-  copyToClipboard() {
-    const element = document.createElement('textarea');
-    element.value = this.props.value;
-    document.body.appendChild(element);
-    element.select();
-    document.execCommand('copy');
-    document.body.removeChild(element);
-
+  showNotification(value: string) {
     if ($('#center-message').length) {
       $('#center-message').remove();
     }
     const div = document.createElement('div');
     div.id = 'center-message';
-    div.style.backgroundColor = 'rgba(111, 111, 112, 0.8)';
+    div.style.backgroundColor = 'rgba(50, 50, 50, 0.8)';
     div.style.color = 'rgb(250, 250, 250)';
     div.style.position = 'fixed';
     div.style.display = 'none';
@@ -38,7 +31,7 @@ class CopyText extends React.Component<IPropsType, {}> {
     div.style.textAlign = 'center';
     div.style.padding = '10px 50px';
     div.style.zIndex = '9999';
-    div.textContent = `${this.props.value} copiado a clipboard.`;
+    div.textContent = `${value} copiado a clipboard.`;
     document.body.appendChild(div);
     $('#center-message').fadeIn();
     setTimeout(() => {
@@ -51,6 +44,19 @@ class CopyText extends React.Component<IPropsType, {}> {
     }, 1500);
   }
 
+  copyToClipboard() {
+    const {value} = this.props;
+    if (value && value.length) {
+      const element = document.createElement('textarea');
+      element.value = value;
+      document.body.appendChild(element);
+      element.select();
+      document.execCommand('copy');
+      document.body.removeChild(element);
+      this.showNotification(value);
+    }
+  }
+
   render(): React.ReactElement<IPropsType> {
     const {className} = this.props;
     return (
@@ -59,6 +65,9 @@ class CopyText extends React.Component<IPropsType, {}> {
         <i
           className="fa fa-copy pointer hidden-xs"
           onClick={this.copyToClipboard}
+          data-toggle="tooltip"
+          data-placement="top"
+          title="Copiar a clipboard"
           style={{
             fontSize: '80%'
           }}

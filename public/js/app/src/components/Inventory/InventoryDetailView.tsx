@@ -366,6 +366,7 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
       this.updateVenueChart(detailByVenue, true);
       this.updateBrandChart(detailByBrand, true);
     }
+    $('[data-toggle="tooltip"]').tooltip();
     if (this.props.location !== prevProps.location) {
       window.scrollTo(0, 0);
     }
@@ -521,6 +522,7 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
               </div>
             </div>
           </Row>
+          {/*<Row>*/}
           <Row style={{display: tab === 'summary' ? 'block' : 'none'}}>
             <div className="col-md-6 col-lg-4 pointer" onClick={() => this.sendToDetailFilteredBy('found')}>
               <div className="info-box bg-green">
