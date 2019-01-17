@@ -17,6 +17,7 @@ import UsersListView from './components/Users/UserListView';
 import VenuesListView from './components/Venues/VenueListView';
 import configureStore from './store/configureStore';
 import history from './utils/history';
+import {isIntenertExplorer} from "./utils/common";
 
 const store = configureStore();
 
@@ -57,6 +58,16 @@ $('body').on('hidden.bs.modal', '#andesModal', () => {
 });
 
 $(() => {
+  // add ekko-lightbox
+  const script = document.createElement('script');
+  const link = document.createElement('link');
+  link.rel = 'stylesheet';
+  link.href = isIntenertExplorer() ? '/static/js/vendor/lightbox/ekko-lightbox.css' : '/static/js/vendor/lightbox/ekko-lightbox.last.css';
+  const js = document.getElementsByClassName('js')[0];
+  script.src = isIntenertExplorer() ? '/static/js/vendor/lightbox/ekko-lightbox.min.js' : '/static/js/vendor/lightbox/ekko-lightbox.last.min.js';
+  js.appendChild(script);
+  js.appendChild(link);
+
   moment.locale('es');
   ReactDOM.render(
       <App />,

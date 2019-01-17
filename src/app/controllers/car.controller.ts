@@ -560,30 +560,34 @@ class CarController {
 
   /* istanbul ignore next */
   public async apiParticipantCSV(req: IRequest, res: Response) {
-    const participants = await ParticipantModel.find({}).populate([{
-      path: 'car'
-    }, {
-      path: 'user',
-      populate: [{
-          path: 'venue'
-      }]
-    }, {
-      path: 'form'
-    }, {
-      path: 'company'
-    }]);
-    const cars = await CarModel.find({}).populate([{
-      path: 'company'
-    }]);
-    const data = [];
-    data.push(`Company|VIN|Marca|Denominacion|Usuario|formulario|venue|calificacion|fecha|Cargado`);
-    for (const participant of participants) {
-      data.push(`${participant.company.name}|${participant.car.vin}|${participant.car.brand}|${participant.car.denomination}|${participant.user.fullName()}|${participant.form.name}|${participant.user.venue.name}|${participant.qualification.toString().replace('.', ',')}|${moment(participant.createdAt).format('DD/MM/YY HH:MM:SS')}`);
+    try{
+      const participants = await ParticipantModel.find({}).populate([{
+        path: 'car'
+      }, {
+        path: 'user',
+        populate: [{
+            path: 'venue'
+        }]
+      }, {
+        path: 'form'
+      }, {
+        path: 'company'
+      }]);
+      // const cars = await CarModel.find({}).populate([{
+      //   path: 'company'
+      // }]);
+      const data = [];
+      data.push(`Company|VIN|Marca|Denominacion|Usuario|formulario|venue|calificacion|fecha|Cargado`);
+      for (const participant of participants) {
+        data.push(`${participant.company.name}|${participant.car.vin}|${participant.car.brand}|${participant.car.denomination}|${participant.user ? participant.user.fullName() : '-'}|${participant.form.name}|${participant.user ? participant.user.venue.name : '-'}|${participant.qualification.toString().replace('.', ',')}|${moment(participant.createdAt).format('DD/MM/YY HH:MM:SS')}`);
+      }
+      // for (const car of cars) {
+      //   data.push(`${car.company.name}|${car.vin}|${car.brand}|${car.denomination}||||||${moment(car.createdAt).format('DD/MM/YY HH:MM:SS')}`);
+      // }
+      res.send(data.join('\n'));
+    } catch (e) {
+      console.log(e);
     }
-    for (const car of cars) {
-      data.push(`${car.company.name}|${car.vin}|${car.brand}|${car.denomination}||||||${moment(car.createdAt).format('DD/MM/YY HH:MM:SS')}`);
-    }
-    res.send(data.join('\n'));
   }
 
   public async apiParticipantDetail(req: IRequest, res: Response) {

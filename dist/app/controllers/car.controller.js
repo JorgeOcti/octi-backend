@@ -565,30 +565,35 @@ class CarController {
     }
     /* istanbul ignore next */
     async apiParticipantCSV(req, res) {
-        const participants = await participant_model_1.default.find({}).populate([{
-                path: 'car'
-            }, {
-                path: 'user',
-                populate: [{
-                        path: 'venue'
-                    }]
-            }, {
-                path: 'form'
-            }, {
-                path: 'company'
-            }]);
-        const cars = await car_model_1.default.find({}).populate([{
-                path: 'company'
-            }]);
-        const data = [];
-        data.push(`Company|VIN|Marca|Denominacion|Usuario|formulario|venue|calificacion|fecha|Cargado`);
-        for (const participant of participants) {
-            data.push(`${participant.company.name}|${participant.car.vin}|${participant.car.brand}|${participant.car.denomination}|${participant.user.fullName()}|${participant.form.name}|${participant.user.venue.name}|${participant.qualification.toString().replace('.', ',')}|${moment(participant.createdAt).format('DD/MM/YY HH:MM:SS')}`);
+        try {
+            const participants = await participant_model_1.default.find({}).populate([{
+                    path: 'car'
+                }, {
+                    path: 'user',
+                    populate: [{
+                            path: 'venue'
+                        }]
+                }, {
+                    path: 'form'
+                }, {
+                    path: 'company'
+                }]);
+            // const cars = await CarModel.find({}).populate([{
+            //   path: 'company'
+            // }]);
+            const data = [];
+            data.push(`Company|VIN|Marca|Denominacion|Usuario|formulario|venue|calificacion|fecha|Cargado`);
+            for (const participant of participants) {
+                data.push(`${participant.company.name}|${participant.car.vin}|${participant.car.brand}|${participant.car.denomination}|${participant.user ? participant.user.fullName() : '-'}|${participant.form.name}|${participant.user ? participant.user.venue.name : '-'}|${participant.qualification.toString().replace('.', ',')}|${moment(participant.createdAt).format('DD/MM/YY HH:MM:SS')}`);
+            }
+            // for (const car of cars) {
+            //   data.push(`${car.company.name}|${car.vin}|${car.brand}|${car.denomination}||||||${moment(car.createdAt).format('DD/MM/YY HH:MM:SS')}`);
+            // }
+            res.send(data.join('\n'));
         }
-        for (const car of cars) {
-            data.push(`${car.company.name}|${car.vin}|${car.brand}|${car.denomination}||||||${moment(car.createdAt).format('DD/MM/YY HH:MM:SS')}`);
+        catch (e) {
+            console.log(e);
         }
-        res.send(data.join('\n'));
     }
     async apiParticipantDetail(req, res) {
         const { id } = req.params;
