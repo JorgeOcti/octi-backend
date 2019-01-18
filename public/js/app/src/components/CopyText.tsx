@@ -7,8 +7,11 @@ interface IPropsType {
 
 class CopyText extends React.Component<IPropsType, {}> {
 
+  private element: React.RefObject<HTMLDivElement>;
+
   constructor(props: IPropsType) {
     super(props);
+    this.element = React.createRef();
     this.copyToClipboard = this.copyToClipboard.bind(this);
   }
 
@@ -33,13 +36,14 @@ class CopyText extends React.Component<IPropsType, {}> {
 
   copyToClipboard() {
     const {value} = this.props;
-    if (value && value.length) {
-      const element = document.createElement('textarea');
+    if (value && value.length && this.element.current) {
+      const element = document.createElement('input');
       element.value = value;
-      document.body.appendChild(element);
+      // element.type = 'hidden';
+      this.element.current.appendChild(element);
       element.select();
       document.execCommand('copy');
-      document.body.removeChild(element);
+      this.element.current.removeChild(element);
       this.showNotification(value);
     }
   }
@@ -47,7 +51,7 @@ class CopyText extends React.Component<IPropsType, {}> {
   render(): React.ReactElement<IPropsType> {
     const {className} = this.props;
     return (
-      <span className={className ? className : ''}>
+      <span className={className ? className : ''} ref={this.element}>
         {this.props.children}{' '}
         <i
           className="fa fa-copy pointer"
