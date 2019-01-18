@@ -161,7 +161,8 @@ function processCars(cars: IInventoryCar[], selectedItems: { [key: string]: any 
         patent: car.car.patent ? car.car.patent : '',
         inventoriedBy: car.inventoriedBy ? `${car.inventoriedBy.firstName} ${car.inventoriedBy.lastName}` : '-',
         selected: selectedItems.hasOwnProperty((car as any)._id),
-        status: car.status
+        status: car.status,
+        option: car.status
       });
     }
   }

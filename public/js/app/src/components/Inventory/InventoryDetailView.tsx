@@ -138,7 +138,6 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
     order: 'asc'
   }];
 
-  private defaultColumns: any[] = [];
   private columns: any[] = [];
 
   private socket: SocketIOClient.Socket;
@@ -152,6 +151,7 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
     this.filterVenues = this.filterVenues.bind(this);
     this.filterStatus = this.filterStatus.bind(this);
     this.selectedHeaderFormatter = this.selectedHeaderFormatter.bind(this);
+    this.statusFormatter = this.statusFormatter.bind(this);
     this.brandFormatter = this.brandFormatter.bind(this);
     this.commentFormatter = this.commentFormatter.bind(this);
     this.calculateDetails = this.calculateDetails.bind(this);
@@ -164,7 +164,7 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
     if (tab && tab === 'detail') {
       this.state.tab = 'detail';
     }
-    this.defaultColumns = [{
+    this.columns = [{
       dataField: 'selected',
       text: '',
       // headerFormatter: this.selectedHeaderFormatter,
@@ -196,7 +196,7 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
       classes: 'middle hidden-xs hidden-sm',
       headerClasses: 'middle hidden-xs hidden-sm pointer',
       style: {
-        width: '20%'
+        width: '15%'
       },
       sort: true
     }, {
@@ -205,7 +205,7 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
       classes: 'middle hidden-xs hidden-sm hidden-md',
       headerClasses: 'middle hidden-xs hidden-sm hidden-md pointer',
       style: {
-        width: '20%'
+        width: '15%'
       },
       sort: true
     }, {
@@ -215,14 +215,14 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
       headerClasses: 'middle hidden-xs',
       formatter: this.imagesFormatter,
       headerStyle: {
-        maxWidth: '60px',
-        minWidth: '60px',
-        width: '60px'
+        maxWidth: '80px',
+        minWidth: '80px',
+        width: '80px'
       },
       style: {
-        maxWidth: '60px',
-        minWidth: '60px',
-        width: '60px'
+        maxWidth: '80px',
+        minWidth: '80px',
+        width: '80px'
       }
     }, {
       dataField: 'countComments',
@@ -231,17 +231,17 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
       formatter: this.commentFormatter,
       headerClasses: 'middle hidden-xs',
       style: {
-        width: '20%'
+        width: '15%'
       },
       headerStyle: {
         verticalAlign: 'top'
       }
-    }];
-    this.columns = [...this.defaultColumns, {
+    }, {
       dataField: 'status',
       text: 'Status',
       sort: true,
-      formatter: (cell: string) => (this.statusText[cell]),
+      formatter: this.statusFormatter,
+      // formatter: (cell: string) => (this.statusText[cell]),
       headerClasses: 'middle pointer',
       headerStyle: {
         maxWidth: '100px',
@@ -253,8 +253,27 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
         minWidth: '100px',
         width: '100px'
       },
-      classes: (cell: any) => {
-        return `middle-center ${this.classStatus.hasOwnProperty(cell) ? this.classStatus[cell] : ''}`;
+      classes: 'middle-center'
+      // classes: (cell: any) => {
+      //   return `middle-center ${this.classStatus.hasOwnProperty(cell) ? this.classStatus[cell] : ''}`;
+      // }
+    }, {
+      dataField: 'option',
+      text: '',
+      formatter: this.optionsFormatter,
+      headerClasses: 'middle hidden-xs',
+      classes: () => {
+        return `hidden-xs middle-center`;
+      },
+      headerStyle: {
+        maxWidth: '150px',
+        minWidth: '150px',
+        width: '150px'
+      },
+      style: {
+        maxWidth: '150px',
+        minWidth: '150px',
+        width: '150px'
       }
     }];
   }
@@ -397,6 +416,39 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
         style={{margin: '5px', marginTop: '5px'}}
       />
     );
+  }
+
+  public statusFormatter(cell: any, row: any) {
+    return (
+      <span
+        className={`label ${this.classLabelStatus.hasOwnProperty(cell) ? this.classLabelStatus[cell] : ''}`}
+        style={{
+          padding: '5px 10px'
+        }}
+      >
+        {this.statusText.hasOwnProperty(cell) ? this.statusText[cell] : cell}
+        </span>
+    );
+  }
+
+  public optionsFormatter(cell: any, row: any) {
+    if (!['found'].includes(row.status)) {
+      return (
+        <div className="btn-group btn-group-sm" style={{marginLeft: '5px'}}>
+          <button type="button" className="btn btn-default"><i className="fa fa-fw fa-cogs"/> Opciones</button>
+          <button type="button" className="btn btn-default dropdown-toggle" data-toggle="dropdown">
+            <span className="caret"/>
+            <span className="sr-only">Toggle Dropdown</span>
+          </button>
+          <ul className="dropdown-menu dropdown-menu-right" role="menu">
+            <li><a href="javascript:void(0)"><i className="fa fa-fw fa-copy"/> Copiar</a></li>
+            <li><a href="javascript:void(0)"><i className="fa fa-fw fa-paste"/> Pegar</a></li>
+            <li><a href="javascript:void(0)"><i className="fa fa-fw fa-close"/> Eliminar</a></li>
+          </ul>
+        </div>
+      );
+    }
+    return null;
   }
 
   public commentFormatter(cell: any, row: any) {
@@ -685,7 +737,7 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
                   display: loadingDetail ? 'none' : ''
                 }}>
                   <Row style={{margin: '5px 0'}}>
-                    <div className="col-md-5">
+                    <div className="col-md-4">
                       <div className="form-group">
                         <label htmlFor="cars" className="control-label">Vehículos</label>
                         <input
@@ -734,7 +786,7 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
                         />
                       </div>
                     </div>
-                    <div className="col-md-1">
+                    <div className="col-md-2">
                       <div className="form-group">
                         <label className="control-label hidden-xs">&nbsp;</label>
                         <button

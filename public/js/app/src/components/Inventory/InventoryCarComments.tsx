@@ -62,7 +62,7 @@ class InventoryCarComments extends React.Component<IPropsType, IStateType> {
       if ($comments) {
         $comments.scrollTop = $comments.scrollHeight;
       }
-    }, 300);
+    }, 500);
     this.interval = setInterval(() => {
       this.setState({
         resetRender: !this.state.resetRender
