@@ -868,18 +868,15 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
   }
 
   private sendToDetailFilteredBy(state: string) {
-    this.changeTab('detail');
-    const {filter} = this.props.inventories;
     this.props.inventoryDetailChangeFilter({
-      ...filter,
+      text: '',
+      venues: [],
       states: [state]
     });
-    const $states: any = $('#states');
+    $('#cars').val('');
+    this.changeTab('detail');
     setTimeout(() => {
       goToSection('#table-detail-inventory');
-      if ($states && $states.length) {
-        $states.selectpicker('refresh');
-      }
     }, 100);
   }
 
@@ -890,16 +887,6 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
       text: ''
     });
     $('#cars').val('');
-    setTimeout(() => {
-      const $states: any = $('#states');
-      if ($states && $states.length) {
-        $states.selectpicker('refresh');
-      }
-      const $venues: any = $('#venues');
-      if ($venues && $venues.length) {
-        $venues.selectpicker('refresh');
-      }
-    }, 200);
   }
 
   private handleChangeSearchText(e: React.ChangeEvent<HTMLInputElement>) {
@@ -976,7 +963,7 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
           sendCommentAction={sendCommentAction}
         />
       );
-    }, 400);
+    }, 200);
   }
 
   private xlsExport(status: string[]) {
