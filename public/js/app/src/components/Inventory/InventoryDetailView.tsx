@@ -580,13 +580,13 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
                 <div className="info-box-content">
                   <span className="info-box-text">Sobrantes</span>
                   <span className="info-box-number count">
-                    {!loadingDetail && summary.results? summary.results.leftover : <i className="fa fa-spinner fa-spin"/>}
+                    {!loadingDetail && summary.results ? summary.results.leftover : <i className="fa fa-spinner fa-spin"/>}
                   </span>
                   <div className="progress">
                     <div className="progress-bar" style={{
                       width: `${!loadingDetail ? percentageLeftover : 0}%`,
                       transition: loadingDetail ? 'none' : 'width .6s ease'
-                    }} />
+                    }}/>
                   </div>
                   <span className="progress-description">
                     {!loadingDetail ? `${percentageLeftover.toFixed(1)}% sobrantes.` : null}
@@ -596,11 +596,11 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
             </div>
             <div className="col-md-6 col-lg-4 pointer" onClick={() => this.sendToDetailFilteredBy('missing')}>
               <div className="info-box bg-red">
-                <span className="info-box-icon"><i className="fa fa-arrow-down" /></span>
+                <span className="info-box-icon"><i className="fa fa-arrow-down"/></span>
                 <div className="info-box-content">
                   <span className="info-box-text">Faltantes</span>
                   <span className="info-box-number count">
-                    {!loadingDetail && summary.results? summary.results.missing : <i className="fa fa-spinner fa-spin"/>}
+                    {!loadingDetail && summary.results ? summary.results.missing : <i className="fa fa-spinner fa-spin"/>}
                   </span>
                   <div className="progress">
                     <div className="progress-bar" style={{
