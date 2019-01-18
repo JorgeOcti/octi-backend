@@ -4,8 +4,8 @@
 ///<reference path="../../../src/types/react-bootstrap-table2-paginator.d.ts"/>
 import * as moment from 'moment';
 import * as Raven from 'raven-js';
-import * as React from 'react';
 import {ErrorInfo} from 'react';
+import * as React from 'react';
 import BootstrapTable from 'react-bootstrap-table-next';
 import filterFactory from 'react-bootstrap-table2-filter';
 import paginationFactory from 'react-bootstrap-table2-paginator';
@@ -34,6 +34,7 @@ import {loadDataAction, ModalReduxAction} from '../../actions/modal.actions';
 import AppContainer from '../../container/AppContainer';
 import {IWindow} from '../../interfaces/window';
 import {goToSection, maxText} from '../../utils/common';
+import BoostrapSelect from '../BoostrapSelect';
 import Checkbox from '../CheckBox';
 import CopyText from '../CopyText';
 import ImageLazyLoad from '../ImageLazyLoad';
@@ -148,6 +149,8 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
     this.xlsExport = this.xlsExport.bind(this);
     this.carComments = this.carComments.bind(this);
     this.selectedFormatter = this.selectedFormatter.bind(this);
+    this.filterVenues = this.filterVenues.bind(this);
+    this.filterStatus = this.filterStatus.bind(this);
     this.selectedHeaderFormatter = this.selectedHeaderFormatter.bind(this);
     this.brandFormatter = this.brandFormatter.bind(this);
     this.commentFormatter = this.commentFormatter.bind(this);
@@ -322,34 +325,6 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
     this.venuesDetailChart = echarts.init($venuesDetail);
     this.brandDetailChart = echarts.init($brandDetail);
     window.scrollTo(0, 0);
-    const $venues: any = $('#venues');
-    $venues.on('changed.bs.select', () => {
-      const {filter} = this.props.inventories;
-      if ($venues) {
-        this.props.inventoryDetailChangeFilter({
-          ...filter,
-          venues: $venues.val() as string[]
-        });
-      }
-    });
-    const $states: any = $('#states');
-    $states.on('changed.bs.select', () => {
-      const {filter} = this.props.inventories;
-      if ($states) {
-        this.props.inventoryDetailChangeFilter({
-          ...filter,
-          states: $states.val() as string[]
-        });
-      }
-    });
-    setTimeout(() => {
-      if ($venues && $venues.length) {
-        $venues.selectpicker('refresh');
-      }
-      if ($states && $states.length) {
-        $states.selectpicker('refresh');
-      }
-    }, 300);
   }
 
   public componentDidUpdate(prevProps: IPropsType): void {
@@ -536,7 +511,7 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
                 <div className="info-box-content">
                   <span className="info-box-text">Encontrados</span>
                   <span className="info-box-number count">
-                    {!loadingDetail && summary.results && summary.results.found ? summary.results.found : <i className="fa fa-spinner fa-spin"/>}
+                    {!loadingDetail && summary.results ? summary.results.found : <i className="fa fa-spinner fa-spin"/>}
                   </span>
                   <div className="progress">
                     <div className="progress-bar" style={{
@@ -556,7 +531,7 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
                 <div className="info-box-content">
                   <span className="info-box-text">Sobrantes</span>
                   <span className="info-box-number count">
-                    {!loadingDetail && summary.results && summary.results.leftover ? summary.results.leftover : <i className="fa fa-spinner fa-spin"/>}
+                    {!loadingDetail && summary.results? summary.results.leftover : <i className="fa fa-spinner fa-spin"/>}
                   </span>
                   <div className="progress">
                     <div className="progress-bar" style={{
@@ -576,7 +551,7 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
                 <div className="info-box-content">
                   <span className="info-box-text">Faltantes</span>
                   <span className="info-box-number count">
-                    {!loadingDetail && summary.results && summary.results.missing ? summary.results.missing : <i className="fa fa-spinner fa-spin"/>}
+                    {!loadingDetail && summary.results? summary.results.missing : <i className="fa fa-spinner fa-spin"/>}
                   </span>
                   <div className="progress">
                     <div className="progress-bar" style={{
@@ -644,7 +619,7 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
                 <div className="info-box-content">
                   <span className="info-box-text">Pendientes</span>
                   <span className="info-box-number count">
-                    {!loadingDetail && summary.results && summary.results.pending ? summary.results.pending : <i className="fa fa-spinner fa-spin"/>}
+                    {!loadingDetail && summary.results ? summary.results.pending : <i className="fa fa-spinner fa-spin"/>}
                   </span>
                   <div className="progress">
                     <div className="progress-bar" style={{
@@ -664,7 +639,7 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
                 <div className="info-box-content">
                   <span className="info-box-text">Reportados</span>
                   <span className="info-box-number count">
-                    {!loadingDetail && summary.results && summary.results.reported ? summary.results.reported : <i className="fa fa-spinner fa-spin"/>}
+                    {!loadingDetail && summary.results ? summary.results.reported : <i className="fa fa-spinner fa-spin"/>}
                   </span>
                   <div className="progress">
                     <div className="progress-bar" style={{
@@ -729,71 +704,37 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
                     <div className="col-md-3">
                       <div className="form-group">
                         <label htmlFor="venues" className="control-label">Sucursales</label>
-                        <select
-                          className="form-control"
-                          id="venues"
-                          multiple
-                          data-style="btn-filter btn-default"
-                          data-none-selected-text="Todos"
-                          data-live-search="true"
-                          data-dropup-auto="false"
-                          data-actions-box="true"
-                          // data-header="&nbsp;"
-                          data-select-all-text="Seleccionar todo"
-                          data-none-results-text="No hay resultados para {0}"
-                          data-deselect-all-text="Deseleccionar todo"
-                          data-count-selected-text="{0} sucursales seleccionadas."
-                          data-selected-text-format="count > 2"
-                          value={filter.venues}
-                          onChange={() => undefined}
-                        >
-                          {
-                            !loadingDetail ? detail.venues.map((venue: any) => (
-                              <option
-                                value={venue._id}
-                                key={venue._id}
-                              >
-                                {venue.name}
-                              </option>
-                            )) : <option value="">Cargando...</option>
-                          }
-                        </select>
+                        <BoostrapSelect
+                          noneSelectedText="Todas"
+                          displayItems={2}
+                          selectedText="sucursales seleccionadas."
+                          selected={filter.venues}
+                          options={detail.venues.map((venue: any) => ({
+                            value: venue._id,
+                            text: venue.name
+                          }))}
+                          onClick={this.filterVenues}
+                        />
                       </div>
                     </div>
                     <div className="col-md-3">
                       <div className="form-group">
                         <label htmlFor="states" className="control-label">Estados</label>
-                        <select
-                          className="form-control"
-                          id="states"
-                          multiple
-                          data-style="btn-filter btn-default"
-                          data-dropup-auto="false"
-                          // data-live-search="true"
-                          // data-header="&nbsp;"
-                          data-none-selected-text="Todos"
-                          data-multiple-separator=" - "
-                          data-count-selected-text="{0} estados seleccionados."
-                          data-selected-text-format="count > 4"
-                          value={filter.states}
-                          onChange={() => undefined}
-                        >
-                          {
-                            Object
-                              .keys(this.statusText)
-                              .map((status) => (
-                                <option
-                                  value={status}
-                                  key={status}
-                                  data-content={
-                                    `<span class='label ${this.classLabelStatus[status]}'>${this.statusText[status]}</span>`
-                                  }
-                                >
-                                  {this.statusText[status]}
-                                </option>
-                              ))
-                          }
-                        </select>
+                        <BoostrapSelect
+                          noneSelectedText="Todos"
+                          displayItems={4}
+                          selectedText="estados seleccionados."
+                          separator=" - "
+                          options={Object
+                            .keys(this.statusText)
+                            .map((status) => ({
+                              value: status,
+                              text: this.statusText[status],
+                              className: `label ${this.classLabelStatus[status]}`
+                          }))}
+                          selected={filter.states}
+                          onClick={this.filterStatus}
+                        />
                       </div>
                     </div>
                     <div className="col-md-1">
@@ -855,6 +796,26 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
         </section>
       </AppContainer>
     );
+  }
+
+  private filterVenues(value: any) {
+    const {filter} = this.props.inventories;
+    this.props.inventoryDetailChangeFilter({
+      ...filter,
+      venues: filter.venues.includes(value)
+        ? filter.venues.filter((venue) => venue !== value)
+        : [value, ...filter.venues]
+    });
+  }
+
+  private filterStatus(value: any) {
+    const {filter} = this.props.inventories;
+    this.props.inventoryDetailChangeFilter({
+      ...filter,
+      states: filter.states.includes(value)
+        ? filter.states.filter((state) => state !== value)
+        : [value, ...filter.states]
+    });
   }
 
   private sendToDetailFilteredBy(state: string) {

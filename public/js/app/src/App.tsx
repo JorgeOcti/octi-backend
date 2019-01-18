@@ -17,7 +17,7 @@ import UsersListView from './components/Users/UserListView';
 import VenuesListView from './components/Venues/VenueListView';
 import configureStore from './store/configureStore';
 import history from './utils/history';
-import {isIntenertExplorer} from "./utils/common";
+import {isIntenertExplorer} from './utils/common';
 
 const store = configureStore();
 
@@ -88,5 +88,9 @@ $(() => {
     if ($('.modal:visible').length) {
       $('body').addClass('modal-open');
     }
+  });
+
+  $(document).on('click.bs.dropdown.data-api', '.dropdown.keep-inside-clicks-open', function(event) {
+    event.stopPropagation();
   });
 });
