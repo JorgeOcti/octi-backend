@@ -189,9 +189,6 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
       filterValue: (cell: any, row: any) => `${cell}${row.denomination}${row.vin}${row.patent}`,
       classes: 'middle',
       headerClasses: 'middle pointer',
-      style: {
-        width: '20%'
-      },
       sort: true
     }, {
       dataField: 'venue',

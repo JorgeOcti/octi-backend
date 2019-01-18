@@ -50,7 +50,7 @@ class CopyText extends React.Component<IPropsType, {}> {
       <span className={className ? className : ''}>
         {this.props.children}{' '}
         <i
-          className="fa fa-copy pointer hidden-xs"
+          className="fa fa-copy pointer"
           onClick={this.copyToClipboard}
           data-toggle="tooltip"
           data-placement="top"
