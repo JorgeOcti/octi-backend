@@ -20,6 +20,7 @@ const initialState: IInventoryState = {
     venues: [],
     cars: []
   },
+  labels: [],
   detailByVenue: [],
   detailByBrand: [],
   carsTable: [],
@@ -89,6 +90,7 @@ export function inventoriesReducer(state = initialState, action: InventoryReduxA
         carsTable: processCars(action.payload.detail.cars, selectedItems, filter),
         selectedItems,
         filter,
+        labels: action.payload.labels,
         summary: action.payload.summary,
         detailByVenue: action.payload.detailByVenue,
         detail: action.payload.detail,

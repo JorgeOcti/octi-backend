@@ -18,6 +18,10 @@ import {
   IInventoryCar
 } from '../../../../../../src/interfaces/inventory.interface';
 import {
+  IInventoryLabel
+} from '../../../../../../src/interfaces/inventoryLabel.interface';
+import {
+  actionSetLabel,
   addCommentAction,
   getInventoryDetailAction,
   IDetailByBrand,
@@ -54,6 +58,7 @@ interface IPropsType extends RouteComponentProps<{ id: string, tab?: string }> {
   inventoryDetailChangeFilterText(filter: { text: string; venues: string[]; states: string[]; }): InventoryReduxAction;
   getInventoryDetailAction(id: string, update: boolean): InventoryReduxAction;
   loadDataAction(title: string, body: JSX.Element, footer?: JSX.Element): ModalReduxAction;
+  actionSetLabel(inventory: string, car: string, label: IInventoryLabel): ModalReduxAction;
 }
 
 interface IStateType {
@@ -96,6 +101,14 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
     leftover: 'Sobrante',
     missing: 'Faltante',
     reported: 'Reportado'
+  };
+
+  private iconStatus: any = {
+    pending: 'fa-clock-o',
+    found: 'fa-check',
+    leftover: 'fa-arrow-up',
+    missing: 'fa-arrow-down',
+    reported: 'fa-exclamation'
   };
 
   private classStatus: any = {
@@ -154,6 +167,7 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
     this.statusFormatter = this.statusFormatter.bind(this);
     this.brandFormatter = this.brandFormatter.bind(this);
     this.commentFormatter = this.commentFormatter.bind(this);
+    this.optionsFormatter = this.optionsFormatter.bind(this);
     this.calculateDetails = this.calculateDetails.bind(this);
     this.imagesFormatter = this.imagesFormatter.bind(this);
     this.handleChangeSearchText = this.handleChangeSearchText.bind(this);
@@ -164,7 +178,7 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
     if (tab && tab === 'detail') {
       this.state.tab = 'detail';
     }
-    this.columns = [{
+    this.columns = [ /* {
       dataField: 'selected',
       text: '',
       // headerFormatter: this.selectedHeaderFormatter,
@@ -182,7 +196,7 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
         minWidth: '60px',
         width: '60px'
       }
-    }, {
+    }, */ {
       dataField: 'brand',
       text: 'Vehículo',
       formatter: this.brandFormatter,
@@ -432,18 +446,37 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
   }
 
   public optionsFormatter(cell: any, row: any) {
-    if (!['found'].includes(row.status)) {
+    const {labels} = this.props.inventories;
+    const {id} = this.props.match.params;
+    const options = labels.filter((label) => {
+      return label.affected.includes(row.status);
+    });
+    if (options.length) {
       return (
-        <div className="btn-group btn-group-sm" style={{marginLeft: '5px'}}>
-          <button type="button" className="btn btn-default"><i className="fa fa-fw fa-cogs"/> Opciones</button>
+        <div className="btn-group btn-group-sm" style={{
+          marginLeft: '5px'
+        }}>
+          <button type="button" className="btn btn-default">
+            <i className="fa fa-fw fa-cogs"/> Opciones
+          </button>
           <button type="button" className="btn btn-default dropdown-toggle" data-toggle="dropdown">
             <span className="caret"/>
             <span className="sr-only">Toggle Dropdown</span>
           </button>
           <ul className="dropdown-menu dropdown-menu-right" role="menu">
-            <li><a href="javascript:void(0)"><i className="fa fa-fw fa-copy"/> Copiar</a></li>
-            <li><a href="javascript:void(0)"><i className="fa fa-fw fa-paste"/> Pegar</a></li>
-            <li><a href="javascript:void(0)"><i className="fa fa-fw fa-close"/> Eliminar</a></li>
+            {
+              options.map((option) => {
+                return (
+                  <li key={option._id} onClick={() => {
+                    this.props.actionSetLabel(id, row._id, option);
+                  }}>
+                    <a href="javascript:void(0)">
+                      <i className={`fa ${this.iconStatus[option.sendTo]}`} />{option.name}
+                    </a>
+                  </li>
+                );
+              })
+            }
           </ul>
         </div>
       );
@@ -717,7 +750,7 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
                     >
                       <i className="fa fa-fw fa-download"/> Exportar Excel
                     </button>
-                    <div className="btn-group btn-group-sm" style={{marginLeft: '5px'}}>
+                    { /* <div className="btn-group btn-group-sm" style={{marginLeft: '5px'}}>
                       <button type="button" className="btn btn-success"><i className="fa fa-fw fa-cogs"/> Acciones</button>
                       <button type="button" className="btn btn-success dropdown-toggle" data-toggle="dropdown">
                         <span className="caret"/>
@@ -727,10 +760,8 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
                         <li><a href="javascript:void(0)"><i className="fa fa-fw fa-copy"/> Copiar</a></li>
                         <li><a href="javascript:void(0)"><i className="fa fa-fw fa-paste"/> Pegar</a></li>
                         <li><a href="javascript:void(0)"><i className="fa fa-fw fa-close"/> Eliminar</a></li>
-                        {/*<li className="divider"/>*/}
-                        {/*<li><a href="javascript:void(0)" onClick={this.clearSelected}><i className="fa fa-fw fa-certificate"/> Limpiar seleccionados.</a></li>*/}
                       </ul>
-                    </div>
+                    </div> */}
                   </div>
                 </div>
                 <div className="box-body no-padding" id="table-detail-inventory" style={{
@@ -1372,7 +1403,8 @@ const mapDispatchToProps = (dispatch: any ) => {
     inventoryDetailChangeSelected: (item: string) => dispatch(inventoryDetailChangeSelected(item)),
     getInventoryDetailAction: (id: string, update: boolean) => dispatch(getInventoryDetailAction(id, update)),
     inventoryDetailChangeFilter: (filter: { text: string; venues: string[]; states: string[]; }) => dispatch(inventoryDetailChangeFilter(filter)),
-    inventoryDetailChangeFilterText: (filter: { text: string; venues: string[]; states: string[]; }) => dispatch(inventoryDetailChangeFilterText(filter))
+    inventoryDetailChangeFilterText: (filter: { text: string; venues: string[]; states: string[]; }) => dispatch(inventoryDetailChangeFilterText(filter)),
+    actionSetLabel: (inventory: string, car: string, label: IInventoryLabel) => dispatch(actionSetLabel(inventory, car, label))
   };
 };
 

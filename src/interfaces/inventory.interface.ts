@@ -9,8 +9,8 @@ import {IVenue} from './venue.interface';
 export interface IInventoryCar {
   car: ICar;
   venue: IVenue;
-  comments: IInventoryComment[];
   venueFound?: IVenue;
+  comments: IInventoryComment[];
   inventoriedBy?: IUserModel;
   images: IInventoryFile[];
   status?: string;

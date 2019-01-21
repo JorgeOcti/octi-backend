@@ -265,4 +265,14 @@ export default class ApiService {
     this.source = this.CancelToken.source();
     return this.source;
   }
+
+  public setLabel(inventory: string, car: string, label: string, custom?: string): AxiosPromise {
+    return this.instance.post(
+      `/api/inventory/${inventory}/set-label/`, {
+        car,
+        label,
+        custom
+      }
+    );
+  }
 }

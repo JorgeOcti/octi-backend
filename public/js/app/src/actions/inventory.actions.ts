@@ -2,6 +2,7 @@ import {AxiosError, AxiosResponse, CancelTokenSource} from 'axios';
 import {Dispatch} from 'redux';
 import {IInventoryCar} from '../../../../../src/interfaces/inventory.interface';
 import {IInventoryComment} from '../../../../../src/interfaces/inventoryComment.interface';
+import {IInventoryLabel} from '../../../../../src/interfaces/inventoryLabel.interface';
 import ApiService from '../utils/axios';
 
 export interface IInventorySummaryResult {
@@ -25,6 +26,7 @@ export interface IInventorySummary {
   createdAt: Date | null;
   finalizedAt: Date | null;
 }
+
 export interface IDetailByVenue {
   name: string;
   results: {
@@ -35,6 +37,7 @@ export interface IDetailByVenue {
     reported: number;
   };
 }
+
 export interface IDetailByBrand {
   name: string;
   results: {
@@ -55,6 +58,7 @@ export interface IInventoryState {
   summary: IInventorySummary;
   detail: any | null;
   detailByVenue: IDetailByVenue[];
+  labels: IInventoryLabel[];
   detailByBrand: IDetailByBrand[];
   carsTable: any[];
   selectedItems: {
@@ -299,13 +303,19 @@ interface ILoadInventory {
     summary: IInventorySummary;
     detailByVenue: IDetailByVenue[];
     detailByBrand: IDetailByBrand[];
+    labels: IInventoryLabel[],
     detail: any;
     resetFilter: boolean;
   };
 }
 
 export function loadInventoryAction(
-  summary: IInventorySummary, detailByVenue: IDetailByVenue[], detailByBrand: IDetailByBrand[], detail: any, resetFilter: boolean
+  summary: IInventorySummary,
+  detailByVenue: IDetailByVenue[],
+  detailByBrand: IDetailByBrand[],
+  labels: IInventoryLabel[],
+  detail: any,
+  resetFilter: boolean
 ): ILoadInventory {
   return {
     type: '/INVENTORORIES/LOAD_INVENTORY_DATA',
@@ -314,6 +324,7 @@ export function loadInventoryAction(
       summary,
       detailByVenue,
       detailByBrand,
+      labels,
       detail
     }
   };
@@ -329,7 +340,14 @@ export function getInventoryDetailAction(id: string, update: boolean) {
     api.getInventory(id)
       .then((response: AxiosResponse) => {
         const {data} = response;
-        dispatch(loadInventoryAction(data.summary, data.detailByVenue, data.detailByBrand, data.detail, update));
+        dispatch(loadInventoryAction(
+          data.summary,
+          data.detailByVenue,
+          data.detailByBrand,
+          data.labels,
+          data.detail,
+          update
+        ));
         dispatch(loadingInventoryDetaillAction(false));
         if (!update) {
           $('.count').each(function() {
@@ -360,6 +378,49 @@ export function sendCommentAction(carId: string, comment: string) {
       .catch((err: AxiosError) => {
         api.errorHandler(err);
       });
+  };
+}
+
+export function actionSetLabel(inventory: string, car: string, label: IInventoryLabel) {
+  return (dispatch: Dispatch<InventoryReduxAction>) => {
+    const api: ApiService = new ApiService();
+    if (label.requireCustomText) {
+      (swal as any)('Ingrese la etiqueta personaliza:', {
+        content: 'input'
+      }).then((custom: string) => {
+        if (custom && custom.trim().length) {
+          api.setLabel(inventory, car, label._id, custom)
+            .then((response: AxiosResponse) => {
+              swal(response.data.message, {
+                icon: 'success'
+              });
+              setTimeout(() => {
+                (swal as any).close();
+              }, 1500);
+            })
+            .catch((err: AxiosError) => {
+              api.errorHandler(err);
+            });
+        } else {
+          swal('Operación cancelada', {
+            icon: 'error'
+          });
+        }
+      });
+    } else {
+      api.setLabel(inventory, car, label._id)
+        .then((response: AxiosResponse) => {
+          swal(response.data.message, {
+            icon: 'success'
+          });
+          setTimeout(() => {
+            (swal as any).close();
+          }, 1500);
+        })
+        .catch((err: AxiosError) => {
+          api.errorHandler(err);
+        });
+    }
   };
 }
 

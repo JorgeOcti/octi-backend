@@ -67,7 +67,7 @@ class InventoryCarComments extends React.Component<IPropsType, IStateType> {
       this.setState({
         resetRender: !this.state.resetRender
       });
-    }, 10000);
+    }, 2000);
   }
 
   public componentWillUnmount(): void {
@@ -122,7 +122,7 @@ class InventoryCarComments extends React.Component<IPropsType, IStateType> {
         </div>
         <div className={'col-md-12'}>
           <div className="direct-chat-info" style={{border: '1px solid #efefef'}}>
-            <div className="direct-chat-messages" id={'comments'} style={{height: '20vh'}}>
+            <div className="direct-chat-messages" id={'comments'} style={{height: '30vh'}}>
               {
                 inventoryCar ? inventoryCar.comments.map((comment) => {
                   return (

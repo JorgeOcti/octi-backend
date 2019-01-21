@@ -21,6 +21,7 @@ import InventoryModel, {
 } from '../models/inventory.model';
 import Inventory from '../models/inventory.model';
 import InventoryFileModel from '../models/inventoryFile.model';
+import InventoryLabel from '../models/inventoryLabel.model';
 
 class InventoryController {
 
@@ -35,6 +36,7 @@ class InventoryController {
     this.apiFoundCar = this.apiFoundCar.bind(this);
     this.uploadFile = this.uploadFile.bind(this);
     this.autoRotate = this.autoRotate.bind(this);
+    this.setLabel = this.setLabel.bind(this);
     this.finishInventory = this.finishInventory.bind(this);
     this.deleteInventory = this.deleteInventory.bind(this);
     this.reportCar = this.reportCar.bind(this);
@@ -795,6 +797,47 @@ class InventoryController {
     }
   }
 
+  public async setLabel(req: IRequest, res: Response) {
+    const {team} = req.user;
+    const {id} = req.params;
+    const {car, label} = req.body;
+    try {
+      const newLabel = await InventoryLabel.findOne({
+        _id: label,
+        team
+      });
+      if (newLabel) {
+        await InventoryModel.update({
+          _id: id,
+          ['cars._id']: car,
+          team
+        }, {
+          $set: {
+            'cars.$.status': newLabel.sendTo,
+            'cars.$.label': newLabel._id
+          }
+        }, {
+          upsert: true
+        });
+        io.to(`inventory-detail-${id}`).emit('REFRESH', {
+          update: true
+        });
+        res.json({
+          message: 'Opción procesada correctamente.',
+          status: 200
+        });
+      }
+    } catch (e) {
+      /* istanbul ignore next */
+      console.log(e);
+      /* istanbul ignore next */
+      res.status(400).json({
+        message: e,
+        status: 400
+      });
+    }
+  }
+
   public async apiList(req: IRequest, res: Response) {
     const {team} = req.user;
     try {
@@ -1108,6 +1151,17 @@ class InventoryController {
         venuesPermissions = venuesPermissions.map((ve) => ve.toString());
         res.json({
           summary: response,
+          labels: await InventoryLabel.find({
+            team,
+            active: true
+          }, {
+            name: true,
+            color: true,
+            affected: true,
+            sendTo: true,
+            isExhibition: true,
+            requireCustomText: true
+          }),
           detailByVenue,
           detailByBrand,
           detail: {

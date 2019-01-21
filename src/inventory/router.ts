@@ -13,6 +13,7 @@ inventoryRouter.get('/api/inventory/', Middlewares.isLoggedIn, InventoryControll
 inventoryRouter.post('/api/inventory/', Middlewares.isLoggedIn, InventoryController.create);
 inventoryRouter.post('/api/inventory/:id/comment/', Middlewares.isJWTAuthenticated, InventoryController.addComment);
 inventoryRouter.post('/api/inventory/:id/finish/', Middlewares.isLoggedIn, InventoryController.finishInventory);
+inventoryRouter.post('/api/inventory/:id/set-label/', Middlewares.isLoggedIn, InventoryController.setLabel);
 inventoryRouter.get('/api/inventory/:id/', Middlewares.isLoggedIn, InventoryController.detaill);
 inventoryRouter.delete('/api/inventory/:id/', Middlewares.isLoggedIn, InventoryController.deleteInventory);
 

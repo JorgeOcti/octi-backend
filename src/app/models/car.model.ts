@@ -47,6 +47,10 @@ const carSchema = new mongoose.Schema({
     default: '',
     trim: true
   },
+  isExhibition: {
+    type: Boolean,
+    default: false
+  },
   team: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Team'

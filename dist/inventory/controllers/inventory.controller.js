@@ -13,6 +13,7 @@ const push_service_1 = require("../../services/push.service");
 const inventory_model_1 = require("../models/inventory.model");
 const inventory_model_2 = require("../models/inventory.model");
 const inventoryFile_model_1 = require("../models/inventoryFile.model");
+const inventoryLabel_model_1 = require("../models/inventoryLabel.model");
 class InventoryController {
     constructor() {
         this.index = this.index.bind(this);
@@ -25,6 +26,7 @@ class InventoryController {
         this.apiFoundCar = this.apiFoundCar.bind(this);
         this.uploadFile = this.uploadFile.bind(this);
         this.autoRotate = this.autoRotate.bind(this);
+        this.setLabel = this.setLabel.bind(this);
         this.finishInventory = this.finishInventory.bind(this);
         this.deleteInventory = this.deleteInventory.bind(this);
         this.reportCar = this.reportCar.bind(this);
@@ -788,6 +790,47 @@ class InventoryController {
             });
         }
     }
+    async setLabel(req, res) {
+        const { team } = req.user;
+        const { id } = req.params;
+        const { car, label } = req.body;
+        try {
+            const newLabel = await inventoryLabel_model_1.default.findOne({
+                _id: label,
+                team
+            });
+            if (newLabel) {
+                await inventory_model_1.default.update({
+                    _id: id,
+                    ['cars._id']: car,
+                    team
+                }, {
+                    $set: {
+                        'cars.$.status': newLabel.sendTo,
+                        'cars.$.label': newLabel._id
+                    }
+                }, {
+                    upsert: true
+                });
+                server_1.io.to(`inventory-detail-${id}`).emit('REFRESH', {
+                    update: true
+                });
+                res.json({
+                    message: 'Opción procesada correctamente.',
+                    status: 200
+                });
+            }
+        }
+        catch (e) {
+            /* istanbul ignore next */
+            console.log(e);
+            /* istanbul ignore next */
+            res.status(400).json({
+                message: e,
+                status: 400
+            });
+        }
+    }
     async apiList(req, res) {
         const { team } = req.user;
         try {
@@ -1102,6 +1145,17 @@ class InventoryController {
                 venuesPermissions = venuesPermissions.map((ve) => ve.toString());
                 res.json({
                     summary: response,
+                    labels: await inventoryLabel_model_1.default.find({
+                        team,
+                        active: true
+                    }, {
+                        name: true,
+                        color: true,
+                        affected: true,
+                        sendTo: true,
+                        isExhibition: true,
+                        requireCustomText: true
+                    }),
                     detailByVenue,
                     detailByBrand,
                     detail: {
