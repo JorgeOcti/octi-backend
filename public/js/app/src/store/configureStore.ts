@@ -6,7 +6,7 @@ import {composeWithDevTools} from 'redux-devtools-extension';
 // import LogerMiddleware from 'redux-logger';
 import ThunkMiddleware from 'redux-thunk';
 import {IWindow} from '../interfaces/window';
-import rootReducer from '../reducers/';
+import rootReducer from '../reducers/index.reducer';
 
 declare let window: IWindow;
 

@@ -1,6 +1,7 @@
 ///<reference path="../../../node_modules/sweetalert/typings/sweetalert.d.ts"/>
+import {AxiosError} from 'axios';
 import * as moment from 'moment';
-import * as PropTypes from 'prop-types';
+// import * as PropTypes from 'prop-types';
 import * as Raven from 'raven-js';
 import * as React from 'react';
 import {ErrorInfo} from 'react';
@@ -8,22 +9,24 @@ import {connect} from 'react-redux';
 import {RouteComponentProps} from 'react-router';
 import {Dispatch} from 'redux';
 import {IUser} from '../../../../../../src/interfaces/user.interface';
-import {loadDataAction, ModalReduxAction} from '../../actions/modal';
+import {loadDataAction, ModalReduxAction} from '../../actions/modal.actions';
 import {
-  addUserAction,
   changeTempUserAction,
+  createUserAction,
   deleteUserAction,
-  editUserAction,
   getUsersAction,
   ITempUser,
   IUsersState,
+  updateUserAction,
   UserReduxAction
-} from '../../actions/users';
+} from '../../actions/users.actions';
 import AppContainer from '../../container/AppContainer';
 import {IWindow} from '../../interfaces/window';
-import {hasPermission, statusFooterButttonsModal} from '../../utils/common';
+import ApiService from '../../utils/axios';
+import {hasPermission, showModal, statusFooterButttonsModal} from '../../utils/common';
 import ModalView from '../Modal/ModalView';
 import Paginator from '../Paginator';
+import UserFormChangePasswordView from './UserFormChangePasswordView';
 import UserFormView from './UserFormView';
 
 interface IPropsType extends RouteComponentProps<{ ticket: string }> {
@@ -31,11 +34,11 @@ interface IPropsType extends RouteComponentProps<{ ticket: string }> {
   users: IUsersState;
 
   getUsersAction(page?: number): UserReduxAction;
+  createUserAction(): UserReduxAction;
+  updateUserAction(): UserReduxAction;
   deleteUserAction(id?: string): UserReduxAction;
   changeTempUserAction(user: ITempUser): UserReduxAction;
-  editUserAction(): UserReduxAction;
   loadDataAction(title: string, body: JSX.Element, footer: JSX.Element): ModalReduxAction;
-  AddUserAction(): UserReduxAction;
 }
 
 interface IStateType {
@@ -46,26 +49,29 @@ declare let window: IWindow;
 
 class UserListView extends React.Component<IPropsType, IStateType> {
 
-  static propTypes = {
-    users: PropTypes.object.isRequired,
-    dispatch: PropTypes.func.isRequired,
-    getUsersAction: PropTypes.func.isRequired
-  };
+  // static propTypes = {
+  //   users: PropTypes.object.isRequired,
+  //   dispatch: PropTypes.func.isRequired,
+  //   getUsersAction: PropTypes.func.isRequired
+  // };
 
   constructor(props: IPropsType) {
     super(props);
+    this.createUser = this.createUser.bind(this);
+    this.processCreateUser = this.processCreateUser.bind(this);
+    this.updateUser = this.updateUser.bind(this);
+    this.processUpdateUser = this.processUpdateUser.bind(this);
     this.changePage = this.changePage.bind(this);
     this.changeTempUser = this.changeTempUser.bind(this);
-    this.addUser = this.addUser.bind(this);
-    this.processAddUser = this.processAddUser.bind(this);
-    this.editUser = this.editUser.bind(this);
-    this.processEditUser = this.processEditUser.bind(this);
+    this.changePassword = this.changePassword.bind(this);
+    this.processChangePassword = this.processChangePassword.bind(this);
   }
 
   public componentWillMount(): void {
+    const {pagination} = this.props.users;
     // set the title of the page
     document.title = 'OSA Andes | Listado de usuarios';
-    this.props.getUsersAction();
+    this.props.getUsersAction(pagination.page);
   }
 
   public componentDidCatch(error: Error, errorInfo: ErrorInfo): void {
@@ -85,31 +91,37 @@ class UserListView extends React.Component<IPropsType, IStateType> {
   public render(): React.ReactElement<IPropsType> {
     const {loading, users, pagination} = this.props.users;
     return (
-      <AppContainer title="" cMenu="2" cSubMenu="2.3" cAction="Listado">
+      <AppContainer title="" cMenu="10" cSubMenu="10.5" cAction="Listado">
         <section className="content">
           <div className="box">
             <div className="box-header with-border"><h3 className="box-title">Usuarios <small>{pagination.count}</small></h3>
               {
                 hasPermission(window.user, 'addUser') ?
                   <div className="box-tools pull-right">
-                    <button className="btn btn-sm btn-success" onClick={this.addUser}>Agregar</button>
+                    <button className="btn btn-sm btn-success" onClick={this.createUser}>Agregar</button>
                   </div>
                   : null
               }
             </div>
-            <div className="box-body">
+            <div className="box-body no-padding">
               <table className="table table-striped">
                 <thead>
                   <tr>
-                    <th style={{width: '20%'}}>Nombre</th>
-                    <th style={{width: '20%'}}>Apellido</th>
-                    <th style={{width: '20%'}} className="hidden-xs">Sucursal</th>
-                    <th style={{width: '20%'}} className="hidden-xs">Email</th>
-                    <th style={{width: '20%'}} className="hidden-xs">Modificado</th>
-                    {hasPermission(window.user, 'changeUser') ?
-                      <th style={{width: '1%'}} className="width-10"/> : null}
-                    {hasPermission(window.user, 'deleteUser') ?
-                      <th style={{width: '1%'}} className="width-10"/> : null}
+                    <th style={{width: '33%'}}>Usuario</th>
+                    <th style={{width: '33%'}} className="hidden-xs">Sucursal</th>
+                    <th style={{width: '33%'}} className="hidden-xs">Modificado</th>
+                    {
+                      hasPermission(window.user, 'changeUser') ?
+                        <th style={{width: '1%'}} className="width-10"/> : null
+                    }
+                    {
+                      hasPermission(window.user, 'changeUser') ?
+                        <th style={{width: '1%'}} className="width-10"/> : null
+                    }
+                    {
+                      hasPermission(window.user, 'deleteUser') ?
+                      <th style={{width: '1%'}} className="width-10"/> : null
+                    }
                   </tr>
                 </thead>
                 <tbody>
@@ -117,15 +129,28 @@ class UserListView extends React.Component<IPropsType, IStateType> {
                     users.map((user: IUser) => {
                       return (
                         <tr key={user._id} id={`user-${user._id}`}>
-                          <td>{user.firstName}</td>
-                          <td>{user.lastName}</td>
-                          <td className="hidden-xs">{user.venue.name}</td>
-                          <td className="hidden-xs">{user.email}</td>
-                          <td className="hidden-xs">{moment(user.updatedAt).format('LLL')}</td>
-                          {hasPermission(window.user, 'changeUser') ?
-                            <td className="text-blue pointer" onClick={() => this.editUser(user)}><i className="fa fa-pencil"/></td> : null}
-                          {hasPermission(window.user, 'deleteUser') ?
-                            <td className="text-red pointer" onClick={() => this.deleteUser(user)}><i className="fa fa-minus-circle"/></td> : null}
+                          <td className="middle">{user.firstName} {user.lastName}<br />
+                            <span className="text-sm text-muted">{user.email}</span>
+                            <div className="hidden-lg hidden-md hidden-sm text-sm">
+                              <span className="text-sm text-muted">{user.venue ? user.venue.name : ''} - {user.company ? user.company.name : ''}</span>
+                            </div>
+                          </td>
+                          <td className="hidden-xs">{user.venue ? user.venue.name : ''}<br />
+                            <span className="text-sm text-muted">{user.company ? user.company.name : ''}</span>
+                          </td>
+                          <td className="middle hidden-xs text-muted">{moment(user.updatedAt).format('LLL')}</td>
+                          {
+                            hasPermission(window.user, 'changeUser') ?
+                              <td className="middle-center text-yellow pointer" onClick={() => this.changePassword(user)}><i className="fa fa-lock"/></td> : null
+                          }
+                          {
+                            hasPermission(window.user, 'changeUser') ?
+                              <td className="middle-center text-blue pointer" onClick={() => this.updateUser(user)}><i className="fa fa-pencil"/></td> : null
+                          }
+                          {
+                            hasPermission(window.user, 'deleteUser') ?
+                              <td className="middle-center text-red pointer" onClick={() => this.deleteUser(user)}><i className="fa fa-minus-circle"/></td> : null
+                          }
                         </tr>
                       );
                     })
@@ -152,91 +177,137 @@ class UserListView extends React.Component<IPropsType, IStateType> {
     );
   }
 
-  private addUser(): void {
+  private createUser(): void {
     const {changeTempUser} = this;
-    const {venues, permissions, forms} = this.props.users;
+    const {venues, permissions, forms, companies} = this.props.users;
     this.props.changeTempUserAction({
       _id: '',
       firstName: '',
       lastName: '',
+      company: null,
       email: '',
       venue: '',
       userPermissions: [],
+      venuesAccess: [],
       userForms: []
     });
     setTimeout(() => {
       this.props.loadDataAction(
         'Agregar Usuario',
-        <UserFormView changeTempUser={changeTempUser} venues={venues} users={this.props.users} forms={forms} permissions={permissions}/>,
+        <UserFormView create={true} changeTempUser={changeTempUser} venues={venues} companies={companies} users={this.props.users} forms={forms} permissions={permissions}/>,
         <React.Fragment>
           <button type="button" className="btn btn-default" data-dismiss="modal">Cancelar</button>
-          <button type="button" className="btn btn-primary" onClick={this.processAddUser}>Grabar</button>
+          <button type="button" className="btn btn-primary" onClick={this.processCreateUser}>Grabar</button>
         </React.Fragment>
       );
-    }, 200);
+    }, 400);
   }
 
-  private processAddUser(): void {
+  private processCreateUser(): void {
     const {firstName, lastName, email, venue} = this.props.users.tempUser;
     if (!firstName || !firstName.trim().length) {
-      swal('Agregar usuario', 'El campo nombres es requerido', 'error');
+      swal('Agregar usuario', 'El nombres es requerido', 'error');
     } else if (!lastName || !lastName.trim().length) {
-      swal('Agregar usuario', 'El campo apellidos es requerido', 'error');
+      swal('Agregar usuario', 'El apellidos es requerido', 'error');
     } else if (!email || !email.trim().length) {
-      swal('Agregar usuario', 'El campo email es requerido', 'error');
+      swal('Agregar usuario', 'El email es requerido', 'error');
     } else if (!venue || !venue.trim().length) {
-      swal('Agregar usuario', 'El campo sucursal es requerido', 'error');
+      swal('Agregar usuario', 'El sucursal es requerido', 'error');
     } else {
       statusFooterButttonsModal(true);
-      this.props.AddUserAction();
+      this.props.createUserAction();
     }
   }
 
-  private editUser(user: IUser): void {
+  private changePassword(user: IUser): void {
     const {changeTempUser} = this;
-    const {venues, permissions, forms} = this.props.users;
-    const tmpUser = {...user};
-    tmpUser.venue = tmpUser.venue._id;
+    const tmpUser = {
+      ...user,
+      password: ''
+    };
     changeTempUser(tmpUser);
     setTimeout(() => {
       this.props.loadDataAction(
-        'Editar Usuario',
-        <UserFormView changeTempUser={changeTempUser} venues={venues} users={this.props.users} forms={forms} permissions={permissions} user={user}/>,
+        `Cambiando contraseña a ${user.firstName} ${user.lastName}`,
+        <UserFormChangePasswordView changeTempUser={changeTempUser} users={this.props.users} user={user}/>,
         <React.Fragment>
           <button type="button" className="btn btn-default" data-dismiss="modal">Cancelar</button>
-          <button type="button" className="btn btn-primary" onClick={this.processEditUser}>Editar</button>
+          <button type="button" className="btn btn-primary" onClick={this.processChangePassword}>Cambiar</button>
         </React.Fragment>
       );
-    }, 200);
+    }, 400);
   }
 
-  private processEditUser() {
-    const {firstName, lastName, email, venue} = this.props.users.tempUser;
-    // debugger;
-    if (!firstName || !firstName.trim().length) {
-      swal('Agregar usuario', 'El campo nombres es requerido', 'error');
-    } else if (!lastName || !lastName.trim().length) {
-      swal('Agregar usuario', 'El campo apellidos es requerido', 'error');
-    } else if (!email || !email.trim().length) {
-      swal('Agregar usuario', 'El campo email es requerido', 'error');
-    } else if (!venue || !venue.trim().length) {
-      swal('Agregar usuario', 'El campo sucursal es requerido', 'error');
+  private processChangePassword() {
+    const {password, _id} = this.props.users.tempUser;
+    statusFooterButttonsModal(true);
+    if (password && password.trim().length >= 6 && _id) {
+      const api: ApiService = new ApiService();
+      api.changePasswordUser(_id, password)
+        .then((response) => {
+          statusFooterButttonsModal(false);
+          showModal(false);
+          swal(response.data.message, {
+            icon: 'success'
+          });
+        })
+        .catch((err: AxiosError) => {
+          statusFooterButttonsModal(false);
+          api.errorHandler(err);
+        });
     } else {
-      statusFooterButttonsModal(true);
-      this.props.editUserAction();
+      swal('Cambiar contraseña', 'La contraseña debe tener al menos 6 caracteres.', 'error');
+      statusFooterButttonsModal(false);
     }
   }
 
-  private changeTempUser({_id, firstName, lastName, email, venue, userPermissions, preferred, userForms}: ITempUser) {
+  private updateUser(user: IUser): void {
+    const {changeTempUser} = this;
+    const {venues, permissions, forms, companies} = this.props.users;
+    const tmpUser = {...user};
+    tmpUser.venue = tmpUser.venue ? tmpUser.venue._id : '';
+    changeTempUser(tmpUser);
+    setTimeout(() => {
+      this.props.loadDataAction(
+        `Editando a ${user.firstName} ${user.lastName}`,
+        <UserFormView create={false}  changeTempUser={changeTempUser} companies={companies} venues={venues} users={this.props.users} forms={forms} permissions={permissions} user={user}/>,
+        <React.Fragment>
+          <button type="button" className="btn btn-default" data-dismiss="modal">Cancelar</button>
+          <button type="button" className="btn btn-primary" onClick={this.processUpdateUser}>Editar</button>
+        </React.Fragment>
+      );
+    }, 400);
+  }
+
+  private processUpdateUser() {
+    const {firstName, lastName, email, venue} = this.props.users.tempUser;
+    if (!firstName || !firstName.trim().length) {
+      swal('Agregar usuario', 'El nombres es requerido', 'error');
+    } else if (!lastName || !lastName.trim().length) {
+      swal('Agregar usuario', 'El apellidos es requerido', 'error');
+    } else if (!email || !email.trim().length) {
+      swal('Agregar usuario', 'El email es requerido', 'error');
+    } else if (!venue || !venue.trim().length) {
+      swal('Agregar usuario', 'El sucursal es requerido', 'error');
+    } else {
+      statusFooterButttonsModal(true);
+      this.props.updateUserAction();
+    }
+  }
+
+  private changeTempUser({_id, firstName, lastName, email, venue, userPermissions, preferred, userForms, company, venuesAccess, password}: ITempUser) {
     const tempUser: ITempUser = {
       _id: _id ? _id : this.props.users.tempUser._id,
       firstName: firstName ? firstName : this.props.users.tempUser.firstName,
       lastName: lastName ? lastName : this.props.users.tempUser.lastName,
+      password: password ? password : '',
       email: email ? email : this.props.users.tempUser.email,
       userPermissions: userPermissions ? userPermissions : this.props.users.tempUser.userPermissions,
       userForms: userForms ? userForms : this.props.users.tempUser.userForms,
       preferred: preferred ? preferred : preferred === undefined ? this.props.users.tempUser.preferred : null,
-      venue: venue ? venue : venue === undefined ? this.props.users.tempUser.venue : null
+      venue: venue ? venue : venue === undefined ? this.props.users.tempUser.venue : null,
+      venuesAccess: venuesAccess ? venuesAccess : venuesAccess === undefined ? this.props.users.tempUser.venuesAccess : [],
+      company: company ? company : company === undefined ? this.props.users.tempUser.company : null
     };
     this.props.changeTempUserAction(tempUser);
   }
@@ -280,8 +351,8 @@ const mapDispatchToProps = (dispatch: any ) => {
     getUsersAction: (page?: number) => dispatch(getUsersAction(page)),
     deleteUserAction: (id: string) => dispatch(deleteUserAction(id)),
     changeTempUserAction: (user: ITempUser) => dispatch(changeTempUserAction(user)),
-    AddUserAction: () => dispatch(addUserAction()),
-    editUserAction: () => dispatch(editUserAction()),
+    createUserAction: () => dispatch(createUserAction()),
+    updateUserAction: () => dispatch(updateUserAction()),
     loadDataAction: (title: string, body: JSX.Element, footer: JSX.Element) => dispatch(loadDataAction(title, body, footer))
   };
 };

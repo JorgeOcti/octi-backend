@@ -1,6 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 const mongoose = require("mongoose");
+const scale_model_1 = require("./scale.model");
 const participantChoiceSchema = new mongoose.Schema({
     choice: {
         type: String,
@@ -13,6 +14,7 @@ const participantChoiceSchema = new mongoose.Schema({
     },
     backgroundColor: {
         type: String,
+        enum: scale_model_1.choiceBackgroundColors,
         default: 'blue'
     },
     requireImage: {
@@ -102,6 +104,10 @@ const participantAnswersSchema = new mongoose.Schema({
     comment: {
         type: String
     },
+    na: {
+        type: Boolean,
+        default: false
+    },
     qualification: {
         type: Number
     },
@@ -151,6 +157,11 @@ const participantSchema = new mongoose.Schema({
         ref: 'Form',
         index: true
     },
+    team: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Team',
+        required: true
+    },
     company: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Company',
@@ -166,6 +177,10 @@ const participantSchema = new mongoose.Schema({
         ref: 'Car',
         index: true
     },
+    venue: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Venue'
+    },
     description: {
         type: String,
         trim: true
@@ -175,6 +190,42 @@ const participantSchema = new mongoose.Schema({
         type: Number,
         default: 0
     },
+    shipping: {
+        type: Boolean,
+        default: false
+    },
+    shippingText: {
+        type: String,
+        default: ''
+    },
+    shippingImages: [{
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'ParticipantFile'
+        }],
+    reception: {
+        type: Boolean,
+        default: false
+    },
+    receptionText: {
+        type: String,
+        default: ''
+    },
+    receptionImages: [{
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'ParticipantFile'
+        }],
+    conciliation: {
+        type: Boolean,
+        default: false
+    },
+    conciliationText: {
+        type: String,
+        default: ''
+    },
+    conciliationImages: [{
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'ParticipantFile'
+        }],
     active: {
         type: Boolean,
         default: true
@@ -182,7 +233,10 @@ const participantSchema = new mongoose.Schema({
 }, {
     timestamps: true
 });
+participantSchema.index({ _id: 1 });
 participantSchema.index({ form: 1, user: 1 });
+participantSchema.index({ company: 1, venue: 1, createdAt: 1 });
+participantSchema.index({ _id: 1, company: 1, venue: 1, createdAt: 1 });
 const Participant = mongoose.model('Participant', participantSchema);
 exports.default = Participant;
 //# sourceMappingURL=participant.model.js.map

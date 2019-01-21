@@ -1,5 +1,5 @@
+// import * as PropTypes from 'prop-types';
 import * as moment from 'moment';
-import * as PropTypes from 'prop-types';
 import * as Raven from 'raven-js';
 import {ErrorInfo} from 'react';
 import * as React from 'react';
@@ -14,7 +14,7 @@ import {
   getParticipant,
   IDashboardState,
   loadParticipantInCarAction
-} from '../../actions/dashboard';
+} from '../../actions/dashboard.actions';
 import AppContainer from '../../container/AppContainer';
 import {IWindow} from '../../interfaces/window';
 import ModalView from '../Modal/ModalView';
@@ -37,12 +37,12 @@ interface IStateType {
 
 class DashboardVinDetail extends React.Component<IPropsType, IStateType> {
 
-  static propTypes = {
-    dashboard: PropTypes.object.isRequired,
-    dispatch: PropTypes.func.isRequired,
-    getCarAction: PropTypes.func.isRequired,
-    getParticipant: PropTypes.func.isRequired
-  };
+  // static propTypes = {
+  //   dashboard: PropTypes.object.isRequired,
+  //   dispatch: PropTypes.func.isRequired,
+  //   getCarAction: PropTypes.func.isRequired,
+  //   getParticipant: PropTypes.func.isRequired
+  // };
 
   state = {
     error: null,
@@ -61,6 +61,7 @@ class DashboardVinDetail extends React.Component<IPropsType, IStateType> {
     this.socket = io.connect(`${location.protocol}//${location.host}`, {
       secure: location.protocol === 'https:',
       reconnection: true,
+      // transports: ['websocket'],
       query: {token: (window.user as any).token}
     });
     this.socket.on('connect', () => {
@@ -97,12 +98,12 @@ class DashboardVinDetail extends React.Component<IPropsType, IStateType> {
       <AppContainer title="" cMenu="1" cSubMenu="1.2" cAction={`Detalle`}>
         <section className="content">
           <div className="box">
-            <div className="box-header with-border"><h3 className="box-title">Auto VIN {car ? car.vin : null}</h3>
+            <div className="box-header with-border"><h3 className="box-title">Detalle VIN {car ? car.vin : null}</h3>
               <div className="box-tools pull-right">
               </div>
             </div>
             <div className="box-body">
-              <table style={{width: '50%'}}>
+              <table style={{width: '100%'}}>
                 <tbody>
                   <tr>
                     <td style={{padding: '5px'}}><strong>Último Checkeo</strong></td>
@@ -116,7 +117,23 @@ class DashboardVinDetail extends React.Component<IPropsType, IStateType> {
                     <td style={{padding: '5px'}}><strong>Por</strong></td>
                     <td style={{padding: '5px'}}>
                       {
-                        car && car.participants && car.participants[0].user ? `${car.participants[0].user.firstName} ${car.participants[0].user.lastName}` : ''
+                        car && car.participants && car.participants[0].user ? `${car.participants[0].user.firstName} ${car.participants[0].user.lastName}` : '-'
+                      }
+                    </td>
+                  </tr>
+                <tr>
+                    <td style={{padding: '5px'}}><strong>Marca</strong></td>
+                    <td style={{padding: '5px'}}>
+                      {
+                        car && car.brand ? car.brand : '-'
+                      }
+                    </td>
+                  </tr>
+                <tr>
+                    <td style={{padding: '5px'}}><strong>Denominación</strong></td>
+                    <td style={{padding: '5px'}}>
+                      {
+                        car && car.denomination ? car.denomination : '-'
                       }
                     </td>
                   </tr>
@@ -126,10 +143,11 @@ class DashboardVinDetail extends React.Component<IPropsType, IStateType> {
               <table className="table table-striped">
                 <thead>
                   <tr>
-                    <th style={{width: '25%'}}>Fecha</th>
-                    <th style={{width: '25%'}}>Formulario</th>
-                    <th style={{width: '25%'}} className="hidden-xs">Supervisor</th>
-                    <th style={{width: '25%'}} className="hidden-xs">Calificación</th>
+                    <th>Fecha</th>
+                    <th>Formulario</th>
+                    <th className="hidden-xs">Supervisor</th>
+                    <th className="hidden-xs">Sucursal</th>
+                    <th className="hidden-xs">Calificación</th>
                     <th className="width-10"/>
                   </tr>
                 </thead>
@@ -140,6 +158,7 @@ class DashboardVinDetail extends React.Component<IPropsType, IStateType> {
                       <td className="middle">{moment(participant.createdAt).format('LLL')}</td>
                       <td className="middle">{participant.name}</td>
                       <td className="middle hidden-xs">{participant.user ? participant.user.firstName : ''} {participant.user ? participant.user.lastName : ''}</td>
+                      <td className="middle hidden-xs">{participant.venue ? participant.venue.name : '-'}</td>
                       <td className="middle hidden-xs">{Math.round(participant.qualification)}%</td>
                       <td className="middle pointer">
                         <button

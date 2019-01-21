@@ -16,7 +16,11 @@
             "dom"
         ],
         "target": "es5",
-        "jsx": "react"
+        "jsx": "react",
+        "typeRoots": [
+            "./node_modules/@types",
+            "./src/types"
+        ]
     },
     "exclude": [
         "node_modules",
@@ -27,9 +31,7 @@
         "jest"
     ],
     "include": [
-        "src/**/*.ts"
-    ],
-    "types": [
-        "typePatches"
+        "./src/**/**/**/*.ts",
+        "./src/**/**/**/*.tsx"
     ]
 }

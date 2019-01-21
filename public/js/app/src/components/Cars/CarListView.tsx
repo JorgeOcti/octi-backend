@@ -1,6 +1,5 @@
 ///<reference path="../../../node_modules/sweetalert/typings/sweetalert.d.ts"/>
 import * as moment from 'moment';
-import * as PropTypes from 'prop-types';
 import * as Raven from 'raven-js';
 import {ErrorInfo} from 'react';
 import * as React from 'react';
@@ -9,7 +8,7 @@ import {RouteComponentProps} from 'react-router';
 import {Dispatch} from 'redux';
 import {debounce} from 'throttle-debounce';
 import {ICar} from '../../../../../../src/interfaces/car.interface';
-import {CarReduxAction, getCarsAction, ICarsState} from '../../actions/cars';
+import {CarReduxAction, getCarsAction, ICarsState} from '../../actions/cars.actions';
 import AppContainer from '../../container/AppContainer';
 import {IWindow} from '../../interfaces/window';
 import {hasPermission} from '../../utils/common';
@@ -32,9 +31,9 @@ interface IStateType {
 
 class CarListView extends React.Component<IPropsType, IStateType> {
 
-  static propTypes = {
-    dispatch: PropTypes.func.isRequired
-  };
+  // static propTypes = {
+  //   dispatch: PropTypes.func.isRequired
+  // };
 
   readonly state = {
     error: null,
@@ -49,9 +48,10 @@ class CarListView extends React.Component<IPropsType, IStateType> {
   }
 
   public componentWillMount() {
+    const {pagination} = this.props.cars;
     // set the title of the page
     document.title = 'OSA Andes | Listado de autos';
-    this.props.getCarsAction(1);
+    this.props.getCarsAction(pagination.page);
   }
 
   public componentDidCatch(error: Error, errorInfo: ErrorInfo) {
@@ -72,10 +72,13 @@ class CarListView extends React.Component<IPropsType, IStateType> {
     const {loading, cars, pagination} = this.props.cars;
     const {searchText} = this.state;
     return (
-      <AppContainer title="" cMenu="2" cSubMenu="2.2" cAction="Listado">
+      <AppContainer title="" cMenu="10" cSubMenu="10.2" cAction="Listado">
         <section className="content">
           <div className="box">
-            <div className="box-header with-border"><h3 className="box-title">Autos <small>{pagination.count}</small></h3>
+            <div className="box-header with-border">
+              <h3 className="box-title">
+                Autos <small>{pagination.count}</small>
+              </h3>
               <div className="box-tools">
                 <div className="form-inline">
                   {
@@ -84,13 +87,14 @@ class CarListView extends React.Component<IPropsType, IStateType> {
                         className="btn btn-sm btn-primary  hidden-xs"
                         onClick={() => this.props.history.push(`/settings/cars/import/`)}
                         style={{marginRight: '5px'}}
-                      >Importar</button> : null
+                      ><i className="fa fa-fw fa-cloud-upload" /> Importar</button> : null
                   }
                   <div className="input-group input-group-sm" style={{width: '200px'}}>
-                    <input type="text" className="form-control pull-right"
-                           // onChange={debounce(300, this.onChangeSearch)}
-                           onChange={this.onChangeSearch}
-                           placeholder="Buscar"/>
+                    <input
+                      type="text"
+                      className="form-control pull-right"
+                      onChange={this.onChangeSearch}
+                      placeholder="Buscar" />
                     <div className="input-group-btn">
                       <button className="btn btn-default"><i className="fa fa-search"/></button>
                     </div>
@@ -98,16 +102,16 @@ class CarListView extends React.Component<IPropsType, IStateType> {
                 </div>
               </div>
             </div>
-            <div className="box-body">
+            <div className="box-body no-padding">
               <table className="table table-striped">
                 <thead>
                   <tr>
                     <th style={{width: '20%'}}>VIN</th>
-                    <th style={{width: '20%'}}>Marca</th>
+                    <th style={{width: '10%'}}>Patente</th>
+                    <th style={{width: '10%'}}>Marca</th>
                     <th style={{width: '20%'}} className="hidden-xs">Denominación</th>
                     <th style={{width: '20%'}} className="hidden-xs">Color</th>
                     <th style={{width: '20%'}} className="hidden-xs">Creado</th>
-                    {/*<th className="width-10" />*/}
                     {/*<th className="width-10" />*/}
                   </tr>
                 </thead>
@@ -122,12 +126,11 @@ class CarListView extends React.Component<IPropsType, IStateType> {
                       return (
                         <tr key={car._id} id={`car-${car._id}`}>
                           <td>{car.vin}</td>
+                          <td>{car.patent}</td>
                           <td>{car.brand}</td>
                           <td className="hidden-xs text-ellipsis">{car.denomination}</td>
                           <td className="hidden-xs text-ellipsis">{car.color}</td>
                           <td className="hidden-xs text-ellipsis">{moment(car.createdAt).format('LLL')}</td>
-                          {/*<td className="text-blue pointer" onClick={() => this.editUser(user)}><i className="fa fa-pencil"/></td>*/}
-                          {/*<td className="text-red pointer" onClick={undefined}><i className="fa fa-minus-circle"/></td>*/}
                         </tr>
                       );
                     })
@@ -163,7 +166,7 @@ class CarListView extends React.Component<IPropsType, IStateType> {
     );
   }
 
-  private onChangeSearch(e: React.ChangeEvent<HTMLInputElement>) {
+  private onChangeSearch(e: React.ChangeEvent<HTMLInputElement>): void {
     e.preventDefault();
     const value = e.target.value.trim();
     this.setState({
@@ -172,7 +175,7 @@ class CarListView extends React.Component<IPropsType, IStateType> {
     this.debounceOnChangeSearch();
   }
 
-  private debounceOnChangeSearch() {
+  private debounceOnChangeSearch(): void {
     const {searchText} = this.state;
     if (searchText && searchText.length) {
       this.props.getCarsAction(1, searchText);
@@ -181,7 +184,7 @@ class CarListView extends React.Component<IPropsType, IStateType> {
     }
   }
 
-  private changePage(page: number) {
+  private changePage(page: number): void {
     const { searchText } = this.state;
     this.props.getCarsAction(page, searchText);
   }

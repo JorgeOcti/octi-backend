@@ -1,7 +1,9 @@
+import {ITeamModel} from '../app/models/team.model';
 import {ICompany} from './company.interface';
 import {IForm} from './form.interface';
 import {IGroup} from './group.interface';
 import {IPermission} from './permision.interface';
+import {ITeam} from './team.interface';
 import {IVenue} from './venue.interface';
 
 export interface IUser {
@@ -9,8 +11,10 @@ export interface IUser {
   username: string;
   firstName: string;
   lastName: string;
+  team: ITeamModel | ITeam;
   company: ICompany | any;
   venue: IVenue | any;
+  venuesAccess: IVenue | any;
   preferred: IForm | any;
   email: string;
   password: string;

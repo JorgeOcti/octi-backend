@@ -1,5 +1,4 @@
 import * as moment from 'moment';
-import * as PropTypes from 'prop-types';
 import * as Raven from 'raven-js';
 import {ErrorInfo} from 'react';
 import * as React from 'react';
@@ -8,7 +7,7 @@ import {RouteComponentProps} from 'react-router';
 import {Dispatch} from 'redux';
 import * as io from 'socket.io-client';
 import {ICar} from '../../../../../../src/interfaces/car.interface';
-import {DashboardReduxAction, getCarsAction, IDashboardState} from '../../actions/dashboard';
+import {DashboardReduxAction, getCarsAction, IDashboardState} from '../../actions/dashboard.actions';
 import AppContainer from '../../container/AppContainer';
 import {IWindow} from '../../interfaces/window';
 import Paginator from '../Paginator';
@@ -29,11 +28,11 @@ interface IStateType {
 
 class DashboardVinView extends React.Component<IPropsType, IStateType> {
 
-  static propTypes = {
-    dashboard: PropTypes.object.isRequired,
-    dispatch: PropTypes.func.isRequired,
-    getCarsAction: PropTypes.func.isRequired
-  };
+  // static propTypes = {
+  //   dashboard: PropTypes.object.isRequired,
+  //   dispatch: PropTypes.func.isRequired,
+  //   getCarsAction: PropTypes.func.isRequired
+  // };
 
   state = {
     error: null,
@@ -50,14 +49,17 @@ class DashboardVinView extends React.Component<IPropsType, IStateType> {
 
   public componentWillMount(): void {
     // set the title of the page
-    document.title = 'OSA Andes | Listado de VINs';
+    document.title = 'OSA Andes | Revisiones';
     this.props.getCarsAction();
 
     // socket
     this.socket = io.connect(`${location.protocol}//${location.host}`, {
       secure: location.protocol === 'https:',
       reconnection: true,
-      query: {token: (window.user as any).token}
+      // transports: ['websocket'],
+      query: {
+        token: (window.user as any).token
+      }
     });
     this.socket.on('connect', () => {
       this.socket.emit('join', {room: `dashboard-vin-view-${window.user.company}`});
@@ -114,20 +116,21 @@ class DashboardVinView extends React.Component<IPropsType, IStateType> {
       <AppContainer title="" cMenu="1" cSubMenu="1.2">
         <section className="content">
           <div className="box">
-            <div className="box-header with-border"><h3 className="box-title">Listado de VINs</h3>
+            <div className="box-header with-border"><h3 className="box-title">Revisiones</h3>
               <div className="box-tools pull-right">
               </div>
             </div>
-            <div className="box-body">
+            <div className={`box-body ${cars.length ? 'no-padding' : ''}`}>
               {
                 cars.length ?
                   <table className="table table-striped">
                     <thead>
                     <tr>
                       <th style={{width: '20%'}} className="middle">VIN</th>
-                      <th style={{width: '20%'}} className="middle hidden-xs">Marca</th>
+                      <th style={{width: '10%'}} className="middle hidden-xs">Marca</th>
                       <th style={{width: '20%'}} className="middle hidden-xs">Supervisor</th>
-                      <th style={{width: '20%'}} className="hidden-xs">Calificación</th>
+                      <th style={{width: '20%'}} className="middle">Sucursal</th>
+                      <th style={{width: '10%'}} className="hidden-xs">Calificación</th>
                       <th style={{width: '20%'}} className="hidden-xs">Último checkeo</th>
                       <th className="width-10"/>
                     </tr>
@@ -142,10 +145,19 @@ class DashboardVinView extends React.Component<IPropsType, IStateType> {
                           >
                             <td className="middle">{car.vin}</td>
                             <td className="middle hidden-xs">{car.brand}</td>
-                            <td className="middle">{`${car.lastForm.user ? `${car.lastForm.user.firstName} ${car.lastForm.user.lastName}` : ''}`}</td>
-                            <td className="middle">{`${car.lastForm && car.lastForm.hasOwnProperty('qualification') ? `${Math.round(car.lastForm.qualification)}%` : ''}`}</td>
-                            <td className="middle hidden-xs">{moment(car.lastForm.createdAt).format('LLL')}</td>
-                            <td className="text-primary">
+                            <td className="middle hidden-xs">
+                              {`${car.lastForm.user ? `${car.lastForm.user.firstName} ${car.lastForm.user.lastName}` : ''}`}
+                            </td>
+                            <td className="middle">
+                              {`${car.lastForm.venue ? `${car.lastForm.venue.name}` : '-'}`}
+                            </td>
+                            <td className="middle">
+                              {`${car.lastForm && car.lastForm.hasOwnProperty('qualification') ? `${Math.round(car.lastForm.qualification)}%` : ''}`}
+                            </td>
+                            <td className="middle hidden-xs">
+                              {moment(car.lastForm.createdAt).format('LLL')}
+                            </td>
+                            <td className="text-primary middle-center">
                               <button className="btn btn-xs btn-primary" onClick={() => this.props.history.push(`/cars/${car._id}`)}><i
                                 className="fa fa-bars"/></button>
                             </td>
@@ -176,7 +188,7 @@ class DashboardVinView extends React.Component<IPropsType, IStateType> {
     );
   }
 
-  private changePage(page: number) {
+  private changePage(page: number): void {
     // change the page
     this.props.getCarsAction(page);
   }

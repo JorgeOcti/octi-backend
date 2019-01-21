@@ -23,29 +23,33 @@ html
     script(src='https://oss.maxcdn.com/respond/1.4.2/respond.min.js')
     <![endif]-->
     link(rel='stylesheet', href=`/static${getVersionedPath('/css/style.css')}`)
-    link(rel='stylesheet', href=`/static${getVersionedPath('/js/vendor/lightbox/ekko-lightbox.css')}`)
     block head
-  block content
-  .js
-    //- polyfill.io
-    script(src='https://cdn.polyfill.io/v2/polyfill.min.js')
-    //- jQuery 3
-    script(src=`/static${getVersionedPath('/js/vendor/jquery/jquery.min.js')}`)
-    //- moment
-    script(src=`/static${getVersionedPath('/js/vendor/moment/moment-with-locales.min.js')}`)
-    //- React
-    script(src=`/static${getVersionedPath('/js/vendor/react/react.js')}`)
-    script(src=`/static${getVersionedPath('/js/vendor/react/react-dom.js')}`)
-    //-  Sweetalert
-    script(src=`/static${getVersionedPath('/js/vendor/sweetalert/sweetalert.min.js')}`)
-    //- Bootstrap 3.3.7
-    script(src=`/static${getVersionedPath('/js/vendor/bootstrap/bootstrap.min.js')}`)
-    //- echarts
-    script(src=`/static${getVersionedPath('/js/vendor/echarts/echarts.min.js')}`)
-    //- lighbox
-    script(src=`/static${getVersionedPath('/js/vendor/lightbox/ekko-lightbox.min.js')}`)
-    //- socket io
-    script(src=`/socket.io/socket.io.js`)
-    //- js app
-    block js
+  body.skin-purple.fixed.sidebar-mini.sidebar-mini-expand-feature
+    block content
+    .js
+      //- link(rel='stylesheet', href=`/static${getVersionedPath('/js/vendor/lightbox/ekko-lightbox.css')}`)
+      link(rel='stylesheet', href=`/static${getVersionedPath('/js/vendor/icheck/skins/all.css')}`)
+      //- polyfill.io
+      script(src='https://cdn.polyfill.io/v2/polyfill.min.js')
+      //- jQuery 3
+      script(src=`/static${getVersionedPath('/js/vendor/jquery/jquery.min.js')}`)
+      //- moment
+      script(src=`/static${getVersionedPath('/js/vendor/moment/moment-with-locales.min.js')}`)
+      //- React
+      script(src=`/static${getVersionedPath('/js/vendor/react/react.js')}`)
+      script(src=`/static${getVersionedPath('/js/vendor/react/react-dom.js')}`)
+      //-  Sweetalert
+      script(src=`/static${getVersionedPath('/js/vendor/sweetalert/sweetalert.min.js')}`)
+      //- Bootstrap 3.3.7
+      script(src=`/static${getVersionedPath('/js/vendor/bootstrap/bootstrap.min.js')}`)
+      //- echarts
+      script(src=`/static${getVersionedPath('/js/vendor/echarts/echarts.min.js')}`)
+      //- lighbox
+      //- script(src=`/static${getVersionedPath('/js/vendor/lightbox/ekko-lightbox.min.js')}`)
+      //- toas
+      script(src=`/static${getVersionedPath('/js/vendor/toast/toast.js')}`)
+      //- socket io
+      script(src=`/socket.io/socket.io.js`)
+      //- js app
+      block js
 

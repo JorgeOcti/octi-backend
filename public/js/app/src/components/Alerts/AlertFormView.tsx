@@ -91,8 +91,14 @@ class AlertFormView extends React.Component<IPropsType, IStateType> {
         <div className="col-md-12">
           <div className="form-group">
             <label>Usuarios a notificar</label>
-            <select id="user-select" className="form-control" style={{minWidth: '200px'}} onChange={this.onChangeSelectUser}>
-              <option value="">Selecciones usuarios.</option>
+            <select
+              id="user-select"
+              className="chosen-select form-control"
+              style={{minWidth: '200px'}}
+              onChange={this.onChangeSelectUser}
+              data-placeholder={'Seleccione usuarios'}
+            >
+              <option value="" />
               {
                 users.filter((user) => !(tempAlert.users as string[]).includes(user._id)).map((user) => {
                   return (

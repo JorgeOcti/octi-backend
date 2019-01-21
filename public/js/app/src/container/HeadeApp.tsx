@@ -34,7 +34,7 @@ class HeaderApp extends React.Component<{}, {}> {
     return (
       <header className="main-header">
         <a className="logo" href="/">
-          <span className="logo-mini"><b>A</b>LT</span>
+          <span className="logo-mini">&nbsp;</span>
           <span className="logo-lg"><b>OSA</b>Andes</span>
         </a>
         <nav className="navbar navbar-static-top">

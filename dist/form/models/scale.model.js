@@ -1,12 +1,13 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 const mongoose = require("mongoose");
+exports.choiceBackgroundColors = ['red', 'green', 'yellow', 'blue'];
 const choiceSchema = new mongoose.Schema({
     choice: { type: String, required: true, trim: true },
     value: { type: Number, required: true },
     backgroundColor: {
         type: String,
-        enum: ['red', 'green', 'yellow', 'blue'],
+        enum: exports.choiceBackgroundColors,
         default: 'blue'
     },
     requireImage: { type: Boolean, default: false },
@@ -18,6 +19,11 @@ const choiceSchema = new mongoose.Schema({
 });
 exports.scaleSchema = new mongoose.Schema({
     name: String,
+    team: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Team',
+        require: true
+    },
     company: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Company',

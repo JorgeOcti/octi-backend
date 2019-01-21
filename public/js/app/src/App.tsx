@@ -5,13 +5,19 @@ import { Provider } from 'react-redux';
 import { Route, RouteComponentProps, Router as BrowserRouter, Switch } from 'react-router-dom';
 import AlertsViews from './components/Alerts/AlertViews';
 import CarsListView from './components/Cars/CarListView';
+import CompaniesListView from './components/Companies/CompaniesListView';
 import DashboardGeneralView from './components/DashboardGeneral/DashboardGeneralView';
 import DashboardVinDetail from './components/DashboardVin/DashboardVinDetail';
 import DashboardVinView from './components/DashboardVin/DashboardVinView';
 import ImportCarsView from './components/Imports/ImportCarView';
+import InventoryCreateView from './components/Inventory/InventoryCreateView';
+import InventoryDetailView from './components/Inventory/InventoryDetailView';
+import InventoryListView from './components/Inventory/InventoryListView';
 import UsersListView from './components/Users/UserListView';
+import VenuesListView from './components/Venues/VenueListView';
 import configureStore from './store/configureStore';
 import history from './utils/history';
+import {isIntenertExplorer} from './utils/common';
 
 const store = configureStore();
 
@@ -28,8 +34,14 @@ const App = () => (
                 <Route exact path="/" component={ DashboardGeneralView }/>
                 <Route exact path="/cars/" component={ DashboardVinView }/>
                 <Route exact path="/cars/:id" component={ DashboardVinDetail }/>
+                <Route exact path="/inventory/" component={ InventoryListView }/>
+                <Route exact path="/inventory/create/" component={ InventoryCreateView }/>
+                <Route exact path="/inventory/:id/" component={ InventoryDetailView }/>
+                <Route exact path="/inventory/:id/:tab/" component={ InventoryDetailView }/>
                 <Route exact path="/settings/users/" component={ UsersListView }/>
                 <Route exact path="/settings/cars/" component={ CarsListView }/>
+                <Route exact path="/settings/venues/" component={ VenuesListView }/>
+                <Route exact path="/settings/companies/" component={ CompaniesListView }/>
                 <Route exact path="/settings/cars/import/" component={ ImportCarsView }/>
                 <Route exact path="/settings/alerts/" component={ AlertsViews }/>
                 <Route component={ NoMatch }/>
@@ -45,7 +57,17 @@ $('body').on('hidden.bs.modal', '#andesModal', () => {
   });
 });
 
-$(function() {
+$(() => {
+  // add ekko-lightbox
+  const script = document.createElement('script');
+  const link = document.createElement('link');
+  link.rel = 'stylesheet';
+  link.href = isIntenertExplorer() ? '/static/js/vendor/lightbox/ekko-lightbox.css' : '/static/js/vendor/lightbox/ekko-lightbox.last.css';
+  const js = document.getElementsByClassName('js')[0];
+  script.src = isIntenertExplorer() ? '/static/js/vendor/lightbox/ekko-lightbox.min.js' : '/static/js/vendor/lightbox/ekko-lightbox.last.min.js';
+  js.appendChild(script);
+  js.appendChild(link);
+
   moment.locale('es');
   ReactDOM.render(
       <App />,
@@ -62,10 +84,13 @@ $(function() {
     ($(this) as any).ekkoLightbox();
   });
   // fix ekk-lightbox
-  $(document).on('hidden.bs.modal', function(event) {
+  $(document).on('hidden.bs.modal', () => {
     if ($('.modal:visible').length) {
       $('body').addClass('modal-open');
     }
   });
-});
 
+  $(document).on('click.bs.dropdown.data-api', '.dropdown.keep-inside-clicks-open', function(event) {
+    event.stopPropagation();
+  });
+});

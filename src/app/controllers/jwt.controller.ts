@@ -2,9 +2,10 @@ import {NextFunction, Request, Response} from 'express';
 import * as jwt from 'jsonwebtoken';
 import * as moment from 'moment-timezone';
 import * as uuid from 'uuid';
-import {queue} from '../../app';
+import app, {queue} from '../../app';
 import ParticipantModel from '../../form/models/participant.model';
 import {IRequest} from '../../interfaces/global.interface';
+import GeneralUtils from '../../utils/general.utils';
 import User from '../models/user.model';
 import UserModel, {IUserModel} from '../models/user.model';
 
@@ -13,41 +14,9 @@ class JWTController {
   constructor() {
     this.login = this.login.bind(this);
     this.token = this.token.bind(this);
-    // this.createUser = this.createUser.bind(this);
     this.isJWTAuthenticated = this.isJWTAuthenticated.bind(this);
     this.forgotPassword = this.forgotPassword.bind(this);
   }
-
-  // public createUser(req: Request, res: Response) {
-  //   const {username, password, firstName, lastName} = req.body;
-  //   if (username && username.length && password && password.length) {
-  //     const newUser = new User({
-  //       username,
-  //       firstName,
-  //       lastName,
-  //       email: username,
-  //       password,
-  //       active: true
-  //     });
-  //     newUser.save((err, user: IUserModel) => {
-  //       if (err) {
-  //         throw err;
-  //       }
-  //       console.log(JSON.stringify(user));
-  //     });
-  //     res.json({
-  //       data: {
-  //         username
-  //       },
-  //       status: 200
-  //     });
-  //   } else {
-  //     res.status(400).json({
-  //       message: 'username and password are required',
-  //       status: 400
-  //     });
-  //   }
-  // }
 
   public login(req: Request, res: Response) {
     if (req.body.username === null || req.body.username === undefined || req.body.password === null || req.body.password === undefined) {
@@ -63,10 +32,18 @@ class JWTController {
           password: true,
           updatedAt: true,
           preferred: true,
+          venue: true,
+          team: true,
+          company: true,
+          userForms: true,
+          userPermissions: true,
           active: true
         })
         .populate([{
           path: 'venue',
+          select: ['name']
+        }, {
+          path: 'team',
           select: ['name']
         }, {
           path: 'company',
@@ -80,6 +57,7 @@ class JWTController {
         }])
         .exec((err, user: IUserModel) => {
           if (err) {
+            /* istanbul ignore next */
             res.status(500).send(err);
           }
           if (!user || !user.comparePasswordSync(req.body.password)) {
@@ -96,6 +74,7 @@ class JWTController {
             user.lastLogin = new Date();
             user.save((err: any) => {
               if (err) {
+                /* istanbul ignore next */
                 res.status(500).json(err);
               } else {
                 const today = moment().startOf('day');
@@ -107,6 +86,7 @@ class JWTController {
                     $lt: tomorrow.toDate()
                   }
                 }, (err, count) => {
+                  user = user.toObject();
                   const userInfo = {
                     _id: user._id,
                     firstName: user.firstName,
@@ -116,12 +96,16 @@ class JWTController {
                     userPermissions: user.userPermissions,
                     userForms: user.userForms,
                     venue: {
-                      _id: user.venue ? user.venue._id : null,
-                      name: user.venue ? user.venue.name : null
+                      _id: GeneralUtils.getObjectProperty(user.venue, '_id', null),
+                      name: GeneralUtils.getObjectProperty(user.venue, 'name', null)
                     },
                     company: {
-                      _id: user.company ? user.company._id : null,
-                      name: user.company ? user.company.name : null
+                      _id: GeneralUtils.getObjectProperty(user.company, '_id', null),
+                      name: GeneralUtils.getObjectProperty(user.company, 'name', null)
+                    },
+                    team: {
+                      _id: GeneralUtils.getObjectProperty(user.team, '_id', null),
+                      name: GeneralUtils.getObjectProperty(user.team, 'name', null)
                     },
                     count
                   };
@@ -166,12 +150,28 @@ class JWTController {
           });
         } else {
           User
-            .findById(decode._id)
+            .findById(decode._id, {
+              firstName: true,
+              lastName: true,
+              email: true,
+              password: true,
+              updatedAt: true,
+              preferred: true,
+              venue: true,
+              company: true,
+              team: true,
+              userForms: true,
+              userPermissions: true,
+              active: true
+            })
             .populate([{
               path: 'venue',
               select: ['name']
             }, {
               path: 'company',
+              select: ['name']
+            }, {
+              path: 'team',
               select: ['name']
             }, {
               path: 'userPermissions',
@@ -182,6 +182,7 @@ class JWTController {
             }])
             .exec((err, user: IUserModel) => {
               if (err) {
+                /* istanbul ignore next */
                 res.status(500).json(err);
               } else if (!user) {
                 res.status(401).json({
@@ -197,6 +198,7 @@ class JWTController {
                 user.lastLogin = new Date();
                 user.save( (err: any) => {
                   if (err) {
+                    /* istanbul ignore next */
                     res.status(500).json(err);
                   } else {
                     const today = moment().startOf('day');
@@ -208,6 +210,7 @@ class JWTController {
                         $lt: tomorrow.toDate()
                       }
                     }, (err, count) => {
+                      user = user.toObject();
                       const userInfo = {
                         _id: user._id,
                         firstName: user.firstName,
@@ -217,12 +220,16 @@ class JWTController {
                         userPermissions: user.userPermissions,
                         userForms: user.userForms,
                         venue: {
-                          _id: user.venue ? user.venue._id : null,
-                          name: user.venue ? user.venue.name : null
+                          _id: GeneralUtils.getObjectProperty(user.venue, '_id', null),
+                          name: GeneralUtils.getObjectProperty(user.venue, 'name', null)
                         },
                         company: {
-                          _id: user.company ? user.company._id : null,
-                          name: user.company ? user.company.name : null
+                          _id: GeneralUtils.getObjectProperty(user.company, '_id', null),
+                          name: GeneralUtils.getObjectProperty(user.company, 'name', null)
+                        },
+                        team: {
+                          _id: GeneralUtils.getObjectProperty(user.team, '_id', null),
+                          name: GeneralUtils.getObjectProperty(user.team, 'name', null)
                         },
                         count
                       };
@@ -234,7 +241,7 @@ class JWTController {
                           refreshToken: jwt.sign(userInfo, req.app.locals.secretKey, {
                             expiresIn: '60 days'
                           }),
-                          iosVersion: '1.4.0',
+                          iosVersion: '1.4.1',
                           androidVersion: '1.4.0',
                           user: userInfo
                         },
@@ -283,21 +290,30 @@ class JWTController {
         user.passwordResetToken = token;
         user.passwordResetExpires = moment().add(2, 'days').toDate();
         await user.save();
-        console.log('Se ha reestablecido ', username);
+        /* istanbul ignore next */
+        if (app.get('env') !== 'testing') {
+          console.log('Se ha reestablecido ', username);
+        }
         res.json({
           message: 'Se ha enviado un e-mail para reestablecer tú contraseña',
           status: 200
         });
       } else {
-        console.log('No se encontro ', username);
+        /* istanbul ignore next */
+        if (app.get('env') !== 'testing') {
+          console.log('No se encontro ', username);
+        }
         res.json({
           message: 'Se ha enviado un e-mail para reestablecer tú contraseña',
           status: 200
         });
       }
     } catch (e) {
+      /* istanbul ignore next */
       console.log(e);
+      /* istanbul ignore next */
       console.log('ocurrio un error ', username);
+      /* istanbul ignore next */
       res.json({
           message: 'Se ha enviado un e-mail para reestablecer tú contraseña',
           status: 200
@@ -305,6 +321,7 @@ class JWTController {
     }
   }
 
+  /* istanbul ignore next */
   public isJWTAuthenticated(req: IRequest, res: Response, next: NextFunction) {
     console.log('test');
     if (req.headers && req.headers.authorization && req.headers.authorization.split(' ')[0] === 'JWT') {
@@ -327,6 +344,7 @@ class JWTController {
     }
   }
 
+  /* istanbul ignore next */
   public test(req: IRequest, res: Response) {
     res.json({
       data: {

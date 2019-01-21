@@ -7,8 +7,8 @@ import {connect} from 'react-redux';
 import {RouteComponentProps} from 'react-router';
 import {Dispatch} from 'redux';
 import {IAlert} from '../../../../../../src/interfaces/alert.interface';
-import {AlertReduxAction, createAlertAction, deleteAlertAction, getAlertsAction, IAlertsState} from '../../actions/alerts';
-import {loadDataAction, ModalReduxAction} from '../../actions/modal';
+import {AlertReduxAction, createAlertAction, deleteAlertAction, getAlertsAction, IAlertsState} from '../../actions/alerts.actions';
+import {loadDataAction, ModalReduxAction} from '../../actions/modal.actions';
 import AppContainer from '../../container/AppContainer';
 import {statusFooterButttonsModal} from '../../utils/common';
 import ModalView from '../Modal/ModalView';
@@ -42,10 +42,10 @@ interface IStateType {
 
 class AlertViews extends React.Component<IPropsType, IStateType> {
 
-  static propTypes = {
-    alerts: PropTypes.object.isRequired,
-    dispatch: PropTypes.func.isRequired
-  };
+  // static propTypes = {
+  //   alerts: PropTypes.object.isRequired,
+  //   dispatch: PropTypes.func.isRequired
+  // };
 
   state = {
     error: null,
@@ -71,7 +71,7 @@ class AlertViews extends React.Component<IPropsType, IStateType> {
   public componentWillMount() {
     this.props.getAlertsAction();
     // set the title of the page
-    document.title = 'OSA Andes | Alertas';
+    document.title = 'OSA Andes | Listado de alertas';
   }
 
   public componentWillUnmount() {
@@ -91,23 +91,23 @@ class AlertViews extends React.Component<IPropsType, IStateType> {
   public render(): React.ReactElement<IPropsType> {
     const {alerts, loading} = this.props.alerts;
     return (
-      <AppContainer title="" cMenu="2" cSubMenu="2.1">
+      <AppContainer title="" cMenu="10" cSubMenu="10.1">
         <section className="content">
           <div className="box">
             <div className="box-header with-border">
-              <h3 className="box-title">Alertas</h3>
+              <h3 className="box-title">Alertas <small>{alerts.length}</small></h3>
               <div className="pull-right box-tools">
                 <button className="btn btn-sm btn-success" onClick={this.addAlert}>Agregar</button>
               </div>
             </div>
-            <div className="box-body">
+            <div className="box-body no-padding">
               <table className="table table-striped">
                 <thead>
                   <tr>
-                    <th style={{width: '20%'}} className="middle">Nombre</th>
-                    <th style={{width: '20%'}} className="middle text-center">Menor igual que</th>
-                    <th style={{width: '20%'}} className="middle text-center">Mayor igual que</th>
-                    <th style={{width: '40%'}} className="middle">Usuarios</th>
+                    <th className="middle">Nombre</th>
+                    <th className="middle text-center">Menor igual que</th>
+                    <th className="middle text-center">Mayor igual que</th>
+                    <th style={{width: '40%'}} className="middle hidden-xs">Usuarios</th>
                     {/*<th className="width-10" />*/}
                     <th className="middle width-10" />
                   </tr>
@@ -121,7 +121,7 @@ class AlertViews extends React.Component<IPropsType, IStateType> {
                           <td className="middle">{alert.name}</td>
                           <td className="middle text-center">{alert.lte !== 0 ? alert.lte : '-'}</td>
                           <td className="middle text-center">{alert.gte !== 0 ? alert.gte : '-'}</td>
-                          <td>
+                          <td className="hidden-xs">
                             {
                               alert.users.map((user) => {
                                 return (

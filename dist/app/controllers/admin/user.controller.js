@@ -7,8 +7,8 @@ class AdminUsersController {
     constructor() {
         this.index = this.index.bind(this);
         this.apiUsers = this.apiUsers.bind(this);
-        this.apiAddUser = this.apiAddUser.bind(this);
-        this.apiEditUser = this.apiEditUser.bind(this);
+        this.apiCreateUser = this.apiAddUser.bind(this);
+        this.apiUpdateUser = this.apiEditUser.bind(this);
         this.apiDeleteUser = this.apiDeleteUser.bind(this);
     }
     async index(req, res) {

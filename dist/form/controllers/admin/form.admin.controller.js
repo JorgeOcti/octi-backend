@@ -6,12 +6,13 @@ class AdminFormsController {
         this.index = this.index.bind(this);
         this.apiListForms = this.apiListForms.bind(this);
     }
+    /* istanbul ignore next */
     async index(req, res) {
         res.render('app/index', { token: await req.user.generateToken() });
     }
     async apiListForms(req, res) {
         const { page, pageSize } = req.query;
-        const company = req.user.company;
+        const { team } = req.user;
         // paginate options
         const options = {
             select: {
@@ -24,9 +25,12 @@ class AdminFormsController {
             limit: parseInt(pageSize ? pageSize : 20, 10)
         };
         try {
-            const forms = await this.getForms(company, options);
+            const forms = await this.getForms({
+                team
+            }, options);
             // validate exist page
             if (options.page && forms.pages && forms.pages < options.page) {
+                /* istanbul ignore next */
                 res.status(400).json({
                     error: 'La página solicitada no existe.',
                     status: 200
@@ -44,15 +48,17 @@ class AdminFormsController {
             }
         }
         catch (e) {
+            /* istanbul ignore next */
             if (e) {
                 res.status(500).json(e);
             }
         }
     }
-    getForms(company, options) {
+    getForms(filter, options) {
         return new Promise((resolve, reject) => {
-            form_model_1.default.paginate({ company }, options, (err, result) => {
+            form_model_1.default.paginate(filter, options, (err, result) => {
                 if (err) {
+                    /* istanbul ignore next */
                     return reject(err);
                 }
                 return resolve(result);

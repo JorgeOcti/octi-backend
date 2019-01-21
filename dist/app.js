@@ -22,6 +22,7 @@ const user_model_1 = require("./app/models/user.model");
 const router_1 = require("./app/router");
 const email_task_1 = require("./app/tasks/email.task");
 const router_2 = require("./form/router");
+const router_3 = require("./inventory/router");
 const middlewares_1 = require("./middlewares/middlewares");
 // Create Express server
 const app = express();
@@ -45,7 +46,10 @@ Raven.config(process.env.SENTRY_DNS, {
     environment: process.env.ENV,
     parseUser: (req) => {
         // custom user parsing logic
-        const username = req.user ? req.user : { username: 'anonymous', id: 0 };
+        const username = req.user ? req.user : {
+            id: 0,
+            username: 'anonymous'
+        };
         return {
             username: username.username,
             id: username.id
@@ -82,7 +86,7 @@ app.disable('x-powered-by');
 // strict routing
 app.set('strict routing', true);
 // For parsing application/json
-app.use(bodyParser.json());
+app.use(bodyParser.json({ limit: '50mb' }));
 // for parsing application/xwww-
 app.use(bodyParser.urlencoded({ extended: true }));
 // For parsing multipart/form-data
@@ -126,7 +130,10 @@ app.use(passport.session());
  * Sign in using Email and Password.
  */
 passport.use(new LocalStrategy({ usernameField: 'username' }, (username, password, done) => {
-    user_model_1.default.findOne({ username: username.toLowerCase(), active: true }, (err, user) => {
+    user_model_1.default.findOne({
+        username: username.toLowerCase(),
+        active: true
+    }, (err, user) => {
         if (err) {
             return done(err);
         }
@@ -154,6 +161,9 @@ passport.deserializeUser(async (email, done) => {
             }, {
                 path: 'userForms',
                 select: ['name']
+            }, {
+                path: 'venue',
+                select: ['name']
             }]);
         if (user) {
             done(null, user);
@@ -163,6 +173,7 @@ passport.deserializeUser(async (email, done) => {
         }
     }
     catch (e) {
+        /* istanbul ignore next */
         done(e);
     }
 });
@@ -187,13 +198,6 @@ exports.accessLogStream = fileStreamRotator.getStream({
     frequency: 'daily',
     verbose: false
 });
-// export const mongooseCrateConfig: any = {
-//   key: process.env.S3_KEY || 'key',
-//   secret: process.env.S3_SECRET || 'secret',
-//   bucket: process.env.S3_BUCKET || 'bucket',
-//   acl: 'public-read', // defaults to public-read
-//   region: process.env.S3_REGION || 'region', // defaults to us-standard
-// };
 /* istanbul ignore if */
 if (app.get('env') !== 'testing') {
     morgan.token('remote-addr', (req) => {
@@ -207,6 +211,7 @@ app.use(Raven.requestHandler());
 // Routes
 app.use('/', router_1.appRouter);
 app.use('/', router_2.default);
+app.use('/', router_3.inventoryRouter);
 app.use('/api/v1', router_1.jwtRouter);
 /* queues */
 exports.queue = kue.createQueue({
@@ -216,7 +221,7 @@ exports.queue = kue.createQueue({
     }
 });
 new email_task_1.default(exports.queue).run();
-kue.app.listen(3041);
+kue.app.listen((parseInt(process.env.PORT, 10) || 3000) + 40);
 // The error handler must be before any other error middleware
 app.use(Raven.errorHandler());
 app.use((req, res, next) => {
@@ -224,8 +229,10 @@ app.use((req, res, next) => {
         message: 'Not Found',
         status: 404
     };
+    /* istanbul ignore next */
     next(err);
 });
+/* istanbul ignore next */
 app.use((err, req, res, next) => {
     // set locals, only providing error in development
     res.locals.message = err.message;

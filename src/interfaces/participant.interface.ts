@@ -1,15 +1,19 @@
 import * as mongoose from 'mongoose';
+import {ICarModel} from '../app/models/car.model';
+import {ICompanyModel} from '../app/models/company.model';
+import {ITeamModel} from '../app/models/team.model';
+import {IUserModel} from '../app/models/user.model';
+import {IVenueModel} from '../app/models/venue.model';
+import {IFormModel} from '../form/models/form.model';
 import {
   IParticipantAccesoryModel,
   IParticipantAnswerModel,
-  IParticipantChoicesModel, IParticipantItemModel,
-  IParticipantSectionModel, IScaleParticipantModel,
-} from "../form/models/participant.model";
-import {IUserModel} from "../app/models/user.model";
-import {IFormModel} from "../form/models/form.model";
-import {ICompanyModel} from "../app/models/company.model";
-import {ICarModel} from "../app/models/car.model";
-import {IParticipantFile} from "./participantFile.interface";
+  IParticipantChoicesModel,
+  IParticipantItemModel,
+  IParticipantSectionModel,
+  IScaleParticipantModel
+} from '../form/models/participant.model';
+import {IParticipantFile} from './participantFile.interface';
 
 export interface IParticipantChoices {
   choice: string;
@@ -38,7 +42,7 @@ export interface IparticipantItems {
 export interface IparticipantAccesory {
   _id: any;
   question: string;
-  items: IParticipantItemModel[]
+  items: IParticipantItemModel[];
 }
 
 export interface IParticipantAnswer {
@@ -52,9 +56,10 @@ export interface IParticipantAnswer {
   conciliation: boolean;
 
   answer: string;
-  images: IParticipantFile[],
+  images: IParticipantFile[];
   qualification: number;
   comment: string;
+  na: boolean;
 
   risk: string;
   observe: string;
@@ -79,9 +84,11 @@ export interface IParticipant {
   name: string;
 
   form: IFormModel;
+  team: ITeamModel;
   company: ICompanyModel;
 
   user: IUserModel;
+  venue: IVenueModel;
   car: ICarModel;
 
   description: string;
@@ -89,6 +96,17 @@ export interface IParticipant {
   sections: mongoose.Types.Array<IParticipantSectionModel>;
 
   qualification: number;
+
+  shipping: boolean;
+  shippingText: string;
+  shippingImages: IParticipantFile[];
+  receptionText: string;
+  reception: boolean;
+  receptionImages: IParticipantFile[];
+  conciliation: boolean;
+  conciliationText: string;
+  conciliationImages: IParticipantFile[];
+
   active: boolean;
   updatedAt: Date;
   createdAt: Date;

@@ -4,6 +4,7 @@ import * as path from 'path';
 import * as pug from 'pug';
 import {compileTemplate} from 'pug';
 import nodemailerTransporter from '../../services/aws-ses.service';
+import app from "../../app";
 
 class EmailQueue {
   private queue: Queue;
@@ -26,6 +27,7 @@ class EmailQueue {
 
   private processEmail(job?: Job, done?: (error?: Error | null, data?: object) => void) {
     if (job && done) {
+      job.log('start process');
       // generate email
       const mail: Mail.Options = {
         from: `"${job.data.from && job.data.from.length ? job.data.from : 'OSA Andes'}"<osa.andes@osacontrol.com>`,
@@ -39,13 +41,12 @@ class EmailQueue {
         headers: {
           'Reply-To': 'OSA Andes<osa.andes@osacontrol.com>',
           'List-Unsubscribe': '<mailto:soporte@osacontrol.com?subject=Unsubscribe>',
-          // 'List-Subscribe': "<mailto:soporte@osacontrol.com?subject=Subscribe>",
           'List-ID': 'mail.osacontrol.com',
           'X-Report-Abuse-To': 'abuse@osacontrol.com',
           'X-CSA-Complaints': 'whitelistcomplaints@eco.de'
         }
       };
-
+      job.log('send email');
       // send mail with defined transport object
       nodemailerTransporter.sendMail(mail, (error, info) => {
         if (error) {
@@ -53,7 +54,11 @@ class EmailQueue {
           done(error);
         }
         done(null, {});
-        console.log('Message %s sent: %s', info.messageId, info.response);
+        job.log(`Message ${info.messageId} sent: ${info.response}`);
+        /* istanbul ignore next */
+        if (app.get('env') !== 'testing') {
+          console.log('Message %s sent: %s', info.messageId, info.response);
+        }
         // console.log('Preview URL: %s', nodemailer.getTestMessageUrl(info));
       });
     }

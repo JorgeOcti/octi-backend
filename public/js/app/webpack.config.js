@@ -20,6 +20,15 @@ else {
 
 module.exports = {// entry: process.env.NODE_ENV === 'production'?['babel-polyfill', './src/app.jsx']:['./src/app.jsx'],
   entry:  process.env.NODE_ENV === 'production'?['babel-polyfill', `${sourcePath}/app.tsx`]:[`${sourcePath}/app.tsx`],
+  output: {
+    filename: '[name].bundle.js',
+    path: path.resolve(__dirname, 'dist')
+  },
+  optimization: {
+    splitChunks: {
+      chunks: 'all'
+    }
+  },
   module: {
     rules: [
       {
@@ -32,8 +41,12 @@ module.exports = {// entry: process.env.NODE_ENV === 'production'?['babel-polyfi
       {
         test: /\.(ts|tsx)$/,
         exclude: /node_modules/,
-        use: process.env.NODE_ENV === 'production'?[{loader: 'babel-loader'}, {loader: 'ts-loader'}]:{
-          loader: 'ts-loader'
+        use: process.env.NODE_ENV === 'production'?[{
+          loader: 'babel-loader'
+        }, {
+          loader: 'awesome-typescript-loader'
+        }]:{
+          loader: 'awesome-typescript-loader'
         }
       }
     ]

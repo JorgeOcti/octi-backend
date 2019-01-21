@@ -1,35 +1,36 @@
 import * as bluebird from 'bluebird';
+import * as cp from 'console-probe';
 import * as jwt from 'jsonwebtoken';
 import * as mongoose from 'mongoose';
 import * as socketIO from 'socket.io';
 import * as socketRedis from 'socket.io-redis';
 import app from './app';
 import logger from './services/logger.service';
+import redisClient from './services/redis.service';
 
 // Mongoose setting
 const MONGODB_URI: string = process.env.MONGODB_URI || '';
 
 // Mongoose connect
+(mongoose as any).Promise = bluebird;
 mongoose.connect(MONGODB_URI, {useMongoClient: true}, (err) => {
   if (err) {
+    /* istanbul ignore next */
     console.log('Unable to connect to the mongodb instance. Error: ', err);
-    // throw err;
+    throw err;
   }
   /* istanbul ignore if */
   if (app.get('env') !== 'testing') {
     console.log('Mongoose Successfully connected');
   }
 });
-(mongoose as any).Promise = bluebird;
-// mongoose.Promise = global.Promise;
 mongoose.set('debug', app.get('env') !== 'testing');
-// mongoose.set('debug', false);
 const NODE_APP_INSTANCE: number = parseInt(process.env.NODE_APP_INSTANCE as string, 10) || 0;
 const server = app.listen(parseInt(app.get('port'), 10) + NODE_APP_INSTANCE, () => {
   /* istanbul ignore if */
   if (app.get('env') !== 'testing') {
     console.log(`${logger.colors.magenta}----------------------${logger.colors.reset}`);
-    console.log(`${logger.colors.brighCyan}OSA-ANDES ${logger.colors.white}v1.0.0 ${logger.colors.brighGreen}RELEASE${logger.colors.reset}`);
+    console.log(`${logger.colors.brighCyan}OSA-ANDES ${logger.colors.white}v1.1.2 ${logger.colors.brighGreen}RELEASE${logger.colors.reset}`);
     console.log(`${logger.colors.magenta}----------------------${logger.colors.reset}`);
     console.log(
       'is running at http://localhost:%s in %s mode',
@@ -47,9 +48,11 @@ io.adapter(socketRedis({
   port: 6379
 }));
 
+/* istanbul ignore next */
 io.use( async (socket, next) => {
   // validate token to use socket
   const token = socket.handshake.query.token;
+  const msgErrorAuthentication: string = 'authentication error';
   if (token) {
     try {
       const user = await jwt.verify(token, process.env.SECRET_KEY || 'secretKey');
@@ -60,15 +63,15 @@ io.use( async (socket, next) => {
         return next();
       } else {
         socket.disconnect();
-        return next(new Error('authentication error'));
+        return next(new Error(msgErrorAuthentication));
       }
     } catch (e) {
       socket.disconnect();
-      return next(new Error('authentication error'));
+      return next(new Error(msgErrorAuthentication));
     }
   } else {
     socket.disconnect();
-    return next(new Error('authentication error'));
+    return next(new Error(msgErrorAuthentication));
   }
   // console.log('token', token);
   // if (isValid(token)) {
@@ -77,21 +80,66 @@ io.use( async (socket, next) => {
   // return next(new Error('authentication error'));
 });
 
-io.on( 'connection', ( socket ) => {
+/* istanbul ignore next */
+io.on( 'connection', async ( socket ) => {
   console.log('---------------------');
   console.log('A user connected');
   console.log('socket.id', socket.id);
-  console.log('socket.user\n', (socket as any).user);
+  cp.json((socket as any).user);
 
   socket.on('join', (data) => {
-    console.log(`join ${data.room}`);
-    socket.join(data.room);
+    const {room} = data;
+    redisClient.get(room, async (error, result) => {
+      let data: any;
+      if (result) {
+        data = JSON.parse(result);
+        if (!result.hasOwnProperty((socket as any).user._id)) {
+          data = {
+            ...data,
+            [(socket as any).user._id]: {
+              firstName: (socket as any).user.firstName,
+              lastName: (socket as any).user.lastName
+            }
+          };
+          redisClient.setex(room, 60 * 60 * 24, JSON.stringify(data));
+        }
+      } else {
+        data = {
+          [(socket as any).user._id]: {
+            firstName: (socket as any).user.firstName,
+            lastName: (socket as any).user.lastName
+          }
+        };
+        redisClient.setex(room, 60 * 60 * 24, JSON.stringify(data));
+      }
+      console.log(`join ${room}`);
+      socket.join(room);
+      io.to(room).emit('USERS_IN_CHANNEL', data);
+    });
+  });
+
+  socket.on('leave', (data) => {
+    const {room} = data;
+    redisClient.get(room, async (error, result) => {
+      let data: any;
+      if (result) {
+        data = JSON.parse(result);
+        const key = (socket as any).user._id;
+        if (data.hasOwnProperty(key)) {
+          delete data[key];
+          redisClient.setex(room, 60 * 60 * 24, JSON.stringify(data));
+        }
+      }
+      io.to(room).emit('USERS_IN_CHANNEL', data);
+      console.log(`leave ${room}`);
+      socket.leave(room);
+    });
   });
 
   socket.on('disconnect',  () => {
     console.log('---------------------');
     console.log('user disconnected');
-    console.log('socket.user\n', (socket as any).user);
+    cp.json((socket as any).user);
     // io.emit('user disconnected');
   });
 });

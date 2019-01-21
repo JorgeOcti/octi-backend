@@ -20,6 +20,7 @@ import User from './app/models/user.model';
 import {appRouter, jwtRouter} from './app/router';
 import EmailQueue from './app/tasks/email.task';
 import formRouter from './form/router';
+import {inventoryRouter} from './inventory/router';
 import Middlewares from './middlewares/middlewares';
 
 // Create Express server
@@ -48,7 +49,10 @@ Raven.config(process.env.SENTRY_DNS, {
   environment: process.env.ENV,
   parseUser: (req) => {
     // custom user parsing logic
-    const username = req.user ? req.user : {username: 'anonymous', id: 0};
+    const username = req.user ? req.user : {
+      id: 0,
+      username: 'anonymous'
+    };
     return {
       username: username.username,
       id: username.id
@@ -93,7 +97,7 @@ app.disable('x-powered-by');
 app.set('strict routing', true);
 
 // For parsing application/json
-app.use(bodyParser.json());
+app.use(bodyParser.json({limit: '50mb'}));
 
 // for parsing application/xwww-
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -145,7 +149,10 @@ app.use(passport.session());
  */
 
 passport.use(new LocalStrategy({ usernameField: 'username' }, (username, password, done) => {
-  User.findOne({username: username.toLowerCase(), active: true}, (err, user: any) => {
+  User.findOne({
+    username: username.toLowerCase(),
+    active: true
+  }, (err, user: any) => {
     if (err) { return done(err); }
     if (!user) {
       return done(undefined, false, { message: `username ${username} not found.` });
@@ -170,6 +177,9 @@ passport.deserializeUser(async (email, done) => {
     }, {
       path: 'userForms',
       select: ['name']
+    }, {
+      path: 'venue',
+      select: ['name']
     }]);
     if (user) {
       done(null, user);
@@ -177,6 +187,7 @@ passport.deserializeUser(async (email, done) => {
       done(new Error('User not found'));
     }
   } catch (e) {
+    /* istanbul ignore next */
     done(e);
   }
 });
@@ -204,14 +215,6 @@ export const accessLogStream = fileStreamRotator.getStream({
   verbose: false
 });
 
-// export const mongooseCrateConfig: any = {
-//   key: process.env.S3_KEY || 'key',
-//   secret: process.env.S3_SECRET || 'secret',
-//   bucket: process.env.S3_BUCKET || 'bucket',
-//   acl: 'public-read', // defaults to public-read
-//   region: process.env.S3_REGION || 'region', // defaults to us-standard
-// };
-
 /* istanbul ignore if */
 if (app.get('env') !== 'testing') {
   morgan.token('remote-addr', (req: express.Request): string => {
@@ -228,6 +231,7 @@ app.use(Raven.requestHandler());
 // Routes
 app.use('/', appRouter);
 app.use('/', formRouter);
+app.use('/', inventoryRouter);
 app.use('/api/v1', jwtRouter);
 
 /* queues */
@@ -237,8 +241,9 @@ export const queue = kue.createQueue({
     port: 6379
   }
 });
+
 new EmailQueue(queue).run();
-kue.app.listen(3041);
+kue.app.listen((parseInt(process.env.PORT as string, 10) || 3000) + 40);
 
 // The error handler must be before any other error middleware
 app.use(Raven.errorHandler());
@@ -255,9 +260,11 @@ app.use((req: express.Request, res: express.Response, next: express.NextFunction
     message: 'Not Found',
     status: 404
   };
+  /* istanbul ignore next */
   next(err);
 });
 
+/* istanbul ignore next */
 app.use((err: IResponseError, req: express.Request, res: express.Response, next: express.NextFunction) => {
   // set locals, only providing error in development
   res.locals.message = err.message;

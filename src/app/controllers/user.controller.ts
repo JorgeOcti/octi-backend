@@ -32,12 +32,14 @@ class UserController {
           }
         }
       } catch (e) {
+        /* istanbul ignore next */
         res.status(400).json({
           message: 'Ha ocurrido un error',
           status: 400
         });
       }
     } else {
+      /* istanbul ignore next */
       res.status(400).json({
         message: 'No se ha podido cambiar la contraseña',
         status: 400

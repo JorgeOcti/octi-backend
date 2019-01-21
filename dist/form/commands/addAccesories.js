@@ -1,17 +1,17 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 const bluebird = require("bluebird");
+const dotenv = require("dotenv");
 const mongoose = require("mongoose");
 const path = require("path");
-const dotenv = require("dotenv");
 const form_model_1 = require("../models/form.model");
 async function addAccesories() {
     dotenv.config({
         path: path.join(__dirname, '../../../.env')
     });
     const MONGODB_URI = process.env.MONGODB_URI || '';
-    await mongoose.connect(MONGODB_URI, { useMongoClient: true });
     mongoose.Promise = bluebird;
+    await mongoose.connect(MONGODB_URI, { useMongoClient: true });
     // form 5b0487db835536612bab1b61
     // section 5b0487db835536612bab1b65
     // question 5b0487db835536612bab1b66

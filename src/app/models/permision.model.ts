@@ -1,4 +1,5 @@
 import * as mongoose from 'mongoose';
+import {PaginateModel} from 'mongoose';
 import * as mongoosePaginate from 'mongoose-paginate';
 import {IPermission} from '../../interfaces/permision.interface';
 
@@ -19,6 +20,8 @@ const permisionSchema = new mongoose.Schema({
 
 permisionSchema.plugin(mongoosePaginate);
 
-const Permission = mongoose.model<IPermissionModel>('Permission', permisionSchema);
+export type PermissionSchema = mongoose.Model<IPermissionModel> & PaginateModel<IPermissionModel> & {};
+
+const Permission = mongoose.model<IPermissionModel, PermissionSchema>('Permission', permisionSchema);
 
 export default Permission;

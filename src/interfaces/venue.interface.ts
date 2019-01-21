@@ -1,10 +1,23 @@
-import {ICompany} from "./company.interface";
+import {ICompany} from './company.interface';
+import {IParticipant} from './participant.interface';
+import {ITeam} from './team.interface';
+import {IUser} from './user.interface';
 
-export interface IVenue {
+export interface IBaseVenue {
   _id: any;
   name: string;
-  company: ICompany | any;
+  company?: ICompany | any;
+  type: string;
+}
+
+export interface IVenue extends IBaseVenue {
+  name: string;
+  team?: ITeam | any;
+  company?: ICompany | any;
+  users?: IUser[];
+  participants?: IParticipant[];
   active: boolean;
-  updatedAt: Date;
-  createdAt: Date;
+  deleted: boolean;
+  updatedAt?: Date;
+  createdAt?: Date;
 }

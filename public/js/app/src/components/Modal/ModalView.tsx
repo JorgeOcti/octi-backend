@@ -1,9 +1,9 @@
-import * as PropTypes from 'prop-types';
+// import * as PropTypes from 'prop-types';
 import * as React from 'react';
 import {connect} from 'react-redux';
 import {Dispatch} from 'redux';
-import {IModalState, ModalReduxAction} from '../../actions/modal';
-import {IUsersState} from '../../actions/users';
+import {IModalState, ModalReduxAction} from '../../actions/modal.actions';
+import {IUsersState} from '../../actions/users.actions';
 
 interface IPropsType {
   dispatch?: Dispatch<ModalReduxAction>;
@@ -17,10 +17,10 @@ interface IStateType {
 
 class ModalView extends React.Component<IPropsType, IStateType> {
 
-  static propTypes = {
-    modal: PropTypes.object.isRequired,
-    dispatch: PropTypes.func.isRequired
-  };
+  // static propTypes = {
+  //   modal: PropTypes.object.isRequired,
+  //   dispatch: PropTypes.func.isRequired
+  // };
 
   render() {
     const {modal} = this.props;
@@ -35,9 +35,12 @@ class ModalView extends React.Component<IPropsType, IStateType> {
             <div className="modal-body">
               {modal ? modal.body : ''}
             </div>
-            <div className="modal-footer">
-              {modal && modal.footer ? modal.footer : <button type="button" className="btn btn-default" data-dismiss="modal">Cerrar</button>}
-            </div>
+            {
+              modal && modal.footer ?
+              <div className="modal-footer">
+                {modal && modal.footer ? modal.footer : <button type="button" className="btn btn-default" data-dismiss="modal">Cerrar</button>}
+              </div> : null
+            }
           </div>
         </div>
       </div>

@@ -5,6 +5,7 @@ import AdminAlertsController from './controllers/admin/alert.admin.controller';
 import AdminCarsController from './controllers/admin/car.admin.controller';
 import AdminCompaniesController from './controllers/admin/company.admin.controller';
 import AdminPermissionController from './controllers/admin/permission.admin.controller';
+import AdminTeamsController from './controllers/admin/team.admin.controller';
 import AdminUsersController from './controllers/admin/user.admin.controller';
 import AdminVenuesController from './controllers/admin/venue.admin.controller';
 import AppController from './controllers/app.controller';
@@ -16,8 +17,8 @@ import UserController from './controllers/user.controller';
 const appRouter = express.Router();
 
 const csrfProtection = csrf({ cookie: true });
-// robots.txt
 
+// robots.txt
 appRouter.get('/robots.txt', AppController.robots);
 
 // DashBoard Principal
@@ -32,6 +33,7 @@ appRouter.get('/api/cars/:id', Middlewares.isLoggedIn, CarController.apiCarDetai
 appRouter.get('/api/cars/', Middlewares.isLoggedIn, CarController.apiCars);
 
 // form detail
+appRouter.get('/api/participant/csv/', Middlewares.isLoggedIn, CarController.apiParticipantCSV);
 appRouter.get('/api/participant/:id/', Middlewares.isLoggedIn, CarController.apiParticipantDetail);
 appRouter.get('/api/participants-per-date/', Middlewares.isLoggedIn, CarController.apiParticipantsPerDate);
 
@@ -40,20 +42,43 @@ appRouter.get('/settings/users/', Middlewares.isLoggedIn, AdminUsersController.i
 
 // api admin users
 appRouter.get('/api/admin/users/', Middlewares.isLoggedIn, AdminUsersController.apiUsers);
-appRouter.post('/api/admin/users/', Middlewares.isLoggedIn, AdminUsersController.apiAddUser);
-appRouter.patch('/api/admin/users/:id/', Middlewares.isLoggedIn, AdminUsersController.apiEditUser);
+appRouter.post('/api/admin/users/', Middlewares.isLoggedIn, AdminUsersController.apiCreateUser);
+appRouter.post('/api/admin/users/change-password/', Middlewares.isLoggedIn, AdminUsersController.apiChangePasswordUser);
+appRouter.patch('/api/admin/users/:id/', Middlewares.isLoggedIn, AdminUsersController.apiUpdateUser);
 appRouter.delete('/api/admin/users/:id/', Middlewares.isLoggedIn, AdminUsersController.apiDeleteUser);
+
+// admin venues
+appRouter.get('/settings/venues/', Middlewares.isLoggedIn, AdminVenuesController.index);
+
+// venue companies
+// appRouter.get('/venues/', Middlewares.isLoggedIn, AdminVenuesController.index);
+appRouter.get('/api/admin/venues/', Middlewares.isLoggedIn, AdminVenuesController.apiListVenues);
+appRouter.post('/api/admin/venues/', Middlewares.isLoggedIn, AdminVenuesController.apiCreateVenue);
+appRouter.patch('/api/admin/venues/:id', Middlewares.isLoggedIn, AdminVenuesController.apiUpdateVenue);
+appRouter.delete('/api/admin/venues/:id', Middlewares.isLoggedIn, AdminVenuesController.apiDeleteVenue);
+
+// companies
+appRouter.get('/settings/companies/', Middlewares.isLoggedIn, AdminCompaniesController.index);
+
+// api companies
+appRouter.get('/api/admin/companies/', Middlewares.isLoggedIn, AdminCompaniesController.apiListCompanies);
+appRouter.post('/api/admin/companies/', Middlewares.isLoggedIn, AdminCompaniesController.apiCreateCompany);
+appRouter.patch('/api/admin/companies/:id', Middlewares.isLoggedIn, AdminCompaniesController.apiUpdateCompany);
+appRouter.delete('/api/admin/companies/:id', Middlewares.isLoggedIn, AdminCompaniesController.apiDeleteCompany);
+
+// api team
+appRouter.get('/api/admin/teams/', Middlewares.isLoggedIn, AdminTeamsController.apiListTeams);
 
 // setting cars
 appRouter.get('/settings/cars/', Middlewares.isLoggedIn, AdminCarsController.index);
 appRouter.get('/api/admin/cars/', Middlewares.isLoggedIn, AdminCarsController.apiListCars);
 
 // import cars
-appRouter.get('/settings/cars/import/', Middlewares.isLoggedIn, AdminCarsController.import);
+appRouter.get('/settings/cars/import/', Middlewares.isLoggedIn, AdminCarsController.imports);
 appRouter.post('/api/admin/import-cars/', Middlewares.isLoggedIn, AdminCarsController.importCars);
 
 // permissions
-appRouter.get('/api/admin/permissions/', Middlewares.isLoggedIn, AdminPermissionController.apiListPermissions);
+appRouter.get('/api/admin/permissions/', Middlewares.isLoggedIn, AdminPermissionController.apiList);
 
 // alerts
 appRouter.get('/settings/alerts/', Middlewares.isLoggedIn, AdminAlertsController.index);
@@ -61,13 +86,6 @@ appRouter.get('/settings/alerts/', Middlewares.isLoggedIn, AdminAlertsController
 appRouter.get('/api/admin/alerts/', Middlewares.isLoggedIn, AdminAlertsController.apiListAlerts);
 appRouter.post('/api/admin/alerts/', Middlewares.isLoggedIn, AdminAlertsController.apiCreateAlert);
 appRouter.delete('/api/admin/alerts/:id', Middlewares.isLoggedIn, AdminAlertsController.apiDeleteAlert);
-
-// admin companies
-appRouter.get('/companies/', Middlewares.isLoggedIn, AdminCompaniesController.index);
-
-// venue companies
-appRouter.get('/venues/', Middlewares.isLoggedIn, AdminVenuesController.index);
-appRouter.get('/api/admin/venues/', Middlewares.isLoggedIn, AdminVenuesController.apiVenues);
 
 // validate vins
 appRouter.post('/api/v1/check-vin/', Middlewares.isJWTAuthenticated, CarController.checkVIN);
@@ -87,7 +105,7 @@ appRouter.post('/account/recovery/:token', csrfProtection, AppController.process
 
 appRouter.get('/account/logout/', AppController.logout);
 
-// JWT API
+// JWT authentication API
 const jwtRouter = express.Router();
 jwtRouter.post('/login/', JWTController.login);
 jwtRouter.post('/token/', JWTController.token);

@@ -83,6 +83,11 @@ const formSchema = new mongoose.Schema({
         required: true,
         trim: true
     },
+    team: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Team',
+        required: true
+    },
     company: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Company',
@@ -91,6 +96,42 @@ const formSchema = new mongoose.Schema({
     description: {
         type: String,
         trim: true
+    },
+    shipping: {
+        type: Boolean,
+        default: false
+    },
+    shippingText: {
+        type: String,
+        default: ''
+    },
+    shippingImage: {
+        type: Boolean,
+        default: false
+    },
+    reception: {
+        type: Boolean,
+        default: false
+    },
+    receptionText: {
+        type: String,
+        default: ''
+    },
+    receptionImage: {
+        type: Boolean,
+        default: false
+    },
+    conciliation: {
+        type: Boolean,
+        default: false
+    },
+    conciliationText: {
+        type: String,
+        default: ''
+    },
+    conciliationImage: {
+        type: Boolean,
+        default: false
     },
     sections: [formSectionsSchema],
     active: {

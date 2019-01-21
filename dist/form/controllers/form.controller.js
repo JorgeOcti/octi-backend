@@ -7,12 +7,15 @@ const app_1 = require("../../app");
 const alert_model_1 = require("../../app/models/alert.model");
 const car_model_1 = require("../../app/models/car.model");
 const user_model_1 = require("../../app/models/user.model");
+const user_model_2 = require("../../app/models/user.model");
 const server_1 = require("../../server");
 const redis_service_1 = require("../../services/redis.service");
+const general_utils_1 = require("../../utils/general.utils");
 const form_model_1 = require("../models/form.model");
 const participant_model_1 = require("../models/participant.model");
 const participantFile_model_1 = require("../models/participantFile.model");
 const scale_model_1 = require("../models/scale.model");
+// import * as cp from 'console-probe';
 class FormController {
     constructor() {
         this.list = this.list.bind(this);
@@ -22,19 +25,34 @@ class FormController {
         this.uploadFile = this.uploadFile.bind(this);
     }
     async list(req, res) {
-        const company = req.user.company;
+        const { team } = req.user;
         try {
-            const forms = await this.getForms(company, {
-                _id: {
-                    $in: req.user.userForms.map((form) => form._id)
-                }
-            });
-            res.json({
-                data: forms,
-                status: 200
-            });
+            const updatedUser = await user_model_2.default.findById(req.user._id).populate([{
+                    path: 'userForms',
+                    select: ['_id']
+                }]);
+            if (updatedUser) {
+                const forms = await this.getForms({
+                    _id: {
+                        $in: updatedUser.userForms.map((form) => form._id)
+                    },
+                    team
+                });
+                res.json({
+                    data: forms,
+                    status: 200
+                });
+            }
+            else {
+                /* istanbul ignore next */
+                res.status(400).json({
+                    message: 'Usuario no encontrado',
+                    status: 400
+                });
+            }
         }
         catch (e) {
+            /* istanbul ignore next */
             res.status(400).json({
                 message: 'Ha ocurrido un error',
                 status: 400
@@ -43,14 +61,14 @@ class FormController {
     }
     async detail(req, res) {
         const { id } = req.params;
-        const company = req.user.company;
+        const { team } = req.user;
         if (req.user.userForms.filter((form) => form._id.toString() === id).length === 0) {
             return res.status(403).json({
-                message: 'No tiene permisos para esta operación'
+                message: 'No tienes permisos para esta operación'
             });
         }
         try {
-            const form = await this.getForm(id, company);
+            const form = await this.getForm({ _id: id, team });
             // generate array of scale ids
             const scalesIds = [];
             form.sections.forEach((section) => {
@@ -61,17 +79,168 @@ class FormController {
                     }
                 });
             });
+            const extra = {
+                accessories: []
+            };
+            const extraSection = {
+                _id: '',
+                name: '',
+                questions: [],
+                weight: 0,
+                order: form.sections.length + 1
+            };
+            const extraScales = [];
+            if (form.shipping) {
+                extraSection.questions.push({
+                    _id: 'shipping',
+                    question: form.shippingText,
+                    scale: 'shipping',
+                    conciliation: false,
+                    risk: '',
+                    observe: '',
+                    accessories: null,
+                    weight: 0,
+                    order: 1000
+                });
+                extraScales.push({
+                    _id: 'shipping',
+                    name: 'shipping',
+                    choices: [
+                        {
+                            _id: 'false',
+                            choice: 'No',
+                            backgroundColor: 'red',
+                            requireImage: form.shippingImage,
+                            requireComment: false,
+                            requireAccesories: false,
+                            requireConciliation: false,
+                            value: 0,
+                            order: 1
+                        }, {
+                            _id: 'true',
+                            choice: 'Si',
+                            backgroundColor: 'green',
+                            requireImage: false,
+                            requireComment: false,
+                            requireAccesories: false,
+                            requireConciliation: false,
+                            value: 1,
+                            order: 2
+                        }
+                    ]
+                });
+            }
+            if (form.reception) {
+                extraSection.questions.push({
+                    _id: 'reception',
+                    question: form.receptionText,
+                    scale: 'reception',
+                    conciliation: false,
+                    risk: '',
+                    observe: '',
+                    accessories: null,
+                    weight: 0,
+                    order: 1000
+                });
+                extraScales.push({
+                    _id: 'reception',
+                    name: 'reception',
+                    choices: [
+                        {
+                            _id: 'false',
+                            choice: 'No',
+                            backgroundColor: 'red',
+                            requireImage: form.receptionImage,
+                            requireComment: false,
+                            requireAccesories: false,
+                            requireConciliation: false,
+                            value: 0,
+                            order: 1
+                        }, {
+                            _id: 'true',
+                            choice: 'Si',
+                            backgroundColor: 'green',
+                            requireImage: false,
+                            requireComment: false,
+                            requireAccesories: false,
+                            requireConciliation: false,
+                            value: 1,
+                            order: 2
+                        }
+                    ]
+                });
+            }
+            if (form.conciliation) {
+                extraSection.questions.push({
+                    _id: 'conciliation',
+                    question: form.conciliationText,
+                    scale: 'conciliation',
+                    conciliation: false,
+                    risk: '',
+                    observe: '',
+                    accessories: null,
+                    weight: 0,
+                    order: 1000
+                });
+                extraScales.push({
+                    _id: 'conciliation',
+                    name: 'conciliation',
+                    choices: [
+                        {
+                            _id: 'false',
+                            choice: 'No',
+                            backgroundColor: 'red',
+                            requireImage: false,
+                            requireComment: false,
+                            requireAccesories: false,
+                            requireConciliation: false,
+                            value: 0,
+                            order: 1
+                        }, {
+                            _id: 'true',
+                            choice: 'Si',
+                            backgroundColor: 'green',
+                            requireImage: form.conciliationImage,
+                            requireComment: false,
+                            requireAccesories: false,
+                            requireConciliation: false,
+                            value: 1,
+                            order: 2
+                        }
+                    ]
+                });
+            }
+            // delete keys from object returned by api
+            const deleteKeys = ['shipping', 'shippingText', 'shippingImage', 'reception', 'receptionText', 'receptionImage', 'conciliation', 'conciliationText', 'conciliationImage'];
+            deleteKeys.forEach((key) => {
+                if (form.hasOwnProperty(key)) {
+                    delete form[key];
+                }
+            });
+            let scales = await this.getScales({
+                _id: {
+                    $in: scalesIds
+                },
+                team
+            });
+            scales = [...scales, ...extraScales];
+            if (extraSection.questions.length) {
+                form.sections = [...form.sections, extraSection];
+            }
             // get scales from db
-            const scales = await this.getScales(scalesIds, company);
             res.json({
                 data: {
                     form,
-                    scales
+                    scales,
+                    extra
                 },
                 status: 200
             });
         }
         catch (e) {
+            /* istanbul ignore next */
+            console.log('e', e);
+            /* istanbul ignore next */
             res.status(400).json({
                 message: 'No se encontro formularío',
                 status: 400
@@ -82,7 +251,7 @@ class FormController {
         const { id } = req.params;
         let { vin } = req.body;
         const { answers } = req.body;
-        const company = req.user.company;
+        const { team, venue, company } = req.user;
         // validate answers in body
         if (!answers) {
             return res.status(400).json({
@@ -101,21 +270,51 @@ class FormController {
         try {
             const car = await car_model_1.default.findOne({
                 $or: [{ vin: { $eq: vin } }, { vin2: { $eq: vin } }],
-                company
+                team
             });
             if (car) {
-                const form = await this.getFormWithScale(id, company);
+                const form = await this.getFormWithScale({
+                    _id: id,
+                    team
+                });
                 if (form) {
                     // initialize participant
-                    const newParticipant = new participant_model_1.default({
+                    const participantObject = {
                         name: form.name,
+                        team,
                         company,
                         form: form._id,
                         car,
                         description: form.description,
                         user: req.user._id,
+                        venue,
                         active: form.active
-                    });
+                    };
+                    if (form.reception && 'reception' in answers) {
+                        const reception = answers.reception;
+                        participantObject.reception = [true, 'true'].includes(reception.value);
+                        participantObject.receptionText = form.receptionText;
+                        if (reception.images) {
+                            participantObject.receptionImages = reception.images.map((image) => (new bson_1.ObjectID(image)));
+                        }
+                    }
+                    if (form.shipping && 'shipping' in answers) {
+                        const shipping = answers.shipping;
+                        participantObject.shipping = [true, 'true'].includes(shipping.value);
+                        participantObject.shippingText = form.shippingText;
+                        if (shipping.images) {
+                            participantObject.shippingImages = shipping.images.map((image) => (new bson_1.ObjectID(image)));
+                        }
+                    }
+                    if (form.conciliation && 'conciliation' in answers) {
+                        const conciliation = answers.conciliation;
+                        participantObject.conciliation = [true, 'true'].includes(conciliation.value);
+                        participantObject.conciliationText = form.conciliationText;
+                        if (conciliation.images) {
+                            participantObject.conciliationImages = conciliation.images.map((image) => (new bson_1.ObjectID(image)));
+                        }
+                    }
+                    const newParticipant = new participant_model_1.default(participantObject);
                     // var sum sections
                     let sumSectionWeigths = 0;
                     let sumSectionQualifications = 0;
@@ -131,7 +330,7 @@ class FormController {
                             // calculate qualification and set vars of the answer
                             const questionID = question._id.toString();
                             // get selected answer
-                            const answer = answers.hasOwnProperty(questionID) ? answers[questionID] : null;
+                            const answer = general_utils_1.default.getObjectProperty(answers, questionID, null);
                             // find choice selected
                             const choice = question.scale.choices.find((choice) => {
                                 return answer ? choice._id.toString() === answer.value : false;
@@ -141,8 +340,15 @@ class FormController {
                             if (choice) {
                                 qualification = (100 / question.scale.maxValue) * choice.value;
                             }
-                            sumQualifications += (qualification * question.weight);
-                            sumWeigths += question.weight;
+                            // no apply
+                            let na = false;
+                            if (choice && choice.na) {
+                                na = true;
+                            }
+                            else {
+                                sumQualifications += (qualification * question.weight);
+                                sumWeigths += question.weight;
+                            }
                             // concat allImages
                             if (choice && choice.requireImage && answer && answer.images && answer.images.length) {
                                 allImages = [...answer.images, ...allImages];
@@ -171,6 +377,7 @@ class FormController {
                                 // images: answer.images && answer.images.length ? await ParticipantFile.find({_id: {$in: answer.images}}, {_id:1}) : [],
                                 images: answer && answer.images && answer.images.length ? answer.images.map((image) => (new bson_1.ObjectID(image))) : [],
                                 qualification,
+                                na,
                                 weight: question.weight,
                                 order: question.order
                             });
@@ -214,20 +421,21 @@ class FormController {
                         /* Search alerts */
                         const alerts = await alert_model_1.default
                             .find({
+                            team,
                             $or: [
                                 { $and: [{ lte: { $gte: formQualification } }, { lte: { $gt: 0 } }] },
                                 { $and: [{ gte: { $lte: formQualification } }, { gte: { $gt: 0 } }] }
                             ]
                         }).populate([{
                                 path: 'users',
-                                select: ['firstName', 'lastName', 'email']
+                                select: ['firstName', 'lastName', 'email', 'venue', 'venuesAccess']
                             }]);
                         /* Send alerts if exist */
                         if (alerts.length) {
                             alerts.forEach((alert) => {
                                 alert.users.forEach((user) => {
                                     const userName = `${user.firstName} ${user.lastName}`;
-                                    if (user.email && user.email.length) {
+                                    if (user.venuesPermissions(true).includes(venue._id) && user.email && user.email.length) {
                                         app_1.queue.create('email', {
                                             from: '',
                                             title: `Alert qualification`,
@@ -238,7 +446,7 @@ class FormController {
 
                         Datos del Vehiculo
                         VIN: ${car ? car.vin : ''}
-                        MARCA: ${car ? car.brand : ''}
+                        MARCA: ${car && car.brand ? car.brand : ''}
 
                         Para ver el detalle has click aquí
                         ${process.env.SITE_URL}cars/${car._id}
@@ -247,8 +455,8 @@ class FormController {
                                             view: 'alerts/lowQualification',
                                             context: {
                                                 userName,
-                                                brand: car ? car.brand : '',
-                                                vin: car ? car.vin : '',
+                                                brand: car && car.brand ? car.brand : '',
+                                                vin: car && car.vin ? car.vin : '',
                                                 qualification: formQualification.toFixed(0),
                                                 url: `${process.env.SITE_URL}cars/${car._id}`
                                             }
@@ -280,8 +488,10 @@ class FormController {
                         });
                     }
                     catch (e) {
+                        /* istanbul ignore next */
                         console.log(e);
                         // return error, if the form could not be recorded
+                        /* istanbul ignore next */
                         return res.status(400).json({
                             message: e,
                             status: 400
@@ -304,6 +514,7 @@ class FormController {
             }
         }
         catch (e) {
+            /* istanbul ignore next */
             return res.status(400).json({
                 message: e,
                 status: 400
@@ -342,6 +553,7 @@ class FormController {
                 participantFile.company = company._id;
                 participantFile.attach('file', file, async (error) => {
                     if (error) {
+                        /* istanbul ignore next */
                         res.status(400).json(error);
                     }
                     else {
@@ -357,6 +569,7 @@ class FormController {
                 });
             }
             catch (e) {
+                /* istanbul ignore next */
                 res.status(400).json(e);
             }
         }
@@ -366,16 +579,15 @@ class FormController {
                 status: 400
             });
         }
-        // ParticipantFile
     }
     async changePreferred(req, res) {
         let { form } = req.body;
-        const company = req.user.company;
+        const { team } = req.user;
         try {
-            const user = await user_model_1.default.findOne({ _id: req.user._id, company, active: true });
+            const user = await user_model_1.default.findOne({ _id: req.user._id, team, active: true });
             // validate exist user
             if (user) {
-                form = await form_model_1.default.findOne({ _id: form, company });
+                form = await form_model_1.default.findOne({ _id: form, team });
                 // validate exist form
                 if (form) {
                     user.preferred = form;
@@ -417,6 +629,7 @@ class FormController {
                 .autoOrient()
                 .write(path, (err) => {
                 if (err) {
+                    /* istanbul ignore next */
                     reject(err);
                 }
                 else {
@@ -425,54 +638,34 @@ class FormController {
             });
         });
     }
-    getForms(company, filter) {
-        const keyCache = `forms${filter ? JSON.stringify(filter) : ''}`;
-        if (filter) {
-            filter = {
-                company,
-                ...filter
-            };
-        }
-        else {
-            filter = {
-                company
-            };
-        }
+    getForms(filter) {
         return new Promise((resolve, reject) => {
-            redis_service_1.default.get(keyCache, async (error, result) => {
-                if (result) {
-                    console.log(`cache: ${keyCache}`);
-                    resolve(JSON.parse(result));
+            form_model_1.default
+                .find(filter, {
+                _id: 1,
+                name: 1
+            })
+                .lean()
+                .exec((err, forms) => {
+                if (err) {
+                    /* istanbul ignore next */
+                    return reject(err);
                 }
-                else {
-                    form_model_1.default
-                        .find(filter, {
-                        _id: 1,
-                        name: 1
-                    })
-                        .lean()
-                        .exec((err, forms) => {
-                        if (err) {
-                            return reject(err);
-                        }
-                        redis_service_1.default.setex(keyCache, 60 * 2, JSON.stringify(forms));
-                        return resolve(forms);
-                    });
-                }
+                return resolve(forms);
             });
         });
     }
-    getForm(id, company) {
-        const keyCache = `form-${id}`;
+    getForm(filter) {
+        const keyCache = `form-${filter._id}`;
         return new Promise((resolve, reject) => {
             redis_service_1.default.get(keyCache, async (error, result) => {
                 if (result) {
-                    console.log(`cache: ${keyCache}`);
+                    // console.log(`cache: ${keyCache}`);
                     resolve(JSON.parse(result));
                 }
                 else {
                     form_model_1.default
-                        .findOne({ _id: id, company }, {
+                        .findOne(filter, {
                         'company': false,
                         'updatedAt': false,
                         'createdAt': false,
@@ -484,6 +677,7 @@ class FormController {
                         .lean()
                         .exec((err, form) => {
                         if (err) {
+                            /* istanbul ignore next */
                             return reject(err);
                         }
                         if (form) {
@@ -496,13 +690,14 @@ class FormController {
             });
         });
     }
-    getFormWithScale(id, company) {
+    getFormWithScale(filter) {
         return new Promise((resolve, reject) => {
             form_model_1.default
-                .findOne({ _id: id, company })
+                .findOne(filter)
                 .populate('sections.questions.scale')
                 .exec((err, form) => {
                 if (err) {
+                    /* istanbul ignore next */
                     return reject(err);
                 }
                 if (form) {
@@ -512,8 +707,8 @@ class FormController {
             });
         });
     }
-    getScales(ids, company) {
-        const keyCache = `scales-${ids.toString()}`;
+    getScales(filter) {
+        const keyCache = `scales-${JSON.stringify(filter)}`;
         return new Promise((resolve, reject) => {
             redis_service_1.default.get(keyCache, async (error, result) => {
                 if (result) {
@@ -521,10 +716,7 @@ class FormController {
                 }
                 else {
                     scale_model_1.default
-                        .find({
-                        _id: { $in: ids },
-                        company
-                    }, {
+                        .find(filter, {
                         'updatedAt': false,
                         'createdAt': false,
                         'active': false,
@@ -532,11 +724,13 @@ class FormController {
                         'minValue': false,
                         'maxValue': false,
                         'choices.na': false,
+                        'team': false,
                         '__v': false
                     })
                         .lean()
                         .exec((err, scales) => {
                         if (err) {
+                            /* istanbul ignore next */
                             return reject(err);
                         }
                         redis_service_1.default.setex(keyCache, 30, JSON.stringify(scales));

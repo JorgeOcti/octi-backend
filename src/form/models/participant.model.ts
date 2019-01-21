@@ -8,6 +8,7 @@ import {
   IParticipantScale,
   IParticipantSection
 } from '../../interfaces/participant.interface';
+import {choiceBackgroundColors} from './scale.model';
 
 export interface IParticipantChoicesModel extends IParticipantChoices, mongoose.Types.Subdocument {}
 const participantChoiceSchema = new mongoose.Schema({
@@ -22,6 +23,7 @@ const participantChoiceSchema = new mongoose.Schema({
   },
   backgroundColor: {
     type: String,
+    enum: choiceBackgroundColors,
     default: 'blue'
   },
   requireImage: {
@@ -123,6 +125,10 @@ const participantAnswersSchema = new mongoose.Schema({
   comment: {
     type: String
   },
+  na: {
+    type: Boolean,
+    default: false
+  },
   qualification: {
     type: Number
   },
@@ -180,6 +186,11 @@ const participantSchema = new mongoose.Schema({
     ref: 'Form',
     index: true
   },
+  team: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Team',
+    required: true
+  },
   company: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Company',
@@ -198,6 +209,11 @@ const participantSchema = new mongoose.Schema({
     index: true
   },
 
+  venue: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Venue'
+  },
+
   description: {
     type: String,
     trim: true
@@ -208,6 +224,44 @@ const participantSchema = new mongoose.Schema({
     type: Number,
     default: 0
   },
+
+  shipping: {
+    type: Boolean,
+    default: false
+  },
+  shippingText: {
+    type: String,
+    default: ''
+  },
+  shippingImages: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'ParticipantFile'
+  }],
+  reception: {
+    type: Boolean,
+    default: false
+  },
+  receptionText: {
+    type: String,
+    default: ''
+  },
+  receptionImages: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'ParticipantFile'
+  }],
+  conciliation: {
+    type: Boolean,
+    default: false
+  },
+  conciliationText: {
+    type: String,
+    default: ''
+  },
+  conciliationImages: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'ParticipantFile'
+  }],
+
   active: {
     type: Boolean,
     default: true
@@ -216,7 +270,10 @@ const participantSchema = new mongoose.Schema({
   timestamps: true
 });
 
-participantSchema.index({ form: 1, user: 1 });
+participantSchema.index({_id: 1});
+participantSchema.index({form: 1, user: 1 });
+participantSchema.index({company: 1, venue: 1, createdAt: 1 });
+participantSchema.index({_id: 1, company: 1, venue: 1, createdAt: 1 });
 
 const Participant = mongoose.model<IParticipantModel>('Participant', participantSchema);
 
