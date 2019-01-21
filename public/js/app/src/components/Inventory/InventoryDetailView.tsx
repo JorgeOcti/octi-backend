@@ -1088,6 +1088,7 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
         name: 'Encontrados',
         type: 'bar',
         stack: 'cars',
+        barMaxWidth: 100,
         label: {
           normal: {
             ...this.labelOption.normal
@@ -1099,6 +1100,7 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
         name: 'Sobrantes',
         type: 'bar',
         stack: 'cars',
+        barMaxWidth: 100,
         label: {
           normal: {
             ...this.labelOption.normal
@@ -1111,6 +1113,7 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
         name: 'Faltantes',
         type: 'bar',
         stack: 'cars',
+        barMaxWidth: 100,
         label: {
           normal: {
             ...this.labelOption.normal
@@ -1122,6 +1125,7 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
         name: 'Pendientes',
         type: 'bar',
         stack: 'cars',
+        barMaxWidth: 100,
         // barMinHeight: 20,
         label: {
           normal: {
@@ -1134,6 +1138,7 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
         name: 'Reportados',
         type: 'bar',
         stack: 'cars',
+        barMaxWidth: 100,
         label: {
           normal: {
             ...this.labelOption.normal
@@ -1258,30 +1263,35 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
         name: 'Encontrados',
         type: 'bar',
         stack: 'cars',
+        barMaxWidth: 100,
         barGap: 0
       }, {
         data: brandLeftover,
         name: 'Sobrantes',
         type: 'bar',
         stack: 'cars',
+        barMaxWidth: 100,
         barGap: 0
       }, {
         data: brandMissing,
         name: 'Faltantes',
         type: 'bar',
         stack: 'cars',
+        barMaxWidth: 100,
         barGap: 0
       }, {
         data: brandPending,
         name: 'Pendientes',
         type: 'bar',
         stack: 'cars',
+        barMaxWidth: 100,
         barGap: 0
       }, {
         data: brandReported,
         name: 'Reportados',
         type: 'bar',
         stack: 'cars',
+        barMaxWidth: 100,
         barGap: 0
       }]
     };
