@@ -996,7 +996,11 @@ class InventoryController {
               category: {
                 $cond: {
                   if: {
-                    $eq: ['$cars.status', 'leftover']
+                    $and: [{
+                      $eq: ['$cars.status', 'leftover']
+                    }, {
+                      $ne: ['$cars.venueFound', null]
+                    }]
                   },
                   then: '$cars.venueFound',
                   else: '$cars.venue'
