@@ -63,6 +63,14 @@ const inventoryCarSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: 'InventoryLabel'
   },
+  labelText: {
+    type: String,
+    default: ''
+  },
+  labelBy: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User'
+  },
   customizedStatusText: {
     type: String,
     default: ''

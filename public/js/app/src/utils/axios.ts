@@ -266,11 +266,12 @@ export default class ApiService {
     return this.source;
   }
 
-  public setLabel(inventory: string, car: string, label: string, custom?: string): AxiosPromise {
+  public setLabel(inventory: string, car: string, carID: string, label: string, custom?: string): AxiosPromise {
     return this.instance.post(
       `/api/inventory/${inventory}/set-label/`, {
         car,
         label,
+        carID,
         custom
       }
     );

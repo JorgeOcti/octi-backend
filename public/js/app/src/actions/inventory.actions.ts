@@ -381,7 +381,7 @@ export function sendCommentAction(carId: string, comment: string) {
   };
 }
 
-export function actionSetLabel(inventory: string, car: string, label: IInventoryLabel) {
+export function actionSetLabel(inventory: string, car: string, carID: string, label: IInventoryLabel) {
   return (dispatch: Dispatch<InventoryReduxAction>) => {
     const api: ApiService = new ApiService();
     if (label.requireCustomText) {
@@ -389,7 +389,7 @@ export function actionSetLabel(inventory: string, car: string, label: IInventory
         content: 'input'
       }).then((custom: string) => {
         if (custom && custom.trim().length) {
-          api.setLabel(inventory, car, label._id, custom)
+          api.setLabel(inventory, car, carID, label._id, custom)
             .then((response: AxiosResponse) => {
               swal(response.data.message, {
                 icon: 'success'
@@ -408,7 +408,7 @@ export function actionSetLabel(inventory: string, car: string, label: IInventory
         }
       });
     } else {
-      api.setLabel(inventory, car, label._id)
+      api.setLabel(inventory, car, carID, label._id)
         .then((response: AxiosResponse) => {
           swal(response.data.message, {
             icon: 'success'

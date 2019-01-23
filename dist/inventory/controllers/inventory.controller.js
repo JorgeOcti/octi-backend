@@ -315,7 +315,11 @@ class InventoryController {
                     res.status(200).json({
                         data: {
                             cars: inventory.cars
-                                .filter((car) => (![inventory_model_1.ChoicesStatusCarInventory.reported, inventory_model_1.ChoicesStatusCarInventory.leftover].includes(car.status)))
+                                .filter((car) => (![
+                                inventory_model_1.ChoicesStatusCarInventory.reported,
+                                inventory_model_1.ChoicesStatusCarInventory.leftover,
+                                inventory_model_1.ChoicesStatusCarInventory.missing
+                            ].includes(car.status)))
                                 .map((car) => {
                                 return {
                                     ...car.car,
@@ -793,7 +797,7 @@ class InventoryController {
     async setLabel(req, res) {
         const { team } = req.user;
         const { id } = req.params;
-        const { car, label } = req.body;
+        const { car, label, custom, carID } = req.body;
         try {
             const newLabel = await inventoryLabel_model_1.default.findOne({
                 _id: label,
@@ -807,11 +811,21 @@ class InventoryController {
                 }, {
                     $set: {
                         'cars.$.status': newLabel.sendTo,
-                        'cars.$.label': newLabel._id
+                        'cars.$.label': newLabel._id,
+                        'cars.$.labelBy': req.user._id,
+                        'cars.$.labelText': custom
                     }
                 }, {
                     upsert: true
                 });
+                if (newLabel.isExhibition) {
+                    await car_model_1.default.findOneAndUpdate({
+                        _id: carID,
+                        team
+                    }, {
+                        isExhibition: true
+                    });
+                }
                 server_1.io.to(`inventory-detail-${id}`).emit('REFRESH', {
                     update: true
                 });
@@ -1122,6 +1136,8 @@ class InventoryController {
                 }).populate([{
                         path: 'cars.car',
                         select: ['vin', 'vin2', 'color', 'denomination', 'brand', 'venue', 'patent']
+                    }, {
+                        path: 'cars.label'
                     }, {
                         path: 'cars.venue',
                         select: ['name']

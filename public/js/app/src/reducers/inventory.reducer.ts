@@ -152,9 +152,14 @@ function processCars(cars: IInventoryCar[], selectedItems: { [key: string]: any 
     if (add) {
       products.push({
         _id: (car as any)._id,
+        carID: (car as any).car._id,
         vin: car.car.vin,
         brand: car.car.brand,
         denomination: car.car.denomination,
+        label: car.label,
+        labelName: car.label && car.label.hasOwnProperty('name') ? car.label.name : 'z',
+        labelBy: car.labelBy,
+        labelText: car.labelText,
         venue: car.venue ? car.venue.name : '-',
         images: car.images && car.images.length ? car.images : [],
         comments: car.comments && car.comments.length ? car.comments : [],
@@ -168,5 +173,6 @@ function processCars(cars: IInventoryCar[], selectedItems: { [key: string]: any 
       });
     }
   }
+  console.log('products', products)
   return products;
 }

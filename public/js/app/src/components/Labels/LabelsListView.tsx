@@ -105,8 +105,8 @@ class LabelsListView extends React.Component<IPropsType, IStateType> {
                 <thead>
                   <tr>
                     <th className="middle">Nombre</th>
-                    <th className="middle" style={{width: '50px'}}>Envia a</th>
-                    <th className="middle" style={{width: '80px'}}>Activo</th>
+                    <th className="middle" style={{width: '80px'}}>Envia a</th>
+                    <th className="middle-center" style={{width: '80px'}}>Activo</th>
                     <th style={{width: '1%'}} className="width-10"/>
                     <th style={{width: '1%'}} className="width-10"/>
                   </tr>

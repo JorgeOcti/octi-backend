@@ -330,7 +330,11 @@ class InventoryController {
           res.status(200).json({
             data: {
               cars: inventory.cars
-                .filter((car: IInventoryCar) => (![ChoicesStatusCarInventory.reported, ChoicesStatusCarInventory.leftover].includes(car.status as any)))
+                .filter((car: IInventoryCar) => (![
+                  ChoicesStatusCarInventory.reported,
+                  ChoicesStatusCarInventory.leftover,
+                  ChoicesStatusCarInventory.missing
+                ].includes(car.status as any)))
                 .map((car: IInventoryCar) => {
                 return {
                   ...car.car,
@@ -800,7 +804,7 @@ class InventoryController {
   public async setLabel(req: IRequest, res: Response) {
     const {team} = req.user;
     const {id} = req.params;
-    const {car, label} = req.body;
+    const {car, label, custom, carID} = req.body;
     try {
       const newLabel = await InventoryLabel.findOne({
         _id: label,
@@ -814,11 +818,21 @@ class InventoryController {
         }, {
           $set: {
             'cars.$.status': newLabel.sendTo,
-            'cars.$.label': newLabel._id
+            'cars.$.label': newLabel._id,
+            'cars.$.labelBy': req.user._id,
+            'cars.$.labelText': custom
           }
         }, {
           upsert: true
         });
+        if (newLabel.isExhibition) {
+          await CarModel.findOneAndUpdate({
+            _id: carID,
+            team
+          }, {
+            isExhibition: true
+          });
+        }
         io.to(`inventory-detail-${id}`).emit('REFRESH', {
           update: true
         });
@@ -1128,6 +1142,8 @@ class InventoryController {
         }).populate([{
           path: 'cars.car',
           select: ['vin', 'vin2', 'color', 'denomination', 'brand', 'venue', 'patent']
+        }, {
+          path: 'cars.label'
         }, {
           path: 'cars.venue',
           select: ['name']

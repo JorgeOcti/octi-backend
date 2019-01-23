@@ -4,8 +4,8 @@
 ///<reference path="../../../src/types/react-bootstrap-table2-paginator.d.ts"/>
 import * as moment from 'moment';
 import * as Raven from 'raven-js';
-import * as React from 'react';
 import {ErrorInfo} from 'react';
+import * as React from 'react';
 import BootstrapTable from 'react-bootstrap-table-next';
 import filterFactory from 'react-bootstrap-table2-filter';
 import paginationFactory from 'react-bootstrap-table2-paginator';
@@ -35,11 +35,11 @@ import {loadDataAction, ModalReduxAction} from '../../actions/modal.actions';
 import AppContainer from '../../container/AppContainer';
 import {IWindow} from '../../interfaces/window';
 import {goToSection, maxText} from '../../utils/common';
+import ModalView from '../Modal/ModalView';
 import BootstrapSelect from '../Utils/BootstrapSelect';
 import Checkbox from '../Utils/CheckBox';
 import CopyText from '../Utils/CopyText';
 import ImageLazyLoad from '../Utils/ImageLazyLoad';
-import ModalView from '../Modal/ModalView';
 import Row from '../Utils/Row';
 import InventoryCarComments from './InventoryCarComments';
 
@@ -55,7 +55,7 @@ interface IPropsType extends RouteComponentProps<{ id: string, tab?: string }> {
   inventoryDetailChangeFilterText(filter: { text: string; venues: string[]; states: string[]; }): InventoryReduxAction;
   getInventoryDetailAction(id: string, update: boolean): InventoryReduxAction;
   loadDataAction(title: string, body: JSX.Element, footer?: JSX.Element): ModalReduxAction;
-  actionSetLabel(inventory: string, car: string, label: IInventoryLabel): ModalReduxAction;
+  actionSetLabel(inventory: string, car: string, carID: string, label: IInventoryLabel): ModalReduxAction;
 }
 
 interface IStateType {
@@ -164,6 +164,7 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
     this.statusFormatter = this.statusFormatter.bind(this);
     this.brandFormatter = this.brandFormatter.bind(this);
     this.commentFormatter = this.commentFormatter.bind(this);
+    this.labelFormatter = this.labelFormatter.bind(this);
     this.optionsFormatter = this.optionsFormatter.bind(this);
     this.calculateDetails = this.calculateDetails.bind(this);
     this.imagesFormatter = this.imagesFormatter.bind(this);
@@ -235,11 +236,25 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
         minWidth: '80px',
         width: '80px'
       }
-    }, {
+    }, /* {
       dataField: 'countComments',
       text: 'Comentarios',
       classes: 'middle hidden-xs text-ellipsis',
       formatter: this.commentFormatter,
+      headerClasses: 'middle hidden-xs',
+      style: {
+        width: '15%'
+      },
+      headerStyle: {
+        verticalAlign: 'top'
+      }
+    } */{
+      dataField: 'labelName',
+      text: 'Etiqueta',
+      sort: true,
+      classes: 'middle hidden-xs text-ellipsis',
+      filterValue: (cell: any, row: any) => `${cell ? cell.name : ''}`,
+      formatter: this.labelFormatter,
       headerClasses: 'middle hidden-xs',
       style: {
         width: '15%'
@@ -465,7 +480,7 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
               options.map((option) => {
                 return (
                   <li key={option._id} onClick={() => {
-                    this.props.actionSetLabel(id, row._id, option);
+                    this.props.actionSetLabel(id, row._id, row.carID, option);
                   }}>
                     <a href="javascript:void(0)">
                       <i className={`fa ${this.iconStatus[option.sendTo]}`} />{option.name}
@@ -497,6 +512,24 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
           Agregar <i className={'fa fa-comments'}/>
         </button>
       );
+    }
+  }
+
+  public labelFormatter(cell: any, row: any) {
+    if (row.label) {
+      const {sendTo} = row.label;
+      return (
+        <span
+          className={
+            `label ${this.classLabelStatus.hasOwnProperty(sendTo) ? this.classLabelStatus[sendTo] : ''}`
+          }
+        >
+          <i className={`fa fa-fw ${this.iconStatus[sendTo]}`} />
+          {row.label.name}{row.label.requireCustomText ? `: ${row.labelText}` : ''}
+        </span>
+      );
+    } else {
+      return null;
     }
   }
 
@@ -1403,7 +1436,7 @@ const mapDispatchToProps = (dispatch: any ) => {
     getInventoryDetailAction: (id: string, update: boolean) => dispatch(getInventoryDetailAction(id, update)),
     inventoryDetailChangeFilter: (filter: { text: string; venues: string[]; states: string[]; }) => dispatch(inventoryDetailChangeFilter(filter)),
     inventoryDetailChangeFilterText: (filter: { text: string; venues: string[]; states: string[]; }) => dispatch(inventoryDetailChangeFilterText(filter)),
-    actionSetLabel: (inventory: string, car: string, label: IInventoryLabel) => dispatch(actionSetLabel(inventory, car, label))
+    actionSetLabel: (inventory: string, car: string, carID: string, label: IInventoryLabel) => dispatch(actionSetLabel(inventory, car, carID, label))
   };
 };
 
