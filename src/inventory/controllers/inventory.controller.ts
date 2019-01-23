@@ -999,7 +999,7 @@ class InventoryController {
                     $and: [{
                       $eq: ['$cars.status', 'leftover']
                     }, {
-                      $ne: ['$cars.venueFound', null]
+                      $ne: ['$cars.venueFound', '']
                     }]
                   },
                   then: '$cars.venueFound',
