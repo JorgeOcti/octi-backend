@@ -62,12 +62,12 @@ class InventoryController {
             const venuesIDs = [];
             for (const venue of carsByVenue) {
                 if (venue.name && venue.name.length) {
-                    const venueRegExp = new RegExp(venue.name, 'i');
+                    const venueRegExp = new RegExp(venue.name.trim(), 'i');
                     let currentVenue = await venue_model_1.default.findOne({ team, name: venueRegExp });
                     // create venue if no existe
                     if (currentVenue === null) {
                         currentVenue = new venue_model_1.default({
-                            name: venue.name,
+                            name: venue.name.trim(),
                             team,
                             company
                         });
@@ -813,6 +813,9 @@ class InventoryController {
                     upsert: true
                 });
                 server_1.io.to(`inventory-detail-${id}`).emit('REFRESH', {
+                    update: true
+                });
+                server_1.io.to(`inventory-list-${team}`).emit('REFRESH', {
                     update: true
                 });
                 res.json({

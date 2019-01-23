@@ -1,6 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 const mongoose = require("mongoose");
+const mongoosePaginate = require("mongoose-paginate");
 const inventory_model_1 = require("./inventory.model");
 exports.inventoryLabelSchema = new mongoose.Schema({
     team: {
@@ -43,6 +44,7 @@ exports.inventoryLabelSchema = new mongoose.Schema({
 }, {
     timestamps: true
 });
+mongoose.plugin(mongoosePaginate);
 const InventoryLabel = mongoose.model('InventoryLabel', exports.inventoryLabelSchema);
 exports.default = InventoryLabel;
 //# sourceMappingURL=inventoryLabel.model.js.map

@@ -4,8 +4,8 @@
 ///<reference path="../../../src/types/react-bootstrap-table2-paginator.d.ts"/>
 import * as moment from 'moment';
 import * as Raven from 'raven-js';
-import {ErrorInfo} from 'react';
 import * as React from 'react';
+import {ErrorInfo} from 'react';
 import BootstrapTable from 'react-bootstrap-table-next';
 import filterFactory from 'react-bootstrap-table2-filter';
 import paginationFactory from 'react-bootstrap-table2-paginator';
@@ -14,12 +14,8 @@ import {RouteComponentProps} from 'react-router';
 import {Dispatch} from 'redux';
 import * as io from 'socket.io-client';
 import * as XLSX from 'xlsx';
-import {
-  IInventoryCar
-} from '../../../../../../src/interfaces/inventory.interface';
-import {
-  IInventoryLabel
-} from '../../../../../../src/interfaces/inventoryLabel.interface';
+import {IInventoryCar} from '../../../../../../src/interfaces/inventory.interface';
+import {IInventoryLabel} from '../../../../../../src/interfaces/inventoryLabel.interface';
 import {
   actionSetLabel,
   addCommentAction,
@@ -29,7 +25,8 @@ import {
   IInventoryState,
   IInventorySummaryResult,
   inventoryDetailChangeFilter,
-  inventoryDetailChangeFilterText, inventoryDetailChangeSelected,
+  inventoryDetailChangeFilterText,
+  inventoryDetailChangeSelected,
   InventoryReduxAction,
   sendCommentAction,
   updateInventoryCarAction
@@ -38,12 +35,12 @@ import {loadDataAction, ModalReduxAction} from '../../actions/modal.actions';
 import AppContainer from '../../container/AppContainer';
 import {IWindow} from '../../interfaces/window';
 import {goToSection, maxText} from '../../utils/common';
-import BoostrapSelect from '../BoostrapSelect';
-import Checkbox from '../CheckBox';
-import CopyText from '../CopyText';
-import ImageLazyLoad from '../ImageLazyLoad';
+import BootstrapSelect from '../Utils/BootstrapSelect';
+import Checkbox from '../Utils/CheckBox';
+import CopyText from '../Utils/CopyText';
+import ImageLazyLoad from '../Utils/ImageLazyLoad';
 import ModalView from '../Modal/ModalView';
-import Row from '../Row';
+import Row from '../Utils/Row';
 import InventoryCarComments from './InventoryCarComments';
 
 declare let window: IWindow;
@@ -532,12 +529,14 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
                   <li className={tab === 'summary' ? 'active' : ''}>
                     <a
                       href="javascript:void(0);"
+                      className={tab === 'summary' ? 'background-transition' : ''}
                       style={{borderTop: '0', marginBottom: '0'}}
                       onClick={() => this.changeTab('summary')}
                     >Consolidado</a>
                   </li>
                   <li className={tab === 'detail' ? 'active' : ''}>
                     <a
+                      className={tab === 'detail' ? 'background-transition' : ''}
                       href="javascript:void(0);"
                       style={{borderTop: '0', marginBottom: '0'}}
                       onClick={() => this.changeTab('detail')}
@@ -784,7 +783,7 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
                     <div className="col-md-3">
                       <div className="form-group">
                         <label htmlFor="venues" className="control-label">Sucursales</label>
-                        <BoostrapSelect
+                        <BootstrapSelect
                           noneSelectedText="Todas"
                           displayItems={2}
                           selectedText="sucursales seleccionadas."
@@ -800,7 +799,7 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
                     <div className="col-md-3">
                       <div className="form-group">
                         <label htmlFor="states" className="control-label">Estados</label>
-                        <BoostrapSelect
+                        <BootstrapSelect
                           noneSelectedText="Todos"
                           displayItems={4}
                           selectedText="estados seleccionados."

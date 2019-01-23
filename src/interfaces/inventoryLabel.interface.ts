@@ -3,10 +3,10 @@ import {IUser} from './user.interface';
 
 export interface IInventoryLabel {
   _id: any;
-  team: ITeam;
+  team?: ITeam;
   name: string;
   color: string;
-  affected: string;
+  affected: string[];
   sendTo: string;
   requireCustomText: boolean;
   isExhibition: boolean;

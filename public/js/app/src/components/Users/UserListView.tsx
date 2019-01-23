@@ -25,7 +25,7 @@ import {IWindow} from '../../interfaces/window';
 import ApiService from '../../utils/axios';
 import {hasPermission, showModal, statusFooterButttonsModal} from '../../utils/common';
 import ModalView from '../Modal/ModalView';
-import Paginator from '../Paginator';
+import Paginator from '../Utils/Paginator';
 import UserFormChangePasswordView from './UserFormChangePasswordView';
 import UserFormView from './UserFormView';
 
@@ -196,8 +196,8 @@ class UserListView extends React.Component<IPropsType, IStateType> {
         'Agregar Usuario',
         <UserFormView create={true} changeTempUser={changeTempUser} venues={venues} companies={companies} users={this.props.users} forms={forms} permissions={permissions}/>,
         <React.Fragment>
-          <button type="button" className="btn btn-default" data-dismiss="modal">Cancelar</button>
-          <button type="button" className="btn btn-primary" onClick={this.processCreateUser}>Grabar</button>
+          <button type="button" className="btn btn-sm btn-default" data-dismiss="modal">Cancelar</button>
+          <button type="button" className="btn btn-sm btn-primary" onClick={this.processCreateUser}>Grabar</button>
         </React.Fragment>
       );
     }, 400);
@@ -231,8 +231,8 @@ class UserListView extends React.Component<IPropsType, IStateType> {
         `Cambiando contraseña a ${user.firstName} ${user.lastName}`,
         <UserFormChangePasswordView changeTempUser={changeTempUser} users={this.props.users} user={user}/>,
         <React.Fragment>
-          <button type="button" className="btn btn-default" data-dismiss="modal">Cancelar</button>
-          <button type="button" className="btn btn-primary" onClick={this.processChangePassword}>Cambiar</button>
+          <button type="button" className="btn btn-sm btn-default" data-dismiss="modal">Cancelar</button>
+          <button type="button" className="btn btn-sm btn-primary" onClick={this.processChangePassword}>Cambiar</button>
         </React.Fragment>
       );
     }, 400);
@@ -272,8 +272,8 @@ class UserListView extends React.Component<IPropsType, IStateType> {
         `Editando a ${user.firstName} ${user.lastName}`,
         <UserFormView create={false}  changeTempUser={changeTempUser} companies={companies} venues={venues} users={this.props.users} forms={forms} permissions={permissions} user={user}/>,
         <React.Fragment>
-          <button type="button" className="btn btn-default" data-dismiss="modal">Cancelar</button>
-          <button type="button" className="btn btn-primary" onClick={this.processUpdateUser}>Editar</button>
+          <button type="button" className="btn btn-sm btn-default" data-dismiss="modal">Cancelar</button>
+          <button type="button" className="btn btn-sm btn-primary" onClick={this.processUpdateUser}>Editar</button>
         </React.Fragment>
       );
     }, 400);

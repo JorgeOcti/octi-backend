@@ -1,4 +1,5 @@
 import * as mongoose from 'mongoose';
+import * as mongoosePaginate from 'mongoose-paginate';
 import {IInventoryLabel} from '../../interfaces/inventoryLabel.interface';
 import {choicesStatusCarInventory} from './inventory.model';
 
@@ -45,6 +46,8 @@ export const inventoryLabelSchema = new mongoose.Schema({
 }, {
   timestamps: true
 });
+
+mongoose.plugin(mongoosePaginate);
 
 const InventoryLabel = mongoose.model<IInventoryLabelModel>('InventoryLabel', inventoryLabelSchema);
 

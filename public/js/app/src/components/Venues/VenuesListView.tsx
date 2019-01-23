@@ -21,7 +21,7 @@ import AppContainer from '../../container/AppContainer';
 import {IWindow} from '../../interfaces/window';
 import {hasPermission} from '../../utils/common';
 import ModalView from '../Modal/ModalView';
-import Paginator from '../Paginator';
+import Paginator from '../Utils/Paginator';
 import VenueFormView from './VenueFormView';
 
 interface IPropsType extends RouteComponentProps<{ ticket: string }> {
@@ -175,11 +175,11 @@ class VenuesListView extends React.Component<IPropsType, IStateType> {
         'Agregar Sucursal',
         <VenueFormView/>,
         <React.Fragment>
-          <button type="button" className="btn btn-default" data-dismiss="modal">Cancelar</button>
-          <button type="button" className="btn btn-primary" onClick={this.processAddVenue}>Grabar</button>
+          <button type="button" className="btn btn-sm btn-default" data-dismiss="modal">Cancelar</button>
+          <button type="button" className="btn btn-sm btn-primary" onClick={this.processAddVenue}>Grabar</button>
         </React.Fragment>
       );
-    }, 400);
+    }, 200);
   }
 
   private processAddVenue(): void {
@@ -205,11 +205,11 @@ class VenuesListView extends React.Component<IPropsType, IStateType> {
         'Editar Sucursal',
         <VenueFormView update={true} />,
         <React.Fragment>
-          <button type="button" className="btn btn-default" data-dismiss="modal">Cancelar</button>
-          <button type="button" className="btn btn-primary" onClick={this.processUpdateVenue}>Editar</button>
+          <button type="button" className="btn btn-sm btn-default" data-dismiss="modal">Cancelar</button>
+          <button type="button" className="btn btn-sm btn-primary" onClick={this.processUpdateVenue}>Editar</button>
         </React.Fragment>
       );
-    }, 400);
+    }, 200);
   }
 
   private processUpdateVenue(): void {

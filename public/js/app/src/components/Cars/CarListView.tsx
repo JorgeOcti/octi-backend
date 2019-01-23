@@ -13,7 +13,7 @@ import AppContainer from '../../container/AppContainer';
 import {IWindow} from '../../interfaces/window';
 import {hasPermission} from '../../utils/common';
 import ModalView from '../Modal/ModalView';
-import Paginator from '../Paginator';
+import Paginator from '../Utils/Paginator';
 
 declare let window: IWindow;
 

@@ -4,7 +4,7 @@ import {connect} from 'react-redux';
 import {IInventoryComment} from '../../../../../../src/interfaces/inventoryComment.interface';
 import {addCommentAction, IInventoryState, sendCommentAction} from '../../actions/inventory.actions';
 import {IWindow} from '../../interfaces/window';
-import Row from '../Row';
+import Row from '../Utils/Row';
 
 interface IPropsType {
   inventories: IInventoryState;

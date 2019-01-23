@@ -275,4 +275,29 @@ export default class ApiService {
       }
     );
   }
+
+  public getLabels(page: number, pageSize?: number): AxiosPromise {
+    return this.instance.get(
+      `/api/admin/labels/?page=${page}${pageSize ? `&pageSize=${pageSize}` : ''}`
+    );
+  }
+
+  public createLabel(label: any): AxiosPromise {
+    return this.instance.post(
+      `/api/admin/labels/`, label
+    );
+  }
+
+  public updateLabel(label: any): AxiosPromise {
+    return this.instance.put(
+      `/api/admin/labels/${label._id}`, label
+    );
+  }
+
+  public deleteLabel(id: string): AxiosPromise {
+    return this.instance.delete(
+      `/api/admin/labels/${id}`
+    );
+  }
+
 }

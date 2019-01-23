@@ -16,6 +16,7 @@ interface IPropsType {
   selectedText?: string;
   separator?: string;
   allOption?: boolean;
+  autoClouse?: boolean;
   search?: boolean;
 }
 
@@ -23,7 +24,7 @@ interface IStateType {
   open: boolean;
 }
 
-class BoostrapSelect extends React.Component<IPropsType, IStateType> {
+class BootstrapSelect extends React.Component<IPropsType, IStateType> {
 
   state = {
     open: false
@@ -42,11 +43,11 @@ class BoostrapSelect extends React.Component<IPropsType, IStateType> {
 
   render(): React.ReactElement<IPropsType> {
     const {
-      options, selected, onClick, displayItems, noneSelectedText, selectedText, separator, allOption, search
+      options, selected, onClick, displayItems, noneSelectedText, selectedText, separator, allOption, search, autoClouse
     } = this.props;
     const selectedItems = options.filter((option) => (selected.includes(option.value)));
     return (
-      <div className={`dropdown bootstrap-select form-control show-tick keep-inside-clicks-open`}>
+      <div className={`dropdown bootstrap-select form-control show-tick ${autoClouse ? '' : 'keep-inside-clicks-open'}`}>
         <button
           type="button"
           className={`btn dropdown-toggle bs-placeholder btn-filter btn-default`}
@@ -120,4 +121,4 @@ class BoostrapSelect extends React.Component<IPropsType, IStateType> {
   }
 }
 
-export default BoostrapSelect;
+export default BootstrapSelect;

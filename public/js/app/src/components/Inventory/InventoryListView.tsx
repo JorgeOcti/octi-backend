@@ -16,7 +16,7 @@ import {
 } from '../../actions/inventory.actions';
 import AppContainer from '../../container/AppContainer';
 import {IWindow} from '../../interfaces/window';
-import Row from '../Row';
+import Row from '../Utils/Row';
 
 declare let window: IWindow;
 

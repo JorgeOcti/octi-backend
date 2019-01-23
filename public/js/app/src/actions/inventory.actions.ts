@@ -396,7 +396,7 @@ export function actionSetLabel(inventory: string, car: string, label: IInventory
               });
               setTimeout(() => {
                 (swal as any).close();
-              }, 1500);
+              }, 1000);
             })
             .catch((err: AxiosError) => {
               api.errorHandler(err);

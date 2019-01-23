@@ -42,6 +42,12 @@ if (hasPermission(window.user, 'viewInventory')) {
     text: 'Gestión',
     url: '/inventory/'
   });
+  inventoryItems.push({
+    id: '2.2',
+    icon: 'fa-circle-o',
+    text: 'Etiquetas',
+    url: '/settings/labels/'
+  });
 }
 
 if (inventoryItems.length) {

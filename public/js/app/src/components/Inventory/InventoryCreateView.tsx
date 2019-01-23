@@ -14,7 +14,7 @@ import {AlertReduxAction, IAlertsState} from '../../actions/alerts.actions';
 import {loadDataAction, ModalReduxAction} from '../../actions/modal.actions';
 import AppContainer from '../../container/AppContainer';
 import ApiService from '../../utils/axios';
-import Checkbox from '../CheckBox';
+import Checkbox from '../Utils/CheckBox';
 
 interface IPropsType extends RouteComponentProps<{ ticket: string }> {
   alerts: IAlertsState;

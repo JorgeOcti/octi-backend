@@ -1,0 +1,286 @@
+import * as Raven from 'raven-js';
+import * as React from 'react';
+import {ErrorInfo} from 'react';
+import {connect} from 'react-redux';
+import {RouteComponentProps} from 'react-router';
+import {Dispatch} from 'redux';
+import {IInventoryLabel} from '../../../../../../src/interfaces/inventoryLabel.interface';
+import {
+  changeLabelAction,
+  changeTempLabelAction, createLabelAction,
+  deleteLabelAction,
+  getLabelsAction,
+  ILabelsState,
+  LabelsReduxAction
+} from '../../actions/labels.actions';
+import {loadDataAction, ModalReduxAction} from '../../actions/modal.actions';
+import AppContainer from '../../container/AppContainer';
+import {statusFooterButttonsModal} from '../../utils/common';
+import ModalView from '../Modal/ModalView';
+import BootstrapSwitch from '../Utils/BootstrapSwitch';
+import Paginator from '../Utils/Paginator';
+import LabelFormView from './LabelFormView';
+
+interface IPropsType extends RouteComponentProps<{ ticket: string }> {
+  dispatch: Dispatch<LabelsReduxAction>;
+  labels: ILabelsState;
+
+  changeTempLabelAction(tempLabel: IInventoryLabel): LabelsReduxAction;
+  getLabelsAction(page: number): LabelsReduxAction;
+  loadDataAction(title: string, body: JSX.Element, footer: JSX.Element): ModalReduxAction;
+  createLabelAction(label: IInventoryLabel): LabelsReduxAction;
+  changeLabelAction(label: IInventoryLabel, message?: boolean): LabelsReduxAction;
+  deleteLabelAction(id: string): LabelsReduxAction;
+}
+
+interface IStateType {
+  error: Error | null;
+}
+
+// declare let window: IWindow;
+
+class LabelsListView extends React.Component<IPropsType, IStateType> {
+
+  private statusText: any = {
+    pending: 'Pendiente',
+    found: 'Encontrado',
+    leftover: 'Sobrante',
+    missing: 'Faltante',
+    reported: 'Reportado'
+  };
+
+  private classLabelStatus: any = {
+    pending: 'label-info',
+    found: 'label-success',
+    missing: 'label-danger',
+    leftover: 'label-warning',
+    reported: 'label-default'
+  };
+
+  constructor(props: IPropsType) {
+    super(props);
+    this.addLabel = this.addLabel.bind(this);
+    this.processAddLabel = this.processAddLabel.bind(this);
+    this.editLabel = this.editLabel.bind(this);
+    this.processEditLabel = this.processEditLabel.bind(this);
+    this.deleteLabel = this.deleteLabel.bind(this);
+    this.changePage = this.changePage.bind(this);
+  }
+
+  public componentWillMount(): void {
+    const {pagination} = this.props.labels;
+    // set the title of the page
+    document.title = 'OSA Andes | Listado de etiquetas';
+    this.props.getLabelsAction(pagination.page);
+  }
+
+  public componentDidCatch(error: Error, errorInfo: ErrorInfo): void {
+    this.setState({error});
+    Raven.captureException(error, {
+      extra: errorInfo
+    });
+  }
+
+  public componentWillUnmount(): void {
+    // cancel request if component is inmounted
+    if (this.props.labels.source) {
+      this.props.labels.source.cancel('Operation canceled by the user.');
+    }
+  }
+
+  public render(): React.ReactElement<IPropsType> {
+    const {loading, labels, pagination} = this.props.labels;
+    return (
+      <AppContainer title="" cMenu="2" cSubMenu="2.2" cAction="Listado">
+        <section className="content">
+          <div className="box">
+            <div className="box-header with-border">
+              <h3 className="box-title">Etiquetas <small>{pagination.count}</small></h3>
+              <div className="box-tools pull-right">
+                <button className="btn btn-sm btn-success" onClick={this.addLabel}>Agregar</button>
+              </div>
+            </div>
+            <div className="box-body no-padding">
+              <table className="table table-striped">
+                <thead>
+                  <tr>
+                    <th className="middle">Nombre</th>
+                    <th className="middle" style={{width: '50px'}}>Envia a</th>
+                    <th className="middle" style={{width: '80px'}}>Activo</th>
+                    <th style={{width: '1%'}} className="width-10"/>
+                    <th style={{width: '1%'}} className="width-10"/>
+                  </tr>
+                </thead>
+                <tbody>
+                  {
+                    labels.map((label) => {
+                      return (
+                        <tr key={label._id} id={`label-${label._id}`} className={`background-transition ${!label.active ? 'text-muted' : ''}`}>
+                          <td className="middle text-ellipsis">{label.name}</td>
+                          <td className="middle">
+                            <label className={`label ${this.classLabelStatus[label.sendTo]}`}>
+                              {this.statusText[label.sendTo]}
+                            </label>
+                          </td>
+                          <td className="middle-center" style={{paddingTop: '15px'}}>
+                            <BootstrapSwitch
+                              checked={label.active}
+                              onChange={() => {
+                                this.props.changeLabelAction({
+                                  ...label,
+                                  active: !label.active
+                                });
+                              }}
+                            />
+                          </td>
+                          <td
+                            onClick={() => this.editLabel(label)}
+                            className="middle text-blue pointer"
+                          >
+                            <i className="fa fa-pencil"/>
+                          </td>
+                          <td
+                            onClick={() => this.deleteLabel(label)}
+                            className={'middle text-red pointer'}
+                          >
+                            <i className="fa fa-minus-circle"/>
+                          </td>
+                        </tr>
+                      );
+                    })
+                  }
+                </tbody>
+              </table>
+            </div>
+            {
+              pagination.pages > 1 &&
+                <div className="box-footer text-right">
+                  <Paginator changePage={this.changePage} page={pagination.page} pages={pagination.pages} />
+                </div>
+            }
+            {
+              loading &&
+                <div className="overlay">
+                  <i className="fa fa-spinner fa-spin text-purple"/>
+                </div>
+            }
+          </div>
+          <ModalView />
+        </section>
+      </AppContainer>
+    );
+  }
+
+  private addLabel(): void {
+    this.props.changeTempLabelAction({
+      _id: '',
+      name: '',
+      color: '',
+      affected: [],
+      sendTo: '',
+      requireCustomText: false,
+      isExhibition: false,
+      active: true
+    });
+    setTimeout(() => {
+      this.props.loadDataAction(
+        'Agregar Etiqueta',
+        <LabelFormView changeTempLabelAction={changeTempLabelAction}/>,
+        <React.Fragment>
+          <button type="button" className="btn btn-sm btn-default" data-dismiss="modal">Cancelar</button>
+          <button type="button" className="btn btn-sm btn-primary" onClick={this.processAddLabel}>Grabar</button>
+        </React.Fragment>
+      );
+    }, 200);
+  }
+
+  private processAddLabel(): void {
+    const { tempLabel} = this.props.labels;
+    if (this.validateLabel(tempLabel, 'Agregar Etiqueta')) {
+      statusFooterButttonsModal(true);
+      this.props.createLabelAction(tempLabel);
+    }
+  }
+
+  private editLabel(tempLabel: IInventoryLabel): void {
+    this.props.changeTempLabelAction(tempLabel);
+    setTimeout(() => {
+      this.props.loadDataAction(
+        'Editar Etiqueta',
+        <LabelFormView changeTempLabelAction={changeTempLabelAction}/>,
+        <React.Fragment>
+          <button type="button" className="btn btn-sm btn-default" data-dismiss="modal">Cancelar</button>
+          <button type="button" className="btn btn-sm btn-primary" onClick={this.processEditLabel}>Editar</button>
+        </React.Fragment>
+      );
+    }, 200);
+
+  }
+
+  private processEditLabel(): void {
+    const { tempLabel} = this.props.labels;
+    if (this.validateLabel(tempLabel, 'Editar Etiqueta')) {
+      statusFooterButttonsModal(true);
+      this.props.changeLabelAction(tempLabel, true);
+    }
+  }
+
+  private deleteLabel(label: IInventoryLabel): void {
+    // ask if you are sure that you are going to delete the user?
+    swal({
+      title: '¿Estás seguro?',
+      text: `Vas a eliminar la etiqueta ${label.name} `,
+      icon: 'warning',
+      dangerMode: true,
+      buttons: {
+        cancel: 'Cancelar' as any,
+        confirm: {
+          text: 'Sí'
+        }
+      }
+    }).then((willDelete) => {
+      if (willDelete) {
+        this.props.deleteLabelAction(label._id);
+      }
+    });
+  }
+
+  private validateLabel(label: IInventoryLabel, action: string): boolean {
+    if (!label.name || !label.name.trim().length) {
+      swal(action, 'El nombres es requerido', 'error');
+      return false;
+    } else if (!label.affected || !label.affected.length) {
+      swal(action, '"Agregar opción en" debe tener al menos 1 seleccionado.', 'error');
+      return false;
+    } else if (!label.sendTo || !label.sendTo.trim().length) {
+      swal(action, 'Debe seleccionar donde se enviara', 'error');
+      return false;
+    }
+    return true;
+  }
+
+  private changePage(page: number): void {
+    // change the page
+    this.props.getLabelsAction(page);
+  }
+}
+
+const mapStateToProps = (state: { labels: ILabelsState }) => {
+  return {
+    labels: state.labels
+  };
+};
+
+const mapDispatchToProps = (dispatch: any ) => {
+  return {
+    dispatch,
+    changeTempLabelAction: (tempLabel: IInventoryLabel) => dispatch(changeTempLabelAction(tempLabel)),
+    createLabelAction: (label: IInventoryLabel) => dispatch(createLabelAction(label)),
+    changeLabelAction: (label: IInventoryLabel, message?: boolean) => dispatch(changeLabelAction(label, message)),
+    deleteLabelAction: (id: string) => dispatch(deleteLabelAction(id)),
+    getLabelsAction: (page: number) => dispatch(getLabelsAction(page)),
+    loadDataAction: (title: string, body: JSX.Element, footer: JSX.Element) => dispatch(loadDataAction(title, body, footer))
+  };
+};
+
+export default connect<{labels: ILabelsState}, {dispatch: any}, IPropsType>(mapStateToProps, mapDispatchToProps)(LabelsListView);
