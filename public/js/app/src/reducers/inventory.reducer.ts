@@ -173,6 +173,5 @@ function processCars(cars: IInventoryCar[], selectedItems: { [key: string]: any 
       });
     }
   }
-  console.log('products', products)
   return products;
 }
