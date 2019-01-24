@@ -1122,10 +1122,10 @@ class InventoryController {
                             category: {
                                 $cond: {
                                     if: {
-                                        $eq: ['$cars.venueFound', 'Unspecified']
+                                        $gt: ['$cars.venueFound', null]
                                     },
-                                    then: '$cars.venue',
-                                    else: '$cars.venueFound'
+                                    then: '$cars.venueFound',
+                                    else: '$cars.venue'
                                 }
                             },
                             status: '$cars.status'
@@ -1155,6 +1155,11 @@ class InventoryController {
                     $unwind: '$info'
                 }
             ]);
+            /*
+              console.log('################');
+              cp.json(detailByVenues);
+              console.log('################');
+            * */
             // detail by brands
             const detailByBrands = await inventory_model_1.default.aggregate([
                 {
