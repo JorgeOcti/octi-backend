@@ -42,6 +42,9 @@ if (hasPermission(window.user, 'viewInventory')) {
     text: 'Gestión',
     url: '/inventory/'
   });
+}
+
+if (hasPermission(window.user, 'viewLabel')) {
   inventoryItems.push({
     id: '2.2',
     icon: 'fa-circle-o',
