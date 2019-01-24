@@ -1122,7 +1122,7 @@ class InventoryController {
                             category: {
                                 $cond: {
                                     if: {
-                                        $ifNull: ['$cars.venueFound', true]
+                                        $eq: ['$cars.venueFound', 'Unspecified']
                                     },
                                     then: '$cars.venue',
                                     else: '$cars.venueFound'
