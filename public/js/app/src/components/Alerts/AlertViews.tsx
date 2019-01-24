@@ -117,7 +117,11 @@ class AlertViews extends React.Component<IPropsType, IStateType> {
                   alerts.length ?
                     alerts.map((alert) => {
                       return (
-                        <tr key={alert._id} id={`alert-${alert._id}`}>
+                        <tr
+                          key={alert._id}
+                          id={`alert-${alert._id}`}
+                          className={'background-transition'}
+                        >
                           <td className="middle">{alert.name}</td>
                           <td className="middle text-center">{alert.lte !== 0 ? alert.lte : '-'}</td>
                           <td className="middle text-center">{alert.gte !== 0 ? alert.gte : '-'}</td>

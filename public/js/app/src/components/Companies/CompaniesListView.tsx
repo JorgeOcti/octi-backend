@@ -109,7 +109,11 @@ class CompaniesListView extends React.Component<IPropsType, IStateType> {
                   {
                     companies.map((company: ICompany) => {
                       return (
-                        <tr key={company._id} id={`company-${company._id}`}>
+                        <tr
+                          key={company._id}
+                          id={`company-${company._id}`}
+                          className={'background-transition'}
+                        >
                           <td className="middle">{company.name}</td>
                           <td className="middle hidden-xs">{moment(company.updatedAt).format('LLL')}</td>
                           {

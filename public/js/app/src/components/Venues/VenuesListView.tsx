@@ -44,6 +44,8 @@ declare let window: IWindow;
 
 class VenuesListView extends React.Component<IPropsType, IStateType> {
 
+  private socket: SocketIOClient.Socket;
+
   constructor(props: IPropsType) {
     super(props);
     this.changePage = this.changePage.bind(this);
@@ -59,6 +61,22 @@ class VenuesListView extends React.Component<IPropsType, IStateType> {
     // set the title of the page
     document.title = 'OSA Andes | Listado de sucursales';
     this.props.getVenuesAction(pagination.page);
+
+    // socket
+    this.socket = io.connect(`${location.protocol}//${location.host}`, {
+      secure: location.protocol === 'https:',
+      reconnection: true,
+      query: {token: (window.user as any).token}
+    });
+    this.socket.on('connect', () => {
+      this.socket.emit('join', {room: `venue-list-${window.user.team}`});
+    });
+    this.socket.on('REFRESH', (data: any): void => {
+      if (data.update) {
+        const {pagination} = this.props.venues;
+        this.props.getVenuesAction(pagination.page);
+      }
+    });
   }
 
   public componentDidCatch(error: Error, errorInfo: ErrorInfo): void {
@@ -73,6 +91,7 @@ class VenuesListView extends React.Component<IPropsType, IStateType> {
     if (this.props.venues.source) {
       this.props.venues.source.cancel('Operation canceled by the user.');
     }
+    this.socket.disconnect();
   }
 
   public render(): React.ReactElement<IPropsType> {
@@ -113,7 +132,11 @@ class VenuesListView extends React.Component<IPropsType, IStateType> {
                     venues.map((venue: IVenue) => {
                       const canDelete = venue.users && venue.users.length === 0 && venue.participants && venue.participants.length === 0;
                       return (
-                        <tr key={venue._id} id={`venue-${venue._id}`}>
+                        <tr
+                          key={venue._id}
+                          id={`venue-${venue._id}`}
+                          className={'background-transition'}
+                        >
                           <td className="middle">{venue.name}<br/>
                             {venue.company ? <span className={'text-sm text-muted'}>{venue.company.name}</span> : null}
                           </td>

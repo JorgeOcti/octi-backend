@@ -1,6 +1,6 @@
 import * as Raven from 'raven-js';
-import * as React from 'react';
 import {ErrorInfo} from 'react';
+import * as React from 'react';
 import {connect} from 'react-redux';
 import {RouteComponentProps} from 'react-router';
 import {Dispatch} from 'redux';
@@ -15,6 +15,7 @@ import {
 } from '../../actions/labels.actions';
 import {loadDataAction, ModalReduxAction} from '../../actions/modal.actions';
 import AppContainer from '../../container/AppContainer';
+import {IWindow} from '../../interfaces/window';
 import {statusFooterButttonsModal} from '../../utils/common';
 import ModalView from '../Modal/ModalView';
 import BootstrapSwitch from '../Utils/BootstrapSwitch';
@@ -37,7 +38,7 @@ interface IStateType {
   error: Error | null;
 }
 
-// declare let window: IWindow;
+declare let window: IWindow;
 
 class LabelsListView extends React.Component<IPropsType, IStateType> {
 
@@ -56,6 +57,7 @@ class LabelsListView extends React.Component<IPropsType, IStateType> {
     leftover: 'label-warning',
     reported: 'label-default'
   };
+  private socket: SocketIOClient.Socket;
 
   constructor(props: IPropsType) {
     super(props);
@@ -72,6 +74,22 @@ class LabelsListView extends React.Component<IPropsType, IStateType> {
     // set the title of the page
     document.title = 'OSA Andes | Listado de etiquetas';
     this.props.getLabelsAction(pagination.page);
+
+    // socket
+    this.socket = io.connect(`${location.protocol}//${location.host}`, {
+      secure: location.protocol === 'https:',
+      reconnection: true,
+      query: {token: (window.user as any).token}
+    });
+    this.socket.on('connect', () => {
+      this.socket.emit('join', {room: `label-list-${window.user.team}`});
+    });
+    this.socket.on('REFRESH', (data: any): void => {
+      if (data.update) {
+        const {pagination} = this.props.labels;
+        this.props.getLabelsAction(pagination.page);
+      }
+    });
   }
 
   public componentDidCatch(error: Error, errorInfo: ErrorInfo): void {
@@ -81,11 +99,16 @@ class LabelsListView extends React.Component<IPropsType, IStateType> {
     });
   }
 
+  public componentDidMount(): void {
+    window.scrollTo(0, 0);
+  }
+
   public componentWillUnmount(): void {
     // cancel request if component is inmounted
     if (this.props.labels.source) {
       this.props.labels.source.cancel('Operation canceled by the user.');
     }
+    this.socket.disconnect();
   }
 
   public render(): React.ReactElement<IPropsType> {
@@ -115,7 +138,10 @@ class LabelsListView extends React.Component<IPropsType, IStateType> {
                   {
                     labels.map((label) => {
                       return (
-                        <tr key={label._id} id={`label-${label._id}`} className={`background-transition ${!label.active ? 'text-muted' : ''}`}>
+                        <tr
+                          key={label._id} id={`label-${label._id}`}
+                          className={`background-transition ${!label.active ? 'text-muted' : ''}`}
+                        >
                           <td className="middle text-ellipsis">{label.name}</td>
                           <td className="middle">
                             <label className={`label ${this.classLabelStatus[label.sendTo]}`}>

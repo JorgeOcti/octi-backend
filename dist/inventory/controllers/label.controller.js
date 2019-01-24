@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+const server_1 = require("../../server");
 const inventoryLabel_model_1 = require("../models/inventoryLabel.model");
 class LabelController {
     constructor() {
@@ -69,6 +70,9 @@ class LabelController {
                 message: 'Etiqueta creada satisfactoriamente.',
                 label: inventoryLabel
             };
+            server_1.io.to(`label-list-${team}`).emit('REFRESH', {
+                update: true
+            });
             res.status(200).json(response);
         }
         catch (e) {
@@ -103,6 +107,9 @@ class LabelController {
                     message: 'Etiqueta editada satisfactoriamente.',
                     label: inventoryLabel
                 };
+                server_1.io.to(`label-list-${team}`).emit('REFRESH', {
+                    update: true
+                });
                 res.status(200).json(response);
             }
             else {
@@ -133,6 +140,9 @@ class LabelController {
                     message: 'Etiqueta eliminada satisfactoriamente.',
                     id: inventoryLabel._id
                 };
+                server_1.io.to(`label-list-${team}`).emit('REFRESH', {
+                    update: true
+                });
                 res.status(200).json(response);
             }
             else {

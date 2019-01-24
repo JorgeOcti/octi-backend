@@ -54,6 +54,7 @@ class UserListView extends React.Component<IPropsType, IStateType> {
   //   dispatch: PropTypes.func.isRequired,
   //   getUsersAction: PropTypes.func.isRequired
   // };
+  private socket: SocketIOClient.Socket;
 
   constructor(props: IPropsType) {
     super(props);
@@ -72,6 +73,22 @@ class UserListView extends React.Component<IPropsType, IStateType> {
     // set the title of the page
     document.title = 'OSA Andes | Listado de usuarios';
     this.props.getUsersAction(pagination.page);
+
+    // socket
+    this.socket = io.connect(`${location.protocol}//${location.host}`, {
+      secure: location.protocol === 'https:',
+      reconnection: true,
+      query: {token: (window.user as any).token}
+    });
+    this.socket.on('connect', () => {
+      this.socket.emit('join', {room: `user-list-${window.user.team}`});
+    });
+    this.socket.on('REFRESH', (data: any): void => {
+      if (data.update) {
+        const {pagination} = this.props.users;
+        this.props.getUsersAction(pagination.page);
+      }
+    });
   }
 
   public componentDidCatch(error: Error, errorInfo: ErrorInfo): void {
@@ -86,6 +103,7 @@ class UserListView extends React.Component<IPropsType, IStateType> {
     if (this.props.users.source) {
       this.props.users.source.cancel('Operation canceled by the user.');
     }
+    this.socket.disconnect();
   }
 
   public render(): React.ReactElement<IPropsType> {
@@ -128,7 +146,11 @@ class UserListView extends React.Component<IPropsType, IStateType> {
                   {
                     users.map((user: IUser) => {
                       return (
-                        <tr key={user._id} id={`user-${user._id}`}>
+                        <tr
+                          key={user._id}
+                          id={`user-${user._id}`}
+                          className={'background-transition'}
+                        >
                           <td className="middle">{user.firstName} {user.lastName}<br />
                             <span className="text-sm text-muted">{user.email}</span>
                             <div className="hidden-lg hidden-md hidden-sm text-sm">

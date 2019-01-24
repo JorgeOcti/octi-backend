@@ -76,16 +76,16 @@ class InventoryListView extends React.Component<IPropsType, IStateType> {
     });
   }
 
+  public componentDidMount(): void {
+    window.scrollTo(0, 0);
+  }
+
   public componentWillUnmount(): void {
     // cancel request if component is inmounted
     if (this.props.inventories.source) {
       this.props.inventories.source.cancel('Operation canceled by the user.');
     }
     this.socket.disconnect();
-  }
-
-  public componentDidMount(): void {
-    window.scrollTo(0, 0);
   }
 
   public componentDidCatch(error: Error, errorInfo: ErrorInfo): void {

@@ -1,6 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 const app_1 = require("../../../app");
+const server_1 = require("../../../server");
 const user_model_1 = require("../../models/user.model");
 class AdminUsersController {
     constructor() {
@@ -170,6 +171,9 @@ class AdminUsersController {
                 // prevent return password
                 newUser = newUser.toObject();
                 delete newUser.password;
+                server_1.io.to(`user-list-${team}`).emit('REFRESH', {
+                    update: true
+                });
                 res.status(201).json({
                     message: 'Usuario agregado satisfactoriamente.',
                     user: newUser
@@ -258,6 +262,9 @@ class AdminUsersController {
                         message: 'Usuario editado satisfactoriamente.',
                         user
                     };
+                    server_1.io.to(`user-list-${team}`).emit('REFRESH', {
+                        update: true
+                    });
                     res.status(200).json(response);
                 }
                 else {
@@ -291,6 +298,9 @@ class AdminUsersController {
                     message: 'Usuario eliminado satisfactoriamente.',
                     id: user._id
                 };
+                server_1.io.to(`user-list-${team}`).emit('REFRESH', {
+                    update: true
+                });
                 res.status(200).json(response);
             }
             else {

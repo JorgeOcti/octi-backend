@@ -1,6 +1,7 @@
 import {Response} from 'express';
 import {PaginateOptions, PaginateResult} from 'mongoose';
 import {IRequest} from '../../interfaces/global.interface';
+import {io} from '../../server';
 import InventoryLabel, {IInventoryLabelModel} from '../models/inventoryLabel.model';
 
 class LabelController {
@@ -72,6 +73,9 @@ class LabelController {
         message: 'Etiqueta creada satisfactoriamente.',
         label: inventoryLabel
       };
+      io.to(`label-list-${team}`).emit('REFRESH', {
+        update: true
+      });
       res.status(200).json(response);
     } catch (e) {
       /* istanbul ignore next  */
@@ -106,6 +110,9 @@ class LabelController {
           message: 'Etiqueta editada satisfactoriamente.',
           label: inventoryLabel
         };
+        io.to(`label-list-${team}`).emit('REFRESH', {
+        update: true
+      });
         res.status(200).json(response);
       } else {
         const response = {
@@ -135,6 +142,9 @@ class LabelController {
           message: 'Etiqueta eliminada satisfactoriamente.',
           id: inventoryLabel._id
         };
+        io.to(`label-list-${team}`).emit('REFRESH', {
+          update: true
+        });
         res.status(200).json(response);
       } else {
         const response = {
