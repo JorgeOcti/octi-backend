@@ -4,6 +4,7 @@ import {connect} from 'react-redux';
 import {IInventoryComment} from '../../../../../../src/interfaces/inventoryComment.interface';
 import {addCommentAction, IInventoryState, sendCommentAction} from '../../actions/inventory.actions';
 import {IWindow} from '../../interfaces/window';
+import Row from '../Utils/Row';
 
 interface IPropsType {
   inventories: IInventoryState;
@@ -66,7 +67,7 @@ class InventoryCarComments extends React.Component<IPropsType, IStateType> {
       this.setState({
         resetRender: !this.state.resetRender
       });
-    }, 10000);
+    }, 2000);
   }
 
   public componentWillUnmount(): void {
@@ -82,7 +83,7 @@ class InventoryCarComments extends React.Component<IPropsType, IStateType> {
   public render(): React.ReactElement<IPropsType> {
     const {inventoryCar} = this.props.inventories;
     return (
-      <div className={'row'}>
+      <Row>
         <div className={'col-md-12'}>
           <strong>Detalle del vehiculo</strong>
         </div>
@@ -121,7 +122,7 @@ class InventoryCarComments extends React.Component<IPropsType, IStateType> {
         </div>
         <div className={'col-md-12'}>
           <div className="direct-chat-info" style={{border: '1px solid #efefef'}}>
-            <div className="direct-chat-messages" id={'comments'} style={{height: '400px'}}>
+            <div className="direct-chat-messages" id={'comments'} style={{height: '30vh'}}>
               {
                 inventoryCar ? inventoryCar.comments.map((comment) => {
                   return (
@@ -167,7 +168,7 @@ class InventoryCarComments extends React.Component<IPropsType, IStateType> {
             <button type="button" className="btn btn-sm btn-primary" onClick={this.sendComment}>Comentar</button>
           </div>
         </div>
-      </div>
+      </Row>
     );
   }
 

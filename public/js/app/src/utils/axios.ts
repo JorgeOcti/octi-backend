@@ -216,9 +216,13 @@ export default class ApiService {
     );
   }
 
-  public createInventory(data: any, name: string): AxiosPromise {
+  public createInventory(carsByVenue: any, name: string, notification: boolean): AxiosPromise {
     return this.instance.post(
-      `/api/inventory/`, {carsByVenue: data, name}, {
+      `/api/inventory/`, {
+        carsByVenue,
+        name,
+        notification
+      }, {
         cancelToken: this.source.token
       }
     );
@@ -261,4 +265,40 @@ export default class ApiService {
     this.source = this.CancelToken.source();
     return this.source;
   }
+
+  public setLabel(inventory: string, car: string, carID: string, label: string, custom?: string): AxiosPromise {
+    return this.instance.post(
+      `/api/inventory/${inventory}/set-label/`, {
+        car,
+        label,
+        carID,
+        custom
+      }
+    );
+  }
+
+  public getLabels(page: number, pageSize?: number): AxiosPromise {
+    return this.instance.get(
+      `/api/admin/labels/?page=${page}${pageSize ? `&pageSize=${pageSize}` : ''}`
+    );
+  }
+
+  public createLabel(label: any): AxiosPromise {
+    return this.instance.post(
+      `/api/admin/labels/`, label
+    );
+  }
+
+  public updateLabel(label: any): AxiosPromise {
+    return this.instance.put(
+      `/api/admin/labels/${label._id}`, label
+    );
+  }
+
+  public deleteLabel(id: string): AxiosPromise {
+    return this.instance.delete(
+      `/api/admin/labels/${id}`
+    );
+  }
+
 }

@@ -2,6 +2,7 @@ import {AxiosError, AxiosResponse, CancelTokenSource} from 'axios';
 import {Dispatch} from 'redux';
 import {IInventoryCar} from '../../../../../src/interfaces/inventory.interface';
 import {IInventoryComment} from '../../../../../src/interfaces/inventoryComment.interface';
+import {IInventoryLabel} from '../../../../../src/interfaces/inventoryLabel.interface';
 import ApiService from '../utils/axios';
 
 export interface IInventorySummaryResult {
@@ -9,6 +10,7 @@ export interface IInventorySummaryResult {
   found: number;
   leftover: number;
   reported: number;
+  missing: number;
 }
 
 export interface IInventorySummary {
@@ -24,20 +26,24 @@ export interface IInventorySummary {
   createdAt: Date | null;
   finalizedAt: Date | null;
 }
+
 export interface IDetailByVenue {
   name: string;
   results: {
     pending: number;
     found: number;
     leftover: number;
+    missing: number;
     reported: number;
   };
 }
+
 export interface IDetailByBrand {
   name: string;
   results: {
     pending: number;
     found: number;
+    missing: number;
     leftover: number;
     reported: number;
   };
@@ -52,7 +58,17 @@ export interface IInventoryState {
   summary: IInventorySummary;
   detail: any | null;
   detailByVenue: IDetailByVenue[];
+  labels: IInventoryLabel[];
   detailByBrand: IDetailByBrand[];
+  carsTable: any[];
+  selectedItems: {
+    [key: string]: any
+  };
+  filter: {
+    text: string;
+    venues: string[];
+    states: string[];
+  };
   pagination: {
     count: number;
     page: number;
@@ -213,23 +229,102 @@ export function loadingInventoryDetaillAction(loadingDetail: boolean): ILoadingD
   };
 }
 
+interface IDetailInventorySelected {
+  type: '/INVENTORORIES/CHANGE_SELECTED';
+  payload: {
+    item: string;
+  };
+}
+
+export function inventoryDetailChangeSelected(item: string): IDetailInventorySelected {
+  return {
+    type: '/INVENTORORIES/CHANGE_SELECTED',
+    payload: {
+      item
+    }
+  };
+}
+
+interface IDetailChangeFilter {
+  type: '/INVENTORORIES/CHANGE_FILTER';
+  payload: {
+    filter: {
+      text: string
+      venues: string[];
+      states: string[];
+    };
+  };
+  meta: {
+    debounce: {
+      time: number
+    }
+  };
+}
+
+export function inventoryDetailChangeFilter(filter: {
+  text: string
+  venues: string[];
+  states: string[];
+}): IDetailChangeFilter {
+  return {
+    type: '/INVENTORORIES/CHANGE_FILTER',
+    payload: {
+      filter
+    },
+    meta: {
+      debounce: {
+        time: 0
+      }
+    }
+  };
+}
+
+export function inventoryDetailChangeFilterText(filter: {
+  text: string
+  venues: string[];
+  states: string[];
+}): IDetailChangeFilter {
+  return {
+    type: '/INVENTORORIES/CHANGE_FILTER',
+    payload: {
+      filter
+    },
+    meta: {
+      debounce: {
+        time: 300
+      }
+    }
+  };
+}
+
 interface ILoadInventory {
   type: '/INVENTORORIES/LOAD_INVENTORY_DATA';
   payload: {
     summary: IInventorySummary;
     detailByVenue: IDetailByVenue[];
     detailByBrand: IDetailByBrand[];
+    labels: IInventoryLabel[],
     detail: any;
+    resetFilter: boolean;
   };
 }
 
-export function loadInventoryAction(summary: IInventorySummary, detailByVenue: IDetailByVenue[], detailByBrand: IDetailByBrand[], detail: any): ILoadInventory {
+export function loadInventoryAction(
+  summary: IInventorySummary,
+  detailByVenue: IDetailByVenue[],
+  detailByBrand: IDetailByBrand[],
+  labels: IInventoryLabel[],
+  detail: any,
+  resetFilter: boolean
+): ILoadInventory {
   return {
     type: '/INVENTORORIES/LOAD_INVENTORY_DATA',
     payload: {
+      resetFilter: !resetFilter,
       summary,
       detailByVenue,
       detailByBrand,
+      labels,
       detail
     }
   };
@@ -245,8 +340,28 @@ export function getInventoryDetailAction(id: string, update: boolean) {
     api.getInventory(id)
       .then((response: AxiosResponse) => {
         const {data} = response;
-        dispatch(loadInventoryAction(data.summary, data.detailByVenue, data.detailByBrand, data.detail));
+        dispatch(loadInventoryAction(
+          data.summary,
+          data.detailByVenue,
+          data.detailByBrand,
+          data.labels,
+          data.detail,
+          update
+        ));
         dispatch(loadingInventoryDetaillAction(false));
+        if (!update) {
+          $('.count').each(function() {
+            $(this).prop('Counter', 0).animate({
+              Counter: $(this).text()
+            }, {
+              duration: 1500,
+              easing: 'swing',
+              step: function(now) {
+                $(this).text(Math.ceil(now));
+              }
+            });
+          });
+        }
       })
       .catch((err: AxiosError) => {
         api.errorHandler(err);
@@ -266,4 +381,47 @@ export function sendCommentAction(carId: string, comment: string) {
   };
 }
 
-export type InventoryReduxAction = ICancelRequest | IIsLoading | ILoadInventories | ILoadInventory | ILoadingDetailInventory | IUpdateInventoryCar | IAddComment;
+export function actionSetLabel(inventory: string, car: string, carID: string, label: IInventoryLabel) {
+  return (dispatch: Dispatch<InventoryReduxAction>) => {
+    const api: ApiService = new ApiService();
+    if (label.requireCustomText) {
+      (swal as any)('Ingrese la etiqueta personaliza:', {
+        content: 'input'
+      }).then((custom: string) => {
+        if (custom && custom.trim().length) {
+          api.setLabel(inventory, car, carID, label._id, custom)
+            .then((response: AxiosResponse) => {
+              swal(response.data.message, {
+                icon: 'success'
+              });
+              setTimeout(() => {
+                (swal as any).close();
+              }, 1000);
+            })
+            .catch((err: AxiosError) => {
+              api.errorHandler(err);
+            });
+        } else {
+          swal('Operación cancelada', {
+            icon: 'error'
+          });
+        }
+      });
+    } else {
+      api.setLabel(inventory, car, carID, label._id)
+        .then((response: AxiosResponse) => {
+          swal(response.data.message, {
+            icon: 'success'
+          });
+          setTimeout(() => {
+            (swal as any).close();
+          }, 1500);
+        })
+        .catch((err: AxiosError) => {
+          api.errorHandler(err);
+        });
+    }
+  };
+}
+
+export type InventoryReduxAction = ICancelRequest | IIsLoading | ILoadInventories | ILoadInventory | ILoadingDetailInventory | IUpdateInventoryCar | IAddComment | IDetailChangeFilter| IDetailInventorySelected;

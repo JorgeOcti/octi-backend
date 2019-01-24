@@ -14,7 +14,7 @@ import {AlertReduxAction, IAlertsState} from '../../actions/alerts.actions';
 import {loadDataAction, ModalReduxAction} from '../../actions/modal.actions';
 import AppContainer from '../../container/AppContainer';
 import ApiService from '../../utils/axios';
-import Checkbox from '../CheckBox';
+import Checkbox from '../Utils/CheckBox';
 
 interface IPropsType extends RouteComponentProps<{ ticket: string }> {
   alerts: IAlertsState;
@@ -46,7 +46,7 @@ class InventoryCreateView extends React.Component<IPropsType, IStateType> {
     loadingSettings: false,
     carsByVenue: [],
     notification: true,
-    name: `Inventario del ${moment().format('YYMMDD')}`,
+    name: `Inventario del ${moment().format('DD-MM-YYYY')}`,
     sending: false
   };
 
@@ -206,7 +206,12 @@ class InventoryCreateView extends React.Component<IPropsType, IStateType> {
                 <div className="col col-md-6">
                   <div className="checkbox">
                     <label style={{paddingLeft: '0'}} onClick={this.handleChangeNotification}>
-                      <Checkbox active={notification} action={this.handleChangeNotification} classes="icheck-in-checkbox"/>
+                      <Checkbox
+                        active={notification}
+                        action={this.handleChangeNotification}
+                        classes="icheck-in-checkbox"
+                        style={{marginTop: '-4px', marginRight: '5px'}}
+                      />
                       Enviar notificaciones push
                     </label>
                   </div>
@@ -287,7 +292,7 @@ class InventoryCreateView extends React.Component<IPropsType, IStateType> {
           if (!rABS) {
             data = new Uint8Array(data);
           }
-          const workbook = XLSX.read(data, {
+          const workbook: XLSX.WorkBook = XLSX.read(data, {
             type: rABS ? 'binary' : 'array'
           });
           const excelData = workbook.Sheets.hasOwnProperty('Autos') ? XLSX.utils.sheet_to_json(workbook.Sheets.Autos) : [];
@@ -334,7 +339,11 @@ class InventoryCreateView extends React.Component<IPropsType, IStateType> {
               loadingSettings: false
             });
           } else {
-            swal('Importador de configuración', 'Este excel no cumple con los requisitos mínimos o no tiene autos.', 'error');
+            swal(
+              'Importador de configuración',
+              `"${file.name}" no cumple con los requisitos mínimos o no tiene autos.`,
+              'error'
+            );
             this.setState({
               loadingSettings: false
             });
@@ -409,7 +418,7 @@ class InventoryCreateView extends React.Component<IPropsType, IStateType> {
   }
 
   private sendCreate(): void {
-    const {carsByVenue, name} = this.state;
+    const {carsByVenue, name, notification} = this.state;
     const { history } = this.props;
     this.setState({
       sending: true
@@ -428,7 +437,7 @@ class InventoryCreateView extends React.Component<IPropsType, IStateType> {
       const api = new ApiService();
       api.getSource();
       api
-        .createInventory(carsByVenue, name)
+        .createInventory(carsByVenue, name, notification)
         .then((response) => {
           const { message } = response.data;
           setTimeout(() => {

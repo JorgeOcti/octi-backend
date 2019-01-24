@@ -7,6 +7,7 @@ import {queue} from '../../../app';
 import {IForm} from '../../../interfaces/form.interface';
 import {IRequest} from '../../../interfaces/global.interface';
 import {IPermission} from '../../../interfaces/permision.interface';
+import {io} from '../../../server';
 import User, {
   IUserModel
 } from '../../models/user.model';
@@ -182,6 +183,9 @@ class AdminUsersController {
         // prevent return password
         newUser = newUser.toObject();
         delete newUser.password;
+        io.to(`user-list-${team}`).emit('REFRESH', {
+          update: true
+        });
         res.status(201).json({
           message: 'Usuario agregado satisfactoriamente.',
           user: newUser
@@ -270,6 +274,9 @@ class AdminUsersController {
             message: 'Usuario editado satisfactoriamente.',
             user
           };
+          io.to(`user-list-${team}`).emit('REFRESH', {
+            update: true
+          });
           res.status(200).json(response);
         } else {
           const response = {
@@ -293,6 +300,7 @@ class AdminUsersController {
         message: 'No tienes permisos para esta operación'
       });
     }
+    const {team} = req.user;
     const {id} = req.params;
     const company = req.user.company;
     try {
@@ -302,6 +310,9 @@ class AdminUsersController {
           message: 'Usuario eliminado satisfactoriamente.',
           id: user._id
         };
+        io.to(`user-list-${team}`).emit('REFRESH', {
+          update: true
+        });
         res.status(200).json(response);
       } else {
         const response = {

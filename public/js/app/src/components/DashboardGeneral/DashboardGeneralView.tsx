@@ -7,6 +7,7 @@ import {RouteComponentProps} from 'react-router';
 import {Dispatch} from 'redux';
 import {DashboardReduxAction, getParticipantsPerDateAction, IDashboardState} from '../../actions/dashboard.actions';
 import AppContainer from '../../container/AppContainer';
+import Row from '../Utils/Row';
 
 interface IPropsType extends RouteComponentProps<{ ticket: string }> {
   dispatch: Dispatch<DashboardReduxAction>;
@@ -89,7 +90,7 @@ class DashboardGeneralView extends React.Component<IPropsType, IStateType> {
     return (
       <AppContainer title="" cMenu="1" cSubMenu="1.1">
         <section className="content">
-          <div className="row">
+          <Row>
             <div className="col-md-3 col-sm-6 col-xs-12">
               <div className="info-box">
                 <span className="info-box-icon bg-aqua"><i className="fa fa-clipboard"/></span>
@@ -119,8 +120,8 @@ class DashboardGeneralView extends React.Component<IPropsType, IStateType> {
                 </div>
               </div>
             </div>
-          </div>
-          <div className="row">
+          </Row>
+          <Row>
             <div className="col-md-12">
               <div className="box">
                 <div className="box-header with-border"><h3 className="box-title">Revisiones y cargas realizadas por día</h3>
@@ -172,7 +173,7 @@ class DashboardGeneralView extends React.Component<IPropsType, IStateType> {
                 }
               </div>
             </div>
-          </div>
+          </Row>
         </section>
       </AppContainer>
     );

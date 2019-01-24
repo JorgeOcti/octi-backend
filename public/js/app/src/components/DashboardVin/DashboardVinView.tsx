@@ -10,7 +10,7 @@ import {ICar} from '../../../../../../src/interfaces/car.interface';
 import {DashboardReduxAction, getCarsAction, IDashboardState} from '../../actions/dashboard.actions';
 import AppContainer from '../../container/AppContainer';
 import {IWindow} from '../../interfaces/window';
-import Paginator from '../Paginator';
+import Paginator from '../Utils/Paginator';
 
 declare let window: IWindow;
 

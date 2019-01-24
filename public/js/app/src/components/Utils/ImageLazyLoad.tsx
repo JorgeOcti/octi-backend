@@ -7,9 +7,9 @@ import {
 interface IPropsType {
   url: string;
   height: string;
-  maxHeight?: string;
-  maxWidth?: string;
   small?: boolean;
+  style?: React.CSSProperties;
+  replaceLoading?: any;
 }
 
 interface IStateType {
@@ -41,6 +41,7 @@ class ImageLazyLoad extends React.Component<IPropsType, IStateType> {
     this.isInViewport = this.isInViewport.bind(this);
     this.addEventListener = this.addEventListener.bind(this);
     this.removeEventListener = this.removeEventListener.bind(this);
+    this.error = this.error.bind(this);
   }
 
   public componentDidMount() {
@@ -52,44 +53,42 @@ class ImageLazyLoad extends React.Component<IPropsType, IStateType> {
   }
 
   public render() {
-    const { loading, inViewPort, error} = this.state;
-    const { url, height, maxHeight, maxWidth, small} = this.props;
+    const { loading, inViewPort} = this.state;
+    const { url, height, small, style, replaceLoading} = this.props;
 
-    const imageStyle: CSSProperties = {};
+    let imageStyle: CSSProperties = {};
     if (loading) {
       imageStyle.display = 'none';
+    } else if (style) {
+      imageStyle = style;
     }
-    if (maxHeight) {
-      imageStyle.maxHeight = maxHeight;
-    }
-    if (maxWidth) {
-      imageStyle.maxWidth = maxWidth;
-    }
+
     return (
       <React.Fragment>
         {
-          inViewPort &&
+          inViewPort ?
             <img
               src={url}
               onLoad={this.handleImageLoaded}
               onError={this.error}
               style={imageStyle}
-            />
+            /> : null
         }
         {
           loading ?
-            <div
-              style={{
-                height,
-                display: 'table-cell',
-                verticalAlign: 'middle'
-              }}
-              className={'text-center'}
-              ref={this.element}
-            >
-              {small ? <i className={'fa fa-circle-o-notch fa-spin'}/> : <i className={'fa fa-circle-o-notch fa-spin fa-2x'}/>}
-            </div>
-          : null
+            replaceLoading ?
+              <span ref={this.element}>{replaceLoading}</span> :
+                <div
+                  style={{
+                    height,
+                    display: 'table-cell',
+                    verticalAlign: 'middle'
+                  }}
+                  className={'text-center'}
+                  ref={this.element}
+                >
+                  {small ? <i className={'fa fa-circle-o-notch fa-spin'}/> : <i className={'fa fa-circle-o-notch fa-spin fa-2x'}/>}
+                </div> : null
         }
 
       </React.Fragment>
@@ -102,7 +101,11 @@ class ImageLazyLoad extends React.Component<IPropsType, IStateType> {
     });
   }
   private handleImageLoaded() {
-    this.setState({ loading: false });
+    const { url} = this.props;
+    sessionStorage.setItem(url, 'true');
+    this.setState({
+      loading: false
+    });
   }
 
   private isInViewport() {

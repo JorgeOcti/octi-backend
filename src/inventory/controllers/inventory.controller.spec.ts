@@ -7,7 +7,7 @@ import * as path from 'path';
 import {SuperTest, Test} from 'supertest';
 import {IInventory} from '../../interfaces/inventory.interface';
 import server from '../../server';
-import Inventory from "../models/inventory.model";
+import Inventory from '../models/inventory.model';
 const request = require('supertest');
 
 chai.use(chaiHttp);

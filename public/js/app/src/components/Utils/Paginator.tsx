@@ -7,7 +7,7 @@ interface IPropsType {
   changePage: (page: number) => void;
 }
 
-const Paginator: React.StatelessComponent<IPropsType> = (props) => {
+const Paginator: React.FunctionComponent<IPropsType> = (props) => {
   const {page, pages, changePage} = props;
   return (
     <ul className="pagination pagination-sm">

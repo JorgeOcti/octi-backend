@@ -7,7 +7,7 @@ import {
   IParticipant,
   IParticipantSection
 } from '../../../../../src/interfaces/participant.interface';
-import ImageLazyLoad from '../components/ImageLazyLoad';
+import ImageLazyLoad from '../components/Utils/ImageLazyLoad';
 import ApiService from '../utils/axios';
 import {loadDataAction} from './modal.actions';
 

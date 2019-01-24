@@ -1,5 +1,5 @@
-import * as moment from 'moment';
 // import * as PropTypes from 'prop-types';
+import * as moment from 'moment';
 import * as Raven from 'raven-js';
 import {ErrorInfo} from 'react';
 import * as React from 'react';

@@ -29,12 +29,12 @@
     border-color: $primary
 
 .deleted-item
-  transition: background-color 500ms linear
+  transition: background-color 500ms
   background-color: transparentize($redErros, 0.6) !important
   color: $white
 
 .editing-item
-  transition: background-color 300ms ease
+  transition: background-color 500ms
   background-color: transparentize($primary, 0.4) !important
   color: $white
 
@@ -70,8 +70,8 @@
     color: #2372bb
 
 .icheck-in-checkbox
-  margin-top: -4px !important
-  margin-right: 5px !important
+  margin-top: -4px
+  margin-right: 5px
 
 // miniature in detaill inventory
 .images-25
@@ -93,3 +93,45 @@
   .right-border
     .no-right-border-mobile
       border-right: 0
+
+@media (max-width: 768px)
+  .vertical-line-mobile
+    div
+      border-bottom: 1px solid #ddd
+      padding-bottom: 5px
+      padding-top: 5px
+      &:last-child
+        border-bottom: none
+
+.btn-filter
+  &.btn-default
+    &:focus
+      outline: 1px auto -webkit-focus-ring-color!important
+      outline-color: #3c8dbc !important
+    border-color: #d2d6de
+    .filter-option
+      color: #777 !important
+      background: #FFF !important
+.open
+  .btn-filter
+    border-color: #3c8dbc !important
+    box-shadow: none
+
+
+#center-message
+  background-color: rgba(50, 50, 50, 0.8)
+  color: rgb(250, 250, 250)
+  position: fixed
+  display: none
+  width: auto
+  left: 50%
+  transform: translateX(-50%)
+  height: auto
+  top: 70vh
+  box-sizing: border-box
+  text-align: center
+  padding: 10px 50px
+  z-index: 9999
+
+.background-transition
+  transition: all 500ms

@@ -16,6 +16,7 @@ import {
 } from '../../actions/inventory.actions';
 import AppContainer from '../../container/AppContainer';
 import {IWindow} from '../../interfaces/window';
+import Row from '../Utils/Row';
 
 declare let window: IWindow;
 
@@ -51,9 +52,10 @@ class InventoryListView extends React.Component<IPropsType, IStateType> {
     this.goToDetail = this.goToDetail.bind(this);
   }
 
-  public componentWillMount() {
+  public componentWillMount(): void {
     // set the title of the page
     document.title = 'OSA Andes | Inventarios';
+    window.scrollTo(0, 0);
 
     // get data
     this.props.getInventoriesAction(true);
@@ -74,7 +76,11 @@ class InventoryListView extends React.Component<IPropsType, IStateType> {
     });
   }
 
-  public componentWillUnmount() {
+  public componentDidMount(): void {
+    window.scrollTo(0, 0);
+  }
+
+  public componentWillUnmount(): void {
     // cancel request if component is inmounted
     if (this.props.inventories.source) {
       this.props.inventories.source.cancel('Operation canceled by the user.');
@@ -82,7 +88,7 @@ class InventoryListView extends React.Component<IPropsType, IStateType> {
     this.socket.disconnect();
   }
 
-  public componentDidCatch(error: Error, errorInfo: ErrorInfo) {
+  public componentDidCatch(error: Error, errorInfo: ErrorInfo): void {
     this.setState({error});
     Raven.captureException(error, {
       extra: errorInfo
@@ -102,7 +108,7 @@ class InventoryListView extends React.Component<IPropsType, IStateType> {
               </div>
             </div>
             <div className="box-body">
-              <div className="row">
+              <Row>
                 <div className="col-md-12">
                   {
                     !inventories.length && !loading ? 'Aún no se han creado inventarios.' : null
@@ -111,15 +117,15 @@ class InventoryListView extends React.Component<IPropsType, IStateType> {
                     inventories.map((inventory: any) => {
                       return (
                         <div className="inventory" key={inventory._id} id={`inventory-${inventory._id}`}>
-                          <div className="row">
+                          <Row>
                             <div className="col-md-8 col-xs-8">
                               <h4 className="text-primary pointer" onClick={() => this.goToDetail(inventory._id)}>{inventory.name}</h4>
                             </div>
                             <div className="col-md-4 col-xs-4 text-right">
                               {this.labelStatus(inventory.status)}
                             </div>
-                          </div>
-                          <div className="row">
+                          </Row>
+                          <Row>
                             <div className="col-lg-3 col-md-4 col-xs-12 text-muted text-detail-user">
                               <p>
                                 <i className="fa fa-fw fa-clock-o text-success"/>Creado el {moment(inventory.createdAt).format('LLL')}<br/>
@@ -140,21 +146,25 @@ class InventoryListView extends React.Component<IPropsType, IStateType> {
                             </div>
                             <div className="col-lg-7 col-md-8">
                               <div className="row right-border">
-                                <div className="col-md-3 col-xs-4 text-center text-success">
-                                  <strong>Encontrados</strong>
-                                  <h2>{inventory.results.found}</h2>
+                                <div className="col-md-5th-1 col-xs-3 text-center text-green">
+                                  <strong style={{fontSize: '80%'}}>Encontrados</strong>
+                                  <h2 style={{marginTop: '10px'}}>{inventory.results.found}</h2>
                                 </div>
-                                <div className="col-md-3 col-xs-4 text-center text-danger">
-                                  <strong>Faltantes</strong>
-                                  <h2>{inventory.results.pending}</h2>
+                                <div className="col-md-5th-1 col-xs-3 text-center text-aqua">
+                                  <strong style={{fontSize: '80%'}}>Pendientes</strong>
+                                  <h2 style={{marginTop: '10px'}}>{inventory.results.pending}</h2>
                                 </div>
-                                <div className="col-md-3 col-xs-4 text-center text-warning no-right-border-mobile">
-                                  <strong>Sobrantes</strong>
-                                  <h2>{inventory.results.leftover}</h2>
+                                <div className="col-md-5th-1 col-xs-3 text-center text-yellow">
+                                  <strong style={{fontSize: '80%'}}>Sobrantes</strong>
+                                  <h2 style={{marginTop: '10px'}}>{inventory.results.leftover}</h2>
                                 </div>
-                                <div className="col-md-3 text-center text-muted hidden-xs hidden-sm">
-                                  <strong>Reportados</strong>
-                                  <h2>{inventory.results.reported}</h2>
+                                <div className="col-md-5th-1 col-xs-3 text-center text-red no-right-border-mobile">
+                                  <strong style={{fontSize: '80%'}}>Faltantes</strong>
+                                  <h2 style={{marginTop: '10px'}}>{inventory.results.missing}</h2>
+                                </div>
+                                <div className="col-md-5th-1 text-center text-muted hidden-xs hidden-sm">
+                                  <strong style={{fontSize: '80%'}}>Reportados</strong>
+                                  <h2 style={{marginTop: '10px'}}>{inventory.results.reported}</h2>
                                 </div>
                               </div>
                             </div>
@@ -175,22 +185,31 @@ class InventoryListView extends React.Component<IPropsType, IStateType> {
                                   <span className="sr-only">Toggle Dropdown</span>
                                 </button>
                                 <ul className="dropdown-menu pull-right" role="menu">
+                                  <li>
+                                    <a href="javascript:void(0);" onClick={() => this.goToDetail(inventory._id, true)}>
+                                      <i className="fa fa-fw fa-table" />Ver Detalle
+                                    </a>
+                                  </li>
                                   {
                                     inventory.status === 'inProcess' ?
-                                        <li><a href="javascript:void(0);" onClick={() => this.finishInventoryAction(inventory)}><i className="fa fa-fw fa-stop" />Finalizar</a></li>
+                                        <li>
+                                          <a href="javascript:void(0);" onClick={() => this.finishInventoryAction(inventory)}>
+                                            <i className="fa fa-fw fa-stop" />Finalizar
+                                          </a>
+                                        </li>
                                       : null
                                   }
-                                  <li><a href="javascript:void(0);" onClick={() => this.deleteInventoryAction(inventory)}><i className="fa fa-fw fa-close" />Eliminar</a></li>
+                                  {/*<li><a href="javascript:void(0);" onClick={() => this.deleteInventoryAction(inventory)}><i className="fa fa-fw fa-close" />Eliminar</a></li>*/}
                                 </ul>
                               </div>
                             </div>
-                          </div>
+                          </Row>
                         </div>
                       );
                     })
                   }
                 </div>
-              </div>
+              </Row>
             </div>
             {
               loading &&
@@ -204,9 +223,9 @@ class InventoryListView extends React.Component<IPropsType, IStateType> {
     );
   }
 
-  private goToDetail(id: string): void {
+  private goToDetail(id: string, detail?: boolean): void {
     const {history} = this.props;
-    history.push(`/inventory/${id}/`);
+    history.push(`/inventory/${id}/${detail ? 'detail/' : ''}`);
   }
 
   private finishInventoryAction(inventory: any): void {

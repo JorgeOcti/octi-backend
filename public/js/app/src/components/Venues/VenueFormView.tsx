@@ -5,7 +5,7 @@ import {connect} from 'react-redux';
 import {IBaseVenue} from '../../../../../../src/interfaces/venue.interface';
 import {changeTempVenueAction, IVenuesState, VenueReduxAction} from '../../actions/venues.actions';
 import {updateTooltip} from '../../utils/common';
-import Checkbox from '../CheckBox';
+import Checkbox from '../Utils/CheckBox';
 
 interface IPropsType {
   venues?: IVenuesState;

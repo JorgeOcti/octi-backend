@@ -1,3 +1,4 @@
+import { routerMiddleware } from 'connected-react-router';
 import * as createRavenMiddleware from 'raven-for-redux';
 import * as Raven from 'raven-js';
 import {applyMiddleware, createStore} from 'redux';
@@ -7,12 +8,15 @@ import {composeWithDevTools} from 'redux-devtools-extension';
 import ThunkMiddleware from 'redux-thunk';
 import {IWindow} from '../interfaces/window';
 import rootReducer from '../reducers/index.reducer';
+import browserHistort from '../utils/history';
 
 declare let window: IWindow;
 
+export const history = browserHistort;
+
 const configureStore = () => {
   let enhancers: any;
-  const middlewares: any[] = [];
+  const middlewares: any[] = [routerMiddleware(history)];
 
   if (process.env.NODE_ENV === 'development') {
     middlewares.push(ThunkMiddleware);
@@ -39,7 +43,7 @@ const configureStore = () => {
     enhancers = applyMiddleware(...middlewares);
   }
 
-  return createStore(rootReducer, enhancers);
+  return createStore(rootReducer(history), enhancers);
 };
 
 export default configureStore;

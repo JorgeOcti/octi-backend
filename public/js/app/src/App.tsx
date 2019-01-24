@@ -1,3 +1,4 @@
+import { ConnectedRouter } from 'connected-react-router'
 import * as moment from 'moment';
 import * as React from 'react';
 import * as ReactDOM from 'react-dom';
@@ -13,10 +14,11 @@ import ImportCarsView from './components/Imports/ImportCarView';
 import InventoryCreateView from './components/Inventory/InventoryCreateView';
 import InventoryDetailView from './components/Inventory/InventoryDetailView';
 import InventoryListView from './components/Inventory/InventoryListView';
+import LabelsListView from './components/Labels/LabelsListView';
 import UsersListView from './components/Users/UserListView';
-import VenuesListView from './components/Venues/VenueListView';
-import configureStore from './store/configureStore';
-import history from './utils/history';
+import VenuesListView from './components/Venues/VenuesListView';
+import configureStore, {history} from './store/configureStore';
+import {isIntenertExplorer} from './utils/common';
 
 const store = configureStore();
 
@@ -25,10 +27,9 @@ const NoMatch = ({location}: RouteComponentProps<{}>) => (
     <h3>No match for <code>{location.pathname}</code></h3>
   </div>
 );
-
 const App = () => (
     <Provider store={store}>
-        <BrowserRouter history={history}>
+        <ConnectedRouter history={history}>
             <Switch>
                 <Route exact path="/" component={ DashboardGeneralView }/>
                 <Route exact path="/cars/" component={ DashboardVinView }/>
@@ -36,15 +37,17 @@ const App = () => (
                 <Route exact path="/inventory/" component={ InventoryListView }/>
                 <Route exact path="/inventory/create/" component={ InventoryCreateView }/>
                 <Route exact path="/inventory/:id/" component={ InventoryDetailView }/>
+                <Route exact path="/inventory/:id/:tab/" component={ InventoryDetailView }/>
                 <Route exact path="/settings/users/" component={ UsersListView }/>
                 <Route exact path="/settings/cars/" component={ CarsListView }/>
+                <Route exact path="/settings/labels/" component={ LabelsListView }/>
                 <Route exact path="/settings/venues/" component={ VenuesListView }/>
                 <Route exact path="/settings/companies/" component={ CompaniesListView }/>
                 <Route exact path="/settings/cars/import/" component={ ImportCarsView }/>
                 <Route exact path="/settings/alerts/" component={ AlertsViews }/>
                 <Route component={ NoMatch }/>
             </Switch>
-        </BrowserRouter>
+        </ConnectedRouter>
     </Provider>
 );
 
@@ -56,13 +59,22 @@ $('body').on('hidden.bs.modal', '#andesModal', () => {
 });
 
 $(() => {
+  // add ekko-lightbox
+  const script = document.createElement('script');
+  const link = document.createElement('link');
+  link.rel = 'stylesheet';
+  link.href = isIntenertExplorer() ? '/static/js/vendor/lightbox/ekko-lightbox.css' : '/static/js/vendor/lightbox/ekko-lightbox.last.css';
+  const js = document.getElementsByClassName('js')[0];
+  script.src = isIntenertExplorer() ? '/static/js/vendor/lightbox/ekko-lightbox.min.js' : '/static/js/vendor/lightbox/ekko-lightbox.last.min.js';
+  js.appendChild(script);
+  js.appendChild(link);
+
   moment.locale('es');
   ReactDOM.render(
       <App />,
       document.querySelector('#app')
   );
   ($('.sidebar-menu') as any).tree();
-
   $('body').on('click', '.treeview-menu li', () => {
     $('body').removeClass('sidebar-open');
   });
@@ -76,5 +88,9 @@ $(() => {
     if ($('.modal:visible').length) {
       $('body').addClass('modal-open');
     }
+  });
+
+  $(document).on('click.bs.dropdown.data-api', '.dropdown.keep-inside-clicks-open', function(event) {
+    event.stopPropagation();
   });
 });
