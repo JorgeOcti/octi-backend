@@ -189,4 +189,4 @@ const mapDispatchToProps = (dispatch: any ) => {
   };
 };
 
-export default connect<{}, {}, IPropsType>(mapStateToProps, mapDispatchToProps)(LabelFormView);
+export default connect<{labels: ILabelsState}, {dispatch: LabelsReduxAction}, IPropsType>(mapStateToProps, mapDispatchToProps)(LabelFormView);

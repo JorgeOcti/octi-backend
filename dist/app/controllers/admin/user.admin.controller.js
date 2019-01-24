@@ -289,6 +289,7 @@ class AdminUsersController {
                 message: 'No tienes permisos para esta operación'
             });
         }
+        const { team } = req.user;
         const { id } = req.params;
         const company = req.user.company;
         try {
