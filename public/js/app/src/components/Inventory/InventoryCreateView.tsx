@@ -46,7 +46,7 @@ class InventoryCreateView extends React.Component<IPropsType, IStateType> {
     loadingSettings: false,
     carsByVenue: [],
     notification: true,
-    name: `Inventario del ${moment().format('YYMMDD')}`,
+    name: `Inventario del ${moment().format('DD-MM-YYYY')}`,
     sending: false
   };
 
@@ -292,7 +292,7 @@ class InventoryCreateView extends React.Component<IPropsType, IStateType> {
           if (!rABS) {
             data = new Uint8Array(data);
           }
-          const workbook = XLSX.read(data, {
+          const workbook: XLSX.WorkBook = XLSX.read(data, {
             type: rABS ? 'binary' : 'array'
           });
           const excelData = workbook.Sheets.hasOwnProperty('Autos') ? XLSX.utils.sheet_to_json(workbook.Sheets.Autos) : [];
@@ -339,7 +339,11 @@ class InventoryCreateView extends React.Component<IPropsType, IStateType> {
               loadingSettings: false
             });
           } else {
-            swal('Importador de configuración', 'Este excel no cumple con los requisitos mínimos o no tiene autos.', 'error');
+            swal(
+              'Importador de configuración',
+              `"${file.name}" no cumple con los requisitos mínimos o no tiene autos.`,
+              'error'
+            );
             this.setState({
               loadingSettings: false
             });

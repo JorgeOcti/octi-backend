@@ -410,6 +410,119 @@ class InventoryController {
         const { id } = req.params;
         const { vin, images } = req.body;
         try {
+            const inventory = await inventory_model_1.default.findOne({
+                _id: id,
+                team,
+                status: inventory_model_1.ChoicesStatusInventory.inProcess
+            });
+            if (inventory) {
+                const car = await car_model_2.default.findOne({
+                    vin,
+                    team
+                });
+                if (car) {
+                    const inventoriedCar = await inventory_model_1.default.findOne({
+                        $and: [{
+                                _id: id
+                            }, {
+                                team
+                            }, {
+                                cars: {
+                                    $elemMatch: {
+                                        $or: [{
+                                                car: car._id,
+                                                status: inventory_model_1.ChoicesStatusCarInventory.found
+                                            }, {
+                                                car: car._id,
+                                                venueFound: venue._id,
+                                                status: inventory_model_1.ChoicesStatusCarInventory.leftover
+                                            }]
+                                    }
+                                }
+                            }]
+                    }, {
+                        'cars.$': 1
+                    });
+                    if (inventoriedCar) {
+                        res.status(400).json({
+                            message: 'Este auto ya ha sido inventariado',
+                            status: 400
+                        });
+                    }
+                    else {
+                        const inventoryCar = await inventory_model_1.default.findOne({
+                            _id: id,
+                            ['cars.car']: car._id,
+                            team
+                        }, {
+                            'cars.$': 1
+                        });
+                        // if car in inventory
+                        if (inventoryCar && inventoryCar.cars.length) {
+                            await inventory_model_1.default.update({
+                                _id: id,
+                                ['cars.car']: car._id,
+                                team
+                            }, {
+                                $set: {
+                                    'cars.$.venueFound': venue._id,
+                                    'cars.$.status': inventory_model_1.ChoicesStatusCarInventory.found,
+                                    'cars.$.images': images ? images.map((image) => (new bson_1.ObjectID(image))) : [],
+                                    'cars.$.inventoriedBy': req.user._id
+                                }
+                            }, {
+                                upsert: true
+                            });
+                            server_1.io.to(`inventory-detail-${inventoryCar._id}`).emit('REFRESH', {
+                                title: 'Vehículo encontrado',
+                                text: `${req.user.firstName} ${req.user.lastName} encontró ${car.brand} (${car.denomination}) en ${venue.name}.`,
+                                status: inventory_model_1.ChoicesStatusCarInventory.found,
+                                update: true
+                            });
+                            res.status(200).json({
+                                vin: car.vin,
+                                status: 200
+                            });
+                        }
+                        else {
+                            res.status(400).json({
+                                message: 'Este vehículo no se encuentra en el inventario.',
+                                status: 400
+                            });
+                        }
+                    }
+                }
+                else {
+                    // if car no exist
+                    res.status(400).json({
+                        message: 'Este vehículo no existe.',
+                        status: 400
+                    });
+                }
+            }
+            else {
+                // if inventory no exist
+                res.status(400).json({
+                    message: 'Este inventario no existe o ya no se encuentra activo',
+                    status: 400
+                });
+            }
+        }
+        catch (e) {
+            /* istanbul ignore next */
+            console.log(e);
+            /* istanbul ignore next */
+            res.status(400).json({
+                message: e,
+                status: 400
+            });
+        }
+    }
+    async exApiFoundCar(req, res) {
+        const { team, venue } = req.user;
+        const { id } = req.params;
+        const { vin, images } = req.body;
+        try {
             const car = await car_model_2.default.findOne({
                 vin,
                 team
@@ -900,9 +1013,18 @@ class InventoryController {
                     $unwind: '$cars'
                 }, {
                     $match: {
-                        'cars.venue': {
-                            $in: venuesPermissions
-                        }
+                        $or: [
+                            {
+                                'cars.venue': {
+                                    $in: venuesPermissions
+                                }
+                            },
+                            {
+                                'cars.venueFound': {
+                                    $in: venuesPermissions
+                                }
+                            }
+                        ]
                     }
                 }, {
                     $group: {
@@ -981,9 +1103,18 @@ class InventoryController {
                     $unwind: '$cars'
                 }, {
                     $match: {
-                        'cars.venue': {
-                            $in: venuesPermissions
-                        }
+                        $or: [
+                            {
+                                'cars.venue': {
+                                    $in: venuesPermissions
+                                }
+                            },
+                            {
+                                'cars.venueFound': {
+                                    $in: venuesPermissions
+                                }
+                            }
+                        ]
                     }
                 }, {
                     $group: {
@@ -1035,9 +1166,18 @@ class InventoryController {
                     $unwind: '$cars'
                 }, {
                     $match: {
-                        'cars.venue': {
-                            $in: venuesPermissions
-                        }
+                        $or: [
+                            {
+                                'cars.venue': {
+                                    $in: venuesPermissions
+                                }
+                            },
+                            {
+                                'cars.venueFound': {
+                                    $in: venuesPermissions
+                                }
+                            }
+                        ]
                     }
                 }, {
                     $lookup: {
