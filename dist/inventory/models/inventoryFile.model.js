@@ -32,7 +32,8 @@ exports.inventoryFileSchema = new mongoose.Schema({
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User'
     },
-    file: fileSchema
+    file: fileSchema,
+    thumbnail: fileSchema
 }, {
     timestamps: true
 });
@@ -57,11 +58,12 @@ exports.inventoryFileSchema.plugin(mongooseCrate, {
             size:966
             type:"image/svg"
             * */
-            return `/inventories/files/${attachment.company}/${attachment.inventory}/${uuid.v1()}-${attachment.originalname}`;
+            return `/inventories/files/${attachment.team}/${attachment.inventory}/${attachment.venue}/${uuid.v1()}-${attachment.originalname}`;
         }
     }),
     fields: {
-        file: {}
+        file: {},
+        thumbnail: {}
     }
 });
 // inventoryFileSchema.index({ form: 1, user: 1 });

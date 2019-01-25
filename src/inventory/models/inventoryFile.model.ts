@@ -21,7 +21,7 @@ const fileSchema = new mongoose.Schema({
 });
 
 export interface IInventoryFileModel extends IInventoryFile, mongoose.Document {
-  attach(condition: string, file: any, error: (err: any) => void): void;
+  attach(fieldName: string, file: any, error?: (err: any) => void): void;
 }
 
 export const inventoryFileSchema = new mongoose.Schema({
@@ -38,7 +38,8 @@ export const inventoryFileSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User'
   },
-  file: fileSchema
+  file: fileSchema,
+  thumbnail: fileSchema
 
 }, {
   timestamps: true
@@ -65,11 +66,12 @@ inventoryFileSchema.plugin(mongooseCrate, {
       size:966
       type:"image/svg"
       * */
-      return `/inventories/files/${attachment.company}/${attachment.inventory}/${uuid.v1()}-${attachment.originalname}`;
+      return `/inventories/files/${attachment.team}/${attachment.inventory}/${attachment.venue}/${uuid.v1()}-${attachment.originalname}`;
     }
   }),
   fields: {
-    file: {}
+    file: {},
+    thumbnail: {}
   }
 });
 

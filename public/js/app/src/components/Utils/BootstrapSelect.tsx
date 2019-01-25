@@ -60,16 +60,17 @@ class BootstrapSelect extends React.Component<IPropsType, IStateType> {
                 {
                   selectedItems.length ?
                     displayItems && selectedItems.length > displayItems ?
-                      `${selectedItems.length} ${selectedText ? selectedText : 'items seleccionados.'}` :
+                      <span style={{color: '#555'}}>{`${selectedItems.length} ${selectedText ? selectedText : 'items seleccionados.'}`}</span> :
                       selectedItems
                         .map((option, index) => (
                           <React.Fragment key={index}>
                             <span
                               className={option.className ? option.className : ''}
+                              style={{color: '#555'}}
                             >{option.text}</span> {selectedItems.length > index + 1 ? separator ? `${separator}` : ', ' : null}
                           </React.Fragment>
                         ))
-                    : noneSelectedText ? noneSelectedText : 'Todos'
+                    : noneSelectedText ? <span style={{color: '#999'}}> {noneSelectedText}</span> : <span style={{color: '#999'}}> Todos </span>
                 }
               </div>
             </div>
