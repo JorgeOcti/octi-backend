@@ -72,7 +72,7 @@ class VenuesListView extends React.Component<IPropsType, IStateType> {
       this.socket.emit('join', {room: `venue-list-${window.user.team}`});
     });
     this.socket.on('REFRESH', (data: any): void => {
-      if (data.update) {
+      if (data.update && data.updatedBy !== window.user._id) {
         const {pagination} = this.props.venues;
         this.props.getVenuesAction(pagination.page);
       }

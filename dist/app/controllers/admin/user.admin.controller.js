@@ -172,7 +172,8 @@ class AdminUsersController {
                 newUser = newUser.toObject();
                 delete newUser.password;
                 server_1.io.to(`user-list-${team}`).emit('REFRESH', {
-                    update: true
+                    update: true,
+                    updatedBy: req.user._id
                 });
                 res.status(201).json({
                     message: 'Usuario agregado satisfactoriamente.',
@@ -263,7 +264,8 @@ class AdminUsersController {
                         user
                     };
                     server_1.io.to(`user-list-${team}`).emit('REFRESH', {
-                        update: true
+                        update: true,
+                        updatedBy: req.user._id
                     });
                     res.status(200).json(response);
                 }
@@ -300,7 +302,8 @@ class AdminUsersController {
                     id: user._id
                 };
                 server_1.io.to(`user-list-${team}`).emit('REFRESH', {
-                    update: true
+                    update: true,
+                    updatedBy: req.user._id
                 });
                 res.status(200).json(response);
             }
