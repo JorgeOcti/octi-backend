@@ -224,8 +224,8 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
     }, {
       dataField: 'images',
       text: 'Imágenes',
-      classes: 'middle hidden-xs',
-      headerClasses: 'middle hidden-xs',
+      classes: 'middle hidden-xs hidden-sm hidden-md',
+      headerClasses: 'middle hidden-xs hidden-sm hidden-md',
       formatter: this.imagesFormatter,
       headerStyle: {
         maxWidth: '80px',
@@ -258,7 +258,7 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
       formatter: this.labelFormatter,
       headerClasses: 'middle hidden-xs',
       style: {
-        width: '15%'
+        width: '18%'
       },
       headerStyle: {
         verticalAlign: 'top'
@@ -288,9 +288,9 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
       dataField: 'option',
       text: '',
       formatter: this.optionsFormatter,
-      headerClasses: 'middle hidden-xs',
+      headerClasses: 'middle hidden-xs hidden-sm hidden-md',
       classes: () => {
-        return `hidden-xs middle-center`;
+        return `middle-center hidden-xs hidden-sm hidden-md`;
       },
       headerStyle: {
         maxWidth: '150px',
