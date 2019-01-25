@@ -419,8 +419,21 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
   }
 
   public brandFormatter(cell: any, row: any) {
+
     return (
       <React.Fragment>
+        {
+          row.venue && row.venueFound && row.venueFound !== '-' && row.venue !== row.venueFound ?
+            <React.Fragment>
+              <i
+                data-toggle="tooltip"
+                data-placement="top"
+                title="Este vehículo no fue encontrado en la sucursal esperada."
+                className="fa fa-warning text-red pointer"
+              /> {` `}
+            </React.Fragment>
+            : null
+        }
         {
           row.patent && row.patent.length ?
             <React.Fragment>
@@ -429,6 +442,9 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
             : <CopyText value={row.vin}><strong>{row.vin}</strong></CopyText>
         }<br/>
         <span className="text-muted text-sm">{cell} / {row.denomination}</span>
+        <div className="visible-xs">
+          {this.labelFormatter(cell, row)}
+        </div>
       </React.Fragment>
     );
   }
@@ -584,7 +600,7 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
               <div className="box box-default">
                 <div className="box-header with-border">
                 <Row className="vertical-line-mobile">
-                  <div className="col-md-6 col-lg-3">
+                  <div className="col-md-4 col-lg-3">
                     <i className="fa fa-fw fa-user text-primary"/>
                     <strong>
                       {
@@ -595,15 +611,15 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
                     </strong>
 
                   </div>
-                  <div className="col-md-6 col-lg-3">
+                  <div className="col-md-4 col-lg-3">
                     <i className="fa fa-fw fa-clock-o text-green"/>
                     <strong>{!loadingDetail && summary && summary.createdAt ? moment(summary.createdAt).format('LLL') : '-'}</strong>
                   </div>
-                  <div className="col-md-6 col-lg-3">
+                  <div className="col-md-4 col-lg-3">
                     <i className="fa fa-fw fa-clock-o text-red"/>
                     <strong>{!loadingDetail && summary && summary.finalizedAt ? moment(summary.finalizedAt).format('LLL') : '-'}</strong>
                   </div>
-                  <div className="col-md-6 col-lg-3 text-right">
+                  <div className="col-md-12 col-lg-3 text-right">
                     {!loadingDetail ? this.labelStatus(detail.status) : null}
                   </div>
                 </Row>
@@ -619,7 +635,7 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
           </Row>
           {/*<Row>*/}
           <Row style={{display: tab === 'summary' ? 'block' : 'none'}}>
-            <div className="col-md-6 col-lg-4 pointer" onClick={() => this.sendToDetailFilteredBy('found')}>
+            <div className="col-md-4 col-lg-4 pointer" onClick={() => this.sendToDetailFilteredBy('found')}>
               <div className="info-box bg-green">
                 <span className="info-box-icon"><i className="fa fa-check" /></span>
                 <div className="info-box-content">
@@ -639,7 +655,7 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
                 </div>
               </div>
             </div>
-            <div className="col-md-6 col-lg-4 pointer" onClick={() => this.sendToDetailFilteredBy('leftover')}>
+            <div className="col-md-4 col-lg-4 pointer" onClick={() => this.sendToDetailFilteredBy('leftover')}>
               <div className="info-box bg-yellow">
                 <span className="info-box-icon"><i className="fa fa-arrow-up" /></span>
                 <div className="info-box-content">
@@ -659,7 +675,7 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
                 </div>
               </div>
             </div>
-            <div className="col-md-6 col-lg-4 pointer" onClick={() => this.sendToDetailFilteredBy('missing')}>
+            <div className="col-md-4 col-lg-4 pointer" onClick={() => this.sendToDetailFilteredBy('missing')}>
               <div className="info-box bg-red">
                 <span className="info-box-icon"><i className="fa fa-arrow-down"/></span>
                 <div className="info-box-content">
