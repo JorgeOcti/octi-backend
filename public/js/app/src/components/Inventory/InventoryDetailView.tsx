@@ -170,7 +170,8 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
     this.imagesFormatter = this.imagesFormatter.bind(this);
     this.handleChangeSearchText = this.handleChangeSearchText.bind(this);
     this.clearFilter = this.clearFilter.bind(this);
-    this.sendToDetailFilteredBy = this.sendToDetailFilteredBy.bind(this);
+    this.sendToDetailFilteredByState = this.sendToDetailFilteredByState.bind(this);
+    this.sendToDetailFilteredByVenue = this.sendToDetailFilteredByVenue.bind(this);
     this.changeTab = this.changeTab.bind(this);
     const {tab} = this.props.match.params;
     if (tab && tab === 'detail') {
@@ -599,30 +600,30 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
             <div className="col-md-12 col-lg-12">
               <div className="box box-default">
                 <div className="box-header with-border">
-                <Row className="vertical-line-mobile">
-                  <div className="col-md-4 col-lg-3">
-                    <i className="fa fa-fw fa-user text-primary"/>
-                    <strong>
-                      {
-                      !loadingDetail && summary && summary.createdBy ?
-                        summary.createdBy.fullName
-                        : '-'
-                    }
-                    </strong>
+                  <Row className="vertical-line-mobile">
+                    <div className="col-md-4 col-lg-3">
+                      <i className="fa fa-fw fa-user text-primary"/>
+                      <strong>
+                        {
+                          !loadingDetail && summary && summary.createdBy ?
+                            summary.createdBy.fullName
+                            : '-'
+                        }
+                      </strong>
 
-                  </div>
-                  <div className="col-md-4 col-lg-3">
-                    <i className="fa fa-fw fa-clock-o text-green"/>
-                    <strong>{!loadingDetail && summary && summary.createdAt ? moment(summary.createdAt).format('LLL') : '-'}</strong>
-                  </div>
-                  <div className="col-md-4 col-lg-3">
-                    <i className="fa fa-fw fa-clock-o text-red"/>
-                    <strong>{!loadingDetail && summary && summary.finalizedAt ? moment(summary.finalizedAt).format('LLL') : '-'}</strong>
-                  </div>
-                  <div className="col-md-12 col-lg-3 text-right">
-                    {!loadingDetail ? this.labelStatus(detail.status) : null}
-                  </div>
-                </Row>
+                    </div>
+                    <div className="col-md-4 col-lg-3">
+                      <i className="fa fa-fw fa-clock-o text-green"/>
+                      <strong>{!loadingDetail && summary && summary.createdAt ? moment(summary.createdAt).format('LLL') : '-'}</strong>
+                    </div>
+                    <div className="col-md-4 col-lg-3">
+                      <i className="fa fa-fw fa-clock-o text-red"/>
+                      <strong>{!loadingDetail && summary && summary.finalizedAt ? moment(summary.finalizedAt).format('LLL') : '-'}</strong>
+                    </div>
+                    <div className="col-md-12 col-lg-3 text-right">
+                      {!loadingDetail ? this.labelStatus(detail.status) : null}
+                    </div>
+                  </Row>
                 </div>
                 {
                   loadingDetail &&
@@ -635,7 +636,7 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
           </Row>
           {/*<Row>*/}
           <Row style={{display: tab === 'summary' ? 'block' : 'none'}}>
-            <div className="col-md-4 col-lg-4 pointer" onClick={() => this.sendToDetailFilteredBy('found')}>
+            <div className="col-md-4 col-lg-4 pointer" onClick={() => this.sendToDetailFilteredByState('found')}>
               <div className="info-box bg-green">
                 <span className="info-box-icon"><i className="fa fa-check" /></span>
                 <div className="info-box-content">
@@ -655,7 +656,7 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
                 </div>
               </div>
             </div>
-            <div className="col-md-4 col-lg-4 pointer" onClick={() => this.sendToDetailFilteredBy('leftover')}>
+            <div className="col-md-4 col-lg-4 pointer" onClick={() => this.sendToDetailFilteredByState('leftover')}>
               <div className="info-box bg-yellow">
                 <span className="info-box-icon"><i className="fa fa-arrow-up" /></span>
                 <div className="info-box-content">
@@ -675,7 +676,7 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
                 </div>
               </div>
             </div>
-            <div className="col-md-4 col-lg-4 pointer" onClick={() => this.sendToDetailFilteredBy('missing')}>
+            <div className="col-md-4 col-lg-4 pointer" onClick={() => this.sendToDetailFilteredByState('missing')}>
               <div className="info-box bg-red">
                 <span className="info-box-icon"><i className="fa fa-arrow-down"/></span>
                 <div className="info-box-content">
@@ -743,7 +744,7 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
             </div>
           </Row>
           <Row style={{display: tab === 'detail' ? 'block' : 'none'}}>
-            <div className="col-md-6 col-lg-6 pointer" onClick={() => this.sendToDetailFilteredBy('pending')}>
+            <div className="col-md-6 col-lg-6 pointer" onClick={() => this.sendToDetailFilteredByState('pending')}>
               <div className="info-box bg-aqua">
                 <span className="info-box-icon"><i className="fa fa-clock-o" /></span>
                 <div className="info-box-content">
@@ -763,7 +764,7 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
                 </div>
               </div>
             </div>
-            <div className="col-md-6 col-lg-6 pointer" onClick={() => this.sendToDetailFilteredBy('reported')}>
+            <div className="col-md-6 col-lg-6 pointer" onClick={() => this.sendToDetailFilteredByState('reported')}>
               <div className="info-box bg-gray-dark">
                 <span className="info-box-icon"><i className="fa fa-exclamation" /></span>
                 <div className="info-box-content">
@@ -859,7 +860,7 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
                               value: status,
                               text: this.statusText[status],
                               className: `label ${this.classLabelStatus[status]}`
-                          }))}
+                            }))}
                           selected={filter.states}
                           onClick={this.filterStatus}
                         />
@@ -946,11 +947,24 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
     });
   }
 
-  private sendToDetailFilteredBy(state: string) {
+  private sendToDetailFilteredByState(state: string) {
     this.props.inventoryDetailChangeFilter({
       text: '',
       venues: [],
       states: [state]
+    });
+    $('#cars').val('');
+    this.changeTab('detail');
+    setTimeout(() => {
+      goToSection('#table-detail-inventory');
+    }, 100);
+  }
+
+  private sendToDetailFilteredByVenue(venue: string) {
+    this.props.inventoryDetailChangeFilter({
+      text: '',
+      venues: [venue],
+      states: []
     });
     $('#cars').val('');
     this.changeTab('detail');
@@ -1251,6 +1265,11 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
     }
     if (!loadingDetail) {
       this.venuesDetailChart.setOption(optionVenues);
+      (this.venuesDetailChart as any).off();
+      this.venuesDetailChart.on('click', (params: any) => {
+        const venue = detailByVenue[params.dataIndex];
+        this.sendToDetailFilteredByVenue(venue._id);
+      });
     }
   }
 

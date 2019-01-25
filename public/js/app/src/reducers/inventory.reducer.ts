@@ -132,6 +132,9 @@ function processCars(cars: IInventoryCar[], selectedItems: { [key: string]: any 
     let add = true;
     if (filter && filter.venues && filter.venues.length && car.venue) {
       add = (filter.venues as any).includes(car.venue._id);
+      if (!add && car.venueFound) {
+        add = (filter.venues as any).includes(car.venueFound._id);
+      }
     }
     if (add && filter && filter.states && filter.states.length && car.status) {
       add = (filter.states as any).includes(car.status);

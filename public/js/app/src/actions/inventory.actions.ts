@@ -28,6 +28,7 @@ export interface IInventorySummary {
 }
 
 export interface IDetailByVenue {
+  _id: string;
   name: string;
   results: {
     pending: number;

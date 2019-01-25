@@ -1243,6 +1243,7 @@ class InventoryController {
       }
       for (const dv of detailByVenues) {
         detailByVenue.push({
+          _id: dv.info._id,
           name: dv.info.name,
           results: dv.status.reduce((acc: any, cur: any) => {
             acc[cur.name] = cur.total;
