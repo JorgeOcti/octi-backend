@@ -71,7 +71,8 @@ class LabelController {
                 label: inventoryLabel
             };
             server_1.io.to(`label-list-${team}`).emit('REFRESH', {
-                update: true
+                update: true,
+                updatedBy: req.user._id
             });
             res.status(200).json(response);
         }
@@ -108,7 +109,8 @@ class LabelController {
                     label: inventoryLabel
                 };
                 server_1.io.to(`label-list-${team}`).emit('REFRESH', {
-                    update: true
+                    update: true,
+                    updatedBy: req.user._id
                 });
                 res.status(200).json(response);
             }
@@ -141,7 +143,8 @@ class LabelController {
                     id: inventoryLabel._id
                 };
                 server_1.io.to(`label-list-${team}`).emit('REFRESH', {
-                    update: true
+                    update: true,
+                    updatedBy: req.user._id
                 });
                 res.status(200).json(response);
             }

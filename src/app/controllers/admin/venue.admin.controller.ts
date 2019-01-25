@@ -120,7 +120,8 @@ class AdminVenueController {
           type
         }).save();
         io.to(`venue-list-${team}`).emit('REFRESH', {
-          update: true
+          update: true,
+          updatedBy: req.user._id
         });
         res.status(201).json({
           message: 'Sucursal agregada satisfactoriamente.',
@@ -173,7 +174,8 @@ class AdminVenueController {
           venue
         };
         io.to(`venue-list-${team}`).emit('REFRESH', {
-          update: true
+          update: true,
+          updatedBy: req.user._id
         });
         res.status(200).json(response);
       } else {
@@ -243,7 +245,8 @@ class AdminVenueController {
               id: venue._id
             };
             io.to(`venue-list-${team}`).emit('REFRESH', {
-              update: true
+              update: true,
+              updatedBy: req.user._id
             });
             res.status(200).json(response);
           }

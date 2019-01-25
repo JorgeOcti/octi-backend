@@ -74,7 +74,8 @@ class LabelController {
         label: inventoryLabel
       };
       io.to(`label-list-${team}`).emit('REFRESH', {
-        update: true
+        update: true,
+        updatedBy: req.user._id
       });
       res.status(200).json(response);
     } catch (e) {
@@ -111,8 +112,9 @@ class LabelController {
           label: inventoryLabel
         };
         io.to(`label-list-${team}`).emit('REFRESH', {
-        update: true
-      });
+          update: true,
+          updatedBy: req.user._id
+        });
         res.status(200).json(response);
       } else {
         const response = {
@@ -143,7 +145,8 @@ class LabelController {
           id: inventoryLabel._id
         };
         io.to(`label-list-${team}`).emit('REFRESH', {
-          update: true
+          update: true,
+          updatedBy: req.user._id
         });
         res.status(200).json(response);
       } else {

@@ -84,7 +84,7 @@ class UserListView extends React.Component<IPropsType, IStateType> {
       this.socket.emit('join', {room: `user-list-${window.user.team}`});
     });
     this.socket.on('REFRESH', (data: any): void => {
-      if (data.update) {
+      if (data.update && data.updatedBy !== window.user._id) {
         const {pagination} = this.props.users;
         this.props.getUsersAction(pagination.page);
       }

@@ -85,7 +85,7 @@ class LabelsListView extends React.Component<IPropsType, IStateType> {
       this.socket.emit('join', {room: `label-list-${window.user.team}`});
     });
     this.socket.on('REFRESH', (data: any): void => {
-      if (data.update) {
+      if (data.update && data.updatedBy !== window.user._id) {
         const {pagination} = this.props.labels;
         this.props.getLabelsAction(pagination.page);
       }
@@ -255,7 +255,7 @@ class LabelsListView extends React.Component<IPropsType, IStateType> {
     // ask if you are sure that you are going to delete the user?
     swal({
       title: '¿Estás seguro?',
-      text: `Vas a eliminar la etiqueta ${label.name} `,
+      text: `Vas a eliminar la etiqueta "${label.name}". Los inventarios marcados con esta etiqueta serán afectados y no se mostrara. `,
       icon: 'warning',
       dangerMode: true,
       buttons: {
