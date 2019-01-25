@@ -150,17 +150,17 @@ class InventoryListView extends React.Component<IPropsType, IStateType> {
                                   <strong style={{fontSize: '80%'}}>Encontrados</strong>
                                   <h2 style={{marginTop: '10px'}}>{inventory.results.found}</h2>
                                 </div>
-                                <div className="col-md-5th-1 col-xs-3 text-center text-aqua">
-                                  <strong style={{fontSize: '80%'}}>Pendientes</strong>
-                                  <h2 style={{marginTop: '10px'}}>{inventory.results.pending}</h2>
-                                </div>
                                 <div className="col-md-5th-1 col-xs-3 text-center text-yellow">
                                   <strong style={{fontSize: '80%'}}>Sobrantes</strong>
                                   <h2 style={{marginTop: '10px'}}>{inventory.results.leftover}</h2>
                                 </div>
-                                <div className="col-md-5th-1 col-xs-3 text-center text-red no-right-border-mobile">
+                                <div className="col-md-5th-1 col-xs-3 text-center text-red">
                                   <strong style={{fontSize: '80%'}}>Faltantes</strong>
                                   <h2 style={{marginTop: '10px'}}>{inventory.results.missing}</h2>
+                                </div>
+                                <div className="col-md-5th-1 col-xs-3 text-center text-aqua no-right-border-mobile">
+                                  <strong style={{fontSize: '80%'}}>Pendientes</strong>
+                                  <h2 style={{marginTop: '10px'}}>{inventory.results.pending}</h2>
                                 </div>
                                 <div className="col-md-5th-1 text-center text-muted hidden-xs hidden-sm">
                                   <strong style={{fontSize: '80%'}}>Reportados</strong>
