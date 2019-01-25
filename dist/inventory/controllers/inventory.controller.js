@@ -26,6 +26,7 @@ class InventoryController {
         this.apiFoundCar = this.apiFoundCar.bind(this);
         this.uploadFile = this.uploadFile.bind(this);
         this.autoRotate = this.autoRotate.bind(this);
+        this.resizeImage = this.resizeImage.bind(this);
         this.setLabel = this.setLabel.bind(this);
         this.finishInventory = this.finishInventory.bind(this);
         this.deleteInventory = this.deleteInventory.bind(this);
@@ -347,7 +348,7 @@ class InventoryController {
     }
     async uploadFile(req, res) {
         const { id } = req.params;
-        const { company } = req.user;
+        const { team, venue, company } = req.user;
         if (req.file) {
             const file = req.file;
             try {
@@ -364,32 +365,28 @@ class InventoryController {
                     size: 794429
                   }
                 */
+                file.headers = {
+                    'Content-Type': file.mimetype
+                };
+                file.team = team._id;
+                file.venue = venue._id;
+                file.inventory = id;
+                inventoryFile.user = req.user._id;
+                inventoryFile.company = company._id;
                 // fix exif
                 if (new RegExp('\\bimage\\b').test(file.mimetype)) {
                     await this.autoRotate(file.path);
                 }
-                file.headers = {
-                    'Content-Type': file.mimetype
-                };
-                file.company = company._id;
-                file.inventory = id;
-                inventoryFile.user = req.user._id;
-                inventoryFile.company = company._id;
-                inventoryFile.attach('file', file, async (error) => {
-                    if (error) {
-                        /* istanbul ignore next */
-                        res.status(400).json(error);
-                    }
-                    else {
-                        await inventoryFile.save();
-                        res.status(201).json({
-                            data: {
-                                _id: inventoryFile._id,
-                                file: inventoryFile.file
-                            },
-                            status: 201
-                        });
-                    }
+                await inventoryFile.attach('file', file);
+                await this.resizeImage(file.path);
+                await inventoryFile.attach('thumbnail', file);
+                inventoryFile.save();
+                res.status(201).json({
+                    data: {
+                        _id: inventoryFile._id,
+                        file: inventoryFile.file
+                    },
+                    status: 201
                 });
             }
             catch (e) {
@@ -1357,12 +1354,32 @@ class InventoryController {
     autoRotate(path) {
         // doc http://aheckmann.github.io/gm/docs.html
         /**** REQUIRE *****
-          brew install imagemagick
-          brew install graphicsmagick
-        * */
+         brew install imagemagick
+         brew install graphicsmagick
+         * */
         return new Promise((resolve, reject) => {
             GraphicsMagick(path)
                 .autoOrient()
+                .write(path, (err) => {
+                if (err) {
+                    /* istanbul ignore next */
+                    reject(err);
+                }
+                else {
+                    resolve();
+                }
+            });
+        });
+    }
+    resizeImage(path) {
+        // doc http://aheckmann.github.io/gm/docs.html
+        /**** REQUIRE *****
+         brew install imagemagick
+         brew install graphicsmagick
+         * */
+        return new Promise((resolve, reject) => {
+            GraphicsMagick(path)
+                .resize(100, 100)
                 .write(path, (err) => {
                 if (err) {
                     /* istanbul ignore next */
