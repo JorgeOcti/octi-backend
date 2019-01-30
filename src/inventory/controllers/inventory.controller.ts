@@ -1,13 +1,16 @@
+import * as archiver from 'archiver';
 import {ObjectID} from 'bson';
 import {Response} from 'express';
+import * as fs from 'fs';
 import * as GraphicsMagick from 'gm';
+import * as https from 'https';
 import * as mongoose from 'mongoose';
-import CarModel, {ChoicesStatusCar} from '../../app/models/car.model';
 import Car, {
   ICarModel
 } from '../../app/models/car.model';
-import UserModel from '../../app/models/user.model';
+import CarModel, {ChoicesStatusCar} from '../../app/models/car.model';
 import User from '../../app/models/user.model';
+import UserModel from '../../app/models/user.model';
 import VenueModel, {
   IVenueModel
 } from '../../app/models/venue.model';
@@ -42,10 +45,16 @@ class InventoryController {
     this.deleteInventory = this.deleteInventory.bind(this);
     this.reportCar = this.reportCar.bind(this);
     this.addComment = this.addComment.bind(this);
+    this.downloadFile = this.downloadFile.bind(this);
+    this.downloadImages = this.downloadImages.bind(this);
   }
 
   public async index(req: IRequest, res: Response) {
-    res.render('app/index', {token: await req.user.generateToken()});
+    try {
+      res.render('app/index', {token: await req.user.generateToken()});
+    } catch (e) {
+      console.log(e);
+    }
   }
 
   public async detail(req: IRequest, res: Response) {
@@ -358,6 +367,42 @@ class InventoryController {
       /* istanbul ignore next */
       res.status(400).json(e);
     }
+  }
+
+  public async downloadFile(url: string, dest: string) {
+    return new Promise(async (resolve, reject) => {
+      try {
+        // generate directory name from dest var
+        const directories: string[] = dest.split('/');
+        directories.pop();
+
+        // validate that the directory exist and create recursive if it does not exist
+        const directoyName = directories.join('/');
+        if (!fs.existsSync(directoyName)) {
+          fs.mkdirSync(directoyName, {recursive: true});
+        }
+        const file = fs.createWriteStream(dest);
+        // download file
+        https.get(url, (response) => {
+          response.pipe(file);
+          file.on('finish', () => {
+            file.close();
+            resolve(dest);
+          });
+        });
+      } catch (e) {
+        // Validate that the file exists and delete it if it exists.
+        if (fs.existsSync(dest)) {
+          fs.unlink(dest, (err) => {
+            if (err) {
+              reject(err);
+            }
+          });
+        } else {
+          reject(e);
+        }
+      }
+    });
   }
 
   public async uploadFile(req: IRequest, res: Response) {
@@ -837,6 +882,130 @@ class InventoryController {
       /* istanbul ignore next */
       res.status(400).json({
         message: 'Ha ocurrido un error',
+        status: 400
+      });
+    }
+  }
+
+  public async downloadImages(req: IRequest, res: Response) {
+    const {id} = req.params;
+    const {cars} = req.body;
+    const {team} = req.user;
+    console.log('cars', cars);
+    try {
+      const inventory = await InventoryModel.findOne({
+        _id: id,
+        team
+      }, {
+        name: true
+      });
+      if (inventory) {
+        const inventoriesCars = await InventoryModel.aggregate([{
+          $match: {
+            team,
+            _id: mongoose.Types.ObjectId(id)
+          }
+        }, {
+          $project: {
+            cars: {
+              $filter: {
+                input: '$cars',
+                as: 'cars',
+                cond: {
+                  $and: [
+                    {
+                      $in: ['$$cars._id', cars.map((car: string) => mongoose.Types.ObjectId(car))]
+                    }, {
+                      $ne: ['$$cars.images', []]
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }, {
+          $unwind: '$cars'
+        }, {
+          $replaceRoot: {
+            newRoot: '$cars'
+          }
+        }, {
+          $lookup: {
+            from: 'inventoryfiles',
+            localField: 'images',
+            foreignField: '_id',
+            as: 'images'
+          }
+        }, {
+          $lookup: {
+            from: 'cars',
+            localField: 'car',
+            foreignField: '_id',
+            as: 'car'
+          }
+        }, {
+          $unwind: '$car'
+        }, {
+          $lookup: {
+            from: 'venues',
+            localField: 'venue',
+            foreignField: '_id',
+            as: 'venue'
+          }
+        }, {
+          $unwind: '$venue'
+        }, {
+           $project: {
+              images: 1,
+              venue: 1,
+              car: 1
+           }
+        }]);
+        const archive = archiver('zip');
+        archive.on('error', (err) => {
+          res.status(500).send({
+            error: err.message
+          });
+        });
+        const filename = `${inventory.name}.zip`;
+        archive.on('end', () => {
+          console.log(`${filename}: Archive wrote ${(archive.pointer() / (1024 * 1024)).toFixed(2)}MB`);
+        });
+        res.attachment(filename);
+        archive.pipe(res);
+        for (const car of inventoriesCars) {
+          for (const image of car.images) {
+            const destDirectory = `/tmp/${image._id}.${image.file.name.split('.')[image.file.name.split('.').length - 1]}`;
+            await this.downloadFile(image.file.url, destDirectory);
+            archive.file(destDirectory, {
+              name: `${car.car.vin}/IMAGE${image._id.toString().substr(image._id.length - 10, 10).toUpperCase()}.${image.file.name.split('.')[image.file.name.split('.').length - 1]}`
+            });
+            // clear simages
+            setTimeout(() => {
+              if (fs.existsSync(destDirectory)) {
+                console.log(`clear ${destDirectory}`);
+                fs.unlink(destDirectory, (err) => {
+                  if (err) {
+                    console.log(err);
+                  }
+                });
+              }
+            }, 60000);
+          }
+        }
+        archive.finalize();
+      } else {
+        res.status(404).json({
+        message: 'No se ha encontrado el inventario.',
+        status: 404
+      });
+      }
+    } catch (e) {
+      /* istanbul ignore next */
+      console.log(e);
+      /* istanbul ignore next */
+      res.status(400).json({
+        message: e,
         status: 400
       });
     }

@@ -42,6 +42,7 @@ import CopyText from '../Utils/CopyText';
 import ImageLazyLoad from '../Utils/ImageLazyLoad';
 import Row from '../Utils/Row';
 import InventoryCarComments from './InventoryCarComments';
+import ApiService from "../../utils/axios";
 
 declare let window: IWindow;
 
@@ -172,12 +173,13 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
     this.clearFilter = this.clearFilter.bind(this);
     this.sendToDetailFilteredByState = this.sendToDetailFilteredByState.bind(this);
     this.sendToDetailFilteredByVenue = this.sendToDetailFilteredByVenue.bind(this);
+    this.downloadImages = this.downloadImages.bind(this);
     this.changeTab = this.changeTab.bind(this);
     const {tab} = this.props.match.params;
     if (tab && tab === 'detail') {
       this.state.tab = 'detail';
     }
-    this.columns = [ /* {
+    this.columns = [ {
       dataField: 'selected',
       text: '',
       // headerFormatter: this.selectedHeaderFormatter,
@@ -195,7 +197,7 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
         minWidth: '60px',
         width: '60px'
       }
-    }, */ {
+    }, {
       dataField: 'brand',
       text: 'Vehículo',
       formatter: this.brandFormatter,
@@ -799,18 +801,16 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
                     >
                       <i className="fa fa-fw fa-download"/> Exportar Excel
                     </button>
-                    { /* <div className="btn-group btn-group-sm" style={{marginLeft: '5px'}}>
+                    <div className="btn-group btn-group-sm" style={{marginLeft: '5px'}}>
                       <button type="button" className="btn btn-success"><i className="fa fa-fw fa-cogs"/> Acciones</button>
                       <button type="button" className="btn btn-success dropdown-toggle" data-toggle="dropdown">
                         <span className="caret"/>
                         <span className="sr-only">Toggle Dropdown</span>
                       </button>
                       <ul className="dropdown-menu" role="menu">
-                        <li><a href="javascript:void(0)"><i className="fa fa-fw fa-copy"/> Copiar</a></li>
-                        <li><a href="javascript:void(0)"><i className="fa fa-fw fa-paste"/> Pegar</a></li>
-                        <li><a href="javascript:void(0)"><i className="fa fa-fw fa-close"/> Eliminar</a></li>
+                        <li onClick={this.downloadImages}><a href="javascript:void(0)"><i className="fa fa-fw fa-copy"/> Descargar Imagenes</a></li>
                       </ul>
-                    </div> */}
+                    </div>
                   </div>
                 </div>
                 <div className="box-body no-padding" id="table-detail-inventory" style={{
@@ -925,6 +925,21 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
         </section>
       </AppContainer>
     );
+  }
+
+  private downloadImages() {
+    const {id} = this.props.match.params;
+    const {selectedItems, summary} = this.props.inventories;
+    const api: ApiService = new ApiService();
+    api.downloadImages(id, Object.keys(selectedItems))
+      .then((response) => {
+        const url = window.URL.createObjectURL(new Blob([response.data]));
+        const link = document.createElement('a');
+        link.href = url;
+        link.setAttribute('download', `${summary.name}.zip`);
+        document.body.appendChild(link);
+        link.click();
+      });
   }
 
   private filterVenues(value: any) {
