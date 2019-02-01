@@ -64,12 +64,20 @@ class AppController {
             return next(loginErr);
           } else {
             user.lastLogin = new Date();
-            user.save((err: any) => {
+            user.save(async (err: any) => {
               /* istanbul ignore if */
               if (err) {
                 console.log(err); // handle errors!
               } else {
-                return res.redirect('/');
+                try {
+                  user = await UserModel.findById(user._id).populate({
+                    path: 'userPermissions',
+                    select: ['codeName']
+                  });
+                  return res.redirect(user.hasPermission('viewInventory') ? '/inventory/' : '/');
+                } catch (e) {
+                  console.log(err); // handle errors!
+                }
               }
             });
           }

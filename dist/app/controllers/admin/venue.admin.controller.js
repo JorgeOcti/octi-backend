@@ -1,6 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 const inventory_model_1 = require("../../../inventory/models/inventory.model");
+const server_1 = require("../../../server");
 const user_model_1 = require("../../models/user.model");
 const venue_model_1 = require("../../models/venue.model");
 class AdminVenueController {
@@ -117,6 +118,10 @@ class AdminVenueController {
                     company,
                     type
                 }).save();
+                server_1.io.to(`venue-list-${team}`).emit('REFRESH', {
+                    update: true,
+                    updatedBy: req.user._id
+                });
                 res.status(201).json({
                     message: 'Sucursal agregada satisfactoriamente.',
                     venue: newVenue
@@ -167,6 +172,10 @@ class AdminVenueController {
                     message: 'Sucursal editada satisfactoriamente.',
                     venue
                 };
+                server_1.io.to(`venue-list-${team}`).emit('REFRESH', {
+                    update: true,
+                    updatedBy: req.user._id
+                });
                 res.status(200).json(response);
             }
             else {
@@ -238,6 +247,10 @@ class AdminVenueController {
                             message: 'Sucursal eliminada satisfactoriamente.',
                             id: venue._id
                         };
+                        server_1.io.to(`venue-list-${team}`).emit('REFRESH', {
+                            update: true,
+                            updatedBy: req.user._id
+                        });
                         res.status(200).json(response);
                     }
                 }

@@ -45,6 +45,10 @@ const carSchema = new mongoose.Schema({
         default: '',
         trim: true
     },
+    isExhibition: {
+        type: Boolean,
+        default: false
+    },
     team: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Team'
@@ -67,8 +71,12 @@ const carSchema = new mongoose.Schema({
 }, {
     timestamps: true
 });
-carSchema.index({ vin: 1 }, { unique: true });
-carSchema.index({ company: 1, vin: 1 }, { unique: true });
+carSchema.index({
+    team: 1, status: 1, createdAt: -1
+});
+carSchema.index({ team: 1, vin: 1 }, {
+    unique: true
+});
 // carSchema.index({
 //   vin: 'text',
 //   brand: 'text',

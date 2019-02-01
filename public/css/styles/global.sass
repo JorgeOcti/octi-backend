@@ -29,12 +29,12 @@
     border-color: $primary
 
 .deleted-item
-  transition: background-color 500ms linear
+  transition: background-color 500ms
   background-color: transparentize($redErros, 0.6) !important
   color: $white
 
 .editing-item
-  transition: background-color 300ms ease
+  transition: background-color 500ms
   background-color: transparentize($primary, 0.4) !important
   color: $white
 
@@ -132,3 +132,6 @@
   text-align: center
   padding: 10px 50px
   z-index: 9999
+
+.background-transition
+  transition: all 500ms

@@ -2,6 +2,7 @@ import {Response} from 'express';
 import {PaginateOptions, PaginateResult} from 'mongoose';
 import {IRequest} from '../../../interfaces/global.interface';
 import Inventory from '../../../inventory/models/inventory.model';
+import {io} from '../../../server';
 import User from '../../models/user.model';
 import Venue, {IVenueModel} from '../../models/venue.model';
 
@@ -118,6 +119,10 @@ class AdminVenueController {
           company,
           type
         }).save();
+        io.to(`venue-list-${team}`).emit('REFRESH', {
+          update: true,
+          updatedBy: req.user._id
+        });
         res.status(201).json({
           message: 'Sucursal agregada satisfactoriamente.',
           venue: newVenue
@@ -168,6 +173,10 @@ class AdminVenueController {
           message: 'Sucursal editada satisfactoriamente.',
           venue
         };
+        io.to(`venue-list-${team}`).emit('REFRESH', {
+          update: true,
+          updatedBy: req.user._id
+        });
         res.status(200).json(response);
       } else {
         const response = {
@@ -235,6 +244,10 @@ class AdminVenueController {
               message: 'Sucursal eliminada satisfactoriamente.',
               id: venue._id
             };
+            io.to(`venue-list-${team}`).emit('REFRESH', {
+              update: true,
+              updatedBy: req.user._id
+            });
             res.status(200).json(response);
           }
         } else {

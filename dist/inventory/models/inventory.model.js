@@ -51,7 +51,15 @@ const inventoryCarSchema = new mongoose.Schema({
             ref: 'InventoryFile'
         }],
     comments: [invetoryCommentCars],
-    customizedStatus: {
+    label: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'InventoryLabel'
+    },
+    labelText: {
+        type: String,
+        default: ''
+    },
+    labelBy: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User'
     },

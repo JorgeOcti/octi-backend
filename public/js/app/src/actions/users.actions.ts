@@ -331,10 +331,10 @@ export function deleteUserAction(id: string) {
     const api: ApiService = new ApiService();
     api.deleteUser(id)
       .then((response: AxiosResponse): void => {
-        // effect when removing user
         swal(response.data.message, {
           icon: 'success'
         });
+        // effect when removing user
         $(`#user-${id}`)
           .addClass('deleted-item');
         setTimeout(() => {

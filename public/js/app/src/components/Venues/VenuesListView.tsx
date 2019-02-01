@@ -21,7 +21,7 @@ import AppContainer from '../../container/AppContainer';
 import {IWindow} from '../../interfaces/window';
 import {hasPermission} from '../../utils/common';
 import ModalView from '../Modal/ModalView';
-import Paginator from '../Paginator';
+import Paginator from '../Utils/Paginator';
 import VenueFormView from './VenueFormView';
 
 interface IPropsType extends RouteComponentProps<{ ticket: string }> {
@@ -44,6 +44,8 @@ declare let window: IWindow;
 
 class VenuesListView extends React.Component<IPropsType, IStateType> {
 
+  private socket: SocketIOClient.Socket;
+
   constructor(props: IPropsType) {
     super(props);
     this.changePage = this.changePage.bind(this);
@@ -59,6 +61,22 @@ class VenuesListView extends React.Component<IPropsType, IStateType> {
     // set the title of the page
     document.title = 'OSA Andes | Listado de sucursales';
     this.props.getVenuesAction(pagination.page);
+
+    // socket
+    this.socket = io.connect(`${location.protocol}//${location.host}`, {
+      secure: location.protocol === 'https:',
+      reconnection: true,
+      query: {token: (window.user as any).token}
+    });
+    this.socket.on('connect', () => {
+      this.socket.emit('join', {room: `venue-list-${window.user.team}`});
+    });
+    this.socket.on('REFRESH', (data: any): void => {
+      if (data.update && data.updatedBy !== window.user._id) {
+        const {pagination} = this.props.venues;
+        this.props.getVenuesAction(pagination.page);
+      }
+    });
   }
 
   public componentDidCatch(error: Error, errorInfo: ErrorInfo): void {
@@ -73,6 +91,7 @@ class VenuesListView extends React.Component<IPropsType, IStateType> {
     if (this.props.venues.source) {
       this.props.venues.source.cancel('Operation canceled by the user.');
     }
+    this.socket.disconnect();
   }
 
   public render(): React.ReactElement<IPropsType> {
@@ -113,7 +132,11 @@ class VenuesListView extends React.Component<IPropsType, IStateType> {
                     venues.map((venue: IVenue) => {
                       const canDelete = venue.users && venue.users.length === 0 && venue.participants && venue.participants.length === 0;
                       return (
-                        <tr key={venue._id} id={`venue-${venue._id}`}>
+                        <tr
+                          key={venue._id}
+                          id={`venue-${venue._id}`}
+                          className={'background-transition'}
+                        >
                           <td className="middle">{venue.name}<br/>
                             {venue.company ? <span className={'text-sm text-muted'}>{venue.company.name}</span> : null}
                           </td>
@@ -175,11 +198,11 @@ class VenuesListView extends React.Component<IPropsType, IStateType> {
         'Agregar Sucursal',
         <VenueFormView/>,
         <React.Fragment>
-          <button type="button" className="btn btn-default" data-dismiss="modal">Cancelar</button>
-          <button type="button" className="btn btn-primary" onClick={this.processAddVenue}>Grabar</button>
+          <button type="button" className="btn btn-sm btn-default" data-dismiss="modal">Cancelar</button>
+          <button type="button" className="btn btn-sm btn-primary" onClick={this.processAddVenue}>Grabar</button>
         </React.Fragment>
       );
-    }, 400);
+    }, 200);
   }
 
   private processAddVenue(): void {
@@ -205,11 +228,11 @@ class VenuesListView extends React.Component<IPropsType, IStateType> {
         'Editar Sucursal',
         <VenueFormView update={true} />,
         <React.Fragment>
-          <button type="button" className="btn btn-default" data-dismiss="modal">Cancelar</button>
-          <button type="button" className="btn btn-primary" onClick={this.processUpdateVenue}>Editar</button>
+          <button type="button" className="btn btn-sm btn-default" data-dismiss="modal">Cancelar</button>
+          <button type="button" className="btn btn-sm btn-primary" onClick={this.processUpdateVenue}>Editar</button>
         </React.Fragment>
       );
-    }, 400);
+    }, 200);
   }
 
   private processUpdateVenue(): void {

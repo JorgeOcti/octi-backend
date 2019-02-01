@@ -20,7 +20,7 @@ import AppContainer from '../../container/AppContainer';
 import {IWindow} from '../../interfaces/window';
 import {hasPermission} from '../../utils/common';
 import ModalView from '../Modal/ModalView';
-import Paginator from '../Paginator';
+import Paginator from '../Utils/Paginator';
 import CompaniesFormView from './CompaniesFormView';
 
 interface IPropsType extends RouteComponentProps<{ ticket: string }> {
@@ -109,7 +109,11 @@ class CompaniesListView extends React.Component<IPropsType, IStateType> {
                   {
                     companies.map((company: ICompany) => {
                       return (
-                        <tr key={company._id} id={`company-${company._id}`}>
+                        <tr
+                          key={company._id}
+                          id={`company-${company._id}`}
+                          className={'background-transition'}
+                        >
                           <td className="middle">{company.name}</td>
                           <td className="middle hidden-xs">{moment(company.updatedAt).format('LLL')}</td>
                           {
@@ -163,8 +167,8 @@ class CompaniesListView extends React.Component<IPropsType, IStateType> {
         'Agregar Empresa',
         <CompaniesFormView />,
         <React.Fragment>
-          <button type="button" className="btn btn-default" data-dismiss="modal">Cancelar</button>
-          <button type="button" className="btn btn-primary" onClick={this.processAddCompany}>Grabar</button>
+          <button type="button" className="btn btn-sm btn-default" data-dismiss="modal">Cancelar</button>
+          <button type="button" className="btn btn-sm btn-primary" onClick={this.processAddCompany}>Grabar</button>
         </React.Fragment>
       );
     }, 400);
@@ -189,8 +193,8 @@ class CompaniesListView extends React.Component<IPropsType, IStateType> {
         'Editar Empresa',
         <CompaniesFormView />,
         <React.Fragment>
-          <button type="button" className="btn btn-default" data-dismiss="modal">Cancelar</button>
-          <button type="button" className="btn btn-primary" onClick={this.processUpdateCompany}>Editar</button>
+          <button type="button" className="btn btn-sm btn-default" data-dismiss="modal">Cancelar</button>
+          <button type="button" className="btn btn-sm btn-primary" onClick={this.processUpdateCompany}>Editar</button>
         </React.Fragment>
       );
     }, 400);

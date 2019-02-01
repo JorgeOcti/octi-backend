@@ -46,10 +46,6 @@ class ModalView extends React.Component<IPropsType, IStateType> {
       </div>
     );
   }
-
-  // public componentWillUnmount(){
-  //   $('#andesModal').unbind()
-  // }
 }
 
 const mapStateToProps = (state: { modal: IModalState, users: IUsersState }) => {

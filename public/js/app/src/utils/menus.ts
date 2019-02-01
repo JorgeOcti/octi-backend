@@ -44,6 +44,15 @@ if (hasPermission(window.user, 'viewInventory')) {
   });
 }
 
+if (hasPermission(window.user, 'viewLabel')) {
+  inventoryItems.push({
+    id: '2.2',
+    icon: 'fa-circle-o',
+    text: 'Etiquetas',
+    url: '/settings/labels/'
+  });
+}
+
 if (inventoryItems.length) {
   menus.push({
     id: '2',

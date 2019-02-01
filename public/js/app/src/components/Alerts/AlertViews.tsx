@@ -117,7 +117,11 @@ class AlertViews extends React.Component<IPropsType, IStateType> {
                   alerts.length ?
                     alerts.map((alert) => {
                       return (
-                        <tr key={alert._id} id={`alert-${alert._id}`}>
+                        <tr
+                          key={alert._id}
+                          id={`alert-${alert._id}`}
+                          className={'background-transition'}
+                        >
                           <td className="middle">{alert.name}</td>
                           <td className="middle text-center">{alert.lte !== 0 ? alert.lte : '-'}</td>
                           <td className="middle text-center">{alert.gte !== 0 ? alert.gte : '-'}</td>
@@ -181,8 +185,8 @@ class AlertViews extends React.Component<IPropsType, IStateType> {
         <AlertFormView users={users} changeTempAlert={this.changeTempAlert} />
       ,
       <React.Fragment>
-        <button type="button" className="btn btn-default" data-dismiss="modal">Cancelar</button>
-        <button type="button" className="btn btn-primary" onClick={this.processAddAlert}>Grabar</button>
+        <button type="button" className="btn btn-sm btn-sm btn-default" data-dismiss="modal">Cancelar</button>
+        <button type="button" className="btn btn-sm btn-sm btn-primary" onClick={this.processAddAlert}>Grabar</button>
       </React.Fragment>
     );
   }

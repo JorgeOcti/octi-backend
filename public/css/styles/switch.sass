@@ -1,0 +1,56 @@
+.switch
+  position: relative
+  display: inline-block
+  width: 30px
+  height: 17px
+  line-height: 17px
+  cursor: pointer
+  margin: 0
+  input
+    display: none
+    &:checked + .slider
+      background-color: #64bd63
+      &:before
+        transform: translateX(13px)
+    &:focus + .slider
+      box-shadow: 0 0 1px #64bd63
+  .slider
+    position: absolute
+    cursor: pointer
+    top: 0
+    left: 0
+    right: 0
+    bottom: 0
+    background-color: #ccc
+    transition: 0.4s
+    &.round
+      border-radius: 34px
+      &:before
+        border-radius: 50%
+    &:before
+      position: absolute
+      content: ""
+      height: 13px
+      width: 13px
+      left: 2px
+      bottom: 2px
+      background-color: #fff
+      transition: 0.4s
+
+  .title
+    position: absolute
+    white-space: nowrap
+    left: 36px
+    line-height: 1.15
+  &.switch-blue input:checked + .slider
+    background-color: #2489c4
+
+.form-group-switch
+  display: inline-block
+  margin-bottom: 5px
+  .switch
+    vertical-align: top
+    top: 2px
+  .switch-label
+    vertical-align: top
+    padding-left: 10px

@@ -265,4 +265,49 @@ export default class ApiService {
     this.source = this.CancelToken.source();
     return this.source;
   }
+
+  public setLabel(inventory: string, car: string, carID: string, label: string, custom?: string): AxiosPromise {
+    return this.instance.post(
+      `/api/inventory/${inventory}/set-label/`, {
+        car,
+        label,
+        carID,
+        custom
+      }
+    );
+  }
+
+  public downloadImages(inventory: string, cars: string[]): AxiosPromise {
+    this.instance.defaults.responseType =  'blob';
+    return this.instance.post(
+      `/api/inventory/${inventory}/download-images/`, {
+        cars
+      }
+    );
+  }
+
+  public getLabels(page: number, pageSize?: number): AxiosPromise {
+    return this.instance.get(
+      `/api/admin/labels/?page=${page}${pageSize ? `&pageSize=${pageSize}` : ''}`
+    );
+  }
+
+  public createLabel(label: any): AxiosPromise {
+    return this.instance.post(
+      `/api/admin/labels/`, label
+    );
+  }
+
+  public updateLabel(label: any): AxiosPromise {
+    return this.instance.put(
+      `/api/admin/labels/${label._id}`, label
+    );
+  }
+
+  public deleteLabel(id: string): AxiosPromise {
+    return this.instance.delete(
+      `/api/admin/labels/${id}`
+    );
+  }
+
 }
