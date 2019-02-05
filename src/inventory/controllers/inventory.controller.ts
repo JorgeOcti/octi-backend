@@ -971,6 +971,7 @@ class InventoryController {
         archive.on('end', () => {
           console.log(`${filename}: Archive wrote ${(archive.pointer() / (1024 * 1024)).toFixed(2)}MB`);
         });
+        res.attachment(filename);
         let contentLength = 0;
         for (const car of inventoriesCars) {
           for (const image of car.images) {
@@ -993,7 +994,6 @@ class InventoryController {
           }
         }
         res.setHeader('size', contentLength);
-        res.attachment(filename);
         archive.pipe(res);
         archive.finalize();
       } else {

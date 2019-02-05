@@ -2,6 +2,7 @@
 ///<reference path="../../../src/types/react-bootstrap-table-next.d.ts"/>
 ///<reference path="../../../src/types/react-bootstrap-table2-filter.d.ts"/>
 ///<reference path="../../../src/types/react-bootstrap-table2-paginator.d.ts"/>
+import {CancelTokenSource, default as Axios} from 'axios';
 import * as moment from 'moment';
 import * as Raven from 'raven-js';
 import * as React from 'react';
@@ -63,6 +64,7 @@ interface IStateType {
   error: Error | null;
   setCharts: boolean;
   tab: string;
+  source: CancelTokenSource | null;
   downloadImages: {
     downloading: boolean;
     progress: number;
@@ -82,7 +84,8 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
       loaded: 0
     },
     setCharts: false,
-    tab: 'summary'
+    tab: 'summary',
+    source: null
   };
 
   venuesDetailChart: echarts.ECharts;
@@ -197,8 +200,8 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
       // headerFormatter: this.selectedHeaderFormatter,
       formatter: this.selectedFormatter,
       sort: true,
-      headerClasses: 'pointer middle-center',
-      classes: 'middle-center',
+      headerClasses: 'pointer middle-center hidden-xs hidden-sm',
+      classes: 'middle-center hidden-xs hidden-sm',
       headerStyle: {
         maxWidth: '60px',
         minWidth: '60px',
@@ -365,6 +368,9 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
     // cancel request if component is inmounted
     if (this.props.inventories.source) {
       this.props.inventories.source.cancel('Operation canceled by the user.');
+    }
+    if (this.state.source) {
+      (this.state.source as any).cancel('Operation canceled by the user.');
     }
     this.socket.disconnect();
   }
@@ -573,7 +579,7 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
       filter,
       selectedItems
     } = this.props.inventories;
-    const { tab } = this.state;
+    const { tab, source } = this.state;
     const selected = Object.keys(selectedItems);
     const {
       percentagePending,
@@ -815,7 +821,7 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
                     >
                       <i className="fa fa-fw fa-download"/> Exportar Excel
                     </button>
-                    <div className="btn-group btn-group-sm" style={{marginLeft: '5px'}}>
+                    <div className="btn-group btn-group-sm hidden-xs hidden-sm" style={{marginLeft: '5px'}}>
                       <button type="button" className="btn btn-success"><i className="fa fa-fw fa-cogs"/> Acciones</button>
                       <button type="button" className="btn btn-success dropdown-toggle" data-toggle="dropdown">
                         <span className="caret"/>
@@ -908,8 +914,26 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
                           </div>
                           {
                             this.state.downloadImages.downloading && this.state.downloadImages.sizeFile === 0 ?
-                              <div className="text-center">Estamos preparando las imágenes para descarga.</div>
-                            : <div className="text-center">Descargando imágenes {this.state.downloadImages.progress}%</div>
+                              <div className="text-center">
+                                Estamos preparando las imágenes.
+                                <button
+                                  className="btn btn-sm btn-danger"
+                                  style={{marginLeft: '10px'}}
+                                  onClick={() => (source as any).cancel('Operation canceled by the user.')}
+                                >
+                                  Cancelar
+                                </button>
+                              </div>
+                            : <div className="text-center">
+                                Descargando imágenes {this.state.downloadImages.progress}%
+                                <button
+                                  className="btn btn-sm btn-danger"
+                                  style={{marginLeft: '10px'}}
+                                  onClick={() => (source as any).cancel('Operation canceled by the user.')}
+                                >
+                                  Cancelar
+                                </button>
+                            </div>
                           }
                         </div>
                       </Row> : null
@@ -982,11 +1006,16 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
       const api: ApiService = new ApiService();
       const instance = api.getInstance();
       instance.defaults.responseType = 'blob';
+      const source = api.getSource();
+      this.setState({
+        source
+      });
       instance
         .post(
           `/api/inventory/${id}/download-images/`, {
             cars: ids
           }, {
+            cancelToken: source.token,
             onDownloadProgress: (progressEvent) => {
               const sizeFile = parseInt(progressEvent.srcElement.getResponseHeader('size'), 10);
               const {loaded} = progressEvent;
@@ -1043,8 +1072,10 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
             }
           });
         })
-        .catch((error) => {
-          swal('Descargar imágenes', 'ha ocurrido un error descargando las imágenes.', 'error');
+        .catch((err) => {
+          if (!Axios.isCancel(err)) {
+            swal('Descargar imágenes', 'ha ocurrido un error descargando las imágenes.', 'error');
+          }
           this.setState({
             downloadImages: {
               downloading: false,
