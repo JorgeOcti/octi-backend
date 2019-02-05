@@ -888,7 +888,6 @@ class InventoryController {
         const { id } = req.params;
         const { cars } = req.body;
         const { team } = req.user;
-        console.log('cars', cars);
         try {
             const inventory = await inventory_model_1.default.findOne({
                 _id: id,
@@ -958,7 +957,11 @@ class InventoryController {
                             car: 1
                         }
                     }]);
-                const archive = archiver('zip');
+                const archive = archiver('zip', {
+                    zlib: {
+                        level: 0
+                    }
+                });
                 archive.on('error', (err) => {
                     res.status(500).send({
                         error: err.message
@@ -972,6 +975,7 @@ class InventoryController {
                 let contentLength = 0;
                 for (const car of inventoriesCars) {
                     for (const image of car.images) {
+                        console.log(image.file.name);
                         const destDirectory = `/tmp/${car._id}${image._id}.${image.file.name.split('.')[image.file.name.split('.').length - 1]}`;
                         contentLength += await this.downloadFile(image.file.url, destDirectory);
                         archive.file(destDirectory, {
