@@ -4,8 +4,8 @@
 ///<reference path="../../../src/types/react-bootstrap-table2-paginator.d.ts"/>
 import * as moment from 'moment';
 import * as Raven from 'raven-js';
-import {ErrorInfo} from 'react';
 import * as React from 'react';
+import {ErrorInfo} from 'react';
 import BootstrapTable from 'react-bootstrap-table-next';
 import filterFactory from 'react-bootstrap-table2-filter';
 import paginationFactory from 'react-bootstrap-table2-paginator';
@@ -34,6 +34,7 @@ import {
 import {loadDataAction, ModalReduxAction} from '../../actions/modal.actions';
 import AppContainer from '../../container/AppContainer';
 import {IWindow} from '../../interfaces/window';
+import ApiService from '../../utils/axios';
 import {goToSection, maxText} from '../../utils/common';
 import ModalView from '../Modal/ModalView';
 import BootstrapSelect from '../Utils/BootstrapSelect';
@@ -42,7 +43,6 @@ import CopyText from '../Utils/CopyText';
 import ImageLazyLoad from '../Utils/ImageLazyLoad';
 import Row from '../Utils/Row';
 import InventoryCarComments from './InventoryCarComments';
-import ApiService from "../../utils/axios";
 
 declare let window: IWindow;
 
@@ -63,12 +63,24 @@ interface IStateType {
   error: Error | null;
   setCharts: boolean;
   tab: string;
+  downloadImages: {
+    downloading: boolean;
+    progress: number;
+    sizeFile: number;
+    loaded: number;
+  };
 }
 
 class InventoryDetailView extends React.Component<IPropsType, IStateType> {
 
   state = {
     error: null,
+    downloadImages: {
+      downloading: false,
+      progress: 0,
+      sizeFile: 0,
+      loaded: 0
+    },
     setCharts: false,
     tab: 'summary'
   };
@@ -680,7 +692,9 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
             </div>
             <div className="col-md-4 col-lg-4 pointer" onClick={() => this.sendToDetailFilteredByState('missing')}>
               <div className="info-box bg-red">
-                <span className="info-box-icon"><i className="fa fa-arrow-down"/></span>
+                <span className="info-box-icon">
+                  <i className="fa fa-arrow-down"/>
+                </span>
                 <div className="info-box-content">
                   <span className="info-box-text">Faltantes</span>
                   <span className="info-box-number count">
@@ -808,7 +822,9 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
                         <span className="sr-only">Toggle Dropdown</span>
                       </button>
                       <ul className="dropdown-menu" role="menu">
-                        <li onClick={this.downloadImages}><a href="javascript:void(0)"><i className="fa fa-fw fa-copy"/> Descargar Imagenes</a></li>
+                        <li onClick={this.downloadImages}>
+                          <a href="javascript:void(0)"><i className="fa fa-fw fa-download"/> Descargar Imagenes</a>
+                        </li>
                       </ul>
                     </div>
                   </div>
@@ -881,6 +897,23 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
                       </div>
                     </div>
                   </Row>
+                  {
+                    this.state.downloadImages.downloading ?
+                      <Row>
+                        <div className="col-md-12" style={{padding: '24px 25vh'}}>
+                          <div className="progress progress-xs progress-striped active">
+                            <div
+                              className="progress-bar progress-bar-success"
+                              style={{width: `${this.state.downloadImages.progress}%`}}/>
+                          </div>
+                          {
+                            this.state.downloadImages.downloading && this.state.downloadImages.sizeFile === 0 ?
+                              <div className="text-center">Estamos preparando las imágenes para descarga.</div>
+                            : <div className="text-center">Descargando imágenes {this.state.downloadImages.progress}%</div>
+                          }
+                        </div>
+                      </Row> : null
+                  }
                   <Row>
                     <div className="col-md-12">
                       {
@@ -929,17 +962,101 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
 
   private downloadImages() {
     const {id} = this.props.match.params;
-    const {selectedItems, summary} = this.props.inventories;
-    const api: ApiService = new ApiService();
-    api.downloadImages(id, Object.keys(selectedItems))
-      .then((response) => {
-        const url = window.URL.createObjectURL(new Blob([response.data]));
-        const link = document.createElement('a');
-        link.href = url;
-        link.setAttribute('download', `${summary.name}.zip`);
-        document.body.appendChild(link);
-        link.click();
+    const {selectedItems, summary, carsTable} = this.props.inventories;
+    const ids = Object.keys(selectedItems);
+    const countImages: number = carsTable
+      .filter((car) => ids.includes(car._id))
+      .reduce((a: any, b: any) => {
+        return a + b.images.length;
+      }, 0);
+
+    if (countImages > 0) {
+      this.setState({
+        downloadImages: {
+          downloading: true,
+          progress: 0,
+          sizeFile: 0,
+          loaded: 0
+        }
       });
+      const api: ApiService = new ApiService();
+      const instance = api.getInstance();
+      instance.defaults.responseType = 'blob';
+      instance
+        .post(
+          `/api/inventory/${id}/download-images/`, {
+            cars: ids
+          }, {
+            onDownloadProgress: (progressEvent) => {
+              const sizeFile = parseInt(progressEvent.srcElement.getResponseHeader('size'), 10);
+              const {loaded} = progressEvent;
+              if (sizeFile) {
+                const progress = Math.round((progressEvent.loaded * 100) / sizeFile);
+                this.setState({
+                  downloadImages: {
+                    downloading: true,
+                    progress,
+                    sizeFile,
+                    loaded
+                  }
+                });
+              }
+            }
+          }
+        )
+        .then((response) => {
+          const blob = new Blob([response.data], {
+            type: 'application/zip'
+          });
+          const fileName = `${summary.name}.zip`;
+          if (typeof window.navigator.msSaveBlob !== 'undefined') {
+            // IE workaround for "HTML7007: One or more blob URLs were
+            // revoked by closing the blob for which they were created.
+            // These URLs will no longer resolve as the data backing
+            // the URL has been freed."
+            window.navigator.msSaveBlob(blob, fileName);
+          } else {
+            const blobURL = window.URL.createObjectURL(blob);
+            const tempLink = document.createElement('a');
+            tempLink.style.display = 'none';
+            tempLink.href = blobURL;
+            tempLink.setAttribute('download', fileName);
+            // Safari thinks _blank anchor are pop ups. We only want to set _blank
+            // target if the browser does not support the HTML5 download attribute.
+            // This allows you to download files in desktop safari if pop up blocking
+            // is enabled.
+            if (typeof tempLink.download === 'undefined') {
+              tempLink.setAttribute('target', '_blank');
+            }
+            document.body.appendChild(tempLink);
+            tempLink.click();
+            document.body.removeChild(tempLink);
+            window.URL.revokeObjectURL(blobURL);
+          }
+          this.setState({
+            downloadImages: {
+              ...this.state.downloadImages,
+              downloading: false,
+              progress: 100,
+              sizeFile: 0,
+              loaded: 0
+            }
+          });
+        })
+        .catch((error) => {
+          swal('Descargar imágenes', 'ha ocurrido un error descargando las imágenes.', 'error');
+          this.setState({
+            downloadImages: {
+              downloading: false,
+              progress: 0,
+              sizeFile: 0,
+              loaded: 0
+            }
+          });
+        });
+    } else {
+      swal('Descargar imágenes', 'No has seleccionado vehículos que contengan imágenes.', 'error');
+    }
   }
 
   private filterVenues(value: any) {
@@ -1147,6 +1264,21 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
         trigger: 'axis',
         axisPointer: {
           type: 'shadow'
+        },
+        formatter: (params: any) => {
+          const colorSpan = (color: any) => '<span style="display:inline-block;margin-right:3px;border-radius:10px;width:9px;height:9px;background-color:' + color + '"/>';
+          let rez = `<span> ${params[0].axisValue}</span>`;
+          // console.log(params); //quite useful for debug
+          let total = 0;
+          params.forEach((item: any) => {
+            // console.log(item); //quite useful for debug
+            const value = item.data ? item.data : 0;
+            const xx = `<br / > ${colorSpan(item.color)} ${item.seriesName}: ${value}`;
+            total += value;
+            rez += xx;
+          });
+          rez += `<br /> ${colorSpan('#ffffff')} <strong>Total: ${total}</strong>`;
+          return rez;
         }
       },
       legend: {

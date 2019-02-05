@@ -277,13 +277,8 @@ export default class ApiService {
     );
   }
 
-  public downloadImages(inventory: string, cars: string[]): AxiosPromise {
-    this.instance.defaults.responseType =  'blob';
-    return this.instance.post(
-      `/api/inventory/${inventory}/download-images/`, {
-        cars
-      }
-    );
+  public getInstance(): AxiosInstance {
+    return this.instance;
   }
 
   public getLabels(page: number, pageSize?: number): AxiosPromise {

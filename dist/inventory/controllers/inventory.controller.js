@@ -373,7 +373,7 @@ class InventoryController {
                     response.pipe(file);
                     file.on('finish', () => {
                         file.close();
-                        resolve(dest);
+                        resolve(response.headers['content-length'] ? parseInt(response.headers['content-length'], 10) : 0);
                     });
                 });
             }
@@ -968,12 +968,11 @@ class InventoryController {
                 archive.on('end', () => {
                     console.log(`${filename}: Archive wrote ${(archive.pointer() / (1024 * 1024)).toFixed(2)}MB`);
                 });
-                res.attachment(filename);
-                archive.pipe(res);
+                let contentLength = 0;
                 for (const car of inventoriesCars) {
                     for (const image of car.images) {
-                        const destDirectory = `/tmp/${image._id}.${image.file.name.split('.')[image.file.name.split('.').length - 1]}`;
-                        await this.downloadFile(image.file.url, destDirectory);
+                        const destDirectory = `/tmp/${car._id}${image._id}.${image.file.name.split('.')[image.file.name.split('.').length - 1]}`;
+                        contentLength += await this.downloadFile(image.file.url, destDirectory);
                         archive.file(destDirectory, {
                             name: `${car.car.vin}/IMAGE${image._id.toString().substr(image._id.length - 10, 10).toUpperCase()}.${image.file.name.split('.')[image.file.name.split('.').length - 1]}`
                         });
@@ -990,6 +989,9 @@ class InventoryController {
                         }, 60000);
                     }
                 }
+                res.setHeader('size', contentLength);
+                res.attachment(filename);
+                archive.pipe(res);
                 archive.finalize();
             }
             else {

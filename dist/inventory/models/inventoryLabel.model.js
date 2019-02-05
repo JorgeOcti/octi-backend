@@ -45,6 +45,7 @@ exports.inventoryLabelSchema = new mongoose.Schema({
     timestamps: true
 });
 mongoose.plugin(mongoosePaginate);
+exports.inventoryLabelSchema.index({ active: 1, team: 1 });
 const InventoryLabel = mongoose.model('InventoryLabel', exports.inventoryLabelSchema);
 exports.default = InventoryLabel;
 //# sourceMappingURL=inventoryLabel.model.js.map
