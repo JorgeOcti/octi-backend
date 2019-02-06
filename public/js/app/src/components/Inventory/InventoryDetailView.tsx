@@ -35,6 +35,7 @@ import {
 import {loadDataAction, ModalReduxAction} from '../../actions/modal.actions';
 import AppContainer from '../../container/AppContainer';
 import {IWindow} from '../../interfaces/window';
+import {IFilterCar} from '../../reducers/inventory.reducer';
 import ApiService from '../../utils/axios';
 import {goToSection, maxText} from '../../utils/common';
 import ModalView from '../Modal/ModalView';
@@ -53,8 +54,8 @@ interface IPropsType extends RouteComponentProps<{ id: string, tab?: string }> {
 
   inventoryDetailChangeSelected(item: string): InventoryReduxAction;
   updateCommentsAction(inventoryCar: IInventoryCar): InventoryReduxAction;
-  inventoryDetailChangeFilter(filter: { text: string; venues: string[]; states: string[]; }): InventoryReduxAction;
-  inventoryDetailChangeFilterText(filter: { text: string; venues: string[]; states: string[]; }): InventoryReduxAction;
+  inventoryDetailChangeFilter(filter: IFilterCar): InventoryReduxAction;
+  inventoryDetailChangeFilterText(filter: IFilterCar): InventoryReduxAction;
   getInventoryDetailAction(id: string, update: boolean): InventoryReduxAction;
   loadDataAction(title: string, body: JSX.Element, footer?: JSX.Element): ModalReduxAction;
   actionSetLabel(inventory: string, car: string, carID: string, label: IInventoryLabel): ModalReduxAction;
@@ -114,6 +115,11 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
     leftover: 'Sobrante',
     missing: 'Faltante',
     reported: 'Reportado'
+  };
+
+  private typeText: any = {
+    new: 'Nuevos',
+    used: 'Usados'
   };
 
   private iconStatus: any = {
@@ -176,6 +182,7 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
     this.selectedFormatter = this.selectedFormatter.bind(this);
     this.filterVenues = this.filterVenues.bind(this);
     this.filterStatus = this.filterStatus.bind(this);
+    this.filterType = this.filterType.bind(this);
     this.selectedHeaderFormatter = this.selectedHeaderFormatter.bind(this);
     this.statusFormatter = this.statusFormatter.bind(this);
     this.brandFormatter = this.brandFormatter.bind(this);
@@ -282,7 +289,7 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
       }
     }, {
       dataField: 'status',
-      text: 'Status',
+      text: 'Estado',
       sort: true,
       formatter: this.statusFormatter,
       // formatter: (cell: string) => (this.statusText[cell]),
@@ -842,7 +849,7 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
                   display: loadingDetail ? 'none' : ''
                 }}>
                   <Row style={{margin: '5px 0'}}>
-                    <div className="col-md-4">
+                    <div className="col-md-12">
                       <div className="form-group">
                         <label htmlFor="cars" className="control-label">Vehículos</label>
                         <input
@@ -891,7 +898,26 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
                         />
                       </div>
                     </div>
-                    <div className="col-md-2">
+                    <div className="col-md-3">
+                      <div className="form-group">
+                        <label htmlFor="states" className="control-label">Nuevos/Usados</label>
+                        <BootstrapSelect
+                          noneSelectedText="Todos"
+                          displayItems={4}
+                          selectedText="estados seleccionados."
+                          separator=" - "
+                          options={Object
+                            .keys(this.typeText)
+                            .map((type) => ({
+                              value: type,
+                              text: this.typeText[type]
+                            }))}
+                          selected={[filter.type]}
+                          onClick={this.filterType}
+                        />
+                      </div>
+                    </div>
+                    <div className="col-md-3">
                       <div className="form-group">
                         <label className="control-label hidden-xs">&nbsp;</label>
                         <button
@@ -899,7 +925,7 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
                           onClick={this.clearFilter}
                           style={{paddingLeft: '5px'}}
                           disabled={
-                            filter.states.length || filter.text.length || filter.venues.length ? false : true}
+                            filter.states.length || filter.text.length || filter.venues.length  || filter.type.length ? false : true}
                         >
                           <i className="fa fa-fw fa-eraser"/> Limpiar
                         </button>
@@ -1113,9 +1139,18 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
     });
   }
 
+  private filterType(value: string) {
+    const {filter} = this.props.inventories;
+    this.props.inventoryDetailChangeFilter({
+      ...filter,
+      type: filter.type !== value ? value : ''
+    });
+  }
+
   private sendToDetailFilteredByState(state: string) {
     this.props.inventoryDetailChangeFilter({
       text: '',
+      type: '',
       venues: [],
       states: [state]
     });
@@ -1129,6 +1164,7 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
   private sendToDetailFilteredByVenue(venue: string) {
     this.props.inventoryDetailChangeFilter({
       text: '',
+      type: '',
       venues: [venue],
       states: []
     });
@@ -1143,6 +1179,7 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
     this.props.inventoryDetailChangeFilter({
       venues: [],
       states: [],
+      type: '',
       text: ''
     });
     $('#cars').val('');
@@ -1649,8 +1686,8 @@ const mapDispatchToProps = (dispatch: any ) => {
     updateCommentsAction: (inventoryCar: IInventoryCar) => dispatch(updateInventoryCarAction(inventoryCar)),
     inventoryDetailChangeSelected: (item: string) => dispatch(inventoryDetailChangeSelected(item)),
     getInventoryDetailAction: (id: string, update: boolean) => dispatch(getInventoryDetailAction(id, update)),
-    inventoryDetailChangeFilter: (filter: { text: string; venues: string[]; states: string[]; }) => dispatch(inventoryDetailChangeFilter(filter)),
-    inventoryDetailChangeFilterText: (filter: { text: string; venues: string[]; states: string[]; }) => dispatch(inventoryDetailChangeFilterText(filter)),
+    inventoryDetailChangeFilter: (filter: IFilterCar) => dispatch(inventoryDetailChangeFilter(filter)),
+    inventoryDetailChangeFilterText: (filter: IFilterCar) => dispatch(inventoryDetailChangeFilterText(filter)),
     actionSetLabel: (inventory: string, car: string, carID: string, label: IInventoryLabel) => dispatch(actionSetLabel(inventory, car, carID, label))
   };
 };
