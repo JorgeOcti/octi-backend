@@ -15,6 +15,7 @@
     "@pusher/push-notifications-server": "^1.0.1",
     "another-json-schema": "^3.8.0",
     "archiver": "^3.0.0",
+    "async": "^2.6.1",
     "aws-sdk": "^2.384.0",
     "bcrypt": "^3.0.3",
     "bluebird": "^3.5.3",
@@ -72,6 +73,7 @@
   },
   "devDependencies": {
     "@types/archiver": "^2.1.2",
+    "@types/async": "^2.4.0",
     "@types/aws-sdk": "^2.7.0",
     "@types/axios": "^0.14.0",
     "@types/bcrypt": "^3.0.0",

@@ -972,29 +972,38 @@ class InventoryController {
                     console.log(`${filename}: Archive wrote ${(archive.pointer() / (1024 * 1024)).toFixed(2)}MB`);
                 });
                 res.attachment(filename);
-                let contentLength = 0;
+                const imagesToDownload = [];
+                const imagesToCompress = [];
                 for (const car of inventoriesCars) {
                     for (const image of car.images) {
                         console.log(image.file.name);
                         const destDirectory = `/tmp/${car._id}${image._id}.${image.file.name.split('.')[image.file.name.split('.').length - 1]}`;
-                        contentLength += await this.downloadFile(image.file.url, destDirectory);
-                        archive.file(destDirectory, {
+                        imagesToDownload.push(this.downloadFile(image.file.url, destDirectory));
+                        imagesToCompress.push({
+                            destDirectory,
                             name: `${car.car.vin}/IMAGE${image._id.toString().substr(image._id.length - 10, 10).toUpperCase()}.${image.file.name.split('.')[image.file.name.split('.').length - 1]}`
                         });
-                        // clear simages
-                        setTimeout(() => {
-                            if (fs.existsSync(destDirectory)) {
-                                console.log(`clear ${destDirectory}`);
-                                fs.unlink(destDirectory, (err) => {
-                                    if (err) {
-                                        console.log(err);
-                                    }
-                                });
-                            }
-                        }, 60000);
                     }
                 }
-                res.setHeader('size', contentLength);
+                // download images
+                const results = await Promise.all(imagesToDownload);
+                // compress images
+                imagesToCompress.map((image) => {
+                    archive.file(image.destDirectory, {
+                        name: image.name
+                    });
+                    setTimeout(() => {
+                        if (fs.existsSync(image.destDirectory)) {
+                            console.log(`clear ${image.destDirectory}`);
+                            fs.unlink(image.destDirectory, (err) => {
+                                if (err) {
+                                    console.log(err);
+                                }
+                            });
+                        }
+                    }, 60000);
+                });
+                res.setHeader('size', results.reduce((a, b) => a + b));
                 archive.pipe(res);
                 archive.finalize();
             }

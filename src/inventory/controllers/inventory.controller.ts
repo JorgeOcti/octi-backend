@@ -954,11 +954,11 @@ class InventoryController {
         }, {
           $unwind: '$venue'
         }, {
-           $project: {
-              images: 1,
-              venue: 1,
-              car: 1
-           }
+          $project: {
+            images: 1,
+            venue: 1,
+            car: 1
+          }
         }]);
         const archive = archiver('zip', {
           zlib: {
@@ -975,29 +975,38 @@ class InventoryController {
           console.log(`${filename}: Archive wrote ${(archive.pointer() / (1024 * 1024)).toFixed(2)}MB`);
         });
         res.attachment(filename);
-        let contentLength = 0;
+        const imagesToDownload: any  = [];
+        const imagesToCompress: any = [];
         for (const car of inventoriesCars) {
           for (const image of car.images) {
             console.log(image.file.name);
             const destDirectory = `/tmp/${car._id}${image._id}.${image.file.name.split('.')[image.file.name.split('.').length - 1]}`;
-            contentLength += await this.downloadFile(image.file.url, destDirectory);
-            archive.file(destDirectory, {
+            imagesToDownload.push(this.downloadFile(image.file.url, destDirectory));
+            imagesToCompress.push({
+              destDirectory,
               name: `${car.car.vin}/IMAGE${image._id.toString().substr(image._id.length - 10, 10).toUpperCase()}.${image.file.name.split('.')[image.file.name.split('.').length - 1]}`
             });
-            // clear simages
-            setTimeout(() => {
-              if (fs.existsSync(destDirectory)) {
-                console.log(`clear ${destDirectory}`);
-                fs.unlink(destDirectory, (err) => {
+          }
+        }
+        // download images
+        const results: any = await Promise.all(imagesToDownload);
+        // compress images
+        imagesToCompress.map((image: any) => {
+          archive.file(image.destDirectory, {
+            name: image.name
+          });
+          setTimeout(() => {
+              if (fs.existsSync(image.destDirectory)) {
+                console.log(`clear ${image.destDirectory}`);
+                fs.unlink(image.destDirectory, (err) => {
                   if (err) {
                     console.log(err);
                   }
                 });
               }
             }, 60000);
-          }
-        }
-        res.setHeader('size', contentLength);
+        });
+        res.setHeader('size', results.reduce((a: number, b: number) => a + b));
         archive.pipe(res);
         archive.finalize();
       } else {
