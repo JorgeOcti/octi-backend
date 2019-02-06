@@ -49,6 +49,8 @@ export const inventoryLabelSchema = new mongoose.Schema({
 
 mongoose.plugin(mongoosePaginate);
 
+inventoryLabelSchema.index({active: 1, team: 1});
+
 const InventoryLabel = mongoose.model<IInventoryLabelModel>('InventoryLabel', inventoryLabelSchema);
 
 export default InventoryLabel;

@@ -3,6 +3,7 @@ import {Dispatch} from 'redux';
 import {IInventoryCar} from '../../../../../src/interfaces/inventory.interface';
 import {IInventoryComment} from '../../../../../src/interfaces/inventoryComment.interface';
 import {IInventoryLabel} from '../../../../../src/interfaces/inventoryLabel.interface';
+import {IFilterCar} from '../reducers/inventory.reducer';
 import ApiService from '../utils/axios';
 
 export interface IInventorySummaryResult {
@@ -65,11 +66,7 @@ export interface IInventoryState {
   selectedItems: {
     [key: string]: any
   };
-  filter: {
-    text: string;
-    venues: string[];
-    states: string[];
-  };
+  filter: IFilterCar;
   pagination: {
     count: number;
     page: number;
@@ -249,11 +246,7 @@ export function inventoryDetailChangeSelected(item: string): IDetailInventorySel
 interface IDetailChangeFilter {
   type: '/INVENTORORIES/CHANGE_FILTER';
   payload: {
-    filter: {
-      text: string
-      venues: string[];
-      states: string[];
-    };
+    filter: IFilterCar
   };
   meta: {
     debounce: {
@@ -262,11 +255,7 @@ interface IDetailChangeFilter {
   };
 }
 
-export function inventoryDetailChangeFilter(filter: {
-  text: string
-  venues: string[];
-  states: string[];
-}): IDetailChangeFilter {
+export function inventoryDetailChangeFilter(filter: IFilterCar): IDetailChangeFilter {
   return {
     type: '/INVENTORORIES/CHANGE_FILTER',
     payload: {
@@ -280,11 +269,7 @@ export function inventoryDetailChangeFilter(filter: {
   };
 }
 
-export function inventoryDetailChangeFilterText(filter: {
-  text: string
-  venues: string[];
-  states: string[];
-}): IDetailChangeFilter {
+export function inventoryDetailChangeFilterText(filter: IFilterCar): IDetailChangeFilter {
   return {
     type: '/INVENTORORIES/CHANGE_FILTER',
     payload: {

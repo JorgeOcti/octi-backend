@@ -15,7 +15,8 @@ inventoryRouter.get('/inventory/:id/:tab/', middlewares_1.default.isLoggedIn, in
 // Inventories API Web
 inventoryRouter.get('/api/inventory/', middlewares_1.default.isLoggedIn, inventory_controller_1.default.list);
 inventoryRouter.post('/api/inventory/', middlewares_1.default.isLoggedIn, inventory_controller_1.default.create);
-inventoryRouter.post('/api/inventory/:id/comment/', middlewares_1.default.isJWTAuthenticated, inventory_controller_1.default.addComment);
+inventoryRouter.post('/api/inventory/:id/comment/', middlewares_1.default.isLoggedIn, inventory_controller_1.default.addComment);
+inventoryRouter.post('/api/inventory/:id/download-images/', middlewares_1.default.isJWTAuthenticated, inventory_controller_1.default.downloadImages);
 inventoryRouter.post('/api/inventory/:id/finish/', middlewares_1.default.isLoggedIn, inventory_controller_1.default.finishInventory);
 inventoryRouter.post('/api/inventory/:id/set-label/', middlewares_1.default.isLoggedIn, inventory_controller_1.default.setLabel);
 inventoryRouter.get('/api/inventory/:id/', middlewares_1.default.isLoggedIn, inventory_controller_1.default.detaill);

@@ -1,7 +1,10 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+const archiver = require("archiver");
 const bson_1 = require("bson");
+const fs = require("fs");
 const GraphicsMagick = require("gm");
+const https = require("https");
 const mongoose = require("mongoose");
 const car_model_1 = require("../../app/models/car.model");
 const car_model_2 = require("../../app/models/car.model");
@@ -32,9 +35,16 @@ class InventoryController {
         this.deleteInventory = this.deleteInventory.bind(this);
         this.reportCar = this.reportCar.bind(this);
         this.addComment = this.addComment.bind(this);
+        this.downloadFile = this.downloadFile.bind(this);
+        this.downloadImages = this.downloadImages.bind(this);
     }
     async index(req, res) {
-        res.render('app/index', { token: await req.user.generateToken() });
+        try {
+            res.render('app/index', { token: await req.user.generateToken() });
+        }
+        catch (e) {
+            console.log(e);
+        }
     }
     async detail(req, res) {
         const { team } = req.user;
@@ -77,12 +87,12 @@ class InventoryController {
                     venuesIDs.push(currentVenue._id.toString());
                     if (venue.cars && venue.cars.length) {
                         for (const car of venue.cars) {
-                            let currentCar = await car_model_1.default.findOne({
+                            let currentCar = await car_model_2.default.findOne({
                                 team,
                                 vin: car.vin
                             });
                             if (currentCar === null && car.vin && car.vin.trim().length) {
-                                currentCar = new car_model_1.default({
+                                currentCar = new car_model_2.default({
                                     team,
                                     company,
                                     vin: car.vin,
@@ -91,7 +101,7 @@ class InventoryController {
                                     denomination: car.denomination,
                                     brand: car.brand,
                                     patent: car.patent,
-                                    status: car_model_1.ChoicesStatusCar.active
+                                    status: car_model_2.ChoicesStatusCar.active
                                 });
                                 await currentCar.save();
                             }
@@ -118,7 +128,7 @@ class InventoryController {
             });
             await inventory.save();
             if (notification) {
-                const usersIDs = await user_model_1.default.find({
+                const usersIDs = await user_model_2.default.find({
                     venue: {
                         $in: venuesIDs
                     },
@@ -288,7 +298,7 @@ class InventoryController {
         const { team } = req.user;
         const { id } = req.params;
         try {
-            const updatedUser = await user_model_2.default.findById(req.user._id);
+            const updatedUser = await user_model_1.default.findById(req.user._id);
             if (!updatedUser) {
                 res.status(404).json({
                     message: 'No se ha encontrado el inventario solicitado.',
@@ -345,6 +355,42 @@ class InventoryController {
             /* istanbul ignore next */
             res.status(400).json(e);
         }
+    }
+    async downloadFile(url, dest) {
+        return new Promise(async (resolve, reject) => {
+            try {
+                // generate directory name from dest var
+                const directories = dest.split('/');
+                directories.pop();
+                // validate that the directory exist and create recursive if it does not exist
+                const directoyName = directories.join('/');
+                if (!fs.existsSync(directoyName)) {
+                    fs.mkdirSync(directoyName, { recursive: true });
+                }
+                const file = fs.createWriteStream(dest);
+                // download file
+                https.get(url, (response) => {
+                    response.pipe(file);
+                    file.on('finish', () => {
+                        file.close();
+                        resolve(response.headers['content-length'] ? parseInt(response.headers['content-length'], 10) : 0);
+                    });
+                });
+            }
+            catch (e) {
+                // Validate that the file exists and delete it if it exists.
+                if (fs.existsSync(dest)) {
+                    fs.unlink(dest, (err) => {
+                        if (err) {
+                            reject(err);
+                        }
+                    });
+                }
+                else {
+                    reject(e);
+                }
+            }
+        });
     }
     async uploadFile(req, res) {
         const { id } = req.params;
@@ -413,7 +459,7 @@ class InventoryController {
                 status: inventory_model_1.ChoicesStatusInventory.inProcess
             });
             if (inventory) {
-                const car = await car_model_2.default.findOne({
+                const car = await car_model_1.default.findOne({
                     vin,
                     team
                 });
@@ -520,7 +566,7 @@ class InventoryController {
         const { id } = req.params;
         const { vin, images } = req.body;
         try {
-            const car = await car_model_2.default.findOne({
+            const car = await car_model_1.default.findOne({
                 vin,
                 team
             });
@@ -669,11 +715,11 @@ class InventoryController {
                     team
                 });
                 if (inventory) {
-                    const newCar = new car_model_1.default({
+                    const newCar = new car_model_2.default({
                         vin,
                         vin2: vin.substr(vin.length - 6),
                         team,
-                        status: car_model_1.ChoicesStatusCar.active
+                        status: car_model_2.ChoicesStatusCar.active
                     });
                     await newCar.save();
                     textNotification = `${req.user.firstName} ${req.user.lastName} encontró ${vin} en ${venue.name}.`;
@@ -838,6 +884,146 @@ class InventoryController {
             });
         }
     }
+    async downloadImages(req, res) {
+        const { id } = req.params;
+        const { cars } = req.body;
+        const { team } = req.user;
+        try {
+            const inventory = await inventory_model_1.default.findOne({
+                _id: id,
+                team
+            }, {
+                name: true
+            });
+            if (inventory) {
+                const inventoriesCars = await inventory_model_1.default.aggregate([{
+                        $match: {
+                            team,
+                            _id: mongoose.Types.ObjectId(id)
+                        }
+                    }, {
+                        $project: {
+                            cars: {
+                                $filter: {
+                                    input: '$cars',
+                                    as: 'cars',
+                                    cond: {
+                                        $and: [
+                                            {
+                                                $in: ['$$cars._id', cars.map((car) => mongoose.Types.ObjectId(car))]
+                                            }, {
+                                                $ne: ['$$cars.images', []]
+                                            }
+                                        ]
+                                    }
+                                }
+                            }
+                        }
+                    }, {
+                        $unwind: '$cars'
+                    }, {
+                        $replaceRoot: {
+                            newRoot: '$cars'
+                        }
+                    }, {
+                        $lookup: {
+                            from: 'inventoryfiles',
+                            localField: 'images',
+                            foreignField: '_id',
+                            as: 'images'
+                        }
+                    }, {
+                        $lookup: {
+                            from: 'cars',
+                            localField: 'car',
+                            foreignField: '_id',
+                            as: 'car'
+                        }
+                    }, {
+                        $unwind: '$car'
+                    }, {
+                        $lookup: {
+                            from: 'venues',
+                            localField: 'venue',
+                            foreignField: '_id',
+                            as: 'venue'
+                        }
+                    }, {
+                        $unwind: '$venue'
+                    }, {
+                        $project: {
+                            images: 1,
+                            venue: 1,
+                            car: 1
+                        }
+                    }]);
+                const archive = archiver('zip', {
+                    zlib: {
+                        level: 0
+                    }
+                });
+                archive.on('error', (err) => {
+                    res.status(500).send({
+                        error: err.message
+                    });
+                });
+                const filename = `${inventory.name}.zip`;
+                archive.on('end', () => {
+                    console.log(`${filename}: Archive wrote ${(archive.pointer() / (1024 * 1024)).toFixed(2)}MB`);
+                });
+                res.attachment(filename);
+                const imagesToDownload = [];
+                const imagesToCompress = [];
+                for (const car of inventoriesCars) {
+                    for (const image of car.images) {
+                        console.log(image.file.name);
+                        const destDirectory = `/tmp/${car._id}${image._id}.${image.file.name.split('.')[image.file.name.split('.').length - 1]}`;
+                        imagesToDownload.push(this.downloadFile(image.file.url, destDirectory));
+                        imagesToCompress.push({
+                            destDirectory,
+                            name: `${car.car.vin}/IMAGE${image._id.toString().substr(image._id.length - 10, 10).toUpperCase()}.${image.file.name.split('.')[image.file.name.split('.').length - 1]}`
+                        });
+                    }
+                }
+                // download images
+                const results = await Promise.all(imagesToDownload);
+                // compress images
+                imagesToCompress.map((image) => {
+                    archive.file(image.destDirectory, {
+                        name: image.name
+                    });
+                    setTimeout(() => {
+                        if (fs.existsSync(image.destDirectory)) {
+                            console.log(`clear ${image.destDirectory}`);
+                            fs.unlink(image.destDirectory, (err) => {
+                                if (err) {
+                                    console.log(err);
+                                }
+                            });
+                        }
+                    }, 60000);
+                });
+                res.setHeader('size', results.reduce((a, b) => a + b));
+                archive.pipe(res);
+                archive.finalize();
+            }
+            else {
+                res.status(404).json({
+                    message: 'No se ha encontrado el inventario.',
+                    status: 404
+                });
+            }
+        }
+        catch (e) {
+            /* istanbul ignore next */
+            console.log(e);
+            /* istanbul ignore next */
+            res.status(400).json({
+                message: e,
+                status: 400
+            });
+        }
+    }
     async reportCar(req, res) {
         const { team, company, venue } = req.user;
         const { id } = req.params;
@@ -848,7 +1034,7 @@ class InventoryController {
                 team
             });
             if (inventory) {
-                const car = await car_model_1.default.findOneOrCreate({
+                const car = await car_model_2.default.findOneOrCreate({
                     vin,
                     team
                 }, {
@@ -859,7 +1045,7 @@ class InventoryController {
                     color,
                     team,
                     company,
-                    status: car_model_1.ChoicesStatusCar.inventory
+                    status: car_model_2.ChoicesStatusCar.inventory
                 });
                 inventory.cars.push({
                     car,
@@ -929,7 +1115,7 @@ class InventoryController {
                     upsert: true
                 });
                 if (newLabel.isExhibition) {
-                    await car_model_1.default.findOneAndUpdate({
+                    await car_model_2.default.findOneAndUpdate({
                         _id: carID,
                         team
                     }, {
@@ -961,7 +1147,7 @@ class InventoryController {
     async apiList(req, res) {
         const { team } = req.user;
         try {
-            const updatedUser = await user_model_2.default.findById(req.user._id);
+            const updatedUser = await user_model_1.default.findById(req.user._id);
             if (updatedUser) {
                 const inventories = await inventory_model_1.default.find({
                     team,

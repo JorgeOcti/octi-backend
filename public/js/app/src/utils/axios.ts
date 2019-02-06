@@ -277,6 +277,10 @@ export default class ApiService {
     );
   }
 
+  public getInstance(): AxiosInstance {
+    return this.instance;
+  }
+
   public getLabels(page: number, pageSize?: number): AxiosPromise {
     return this.instance.get(
       `/api/admin/labels/?page=${page}${pageSize ? `&pageSize=${pageSize}` : ''}`
