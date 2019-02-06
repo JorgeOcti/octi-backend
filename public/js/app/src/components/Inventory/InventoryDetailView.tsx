@@ -562,7 +562,10 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
           }
         >
           <i className={`fa fa-fw ${this.iconStatus[sendTo]}`} />
-          {row.label.name}{row.label.requireCustomText ? `: ${row.labelText}` : ''}
+          {row.label.name} {row.label.requireCustomText ? <span
+                data-toggle="tooltip"
+                data-placement="top"
+                title={row.labelText}>Ver más</span> : ''}
         </span>
       );
     } else {
