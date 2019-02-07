@@ -913,6 +913,7 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
                               text: this.typeText[type]
                             }))}
                           selected={[filter.type]}
+                          autoClouse={true}
                           onClick={this.filterType}
                         />
                       </div>
