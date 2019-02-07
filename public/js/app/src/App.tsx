@@ -94,3 +94,8 @@ $(() => {
     event.stopPropagation();
   });
 });
+
+if (process.env.NODE_ENV !== 'development') {
+  // disable react debug
+  (window as any).__REACT_DEVTOOLS_GLOBAL_HOOK__._renderers = {};
+}
