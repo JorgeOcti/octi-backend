@@ -30,6 +30,10 @@ const participantChoiceSchema = new mongoose.Schema({
     type: Boolean,
     default: false
   },
+  requireVenue: {
+    type: Boolean,
+    default: false
+  },
   requireComment: {
     type: Boolean,
     default: false

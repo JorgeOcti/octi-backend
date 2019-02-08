@@ -28,7 +28,7 @@ class FormController {
     this.uploadFile = this.uploadFile.bind(this);
   }
 
-  public async list(req: IRequest, res: Response) {
+  public async list(req: IRequest, res: Response): Promise<any> {
     const {team} = req.user;
     try {
       const updatedUser = await User.findById(req.user._id).populate([{
@@ -267,7 +267,7 @@ class FormController {
     }
   }
 
-  public async complete(req: IRequest, res: Response) {
+  public async complete(req: IRequest, res: Response): Promise<any> {
     const {id} = req.params;
     let {vin} = req.body;
     const {answers} = req.body;
@@ -610,7 +610,7 @@ class FormController {
     }
   }
 
-  public async changePreferred(req: IRequest, res: Response) {
+  public async changePreferred(req: IRequest, res: Response): Promise<any> {
     let {form} = req.body;
     const {team} = req.user;
     try {
