@@ -10,6 +10,7 @@ export interface IChoices {
   value: number;
   backgroundColor: string;
   requireImage: boolean;
+  requireVenue: boolean;
   requireComment: boolean;
   requireAccesories: boolean;
   na: boolean;

@@ -15,6 +15,7 @@ import FormModel, {IFormModel} from '../models/form.model';
 import ParticipantModel from '../models/participant.model';
 import ParticipantFile from '../models/participantFile.model';
 import ScaleModel, {IScaleModel} from '../models/scale.model';
+import Venue from "../../app/models/venue.model";
 // import * as cp from 'console-probe';
 
 class FormController {
@@ -93,6 +94,7 @@ class FormController {
         order: form.sections.length + 1
       };
       const extraScales: any = [];
+      let response: any = {};
       if (form.shipping) {
         extraSection.questions.push({
           _id: 'shipping',
@@ -114,6 +116,7 @@ class FormController {
               choice: 'No',
               backgroundColor: 'red',
               requireImage: form.shippingImage,
+              requireVenue: false,
               requireComment: false,
               requireAccesories: false,
               requireConciliation: false,
@@ -123,6 +126,7 @@ class FormController {
               _id: 'true',
               choice: 'Si',
               backgroundColor: 'green',
+              requireVenue: true,
               requireImage: false,
               requireComment: false,
               requireAccesories: false,
@@ -132,6 +136,10 @@ class FormController {
             }
           ]
         });
+        response = {
+          ...response,
+          venues: await Venue.find({team, active: true, deleted: false}, {name: true})
+        };
       }
       if (form.reception) {
         extraSection.questions.push({
@@ -154,6 +162,7 @@ class FormController {
               choice: 'No',
               backgroundColor: 'red',
               requireImage: form.receptionImage,
+              requireVenue: false,
               requireComment: false,
               requireAccesories: false,
               requireConciliation: false,
@@ -164,6 +173,7 @@ class FormController {
               choice: 'Si',
               backgroundColor: 'green',
               requireImage: false,
+              requireVenue: false,
               requireComment: false,
               requireAccesories: false,
               requireConciliation: false,
@@ -194,6 +204,7 @@ class FormController {
               choice: 'No',
               backgroundColor: 'red',
               requireImage: false,
+              requireVenue: false,
               requireComment: false,
               requireAccesories: false,
               requireConciliation: false,
@@ -204,6 +215,7 @@ class FormController {
               choice: 'Si',
               backgroundColor: 'green',
               requireImage: form.conciliationImage,
+              requireVenue: false,
               requireComment: false,
               requireAccesories: false,
               requireConciliation: false,
@@ -232,13 +244,13 @@ class FormController {
       if (extraSection.questions.length) {
         (form as any).sections = [...form.sections, extraSection];
       }
-
       // get scales from db
       res.json({
         data: {
           form,
           scales,
-          extra
+          extra,
+          ...response
         },
         status: 200
       });

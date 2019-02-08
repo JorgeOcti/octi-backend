@@ -15,6 +15,7 @@ const form_model_1 = require("../models/form.model");
 const participant_model_1 = require("../models/participant.model");
 const participantFile_model_1 = require("../models/participantFile.model");
 const scale_model_1 = require("../models/scale.model");
+const venue_model_1 = require("../../app/models/venue.model");
 // import * as cp from 'console-probe';
 class FormController {
     constructor() {
@@ -90,6 +91,7 @@ class FormController {
                 order: form.sections.length + 1
             };
             const extraScales = [];
+            let response = {};
             if (form.shipping) {
                 extraSection.questions.push({
                     _id: 'shipping',
@@ -111,6 +113,7 @@ class FormController {
                             choice: 'No',
                             backgroundColor: 'red',
                             requireImage: form.shippingImage,
+                            requireVenue: false,
                             requireComment: false,
                             requireAccesories: false,
                             requireConciliation: false,
@@ -120,6 +123,7 @@ class FormController {
                             _id: 'true',
                             choice: 'Si',
                             backgroundColor: 'green',
+                            requireVenue: true,
                             requireImage: false,
                             requireComment: false,
                             requireAccesories: false,
@@ -129,6 +133,10 @@ class FormController {
                         }
                     ]
                 });
+                response = {
+                    ...response,
+                    venues: await venue_model_1.default.find({ team, active: true, deleted: false }, { name: true })
+                };
             }
             if (form.reception) {
                 extraSection.questions.push({
@@ -151,6 +159,7 @@ class FormController {
                             choice: 'No',
                             backgroundColor: 'red',
                             requireImage: form.receptionImage,
+                            requireVenue: false,
                             requireComment: false,
                             requireAccesories: false,
                             requireConciliation: false,
@@ -161,6 +170,7 @@ class FormController {
                             choice: 'Si',
                             backgroundColor: 'green',
                             requireImage: false,
+                            requireVenue: false,
                             requireComment: false,
                             requireAccesories: false,
                             requireConciliation: false,
@@ -191,6 +201,7 @@ class FormController {
                             choice: 'No',
                             backgroundColor: 'red',
                             requireImage: false,
+                            requireVenue: false,
                             requireComment: false,
                             requireAccesories: false,
                             requireConciliation: false,
@@ -201,6 +212,7 @@ class FormController {
                             choice: 'Si',
                             backgroundColor: 'green',
                             requireImage: form.conciliationImage,
+                            requireVenue: false,
                             requireComment: false,
                             requireAccesories: false,
                             requireConciliation: false,
@@ -232,7 +244,8 @@ class FormController {
                 data: {
                     form,
                     scales,
-                    extra
+                    extra,
+                    ...response
                 },
                 status: 200
             });
