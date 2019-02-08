@@ -7,6 +7,7 @@ import Alert from '../../app/models/alert.model';
 import CarModel from '../../app/models/car.model';
 import UserModel, {IUserModel} from '../../app/models/user.model';
 import User from '../../app/models/user.model';
+import Venue from '../../app/models/venue.model';
 import {IAnyObject, IRequest} from '../../interfaces/global.interface';
 import {io} from '../../server';
 import redisClient from '../../services/redis.service';
@@ -15,7 +16,6 @@ import FormModel, {IFormModel} from '../models/form.model';
 import ParticipantModel from '../models/participant.model';
 import ParticipantFile from '../models/participantFile.model';
 import ScaleModel, {IScaleModel} from '../models/scale.model';
-import Venue from "../../app/models/venue.model";
 // import * as cp from 'console-probe';
 
 class FormController {
@@ -136,7 +136,6 @@ class FormController {
             }
           ]
         });
-        console.log('form.shippingVenue', form.shippingVenue)
         if (form.shippingVenue) {
           response = {
             ...response,
@@ -328,6 +327,7 @@ class FormController {
               participantObject.shippingImages = shipping.images.map((image: string) => (new ObjectID(image)));
             }
           }
+          participantObject.shippingVenue = form.shippingVenue;
           if (form.conciliation && 'conciliation' in answers) {
             const conciliation = answers.conciliation;
             participantObject.conciliation = [true, 'true'].includes(conciliation.value);
@@ -541,6 +541,8 @@ class FormController {
         });
       }
     } catch (e) {
+      /* istanbul ignore next */
+      console.log(e);
       /* istanbul ignore next */
       return res.status(400).json({
         message: e,

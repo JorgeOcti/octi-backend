@@ -8,6 +8,7 @@ const alert_model_1 = require("../../app/models/alert.model");
 const car_model_1 = require("../../app/models/car.model");
 const user_model_1 = require("../../app/models/user.model");
 const user_model_2 = require("../../app/models/user.model");
+const venue_model_1 = require("../../app/models/venue.model");
 const server_1 = require("../../server");
 const redis_service_1 = require("../../services/redis.service");
 const general_utils_1 = require("../../utils/general.utils");
@@ -15,7 +16,6 @@ const form_model_1 = require("../models/form.model");
 const participant_model_1 = require("../models/participant.model");
 const participantFile_model_1 = require("../models/participantFile.model");
 const scale_model_1 = require("../models/scale.model");
-const venue_model_1 = require("../../app/models/venue.model");
 // import * as cp from 'console-probe';
 class FormController {
     constructor() {
@@ -133,7 +133,6 @@ class FormController {
                         }
                     ]
                 });
-                console.log('form.shippingVenue', form.shippingVenue);
                 if (form.shippingVenue) {
                     response = {
                         ...response,
@@ -322,6 +321,7 @@ class FormController {
                             participantObject.shippingImages = shipping.images.map((image) => (new bson_1.ObjectID(image)));
                         }
                     }
+                    participantObject.shippingVenue = form.shippingVenue;
                     if (form.conciliation && 'conciliation' in answers) {
                         const conciliation = answers.conciliation;
                         participantObject.conciliation = [true, 'true'].includes(conciliation.value);
@@ -530,6 +530,8 @@ class FormController {
             }
         }
         catch (e) {
+            /* istanbul ignore next */
+            console.log(e);
             /* istanbul ignore next */
             return res.status(400).json({
                 message: e,

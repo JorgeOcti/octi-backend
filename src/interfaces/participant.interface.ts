@@ -100,6 +100,7 @@ export interface IParticipant {
   shipping: boolean;
   shippingText: string;
   shippingImages: IParticipantFile[];
+  shippingVenue: boolean;
   receptionText: string;
   reception: boolean;
   receptionImages: IParticipantFile[];

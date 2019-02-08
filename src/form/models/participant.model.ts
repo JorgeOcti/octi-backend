@@ -237,6 +237,10 @@ const participantSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: 'ParticipantFile'
   }],
+  shippingVenue: {
+    type: Boolean,
+    default: false
+  },
   reception: {
     type: Boolean,
     default: false
