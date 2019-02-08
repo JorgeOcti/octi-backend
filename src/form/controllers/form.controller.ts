@@ -126,7 +126,7 @@ class FormController {
               _id: 'true',
               choice: 'Si',
               backgroundColor: 'green',
-              requireVenue: true,
+              requireVenue: form.shippingVenue,
               requireImage: false,
               requireComment: false,
               requireAccesories: false,
@@ -136,10 +136,13 @@ class FormController {
             }
           ]
         });
-        response = {
-          ...response,
-          venues: await Venue.find({team, active: true, deleted: false}, {name: true})
-        };
+        console.log('form.shippingVenue', form.shippingVenue)
+        if (form.shippingVenue) {
+          response = {
+            ...response,
+            venues: await Venue.find({team, active: true, deleted: false}, {name: true})
+          };
+        }
       }
       if (form.reception) {
         extraSection.questions.push({
