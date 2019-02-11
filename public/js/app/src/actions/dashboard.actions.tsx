@@ -129,7 +129,7 @@ export function changePageAction(page: number): IChangePage {
   };
 }
 
-export function getCarsAction(nextPage?: number, loading: boolean = true) {
+export function getCarsAction(nextPage: number, loading: boolean, search?: string) {
   return (dispatch: Dispatch<DashboardReduxAction>, getState: () => {dashboard: IDashboardState}) => {
     const api: ApiService = new ApiService();
     const state = getState();
@@ -141,7 +141,7 @@ export function getCarsAction(nextPage?: number, loading: boolean = true) {
     if (nextPage) {
       dispatch(changePageAction(nextPage));
     }
-    api.getCars(page)
+    api.getCars(page, search)
       .then((response: AxiosResponse) => {
         dispatch(loadCarsAction(response.data.results, response.data.count, response.data.pages));
         if (loading) {

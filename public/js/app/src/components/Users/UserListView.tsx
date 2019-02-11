@@ -8,6 +8,7 @@ import {ErrorInfo} from 'react';
 import {connect} from 'react-redux';
 import {RouteComponentProps} from 'react-router';
 import {Dispatch} from 'redux';
+import {debounce} from 'throttle-debounce';
 import {IUser} from '../../../../../../src/interfaces/user.interface';
 import {loadDataAction, ModalReduxAction} from '../../actions/modal.actions';
 import {
@@ -33,7 +34,7 @@ interface IPropsType extends RouteComponentProps<{ ticket: string }> {
   dispatch: Dispatch<UserReduxAction>;
   users: IUsersState;
 
-  getUsersAction(page?: number): UserReduxAction;
+  getUsersAction(page: number, search?: string): UserReduxAction;
   createUserAction(): UserReduxAction;
   updateUserAction(): UserReduxAction;
   deleteUserAction(id?: string): UserReduxAction;
@@ -43,6 +44,7 @@ interface IPropsType extends RouteComponentProps<{ ticket: string }> {
 
 interface IStateType {
   error: Error | null;
+  searchText: string;
 }
 
 declare let window: IWindow;
@@ -54,6 +56,11 @@ class UserListView extends React.Component<IPropsType, IStateType> {
   //   dispatch: PropTypes.func.isRequired,
   //   getUsersAction: PropTypes.func.isRequired
   // };
+  readonly state = {
+    error: null,
+    searchText: ''
+  };
+
   private socket: SocketIOClient.Socket;
 
   constructor(props: IPropsType) {
@@ -66,6 +73,8 @@ class UserListView extends React.Component<IPropsType, IStateType> {
     this.changeTempUser = this.changeTempUser.bind(this);
     this.changePassword = this.changePassword.bind(this);
     this.processChangePassword = this.processChangePassword.bind(this);
+    this.onChangeSearch = this.onChangeSearch.bind(this);
+    this.debounceOnChangeSearch = debounce(300, this.debounceOnChangeSearch);
   }
 
   public componentWillMount(): void {
@@ -122,6 +131,22 @@ class UserListView extends React.Component<IPropsType, IStateType> {
               }
             </div>
             <div className="box-body no-padding">
+              <div className="row">
+                <div className="col-md-offset-8 col-md-4">
+                  <div className="input-group input-group-sm"
+                       style={{padding: '10px'}}
+                  >
+                    <input
+                      type="text"
+                      className="form-control pull-right"
+                      onChange={this.onChangeSearch}
+                      placeholder="Buscar"/>
+                    <div className="input-group-btn">
+                      <button className="btn btn-default"><i className="fa fa-search"/></button>
+                    </div>
+                  </div>
+                </div>
+              </div>
               <table className="table table-striped">
                 <thead>
                   <tr>
@@ -143,6 +168,11 @@ class UserListView extends React.Component<IPropsType, IStateType> {
                   </tr>
                 </thead>
                 <tbody>
+                  {
+                    !loading && users.length === 0 && users ? <tr>
+                      <td colSpan={6}>No se han encontrado resultados.</td>
+                    </tr> : null
+                  }
                   {
                     users.map((user: IUser) => {
                       return (
@@ -197,6 +227,24 @@ class UserListView extends React.Component<IPropsType, IStateType> {
         </section>
       </AppContainer>
     );
+  }
+
+  private onChangeSearch(e: React.ChangeEvent<HTMLInputElement>): void {
+    e.preventDefault();
+    const value = e.target.value.trim();
+    this.setState({
+      searchText: value
+    });
+    this.debounceOnChangeSearch();
+  }
+
+  private debounceOnChangeSearch(): void {
+    const {searchText} = this.state;
+    if (searchText && searchText.length) {
+      this.props.getUsersAction(1, searchText);
+    } else {
+      this.props.getUsersAction(1);
+    }
   }
 
   private createUser(): void {
@@ -370,7 +418,7 @@ const mapStateToProps = (state: { users: IUsersState }) => {
 const mapDispatchToProps = (dispatch: any ) => {
   return {
     dispatch,
-    getUsersAction: (page?: number) => dispatch(getUsersAction(page)),
+    getUsersAction: (page: number, search?: string) => dispatch(getUsersAction(page, search)),
     deleteUserAction: (id: string) => dispatch(deleteUserAction(id)),
     changeTempUserAction: (user: ITempUser) => dispatch(changeTempUserAction(user)),
     createUserAction: () => dispatch(createUserAction()),

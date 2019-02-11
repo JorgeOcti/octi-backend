@@ -21,6 +21,10 @@ const participantChoiceSchema = new mongoose.Schema({
         type: Boolean,
         default: false
     },
+    requireVenue: {
+        type: Boolean,
+        default: false
+    },
     requireComment: {
         type: Boolean,
         default: false
@@ -202,6 +206,10 @@ const participantSchema = new mongoose.Schema({
             type: mongoose.Schema.Types.ObjectId,
             ref: 'ParticipantFile'
         }],
+    shippingVenue: {
+        type: Boolean,
+        default: false
+    },
     reception: {
         type: Boolean,
         default: false

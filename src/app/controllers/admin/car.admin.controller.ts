@@ -149,7 +149,7 @@ class AdminCarController {
     } catch (e) {
       /* istanbul ignore next  */
       if (e) {
-        console.log('e', e)
+        console.log('e', e);
         res.status(500).json(e);
       }
     }

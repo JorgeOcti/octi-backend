@@ -263,7 +263,7 @@ export function loadCompaniesUserAction(companies: ICompany[]): ILoadCompaniesUs
   };
 }
 
-export function getUsersAction(nextPage?: number) {
+export function getUsersAction(nextPage: number, search?: string) {
   return (dispatch: Dispatch<UserReduxAction>, getState: () => {users: IUsersState}) => {
     const api: ApiService = new ApiService();
     const state = getState();
@@ -272,28 +272,30 @@ export function getUsersAction(nextPage?: number) {
       dispatch(isLoadingAction(true));
     }
     // get venues and permissions
-    Axios.all([
-      api.getCompanies(1, 200),
-      api.getVenues(1, 200),
-      api.getPermissions(1, 200),
-      api.getForms(1, 200)
-    ])
-      .then(Axios.spread((companies, venues, permissions, forms) => {
-        dispatch(loadCompaniesUserAction(companies.data.results));
-        dispatch(loadVenuesUserAction(venues.data.results));
-        dispatch(loadPermissionsUserAction(permissions.data.results));
-        dispatch(loadFormsUserAction(forms.data.results));
-      }))
-      .catch((err: AxiosError): void => {
-        api.errorHandler(err);
-      });
+    if (!search) {
+      Axios.all([
+        api.getCompanies(1, 200),
+        api.getVenues(1, 200),
+        api.getPermissions(1, 200),
+        api.getForms(1, 200)
+      ])
+        .then(Axios.spread((companies, venues, permissions, forms) => {
+          dispatch(loadCompaniesUserAction(companies.data.results));
+          dispatch(loadVenuesUserAction(venues.data.results));
+          dispatch(loadPermissionsUserAction(permissions.data.results));
+          dispatch(loadFormsUserAction(forms.data.results));
+        }))
+        .catch((err: AxiosError): void => {
+          api.errorHandler(err);
+        });
+    }
 
     dispatch(cancelRequestAction(api.getSource()));
     const page = nextPage ? nextPage : state.users.pagination.page;
     if (nextPage) {
       dispatch(changePageAction(nextPage));
     }
-    api.getUsers(page)
+    api.getUsers(page, search)
       .then((response: AxiosResponse): void => {
         dispatch(loadUserAction(response.data.results, response.data.count, response.data.pages));
         dispatch(isLoadingAction(false));

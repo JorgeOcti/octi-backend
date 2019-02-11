@@ -11,6 +11,7 @@ const choiceSchema = new mongoose.Schema({
         default: 'blue'
     },
     requireImage: { type: Boolean, default: false },
+    requireVenue: { type: Boolean, default: false },
     requireComment: { type: Boolean, default: false },
     requireAccesories: { type: Boolean, default: false },
     requireConciliation: { type: Boolean, default: false },

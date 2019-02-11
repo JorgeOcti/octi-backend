@@ -38,7 +38,7 @@ class AdminUsersController {
         message: 'No tienes permisos para esta operación'
       });
     }
-    const {page, pageSize} = req.query;
+    const {page, pageSize, search} = req.query;
     const {team} = req.user;
     // paginate options
     const options: PaginateOptions = {
@@ -83,7 +83,7 @@ class AdminUsersController {
     try {
       const users = await this.getUsers({
         team
-      }, options);
+      }, options, search);
       // validate exist page
       /* istanbul ignore if  */
       if (options.page && users.pages && users.pages < options.page) {
@@ -366,7 +366,21 @@ class AdminUsersController {
     }
   }
 
-  private getUsers(filter: any, options: PaginateOptions): Promise<PaginateResult<IUserModel>> {
+  private getUsers(filter: any, options: PaginateOptions, search?: string): Promise<PaginateResult<IUserModel>> {
+    if (search && search.length) {
+      const searchText = new RegExp(search, 'i');
+      filter = {
+        $and: [{
+          $or: [{
+            firstName: {$regex: searchText}
+          }, {
+            lastName: {$regex: searchText}
+          }]
+        }, filter]
+      };
+    }
+    console.log('--------------');
+    console.log(filter);
     return new Promise((resolve, reject) => {
       User.paginate(filter, options, (err, result) => {
         /* istanbul ignore next  */

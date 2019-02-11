@@ -12,6 +12,7 @@ import filterFactory from 'react-bootstrap-table2-filter';
 import paginationFactory from 'react-bootstrap-table2-paginator';
 import {connect} from 'react-redux';
 import {RouteComponentProps} from 'react-router';
+import {RouterState} from 'react-router-redux';
 import {Dispatch} from 'redux';
 import * as io from 'socket.io-client';
 import * as XLSX from 'xlsx';
@@ -50,6 +51,7 @@ declare let window: IWindow;
 
 interface IPropsType extends RouteComponentProps<{ id: string, tab?: string }> {
   inventories: IInventoryState;
+  router: RouterState;
   dispatch: Dispatch<InventoryReduxAction>;
 
   inventoryDetailChangeSelected(item: string): InventoryReduxAction;
@@ -418,7 +420,10 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
       this.updateBrandChart(detailByBrand, true);
     }
     $('[data-toggle="tooltip"]').tooltip();
-    if (this.props.location.pathname !== prevProps.location.pathname) {
+    if (
+      !this.props.router.location || !prevProps.router.location ||
+      this.props.router.location.key !== prevProps.router.location.key
+    ) {
       window.scrollTo(0, 0);
     }
   }
@@ -1674,9 +1679,10 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
 
 }
 
-const mapStateToProps = (state: { inventories: IInventoryState }) => {
+const mapStateToProps = (state: { inventories: IInventoryState, router: RouterState }) => {
   return {
-    inventories: state.inventories
+    inventories: state.inventories,
+    router: state.router
   };
 };
 

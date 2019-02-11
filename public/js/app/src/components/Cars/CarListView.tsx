@@ -80,29 +80,33 @@ class CarListView extends React.Component<IPropsType, IStateType> {
                 Autos <small>{pagination.count}</small>
               </h3>
               <div className="box-tools">
-                <div className="form-inline">
-                  {
-                    hasPermission(window.user, 'addCar') ?
-                      <button
-                        className="btn btn-sm btn-primary  hidden-xs"
-                        onClick={() => this.props.history.push(`/settings/cars/import/`)}
-                        style={{marginRight: '5px'}}
-                      ><i className="fa fa-fw fa-cloud-upload" /> Importar</button> : null
-                  }
-                  <div className="input-group input-group-sm" style={{width: '200px'}}>
+                {
+                  hasPermission(window.user, 'addCar') ?
+                    <button
+                      className="btn btn-sm btn-primary  hidden-xs"
+                      onClick={() => this.props.history.push(`/settings/cars/import/`)}
+                      style={{marginRight: '5px'}}
+                    ><i className="fa fa-fw fa-cloud-upload" /> Importar</button> : null
+                }
+              </div>
+            </div>
+            <div className="box-body no-padding">
+              <div className="row">
+                <div className="col-md-offset-8 col-md-4">
+                  <div className="input-group input-group-sm"
+                       style={{padding: '10px'}}
+                  >
                     <input
                       type="text"
                       className="form-control pull-right"
                       onChange={this.onChangeSearch}
-                      placeholder="Buscar" />
+                      placeholder="Buscar"/>
                     <div className="input-group-btn">
                       <button className="btn btn-default"><i className="fa fa-search"/></button>
                     </div>
                   </div>
                 </div>
               </div>
-            </div>
-            <div className="box-body no-padding">
               <table className="table table-striped">
                 <thead>
                   <tr>

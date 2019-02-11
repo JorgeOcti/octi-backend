@@ -7,6 +7,7 @@ import Alert from '../../app/models/alert.model';
 import CarModel from '../../app/models/car.model';
 import UserModel, {IUserModel} from '../../app/models/user.model';
 import User from '../../app/models/user.model';
+import Venue from '../../app/models/venue.model';
 import {IAnyObject, IRequest} from '../../interfaces/global.interface';
 import {io} from '../../server';
 import redisClient from '../../services/redis.service';
@@ -27,7 +28,7 @@ class FormController {
     this.uploadFile = this.uploadFile.bind(this);
   }
 
-  public async list(req: IRequest, res: Response) {
+  public async list(req: IRequest, res: Response): Promise<any> {
     const {team} = req.user;
     try {
       const updatedUser = await User.findById(req.user._id).populate([{
@@ -93,6 +94,7 @@ class FormController {
         order: form.sections.length + 1
       };
       const extraScales: any = [];
+      let response: any = {};
       if (form.shipping) {
         extraSection.questions.push({
           _id: 'shipping',
@@ -114,6 +116,7 @@ class FormController {
               choice: 'No',
               backgroundColor: 'red',
               requireImage: form.shippingImage,
+              requireVenue: false,
               requireComment: false,
               requireAccesories: false,
               requireConciliation: false,
@@ -123,6 +126,7 @@ class FormController {
               _id: 'true',
               choice: 'Si',
               backgroundColor: 'green',
+              requireVenue: form.shippingVenue,
               requireImage: false,
               requireComment: false,
               requireAccesories: false,
@@ -132,6 +136,12 @@ class FormController {
             }
           ]
         });
+        if (form.shippingVenue) {
+          response = {
+            ...response,
+            venues: await Venue.find({team, active: true, deleted: false}, {name: true})
+          };
+        }
       }
       if (form.reception) {
         extraSection.questions.push({
@@ -154,6 +164,7 @@ class FormController {
               choice: 'No',
               backgroundColor: 'red',
               requireImage: form.receptionImage,
+              requireVenue: false,
               requireComment: false,
               requireAccesories: false,
               requireConciliation: false,
@@ -164,6 +175,7 @@ class FormController {
               choice: 'Si',
               backgroundColor: 'green',
               requireImage: false,
+              requireVenue: false,
               requireComment: false,
               requireAccesories: false,
               requireConciliation: false,
@@ -194,6 +206,7 @@ class FormController {
               choice: 'No',
               backgroundColor: 'red',
               requireImage: false,
+              requireVenue: false,
               requireComment: false,
               requireAccesories: false,
               requireConciliation: false,
@@ -204,6 +217,7 @@ class FormController {
               choice: 'Si',
               backgroundColor: 'green',
               requireImage: form.conciliationImage,
+              requireVenue: false,
               requireComment: false,
               requireAccesories: false,
               requireConciliation: false,
@@ -232,13 +246,13 @@ class FormController {
       if (extraSection.questions.length) {
         (form as any).sections = [...form.sections, extraSection];
       }
-
       // get scales from db
       res.json({
         data: {
           form,
           scales,
-          extra
+          extra,
+          ...response
         },
         status: 200
       });
@@ -253,7 +267,7 @@ class FormController {
     }
   }
 
-  public async complete(req: IRequest, res: Response) {
+  public async complete(req: IRequest, res: Response): Promise<any> {
     const {id} = req.params;
     let {vin} = req.body;
     const {answers} = req.body;
@@ -313,6 +327,7 @@ class FormController {
               participantObject.shippingImages = shipping.images.map((image: string) => (new ObjectID(image)));
             }
           }
+          participantObject.shippingVenue = form.shippingVenue;
           if (form.conciliation && 'conciliation' in answers) {
             const conciliation = answers.conciliation;
             participantObject.conciliation = [true, 'true'].includes(conciliation.value);
@@ -527,6 +542,8 @@ class FormController {
       }
     } catch (e) {
       /* istanbul ignore next */
+      console.log(e);
+      /* istanbul ignore next */
       return res.status(400).json({
         message: e,
         status: 400
@@ -593,7 +610,7 @@ class FormController {
     }
   }
 
-  public async changePreferred(req: IRequest, res: Response) {
+  public async changePreferred(req: IRequest, res: Response): Promise<any> {
     let {form} = req.body;
     const {team} = req.user;
     try {
