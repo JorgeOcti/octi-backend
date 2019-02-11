@@ -17,8 +17,11 @@ import InventoryListView from './components/Inventory/InventoryListView';
 import LabelsListView from './components/Labels/LabelsListView';
 import UsersListView from './components/Users/UserListView';
 import VenuesListView from './components/Venues/VenuesListView';
+import {IWindow} from './interfaces/window';
 import configureStore, {history} from './store/configureStore';
 import {isIntenertExplorer} from './utils/common';
+
+declare let window: IWindow;
 
 const store = configureStore();
 
@@ -97,5 +100,7 @@ $(() => {
 
 if (process.env.NODE_ENV !== 'development') {
   // disable react debug
-  (window as any).__REACT_DEVTOOLS_GLOBAL_HOOK__._renderers = {};
+  if (window.hasOwnProperty('__REACT_DEVTOOLS_GLOBAL_HOOK__')) {
+    window.__REACT_DEVTOOLS_GLOBAL_HOOK__._renderers = {};
+  }
 }
