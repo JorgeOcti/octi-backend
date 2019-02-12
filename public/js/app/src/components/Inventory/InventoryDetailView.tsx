@@ -1349,7 +1349,7 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
           params.forEach((item: any) => {
             // console.log(item); //quite useful for debug
             const value = item.data ? item.data : 0;
-            const xx = `<br />${colorSpan(item.color)} ${item.seriesName}: ${value}</span>`;
+            const xx = `<br />${colorSpan(item.color)} ${item.seriesName}: ${value}`;
             total += value;
             rez += xx;
           });
