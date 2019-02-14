@@ -1,8 +1,10 @@
 import * as mongoose from 'mongoose';
 import {
-  IInventory
+  IInventoryCar
 } from '../../interfaces/inventory.interface';
+import {IInventoryComment} from '../../interfaces/inventoryComment.interface';
 
+export interface IIventoryCommentModel extends IInventoryComment, mongoose.Types.Subdocument {}
 const invetoryCommentCars = new mongoose.Schema({
   user: {
     type: mongoose.Schema.Types.ObjectId,
@@ -32,6 +34,7 @@ export const choicesStatusCarInventory = [
   ChoicesStatusCarInventory.reported
 ];
 
+export interface IInventoryCarModel extends IInventoryCar, mongoose.Document {}
 const inventoryCarSchema = new mongoose.Schema({
   inventory: {
     type: mongoose.Schema.Types.ObjectId,
@@ -82,66 +85,10 @@ const inventoryCarSchema = new mongoose.Schema({
 }, {
   timestamps: true
 });
-console.log(inventoryCarSchema);
 
-export interface IInventoryModel extends IInventory, mongoose.Document {}
-export enum ChoicesStatusInventory {
-  pending = 'pending',
-  inProcess = 'inProcess',
-  finalized = 'finalized'
-}
-export const choicesStatusInventory = [
-  ChoicesStatusInventory.pending,
-  ChoicesStatusInventory.inProcess,
-  ChoicesStatusInventory.finalized
-];
-const inventorySchema = new mongoose.Schema({
-  name: {
-    type: String
-  },
-  team: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'Team',
-    required: true
-  },
-  company: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'Company',
-    required: true
-  },
-  venues: [{
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'Venue'
-  }],
-  createdBy: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'User'
-  },
-  finalizedBy: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'User'
-  },
-  finalizedAt: {
-    type: Date
-  },
-  status: {
-    type: String,
-    enum: choicesStatusInventory,
-    default: ChoicesStatusInventory.pending
-  }
-}, {
-  timestamps: true
-});
+inventoryCarSchema.index({inventory: 1});
+inventoryCarSchema.index({inventory: 1, car: 1});
 
-inventorySchema.virtual('cars', {
-  ref: 'InventoryCar', // The model to use
-  localField: '_id', // Find field in this model
-  foreignField: 'inventory', // is equal to field in another model
-  justOne: false
-});
+const InventoryCar = mongoose.model<IInventoryCarModel>('InventoryCar', inventoryCarSchema);
 
-inventorySchema.index({team: 1});
-inventorySchema.index({team: 1, status: 1, venues: 1});
-const Inventory = mongoose.model<IInventoryModel>('Inventory', inventorySchema);
-
-export default Inventory;
+export default InventoryCar;

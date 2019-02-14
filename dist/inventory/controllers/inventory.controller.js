@@ -15,6 +15,7 @@ const server_1 = require("../../server");
 const push_service_1 = require("../../services/push.service");
 const inventory_model_1 = require("../models/inventory.model");
 const inventory_model_2 = require("../models/inventory.model");
+const inventoryCar_model_1 = require("../models/inventoryCar.model");
 const inventoryFile_model_1 = require("../models/inventoryFile.model");
 const inventoryLabel_model_1 = require("../models/inventoryLabel.model");
 class InventoryController {
@@ -74,7 +75,10 @@ class InventoryController {
             for (const venue of carsByVenue) {
                 if (venue.name && venue.name.length) {
                     const venueRegExp = new RegExp(venue.name.trim(), 'i');
-                    let currentVenue = await venue_model_1.default.findOne({ team, name: venueRegExp });
+                    let currentVenue = await venue_model_1.default.findOne({
+                        team,
+                        name: venueRegExp
+                    });
                     // create venue if no existe
                     if (currentVenue === null) {
                         currentVenue = new venue_model_1.default({
@@ -121,12 +125,16 @@ class InventoryController {
                 name,
                 company,
                 team,
-                cars: inventoryCars,
                 venues: venuesIDs,
                 createdBy: req.user._id,
                 status: inventory_model_1.ChoicesStatusInventory.inProcess
             });
             await inventory.save();
+            inventoryCars.map((i) => {
+                i.inventory = inventory._id;
+                return i;
+            });
+            await inventoryCar_model_1.default.insertMany(inventoryCars);
             if (notification) {
                 const usersIDs = await user_model_2.default.find({
                     venue: {
@@ -166,6 +174,13 @@ class InventoryController {
                         venues: {
                             $in: venuesPermissions
                         }
+                    }
+                }, {
+                    $lookup: {
+                        from: 'inventorycars',
+                        localField: '_id',
+                        foreignField: 'inventory',
+                        as: 'cars'
                     }
                 }, {
                     $unwind: '$cars'
@@ -316,11 +331,14 @@ class InventoryController {
                     team
                 })
                     .populate([{
-                        path: 'cars.car',
-                        select: ['vin', 'vin2', 'color', 'denomination', 'brand', 'patent']
-                    }, {
-                        path: 'cars.venue',
-                        select: ['name']
+                        path: 'cars',
+                        populate: [{
+                                path: 'car',
+                                select: ['vin', 'vin2', 'color', 'denomination', 'brand', 'patent']
+                            }, {
+                                path: 'venue',
+                                select: ['name']
+                            }]
                     }]).lean();
                 if (inventory) {
                     res.status(200).json({
@@ -352,6 +370,7 @@ class InventoryController {
             }
         }
         catch (e) {
+            console.log(e);
             /* istanbul ignore next */
             res.status(400).json(e);
         }
@@ -464,27 +483,12 @@ class InventoryController {
                     team
                 });
                 if (car) {
-                    const inventoriedCar = await inventory_model_1.default.findOne({
-                        $and: [{
-                                _id: id
-                            }, {
-                                team
-                            }, {
-                                cars: {
-                                    $elemMatch: {
-                                        $or: [{
-                                                car: car._id,
-                                                status: inventory_model_1.ChoicesStatusCarInventory.found
-                                            }, {
-                                                car: car._id,
-                                                venueFound: venue._id,
-                                                status: inventory_model_1.ChoicesStatusCarInventory.leftover
-                                            }]
-                                    }
-                                }
-                            }]
-                    }, {
-                        'cars.$': 1
+                    const inventoriedCar = await inventoryCar_model_1.default.findOne({
+                        inventory: id,
+                        car: car._id,
+                        status: {
+                            $in: [inventory_model_1.ChoicesStatusCarInventory.found, inventory_model_1.ChoicesStatusCarInventory.leftover]
+                        }
                     });
                     if (inventoriedCar) {
                         res.status(400).json({
@@ -493,30 +497,18 @@ class InventoryController {
                         });
                     }
                     else {
-                        const inventoryCar = await inventory_model_1.default.findOne({
-                            _id: id,
-                            ['cars.car']: car._id,
-                            team
-                        }, {
-                            'cars.$': 1
+                        const inventoryCar = await inventoryCar_model_1.default.findOne({
+                            inventory: id,
+                            car: car._id
                         });
                         // if car in inventory
-                        if (inventoryCar && inventoryCar.cars.length) {
-                            await inventory_model_1.default.update({
-                                _id: id,
-                                ['cars.car']: car._id,
-                                team
-                            }, {
-                                $set: {
-                                    'cars.$.venueFound': venue._id,
-                                    'cars.$.status': inventory_model_1.ChoicesStatusCarInventory.found,
-                                    'cars.$.images': images ? images.map((image) => (new bson_1.ObjectID(image))) : [],
-                                    'cars.$.inventoriedBy': req.user._id
-                                }
-                            }, {
-                                upsert: true
-                            });
-                            server_1.io.to(`inventory-detail-${inventoryCar._id}`).emit('REFRESH', {
+                        if (inventoryCar) {
+                            inventoryCar.venueFound = venue._id;
+                            inventoryCar.status = inventory_model_1.ChoicesStatusCarInventory.found;
+                            inventoryCar.images = images ? images.map((image) => (new bson_1.ObjectID(image))) : [];
+                            inventoryCar.inventoriedBy = req.user._id;
+                            await inventoryCar.save();
+                            server_1.io.to(`inventory-detail-${inventory._id}`).emit('REFRESH', {
                                 title: 'Vehículo encontrado',
                                 text: `${req.user.firstName} ${req.user.lastName} encontró ${car.brand} (${car.denomination}) en ${venue.name}.`,
                                 status: inventory_model_1.ChoicesStatusCarInventory.found,
@@ -538,7 +530,7 @@ class InventoryController {
                 else {
                     // if car no exist
                     res.status(400).json({
-                        message: 'Este vehículo no existe.',
+                        message: 'Este vehículo no se encuentra en el inventario.',
                         status: 400
                     });
                 }
@@ -697,6 +689,13 @@ class InventoryController {
                             _id: mongoose.Types.ObjectId(id)
                         }
                     }, {
+                        $lookup: {
+                            from: 'inventorycars',
+                            localField: '_id',
+                            foreignField: 'inventory',
+                            as: 'cars'
+                        }
+                    }, {
                         $project: {
                             cars: {
                                 $filter: {
@@ -842,8 +841,9 @@ class InventoryController {
                     company,
                     status: car_model_2.ChoicesStatusCar.inventory
                 });
-                inventory.cars.push({
+                const inventoryCar = new inventoryCar_model_1.default({
                     car,
+                    inventory,
                     venue,
                     venueFound: venue,
                     comments: [],
@@ -851,7 +851,7 @@ class InventoryController {
                     images: images ? images.map((image) => (new bson_1.ObjectID(image))) : [],
                     status: inventory_model_1.ChoicesStatusCarInventory.reported
                 });
-                await inventory.save();
+                await inventoryCar.save();
                 const textNotification = `${req.user.firstName} ${req.user.lastName} encontró ${car.brand} (${car.denomination}) en ${venue.name}.`;
                 server_1.io.to(`inventory-detail-${inventory._id}`).emit('REFRESH', {
                     title: 'Vehículo reportado',
@@ -895,17 +895,14 @@ class InventoryController {
                 team
             });
             if (newLabel) {
-                await inventory_model_1.default.update({
-                    _id: id,
-                    ['cars._id']: car,
-                    team
+                await inventoryCar_model_1.default.update({
+                    _id: car,
+                    inventory: id
                 }, {
-                    $set: {
-                        'cars.$.status': newLabel.sendTo,
-                        'cars.$.label': newLabel._id,
-                        'cars.$.labelBy': req.user._id,
-                        'cars.$.labelText': custom
-                    }
+                    status: newLabel.sendTo,
+                    label: newLabel._id,
+                    labelBy: req.user._id,
+                    labelText: custom
                 }, {
                     upsert: true
                 });
@@ -986,6 +983,13 @@ class InventoryController {
                     $match: {
                         team,
                         _id: { $in: [mongoose.Types.ObjectId(id)] }
+                    }
+                }, {
+                    $lookup: {
+                        from: 'inventorycars',
+                        localField: '_id',
+                        foreignField: 'inventory',
+                        as: 'cars'
                     }
                 }, {
                     $unwind: '$cars'
@@ -1078,6 +1082,13 @@ class InventoryController {
                         _id: { $in: [mongoose.Types.ObjectId(id)] }
                     }
                 }, {
+                    $lookup: {
+                        from: 'inventorycars',
+                        localField: '_id',
+                        foreignField: 'inventory',
+                        as: 'cars'
+                    }
+                }, {
                     $unwind: '$cars'
                 }, {
                     $match: {
@@ -1144,6 +1155,13 @@ class InventoryController {
                     $match: {
                         team,
                         _id: { $in: [mongoose.Types.ObjectId(id)] }
+                    }
+                }, {
+                    $lookup: {
+                        from: 'inventorycars',
+                        localField: '_id',
+                        foreignField: 'inventory',
+                        as: 'cars'
                     }
                 }, {
                     $unwind: '$cars'
@@ -1258,24 +1276,27 @@ class InventoryController {
                     cars: true,
                     venues: true
                 }).populate([{
-                        path: 'cars.car',
-                        select: ['vin', 'vin2', 'color', 'denomination', 'brand', 'venue', 'patent']
-                    }, {
-                        path: 'cars.label'
-                    }, {
-                        path: 'cars.venue',
-                        select: ['name']
-                    }, {
-                        path: 'cars.images'
-                    }, {
-                        path: 'cars.venueFound',
-                        select: ['name']
-                    }, {
-                        path: 'cars.inventoriedBy',
-                        select: ['firstName', 'lastName']
-                    }, {
-                        path: 'cars.comments.user',
-                        select: ['_id', 'firstName', 'lastName']
+                        path: 'cars',
+                        populate: [{
+                                path: 'car',
+                                select: ['vin', 'vin2', 'color', 'denomination', 'brand', 'venue', 'patent']
+                            }, {
+                                path: 'label'
+                            }, {
+                                path: 'venue',
+                                select: ['name']
+                            }, {
+                                path: 'images'
+                            }, {
+                                path: 'venueFound',
+                                select: ['name']
+                            }, {
+                                path: 'inventoriedBy',
+                                select: ['firstName', 'lastName']
+                            }, {
+                                path: 'comments.user',
+                                select: ['_id', 'firstName', 'lastName']
+                            }]
                     }, {
                         path: 'venues',
                         select: ['_id', 'name'],
@@ -1284,7 +1305,7 @@ class InventoryController {
                                 name: 1
                             }
                         }
-                    }]);
+                    }]).lean();
                 venuesPermissions = venuesPermissions.map((ve) => ve.toString());
                 res.json({
                     summary: response,

@@ -1,3 +1,4 @@
+import * as mongoose from 'mongoose';
 import {IUserModel} from '../app/models/user.model';
 import {ICar} from './car.interface';
 import {ICompany} from './company.interface';
@@ -9,6 +10,7 @@ import {IVenue} from './venue.interface';
 
 export interface IInventoryCar {
   car: ICar;
+  inventory?: mongoose.Schema.Types.ObjectId;
   venue: IVenue;
   venueFound?: IVenue;
   comments: IInventoryComment[];
