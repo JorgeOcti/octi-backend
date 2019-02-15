@@ -452,7 +452,6 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
   }
 
   public brandFormatter(cell: any, row: any) {
-
     return (
       <React.Fragment>
         {
@@ -1343,18 +1342,18 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
           type: 'shadow'
         },
         formatter: (params: any) => {
-          const colorSpan = (color: any) => '<span style="display:inline-block;margin-right:3px;border-radius:10px;width:9px;height:9px;background-color:' + color + '"/>';
+          const colorSpan = (color: any) => `<span style="color:${color}"><i class="fa fa-fw fa-circle"></i></span>`;
           let rez = `<span> ${params[0].axisValue}</span>`;
           // console.log(params); //quite useful for debug
           let total = 0;
           params.forEach((item: any) => {
             // console.log(item); //quite useful for debug
             const value = item.data ? item.data : 0;
-            const xx = `<br / > ${colorSpan(item.color)} ${item.seriesName}: ${value}`;
+            const xx = `<br />${colorSpan(item.color)} ${item.seriesName}: ${value}`;
             total += value;
             rez += xx;
           });
-          rez += `<br /> ${colorSpan('#ffffff')} <strong>Total: ${total}</strong>`;
+          rez += `<br />${colorSpan('#ffffff')} <strong>Total: ${total}</strong>`;
           return rez;
         }
       },

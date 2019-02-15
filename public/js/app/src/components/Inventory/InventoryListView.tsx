@@ -16,8 +16,8 @@ import {
 } from '../../actions/inventory.actions';
 import AppContainer from '../../container/AppContainer';
 import {IWindow} from '../../interfaces/window';
+import {hasPermission} from '../../utils/common';
 import Row from '../Utils/Row';
-import {hasPermission} from "../../utils/common";
 
 declare let window: IWindow;
 
@@ -201,7 +201,7 @@ class InventoryListView extends React.Component<IPropsType, IStateType> {
                                       : null
                                   }
                                   {
-                                    hasPermission(window.user, 'finishInventory') ?
+                                    hasPermission(window.user, 'deleteInventory') ?
                                       <li>
                                         <a href="javascript:void(0);" onClick={() => this.deleteInventoryAction(inventory)}>
                                           <i className="fa fa-fw fa-close" />Eliminar
