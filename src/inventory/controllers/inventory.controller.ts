@@ -599,17 +599,17 @@ class InventoryController {
   }
 
   public async deleteInventory(req: IRequest, res: Response) {
-    const {company} = req.user;
+    const {team} = req.user;
     const {id} = req.params;
     try {
       const inventory = await InventoryModel.findOne({
         _id: id,
-        company
+        team
       });
       if (inventory) {
         await InventoryCar.find({inventory}).remove();
         await inventory.remove();
-        io.to(`inventory-list-${company}`).emit('REFRESH', {
+        io.to(`inventory-list-${team._id}`).emit('REFRESH', {
           update: true
         });
         res.json({

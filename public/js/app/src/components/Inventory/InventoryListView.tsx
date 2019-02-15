@@ -16,6 +16,7 @@ import {
 } from '../../actions/inventory.actions';
 import AppContainer from '../../container/AppContainer';
 import {IWindow} from '../../interfaces/window';
+import {hasPermission} from '../../utils/common';
 import Row from '../Utils/Row';
 
 declare let window: IWindow;
@@ -191,7 +192,7 @@ class InventoryListView extends React.Component<IPropsType, IStateType> {
                                     </a>
                                   </li>
                                   {
-                                    inventory.status === 'inProcess' ?
+                                    inventory.status === 'inProcess' && hasPermission(window.user, 'finishInventory') ?
                                         <li>
                                           <a href="javascript:void(0);" onClick={() => this.finishInventoryAction(inventory)}>
                                             <i className="fa fa-fw fa-stop" />Finalizar
@@ -199,7 +200,15 @@ class InventoryListView extends React.Component<IPropsType, IStateType> {
                                         </li>
                                       : null
                                   }
-                                  {/*<li><a href="javascript:void(0);" onClick={() => this.deleteInventoryAction(inventory)}><i className="fa fa-fw fa-close" />Eliminar</a></li>*/}
+                                  {
+                                    hasPermission(window.user, 'deleteInventory') ?
+                                      <li>
+                                        <a href="javascript:void(0);" onClick={() => this.deleteInventoryAction(inventory)}>
+                                          <i className="fa fa-fw fa-close" />Eliminar
+                                        </a>
+                                      </li>
+                                      : null
+                                  }
                                 </ul>
                               </div>
                             </div>
