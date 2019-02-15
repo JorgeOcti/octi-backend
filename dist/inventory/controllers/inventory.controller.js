@@ -268,11 +268,11 @@ class InventoryController {
                 }]);
             for (const inventory of inventories) {
                 const defaultResults = {
-                    [inventory_model_1.ChoicesStatusCarInventory.pending]: 0,
-                    [inventory_model_1.ChoicesStatusCarInventory.found]: 0,
-                    [inventory_model_1.ChoicesStatusCarInventory.missing]: 0,
-                    [inventory_model_1.ChoicesStatusCarInventory.reported]: 0,
-                    [inventory_model_1.ChoicesStatusCarInventory.leftover]: 0
+                    [inventoryCar_model_1.ChoicesStatusCarInventory.pending]: 0,
+                    [inventoryCar_model_1.ChoicesStatusCarInventory.found]: 0,
+                    [inventoryCar_model_1.ChoicesStatusCarInventory.missing]: 0,
+                    [inventoryCar_model_1.ChoicesStatusCarInventory.reported]: 0,
+                    [inventoryCar_model_1.ChoicesStatusCarInventory.leftover]: 0
                 };
                 response.push({
                     _id: inventory._id,
@@ -345,9 +345,9 @@ class InventoryController {
                         data: {
                             cars: inventory.cars
                                 .filter((car) => (![
-                                inventory_model_1.ChoicesStatusCarInventory.reported,
-                                inventory_model_1.ChoicesStatusCarInventory.leftover,
-                                inventory_model_1.ChoicesStatusCarInventory.missing
+                                inventoryCar_model_1.ChoicesStatusCarInventory.reported,
+                                inventoryCar_model_1.ChoicesStatusCarInventory.leftover,
+                                inventoryCar_model_1.ChoicesStatusCarInventory.missing
                             ].includes(car.status)))
                                 .map((car) => {
                                 return {
@@ -487,7 +487,7 @@ class InventoryController {
                         inventory: id,
                         car: car._id,
                         status: {
-                            $in: [inventory_model_1.ChoicesStatusCarInventory.found, inventory_model_1.ChoicesStatusCarInventory.leftover]
+                            $in: [inventoryCar_model_1.ChoicesStatusCarInventory.found, inventoryCar_model_1.ChoicesStatusCarInventory.leftover]
                         }
                     });
                     if (inventoriedCar) {
@@ -504,14 +504,14 @@ class InventoryController {
                         // if car in inventory
                         if (inventoryCar) {
                             inventoryCar.venueFound = venue._id;
-                            inventoryCar.status = inventory_model_1.ChoicesStatusCarInventory.found;
+                            inventoryCar.status = inventoryCar_model_1.ChoicesStatusCarInventory.found;
                             inventoryCar.images = images ? images.map((image) => (new bson_1.ObjectID(image))) : [];
                             inventoryCar.inventoriedBy = req.user._id;
                             await inventoryCar.save();
                             server_1.io.to(`inventory-detail-${inventory._id}`).emit('REFRESH', {
                                 title: 'Vehículo encontrado',
                                 text: `${req.user.firstName} ${req.user.lastName} encontró ${car.brand} (${car.denomination}) en ${venue.name}.`,
-                                status: inventory_model_1.ChoicesStatusCarInventory.found,
+                                status: inventoryCar_model_1.ChoicesStatusCarInventory.found,
                                 update: true
                             });
                             res.status(200).json({
@@ -598,6 +598,7 @@ class InventoryController {
                 company
             });
             if (inventory) {
+                await inventoryCar_model_1.default.find({ inventory }).remove();
                 await inventory.remove();
                 server_1.io.to(`inventory-list-${company}`).emit('REFRESH', {
                     update: true
@@ -625,17 +626,15 @@ class InventoryController {
         }
     }
     async addComment(req, res) {
-        const { team } = req.user;
-        const { id } = req.params;
+        const { inventory } = req.params;
         const { _id, comment } = req.body;
         try {
-            await inventory_model_1.default.update({
-                _id: id,
-                ['cars._id']: _id,
-                team
+            await inventoryCar_model_1.default.update({
+                inventory,
+                _id
             }, {
                 $push: {
-                    'cars.$.comments': {
+                    comments: {
                         user: req.user._id,
                         comment,
                         createdAt: new Date()
@@ -644,7 +643,7 @@ class InventoryController {
             }, {
                 upsert: true
             });
-            server_1.io.to(`inventory-detail-${id}`).emit('REFRESH', {
+            server_1.io.to(`inventory-detail-${inventory}`).emit('REFRESH', {
                 update: true
             });
             server_1.io.to(`inventory-comment-${_id}`).emit('NEW_COMMENT', {
@@ -849,14 +848,14 @@ class InventoryController {
                     comments: [],
                     inventoriedBy: req.user._id,
                     images: images ? images.map((image) => (new bson_1.ObjectID(image))) : [],
-                    status: inventory_model_1.ChoicesStatusCarInventory.reported
+                    status: inventoryCar_model_1.ChoicesStatusCarInventory.reported
                 });
                 await inventoryCar.save();
                 const textNotification = `${req.user.firstName} ${req.user.lastName} encontró ${car.brand} (${car.denomination}) en ${venue.name}.`;
                 server_1.io.to(`inventory-detail-${inventory._id}`).emit('REFRESH', {
                     title: 'Vehículo reportado',
                     text: textNotification,
-                    status: inventory_model_1.ChoicesStatusCarInventory.reported,
+                    status: inventoryCar_model_1.ChoicesStatusCarInventory.reported,
                     update: true
                 });
                 server_1.io.to(`inventory-list-${team._id}`).emit('REFRESH', {
@@ -1221,11 +1220,11 @@ class InventoryController {
             const detailByBrand = [];
             const detailByVenue = [];
             const defaultResults = {
-                [inventory_model_1.ChoicesStatusCarInventory.pending]: 0,
-                [inventory_model_1.ChoicesStatusCarInventory.found]: 0,
-                [inventory_model_1.ChoicesStatusCarInventory.leftover]: 0,
-                [inventory_model_1.ChoicesStatusCarInventory.missing]: 0,
-                [inventory_model_1.ChoicesStatusCarInventory.reported]: 0
+                [inventoryCar_model_1.ChoicesStatusCarInventory.pending]: 0,
+                [inventoryCar_model_1.ChoicesStatusCarInventory.found]: 0,
+                [inventoryCar_model_1.ChoicesStatusCarInventory.leftover]: 0,
+                [inventoryCar_model_1.ChoicesStatusCarInventory.missing]: 0,
+                [inventoryCar_model_1.ChoicesStatusCarInventory.reported]: 0
             };
             for (const db of detailByBrands) {
                 detailByBrand.push({

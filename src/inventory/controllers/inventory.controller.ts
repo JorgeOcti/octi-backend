@@ -19,11 +19,10 @@ import {IInventoryCar} from '../../interfaces/inventory.interface';
 import {io} from '../../server';
 import PushService from '../../services/push.service';
 import InventoryModel, {
-  ChoicesStatusCarInventory,
   ChoicesStatusInventory
 } from '../models/inventory.model';
 import Inventory from '../models/inventory.model';
-import InventoryCar from '../models/inventoryCar.model';
+import InventoryCar, {ChoicesStatusCarInventory} from '../models/inventoryCar.model';
 import InventoryFileModel from '../models/inventoryFile.model';
 import InventoryLabel from '../models/inventoryLabel.model';
 
@@ -608,6 +607,7 @@ class InventoryController {
         company
       });
       if (inventory) {
+        await InventoryCar.find({inventory}).remove();
         await inventory.remove();
         io.to(`inventory-list-${company}`).emit('REFRESH', {
           update: true
@@ -635,18 +635,15 @@ class InventoryController {
   }
 
   public async addComment(req: IRequest, res: Response) {
-    const {team} = req.user;
-    const {id} = req.params;
+    const {inventory} = req.params;
     const {_id, comment} = req.body;
     try {
-
-      await InventoryModel.update({
-        _id: id,
-        ['cars._id']: _id,
-        team
+      await InventoryCar.update({
+        inventory,
+        _id
       }, {
         $push: {
-          'cars.$.comments': {
+          comments: {
             user: req.user._id,
             comment,
             createdAt: new Date()
@@ -655,7 +652,7 @@ class InventoryController {
       }, {
         upsert: true
       });
-      io.to(`inventory-detail-${id}`).emit('REFRESH', {
+      io.to(`inventory-detail-${inventory}`).emit('REFRESH', {
         update: true
       });
       io.to(`inventory-comment-${_id}`).emit('NEW_COMMENT', {

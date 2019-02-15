@@ -77,7 +77,8 @@ describe('formularies', () => {
                 'name',
                 'description',
                 'sections',
-                'team'
+                'team',
+                'shippingVenue'
             ]);
             expect(res.body.data.form.sections).be.a('array');
             // validate sections keys
@@ -123,6 +124,7 @@ describe('formularies', () => {
                 'backgroundColor',
                 'requireAccesories',
                 'requireComment',
+                'requireVenue',
                 'requireConciliation',
                 'value',
                 'order'

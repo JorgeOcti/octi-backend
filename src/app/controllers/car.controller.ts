@@ -5,7 +5,8 @@ import {PaginateOptions, PaginateResult} from 'mongoose';
 import app from '../../app';
 import ParticipantModel from '../../form/models/participant.model';
 import {IRequest} from '../../interfaces/global.interface';
-import InventoryModel, {ChoicesStatusCarInventory, ChoicesStatusInventory} from '../../inventory/models/inventory.model';
+import InventoryModel, {ChoicesStatusInventory} from '../../inventory/models/inventory.model';
+import {ChoicesStatusCarInventory} from '../../inventory/models/inventoryCar.model';
 import VINService from '../../services/vin.service';
 import CarModel, {ChoicesStatusCar, ICarModel} from '../models/car.model';
 
@@ -560,7 +561,7 @@ class CarController {
 
   /* istanbul ignore next */
   public async apiParticipantCSV(req: IRequest, res: Response) {
-    try{
+    try {
       const participants = await ParticipantModel.find({}).populate([{
         path: 'car'
       }, {
