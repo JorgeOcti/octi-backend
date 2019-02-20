@@ -58,7 +58,7 @@ class TimeLineInventory extends React.Component<IPropsType, IStateType> {
   render(): React.ReactElement<IPropsType> {
     const {inventory} = this.props;
     return (
-      <li>
+      <li style={{marginRight: '0'}}>
         <i className={`fa ${this.iconStatus[inventory.status]} ${this.classStatus[inventory.status]}`}/>
         <div className="timeline-item">
           <span className="time" style={{
@@ -90,13 +90,18 @@ class TimeLineInventory extends React.Component<IPropsType, IStateType> {
           </div>
           <div className="timeline-footer">
             <Row>
-              <div className="col col-md-6">
+              <div
+                className="col col-md-6"
+                style={{
+                  padding: '5px 15px'
+                }}>
                 {this.status(inventory.status)}{' '}
                 {this.label(inventory.label, inventory.labelText)}
               </div>
               <div className="col col-md-6 text-right" style={{
                 color: '#888',
-                fontSize: '12px'
+                fontSize: '12px',
+                padding: '5px 15px'
               }}>
                 {
                   ['leftover', 'missing'].includes(inventory.status) && inventory.labelBy ?

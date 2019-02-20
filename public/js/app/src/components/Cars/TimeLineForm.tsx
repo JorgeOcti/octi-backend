@@ -27,7 +27,7 @@ class TimeLineForm extends React.Component<IPropsType, IStateType> {
   render(): React.ReactElement<IPropsType> {
     const {form} = this.props;
     return (
-      <li>
+      <li style={{marginRight: '0'}}>
         <i className={`fa fa-check-square-o ${this.getColor(form.qualification)}`}/>
         <div className="timeline-item">
           <span className="time" style={{
@@ -49,7 +49,11 @@ class TimeLineForm extends React.Component<IPropsType, IStateType> {
           </div>
           <div className="timeline-footer">
             <Row>
-              <div className="col col-md-6">
+              <div
+                className="col col-md-6"
+                style={{
+                  padding: '5px 15px'
+                }}>
                 <a
                   className="btn btn-primary btn-flat btn-xs"
                   onClick={() => this.props.getParticipant(form._id)}
@@ -57,14 +61,15 @@ class TimeLineForm extends React.Component<IPropsType, IStateType> {
               </div>
               <div className="col col-md-6 text-right" style={{
                 color: '#888',
-                fontSize: '12px'
+                fontSize: '12px',
+                padding: '5px 15px'
               }}>
-                {
-                  form.user ?
-                    <React.Fragment>
-                      <i className="fa fa-user"/> {form.user.firstName} {form.user.lastName}
-                    </React.Fragment> : null
-                }
+                  {
+                    form.user ?
+                      <React.Fragment>
+                        <i className="fa fa-user"/> {form.user.firstName} {form.user.lastName}
+                      </React.Fragment> : null
+                  }
               </div>
             </Row>
           </div>
