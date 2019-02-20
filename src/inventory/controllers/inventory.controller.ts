@@ -149,7 +149,8 @@ class InventoryController {
         const usersIDs = await UserModel.find({
           venue: {
             $in: venuesIDs
-          }
+          },
+          team
         }, {
           _id: true
         });
