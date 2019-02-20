@@ -142,7 +142,7 @@ class InventoryController {
           venue: {
             $in: venuesIDs
           },
-          company
+          team
         }, {
           _id: true
         });
