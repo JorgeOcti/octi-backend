@@ -1,88 +1,7 @@
 import * as mongoose from 'mongoose';
 import {
-  IInventory,
-  IInventoryCar
+  IInventory
 } from '../../interfaces/inventory.interface';
-import {IInventoryComment} from '../../interfaces/inventoryComment.interface';
-
-export interface IIventoryCommentModel extends IInventoryComment, mongoose.Types.Subdocument {}
-
-const invetoryCommentCars = new mongoose.Schema({
-  user: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'User'
-  },
-  comment: {
-    type: String
-  },
-  createdAt: {
-    type: Date,
-    default: new Date()
-  }
-});
-
-export interface IInventoryCarModel extends IInventoryCar, mongoose.Types.Subdocument {}
-
-export enum ChoicesStatusCarInventory {
-  pending = 'pending',
-  found = 'found',
-  missing = 'missing',
-  leftover = 'leftover',
-  reported = 'reported'
-}
-export const choicesStatusCarInventory = [
-  ChoicesStatusCarInventory.pending,
-  ChoicesStatusCarInventory.found,
-  ChoicesStatusCarInventory.leftover,
-  ChoicesStatusCarInventory.missing,
-  ChoicesStatusCarInventory.reported
-];
-const inventoryCarSchema = new mongoose.Schema({
-  car: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'Car'
-  },
-  venue: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'Venue'
-  },
-  venueFound: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'Venue'
-  },
-  inventoriedBy: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'User'
-  },
-  images: [{
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'InventoryFile'
-  }],
-  comments: [invetoryCommentCars],
-  label: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'InventoryLabel'
-  },
-  labelText: {
-    type: String,
-    default: ''
-  },
-  labelBy: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'User'
-  },
-  customizedStatusText: {
-    type: String,
-    default: ''
-  },
-  status: {
-    type: String,
-    enum: choicesStatusCarInventory,
-    default: ChoicesStatusCarInventory.pending
-  }
-}, {
-  timestamps: true
-});
 
 export interface IInventoryModel extends IInventory, mongoose.Document {}
 export enum ChoicesStatusInventory {
@@ -109,7 +28,6 @@ const inventorySchema = new mongoose.Schema({
     ref: 'Company',
     required: true
   },
-  cars: [inventoryCarSchema],
   venues: [{
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Venue'
@@ -134,6 +52,15 @@ const inventorySchema = new mongoose.Schema({
   timestamps: true
 });
 
+inventorySchema.virtual('cars', {
+  ref: 'InventoryCar', // The model to use
+  localField: '_id', // Find field in this model
+  foreignField: 'inventory', // is equal to field in another model
+  justOne: false
+});
+
+inventorySchema.index({team: 1});
+inventorySchema.index({team: 1, status: 1, venues: 1});
 const Inventory = mongoose.model<IInventoryModel>('Inventory', inventorySchema);
 
 export default Inventory;

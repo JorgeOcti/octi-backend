@@ -8,6 +8,7 @@ import {SuperTest, Test} from 'supertest';
 import {IInventory} from '../../interfaces/inventory.interface';
 import server from '../../server';
 import Inventory from '../models/inventory.model';
+import {IInventoryCarModel} from '../models/inventoryCar.model';
 const request = require('supertest');
 
 chai.use(chaiHttp);
@@ -16,8 +17,10 @@ const expect = chai.expect;
 let token: string = '';
 const authenticatedUser: SuperTest<Test> = request.agent(server);
 let firstInventory: any;
+
 const inventoryData: any = {
-  name: 'InventoryTest',
+  name: 'Inventory test',
+  notification: true,
   carsByVenue: [{
     name: 'Dercocenter Movicenter',
     cars: [{
@@ -50,6 +53,7 @@ const inventoryData: any = {
     }]
   }]
 };
+
 describe('inventories', () => {
 
   before((done) => {
@@ -245,7 +249,9 @@ describe('inventories', () => {
   });
 
   it('it should comment car', (done) => {
-    Inventory.findById(inventoryID).exec((err, invetory) => {
+    Inventory.findById(inventoryID).populate([{
+      path: 'cars'
+    }]).exec((err, invetory) => {
       if (err) {
         console.log(err);
       }
@@ -253,7 +259,7 @@ describe('inventories', () => {
         authenticatedUser
           .post(`/api/inventory/${inventoryID}/comment/`)
           .send({
-            _id: (invetory.cars[0] as any)._id,
+            _id: (invetory.cars[0] as IInventoryCarModel)._id,
             comment: 'Prueba comentario'
           })
           .end((err, res) => {

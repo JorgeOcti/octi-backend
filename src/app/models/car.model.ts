@@ -24,7 +24,8 @@ const carSchema = new mongoose.Schema({
     trim: true
   },
   internalNumber: {
-    type: Number
+    type: String,
+    default: ''
   },
   patent: {
     type: String,
@@ -80,22 +81,16 @@ carSchema.index({
 carSchema.index({team: 1, vin: 1}, {
   unique: true
 });
-// carSchema.index({
-//   vin: 'text',
-//   brand: 'text',
-//   denomination: 'text',
-//   color: 'text'
-// }, {
-//   weights: {
-//     vin: 9,
-//     brand: 10,
-//     denomination: 1,
-//     color: 1
-//   }
-// });
 
 carSchema.virtual('participants', {
   ref: 'Participant', // The model to use
+  localField: '_id', // Find field in this model
+  foreignField: 'car', // is equal to field in another model
+  justOne: false
+});
+
+carSchema.virtual('inventories', {
+  ref: 'InventoryCar', // The model to use
   localField: '_id', // Find field in this model
   foreignField: 'car', // is equal to field in another model
   justOne: false

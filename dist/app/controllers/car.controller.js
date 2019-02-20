@@ -5,6 +5,7 @@ const mongoose = require("mongoose");
 const app_1 = require("../../app");
 const participant_model_1 = require("../../form/models/participant.model");
 const inventory_model_1 = require("../../inventory/models/inventory.model");
+const inventoryCar_model_1 = require("../../inventory/models/inventoryCar.model");
 const vin_service_1 = require("../../services/vin.service");
 const car_model_1 = require("../models/car.model");
 class CarController {
@@ -178,7 +179,7 @@ class CarController {
                                     const carToAdd = cars.find((ci) => {
                                         return ci._id.toString() === car.car.toString();
                                     });
-                                    if (carToAdd && car.status !== inventory_model_1.ChoicesStatusCarInventory.leftover) {
+                                    if (carToAdd && car.status !== inventoryCar_model_1.ChoicesStatusCarInventory.leftover) {
                                         carsInInventory.push({
                                             _id: carToAdd._id,
                                             vin: carToAdd.vin,
@@ -670,9 +671,28 @@ class CarController {
                 color: true
             })
                 .populate([{
+                    path: 'inventories',
+                    populate: [{
+                            path: 'venue',
+                            select: ['name']
+                        }, {
+                            path: 'label'
+                        }, {
+                            path: 'venueFound',
+                            select: ['name']
+                        }, {
+                            path: 'inventory',
+                            select: ['name']
+                        }],
+                    options: {
+                        sort: {
+                            createdAt: -1
+                        }
+                    }
+                }, {
                     // reverse populate
                     path: 'participants',
-                    select: ['name', 'user', 'createdAt', 'qualification', 'venue'],
+                    select: ['name', 'user', 'createdAt', 'updatedAt', 'qualification', 'venue', 'shipping', 'reception'],
                     match: {
                         venue: {
                             $in: req.user.venuesPermissions()
@@ -687,6 +707,9 @@ class CarController {
                     populate: [{
                             path: 'venue',
                             select: ['name']
+                        }, {
+                            path: 'form',
+                            select: ['shipping', 'reception']
                         }, {
                             path: 'user',
                             select: ['firstName', 'lastName']

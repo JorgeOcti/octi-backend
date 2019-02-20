@@ -2,7 +2,7 @@ import * as bluebird from 'bluebird';
 import * as dotenv from 'dotenv';
 import * as mongoose from 'mongoose';
 import * as path from 'path';
-import {ChoicesStatusCarInventory} from '../models/inventory.model';
+import {ChoicesStatusCarInventory} from '../models/inventoryCar.model';
 import InventoryLabel from '../models/inventoryLabel.model';
 
 async function addlabel() {

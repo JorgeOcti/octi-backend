@@ -5,6 +5,8 @@ import ApiService from '../utils/axios';
 
 export interface ICarsState {
   cars: ICar[];
+  car: ICar | null;
+  carEvents: any;
   loading: boolean;
   source: CancelTokenSource | null;
   pagination: {
@@ -81,6 +83,45 @@ export function loadCarsAction(cars: any, count: number, pages: number): ILoadCa
   };
 }
 
+interface ILoadCar {
+  type: '/CARS/LOAD_CAR';
+  payload: {
+    car: ICar;
+  };
+}
+
+export function loadCarAction(car: ICar): ILoadCar {
+  return {
+    type: '/CARS/LOAD_CAR',
+    payload: {
+      car
+    }
+  };
+}
+
+export function getCarAction(id: string) {
+  return (dispatch: Dispatch<CarReduxAction>) => {
+    const api: ApiService = new ApiService();
+    dispatch(cancelRequestAction(api.getSource()));
+    dispatch(isLoadingAction(true));
+    api.getCar(id)
+      .then((response: AxiosResponse) => {
+        document.title = `OSA Andes | Detalle VIN ${response.data.data.vin}`;
+        dispatch(loadCarAction(response.data.data));
+        dispatch(isLoadingAction(false));
+      })
+      .catch((err: AxiosError) => {
+        // if the request is canceled
+        if (Axios.isCancel(err)) {
+          dispatch(isLoadingAction(true));
+        } else {
+          dispatch(isLoadingAction(false));
+          api.errorHandler(err);
+        }
+      });
+  };
+}
+
 export function getCarsAction(nextPage: number, search?: string) {
   return (dispatch: Dispatch<CarReduxAction>, getState: () => {cars: ICarsState}) => {
     const api: ApiService = new ApiService();
@@ -110,4 +151,4 @@ export function getCarsAction(nextPage: number, search?: string) {
   };
 }
 
-export type CarReduxAction = ICancelRequest | IIsLoading | IChangePage | ILoadCars;
+export type CarReduxAction = ICancelRequest | IIsLoading | IChangePage | ILoadCars | ILoadCar;
