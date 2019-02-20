@@ -15,7 +15,8 @@ let token = '';
 const authenticatedUser = request.agent(server_1.default);
 let firstInventory;
 const inventoryData = {
-    name: 'InventoryTest',
+    name: 'Inventory test',
+    notification: true,
     carsByVenue: [{
             name: 'Dercocenter Movicenter',
             cars: [{

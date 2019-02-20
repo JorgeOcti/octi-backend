@@ -5,6 +5,7 @@ import * as ReactDOM from 'react-dom';
 import { Provider } from 'react-redux';
 import { Route, RouteComponentProps, Router as BrowserRouter, Switch } from 'react-router-dom';
 import AlertsViews from './components/Alerts/AlertViews';
+import CarDetailView from './components/Cars/CarDetailView';
 import CarsListView from './components/Cars/CarListView';
 import CompaniesListView from './components/Companies/CompaniesListView';
 import DashboardGeneralView from './components/DashboardGeneral/DashboardGeneralView';
@@ -43,6 +44,7 @@ const App = () => (
                 <Route exact path="/inventory/:id/:tab/" component={ InventoryDetailView }/>
                 <Route exact path="/settings/users/" component={ UsersListView }/>
                 <Route exact path="/settings/cars/" component={ CarsListView }/>
+                <Route exact path="/settings/cars/:id" component={ CarDetailView }/>
                 <Route exact path="/settings/labels/" component={ LabelsListView }/>
                 <Route exact path="/settings/venues/" component={ VenuesListView }/>
                 <Route exact path="/settings/companies/" component={ CompaniesListView }/>

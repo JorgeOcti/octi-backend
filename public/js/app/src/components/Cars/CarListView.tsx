@@ -114,8 +114,9 @@ class CarListView extends React.Component<IPropsType, IStateType> {
                     <th style={{width: '10%'}}>Patente</th>
                     <th style={{width: '10%'}}>Marca</th>
                     <th style={{width: '20%'}} className="hidden-xs">Denominación</th>
-                    <th style={{width: '20%'}} className="hidden-xs">Color</th>
+                    <th style={{width: '15%'}} className="hidden-xs">Color</th>
                     <th style={{width: '20%'}} className="hidden-xs">Creado</th>
+                    <th style={{width: '5%'}} />
                     {/*<th className="width-10" />*/}
                   </tr>
                 </thead>
@@ -135,6 +136,10 @@ class CarListView extends React.Component<IPropsType, IStateType> {
                           <td className="hidden-xs text-ellipsis">{car.denomination}</td>
                           <td className="hidden-xs text-ellipsis">{car.color}</td>
                           <td className="hidden-xs text-ellipsis">{moment(car.createdAt).format('LLL')}</td>
+                          <td className="text-primary middle-center">
+                            <button className="btn btn-xs btn-primary" onClick={() => this.props.history.push(`/settings/cars/${car._id}`)}><i
+                              className="fa fa-bars"/></button>
+                          </td>
                         </tr>
                       );
                     })

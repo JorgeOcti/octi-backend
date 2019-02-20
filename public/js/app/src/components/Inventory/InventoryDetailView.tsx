@@ -349,7 +349,7 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
       this.socket.emit('join', {room: `inventory-detail-${id}`});
     });
     this.socket.on('REFRESH', (data: any): void => {
-      if (data.update) {
+      if (data.update && (window.user.venuesAccess as string[]).includes(data.venue)) {
         if (data.title) {
           const status: any = {
             found: 'success',

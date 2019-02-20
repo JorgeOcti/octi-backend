@@ -149,8 +149,7 @@ class InventoryController {
         const usersIDs = await UserModel.find({
           venue: {
             $in: venuesIDs
-          },
-          company
+          }
         }, {
           _id: true
         });
@@ -335,6 +334,7 @@ class InventoryController {
           status: 404
         });
       } else {
+        // const venuesPermissions = req.user.venuesPermissions();
         const inventory = await Inventory
           .findOne({
             _id: id,
@@ -346,6 +346,14 @@ class InventoryController {
           })
           .populate([{
             path: 'cars',
+            match: {
+              status: {
+                $in: [ChoicesStatusCarInventory.pending, ChoicesStatusCarInventory.found]
+              }
+            //   venue: {
+            //     $in: venuesPermissions
+            //   }
+            },
             populate: [{
               path: 'car',
               select: ['vin', 'vin2', 'color', 'denomination', 'brand', 'patent']
@@ -358,11 +366,6 @@ class InventoryController {
           res.status(200).json({
             data: {
               cars: inventory.cars
-                .filter((car: IInventoryCar) => (![
-                  ChoicesStatusCarInventory.reported,
-                  ChoicesStatusCarInventory.leftover,
-                  ChoicesStatusCarInventory.missing
-                ].includes(car.status as any)))
                 .map((car: IInventoryCar) => {
                 return {
                   ...car.car,
@@ -479,11 +482,22 @@ class InventoryController {
     }
   }
 
-  public async apiFoundCar(req: IRequest, res: Response) {
-    const {team, venue} = req.user;
+  public async apiFoundCar(req: IRequest, res: Response): Promise<any> {
+    const {team} = req.user;
     const {id} = req.params;
     const {vin, images} = req.body;
     try {
+      const updatedUser = await User.findById(req.user._id).populate([{
+        path: 'venue',
+        select: ['name']
+      }]);
+      if (!updatedUser) {
+        return res.status(404).json({
+          message: 'No se ha encontrado el inventario solicitado.',
+          status: 404
+        });
+      }
+      const venueId = updatedUser.venue._id;
       const inventory = await InventoryModel.findOne({
         _id: id,
         team,
@@ -504,7 +518,7 @@ class InventoryController {
           });
           if (inventoriedCar) {
             res.status(400).json({
-              message: 'Este auto ya ha sido inventariado',
+              message: 'Este vehículo ya ha sido inventariado',
               status: 400
             });
           } else {
@@ -514,7 +528,7 @@ class InventoryController {
             });
             // if car in inventory
             if (inventoryCar) {
-              inventoryCar.venueFound = venue._id;
+              inventoryCar.venueFound = venueId;
               inventoryCar.status = ChoicesStatusCarInventory.found;
               inventoryCar.images = images ? images.map((image: string) => (new ObjectID(image))) : [];
               inventoryCar.inventoriedBy = req.user._id;
@@ -522,8 +536,9 @@ class InventoryController {
 
               io.to(`inventory-detail-${inventory._id}`).emit('REFRESH', {
                 title: 'Vehículo encontrado',
-                text: `${req.user.firstName} ${req.user.lastName} encontró ${car.brand} (${car.denomination}) en ${venue.name}.`,
+                text: `${req.user.firstName} ${req.user.lastName} encontró ${car.brand} (${car.denomination}) en ${updatedUser.venue.name}.`,
                 status: ChoicesStatusCarInventory.found,
+                venue: venueId,
                 update: true
               });
               res.status(200).json({
@@ -547,7 +562,7 @@ class InventoryController {
       } else {
         // if inventory no exist
         res.status(400).json({
-          message: 'Este inventario no existe o ya no se encuentra activo',
+          message: 'Este inventario no existe o ya no se encuentra activo.',
           status: 400
         });
       }
@@ -562,9 +577,14 @@ class InventoryController {
     }
   }
 
-  public async finishInventory(req: IRequest, res: Response) {
+  public async finishInventory(req: IRequest, res: Response): Promise<any> {
     const {team} = req.user;
     const {id} = req.params;
+    if (!req.user.hasPermission('finishInventory')) {
+      return res.status(403).json({
+        message: 'No tienes permisos para esta operación'
+      });
+    }
     try {
       const inventory = await InventoryModel.findOne({_id: id, team});
       if (inventory) {
@@ -598,9 +618,14 @@ class InventoryController {
     }
   }
 
-  public async deleteInventory(req: IRequest, res: Response) {
+  public async deleteInventory(req: IRequest, res: Response): Promise<any> {
     const {team} = req.user;
     const {id} = req.params;
+    if (!req.user.hasPermission('deleteInventory')) {
+      return res.status(403).json({
+        message: 'No tienes permisos para esta operación'
+      });
+    }
     try {
       const inventory = await InventoryModel.findOne({
         _id: id,
@@ -980,7 +1005,7 @@ class InventoryController {
   public async detaill(req: IRequest, res: Response) {
     const {id} = req.params;
     const {team} = req.user;
-    let venuesPermissions = req.user.venuesPermissions();
+    const venuesPermissions = req.user.venuesPermissions();
     try {
       // summary
       const inventory = await InventoryModel.aggregate([
@@ -1077,6 +1102,7 @@ class InventoryController {
             createdAt: -1
           }
         }]);
+
       // detail by venue
       const detailByVenues = await InventoryModel.aggregate([
         {
@@ -1271,7 +1297,7 @@ class InventoryController {
           createdAt: currentInventory.createdAt,
           finalizedAt: currentInventory.finalizedAt ? currentInventory.finalizedAt : null
         };
-        // console.log('detailByVenue', detailByVenue);
+
         const detailInventory = await InventoryModel.findById(id, {
           name: true,
           status: true,
@@ -1279,9 +1305,20 @@ class InventoryController {
           venues: true
         }).populate([{
           path: 'cars',
+          match: {
+            $or: [{
+              venue: {
+                $in: venuesPermissions
+              }
+            }, {
+              venueFound: {
+                $in: venuesPermissions
+              }
+            }]
+          },
           populate: [{
             path: 'car',
-            select: ['vin', 'vin2', 'color', 'denomination', 'brand', 'venue', 'patent']
+            select: ['vin', 'vin2', 'color', 'denomination', 'brand', 'venue', 'patent', 'internalNumber']
           }, {
             path: 'label'
           }, {
@@ -1302,6 +1339,11 @@ class InventoryController {
         }, {
           path: 'venues',
           select: ['_id', 'name'],
+          match: {
+            _id: {
+              $in: venuesPermissions
+            }
+          },
           options: {
             sort: {
               name: 1
@@ -1309,7 +1351,6 @@ class InventoryController {
           }
         }]).lean();
 
-        venuesPermissions = venuesPermissions.map((ve) => ve.toString());
         res.json({
           summary: response,
           labels: await InventoryLabel.find({
@@ -1325,17 +1366,7 @@ class InventoryController {
           }),
           detailByVenue,
           detailByBrand,
-          detail: {
-            _id: detailInventory ? detailInventory._id : '',
-            name: detailInventory ? detailInventory.name : '',
-            status: detailInventory ? detailInventory.status : '',
-            cars: detailInventory ? detailInventory.cars.filter((car: IInventoryCar) => {
-              return car.venue && venuesPermissions.includes(car.venue._id.toString()) || (car.venueFound && venuesPermissions.includes(car.venueFound._id.toString()));
-            }) : [],
-            venues: detailInventory ? detailInventory.venues.filter((venue: IVenueModel) => {
-              return venuesPermissions.includes(venue._id.toString());
-            }) : []
-          },
+          detail: detailInventory,
           status: 200
         });
       } else {

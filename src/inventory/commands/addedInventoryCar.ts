@@ -4,7 +4,6 @@ import * as mongoose from 'mongoose';
 import * as path from 'path';
 import {IInventoryCar} from '../../interfaces/inventory.interface';
 import Inventory from '../models/inventory.model';
-import InventoryCar from '../models/inventoryCar.model';
 /*
 * run fix
 * node dist/inventory/commands/addedInventoryCar.js
@@ -28,7 +27,7 @@ async function addedInventoryCar() {
           car.inventory = inventory._id;
           return car;
         });
-        await InventoryCar.insertMany(inventoryCars);
+        await mongoose.connection.db.collection('inventorycars').insertMany(inventoryCars);
       }
     }
   } catch (e) {

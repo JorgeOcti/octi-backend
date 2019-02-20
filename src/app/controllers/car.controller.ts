@@ -665,9 +665,26 @@ class CarController {
           color: true
         })
         .populate([{
+          path: 'inventories',
+          populate: [{
+            path: 'venue',
+            select: ['name']
+          }, {
+            path: 'venueFound',
+            select: ['name']
+          }, {
+            path: 'inventory',
+            select: ['name']
+          }],
+          options: {
+            sort: {
+              createdAt: -1
+            }
+          }
+        }, {
           // reverse populate
           path: 'participants',
-          select: ['name', 'user', 'createdAt', 'qualification', 'venue'],
+          select: ['name', 'user', 'createdAt', 'updatedAt', 'qualification', 'venue'],
           match: {
             venue: {
               $in: req.user.venuesPermissions()

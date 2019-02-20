@@ -20,6 +20,8 @@ export interface IInventoryCar {
   inventoriedBy?: IUserModel;
   images: IInventoryFile[];
   status?: string;
+  updatedAt?: Date;
+  createdAt?: Date;
 }
 
 export interface IInventory {
@@ -32,4 +34,6 @@ export interface IInventory {
   finalizedBy: IUserModel;
   finalizedAt: Date;
   status: string;
+  updatedAt: Date;
+  createdAt: Date;
 }

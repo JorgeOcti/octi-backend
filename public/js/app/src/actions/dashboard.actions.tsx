@@ -16,6 +16,7 @@ export interface IDashboardState {
   source: CancelTokenSource | null;
   cars: any[];
   car: ICar | null;
+  carEvents: any;
   participantsPerDate: any[];
   carsPerDate: any[];
   carsByVenue: any[];

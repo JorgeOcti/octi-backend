@@ -5,7 +5,6 @@ const dotenv = require("dotenv");
 const mongoose = require("mongoose");
 const path = require("path");
 const inventory_model_1 = require("../models/inventory.model");
-const inventoryCar_model_1 = require("../models/inventoryCar.model");
 /*
 * run fix
 * node dist/inventory/commands/addedInventoryCar.js
@@ -28,7 +27,7 @@ async function addedInventoryCar() {
                     car.inventory = inventory._id;
                     return car;
                 });
-                await inventoryCar_model_1.default.insertMany(inventoryCars);
+                await mongoose.connection.db.collection('inventorycars').insertMany(inventoryCars);
             }
         }
     }

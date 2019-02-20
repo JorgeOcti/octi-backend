@@ -17,8 +17,10 @@ const expect = chai.expect;
 let token: string = '';
 const authenticatedUser: SuperTest<Test> = request.agent(server);
 let firstInventory: any;
+
 const inventoryData: any = {
-  name: 'InventoryTest',
+  name: 'Inventory test',
+  notification: true,
   carsByVenue: [{
     name: 'Dercocenter Movicenter',
     cars: [{
@@ -51,6 +53,7 @@ const inventoryData: any = {
     }]
   }]
 };
+
 describe('inventories', () => {
 
   before((done) => {
