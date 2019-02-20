@@ -683,6 +683,12 @@ class CarController {
                         }, {
                             path: 'inventory',
                             select: ['name']
+                        }, {
+                            path: 'inventoriedBy',
+                            select: ['firstName', 'lastName']
+                        }, {
+                            path: 'labelBy',
+                            select: ['firstName', 'lastName']
                         }],
                     options: {
                         sort: {

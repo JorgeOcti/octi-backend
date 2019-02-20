@@ -852,11 +852,22 @@ class InventoryController {
     }
   }
 
-  public async reportCar(req: IRequest, res: Response) {
-    const {team, company, venue} = req.user;
+  public async reportCar(req: IRequest, res: Response): Promise<any> {
+    const {team, company} = req.user;
     const {id} = req.params;
     const {vin, denomination, brand, color, images} = req.body;
     try {
+      const updatedUser = await User.findById(req.user._id).populate([{
+        path: 'venue',
+        select: ['name']
+      }]);
+      if (!updatedUser) {
+        return res.status(404).json({
+          message: 'No se ha encontrado el inventario solicitado.',
+          status: 404
+        });
+      }
+      const venueId = updatedUser.venue._id;
       const inventory = await InventoryModel.findOne({
         _id: id,
         team
@@ -878,19 +889,20 @@ class InventoryController {
         const inventoryCar = new InventoryCar({
           car,
           inventory,
-          venue,
-          venueFound: venue,
+          venue: venueId,
+          venueFound: venueId,
           comments: [],
           inventoriedBy: req.user._id,
           images: images ? images.map((image: string) => (new ObjectID(image))) : [],
           status: ChoicesStatusCarInventory.reported
         });
         await inventoryCar.save();
-        const textNotification = `${req.user.firstName} ${req.user.lastName} encontró ${car.brand} (${car.denomination}) en ${venue.name}.`;
+        const textNotification = `${req.user.firstName} ${req.user.lastName} encontró ${car.brand} (${car.denomination}) en ${updatedUser.venue.name}.`;
         io.to(`inventory-detail-${inventory._id}`).emit('REFRESH', {
           title: 'Vehículo reportado',
           text: textNotification,
           status: ChoicesStatusCarInventory.reported,
+          venue: venueId,
           update: true
         });
         io.to(`inventory-list-${team._id}`).emit('REFRESH', {
@@ -928,35 +940,39 @@ class InventoryController {
         team
       });
       if (newLabel) {
-        await InventoryCar.update({
-          _id: car,
-          inventory: id
-        }, {
+        const inventoryCar = await InventoryCar.findById(car, {venue: true});
+        if (inventoryCar) {
+          await InventoryCar.update({
+            _id: car,
+            inventory: id
+          }, {
             status: newLabel.sendTo,
             label: newLabel._id,
             labelBy: req.user._id,
             labelText: custom
-        }, {
-          upsert: true
-        });
-        if (newLabel.isExhibition) {
-          await CarModel.findOneAndUpdate({
-            _id: carID,
-            team
           }, {
-            isExhibition: true
+            upsert: true
+          });
+          if (newLabel.isExhibition) {
+            await CarModel.findOneAndUpdate({
+              _id: carID,
+              team
+            }, {
+              isExhibition: true
+            });
+          }
+          io.to(`inventory-detail-${id}`).emit('REFRESH', {
+            update: true,
+            venue: inventoryCar.venue
+          });
+          io.to(`inventory-list-${team}`).emit('REFRESH', {
+            update: true
+          });
+          res.json({
+            message: 'Opción procesada correctamente.',
+            status: 200
           });
         }
-        io.to(`inventory-detail-${id}`).emit('REFRESH', {
-          update: true
-        });
-        io.to(`inventory-list-${team}`).emit('REFRESH', {
-          update: true
-        });
-        res.json({
-          message: 'Opción procesada correctamente.',
-          status: 200
-        });
       }
     } catch (e) {
       /* istanbul ignore next */

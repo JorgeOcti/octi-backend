@@ -98,7 +98,7 @@ function groupCarEvents(car: ICar): any[] {
       return b.createdAt.format('X') - a.createdAt.format('X');
     })
     .reduce((acc: any, cur: any) => {
-    const key = cur.createdAt.format('YYYY-MM-DD');
+    const key = moment(cur.createdAt).startOf('month').format('YYYY-MM-DD');
     acc[key] = acc[key] || [];
     acc[key].push(cur);
     return acc;

@@ -845,10 +845,21 @@ class InventoryController {
         }
     }
     async reportCar(req, res) {
-        const { team, company, venue } = req.user;
+        const { team, company } = req.user;
         const { id } = req.params;
         const { vin, denomination, brand, color, images } = req.body;
         try {
+            const updatedUser = await user_model_1.default.findById(req.user._id).populate([{
+                    path: 'venue',
+                    select: ['name']
+                }]);
+            if (!updatedUser) {
+                return res.status(404).json({
+                    message: 'No se ha encontrado el inventario solicitado.',
+                    status: 404
+                });
+            }
+            const venueId = updatedUser.venue._id;
             const inventory = await inventory_model_1.default.findOne({
                 _id: id,
                 team
@@ -870,19 +881,20 @@ class InventoryController {
                 const inventoryCar = new inventoryCar_model_1.default({
                     car,
                     inventory,
-                    venue,
-                    venueFound: venue,
+                    venue: venueId,
+                    venueFound: venueId,
                     comments: [],
                     inventoriedBy: req.user._id,
                     images: images ? images.map((image) => (new bson_1.ObjectID(image))) : [],
                     status: inventoryCar_model_1.ChoicesStatusCarInventory.reported
                 });
                 await inventoryCar.save();
-                const textNotification = `${req.user.firstName} ${req.user.lastName} encontró ${car.brand} (${car.denomination}) en ${venue.name}.`;
+                const textNotification = `${req.user.firstName} ${req.user.lastName} encontró ${car.brand} (${car.denomination}) en ${updatedUser.venue.name}.`;
                 server_1.io.to(`inventory-detail-${inventory._id}`).emit('REFRESH', {
                     title: 'Vehículo reportado',
                     text: textNotification,
                     status: inventoryCar_model_1.ChoicesStatusCarInventory.reported,
+                    venue: venueId,
                     update: true
                 });
                 server_1.io.to(`inventory-list-${team._id}`).emit('REFRESH', {
@@ -921,35 +933,39 @@ class InventoryController {
                 team
             });
             if (newLabel) {
-                await inventoryCar_model_1.default.update({
-                    _id: car,
-                    inventory: id
-                }, {
-                    status: newLabel.sendTo,
-                    label: newLabel._id,
-                    labelBy: req.user._id,
-                    labelText: custom
-                }, {
-                    upsert: true
-                });
-                if (newLabel.isExhibition) {
-                    await car_model_2.default.findOneAndUpdate({
-                        _id: carID,
-                        team
+                const inventoryCar = await inventoryCar_model_1.default.findById(car, { venue: true });
+                if (inventoryCar) {
+                    await inventoryCar_model_1.default.update({
+                        _id: car,
+                        inventory: id
                     }, {
-                        isExhibition: true
+                        status: newLabel.sendTo,
+                        label: newLabel._id,
+                        labelBy: req.user._id,
+                        labelText: custom
+                    }, {
+                        upsert: true
+                    });
+                    if (newLabel.isExhibition) {
+                        await car_model_2.default.findOneAndUpdate({
+                            _id: carID,
+                            team
+                        }, {
+                            isExhibition: true
+                        });
+                    }
+                    server_1.io.to(`inventory-detail-${id}`).emit('REFRESH', {
+                        update: true,
+                        venue: inventoryCar.venue
+                    });
+                    server_1.io.to(`inventory-list-${team}`).emit('REFRESH', {
+                        update: true
+                    });
+                    res.json({
+                        message: 'Opción procesada correctamente.',
+                        status: 200
                     });
                 }
-                server_1.io.to(`inventory-detail-${id}`).emit('REFRESH', {
-                    update: true
-                });
-                server_1.io.to(`inventory-list-${team}`).emit('REFRESH', {
-                    update: true
-                });
-                res.json({
-                    message: 'Opción procesada correctamente.',
-                    status: 200
-                });
             }
         }
         catch (e) {

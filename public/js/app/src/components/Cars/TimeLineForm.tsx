@@ -1,5 +1,6 @@
 import * as Raven from 'raven-js';
 import * as React from 'react';
+import Row from '../Utils/Row';
 
 interface IPropsType {
   form: any;
@@ -29,7 +30,12 @@ class TimeLineForm extends React.Component<IPropsType, IStateType> {
       <li>
         <i className={`fa fa-check-square-o ${this.getColor(form.qualification)}`}/>
         <div className="timeline-item">
-          <span className="time"><i className="fa fa-clock-o"/> {form.createdAt.format('HH:mm')}</span>
+          <span className="time" style={{
+            color: '#888',
+            fontSize: '13px'
+          }}>
+            <i className="fa fa-calendar-o"/> {form.createdAt.format('LL')}
+          </span>
 
           <h3 className="timeline-header"><a href="javascript:void(0)">{form.name}</a></h3>
 
@@ -41,14 +47,27 @@ class TimeLineForm extends React.Component<IPropsType, IStateType> {
               form.form.shipping ? `El vehículo fue Despachado a ${form.venue.name}. Con una calificación de ${form.qualification.toFixed(0)}%` : ''
             }
           </div>
-          {
-            form.typeEvent === 'revision' ? <div className="timeline-footer">
-              <a
-                className="btn btn-primary btn-flat btn-xs"
-                onClick={() => this.props.getParticipant(form._id)}
-              >Ver detalle</a>
-            </div> : null
-          }
+          <div className="timeline-footer">
+            <Row>
+              <div className="col col-md-6">
+                <a
+                  className="btn btn-primary btn-flat btn-xs"
+                  onClick={() => this.props.getParticipant(form._id)}
+                >Ver detalle</a>
+              </div>
+              <div className="col col-md-6 text-right" style={{
+                color: '#888',
+                fontSize: '12px'
+              }}>
+                {
+                  form.user ?
+                    <React.Fragment>
+                      <i className="fa fa-user"/> {form.user.firstName} {form.user.lastName}
+                    </React.Fragment> : null
+                }
+              </div>
+            </Row>
+          </div>
         </div>
       </li>
     );

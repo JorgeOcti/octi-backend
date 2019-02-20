@@ -115,12 +115,11 @@ class CarDetailView extends React.Component<IPropsType, IStateType> {
                 return <React.Fragment key={event}>
                   <li className="time-label">
                     <span className="bg-blue">
-                        {moment(event).format('LL')}
+                        {moment(event).format('MMMM YYYY')}
                     </span>
                   </li>
                   {
                     events.map((data: any) => {
-                      console.log(data);
                       return (
                         data.typeEvent === 'revision' ?
                           <TimeLineForm form={data} getParticipant={getParticipant} key={data._id}/>

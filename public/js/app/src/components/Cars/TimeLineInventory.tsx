@@ -1,5 +1,6 @@
 import * as Raven from 'raven-js';
 import * as React from 'react';
+import Row from '../Utils/Row';
 
 interface IPropsType {
   inventory: any;
@@ -60,27 +61,55 @@ class TimeLineInventory extends React.Component<IPropsType, IStateType> {
       <li>
         <i className={`fa ${this.iconStatus[inventory.status]} ${this.classStatus[inventory.status]}`}/>
         <div className="timeline-item">
-          <span className="time"><i className="fa fa-clock-o"/> {inventory.createdAt.format('HH:mm')}</span>
+          <span className="time" style={{
+            color: '#888',
+            fontSize: '13px'
+          }}>
+            <i className="fa fa-calendar-o"/> {inventory.createdAt.format('LL')}
+          </span>
 
           <h3 className="timeline-header"><a href="javascript:void(0)">{inventory.inventory.name}</a></h3>
 
           <div className="timeline-body">
             {
               ['found'].includes(inventory.status) ?
-                `El vehiculo fue encontrado en ${inventory.venueFound.name}` : null
+                `El vehículo fue encontrado en ${inventory.venueFound.name}` : null
             }
             {
               ['pending'].includes(inventory.status) ?
-                `El vehiculo no fue encontrado.` : null
+                `El vehículo no fue encontrado.` : null
             }
             {
               ['missing'].includes(inventory.status) ?
-                `El vehiculo fue marcado como faltante.` : null
+                `El vehículo fue marcado como faltante.` : null
+            }
+            {
+              ['leftover'].includes(inventory.status) ?
+                `El vehículo fue marcado como sobrante.` : null
             }
           </div>
           <div className="timeline-footer">
-            {this.status(inventory.status)}{' '}
-            {this.label(inventory.label, inventory.labelText)}
+            <Row>
+              <div className="col col-md-6">
+                {this.status(inventory.status)}{' '}
+                {this.label(inventory.label, inventory.labelText)}
+              </div>
+              <div className="col col-md-6 text-right" style={{
+                color: '#888',
+                fontSize: '12px'
+              }}>
+                {
+                  ['leftover', 'missing'].includes(inventory.status) && inventory.labelBy ?
+                    <React.Fragment>
+                      <i className="fa fa-user"/> {inventory.labelBy.firstName} {inventory.labelBy.lastName}
+                    </React.Fragment>
+                    : inventory.inventoriedBy ?
+                    <React.Fragment>
+                      <i className="fa fa-user"/> {inventory.inventoriedBy.firstName} {inventory.inventoriedBy.lastName}
+                    </React.Fragment> : null
+                }
+              </div>
+            </Row>
           </div>
         </div>
       </li>
