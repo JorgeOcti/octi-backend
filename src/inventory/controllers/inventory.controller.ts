@@ -348,6 +348,7 @@ class InventoryController {
                 .map((car: IInventoryCar) => {
                 return {
                   ...car.car,
+                  _id: (car as any)._id,
                   venue: car.venue,
                   status: car.status
                 };
