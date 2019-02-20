@@ -670,6 +670,8 @@ class CarController {
             path: 'venue',
             select: ['name']
           }, {
+            path: 'label'
+          }, {
             path: 'venueFound',
             select: ['name']
           }, {
@@ -684,7 +686,7 @@ class CarController {
         }, {
           // reverse populate
           path: 'participants',
-          select: ['name', 'user', 'createdAt', 'updatedAt', 'qualification', 'venue'],
+          select: ['name', 'user', 'createdAt', 'updatedAt', 'qualification', 'venue', 'shipping', 'reception'],
           match: {
             venue: {
               $in: req.user.venuesPermissions()
@@ -699,6 +701,9 @@ class CarController {
           populate: [{
             path: 'venue',
             select: ['name']
+          }, {
+            path: 'form',
+            select: ['shipping', 'reception']
           }, {
             path: 'user',
             select: ['firstName', 'lastName']

@@ -12,6 +12,8 @@ import {getParticipant, IDashboardState, loadParticipantInCarAction} from '../..
 import AppContainer from '../../container/AppContainer';
 import {IWindow} from '../../interfaces/window';
 import ModalView from '../Modal/ModalView';
+import TimeLineForm from './TimeLineForm';
+import TimeLineInventory from './TimeLineInventory';
 
 declare let window: IWindow;
 
@@ -118,28 +120,11 @@ class CarDetailView extends React.Component<IPropsType, IStateType> {
                   </li>
                   {
                     events.map((data: any) => {
+                      console.log(data);
                       return (
-                        <li key={data._id}>
-                          <i className="fa fa-envelope bg-purple"/>
-                          <div className="timeline-item">
-                            <span className="time"><i className="fa fa-clock-o"/> {data.createdAt.format('HH:mm')}</span>
-
-                            <h3 className="timeline-header"><a href="javascript:void(0)">{data.typeEvent}</a> ...</h3>
-
-                            <div className="timeline-body">
-                              ...
-                              Content goes here
-                            </div>
-                            {
-                              data.typeEvent === 'revision' ? <div className="timeline-footer">
-                                <a
-                                  className="btn btn-primary btn-flat btn-xs"
-                                  onClick={() => getParticipant(data._id)}
-                                >Ver detalle</a>
-                              </div> : null
-                            }
-                          </div>
-                        </li>
+                        data.typeEvent === 'revision' ?
+                          <TimeLineForm form={data} getParticipant={getParticipant} key={data._id}/>
+                        : <TimeLineInventory inventory={data}  key={data._id}/>
                       );
                     })
                   }
