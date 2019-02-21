@@ -672,6 +672,16 @@ class CarController {
             })
                 .populate([{
                     path: 'inventories',
+                    match: {
+                        inventory: {
+                            $in: await inventory_model_1.default.find({
+                                team,
+                                status: inventory_model_1.ChoicesStatusInventory.finalized
+                            }, {
+                                _id: true
+                            })
+                        }
+                    },
                     populate: [{
                             path: 'venue',
                             select: ['name']

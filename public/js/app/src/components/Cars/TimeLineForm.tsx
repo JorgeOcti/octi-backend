@@ -80,11 +80,11 @@ class TimeLineForm extends React.Component<IPropsType, IStateType> {
 
   private getColor(qualification: number): string {
     if (qualification <= 25) {
-      return '';
+      return 'bg-red';
     } else if (qualification <= 50) {
-      return '';
+      return 'bg-orange';
     } else if (qualification <= 75) {
-      return '';
+      return 'bg-yellow';
     } else {
       return 'bg-green';
     }
