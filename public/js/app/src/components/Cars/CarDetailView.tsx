@@ -178,7 +178,7 @@ class CarDetailView extends React.Component<IPropsType, IStateType> {
                   <li className="active"><a href="#timeline" data-toggle="tab" aria-expanded="true">Timeline</a></li>
                 </ul>
                 <div className="tab-content" style={{
-                  backgroundColor: '#f9f9f9',
+                  backgroundColor: '#f9f9f9'
                   // maxHeight: '80vh',
                   // overflowX: 'auto'
                 }}>

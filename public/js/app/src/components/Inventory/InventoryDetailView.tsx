@@ -350,6 +350,7 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
     });
     this.socket.on('REFRESH', (data: any): void => {
       if (data.update && (window.user.venuesAccess as string[]).includes(data.venue)) {
+        this.props.getInventoryDetailAction(id, true);
         if (data.title) {
           const status: any = {
             found: 'success',
@@ -366,7 +367,6 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
             stack: 6
           });
         }
-        this.props.getInventoryDetailAction(id, true);
       }
     });
   }

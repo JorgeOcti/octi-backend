@@ -9,6 +9,7 @@ const initialState: IInventoryState = {
   inventoryCar: null,
   source: null,
   loadingDetail: true,
+  fetchingDetail: false,
   summary: {
     _id: '',
     name: '',
@@ -84,6 +85,11 @@ export function inventoriesReducer(state = initialState, action: InventoryReduxA
       return {
         ...state,
         loadingDetail: action.payload.loadingDetail
+      };
+    case '/INVENTORORIES/FETCHING_INVENTORY_DETAIL':
+      return {
+        ...state,
+        fetchingDetail: action.payload.fetchingDetail
       };
     case '/INVENTORORIES/LOAD_INVENTORY_DATA':
       const selectedItems = action.payload.resetFilter ? initialState.selectedItems : state.selectedItems;
