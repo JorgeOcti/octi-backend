@@ -126,20 +126,49 @@ class CarDetailView extends React.Component<IPropsType, IStateType> {
                   />
                   <h3 className="profile-username text-center">{car && car.brand ? car.brand : '-'}</h3>
                   <p className="text-muted text-center">{car && car.denomination ? car.denomination : '-'}</p>
-                    <ul className="list-group list-group-unbordered">
-                      <li className="list-group-item">
-                        <b>Nº Interno</b> <a className="pull-right">543</a>
-                      </li>
-                      <li className="list-group-item">
-                        <b>Color</b> <a className="pull-right">{
-                        car && car.color ? car.color : '-'
-                      }</a>
-                      </li>
-                      <li className="list-group-item">
-                        <b>Friends</b> <a className="pull-right">13,287</a>
-                      </li>
-                    </ul>
-                    <a href="#" className="btn btn-primary btn-block"><b>Follow</b></a>
+                  <ul className="list-group list-group-unbordered">
+                    <li className="list-group-item">
+                      <strong>VIN</strong>
+                      <a className="pull-right">
+                        {
+                          car && car.vin ? car.vin : '-'
+                        }
+                      </a>
+                    </li>
+                    <li className="list-group-item">
+                      <strong>Nº Interno</strong>
+                      <a className="pull-right">
+                        {
+                          car && car.internalNumber ? car.internalNumber : '-'
+                        }
+                      </a>
+                    </li>
+                    <li className="list-group-item">
+                      <strong>Color</strong>
+                      <a className="pull-right">
+                        {
+                          car && car.color ? car.color : '-'
+                        }
+                      </a>
+                    </li>
+                    <li className="list-group-item">
+                      <strong>Revisiones</strong>
+                      <a className="pull-right">
+                        {
+                          car && car.participants ? car.participants.length : 0
+                        }
+                      </a>
+                    </li>
+                    <li className="list-group-item">
+                      <strong>Inventarios</strong>
+                      <a className="pull-right">
+                        {
+                          car && car.inventories ? car.inventories.length : 0
+                        }
+                      </a>
+                    </li>
+                  </ul>
+                    {/*<a href="#" className="btn btn-primary btn-block"><b>Follow</b></a>*/}
                 </div>
               </div>
             </div>
@@ -148,7 +177,11 @@ class CarDetailView extends React.Component<IPropsType, IStateType> {
                 <ul className="nav nav-tabs">
                   <li className="active"><a href="#timeline" data-toggle="tab" aria-expanded="true">Timeline</a></li>
                 </ul>
-                <div className="tab-content" style={{backgroundColor: '#f9f9f9'}}>
+                <div className="tab-content" style={{
+                  backgroundColor: '#f9f9f9',
+                  // maxHeight: '80vh',
+                  // overflowX: 'auto'
+                }}>
                   <div className="tab-pane active" id="timeline">
                     <ul className="timeline">
                       {

@@ -73,7 +73,10 @@ class TimeLineInventory extends React.Component<IPropsType, IStateType> {
           <div className="timeline-body">
             {
               ['found'].includes(inventory.status) ?
-                `El vehículo fue encontrado en ${inventory.venueFound.name}` : null
+                <React.Fragment>
+                  El vehículo fue encontrado en <span className="text-blue">{inventory.venueFound.name}</span>.
+                </React.Fragment>
+                : null
             }
             {
               ['pending'].includes(inventory.status) ?

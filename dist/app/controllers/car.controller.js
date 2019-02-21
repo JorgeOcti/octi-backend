@@ -667,6 +667,7 @@ class CarController {
             }, {
                 vin: true,
                 brand: true,
+                internalNumber: true,
                 denomination: true,
                 color: true
             })
