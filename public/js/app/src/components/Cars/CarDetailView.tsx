@@ -145,6 +145,14 @@ class CarDetailView extends React.Component<IPropsType, IStateType> {
                       </a>
                     </li>
                     <li className="list-group-item">
+                      <strong>Patente</strong>
+                      <a className="pull-right">
+                        {
+                          car && car.patent ? car.patent : '-'
+                        }
+                      </a>
+                    </li>
+                    <li className="list-group-item">
                       <strong>Color</strong>
                       <a className="pull-right">
                         {
