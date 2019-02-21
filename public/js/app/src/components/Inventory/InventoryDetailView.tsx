@@ -430,7 +430,6 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
 
   public imagesFormatter(cell: string, row: any) {
     if (row.images && row.images.length) {
-      console.log('row',row)
       return (
         <div className="row">{
           row.images.map((image: any, index: number) => (

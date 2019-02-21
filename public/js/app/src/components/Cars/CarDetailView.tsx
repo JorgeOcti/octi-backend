@@ -113,6 +113,7 @@ class CarDetailView extends React.Component<IPropsType, IStateType> {
             <div className="col col-md-3">
               <div className="box box-primary">
                 <div className="box-body box-profile">
+                  {/*<ImageLazyLoad url={decodeURI(image.file.url)} height={'100px'} maxHeight={'100px'} maxWidth={'100px'} small={true}/>*/}
                   <img
                     className="profile-user-img img-responsive img-circle"
                     src="https://cdn.forbes.com.mx/2018/03/Auto-Carretera-1280x720.jpg"
