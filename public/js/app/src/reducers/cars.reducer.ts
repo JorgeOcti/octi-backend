@@ -1,7 +1,11 @@
+import * as moment from 'moment';
+import {ICar} from '../../../../../src/interfaces/car.interface';
 import {CarReduxAction, ICarsState} from '../actions/cars.actions';
 
 const initialState: ICarsState = {
   cars: [],
+  car: null,
+  carEvents: {} ,
   loading: true,
   source: null,
   pagination: {
@@ -33,6 +37,12 @@ export function carsReducer(state = initialState, action: CarReduxAction): ICars
           count: action.payload.count
         }
       };
+    case '/CARS/LOAD_CAR':
+      return {
+        ...state,
+        car: action.payload.car,
+        carEvents: groupCarEvents(action.payload.car)
+      };
     case '/CARS/CHANGE_PAGE':
       return {
         ...state,
@@ -44,4 +54,42 @@ export function carsReducer(state = initialState, action: CarReduxAction): ICars
     default:
       return state;
   }
+}
+
+function groupCarEvents(car: ICar): any[] {
+  const events: any[] = [];
+  events.push({
+    _id: car._id,
+    createdAt: moment(car.createdAt).seconds(0),
+    typeEvent: 'created'
+  });
+  if (car.participants && car.participants.length) {
+    for (const participant of car.participants) {
+      events.push({
+        ...participant,
+        createdAt: moment(participant.createdAt),
+        typeEvent: 'revision'
+      });
+    }
+  }
+  if (car.inventories && car.inventories.length) {
+    for (const inventory of car.inventories) {
+      events.push({
+        ...inventory,
+        createdAt: moment(inventory.createdAt),
+        typeEvent: 'inventory'
+      });
+    }
+  }
+
+  return events
+    .sort((a, b) => {
+      return b.createdAt.unix() - a.createdAt.unix();
+    })
+    .reduce((acc: any, cur: any) => {
+    const key = moment(cur.createdAt).startOf('month').format('YYYY-MM-DD');
+    acc[key] = acc[key] || [];
+    acc[key].push(cur);
+    return acc;
+  }, {});
 }

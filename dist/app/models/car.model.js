@@ -22,7 +22,8 @@ const carSchema = new mongoose.Schema({
         trim: true
     },
     internalNumber: {
-        type: Number
+        type: String,
+        default: ''
     },
     patent: {
         type: String,
@@ -77,21 +78,14 @@ carSchema.index({
 carSchema.index({ team: 1, vin: 1 }, {
     unique: true
 });
-// carSchema.index({
-//   vin: 'text',
-//   brand: 'text',
-//   denomination: 'text',
-//   color: 'text'
-// }, {
-//   weights: {
-//     vin: 9,
-//     brand: 10,
-//     denomination: 1,
-//     color: 1
-//   }
-// });
 carSchema.virtual('participants', {
     ref: 'Participant',
+    localField: '_id',
+    foreignField: 'car',
+    justOne: false
+});
+carSchema.virtual('inventories', {
+    ref: 'InventoryCar',
     localField: '_id',
     foreignField: 'car',
     justOne: false

@@ -71,18 +71,28 @@ describe('formularies', () => {
         ]);
         expect(res.body.status).to.equal(200);
         expect(res.body.data).be.a('object');
-        expect(res.body.data).to.have.all.keys([
-          'extra',
-          'form',
-          'scales'
-        ]);
+        if (res.body.data.hasOwnProperty('venues')) {
+          expect(res.body.data).to.have.all.keys([
+            'extra',
+            'form',
+            'scales',
+            'venues'
+          ]);
+        } else {
+          expect(res.body.data).to.have.all.keys([
+            'extra',
+            'form',
+            'scales'
+          ]);
+        }
         // validate form keys
         expect(res.body.data.form).to.have.all.keys([
           '_id',
           'name',
           'description',
           'sections',
-          'team'
+          'team',
+          'shippingVenue'
         ]);
         expect(res.body.data.form.sections).be.a('array');
         // validate sections keys
@@ -128,6 +138,7 @@ describe('formularies', () => {
           'backgroundColor',
           'requireAccesories',
           'requireComment',
+          'requireVenue',
           'requireConciliation',
           'value',
           'order'

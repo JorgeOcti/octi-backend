@@ -1,8 +1,13 @@
 import {IAnyObject} from '../interfaces/global.interface';
 
-class GeneralUtils {
+interface IGeneralutils {
+  getObjectProperty(obj: IAnyObject, attribute: string, defaultValue: any): boolean;
+  getFromEnviroment(name: string, defaultValue: string): string;
+}
 
-  public getObjectProperty(obj: IAnyObject, attribute: string, defaultValue: any) {
+class GeneralUtils implements IGeneralutils {
+
+  public getObjectProperty(obj: IAnyObject, attribute: string, defaultValue: any): any {
     if (obj.hasOwnProperty(attribute)) {
       return obj[attribute];
     } else {
@@ -11,7 +16,6 @@ class GeneralUtils {
   }
 
   public getFromEnviroment(name: string, defaultValue: string): string {
-
     if (process.env.hasOwnProperty(name) && process.env[name]) {
       return process.env[name] as string;
     } else {

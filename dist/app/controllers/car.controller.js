@@ -5,6 +5,7 @@ const mongoose = require("mongoose");
 const app_1 = require("../../app");
 const participant_model_1 = require("../../form/models/participant.model");
 const inventory_model_1 = require("../../inventory/models/inventory.model");
+const inventoryCar_model_1 = require("../../inventory/models/inventoryCar.model");
 const vin_service_1 = require("../../services/vin.service");
 const car_model_1 = require("../models/car.model");
 class CarController {
@@ -178,7 +179,7 @@ class CarController {
                                     const carToAdd = cars.find((ci) => {
                                         return ci._id.toString() === car.car.toString();
                                     });
-                                    if (carToAdd && car.status !== inventory_model_1.ChoicesStatusCarInventory.leftover) {
+                                    if (carToAdd && car.status !== inventoryCar_model_1.ChoicesStatusCarInventory.leftover) {
                                         carsInInventory.push({
                                             _id: carToAdd._id,
                                             vin: carToAdd.vin,
@@ -659,6 +660,7 @@ class CarController {
         const { team } = req.user;
         const { id } = req.params;
         try {
+            const venuesPermissions = req.user.venuesPermissions();
             const car = await car_model_1.default
                 .findOne({
                 _id: id,
@@ -666,16 +668,66 @@ class CarController {
             }, {
                 vin: true,
                 brand: true,
+                internalNumber: true,
+                createdAt: true,
+                patent: true,
                 denomination: true,
                 color: true
             })
                 .populate([{
+                    path: 'inventories',
+                    match: {
+                        inventory: {
+                            $in: await inventory_model_1.default.find({
+                                team,
+                                venues: {
+                                    $in: venuesPermissions
+                                },
+                                status: inventory_model_1.ChoicesStatusInventory.finalized
+                            }, {
+                                _id: true
+                            })
+                        },
+                        $or: [{
+                                venue: {
+                                    $in: venuesPermissions
+                                }
+                            }, {
+                                venueFound: {
+                                    $in: venuesPermissions
+                                }
+                            }]
+                    },
+                    populate: [{
+                            path: 'venue',
+                            select: ['name']
+                        }, {
+                            path: 'label'
+                        }, {
+                            path: 'venueFound',
+                            select: ['name']
+                        }, {
+                            path: 'inventory',
+                            select: ['name']
+                        }, {
+                            path: 'inventoriedBy',
+                            select: ['firstName', 'lastName']
+                        }, {
+                            path: 'labelBy',
+                            select: ['firstName', 'lastName']
+                        }],
+                    options: {
+                        sort: {
+                            createdAt: -1
+                        }
+                    }
+                }, {
                     // reverse populate
                     path: 'participants',
-                    select: ['name', 'user', 'createdAt', 'qualification', 'venue'],
+                    select: ['name', 'user', 'createdAt', 'updatedAt', 'qualification', 'venue', 'shipping', 'reception'],
                     match: {
                         venue: {
-                            $in: req.user.venuesPermissions()
+                            $in: venuesPermissions
                         }
                     },
                     options: {
@@ -687,6 +739,9 @@ class CarController {
                     populate: [{
                             path: 'venue',
                             select: ['name']
+                        }, {
+                            path: 'form',
+                            select: ['shipping', 'reception']
                         }, {
                             path: 'user',
                             select: ['firstName', 'lastName']

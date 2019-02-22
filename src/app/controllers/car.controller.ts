@@ -5,7 +5,8 @@ import {PaginateOptions, PaginateResult} from 'mongoose';
 import app from '../../app';
 import ParticipantModel from '../../form/models/participant.model';
 import {IRequest} from '../../interfaces/global.interface';
-import InventoryModel, {ChoicesStatusCarInventory, ChoicesStatusInventory} from '../../inventory/models/inventory.model';
+import InventoryModel, {ChoicesStatusInventory} from '../../inventory/models/inventory.model';
+import {ChoicesStatusCarInventory} from '../../inventory/models/inventoryCar.model';
 import VINService from '../../services/vin.service';
 import CarModel, {ChoicesStatusCar, ICarModel} from '../models/car.model';
 
@@ -560,7 +561,7 @@ class CarController {
 
   /* istanbul ignore next */
   public async apiParticipantCSV(req: IRequest, res: Response) {
-    try{
+    try {
       const participants = await ParticipantModel.find({}).populate([{
         path: 'car'
       }, {
@@ -653,6 +654,7 @@ class CarController {
     const {team} = req.user;
     const {id} = req.params;
     try {
+      const venuesPermissions = req.user.venuesPermissions();
       const car = await CarModel
         .findOne({
           _id: id,
@@ -660,16 +662,66 @@ class CarController {
         }, {
           vin: true,
           brand: true,
+          internalNumber: true,
+          createdAt: true,
+          patent: true,
           denomination: true,
           color: true
         })
         .populate([{
+          path: 'inventories',
+          match: {
+            inventory: {
+              $in: await InventoryModel.find({
+                team,
+                venues: {
+                  $in: venuesPermissions
+                },
+                status: ChoicesStatusInventory.finalized
+              }, {
+                _id: true
+              })
+            },
+            $or: [{
+              venue: {
+                $in: venuesPermissions
+              }
+            }, {
+              venueFound: {
+                $in: venuesPermissions
+              }
+            }]
+          },
+          populate: [{
+            path: 'venue',
+            select: ['name']
+          }, {
+            path: 'label'
+          }, {
+            path: 'venueFound',
+            select: ['name']
+          }, {
+            path: 'inventory',
+            select: ['name']
+          }, {
+            path: 'inventoriedBy',
+            select: ['firstName', 'lastName']
+          }, {
+            path: 'labelBy',
+            select: ['firstName', 'lastName']
+          }],
+          options: {
+            sort: {
+              createdAt: -1
+            }
+          }
+        }, {
           // reverse populate
           path: 'participants',
-          select: ['name', 'user', 'createdAt', 'qualification', 'venue'],
+          select: ['name', 'user', 'createdAt', 'updatedAt', 'qualification', 'venue', 'shipping', 'reception'],
           match: {
             venue: {
-              $in: req.user.venuesPermissions()
+              $in: venuesPermissions
             }
           },
           options: {
@@ -681,6 +733,9 @@ class CarController {
           populate: [{
             path: 'venue',
             select: ['name']
+          }, {
+            path: 'form',
+            select: ['shipping', 'reception']
           }, {
             path: 'user',
             select: ['firstName', 'lastName']

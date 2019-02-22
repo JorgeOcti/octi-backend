@@ -349,7 +349,8 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
       this.socket.emit('join', {room: `inventory-detail-${id}`});
     });
     this.socket.on('REFRESH', (data: any): void => {
-      if (data.update) {
+      if (data.update && (window.user.venuesAccess as string[]).includes(data.venue)) {
+        this.props.getInventoryDetailAction(id, true);
         if (data.title) {
           const status: any = {
             found: 'success',
@@ -366,7 +367,6 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
             stack: 6
           });
         }
-        this.props.getInventoryDetailAction(id, true);
       }
     });
   }
@@ -434,7 +434,12 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
         <div className="row">{
           row.images.map((image: any, index: number) => (
             <div key={image._id} className={'col-md-3 images-25 text-center'} style={{display: index === 0 ? '' : 'none'}}>
-              <a href={decodeURI(image.file.url)} data-toggle="lightbox" data-gallery={row._id}>
+              <a href={decodeURI(image.file.url)}
+                 data-toggle="lightbox"
+                 data-gallery={row._id}
+                 data-title={`${row.vin} / ${row.brand} ${row.denomination} `}
+                 data-footer={`${row.venueFound ?  `En ${row.venueFound}` : `En ${row.venue}`} ${row.inventoriedBy ? ` por ${row.inventoriedBy}.` : ''}`}
+              >
                 <button className="btn btn-xs btn-default">
                   <i className="fa fa-fw fa-image" /> {row.images.length}
                 </button>

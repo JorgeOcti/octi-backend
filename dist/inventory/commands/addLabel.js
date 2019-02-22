@@ -4,7 +4,7 @@ const bluebird = require("bluebird");
 const dotenv = require("dotenv");
 const mongoose = require("mongoose");
 const path = require("path");
-const inventory_model_1 = require("../models/inventory.model");
+const inventoryCar_model_1 = require("../models/inventoryCar.model");
 const inventoryLabel_model_1 = require("../models/inventoryLabel.model");
 async function addlabel() {
     dotenv.config({
@@ -20,8 +20,8 @@ async function addlabel() {
         const inventoryLabel = new inventoryLabel_model_1.default({
             team: '5c06bd161f616ce4540bbb9e',
             name: 'Pasar a encontrado',
-            affected: [inventory_model_1.ChoicesStatusCarInventory.reported, inventory_model_1.ChoicesStatusCarInventory.leftover],
-            sendTo: inventory_model_1.ChoicesStatusCarInventory.found,
+            affected: [inventoryCar_model_1.ChoicesStatusCarInventory.reported, inventoryCar_model_1.ChoicesStatusCarInventory.leftover],
+            sendTo: inventoryCar_model_1.ChoicesStatusCarInventory.found,
             updatedBy: '5af487b4f6a4c95ccd991466'
         });
         inventoryLabel.validate((err) => {

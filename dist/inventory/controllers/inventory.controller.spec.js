@@ -15,7 +15,8 @@ let token = '';
 const authenticatedUser = request.agent(server_1.default);
 let firstInventory;
 const inventoryData = {
-    name: 'InventoryTest',
+    name: 'Inventory test',
+    notification: true,
     carsByVenue: [{
             name: 'Dercocenter Movicenter',
             cars: [{
@@ -227,7 +228,9 @@ describe('inventories', () => {
         });
     });
     it('it should comment car', (done) => {
-        inventory_model_1.default.findById(inventoryID).exec((err, invetory) => {
+        inventory_model_1.default.findById(inventoryID).populate([{
+                path: 'cars'
+            }]).exec((err, invetory) => {
             if (err) {
                 console.log(err);
             }
