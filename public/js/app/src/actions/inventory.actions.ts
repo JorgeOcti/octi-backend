@@ -1,8 +1,9 @@
-import {AxiosError, AxiosResponse, CancelTokenSource} from 'axios';
+import {AxiosError, AxiosResponse, CancelTokenSource, default as Axios} from 'axios';
 import {Dispatch} from 'redux';
 import {IInventoryCar} from '../../../../../src/interfaces/inventory.interface';
 import {IInventoryComment} from '../../../../../src/interfaces/inventoryComment.interface';
 import {IInventoryLabel} from '../../../../../src/interfaces/inventoryLabel.interface';
+import {IFilterCar} from '../reducers/inventory.reducer';
 import ApiService from '../utils/axios';
 
 export interface IInventorySummaryResult {
@@ -56,6 +57,7 @@ export interface IInventoryState {
   inventoryCar: IInventoryCar | null;
   source: CancelTokenSource | null;
   loadingDetail: boolean;
+  fetchingDetail: boolean;
   summary: IInventorySummary;
   detail: any | null;
   detailByVenue: IDetailByVenue[];
@@ -65,11 +67,7 @@ export interface IInventoryState {
   selectedItems: {
     [key: string]: any
   };
-  filter: {
-    text: string;
-    venues: string[];
-    states: string[];
-  };
+  filter: IFilterCar;
   pagination: {
     count: number;
     page: number;
@@ -230,6 +228,22 @@ export function loadingInventoryDetaillAction(loadingDetail: boolean): ILoadingD
   };
 }
 
+interface IFetchingDetailInventory {
+  type: '/INVENTORORIES/FETCHING_INVENTORY_DETAIL';
+  payload: {
+    fetchingDetail: boolean;
+  };
+}
+
+export function fetchingnventoryDetaillAction(fetchingDetail: boolean): IFetchingDetailInventory {
+  return {
+    type: '/INVENTORORIES/FETCHING_INVENTORY_DETAIL',
+    payload: {
+      fetchingDetail
+    }
+  };
+}
+
 interface IDetailInventorySelected {
   type: '/INVENTORORIES/CHANGE_SELECTED';
   payload: {
@@ -249,11 +263,7 @@ export function inventoryDetailChangeSelected(item: string): IDetailInventorySel
 interface IDetailChangeFilter {
   type: '/INVENTORORIES/CHANGE_FILTER';
   payload: {
-    filter: {
-      text: string
-      venues: string[];
-      states: string[];
-    };
+    filter: IFilterCar
   };
   meta: {
     debounce: {
@@ -262,11 +272,7 @@ interface IDetailChangeFilter {
   };
 }
 
-export function inventoryDetailChangeFilter(filter: {
-  text: string
-  venues: string[];
-  states: string[];
-}): IDetailChangeFilter {
+export function inventoryDetailChangeFilter(filter: IFilterCar): IDetailChangeFilter {
   return {
     type: '/INVENTORORIES/CHANGE_FILTER',
     payload: {
@@ -280,11 +286,7 @@ export function inventoryDetailChangeFilter(filter: {
   };
 }
 
-export function inventoryDetailChangeFilterText(filter: {
-  text: string
-  venues: string[];
-  states: string[];
-}): IDetailChangeFilter {
+export function inventoryDetailChangeFilterText(filter: IFilterCar): IDetailChangeFilter {
   return {
     type: '/INVENTORORIES/CHANGE_FILTER',
     payload: {
@@ -331,43 +333,55 @@ export function loadInventoryAction(
   };
 }
 
+let preventRepeatGetInventoryDetail: any;
 export function getInventoryDetailAction(id: string, update: boolean) {
-  return (dispatch: Dispatch<InventoryReduxAction>) => {
-    if (!update) {
-      dispatch(loadingInventoryDetaillAction(true));
-    }
-    const api: ApiService = new ApiService();
-    api.getSource();
-    api.getInventory(id)
-      .then((response: AxiosResponse) => {
-        const {data} = response;
-        dispatch(loadInventoryAction(
-          data.summary,
-          data.detailByVenue,
-          data.detailByBrand,
-          data.labels,
-          data.detail,
-          update
-        ));
-        dispatch(loadingInventoryDetaillAction(false));
-        if (!update) {
-          $('.count').each(function() {
-            $(this).prop('Counter', 0).animate({
-              Counter: $(this).text()
-            }, {
-              duration: 1500,
-              easing: 'swing',
-              step: function(now) {
-                $(this).text(Math.ceil(now));
-              }
+  return (dispatch: Dispatch<InventoryReduxAction>, getState: () => { inventories: IInventoryState }) => {
+    const state = getState();
+    if (state.inventories.fetchingDetail) {
+      clearTimeout(preventRepeatGetInventoryDetail);
+      preventRepeatGetInventoryDetail = setTimeout(() => (dispatch as any)(getInventoryDetailAction(id, update)), 1000);
+    } else {
+      dispatch(fetchingnventoryDetaillAction(true));
+      if (!update) {
+        dispatch(loadingInventoryDetaillAction(true));
+      }
+      const api: ApiService = new ApiService();
+      dispatch(cancelRequestAction(api.getSource()));
+      api.getInventory(id)
+        .then((response: AxiosResponse) => {
+          const {data} = response;
+          dispatch(loadInventoryAction(
+            data.summary,
+            data.detailByVenue,
+            data.detailByBrand,
+            data.labels,
+            data.detail,
+            update
+          ));
+          dispatch(fetchingnventoryDetaillAction(false));
+          dispatch(loadingInventoryDetaillAction(false));
+          if (!update) {
+            $('.count').each(function () {
+              $(this).prop('Counter', 0).animate({
+                Counter: $(this).text()
+              }, {
+                duration: 1500,
+                easing: 'swing',
+                step: function(now) {
+                  $(this).text(Math.ceil(now));
+                }
+              });
             });
-          });
-        }
-      })
-      .catch((err: AxiosError) => {
-        api.errorHandler(err);
-        dispatch(loadingInventoryDetaillAction(false));
-      });
+          }
+        })
+        .catch((err: AxiosError) => {
+          if (!Axios.isCancel(err)) {
+            api.errorHandler(err);
+          }
+          dispatch(loadingInventoryDetaillAction(false));
+          dispatch(fetchingnventoryDetaillAction(false));
+        });
+    }
   };
 }
 
@@ -425,4 +439,4 @@ export function actionSetLabel(inventory: string, car: string, carID: string, la
   };
 }
 
-export type InventoryReduxAction = ICancelRequest | IIsLoading | ILoadInventories | ILoadInventory | ILoadingDetailInventory | IUpdateInventoryCar | IAddComment | IDetailChangeFilter| IDetailInventorySelected;
+export type InventoryReduxAction = ICancelRequest | IIsLoading | ILoadInventories | ILoadInventory | ILoadingDetailInventory | IUpdateInventoryCar | IAddComment | IDetailChangeFilter| IDetailInventorySelected | IFetchingDetailInventory;

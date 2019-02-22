@@ -2,7 +2,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 const mongoose = require("mongoose");
 const mongoosePaginate = require("mongoose-paginate");
-const inventory_model_1 = require("./inventory.model");
+const inventoryCar_model_1 = require("./inventoryCar.model");
 exports.inventoryLabelSchema = new mongoose.Schema({
     team: {
         type: mongoose.Schema.Types.ObjectId,
@@ -18,11 +18,11 @@ exports.inventoryLabelSchema = new mongoose.Schema({
     },
     affected: [{
             type: String,
-            enum: inventory_model_1.choicesStatusCarInventory
+            enum: inventoryCar_model_1.choicesStatusCarInventory
         }],
     sendTo: {
         type: String,
-        enum: inventory_model_1.choicesStatusCarInventory,
+        enum: inventoryCar_model_1.choicesStatusCarInventory,
         required: true
     },
     isExhibition: {
@@ -45,6 +45,7 @@ exports.inventoryLabelSchema = new mongoose.Schema({
     timestamps: true
 });
 mongoose.plugin(mongoosePaginate);
+exports.inventoryLabelSchema.index({ active: 1, team: 1 });
 const InventoryLabel = mongoose.model('InventoryLabel', exports.inventoryLabelSchema);
 exports.default = InventoryLabel;
 //# sourceMappingURL=inventoryLabel.model.js.map

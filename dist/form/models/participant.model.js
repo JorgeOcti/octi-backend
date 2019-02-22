@@ -21,6 +21,10 @@ const participantChoiceSchema = new mongoose.Schema({
         type: Boolean,
         default: false
     },
+    requireVenue: {
+        type: Boolean,
+        default: false
+    },
     requireComment: {
         type: Boolean,
         default: false
@@ -202,6 +206,10 @@ const participantSchema = new mongoose.Schema({
             type: mongoose.Schema.Types.ObjectId,
             ref: 'ParticipantFile'
         }],
+    shippingVenue: {
+        type: Boolean,
+        default: false
+    },
     reception: {
         type: Boolean,
         default: false
@@ -234,6 +242,7 @@ const participantSchema = new mongoose.Schema({
     timestamps: true
 });
 participantSchema.index({ _id: 1 });
+participantSchema.index({ venue: 1 });
 participantSchema.index({ form: 1, user: 1 });
 participantSchema.index({ company: 1, venue: 1, createdAt: 1 });
 participantSchema.index({ _id: 1, company: 1, venue: 1, createdAt: 1 });

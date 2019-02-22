@@ -9,6 +9,7 @@ const initialState: IInventoryState = {
   inventoryCar: null,
   source: null,
   loadingDetail: true,
+  fetchingDetail: false,
   summary: {
     _id: '',
     name: '',
@@ -27,6 +28,7 @@ const initialState: IInventoryState = {
   selectedItems: {},
   filter: {
     text: '',
+    type: '',
     venues: [],
     states: []
   },
@@ -36,10 +38,12 @@ const initialState: IInventoryState = {
     pages: 1
   }
 };
-interface IFilterCar {
+
+export interface IFilterCar {
   text: string;
-    venues: string[];
-    states: string[];
+  type: string;
+  venues: string[];
+  states: string[];
 }
 
 export function inventoriesReducer(state = initialState, action: InventoryReduxAction): IInventoryState {
@@ -81,6 +85,11 @@ export function inventoriesReducer(state = initialState, action: InventoryReduxA
       return {
         ...state,
         loadingDetail: action.payload.loadingDetail
+      };
+    case '/INVENTORORIES/FETCHING_INVENTORY_DETAIL':
+      return {
+        ...state,
+        fetchingDetail: action.payload.fetchingDetail
       };
     case '/INVENTORORIES/LOAD_INVENTORY_DATA':
       const selectedItems = action.payload.resetFilter ? initialState.selectedItems : state.selectedItems;
@@ -152,6 +161,14 @@ function processCars(cars: IInventoryCar[], selectedItems: { [key: string]: any 
         .toLowerCase()
         .includes(filter.text.toLowerCase());*/
     }
+    const patent: string = car.car.patent ? car.car.patent : '';
+    if (add && filter && filter && filter.type.length) {
+      if (filter.type === 'new') {
+        add = patent.length === 0;
+      } else if (filter.type === 'used') {
+        add = patent.length !== 0;
+      }
+    }
     if (add) {
       products.push({
         _id: (car as any)._id,
@@ -168,7 +185,7 @@ function processCars(cars: IInventoryCar[], selectedItems: { [key: string]: any 
         comments: car.comments && car.comments.length ? car.comments : [],
         countComments: car.comments && car.comments.length ? car.comments.length : 0,
         venueFound: car.venueFound ? car.venueFound.name : '-',
-        patent: car.car.patent ? car.car.patent : '',
+        patent,
         inventoriedBy: car.inventoriedBy ? `${car.inventoriedBy.firstName} ${car.inventoriedBy.lastName}` : '-',
         selected: selectedItems.hasOwnProperty((car as any)._id),
         status: car.status,

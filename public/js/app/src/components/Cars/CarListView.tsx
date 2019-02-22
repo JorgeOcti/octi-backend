@@ -80,29 +80,33 @@ class CarListView extends React.Component<IPropsType, IStateType> {
                 Autos <small>{pagination.count}</small>
               </h3>
               <div className="box-tools">
-                <div className="form-inline">
-                  {
-                    hasPermission(window.user, 'addCar') ?
-                      <button
-                        className="btn btn-sm btn-primary  hidden-xs"
-                        onClick={() => this.props.history.push(`/settings/cars/import/`)}
-                        style={{marginRight: '5px'}}
-                      ><i className="fa fa-fw fa-cloud-upload" /> Importar</button> : null
-                  }
-                  <div className="input-group input-group-sm" style={{width: '200px'}}>
+                {
+                  hasPermission(window.user, 'addCar') ?
+                    <button
+                      className="btn btn-sm btn-primary  hidden-xs"
+                      onClick={() => this.props.history.push(`/settings/cars/import/`)}
+                      style={{marginRight: '5px'}}
+                    ><i className="fa fa-fw fa-cloud-upload" /> Importar</button> : null
+                }
+              </div>
+            </div>
+            <div className="box-body no-padding">
+              <div className="row">
+                <div className="col-md-offset-8 col-md-4">
+                  <div className="input-group input-group-sm"
+                       style={{padding: '10px'}}
+                  >
                     <input
                       type="text"
                       className="form-control pull-right"
                       onChange={this.onChangeSearch}
-                      placeholder="Buscar" />
+                      placeholder="Buscar"/>
                     <div className="input-group-btn">
                       <button className="btn btn-default"><i className="fa fa-search"/></button>
                     </div>
                   </div>
                 </div>
               </div>
-            </div>
-            <div className="box-body no-padding">
               <table className="table table-striped">
                 <thead>
                   <tr>
@@ -110,8 +114,9 @@ class CarListView extends React.Component<IPropsType, IStateType> {
                     <th style={{width: '10%'}}>Patente</th>
                     <th style={{width: '10%'}}>Marca</th>
                     <th style={{width: '20%'}} className="hidden-xs">Denominación</th>
-                    <th style={{width: '20%'}} className="hidden-xs">Color</th>
+                    <th style={{width: '15%'}} className="hidden-xs">Color</th>
                     <th style={{width: '20%'}} className="hidden-xs">Creado</th>
+                    <th style={{width: '5%'}} />
                     {/*<th className="width-10" />*/}
                   </tr>
                 </thead>
@@ -131,6 +136,10 @@ class CarListView extends React.Component<IPropsType, IStateType> {
                           <td className="hidden-xs text-ellipsis">{car.denomination}</td>
                           <td className="hidden-xs text-ellipsis">{car.color}</td>
                           <td className="hidden-xs text-ellipsis">{moment(car.createdAt).format('LLL')}</td>
+                          <td className="text-primary middle-center">
+                            <button className="btn btn-xs btn-primary" onClick={() => this.props.history.push(`/settings/cars/${car._id}`)}><i
+                              className="fa fa-bars"/></button>
+                          </td>
                         </tr>
                       );
                     })

@@ -1,80 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 const mongoose = require("mongoose");
-const invetoryCommentCars = new mongoose.Schema({
-    user: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'User'
-    },
-    comment: {
-        type: String
-    },
-    createdAt: {
-        type: Date,
-        default: new Date()
-    }
-});
-var ChoicesStatusCarInventory;
-(function (ChoicesStatusCarInventory) {
-    ChoicesStatusCarInventory["pending"] = "pending";
-    ChoicesStatusCarInventory["found"] = "found";
-    ChoicesStatusCarInventory["missing"] = "missing";
-    ChoicesStatusCarInventory["leftover"] = "leftover";
-    ChoicesStatusCarInventory["reported"] = "reported";
-})(ChoicesStatusCarInventory = exports.ChoicesStatusCarInventory || (exports.ChoicesStatusCarInventory = {}));
-exports.choicesStatusCarInventory = [
-    ChoicesStatusCarInventory.pending,
-    ChoicesStatusCarInventory.found,
-    ChoicesStatusCarInventory.leftover,
-    ChoicesStatusCarInventory.missing,
-    ChoicesStatusCarInventory.reported
-];
-const inventoryCarSchema = new mongoose.Schema({
-    car: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'Car'
-    },
-    venue: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'Venue'
-    },
-    venueFound: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'Venue'
-    },
-    inventoriedBy: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'User'
-    },
-    images: [{
-            type: mongoose.Schema.Types.ObjectId,
-            ref: 'InventoryFile'
-        }],
-    comments: [invetoryCommentCars],
-    label: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'InventoryLabel'
-    },
-    labelText: {
-        type: String,
-        default: ''
-    },
-    labelBy: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'User'
-    },
-    customizedStatusText: {
-        type: String,
-        default: ''
-    },
-    status: {
-        type: String,
-        enum: exports.choicesStatusCarInventory,
-        default: ChoicesStatusCarInventory.pending
-    }
-}, {
-    timestamps: true
-});
 var ChoicesStatusInventory;
 (function (ChoicesStatusInventory) {
     ChoicesStatusInventory["pending"] = "pending";
@@ -100,7 +26,6 @@ const inventorySchema = new mongoose.Schema({
         ref: 'Company',
         required: true
     },
-    cars: [inventoryCarSchema],
     venues: [{
             type: mongoose.Schema.Types.ObjectId,
             ref: 'Venue'
@@ -124,6 +49,14 @@ const inventorySchema = new mongoose.Schema({
 }, {
     timestamps: true
 });
+inventorySchema.virtual('cars', {
+    ref: 'InventoryCar',
+    localField: '_id',
+    foreignField: 'inventory',
+    justOne: false
+});
+inventorySchema.index({ team: 1 });
+inventorySchema.index({ team: 1, status: 1, venues: 1 });
 const Inventory = mongoose.model('Inventory', inventorySchema);
 exports.default = Inventory;
 //# sourceMappingURL=inventory.model.js.map

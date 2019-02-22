@@ -8,6 +8,7 @@ const alert_model_1 = require("../../app/models/alert.model");
 const car_model_1 = require("../../app/models/car.model");
 const user_model_1 = require("../../app/models/user.model");
 const user_model_2 = require("../../app/models/user.model");
+const venue_model_1 = require("../../app/models/venue.model");
 const server_1 = require("../../server");
 const redis_service_1 = require("../../services/redis.service");
 const general_utils_1 = require("../../utils/general.utils");
@@ -90,6 +91,7 @@ class FormController {
                 order: form.sections.length + 1
             };
             const extraScales = [];
+            let response = {};
             if (form.shipping) {
                 extraSection.questions.push({
                     _id: 'shipping',
@@ -111,6 +113,7 @@ class FormController {
                             choice: 'No',
                             backgroundColor: 'red',
                             requireImage: form.shippingImage,
+                            requireVenue: false,
                             requireComment: false,
                             requireAccesories: false,
                             requireConciliation: false,
@@ -120,6 +123,7 @@ class FormController {
                             _id: 'true',
                             choice: 'Si',
                             backgroundColor: 'green',
+                            requireVenue: form.shippingVenue,
                             requireImage: false,
                             requireComment: false,
                             requireAccesories: false,
@@ -129,6 +133,12 @@ class FormController {
                         }
                     ]
                 });
+                if (form.shippingVenue) {
+                    response = {
+                        ...response,
+                        venues: await venue_model_1.default.find({ team, active: true, deleted: false }, { name: true })
+                    };
+                }
             }
             if (form.reception) {
                 extraSection.questions.push({
@@ -151,6 +161,7 @@ class FormController {
                             choice: 'No',
                             backgroundColor: 'red',
                             requireImage: form.receptionImage,
+                            requireVenue: false,
                             requireComment: false,
                             requireAccesories: false,
                             requireConciliation: false,
@@ -161,6 +172,7 @@ class FormController {
                             choice: 'Si',
                             backgroundColor: 'green',
                             requireImage: false,
+                            requireVenue: false,
                             requireComment: false,
                             requireAccesories: false,
                             requireConciliation: false,
@@ -191,6 +203,7 @@ class FormController {
                             choice: 'No',
                             backgroundColor: 'red',
                             requireImage: false,
+                            requireVenue: false,
                             requireComment: false,
                             requireAccesories: false,
                             requireConciliation: false,
@@ -201,6 +214,7 @@ class FormController {
                             choice: 'Si',
                             backgroundColor: 'green',
                             requireImage: form.conciliationImage,
+                            requireVenue: false,
                             requireComment: false,
                             requireAccesories: false,
                             requireConciliation: false,
@@ -232,7 +246,8 @@ class FormController {
                 data: {
                     form,
                     scales,
-                    extra
+                    extra,
+                    ...response
                 },
                 status: 200
             });
@@ -306,6 +321,7 @@ class FormController {
                             participantObject.shippingImages = shipping.images.map((image) => (new bson_1.ObjectID(image)));
                         }
                     }
+                    participantObject.shippingVenue = form.shippingVenue;
                     if (form.conciliation && 'conciliation' in answers) {
                         const conciliation = answers.conciliation;
                         participantObject.conciliation = [true, 'true'].includes(conciliation.value);
@@ -514,6 +530,8 @@ class FormController {
             }
         }
         catch (e) {
+            /* istanbul ignore next */
+            console.log(e);
             /* istanbul ignore next */
             return res.status(400).json({
                 message: e,

@@ -20,6 +20,7 @@ export interface IParticipantChoices {
   value: number;
   backgroundColor: string;
   requireImage: boolean;
+  requireVenue: boolean;
   requireAccesories: boolean;
   requireConciliation: boolean;
   na: boolean;
@@ -100,6 +101,7 @@ export interface IParticipant {
   shipping: boolean;
   shippingText: string;
   shippingImages: IParticipantFile[];
+  shippingVenue: boolean;
   receptionText: string;
   reception: boolean;
   receptionImages: IParticipantFile[];

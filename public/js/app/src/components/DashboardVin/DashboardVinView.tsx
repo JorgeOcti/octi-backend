@@ -6,6 +6,7 @@ import {connect} from 'react-redux';
 import {RouteComponentProps} from 'react-router';
 import {Dispatch} from 'redux';
 import * as io from 'socket.io-client';
+import {debounce} from 'throttle-debounce';
 import {ICar} from '../../../../../../src/interfaces/car.interface';
 import {DashboardReduxAction, getCarsAction, IDashboardState} from '../../actions/dashboard.actions';
 import AppContainer from '../../container/AppContainer';
@@ -17,13 +18,13 @@ declare let window: IWindow;
 interface IPropsType extends RouteComponentProps<{ ticket: string }> {
   dispatch: Dispatch<DashboardReduxAction>;
   dashboard: IDashboardState;
-
-  getCarsAction(page?: number, loading?: boolean): void;
+  getCarsAction(page: number, loading: boolean, search?: string): void;
 }
 
 interface IStateType {
   error: Error | null;
   highlight: string[];
+  searchText: string;
 }
 
 class DashboardVinView extends React.Component<IPropsType, IStateType> {
@@ -36,7 +37,8 @@ class DashboardVinView extends React.Component<IPropsType, IStateType> {
 
   state = {
     error: null,
-    highlight: []
+    highlight: [],
+    searchText: ''
   };
 
   protected isMount: boolean = false;
@@ -45,12 +47,15 @@ class DashboardVinView extends React.Component<IPropsType, IStateType> {
   constructor(props: IPropsType) {
     super(props);
     this.changePage = this.changePage.bind(this);
+    this.onChangeSearch = this.onChangeSearch.bind(this);
+    this.debounceOnChangeSearch = debounce(300, this.debounceOnChangeSearch);
   }
 
   public componentWillMount(): void {
     // set the title of the page
+    const {page} = this.props.dashboard.pagination;
     document.title = 'OSA Andes | Revisiones';
-    this.props.getCarsAction();
+    this.props.getCarsAction(page, true);
 
     // socket
     this.socket = io.connect(`${location.protocol}//${location.host}`, {
@@ -120,7 +125,23 @@ class DashboardVinView extends React.Component<IPropsType, IStateType> {
               <div className="box-tools pull-right">
               </div>
             </div>
-            <div className={`box-body ${cars.length ? 'no-padding' : ''}`}>
+            <div className={`box-body no-padding`}>
+              <div className="row">
+                <div className="col-md-offset-8 col-md-4">
+                  <div className="input-group input-group-sm"
+                       style={{padding: '10px'}}
+                  >
+                    <input
+                      type="text"
+                      className="form-control pull-right"
+                      onChange={this.onChangeSearch}
+                      placeholder="Buscar"/>
+                    <div className="input-group-btn">
+                      <button className="btn btn-default"><i className="fa fa-search"/></button>
+                    </div>
+                  </div>
+                </div>
+              </div>
               {
                 cars.length ?
                   <table className="table table-striped">
@@ -167,7 +188,7 @@ class DashboardVinView extends React.Component<IPropsType, IStateType> {
                     }
                     </tbody>
                   </table>
-                  : !loading ? <strong>Aún no se han realizado revisiones.</strong> : null
+                  : !loading ? <p style={{padding: '10px'}}><strong>No se han encontrado revisiones.</strong></p> : null
               }
             </div>
             {
@@ -188,9 +209,27 @@ class DashboardVinView extends React.Component<IPropsType, IStateType> {
     );
   }
 
+  private onChangeSearch(e: React.ChangeEvent<HTMLInputElement>): void {
+    e.preventDefault();
+    const value = e.target.value.trim();
+    this.setState({
+      searchText: value
+    });
+    this.debounceOnChangeSearch();
+  }
+
+  private debounceOnChangeSearch(): void {
+    const {searchText} = this.state;
+    if (searchText && searchText.length) {
+      this.props.getCarsAction(1, true, searchText);
+    } else {
+      this.props.getCarsAction(1, true);
+    }
+  }
+
   private changePage(page: number): void {
     // change the page
-    this.props.getCarsAction(page);
+    this.props.getCarsAction(page, true);
   }
 }
 
@@ -203,7 +242,7 @@ const mapStateToProps = (state: { dashboard: IDashboardState }) => {
 const mapDispatchToProps = (dispatch: any ) => {
   return {
     dispatch,
-    getCarsAction: (page?: number, loading?: boolean) => dispatch(getCarsAction(page, loading))
+    getCarsAction: (page: number, loading: boolean, search?: string) => dispatch(getCarsAction(page, loading, search))
   };
 };
 

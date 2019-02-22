@@ -121,7 +121,7 @@ class JWTController {
                         expiresIn: '60 days'
                       }),
                       iosVersion: '1.4.0',
-                      androidVersion: '1.4.0',
+                      androidVersion: '2.1.6',
                       user: userInfo
                     },
                     status: 200

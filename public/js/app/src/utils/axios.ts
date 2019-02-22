@@ -53,9 +53,9 @@ export default class ApiService {
     }
   }
 
-  public getUsers(page?: number): AxiosPromise {
+  public getUsers(page: number, search?: string): AxiosPromise {
     return this.instance.get(
-      `/api/admin/users/${page ? `?page=${page}` : ''}`
+      `/api/admin/users/?page=${page}${search ? `&search=${search}` : ''}`
       , {
         cancelToken: this.source.token
       });
@@ -159,9 +159,9 @@ export default class ApiService {
     );
   }
 
-  public getCars(page?: number): AxiosPromise {
+  public getCars(page: number, search?: string): AxiosPromise {
     return this.instance.get(
-      `/api/cars/${page ? `?page=${page}` : ''}`, {
+      `/api/cars/?page=${page}${search ? `&search=${search}` : ''}`, {
         cancelToken: this.source.token
       }
     );
@@ -277,13 +277,8 @@ export default class ApiService {
     );
   }
 
-  public downloadImages(inventory: string, cars: string[]): AxiosPromise {
-    this.instance.defaults.responseType =  'blob';
-    return this.instance.post(
-      `/api/inventory/${inventory}/download-images/`, {
-        cars
-      }
-    );
+  public getInstance(): AxiosInstance {
+    return this.instance;
   }
 
   public getLabels(page: number, pageSize?: number): AxiosPromise {

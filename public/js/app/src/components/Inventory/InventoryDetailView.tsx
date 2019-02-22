@@ -2,15 +2,17 @@
 ///<reference path="../../../src/types/react-bootstrap-table-next.d.ts"/>
 ///<reference path="../../../src/types/react-bootstrap-table2-filter.d.ts"/>
 ///<reference path="../../../src/types/react-bootstrap-table2-paginator.d.ts"/>
+import {CancelTokenSource, default as Axios} from 'axios';
 import * as moment from 'moment';
 import * as Raven from 'raven-js';
-import {ErrorInfo} from 'react';
 import * as React from 'react';
+import {ErrorInfo} from 'react';
 import BootstrapTable from 'react-bootstrap-table-next';
 import filterFactory from 'react-bootstrap-table2-filter';
 import paginationFactory from 'react-bootstrap-table2-paginator';
 import {connect} from 'react-redux';
 import {RouteComponentProps} from 'react-router';
+import {RouterState} from 'react-router-redux';
 import {Dispatch} from 'redux';
 import * as io from 'socket.io-client';
 import * as XLSX from 'xlsx';
@@ -34,6 +36,8 @@ import {
 import {loadDataAction, ModalReduxAction} from '../../actions/modal.actions';
 import AppContainer from '../../container/AppContainer';
 import {IWindow} from '../../interfaces/window';
+import {IFilterCar} from '../../reducers/inventory.reducer';
+import ApiService from '../../utils/axios';
 import {goToSection, maxText} from '../../utils/common';
 import ModalView from '../Modal/ModalView';
 import BootstrapSelect from '../Utils/BootstrapSelect';
@@ -42,18 +46,18 @@ import CopyText from '../Utils/CopyText';
 import ImageLazyLoad from '../Utils/ImageLazyLoad';
 import Row from '../Utils/Row';
 import InventoryCarComments from './InventoryCarComments';
-import ApiService from "../../utils/axios";
 
 declare let window: IWindow;
 
 interface IPropsType extends RouteComponentProps<{ id: string, tab?: string }> {
   inventories: IInventoryState;
+  router: RouterState;
   dispatch: Dispatch<InventoryReduxAction>;
 
   inventoryDetailChangeSelected(item: string): InventoryReduxAction;
   updateCommentsAction(inventoryCar: IInventoryCar): InventoryReduxAction;
-  inventoryDetailChangeFilter(filter: { text: string; venues: string[]; states: string[]; }): InventoryReduxAction;
-  inventoryDetailChangeFilterText(filter: { text: string; venues: string[]; states: string[]; }): InventoryReduxAction;
+  inventoryDetailChangeFilter(filter: IFilterCar): InventoryReduxAction;
+  inventoryDetailChangeFilterText(filter: IFilterCar): InventoryReduxAction;
   getInventoryDetailAction(id: string, update: boolean): InventoryReduxAction;
   loadDataAction(title: string, body: JSX.Element, footer?: JSX.Element): ModalReduxAction;
   actionSetLabel(inventory: string, car: string, carID: string, label: IInventoryLabel): ModalReduxAction;
@@ -63,14 +67,28 @@ interface IStateType {
   error: Error | null;
   setCharts: boolean;
   tab: string;
+  source: CancelTokenSource | null;
+  downloadImages: {
+    downloading: boolean;
+    progress: number;
+    sizeFile: number;
+    loaded: number;
+  };
 }
 
 class InventoryDetailView extends React.Component<IPropsType, IStateType> {
 
   state = {
     error: null,
+    downloadImages: {
+      downloading: false,
+      progress: 0,
+      sizeFile: 0,
+      loaded: 0
+    },
     setCharts: false,
-    tab: 'summary'
+    tab: 'summary',
+    source: null
   };
 
   venuesDetailChart: echarts.ECharts;
@@ -99,6 +117,11 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
     leftover: 'Sobrante',
     missing: 'Faltante',
     reported: 'Reportado'
+  };
+
+  private typeText: any = {
+    new: 'Nuevos',
+    used: 'Usados'
   };
 
   private iconStatus: any = {
@@ -161,6 +184,7 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
     this.selectedFormatter = this.selectedFormatter.bind(this);
     this.filterVenues = this.filterVenues.bind(this);
     this.filterStatus = this.filterStatus.bind(this);
+    this.filterType = this.filterType.bind(this);
     this.selectedHeaderFormatter = this.selectedHeaderFormatter.bind(this);
     this.statusFormatter = this.statusFormatter.bind(this);
     this.brandFormatter = this.brandFormatter.bind(this);
@@ -185,8 +209,8 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
       // headerFormatter: this.selectedHeaderFormatter,
       formatter: this.selectedFormatter,
       sort: true,
-      headerClasses: 'pointer middle-center',
-      classes: 'middle-center',
+      headerClasses: 'pointer middle-center hidden-xs hidden-sm',
+      classes: 'middle-center hidden-xs hidden-sm',
       headerStyle: {
         maxWidth: '60px',
         minWidth: '60px',
@@ -267,7 +291,7 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
       }
     }, {
       dataField: 'status',
-      text: 'Status',
+      text: 'Estado',
       sort: true,
       formatter: this.statusFormatter,
       // formatter: (cell: string) => (this.statusText[cell]),
@@ -325,7 +349,8 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
       this.socket.emit('join', {room: `inventory-detail-${id}`});
     });
     this.socket.on('REFRESH', (data: any): void => {
-      if (data.update) {
+      if (data.update && (window.user.venuesAccess as string[]).includes(data.venue)) {
+        this.props.getInventoryDetailAction(id, true);
         if (data.title) {
           const status: any = {
             found: 'success',
@@ -342,7 +367,6 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
             stack: 6
           });
         }
-        this.props.getInventoryDetailAction(id, true);
       }
     });
   }
@@ -353,6 +377,9 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
     // cancel request if component is inmounted
     if (this.props.inventories.source) {
       this.props.inventories.source.cancel('Operation canceled by the user.');
+    }
+    if (this.state.source) {
+      (this.state.source as any).cancel('Operation canceled by the user.');
     }
     this.socket.disconnect();
   }
@@ -393,7 +420,10 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
       this.updateBrandChart(detailByBrand, true);
     }
     $('[data-toggle="tooltip"]').tooltip();
-    if (this.props.location.pathname !== prevProps.location.pathname) {
+    if (
+      !this.props.router.location || !prevProps.router.location ||
+      this.props.router.location.key !== prevProps.router.location.key
+    ) {
       window.scrollTo(0, 0);
     }
   }
@@ -404,7 +434,12 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
         <div className="row">{
           row.images.map((image: any, index: number) => (
             <div key={image._id} className={'col-md-3 images-25 text-center'} style={{display: index === 0 ? '' : 'none'}}>
-              <a href={decodeURI(image.file.url)} data-toggle="lightbox" data-gallery={row._id}>
+              <a href={decodeURI(image.file.url)}
+                 data-toggle="lightbox"
+                 data-gallery={row._id}
+                 data-title={`${row.vin} / ${row.brand} ${row.denomination} `}
+                 data-footer={`${row.venueFound ?  `En ${row.venueFound}` : `En ${row.venue}`} ${row.inventoriedBy ? ` por ${row.inventoriedBy}.` : ''}`}
+              >
                 <button className="btn btn-xs btn-default">
                   <i className="fa fa-fw fa-image" /> {row.images.length}
                 </button>
@@ -422,7 +457,6 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
   }
 
   public brandFormatter(cell: any, row: any) {
-
     return (
       <React.Fragment>
         {
@@ -544,7 +578,10 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
           }
         >
           <i className={`fa fa-fw ${this.iconStatus[sendTo]}`} />
-          {row.label.name}{row.label.requireCustomText ? `: ${row.labelText}` : ''}
+          {row.label.name} {row.label.requireCustomText ? <span
+                data-toggle="tooltip"
+                data-placement="top"
+                title={row.labelText}>Ver más</span> : ''}
         </span>
       );
     } else {
@@ -561,7 +598,7 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
       filter,
       selectedItems
     } = this.props.inventories;
-    const { tab } = this.state;
+    const { tab, source } = this.state;
     const selected = Object.keys(selectedItems);
     const {
       percentagePending,
@@ -680,7 +717,9 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
             </div>
             <div className="col-md-4 col-lg-4 pointer" onClick={() => this.sendToDetailFilteredByState('missing')}>
               <div className="info-box bg-red">
-                <span className="info-box-icon"><i className="fa fa-arrow-down"/></span>
+                <span className="info-box-icon">
+                  <i className="fa fa-arrow-down"/>
+                </span>
                 <div className="info-box-content">
                   <span className="info-box-text">Faltantes</span>
                   <span className="info-box-number count">
@@ -801,14 +840,16 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
                     >
                       <i className="fa fa-fw fa-download"/> Exportar Excel
                     </button>
-                    <div className="btn-group btn-group-sm" style={{marginLeft: '5px'}}>
+                    <div className="btn-group btn-group-sm hidden-xs hidden-sm" style={{marginLeft: '5px'}}>
                       <button type="button" className="btn btn-success"><i className="fa fa-fw fa-cogs"/> Acciones</button>
                       <button type="button" className="btn btn-success dropdown-toggle" data-toggle="dropdown">
                         <span className="caret"/>
                         <span className="sr-only">Toggle Dropdown</span>
                       </button>
                       <ul className="dropdown-menu" role="menu">
-                        <li onClick={this.downloadImages}><a href="javascript:void(0)"><i className="fa fa-fw fa-copy"/> Descargar Imagenes</a></li>
+                        <li onClick={this.downloadImages}>
+                          <a href="javascript:void(0)"><i className="fa fa-fw fa-download"/> Descargar Imagenes</a>
+                        </li>
                       </ul>
                     </div>
                   </div>
@@ -817,7 +858,7 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
                   display: loadingDetail ? 'none' : ''
                 }}>
                   <Row style={{margin: '5px 0'}}>
-                    <div className="col-md-4">
+                    <div className="col-md-12">
                       <div className="form-group">
                         <label htmlFor="cars" className="control-label">Vehículos</label>
                         <input
@@ -866,7 +907,27 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
                         />
                       </div>
                     </div>
-                    <div className="col-md-2">
+                    <div className="col-md-3">
+                      <div className="form-group">
+                        <label htmlFor="states" className="control-label">Nuevos/Usados</label>
+                        <BootstrapSelect
+                          noneSelectedText="Todos"
+                          displayItems={4}
+                          selectedText="estados seleccionados."
+                          separator=" - "
+                          options={Object
+                            .keys(this.typeText)
+                            .map((type) => ({
+                              value: type,
+                              text: this.typeText[type]
+                            }))}
+                          selected={[filter.type]}
+                          autoClouse={true}
+                          onClick={this.filterType}
+                        />
+                      </div>
+                    </div>
+                    <div className="col-md-3">
                       <div className="form-group">
                         <label className="control-label hidden-xs">&nbsp;</label>
                         <button
@@ -874,13 +935,48 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
                           onClick={this.clearFilter}
                           style={{paddingLeft: '5px'}}
                           disabled={
-                            filter.states.length || filter.text.length || filter.venues.length ? false : true}
+                            filter.states.length || filter.text.length || filter.venues.length  || filter.type.length ? false : true}
                         >
                           <i className="fa fa-fw fa-eraser"/> Limpiar
                         </button>
                       </div>
                     </div>
                   </Row>
+                  {
+                    this.state.downloadImages.downloading ?
+                      <Row>
+                        <div className="col-md-12" style={{padding: '24px 25vh'}}>
+                          <div className="progress progress-xs progress-striped active">
+                            <div
+                              className="progress-bar progress-bar-success"
+                              style={{width: `${this.state.downloadImages.progress}%`}}/>
+                          </div>
+                          {
+                            this.state.downloadImages.downloading && this.state.downloadImages.sizeFile === 0 ?
+                              <div className="text-center">
+                                Estamos preparando las imágenes.
+                                <button
+                                  className="btn btn-sm btn-danger"
+                                  style={{marginLeft: '10px'}}
+                                  onClick={() => (source as any).cancel('Operation canceled by the user.')}
+                                >
+                                  Cancelar
+                                </button>
+                              </div>
+                            : <div className="text-center">
+                                Descargando imágenes {this.state.downloadImages.progress}%
+                                <button
+                                  className="btn btn-sm btn-danger"
+                                  style={{marginLeft: '10px'}}
+                                  onClick={() => (source as any).cancel('Operation canceled by the user.')}
+                                >
+                                  Cancelar
+                                </button>
+                            </div>
+                          }
+                        </div>
+                      </Row> : null
+                  }
                   <Row>
                     <div className="col-md-12">
                       {
@@ -929,17 +1025,108 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
 
   private downloadImages() {
     const {id} = this.props.match.params;
-    const {selectedItems, summary} = this.props.inventories;
-    const api: ApiService = new ApiService();
-    api.downloadImages(id, Object.keys(selectedItems))
-      .then((response) => {
-        const url = window.URL.createObjectURL(new Blob([response.data]));
-        const link = document.createElement('a');
-        link.href = url;
-        link.setAttribute('download', `${summary.name}.zip`);
-        document.body.appendChild(link);
-        link.click();
+    const {selectedItems, summary, carsTable} = this.props.inventories;
+    const ids = Object.keys(selectedItems);
+    const countImages: number = carsTable
+      .filter((car) => ids.includes(car._id))
+      .reduce((a: any, b: any) => {
+        return a + b.images.length;
+      }, 0);
+
+    if (countImages > 0) {
+      this.setState({
+        downloadImages: {
+          downloading: true,
+          progress: 0,
+          sizeFile: 0,
+          loaded: 0
+        }
       });
+      const api: ApiService = new ApiService();
+      const instance = api.getInstance();
+      instance.defaults.responseType = 'blob';
+      const source = api.getSource();
+      this.setState({
+        source
+      });
+      instance
+        .post(
+          `/api/inventory/${id}/download-images/`, {
+            cars: ids
+          }, {
+            cancelToken: source.token,
+            onDownloadProgress: (progressEvent) => {
+              const sizeFile = parseInt(progressEvent.srcElement.getResponseHeader('size'), 10);
+              const {loaded} = progressEvent;
+              if (sizeFile) {
+                const progress = Math.round((progressEvent.loaded * 100) / sizeFile);
+                this.setState({
+                  downloadImages: {
+                    downloading: true,
+                    progress,
+                    sizeFile,
+                    loaded
+                  }
+                });
+              }
+            }
+          }
+        )
+        .then((response) => {
+          const blob = new Blob([response.data], {
+            type: 'application/zip'
+          });
+          const fileName = `${summary.name}.zip`;
+          if (typeof window.navigator.msSaveBlob !== 'undefined') {
+            // IE workaround for "HTML7007: One or more blob URLs were
+            // revoked by closing the blob for which they were created.
+            // These URLs will no longer resolve as the data backing
+            // the URL has been freed."
+            window.navigator.msSaveBlob(blob, fileName);
+          } else {
+            const blobURL = window.URL.createObjectURL(blob);
+            const tempLink = document.createElement('a');
+            tempLink.style.display = 'none';
+            tempLink.href = blobURL;
+            tempLink.setAttribute('download', fileName);
+            // Safari thinks _blank anchor are pop ups. We only want to set _blank
+            // target if the browser does not support the HTML5 download attribute.
+            // This allows you to download files in desktop safari if pop up blocking
+            // is enabled.
+            if (typeof tempLink.download === 'undefined') {
+              tempLink.setAttribute('target', '_blank');
+            }
+            document.body.appendChild(tempLink);
+            tempLink.click();
+            document.body.removeChild(tempLink);
+            window.URL.revokeObjectURL(blobURL);
+          }
+          this.setState({
+            downloadImages: {
+              ...this.state.downloadImages,
+              downloading: false,
+              progress: 100,
+              sizeFile: 0,
+              loaded: 0
+            }
+          });
+        })
+        .catch((err) => {
+          if (!Axios.isCancel(err)) {
+            swal('Descargar imágenes', 'ha ocurrido un error descargando las imágenes.', 'error');
+          }
+          this.setState({
+            downloadImages: {
+              downloading: false,
+              progress: 0,
+              sizeFile: 0,
+              loaded: 0
+            }
+          });
+        });
+    } else {
+      swal('Descargar imágenes', 'No has seleccionado vehículos que contengan imágenes.', 'error');
+    }
   }
 
   private filterVenues(value: any) {
@@ -962,9 +1149,18 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
     });
   }
 
+  private filterType(value: string) {
+    const {filter} = this.props.inventories;
+    this.props.inventoryDetailChangeFilter({
+      ...filter,
+      type: filter.type !== value ? value : ''
+    });
+  }
+
   private sendToDetailFilteredByState(state: string) {
     this.props.inventoryDetailChangeFilter({
       text: '',
+      type: '',
       venues: [],
       states: [state]
     });
@@ -978,6 +1174,7 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
   private sendToDetailFilteredByVenue(venue: string) {
     this.props.inventoryDetailChangeFilter({
       text: '',
+      type: '',
       venues: [venue],
       states: []
     });
@@ -992,6 +1189,7 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
     this.props.inventoryDetailChangeFilter({
       venues: [],
       states: [],
+      type: '',
       text: ''
     });
     $('#cars').val('');
@@ -1147,6 +1345,21 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
         trigger: 'axis',
         axisPointer: {
           type: 'shadow'
+        },
+        formatter: (params: any) => {
+          const colorSpan = (color: any) => `<span style="color:${color}"><i class="fa fa-fw fa-circle"></i></span>`;
+          let rez = `<span> ${params[0].axisValue}</span>`;
+          // console.log(params); //quite useful for debug
+          let total = 0;
+          params.forEach((item: any) => {
+            // console.log(item); //quite useful for debug
+            const value = item.data ? item.data : 0;
+            const xx = `<br />${colorSpan(item.color)} ${item.seriesName}: ${value}`;
+            total += value;
+            rez += xx;
+          });
+          rez += `<br />${colorSpan('#ffffff')} <strong>Total: ${total}</strong>`;
+          return rez;
         }
       },
       legend: {
@@ -1470,9 +1683,10 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
 
 }
 
-const mapStateToProps = (state: { inventories: IInventoryState }) => {
+const mapStateToProps = (state: { inventories: IInventoryState, router: RouterState }) => {
   return {
-    inventories: state.inventories
+    inventories: state.inventories,
+    router: state.router
   };
 };
 
@@ -1483,8 +1697,8 @@ const mapDispatchToProps = (dispatch: any ) => {
     updateCommentsAction: (inventoryCar: IInventoryCar) => dispatch(updateInventoryCarAction(inventoryCar)),
     inventoryDetailChangeSelected: (item: string) => dispatch(inventoryDetailChangeSelected(item)),
     getInventoryDetailAction: (id: string, update: boolean) => dispatch(getInventoryDetailAction(id, update)),
-    inventoryDetailChangeFilter: (filter: { text: string; venues: string[]; states: string[]; }) => dispatch(inventoryDetailChangeFilter(filter)),
-    inventoryDetailChangeFilterText: (filter: { text: string; venues: string[]; states: string[]; }) => dispatch(inventoryDetailChangeFilterText(filter)),
+    inventoryDetailChangeFilter: (filter: IFilterCar) => dispatch(inventoryDetailChangeFilter(filter)),
+    inventoryDetailChangeFilterText: (filter: IFilterCar) => dispatch(inventoryDetailChangeFilterText(filter)),
     actionSetLabel: (inventory: string, car: string, carID: string, label: IInventoryLabel) => dispatch(actionSetLabel(inventory, car, carID, label))
   };
 };

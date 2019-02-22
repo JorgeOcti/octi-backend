@@ -16,6 +16,7 @@ export interface IWindow extends Window {
   user: IUser;
   token: string;
   sentry_dns: string;
+  __REACT_DEVTOOLS_GLOBAL_HOOK__?: any;
   mixpanel: any;
   utils: {
     tooltip(): void;
