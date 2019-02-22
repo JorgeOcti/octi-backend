@@ -65,7 +65,7 @@ class TimeLineInventory extends React.Component<IPropsType, IStateType> {
             color: '#888',
             fontSize: '13px'
           }}>
-            <i className="fa fa-calendar-o"/> {inventory.createdAt.format('LL')}
+            <i className="fa fa-fw fa-calendar-o"/> {inventory.createdAt.format('LL')}
           </span>
 
           <h3 className="timeline-header"><a href="javascript:void(0)">{inventory.inventory.name}</a></h3>

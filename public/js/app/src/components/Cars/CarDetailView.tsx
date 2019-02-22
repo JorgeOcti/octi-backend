@@ -12,9 +12,9 @@ import {getParticipant, IDashboardState, loadParticipantInCarAction} from '../..
 import AppContainer from '../../container/AppContainer';
 import {IWindow} from '../../interfaces/window';
 import ModalView from '../Modal/ModalView';
+import Row from '../Utils/Row';
 import TimeLineForm from './TimeLineForm';
 import TimeLineInventory from './TimeLineInventory';
-import Row from "../Utils/Row";
 
 declare let window: IWindow;
 
@@ -114,17 +114,17 @@ class CarDetailView extends React.Component<IPropsType, IStateType> {
               <div className="box box-primary">
                 <div className="box-body box-profile">
                   {/*<ImageLazyLoad url={decodeURI(image.file.url)} height={'100px'} maxHeight={'100px'} maxWidth={'100px'} small={true}/>*/}
-                  <img
-                    className="profile-user-img img-responsive img-circle"
-                    src="https://cdn.forbes.com.mx/2018/03/Auto-Carretera-1280x720.jpg"
-                    alt="User profile picture"
-                    style={{
-                      fontFamily: 'object-fit:cover',
-                      objectFit: 'cover',
-                      width: '100px',
-                      height: '100px'
-                    }}
-                  />
+                  {/*<img*/}
+                    {/*className="profile-user-img img-responsive img-circle"*/}
+                    {/*src="https://cdn.forbes.com.mx/2018/03/Auto-Carretera-1280x720.jpg"*/}
+                    {/*alt="User profile picture"*/}
+                    {/*style={{*/}
+                      {/*fontFamily: 'object-fit:cover',*/}
+                      {/*objectFit: 'cover',*/}
+                      {/*width: '100px',*/}
+                      {/*height: '100px'*/}
+                    {/*}}*/}
+                  {/*/>*/}
                   <h3 className="profile-username text-center">{car && car.brand ? car.brand : '-'}</h3>
                   <p className="text-muted text-center">{car && car.denomination ? car.denomination : '-'}</p>
                   <ul className="list-group list-group-unbordered">
@@ -182,45 +182,73 @@ class CarDetailView extends React.Component<IPropsType, IStateType> {
               </div>
             </div>
             <div className="col col-md-9">
-              <div className="nav-tabs-custom">
-                <ul className="nav nav-tabs">
-                  <li className="active"><a href="#timeline" data-toggle="tab" aria-expanded="true">Timeline</a></li>
-                </ul>
-                <div className="tab-content" style={{
-                  backgroundColor: '#f9f9f9'
-                  // maxHeight: '80vh',
-                  // overflowX: 'auto'
-                }}>
-                  <div className="tab-pane active" id="timeline">
-                    <ul className="timeline">
-                      {
-                        Object.keys(carEvents).map((event) => {
-                          const events = carEvents[event];
-                          return <React.Fragment key={event}>
-                            <li className="time-label">
-                          <span className="bg-blue">
-                              {moment(event).format('MMMM YYYY')}
-                          </span>
-                            </li>
-                            {
-                              events.map((data: any) => {
-                                return (
-                                  data.typeEvent === 'revision' ?
-                                    <TimeLineForm form={data} getParticipant={getParticipant} key={data._id}/>
-                                    : <TimeLineInventory inventory={data} key={data._id}/>
-                                );
-                              })
-                            }
-                          </React.Fragment>;
-                        })
-                      }
-                      <li>
-                        <i className="fa fa-clock-o bg-gray"></i>
-                      </li>
+              {
+                loading ?
+                  <div className="box">
+                    <div className="box-body text-center">
+                      <p>&nbsp;</p>
+                    </div>
+                      <div className="overlay">
+                        <i className="fa fa-spinner fa-spin text-purple"/>
+                      </div>
+                  </div> :
+                  <div className="nav-tabs-custom">
+                    <ul className="nav nav-tabs">
+                      <li className="active"><a href="#timeline" data-toggle="tab" aria-expanded="true">Timeline</a></li>
                     </ul>
+                    <div className="tab-content" style={{
+                      backgroundColor: '#f9f9f9'
+                      // maxHeight: '80vh',
+                      // overflowX: 'auto'
+                    }}>
+                      <div className="tab-pane active" id="timeline">
+                        <ul className="timeline">
+                          {
+                            Object.keys(carEvents).map((event) => {
+                              const events = carEvents[event];
+                              return <React.Fragment key={event}>
+                                <li className="time-label">
+                                  <span className="bg-blue">
+                                      {moment(event).format('MMMM YYYY')}
+                                  </span>
+                                </li>
+                                {
+                                  events.map((data: any) => {
+                                    return (
+                                      data.typeEvent === 'created' ?
+                                        <li style={{marginRight: '0'}} key={data._id}>
+                                          <i className={`fa fa-cloud-upload bg-green`}/>
+                                          <div className="timeline-item">
+                                            <span className="time" style={{
+                                              color: '#888',
+                                              fontSize: '13px'
+                                            }}>
+                                              <i className="fa fa-fw fa-calendar-o"/> {data.createdAt.format('LL')}
+                                            </span>
+                                            <h3 className="timeline-header"><a href="javascript:void(0)">VEHÍCULO IMPORTADO</a></h3>
+                                            <div className="timeline-body">
+                                              El vehículo fue importado al sistema
+                                              el {data.createdAt.format('LLLL')}.
+                                            </div>
+                                          </div>
+                                        </li>
+                                        : data.typeEvent === 'revision' ?
+                                        <TimeLineForm form={data} getParticipant={getParticipant} key={data._id}/>
+                                        : <TimeLineInventory inventory={data} key={data._id}/>
+                                    );
+                                  })
+                                }
+                              </React.Fragment>;
+                            })
+                          }
+                          <li>
+                            <i className="fa fa-clock-o bg-gray"/>
+                          </li>
+                        </ul>
+                      </div>
+                    </div>
                   </div>
-                </div>
-              </div>
+              }
             </div>
           </Row>
           <ModalView />

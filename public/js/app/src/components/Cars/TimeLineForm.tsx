@@ -34,7 +34,7 @@ class TimeLineForm extends React.Component<IPropsType, IStateType> {
             color: '#888',
             fontSize: '13px'
           }}>
-            <i className="fa fa-calendar-o"/> {form.createdAt.format('LL')}
+            <i className="fa fa-fw fa-calendar-o"/> {form.createdAt.format('LL')}
           </span>
 
           <h3 className="timeline-header"><a href="javascript:void(0)">{form.name}</a></h3>
