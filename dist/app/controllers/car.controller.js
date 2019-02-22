@@ -660,6 +660,7 @@ class CarController {
         const { team } = req.user;
         const { id } = req.params;
         try {
+            const venuesPermissions = req.user.venuesPermissions();
             const car = await car_model_1.default
                 .findOne({
                 _id: id,
@@ -679,11 +680,23 @@ class CarController {
                         inventory: {
                             $in: await inventory_model_1.default.find({
                                 team,
+                                venues: {
+                                    $in: venuesPermissions
+                                },
                                 status: inventory_model_1.ChoicesStatusInventory.finalized
                             }, {
                                 _id: true
                             })
-                        }
+                        },
+                        $or: [{
+                                venue: {
+                                    $in: venuesPermissions
+                                }
+                            }, {
+                                venueFound: {
+                                    $in: venuesPermissions
+                                }
+                            }]
                     },
                     populate: [{
                             path: 'venue',
@@ -714,7 +727,7 @@ class CarController {
                     select: ['name', 'user', 'createdAt', 'updatedAt', 'qualification', 'venue', 'shipping', 'reception'],
                     match: {
                         venue: {
-                            $in: req.user.venuesPermissions()
+                            $in: venuesPermissions
                         }
                     },
                     options: {
