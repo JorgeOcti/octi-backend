@@ -22,7 +22,7 @@ spec:
       containers:
       - image: gcr.io/durable-timing-221813/osa-andes:latest
         name: osa-andes
-        command: ['node', 'dist/server.js']
+        command: [ "pm2", "start", "pm2.json", "--no-daemon" ]
         resources:
           requests:
             cpu: 100m
@@ -31,7 +31,6 @@ spec:
             cpu: 200m
             memory: 300Mi
         imagePullPolicy: Always
-
         ports:
         - containerPort: 3000
           name: osa-andes
