@@ -1,0 +1,19 @@
+apiVersion: v1
+items:
+- apiVersion: autoscaling/v1
+  kind: HorizontalPodAutoscaler
+  metadata:
+    name: osa-andes
+    namespace: default
+  spec:
+    maxReplicas: 4
+    minReplicas: 2
+    scaleTargetRef:
+      apiVersion: extensions/v1beta1
+      kind: Deployment
+      name: osa-andes
+    targetCPUUtilizationPercentage: 50
+kind: List
+metadata:
+  resourceVersion: ""
+  selfLink: ""

@@ -13,10 +13,12 @@ COPY . /srv
 
 # install node packages
 RUN npm  --unsafe-perm  install
-#RUN npm i typescript@3.1.6 -D
+# RUN npm i -g pm2
 
 # port to expose
 EXPOSE 3000
 
 # run app
+# CMD [ "pm2", "start", "pm2.json", "--no-daemon" ]
+# run watch app
 CMD ["npm", "run", "watch-ts"]
