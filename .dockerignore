@@ -5,6 +5,7 @@ coverage
 
 email-templates
 kubernetes
+k8s
 logs
 
 bower_components

@@ -18,6 +18,8 @@ RUN apk add --no-cache make gcc g++ python && \
 # port to expose
 RUN npm run build
 
+RUN touch s3-config.json
+RUN touch ses-config.json
 
 EXPOSE 3000
 
