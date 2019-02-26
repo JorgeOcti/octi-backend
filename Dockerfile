@@ -19,7 +19,9 @@ RUN apk add --no-cache make gcc g++ python && \
 RUN npm run build
 
 RUN touch s3-config.json
+RUN echo "{}" >>s3-config.json
 RUN touch ses-config.json
+RUN echo "{}" >>ses-config.json
 
 EXPOSE 3000
 
