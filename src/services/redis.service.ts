@@ -3,7 +3,7 @@ import * as redis from 'redis';
 import GeneralUtils from '../utils/general.utils';
 
 const client = redis.createClient({
-  host: GeneralUtils.getFromEnviroment('REDIS_HOST', 'localhost'),
+  host: GeneralUtils.getFromEnviroment('REDIS_SERVICE_SERVICE_HOST', 'localhost'),
   port: 6379
 });
 

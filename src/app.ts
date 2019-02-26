@@ -133,7 +133,7 @@ app.use(session({
     maxAge: 2592000000 // 30 * 24 * 60 * 60 * 1000 Rememeber 'me' for 30 days
   },
   store: new redisStore( {
-    host: process.env.REDIS_HOST ? process.env.REDIS_HOST : 'localhost',
+    host: process.env.REDIS_SERVICE_SERVICE_HOST ? process.env.REDIS_SERVICE_SERVICE_HOST : 'localhost',
     port: 6379
   })
 }));
@@ -237,7 +237,7 @@ app.use('/api/v1', jwtRouter);
 /* queues */
 export const queue = kue.createQueue({
   redis: {
-    host: process.env.REDIS_HOST ? process.env.REDIS_HOST : 'localhost',
+    host: process.env.REDIS_SERVICE_SERVICE_HOST ? process.env.REDIS_SERVICE_SERVICE_HOST : 'localhost',
     port: 6379
   }
 });
