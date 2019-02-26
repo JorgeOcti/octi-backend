@@ -81,23 +81,7 @@ function groupCarEvents(car: ICar): any[] {
       });
     }
   }
-  // const carEvents: any = events
-  //   .sort((a, b) => {
-  //     return b.createdAt.format('X') - a.createdAt.format('X');
-  //   })
-  //   .reduce((acc: any, cur: any) => {
-  //   const key = cur.createdAt.format('YYYY-MM-DD');
-  //   acc[key] = acc[key] || [];
-  //   acc[key].push(cur);
-  //   return acc;
-  // }, {});
-  // for(const e in carEvents) {
-  //   console.log('e', e);
-  //   for(const a of carEvents[e]) {
-  //     console.log(' a', a.typeEvent);
-  //     console.log(' a', a.createdAt.format('LLLL'));
-  //   }
-  // }
+
   return events
     .sort((a, b) => {
       return b.createdAt.unix() - a.createdAt.unix();

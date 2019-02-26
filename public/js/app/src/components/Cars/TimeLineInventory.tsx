@@ -80,15 +80,22 @@ class TimeLineInventory extends React.Component<IPropsType, IStateType> {
             }
             {
               ['pending'].includes(inventory.status) ?
-                `El vehículo no fue encontrado.` : null
+                <React.Fragment>
+                  El vehículo no fue encontrado en <span className="text-blue">{inventory.venue.name}</span>.
+                </React.Fragment> : null
             }
             {
               ['missing'].includes(inventory.status) ?
-                `El vehículo fue marcado como faltante.` : null
+                <React.Fragment>
+                  El vehículo fue marcado como faltante en <span className="text-blue">{inventory.venueFound ? inventory.venueFound.name : inventory.venue.name}</span>.
+                </React.Fragment> : null
             }
             {
               ['leftover'].includes(inventory.status) ?
-                `El vehículo fue marcado como sobrante.` : null
+                <React.Fragment>
+                  El vehículo fue marcado como sobrante en <span
+                  className="text-blue">{inventory.venueFound ? inventory.venueFound.name : inventory.venue.name}</span>.
+                </React.Fragment> : null
             }
           </div>
           <div className="timeline-footer">
