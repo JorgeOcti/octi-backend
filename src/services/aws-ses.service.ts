@@ -1,12 +1,13 @@
 import * as AWS from 'aws-sdk';
 import * as nodemailer from 'nodemailer';
-import * as path from 'path';
+// import * as path from 'path';
 
-AWS.config.loadFromPath(path.join(__dirname, '../../ses-config.json'));
+// AWS.config.loadFromPath(path.join(__dirname, '../../ses-config.json'));
 
 const transport = nodemailer.createTransport({
   SES: new AWS.SES({
-    apiVersion: '2010-12-01'
+    apiVersion: '2010-12-01',
+    region: process.env.SES_REGION || 'us-west-2'
   })
 });
 
