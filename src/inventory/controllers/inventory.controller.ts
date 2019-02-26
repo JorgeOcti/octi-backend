@@ -336,7 +336,7 @@ class InventoryController {
         });
       } else {
         // const venuesPermissions = req.user.venuesPermissions();
-        const inventory = await Inventory
+        const inventory = await (Inventory as any  )
           .findOne({
             _id: id,
             venues: updatedUser.venue,
