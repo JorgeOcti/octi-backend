@@ -44,3 +44,5 @@ package-lock.json
 
 # mongo dump
 dump/
+
+secrets.yaml
