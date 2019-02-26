@@ -1,0 +1,14 @@
+---
+apiVersion: v1
+kind: Service
+
+metadata:
+  name: osa-andes-service
+  # namespace: ${NAMESPACE}
+  namespace: andes-stage
+spec:
+  selector:
+    app: osa-andes
+  ports:
+  - port: 3000
+    targetPort: 3000

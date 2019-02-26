@@ -1,0 +1,106 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: osa-andes
+  # namespace: ${NAMESPACE}
+  namespace: andes-stage
+  labels:
+    app: osa-andes
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: osa-andes
+  template:
+    metadata:
+      # namespace: ${NAMESPACE}
+      namespace: andes-stage
+      labels:
+        app: osa-andes
+    spec:
+      containers:
+      - name: osa-andes
+        # image: 169428622952.dkr.ecr.us-east-1.amazonaws.com/osa/django:${CIRCLE_SHA1}
+        image: 169428622952.dkr.ecr.us-east-1.amazonaws.com/osa/andes:latest
+        # image: andes:latest
+        # imagePullPolicy: Always
+        env:
+          - name: ENV
+            valueFrom:
+              secretKeyRef:
+                name: env
+                key: ENV
+          - name: PORT
+            valueFrom:
+              secretKeyRef:
+                name: env
+                key: PORT
+          - name: SECRET_KEY
+            valueFrom:
+              secretKeyRef:
+                name: env
+                key: SECRET_KEY
+          - name: SITE_URL
+            valueFrom:
+              secretKeyRef:
+                name: env
+                key: SITE_URL
+          - name: AWS_REGION
+            valueFrom:
+              secretKeyRef:
+                name: aws
+                key: AWS_REGION
+          - name: AWS_ACCESS_KEY_ID
+            valueFrom:
+              secretKeyRef:
+                name: aws
+                key: AWS_ACCESS_KEY_ID
+          - name: AWS_SECRET_ACCESS_KEY
+            valueFrom:
+              secretKeyRef:
+                name: aws
+                key: AWS_SECRET_ACCESS_KEY
+          - name: MONGODB_URI
+            valueFrom:
+              secretKeyRef:
+                name: mongo
+                key: DB_URI
+          - name: SENTRY_DNS
+            valueFrom:
+              secretKeyRef:
+                name: sentry
+                key: DNS
+          - name: S3_KEY
+            valueFrom:
+              secretKeyRef:
+                name: s3
+                key: KEY
+          - name: S3_SECRET
+            valueFrom:
+              secretKeyRef:
+                name: s3
+                key: SECRET
+          - name: S3_BUCKET
+            valueFrom:
+              secretKeyRef:
+                name: s3
+                key: BUCKET
+          - name: S3_REGION
+            valueFrom:
+              secretKeyRef:
+                name: s3
+                key: REGION
+          - name: PUSHER_INSTANCE_ID
+            valueFrom:
+              secretKeyRef:
+                name: pusher
+                key: INSTANCE_ID
+          - name: PUHSER_SECRET_KEY
+            valueFrom:
+              secretKeyRef:
+                name: pusher
+                key: SECRET_KEY
+        ports:
+        - containerPort: 3030
+      imagePullSecrets:
+          - name: awskey
