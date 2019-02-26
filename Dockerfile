@@ -13,7 +13,7 @@ COPY . /srv
 
 # install node packages
 RUN npm  --unsafe-perm  install
-# RUN npm i -g pm2
+RUN npm i -g pm2
 
 # port to expose
 EXPOSE 3000
