@@ -18,7 +18,7 @@ spec:
     spec:
       containers:
       - name: osa-andes
-        image: 169428622952.dkr.ecr.us-east-1.amazonaws.com/osa/django:${CIRCLE_SHA1}
+        image: 169428622952.dkr.ecr.us-east-1.amazonaws.com/osa/andes:${CIRCLE_SHA1}
         imagePullPolicy: Always
         env:
           - name: ENV
