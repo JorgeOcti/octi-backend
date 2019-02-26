@@ -146,7 +146,6 @@ workflows:
       - deploy-production:
           requires:
               - build
-              - test
           filters:
             branches:
               only:
@@ -155,7 +154,6 @@ workflows:
       - deploy-staging:
           requires:
               - build
-              - test
           filters:
             branches:
               only:
