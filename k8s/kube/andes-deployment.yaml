@@ -2,8 +2,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: osa-andes
-  # namespace: ${NAMESPACE}
-  namespace: andes-stage
+  namespace: ${NAMESPACE}
   labels:
     app: osa-andes
 spec:
@@ -13,17 +12,14 @@ spec:
       app: osa-andes
   template:
     metadata:
-      # namespace: ${NAMESPACE}
-      namespace: andes-stage
+      namespace: ${NAMESPACE}
       labels:
         app: osa-andes
     spec:
       containers:
       - name: osa-andes
-        # image: 169428622952.dkr.ecr.us-east-1.amazonaws.com/osa/django:${CIRCLE_SHA1}
-        image: 169428622952.dkr.ecr.us-east-1.amazonaws.com/osa/andes:latest
-        # image: andes:latest
-        # imagePullPolicy: Always
+        image: 169428622952.dkr.ecr.us-east-1.amazonaws.com/osa/django:${CIRCLE_SHA1}
+        imagePullPolicy: Always
         env:
           - name: ENV
             valueFrom:
