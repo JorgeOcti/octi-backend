@@ -39,11 +39,11 @@ exports.inventoryFileSchema = new mongoose.Schema({
 });
 exports.inventoryFileSchema.plugin(mongooseCrate, {
     storage: new MongooseCrateS3({
-        key: s3Config.accessKeyId,
-        secret: s3Config.secretAccessKey,
-        bucket: s3Config.bucket,
+        key: process.env.S3_KEY || s3Config.accessKeyId,
+        secret: process.env.S3_SECRET || s3Config.secretAccessKey,
+        bucket: process.env.S3_BUCKET || s3Config.bucket,
         acl: 'public-read',
-        region: s3Config.region,
+        region: process.env.S3_REGION || s3Config.region,
         // where the file is stored in the bucket - defaults to this function
         path: (attachment) => {
             /* attachment params:

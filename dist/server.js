@@ -43,7 +43,7 @@ const server = app_1.default.listen(parseInt(app_1.default.get('port'), 10) + NO
 });
 exports.io = socketIO(server);
 exports.io.adapter(socketRedis({
-    host: process.env.REDIS_HOST ? process.env.REDIS_HOST : 'localhost',
+    host: process.env.REDIS_SERVICE_SERVICE_HOST ? process.env.REDIS_SERVICE_SERVICE_HOST : 'localhost',
     port: 6379
 }));
 /* istanbul ignore next */

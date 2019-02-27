@@ -7,7 +7,7 @@ items:
     namespace: default
   spec:
     maxReplicas: 4
-    minReplicas: 2
+    minReplicas: 3
     scaleTargetRef:
       apiVersion: extensions/v1beta1
       kind: Deployment
