@@ -11,9 +11,7 @@ RUN apk add --no-cache make gcc g++ python && \
   npm --unsafe-perm install && \
   apk del make gcc g++ python
 
-# install node packages
-# RUN npm  --unsafe-perm  install
-# RUN npm i -g pm2
+RUN npm i -g pm2
 
 # port to expose
 RUN npm run build
@@ -26,7 +24,8 @@ RUN echo "{}" >>ses-config.json
 EXPOSE 3000
 
 # run app
-# CMD [ "pm2", "start", "pm2.json", "--no-daemon" ]
+
 # run watch app
 # CMD ["npm", "run", "watch-ts"]
-CMD ["node", "dist/server.js"]
+# CMD ["node", "dist/server.js"]
+CMD [ "pm2", "start", "pm2.json", "--no-daemon" ]

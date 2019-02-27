@@ -12,7 +12,7 @@ items:
       apiVersion: extensions/v1beta1
       kind: Deployment
       name: osa-andes
-    targetCPUUtilizationPercentage: 50
+    targetCPUUtilizationPercentage: 80
 kind: List
 metadata:
   resourceVersion: ""
