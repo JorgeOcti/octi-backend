@@ -1,9 +1,9 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: web
+  name: osa-andes-service
   labels:
-    name: web
+    name: osa-andes-service
 spec:
   type: LoadBalancer
   ports:
@@ -11,4 +11,8 @@ spec:
       targetPort: 3000
       protocol: TCP
   selector:
-    name: web
+    app: osa-andes
+  sessionAffinity: ClientIP
+  sessionAffinityConfig:
+    clientIP:
+      timeoutSeconds: 10800

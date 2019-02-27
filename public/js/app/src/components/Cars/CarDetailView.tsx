@@ -67,48 +67,6 @@ class CarDetailView extends React.Component<IPropsType, IStateType> {
     return (
       <AppContainer title={`Detalle VIN ${car ? car.vin : null}`} cMenu="10" cSubMenu="10.2"  cAction="Detalle Vehículo">
         <section className="content">
-          <div className="box" style={{display: 'none'}}>
-            <div className="box-header with-border"><h3 className="box-title">Detalle VIN {car ? car.vin : null}</h3>
-              <div className="box-tools pull-right">
-              </div>
-            </div>
-            <div className="box-body">
-              <table style={{width: '100%'}}>
-                <tbody>
-                <tr>
-                  <td style={{padding: '5px'}}><strong>Marca</strong></td>
-                  <td style={{padding: '5px'}}>
-                    {
-                      car && car.brand ? car.brand : '-'
-                    }
-                  </td>
-                </tr>
-                <tr>
-                  <td style={{padding: '5px'}}><strong>Denominación</strong></td>
-                  <td style={{padding: '5px'}}>
-                    {
-                      car && car.denomination ? car.denomination : '-'
-                    }
-                  </td>
-                </tr>
-                <tr>
-                  <td style={{padding: '5px'}}><strong>Color</strong></td>
-                  <td style={{padding: '5px'}}>
-                    {
-                      car && car.color ? car.color : '-'
-                    }
-                  </td>
-                </tr>
-                </tbody>
-              </table>
-            </div>
-            {
-              loading &&
-              <div className="overlay">
-                <i className="fa fa-spinner fa-spin text-purple"/>
-              </div>
-            }
-          </div>
           <Row>
             <div className="col col-md-3">
               <div className="box box-primary">
