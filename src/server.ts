@@ -49,7 +49,7 @@ const server = app.listen(parseInt(app.get('port'), 10) + NODE_APP_INSTANCE, () 
 export const io = socketIO(server);
 
 io.adapter(socketRedis({
-  host: process.env.REDIS_HOST ? process.env.REDIS_HOST : 'localhost',
+  host: process.env.REDIS_SERVICE_SERVICE_HOST ? process.env.REDIS_SERVICE_SERVICE_HOST : 'localhost',
   port: 6379
 }));
 

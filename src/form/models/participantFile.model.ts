@@ -46,11 +46,11 @@ export const participantFileSchema = new mongoose.Schema({
 
 participantFileSchema.plugin(mongooseCrate, {
   storage: new MongooseCrateS3({
-    key: s3Config.accessKeyId,
-    secret: s3Config.secretAccessKey,
-    bucket: s3Config.bucket,
+    key: process.env.S3_KEY || s3Config.accessKeyId,
+    secret: process.env.S3_SECRET || s3Config.secretAccessKey,
+    bucket: process.env.S3_BUCKET || s3Config.bucket,
     acl: 'public-read', // defaults to public-read
-    region: s3Config.region, // defaults to us-standard
+    region: process.env.S3_REGION || s3Config.region, // defaults to us-standard
     // where the file is stored in the bucket - defaults to this function
     path: (attachment) => {
       /* attachment params:

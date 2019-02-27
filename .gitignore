@@ -41,3 +41,8 @@ package-lock.json
 
 # Optional eslint cache
 .eslintcache
+
+# mongo dump
+dump/
+
+secrets.yaml

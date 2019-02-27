@@ -20,8 +20,8 @@ async function addedInventoryCar() {
   });
   mongoose.set('debug', true);
   try {
-    const inventories = await Inventory.find({}).lean();
-    for (const inventory of  inventories) {
+    const inventories : [any] = (await Inventory.find({}).lean() as [any]);
+    for (const inventory of inventories) {
       if (inventory.hasOwnProperty('cars')) {
         const inventoryCars = inventory.cars.map((car: IInventoryCar) => {
           car.inventory = inventory._id;
