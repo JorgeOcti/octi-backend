@@ -194,6 +194,7 @@ passport.deserializeUser((id, done) => {
 const logDirectory = path.join(__dirname, '../logs');
 exports.accessLogStream = fileStreamRotator.getStream({
     date_format: 'YYYYMMDD',
+    // date_format: 'YYYY/MM/DD',
     filename: logDirectory + '/access-%DATE%.log',
     frequency: 'daily',
     verbose: false
@@ -203,7 +204,9 @@ if (app.get('env') !== 'testing') {
     morgan.token('remote-addr', (req) => {
         return req.headers['x-real-ip'] || req.headers['x-forwarded-for'] || req.connection.remoteAddress || '';
     });
-    app.use(morgan(':remote-addr - :remote-user [:date[clf]] ":method :url HTTP/:http-version" :status :res[content-length] ":referrer" ":user-agent" :response-time', { stream: exports.accessLogStream }));
+    app.use(morgan('[:date[clf]] [INFO]: :remote-addr - :remote-user ":method :url HTTP/:http-version" :status :res[content-length] ":referrer" ":user-agent" :response-time', {
+        stream: exports.accessLogStream
+    }));
     app.use(morgan('[:date[clf]] :remote-addr :method :url :status :response-time ms - :res[content-length]'));
 }
 // The request handler must be the first middleware on the app

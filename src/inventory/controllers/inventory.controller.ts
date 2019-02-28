@@ -17,6 +17,7 @@ import VenueModel, {
 import {IRequest} from '../../interfaces/global.interface';
 import {IInventoryCar} from '../../interfaces/inventory.interface';
 import {io} from '../../server';
+import logger from '../../services/logger.service';
 import PushService from '../../services/push.service';
 import InventoryModel, {
   ChoicesStatusInventory
@@ -380,6 +381,8 @@ class InventoryController {
             status: 200
           });
         } else {
+          logger.info(`apiDetail: No se ha encontrado el inventario solicitado.`);
+          logger.info(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
           res.status(404).json({
             message: 'No se ha encontrado el inventario solicitado.',
             status: 404
@@ -472,10 +475,14 @@ class InventoryController {
           status: 201
         });
       } catch (e) {
+        logger.info(`uploadFile: Error procesing image.`);
+        logger.info(`{user: {_id: ${req.user._id}, email: ${req.user.email}}, error: ${e}}`);
         /* istanbul ignore next */
         res.status(400).json(e);
       }
     } else {
+      logger.info(`uploadFile: La imagen es obligatoria.`);
+      logger.info(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
       /* istanbul ignore next */
       res.status(400).json({
         message: 'La imagen es obligatoria.',
@@ -519,6 +526,8 @@ class InventoryController {
             }
           });
           if (inventoriedCar) {
+            logger.info(`apiFoundCar: Este vehículo ya ha sido inventariado`);
+            logger.info(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
             res.status(400).json({
               message: 'Este vehículo ya ha sido inventariado',
               status: 400
@@ -548,6 +557,8 @@ class InventoryController {
                 status: 200
               });
             } else {
+              logger.info(`apiFoundCar: Este vehículo no se encuentra en el inventario.`);
+              logger.info(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
               res.status(400).json({
                 message: 'Este vehículo no se encuentra en el inventario.',
                 status: 400
@@ -556,6 +567,8 @@ class InventoryController {
           }
         } else {
           // if car no exist
+          logger.info(`apiFoundCar: Este vehículo no se encuentra en el inventario.`);
+          logger.info(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
           res.status(400).json({
             message: 'Este vehículo no se encuentra en el inventario.',
             status: 400
@@ -563,13 +576,17 @@ class InventoryController {
         }
       } else {
         // if inventory no exist
-        res.status(400).json({
+        logger.info(`apiFoundCar: Este inventario no existe o ya no se encuentra activo.`);
+        logger.info(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
+        res.status(404).json({
           message: 'Este inventario no existe o ya no se encuentra activo.',
-          status: 400
+          status: 404
         });
       }
     } catch (e) {
       /* istanbul ignore next */
+      logger.info(`apiFoundCar: Async Error.`);
+      logger.info(`{user: {_id: ${req.user._id}, email: ${req.user.email}}, error: ${e}}`);
       console.log(e);
       /* istanbul ignore next */
       res.status(400).json({
@@ -870,6 +887,7 @@ class InventoryController {
       const venueId = updatedUser.venue._id;
       const inventory = await InventoryModel.findOne({
         _id: id,
+        status:  ChoicesStatusInventory.inProcess,
         team
       });
       if (inventory) {
@@ -914,12 +932,16 @@ class InventoryController {
           status: 200
         });
       } else {
-        res.status(400).json({
+        logger.info(`reportCar: Este inventario ya no se encuentra disponible.`);
+        logger.info(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
+        res.status(404).json({
           message: 'Este inventario ya no se encuentra disponible.',
-          status: 400
+          status: 404
         });
       }
     } catch (e) {
+      logger.info(`reportCar: Async Error.`);
+      logger.info(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
       /* istanbul ignore next */
       console.log(e);
       /* istanbul ignore next */
@@ -1005,6 +1027,8 @@ class InventoryController {
           status: 200
         });
       } else {
+        logger.info(`apiList: Usuario no encontrado`);
+        logger.info(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
         /* istanbul ignore next */
         res.status(400).json({
           message: 'Usuario no encontrado',
@@ -1012,6 +1036,8 @@ class InventoryController {
         });
       }
     } catch (e) {
+      logger.info(`apiList: Async Error`);
+      logger.info(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
       /* istanbul ignore next */
       res.status(400).json({
         message: e,

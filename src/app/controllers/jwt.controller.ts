@@ -1,10 +1,11 @@
-import {NextFunction, Request, Response} from 'express';
+import {Request, Response} from 'express';
 import * as jwt from 'jsonwebtoken';
 import * as moment from 'moment-timezone';
 import * as uuid from 'uuid';
 import app, {queue} from '../../app';
 import ParticipantModel from '../../form/models/participant.model';
 import {IRequest} from '../../interfaces/global.interface';
+import logger from '../../services/logger.service';
 import GeneralUtils from '../../utils/general.utils';
 import User from '../models/user.model';
 import UserModel, {IUserModel} from '../models/user.model';
@@ -14,12 +15,13 @@ class JWTController {
   constructor() {
     this.login = this.login.bind(this);
     this.token = this.token.bind(this);
-    this.isJWTAuthenticated = this.isJWTAuthenticated.bind(this);
+    // this.isJWTAuthenticated = this.isJWTAuthenticated.bind(this);
     this.forgotPassword = this.forgotPassword.bind(this);
   }
 
   public login(req: Request, res: Response) {
     if (req.body.username === null || req.body.username === undefined || req.body.password === null || req.body.password === undefined) {
+      logger.info(`login: Authentication failed. Invalid user or password.`);
       res.status(401).json({message: 'Authentication failed. Invalid user or password.'});
     } else {
       User
@@ -61,11 +63,13 @@ class JWTController {
             res.status(500).send(err);
           }
           if (!user || !user.comparePasswordSync(req.body.password)) {
+            logger.info(`login: Authentication failed. Invalid user or password.`);
             res.status(401).json({
               message: 'Authentication failed. Invalid user or password.',
               status: 401
             });
           } else if (!user.active) {
+            logger.info(`login: User is inactive`);
             res.status(401).json({
               message: 'User is inactive',
               status: 401
@@ -112,14 +116,13 @@ class JWTController {
                   res.json({
                     data: {
                       token: jwt.sign(userInfo, req.app.locals.secretKey, {
-                        // expiresIn: '30 days'
-                        expiresIn: 30 // 30 segundos
+                        expiresIn: '7 days'
                       }),
                       // token: jwt.sign(userInfo, req.app.locals.secretKey, {
                       //   expiresIn: '60 seconds'
                       // }),
                       refreshToken: jwt.sign(userInfo, req.app.locals.secretKey, {
-                        expiresIn: 600 // 10 minutos
+                        expiresIn: '30 days'
                       }),
                       iosVersion: '1.4.0',
                       androidVersion: '2.1.6',
@@ -138,6 +141,8 @@ class JWTController {
   public token(req: Request, res: Response) {
     const {refreshToken} = req.body;
     if (!refreshToken) {
+      logger.info(`token: refresh token is required`);
+      logger.info(`{body: ${req.body}, headers: ${JSON.stringify(req.headers)}}`);
       res.status(400).json({
         message: 'refresh token is required',
         status: 400
@@ -145,6 +150,7 @@ class JWTController {
     } else {
       jwt.verify(refreshToken, req.app.locals.secretKey, (err: any, decode: any) => {
         if (err) {
+          logger.info(`token: JWT error`);
           res.status(401).json({
             message: err.message,
             status: 401
@@ -186,11 +192,13 @@ class JWTController {
                 /* istanbul ignore next */
                 res.status(500).json(err);
               } else if (!user) {
+                logger.info(`token: User not found`);
                 res.status(401).json({
                   message: 'User not found',
                   status: 401
                 });
               } else if (!user.active) {
+                logger.info(`token: User is inactive`);
                 res.status(401).json({
                   message: 'User is inactive',
                   status: 401
@@ -199,6 +207,7 @@ class JWTController {
                 user.lastLogin = new Date();
                 user.save( (err: any) => {
                   if (err) {
+                    logger.info(`token: Save user`);
                     /* istanbul ignore next */
                     res.status(500).json(err);
                   } else {
@@ -237,10 +246,10 @@ class JWTController {
                       res.json({
                         data: {
                           token: jwt.sign(userInfo, req.app.locals.secretKey, {
-                            expiresIn: '30 days'
+                            expiresIn: '7 days'
                           }),
                           refreshToken: jwt.sign(userInfo, req.app.locals.secretKey, {
-                            expiresIn: '60 days'
+                            expiresIn: '30 days'
                           }),
                           iosVersion: '1.4.1',
                           androidVersion: '1.4.0',
@@ -323,27 +332,26 @@ class JWTController {
   }
 
   /* istanbul ignore next */
-  public isJWTAuthenticated(req: IRequest, res: Response, next: NextFunction) {
-    console.log('test');
-    if (req.headers && req.headers.authorization && req.headers.authorization.split(' ')[0] === 'JWT') {
-      jwt.verify(req.headers.authorization.split(' ')[1], req.app.locals.secretKey, (err: any, decode: any) => {
-        if (err) {
-          res.status(401).json({
-            message: err.message,
-            status: 401
-          });
-        }
-        req.user = decode;
-        next();
-      });
-    } else {
-      res.status(403).json({
-        message: 'Forbidden',
-        status: 403
-      });
-      next();
-    }
-  }
+  // public isJWTAuthenticated(req: IRequest, res: Response, next: NextFunction) {
+  //   if (req.headers && req.headers.authorization && req.headers.authorization.split(' ')[0] === 'JWT') {
+  //     jwt.verify(req.headers.authorization.split(' ')[1], req.app.locals.secretKey, (err: any, decode: any) => {
+  //       if (err) {
+  //         res.status(401).json({
+  //           message: err.message,
+  //           status: 401
+  //         });
+  //       }
+  //       req.user = decode;
+  //       next();
+  //     });
+  //   } else {
+  //     res.status(403).json({
+  //       message: 'Forbidden',
+  //       status: 403
+  //     });
+  //     next();
+  //   }
+  // }
 
   /* istanbul ignore next */
   public test(req: IRequest, res: Response) {

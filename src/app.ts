@@ -210,6 +210,7 @@ passport.deserializeUser((id, done) => {
 const logDirectory = path.join(__dirname, '../logs');
 export const accessLogStream = fileStreamRotator.getStream({
   date_format: 'YYYYMMDD',
+  // date_format: 'YYYY/MM/DD',
   filename: logDirectory + '/access-%DATE%.log',
   frequency: 'daily',
   verbose: false
@@ -221,7 +222,9 @@ if (app.get('env') !== 'testing') {
     return (req.headers['x-real-ip'] as string) || (req.headers['x-forwarded-for'] as string) || req.connection.remoteAddress || '';
   });
 
-  app.use(morgan(':remote-addr - :remote-user [:date[clf]] ":method :url HTTP/:http-version" :status :res[content-length] ":referrer" ":user-agent" :response-time', {stream: accessLogStream}));
+  app.use(morgan('[:date[clf]] [INFO]: :remote-addr - :remote-user ":method :url HTTP/:http-version" :status :res[content-length] ":referrer" ":user-agent" :response-time', {
+    stream: accessLogStream
+  }));
   app.use(morgan('[:date[clf]] :remote-addr :method :url :status :response-time ms - :res[content-length]'));
 }
 
