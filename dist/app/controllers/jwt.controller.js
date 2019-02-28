@@ -113,13 +113,14 @@ class JWTController {
                                 res.json({
                                     data: {
                                         token: jwt.sign(userInfo, req.app.locals.secretKey, {
-                                            expiresIn: '30 days'
+                                            // expiresIn: '30 days'
+                                            expiresIn: 30 // 30 segundos
                                         }),
                                         // token: jwt.sign(userInfo, req.app.locals.secretKey, {
                                         //   expiresIn: '60 seconds'
                                         // }),
                                         refreshToken: jwt.sign(userInfo, req.app.locals.secretKey, {
-                                            expiresIn: '60 days'
+                                            expiresIn: 600 // 10 minutos
                                         }),
                                         iosVersion: '1.4.0',
                                         androidVersion: '2.1.6',
