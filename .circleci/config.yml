@@ -148,7 +148,7 @@ workflows:
           filters:
             branches:
               only:
-                - master
+                - feature/k8s
           context: prod
       - deploy-staging:
           requires:
@@ -156,5 +156,5 @@ workflows:
           filters:
             branches:
               only:
-                - feature/k8s
+                - develop
           context: stage
