@@ -36,8 +36,8 @@ html
       //- moment
       script(src=`/static${getVersionedPath('/js/vendor/moment/moment-with-locales.min.js')}`)
       //- React
-      script(src=`/static${getVersionedPath('/js/vendor/react/react.js')}`)
-      script(src=`/static${getVersionedPath('/js/vendor/react/react-dom.js')}`)
+      script(src=`/static${process.env.ENV == 'production' ? getVersionedPath('/js/vendor/react/react.min.js') : getVersionedPath('/js/vendor/react/react.js')}`)
+      script(src=`/static${process.env.ENV == 'production' ? getVersionedPath('/js/vendor/react/react-dom.min.js') : getVersionedPath('/js/vendor/react/react-dom.js')}`)
       //-  Sweetalert
       script(src=`/static${getVersionedPath('/js/vendor/sweetalert/sweetalert.min.js')}`)
       //- Bootstrap 3.3.7
