@@ -44,11 +44,11 @@ const App = () => (
                 <Route exact path="/inventory/:id/:tab/" component={ InventoryDetailView }/>
                 <Route exact path="/settings/users/" component={ UsersListView }/>
                 <Route exact path="/settings/cars/" component={ CarsListView }/>
+                <Route exact path="/settings/cars/import/" component={ ImportCarsView }/>
                 <Route exact path="/settings/cars/:id" component={ CarDetailView }/>
                 <Route exact path="/settings/labels/" component={ LabelsListView }/>
                 <Route exact path="/settings/venues/" component={ VenuesListView }/>
                 <Route exact path="/settings/companies/" component={ CompaniesListView }/>
-                <Route exact path="/settings/cars/import/" component={ ImportCarsView }/>
                 <Route exact path="/settings/alerts/" component={ AlertsViews }/>
                 <Route component={ NoMatch }/>
             </Switch>
