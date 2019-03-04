@@ -13,7 +13,12 @@ const MONGODB_URI: string = process.env.MONGODB_URI || '';
 
 // Mongoose connect
 (mongoose as any).Promise = bluebird;
-mongoose.connect(MONGODB_URI, {useMongoClient: true}, (err) => {
+mongoose.connect(MONGODB_URI, {
+  useMongoClient: true,
+  db: {
+    readPreference: 'nearest'
+  }
+}, (err) => {
   if (err) {
     /* istanbul ignore next */
     console.log('Unable to connect to the mongodb instance. Error: ', err);
@@ -44,7 +49,7 @@ const server = app.listen(parseInt(app.get('port'), 10) + NODE_APP_INSTANCE, () 
 export const io = socketIO(server);
 
 io.adapter(socketRedis({
-  host: process.env.REDIS_HOST ? process.env.REDIS_HOST : 'localhost',
+  host: process.env.REDIS_SERVICE_SERVICE_HOST ? process.env.REDIS_SERVICE_SERVICE_HOST : 'localhost',
   port: 6379
 }));
 

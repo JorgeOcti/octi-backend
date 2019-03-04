@@ -1,0 +1,37 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: osa-andes
+  labels:
+    name: osa-andes
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: osa-andes
+  strategy:
+    rollingUpdate:
+      maxSurge: 25%
+      maxUnavailable: 25%
+    type: RollingUpdate
+  template:
+    metadata:
+      labels:
+        app: osa-andes
+    spec:
+      containers:
+      - image: gcr.io/durable-timing-221813/osa-andes:latest
+        name: osa-andes
+        command: [ "pm2", "start", "pm2.json", "--no-daemon" ]
+        resources:
+          requests:
+            cpu: 100m
+            memory: 200Mi
+          limits:
+            cpu: 200m
+            memory: 300Mi
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 3000
+          name: osa-andes
+      dnsPolicy: ClusterFirst

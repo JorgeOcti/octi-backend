@@ -1,34 +1,31 @@
-FROM node:9.11-jessie
+FROM node:9.11-alpine
 
 LABEL maintainer = "gmunoz@osacontrol.com"
 
-# create directories
-RUN mkdir -p /srv/app
-RUN mkdir -p /srv/logs
-RUN mkdir -p /srv/public
-RUN mkdir -p /srv/views
+WORKDIR /srv
 
-WORKDIR /srv/app
-
-# copy files and directories
-COPY ./dist/ ./
-COPY ./views/ ../views
-COPY ./public/ ../public
-COPY ./.env ../
-COPY ./ses-config.json ../
-COPY ./package.json ./
+COPY . /srv
 
 # install requirements
-RUN apt-get update && apt-get upgrade -y && apt-get install -y \
-    python
+RUN apk add --no-cache make gcc g++ python && \
+  npm --unsafe-perm install && \
+  apk del make gcc g++ python
 
-# install node packages
-RUN npm  --unsafe-perm  install
+RUN npm i -g pm2
 
 # port to expose
+RUN npm run build
+
+RUN touch s3-config.json
+RUN echo "{}" >>s3-config.json
+RUN touch ses-config.json
+RUN echo "{}" >>ses-config.json
+
 EXPOSE 3000
 
-# CMD pm2 start --no-daemon  pm2.json
-
 # run app
-CMD ["node", "server.js"]
+
+# run watch app
+# CMD ["npm", "run", "watch-ts"]
+# CMD ["node", "dist/server.js"]
+CMD [ "pm2", "start", "pm2.json", "--no-daemon" ]

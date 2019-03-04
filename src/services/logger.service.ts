@@ -53,22 +53,23 @@ class LoggerService {
   }
 
   /* istanbul ignore next */
-  private now(): moment.Moment {
-    return moment();
+  private now(): string {
+    // return moment();
+    return moment().utc().format('DD/MMM/YYYY:HH:mm:ss ZZ');
   }
 
   /* istanbul ignore next */
   private logger(type: string, env: string, message: string) {
     if (this.env === env) {
       this.message = message;
-      console.log(`${this.colors.brightBlack}${type} ${this.now()}:${this.colors.reset} ${this.message}`);
+      console.log(`${this.colors.brightBlack}[${this.now()}] [${type}] :${this.colors.reset} ${this.message}`);
       this.writeLog(type);
     }
   }
 
   /* istanbul ignore next */
   private writeLog(type: string) {
-    accessLogStream.write(`${type} [${this.now()}] ${this.message} \n`);
+    accessLogStream.write(`[${this.now()}] [${type}]: ${this.message} \n`);
   }
 }
 

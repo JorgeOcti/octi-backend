@@ -42,19 +42,20 @@ class LoggerService {
     }
     /* istanbul ignore next */
     now() {
-        return moment();
+        // return moment();
+        return moment().utc().format('DD/MMM/YYYY:HH:mm:ss ZZ');
     }
     /* istanbul ignore next */
     logger(type, env, message) {
         if (this.env === env) {
             this.message = message;
-            console.log(`${this.colors.brightBlack}${type} ${this.now()}:${this.colors.reset} ${this.message}`);
+            console.log(`${this.colors.brightBlack}[${this.now()}] [${type}] :${this.colors.reset} ${this.message}`);
             this.writeLog(type);
         }
     }
     /* istanbul ignore next */
     writeLog(type) {
-        app_1.accessLogStream.write(`${type} [${this.now()}] ${this.message} \n`);
+        app_1.accessLogStream.write(`[${this.now()}] [${type}]: ${this.message} \n`);
     }
 }
 exports.default = new LoggerService();
