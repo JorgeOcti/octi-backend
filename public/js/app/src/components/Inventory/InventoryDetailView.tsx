@@ -529,7 +529,7 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
             <span className="caret"/>
             <span className="sr-only">Toggle Dropdown</span>
           </button>
-          <ul className="dropdown-menu dropdown-menu-right" role="menu">
+          <ul className="dropdown-menu dropdown-menu-right dropdown-menu-scrollable" role="menu">
             {
               options.map((option) => {
                 return (
