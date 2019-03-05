@@ -156,5 +156,5 @@ workflows:
           filters:
             branches:
               only:
-                - feature/k8s
+                - develop
           context: stage
