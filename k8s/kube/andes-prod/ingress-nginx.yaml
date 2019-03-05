@@ -1,0 +1,17 @@
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: api-ingress-andes
+  namespace: andes-prod
+  annotations:
+    kubernetes.io/ingress.class: "nginx"
+    nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
+spec:
+  rules:
+  - host: andes-prod-k8s.osacontrol.com
+    http:
+      paths:
+      - backend:
+          serviceName: osa-andes-service
+          servicePort: 3030
+        path: /
