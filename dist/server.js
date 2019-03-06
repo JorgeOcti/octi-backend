@@ -1,7 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 const bluebird = require("bluebird");
-const cp = require("console-probe");
+// import * as cp from 'console-probe';
 const jwt = require("jsonwebtoken");
 const mongoose = require("mongoose");
 const socketIO = require("socket.io");
@@ -82,10 +82,11 @@ exports.io.use(async (socket, next) => {
 });
 /* istanbul ignore next */
 exports.io.on('connection', async (socket) => {
-    console.log('---------------------');
-    console.log('A user connected');
-    console.log('socket.id', socket.id);
-    cp.json(socket.user);
+    logger_service_1.default.info(`socket.connection: {user: ${JSON.stringify(socket.user)}}`);
+    // console.log('---------------------');
+    // console.log('A user connected');
+    // console.log('socket.id', socket.id);
+    // cp.json((socket as any).user);
     socket.on('join', (data) => {
         const { room } = data;
         redis_service_1.default.get(room, async (error, result) => {
@@ -112,7 +113,7 @@ exports.io.on('connection', async (socket) => {
                 };
                 redis_service_1.default.setex(room, 60 * 60 * 24, JSON.stringify(data));
             }
-            console.log(`join ${room}`);
+            logger_service_1.default.info(`socket.join.${room}: {user: ${JSON.stringify(socket.user)}}`);
             socket.join(room);
             exports.io.to(room).emit('USERS_IN_CHANNEL', data);
         });
@@ -130,14 +131,15 @@ exports.io.on('connection', async (socket) => {
                 }
             }
             exports.io.to(room).emit('USERS_IN_CHANNEL', data);
-            console.log(`leave ${room}`);
+            logger_service_1.default.info(`socket.leave.${room}: {user: ${JSON.stringify(socket.user)}}`);
             socket.leave(room);
         });
     });
     socket.on('disconnect', () => {
-        console.log('---------------------');
-        console.log('user disconnected');
-        cp.json(socket.user);
+        logger_service_1.default.info(`socket.disconnect: {user: ${JSON.stringify(socket.user)}}`);
+        // console.log('---------------------');
+        // console.log('user disconnected');
+        // cp.json((socket as any).user);
         // io.emit('user disconnected');
     });
 });

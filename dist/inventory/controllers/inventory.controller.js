@@ -158,6 +158,12 @@ class InventoryController {
         }
         catch (e) {
             /* istanbul ignore next */
+            logger_service_1.default.error(`create: Async Error.`);
+            /* istanbul ignore next */
+            logger_service_1.default.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
+            /* istanbul ignore next */
+            logger_service_1.default.error(e);
+            /* istanbul ignore next */
             res.status(400).json({
                 message: e,
                 status: 400
@@ -302,7 +308,11 @@ class InventoryController {
         }
         catch (e) {
             /* istanbul ignore next */
-            console.log(e);
+            logger_service_1.default.error(`list: Async Error.`);
+            /* istanbul ignore next */
+            logger_service_1.default.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
+            /* istanbul ignore next */
+            logger_service_1.default.error(e);
             /* istanbul ignore next */
             res.status(400).json({
                 message: e,
@@ -370,8 +380,8 @@ class InventoryController {
                     });
                 }
                 else {
-                    logger_service_1.default.info(`apiDetail: No se ha encontrado el inventario solicitado.`);
-                    logger_service_1.default.info(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
+                    logger_service_1.default.error(`apiDetail: No se ha encontrado el inventario solicitado.`);
+                    logger_service_1.default.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
                     res.status(404).json({
                         message: 'No se ha encontrado el inventario solicitado.',
                         status: 404
@@ -380,7 +390,12 @@ class InventoryController {
             }
         }
         catch (e) {
-            console.log(e);
+            /* istanbul ignore next */
+            logger_service_1.default.error(`apiDetail: Async Error.`);
+            /* istanbul ignore next */
+            logger_service_1.default.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
+            /* istanbul ignore next */
+            logger_service_1.default.error(e);
             /* istanbul ignore next */
             res.status(400).json(e);
         }
@@ -468,15 +483,19 @@ class InventoryController {
                 });
             }
             catch (e) {
-                logger_service_1.default.info(`uploadFile: Error procesing image.`);
-                logger_service_1.default.info(`{user: {_id: ${req.user._id}, email: ${req.user.email}}, error: ${e}}`);
+                /* istanbul ignore next */
+                logger_service_1.default.error(`uploadFile: Async Error.`);
+                /* istanbul ignore next */
+                logger_service_1.default.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
+                /* istanbul ignore next */
+                logger_service_1.default.error(e);
                 /* istanbul ignore next */
                 res.status(400).json(e);
             }
         }
         else {
-            logger_service_1.default.info(`uploadFile: La imagen es obligatoria.`);
-            logger_service_1.default.info(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
+            logger_service_1.default.error(`uploadFile: La imagen es obligatoria.`);
+            logger_service_1.default.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
             /* istanbul ignore next */
             res.status(400).json({
                 message: 'La imagen es obligatoria.',
@@ -521,8 +540,8 @@ class InventoryController {
                         }
                     });
                     if (inventoriedCar) {
-                        logger_service_1.default.info(`apiFoundCar: Este vehículo ya ha sido inventariado`);
-                        logger_service_1.default.info(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
+                        logger_service_1.default.error(`apiFoundCar: Este vehículo ya ha sido inventariado`);
+                        logger_service_1.default.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
                         res.status(400).json({
                             message: 'Este vehículo ya ha sido inventariado',
                             status: 400
@@ -553,8 +572,8 @@ class InventoryController {
                             });
                         }
                         else {
-                            logger_service_1.default.info(`apiFoundCar: Este vehículo no se encuentra en el inventario.`);
-                            logger_service_1.default.info(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
+                            logger_service_1.default.error(`apiFoundCar: Este vehículo no se encuentra en el inventario.`);
+                            logger_service_1.default.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
                             res.status(400).json({
                                 message: 'Este vehículo no se encuentra en el inventario.',
                                 status: 400
@@ -564,8 +583,8 @@ class InventoryController {
                 }
                 else {
                     // if car no exist
-                    logger_service_1.default.info(`apiFoundCar: Este vehículo no se encuentra en el inventario.`);
-                    logger_service_1.default.info(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
+                    logger_service_1.default.error(`apiFoundCar: Este vehículo no se encuentra en el inventario.`);
+                    logger_service_1.default.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
                     res.status(400).json({
                         message: 'Este vehículo no se encuentra en el inventario.',
                         status: 400
@@ -574,8 +593,8 @@ class InventoryController {
             }
             else {
                 // if inventory no exist
-                logger_service_1.default.info(`apiFoundCar: Este inventario no existe o ya no se encuentra activo.`);
-                logger_service_1.default.info(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
+                logger_service_1.default.error(`apiFoundCar: Este inventario no existe o ya no se encuentra activo.`);
+                logger_service_1.default.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
                 res.status(404).json({
                     message: 'Este inventario no existe o ya no se encuentra activo.',
                     status: 404
@@ -584,9 +603,11 @@ class InventoryController {
         }
         catch (e) {
             /* istanbul ignore next */
-            logger_service_1.default.info(`apiFoundCar: Async Error.`);
-            logger_service_1.default.info(`{user: {_id: ${req.user._id}, email: ${req.user.email}}, error: ${e}}`);
-            console.log(e);
+            logger_service_1.default.error(`apiFoundCar: Async Error.`);
+            /* istanbul ignore next */
+            logger_service_1.default.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}, error: ${e}}`);
+            /* istanbul ignore next */
+            logger_service_1.default.error(e);
             /* istanbul ignore next */
             res.status(400).json({
                 message: e,
@@ -619,6 +640,8 @@ class InventoryController {
                 });
             }
             else {
+                logger_service_1.default.error(`finishInventory: No se ha encontrado el inventario`);
+                logger_service_1.default.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
                 res.status(400).json({
                     message: 'No se ha encontrado el inventario',
                     status: 400
@@ -627,7 +650,11 @@ class InventoryController {
         }
         catch (e) {
             /* istanbul ignore next */
-            console.log('e', e);
+            logger_service_1.default.error(`finishInventory: Async Error.`);
+            /* istanbul ignore next */
+            logger_service_1.default.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
+            /* istanbul ignore next */
+            logger_service_1.default.error(e);
             /* istanbul ignore next */
             res.status(400).json({
                 message: 'Ha ocurrido un error',
@@ -660,6 +687,8 @@ class InventoryController {
                 });
             }
             else {
+                logger_service_1.default.error(`deleteInventory: No se ha encontrado el inventario`);
+                logger_service_1.default.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
                 res.status(400).json({
                     message: 'No se ha encontrado el inventario',
                     status: 400
@@ -668,7 +697,11 @@ class InventoryController {
         }
         catch (e) {
             /* istanbul ignore next */
-            console.log('e', e);
+            logger_service_1.default.error(`deleteInventory: Async Error.`);
+            /* istanbul ignore next */
+            logger_service_1.default.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
+            /* istanbul ignore next */
+            logger_service_1.default.error(e);
             /* istanbul ignore next */
             res.status(400).json({
                 message: 'Ha ocurrido un error',
@@ -713,7 +746,11 @@ class InventoryController {
         }
         catch (e) {
             /* istanbul ignore next */
-            console.log('e', e);
+            logger_service_1.default.error(`addComment: Async Error.`);
+            /* istanbul ignore next */
+            logger_service_1.default.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
+            /* istanbul ignore next */
+            logger_service_1.default.error(e);
             /* istanbul ignore next */
             res.status(400).json({
                 message: 'Ha ocurrido un error',
@@ -852,6 +889,8 @@ class InventoryController {
                 archive.finalize();
             }
             else {
+                logger_service_1.default.error(`downloadImages: 'No se ha encontrado el inventario.`);
+                logger_service_1.default.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
                 res.status(404).json({
                     message: 'No se ha encontrado el inventario.',
                     status: 404
@@ -860,7 +899,11 @@ class InventoryController {
         }
         catch (e) {
             /* istanbul ignore next */
-            console.log(e);
+            logger_service_1.default.error(`downloadImages: Async Error.`);
+            /* istanbul ignore next */
+            logger_service_1.default.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
+            /* istanbul ignore next */
+            logger_service_1.default.error(e);
             /* istanbul ignore next */
             res.status(400).json({
                 message: e,
@@ -934,8 +977,8 @@ class InventoryController {
                 });
             }
             else {
-                logger_service_1.default.info(`reportCar: Este inventario ya no se encuentra disponible.`);
-                logger_service_1.default.info(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
+                logger_service_1.default.error(`reportCar: Este inventario ya no se encuentra disponible.`);
+                logger_service_1.default.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
                 res.status(404).json({
                     message: 'Este inventario ya no se encuentra disponible.',
                     status: 404
@@ -943,10 +986,12 @@ class InventoryController {
             }
         }
         catch (e) {
-            logger_service_1.default.info(`reportCar: Async Error.`);
-            logger_service_1.default.info(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
             /* istanbul ignore next */
-            console.log(e);
+            logger_service_1.default.error(`reportCar: Async Error.`);
+            /* istanbul ignore next */
+            logger_service_1.default.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
+            /* istanbul ignore next */
+            logger_service_1.default.error(e);
             /* istanbul ignore next */
             res.status(400).json({
                 message: e,
@@ -958,6 +1003,8 @@ class InventoryController {
         const { team } = req.user;
         const { id } = req.params;
         const { car, label, custom, carID } = req.body;
+        logger_service_1.default.info(`setLabel`);
+        logger_service_1.default.info(`{user: {_id: ${req.user._id}, email: ${req.user.email}}, body: ${JSON.stringify(req.body)}, params: ${req.params}}`);
         try {
             const newLabel = await inventoryLabel_model_1.default.findOne({
                 _id: label,
@@ -1001,7 +1048,11 @@ class InventoryController {
         }
         catch (e) {
             /* istanbul ignore next */
-            console.log(e);
+            logger_service_1.default.error(`setLabel: Async Error.`);
+            /* istanbul ignore next */
+            logger_service_1.default.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
+            /* istanbul ignore next */
+            logger_service_1.default.error(e);
             /* istanbul ignore next */
             res.status(400).json({
                 message: e,
@@ -1032,8 +1083,8 @@ class InventoryController {
                 });
             }
             else {
-                logger_service_1.default.info(`apiList: Usuario no encontrado`);
-                logger_service_1.default.info(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
+                logger_service_1.default.error(`apiList: Usuario no encontrado`);
+                logger_service_1.default.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
                 /* istanbul ignore next */
                 res.status(400).json({
                     message: 'Usuario no encontrado',
@@ -1042,8 +1093,12 @@ class InventoryController {
             }
         }
         catch (e) {
-            logger_service_1.default.info(`apiList: Async Error`);
-            logger_service_1.default.info(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
+            /* istanbul ignore next */
+            logger_service_1.default.error(`apiList: Async Error.`);
+            /* istanbul ignore next */
+            logger_service_1.default.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
+            /* istanbul ignore next */
+            logger_service_1.default.error(e);
             /* istanbul ignore next */
             res.status(400).json({
                 message: e,
@@ -1428,7 +1483,11 @@ class InventoryController {
         }
         catch (e) {
             /* istanbul ignore next */
-            console.log(e);
+            logger_service_1.default.error(`detaill: Async Error.`);
+            /* istanbul ignore next */
+            logger_service_1.default.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
+            /* istanbul ignore next */
+            logger_service_1.default.error(e);
             /* istanbul ignore next */
             res.status(400).json({
                 message: e,

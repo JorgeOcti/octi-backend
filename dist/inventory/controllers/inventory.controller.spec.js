@@ -208,8 +208,8 @@ describe('inventories', () => {
             images: []
         })
             .end((err, res) => {
-            expect(res.status).to.equal(400);
-            expect(res.body.status).to.equal(400);
+            expect(res.status).to.equal(404);
+            expect(res.body.status).to.equal(404);
             done();
         });
     });
@@ -279,7 +279,7 @@ describe('inventories', () => {
             images: []
         })
             .end((err, res) => {
-            expect(res.status).to.equal(400);
+            expect(res.status).to.equal(404);
             done();
         });
     });

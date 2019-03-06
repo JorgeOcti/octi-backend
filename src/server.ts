@@ -1,5 +1,5 @@
 import * as bluebird from 'bluebird';
-import * as cp from 'console-probe';
+// import * as cp from 'console-probe';
 import * as jwt from 'jsonwebtoken';
 import * as mongoose from 'mongoose';
 import * as socketIO from 'socket.io';
@@ -87,10 +87,11 @@ io.use( async (socket, next) => {
 
 /* istanbul ignore next */
 io.on( 'connection', async ( socket ) => {
-  console.log('---------------------');
-  console.log('A user connected');
-  console.log('socket.id', socket.id);
-  cp.json((socket as any).user);
+  logger.info(`socket.connection: {user: ${JSON.stringify((socket as any).user)}}`);
+  // console.log('---------------------');
+  // console.log('A user connected');
+  // console.log('socket.id', socket.id);
+  // cp.json((socket as any).user);
 
   socket.on('join', (data) => {
     const {room} = data;
@@ -117,7 +118,7 @@ io.on( 'connection', async ( socket ) => {
         };
         redisClient.setex(room, 60 * 60 * 24, JSON.stringify(data));
       }
-      console.log(`join ${room}`);
+      logger.info(`socket.join.${room}: {user: ${JSON.stringify((socket as any).user)}}`);
       socket.join(room);
       io.to(room).emit('USERS_IN_CHANNEL', data);
     });
@@ -136,15 +137,16 @@ io.on( 'connection', async ( socket ) => {
         }
       }
       io.to(room).emit('USERS_IN_CHANNEL', data);
-      console.log(`leave ${room}`);
+      logger.info(`socket.leave.${room}: {user: ${JSON.stringify((socket as any).user)}}`);
       socket.leave(room);
     });
   });
 
   socket.on('disconnect',  () => {
-    console.log('---------------------');
-    console.log('user disconnected');
-    cp.json((socket as any).user);
+    logger.info(`socket.disconnect: {user: ${JSON.stringify((socket as any).user)}}`);
+    // console.log('---------------------');
+    // console.log('user disconnected');
+    // cp.json((socket as any).user);
     // io.emit('user disconnected');
   });
 });

@@ -35,21 +35,22 @@ class LoggerService {
   }
 
   public info(message: string): void {
-    this.logger('INFO', 'production', message);
-    this.logger('INFO', 'development', message);
+    this.logger('INFO', 'production', message, this.colors.brightBlack);
+    this.logger('INFO', 'development', message, this.colors.brightBlack);
   }
 
   /* istanbul ignore next */
-  public debbug(message: string): void {
-    this.logger('DEBUG', 'development', message);
+  public debug(message: string): void {
+    this.logger('DEBUG', 'development', message, this.colors.cyan);
   }
 
   /* istanbul ignore next */
-  public error(message: string): void {
-    this.message = message;
-    Raven.captureException(new Error(this.message));
-    console.log(`${this.colors.red}ERROR $\{this.colors.brightBlack}${this.now()}: ${this.colors.reset} ${message}${this.colors.reset}`);
-    this.writeLog('ERROR');
+  public error(message: string, propagate?: boolean): void {
+    if (propagate) {
+      Raven.captureException(new Error(this.message));
+    }
+    this.logger('ERROR', 'production', message, this.colors.brighRed);
+    this.logger('ERROR', 'development', message, this.colors.brighRed);
   }
 
   /* istanbul ignore next */
@@ -59,10 +60,10 @@ class LoggerService {
   }
 
   /* istanbul ignore next */
-  private logger(type: string, env: string, message: string) {
+  private logger(type: string, env: string, message: string, color: string) {
     if (this.env === env) {
       this.message = message;
-      console.log(`${this.colors.brightBlack}[${this.now()}] [${type}] :${this.colors.reset} ${this.message}`);
+      console.log(`${color}[${this.now()}] [${type}]:${this.colors.reset} ${this.message}`);
       this.writeLog(type);
     }
   }

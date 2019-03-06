@@ -9,6 +9,7 @@ import InventoryModel, {ChoicesStatusInventory} from '../../inventory/models/inv
 import {ChoicesStatusCarInventory} from '../../inventory/models/inventoryCar.model';
 import VINService from '../../services/vin.service';
 import CarModel, {ChoicesStatusCar, ICarModel} from '../models/car.model';
+import logger from "../../services/logger.service";
 
 class CarController {
   protected carBrands: any = {
@@ -110,6 +111,8 @@ class CarController {
     const {inventory} = req.body;
     // const {multi} = req.query;
     const {team, company} = req.user;
+    logger.info(`checkVIN`);
+    logger.info(`{user: {_id: ${req.user._id}, email: ${req.user.email}}, body: ${JSON.stringify(req.body)}}`);
     /*
       {
         $group: {
@@ -124,6 +127,7 @@ class CarController {
     */
     if (vin) {
       vin = vin.replace(/[\W_]+/g, '');
+      logger.info(`VIN fixed: ${vin}`);
     }
     if (inventory) {
       try {
@@ -131,6 +135,8 @@ class CarController {
             _id: inventory
         }, {status: true});
         if (inventoryStatus && inventoryStatus.status !== ChoicesStatusInventory.inProcess) {
+          logger.error(`checkVIN: Este inventario ya no se encuentra disponible.`);
+          logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
           res.status(404).json({
             message: 'Este inventario ya no se encuentra disponible.',
             status: 404
@@ -203,18 +209,24 @@ class CarController {
                   status: 200
                 });
               } else {
+                logger.error(`checkVIN: VIN no válido.`);
+                logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
                 res.status(400).json({
                   message: 'VIN no válido.',
                   status: 400
                 });
               }
             } else {
+              logger.error(`checkVIN: Este inventario ya no se encuentra disponible.`);
+              logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
               res.status(404).json({
                 message: 'Este inventario ya no se encuentra disponible.',
                 status: 404
               });
             }
           } else {
+            logger.error(`checkVIN: VIN no válido.`);
+            logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
             res.status(400).json({
               message: 'VIN no válido.',
               status: 400
@@ -224,6 +236,12 @@ class CarController {
       } catch (e) {
         /* istanbul ignore next */
         if (e) {
+          /* istanbul ignore next */
+          logger.error(`checkVIN: Async Error.`);
+          /* istanbul ignore next */
+          logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
+          /* istanbul ignore next */
+          logger.error(e);
           res.status(500).json(e);
         }
       }
@@ -291,6 +309,8 @@ class CarController {
               status: 200
             });
           } else {
+            logger.error(`checkVIN: VIN no encontrado.`);
+            logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
             res.status(400).json({
               message: 'VIN no encontrado.',
               status: 400
@@ -299,10 +319,18 @@ class CarController {
         } catch (e) {
           /* istanbul ignore next */
           if (e) {
+            /* istanbul ignore next */
+            logger.error(`checkVIN: Async Error.`);
+            /* istanbul ignore next */
+            logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
+            /* istanbul ignore next */
+            logger.error(e);
             res.status(500).send(e);
           }
         }
       } else {
+        logger.error(`checkVIN: VIN no encontrado.`);
+        logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
         res.status(400).json({
           message: 'VIN no encontrado.',
           status: 400

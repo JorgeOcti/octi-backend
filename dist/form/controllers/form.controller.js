@@ -10,6 +10,7 @@ const user_model_1 = require("../../app/models/user.model");
 const user_model_2 = require("../../app/models/user.model");
 const venue_model_1 = require("../../app/models/venue.model");
 const server_1 = require("../../server");
+const logger_service_1 = require("../../services/logger.service");
 const redis_service_1 = require("../../services/redis.service");
 const general_utils_1 = require("../../utils/general.utils");
 const form_model_1 = require("../models/form.model");
@@ -616,13 +617,17 @@ class FormController {
                     });
                 }
                 else {
+                    logger_service_1.default.error(`changePreferred: Formulario no encontrado`);
+                    logger_service_1.default.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
                     res.status(400).json({
-                        message: 'Formualrio no encontrado',
+                        message: 'Formulario no encontrado',
                         status: 400
                     });
                 }
             }
             else {
+                logger_service_1.default.error(`changePreferred: Usuario no encontrado`);
+                logger_service_1.default.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
                 res.status(400).json({
                     message: 'Usuario no encontrado',
                     status: 400
@@ -630,6 +635,12 @@ class FormController {
             }
         }
         catch (e) {
+            /* istanbul ignore next */
+            logger_service_1.default.error(`changePreferred: Async Error.`);
+            /* istanbul ignore next */
+            logger_service_1.default.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
+            /* istanbul ignore next */
+            logger_service_1.default.error(e);
             res.status(400).json({
                 message: 'Ha ocurrido un error',
                 status: 400

@@ -10,6 +10,7 @@ import User from '../../app/models/user.model';
 import Venue from '../../app/models/venue.model';
 import {IAnyObject, IRequest} from '../../interfaces/global.interface';
 import {io} from '../../server';
+import logger from '../../services/logger.service';
 import redisClient from '../../services/redis.service';
 import GeneralUtils from '../../utils/general.utils';
 import FormModel, {IFormModel} from '../models/form.model';
@@ -627,18 +628,28 @@ class FormController {
             status: 200
           });
         } else {
+          logger.error(`changePreferred: Formulario no encontrado`);
+          logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
           res.status(400).json({
-            message: 'Formualrio no encontrado',
+            message: 'Formulario no encontrado',
             status: 400
           });
         }
       } else {
+        logger.error(`changePreferred: Usuario no encontrado`);
+        logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
         res.status(400).json({
           message: 'Usuario no encontrado',
           status: 400
         });
       }
     } catch (e) {
+      /* istanbul ignore next */
+      logger.error(`changePreferred: Async Error.`);
+      /* istanbul ignore next */
+      logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
+      /* istanbul ignore next */
+      logger.error(e);
       res.status(400).json({
         message: 'Ha ocurrido un error',
         status: 400

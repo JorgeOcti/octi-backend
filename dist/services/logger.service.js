@@ -26,19 +26,20 @@ class LoggerService {
         };
     }
     info(message) {
-        this.logger('INFO', 'production', message);
-        this.logger('INFO', 'development', message);
+        this.logger('INFO', 'production', message, this.colors.brightBlack);
+        this.logger('INFO', 'development', message, this.colors.brightBlack);
     }
     /* istanbul ignore next */
-    debbug(message) {
-        this.logger('DEBUG', 'development', message);
+    debug(message) {
+        this.logger('DEBUG', 'development', message, this.colors.cyan);
     }
     /* istanbul ignore next */
-    error(message) {
-        this.message = message;
-        Raven.captureException(new Error(this.message));
-        console.log(`${this.colors.red}ERROR $\{this.colors.brightBlack}${this.now()}: ${this.colors.reset} ${message}${this.colors.reset}`);
-        this.writeLog('ERROR');
+    error(message, propagate) {
+        if (propagate) {
+            Raven.captureException(new Error(this.message));
+        }
+        this.logger('ERROR', 'production', message, this.colors.brighRed);
+        this.logger('ERROR', 'development', message, this.colors.brighRed);
     }
     /* istanbul ignore next */
     now() {
@@ -46,10 +47,10 @@ class LoggerService {
         return moment().utc().format('DD/MMM/YYYY:HH:mm:ss ZZ');
     }
     /* istanbul ignore next */
-    logger(type, env, message) {
+    logger(type, env, message, color) {
         if (this.env === env) {
             this.message = message;
-            console.log(`${this.colors.brightBlack}[${this.now()}] [${type}] :${this.colors.reset} ${this.message}`);
+            console.log(`${color}[${this.now()}] [${type}]:${this.colors.reset} ${this.message}`);
             this.writeLog(type);
         }
     }
