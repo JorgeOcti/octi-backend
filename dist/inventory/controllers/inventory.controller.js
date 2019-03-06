@@ -313,6 +313,8 @@ class InventoryController {
     async apiDetail(req, res) {
         const { team } = req.user;
         const { id } = req.params;
+        logger_service_1.default.info(`apiDetail`);
+        logger_service_1.default.info(`{user: {_id: ${req.user._id}, email: ${req.user.email}}, inventory: ${id}}`);
         try {
             const updatedUser = await user_model_1.default.findById(req.user._id);
             if (!updatedUser) {
@@ -422,6 +424,8 @@ class InventoryController {
     async uploadFile(req, res) {
         const { id } = req.params;
         const { team, venue, company } = req.user;
+        logger_service_1.default.info(`uploadFile`);
+        logger_service_1.default.info(`{user: {_id: ${req.user._id}, email: ${req.user.email}}, inventory: ${id}}`);
         if (req.file) {
             const file = req.file;
             try {
@@ -444,6 +448,7 @@ class InventoryController {
                 file.team = team._id;
                 file.venue = venue._id;
                 file.inventory = id;
+                inventoryFile.inventory = id;
                 inventoryFile.user = req.user._id;
                 inventoryFile.company = company._id;
                 // fix exif
@@ -483,6 +488,8 @@ class InventoryController {
         const { team } = req.user;
         const { id } = req.params;
         const { vin, images } = req.body;
+        logger_service_1.default.info(`apiFoundCar`);
+        logger_service_1.default.info(`{user: {_id: ${req.user._id}, email: ${req.user.email}}, body: ${JSON.stringify(req.body)}}`);
         try {
             const updatedUser = await user_model_1.default.findById(req.user._id).populate([{
                     path: 'venue',
@@ -865,6 +872,8 @@ class InventoryController {
         const { team, company } = req.user;
         const { id } = req.params;
         const { vin, denomination, brand, color, images } = req.body;
+        logger_service_1.default.info(`reportCar`);
+        logger_service_1.default.info(`{user: {_id: ${req.user._id}, email: ${req.user.email}}, body: ${JSON.stringify(req.body)}}`);
         try {
             const updatedUser = await user_model_1.default.findById(req.user._id).populate([{
                     path: 'venue',
@@ -1002,6 +1011,8 @@ class InventoryController {
     }
     async apiList(req, res) {
         const { team } = req.user;
+        logger_service_1.default.info(`apiList`);
+        logger_service_1.default.info(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
         try {
             const updatedUser = await user_model_1.default.findById(req.user._id);
             if (updatedUser) {
