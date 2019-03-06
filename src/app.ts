@@ -225,7 +225,7 @@ if (app.get('env') !== 'testing') {
   app.use(morgan('[:date[clf]] [INFO]: :remote-addr - :remote-user ":method :url HTTP/:http-version" :status :res[content-length] ":referrer" ":user-agent" :response-time', {
     stream: accessLogStream
   }));
-  app.use(morgan('[:date[clf]] :remote-addr :method :url :status :response-time ms - :res[content-length]'));
+  app.use(morgan('[:date[clf]] [INFO]: :remote-addr :method :url :status :response-time ms - :res[content-length]'));
 }
 
 // The request handler must be the first middleware on the app

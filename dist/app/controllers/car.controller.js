@@ -249,10 +249,10 @@ class CarController {
         else {
             if (vin) {
                 try {
-                    const testDecode = vin_service_1.default.decode(vin);
                     /* istanbul ignore next */
                     if (app_1.default.get('env') !== 'testing') {
-                        console.log('vin', testDecode);
+                        const testDecode = vin_service_1.default.decode(vin);
+                        logger_service_1.default.info(`vin decode ${JSON.stringify(testDecode)}`);
                     }
                     const indexBrand = vin.slice(0, 3);
                     vin2 = vin.substr(vin.length - 6);

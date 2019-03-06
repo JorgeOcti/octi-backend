@@ -20,8 +20,9 @@ class JWTController {
   }
 
   public login(req: Request, res: Response) {
+    logger.info(`login: {username: ${req.body.username}`);
     if (req.body.username === null || req.body.username === undefined || req.body.password === null || req.body.password === undefined) {
-      logger.info(`login: Authentication failed. Invalid user or password.`);
+      logger.error(`login: Authentication failed. Invalid user or password.`);
       res.status(401).json({message: 'Authentication failed. Invalid user or password.'});
     } else {
       User
@@ -63,13 +64,13 @@ class JWTController {
             res.status(500).send(err);
           }
           if (!user || !user.comparePasswordSync(req.body.password)) {
-            logger.info(`login: Authentication failed. Invalid user or password.`);
+            logger.error(`login: Authentication failed. Invalid user or password.`);
             res.status(401).json({
               message: 'Authentication failed. Invalid user or password.',
               status: 401
             });
           } else if (!user.active) {
-            logger.info(`login: User is inactive`);
+            logger.error(`login: User is inactive`);
             res.status(401).json({
               message: 'User is inactive',
               status: 401
@@ -141,8 +142,8 @@ class JWTController {
   public token(req: Request, res: Response) {
     const {refreshToken} = req.body;
     if (!refreshToken) {
-      logger.info(`token: refresh token is required`);
-      logger.info(`{body: ${req.body}, headers: ${JSON.stringify(req.headers)}}`);
+      logger.error(`token: refresh token is required`);
+      logger.error(`{body: ${req.body}, headers: ${JSON.stringify(req.headers)}}`);
       res.status(400).json({
         message: 'refresh token is required',
         status: 400
@@ -150,7 +151,7 @@ class JWTController {
     } else {
       jwt.verify(refreshToken, req.app.locals.secretKey, (err: any, decode: any) => {
         if (err) {
-          logger.info(`token: JWT error`);
+          logger.error(`token: JWT error`);
           res.status(401).json({
             message: err.message,
             status: 401
@@ -192,13 +193,13 @@ class JWTController {
                 /* istanbul ignore next */
                 res.status(500).json(err);
               } else if (!user) {
-                logger.info(`token: User not found`);
+                logger.error(`token: User not found`);
                 res.status(401).json({
                   message: 'User not found',
                   status: 401
                 });
               } else if (!user.active) {
-                logger.info(`token: User is inactive`);
+                logger.error(`token: User is inactive`);
                 res.status(401).json({
                   message: 'User is inactive',
                   status: 401
@@ -207,7 +208,7 @@ class JWTController {
                 user.lastLogin = new Date();
                 user.save( (err: any) => {
                   if (err) {
-                    logger.info(`token: Save user`);
+                    logger.error(`token: Save user`);
                     /* istanbul ignore next */
                     res.status(500).json(err);
                   } else {

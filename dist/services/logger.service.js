@@ -22,7 +22,8 @@ class LoggerService {
             brighCyan: '\x1b[96m',
             red: '\x1b[31m',
             brighRed: '\x1b[91m',
-            white: '\x1b[37m'
+            white: '\x1b[37m',
+            brighwhite: '\x1b[97m'
         };
     }
     info(message) {

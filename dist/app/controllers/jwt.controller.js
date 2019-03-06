@@ -17,8 +17,9 @@ class JWTController {
         this.forgotPassword = this.forgotPassword.bind(this);
     }
     login(req, res) {
+        logger_service_1.default.info(`login: {username: ${req.body.username}`);
         if (req.body.username === null || req.body.username === undefined || req.body.password === null || req.body.password === undefined) {
-            logger_service_1.default.info(`login: Authentication failed. Invalid user or password.`);
+            logger_service_1.default.error(`login: Authentication failed. Invalid user or password.`);
             res.status(401).json({ message: 'Authentication failed. Invalid user or password.' });
         }
         else {
@@ -61,14 +62,14 @@ class JWTController {
                     res.status(500).send(err);
                 }
                 if (!user || !user.comparePasswordSync(req.body.password)) {
-                    logger_service_1.default.info(`login: Authentication failed. Invalid user or password.`);
+                    logger_service_1.default.error(`login: Authentication failed. Invalid user or password.`);
                     res.status(401).json({
                         message: 'Authentication failed. Invalid user or password.',
                         status: 401
                     });
                 }
                 else if (!user.active) {
-                    logger_service_1.default.info(`login: User is inactive`);
+                    logger_service_1.default.error(`login: User is inactive`);
                     res.status(401).json({
                         message: 'User is inactive',
                         status: 401
@@ -141,8 +142,8 @@ class JWTController {
     token(req, res) {
         const { refreshToken } = req.body;
         if (!refreshToken) {
-            logger_service_1.default.info(`token: refresh token is required`);
-            logger_service_1.default.info(`{body: ${req.body}, headers: ${JSON.stringify(req.headers)}}`);
+            logger_service_1.default.error(`token: refresh token is required`);
+            logger_service_1.default.error(`{body: ${req.body}, headers: ${JSON.stringify(req.headers)}}`);
             res.status(400).json({
                 message: 'refresh token is required',
                 status: 400
@@ -151,7 +152,7 @@ class JWTController {
         else {
             jwt.verify(refreshToken, req.app.locals.secretKey, (err, decode) => {
                 if (err) {
-                    logger_service_1.default.info(`token: JWT error`);
+                    logger_service_1.default.error(`token: JWT error`);
                     res.status(401).json({
                         message: err.message,
                         status: 401
@@ -195,14 +196,14 @@ class JWTController {
                             res.status(500).json(err);
                         }
                         else if (!user) {
-                            logger_service_1.default.info(`token: User not found`);
+                            logger_service_1.default.error(`token: User not found`);
                             res.status(401).json({
                                 message: 'User not found',
                                 status: 401
                             });
                         }
                         else if (!user.active) {
-                            logger_service_1.default.info(`token: User is inactive`);
+                            logger_service_1.default.error(`token: User is inactive`);
                             res.status(401).json({
                                 message: 'User is inactive',
                                 status: 401
@@ -212,7 +213,7 @@ class JWTController {
                             user.lastLogin = new Date();
                             user.save((err) => {
                                 if (err) {
-                                    logger_service_1.default.info(`token: Save user`);
+                                    logger_service_1.default.error(`token: Save user`);
                                     /* istanbul ignore next */
                                     res.status(500).json(err);
                                 }
