@@ -614,6 +614,8 @@ class FormController {
   public async changePreferred(req: IRequest, res: Response): Promise<any> {
     let {form} = req.body;
     const {team} = req.user;
+    logger.info(`changePreferred`);
+    logger.info(`{user: {_id: ${req.user._id}, email: ${req.user.email}}, body: ${JSON.stringify(req.body)}}`);
     try {
       const user = await UserModel.findOne({_id: req.user._id, team,  active: true});
       // validate exist user

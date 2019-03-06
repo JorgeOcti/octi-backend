@@ -602,6 +602,8 @@ class FormController {
     async changePreferred(req, res) {
         let { form } = req.body;
         const { team } = req.user;
+        logger_service_1.default.info(`changePreferred`);
+        logger_service_1.default.info(`{user: {_id: ${req.user._id}, email: ${req.user.email}}, body: ${JSON.stringify(req.body)}}`);
         try {
             const user = await user_model_1.default.findOne({ _id: req.user._id, team, active: true });
             // validate exist user
