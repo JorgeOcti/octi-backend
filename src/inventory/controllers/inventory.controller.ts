@@ -328,6 +328,8 @@ class InventoryController {
   public async apiDetail(req: IRequest, res: Response) {
     const {team} = req.user;
     const {id} = req.params;
+    logger.info(`apiDetail`);
+    logger.info(`{user: {_id: ${req.user._id}, email: ${req.user.email}}, inventory: ${id}}`);
     try {
       const updatedUser = await User.findById(req.user._id);
       if (!updatedUser) {
@@ -435,6 +437,8 @@ class InventoryController {
   public async uploadFile(req: IRequest, res: Response) {
     const {id} = req.params;
     const {team, venue, company} = req.user;
+    logger.info(`uploadFile`);
+    logger.info(`{user: {_id: ${req.user._id}, email: ${req.user.email}}, inventory: ${id}}`);
     if (req.file) {
       const file: any = req.file;
       try {
@@ -457,6 +461,7 @@ class InventoryController {
         file.team = team._id;
         file.venue = venue._id;
         file.inventory = id;
+        inventoryFile.inventory = id;
         inventoryFile.user = req.user._id;
         inventoryFile.company = company._id;
         // fix exif
@@ -495,6 +500,8 @@ class InventoryController {
     const {team} = req.user;
     const {id} = req.params;
     const {vin, images} = req.body;
+    logger.info(`apiFoundCar`);
+    logger.info(`{user: {_id: ${req.user._id}, email: ${req.user.email}}, body: ${JSON.stringify(req.body)}}`);
     try {
       const updatedUser = await User.findById(req.user._id).populate([{
         path: 'venue',
@@ -873,6 +880,8 @@ class InventoryController {
     const {team, company} = req.user;
     const {id} = req.params;
     const {vin, denomination, brand, color, images} = req.body;
+    logger.info(`reportCar`);
+    logger.info(`{user: {_id: ${req.user._id}, email: ${req.user.email}}, body: ${JSON.stringify(req.body)}}`);
     try {
       const updatedUser = await User.findById(req.user._id).populate([{
         path: 'venue',
@@ -1009,6 +1018,8 @@ class InventoryController {
 
   public async apiList(req: IRequest, res: Response) {
     const {team} = req.user;
+    logger.info(`apiList`);
+    logger.info(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
     try {
       const updatedUser = await User.findById(req.user._id);
       if (updatedUser) {
