@@ -9,7 +9,7 @@ const express = require("express");
 const session = require("express-session");
 const fileStreamRotator = require("file-stream-rotator");
 const kue = require("kue");
-const lusca = require("lusca");
+// import * as lusca from 'lusca';
 const morgan = require("morgan");
 const multer = require("multer");
 const passport = require("passport");
@@ -69,8 +69,8 @@ Raven.config(process.env.SENTRY_DNS, {
 }).install();
 // Middlewares
 app.use(compression());
-app.use(lusca.xframe('SAMEORIGIN'));
-app.use(lusca.xssProtection(true));
+// app.use(lusca.xframe('SAMEORIGIN'));
+// app.use(lusca.xssProtection(true));
 app.use(responseTime());
 // template engine
 const viewDirectory = path.join(__dirname, '../views');
