@@ -94,6 +94,10 @@ appRouter.post('/api/v1/check-vin/', Middlewares.isJWTAuthenticated, CarControll
 // change password
 appRouter.post('/api/v1/change-password/', Middlewares.isJWTAuthenticated, UserController.apiChangePassword);
 
+// User Change venue
+appRouter.get('/api/v1/venues/', Middlewares.isJWTAuthenticated, UserController.apiListVenues);
+appRouter.put('/api/v1/venues/change/', Middlewares.isJWTAuthenticated, UserController.apiChangeVenue);
+
 // web login
 appRouter.get('/account/login/', csrfProtection, AppController.login);
 appRouter.post('/account/login/', csrfProtection, AppController.processLogin);

@@ -10,6 +10,7 @@ class LoggerService {
         this.env = general_utils_1.default.getFromEnviroment('ENV', 'development');
         // https://github.com/shiena/ansicolor/blob/master/README.md
         this.colors = {
+            black: '\x1b[30m',
             brightBlack: '\x1b[90m',
             reset: '\x1b[0m',
             magenta: '\x1b[35m',
@@ -18,6 +19,7 @@ class LoggerService {
             yellow: '\x1b[33m',
             brighYellow: '\x1b[93m',
             blue: '\x1b[34m',
+            brighBlue: '\x1b[94m',
             cyan: '\x1b[36m',
             brighCyan: '\x1b[96m',
             red: '\x1b[31m',
@@ -32,7 +34,7 @@ class LoggerService {
     }
     /* istanbul ignore next */
     debug(message) {
-        this.logger('DEBUG', 'development', message, this.colors.cyan);
+        this.logger('DEBUG', 'development', message, this.colors.brighGreen, this.colors.brightBlack);
     }
     /* istanbul ignore next */
     error(message, propagate) {
@@ -48,10 +50,13 @@ class LoggerService {
         return moment().utc().format('DD/MMM/YYYY:HH:mm:ss ZZ');
     }
     /* istanbul ignore next */
-    logger(type, env, message, color) {
+    logger(type, env, message, color, textColor) {
         if (this.env === env) {
             this.message = message;
-            console.log(`${color}[${this.now()}] [${type}]:${this.colors.reset} ${this.message}`);
+            if (!textColor) {
+                textColor = this.colors.reset;
+            }
+            console.log(`${color}[${this.now()}] [${type}]:${textColor} ${this.message}${this.colors.reset}`);
             this.writeLog(type);
         }
     }

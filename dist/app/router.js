@@ -76,6 +76,9 @@ appRouter.delete('/api/admin/alerts/:id', middlewares_1.default.isLoggedIn, aler
 appRouter.post('/api/v1/check-vin/', middlewares_1.default.isJWTAuthenticated, car_controller_1.default.checkVIN);
 // change password
 appRouter.post('/api/v1/change-password/', middlewares_1.default.isJWTAuthenticated, user_controller_1.default.apiChangePassword);
+// User Change venue
+appRouter.get('/api/v1/venues/', middlewares_1.default.isJWTAuthenticated, user_controller_1.default.apiListVenues);
+appRouter.put('/api/v1/venues/change/', middlewares_1.default.isJWTAuthenticated, user_controller_1.default.apiChangeVenue);
 // web login
 appRouter.get('/account/login/', csrfProtection, app_controller_1.default.login);
 appRouter.post('/account/login/', csrfProtection, app_controller_1.default.processLogin);

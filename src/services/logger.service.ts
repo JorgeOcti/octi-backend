@@ -18,6 +18,7 @@ class LoggerService {
     this.env = GeneralUtils.getFromEnviroment('ENV', 'development');
     // https://github.com/shiena/ansicolor/blob/master/README.md
     this.colors = {
+      black: '\x1b[30m',
       brightBlack: '\x1b[90m',
       reset: '\x1b[0m',
       magenta: '\x1b[35m',
@@ -26,6 +27,7 @@ class LoggerService {
       yellow: '\x1b[33m',
       brighYellow: '\x1b[93m',
       blue: '\x1b[34m',
+      brighBlue: '\x1b[94m',
       cyan: '\x1b[36m',
       brighCyan: '\x1b[96m',
       red: '\x1b[31m',
@@ -42,7 +44,7 @@ class LoggerService {
 
   /* istanbul ignore next */
   public debug(message: string): void {
-    this.logger('DEBUG', 'development', message, this.colors.cyan);
+    this.logger('DEBUG', 'development', message, this.colors.brighGreen, this.colors.brightBlack);
   }
 
   /* istanbul ignore next */
@@ -61,10 +63,13 @@ class LoggerService {
   }
 
   /* istanbul ignore next */
-  private logger(type: string, env: string, message: string, color: string) {
+  private logger(type: string, env: string, message: string, color: string, textColor?: string) {
     if (this.env === env) {
       this.message = message;
-      console.log(`${color}[${this.now()}] [${type}]:${this.colors.reset} ${this.message}`);
+      if (!textColor) {
+        textColor = this.colors.reset;
+      }
+      console.log(`${color}[${this.now()}] [${type}]:${textColor} ${this.message}${this.colors.reset}`);
       this.writeLog(type);
     }
   }
