@@ -96,7 +96,7 @@ appRouter.post('/api/v1/change-password/', Middlewares.isJWTAuthenticated, UserC
 
 // User Change venue
 appRouter.get('/api/v1/venues/', Middlewares.isJWTAuthenticated, UserController.apiListVenues);
-appRouter.post('/api/v1/venues/change/', Middlewares.isJWTAuthenticated, UserController.apiChangeVenue);
+appRouter.put('/api/v1/venues/change/', Middlewares.isJWTAuthenticated, UserController.apiChangeVenue);
 
 // web login
 appRouter.get('/account/login/', csrfProtection, AppController.login);
