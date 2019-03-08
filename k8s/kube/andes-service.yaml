@@ -4,10 +4,24 @@ kind: Service
 
 metadata:
   name: osa-andes-service
-  namespace: ${NAMESPACE}
+  namespace: andes-stage
 spec:
   selector:
     app: osa-andes
   ports:
   - port: 3030
     targetPort: 3030
+    protocol: TCP
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: osa-andes-service-ws
+  namespace: andes-stage
+spec:
+  selector:
+    app: osa-andes
+  ports:
+  - port: 80
+    targetPort: 3030
+    protocol: TCP
