@@ -1,10 +1,14 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 const bcrypt = require("bcrypt");
+const logger_service_1 = require("../../services/logger.service");
 const user_model_1 = require("../models/user.model");
+const venue_model_1 = require("../models/venue.model");
 class UserController {
     constructor() {
         this.apiChangePassword = this.apiChangePassword.bind(this);
+        this.apiListVenues = this.apiListVenues.bind(this);
+        this.apiChangeVenue = this.apiChangeVenue.bind(this);
     }
     async apiChangePassword(req, res) {
         const user = req.user;
@@ -43,6 +47,80 @@ class UserController {
             res.status(400).json({
                 message: 'No se ha podido cambiar la contraseña',
                 status: 400
+            });
+        }
+    }
+    async apiListVenues(req, res) {
+        const { team } = req.user;
+        logger_service_1.default.info(`apiListVenues`);
+        logger_service_1.default.info(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
+        try {
+            const currentUser = await user_model_1.default.findById(req.user._id);
+            if (currentUser) {
+                res.status(200).json({
+                    venues: await venue_model_1.default.find({
+                        _id: {
+                            $in: currentUser.venuesPermissions()
+                        },
+                        team
+                    }, {
+                        name: true
+                    }),
+                    status: 200
+                });
+            }
+            else {
+                /* istanbul ignore next */
+                res.status(400).json({
+                    message: 'Ha ocurrido un error',
+                    status: 400
+                });
+            }
+        }
+        catch (e) {
+            logger_service_1.default.error(`apiListVenues: Async Error.`);
+            logger_service_1.default.error(e);
+            /* istanbul ignore next */
+            res.status(500).json({
+                message: 'Ha ocurrido un error',
+                status: 500
+            });
+        }
+    }
+    async apiChangeVenue(req, res) {
+        const { team } = req.user;
+        const { venue } = req.body;
+        logger_service_1.default.info(`apiChangeVenue`);
+        logger_service_1.default.info(`{user: {_id: ${req.user._id}, email: ${req.user.email}}, body: ${JSON.stringify(req.body)}}`);
+        try {
+            const currentUser = await user_model_1.default.findById(req.user._id);
+            const currentVenue = await venue_model_1.default.findOne({ _id: venue, team });
+            // TODO vadalidate venue in venuesPermissions
+            if (currentUser && currentVenue) {
+                currentUser.venue = currentVenue;
+                currentUser.company = currentVenue.company;
+                await currentUser.save();
+                res.status(200).json({
+                    message: 'Usuario editado satisfactoriamente.',
+                    status: 200
+                });
+            }
+            else {
+                /* istanbul ignore next */
+                logger_service_1.default.error(`apiChangeVenue: Ha ocurrido un error.`);
+                res.status(400).json({
+                    message: 'Ha ocurrido un error',
+                    status: 400
+                });
+            }
+        }
+        catch (e) {
+            logger_service_1.default.error(`apiChangeVenue: Async Error.`);
+            logger_service_1.default.error(e);
+            /* istanbul ignore next */
+            res.status(500).json({
+                message: 'Ha ocurrido un error',
+                status: 500
             });
         }
     }
