@@ -95,8 +95,7 @@ class UserController {
     try {
       const currentUser = await UserModel.findById(req.user._id);
       const currentVenue = await Venue.findOne({_id: venue, team});
-      // TODO vadalidate venue in venuesPermissions
-      if (currentUser && currentVenue) {
+      if (currentUser && currentVenue && currentUser.venuesPermissions(true).includes(venue)) {
         currentUser.venue = currentVenue;
         currentUser.company = currentVenue.company;
         await currentUser.save();
@@ -108,7 +107,7 @@ class UserController {
         /* istanbul ignore next */
         logger.error(`apiChangeVenue: Ha ocurrido un error.`);
         res.status(400).json({
-          message: 'Ha ocurrido un error',
+          message: 'Operación no permitida',
           status: 400
         });
       }
