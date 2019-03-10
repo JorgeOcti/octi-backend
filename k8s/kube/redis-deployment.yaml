@@ -24,11 +24,11 @@ spec:
         - containerPort: 6379
         volumeMounts:
           - mountPath: /data
-            name: redis-${NAMESPACE}-volume
+            name: redis-volume
       volumes:
-        - name: redis-${NAMESPACE}-volume
+        - name: redis-volume
           persistentVolumeClaim:
-            claimName: redis-${NAMESPACE}-volume
+            claimName: redis-volume
 ---
 apiVersion: v1
 kind: Service

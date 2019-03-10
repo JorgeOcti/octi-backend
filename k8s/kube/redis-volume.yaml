@@ -1,7 +1,7 @@
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
-  name: redis-${NAMESPACE}-volume
+  name: redis-volume
   namespace: ${NAMESPACE}
   annotations:
     volume.beta.kubernetes.io/storage-class: standard
