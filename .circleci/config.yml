@@ -94,6 +94,9 @@ jobs:
             if kubectl describe deployment/osa-andes ;then
               echo "Updating image on existing deployment" 
 
+              envsubst < ~/repo/k8s/kube/redis-volume.yaml > ${HOME}/patched-redis-volume.yaml
+              kubectl apply -f ${HOME}/patched-redis-volume.yaml
+
               envsubst < ~/repo/k8s/kube/redis-deployment.yaml > ${HOME}/patched-redis-deployment.yaml
               kubectl apply -f ${HOME}/patched-redis-deployment.yaml
               kubectl rollout status deployment/redis
@@ -110,6 +113,9 @@ jobs:
               kubectl apply -f ~/repo/k8s/kube/${NAMESPACE}/namespace.yaml
               kubectl apply -f ~/repo/k8s/kube/${NAMESPACE}/aws-registry.yaml
               kubectl apply -f ~/repo/k8s/kube/${NAMESPACE}/ingress-nginx.yaml
+
+              envsubst < ~/repo/k8s/kube/redis-volume.yaml > ${HOME}/patched-redis-volume.yaml
+              kubectl apply -f ${HOME}/patched-redis-volume.yaml
 
               envsubst < ~/repo/k8s/kube/redis-deployment.yaml > ${HOME}/patched-redis-deployment.yaml
               kubectl apply -f ${HOME}/patched-redis-deployment.yaml
