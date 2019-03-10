@@ -113,5 +113,12 @@ spec:
                 key: SECRET_KEY
         ports:
         - containerPort: 3030
+        resources:
+          limits:
+            cpu: 700m
+            memory: 300Mi
+          requests:
+            cpu: 300m
+            memory: 200Mi
       imagePullSecrets:
           - name: awskey
