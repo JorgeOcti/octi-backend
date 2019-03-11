@@ -103,6 +103,7 @@ jobs:
 
               envsubst < ~/repo/k8s/kube/andes-deployment.yaml > ${HOME}/patched-andes-deployment.yaml
               kubectl apply -f ${HOME}/patched-andes-deployment.yaml
+              kubectl annotate deployment osa-andes kubernetes.io/change-cause="Deploy new version: $CIRCLE_SHA1" --record=false --overwrite=true
               kubectl rollout status deployment/osa-andes
 
               envsubst < ~/repo/k8s/kube/andes-service.yaml > ${HOME}/patched-andes-celery.yaml
