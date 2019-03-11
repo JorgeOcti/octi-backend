@@ -116,9 +116,9 @@ spec:
         resources:
           limits:
             cpu: 700m
-            memory: 300Mi
+            memory: 400Mi
           requests:
-            cpu: 300m
-            memory: 200Mi
+            cpu: 600m
+            memory: 300Mi
       imagePullSecrets:
           - name: awskey
