@@ -5,12 +5,13 @@ import * as fs from 'fs';
 import * as GraphicsMagick from 'gm';
 import * as https from 'https';
 import * as mongoose from 'mongoose';
+import {queue} from '../../app';
+import CarModel, {ChoicesStatusCar} from '../../app/models/car.model';
 import Car, {
   ICarModel
 } from '../../app/models/car.model';
-import CarModel, {ChoicesStatusCar} from '../../app/models/car.model';
-import User from '../../app/models/user.model';
 import UserModel from '../../app/models/user.model';
+import User from '../../app/models/user.model';
 import VenueModel, {
   IVenueModel
 } from '../../app/models/venue.model';
@@ -126,6 +127,11 @@ class InventoryController {
                   comments: [],
                   images: []
                 });
+                queue.create('updateCar', {
+                  title: `updateCar ${car.vin}`,
+                  currentCar: currentCar._id,
+                  car
+                }).delay(10000).priority('high').attempts(5).save();
               }
             }
           }

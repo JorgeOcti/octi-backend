@@ -6,6 +6,7 @@ const fs = require("fs");
 const GraphicsMagick = require("gm");
 const https = require("https");
 const mongoose = require("mongoose");
+const app_1 = require("../../app");
 const car_model_1 = require("../../app/models/car.model");
 const car_model_2 = require("../../app/models/car.model");
 const user_model_1 = require("../../app/models/user.model");
@@ -92,12 +93,12 @@ class InventoryController {
                     venuesIDs.push(currentVenue._id.toString());
                     if (venue.cars && venue.cars.length) {
                         for (const car of venue.cars) {
-                            let currentCar = await car_model_2.default.findOne({
+                            let currentCar = await car_model_1.default.findOne({
                                 team,
                                 vin: car.vin
                             });
                             if (currentCar === null && car.vin && car.vin.trim().length) {
-                                currentCar = new car_model_2.default({
+                                currentCar = new car_model_1.default({
                                     team,
                                     company,
                                     vin: car.vin,
@@ -106,7 +107,7 @@ class InventoryController {
                                     denomination: car.denomination,
                                     brand: car.brand,
                                     patent: car.patent,
-                                    status: car_model_2.ChoicesStatusCar.active
+                                    status: car_model_1.ChoicesStatusCar.active
                                 });
                                 await currentCar.save();
                             }
@@ -117,6 +118,11 @@ class InventoryController {
                                     comments: [],
                                     images: []
                                 });
+                                app_1.queue.create('updateCar', {
+                                    title: `updateCar ${car.vin}`,
+                                    currentCar: currentCar._id,
+                                    car
+                                }).delay(10000).priority('high').attempts(5).save();
                             }
                         }
                     }
@@ -137,7 +143,7 @@ class InventoryController {
             });
             await inventoryCar_model_1.default.insertMany(inventoryCars);
             if (notification) {
-                const usersIDs = await user_model_2.default.find({
+                const usersIDs = await user_model_1.default.find({
                     venue: {
                         $in: venuesIDs
                     },
@@ -326,7 +332,7 @@ class InventoryController {
         logger_service_1.default.info(`apiDetail`);
         logger_service_1.default.info(`{user: {_id: ${req.user._id}, email: ${req.user.email}}, inventory: ${id}}`);
         try {
-            const updatedUser = await user_model_1.default.findById(req.user._id);
+            const updatedUser = await user_model_2.default.findById(req.user._id);
             if (!updatedUser) {
                 res.status(404).json({
                     message: 'No se ha encontrado el inventario solicitado.',
@@ -510,7 +516,7 @@ class InventoryController {
         logger_service_1.default.info(`apiFoundCar`);
         logger_service_1.default.info(`{user: {_id: ${req.user._id}, email: ${req.user.email}}, body: ${JSON.stringify(req.body)}}`);
         try {
-            const updatedUser = await user_model_1.default.findById(req.user._id).populate([{
+            const updatedUser = await user_model_2.default.findById(req.user._id).populate([{
                     path: 'venue',
                     select: ['name']
                 }]);
@@ -527,7 +533,7 @@ class InventoryController {
                 status: inventory_model_1.ChoicesStatusInventory.inProcess
             });
             if (inventory) {
-                const car = await car_model_1.default.findOne({
+                const car = await car_model_2.default.findOne({
                     vin,
                     team
                 });
@@ -918,7 +924,7 @@ class InventoryController {
         logger_service_1.default.info(`reportCar`);
         logger_service_1.default.info(`{user: {_id: ${req.user._id}, email: ${req.user.email}}, body: ${JSON.stringify(req.body)}}`);
         try {
-            const updatedUser = await user_model_1.default.findById(req.user._id).populate([{
+            const updatedUser = await user_model_2.default.findById(req.user._id).populate([{
                     path: 'venue',
                     select: ['name']
                 }]);
@@ -935,7 +941,7 @@ class InventoryController {
                 team
             });
             if (inventory) {
-                const car = await car_model_2.default.findOneOrCreate({
+                const car = await car_model_1.default.findOneOrCreate({
                     vin,
                     team
                 }, {
@@ -946,7 +952,7 @@ class InventoryController {
                     color,
                     team,
                     company,
-                    status: car_model_2.ChoicesStatusCar.inventory
+                    status: car_model_1.ChoicesStatusCar.inventory
                 });
                 const inventoryCar = new inventoryCar_model_1.default({
                     car,
@@ -1025,7 +1031,7 @@ class InventoryController {
                         upsert: true
                     });
                     if (newLabel.isExhibition) {
-                        await car_model_2.default.findOneAndUpdate({
+                        await car_model_1.default.findOneAndUpdate({
                             _id: carID,
                             team
                         }, {
@@ -1065,7 +1071,7 @@ class InventoryController {
         logger_service_1.default.info(`apiList`);
         logger_service_1.default.info(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
         try {
-            const updatedUser = await user_model_1.default.findById(req.user._id);
+            const updatedUser = await user_model_2.default.findById(req.user._id);
             if (updatedUser) {
                 const inventories = await inventory_model_1.default.find({
                     team,

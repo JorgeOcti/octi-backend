@@ -21,6 +21,7 @@ import {appRouter, jwtRouter} from './app/router';
 import EmailQueue from './app/tasks/email.task';
 import formRouter from './form/router';
 import {inventoryRouter} from './inventory/router';
+import InventoryQueue from './inventory/taks/inventory.task';
 import Middlewares from './middlewares/middlewares';
 
 // Create Express server
@@ -246,6 +247,7 @@ export const queue = kue.createQueue({
 });
 
 new EmailQueue(queue).run();
+new InventoryQueue(queue).run();
 kue.app.listen((parseInt(process.env.PORT as string, 10) || 3000) + 40);
 
 // The error handler must be before any other error middleware
