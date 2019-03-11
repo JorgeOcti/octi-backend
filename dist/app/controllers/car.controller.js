@@ -6,9 +6,9 @@ const app_1 = require("../../app");
 const participant_model_1 = require("../../form/models/participant.model");
 const inventory_model_1 = require("../../inventory/models/inventory.model");
 const inventoryCar_model_1 = require("../../inventory/models/inventoryCar.model");
+const logger_service_1 = require("../../services/logger.service");
 const vin_service_1 = require("../../services/vin.service");
 const car_model_1 = require("../models/car.model");
-const logger_service_1 = require("../../services/logger.service");
 class CarController {
     constructor() {
         this.carBrands = {
@@ -628,13 +628,22 @@ class CarController {
         const { id } = req.params;
         const { team } = req.user;
         try {
+            const venuesPermissions = req.user.venuesPermissions();
             const participant = await participant_model_1.default
                 .findOne({
                 _id: id,
                 team,
-                venue: {
-                    $in: req.user.venuesPermissions()
-                }
+                $or: [{
+                        venue: {
+                            $in: venuesPermissions
+                        }
+                    }, {
+                        venue: {
+                            $exists: false
+                        }
+                    }, {
+                        venue: null
+                    }]
             }, {
                 name: true,
                 user: true,
