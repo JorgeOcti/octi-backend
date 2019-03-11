@@ -7,9 +7,9 @@ import ParticipantModel from '../../form/models/participant.model';
 import {IRequest} from '../../interfaces/global.interface';
 import InventoryModel, {ChoicesStatusInventory} from '../../inventory/models/inventory.model';
 import {ChoicesStatusCarInventory} from '../../inventory/models/inventoryCar.model';
+import logger from '../../services/logger.service';
 import VINService from '../../services/vin.service';
 import CarModel, {ChoicesStatusCar, ICarModel} from '../models/car.model';
-import logger from "../../services/logger.service";
 
 class CarController {
   protected carBrands: any = {
@@ -623,13 +623,22 @@ class CarController {
     const {id} = req.params;
     const {team} = req.user;
     try {
+      const venuesPermissions = req.user.venuesPermissions();
       const participant = await ParticipantModel
         .findOne({
           _id: id,
           team,
-          venue: {
-            $in: req.user.venuesPermissions()
-          }
+          $or: [{
+            venue: {
+              $in: venuesPermissions
+            }
+          }, {
+            venue: {
+              $exists: false
+            }
+          }, {
+            venue: null
+          }]
         }, {
           name: true,
           user: true,

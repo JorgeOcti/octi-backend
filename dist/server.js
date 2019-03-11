@@ -14,10 +14,7 @@ const MONGODB_URI = process.env.MONGODB_URI || '';
 // Mongoose connect
 mongoose.Promise = bluebird;
 mongoose.connect(MONGODB_URI, {
-    useMongoClient: true,
-    db: {
-        readPreference: 'nearest'
-    }
+    useMongoClient: true
 }, (err) => {
     if (err) {
         /* istanbul ignore next */
