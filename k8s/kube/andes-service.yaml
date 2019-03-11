@@ -12,16 +12,3 @@ spec:
   - port: 3030
     targetPort: 3030
     protocol: TCP
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: osa-andes-service-ws
-  namespace: ${NAMESPACE}
-spec:
-  selector:
-    app: osa-andes
-  ports:
-  - port: 80
-    targetPort: 3030
-    protocol: TCP
