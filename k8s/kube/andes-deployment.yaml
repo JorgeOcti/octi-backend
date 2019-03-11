@@ -2,23 +2,26 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: osa-andes
-  namespace: ${NAMESPACE}
+  namespace: andes-prod
+  # namespace: ${NAMESPACE}
   labels:
     app: osa-andes
 spec:
-  replicas: 1
+  replicas: 2
   selector:
     matchLabels:
       app: osa-andes
   template:
     metadata:
-      namespace: ${NAMESPACE}
+      namespace: andes-prod
+      # namespace: ${NAMESPACE}
       labels:
         app: osa-andes
     spec:
       containers:
       - name: osa-andes
-        image: 169428622952.dkr.ecr.us-east-1.amazonaws.com/osa/andes:${CIRCLE_SHA1}
+        # image: 169428622952.dkr.ecr.us-east-1.amazonaws.com/osa/andes:${CIRCLE_SHA1}
+        image: 169428622952.dkr.ecr.us-east-1.amazonaws.com/osa/andes:latest
         imagePullPolicy: Always
         env:
           - name: ENV
