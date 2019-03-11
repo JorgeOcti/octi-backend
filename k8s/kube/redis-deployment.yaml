@@ -2,7 +2,7 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  # namespace: andes-stage
+  # namespace: andes-prod
   namespace: ${NAMESPACE}
   labels:
     app: redis
@@ -33,7 +33,7 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  # namespace: andes-stage
+  # namespace: andes-prod
   namespace: ${NAMESPACE}
   name: redis-service
 spec:
