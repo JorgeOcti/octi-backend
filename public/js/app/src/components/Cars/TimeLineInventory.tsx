@@ -85,6 +85,12 @@ class TimeLineInventory extends React.Component<IPropsType, IStateType> {
                 </React.Fragment> : null
             }
             {
+              ['reported'].includes(inventory.status) ?
+                <React.Fragment>
+                  El vehículo fue reportado en <span className="text-blue">{inventory.venue.name}</span>.
+                </React.Fragment> : null
+            }
+            {
               ['missing'].includes(inventory.status) ?
                 <React.Fragment>
                   El vehículo fue marcado como faltante en <span className="text-blue">{inventory.venueFound ? inventory.venueFound.name : inventory.venue.name}</span>.

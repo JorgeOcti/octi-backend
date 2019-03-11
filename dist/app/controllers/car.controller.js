@@ -754,9 +754,17 @@ class CarController {
                     path: 'participants',
                     select: ['name', 'user', 'createdAt', 'updatedAt', 'qualification', 'venue', 'shipping', 'reception'],
                     match: {
-                        venue: {
-                            $in: venuesPermissions
-                        }
+                        $or: [{
+                                venue: {
+                                    $in: venuesPermissions
+                                }
+                            }, {
+                                venue: {
+                                    $exists: false
+                                }
+                            }, {
+                                venue: null
+                            }]
                     },
                     options: {
                         sort: {
