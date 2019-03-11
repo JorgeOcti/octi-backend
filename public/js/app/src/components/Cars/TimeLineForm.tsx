@@ -43,7 +43,9 @@ class TimeLineForm extends React.Component<IPropsType, IStateType> {
             {
               form.form.reception ?
                 <React.Fragment>
-                  El vehículo fue recepcionado en <span className="text-blue">{form.venue.name}</span>. Con una calificación de <strong>{form.qualification.toFixed(0)}%</strong>.
+                  El vehículo fue recepcionado{form.venue ?
+                  <React.Fragment> en <span className="text-blue">{form.venue.name}</span></React.Fragment> : ''}. Con una calificación
+                  de <strong>{form.qualification.toFixed(0)}%</strong>.
                 </React.Fragment> : null
             }
             {

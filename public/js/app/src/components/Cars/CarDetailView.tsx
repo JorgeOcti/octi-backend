@@ -53,6 +53,10 @@ class CarDetailView extends React.Component<IPropsType, IStateType> {
     });
   }
 
+  public componentDidUpdate(prevProps: Readonly<IPropsType>, prevState: Readonly<IStateType>, snapshot?: any): void {
+    $('[data-toggle="tooltip"]').tooltip();
+  }
+
   public componentWillUnmount() {
     // cancel request if component is inmounted
     if (this.props.cars.source) {
