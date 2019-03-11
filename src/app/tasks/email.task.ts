@@ -3,8 +3,8 @@ import * as Mail from 'nodemailer/lib/mailer';
 import * as path from 'path';
 import * as pug from 'pug';
 import {compileTemplate} from 'pug';
+import app from '../../app';
 import nodemailerTransporter from '../../services/aws-ses.service';
-import app from "../../app";
 
 class EmailQueue {
   private queue: Queue;

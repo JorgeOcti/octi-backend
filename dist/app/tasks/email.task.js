@@ -2,8 +2,8 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 const path = require("path");
 const pug = require("pug");
-const aws_ses_service_1 = require("../../services/aws-ses.service");
 const app_1 = require("../../app");
+const aws_ses_service_1 = require("../../services/aws-ses.service");
 class EmailQueue {
     constructor(queue) {
         this.queue = queue;

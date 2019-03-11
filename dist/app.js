@@ -23,6 +23,7 @@ const router_1 = require("./app/router");
 const email_task_1 = require("./app/tasks/email.task");
 const router_2 = require("./form/router");
 const router_3 = require("./inventory/router");
+const inventory_task_1 = require("./inventory/taks/inventory.task");
 const middlewares_1 = require("./middlewares/middlewares");
 // Create Express server
 const app = express();
@@ -224,6 +225,7 @@ exports.queue = kue.createQueue({
     }
 });
 new email_task_1.default(exports.queue).run();
+new inventory_task_1.default(exports.queue).run();
 kue.app.listen((parseInt(process.env.PORT, 10) || 3000) + 40);
 // The error handler must be before any other error middleware
 app.use(Raven.errorHandler());
