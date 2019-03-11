@@ -7,7 +7,7 @@ WORKDIR /srv
 COPY . /srv
 
 # install requirements
-RUN apk add --no-cache make gcc g++ python && \
+RUN apk add --no-cache make gcc g++ python graphicsmagick gettext librsvg ghostscript imagemagick && \
   npm --unsafe-perm install && \
   apk del make gcc g++ python
 
