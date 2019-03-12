@@ -137,13 +137,13 @@ jobs:
   deploy-production:
     <<: *deploy-AWS
     environment:
-            NAMESPACE: andes-prod
-            INSTANCE_NUMBER: 2
+      NAMESPACE: andes-prod
+      INSTANCE_NUMBER: 2
   deploy-staging:
     <<: *deploy-AWS
     environment:
-            NAMESPACE: andes-stage
-            INSTANCE_NUMBER: 1
+      NAMESPACE: andes-stage
+      INSTANCE_NUMBER: 1
 
 workflows:
   version: 2
