@@ -10,6 +10,11 @@ spec:
   selector:
     matchLabels:
       app: osa-andes
+  strategy:
+    rollingUpdate:
+      maxSurge: 25%
+      maxUnavailable: 1
+    type: RollingUpdate
   template:
     metadata:
       namespace: ${NAMESPACE}
@@ -20,6 +25,13 @@ spec:
       - name: osa-andes
         image: 169428622952.dkr.ecr.us-east-1.amazonaws.com/osa/andes:${CIRCLE_SHA1}
         imagePullPolicy: Always
+        readinessProbe:
+          httpGet:
+            path: /account/login/
+            port: 3030
+            initialDelaySeconds: 5
+            periodSeconds: 5
+            successThreshold: 1
         env:
           - name: ENV
             valueFrom:
