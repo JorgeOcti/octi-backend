@@ -26,7 +26,7 @@ mongoose.connect(MONGODB_URI, {
         console.log('Mongoose Successfully connected');
     }
 });
-mongoose.set('debug', app_1.default.get('env') !== 'testing');
+mongoose.set('debug', app_1.default.get('env') === 'development');
 const NODE_APP_INSTANCE = parseInt(process.env.NODE_APP_INSTANCE, 10) || 0;
 const server = app_1.default.listen(parseInt(app_1.default.get('port'), 10) + NODE_APP_INSTANCE, () => {
     /* istanbul ignore if */

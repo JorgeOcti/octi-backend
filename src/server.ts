@@ -15,7 +15,7 @@ const MONGODB_URI: string = process.env.MONGODB_URI || '';
 (mongoose as any).Promise = bluebird;
 mongoose.connect(MONGODB_URI, {
   useMongoClient: true
-}, (err) => {
+}, (err: any) => {
   if (err) {
     /* istanbul ignore next */
     console.log('Unable to connect to the mongodb instance. Error: ', err);
@@ -26,7 +26,7 @@ mongoose.connect(MONGODB_URI, {
     console.log('Mongoose Successfully connected');
   }
 });
-mongoose.set('debug', app.get('env') !== 'testing');
+mongoose.set('debug', app.get('env') === 'development');
 const NODE_APP_INSTANCE: number = parseInt(process.env.NODE_APP_INSTANCE as string, 10) || 0;
 const server = app.listen(parseInt(app.get('port'), 10) + NODE_APP_INSTANCE, () => {
   /* istanbul ignore if */
