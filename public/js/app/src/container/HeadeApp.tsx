@@ -33,9 +33,9 @@ class HeaderApp extends React.Component<{}, {}> {
   public render() {
     return (
       <header className="main-header">
-        <a className="logo" href="/">
+        <a className="logo" href="/" style={{padding: '5px 15px'}}>
           <span className="logo-mini">&nbsp;</span>
-          <span className="logo-lg"><img src="/static/images/OSA_andes_logo.50ea35c.svg" style={{maxHeight: '40px'}}/></span>
+          <span className="logo-lg"><img src="/static/images/OSA_andes_logo_horizontal.svg" style={{maxHeight: '40px', verticalAlign: 'baseline'}}/></span>
         </a>
         <nav className="navbar navbar-static-top">
           <a className="sidebar-toggle hidden-sm hidden-md hidden-lg" href="#" data-toggle="push-menu" role="button">
