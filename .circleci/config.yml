@@ -101,6 +101,9 @@ jobs:
               kubectl apply -f ${HOME}/patched-redis-deployment.yaml
               kubectl rollout status deployment/redis
 
+              envsubst < ~/repo/k8s/kube/andes-volume.yaml > ${HOME}/patched-andes-volume.yaml
+              kubectl apply -f ${HOME}/patched-andes-volume.yaml
+
               envsubst < ~/repo/k8s/kube/andes-deployment.yaml > ${HOME}/patched-andes-deployment.yaml
               kubectl apply -f ${HOME}/patched-andes-deployment.yaml
               kubectl annotate deployment osa-andes kubernetes.io/change-cause="version: $CIRCLE_SHA1, date: $(date '+%Y-%m-%d %H:%M:%S %z')" --record=false --overwrite=true
@@ -122,6 +125,9 @@ jobs:
               kubectl apply -f ${HOME}/patched-redis-deployment.yaml
               kubectl rollout status deployment/redis
 
+              envsubst < ~/repo/k8s/kube/andes-volume.yaml > ${HOME}/patched-andes-volume.yaml
+              kubectl apply -f ${HOME}/patched-andes-volume.yaml
+
               envsubst < ~/repo/k8s/kube/andes-deployment.yaml > ${HOME}/patched-andes-deployment.yaml
               kubectl apply -f ${HOME}/patched-andes-deployment.yaml
               kubectl rollout status deployment/osa-andes
@@ -137,13 +143,13 @@ jobs:
   deploy-production:
     <<: *deploy-AWS
     environment:
-            NAMESPACE: andes-prod
-            INSTANCE_NUMBER: 2
+      NAMESPACE: andes-prod
+      INSTANCE_NUMBER: 2
   deploy-staging:
     <<: *deploy-AWS
     environment:
-            NAMESPACE: andes-stage
-            INSTANCE_NUMBER: 1
+      NAMESPACE: andes-stage
+      INSTANCE_NUMBER: 1
 
 workflows:
   version: 2

@@ -25,6 +25,9 @@ spec:
       - name: osa-andes
         image: 169428622952.dkr.ecr.us-east-1.amazonaws.com/osa/andes:${CIRCLE_SHA1}
         imagePullPolicy: Always
+        volumeMounts:
+          - mountPath: /srv/logs
+            name: andes-volume
         env:
           - name: ENV
             valueFrom:
@@ -125,5 +128,9 @@ spec:
           requests:
             cpu: 600m
             memory: 300Mi
+      volumes:
+        - name: andes-volume
+          persistentVolumeClaim:
+            claimName: andes-volume
       imagePullSecrets:
           - name: awskey
