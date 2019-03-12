@@ -25,13 +25,6 @@ spec:
       - name: osa-andes
         image: 169428622952.dkr.ecr.us-east-1.amazonaws.com/osa/andes:${CIRCLE_SHA1}
         imagePullPolicy: Always
-        readinessProbe:
-          httpGet:
-            path: /account/login/
-            port: 3030
-            initialDelaySeconds: 5
-            periodSeconds: 5
-            successThreshold: 1
         env:
           - name: ENV
             valueFrom:
