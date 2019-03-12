@@ -101,9 +101,6 @@ jobs:
               kubectl apply -f ${HOME}/patched-redis-deployment.yaml
               kubectl rollout status deployment/redis
 
-              envsubst < ~/repo/k8s/kube/andes-volume.yaml > ${HOME}/patched-andes-volume.yaml
-              kubectl apply -f ${HOME}/patched-andes-volume.yaml
-
               envsubst < ~/repo/k8s/kube/andes-deployment.yaml > ${HOME}/patched-andes-deployment.yaml
               kubectl apply -f ${HOME}/patched-andes-deployment.yaml
               kubectl annotate deployment osa-andes kubernetes.io/change-cause="version: $CIRCLE_SHA1, date: $(date '+%Y-%m-%d %H:%M:%S %z')" --record=false --overwrite=true
@@ -124,9 +121,6 @@ jobs:
               envsubst < ~/repo/k8s/kube/redis-deployment.yaml > ${HOME}/patched-redis-deployment.yaml
               kubectl apply -f ${HOME}/patched-redis-deployment.yaml
               kubectl rollout status deployment/redis
-
-              envsubst < ~/repo/k8s/kube/andes-volume.yaml > ${HOME}/patched-andes-volume.yaml
-              kubectl apply -f ${HOME}/patched-andes-volume.yaml
 
               envsubst < ~/repo/k8s/kube/andes-deployment.yaml > ${HOME}/patched-andes-deployment.yaml
               kubectl apply -f ${HOME}/patched-andes-deployment.yaml
