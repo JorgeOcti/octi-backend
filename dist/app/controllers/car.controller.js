@@ -145,7 +145,7 @@ class CarController {
                     }
                     if (vin2) {
                         if (vin2[0] === '0') {
-                            const vinRegex = new RegExp('[a-zA-Z0]' + vin2.substr(vin2.length - 5), 'i');
+                            const vinRegex = new RegExp(vin2.substr(vin2.length - 5), 'i');
                             inventoryQuery.vin2 = { $regex: vinRegex };
                         }
                         else {
@@ -175,8 +175,11 @@ class CarController {
                             'cars.status': true,
                             'cars.venue': true
                         }).populate([{
-                                path: 'cars.venue',
-                                select: ['name']
+                                path: 'cars',
+                                populate: [{
+                                        path: 'venue',
+                                        select: ['name']
+                                    }]
                             }]);
                         if (inventoriedCar) {
                             const carsInInventory = [];
@@ -206,7 +209,7 @@ class CarController {
                                 });
                             }
                             else {
-                                logger_service_1.default.error(`checkVIN: VIN no válido.`);
+                                logger_service_1.default.error(`checkVIN: VIN no válido 1.`);
                                 logger_service_1.default.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
                                 res.status(400).json({
                                     message: 'VIN no válido.',
@@ -224,7 +227,7 @@ class CarController {
                         }
                     }
                     else {
-                        logger_service_1.default.error(`checkVIN: VIN no válido.`);
+                        logger_service_1.default.error(`checkVIN: VIN no válido 2.`);
                         logger_service_1.default.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
                         res.status(400).json({
                             message: 'VIN no válido.',

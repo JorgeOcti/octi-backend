@@ -150,7 +150,7 @@ class CarController {
           }
           if (vin2) {
             if (vin2[0] === '0') {
-              const vinRegex = new RegExp('[a-zA-Z0]' + vin2.substr(vin2.length - 5), 'i');
+              const vinRegex = new RegExp( vin2.substr(vin2.length - 5), 'i');
               inventoryQuery.vin2 = {$regex: vinRegex};
             } else {
               const patentRegex = new RegExp(vin2, 'i');
@@ -179,8 +179,11 @@ class CarController {
               'cars.status': true,
               'cars.venue': true
             }).populate([{
-              path: 'cars.venue',
-              select: ['name']
+              path: 'cars',
+              populate: [{
+                path: 'venue',
+                select: ['name']
+              }]
             }]);
             if (inventoriedCar) {
               const carsInInventory: any[] = [];
@@ -209,7 +212,7 @@ class CarController {
                   status: 200
                 });
               } else {
-                logger.error(`checkVIN: VIN no válido.`);
+                logger.error(`checkVIN: VIN no válido 1.`);
                 logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
                 res.status(400).json({
                   message: 'VIN no válido.',
@@ -225,7 +228,7 @@ class CarController {
               });
             }
           } else {
-            logger.error(`checkVIN: VIN no válido.`);
+            logger.error(`checkVIN: VIN no válido 2.`);
             logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
             res.status(400).json({
               message: 'VIN no válido.',
