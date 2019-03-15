@@ -153,7 +153,7 @@ class InventoryController {
                 });
                 push_service_1.default.massiveSend('Nuevo inventario', `Se ha iniciado el inventario "${inventory.name}"`, 'Ya puedes empezar a escanear', usersIDs.map((user) => user._id.toString()));
             }
-            server_1.io.to(`inventory-list-${company}`).emit('REFRESH', {
+            server_1.io.to(`inventory-list-${team}`).emit('REFRESH', {
                 update: true
             });
             res.json({
@@ -572,6 +572,9 @@ class InventoryController {
                                 venue: venueId,
                                 update: true
                             });
+                            server_1.io.to(`inventory-list-${team._id}`).emit('REFRESH', {
+                                update: true
+                            });
                             res.status(200).json({
                                 vin: car.vin,
                                 status: 200
@@ -684,7 +687,7 @@ class InventoryController {
             if (inventory) {
                 await inventoryCar_model_1.default.find({ inventory }).remove();
                 await inventory.remove();
-                server_1.io.to(`inventory-list-${team._id}`).emit('REFRESH', {
+                server_1.io.to(`inventory-list-${team}`).emit('REFRESH', {
                     update: true
                 });
                 res.json({
