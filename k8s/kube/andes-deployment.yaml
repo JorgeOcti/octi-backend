@@ -24,6 +24,25 @@ spec:
       containers:
       - name: osa-andes
         image: 169428622952.dkr.ecr.us-east-1.amazonaws.com/osa/andes:${CIRCLE_SHA1}
+        readinessProbe:
+          failureThreshold: 3
+          httpGet:
+            path: /health-check/
+            port: 3030
+            scheme: HTTP
+          initialDelaySeconds: 5
+          periodSeconds: 10
+          successThreshold: 1
+          timeoutSeconds: 1
+        livenessProbe:
+          failureThreshold: 3
+          httpGet:
+            path: /health-check/
+            port: 3030
+            scheme: HTTP
+          periodSeconds: 10
+          successThreshold: 1
+          timeoutSeconds: 1
         imagePullPolicy: Always
         env:
           - name: ENV
@@ -120,10 +139,10 @@ spec:
         - containerPort: 3030
         resources:
           limits:
-            cpu: 700m
-            memory: 400Mi
-          requests:
-            cpu: 600m
+            cpu: 500m
             memory: 300Mi
+          requests:
+            cpu: 200m
+            memory: 250Mi
       imagePullSecrets:
           - name: awskey

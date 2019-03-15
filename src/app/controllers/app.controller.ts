@@ -11,6 +11,7 @@ class AppController {
 
   constructor() {
     this.index = this.index.bind(this);
+    this.healthCheck = this.healthCheck.bind(this);
     this.robots = this.robots.bind(this);
 
     this.login = this.login.bind(this);
@@ -28,6 +29,10 @@ class AppController {
   /* istanbul ignore next */
   public index(req: Request, res: Response) {
     res.render('app/index');
+  }
+
+  public healthCheck(req: Request, res: Response) {
+    res.json({status: 'success'});
   }
 
   public robots(req: Request, res: Response) {
