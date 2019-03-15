@@ -21,6 +21,8 @@ const csrfProtection = csrf({ cookie: true });
 // robots.txt
 appRouter.get('/robots.txt', AppController.robots);
 
+appRouter.get('/health-check/', AppController.index);
+
 // DashBoard Principal
 appRouter.get('/', Middlewares.isLoggedIn, CarController.generalDashboard);
 

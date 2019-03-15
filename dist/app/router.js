@@ -20,6 +20,7 @@ exports.appRouter = appRouter;
 const csrfProtection = csrf({ cookie: true });
 // robots.txt
 appRouter.get('/robots.txt', app_controller_1.default.robots);
+appRouter.get('/health-check', app_controller_1.default.index);
 // DashBoard Principal
 appRouter.get('/', middlewares_1.default.isLoggedIn, car_controller_1.default.generalDashboard);
 // DashBoard Cars
