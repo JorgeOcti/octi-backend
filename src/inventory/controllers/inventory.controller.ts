@@ -168,7 +168,7 @@ class InventoryController {
            usersIDs.map((user) => user._id.toString())
         );
       }
-      io.to(`inventory-list-${company}`).emit('REFRESH', {
+      io.to(`inventory-list-${team}`).emit('REFRESH', {
         update: true
       });
       res.json({
@@ -584,6 +584,9 @@ class InventoryController {
                 venue: venueId,
                 update: true
               });
+              io.to(`inventory-list-${team._id}`).emit('REFRESH', {
+                update: true
+              });
               res.status(200).json({
                 vin: car.vin,
                 status: 200
@@ -693,7 +696,7 @@ class InventoryController {
       if (inventory) {
         await InventoryCar.find({inventory}).remove();
         await inventory.remove();
-        io.to(`inventory-list-${team._id}`).emit('REFRESH', {
+        io.to(`inventory-list-${team}`).emit('REFRESH', {
           update: true
         });
         res.json({
