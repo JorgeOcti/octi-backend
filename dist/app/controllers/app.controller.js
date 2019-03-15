@@ -10,6 +10,7 @@ const user_model_1 = require("../models/user.model");
 class AppController {
     constructor() {
         this.index = this.index.bind(this);
+        this.healthCheck = this.healthCheck.bind(this);
         this.robots = this.robots.bind(this);
         this.login = this.login.bind(this);
         this.processLogin = this.processLogin.bind(this);
@@ -22,6 +23,9 @@ class AppController {
     /* istanbul ignore next */
     index(req, res) {
         res.render('app/index');
+    }
+    healthCheck(req, res) {
+        res.json({ status: 'success' });
     }
     robots(req, res) {
         res.setHeader('content-type', 'text/plain; charset=utf-8');
