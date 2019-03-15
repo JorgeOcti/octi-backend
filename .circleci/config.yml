@@ -8,23 +8,23 @@ jobs:
           docker_layer_caching: true
       - checkout
       - run: 
-          name: Install aws cli
-          command: |
-            pip install virtualenv
-            python -m virtualenv venv
-            . venv/bin/activate
-            pip install awscli
-            export AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY
-            export AWS_SECRET_ACCESS_KEY=$AWS_SECRET_KEY
-            export AWS_REGION=us-east-1
-            aws configure set aws_access_key_id default_access_key
-            echo $DOCKER_PWD | $(aws ecr get-login --no-include-email --region us-east-1)
+        name: Install aws cli
+        command: |
+          pip install virtualenv
+          python -m virtualenv venv
+          . venv/bin/activate
+          pip install awscli
+          export AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY
+          export AWS_SECRET_ACCESS_KEY=$AWS_SECRET_KEY
+          export AWS_REGION=us-east-1
+          aws configure set aws_access_key_id default_access_key
+          echo $DOCKER_PWD | $(aws ecr get-login --no-include-email --region us-east-1)
 
       - run:
-          name: Build and push Docker OSA-Andes image
-          command: |
-            docker build -t $REGISTRY/osa/andes:$CIRCLE_SHA1 -t $REGISTRY/osa/andes:latest .
-            docker push $REGISTRY/osa/andes
+        name: Build and push Docker OSA-Andes image
+        command: |
+          docker build -t $REGISTRY/osa/andes:$CIRCLE_SHA1 -t $REGISTRY/osa/andes:latest .
+          docker push $REGISTRY/osa/andes
 
   deploy-AWS: &deploy-AWS
     docker:
@@ -32,107 +32,107 @@ jobs:
     working_directory: ~/repo
     steps:
       - attach_workspace: 
-          at: /tmp
+        at: /tmp
       - run: 
-          name: Install dependencies 
-          command: |
-            apt-get update
-            apt-get install -qq -y wget curl gettext git
+        name: Install dependencies
+        command: |
+          apt-get update
+          apt-get install -qq -y wget curl gettext git
       - checkout
       - run: 
-          name: Install kops 
-          command: |
-            apt-get update
-            apt-get install -qq -y wget curl gettext
-            wget -O kops https://github.com/kubernetes/kops/releases/download/$(curl -s https://api.github.com/repos/kubernetes/kops/releases/latest | grep tag_name | cut -d '"' -f 4)/kops-linux-amd64
-            chmod +x ./kops
-            mv ./kops /usr/local/bin/kops
-            echo "export KOPS_CLUSTER_NAME=${K8S_DOMAIN_AWS}" >> $BASH_ENV
-            echo "export KOPS_STATE_STORE=s3://${S3_BUCKET_NAME}" >> $BASH_ENV
+        name: Install kops
+        command: |
+          apt-get update
+          apt-get install -qq -y wget curl gettext
+          wget -O kops https://github.com/kubernetes/kops/releases/download/$(curl -s https://api.github.com/repos/kubernetes/kops/releases/latest | grep tag_name | cut -d '"' -f 4)/kops-linux-amd64
+          chmod +x ./kops
+          mv ./kops /usr/local/bin/kops
+          echo "export KOPS_CLUSTER_NAME=${K8S_DOMAIN_AWS}" >> $BASH_ENV
+          echo "export KOPS_STATE_STORE=s3://${S3_BUCKET_NAME}" >> $BASH_ENV
       - run: 
-          name: Install kubectl
-          command: |
-            wget -O kubectl https://storage.googleapis.com/kubernetes-release/release/$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)/bin/linux/amd64/kubectl
-            chmod +x ./kubectl
-            mv ./kubectl /usr/local/bin/kubectl
+        name: Install kubectl
+        command: |
+          wget -O kubectl https://storage.googleapis.com/kubernetes-release/release/$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)/bin/linux/amd64/kubectl
+          chmod +x ./kubectl
+          mv ./kubectl /usr/local/bin/kubectl
       - run: 
-          name: Install aws cli
-          command: |
-            pip install awscli
-            echo "export AWS_ACCESS_KEY=$AWS_ACCESS_KEY">> $BASH_ENV
-            echo "export AWS_SECRET_KEY=$AWS_SECRET_KEY">> $BASH_ENV
-            echo "export AWS_REGION=us-east-1" >> $BASH_ENV
+        name: Install aws cli
+        command: |
+          pip install awscli
+          echo "export AWS_ACCESS_KEY=$AWS_ACCESS_KEY">> $BASH_ENV
+          echo "export AWS_SECRET_KEY=$AWS_SECRET_KEY">> $BASH_ENV
+          echo "export AWS_REGION=us-east-1" >> $BASH_ENV
       - run: 
-          name: Create CLuster
-          command: |
-            pwd
-            echo $HOME
-            ls $HOME
-            ls ~/repo
-            if kops get cluster --name ${KOPS_CLUSTER_NAME} ; then
-              echo "Cluster exists, loading configuration into kubectl"
-              kops export kubecfg --name ${KOPS_CLUSTER_NAME}
+        name: Create CLuster
+        command: |
+          pwd
+          echo $HOME
+          ls $HOME
+          ls ~/repo
+          if kops get cluster --name ${KOPS_CLUSTER_NAME} ; then
+            echo "Cluster exists, loading configuration into kubectl"
+            kops export kubecfg --name ${KOPS_CLUSTER_NAME}
+          else
+            exit 1
+          fi
+          attempts=0
+          until kops validate cluster ; do
+            # wait up to 10 minutes for helthy cluster
+            if [ $attempts -lt 10 ];then
+              echo "Cluster not ready"
+              sleep 30
+              let attempts=attempts+1
             else
-              exit 1
+              echo "Attempts failed"
+              #exit 1
             fi
-            attempts=0
-            until kops validate cluster ; do
-              # wait up to 10 minutes for helthy cluster
-              if [ $attempts -lt 10 ];then
-                echo "Cluster not ready"
-                sleep 30
-                let attempts=attempts+1
-              else
-                echo "Attempts failed"
-                #exit 1
-              fi
-            done
-            kubectl config set-context $(kubectl config current-context) --namespace=$NAMESPACE
-            #push image for first run, or update existing.
-            # source /tmp/docker_image
-            # echo "Deploying IMage: ${DOCKER_IMAGE}"
-            if kubectl describe deployment/osa-andes ;then
-              echo "Updating image on existing deployment" 
+          done
+          kubectl config set-context $(kubectl config current-context) --namespace=$NAMESPACE
+          #push image for first run, or update existing.
+          # source /tmp/docker_image
+          # echo "Deploying IMage: ${DOCKER_IMAGE}"
+          if kubectl describe deployment/osa-andes ;then
+            echo "Updating image on existing deployment"
 
-              # envsubst < ~/repo/k8s/kube/redis-volume.yaml > ${HOME}/patched-redis-volume.yaml
-              # kubectl apply -f ${HOME}/patched-redis-volume.yaml
+            # envsubst < ~/repo/k8s/kube/redis-volume.yaml > ${HOME}/patched-redis-volume.yaml
+            # kubectl apply -f ${HOME}/patched-redis-volume.yaml
 
-              # envsubst < ~/repo/k8s/kube/redis-deployment.yaml > ${HOME}/patched-redis-deployment.yaml
-              # kubectl apply -f ${HOME}/patched-redis-deployment.yaml
-              # kubectl rollout status deployment/redis
+            # envsubst < ~/repo/k8s/kube/redis-deployment.yaml > ${HOME}/patched-redis-deployment.yaml
+            # kubectl apply -f ${HOME}/patched-redis-deployment.yaml
+            # kubectl rollout status deployment/redis
 
-              envsubst < ~/repo/k8s/kube/andes-deployment.yaml > ${HOME}/patched-andes-deployment.yaml
-              kubectl apply -f ${HOME}/patched-andes-deployment.yaml
-              kubectl annotate deployment osa-andes kubernetes.io/change-cause="version: $CIRCLE_SHA1, date: $(date '+%Y-%m-%d %H:%M:%S %z')" --record=false --overwrite=true
-              kubectl rollout status deployment/osa-andes
-
-              envsubst < ~/repo/k8s/kube/andes-service.yaml > ${HOME}/patched-andes-celery.yaml
-              kubectl apply -f ${HOME}/patched-andes-celery.yaml
-
-            else
-              echo "There's no deployments deployed in cluster"
-              kubectl apply -f ~/repo/k8s/kube/${NAMESPACE}/namespace.yaml
-              kubectl apply -f ~/repo/k8s/kube/${NAMESPACE}/aws-registry.yaml
-              kubectl apply -f ~/repo/k8s/kube/${NAMESPACE}/ingress-nginx.yaml
-
-              envsubst < ~/repo/k8s/kube/redis-volume.yaml > ${HOME}/patched-redis-volume.yaml
-              kubectl apply -f ${HOME}/patched-redis-volume.yaml
-
-              envsubst < ~/repo/k8s/kube/redis-deployment.yaml > ${HOME}/patched-redis-deployment.yaml
-              kubectl apply -f ${HOME}/patched-redis-deployment.yaml
-              kubectl rollout status deployment/redis
-
-              envsubst < ~/repo/k8s/kube/andes-deployment.yaml > ${HOME}/patched-andes-deployment.yaml
-              kubectl apply -f ${HOME}/patched-andes-deployment.yaml
-              kubectl rollout status deployment/osa-andes
-
-              envsubst < ~/repo/k8s/kube/andes-service.yaml > ${HOME}/patched-andes-celery.yaml
-              kubectl apply -f ${HOME}/patched-andes-celery.yaml
-
-            fi
-
-            # block until deployment is running
+            envsubst < ~/repo/k8s/kube/andes-deployment.yaml > ${HOME}/patched-andes-deployment.yaml
+            kubectl apply -f ${HOME}/patched-andes-deployment.yaml
+            kubectl annotate deployment osa-andes kubernetes.io/change-cause="version: $CIRCLE_SHA1, date: $(date '+%Y-%m-%d %H:%M:%S %z')" --record=false --overwrite=true
             kubectl rollout status deployment/osa-andes
+
+            envsubst < ~/repo/k8s/kube/andes-service.yaml > ${HOME}/patched-andes-celery.yaml
+            kubectl apply -f ${HOME}/patched-andes-celery.yaml
+
+          else
+            echo "There's no deployments deployed in cluster"
+            kubectl apply -f ~/repo/k8s/kube/${NAMESPACE}/namespace.yaml
+            kubectl apply -f ~/repo/k8s/kube/${NAMESPACE}/aws-registry.yaml
+            kubectl apply -f ~/repo/k8s/kube/${NAMESPACE}/ingress-nginx.yaml
+
+            envsubst < ~/repo/k8s/kube/redis-volume.yaml > ${HOME}/patched-redis-volume.yaml
+            kubectl apply -f ${HOME}/patched-redis-volume.yaml
+
+            envsubst < ~/repo/k8s/kube/redis-deployment.yaml > ${HOME}/patched-redis-deployment.yaml
+            kubectl apply -f ${HOME}/patched-redis-deployment.yaml
+            kubectl rollout status deployment/redis
+
+            envsubst < ~/repo/k8s/kube/andes-deployment.yaml > ${HOME}/patched-andes-deployment.yaml
+            kubectl apply -f ${HOME}/patched-andes-deployment.yaml
+            kubectl rollout status deployment/osa-andes
+
+            envsubst < ~/repo/k8s/kube/andes-service.yaml > ${HOME}/patched-andes-celery.yaml
+            kubectl apply -f ${HOME}/patched-andes-celery.yaml
+
+          fi
+
+          # block until deployment is running
+          kubectl rollout status deployment/osa-andes
 
   deploy-production:
     <<: *deploy-AWS
@@ -147,23 +147,23 @@ jobs:
 
 workflows:
   version: 2
-  deploy-production:
+  deploy:
     jobs:
       - build:
-          context: build
+        context: build
       - deploy-production:
-          requires:
-              - build
-          filters:
-            branches:
-              only:
-                - master
-          context: prod
+        requires:
+          - build
+        filters:
+          branches:
+            only:
+              - master
+        context: prod
       - deploy-staging:
-          requires:
-              - build
-          filters:
-            branches:
-              only:
-                - develop
-          context: stage
+        requires:
+          - build
+        filters:
+          branches:
+            only:
+              - develop
+        context: stage
