@@ -11,6 +11,8 @@ const user_model_1 = require("../models/user.model");
 const user_model_2 = require("../models/user.model");
 class JWTController {
     constructor() {
+        this.androidVersion = '2.1.8';
+        this.iosVersion = '1.4.0';
         this.login = this.login.bind(this);
         this.token = this.token.bind(this);
         // this.isJWTAuthenticated = this.isJWTAuthenticated.bind(this);
@@ -126,8 +128,8 @@ class JWTController {
                                         refreshToken: jwt.sign(userInfo, req.app.locals.secretKey, {
                                             expiresIn: '30 days'
                                         }),
-                                        iosVersion: '1.4.0',
-                                        androidVersion: '2.1.6',
+                                        iosVersion: this.iosVersion,
+                                        androidVersion: this.androidVersion,
                                         user: userInfo
                                     },
                                     status: 200
@@ -258,8 +260,8 @@ class JWTController {
                                                 refreshToken: jwt.sign(userInfo, req.app.locals.secretKey, {
                                                     expiresIn: '30 days'
                                                 }),
-                                                iosVersion: '1.4.1',
-                                                androidVersion: '1.4.0',
+                                                iosVersion: this.iosVersion,
+                                                androidVersion: this.androidVersion,
                                                 user: userInfo
                                             },
                                             status: 200

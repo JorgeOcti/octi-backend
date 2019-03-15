@@ -12,6 +12,9 @@ import UserModel, {IUserModel} from '../models/user.model';
 
 class JWTController {
 
+  private androidVersion: string = '2.1.8';
+  private iosVersion: string = '1.4.0';
+
   constructor() {
     this.login = this.login.bind(this);
     this.token = this.token.bind(this);
@@ -125,8 +128,8 @@ class JWTController {
                       refreshToken: jwt.sign(userInfo, req.app.locals.secretKey, {
                         expiresIn: '30 days'
                       }),
-                      iosVersion: '1.4.0',
-                      androidVersion: '2.1.6',
+                      iosVersion: this.iosVersion,
+                      androidVersion: this.androidVersion,
                       user: userInfo
                     },
                     status: 200
@@ -252,8 +255,8 @@ class JWTController {
                           refreshToken: jwt.sign(userInfo, req.app.locals.secretKey, {
                             expiresIn: '30 days'
                           }),
-                          iosVersion: '1.4.1',
-                          androidVersion: '1.4.0',
+                          iosVersion: this.iosVersion,
+                          androidVersion: this.androidVersion,
                           user: userInfo
                         },
                         status: 200
