@@ -34,13 +34,13 @@ jobs:
       - attach_workspace: 
           at: /tmp
       - run: 
-          name: Install dependencies 
+          name: Install dependencies
           command: |
             apt-get update
             apt-get install -qq -y wget curl gettext git
       - checkout
       - run: 
-          name: Install kops 
+          name: Install kops
           command: |
             apt-get update
             apt-get install -qq -y wget curl gettext
@@ -92,7 +92,7 @@ jobs:
             # source /tmp/docker_image
             # echo "Deploying IMage: ${DOCKER_IMAGE}"
             if kubectl describe deployment/osa-andes ;then
-              echo "Updating image on existing deployment" 
+              echo "Updating image on existing deployment"
 
               # envsubst < ~/repo/k8s/kube/redis-volume.yaml > ${HOME}/patched-redis-volume.yaml
               # kubectl apply -f ${HOME}/patched-redis-volume.yaml
@@ -147,7 +147,7 @@ jobs:
 
 workflows:
   version: 2
-  deploy-production:
+  deploy:
     jobs:
       - build:
           context: build

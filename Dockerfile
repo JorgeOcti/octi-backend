@@ -1,31 +1,32 @@
-FROM node:9.11-alpine
+FROM node:10.15.3-stretch-slim
+MAINTAINER Gonzalo Muñoz Coloma gmunoz@osacontrol.com
 
-LABEL maintainer = "gmunoz@osacontrol.com"
+RUN apt-get update && \
+    apt-get upgrade -y && \
+    apt-get install -y  --no-install-recommends \
+        build-essential \
+        python \
+        graphicsmagick \
+        gettext \
+        imagemagick && \
+    rm -rf /var/lib/apt
 
 WORKDIR /srv
 
-COPY . /srv
+COPY ./package.json /srv/package.json
 
-# install requirements
-RUN apk add --no-cache make gcc g++ python graphicsmagick gettext librsvg ghostscript imagemagick && \
-  npm --unsafe-perm install && \
-  apk del make gcc g++ python
+RUN npm --unsafe-perm --production install  && \
+    npm i -g pm2 && \
+    touch /srv/s3-config.json && \
+    echo "{}" >> /srv/s3-config.json && \
+    touch /srv/ses-config.json && \
+    echo "{}" >> /srv/ses-config.json
 
-RUN npm i -g pm2
-
-# port to expose
-RUN npm run build
-
-RUN touch s3-config.json
-RUN echo "{}" >>s3-config.json
-RUN touch ses-config.json
-RUN echo "{}" >>ses-config.json
+COPY ./dist /srv/dist
+COPY ./public /srv/public
+COPY ./views /srv/views
+COPY ./pm2.json /srv/pm2.json
 
 EXPOSE 3000
 
-# run app
-
-# run watch app
-# CMD ["npm", "run", "watch-ts"]
-# CMD ["node", "dist/server.js"]
 CMD [ "pm2", "start", "pm2.json", "--no-daemon" ]
