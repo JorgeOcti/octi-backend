@@ -6,7 +6,16 @@ jobs:
     steps:
       - setup_remote_docker:
           docker_layer_caching: true
-      - checkout
+      - restore_cache:
+          keys:
+            - source-{{ .Branch }}-{{ .Revision }}
+            - source-{{ .Branch }}-
+            - source-
+            - checkout
+      - save_cache:
+          key: source-{{ .Branch }}-{{ .Revision }}
+          paths:
+            - ".git"
       - run: 
           name: Install aws cli
           command: |
@@ -38,7 +47,16 @@ jobs:
           command: |
             apt-get update
             apt-get install -qq -y wget curl gettext git
+      - restore_cache:
+          keys:
+            - source-{{ .Branch }}-{{ .Revision }}
+            - source-{{ .Branch }}-
+            - source-
       - checkout
+      - save_cache:
+          key: source-{{ .Branch }}-{{ .Revision }}
+          paths:
+            - ".git"
       - run: 
           name: Install kops
           command: |
