@@ -3,7 +3,7 @@ MAINTAINER Gonzalo Muñoz Coloma gmunoz@osacontrol.com
 
 RUN apt-get update && \
     apt-get upgrade -y && \
-    apt-get install -y \
+    apt-get install -y  --no-install-recommends \
         build-essential \
         python \
         graphicsmagick \
