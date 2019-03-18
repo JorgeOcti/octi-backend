@@ -28,37 +28,37 @@ jobs:
 
   deploy-AWS: &deploy-AWS
     docker:
-      - image: python:2.7.15-slim-stretch
+      - image: circleci/python:2.7.15-stretch
     working_directory: ~/repo
     steps:
-      - attach_workspace: 
+      - attach_workspace:
           at: /tmp
-      - run: 
+      - run:
           name: Install dependencies
           command: |
-            apt-get update
-            apt-get install -qq -y wget curl gettext git
+            sudo apt-get update
+            sudo apt-get install -qq -y wget curl gettext git
       - checkout
       - run: 
           name: Install kops
           command: |
-            apt-get update
-            apt-get install -qq -y wget curl gettext
+            sudo apt-get update
+            sudo apt-get install -qq -y wget curl gettext
             wget -O kops https://github.com/kubernetes/kops/releases/download/$(curl -s https://api.github.com/repos/kubernetes/kops/releases/latest | grep tag_name | cut -d '"' -f 4)/kops-linux-amd64
-            chmod +x ./kops
-            mv ./kops /usr/local/bin/kops
+            sudo chmod +x ./kops
+            sudo mv ./kops /usr/local/bin/kops
             echo "export KOPS_CLUSTER_NAME=${K8S_DOMAIN_AWS}" >> $BASH_ENV
             echo "export KOPS_STATE_STORE=s3://${S3_BUCKET_NAME}" >> $BASH_ENV
       - run: 
           name: Install kubectl
           command: |
             wget -O kubectl https://storage.googleapis.com/kubernetes-release/release/$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)/bin/linux/amd64/kubectl
-            chmod +x ./kubectl
-            mv ./kubectl /usr/local/bin/kubectl
+            sudo chmod +x ./kubectl
+            sudo mv ./kubectl /usr/local/bin/kubectl
       - run: 
           name: Install aws cli
           command: |
-            pip install awscli
+            sudo pip install awscli
             echo "export AWS_ACCESS_KEY=$AWS_ACCESS_KEY">> $BASH_ENV
             echo "export AWS_SECRET_KEY=$AWS_SECRET_KEY">> $BASH_ENV
             echo "export AWS_REGION=us-east-1" >> $BASH_ENV
