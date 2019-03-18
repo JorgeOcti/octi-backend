@@ -1,7 +1,45 @@
-version: '3'
+version: '3.2'
 
 services:
-  web:
-    build: .
+  mongo:
+    image: mongo:3.4-jessie
+    restart: always
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: 'osacontrol'
+      MONGO_INITDB_ROOT_PASSWORD: 'osacontrol'
+    ports:
+      - 27017:27017
     volumes:
-      - .:/srv
+      - mongo:/data/db
+
+  redis:
+    image: redis:5.0.3
+    restart: always
+    ports:
+      - 6379:6379
+    volumes:
+      - redis:/data
+
+  web:
+    build:
+      dockerfile: Dockerfile
+      context: .
+    image: andes:latest
+    restart: always
+    env_file:
+      - .env
+    environment:
+      REDIS_SERVICE_SERVICE_HOST: 'redis'
+    ports:
+      - 3030:3030
+    volumes:
+      - ./dist:/srv/dist
+      - ./public:/srv/public
+      - ./views:/srv/views
+    depends_on:
+      - redis
+      - mongo
+
+volumes:
+  mongo:
+  redis:
