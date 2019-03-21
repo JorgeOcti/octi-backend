@@ -40,6 +40,7 @@ appRouter.get('/api/participant/:id/', Middlewares.isLoggedIn, CarController.api
 appRouter.get('/api/participants-per-date/', Middlewares.isLoggedIn, CarController.apiParticipantsPerDate);
 
 // admin user
+appRouter.get('/settings/users/export/', Middlewares.isLoggedIn, AdminUsersController.exportXLS);
 appRouter.get('/settings/users/', Middlewares.isLoggedIn, AdminUsersController.index);
 
 // api admin users
