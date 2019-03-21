@@ -166,7 +166,7 @@ class UserListView extends React.Component<IPropsType, IStateType> {
           exporing: false
         });
         if (!Axios.isCancel(err)) {
-          swal('Descargar imágenes', 'ha ocurrido un error descargando las imágenes.', 'error');
+          swal('Exportar usuarios', 'Ha ocurrido un error al general el excel.', 'error');
         }
       });
   }
