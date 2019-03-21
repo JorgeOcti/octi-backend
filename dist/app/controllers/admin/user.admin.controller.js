@@ -57,7 +57,12 @@ class AdminUsersController {
                     header: 'Último inicio de sesión', key: 'lastLogin', width: 21, style: { numFmt: 'dd/mm/yyyy' }
                 }];
             /* body */
-            const users = await user_model_1.default.find({ team }).populate([{
+            const users = await user_model_1.default.find({
+                team,
+                venue: {
+                    $in: req.user.venuesPermissions()
+                }
+            }).populate([{
                     path: 'venuesAccess',
                     select: ['name'],
                     populate: [{
@@ -164,7 +169,10 @@ class AdminUsersController {
         };
         try {
             const users = await this.getUsers({
-                team
+                team,
+                venue: {
+                    $in: req.user.venuesPermissions()
+                }
             }, options, search);
             // validate exist page
             /* istanbul ignore if  */
