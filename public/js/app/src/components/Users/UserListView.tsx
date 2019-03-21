@@ -1,5 +1,5 @@
 ///<reference path="../../../node_modules/sweetalert/typings/sweetalert.d.ts"/>
-import {AxiosError} from 'axios';
+import {AxiosError, default as Axios} from 'axios';
 import * as moment from 'moment';
 // import * as PropTypes from 'prop-types';
 import * as Raven from 'raven-js';
@@ -45,6 +45,7 @@ interface IPropsType extends RouteComponentProps<{ ticket: string }> {
 interface IStateType {
   error: Error | null;
   searchText: string;
+  exporing: boolean;
 }
 
 declare let window: IWindow;
@@ -58,7 +59,8 @@ class UserListView extends React.Component<IPropsType, IStateType> {
   // };
   readonly state = {
     error: null,
-    searchText: ''
+    searchText: '',
+    exporing: false
   };
 
   private socket: SocketIOClient.Socket;
@@ -74,6 +76,7 @@ class UserListView extends React.Component<IPropsType, IStateType> {
     this.changePassword = this.changePassword.bind(this);
     this.processChangePassword = this.processChangePassword.bind(this);
     this.onChangeSearch = this.onChangeSearch.bind(this);
+    this.exportExcel = this.exportExcel.bind(this);
     this.debounceOnChangeSearch = debounce(300, this.debounceOnChangeSearch);
   }
 
@@ -116,20 +119,84 @@ class UserListView extends React.Component<IPropsType, IStateType> {
     this.socket.disconnect();
   }
 
+  public exportExcel() {
+    this.setState({
+      exporing: true
+    });
+    const api: ApiService = new ApiService();
+    const instance = api.getInstance();
+    instance.defaults.responseType = 'blob';
+    instance
+      .get(`/settings/users/export/`)
+      .then((response) => {
+        const blob = new Blob([response.data], {
+          type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+        });
+        const fileName = `${moment().format('YYYYMMDD')}-usuarios .xlsx`;
+        if (typeof window.navigator.msSaveBlob !== 'undefined') {
+          // IE workaround for "HTML7007: One or more blob URLs were
+          // revoked by closing the blob for which they were created.
+          // These URLs will no longer resolve as the data backing
+          // the URL has been freed."
+          window.navigator.msSaveBlob(blob, fileName);
+        } else {
+          const blobURL = window.URL.createObjectURL(blob);
+          const tempLink = document.createElement('a');
+          tempLink.style.display = 'none';
+          tempLink.href = blobURL;
+          tempLink.setAttribute('download', fileName);
+          // Safari thinks _blank anchor are pop ups. We only want to set _blank
+          // target if the browser does not support the HTML5 download attribute.
+          // This allows you to download files in desktop safari if pop up blocking
+          // is enabled.
+          if (typeof tempLink.download === 'undefined') {
+            tempLink.setAttribute('target', '_blank');
+          }
+          this.setState({
+            exporing: false
+          });
+          document.body.appendChild(tempLink);
+          tempLink.click();
+          document.body.removeChild(tempLink);
+          window.URL.revokeObjectURL(blobURL);
+        }
+      })
+      .catch((err) => {
+        this.setState({
+          exporing: false
+        });
+        if (!Axios.isCancel(err)) {
+          swal('Exportar usuarios', 'Ha ocurrido un error al general el excel.', 'error');
+        }
+      });
+  }
+
   public render(): React.ReactElement<IPropsType> {
+    const {exporing} = this.state;
     const {loading, users, pagination} = this.props.users;
     return (
       <AppContainer title="" cMenu="10" cSubMenu="10.5" cAction="Listado">
         <section className="content">
           <div className="box">
             <div className="box-header with-border"><h3 className="box-title">Usuarios <small>{pagination.count}</small></h3>
-              {
-                hasPermission(window.user, 'addUser') ?
-                  <div className="box-tools pull-right">
+              <div className="box-tools pull-right">
+                {
+                  hasPermission(window.user, 'addUser') ?
                     <button className="btn btn-sm btn-success" onClick={this.createUser}>Agregar</button>
-                  </div>
-                  : null
-              }
+                    : null
+                }
+                <button
+                  className="btn btn-sm btn-primary  hidden-xs"
+                  onClick={this.exportExcel}
+                  disabled={exporing}
+                  style={{marginLeft: '5px'}}
+                >{
+                  exporing ?
+                    <React.Fragment><i className="fa fa-spin fa-spinner"/> Exportando</React.Fragment>
+                    : <React.Fragment><i className="fa fa-fw fa-download"/> Exportar</React.Fragment>
+                }
+                </button>
+              </div>
             </div>
             <div className="box-body no-padding">
               <div className="row">

@@ -1,5 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+const excel = require("exceljs");
+const tempfile = require("tempfile");
 const app_1 = require("../../../app");
 const server_1 = require("../../../server");
 const user_model_1 = require("../../models/user.model");
@@ -10,6 +12,7 @@ class AdminUsersController {
         this.apiCreateUser = this.apiCreateUser.bind(this);
         this.apiUpdateUser = this.apiUpdateUser.bind(this);
         this.apiDeleteUser = this.apiDeleteUser.bind(this);
+        this.exportXLS = this.exportXLS.bind(this);
         this.apiChangePasswordUser = this.apiChangePasswordUser.bind(this);
     }
     async index(req, res) {
@@ -19,6 +22,96 @@ class AdminUsersController {
         }
         else {
             res.status(403).render('403');
+        }
+    }
+    async exportXLS(req, res) {
+        if (!req.user.hasPermission('viewUser')) {
+            return res.status(403).json({
+                message: 'No tienes permisos para esta operación'
+            });
+        }
+        const { team } = req.user;
+        try {
+            /* generate file */
+            const workbook = new excel.Workbook();
+            const worksheet = workbook.addWorksheet('Usuarios', {
+                properties: {
+                    defaultRowHeight: 30
+                }, pageSetup: {
+                    fitToPage: true, fitToHeight: 100, fitToWidth: 1
+                }
+            });
+            worksheet.autoFilter = { from: 'A1', to: 'F1' };
+            /* headers */
+            worksheet.columns = [{
+                    header: 'Nombre', key: 'name', width: 30
+                }, {
+                    header: 'Correo', key: 'email', width: 30
+                }, {
+                    header: 'Sucursal', key: 'venue', width: 30
+                }, {
+                    header: 'Empresa', key: 'company', width: 20
+                }, {
+                    header: 'Creado', key: 'created', width: 21, style: { numFmt: 'dd/mm/yyyy' }
+                }, {
+                    header: 'Último inicio de sesión', key: 'lastLogin', width: 21, style: { numFmt: 'dd/mm/yyyy' }
+                }];
+            /* body */
+            const users = await user_model_1.default.find({ team }).populate([{
+                    path: 'venuesAccess',
+                    select: ['name'],
+                    populate: [{
+                            path: 'company',
+                            select: ['name']
+                        }]
+                }, {
+                    path: 'venue',
+                    select: ['name', 'active'],
+                    populate: [{
+                            path: 'company',
+                            select: ['name']
+                        }]
+                }]);
+            users.forEach((user) => {
+                const detailUser = {
+                    name: user.fullName(),
+                    email: user.email,
+                    created: user.createdAt,
+                    lastLogin: user.lastLogin
+                };
+                worksheet.addRow({
+                    ...detailUser,
+                    venue: user.venue ? user.venue.name : '',
+                    company: user.venue && user.venue.company ? user.venue.company.name : ''
+                });
+                user.venuesAccess.forEach((venue) => {
+                    worksheet.addRow({
+                        ...detailUser,
+                        venue: venue.name,
+                        company: venue.company.name
+                    });
+                });
+            });
+            /* formats */
+            worksheet.getRow(1).eachCell((cell) => {
+                cell.font = {
+                    bold: true
+                };
+            });
+            // const idCol = worksheet.getColumn('id');
+            // idCol.eachCell({includeEmpty: true}, (cell) => {
+            //   cell.alignment = {vertical: 'middle', horizontal: 'center'};
+            // });
+            const tempFilePath = tempfile('.xlsx');
+            await workbook.xlsx.writeFile(tempFilePath);
+            res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+            res.setHeader('Content-Disposition', 'attachment; filename=usuarios-21-03-2019.xlsx');
+            return res.sendFile(tempFilePath);
+        }
+        catch (e) {
+            return res.status(500).json({
+                message: 'Ha ocurrido un error. Comunicate con soporte para que te ayudemos a solucionarlo.'
+            });
         }
     }
     async apiUsers(req, res) {

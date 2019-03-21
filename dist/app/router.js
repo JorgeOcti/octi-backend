@@ -34,6 +34,7 @@ appRouter.get('/api/participant/csv/', middlewares_1.default.isLoggedIn, car_con
 appRouter.get('/api/participant/:id/', middlewares_1.default.isLoggedIn, car_controller_1.default.apiParticipantDetail);
 appRouter.get('/api/participants-per-date/', middlewares_1.default.isLoggedIn, car_controller_1.default.apiParticipantsPerDate);
 // admin user
+appRouter.get('/settings/users/export/', middlewares_1.default.isLoggedIn, user_admin_controller_1.default.exportXLS);
 appRouter.get('/settings/users/', middlewares_1.default.isLoggedIn, user_admin_controller_1.default.index);
 // api admin users
 appRouter.get('/api/admin/users/', middlewares_1.default.isLoggedIn, user_admin_controller_1.default.apiUsers);
