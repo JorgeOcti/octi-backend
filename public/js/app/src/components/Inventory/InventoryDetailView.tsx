@@ -1057,7 +1057,7 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
       const api: ApiService = new ApiService();
       const instance = api.getInstance();
       instance.defaults.responseType = 'blob';
-      instance.defaults.timeout = 240000;
+      instance.defaults.timeout = 7200000;
       const source = api.getSource();
       this.setState({
         source
