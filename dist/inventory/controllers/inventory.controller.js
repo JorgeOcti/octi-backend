@@ -900,7 +900,7 @@ class InventoryController {
                                 }
                             });
                         }
-                    }, 60000);
+                    }, 1200000);
                 });
                 console.log('results', results);
                 res.setHeader('size', results.reduce((a, b) => a + b));
