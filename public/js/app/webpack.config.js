@@ -1,6 +1,7 @@
 const webpack = require('webpack');
 const path = require('path');
 const DashboardPlugin = require('webpack-dashboard/plugin');
+const SentryCliPlugin = require('@sentry/webpack-plugin');
 
 let plugins;
 const sourcePath = path.join(__dirname, './src');
@@ -8,7 +9,14 @@ const sourcePath = path.join(__dirname, './src');
 
 if (process.env.NODE_ENV === 'production') {
   plugins = [
-    new webpack.EnvironmentPlugin(['NODE_ENV'])
+    new webpack.EnvironmentPlugin(['NODE_ENV']),
+    new SentryCliPlugin({
+      include: '.',
+      ignoreFile: '.sentrycliignore',
+      ignore: ['node_modules', 'webpack.config.js'],
+      configFile: 'sentry.properties',
+      dryRun: true
+    })
   ];
 }
 else {
@@ -17,6 +25,14 @@ else {
     new webpack.EnvironmentPlugin(['NODE_ENV'])
   ];
 }
+
+const setDevTool = () => {
+    if (process.env.NODE_ENV === 'development') {
+        return 'inline-source-map';
+    } else if (process.env.NODE_ENV === 'production') {
+        return 'cheap-module-source-map';
+    }
+};
 
 module.exports = {// entry: process.env.NODE_ENV === 'production'?['babel-polyfill', './src/app.jsx']:['./src/app.jsx'],
   entry:  process.env.NODE_ENV === 'production'?['babel-polyfill', `${sourcePath}/app.tsx`]:[`${sourcePath}/app.tsx`],
@@ -67,6 +83,7 @@ module.exports = {// entry: process.env.NODE_ENV === 'production'?['babel-polyfi
     },
     moment: 'moment'
   },
+  devtool: setDevTool(),
   devServer: {
     contentBase: sourcePath,
     hot: true,

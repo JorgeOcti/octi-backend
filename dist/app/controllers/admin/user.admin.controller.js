@@ -52,9 +52,9 @@ class AdminUsersController {
                 }, {
                     header: 'Empresa', key: 'company', width: 20
                 }, {
-                    header: 'Creado', key: 'created', width: 21, style: { numFmt: 'dd/mm/yyyy' }
+                    header: 'Creado', key: 'created', width: 21, style: { numFmt: 'dd/mm/yyyy hh:mm' }
                 }, {
-                    header: 'Último inicio de sesión', key: 'lastLogin', width: 21, style: { numFmt: 'dd/mm/yyyy' }
+                    header: 'Último inicio de sesión', key: 'lastLogin', width: 21, style: { numFmt: 'dd/mm/yyyy hh:mm' }
                 }];
             /* body */
             const users = await user_model_1.default.find({
