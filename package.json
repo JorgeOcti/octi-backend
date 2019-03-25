@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "dev": "nodemon --inspect dist/server.js -e js,jade",
+    "dev": "nodemon --inspect dist/server.js -e js,jade --max-old-space-size=4096",
     "build": "tsc",
     "watch-ts": "tsc -w",
     "test": "ENV=testing ts-mocha -p tsconfig.json --recursive src/*.spec.ts src/**/*.spec.ts src/**/**/*.spec.ts --timeout 5000 --exit",
