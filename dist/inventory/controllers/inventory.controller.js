@@ -1,6 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 const archiver = require("archiver");
+const bluebird = require("bluebird");
 const bson_1 = require("bson");
 const fs = require("fs");
 const GraphicsMagick = require("gm");
@@ -93,12 +94,12 @@ class InventoryController {
                     venuesIDs.push(currentVenue._id.toString());
                     if (venue.cars && venue.cars.length) {
                         for (const car of venue.cars) {
-                            let currentCar = await car_model_1.default.findOne({
+                            let currentCar = await car_model_2.default.findOne({
                                 team,
                                 vin: car.vin
                             });
                             if (currentCar === null && car.vin && car.vin.trim().length) {
-                                currentCar = new car_model_1.default({
+                                currentCar = new car_model_2.default({
                                     team,
                                     company,
                                     vin: car.vin,
@@ -107,7 +108,7 @@ class InventoryController {
                                     denomination: car.denomination,
                                     brand: car.brand,
                                     patent: car.patent,
-                                    status: car_model_1.ChoicesStatusCar.active
+                                    status: car_model_2.ChoicesStatusCar.active
                                 });
                                 await currentCar.save();
                             }
@@ -437,6 +438,7 @@ class InventoryController {
                     });
                 }
                 else {
+                    console.log(url);
                     reject(e);
                 }
             }
@@ -533,7 +535,7 @@ class InventoryController {
                 status: inventory_model_1.ChoicesStatusInventory.inProcess
             });
             if (inventory) {
-                const car = await car_model_2.default.findOne({
+                const car = await car_model_1.default.findOne({
                     vin,
                     team
                 });
@@ -866,9 +868,8 @@ class InventoryController {
                 const imagesToCompress = [];
                 for (const car of inventoriesCars) {
                     for (const image of car.images) {
-                        console.log(image.file.name);
                         const destDirectory = `/tmp/${car._id}${image._id}.${image.file.name.split('.')[image.file.name.split('.').length - 1]}`;
-                        imagesToDownload.push(this.downloadFile(image.file.url, destDirectory));
+                        imagesToDownload.push(() => this.downloadFile(image.file.url, destDirectory));
                         imagesToCompress.push({
                             destDirectory,
                             name: `${car.car.vin}/IMAGE${image._id.toString().substr(image._id.length - 10, 10).toUpperCase()}.${image.file.name.split('.')[image.file.name.split('.').length - 1]}`
@@ -876,8 +877,16 @@ class InventoryController {
                     }
                 }
                 // download images
-                const results = await Promise.all(imagesToDownload);
+                console.log('EXECUTE PROMISES');
+                let results = [];
+                let numb = 1;
+                while (imagesToDownload.length) {
+                    console.log('promise', numb);
+                    results = [...results, ...await bluebird.all(imagesToDownload.splice(0, 20).map((promise) => promise()))];
+                    numb++;
+                }
                 // compress images
+                console.log('EXECUTE COMPRESS');
                 imagesToCompress.map((image) => {
                     archive.file(image.destDirectory, {
                         name: image.name
@@ -893,6 +902,7 @@ class InventoryController {
                         }
                     }, 60000);
                 });
+                console.log('results', results);
                 res.setHeader('size', results.reduce((a, b) => a + b));
                 archive.pipe(res);
                 archive.finalize();
@@ -944,7 +954,7 @@ class InventoryController {
                 team
             });
             if (inventory) {
-                const car = await car_model_1.default.findOneOrCreate({
+                const car = await car_model_2.default.findOneOrCreate({
                     vin,
                     team
                 }, {
@@ -955,7 +965,7 @@ class InventoryController {
                     color,
                     team,
                     company,
-                    status: car_model_1.ChoicesStatusCar.inventory
+                    status: car_model_2.ChoicesStatusCar.inventory
                 });
                 const inventoryCar = new inventoryCar_model_1.default({
                     car,
@@ -1034,7 +1044,7 @@ class InventoryController {
                         upsert: true
                     });
                     if (newLabel.isExhibition) {
-                        await car_model_1.default.findOneAndUpdate({
+                        await car_model_2.default.findOneAndUpdate({
                             _id: carID,
                             team
                         }, {

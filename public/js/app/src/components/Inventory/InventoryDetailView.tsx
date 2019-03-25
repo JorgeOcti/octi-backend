@@ -848,9 +848,9 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
                         <span className="sr-only">Toggle Dropdown</span>
                       </button>
                       <ul className="dropdown-menu" role="menu">
-                        {/*<li onClick={() => this.downloadImages({all: true})}>*/}
-                          {/*<a href="javascript:void(0)"><i className="fa fa-fw fa-download"/> Descargar todas las imágenes</a>*/}
-                        {/*</li>*/}
+                        <li onClick={() => this.downloadImages({all: true})}>
+                          <a href="javascript:void(0)"><i className="fa fa-fw fa-download"/> Descargar todas las imágenes</a>
+                        </li>
                         <li onClick={() => this.downloadImages({})}>
                           <a href="javascript:void(0)"><i className="fa fa-fw fa-download"/> Descargar imágenes seleccinadas</a>
                         </li>
@@ -1057,6 +1057,7 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
       const api: ApiService = new ApiService();
       const instance = api.getInstance();
       instance.defaults.responseType = 'blob';
+      instance.defaults.timeout = 240000;
       const source = api.getSource();
       this.setState({
         source

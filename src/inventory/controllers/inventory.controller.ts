@@ -1,4 +1,5 @@
 import * as archiver from 'archiver';
+import * as bluebird from 'bluebird';
 import {ObjectID} from 'bson';
 import {Response} from 'express';
 import * as fs from 'fs';
@@ -6,10 +7,10 @@ import * as GraphicsMagick from 'gm';
 import * as https from 'https';
 import * as mongoose from 'mongoose';
 import {queue} from '../../app';
-import CarModel, {ChoicesStatusCar} from '../../app/models/car.model';
 import Car, {
   ICarModel
 } from '../../app/models/car.model';
+import CarModel, {ChoicesStatusCar} from '../../app/models/car.model';
 import UserModel from '../../app/models/user.model';
 import User from '../../app/models/user.model';
 import VenueModel, {
@@ -449,6 +450,7 @@ class InventoryController {
             }
           });
         } else {
+          console.log(url);
           reject(e);
         }
       }
@@ -875,9 +877,8 @@ class InventoryController {
         const imagesToCompress: any = [];
         for (const car of inventoriesCars) {
           for (const image of car.images) {
-            console.log(image.file.name);
             const destDirectory = `/tmp/${car._id}${image._id}.${image.file.name.split('.')[image.file.name.split('.').length - 1]}`;
-            imagesToDownload.push(this.downloadFile(image.file.url, destDirectory));
+            imagesToDownload.push(() => this.downloadFile(image.file.url, destDirectory));
             imagesToCompress.push({
               destDirectory,
               name: `${car.car.vin}/IMAGE${image._id.toString().substr(image._id.length - 10, 10).toUpperCase()}.${image.file.name.split('.')[image.file.name.split('.').length - 1]}`
@@ -885,8 +886,16 @@ class InventoryController {
           }
         }
         // download images
-        const results: any = await Promise.all(imagesToDownload);
+        console.log('EXECUTE PROMISES');
+        let results: any[] = [];
+        let numb = 1;
+        while (imagesToDownload.length) {
+          console.log('promise', numb);
+          results = [...results, ...await bluebird.all(imagesToDownload.splice(0, 20).map((promise: any) => promise()))];
+          numb++;
+        }
         // compress images
+        console.log('EXECUTE COMPRESS');
         imagesToCompress.map((image: any) => {
           archive.file(image.destDirectory, {
             name: image.name
@@ -902,6 +911,7 @@ class InventoryController {
               }
             }, 60000);
         });
+        console.log('results', results);
         res.setHeader('size', results.reduce((a: number, b: number) => a + b));
         archive.pipe(res);
         archive.finalize();
