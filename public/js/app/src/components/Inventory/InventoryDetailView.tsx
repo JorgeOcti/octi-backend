@@ -848,8 +848,11 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
                         <span className="sr-only">Toggle Dropdown</span>
                       </button>
                       <ul className="dropdown-menu" role="menu">
-                        <li onClick={this.downloadImages}>
-                          <a href="javascript:void(0)"><i className="fa fa-fw fa-download"/> Descargar Imagenes</a>
+                        <li onClick={() => this.downloadImages({all: true})}>
+                          <a href="javascript:void(0)"><i className="fa fa-fw fa-download"/> Descargar todas las imágenes</a>
+                        </li>
+                        <li onClick={() => this.downloadImages({})}>
+                          <a href="javascript:void(0)"><i className="fa fa-fw fa-download"/> Descargar imágenes seleccinadas</a>
                         </li>
                       </ul>
                     </div>
@@ -1024,10 +1027,18 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
     );
   }
 
-  private downloadImages() {
+  private downloadImages({all}: { all?: boolean }) {
     const {id} = this.props.match.params;
     const {selectedItems, summary, carsTable} = this.props.inventories;
-    const ids = Object.keys(selectedItems);
+    let ids: string[];
+    if (all) {
+      ids = carsTable
+        .filter((car) => car.images.length)
+        .map((car) => car._id);
+    } else {
+      ids = Object.keys(selectedItems);
+    }
+
     const countImages: number = carsTable
       .filter((car) => ids.includes(car._id))
       .reduce((a: any, b: any) => {
@@ -1126,7 +1137,11 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
           });
         });
     } else {
-      swal('Descargar imágenes', 'No has seleccionado vehículos que contengan imágenes.', 'error');
+      if (all) {
+        swal('Descargar imágenes', 'No hay imágenes para dercargar.', 'error');
+      } else {
+        swal('Descargar imágenes', 'No has seleccionado vehículos que contengan imágenes.', 'error');
+      }
     }
   }
 

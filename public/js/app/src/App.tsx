@@ -37,7 +37,7 @@ const App = () => (
             <Switch>
                 <Route exact path="/" component={ DashboardGeneralView }/>
                 <Route exact path="/cars/" component={ DashboardVinView }/>
-                <Route exact path="/cars/:id" component={ DashboardVinDetail }/>
+                <Route exact path="/cars/:id/" component={ DashboardVinDetail }/>
                 <Route exact path="/inventory/" component={ InventoryListView }/>
                 <Route exact path="/inventory/create/" component={ InventoryCreateView }/>
                 <Route exact path="/inventory/:id/" component={ InventoryDetailView }/>
@@ -45,7 +45,7 @@ const App = () => (
                 <Route exact path="/settings/users/" component={ UsersListView }/>
                 <Route exact path="/settings/cars/" component={ CarsListView }/>
                 <Route exact path="/settings/cars/import/" component={ ImportCarsView }/>
-                <Route exact path="/settings/cars/:id" component={ CarDetailView }/>
+                <Route exact path="/settings/cars/:id/" component={ CarDetailView }/>
                 <Route exact path="/settings/labels/" component={ LabelsListView }/>
                 <Route exact path="/settings/venues/" component={ VenuesListView }/>
                 <Route exact path="/settings/companies/" component={ CompaniesListView }/>
