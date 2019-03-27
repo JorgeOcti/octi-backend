@@ -8,14 +8,25 @@ RUN apt-get update && \
         cabextract \
         xfonts-utils \
         fontconfig \
+        libfreetype6 \
         libfontconfig1 \
+        libssl-dev \
+        libxft-dev \
         python \
         graphicsmagick \
         gettext \
         imagemagick && \
+    # install windows fonts
     wget http://ftp.br.debian.org/debian/pool/contrib/m/msttcorefonts/ttf-mscorefonts-installer_3.7_all.deb && \
     dpkg -i ttf-mscorefonts-installer_3.7_all.deb && \
     fc-cache && \
+    # install phantomjs
+    PHANTOM_JS="phantomjs-2.1.1-linux-x86_64" && \
+    wget https://bitbucket.org/ariya/phantomjs/downloads/$PHANTOM_JS.tar.bz2 && \
+    tar -xvjf $PHANTOM_JS.tar.bz2 && \
+    mv $PHANTOM_JS /usr/local/share && \
+    ln -s /usr/local/share/$PHANTOM_JS/bin/phantomjs /usr/local/bin && \
+    # clean
     rm -rf /var/lib/apt
 
 WORKDIR /srv
