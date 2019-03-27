@@ -44,7 +44,7 @@ class FormController {
         format: 'Letter',
         orientation: 'portrait',
         border: {
-          top: '0.4in',
+          top: '0.3in',
           right: '0.5in',
           bottom: '0.3in',
           left: '0.5in'
