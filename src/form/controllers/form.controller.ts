@@ -1,12 +1,16 @@
 import {ObjectID} from 'bson';
 import {Response} from 'express';
+import * as fs from 'fs';
 import * as GraphicsMagick from 'gm';
+import * as HtmlPdf from 'html-pdf';
 import * as moment from 'moment-timezone';
+import * as path from 'path';
+import * as QRCode from 'qrcode';
 import {queue} from '../../app';
 import Alert from '../../app/models/alert.model';
 import CarModel from '../../app/models/car.model';
-import UserModel, {IUserModel} from '../../app/models/user.model';
 import User from '../../app/models/user.model';
+import UserModel, {IUserModel} from '../../app/models/user.model';
 import Venue from '../../app/models/venue.model';
 import {IAnyObject, IRequest} from '../../interfaces/global.interface';
 import {io} from '../../server';
@@ -24,9 +28,135 @@ class FormController {
   constructor() {
     this.list = this.list.bind(this);
     this.detail = this.detail.bind(this);
+    this.pdf = this.pdf.bind(this);
     this.complete = this.complete.bind(this);
     this.changePreferred = this.changePreferred.bind(this);
     this.uploadFile = this.uploadFile.bind(this);
+  }
+
+  public async pdf(req: IRequest, res: Response): Promise<any> {
+    const {debug} = req.query;
+    const {id} = req.params;
+    const {team} = req.user;
+    try {
+      const config: HtmlPdf.CreateOptions = {
+        directory: '/tmp',
+        format: 'Letter',
+        orientation: 'portrait',
+        border: {
+          top: '0.4in',
+          right: '0.5in',
+          bottom: '0.4in',
+          left: '0.5in'
+        },
+        // "header": {
+        //   "height": "45mm",
+        //   "contents": '<div style="text-align: center;">Author: Marc Bachmann</div>'
+        // },
+        footer: {
+          height: '5mm',
+          contents: {
+            default: `<div class="footer">
+                Reporte generado por OSA Andes. Página <span style="color: #444;">{{page}}</span>/<span>{{pages}}</span>
+            </div>`
+          }
+        },
+        type: 'pdf',
+        quality: '75'
+
+      };
+
+      const venuesPermissions = req.user.venuesPermissions();
+      const participant = await ParticipantModel
+        .findOne({
+          _id: id,
+          team,
+          $or: [{
+            venue: {
+              $in: venuesPermissions
+            }
+          }, {
+            venue: {
+              $exists: false
+            }
+          }, {
+            venue: null
+          }]
+        }, {
+          name: true,
+          user: true,
+          sections: true,
+          qualification: true,
+          shipping: true,
+          shippingText: true,
+          shippingImages: true,
+          reception: true,
+          receptionText: true,
+          receptionImages: true,
+          conciliation: true,
+          conciliationText: true,
+          conciliationImages: true,
+          createdAt: true
+        })
+        .populate([{
+          path: 'user',
+          select: ['firstName', 'lastName']
+        }, {
+          path: 'car',
+          select: ['vin', 'internalNumber', 'brand', 'denomination', 'color' ]
+        }, {
+          path: 'sections.answers.images'
+        }, {
+          path: 'shippingImages'
+        }, {
+          path: 'receptionImages'
+        }, {
+          path: 'conciliationImages'
+        }]).lean();
+      moment.locale('es');
+      const css = fs.readFileSync(path.join(__dirname, '../../../views/') + 'form/carDetail/style.css', 'utf8');
+      const templatePath: string = path.join(__dirname, '../../../views/') + 'form/carDetail/index.pug';
+      const html = GeneralUtils.generateHtmlFromPugFile(templatePath, {
+        css: css.replace(/(\r\n|\n|\r)/gm, ''),
+        participant,
+        qr: await QRCode.toDataURL(participant.car.vin, {
+          errorCorrectionLevel: 'H',
+          rendererOpts: {
+            quality: 1
+          }
+        }),
+        moment,
+        getAnswer: ((scale: any, answer: any) => {
+          const choice = scale.choices.find((choice: any) => choice._id.toString() === answer.toString());
+          return choice ? choice.choice : '';
+        }),
+        accesorySelected: (answer: any, item: any) => {
+          return answer.accesoriesSelected.map((a: any) => a.toString()).includes(item._id.toString());
+      }
+      });
+      if (debug) {
+        res.send(html);
+      } else {
+        HtmlPdf.create(html, config).toStream((err, pdfStream) => {
+          if (err) {
+            console.log(err);
+            res.sendStatus(500);
+          } else {
+            // send a status code of 200 OK
+            res.statusCode = 200;
+            // once we are done reading end the response
+            pdfStream.on('end', () => {
+              // done reading
+              res.end();
+            });
+            // pipe the contents of the PDF directly to the response
+            pdfStream.pipe(res);
+          }
+        });
+      }
+    } catch (e) {
+      res.status(500);
+    }
   }
 
   public async list(req: IRequest, res: Response): Promise<any> {

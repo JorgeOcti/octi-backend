@@ -25,6 +25,7 @@ interface IStateType {
   error: Error | null;
   highlight: string[];
   searchText: string;
+  carLoading: string;
 }
 
 class DashboardVinView extends React.Component<IPropsType, IStateType> {
@@ -35,11 +36,13 @@ class DashboardVinView extends React.Component<IPropsType, IStateType> {
   //   getCarsAction: PropTypes.func.isRequired
   // };
 
-  state = {
+  readonly state = {
     error: null,
     highlight: [],
-    searchText: ''
+    searchText: '',
+    carLoading: ''
   };
+  protected printIframe: any;
 
   protected isMount: boolean = false;
   private socket: SocketIOClient.Socket;
@@ -48,7 +51,27 @@ class DashboardVinView extends React.Component<IPropsType, IStateType> {
     super(props);
     this.changePage = this.changePage.bind(this);
     this.onChangeSearch = this.onChangeSearch.bind(this);
+    this.printPdf = this.printPdf.bind(this);
     this.debounceOnChangeSearch = debounce(300, this.debounceOnChangeSearch);
+  }
+
+  public printPdf(url: string, carLoading: string) {
+    this.setState({carLoading});
+    let iframe: any = this.printIframe;
+    if (!this.printIframe) {
+      iframe = this.printIframe = document.createElement('iframe');
+      document.body.appendChild(iframe);
+      iframe.style.display = 'none';
+      iframe.onload = () => {
+        setTimeout(() => {
+          iframe.focus();
+          iframe.contentWindow.print();
+          this.setState({carLoading: ''});
+          // document.body.removeChild(iframe)
+        }, 1);
+      };
+    }
+    iframe.src = url;
   }
 
   public componentWillMount(): void {
@@ -116,7 +139,7 @@ class DashboardVinView extends React.Component<IPropsType, IStateType> {
 
   public render(): React.ReactElement<IPropsType> {
     const {loading, cars, pagination} = this.props.dashboard;
-    const {highlight} = this.state;
+    const {highlight, carLoading} = this.state;
     return (
       <AppContainer title="" cMenu="1" cSubMenu="1.2">
         <section className="content">
@@ -154,6 +177,7 @@ class DashboardVinView extends React.Component<IPropsType, IStateType> {
                       <th style={{width: '10%'}} className="hidden-xs">Calificación</th>
                       <th style={{width: '20%'}} className="hidden-xs">Último checkeo</th>
                       <th className="width-10"/>
+                      <th className="width-10"/>
                     </tr>
                     </thead>
                     <tbody>
@@ -179,8 +203,17 @@ class DashboardVinView extends React.Component<IPropsType, IStateType> {
                               {moment(car.lastForm.createdAt).format('LLL')}
                             </td>
                             <td className="text-primary middle-center">
-                              <button className="btn btn-xs btn-primary" onClick={() => this.props.history.push(`/cars/${car._id}`)}><i
-                                className="fa fa-bars"/></button>
+                              <button
+                                className="btn btn-xs btn-default"
+                                disabled={carLoading === car._id}
+                                onClick={() => this.printPdf(`/report/forms/pdf/${car.lastForm._id}`, car._id)}
+                              ><i className={carLoading === car._id ? 'fa fa-spinner fa-spin' : 'fa fa-print'}/></button>
+                            </td>
+                            <td className="text-primary middle-center">
+                              <button
+                                className="btn btn-xs btn-primary"
+                                onClick={() => this.props.history.push(`/cars/${car._id}`)}
+                              ><i className="fa fa-bars"/></button>
                             </td>
                           </tr>
                         );

@@ -33,6 +33,7 @@ interface IPropsType extends RouteComponentProps<{ id: string }> {
 interface IStateType {
   error: Error | null;
   highlight: string[];
+  carLoading: string;
 }
 
 class DashboardVinDetail extends React.Component<IPropsType, IStateType> {
@@ -44,10 +45,12 @@ class DashboardVinDetail extends React.Component<IPropsType, IStateType> {
   //   getParticipant: PropTypes.func.isRequired
   // };
 
-  state = {
+  readonly state = {
     error: null,
-    highlight: []
+    highlight: [],
+    carLoading: ''
   };
+  protected printIframe: any;
 
   private socket: SocketIOClient.Socket;
 
@@ -75,6 +78,25 @@ class DashboardVinDetail extends React.Component<IPropsType, IStateType> {
     });
   }
 
+  public printPdf(url: string, carLoading: string) {
+    this.setState({carLoading});
+    let iframe: any = this.printIframe;
+    if (!this.printIframe) {
+      iframe = this.printIframe = document.createElement('iframe');
+      document.body.appendChild(iframe);
+      iframe.style.display = 'none';
+      iframe.onload = () => {
+        setTimeout(() => {
+          iframe.focus();
+          iframe.contentWindow.print();
+          this.setState({carLoading: ''});
+          // document.body.removeChild(iframe)
+        }, 1);
+      };
+    }
+    iframe.src = url;
+  }
+
   public componentDidCatch(error: Error, errorInfo: ErrorInfo) {
     this.setState({error});
     Raven.captureException(error, {
@@ -92,7 +114,7 @@ class DashboardVinDetail extends React.Component<IPropsType, IStateType> {
 
   public render(): React.ReactElement<IPropsType> {
     const {loading, car, loadingParticipant} = this.props.dashboard;
-    const {highlight} = this.state;
+    const {highlight, carLoading} = this.state;
     const {getParticipant} = this.props;
     return (
       <AppContainer title="" cMenu="1" cSubMenu="1.2" cAction={`Detalle`}>
@@ -149,6 +171,7 @@ class DashboardVinDetail extends React.Component<IPropsType, IStateType> {
                     <th className="hidden-xs">Sucursal</th>
                     <th className="hidden-xs">Calificación</th>
                     <th className="width-10"/>
+                    <th className="width-10"/>
                   </tr>
                 </thead>
                 <tbody>
@@ -160,6 +183,13 @@ class DashboardVinDetail extends React.Component<IPropsType, IStateType> {
                       <td className="middle hidden-xs">{participant.user ? participant.user.firstName : ''} {participant.user ? participant.user.lastName : ''}</td>
                       <td className="middle hidden-xs">{participant.venue ? participant.venue.name : '-'}</td>
                       <td className="middle hidden-xs">{Math.round(participant.qualification)}%</td>
+                      <td className="text-primary middle-center">
+                        <button
+                          className="btn btn-xs btn-default"
+                          disabled={carLoading === participant._id}
+                          onClick={() => this.printPdf(`/report/forms/pdf/${participant._id}`, participant._id)}
+                        ><i className={carLoading === participant._id ? 'fa fa-spinner fa-spin' : 'fa fa-print'}/></button>
+                      </td>
                       <td className="middle pointer">
                         <button
                           className="btn btn-xs btn-primary"

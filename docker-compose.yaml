@@ -22,14 +22,16 @@ services:
 
   web:
     build:
-      dockerfile: Dockerfile
+      dockerfile: Dockerfile.development
       context: .
     image: andes:latest
     restart: always
+    command: ['nodemon', '--inspect', 'dist/server.js','-e', 'js,jade']
     env_file:
       - .env
     environment:
-      REDIS_SERVICE_SERVICE_HOST: 'redis'
+      REDIS_SERVICE_SERVICE_HOST: redis
+      MONGODB_URI: mongodb://osacontrol:osacontrol@mongo:27017/osaAndesProduction
     ports:
       - 3030:3030
     volumes:

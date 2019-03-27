@@ -13,6 +13,7 @@ router.put('/api/v1/forms/preferred/', Middlewares.isJWTAuthenticated, FormContr
 router.post('/api/v1/forms/:id/upload-file/', Middlewares.isJWTAuthenticated, FormController.uploadFile);
 
 // detail information of the form
+router.get('/report/forms/pdf/:id/', Middlewares.isJWTAuthenticated, FormController.pdf);
 router.get('/api/v1/forms/:id/', Middlewares.isJWTAuthenticated, FormController.detail);
 
 // answer form
