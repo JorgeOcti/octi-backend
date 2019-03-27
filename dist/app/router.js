@@ -18,7 +18,6 @@ const user_controller_1 = require("./controllers/user.controller");
 const appRouter = express.Router();
 exports.appRouter = appRouter;
 const csrfProtection = csrf({ cookie: true });
-// robots.txt
 // DashBoard Principal
 appRouter.get('/', middlewares_1.default.isLoggedIn, car_controller_1.default.generalDashboard);
 // DashBoard Cars

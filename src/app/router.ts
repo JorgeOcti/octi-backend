@@ -18,8 +18,6 @@ const appRouter = express.Router();
 
 const csrfProtection = csrf({ cookie: true });
 
-// robots.txt
-
 // DashBoard Principal
 appRouter.get('/', Middlewares.isLoggedIn, CarController.generalDashboard);
 

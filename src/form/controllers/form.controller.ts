@@ -127,12 +127,15 @@ class FormController {
         }),
         moment,
         getAnswer: ((scale: any, answer: any) => {
-          const choice = scale.choices.find((choice: any) => choice._id.toString() === answer.toString());
-          return choice ? choice.choice : '';
+          if (answer) {
+            const choice = scale.choices.find((choice: any) => choice._id.toString() === answer.toString());
+            return choice ? choice.choice : '';
+          }
+          return '';
         }),
         accesorySelected: (answer: any, item: any) => {
-          return answer.accesoriesSelected.map((a: any) => a.toString()).includes(item._id.toString());
-      }
+          return item ? answer.accesoriesSelected.map((a: any) => a.toString()).includes(item._id.toString()) : false;
+        }
       });
       if (debug) {
         res.send(html);
