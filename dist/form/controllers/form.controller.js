@@ -122,11 +122,14 @@ class FormController {
                 }),
                 moment,
                 getAnswer: ((scale, answer) => {
-                    const choice = scale.choices.find((choice) => choice._id.toString() === answer.toString());
-                    return choice ? choice.choice : '';
+                    if (answer && answer.hasOwnProperty('answer') && answer.answer) {
+                        const choice = scale.choices.find((choice) => choice._id.toString() === answer.toString());
+                        return choice ? choice.choice : '';
+                    }
+                    return '';
                 }),
                 accesorySelected: (answer, item) => {
-                    return answer.accesoriesSelected.map((a) => a.toString()).includes(item._id.toString());
+                    return item ? answer.accesoriesSelected.map((a) => a.toString()).includes(item._id.toString()) : false;
                 }
             });
             if (debug) {
