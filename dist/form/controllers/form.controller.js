@@ -123,7 +123,7 @@ class FormController {
                 moment,
                 getAnswer: ((scale, answer) => {
                     if (answer && answer.hasOwnProperty('answer') && answer.answer) {
-                        const choice = scale.choices.find((choice) => choice._id.toString() === answer.toString());
+                        const choice = scale.choices.find((choice) => choice._id.toString() === answer.answer.toString());
                         return choice ? choice.choice : '';
                     }
                     return '';
