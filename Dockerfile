@@ -2,7 +2,7 @@ FROM node:10.15.3-stretch-slim
 MAINTAINER Gonzalo Muñoz Coloma gmunoz@osacontrol.com
 
 RUN apt-get update && \
-    apt-get upgrade -y && \gettext
+    apt-get upgrade -y && \
     apt-get install -y --no-install-recommends \
         build-essential \
         cabextract \
