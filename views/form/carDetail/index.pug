@@ -9,9 +9,9 @@ mixin headerDetail(first, second, third, quarter)
     if third
       td(width="18%", class="strong")=third
       if quarter
-        td(width="32%")=quarter
+        td(width="32%").text-right=quarter
       else
-        td(width="32%")
+        td(width="32%").text-right
           .border-bottom-dashed
 
 mixin carDetail(first, second, third, quarter, fifth, sixth)
