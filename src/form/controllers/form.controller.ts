@@ -46,7 +46,7 @@ class FormController {
         border: {
           top: '0.4in',
           right: '0.5in',
-          bottom: '0.4in',
+          bottom: '0.3in',
           left: '0.5in'
         },
         // "header": {

@@ -27,6 +27,7 @@ RUN apt-get update && \
     mv $PHANTOM_JS /usr/local/share && \
     ln -s /usr/local/share/$PHANTOM_JS/bin/phantomjs /usr/local/bin && \
     # clean
+    apt-get clean && \
     rm -rf /var/lib/apt
 
 WORKDIR /srv
