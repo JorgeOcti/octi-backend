@@ -18,6 +18,7 @@ const path = require("path");
 const Raven = require("raven");
 const responseTime = require("response-time");
 const Staticify = require("staticify");
+const app_controller_1 = require("./app/controllers/app.controller");
 const user_model_1 = require("./app/models/user.model");
 const router_1 = require("./app/router");
 const email_task_1 = require("./app/tasks/email.task");
@@ -200,6 +201,8 @@ exports.accessLogStream = fileStreamRotator.getStream({
     frequency: 'daily',
     verbose: false
 });
+app.use('/robots.txt', app_controller_1.default.robots);
+app.use('/health-check/', app_controller_1.default.healthCheck);
 /* istanbul ignore if */
 if (app.get('env') !== 'testing') {
     morgan.token('remote-addr', (req) => {
