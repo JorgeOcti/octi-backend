@@ -206,7 +206,7 @@ class DashboardVinView extends React.Component<IPropsType, IStateType> {
                               <button
                                 className="btn btn-xs btn-default"
                                 disabled={carLoading === car._id}
-                                onClick={() => this.printPdf(`/report/forms/pdf/${car.lastForm._id}`, car._id)}
+                                onClick={() => this.printPdf(`/report/forms/pdf/${car.lastForm._id}.pdf`, car._id)}
                               ><i className={carLoading === car._id ? 'fa fa-spinner fa-spin' : 'fa fa-print'}/></button>
                             </td>
                             <td className="text-primary middle-center">

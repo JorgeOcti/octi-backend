@@ -153,6 +153,8 @@ class FormController {
                     else {
                         // set header
                         res.setHeader('Content-Type', 'application/pdf');
+                        res.setHeader('Content-disposition', `inline; filename=${participant._id.toString()}.pdf`);
+                        // res.setHeader('Content-disposition', `attachment; filename=${participant._id.toString()}.pdf`);
                         // send a status code of 200 OK
                         res.statusCode = 200;
                         // once we are done reading end the response
@@ -167,7 +169,7 @@ class FormController {
             }
         }
         catch (e) {
-            res.status(500);
+            res.status(500).send();
         }
     }
     async list(req, res) {

@@ -187,7 +187,7 @@ class DashboardVinDetail extends React.Component<IPropsType, IStateType> {
                         <button
                           className="btn btn-xs btn-default"
                           disabled={carLoading === participant._id}
-                          onClick={() => this.printPdf(`/report/forms/pdf/${participant._id}`, participant._id)}
+                          onClick={() => this.printPdf(`/report/forms/pdf/${participant._id}.pdf`, participant._id)}
                         ><i className={carLoading === participant._id ? 'fa fa-spinner fa-spin' : 'fa fa-print'}/></button>
                       </td>
                       <td className="middle pointer">
