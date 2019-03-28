@@ -154,6 +154,8 @@ class FormController {
             console.log(err);
             res.sendStatus(500);
           } else {
+            // set header
+            res.setHeader('Content-Type', 'application/pdf');
             // send a status code of 200 OK
             res.statusCode = 200;
             // once we are done reading end the response
