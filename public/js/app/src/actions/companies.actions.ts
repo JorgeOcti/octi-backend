@@ -142,10 +142,11 @@ export function getCompaniesAction(nextPage: number) {
 
 export function createCompanyAction() {
   return (dispatch: Dispatch<CompaniesReduxAction>, getState: () => {companies: ICompaniesState}) => {
-    dispatch(isLoadingAction(true));
     const state = getState();
     const {tempCompany} = state.companies;
     const api: ApiService = new ApiService();
+    dispatch(isLoadingAction(true));
+    statusFooterButttonsModal(true);
     api.createCompany(tempCompany)
       .then((response: AxiosResponse) => {
         statusFooterButttonsModal(false);
@@ -184,6 +185,7 @@ export function updateCompanyAction() {
   return (dispatch: Dispatch<CompaniesReduxAction>, getState: () => {companies: ICompaniesState}) => {
     const state = getState();
     const {tempCompany} = state.companies;
+    statusFooterButttonsModal(true);
     const $company = $(`#company-${tempCompany._id}`);
     const api: ApiService = new ApiService();
     api.updateCompany(tempCompany)

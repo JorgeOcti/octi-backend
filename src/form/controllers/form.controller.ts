@@ -100,7 +100,13 @@ class FormController {
         })
         .populate([{
           path: 'user',
-          select: ['firstName', 'lastName']
+          select: ['firstName', 'lastName', 'venue'],
+          populate: [{
+            path: 'venue',
+            populate: [{
+              path: 'company'
+            }]
+          }]
         }, {
           path: 'car',
           select: ['vin', 'internalNumber', 'brand', 'denomination', 'color' ]
@@ -116,11 +122,13 @@ class FormController {
       moment.locale('es');
       const css = fs.readFileSync(path.join(__dirname, '../../../views/') + 'form/carDetail/style.css', 'utf8');
       const templatePath: string = path.join(__dirname, '../../../views/') + 'form/carDetail/index.pug';
+      const participantCompany = participant.user.venue && participant.user.venue.company || {};
       const html = GeneralUtils.generateHtmlFromPugFile(templatePath, {
         css: css.replace(/(\r\n|\n|\r)/gm, ''),
         participant,
         qr: await QRCode.toDataURL(participant.car.vin, {
           errorCorrectionLevel: 'H',
+          margin: 0,
           rendererOpts: {
             quality: 1
           }
@@ -133,6 +141,7 @@ class FormController {
           }
           return '';
         }),
+        logo: participantCompany.image && participantCompany.image.hasOwnProperty('url') ? decodeURI(participantCompany.image.url) : false,
         accesorySelected: (answer: any, item: any) => {
           return item ? answer.accesoriesSelected.map((a: any) => a.toString()).includes(item._id.toString()) : false;
         }

@@ -182,6 +182,8 @@ passport.deserializeUser(async (email, done) => {
     }, {
       path: 'venue',
       select: ['name']
+    }, {
+      path: 'company'
     }]);
     if (user) {
       done(null, user);

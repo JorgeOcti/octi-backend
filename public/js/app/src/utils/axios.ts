@@ -106,14 +106,26 @@ export default class ApiService {
     );
   }
   public createCompany(company: IBaseCompany): AxiosPromise {
+    const formData = new FormData();
+    formData.append('name', company.name);
+    if (company.image) {
+      formData.append('file', company.image);
+    }
+    this.instance.defaults.headers.common['Content-Type'] = 'multipart/form-data';
     return this.instance.post(
-      `/api/admin/companies/`, company
+      `/api/admin/companies/`, formData
     );
   }
 
   public updateCompany(company: IBaseCompany): AxiosPromise {
+    const formData = new FormData();
+    formData.append('name', company.name);
+    if (company.image) {
+      formData.append('file', company.image);
+    }
+    this.instance.defaults.headers.common['Content-Type'] = 'multipart/form-data';
     return this.instance.patch(
-      `/api/admin/companies/${company._id}`, company
+      `/api/admin/companies/${company._id}`, formData
     );
   }
 
