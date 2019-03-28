@@ -150,6 +150,8 @@
     .text-layer
       visibility: visible
       opacity: 1
+      .text
+        transform: translateY(0)
   .text-layer
     position: absolute
     top: 0
@@ -169,3 +171,6 @@
 
     border-radius: 5px
     //border: #0a0a0a solid 1px
+    .text
+      transition: .2s
+      transform: translateY(2em)
