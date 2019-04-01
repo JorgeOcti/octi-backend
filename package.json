@@ -127,7 +127,7 @@
     "chai-http": "4.2.0",
     "console-probe": "^3.3.0",
     "mocha-typescript": "^1.1.17",
-    "nyc": "^13.1.0",
+    "nyc": "^13.3.0",
     "source-map-support": "^0.5.9",
     "supertest": "^3.3.0",
     "ts-mocha": "^2.0.0",

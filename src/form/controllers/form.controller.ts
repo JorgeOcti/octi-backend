@@ -171,7 +171,7 @@ class FormController {
         });
       }
     } catch (e) {
-      res.status(500).send();
+      res.status(500).json(e);
     }
   }
 
@@ -544,6 +544,7 @@ class FormController {
                 accessories: question.accessories,
                 accesoriesSelected: choice && choice.requireAccesories && answer && answer.accesories ? answer.accesories.map((accesory: any) => new ObjectID(accesory)) : [],
                 risk: question.risk,
+                comment: choice && choice.requireComment && answer && answer.comment ? answer.comment : '',
                 observe: question.observe,
                 answer: answer ? new ObjectID(answer.value) : null,
                 // images: answer.images && answer.images.length ? await ParticipantFile.find({_id: {$in: answer.images}}, {_id:1}) : [],
@@ -648,11 +649,14 @@ class FormController {
 
             // send refresh with websocket to dashboard detail
             io.to(`dashboard-vin-detail-${car._id}`).emit(`ADD_PARTICIPANT`, await ParticipantModel
-              .findById(newParticipant._id, {name: 1, user: 1, createdAt: 1, qualification: 1})
-              .populate({
+              .findById(newParticipant._id, {name: 1, user: 1, venue: 1, createdAt: 1, qualification: 1})
+              .populate([{
                 path: 'user',
                 select: ['firstName', 'lastName']
-              })
+              }, {
+                path: 'venue',
+                select: ['name']
+              }])
             );
 
             return res.json({

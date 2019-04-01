@@ -21,6 +21,7 @@ export interface IParticipantChoices {
   backgroundColor: string;
   requireImage: boolean;
   requireVenue: boolean;
+  requireComment: boolean;
   requireAccesories: boolean;
   requireConciliation: boolean;
   na: boolean;
