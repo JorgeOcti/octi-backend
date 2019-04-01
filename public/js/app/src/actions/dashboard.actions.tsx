@@ -394,6 +394,15 @@ export function getParticipant(id: string) {
                                   </div>
                                 : null
                               }
+                              {
+                                selectChoice && selectChoice.requireComment && answer.comment && answer.comment.length ?
+                                  <div className="row" style={{marginTop: '10px'}}>
+                                    <div className="col-md-12">
+                                      <p><strong>Comentario</strong>: <span className="text-muted">{answer.comment}</span></p>
+                                    </div>
+                                  </div>
+                                : null
+                              }
                             </div>
                           );
                         })

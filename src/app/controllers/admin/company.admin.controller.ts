@@ -33,6 +33,7 @@ class AdminCompaniesController {
     const options: PaginateOptions = {
       select: {
         name: true,
+        image: true,
         updatedAt: true,
         createdAt: true
       },
@@ -72,6 +73,7 @@ class AdminCompaniesController {
     }
     const {name} = req.body;
     const {team} = req.user;
+    const file: any = req.file;
     if (!name || !name.trim().length) {
       res.status(400).json({
         message: 'El nombre es requerido.',
@@ -90,10 +92,18 @@ class AdminCompaniesController {
           status: 400
         });
       } else {
-        const newCompany = await new Company({
+        const newCompany = new Company({
           name,
           team
-        }).save();
+        });
+        if (file) {
+          file.headers = {
+            'Content-Type': file.mimetype
+          };
+          file.team = team._id;
+          await newCompany.attach('image', file);
+        }
+        await newCompany.save();
         res.status(201).json({
           message: 'Empresa agregada satisfactoriamente.',
           company: newCompany
@@ -116,6 +126,7 @@ class AdminCompaniesController {
     const {id} = req.params;
     const {team} = req.user;
     const {name} = req.body;
+    const file: any = req.file;
     if (!name || !name.length) {
       res.status(400).json({
         message: 'The name is are required',
@@ -123,15 +134,21 @@ class AdminCompaniesController {
       });
     }
     try {
-      const company = await Company.findOneAndUpdate({
+      const company = await Company.findOne({
         _id: id
         , team
-      }, {
-        name
-      }, {
-        new: true
       });
+      console.log(JSON.stringify(company));
       if (company) {
+        company.name = name;
+        if (file) {
+          file.headers = {
+            'Content-Type': file.mimetype
+          };
+          file.team = team._id;
+          await company.attach('image', file);
+        }
+        await company.save();
         const response = {
           message: 'Empresa editada satisfactoriamente.',
           company

@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+const pug = require("pug");
 class GeneralUtils {
     getObjectProperty(obj, attribute, defaultValue) {
         if (obj.hasOwnProperty(attribute)) {
@@ -16,6 +17,10 @@ class GeneralUtils {
         else {
             return defaultValue;
         }
+    }
+    generateHtmlFromPugFile(path, context) {
+        const pugCompile = pug.compileFile(path);
+        return pugCompile(context);
     }
 }
 exports.default = new GeneralUtils();

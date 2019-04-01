@@ -132,7 +132,7 @@ class UserListView extends React.Component<IPropsType, IStateType> {
         const blob = new Blob([response.data], {
           type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
         });
-        const fileName = `${moment().format('YYYYMMDD')}-usuarios .xlsx`;
+        const fileName = `${moment().format('YYYYMMDD')}-usuarios.xlsx`;
         if (typeof window.navigator.msSaveBlob !== 'undefined') {
           // IE workaround for "HTML7007: One or more blob URLs were
           // revoked by closing the blob for which they were created.

@@ -160,7 +160,8 @@ class CompaniesListView extends React.Component<IPropsType, IStateType> {
   private addCompany(): void {
     this.props.changeTempCompanyAction({
       _id: '',
-      name: ''
+      name: '',
+      image: null
     });
     setTimeout(() => {
       this.props.loadDataAction(
@@ -186,7 +187,9 @@ class CompaniesListView extends React.Component<IPropsType, IStateType> {
   private udpateCompany(company: ICompany): void {
     this.props.changeTempCompanyAction({
       _id: company._id,
-      name: company.name
+      name: company.name,
+      image: null,
+      imageURI: company.image.hasOwnProperty('url') ? decodeURI(company.image.url) : null
     });
     setTimeout(() => {
       this.props.loadDataAction(

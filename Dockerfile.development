@@ -9,7 +9,9 @@ RUN apt-get update && \
         xfonts-utils \
         fontconfig \
         libfreetype6 \
+        libfreetype6-dev \
         libfontconfig1 \
+        libfontconfig1-dev \
         libssl-dev \
         libxft-dev \
         python \
@@ -34,18 +36,14 @@ WORKDIR /srv
 
 COPY ./package.json /srv/package.json
 
-RUN npm --unsafe-perm --production install  && \
+RUN npm --unsafe-perm --production install && \
+    npm i -g nodemon && \
     npm i -g pm2 && \
     touch /srv/s3-config.json && \
     echo "{}" >> /srv/s3-config.json && \
     touch /srv/ses-config.json && \
     echo "{}" >> /srv/ses-config.json
 
-COPY ./dist /srv/dist
-COPY ./public /srv/public
-COPY ./views /srv/views
-COPY ./pm2.json /srv/pm2.json
 
 EXPOSE 3000
 
-CMD [ "pm2", "start", "pm2.json", "--no-daemon" ]

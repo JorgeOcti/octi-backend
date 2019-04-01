@@ -1,3 +1,5 @@
+import {compileTemplate} from 'pug';
+import * as pug from 'pug';
 import {IAnyObject} from '../interfaces/global.interface';
 
 interface IGeneralutils {
@@ -21,6 +23,11 @@ class GeneralUtils implements IGeneralutils {
     } else {
       return defaultValue;
     }
+  }
+
+  public generateHtmlFromPugFile(path: string, context: any) {
+    const pugCompile: compileTemplate = pug.compileFile(path);
+    return pugCompile(context);
   }
 }
 

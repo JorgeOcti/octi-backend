@@ -4,7 +4,9 @@ import {CompaniesReduxAction, ICompaniesState} from '../actions/companies.action
 const initialState: ICompaniesState = {
   companies: [],
   tempCompany: {
-    name: ''
+    name: '',
+    imageURI: null,
+    image: null
   },
   loading: true,
   source: null,
@@ -46,6 +48,7 @@ export function companiesReducer(state = initialState, action: CompaniesReduxAct
         companies: state.companies.map((company: ICompany) => {
           if (company._id === action.payload.company._id) {
             company.name = action.payload.company.name;
+            company.image = action.payload.company.image;
           }
           return company;
         })

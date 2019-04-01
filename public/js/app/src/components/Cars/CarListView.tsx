@@ -137,8 +137,11 @@ class CarListView extends React.Component<IPropsType, IStateType> {
                           <td className="hidden-xs text-ellipsis">{car.color}</td>
                           <td className="hidden-xs text-ellipsis">{moment(car.createdAt).format('LLL')}</td>
                           <td className="text-primary middle-center">
-                            <button className="btn btn-xs btn-primary" onClick={() => this.props.history.push(`/settings/cars/${car._id}`)}><i
-                              className="fa fa-bars"/></button>
+                            <button
+                              className="btn btn-xs btn-primary"
+                              onClick={() => this.props.history.push(`/settings/cars/${car._id}`)}
+                            ><i className="fa fa-bars"/>
+                            </button>
                           </td>
                         </tr>
                       );

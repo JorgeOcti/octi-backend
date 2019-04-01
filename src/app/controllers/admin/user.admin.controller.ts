@@ -176,7 +176,8 @@ class AdminUsersController {
         }]
       }],
       sort: {
-        firstName: 1
+        firstName: 1,
+        lastName: 1
       },
       page: parseInt(page ? page : 1, 10),
       limit: parseInt(pageSize ? pageSize : 20, 10)

@@ -34,6 +34,7 @@ export interface IInventory {
   finalizedBy: IUserModel;
   finalizedAt: Date;
   status: string;
+  file: any;
   updatedAt: Date;
   createdAt: Date;
 }

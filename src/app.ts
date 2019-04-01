@@ -16,6 +16,7 @@ import * as path from 'path';
 import * as Raven from 'raven';
 import * as responseTime from 'response-time';
 import * as Staticify from 'staticify';
+import AppController from './app/controllers/app.controller';
 import User from './app/models/user.model';
 import {appRouter, jwtRouter} from './app/router';
 import EmailQueue from './app/tasks/email.task';
@@ -181,6 +182,8 @@ passport.deserializeUser(async (email, done) => {
     }, {
       path: 'venue',
       select: ['name']
+    }, {
+      path: 'company'
     }]);
     if (user) {
       done(null, user);
@@ -216,6 +219,9 @@ export const accessLogStream = fileStreamRotator.getStream({
   frequency: 'daily',
   verbose: false
 });
+
+app.use('/robots.txt', AppController.robots);
+app.use('/health-check/', AppController.healthCheck);
 
 /* istanbul ignore if */
 if (app.get('env') !== 'testing') {

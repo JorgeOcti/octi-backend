@@ -140,3 +140,37 @@
   height: auto
   max-height: 170px
   overflow-x: hidden
+
+
+.change-image-wrapper
+  position: relative
+  text-align: center
+  padding: 10px
+  &:hover
+    .text-layer
+      visibility: visible
+      opacity: 1
+      .text
+        transform: translateY(0)
+  .text-layer
+    position: absolute
+    top: 0
+    bottom: 0
+    left: 0
+    right: 0
+    background: rgba(0, 0, 0, 0.5)
+    color: #fff
+    visibility: hidden
+    opacity: 0
+    display: flex
+    align-items: center
+    justify-content: center
+
+    /* transition effect. not necessary */
+    transition: opacity .2s, visibility .2s
+
+    border-radius: 5px
+    //border: #0a0a0a solid 1px
+    .text
+      transition: .2s
+      transform: translateY(2em)

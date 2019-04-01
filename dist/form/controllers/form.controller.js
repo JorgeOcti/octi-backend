@@ -1,8 +1,12 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 const bson_1 = require("bson");
+const fs = require("fs");
 const GraphicsMagick = require("gm");
+const HtmlPdf = require("html-pdf");
 const moment = require("moment-timezone");
+const path = require("path");
+const QRCode = require("qrcode");
 const app_1 = require("../../app");
 const alert_model_1 = require("../../app/models/alert.model");
 const car_model_1 = require("../../app/models/car.model");
@@ -22,14 +26,156 @@ class FormController {
     constructor() {
         this.list = this.list.bind(this);
         this.detail = this.detail.bind(this);
+        this.pdf = this.pdf.bind(this);
         this.complete = this.complete.bind(this);
         this.changePreferred = this.changePreferred.bind(this);
         this.uploadFile = this.uploadFile.bind(this);
     }
+    async pdf(req, res) {
+        const { debug } = req.query;
+        const { id } = req.params;
+        const { team } = req.user;
+        try {
+            const config = {
+                directory: '/tmp',
+                format: 'Letter',
+                orientation: 'portrait',
+                border: {
+                    top: '0.3in',
+                    right: '0.5in',
+                    bottom: '0.3in',
+                    left: '0.5in'
+                },
+                // "header": {
+                //   "height": "45mm",
+                //   "contents": '<div style="text-align: center;">Author: Marc Bachmann</div>'
+                // },
+                footer: {
+                    height: '5mm',
+                    contents: {
+                        default: `<div class="footer">
+                Reporte generado por OSA Andes. Página <span style="color: #444;">{{page}}</span>/<span>{{pages}}</span>
+            </div>`
+                    }
+                },
+                type: 'pdf',
+                quality: '75'
+            };
+            const venuesPermissions = req.user.venuesPermissions();
+            const participant = await participant_model_1.default
+                .findOne({
+                _id: id,
+                team,
+                $or: [{
+                        venue: {
+                            $in: venuesPermissions
+                        }
+                    }, {
+                        venue: {
+                            $exists: false
+                        }
+                    }, {
+                        venue: null
+                    }]
+            }, {
+                name: true,
+                user: true,
+                sections: true,
+                qualification: true,
+                shipping: true,
+                shippingText: true,
+                shippingImages: true,
+                reception: true,
+                receptionText: true,
+                receptionImages: true,
+                conciliation: true,
+                conciliationText: true,
+                conciliationImages: true,
+                createdAt: true
+            })
+                .populate([{
+                    path: 'user',
+                    select: ['firstName', 'lastName', 'venue'],
+                    populate: [{
+                            path: 'venue',
+                            populate: [{
+                                    path: 'company'
+                                }]
+                        }]
+                }, {
+                    path: 'car',
+                    select: ['vin', 'internalNumber', 'brand', 'denomination', 'color']
+                }, {
+                    path: 'sections.answers.images'
+                }, {
+                    path: 'shippingImages'
+                }, {
+                    path: 'receptionImages'
+                }, {
+                    path: 'conciliationImages'
+                }]).lean();
+            moment.locale('es');
+            const css = fs.readFileSync(path.join(__dirname, '../../../views/') + 'form/carDetail/style.css', 'utf8');
+            const templatePath = path.join(__dirname, '../../../views/') + 'form/carDetail/index.pug';
+            const participantCompany = participant.user.venue && participant.user.venue.company || {};
+            const html = general_utils_1.default.generateHtmlFromPugFile(templatePath, {
+                css: css.replace(/(\r\n|\n|\r)/gm, ''),
+                participant,
+                qr: await QRCode.toDataURL(participant.car.vin, {
+                    errorCorrectionLevel: 'H',
+                    margin: 0,
+                    rendererOpts: {
+                        quality: 1
+                    }
+                }),
+                moment,
+                getAnswer: ((scale, answer) => {
+                    if (answer && answer.hasOwnProperty('answer') && answer.answer) {
+                        const choice = scale.choices.find((choice) => choice._id.toString() === answer.answer.toString());
+                        return choice ? choice.choice : '';
+                    }
+                    return '';
+                }),
+                logo: participantCompany.image && participantCompany.image.hasOwnProperty('url') ? decodeURI(participantCompany.image.url) : false,
+                accesorySelected: (answer, item) => {
+                    return item ? answer.accesoriesSelected.map((a) => a.toString()).includes(item._id.toString()) : false;
+                }
+            });
+            if (debug) {
+                res.send(html);
+            }
+            else {
+                HtmlPdf.create(html, config).toStream((err, pdfStream) => {
+                    if (err) {
+                        console.log(err);
+                        res.sendStatus(500);
+                    }
+                    else {
+                        // set header
+                        res.setHeader('Content-Type', 'application/pdf');
+                        res.setHeader('Content-disposition', `inline; filename=${participant._id.toString()}.pdf`);
+                        // res.setHeader('Content-disposition', `attachment; filename=${participant._id.toString()}.pdf`);
+                        // send a status code of 200 OK
+                        res.statusCode = 200;
+                        // once we are done reading end the response
+                        pdfStream.on('end', () => {
+                            // done reading
+                            res.end();
+                        });
+                        // pipe the contents of the PDF directly to the response
+                        pdfStream.pipe(res);
+                    }
+                });
+            }
+        }
+        catch (e) {
+            res.status(500).json(e);
+        }
+    }
     async list(req, res) {
         const { team } = req.user;
         try {
-            const updatedUser = await user_model_2.default.findById(req.user._id).populate([{
+            const updatedUser = await user_model_1.default.findById(req.user._id).populate([{
                     path: 'userForms',
                     select: ['_id']
                 }]);
@@ -389,6 +535,7 @@ class FormController {
                                 accessories: question.accessories,
                                 accesoriesSelected: choice && choice.requireAccesories && answer && answer.accesories ? answer.accesories.map((accesory) => new bson_1.ObjectID(accesory)) : [],
                                 risk: question.risk,
+                                comment: choice && choice.requireComment && answer && answer.comment ? answer.comment : '',
                                 observe: question.observe,
                                 answer: answer ? new bson_1.ObjectID(answer.value) : null,
                                 // images: answer.images && answer.images.length ? await ParticipantFile.find({_id: {$in: answer.images}}, {_id:1}) : [],
@@ -489,11 +636,14 @@ class FormController {
                         });
                         // send refresh with websocket to dashboard detail
                         server_1.io.to(`dashboard-vin-detail-${car._id}`).emit(`ADD_PARTICIPANT`, await participant_model_1.default
-                            .findById(newParticipant._id, { name: 1, user: 1, createdAt: 1, qualification: 1 })
-                            .populate({
-                            path: 'user',
-                            select: ['firstName', 'lastName']
-                        }));
+                            .findById(newParticipant._id, { name: 1, user: 1, venue: 1, createdAt: 1, qualification: 1 })
+                            .populate([{
+                                path: 'user',
+                                select: ['firstName', 'lastName']
+                            }, {
+                                path: 'venue',
+                                select: ['name']
+                            }]));
                         return res.json({
                             data: {
                                 id,
@@ -605,7 +755,7 @@ class FormController {
         logger_service_1.default.info(`changePreferred`);
         logger_service_1.default.info(`{user: {_id: ${req.user._id}, email: ${req.user.email}}, body: ${JSON.stringify(req.body)}}`);
         try {
-            const user = await user_model_1.default.findOne({ _id: req.user._id, team, active: true });
+            const user = await user_model_2.default.findOne({ _id: req.user._id, team, active: true });
             // validate exist user
             if (user) {
                 form = await form_model_1.default.findOne({ _id: form, team });
