@@ -136,7 +136,6 @@ class AdminCompaniesController {
                 _id: id,
                 team
             });
-            console.log(JSON.stringify(company));
             if (company) {
                 company.name = name;
                 if (file) {
