@@ -30,10 +30,9 @@ export default class ApiService {
   private CancelToken: CancelTokenStatic;
   private source: CancelTokenSource;
 
-  constructor() {
-    const headers: IHeaders = {};
+  constructor(private headers: IHeaders = {}) {
     this.instance = Axios.create({
-      headers
+      headers: this.headers
     });
     this.CancelToken = Axios.CancelToken;
   }
@@ -228,13 +227,15 @@ export default class ApiService {
     );
   }
 
-  public createInventory(carsByVenue: any, name: string, notification: boolean): AxiosPromise {
+  public createInventory(carsByVenue: any, name: string, notification: boolean, file: File): AxiosPromise {
+    const formData = new FormData();
+    formData.append('carsByVenue', JSON.stringify(carsByVenue));
+    formData.append('name', name);
+    formData.append('notification', notification.toString());
+    formData.append('file', file);
+    this.instance.defaults.headers.common['Content-Type'] = 'multipart/form-data';
     return this.instance.post(
-      `/api/inventory/`, {
-        carsByVenue,
-        name,
-        notification
-      }, {
+      `/api/inventory/`, formData, {
         cancelToken: this.source.token
       }
     );

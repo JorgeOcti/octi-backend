@@ -180,7 +180,11 @@ describe('inventories', () => {
   it('it should create inventory', (done) => {
     authenticatedUser
       .post('/api/inventory/')
-      .send(inventoryData)
+      .send({
+        ...inventoryData,
+        carsByVenue: JSON.stringify(inventoryData.carsByVenue),
+        notification: inventoryData.notification.toString()
+      })
       .end((err, res) => {
         expect(res.status).to.equal(200);
         expect(res.body).have.property('message');

@@ -78,7 +78,7 @@ interface IStateType {
 
 class InventoryDetailView extends React.Component<IPropsType, IStateType> {
 
-  state = {
+  readonly state = {
     error: null,
     downloadImages: {
       downloading: false,
@@ -1364,7 +1364,7 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
           type: 'shadow'
         },
         formatter: (params: any) => {
-          const colorSpan = (color: any) => `<span style="color:${color}"><i class="fa fa-fw fa-circle"></i></span>`;
+          const colorSpan = (color: any) => `<span style="color:${color}"><i class="fa fa-fw fa-circle" /></span>`;
           let rez = `<span> ${params[0].axisValue}</span>`;
           // console.log(params); //quite useful for debug
           let total = 0;

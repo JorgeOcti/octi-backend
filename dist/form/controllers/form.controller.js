@@ -6,6 +6,7 @@ const GraphicsMagick = require("gm");
 const HtmlPdf = require("html-pdf");
 const moment = require("moment-timezone");
 const path = require("path");
+// import * as puppeteer from 'puppeteer';
 const QRCode = require("qrcode");
 const app_1 = require("../../app");
 const alert_model_1 = require("../../app/models/alert.model");
@@ -21,7 +22,6 @@ const form_model_1 = require("../models/form.model");
 const participant_model_1 = require("../models/participant.model");
 const participantFile_model_1 = require("../models/participantFile.model");
 const scale_model_1 = require("../models/scale.model");
-// import * as cp from 'console-probe';
 class FormController {
     constructor() {
         this.list = this.list.bind(this);
@@ -145,6 +145,22 @@ class FormController {
                 res.send(html);
             }
             else {
+                /*const browser = await puppeteer.launch();
+                const page = await browser.newPage();
+                await page.goto(`http://localhost:3030/report/forms/pdf/${id}.pdf?debug=true`);
+                const buffer = await page.pdf({
+                  format: 'Letter',
+                  margin: {
+                    top: '0.3in',
+                    right: '0.5in',
+                    bottom: '0.3in',
+                    left: '0.5in'
+                  }
+                });
+                res.type('application/pdf');
+                res.send(buffer);
+                browser.close();
+                */
                 HtmlPdf.create(html, config).toStream((err, pdfStream) => {
                     if (err) {
                         console.log(err);
@@ -169,13 +185,13 @@ class FormController {
             }
         }
         catch (e) {
-            res.status(500).json(e);
+            res.status(500).json(e.message);
         }
     }
     async list(req, res) {
         const { team } = req.user;
         try {
-            const updatedUser = await user_model_1.default.findById(req.user._id).populate([{
+            const updatedUser = await user_model_2.default.findById(req.user._id).populate([{
                     path: 'userForms',
                     select: ['_id']
                 }]);
@@ -755,7 +771,7 @@ class FormController {
         logger_service_1.default.info(`changePreferred`);
         logger_service_1.default.info(`{user: {_id: ${req.user._id}, email: ${req.user.email}}, body: ${JSON.stringify(req.body)}}`);
         try {
-            const user = await user_model_2.default.findOne({ _id: req.user._id, team, active: true });
+            const user = await user_model_1.default.findOne({ _id: req.user._id, team, active: true });
             // validate exist user
             if (user) {
                 form = await form_model_1.default.findOne({ _id: form, team });

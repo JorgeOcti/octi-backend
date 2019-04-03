@@ -8,13 +8,13 @@ import {RefObject} from 'react';
 import {connect} from 'react-redux';
 import {RouteComponentProps} from 'react-router';
 import {Dispatch} from 'redux';
-import slugify from 'slugify';
 import * as XLSX from 'xlsx';
 import {AlertReduxAction, IAlertsState} from '../../actions/alerts.actions';
 import {loadDataAction, ModalReduxAction} from '../../actions/modal.actions';
 import AppContainer from '../../container/AppContainer';
 import ApiService from '../../utils/axios';
 import Checkbox from '../Utils/CheckBox';
+import VenueDetail from './VenueDetail';
 
 interface IPropsType extends RouteComponentProps<{ ticket: string }> {
   alerts: IAlertsState;
@@ -30,6 +30,7 @@ interface IStateType {
   carsByVenue: any;
   name: string;
   sending: boolean;
+  file: File | null;
 }
 
 class InventoryCreateView extends React.Component<IPropsType, IStateType> {
@@ -40,14 +41,15 @@ class InventoryCreateView extends React.Component<IPropsType, IStateType> {
 
   readonly inputFile: RefObject<HTMLInputElement>;
 
-  state = {
+  readonly state = {
     error: null,
     canDrop: false,
     loadingSettings: false,
     carsByVenue: [],
     notification: true,
     name: `Inventario del ${moment().format('DD-MM-YYYY')}`,
-    sending: false
+    sending: false,
+    file: null
   };
 
   constructor(props: IPropsType) {
@@ -77,6 +79,10 @@ class InventoryCreateView extends React.Component<IPropsType, IStateType> {
     // }
   }
 
+  public componentDidUpdate(prevProps: Readonly<IPropsType>, prevState: Readonly<IStateType>, snapshot?: any): void {
+    $('[data-toggle="tooltip"]').tooltip();
+  }
+
   public componentDidCatch(error: Error, errorInfo: ErrorInfo) {
     this.setState({error});
     Raven.captureException(error, {
@@ -85,7 +91,6 @@ class InventoryCreateView extends React.Component<IPropsType, IStateType> {
   }
 
   public render(): React.ReactElement<IPropsType> {
-    // const {alerts, loading} = this.props.alerts;
     const {loadingSettings, carsByVenue, name, sending, notification} = this.state;
     let carsInSettings = 0;
     return (
@@ -113,49 +118,7 @@ class InventoryCreateView extends React.Component<IPropsType, IStateType> {
                           carsByVenue.map((venue: any, index) => {
                             carsInSettings += venue.cars.length;
                             return (
-                              <div className="panel box box-default" key={index}>
-                                <div className="box-header with-border" style={{padding: '6px'}}>
-                                  <h4 className="box-title">
-                                    <a data-toggle="collapse"
-                                       data-parent="#accordion"
-                                       href={`#${slugify(venue.name.toLowerCase())}`}
-                                       aria-expanded="false"
-                                       style={{fontSize: '15px'}}
-                                       className="collapsed">
-                                      {index + 1} {venue.name} ({venue.cars.length} Vehiculos)
-                                    </a>
-                                  </h4>
-                                </div>
-                                <div id={`${slugify(venue.name.toLowerCase())}`} className="panel-collapse collapse" aria-expanded="false">
-                                  <div className="box-body">
-                                    <strong>Vehiculos</strong>
-                                    <table className="table table-striped">
-                                      <thead>
-                                      <tr>
-                                        <th>VIN</th>
-                                        <th>PATENTE</th>
-                                        <th>MARCA</th>
-                                        <th>DENOMINACION</th>
-                                      </tr>
-                                      </thead>
-                                      <tbody>
-                                      {
-                                        venue.cars.map((car: any, index: any) => {
-                                          return (
-                                            <tr key={index}>
-                                              <td>{car.vin}</td>
-                                              <td>{car.patent}</td>
-                                              <td>{car.brand}</td>
-                                              <td>{car.denomination}</td>
-                                            </tr>
-                                          );
-                                        })
-                                      }
-                                      </tbody>
-                                    </table>
-                                  </div>
-                                </div>
-                              </div>
+                              <VenueDetail index={index} venue={venue} key={venue.name} />
                             );
                           })
                         }
@@ -192,7 +155,12 @@ class InventoryCreateView extends React.Component<IPropsType, IStateType> {
                       </div>
                     </div>
                     <div className="col-md-12 text-right">
-                      <button className="btn btn-sm btn-primary" onClick={this.downloadTemplate}><i className="fa fa-fw fa-download"/> Descargar Formato</button>
+                      <button
+                        className="btn btn-sm btn-primary"
+                        onClick={this.downloadTemplate}
+                      >
+                        <i className="fa fa-fw fa-download"/> Descargar Formato
+                      </button>
                     </div>
                   </div>
               }
@@ -229,10 +197,10 @@ class InventoryCreateView extends React.Component<IPropsType, IStateType> {
               </button>
             </div>
             {
-              loadingSettings &&
-              <div className="overlay">
-                <i className="fa fa-spinner fa-spin text-purple"/>
-              </div>
+              sending || loadingSettings ?
+                <div className="overlay">
+                  <i className="fa fa-spinner fa-spin text-purple"/>
+                </div> : null
             }
           </div>
         </section>
@@ -296,19 +264,24 @@ class InventoryCreateView extends React.Component<IPropsType, IStateType> {
             type: rABS ? 'binary' : 'array'
           });
           const excelData = workbook.Sheets.hasOwnProperty('Autos') ? XLSX.utils.sheet_to_json(workbook.Sheets.Autos) : [];
-          // const cars: any[] = [];
-          // const venues: any[] = [];
           const carsByVenue: any = {};
           if (excelData.length >= 1) {
             excelData.forEach((item: any) => {
               if (item.hasOwnProperty('vin') && item.vin && item.hasOwnProperty('sucursal') && item.sucursal) {
+                const vinWarning = item.vin.length < 17;
+                const patentWarning = item.patente && item.patente.length < 6;
                 const car = {
                   vin: item.vin,
                   internalNumber: item.NInterno,
                   color: item.color,
                   denomination: item.denominacion,
                   brand: item.marca,
-                  patent: item.patente
+                  patent: item.patente,
+                  hasWaranings: vinWarning || patentWarning,
+                  warning: {
+                    vin: vinWarning,
+                    patent: patentWarning
+                  }
                 };
                 if (!carsByVenue.hasOwnProperty(item.sucursal)) {
                   // venues.push(item.sucursal);
@@ -319,9 +292,8 @@ class InventoryCreateView extends React.Component<IPropsType, IStateType> {
                 carsByVenue[item.sucursal].cars.push(car);
                 // cars.push(car);
               } else {
-                // @ts-ignore: Unreachable code error
+                /* tslint:disable:no-console */
                 console.log('Error en linea:');
-                // @ts-ignore: Unreachable code error
                 console.log(item.__rowNum__);
               }
             });
@@ -330,11 +302,14 @@ class InventoryCreateView extends React.Component<IPropsType, IStateType> {
               if (carsByVenue.hasOwnProperty(cv)) {
                 carsByVenueArray.push({
                   name: cv,
-                  cars: carsByVenue[cv].cars
+                  cars: carsByVenue[cv].cars.sort((x: any, y: any) => {
+                    return (x.hasWaranings === y.hasWaranings) ? 0 : x.hasWaranings ? -1 : 1;
+                  })
                 });
               }
             }
             this.setState({
+              file,
               carsByVenue: carsByVenueArray,
               loadingSettings: false
             });
@@ -418,7 +393,7 @@ class InventoryCreateView extends React.Component<IPropsType, IStateType> {
   }
 
   private sendCreate(): void {
-    const {carsByVenue, name, notification} = this.state;
+    const {carsByVenue, name, notification, file} = this.state;
     const { history } = this.props;
     this.setState({
       sending: true
@@ -433,12 +408,14 @@ class InventoryCreateView extends React.Component<IPropsType, IStateType> {
       this.setState({
         sending: false
       });
-    } else {
-      const api = new ApiService();
+    } else if (file) {
+      const api = new ApiService({
+        'Content-Type': 'multipart/form-data'
+      });
       api.getSource();
       api
-        .createInventory(carsByVenue, name, notification)
-        .then((response) => {
+        .createInventory(carsByVenue, name, notification, file)
+        .then((response: any) => {
           const { message } = response.data;
           setTimeout(() => {
             swal('Envió inventario', message, 'success');
