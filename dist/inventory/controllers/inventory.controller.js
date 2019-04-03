@@ -71,7 +71,10 @@ class InventoryController {
     }
     async create(req, res) {
         const { company, team } = req.user;
-        const { carsByVenue, name, notification } = req.body;
+        const { name } = req.body;
+        let { carsByVenue, notification } = req.body;
+        carsByVenue = JSON.parse(carsByVenue);
+        notification = notification === 'true';
         try {
             const inventoryCars = [];
             const venuesIDs = [];
@@ -137,6 +140,11 @@ class InventoryController {
                 createdBy: req.user._id,
                 status: inventory_model_1.ChoicesStatusInventory.inProcess
             });
+            const file = req.file;
+            if (file) {
+                file.team = team;
+                await inventory.attach('file', file);
+            }
             await inventory.save();
             inventoryCars.map((i) => {
                 i.inventory = inventory._id;

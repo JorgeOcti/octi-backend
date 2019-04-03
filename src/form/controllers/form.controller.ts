@@ -5,12 +5,13 @@ import * as GraphicsMagick from 'gm';
 import * as HtmlPdf from 'html-pdf';
 import * as moment from 'moment-timezone';
 import * as path from 'path';
+// import * as puppeteer from 'puppeteer';
 import * as QRCode from 'qrcode';
 import {queue} from '../../app';
 import Alert from '../../app/models/alert.model';
 import CarModel from '../../app/models/car.model';
-import User from '../../app/models/user.model';
 import UserModel, {IUserModel} from '../../app/models/user.model';
+import User from '../../app/models/user.model';
 import Venue from '../../app/models/venue.model';
 import {IAnyObject, IRequest} from '../../interfaces/global.interface';
 import {io} from '../../server';
@@ -21,7 +22,6 @@ import FormModel, {IFormModel} from '../models/form.model';
 import ParticipantModel from '../models/participant.model';
 import ParticipantFile from '../models/participantFile.model';
 import ScaleModel, {IScaleModel} from '../models/scale.model';
-// import * as cp from 'console-probe';
 
 class FormController {
 
@@ -149,6 +149,22 @@ class FormController {
       if (debug) {
         res.send(html);
       } else {
+        /*const browser = await puppeteer.launch();
+        const page = await browser.newPage();
+        await page.goto(`http://localhost:3030/report/forms/pdf/${id}.pdf?debug=true`);
+        const buffer = await page.pdf({
+          format: 'Letter',
+          margin: {
+            top: '0.3in',
+            right: '0.5in',
+            bottom: '0.3in',
+            left: '0.5in'
+          }
+        });
+        res.type('application/pdf');
+        res.send(buffer);
+        browser.close();
+        */
         HtmlPdf.create(html, config).toStream((err, pdfStream) => {
           if (err) {
             console.log(err);
@@ -171,7 +187,7 @@ class FormController {
         });
       }
     } catch (e) {
-      res.status(500).json(e);
+      res.status(500).json(e.message);
     }
   }
 

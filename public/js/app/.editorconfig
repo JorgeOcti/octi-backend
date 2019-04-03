@@ -1,7 +1,7 @@
 # top-most EditorConfig file
 root = true
 
-[*.{py,html,}]
+[*.{py,html}]
 indent_style = space
 indent_size = 4
 trim_trailing_whitespace = true

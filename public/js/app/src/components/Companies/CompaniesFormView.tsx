@@ -25,6 +25,10 @@ class CompaniesFormView extends React.Component<IPropsType, IStateType> {
     super(props);
     this.clickUploadFile = this.clickUploadFile.bind(this);
     this.handleChangeInputFile = this.handleChangeInputFile.bind(this);
+    this.handleDrop = this.handleDrop.bind(this);
+    this.dragOverHandler = this.dragOverHandler.bind(this);
+    this.dragEndHandler = this.dragEndHandler.bind(this);
+    this.dragLeaveHandler = this.dragLeaveHandler.bind(this);
     this.inputFile = React.createRef();
   }
 
@@ -71,10 +75,10 @@ class CompaniesFormView extends React.Component<IPropsType, IStateType> {
                   <div
                     className="upload-file text-center pointer"
                     onClick={this.clickUploadFile}
-                    // onDrop={this.handleDrop}
-                    // onDragOver={this.dragOverHandler}
-                    // onDragEnd={this.dragEndHandler}
-                    // onDragLeave={this.dragLeaveHandler}
+                    onDrop={this.handleDrop}
+                    onDragOver={this.dragOverHandler}
+                    onDragEnd={this.dragEndHandler}
+                    onDragLeave={this.dragLeaveHandler}
                     style={{
                       backgroundColor: '#EEEEEE',
                       border: this.state.canDrop ? '1px solid #979797' : '1px dashed #979797',
@@ -109,12 +113,62 @@ class CompaniesFormView extends React.Component<IPropsType, IStateType> {
     }
   }
 
+  private handleDrop(e: React.DragEvent<HTMLDivElement>): void {
+    e.preventDefault();
+    const dt = e.dataTransfer;
+    if (dt.items) {
+      if (dt.items.length) {
+        const file: File | null = dt.items[0].getAsFile();
+        if (file) {
+          this.processFile(file);
+        }
+      }
+    } else {
+      if (dt.files.length) {
+        const file = dt.files[0];
+        this.processFile(file);
+      }
+    }
+  }
+
   private handleChangeInputFile(e: React.ChangeEvent<HTMLInputElement>) {
     const {files} = e.target;
-    if (files && files.length && this.props.companies && this.props.changeTempCompanyAction) {
+    if (files && files.length) {
+      const file = files[0];
+      this.processFile(file);
+    }
+  }
+
+  private dragOverHandler(e: React.DragEvent<HTMLDivElement>): void {
+    e.preventDefault();
+    this.setState({
+      canDrop: true
+    });
+  }
+
+  private dragLeaveHandler(): void {
+    this.setState({
+      canDrop: false
+    });
+  }
+
+  private dragEndHandler(e: React.DragEvent<HTMLDivElement>): void {
+    const dt = e.dataTransfer;
+    if (dt.items) {
+      // Use DataTransferItemList interface to remove the drag data
+      for (let i = 0; i < dt.items.length; i++) {
+        dt.items.remove(i);
+      }
+    } else {
+      // Use DataTransfer interface to remove the drag data
+      e.dataTransfer.clearData();
+    }
+  }
+
+  private processFile(file: File): void {
+    if (file && this.props.companies && this.props.changeTempCompanyAction) {
       const {tempCompany} = this.props.companies;
       const {changeTempCompanyAction} = this.props;
-      const file = files[0];
       const reader = new FileReader();
       reader.onload = (e) => {
         if (e.target) {
