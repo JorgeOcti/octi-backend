@@ -39,7 +39,7 @@ class CarDetail extends React.Component<IPropsType, IStateType> {
                 style={{color: '#f2aa2e'}}
                 data-toggle="tooltip"
                 data-placement="top"
-                title="El vin debe tener al menos 17 dígitos.."
+                title="El vin debe tener al menos 17 dígitos."
               /> : null} {car.vin}
         </td>
         <td>

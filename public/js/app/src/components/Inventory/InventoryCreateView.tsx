@@ -197,10 +197,10 @@ class InventoryCreateView extends React.Component<IPropsType, IStateType> {
               </button>
             </div>
             {
-              loadingSettings &&
-              <div className="overlay">
-                <i className="fa fa-spinner fa-spin text-purple"/>
-              </div>
+              sending || loadingSettings ?
+                <div className="overlay">
+                  <i className="fa fa-spinner fa-spin text-purple"/>
+                </div> : null
             }
           </div>
         </section>
