@@ -56,6 +56,7 @@ class InventoryCreateView extends React.Component<IPropsType, IStateType> {
     super(props);
     this.clickUploadFile = this.clickUploadFile.bind(this);
     this.processSettings = this.processSettings.bind(this);
+    this.deleteVenue = this.deleteVenue.bind(this);
     this.handleChangeInputFile = this.handleChangeInputFile.bind(this);
     this.handleDrop = this.handleDrop.bind(this);
     this.dragOverHandler = this.dragOverHandler.bind(this);
@@ -118,7 +119,7 @@ class InventoryCreateView extends React.Component<IPropsType, IStateType> {
                           carsByVenue.map((venue: any, index) => {
                             carsInSettings += venue.cars.length;
                             return (
-                              <VenueDetail index={index} venue={venue} key={venue.name} />
+                              <VenueDetail index={index} venue={venue} key={venue.name} deleteVenue={this.deleteVenue} />
                             );
                           })
                         }
@@ -208,6 +209,28 @@ class InventoryCreateView extends React.Component<IPropsType, IStateType> {
     );
   }
 
+  private deleteVenue(venueName: string): void {
+    const {carsByVenue} = this.state;
+    swal({
+      title: '¿Estás seguro?',
+      text: `Vas a eliminar la sucursal "${venueName}"`,
+      icon: 'warning',
+      dangerMode: true,
+      buttons: {
+        cancel: 'Cancelar' as any,
+        confirm: {
+          text: 'Sí'
+        }
+      }
+    }).then((willDelete) => {
+      if (willDelete) {
+        this.setState({
+          carsByVenue: carsByVenue.filter((venue: any) => venue.name !== venueName)
+        });
+      }
+    });
+  }
+
   private handleChangeNotification() {
     this.setState({
       notification: !this.state.notification
@@ -277,7 +300,7 @@ class InventoryCreateView extends React.Component<IPropsType, IStateType> {
                   denomination: item.denominacion,
                   brand: item.marca,
                   patent: item.patente,
-                  hasWaranings: vinWarning || patentWarning,
+                  hasWarnings: vinWarning || patentWarning,
                   warning: {
                     vin: vinWarning,
                     patent: patentWarning
@@ -303,7 +326,7 @@ class InventoryCreateView extends React.Component<IPropsType, IStateType> {
                 carsByVenueArray.push({
                   name: cv,
                   cars: carsByVenue[cv].cars.sort((x: any, y: any) => {
-                    return (x.hasWaranings === y.hasWaranings) ? 0 : x.hasWaranings ? -1 : 1;
+                    return (x.hasWarnings === y.hasWarnings) ? 0 : x.hasWarnings ? -1 : 1;
                   })
                 });
               }

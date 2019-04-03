@@ -33,7 +33,7 @@ class CarDetail extends React.Component<IPropsType, IStateType> {
       <tr>
         <td>
           {
-            car.hasWaranings && car.warning.vin ?
+            car.hasWarnings && car.warning.vin ?
               <i
                 className="fa fa-warning pointer"
                 style={{color: '#f2aa2e'}}
@@ -44,7 +44,7 @@ class CarDetail extends React.Component<IPropsType, IStateType> {
         </td>
         <td>
           {
-            car.hasWaranings && car.warning.patent ?
+            car.hasWarnings && car.warning.patent ?
               <i
                 className="fa fa-warning pointer"
                 style={{color: '#f2aa2e'}}

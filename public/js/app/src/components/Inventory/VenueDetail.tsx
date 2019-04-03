@@ -6,6 +6,8 @@ import CarDetail from './CarDetail';
 interface IPropsType {
   venue: any;
   index: number;
+
+  deleteVenue(venueName: string): void;
 }
 
 interface IStateType {
@@ -32,7 +34,7 @@ class VenueDetail extends React.Component<IPropsType, IStateType> {
 
   public render(): React.ReactElement<IPropsType> {
     const {venue, index} = this.props;
-    const warnings = venue.cars.filter((car: any) => car.hasWaranings).length;
+    const warnings = venue.cars.filter((car: any) => car.hasWarnings).length;
     return (
       <div className="panel box box-default">
         <div className="box-header with-border" style={{padding: '6px'}}>
@@ -46,12 +48,14 @@ class VenueDetail extends React.Component<IPropsType, IStateType> {
                aria-expanded="false"
                className="collapsed">
               {index + 1} {venue.name} ({venue.cars.length} Vehiculos)
-            </a> {
-            warnings ?
-              <span className="text-muted pull-right">
-                <i className="fa fa-warning" style={{color: '#f2aa2e'}}/> {warnings} posibles problemas.
-              </span> : null
-          }
+            </a>
+            <i className="fa fa-minus-circle text-red pull-right pointer" onClick={() => this.props.deleteVenue(venue.name)} />
+            {
+              warnings ?
+                <span className="text-muted pull-right">
+                  <i className="fa fa-warning" style={{color: '#f2aa2e'}}/> {warnings} posibles problemas {'  '}
+                </span> : null
+            }
           </h4>
         </div>
         <div id={`${slugify(venue.name.toLowerCase())}`} className="panel-collapse collapse" aria-expanded="false">
