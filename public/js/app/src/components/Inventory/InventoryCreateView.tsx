@@ -347,12 +347,12 @@ class InventoryCreateView extends React.Component<IPropsType, IStateType> {
                 const vinWarning = item.vin.length < 17;
                 const patentWarning = item.patente && item.patente.length < 6;
                 const car = {
-                  vin: item.vin,
-                  internalNumber: item.NInterno,
-                  color: item.color,
-                  denomination: item.denominacion,
-                  brand: item.marca,
-                  patent: item.patente,
+                  vin: item.vin.trim(),
+                  internalNumber: item.NInterno ? item.NInterno.trim() : '',
+                  color: item.color ? item.color.trim() : '',
+                  denomination: item.denominacion ? item.denominacion.trim() : '',
+                  brand: item.marca ? item.marca.trim() : '',
+                  patent: item.patente ? item.patente.trim() : '',
                   hasWarnings: vinWarning || patentWarning,
                   warning: {
                     vin: vinWarning,
@@ -441,7 +441,7 @@ class InventoryCreateView extends React.Component<IPropsType, IStateType> {
     if (files && files.length) {
       const file = files[0];
       if (!this.validateSize(file.size)) {
-        swal('Envió inventario', 'El archivo excede los 10Mb permitios.', 'error');
+        swal('Envió inventario', 'El archivo supera los 10Mb permitidos.', 'error');
       } else {
         if (new RegExp('\\bimage\\b').test(file.type)) {
           const reader = new FileReader();

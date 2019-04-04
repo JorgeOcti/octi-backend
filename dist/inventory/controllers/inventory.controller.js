@@ -142,15 +142,11 @@ class InventoryController {
                 status: inventory_model_2.ChoicesStatusInventory.inProcess
             });
             const file = general_utils_1.default.getFileFromRequest(req.files, 'file');
-            console.log('file');
-            console.log(file);
             if (file) {
                 file.team = team;
                 await inventory.attach('file', file);
             }
             const backup = general_utils_1.default.getFileFromRequest(req.files, 'backup');
-            console.log('backup');
-            console.log(backup);
             if (backup) {
                 backup.team = team;
                 await inventory.attach('backup', backup);
