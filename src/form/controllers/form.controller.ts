@@ -721,8 +721,8 @@ class FormController {
   public async uploadFile(req: IRequest, res: Response): Promise<any> {
     const {id} = req.params;
     const company = req.user.company;
-    if (req.file) {
-      const file: any = req.file;
+    const file: any = GeneralUtils.getFileFromRequest(req.files, 'file');
+    if (file) {
       try {
         const participantFile = new ParticipantFile();
         /*

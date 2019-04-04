@@ -29,6 +29,9 @@ class GeneralUtils implements IGeneralutils {
     const pugCompile: compileTemplate = pug.compileFile(path);
     return pugCompile(context);
   }
-}
 
+  public getFileFromRequest(files: Express.Multer.File[], name: string): Express.Multer.File | undefined {
+    return files.find((file: Express.Multer.File) => file.fieldname === name);
+  }
+}
 export default new GeneralUtils();

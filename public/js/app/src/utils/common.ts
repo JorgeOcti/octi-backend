@@ -3,6 +3,34 @@ import {IWindow} from '../interfaces/window';
 
 declare let window: IWindow;
 
+export function getExtension(name: string): string {
+  const descomposition = name.split('.');
+  if (descomposition.length) {
+    return descomposition[descomposition.length - 1];
+  }
+  return '';
+}
+
+export function getIconFromExtension(extension: string): string {
+  // https://en.wikipedia.org/wiki/List_of_Microsoft_Office_filename_extensions
+  const word = ['doc', 'docx', 'docm', 'dotx'];
+  const excel = ['xls', 'xlsx', 'xlsm', 'xltx', 'csv'];
+  const pdf = ['pdf'];
+  const image = ['jpeg', 'gif', 'jpg', 'png'];
+  extension = extension.toLowerCase();
+  if (word.includes(extension)) {
+    return 'word';
+  } else if (excel.includes(extension)) {
+    return 'excel';
+  } else if (pdf.includes(extension)) {
+    return 'pdf';
+  } else if (image.includes(extension)) {
+    return extension;
+  } else {
+    return 'file';
+  }
+}
+
 export function getDistFromBottom(): number {
   const scrollPosition: number = window.pageYOffset;
   const windowSize: number = window.innerHeight;

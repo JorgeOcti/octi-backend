@@ -30,6 +30,7 @@ export interface IResponsePaginateData<S> {
 
 export interface IRequest extends Request {
   user: IUserModel;
+  files: Express.Multer.File[];
 }
 
 export interface IAnyObject {

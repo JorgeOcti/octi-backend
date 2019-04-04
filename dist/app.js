@@ -101,7 +101,7 @@ const upload = multer({
         }
     })
 });
-app.use(upload.single('file'));
+app.use(upload.any());
 // static files
 const staticDirectory = path.join(__dirname, '../public');
 app.use(middlewares_1.default.cleanStaticFiles);

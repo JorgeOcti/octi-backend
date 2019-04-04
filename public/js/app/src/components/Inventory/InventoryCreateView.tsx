@@ -1,4 +1,4 @@
-///<reference path="../../../node_modules/sweetalert/typings/sweetalert.d.ts"/>
+// <reference path="../../../node_modules/sweetalert/typings/sweetalert.d.ts"/>
 // import * as PropTypes from 'prop-types';
 import * as moment from 'moment';
 import * as Raven from 'raven-js';
@@ -13,6 +13,7 @@ import {AlertReduxAction, IAlertsState} from '../../actions/alerts.actions';
 import {loadDataAction, ModalReduxAction} from '../../actions/modal.actions';
 import AppContainer from '../../container/AppContainer';
 import ApiService from '../../utils/axios';
+import {getExtension, getIconFromExtension} from '../../utils/common';
 import Checkbox from '../Utils/CheckBox';
 import VenueDetail from './VenueDetail';
 
@@ -31,6 +32,8 @@ interface IStateType {
   name: string;
   sending: boolean;
   file: File | null;
+  backupFile: File | null;
+  backupUri: string;
 }
 
 class InventoryCreateView extends React.Component<IPropsType, IStateType> {
@@ -40,6 +43,7 @@ class InventoryCreateView extends React.Component<IPropsType, IStateType> {
   // };
 
   readonly inputFile: RefObject<HTMLInputElement>;
+  readonly inputBackup: RefObject<HTMLInputElement>;
 
   readonly state = {
     error: null,
@@ -49,23 +53,29 @@ class InventoryCreateView extends React.Component<IPropsType, IStateType> {
     notification: true,
     name: `Inventario del ${moment().format('DD-MM-YYYY')}`,
     sending: false,
-    file: null
+    file: null,
+    backupFile: null,
+    backupUri: ''
   };
 
   constructor(props: IPropsType) {
     super(props);
     this.clickUploadFile = this.clickUploadFile.bind(this);
+    this.clickUploadBackup = this.clickUploadBackup.bind(this);
     this.processSettings = this.processSettings.bind(this);
     this.deleteVenue = this.deleteVenue.bind(this);
     this.handleChangeInputFile = this.handleChangeInputFile.bind(this);
+    this.handleChangeInputBackup = this.handleChangeInputBackup.bind(this);
     this.handleDrop = this.handleDrop.bind(this);
     this.dragOverHandler = this.dragOverHandler.bind(this);
     this.dragEndHandler = this.dragEndHandler.bind(this);
+    this.clearBackup = this.clearBackup.bind(this);
     this.dragLeaveHandler = this.dragLeaveHandler.bind(this);
     this.sendCreate = this.sendCreate.bind(this);
     this.handleChangeName = this.handleChangeName.bind(this);
     this.handleChangeNotification = this.handleChangeNotification.bind(this);
     this.inputFile = React.createRef();
+    this.inputBackup = React.createRef();
   }
 
   public componentWillMount() {
@@ -92,7 +102,7 @@ class InventoryCreateView extends React.Component<IPropsType, IStateType> {
   }
 
   public render(): React.ReactElement<IPropsType> {
-    const {loadingSettings, carsByVenue, name, sending, notification} = this.state;
+    const {loadingSettings, carsByVenue, name, sending, notification, backupFile, backupUri} = this.state;
     let carsInSettings = 0;
     return (
       <AppContainer title="" cMenu="2" cSubMenu="2.1" cAction="Creación">
@@ -130,6 +140,43 @@ class InventoryCreateView extends React.Component<IPropsType, IStateType> {
                     <div className="col-md-12 text-right">
                       <button className="btn btn-sm btn-primary" onClick={this.downloadTemplate}><i className="fa fa-fw fa-download" /> Descargar Formato</button>
                       <button className="btn btn-sm btn-default" onClick={this.clickUploadFile} style={{marginLeft: '5px'}}><i className="fa fa-fw fa-cogs" /> Cambiar configuración</button>
+                    </div>
+                    <div className="col-md-12">
+                      <div className="form-group" style={{marginBottom: '0px'}}>
+                        <label>Archivo de respaldo</label>
+                      </div>
+                      <div className="preview-files">
+                        {
+                          backupFile && backupUri ?
+                            <div className="file">
+                              <i className="fa fa-minus-circle text-red pointer" onClick={this.clearBackup}/>
+                              <a href={backupUri} data-toggle="lightbox">
+                                <img
+                                  src={backupUri}
+                                />
+                              </a>
+                            </div>
+                            : backupFile ?
+                            <div className="file">
+                              <i className="fa fa-minus-circle text-red pointer" onClick={this.clearBackup}/>
+                              <div className={`icon type-${getIconFromExtension(getExtension((backupFile as File).name))}`}/>
+                              <div className="name-file">{(backupFile as File).name}</div>
+                            </div>
+                            : <div
+                              className="add-file"
+                              onClick={this.clickUploadBackup}
+                            >
+                              <i className="fa fa-plus"/>
+                              AGREGAR ARCHIVO
+                            </div>
+                        }
+                      </div>
+                      <input
+                        type="file"
+                        onChange={this.handleChangeInputBackup}
+                        style={{display: 'None'}}
+                        ref={this.inputBackup}
+                      />
                     </div>
                   </div> :
                   <div className="row">
@@ -240,6 +287,12 @@ class InventoryCreateView extends React.Component<IPropsType, IStateType> {
   private clickUploadFile(): void {
     if (this.inputFile.current) {
       this.inputFile.current.click();
+    }
+  }
+
+  private clickUploadBackup(): void {
+    if (this.inputBackup.current) {
+      this.inputBackup.current.click();
     }
   }
 
@@ -371,6 +424,46 @@ class InventoryCreateView extends React.Component<IPropsType, IStateType> {
     }
   }
 
+  private validateSize(size: number) {
+    const maxSize = Math.pow(1024, 2) * 10; // 10MB
+    return size <= maxSize;
+  }
+
+  private clearBackup() {
+    this.setState({
+      backupFile: null,
+      backupUri: ''
+    });
+  }
+
+  private handleChangeInputBackup(e: React.ChangeEvent<HTMLInputElement>): void {
+    const {files} = e.target;
+    if (files && files.length) {
+      const file = files[0];
+      if (!this.validateSize(file.size)) {
+        swal('Envió inventario', 'El archivo excede los 10Mb permitios.', 'error');
+      } else {
+        if (new RegExp('\\bimage\\b').test(file.type)) {
+          const reader = new FileReader();
+          reader.onload = (e) => {
+            if (e.target) {
+              this.setState({
+                backupFile: file,
+                backupUri: (e.target as any).result
+              });
+            }
+          };
+          reader.readAsDataURL(file);
+        } else {
+          this.setState({
+            backupFile: file,
+            backupUri: ''
+          });
+        }
+      }
+    }
+  }
+
   private handleDrop(e: React.DragEvent<HTMLDivElement>): void {
     e.preventDefault();
     const dt = e.dataTransfer;
@@ -416,7 +509,7 @@ class InventoryCreateView extends React.Component<IPropsType, IStateType> {
   }
 
   private sendCreate(): void {
-    const {carsByVenue, name, notification, file} = this.state;
+    const {carsByVenue, name, notification, file, backupFile} = this.state;
     const { history } = this.props;
     this.setState({
       sending: true
@@ -437,7 +530,7 @@ class InventoryCreateView extends React.Component<IPropsType, IStateType> {
       });
       api.getSource();
       api
-        .createInventory(carsByVenue, name, notification, file)
+        .createInventory(carsByVenue, name, notification, file, backupFile)
         .then((response: any) => {
           const { message } = response.data;
           setTimeout(() => {

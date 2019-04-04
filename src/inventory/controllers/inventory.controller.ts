@@ -21,10 +21,11 @@ import {IInventoryCar} from '../../interfaces/inventory.interface';
 import {io} from '../../server';
 import logger from '../../services/logger.service';
 import PushService from '../../services/push.service';
+import GeneralUtils from '../../utils/general.utils';
+import Inventory from '../models/inventory.model';
 import InventoryModel, {
   ChoicesStatusInventory
 } from '../models/inventory.model';
-import Inventory from '../models/inventory.model';
 import InventoryCar, {ChoicesStatusCarInventory} from '../models/inventoryCar.model';
 import InventoryFileModel from '../models/inventoryFile.model';
 import InventoryLabel from '../models/inventoryLabel.model';
@@ -108,7 +109,7 @@ class InventoryController {
             for (const car of venue.cars) {
               let currentCar: ICarModel | null = await CarModel.findOne({
                 team,
-                vin: car.vin
+                vin: car.vin.trim()
               });
               if (currentCar === null && car.vin && car.vin.trim().length) {
                 currentCar = new CarModel({
@@ -149,10 +150,19 @@ class InventoryController {
         createdBy: req.user._id,
         status: ChoicesStatusInventory.inProcess
       });
-      const file: any = req.file;
+      const file: any = GeneralUtils.getFileFromRequest(req.files, 'file');
+      console.log('file');
+      console.log(file);
       if (file) {
         file.team = team;
         await inventory.attach('file', file);
+      }
+      const backup: any = GeneralUtils.getFileFromRequest(req.files, 'backup');
+      console.log('backup');
+      console.log(backup);
+      if (backup) {
+        backup.team = team;
+        await inventory.attach('backup', backup);
       }
       await inventory.save();
       inventoryCars.map((i) => {
@@ -470,8 +480,8 @@ class InventoryController {
     const {team, venue, company} = req.user;
     logger.info(`uploadFile`);
     logger.info(`{user: {_id: ${req.user._id}, email: ${req.user.email}}, inventory: ${id}}`);
-    if (req.file) {
-      const file: any = req.file;
+    const file: any = GeneralUtils.getFileFromRequest(req.files, 'file');
+    if (file) {
       try {
         const inventoryFile = new InventoryFileModel();
         /*
@@ -1110,9 +1120,17 @@ class InventoryController {
         }, {
           _id: true,
           name: true
-        });
+        }).lean();
         res.json({
-          data: inventories,
+          data: inventories.map((inventory: any) => {
+            inventory.settings = {
+              photos: {
+                manual: 1,
+                report: 1
+              }
+            };
+            return inventory;
+          }),
           status: 200
         });
       } else {

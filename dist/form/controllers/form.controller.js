@@ -709,8 +709,8 @@ class FormController {
     async uploadFile(req, res) {
         const { id } = req.params;
         const company = req.user.company;
-        if (req.file) {
-            const file = req.file;
+        const file = general_utils_1.default.getFileFromRequest(req.files, 'file');
+        if (file) {
             try {
                 const participantFile = new participantFile_model_1.default();
                 /*

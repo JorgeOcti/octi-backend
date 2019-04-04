@@ -22,6 +22,9 @@ class GeneralUtils {
         const pugCompile = pug.compileFile(path);
         return pugCompile(context);
     }
+    getFileFromRequest(files, name) {
+        return files.find((file) => file.fieldname === name);
+    }
 }
 exports.default = new GeneralUtils();
 //# sourceMappingURL=general.utils.js.map

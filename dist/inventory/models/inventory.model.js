@@ -52,6 +52,10 @@ const inventorySchema = new mongoose.Schema({
         type: fileSchema,
         default: {}
     },
+    backup: {
+        type: fileSchema,
+        default: {}
+    },
     createdBy: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User'
@@ -96,7 +100,8 @@ inventorySchema.plugin(mongooseCrate, {
         }
     }),
     fields: {
-        file: {}
+        file: {},
+        backup: {}
     }
 });
 inventorySchema.virtual('cars', {

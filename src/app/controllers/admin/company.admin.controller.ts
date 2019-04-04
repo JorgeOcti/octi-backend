@@ -1,6 +1,7 @@
 import {Request, Response} from 'express';
 import {PaginateOptions, PaginateResult} from 'mongoose';
 import {IRequest} from '../../../interfaces/global.interface';
+import GeneralUtils from '../../../utils/general.utils';
 import Company, {ICompanyModel} from '../../models/company.model';
 
 class AdminCompaniesController {
@@ -73,7 +74,7 @@ class AdminCompaniesController {
     }
     const {name} = req.body;
     const {team} = req.user;
-    const file: any = req.file;
+    const file: any = GeneralUtils.getFileFromRequest(req.files, 'file');
     if (!name || !name.trim().length) {
       res.status(400).json({
         message: 'El nombre es requerido.',
@@ -126,7 +127,7 @@ class AdminCompaniesController {
     const {id} = req.params;
     const {team} = req.user;
     const {name} = req.body;
-    const file: any = req.file;
+    const file: any = GeneralUtils.getFileFromRequest(req.files, 'file');
     if (!name || !name.length) {
       res.status(400).json({
         message: 'The name is are required',
