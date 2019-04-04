@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+const general_utils_1 = require("../../../utils/general.utils");
 const company_model_1 = require("../../models/company.model");
 class AdminCompaniesController {
     constructor() {
@@ -70,7 +71,7 @@ class AdminCompaniesController {
         }
         const { name } = req.body;
         const { team } = req.user;
-        const file = req.file;
+        const file = general_utils_1.default.getFileFromRequest(req.files, 'file');
         if (!name || !name.trim().length) {
             res.status(400).json({
                 message: 'El nombre es requerido.',
@@ -124,7 +125,7 @@ class AdminCompaniesController {
         const { id } = req.params;
         const { team } = req.user;
         const { name } = req.body;
-        const file = req.file;
+        const file = general_utils_1.default.getFileFromRequest(req.files, 'file');
         if (!name || !name.length) {
             res.status(400).json({
                 message: 'The name is are required',

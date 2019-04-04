@@ -227,12 +227,15 @@ export default class ApiService {
     );
   }
 
-  public createInventory(carsByVenue: any, name: string, notification: boolean, file: File): AxiosPromise {
+  public createInventory(carsByVenue: any, name: string, notification: boolean, file: File, backup: File | null): AxiosPromise {
     const formData = new FormData();
     formData.append('carsByVenue', JSON.stringify(carsByVenue));
     formData.append('name', name);
     formData.append('notification', notification.toString());
     formData.append('file', file);
+    if (backup) {
+      formData.append('backup', backup);
+    }
     this.instance.defaults.headers.common['Content-Type'] = 'multipart/form-data';
     return this.instance.post(
       `/api/inventory/`, formData, {
