@@ -22,6 +22,27 @@ const fileSchema = new mongoose.Schema({
   }
 });
 
+const photoSettingSchema = new mongoose.Schema({
+  manual: {
+    type: Number,
+    default: 1
+  },
+  report: {
+    type: Number,
+    default: 1
+  }
+}, {
+  _id: false
+});
+
+const settingSchema = new mongoose.Schema({
+  photos: {
+    type: photoSettingSchema
+  }
+}, {
+  _id: false
+});
+
 export interface IInventoryModel extends IInventory, mongoose.Document {
   attach(fieldName: string, file: any, error?: (err: any) => void): void;
 }
@@ -56,6 +77,15 @@ const inventorySchema = new mongoose.Schema({
   file: {
     type: fileSchema,
     default: {}
+  },
+  settings: {
+    type: settingSchema,
+    default: {
+      photos: {
+        manual: 1,
+        report: 1
+      }
+    }
   },
   backup: {
     type: fileSchema,
