@@ -34,6 +34,8 @@ interface IStateType {
   file: File | null;
   backupFile: File | null;
   backupUri: string;
+  manualPhoto: number;
+  reportPhoto: number;
 }
 
 class InventoryCreateView extends React.Component<IPropsType, IStateType> {
@@ -55,7 +57,9 @@ class InventoryCreateView extends React.Component<IPropsType, IStateType> {
     sending: false,
     file: null,
     backupFile: null,
-    backupUri: ''
+    backupUri: '',
+    manualPhoto: 1,
+    reportPhoto: 1
   };
 
   constructor(props: IPropsType) {
@@ -66,6 +70,7 @@ class InventoryCreateView extends React.Component<IPropsType, IStateType> {
     this.deleteVenue = this.deleteVenue.bind(this);
     this.handleChangeInputFile = this.handleChangeInputFile.bind(this);
     this.handleChangeInputBackup = this.handleChangeInputBackup.bind(this);
+    this.handleChangeManualPhoto = this.handleChangeManualPhoto.bind(this);
     this.handleDrop = this.handleDrop.bind(this);
     this.dragOverHandler = this.dragOverHandler.bind(this);
     this.dragEndHandler = this.dragEndHandler.bind(this);
@@ -94,6 +99,19 @@ class InventoryCreateView extends React.Component<IPropsType, IStateType> {
     $('[data-toggle="tooltip"]').tooltip();
   }
 
+  public componentDidMount(): void {
+    const $reportPhoto: any = $('#report-photo');
+    $reportPhoto.TouchSpin({
+      initval: 1,
+      min: 0,
+      max: 3
+    }).on('change', () => {
+      this.setState({
+        reportPhoto: parseInt($reportPhoto.val(), 10)
+      });
+    });
+  }
+
   public componentDidCatch(error: Error, errorInfo: ErrorInfo) {
     this.setState({error});
     Raven.captureException(error, {
@@ -102,7 +120,10 @@ class InventoryCreateView extends React.Component<IPropsType, IStateType> {
   }
 
   public render(): React.ReactElement<IPropsType> {
-    const {loadingSettings, carsByVenue, name, sending, notification, backupFile, backupUri} = this.state;
+    const {
+      loadingSettings, carsByVenue, name, sending, notification, backupFile, backupUri,
+      manualPhoto, reportPhoto
+    } = this.state;
     let carsInSettings = 0;
     return (
       <AppContainer title="" cMenu="2" cSubMenu="2.1" cAction="Creación">
@@ -124,22 +145,31 @@ class InventoryCreateView extends React.Component<IPropsType, IStateType> {
                 carsByVenue.length ?
                   <div className="row">
                     <div className="col-md-12">
-                      <div className="box-group" id="accordion" style={{margin: '10px 0'}}>
-                        {
-                          carsByVenue.map((venue: any, index) => {
-                            carsInSettings += venue.cars.length;
-                            return (
-                              <VenueDetail index={index} venue={venue} key={venue.name} deleteVenue={this.deleteVenue} />
-                            );
-                          })
-                        }
+                      <div className="form-group">
+                        <label>Configuración cargada</label>
+                        <div className="box-group" id="accordion" style={{margin: '10px 0'}}>
+                          {
+                            carsByVenue.map((venue: any, index) => {
+                              carsInSettings += venue.cars.length;
+                              return (
+                                <VenueDetail index={index} venue={venue} key={venue.name} deleteVenue={this.deleteVenue} />
+                              );
+                            })
+                          }
+                        </div>
                       </div>
-                      <p><strong>Total de sucursales:</strong> {carsByVenue.length}</p>
-                      <p><strong>Total de vehiculos:</strong> {carsInSettings}</p>
                     </div>
-                    <div className="col-md-12 text-right">
-                      <button className="btn btn-sm btn-primary" onClick={this.downloadTemplate}><i className="fa fa-fw fa-download" /> Descargar Formato</button>
-                      <button className="btn btn-sm btn-default" onClick={this.clickUploadFile} style={{marginLeft: '5px'}}><i className="fa fa-fw fa-cogs" /> Cambiar configuración</button>
+                    <div className="col-md-6">
+                        <p><strong>Total de sucursales:</strong> {carsByVenue.length}</p>
+                        <p><strong>Total de vehiculos:</strong> {carsInSettings}</p>
+                    </div>
+                    <div className="col-md-6 text-right">
+                      <button className="btn btn-sm btn-primary" onClick={this.downloadTemplate}>
+                        <i className="fa fa-fw fa-download" /> Descargar Formato
+                      </button>
+                      <button className="btn btn-sm btn-default" onClick={this.clickUploadFile} style={{marginLeft: '5px'}}>
+                        <i className="fa fa-fw fa-cogs" /> Cambiar configuración
+                      </button>
                     </div>
                     <div className="col-md-12">
                       <div className="form-group" style={{marginBottom: '0px'}}>
@@ -150,9 +180,17 @@ class InventoryCreateView extends React.Component<IPropsType, IStateType> {
                           backupFile && backupUri ?
                             <div className="file">
                               <i className="fa fa-minus-circle text-red pointer" onClick={this.clearBackup}/>
-                              <a href={backupUri} data-toggle="lightbox">
+                              <a
+                                href={backupUri}
+                                data-toggle="lightbox"
+                                data-title={`Vista previa de la imagen`}
+                                data-footer={(backupFile as File).name}
+                              >
                                 <img
                                   src={backupUri}
+                                  data-toggle="tooltip"
+                                  data-placement="bottom"
+                                  title={(backupFile as File).name}
                                 />
                               </a>
                             </div>
@@ -160,7 +198,14 @@ class InventoryCreateView extends React.Component<IPropsType, IStateType> {
                             <div className="file">
                               <i className="fa fa-minus-circle text-red pointer" onClick={this.clearBackup}/>
                               <div className={`icon type-${getIconFromExtension(getExtension((backupFile as File).name))}`}/>
-                              <div className="name-file">{(backupFile as File).name}</div>
+                              <div
+                                className="name-file"
+                                data-toggle="tooltip"
+                                data-placement="bottom"
+                                title={(backupFile as File).name}
+                              >
+                                {(backupFile as File).name}
+                              </div>
                             </div>
                             : <div
                               className="add-file"
@@ -219,7 +264,36 @@ class InventoryCreateView extends React.Component<IPropsType, IStateType> {
                 ref={this.inputFile} accept="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel"
               />
               <div className="row">
-                <div className="col col-md-6">
+                <div className="col-md-12">
+                  <div className="form-group" style={{marginBottom: '0px', marginTop: '10px'}}>
+                    <label>Configuraciones</label>
+                  </div>
+                </div>
+                <div className="col-md-6">
+                  <div className="checkbox">
+                    <label style={{paddingLeft: '0'}} onClick={this.handleChangeManualPhoto}>
+                      <Checkbox
+                        active={manualPhoto === 1}
+                        action={this.handleChangeManualPhoto}
+                        classes="icheck-in-checkbox"
+                        style={{marginTop: '-4px', marginRight: '5px'}}
+                      />
+                      Solicitar foto en modo manual
+                    </label>
+                  </div>
+                </div>
+                <div className="col col-md-6 number-question">
+                    <input
+                      type="text"
+                      id="report-photo"
+                      className="input-sm form-control"
+                      style={{
+                        width: '35px'
+                      }}
+                    />
+                    <span>Cantidad de imágenes al reportar</span>
+                </div>
+                <div className="col-md-12">
                   <div className="checkbox">
                     <label style={{paddingLeft: '0'}} onClick={this.handleChangeNotification}>
                       <Checkbox
@@ -294,6 +368,13 @@ class InventoryCreateView extends React.Component<IPropsType, IStateType> {
     if (this.inputBackup.current) {
       this.inputBackup.current.click();
     }
+  }
+
+  private handleChangeManualPhoto(): void {
+    const {manualPhoto} = this.state;
+    this.setState({
+      manualPhoto: manualPhoto === 1 ? 0 : 1
+    });
   }
 
   private handleChangeName(e: React.ChangeEvent<HTMLInputElement>): void {
@@ -509,7 +590,7 @@ class InventoryCreateView extends React.Component<IPropsType, IStateType> {
   }
 
   private sendCreate(): void {
-    const {carsByVenue, name, notification, file, backupFile} = this.state;
+    const {carsByVenue, name, notification, file, backupFile, manualPhoto, reportPhoto} = this.state;
     const { history } = this.props;
     this.setState({
       sending: true
@@ -530,7 +611,9 @@ class InventoryCreateView extends React.Component<IPropsType, IStateType> {
       });
       api.getSource();
       api
-        .createInventory(carsByVenue, name, notification, file, backupFile)
+        .createInventory({
+          carsByVenue, name, notification, file, backupFile, manualPhoto, reportPhoto
+        })
         .then((response: any) => {
           const { message } = response.data;
           setTimeout(() => {

@@ -81,7 +81,7 @@ class InventoryController {
 
   public async create(req: IRequest, res: Response) {
     const {company, team} = req.user;
-    const {name} = req.body;
+    const {name, manualPhoto, reportPhoto} = req.body;
     let {carsByVenue, notification} = req.body;
     carsByVenue = JSON.parse(carsByVenue);
     notification = notification === 'true';
@@ -148,7 +148,13 @@ class InventoryController {
         team,
         venues: venuesIDs,
         createdBy: req.user._id,
-        status: ChoicesStatusInventory.inProcess
+        status: ChoicesStatusInventory.inProcess,
+        settings: {
+          photos: {
+            manual: manualPhoto,
+            report: reportPhoto
+          }
+        }
       });
       const file: any = GeneralUtils.getFileFromRequest(req.files, 'file');
       if (file) {
@@ -1115,18 +1121,11 @@ class InventoryController {
           }
         }, {
           _id: true,
-          name: true
+          name: true,
+          settings: true
         }).lean();
         res.json({
-          data: inventories.map((inventory: any) => {
-            inventory.settings = {
-              photos: {
-                manual: 1,
-                report: 1
-              }
-            };
-            return inventory;
-          }),
+          data: inventories,
           status: 200
         });
       } else {

@@ -19,6 +19,25 @@ const fileSchema = new mongoose.Schema({
         type: Number
     }
 });
+const photoSettingSchema = new mongoose.Schema({
+    manual: {
+        type: Number,
+        default: 1
+    },
+    report: {
+        type: Number,
+        default: 1
+    }
+}, {
+    _id: false
+});
+const settingSchema = new mongoose.Schema({
+    photos: {
+        type: photoSettingSchema
+    }
+}, {
+    _id: false
+});
 var ChoicesStatusInventory;
 (function (ChoicesStatusInventory) {
     ChoicesStatusInventory["pending"] = "pending";
@@ -51,6 +70,15 @@ const inventorySchema = new mongoose.Schema({
     file: {
         type: fileSchema,
         default: {}
+    },
+    settings: {
+        type: settingSchema,
+        default: {
+            photos: {
+                manual: 1,
+                report: 1
+            }
+        }
     },
     backup: {
         type: fileSchema,
