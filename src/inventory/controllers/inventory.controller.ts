@@ -118,6 +118,7 @@ class InventoryController {
                   vin: car.vin,
                   vin2: car.vin.substr(car.vin.length - 6),
                   color: car.color,
+                  property: car.property,
                   denomination: car.denomination,
                   brand: car.brand,
                   patent: car.patent,
@@ -1480,7 +1481,7 @@ class InventoryController {
           },
           populate: [{
             path: 'car',
-            select: ['vin', 'vin2', 'color', 'denomination', 'brand', 'venue', 'patent', 'internalNumber']
+            select: ['vin', 'vin2', 'color', 'denomination', 'brand', 'venue', 'patent', 'internalNumber', 'property']
           }, {
             path: 'label'
           }, {

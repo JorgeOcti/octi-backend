@@ -124,6 +124,11 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
     used: 'Usados'
   };
 
+  private propertyText: any = {
+    D: 'D',
+    I: 'I'
+  };
+
   private iconStatus: any = {
     pending: 'fa-clock-o',
     found: 'fa-check',
@@ -185,6 +190,7 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
     this.filterVenues = this.filterVenues.bind(this);
     this.filterStatus = this.filterStatus.bind(this);
     this.filterType = this.filterType.bind(this);
+    this.filterProperty = this.filterProperty.bind(this);
     this.selectedHeaderFormatter = this.selectedHeaderFormatter.bind(this);
     this.statusFormatter = this.statusFormatter.bind(this);
     this.brandFormatter = this.brandFormatter.bind(this);
@@ -852,7 +858,7 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
                           <a href="javascript:void(0)"><i className="fa fa-fw fa-download"/> Descargar todas las imágenes</a>
                         </li>
                         <li onClick={() => this.downloadImages({})}>
-                          <a href="javascript:void(0)"><i className="fa fa-fw fa-download"/> Descargar imágenes seleccinadas</a>
+                          <a href="javascript:void(0)"><i className="fa fa-fw fa-download"/> Descargar imágenes seleccionadas</a>
                         </li>
                       </ul>
                     </div>
@@ -933,17 +939,34 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
                     </div>
                     <div className="col-md-3">
                       <div className="form-group">
-                        <label className="control-label hidden-xs">&nbsp;</label>
-                        <button
-                          className="btn btn-default btn-sm form-control"
-                          onClick={this.clearFilter}
-                          style={{paddingLeft: '5px'}}
-                          disabled={
-                            filter.states.length || filter.text.length || filter.venues.length  || filter.type.length ? false : true}
-                        >
-                          <i className="fa fa-fw fa-eraser"/> Limpiar
-                        </button>
+                        <label htmlFor="states" className="control-label">Propiedad</label>
+                        <BootstrapSelect
+                          noneSelectedText="Todos"
+                          displayItems={4}
+                          selectedText="estados seleccionados."
+                          separator=" - "
+                          options={Object
+                            .keys(this.propertyText)
+                            .map((type) => ({
+                              value: type,
+                              text: this.propertyText[type]
+                            }))}
+                          selected={[filter.property]}
+                          autoClouse={true}
+                          onClick={this.filterProperty}
+                        />
                       </div>
+                    </div>
+                    <div className="col-md-3 col-md-push-9 text-right" style={{marginBottom: '10px'}}>
+                      <button
+                        className="btn btn-default btn-sm"
+                        onClick={this.clearFilter}
+                        style={{paddingLeft: '5px'}}
+                        disabled={
+                          filter.states.length || filter.text.length || filter.venues.length || filter.type.length || filter.property.length ? false : true}
+                      >
+                        <i className="fa fa-fw fa-eraser"/> Limpiar
+                      </button>
                     </div>
                   </Row>
                   {
@@ -1174,10 +1197,19 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
     });
   }
 
+  private filterProperty(value: string) {
+    const {filter} = this.props.inventories;
+    this.props.inventoryDetailChangeFilter({
+      ...filter,
+      property: filter.property !== value ? value : ''
+    });
+  }
+
   private sendToDetailFilteredByState(state: string) {
     this.props.inventoryDetailChangeFilter({
       text: '',
       type: '',
+      property: '',
       venues: [],
       states: [state]
     });
@@ -1192,6 +1224,7 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
     this.props.inventoryDetailChangeFilter({
       text: '',
       type: '',
+      property: '',
       venues: [venue],
       states: []
     });
@@ -1206,6 +1239,7 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
     this.props.inventoryDetailChangeFilter({
       venues: [],
       states: [],
+      property: '',
       type: '',
       text: ''
     });
@@ -1303,6 +1337,7 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
             ['Denominación']: car.car.denomination && car.car.denomination.length ? car.car.denomination : '-',
             Color: car.car.color && car.car.color.length ? car.car.color : '-',
             Sucursal: car.venue && car.venue.hasOwnProperty('name') ? car.venue.name : '-',
+            Propiedad: car.car.property && car.car.property ? car.car.property : '-',
             ['Sucursal encontrado']: car.venueFound && car.venueFound.hasOwnProperty('name') ? car.venueFound.name : '-',
             ['Encontrado por']: car.inventoriedBy ? `${car.inventoriedBy.firstName} ${car.inventoriedBy.lastName}` : '-',
             ['Comentario']: car.comments && car.comments.length ? `${car.comments[car.comments.length - 1].comment}` : '-',

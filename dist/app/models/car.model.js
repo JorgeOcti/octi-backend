@@ -33,6 +33,11 @@ const carSchema = new mongoose.Schema({
         type: String,
         trim: true
     },
+    property: {
+        type: String,
+        trim: true,
+        uppercase: true
+    },
     brand: {
         type: String,
         trim: true

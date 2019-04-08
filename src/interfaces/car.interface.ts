@@ -12,6 +12,7 @@ export interface ICar {
   brand: string;
   denomination: string;
   destination: string;
+  property: string;
   isExhibition: boolean;
   color: string;
   team: ITeam | any;
