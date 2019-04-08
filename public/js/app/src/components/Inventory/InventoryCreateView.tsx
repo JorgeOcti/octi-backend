@@ -182,6 +182,7 @@ class InventoryCreateView extends React.Component<IPropsType, IStateType> {
                               <i className="fa fa-minus-circle text-red pointer" onClick={this.clearBackup}/>
                               <a
                                 href={backupUri}
+                                className="zoom-in"
                                 data-toggle="lightbox"
                                 data-title={`Vista previa de la imagen`}
                                 data-footer={(backupFile as File).name}
