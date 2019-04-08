@@ -2,7 +2,7 @@ import {ICompanyModel} from '../app/models/company.model';
 import {IUserModel} from '../app/models/user.model';
 import {IInventoryModel} from '../inventory/models/inventory.model';
 
-interface IIFile {
+export interface IIFile {
   url: string;
   type: string;
   name: string;
