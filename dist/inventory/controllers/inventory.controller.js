@@ -231,6 +231,8 @@ class InventoryController {
                             status: '$status',
                             carStatus: '$cars.status',
                             name: '$name',
+                            file: '$file',
+                            backup: '$backup',
                             createdBy: '$createdBy',
                             createdAt: '$createdAt',
                             finalizedBy: '$finalizedBy',
@@ -248,6 +250,12 @@ class InventoryController {
                         },
                         createdAt: {
                             $first: '$_id.createdAt'
+                        },
+                        file: {
+                            $first: '$_id.file'
+                        },
+                        backup: {
+                            $first: '$_id.backup'
                         },
                         finalizedAt: {
                             $first: '$_id.finalizedAt'
@@ -287,6 +295,8 @@ class InventoryController {
                         '_id': 1,
                         'name': 1,
                         'results': 1,
+                        'file': 1,
+                        'backup': 1,
                         'createdBy.firstName': 1,
                         'createdBy.lastName': 1,
                         'finalizedBy.firstName': 1,
@@ -311,6 +321,8 @@ class InventoryController {
                 response.push({
                     _id: inventory._id,
                     name: inventory.name,
+                    file: req.user.hasPermission('viewFilesInventory') ? inventory.file : null,
+                    backup: req.user.hasPermission('viewFilesInventory') ? inventory.backup : null,
                     createdBy: inventory.createdBy.length ? {
                         fullName: `${inventory.createdBy[0].firstName} ${inventory.createdBy[0].lastName}`
                     } : {},

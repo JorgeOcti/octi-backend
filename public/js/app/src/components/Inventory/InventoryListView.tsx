@@ -106,7 +106,11 @@ class InventoryListView extends React.Component<IPropsType, IStateType> {
             <div className="box-header with-border">
               <h3 className="box-title">Gestión de inventarios</h3>
               <div className="pull-right box-tools">
-                <button className="btn btn-sm btn-success" onClick={this.create}>Nuevo</button>
+                {
+                  hasPermission(window.user, 'createInventory') ?
+                    <button className="btn btn-sm btn-success" onClick={this.create}>Nuevo</button>
+                    : null
+                }
               </div>
             </div>
             <div className="box-body">
@@ -192,6 +196,24 @@ class InventoryListView extends React.Component<IPropsType, IStateType> {
                                       <i className="fa fa-fw fa-table" />Ver Detalle
                                     </a>
                                   </li>
+                                  {
+                                    hasPermission(window.user, 'viewFilesInventory') && inventory.file ?
+                                      <li>
+                                        <a href={decodeURI(inventory.file.url)} download={inventory.file.name}>
+                                          <i className="fa fa-fw fa-download"/>Descargar archivo cargado
+                                        </a>
+                                      </li>
+                                      : null
+                                  }
+                                  {
+                                    hasPermission(window.user, 'viewFilesInventory') && inventory.backup ?
+                                      <li>
+                                        <a href={decodeURI(inventory.backup.url)} target="_blank" download={inventory.file.name}>
+                                          <i className="fa fa-fw fa-download"/>Descargar archivo de respaldo
+                                        </a>
+                                      </li>
+                                      : null
+                                  }
                                   {
                                     inventory.status === 'inProcess' && hasPermission(window.user, 'finishInventory') ?
                                         <li>

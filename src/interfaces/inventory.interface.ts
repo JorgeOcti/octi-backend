@@ -3,7 +3,7 @@ import {IUserModel} from '../app/models/user.model';
 import {ICar} from './car.interface';
 import {ICompany} from './company.interface';
 import {IInventoryComment} from './inventoryComment.interface';
-import {IInventoryFile} from './inventoryFile.interface';
+import {IIFile, IInventoryFile} from './inventoryFile.interface';
 import {IInventoryLabel} from './inventoryLabel.interface';
 import {ITeam} from './team.interface';
 import {IVenue} from './venue.interface';
@@ -33,8 +33,9 @@ export interface IInventory {
   createdBy: IUserModel;
   finalizedBy: IUserModel;
   finalizedAt: Date;
+  file: IIFile;
+  backup: IIFile;
   status: string;
-  file: any;
   updatedAt: Date;
   createdAt: Date;
 }
