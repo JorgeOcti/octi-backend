@@ -28,6 +28,7 @@ const initialState: IInventoryState = {
   selectedItems: {},
   filter: {
     text: '',
+    property: '',
     type: '',
     venues: [],
     states: []
@@ -42,6 +43,7 @@ const initialState: IInventoryState = {
 export interface IFilterCar {
   text: string;
   type: string;
+  property: string;
   venues: string[];
   states: string[];
 }
@@ -147,6 +149,9 @@ function processCars(cars: IInventoryCar[], selectedItems: { [key: string]: any 
     }
     if (add && filter && filter.states && filter.states.length && car.status) {
       add = (filter.states as any).includes(car.status);
+    }
+    if (add && filter && filter.property && filter.property.length && car.car.property) {
+      add = car.car.property === filter.property;
     }
     if (add && filter && filter.text && filter.text.length) {
       const result: boolean[] = filter.text.toLowerCase().split(' ').map((text) => (

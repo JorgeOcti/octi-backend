@@ -361,7 +361,7 @@ export function getInventoryDetailAction(id: string, update: boolean) {
           dispatch(fetchingnventoryDetaillAction(false));
           dispatch(loadingInventoryDetaillAction(false));
           if (!update) {
-            $('.count').each(function () {
+            $('.count').each(function() {
               $(this).prop('Counter', 0).animate({
                 Counter: $(this).text()
               }, {

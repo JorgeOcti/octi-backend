@@ -122,7 +122,7 @@ class InventoryCreateView extends React.Component<IPropsType, IStateType> {
   public render(): React.ReactElement<IPropsType> {
     const {
       loadingSettings, carsByVenue, name, sending, notification, backupFile, backupUri,
-      manualPhoto, reportPhoto
+      manualPhoto
     } = this.state;
     let carsInSettings = 0;
     return (
@@ -394,7 +394,8 @@ class InventoryCreateView extends React.Component<IPropsType, IStateType> {
       marca: '',
       patente: '',
       denominacion: '',
-      color: ''
+      color: '',
+      propiedad: ''
     }];
     /* make the worksheet */
     const ws = XLSX.utils.json_to_sheet(data);
@@ -435,6 +436,7 @@ class InventoryCreateView extends React.Component<IPropsType, IStateType> {
                   denomination: item.denominacion ? item.denominacion.trim() : '',
                   brand: item.marca ? item.marca.trim() : '',
                   patent: item.patente ? item.patente.trim() : '',
+                  property: item.propiedad ? item.propiedad.trim().toUpperCase() : '',
                   hasWarnings: vinWarning || patentWarning,
                   warning: {
                     vin: vinWarning,
