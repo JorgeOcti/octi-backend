@@ -12,6 +12,7 @@ interface IPropsType {
   className?: string;
   displayItems?: number;
   onClick: any;
+  selectAll?: any;
   noneSelectedText?: string;
   selectedText?: string;
   separator?: string;
@@ -43,7 +44,7 @@ class BootstrapSelect extends React.Component<IPropsType, IStateType> {
 
   render(): React.ReactElement<IPropsType> {
     const {
-      options, selected, onClick, displayItems, noneSelectedText, selectedText, separator, allOption, search, autoClouse
+      options, selected, onClick, displayItems, noneSelectedText, selectedText, separator, allOption, search, autoClouse, selectAll
     } = this.props;
     const selectedItems = options.filter((option) => (selected.includes(option.value)));
     return (
@@ -90,8 +91,14 @@ class BootstrapSelect extends React.Component<IPropsType, IStateType> {
             allOption ?
               <div className="bs-actionsbox">
                 <div className="btn-group btn-group-sm btn-block">
-                  <button type="button" className="actions-btn bs-select-all btn btn-default">Seleccionar todo</button>
-                  <button type="button" className="actions-btn bs-deselect-all btn btn-default">Deseleccionar todo</button>
+                  <button
+                    onClick={() => selectAll(true)}
+                    type="button" className="actions-btn bs-select-all btn btn-default">Seleccionar todo
+                  </button>
+                  <button
+                    onClick={() => selectAll(false)}
+                    type="button" className="actions-btn bs-deselect-all btn btn-default">Deseleccionar todo
+                  </button>
                 </div>
               </div> : null
           }

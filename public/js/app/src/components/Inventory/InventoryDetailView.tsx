@@ -188,6 +188,7 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
     this.carComments = this.carComments.bind(this);
     this.selectedFormatter = this.selectedFormatter.bind(this);
     this.filterVenues = this.filterVenues.bind(this);
+    this.filterAllVenues = this.filterAllVenues.bind(this);
     this.filterStatus = this.filterStatus.bind(this);
     this.filterType = this.filterType.bind(this);
     this.filterProperty = this.filterProperty.bind(this);
@@ -889,6 +890,8 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
                           displayItems={2}
                           selectedText="sucursales seleccionadas."
                           selected={filter.venues}
+                          allOption={true}
+                          selectAll={this.filterAllVenues}
                           options={detail.venues.map((venue: any) => ({
                             value: venue._id,
                             text: venue.name
@@ -1176,6 +1179,14 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
       venues: filter.venues.includes(value)
         ? filter.venues.filter((venue) => venue !== value)
         : [value, ...filter.venues]
+    });
+  }
+
+  private filterAllVenues(value: boolean) {
+    const {filter, detail} = this.props.inventories;
+    this.props.inventoryDetailChangeFilter({
+      ...filter,
+      venues: value ? detail.venues.map((venue: any) => venue._id) : []
     });
   }
 
