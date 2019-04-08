@@ -150,7 +150,7 @@ function processCars(cars: IInventoryCar[], selectedItems: { [key: string]: any 
     if (add && filter && filter.states && filter.states.length && car.status) {
       add = (filter.states as any).includes(car.status);
     }
-    if (add && filter && filter.property && filter.property.length && car.car.property) {
+    if (add && filter && filter.property && filter.property.length) {
       add = car.car.property === filter.property;
     }
     if (add && filter && filter.text && filter.text.length) {
