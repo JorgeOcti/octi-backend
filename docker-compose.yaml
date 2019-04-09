@@ -32,7 +32,7 @@ services:
       - .env
     environment:
       REDIS_SERVICE_SERVICE_HOST: redis
-      MONGODB_URI: mongodb://osacontrol:osacontrol@mongo:27017/osaAndesProduction
+      MONGODB_URI: mongodb://osacontrol:osacontrol@mongo:27017/osaAndesProduction?authSource=admin
     ports:
       - 3030:3030
     volumes:
