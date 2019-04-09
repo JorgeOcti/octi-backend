@@ -44,5 +44,7 @@ package-lock.json
 
 # mongo dump
 dump/
-
+tsconfig.tsbuildinfo
 secrets.yaml
+
+
