@@ -193,6 +193,8 @@ class FormController {
 
   public async list(req: IRequest, res: Response): Promise<any> {
     const {team} = req.user;
+    logger.info(`list forms`);
+    logger.info(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
     try {
       const updatedUser = await User.findById(req.user._id).populate([{
         path: 'userForms',
@@ -218,6 +220,7 @@ class FormController {
       }
     } catch (e) {
       /* istanbul ignore next */
+      logger.error(`Async Error.`);
       res.status(400).json({
         message: 'Ha ocurrido un error',
         status: 400
@@ -228,6 +231,8 @@ class FormController {
   public async detail(req: IRequest, res: Response): Promise<any> {
     const {id} = req.params;
     const {team} = req.user;
+    logger.info(`detail forms`);
+    logger.info(`{user: {_id: ${req.user._id}, email: ${req.user.email}}, {form: ${id}}}`);
     try {
       if (await User.find({_id: req.user._id, userForms: id}).count() < 1) {
         return res.status(403).json({
@@ -421,6 +426,12 @@ class FormController {
       });
     } catch (e) {
       /* istanbul ignore next */
+      logger.error(`detail form: Async Error.`);
+      /* istanbul ignore next */
+      logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
+      /* istanbul ignore next */
+      logger.error(e);
+      /* istanbul ignore next */
       console.log('e', e);
       /* istanbul ignore next */
       res.status(400).json({
@@ -435,7 +446,8 @@ class FormController {
     let {vin} = req.body;
     const {answers} = req.body;
     const {team, venue, company} = req.user;
-
+    logger.info(`complete`);
+    logger.info(`{user: {_id: ${req.user._id}, email: ${req.user.email}}, body: ${JSON.stringify(req.body)}}`);
     // validate answers in body
     if (!answers) {
       return res.status(400).json({
@@ -722,6 +734,8 @@ class FormController {
     const {id} = req.params;
     const company = req.user.company;
     const file: any = GeneralUtils.getFileFromRequest(req.files, 'file');
+    logger.info(`uploadFile`);
+    logger.info(`{user: {_id: ${req.user._id}, email: ${req.user.email}}, {form: ${id}, file: ${JSON.stringify(file)}}}`);
     if (file) {
       try {
         const participantFile = new ParticipantFile();
@@ -766,10 +780,15 @@ class FormController {
         });
       } catch (e) {
         /* istanbul ignore next */
+        logger.error(`async error:`);
+        /* istanbul ignore next */
+        logger.error(e);
+        /* istanbul ignore next */
         res.status(400).json(e);
       }
 
     } else {
+      logger.error(`uploadFile: La imagen es obligatoria.`);
       res.status(400).json({
         message: 'La imagen es obligatoria.',
         status: 400
