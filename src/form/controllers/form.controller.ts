@@ -228,12 +228,12 @@ class FormController {
   public async detail(req: IRequest, res: Response): Promise<any> {
     const {id} = req.params;
     const {team} = req.user;
-    if (req.user.userForms.filter((form) => form._id.toString() === id).length === 0) {
-      return res.status(403).json({
-        message: 'No tienes permisos para esta operación'
-      });
-    }
     try {
+      if (await User.find({_id: req.user._id, userForms: id}).count() < 1) {
+        return res.status(403).json({
+          message: 'No tienes permisos para esta operación'
+        });
+      }
       const form = await this.getForm({_id: id, team});
       // generate array of scale ids
       const scalesIds: any[] = [];
