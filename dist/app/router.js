@@ -58,7 +58,7 @@ appRouter.delete('/api/admin/companies/:id', middlewares_1.default.isLoggedIn, c
 appRouter.get('/api/admin/teams/', middlewares_1.default.isLoggedIn, team_admin_controller_1.default.apiListTeams);
 // setting cars
 appRouter.get('/settings/cars/', middlewares_1.default.isLoggedIn, car_admin_controller_1.default.index);
-appRouter.get('/settings/cars/:car/', middlewares_1.default.isLoggedIn, car_admin_controller_1.default.index);
+appRouter.get('/settings/cars/:id/', middlewares_1.default.isLoggedIn, car_admin_controller_1.default.indexDetail);
 appRouter.get('/api/admin/cars/', middlewares_1.default.isLoggedIn, car_admin_controller_1.default.apiListCars);
 // import cars
 appRouter.get('/settings/cars/import/', middlewares_1.default.isLoggedIn, car_admin_controller_1.default.imports);

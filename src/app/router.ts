@@ -69,7 +69,7 @@ appRouter.get('/api/admin/teams/', Middlewares.isLoggedIn, AdminTeamsController.
 
 // setting cars
 appRouter.get('/settings/cars/', Middlewares.isLoggedIn, AdminCarsController.index);
-appRouter.get('/settings/cars/:car/', Middlewares.isLoggedIn, AdminCarsController.index);
+appRouter.get('/settings/cars/:id/', Middlewares.isLoggedIn, AdminCarsController.indexDetail);
 appRouter.get('/api/admin/cars/', Middlewares.isLoggedIn, AdminCarsController.apiListCars);
 
 // import cars
