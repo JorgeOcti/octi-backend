@@ -1,10 +1,12 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+const mongoose_1 = require("mongoose");
 const server_1 = require("../../../server");
 const car_model_1 = require("../../models/car.model");
 class AdminCarController {
     constructor() {
         this.index = this.index.bind(this);
+        this.indexDetail = this.indexDetail.bind(this);
         this.imports = this.imports.bind(this);
         this.importCars = this.importCars.bind(this);
         this.apiListCars = this.apiListCars.bind(this);
@@ -16,6 +18,17 @@ class AdminCarController {
         }
         else {
             res.status(403).render('403');
+        }
+    }
+    async indexDetail(req, res) {
+        const { id } = req.params;
+        const { team } = req.user;
+        /* istanbul ignore else */
+        if (req.user.hasPermission('viewCar') && mongoose_1.Types.ObjectId.isValid(id) && await car_model_1.default.find({ _id: id, team }).count()) {
+            res.render('app/index', { token: await req.user.generateToken() });
+        }
+        else {
+            res.redirect('/settings/cars/');
         }
     }
     async imports(req, res) {

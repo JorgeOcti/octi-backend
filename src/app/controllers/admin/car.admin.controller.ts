@@ -1,5 +1,6 @@
 import {Response} from 'express';
 import {PaginateOptions, PaginateResult} from 'mongoose';
+import {Types} from 'mongoose';
 import {IRequest} from '../../../interfaces/global.interface';
 import {io} from '../../../server';
 import Car, {ChoicesStatusCar, ICarModel} from '../../models/car.model';
@@ -8,6 +9,7 @@ class AdminCarController {
 
   constructor() {
     this.index = this.index.bind(this);
+    this.indexDetail = this.indexDetail.bind(this);
     this.imports = this.imports.bind(this);
     this.importCars = this.importCars.bind(this);
     this.apiListCars = this.apiListCars.bind(this);
@@ -19,6 +21,17 @@ class AdminCarController {
       res.render('app/index', {token: await req.user.generateToken()});
     } else {
       res.status(403).render('403');
+    }
+  }
+
+  public async indexDetail(req: IRequest, res: Response) {
+    const {id} = req.params;
+    const {team} = req.user;
+    /* istanbul ignore else */
+    if (req.user.hasPermission('viewCar') && Types.ObjectId.isValid(id) && await Car.find({_id: id, team}).count()) {
+      res.render('app/index', {token: await req.user.generateToken()});
+    } else {
+      res.redirect('/settings/cars/');
     }
   }
 
