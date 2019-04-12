@@ -91,8 +91,8 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
     source: null
   };
 
-  venuesDetailChart: echarts.ECharts;
-  brandDetailChart: echarts.ECharts;
+  private venuesDetailChart: echarts.ECharts;
+  private brandDetailChart: echarts.ECharts;
 
   private labelOption: any = {
     normal: {
@@ -119,30 +119,12 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
     reported: 'Reportado'
   };
 
-  private typeText: any = {
-    new: 'Nuevos',
-    used: 'Usados'
-  };
-
-  private propertyText: any = {
-    D: 'D',
-    I: 'I'
-  };
-
   private iconStatus: any = {
     pending: 'fa-clock-o',
     found: 'fa-check',
     leftover: 'fa-arrow-up',
     missing: 'fa-arrow-down',
     reported: 'fa-exclamation'
-  };
-
-  private classStatus: any = {
-    pending: 'bg-aqua',
-    found: 'bg-green',
-    missing: 'bg-red',
-    leftover: 'bg-yellow',
-    reported: 'bg-gray'
   };
 
   private classLabelStatus: any = {
@@ -338,7 +320,7 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
     }];
   }
 
-  public componentWillMount() {
+  public componentWillMount(): void {
     // get data
     const {id} = this.props.match.params;
     this.props.getInventoryDetailAction(id, false);
@@ -379,7 +361,7 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
     });
   }
 
-  public componentWillUnmount() {
+  public componentWillUnmount(): void {
     // remove listeners
     window.removeEventListener('resize', this.resizeCharts, false);
     // cancel request if component is inmounted
@@ -392,7 +374,7 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
     this.socket.disconnect();
   }
 
-  public componentDidCatch(error: Error, errorInfo: ErrorInfo) {
+  public componentDidCatch(error: Error, errorInfo: ErrorInfo): void {
     this.setState({error});
     Raven.captureException(error, {
       extra: errorInfo
