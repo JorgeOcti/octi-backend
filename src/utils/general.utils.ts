@@ -31,7 +31,10 @@ class GeneralUtils implements IGeneralutils {
   }
 
   public getFileFromRequest(files: Express.Multer.File[], name: string): Express.Multer.File | undefined {
-    return files.find((file: Express.Multer.File) => file.fieldname === name);
+    if (files && files.length) {
+      return files.find((file: Express.Multer.File) => file.fieldname === name);
+    }
+    return undefined;
   }
 }
 export default new GeneralUtils();

@@ -67,14 +67,14 @@ appRouter.delete('/api/admin/companies/:id', Middlewares.isLoggedIn, AdminCompan
 // api team
 appRouter.get('/api/admin/teams/', Middlewares.isLoggedIn, AdminTeamsController.apiListTeams);
 
+// import cars
+appRouter.get('/settings/cars/import/', Middlewares.isLoggedIn, AdminCarsController.imports);
+appRouter.post('/api/admin/import-cars/', Middlewares.isLoggedIn, AdminCarsController.importCars);
+
 // setting cars
 appRouter.get('/settings/cars/', Middlewares.isLoggedIn, AdminCarsController.index);
 appRouter.get('/settings/cars/:id/', Middlewares.isLoggedIn, AdminCarsController.indexDetail);
 appRouter.get('/api/admin/cars/', Middlewares.isLoggedIn, AdminCarsController.apiListCars);
-
-// import cars
-appRouter.get('/settings/cars/import/', Middlewares.isLoggedIn, AdminCarsController.imports);
-appRouter.post('/api/admin/import-cars/', Middlewares.isLoggedIn, AdminCarsController.importCars);
 
 // permissions
 appRouter.get('/api/admin/permissions/', Middlewares.isLoggedIn, AdminPermissionController.apiList);

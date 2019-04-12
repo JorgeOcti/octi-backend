@@ -124,7 +124,7 @@ describe('cars', () => {
         authenticatedUser
             .get(`/cars/0af487b4f6a4c95ccd991400`)
             .end((err, res) => {
-            expect(res.status).to.equal(404);
+            expect(res.status).to.equal(302);
             done();
         });
     });

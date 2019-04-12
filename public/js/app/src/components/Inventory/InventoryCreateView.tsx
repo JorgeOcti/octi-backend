@@ -395,7 +395,8 @@ class InventoryCreateView extends React.Component<IPropsType, IStateType> {
       patente: '',
       denominacion: '',
       color: '',
-      propiedad: ''
+      propiedad: '',
+      tipo: ''
     }];
     /* make the worksheet */
     const ws = XLSX.utils.json_to_sheet(data);
@@ -437,6 +438,7 @@ class InventoryCreateView extends React.Component<IPropsType, IStateType> {
                   brand: item.marca ? item.marca.trim() : '',
                   patent: item.patente ? item.patente.trim() : '',
                   property: item.propiedad ? item.propiedad.trim().toUpperCase() : '',
+                  type: item.tipo ? item.tipo.trim() : '',
                   hasWarnings: vinWarning || patentWarning,
                   warning: {
                     vin: vinWarning,
