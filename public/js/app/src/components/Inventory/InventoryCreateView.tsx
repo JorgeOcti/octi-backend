@@ -284,16 +284,30 @@ class InventoryCreateView extends React.Component<IPropsType, IStateType> {
                     </label>
                   </div>
                 </div>
-                <div className="col col-md-6 number-question">
-                    <input
-                      type="text"
-                      id="report-photo"
-                      className="input-sm form-control"
-                      style={{
-                        width: '35px'
-                      }}
-                    />
-                    <span>Cantidad de imágenes al reportar</span>
+                <div className="col-md-6">
+                  <div className="form-horizontal">
+                    <div className="form-group" style={{marginRight: '0', marginLeft: '0'}}>
+                      <span
+                        className="col-md-6 control-label"
+                        style={{
+                          paddingLeft: '0',
+                          textAlign: 'left'
+                        }}
+                      >
+                        Nº imágenes al reporta
+                      </span>
+                      <input id="report-photo" type="text" className="col-md-6 form-control" />
+                    </div>
+                  </div>
+                    {/*<input*/}
+                    {/*  type="text"*/}
+                    {/*  id="report-photo"*/}
+                    {/*  className="input-sm form-control"*/}
+                    {/*  style={{*/}
+                    {/*    width: '35px'*/}
+                    {/*  }}*/}
+                    {/*/>*/}
+                    {/*<span>Cantidad de imágenes al reportar</span>*/}
                 </div>
                 <div className="col-md-12">
                   <div className="checkbox">
@@ -312,12 +326,14 @@ class InventoryCreateView extends React.Component<IPropsType, IStateType> {
             </div>
             <div className="box-footer text-right">
               <button className="btn btn-sm btn-default" onClick={() => this.props.history.push('/inventory/')}>Cancelar</button>
-              <button className="btn btn-sm btn-primary" style={{marginLeft: '5px'}} onClick={this.sendCreate} disabled={sending}>{
-                sending ?
-                  <React.Fragment><i className="fa fa-fw fa-spin fa-spinner"/> Creando...</React.Fragment>
-                  :
-                  'Crear'
-              }
+              <button className="btn btn-sm btn-primary" style={{marginLeft: '5px'}} onClick={this.sendCreate} disabled={sending}>
+                {
+                  sending ?
+                    <React.Fragment>
+                      <i className="fa fa-fw fa-spin fa-spinner"/> Creando...
+                    </React.Fragment>
+                    : 'Crear'
+                }
               </button>
             </div>
             {
