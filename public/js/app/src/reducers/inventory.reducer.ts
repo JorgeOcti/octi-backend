@@ -25,6 +25,8 @@ const initialState: IInventoryState = {
   detailByVenue: [],
   detailByBrand: [],
   carsTable: [],
+  cardTypes: [],
+  cardProperties: [],
   selectedItems: {},
   filter: {
     text: '',
@@ -98,6 +100,7 @@ export function inventoriesReducer(state = initialState, action: InventoryReduxA
       const filter = action.payload.resetFilter ? initialState.filter : state.filter;
       return {
         ...state,
+        ...processPropertyCars(action.payload.detail.cars),
         carsTable: processCars(action.payload.detail.cars, selectedItems, filter),
         selectedItems,
         filter,
@@ -137,6 +140,27 @@ function processSelected(selectedItems: any, item: string) {
   return newSelectedItems;
 }
 
+interface IPropertyCar {
+  cardProperties: string[];
+  cardTypes: string[];
+}
+
+function processPropertyCars(cars: IInventoryCar[]): IPropertyCar {
+  const propertyCars: IPropertyCar = {
+    cardProperties: [],
+    cardTypes: []
+  };
+  for (const car of cars) {
+    if (car.car.property && !propertyCars.cardProperties.includes(car.car.property)) {
+      propertyCars.cardProperties.push(car.car.property);
+    }
+    if (car.car.type && !propertyCars.cardTypes.includes(car.car.type)) {
+      propertyCars.cardTypes.push(car.car.type);
+    }
+  }
+  return propertyCars;
+}
+
 function processCars(cars: IInventoryCar[], selectedItems: { [key: string]: any }, filter: IFilterCar) {
   const products: any[] = [];
   for (const car of cars) {
@@ -153,6 +177,9 @@ function processCars(cars: IInventoryCar[], selectedItems: { [key: string]: any 
     if (add && filter && filter.property && filter.property.length) {
       add = car.car.property === filter.property;
     }
+    if (add && filter && filter.type && filter.type.length) {
+      add = car.car.type === filter.type;
+    }
     if (add && filter && filter.text && filter.text.length) {
       const result: boolean[] = filter.text.toLowerCase().split(' ').map((text) => (
         `${car.car.vin}${car.car.brand}${car.car.denomination}${car.car.patent}`.normalize('NFD')
@@ -167,13 +194,13 @@ function processCars(cars: IInventoryCar[], selectedItems: { [key: string]: any 
         .includes(filter.text.toLowerCase());*/
     }
     const patent: string = car.car.patent ? car.car.patent : '';
-    if (add && filter && filter && filter.type.length) {
-      if (filter.type === 'new') {
-        add = patent.length === 0;
-      } else if (filter.type === 'used') {
-        add = patent.length !== 0;
-      }
-    }
+    // if (add && filter && filter && filter.type.length) {
+    //   if (filter.type === 'new') {
+    //     add = patent.length === 0;
+    //   } else if (filter.type === 'used') {
+    //     add = patent.length !== 0;
+    //   }
+    // }
     if (add) {
       products.push({
         _id: (car as any)._id,

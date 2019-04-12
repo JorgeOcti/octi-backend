@@ -604,7 +604,9 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
       detail,
       carsTable,
       filter,
-      selectedItems
+      selectedItems,
+      cardTypes,
+      cardProperties
     } = this.props.inventories;
     const { tab, source } = this.state;
     const selected = Object.keys(selectedItems);
@@ -877,7 +879,6 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
                           className="form-control"
                           id="cars"
                           placeholder="Busca por VIN, patente, marca o modelo."
-                          // value={filter.text}
                           onChange={this.handleChangeSearchText}
                         />
                       </div>
@@ -920,46 +921,54 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
                         />
                       </div>
                     </div>
-                    <div className="col-md-3">
-                      <div className="form-group">
-                        <label htmlFor="states" className="control-label">Nuevos/Usados</label>
-                        <BootstrapSelect
-                          noneSelectedText="Todos"
-                          displayItems={4}
-                          selectedText="estados seleccionados."
-                          separator=" - "
-                          options={Object
-                            .keys(this.typeText)
-                            .map((type) => ({
-                              value: type,
-                              text: this.typeText[type]
-                            }))}
-                          selected={[filter.type]}
-                          autoClouse={true}
-                          onClick={this.filterType}
-                        />
-                      </div>
-                    </div>
-                    <div className="col-md-3">
-                      <div className="form-group">
-                        <label htmlFor="states" className="control-label">Propiedad</label>
-                        <BootstrapSelect
-                          noneSelectedText="Todos"
-                          displayItems={4}
-                          selectedText="estados seleccionados."
-                          separator=" - "
-                          options={Object
-                            .keys(this.propertyText)
-                            .map((type) => ({
-                              value: type,
-                              text: this.propertyText[type]
-                            }))}
-                          selected={[filter.property]}
-                          autoClouse={true}
-                          onClick={this.filterProperty}
-                        />
-                      </div>
-                    </div>
+                    {
+                      cardTypes.length ?
+                        <div className="col-md-3">
+                          <div className="form-group">
+                            <label htmlFor="states" className="control-label">Tipo</label>
+                            <BootstrapSelect
+                              noneSelectedText="Todos"
+                              displayItems={4}
+                              selectedText="estados seleccionados."
+                              separator=" - "
+                              options={cardTypes
+                                .map((name) => ({
+                                  value: name,
+                                  text: name
+                                }))}
+                              selected={[filter.type]}
+                              autoClouse={true}
+                              onClick={this.filterType}
+                            />
+                          </div>
+                        </div>
+                        : null
+                    }
+                    {
+                      cardProperties.length ?
+                        <div className="col-md-3">
+                          <div className="form-group">
+                            <label htmlFor="states" className="control-label">Propiedad</label>
+                            <BootstrapSelect
+                              noneSelectedText="Todos"
+                              displayItems={4}
+                              selectedText="estados seleccionados."
+                              separator=" - "
+                              options={cardProperties
+                                .map((name) => ({
+                                  value: name,
+                                  text: name
+                                }))}
+                              selected={[filter.property]}
+                              autoClouse={true}
+                              onClick={this.filterProperty}
+                            />
+                          </div>
+                        </div>
+                        : null
+                    }
+                  </Row>
+                  <Row style={{margin: '5px 0'}}>
                     <div className="col-md-3 col-md-push-9 text-right" style={{marginBottom: '10px'}}>
                       <button
                         className="btn btn-default btn-sm"
@@ -1344,6 +1353,7 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
           data.push({
             VIN: car.car.vin,
             Patente: car.car.patent && car.car.patent.length ? car.car.patent : '-',
+            ['Nº interno']: car.car.internalNumber && car.car.internalNumber.length ? car.car.internalNumber : '-',
             Marca: car.car.brand && car.car.brand.length ? car.car.brand : '-',
             ['Denominación']: car.car.denomination && car.car.denomination.length ? car.car.denomination : '-',
             Color: car.car.color && car.car.color.length ? car.car.color : '-',
@@ -1353,6 +1363,7 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
             ['Encontrado por']: car.inventoriedBy ? `${car.inventoriedBy.firstName} ${car.inventoriedBy.lastName}` : '-',
             ['Comentario']: car.comments && car.comments.length ? `${car.comments[car.comments.length - 1].comment}` : '-',
             ['Etiqueta']: car.label ? `${car.label.name}${car.label.requireCustomText ? `: ${car.labelText}` : ''}` : '-',
+            ['Comentario etiqueta']: car.label && car.label.requireCustomText && car.labelText ? car.labelText : '-',
             ['Imágenes']: car.images.length ? car.images.length : '-',
             // ['Imágenes']: car.images.length ? car.images.map((image: any) => `${image.file.url}`).join('\n') : '-',
             Status: this.statusText.hasOwnProperty(car.status) ? this.statusText[car.status] : '-'

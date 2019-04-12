@@ -35,6 +35,10 @@ class InventoryQueue {
                         update = true;
                         carToUpdate.property = car.property;
                     }
+                    if (car.type && carToUpdate.type !== car.type) {
+                        update = true;
+                        carToUpdate.type = car.type;
+                    }
                     if (car.patent && carToUpdate.patent !== car.patent) {
                         update = true;
                         carToUpdate.patent = car.patent;

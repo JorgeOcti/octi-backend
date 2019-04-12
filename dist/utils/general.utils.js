@@ -23,7 +23,10 @@ class GeneralUtils {
         return pugCompile(context);
     }
     getFileFromRequest(files, name) {
-        return files.find((file) => file.fieldname === name);
+        if (files && files.length) {
+            return files.find((file) => file.fieldname === name);
+        }
+        return undefined;
     }
 }
 exports.default = new GeneralUtils();
