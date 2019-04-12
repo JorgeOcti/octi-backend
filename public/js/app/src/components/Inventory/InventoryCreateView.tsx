@@ -121,8 +121,9 @@ class InventoryCreateView extends React.Component<IPropsType, IStateType> {
 
   public render(): React.ReactElement<IPropsType> {
     const {
-      loadingSettings, carsByVenue, name, sending, notification, backupFile, backupUri,
-      manualPhoto
+      loadingSettings, carsByVenue, name,
+      sending, notification, backupFile,
+      backupUri, manualPhoto
     } = this.state;
     let carsInSettings = 0;
     return (
@@ -147,7 +148,7 @@ class InventoryCreateView extends React.Component<IPropsType, IStateType> {
                     <div className="col-md-12">
                       <div className="form-group">
                         <label>Configuración cargada</label>
-                        <div className="box-group" id="accordion" style={{margin: '10px 0'}}>
+                        <div className="box-group" id="accordion" style={{margin: '2px 0 10px 0'}}>
                           {
                             carsByVenue.map((venue: any, index) => {
                               carsInSettings += venue.cars.length;

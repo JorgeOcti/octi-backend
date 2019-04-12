@@ -17,8 +17,7 @@ interface IStateType {
 class VenueDetail extends React.Component<IPropsType, IStateType> {
 
   readonly state = {
-    error: null,
-    warning: 0
+    error: null
   };
 
   constructor(props: IPropsType) {
@@ -36,7 +35,7 @@ class VenueDetail extends React.Component<IPropsType, IStateType> {
     const {venue, index} = this.props;
     const warnings = venue.cars.filter((car: any) => car.hasWarnings).length;
     return (
-      <div className="panel box box-default">
+      <div className="panel box box-default" style={{borderTopWidth: '2px'}}>
         <div className="box-header with-border" style={{padding: '6px'}}>
           <h4 className="box-title" style={{
             fontSize: '15px',
@@ -47,7 +46,7 @@ class VenueDetail extends React.Component<IPropsType, IStateType> {
                href={`#${slugify(venue.name.toLowerCase())}`}
                aria-expanded="false"
                className="collapsed">
-              {index + 1} {venue.name} ({venue.cars.length} Vehiculos)
+              {index + 1} {venue.name} ({venue.cars.length} Vehículos)
             </a>
             <i className="fa fa-minus-circle text-red pull-right pointer" onClick={() => this.props.deleteVenue(venue.name)} />
             {
@@ -59,15 +58,15 @@ class VenueDetail extends React.Component<IPropsType, IStateType> {
           </h4>
         </div>
         <div id={`${slugify(venue.name.toLowerCase())}`} className="panel-collapse collapse" aria-expanded="false">
-          <div className="box-body">
-            <strong>Vehiculos</strong>
+          <div className="box-body no-padding">
             <table className="table table-striped">
               <thead>
               <tr>
-                <th>VIN</th>
-                <th>PATENTE</th>
-                <th>MARCA</th>
+                <th style={{width: '15%'}}>VIN</th>
+                <th style={{width: '10%'}}>PATENTE</th>
+                <th style={{width: '15%'}}>MARCA</th>
                 <th>DENOMINACION</th>
+                <th style={{width: '15%'}}>TIPO</th>
               </tr>
               </thead>
               <tbody>
