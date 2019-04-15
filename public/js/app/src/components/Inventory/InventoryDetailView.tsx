@@ -1143,6 +1143,7 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
         })
         .catch((err) => {
           if (!Axios.isCancel(err)) {
+            Raven.captureException(err);
             swal('Descargar imágenes', 'ha ocurrido un error descargando las imágenes.', 'error');
           }
           this.setState({

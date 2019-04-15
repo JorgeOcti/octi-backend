@@ -288,7 +288,7 @@ class InventoryCreateView extends React.Component<IPropsType, IStateType> {
                   <div className="form-horizontal">
                     <div className="form-group" style={{marginRight: '0', marginLeft: '0'}}>
                       <span
-                        className="col-md-6 control-label"
+                        className="col-sm-10 col-md-8 col-lg-9 control-label"
                         style={{
                           paddingLeft: '0',
                           textAlign: 'left'
@@ -296,7 +296,7 @@ class InventoryCreateView extends React.Component<IPropsType, IStateType> {
                       >
                         Nº imágenes al reporta
                       </span>
-                      <input id="report-photo" type="text" className="col-md-6 form-control" />
+                      <input id="report-photo" type="text" className="col-sm-2 col-md-4 col-lg-3 form-control" />
                     </div>
                   </div>
                     {/*<input*/}
