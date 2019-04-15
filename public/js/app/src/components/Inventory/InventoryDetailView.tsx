@@ -1344,7 +1344,7 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
             ['Sucursal encontrado']: car.venueFound && car.venueFound.hasOwnProperty('name') ? car.venueFound.name : '-',
             ['Encontrado por']: car.inventoriedBy ? `${car.inventoriedBy.firstName} ${car.inventoriedBy.lastName}` : '-',
             ['Comentario']: car.comments && car.comments.length ? `${car.comments[car.comments.length - 1].comment}` : '-',
-            ['Etiqueta']: car.label ? `${car.label.name}${car.label.requireCustomText ? `: ${car.labelText}` : ''}` : '-',
+            ['Etiqueta']: car.label ? car.label.name : '-',
             ['Comentario etiqueta']: car.label && car.label.requireCustomText && car.labelText ? car.labelText : '-',
             ['Imágenes']: car.images.length ? car.images.length : '-',
             // ['Imágenes']: car.images.length ? car.images.map((image: any) => `${image.file.url}`).join('\n') : '-',
