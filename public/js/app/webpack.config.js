@@ -30,13 +30,14 @@ const setDevTool = () => {
     if (process.env.NODE_ENV === 'development') {
         return 'inline-source-map';
     } else if (process.env.NODE_ENV === 'production') {
-        return 'cheap-module-source-map';
+        return 'source-map';
     }
 };
 
 module.exports = {// entry: process.env.NODE_ENV === 'production'?['babel-polyfill', './src/app.jsx']:['./src/app.jsx'],
   entry:  process.env.NODE_ENV === 'production'?['babel-polyfill', `${sourcePath}/app.tsx`]:[`${sourcePath}/app.tsx`],
   output: {
+    // filename: '[name].bundle.[hash].js',
     filename: '[name].bundle.js',
     path: path.resolve(__dirname, 'dist')
   },
