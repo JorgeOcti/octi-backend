@@ -5,7 +5,7 @@
   "scripts": {
     "start": "NODE_ENV=development webpack-dashboard -- node_modules/.bin/webpack --mode development --watch",
     "dev": "NODE_ENV=development webpack-dev-server --mode development --hot --progress --color --open",
-    "build": "NODE_ENV=production webpack --mode production --module-bind js=babel-loader"
+    "build": "NODE_ENV=production SENTRY_ORG=osa webpack --mode production --module-bind js=babel-loader"
   },
   "author": "Gonzalo Muñoz Coloma",
   "license": "ISC",
