@@ -8,6 +8,7 @@ import {
   IParticipantScale,
   IParticipantSection
 } from '../../interfaces/participant.interface';
+import {KindQuestion, kindQuestion} from './form.model';
 import {choiceBackgroundColors} from './scale.model';
 
 export interface IParticipantChoicesModel extends IParticipantChoices, mongoose.Types.Subdocument {}
@@ -105,12 +106,11 @@ const participantAnswersSchema = new mongoose.Schema({
     type: accessorySchema,
     default: null
   },
+  accesoriesSelected: [mongoose.Schema.Types.ObjectId],
   conciliation: {
     type: Boolean,
     default: false
   },
-  accesoriesSelected: [mongoose.Schema.Types.ObjectId],
-
   risk: {
     type: String,
     trim: true
@@ -136,10 +136,14 @@ const participantAnswersSchema = new mongoose.Schema({
   qualification: {
     type: Number
   },
-
   weight: {
     type: Number,
     required: true
+  },
+  kind: {
+    type: String,
+    enum: kindQuestion,
+    default: KindQuestion.scale
   },
   order: {
     type: Number,

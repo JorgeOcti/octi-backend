@@ -1,13 +1,12 @@
 import * as mongoose from 'mongoose';
+import {IDamagesModel} from '../form/models/damages.model';
 import {
   IFormAccesoryModel,
   IFormItemModel,
   IFormQuestionModel,
   IFormSectionModel
 } from '../form/models/form.model';
-import {
-  IScaleModel
-} from '../form/models/scale.model';
+import {IScaleModel} from '../form/models/scale.model';
 import {ICompany} from './company.interface';
 import {ITeam} from './team.interface';
 
@@ -29,6 +28,7 @@ export interface IFormQuestion {
 
   scale: IScaleModel;
   accessories: IFormAccesoryModel;
+  damages: IDamagesModel;
 
   conciliation: boolean;
 
@@ -36,6 +36,7 @@ export interface IFormQuestion {
   observe: string;
 
   weight: number;
+  kind: string;
   order: number;
 }
 

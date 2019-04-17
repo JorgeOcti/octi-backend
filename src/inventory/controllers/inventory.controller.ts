@@ -207,9 +207,9 @@ class InventoryController {
       /* istanbul ignore next */
       logger.error(e);
       /* istanbul ignore next */
-      res.status(400).json({
+      res.status(500).json({
         message: e,
-        status: 400
+        status: 500
       });
     }
   }
@@ -369,9 +369,9 @@ class InventoryController {
       /* istanbul ignore next */
       logger.error(e);
       /* istanbul ignore next */
-      res.status(400).json({
+      res.status(500).json({
         message: e,
-        status: 400
+        status: 500
       });
     }
   }
@@ -450,7 +450,7 @@ class InventoryController {
       /* istanbul ignore next */
       logger.error(e);
       /* istanbul ignore next */
-      res.status(400).json(e);
+      res.status(500).json(e);
     }
   }
 
@@ -1113,9 +1113,9 @@ class InventoryController {
       /* istanbul ignore next */
       logger.error(e);
       /* istanbul ignore next */
-      res.status(400).json({
+      res.status(500).json({
         message: e,
-        status: 400
+        status: 500
       });
     }
   }

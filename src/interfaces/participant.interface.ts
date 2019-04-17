@@ -67,6 +67,7 @@ export interface IParticipantAnswer {
   observe: string;
 
   weight: number;
+  kind: string;
   order: number;
 }
 

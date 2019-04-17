@@ -1,6 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 const mongoose = require("mongoose");
+const form_model_1 = require("./form.model");
 const scale_model_1 = require("./scale.model");
 const participantChoiceSchema = new mongoose.Schema({
     choice: {
@@ -85,11 +86,11 @@ const participantAnswersSchema = new mongoose.Schema({
         type: accessorySchema,
         default: null
     },
+    accesoriesSelected: [mongoose.Schema.Types.ObjectId],
     conciliation: {
         type: Boolean,
         default: false
     },
-    accesoriesSelected: [mongoose.Schema.Types.ObjectId],
     risk: {
         type: String,
         trim: true
@@ -118,6 +119,11 @@ const participantAnswersSchema = new mongoose.Schema({
     weight: {
         type: Number,
         required: true
+    },
+    kind: {
+        type: String,
+        enum: form_model_1.kindQuestion,
+        default: form_model_1.KindQuestion.scale
     },
     order: {
         type: Number,

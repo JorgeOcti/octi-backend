@@ -147,6 +147,11 @@ workflows:
     jobs:
       - build:
           context: build
+          filters:
+            branches:
+              only:
+                - master
+                - develop
       - deploy-production:
           requires:
               - build

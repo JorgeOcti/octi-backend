@@ -580,6 +580,7 @@ class FormController {
                 qualification,
                 na,
                 weight: question.weight,
+                kind: question.kind,
                 order: question.order
               });
             }

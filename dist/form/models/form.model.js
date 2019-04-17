@@ -17,6 +17,19 @@ const accessorySchema = new mongoose.Schema({
     },
     items: [itemSchema]
 });
+var KindQuestion;
+(function (KindQuestion) {
+    KindQuestion["scale"] = "scale";
+    KindQuestion["accessory"] = "accessory";
+    KindQuestion["text"] = "text";
+    KindQuestion["damage"] = "damage";
+})(KindQuestion = exports.KindQuestion || (exports.KindQuestion = {}));
+exports.kindQuestion = [
+    KindQuestion.scale,
+    KindQuestion.text,
+    KindQuestion.accessory,
+    KindQuestion.damage
+];
 const formQuestionsSchema = new mongoose.Schema({
     question: {
         type: String,
@@ -31,6 +44,10 @@ const formQuestionsSchema = new mongoose.Schema({
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Scale',
         required: true
+    },
+    damages: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Damages'
     },
     accessories: {
         type: accessorySchema,
@@ -51,6 +68,11 @@ const formQuestionsSchema = new mongoose.Schema({
     weight: {
         type: Number,
         required: true
+    },
+    kind: {
+        type: String,
+        enum: exports.kindQuestion,
+        default: KindQuestion.scale
     },
     order: {
         type: Number,

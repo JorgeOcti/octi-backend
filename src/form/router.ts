@@ -1,5 +1,6 @@
 import * as express from 'express';
 import Middlewares from '../middlewares/middlewares';
+import AdminDamagesController from './controllers/admin/damages.admin.controller';
 import AdminFormsController from './controllers/admin/form.admin.controller';
 import FormController from './controllers/form.controller';
 
@@ -21,5 +22,6 @@ router.post('/api/v1/forms/:id/', Middlewares.isJWTAuthenticated, FormController
 
 // admin forms
 router.get('/api/admin/forms/', Middlewares.isLoggedIn, AdminFormsController.apiListForms);
+router.get('/api/admin/damages/', Middlewares.isLoggedIn, AdminDamagesController.apiListDamages);
 
 export default router;
