@@ -197,7 +197,7 @@ class InventoryListView extends React.Component<IPropsType, IStateType> {
                                     </a>
                                   </li>
                                   {
-                                    hasPermission(window.user, 'viewFilesInventory') && inventory.file ?
+                                    hasPermission(window.user, 'viewFilesInventory') && inventory.file && inventory.file.hasOwnProperty('url') ?
                                       <li>
                                         <a href={decodeURI(inventory.file.url)} download={inventory.file.name}>
                                           <i className="fa fa-fw fa-download"/>Descargar archivo cargado
@@ -206,7 +206,7 @@ class InventoryListView extends React.Component<IPropsType, IStateType> {
                                       : null
                                   }
                                   {
-                                    hasPermission(window.user, 'viewFilesInventory') && inventory.backup ?
+                                    hasPermission(window.user, 'viewFilesInventory') && inventory.backup && inventory.backup.hasOwnProperty('url') ?
                                       <li>
                                         <a href={decodeURI(inventory.backup.url)} target="_blank" download={inventory.file.name}>
                                           <i className="fa fa-fw fa-download"/>Descargar archivo de respaldo
