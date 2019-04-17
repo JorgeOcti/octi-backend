@@ -8,6 +8,7 @@ const moment = require("moment-timezone");
 const path = require("path");
 // import * as puppeteer from 'puppeteer';
 const QRCode = require("qrcode");
+const Raven = require("raven");
 const app_1 = require("../../app");
 const alert_model_1 = require("../../app/models/alert.model");
 const car_model_1 = require("../../app/models/car.model");
@@ -428,11 +429,11 @@ class FormController {
             /* istanbul ignore next */
             logger_service_1.default.error(e);
             /* istanbul ignore next */
-            console.log('e', e);
+            Raven.captureException(e, { req });
             /* istanbul ignore next */
-            res.status(400).json({
+            res.status(500).json({
                 message: 'No se encontro formularío',
-                status: 400
+                status: 500
             });
         }
     }
