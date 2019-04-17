@@ -50,11 +50,12 @@ Raven.config(process.env.SENTRY_DNS, {
         // custom user parsing logic
         const username = req.user ? req.user : {
             id: 0,
-            username: 'anonymous'
+            email: 'anonymous'
         };
         return {
-            username: username.username,
-            id: username.id
+            email: username.email,
+            name: `${username.firstName} ${username.lastName}`,
+            id: username._id
         };
     },
     dataCallback: (data) => {

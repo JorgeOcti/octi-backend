@@ -7,7 +7,7 @@
     "baseUrl": "src",
     "sourceMap": true,
     "inlineSources": true,
-    "outDir": "dist/",
+    "outDir": "dist",
     "noImplicitReturns": true,
     "noImplicitAny": true,
     "noImplicitThis": false,

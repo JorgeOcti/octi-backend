@@ -1,1 +1,0 @@
-{"version":3,"file":"company.interface.js","sourceRoot":"","sources":["../../../src/interfaces/company.interface.ts"],"names":[],"mappings":"","sourcesContent":["export interface ICompany {\n  _id: any;\n  name: string;\n  active: boolean;\n  updatedAt: Date;\n  createdAt: Date;\n}\n"]}
