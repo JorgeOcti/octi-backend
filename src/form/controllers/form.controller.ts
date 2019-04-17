@@ -7,6 +7,7 @@ import * as moment from 'moment-timezone';
 import * as path from 'path';
 // import * as puppeteer from 'puppeteer';
 import * as QRCode from 'qrcode';
+import * as Raven from 'raven';
 import {queue} from '../../app';
 import Alert from '../../app/models/alert.model';
 import CarModel from '../../app/models/car.model';
@@ -432,11 +433,11 @@ class FormController {
       /* istanbul ignore next */
       logger.error(e);
       /* istanbul ignore next */
-      console.log('e', e);
+      Raven.captureException(e, {req});
       /* istanbul ignore next */
-      res.status(400).json({
+      res.status(500).json({
         message: 'No se encontro formularío',
-        status: 400
+        status: 500
       });
     }
   }
