@@ -242,8 +242,8 @@ class FormController {
             const scalesIds = [];
             form.sections.forEach((section) => {
                 section.questions.forEach((question) => {
-                    const scaleID = question.scale.toString();
-                    if (!scalesIds.includes(scaleID)) {
+                    const scaleID = question.scale ? question.scale.toString() : null;
+                    if (scaleID && !scalesIds.includes(scaleID)) {
                         scalesIds.push(scaleID);
                     }
                 });
@@ -878,7 +878,6 @@ class FormController {
         return new Promise((resolve, reject) => {
             redis_service_1.default.get(keyCache, async (error, result) => {
                 if (result) {
-                    // console.log(`cache: ${keyCache}`);
                     resolve(JSON.parse(result));
                 }
                 else {
@@ -892,6 +891,20 @@ class FormController {
                         'sections.questions.shortName': false,
                         '__v': false
                     })
+                        .populate([{
+                            path: 'sections.questions.damages',
+                            select: ['name', 'positions', 'kinds', 'parts'],
+                            populate: [{
+                                    path: 'positions',
+                                    select: ['name']
+                                }, {
+                                    path: 'kinds',
+                                    select: ['name']
+                                }, {
+                                    path: 'parts',
+                                    select: ['name']
+                                }]
+                        }])
                         .lean()
                         .exec((err, form) => {
                         if (err) {
@@ -899,7 +912,7 @@ class FormController {
                             return reject(err);
                         }
                         if (form) {
-                            redis_service_1.default.setex(keyCache, 60 * 2, JSON.stringify(form));
+                            redis_service_1.default.setex(keyCache, 60, JSON.stringify(form));
                             return resolve(form);
                         }
                         return reject('No se encontro formularío');
