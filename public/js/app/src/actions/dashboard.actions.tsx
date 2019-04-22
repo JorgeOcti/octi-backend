@@ -375,7 +375,7 @@ export function getParticipant(id: string) {
                                   <div className="row" style={{marginTop: '10px'}}>
                                     {
                                       answer.damagesSelected.map((ds, index) => (
-                                        <div className="col-md-12" key={index}>
+                                        <div className="col-md-12 damage" key={index}>
                                           <div className="damage-detail">
                                             <p className="damage-description">
                                               <strong className="title">{parts.hasOwnProperty(ds.part) ? parts[ds.part] : '-'}</strong><br/>
@@ -387,7 +387,7 @@ export function getParticipant(id: string) {
                                                 ds.images.map((image) => {
                                                   return (
                                                     <div className="col-md-3 col-sm-4 col-xs-4 text-center" key={image._id}>
-                                                      <a href={image.file.url} data-toggle="lightbox" data-gallery={answer._id}>
+                                                      <a href={image.file.url} data-toggle="lightbox" data-gallery={ds._id}>
                                                         <ImageLazyLoad
                                                           url={image.file.url}
                                                           height={'100px'}
