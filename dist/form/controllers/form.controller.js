@@ -525,9 +525,9 @@ class FormController {
                             // get selected answer
                             const answer = general_utils_1.default.getObjectProperty(answers, questionID, null);
                             // find choice selected
-                            const choice = question.scale.choices.find((choice) => {
+                            const choice = question.scale ? question.scale.choices.find((choice) => {
                                 return answer ? choice._id.toString() === answer.value : false;
-                            });
+                            }) : null;
                             // calculate qualification
                             let qualification = 0;
                             if (choice) {
@@ -563,13 +563,20 @@ class FormController {
                                 scale: question.scale,
                                 conciliation: question.conciliation,
                                 accessories: question.accessories,
-                                accesoriesSelected: choice && choice.requireAccesories && answer && answer.accesories ? answer.accesories.map((accesory) => new bson_1.ObjectID(accesory)) : [],
+                                damages: question.damages,
+                                damagesSelected: answer && answer.damages ? answer.damages : [],
+                                accesoriesSelected: choice && choice.requireAccesories && answer && answer.accesories ?
+                                    answer.accesories.map((accesory) => new bson_1.ObjectID(accesory))
+                                    : [],
                                 risk: question.risk,
-                                comment: choice && choice.requireComment && answer && answer.comment ? answer.comment : '',
+                                comment: choice && choice.requireComment && answer && answer.comment ?
+                                    answer.comment
+                                    : '',
                                 observe: question.observe,
                                 answer: answer ? new bson_1.ObjectID(answer.value) : null,
-                                // images: answer.images && answer.images.length ? await ParticipantFile.find({_id: {$in: answer.images}}, {_id:1}) : [],
-                                images: answer && answer.images && answer.images.length ? answer.images.map((image) => (new bson_1.ObjectID(image))) : [],
+                                images: answer && answer.images && answer.images.length ?
+                                    answer.images.map((image) => (new bson_1.ObjectID(image)))
+                                    : [],
                                 qualification,
                                 na,
                                 weight: question.weight,
@@ -926,7 +933,22 @@ class FormController {
         return new Promise((resolve, reject) => {
             form_model_1.default
                 .findOne(filter)
-                .populate('sections.questions.scale')
+                .populate([{
+                    path: 'sections.questions.scale'
+                }, {
+                    path: 'sections.questions.damages',
+                    select: ['name', 'positions', 'kinds', 'parts'],
+                    populate: [{
+                            path: 'positions',
+                            select: ['name']
+                        }, {
+                            path: 'kinds',
+                            select: ['name']
+                        }, {
+                            path: 'parts',
+                            select: ['name']
+                        }]
+                }])
                 .exec((err, form) => {
                 if (err) {
                     /* istanbul ignore next */

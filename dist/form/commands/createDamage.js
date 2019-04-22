@@ -4,7 +4,7 @@ const bluebird = require("bluebird");
 const dotenv = require("dotenv");
 const mongoose = require("mongoose");
 const path = require("path");
-// import Damages from '../models/damages.model';
+const damages_model_1 = require("../models/damages.model");
 const kind_model_1 = require("../models/kind.model");
 const part_model_1 = require("../models/part.model");
 const position_model_1 = require("../models/position.model");
@@ -50,14 +50,14 @@ async function createDamage() {
             }).save();
         }
     }
-    // const damages = new Damages({
-    //   name: 'Prueba',
-    //   team,
-    //   parts: await Part.find({team}, {_id: true}),
-    //   kinds: await Kind.find({team}, {_id: true}),
-    //   positions: await Position.find({team}, {_id: true})
-    // });
-    // await damages.save();
+    const damages = new damages_model_1.default({
+        name: 'Prueba',
+        team,
+        parts: await part_model_1.default.find({ team }, { _id: true }),
+        kinds: await kind_model_1.default.find({ team }, { _id: true }),
+        positions: await position_model_1.default.find({ team }, { _id: true })
+    });
+    await damages.save();
     process.exit(1);
 }
 createDamage();

@@ -2,7 +2,7 @@ import * as bluebird from 'bluebird';
 import * as dotenv from 'dotenv';
 import * as mongoose from 'mongoose';
 import * as path from 'path';
-// import Damages from '../models/damages.model';
+import Damages from '../models/damages.model';
 import Kind from '../models/kind.model';
 import Part from '../models/part.model';
 import Position from '../models/position.model';
@@ -49,14 +49,14 @@ async function createDamage() {
       }).save();
     }
   }
-  // const damages = new Damages({
-  //   name: 'Prueba',
-  //   team,
-  //   parts: await Part.find({team}, {_id: true}),
-  //   kinds: await Kind.find({team}, {_id: true}),
-  //   positions: await Position.find({team}, {_id: true})
-  // });
-  // await damages.save();
+  const damages = new Damages({
+    name: 'Prueba',
+    team,
+    parts: await Part.find({team}, {_id: true}),
+    kinds: await Kind.find({team}, {_id: true}),
+    positions: await Position.find({team}, {_id: true})
+  });
+  await damages.save();
   process.exit(1);
 }
 

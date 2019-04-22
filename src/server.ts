@@ -32,7 +32,7 @@ const server = app.listen(parseInt(app.get('port'), 10) + NODE_APP_INSTANCE, () 
   /* istanbul ignore if */
   if (app.get('env') !== 'testing') {
     console.log(`${logger.colors.magenta}----------------------${logger.colors.reset}`);
-    console.log(`${logger.colors.brighCyan}OSA-ANDES ${logger.colors.white}v1.1.2 ${logger.colors.brighGreen}RELEASE${logger.colors.reset}`);
+    console.log(`${logger.colors.brighCyan}OSA-ANDES ${logger.colors.white}v2.1.3 ${logger.colors.brighGreen}RELEASE${logger.colors.reset}`);
     console.log(`${logger.colors.magenta}----------------------${logger.colors.reset}`);
     console.log(
       'is running at http://localhost:%s in %s mode',
@@ -84,12 +84,7 @@ io.use( async (socket, next) => {
 
 /* istanbul ignore next */
 io.on( 'connection', async ( socket ) => {
-  logger.info(`socket.connection: {user: ${JSON.stringify((socket as any).user)}}`);
-  // console.log('---------------------');
-  // console.log('A user connected');
-  // console.log('socket.id', socket.id);
-  // cp.json((socket as any).user);
-
+  // logger.info(`socket.connection: {user: ${JSON.stringify((socket as any).user)}}`);
   socket.on('join', (data) => {
     const {room} = data;
     redisClient.get(room, async (error, result) => {
@@ -115,7 +110,7 @@ io.on( 'connection', async ( socket ) => {
         };
         redisClient.setex(room, 60 * 60 * 24, JSON.stringify(data));
       }
-      logger.info(`socket.join.${room}: {user: ${JSON.stringify((socket as any).user)}}`);
+      // logger.info(`socket.join.${room}: {user: ${JSON.stringify((socket as any).user)}}`);
       socket.join(room);
       io.to(room).emit('USERS_IN_CHANNEL', data);
     });
@@ -134,16 +129,13 @@ io.on( 'connection', async ( socket ) => {
         }
       }
       io.to(room).emit('USERS_IN_CHANNEL', data);
-      logger.info(`socket.leave.${room}: {user: ${JSON.stringify((socket as any).user)}}`);
+      // logger.info(`socket.leave.${room}: {user: ${JSON.stringify((socket as any).user)}}`);
       socket.leave(room);
     });
   });
 
   socket.on('disconnect',  () => {
-    logger.info(`socket.disconnect: {user: ${JSON.stringify((socket as any).user)}}`);
-    // console.log('---------------------');
-    // console.log('user disconnected');
-    // cp.json((socket as any).user);
+    // logger.info(`socket.disconnect: {user: ${JSON.stringify((socket as any).user)}}`);
     // io.emit('user disconnected');
   });
 });

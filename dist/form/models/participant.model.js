@@ -78,10 +78,50 @@ const accessorySchema = new mongoose.Schema({
     },
     items: [itemSchema]
 });
+const positionSchema = new mongoose.Schema({
+    name: {
+        type: String
+    }
+});
+const kindSchema = new mongoose.Schema({
+    name: {
+        type: String
+    }
+});
+const partSchema = new mongoose.Schema({
+    name: {
+        type: String
+    }
+});
+const damagesSchema = new mongoose.Schema({
+    name: {
+        type: String
+    },
+    positions: [positionSchema],
+    kinds: [kindSchema],
+    parts: [partSchema]
+});
+const damagesSelectedSchema = new mongoose.Schema({
+    position: {
+        type: mongoose.Schema.Types.ObjectId
+    },
+    kind: {
+        type: mongoose.Schema.Types.ObjectId
+    },
+    part: {
+        type: mongoose.Schema.Types.ObjectId
+    },
+    images: [{
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'ParticipantFile'
+        }]
+});
 const participantAnswersSchema = new mongoose.Schema({
     question: { type: String, required: true, trim: true },
     shortName: { type: String, trim: true },
     scale: exports.scaleSchema,
+    damages: damagesSchema,
+    damagesSelected: [damagesSelectedSchema],
     accessories: {
         type: accessorySchema,
         default: null

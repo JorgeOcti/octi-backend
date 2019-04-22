@@ -13,6 +13,7 @@ import {
   IParticipantSectionModel,
   IScaleParticipantModel
 } from '../form/models/participant.model';
+import {IDamages, IDamageSelected} from './damage.interface';
 import {IParticipantFile} from './participantFile.interface';
 
 export interface IParticipantChoices {
@@ -52,6 +53,9 @@ export interface IParticipantAnswer {
   shortName: string;
 
   scale: IScaleParticipantModel;
+
+  damages: IDamages;
+  damagesSelected: IDamageSelected[];
 
   accessories: IParticipantAccesoryModel;
   accesoriesSelected: any[];

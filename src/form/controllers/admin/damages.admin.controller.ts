@@ -22,6 +22,9 @@ class AdminDamagesController {
     this.position = new Position();
     this.part = new Part();
     this.damage = new Damages();
+  }
+
+  public unused() {
     console.log({
       kind: this.kind,
       position: this.position,

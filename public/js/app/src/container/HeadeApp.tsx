@@ -39,6 +39,7 @@ class HeaderApp extends React.Component<{}, {}> {
         </a>
         <nav className="navbar navbar-static-top">
           <a className="sidebar-toggle hidden-sm hidden-md hidden-lg" href="#" data-toggle="push-menu" role="button">
+          {/*<a className="sidebar-toggle" href="#" data-toggle="push-menu" role="button">*/}
             <span className="sr-only">Toggle navigation</span>
             <span className="icon-bar"/>
             <span className="icon-bar"/>

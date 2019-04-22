@@ -320,38 +320,75 @@ export function getParticipant(id: string) {
                     <h4>{section.name} <small>{Math.round(section.qualification)}%</small></h4>
                       {
                         section.answers.map((answer) => {
-                          const selectChoice = answer.scale.choices.find((choice) => choice._id === answer.answer);
+                          const selectChoice = answer.scale ? answer.scale.choices.find((choice) => choice._id === answer.answer) : undefined;
+                          const kinds: any = answer.damages && answer.damages.hasOwnProperty('kinds') ? answer.damages.kinds.reduce((acc: any, cur: any) => {
+                            acc[cur._id] = cur.name;
+                            return acc;
+                          }, {}) : {};
+                          const parts: any = answer.damages && answer.damages.hasOwnProperty('parts') ? answer.damages.parts.reduce((acc: any, cur: any) => {
+                            acc[cur._id] = cur.name;
+                            return acc;
+                          }, {}) : {};
+                          const positions: any = answer.damages && answer.damages.hasOwnProperty('positions') ? answer.damages.positions.reduce((acc: any, cur: any) => {
+                            acc[cur._id] = cur.name;
+                            return acc;
+                          }, {}) : {};
+                          // const positions =
+                          // const parts =
                           // no show conciliation questions if no require
-                          // if(answer.conciliation && ((selectChoice && !selectChoice.requireConciliation) || !selectChoice)){
                           if (answer.conciliation && !selectChoice) {
                             return null;
                           }
                           return (
                             <div className="question" key={answer._id}>
                               <p><strong>{answer.order} {answer.question}</strong></p>
-                              <div className="btn-group btn-group-justified" role="group" aria-label="...">
-                                {
-                                  answer.scale.choices.map((choice) => {
-                                    const btnDefault = 'btn-default';
-                                    const optionsClass: any = {
-                                      blue: 'btn-primary',
-                                      green: 'btn-success',
-                                      yellow: 'btn-warning',
-                                      red: 'btn-danger'
-                                    };
-                                    const btnClass =  optionsClass.hasOwnProperty(choice.backgroundColor) ? optionsClass[choice.backgroundColor] : btnDefault;
-                                    return (
-                                      <div className="btn-group" role="group" key={choice._id}>
-                                        <button
-                                          type="button"
-                                          className={`btn ${choice._id === answer.answer ? btnClass : btnDefault}`}
-                                          disabled={true}
-                                        >{choice.choice}</button>
-                                      </div>
-                                    );
-                                  })
-                                }
-                              </div>
+                              {
+                                answer.scale ?
+                                  <div className="btn-group btn-group-justified" role="group" aria-label="...">
+                                    {
+                                      answer.scale.choices.map((choice) => {
+                                        const btnDefault = 'btn-default';
+                                        const optionsClass: any = {
+                                          blue: 'btn-primary',
+                                          green: 'btn-success',
+                                          yellow: 'btn-warning',
+                                          red: 'btn-danger'
+                                        };
+                                        const btnClass = optionsClass.hasOwnProperty(choice.backgroundColor) ? optionsClass[choice.backgroundColor] : btnDefault;
+                                        return (
+                                          <div className="btn-group" role="group" key={choice._id}>
+                                            <button
+                                              type="button"
+                                              className={`btn ${choice._id === answer.answer ? btnClass : btnDefault}`}
+                                              disabled={true}
+                                            >{choice.choice}</button>
+                                          </div>
+                                        );
+                                      })
+                                    }
+                                  </div>
+                                  : null
+                              }
+                              {
+                                // TODO: validate by kind question
+                                answer.damagesSelected && answer.damagesSelected.length ?
+                                  <div className="row" style={{marginTop: '10px'}}>
+                                    <div className="col-md-12">
+                                      <ol>
+                                        {
+                                          answer.damagesSelected.map((ds, index) => (
+                                            <li key={index}>
+                                              <strong>Daño</strong> {kinds.hasOwnProperty(ds.kind) ? kinds[ds.kind] : '-'}{ ' '}
+                                              <strong>Pieza</strong> {parts.hasOwnProperty(ds.part) ? parts[ds.part] : '-'}{ ' '}
+                                              <strong>Posición</strong> {positions.hasOwnProperty(ds.position) ? positions[ds.position] : '-'}
+                                            </li>
+                                          ))
+                                        }
+                                      </ol>
+                                    </div>
+                                  </div>
+                                  : answer.damages && answer.damages.hasOwnProperty('parts') ? 'No se han seleccionado daños.' : null
+                              }
                               {
                                 selectChoice && selectChoice.requireAccesories && answer.accessories && answer.accessories.items.length ?
                                   <div className="row" style={{marginTop: '10px'}}>

@@ -49,8 +49,7 @@ const formQuestionsSchema = new mongoose.Schema({
   },
   scale: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'Scale',
-    required: true
+    ref: 'Scale'
   },
 
   damages: {

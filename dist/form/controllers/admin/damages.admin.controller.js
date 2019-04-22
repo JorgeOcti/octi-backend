@@ -12,6 +12,8 @@ class AdminDamagesController {
         this.position = new position_model_1.default();
         this.part = new part_model_1.default();
         this.damage = new damages_model_1.default();
+    }
+    unused() {
         console.log({
             kind: this.kind,
             position: this.position,
