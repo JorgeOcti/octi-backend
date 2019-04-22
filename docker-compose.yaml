@@ -26,8 +26,7 @@ services:
       context: .
     image: andes:latest
     restart: always
-#    command: [ "pm2", "start", "pm2.json", "--no-daemon" ]
-    command: ['nodemon', '--inspect', 'dist/server.js','-e', 'js,jade']
+    command: [ "pm2", "start", "pm2-development.json", "--no-daemon" ]
     env_file:
       - .env
     environment:
@@ -40,6 +39,7 @@ services:
       - ./public:/srv/public
       - ./views:/srv/views
       - ./pm2.json:/srv/pm2.json
+      - ./pm2-development.json:/srv/pm2-development.json
     depends_on:
       - redis
       - mongo
