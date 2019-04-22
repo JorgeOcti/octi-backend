@@ -373,19 +373,37 @@ export function getParticipant(id: string) {
                                 // TODO: validate by kind question
                                 answer.damagesSelected && answer.damagesSelected.length ?
                                   <div className="row" style={{marginTop: '10px'}}>
-                                    <div className="col-md-12">
-                                      <ol>
-                                        {
-                                          answer.damagesSelected.map((ds, index) => (
-                                            <li key={index}>
-                                              <strong>Daño</strong> {kinds.hasOwnProperty(ds.kind) ? kinds[ds.kind] : '-'}{ ' '}
-                                              <strong>Pieza</strong> {parts.hasOwnProperty(ds.part) ? parts[ds.part] : '-'}{ ' '}
+                                    {
+                                      answer.damagesSelected.map((ds, index) => (
+                                        <div className="col-md-12" key={index}>
+                                          <div className="damage-detail">
+                                            <p className="damage-description">
+                                              <strong className="title">{parts.hasOwnProperty(ds.part) ? parts[ds.part] : '-'}</strong><br/>
+                                              <strong>Daño</strong> {kinds.hasOwnProperty(ds.kind) ? kinds[ds.kind] : '-'}{' '}
                                               <strong>Posición</strong> {positions.hasOwnProperty(ds.position) ? positions[ds.position] : '-'}
-                                            </li>
-                                          ))
-                                        }
-                                      </ol>
-                                    </div>
+                                            </p>
+                                            <div className="row images">
+                                              {
+                                                ds.images.map((image) => {
+                                                  return (
+                                                    <div className="col-md-3 col-sm-4 col-xs-4 text-center" key={image._id}>
+                                                      <a href={image.file.url} data-toggle="lightbox" data-gallery={answer._id}>
+                                                        <ImageLazyLoad
+                                                          url={image.file.url}
+                                                          height={'100px'}
+                                                        />
+                                                      </a>
+                                                      <p className={'text-ellipsis'} data-toggle="tooltip" data-placement="top"
+                                                         title={image.file.name}>{image.file.name}</p>
+                                                    </div>
+                                                  );
+                                                })
+                                              }
+                                            </div>
+                                          </div>
+                                        </div>
+                                      ))
+                                    }
                                   </div>
                                   : answer.damages && answer.damages.hasOwnProperty('parts') ? 'No se han seleccionado daños.' : null
                               }

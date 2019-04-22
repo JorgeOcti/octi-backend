@@ -670,6 +670,8 @@ class CarController {
                 }, {
                     path: 'sections.answers.images'
                 }, {
+                    path: 'sections.answers.damagesSelected.images'
+                }, {
                     path: 'shippingImages'
                 }, {
                     path: 'receptionImages'

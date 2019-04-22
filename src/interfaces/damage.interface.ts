@@ -1,7 +1,7 @@
 import * as mongoose from 'mongoose';
-import {IIFile} from './inventoryFile.interface';
 import {IKind} from './kind.interface';
 import {IPart} from './part.interface';
+import {IParticipantFile} from './participantFile.interface';
 import {IPosition} from './position.interface';
 import {ITeam} from './team.interface';
 
@@ -19,5 +19,5 @@ export interface IDamageSelected {
   part: string;
   kind: string;
   position: string;
-  images: IIFile[];
+  images: IParticipantFile[];
 }
