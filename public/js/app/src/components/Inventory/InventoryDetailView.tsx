@@ -303,9 +303,9 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
       dataField: 'option',
       text: '',
       formatter: this.optionsFormatter,
-      headerClasses: 'middle hidden-xs hidden-sm hidden-md',
+      headerClasses: 'middle hidden-xs hidden-sm',
       classes: () => {
-        return `middle-center hidden-xs hidden-sm hidden-md`;
+        return `middle-center hidden-xs hidden-sm`;
       },
       headerStyle: {
         maxWidth: '150px',
