@@ -387,14 +387,24 @@ export function getParticipant(id: string) {
                                                 ds.images.map((image) => {
                                                   return (
                                                     <div className="col-md-3 col-sm-4 col-xs-4 text-center" key={image._id}>
-                                                      <a href={image.file.url} data-toggle="lightbox" data-gallery={ds._id}>
+                                                      <a
+                                                        href={image.file.url}
+                                                        data-toggle="lightbox"
+                                                        data-gallery={ds._id}
+                                                        data-title={parts.hasOwnProperty(ds.part) ? parts[ds.part] : '-'}
+                                                      >
                                                         <ImageLazyLoad
                                                           url={image.file.url}
                                                           height={'100px'}
                                                         />
                                                       </a>
-                                                      <p className={'text-ellipsis'} data-toggle="tooltip" data-placement="top"
-                                                         title={image.file.name}>{image.file.name}</p>
+                                                      <p
+                                                        className={'text-ellipsis'}
+                                                        data-toggle="tooltip"
+                                                        data-placement="top"
+                                                        title={image.file.name}>
+                                                        {image.file.name}
+                                                      </p>
                                                     </div>
                                                   );
                                                 })
@@ -441,7 +451,14 @@ export function getParticipant(id: string) {
                                                 height={'100px'}
                                               />
                                             </a>
-                                            <p className={'text-ellipsis'} data-toggle="tooltip" data-placement="top" title={image.file.name}>{image.file.name}</p>
+                                            <p
+                                              className={'text-ellipsis'}
+                                              data-toggle="tooltip"
+                                              data-placement="top"
+                                              title={image.file.name}
+                                            >
+                                              {image.file.name}
+                                            </p>
                                           </div>
                                         );
                                       })
