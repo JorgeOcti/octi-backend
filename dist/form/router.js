@@ -2,6 +2,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 const express = require("express");
 const middlewares_1 = require("../middlewares/middlewares");
+const damages_admin_controller_1 = require("./controllers/admin/damages.admin.controller");
 const form_admin_controller_1 = require("./controllers/admin/form.admin.controller");
 const form_controller_1 = require("./controllers/form.controller");
 const router = express.Router();
@@ -16,5 +17,6 @@ router.get('/api/v1/forms/:id/', middlewares_1.default.isJWTAuthenticated, form_
 router.post('/api/v1/forms/:id/', middlewares_1.default.isJWTAuthenticated, form_controller_1.default.complete);
 // admin forms
 router.get('/api/admin/forms/', middlewares_1.default.isLoggedIn, form_admin_controller_1.default.apiListForms);
+router.get('/api/admin/damages/', middlewares_1.default.isLoggedIn, damages_admin_controller_1.default.apiListDamages);
 exports.default = router;
 //# sourceMappingURL=router.js.map

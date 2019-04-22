@@ -22,6 +22,20 @@ const accessorySchema = new mongoose.Schema({
   items: [itemSchema]
 });
 
+export enum KindQuestion {
+  scale = 'scale',
+  accessory = 'accessory',
+  text = 'text',
+  damage = 'damage'
+}
+
+export const kindQuestion = [
+  KindQuestion.scale,
+  KindQuestion.text,
+  KindQuestion.accessory,
+  KindQuestion.damage
+];
+
 export interface IFormQuestionModel extends IFormQuestion, mongoose.Types.Subdocument {}
 const formQuestionsSchema = new mongoose.Schema({
   question: {
@@ -33,11 +47,14 @@ const formQuestionsSchema = new mongoose.Schema({
     type: String,
     trim: true
   },
-
   scale: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'Scale',
-    required: true
+    ref: 'Scale'
+  },
+
+  damages: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Damages'
   },
 
   accessories: {
@@ -62,6 +79,13 @@ const formQuestionsSchema = new mongoose.Schema({
     type: Number,
     required: true
   },
+
+  kind: {
+    type: String,
+    enum: kindQuestion,
+    default: KindQuestion.scale
+  },
+
   order: {
     type: Number,
     required: true

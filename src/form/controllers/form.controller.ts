@@ -245,8 +245,8 @@ class FormController {
       const scalesIds: any[] = [];
       form.sections.forEach((section) => {
         section.questions.forEach((question) => {
-          const scaleID = question.scale.toString();
-          if (!scalesIds.includes(scaleID)) {
+          const scaleID = question.scale ? question.scale.toString() : null;
+          if (scaleID && !scalesIds.includes(scaleID)) {
             scalesIds.push(scaleID);
           }
         });
@@ -530,9 +530,9 @@ class FormController {
               // get selected answer
               const answer = GeneralUtils.getObjectProperty(answers, questionID, null);
               // find choice selected
-              const choice = question.scale.choices.find((choice) => {
+              const choice = question.scale ? question.scale.choices.find((choice) => {
                 return answer ? choice._id.toString() === answer.value : false;
-              });
+              }) : null;
               // calculate qualification
               let qualification = 0;
               if (choice) {
@@ -571,16 +571,24 @@ class FormController {
                 scale: question.scale,
                 conciliation: question.conciliation,
                 accessories: question.accessories,
-                accesoriesSelected: choice && choice.requireAccesories && answer && answer.accesories ? answer.accesories.map((accesory: any) => new ObjectID(accesory)) : [],
+                damages: question.damages,
+                damagesSelected: answer && answer.damages ? answer.damages : [],
+                accesoriesSelected: choice && choice.requireAccesories && answer && answer.accesories ?
+                  answer.accesories.map((accesory: any) => new ObjectID(accesory))
+                  : [],
                 risk: question.risk,
-                comment: choice && choice.requireComment && answer && answer.comment ? answer.comment : '',
+                comment: choice && choice.requireComment && answer && answer.comment ?
+                  answer.comment
+                  : '',
                 observe: question.observe,
                 answer: answer ? new ObjectID(answer.value) : null,
-                // images: answer.images && answer.images.length ? await ParticipantFile.find({_id: {$in: answer.images}}, {_id:1}) : [],
-                images: answer && answer.images && answer.images.length ? answer.images.map((image: string) => (new ObjectID(image))) : [],
+                images: answer && answer.images && answer.images.length ?
+                  answer.images.map((image: string) => (new ObjectID(image)))
+                  : [],
                 qualification,
                 na,
                 weight: question.weight,
+                kind: question.kind,
                 order: question.order
               });
             }
@@ -888,7 +896,6 @@ class FormController {
     return new Promise((resolve, reject) => {
       redisClient.get(keyCache, async (error, result) => {
         if (result) {
-          // console.log(`cache: ${keyCache}`);
           resolve(JSON.parse(result));
         } else {
           FormModel
@@ -901,6 +908,20 @@ class FormController {
               'sections.questions.shortName': false,
               '__v': false
             })
+            .populate([{
+              path: 'sections.questions.damages',
+              select: ['name', 'positions', 'kinds', 'parts'],
+              populate: [{
+                path: 'positions',
+                select: ['name']
+              }, {
+                path: 'kinds',
+                select: ['name']
+              }, {
+                path: 'parts',
+                select: ['name']
+              }]
+            }])
             .lean()
             .exec((err, form: IFormModel) => {
               if (err) {
@@ -908,7 +929,7 @@ class FormController {
                 return reject(err);
               }
               if (form) {
-                redisClient.setex(keyCache, 60 * 2, JSON.stringify(form));
+                redisClient.setex(keyCache, 60, JSON.stringify(form));
                 return resolve(form);
               }
               return reject('No se encontro formularío');
@@ -922,7 +943,22 @@ class FormController {
     return new Promise((resolve, reject) => {
       FormModel
         .findOne(filter)
-        .populate('sections.questions.scale')
+        .populate([{
+          path: 'sections.questions.scale'
+        }, {
+          path: 'sections.questions.damages',
+          select: ['name', 'positions', 'kinds', 'parts'],
+          populate: [{
+            path: 'positions',
+            select: ['name']
+          }, {
+            path: 'kinds',
+            select: ['name']
+          }, {
+            path: 'parts',
+            select: ['name']
+          }]
+        }])
         .exec((err, form) => {
           if (err) {
             /* istanbul ignore next */

@@ -8,6 +8,7 @@ import {
   IParticipantScale,
   IParticipantSection
 } from '../../interfaces/participant.interface';
+import {KindQuestion, kindQuestion} from './form.model';
 import {choiceBackgroundColors} from './scale.model';
 
 export interface IParticipantChoicesModel extends IParticipantChoices, mongoose.Types.Subdocument {}
@@ -94,6 +95,46 @@ const accessorySchema = new mongoose.Schema({
   items: [itemSchema]
 });
 
+const positionSchema = new mongoose.Schema({
+  name: {
+    type: String
+  }
+});
+const kindSchema = new mongoose.Schema({
+  name: {
+    type: String
+  }
+});
+const partSchema = new mongoose.Schema({
+  name: {
+    type: String
+  }
+});
+const damagesSchema = new mongoose.Schema({
+  name: {
+    type: String
+  },
+  positions: [positionSchema],
+  kinds: [kindSchema],
+  parts: [partSchema]
+});
+
+const damagesSelectedSchema = new mongoose.Schema({
+  position: {
+    type: mongoose.Schema.Types.ObjectId
+  },
+  kind: {
+    type: mongoose.Schema.Types.ObjectId
+  },
+  part: {
+    type: mongoose.Schema.Types.ObjectId
+  },
+  images:  [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'ParticipantFile'
+  }]
+});
+
 export interface IParticipantAnswerModel extends IParticipantAnswer, mongoose.Types.Subdocument {}
 const participantAnswersSchema = new mongoose.Schema({
   question: {type: String, required: true, trim: true},
@@ -101,16 +142,18 @@ const participantAnswersSchema = new mongoose.Schema({
 
   scale: scaleSchema,
 
+  damages: damagesSchema,
+  damagesSelected: [damagesSelectedSchema],
+
   accessories: {
     type: accessorySchema,
     default: null
   },
+  accesoriesSelected: [mongoose.Schema.Types.ObjectId],
   conciliation: {
     type: Boolean,
     default: false
   },
-  accesoriesSelected: [mongoose.Schema.Types.ObjectId],
-
   risk: {
     type: String,
     trim: true
@@ -136,10 +179,14 @@ const participantAnswersSchema = new mongoose.Schema({
   qualification: {
     type: Number
   },
-
   weight: {
     type: Number,
     required: true
+  },
+  kind: {
+    type: String,
+    enum: kindQuestion,
+    default: KindQuestion.scale
   },
   order: {
     type: Number,
