@@ -97,7 +97,8 @@ describe('inventories', () => {
             res.body.data.forEach((item) => {
                 expect(item).to.have.all.keys([
                     '_id',
-                    'name'
+                    'name',
+                    'settings'
                 ]);
             });
             firstInventory = res.body.data[0];

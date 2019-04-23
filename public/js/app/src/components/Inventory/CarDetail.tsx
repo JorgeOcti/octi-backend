@@ -55,6 +55,7 @@ class CarDetail extends React.Component<IPropsType, IStateType> {
         </td>
         <td>{car.brand}</td>
         <td>{car.denomination}</td>
+        <td>{car.type}</td>
       </tr>
     );
   }

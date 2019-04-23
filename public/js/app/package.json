@@ -5,20 +5,19 @@
   "scripts": {
     "start": "NODE_ENV=development webpack-dashboard -- node_modules/.bin/webpack --mode development --watch",
     "dev": "NODE_ENV=development webpack-dev-server --mode development --hot --progress --color --open",
-    "build": "NODE_ENV=production webpack --mode production --module-bind js=babel-loader"
+    "build": "NODE_ENV=production SENTRY_ORG=osa webpack --mode production --module-bind js=babel-loader"
   },
   "author": "Gonzalo Muñoz Coloma",
   "license": "ISC",
   "dependencies": {
     "another-json-schema": "~3.8.0",
-    "autoprefixer": "^9.5.1",
+    "autoprefixer": "~9.5.1",
     "babel-polyfill": "~6.26.0",
     "connected-react-router": "~6.3.2",
-    "echarts": "^4.2.1",
+    "echarts": "~4.2.1",
     "lodash": "~4.17.11",
     "mixpanel": "~0.10.2",
     "moment": "~2.24.0",
-    "npm-check": "^5.9.0",
     "pusher-js": "~4.4.0",
     "raven-for-redux": "~1.4.0",
     "raven-js": "~3.27.0",
@@ -46,7 +45,7 @@
     "xlsx": "~0.14.1"
   },
   "devDependencies": {
-    "@babel/core": "^7.4.3",
+    "@babel/core": "~7.4.3",
     "@sentry/webpack-plugin": "~1.6.2",
     "@types/axios": "~0.14.0",
     "@types/echarts": "~4.1.3",
@@ -57,15 +56,15 @@
     "@types/materialize-css": "~1.0.6",
     "@types/mixpanel": "~2.14.0",
     "@types/moment": "~2.13.0",
-    "@types/node": "^11.13.1",
+    "@types/node": "~11.13.4",
     "@types/prop-types": "~15.7.0",
     "@types/pusher-js": "~4.2.0",
     "@types/raven-for-redux": "~1.1.1",
     "@types/raven-js": "~3.10.0",
-    "@types/react": "^16.8.13",
-    "@types/react-dom": "~16.8.3",
+    "@types/react": "~16.8.13",
+    "@types/react-dom": "~16.8.4",
     "@types/react-redux": "~7.0.6",
-    "@types/react-router-dom": "~4.3.1",
+    "@types/react-router-dom": "~4.3.2",
     "@types/react-router-redux": "~5.0.17",
     "@types/redux": "~3.6.0",
     "@types/redux-debounced": "~0.2.19",
@@ -99,7 +98,7 @@
     "history": "~4.9.0",
     "immutable": "~3.8.2",
     "jquery": "~3.3.1",
-    "mini-css-extract-plugin": "~0.5.0",
+    "mini-css-extract-plugin": "~0.6.0",
     "prop-types": "~15.7.2",
     "source-map-loader": "~0.2.4",
     "ts-loader": "~5.3.3",
@@ -108,7 +107,7 @@
     "webpack": "~4.29.6",
     "webpack-cli": "~3.3.0",
     "webpack-dashboard": "~3.0.2",
-    "webpack-dev-server": "^3.3.0"
+    "webpack-dev-server": "~3.3.1"
   },
   "keywords": [],
   "description": ""

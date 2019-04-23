@@ -41,8 +41,7 @@ class Middlewares {
       jwt.verify(req.headers.authorization.split(' ')[1], req.app.locals.secretKey, (err: any, decode: any) => {
         /* istanbul ignore if */
         if (err) {
-          logger.error(`isJWTAuthenticated error: ${err.message}`);
-          logger.error(`${JSON.stringify(req.headers)}`);
+          logger.error(`isJWTAuthenticated error: ${err.message} ${JSON.stringify(req.headers)}`);
           res.status(401).json({
             error: err.message,
             status: 401
@@ -53,8 +52,7 @@ class Middlewares {
         }
       });
     } else {
-      logger.error(`isJWTAuthenticated error: Debes estar autenticado para este recurso.`);
-      logger.error(`${JSON.stringify(req.headers)}`);
+      logger.error(`isJWTAuthenticated error: Debes estar autenticado para este recurso. ${JSON.stringify(req.headers)}`);
       /* istanbul ignore next */
       res.status(401).json({
         error: 'Debes estar autenticado para este recurso.',

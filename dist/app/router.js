@@ -56,13 +56,13 @@ appRouter.patch('/api/admin/companies/:id', middlewares_1.default.isLoggedIn, co
 appRouter.delete('/api/admin/companies/:id', middlewares_1.default.isLoggedIn, company_admin_controller_1.default.apiDeleteCompany);
 // api team
 appRouter.get('/api/admin/teams/', middlewares_1.default.isLoggedIn, team_admin_controller_1.default.apiListTeams);
-// setting cars
-appRouter.get('/settings/cars/', middlewares_1.default.isLoggedIn, car_admin_controller_1.default.index);
-appRouter.get('/settings/cars/:car/', middlewares_1.default.isLoggedIn, car_admin_controller_1.default.index);
-appRouter.get('/api/admin/cars/', middlewares_1.default.isLoggedIn, car_admin_controller_1.default.apiListCars);
 // import cars
 appRouter.get('/settings/cars/import/', middlewares_1.default.isLoggedIn, car_admin_controller_1.default.imports);
 appRouter.post('/api/admin/import-cars/', middlewares_1.default.isLoggedIn, car_admin_controller_1.default.importCars);
+// setting cars
+appRouter.get('/settings/cars/', middlewares_1.default.isLoggedIn, car_admin_controller_1.default.index);
+appRouter.get('/settings/cars/:id/', middlewares_1.default.isLoggedIn, car_admin_controller_1.default.indexDetail);
+appRouter.get('/api/admin/cars/', middlewares_1.default.isLoggedIn, car_admin_controller_1.default.apiListCars);
 // permissions
 appRouter.get('/api/admin/permissions/', middlewares_1.default.isLoggedIn, permission_admin_controller_1.default.apiList);
 // alerts

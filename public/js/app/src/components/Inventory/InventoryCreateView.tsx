@@ -121,8 +121,9 @@ class InventoryCreateView extends React.Component<IPropsType, IStateType> {
 
   public render(): React.ReactElement<IPropsType> {
     const {
-      loadingSettings, carsByVenue, name, sending, notification, backupFile, backupUri,
-      manualPhoto
+      loadingSettings, carsByVenue, name,
+      sending, notification, backupFile,
+      backupUri, manualPhoto
     } = this.state;
     let carsInSettings = 0;
     return (
@@ -147,7 +148,7 @@ class InventoryCreateView extends React.Component<IPropsType, IStateType> {
                     <div className="col-md-12">
                       <div className="form-group">
                         <label>Configuración cargada</label>
-                        <div className="box-group" id="accordion" style={{margin: '10px 0'}}>
+                        <div className="box-group" id="accordion" style={{margin: '2px 0 10px 0'}}>
                           {
                             carsByVenue.map((venue: any, index) => {
                               carsInSettings += venue.cars.length;
@@ -283,16 +284,30 @@ class InventoryCreateView extends React.Component<IPropsType, IStateType> {
                     </label>
                   </div>
                 </div>
-                <div className="col col-md-6 number-question">
-                    <input
-                      type="text"
-                      id="report-photo"
-                      className="input-sm form-control"
-                      style={{
-                        width: '35px'
-                      }}
-                    />
-                    <span>Cantidad de imágenes al reportar</span>
+                <div className="col-md-6">
+                  <div className="form-horizontal">
+                    <div className="form-group" style={{marginRight: '0', marginLeft: '0'}}>
+                      <span
+                        className="col-sm-10 col-md-8 col-lg-9 control-label"
+                        style={{
+                          paddingLeft: '0',
+                          textAlign: 'left'
+                        }}
+                      >
+                        Nº imágenes al reporta
+                      </span>
+                      <input id="report-photo" type="text" className="col-sm-2 col-md-4 col-lg-3 form-control" />
+                    </div>
+                  </div>
+                    {/*<input*/}
+                    {/*  type="text"*/}
+                    {/*  id="report-photo"*/}
+                    {/*  className="input-sm form-control"*/}
+                    {/*  style={{*/}
+                    {/*    width: '35px'*/}
+                    {/*  }}*/}
+                    {/*/>*/}
+                    {/*<span>Cantidad de imágenes al reportar</span>*/}
                 </div>
                 <div className="col-md-12">
                   <div className="checkbox">
@@ -311,12 +326,14 @@ class InventoryCreateView extends React.Component<IPropsType, IStateType> {
             </div>
             <div className="box-footer text-right">
               <button className="btn btn-sm btn-default" onClick={() => this.props.history.push('/inventory/')}>Cancelar</button>
-              <button className="btn btn-sm btn-primary" style={{marginLeft: '5px'}} onClick={this.sendCreate} disabled={sending}>{
-                sending ?
-                  <React.Fragment><i className="fa fa-fw fa-spin fa-spinner"/> Creando...</React.Fragment>
-                  :
-                  'Crear'
-              }
+              <button className="btn btn-sm btn-primary" style={{marginLeft: '5px'}} onClick={this.sendCreate} disabled={sending}>
+                {
+                  sending ?
+                    <React.Fragment>
+                      <i className="fa fa-fw fa-spin fa-spinner"/> Creando...
+                    </React.Fragment>
+                    : 'Crear'
+                }
               </button>
             </div>
             {
@@ -395,7 +412,8 @@ class InventoryCreateView extends React.Component<IPropsType, IStateType> {
       patente: '',
       denominacion: '',
       color: '',
-      propiedad: ''
+      propiedad: '',
+      tipo: ''
     }];
     /* make the worksheet */
     const ws = XLSX.utils.json_to_sheet(data);
@@ -437,6 +455,7 @@ class InventoryCreateView extends React.Component<IPropsType, IStateType> {
                   brand: item.marca ? item.marca.trim() : '',
                   patent: item.patente ? item.patente.trim() : '',
                   property: item.propiedad ? item.propiedad.trim().toUpperCase() : '',
+                  type: item.tipo ? item.tipo.trim() : '',
                   hasWarnings: vinWarning || patentWarning,
                   warning: {
                     vin: vinWarning,

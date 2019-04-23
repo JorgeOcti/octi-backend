@@ -68,7 +68,7 @@ class TimeLineInventory extends React.Component<IPropsType, IStateType> {
             <i className="fa fa-fw fa-calendar-o"/> {inventory.createdAt.format('LL')}
           </span>
 
-          <h3 className="timeline-header"><a href="javascript:void(0)">{inventory.inventory.name}</a></h3>
+          <h3 className="timeline-header"><a href={`/inventory/${inventory.inventory._id}`} target="_blank">{inventory.inventory.name}</a></h3>
 
           <div className="timeline-body">
             {

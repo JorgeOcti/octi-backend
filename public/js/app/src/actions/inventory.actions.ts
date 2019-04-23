@@ -64,6 +64,8 @@ export interface IInventoryState {
   labels: IInventoryLabel[];
   detailByBrand: IDetailByBrand[];
   carsTable: any[];
+  cardTypes: string[];
+  cardProperties: string[];
   selectedItems: {
     [key: string]: any
   };

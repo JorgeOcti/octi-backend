@@ -72,8 +72,9 @@ class CarController {
     const {team} = req.user;
     // validate params
     /* istanbul ignore next */
-    if (!mongoose.Types.ObjectId.isValid(id)) {
-      return res.status(404).render('404');
+    if (!mongoose.Types.ObjectId.isValid(id) || !await CarModel.find({_id: id, team}).count()) {
+      return res.redirect('/cars/');
+      // return res.status(404).render('404');
     }
     try {
       // validate car exist

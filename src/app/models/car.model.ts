@@ -25,11 +25,13 @@ const carSchema = new mongoose.Schema({
   },
   internalNumber: {
     type: String,
-    default: ''
+    default: '',
+    trim: true
   },
   patent: {
     type: String,
-    default: ''
+    default: '',
+    trim: true
   },
   destination: {
     type: String,
@@ -39,6 +41,10 @@ const carSchema = new mongoose.Schema({
     type: String,
     trim: true,
     uppercase: true
+  },
+  type: {
+    type: String,
+    trim: true
   },
   brand: {
     type: String,
