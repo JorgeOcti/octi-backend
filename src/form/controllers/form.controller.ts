@@ -142,6 +142,13 @@ class FormController {
           }
           return '';
         }),
+        getDamageItem: ((items: any, item: string) => {
+          const result = items.find((i: any) => i._id.toString() === item.toString());
+          if (result && result.hasOwnProperty('name')) {
+            return result.name;
+          }
+          return '';
+        }),
         logo: participantCompany.image && participantCompany.image.hasOwnProperty('url') ? decodeURI(participantCompany.image.url) : false,
         accesorySelected: (answer: any, item: any) => {
           return item ? answer.accesoriesSelected.map((a: any) => a.toString()).includes(item._id.toString()) : false;
