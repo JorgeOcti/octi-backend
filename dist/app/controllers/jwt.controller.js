@@ -11,7 +11,7 @@ const user_model_1 = require("../models/user.model");
 const user_model_2 = require("../models/user.model");
 class JWTController {
     constructor() {
-        this.androidVersion = '2.2';
+        this.androidVersion = '2.2.0';
         this.iosVersion = '1.4.0';
         this.login = this.login.bind(this);
         this.token = this.token.bind(this);
