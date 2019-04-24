@@ -390,6 +390,7 @@ export function getParticipant(id: string) {
                                                       <a
                                                         href={image.file.url}
                                                         data-toggle="lightbox"
+                                                        className="zoom-in"
                                                         data-gallery={ds._id}
                                                         data-title={parts.hasOwnProperty(ds.part) ? parts[ds.part] : '-'}
                                                       >
@@ -445,7 +446,12 @@ export function getParticipant(id: string) {
                                       answer.images.map((image) => {
                                         return (
                                           <div className="col-md-3 col-sm-4 col-xs-4 text-center" key={image._id}>
-                                            <a href={image.file.url} data-toggle="lightbox" data-gallery={answer._id}>
+                                            <a
+                                              href={image.file.url}
+                                              className="zoom-in"
+                                              data-toggle="lightbox"
+                                              data-gallery={answer._id}
+                                            >
                                               <ImageLazyLoad
                                                 url={image.file.url}
                                                 height={'100px'}

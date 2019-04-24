@@ -19,7 +19,7 @@ import {io} from '../../server';
 import logger from '../../services/logger.service';
 import redisClient from '../../services/redis.service';
 import GeneralUtils from '../../utils/general.utils';
-import FormModel, {IFormModel} from '../models/form.model';
+import FormModel, {IFormModel, KindQuestion} from '../models/form.model';
 import ParticipantModel from '../models/participant.model';
 import ParticipantFile from '../models/participantFile.model';
 import ScaleModel, {IScaleModel} from '../models/scale.model';
@@ -55,7 +55,7 @@ class FormController {
         //   "contents": '<div style="text-align: center;">Author: Marc Bachmann</div>'
         // },
         footer: {
-          height: '5mm',
+          // height: '5mm',
           contents: {
             default: `<div class="footer">
                 Reporte generado por OSA Andes. Página <span style="color: #444;">{{page}}</span>/<span>{{pages}}</span>
@@ -64,7 +64,6 @@ class FormController {
         },
         type: 'pdf',
         quality: '75'
-
       };
 
       const venuesPermissions = req.user.venuesPermissions();
@@ -281,6 +280,7 @@ class FormController {
           observe: '',
           accessories: null,
           weight: 0,
+          kind: KindQuestion.scale,
           order: 1000
         });
         extraScales.push({
@@ -329,6 +329,7 @@ class FormController {
           observe: '',
           accessories: null,
           weight: 0,
+          kind: KindQuestion.scale,
           order: 1000
         });
         extraScales.push({
@@ -371,6 +372,7 @@ class FormController {
           observe: '',
           accessories: null,
           weight: 0,
+          kind: KindQuestion.scale,
           order: 1000
         });
         extraScales.push({

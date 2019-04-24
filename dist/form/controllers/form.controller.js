@@ -52,7 +52,7 @@ class FormController {
                 //   "contents": '<div style="text-align: center;">Author: Marc Bachmann</div>'
                 // },
                 footer: {
-                    height: '5mm',
+                    // height: '5mm',
                     contents: {
                         default: `<div class="footer">
                 Reporte generado por OSA Andes. Página <span style="color: #444;">{{page}}</span>/<span>{{pages}}</span>
@@ -278,6 +278,7 @@ class FormController {
                     observe: '',
                     accessories: null,
                     weight: 0,
+                    kind: form_model_1.KindQuestion.scale,
                     order: 1000
                 });
                 extraScales.push({
@@ -326,6 +327,7 @@ class FormController {
                     observe: '',
                     accessories: null,
                     weight: 0,
+                    kind: form_model_1.KindQuestion.scale,
                     order: 1000
                 });
                 extraScales.push({
@@ -368,6 +370,7 @@ class FormController {
                     observe: '',
                     accessories: null,
                     weight: 0,
+                    kind: form_model_1.KindQuestion.scale,
                     order: 1000
                 });
                 extraScales.push({
