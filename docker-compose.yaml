@@ -26,7 +26,8 @@ services:
       context: .
     image: andes:latest
     restart: always
-    command: [ "pm2", "start", "pm2-development.json", "--no-daemon" ]
+#    command: [ "pm2", "start", "pm2-development.json", "--no-daemon" ]
+    command: ['nodemon', '--inspect', 'dist/server.js','-e', 'js,jade']
     env_file:
       - .env
     environment:

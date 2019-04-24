@@ -192,7 +192,9 @@ class VenuesListView extends React.Component<IPropsType, IStateType> {
     this.props.changeTempVenueAction({
       _id: '',
       name: '',
-      type: 'receiver'
+      type: 'receiver',
+      sendTo: [],
+      receiveFrom: []
     });
     setTimeout(() => {
       this.props.loadDataAction(
@@ -203,7 +205,7 @@ class VenuesListView extends React.Component<IPropsType, IStateType> {
           <button type="button" className="btn btn-sm btn-primary" onClick={this.processAddVenue}>Grabar</button>
         </React.Fragment>
       );
-    }, 200);
+    }, 300);
   }
 
   private processAddVenue(): void {
@@ -222,7 +224,9 @@ class VenuesListView extends React.Component<IPropsType, IStateType> {
       _id: venue._id,
       name: venue.name,
       company: venue.company,
-      type: venue.type ? venue.type : 'receiver'
+      type: venue.type ? venue.type : 'receiver',
+      sendTo: venue.sendTo,
+      receiveFrom: venue.receiveFrom
     });
     setTimeout(() => {
       this.props.loadDataAction(
@@ -233,7 +237,7 @@ class VenuesListView extends React.Component<IPropsType, IStateType> {
           <button type="button" className="btn btn-sm btn-primary" onClick={this.processUpdateVenue}>Editar</button>
         </React.Fragment>
       );
-    }, 200);
+    }, 300);
   }
 
   private processUpdateVenue(): void {

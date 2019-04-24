@@ -78,7 +78,7 @@ export interface IInventoryState {
 }
 
 interface IUpdateInventoryCar {
-  type: '/INVENTORORIES/UPDATE_INVENTORY_CAR';
+  type: '/INVENTORIES/UPDATE_INVENTORY_CAR';
   payload: {
     inventoryCar: IInventoryCar;
   };
@@ -86,7 +86,7 @@ interface IUpdateInventoryCar {
 
 export function updateInventoryCarAction(inventoryCar: IInventoryCar): IUpdateInventoryCar {
   return {
-    type: '/INVENTORORIES/UPDATE_INVENTORY_CAR',
+    type: '/INVENTORIES/UPDATE_INVENTORY_CAR',
     payload: {
       inventoryCar
     }
@@ -94,7 +94,7 @@ export function updateInventoryCarAction(inventoryCar: IInventoryCar): IUpdateIn
 }
 
 interface IAddComment {
-  type: '/INVENTORORIES/ADD_COMMENT';
+  type: '/INVENTORIES/ADD_COMMENT';
   payload: {
     inventoryComment: IInventoryComment;
   };
@@ -102,7 +102,7 @@ interface IAddComment {
 
 export function addCommentAction(inventoryComment: IInventoryComment): IAddComment {
   return {
-    type: '/INVENTORORIES/ADD_COMMENT',
+    type: '/INVENTORIES/ADD_COMMENT',
     payload: {
       inventoryComment
     }
@@ -110,7 +110,7 @@ export function addCommentAction(inventoryComment: IInventoryComment): IAddComme
 }
 
 interface ICancelRequest {
-  type: '/INVENTORORIES/CANCEL_REQUEST';
+  type: '/INVENTORIES/CANCEL_REQUEST';
   payload: {
     source: CancelTokenSource;
   };
@@ -118,7 +118,7 @@ interface ICancelRequest {
 
 export function cancelRequestAction(source: CancelTokenSource): ICancelRequest {
   return {
-    type: '/INVENTORORIES/CANCEL_REQUEST',
+    type: '/INVENTORIES/CANCEL_REQUEST',
     payload: {
       source
     }
@@ -126,14 +126,14 @@ export function cancelRequestAction(source: CancelTokenSource): ICancelRequest {
 }
 
 interface IIsLoading {
-  type: '/INVENTORORIES/IS_LOADING';
+  type: '/INVENTORIES/IS_LOADING';
   payload: {
     loading: boolean;
   };
 }
 export function isLoadingAction(loading: boolean): IIsLoading {
   return {
-    type: '/INVENTORORIES/IS_LOADING',
+    type: '/INVENTORIES/IS_LOADING',
     payload: {
       loading
     }
@@ -141,7 +141,7 @@ export function isLoadingAction(loading: boolean): IIsLoading {
 }
 
 interface ILoadInventories {
-  type: '/INVENTORORIES/LOAD_DATA';
+  type: '/INVENTORIES/LOAD_DATA';
   payload: {
     inventories: any[];
   };
@@ -149,7 +149,7 @@ interface ILoadInventories {
 
 export function loadInventoriesAction(inventories: any[]): ILoadInventories {
   return {
-    type: '/INVENTORORIES/LOAD_DATA',
+    type: '/INVENTORIES/LOAD_DATA',
     payload: {
       inventories
     }
@@ -215,7 +215,7 @@ export function deleteInventoryAction(id: string) {
 }
 
 interface ILoadingDetailInventory {
-  type: '/INVENTORORIES/LOADING_INVENTORY_DETAIL';
+  type: '/INVENTORIES/LOADING_INVENTORY_DETAIL';
   payload: {
     loadingDetail: boolean;
   };
@@ -223,7 +223,7 @@ interface ILoadingDetailInventory {
 
 export function loadingInventoryDetaillAction(loadingDetail: boolean): ILoadingDetailInventory {
   return {
-    type: '/INVENTORORIES/LOADING_INVENTORY_DETAIL',
+    type: '/INVENTORIES/LOADING_INVENTORY_DETAIL',
     payload: {
       loadingDetail
     }
@@ -231,7 +231,7 @@ export function loadingInventoryDetaillAction(loadingDetail: boolean): ILoadingD
 }
 
 interface IFetchingDetailInventory {
-  type: '/INVENTORORIES/FETCHING_INVENTORY_DETAIL';
+  type: '/INVENTORIES/FETCHING_INVENTORY_DETAIL';
   payload: {
     fetchingDetail: boolean;
   };
@@ -239,7 +239,7 @@ interface IFetchingDetailInventory {
 
 export function fetchingnventoryDetaillAction(fetchingDetail: boolean): IFetchingDetailInventory {
   return {
-    type: '/INVENTORORIES/FETCHING_INVENTORY_DETAIL',
+    type: '/INVENTORIES/FETCHING_INVENTORY_DETAIL',
     payload: {
       fetchingDetail
     }
@@ -247,7 +247,7 @@ export function fetchingnventoryDetaillAction(fetchingDetail: boolean): IFetchin
 }
 
 interface IDetailInventorySelected {
-  type: '/INVENTORORIES/CHANGE_SELECTED';
+  type: '/INVENTORIES/CHANGE_SELECTED';
   payload: {
     item: string;
   };
@@ -255,7 +255,7 @@ interface IDetailInventorySelected {
 
 export function inventoryDetailChangeSelected(item: string): IDetailInventorySelected {
   return {
-    type: '/INVENTORORIES/CHANGE_SELECTED',
+    type: '/INVENTORIES/CHANGE_SELECTED',
     payload: {
       item
     }
@@ -263,7 +263,7 @@ export function inventoryDetailChangeSelected(item: string): IDetailInventorySel
 }
 
 interface IDetailChangeFilter {
-  type: '/INVENTORORIES/CHANGE_FILTER';
+  type: '/INVENTORIES/CHANGE_FILTER';
   payload: {
     filter: IFilterCar
   };
@@ -276,7 +276,7 @@ interface IDetailChangeFilter {
 
 export function inventoryDetailChangeFilter(filter: IFilterCar): IDetailChangeFilter {
   return {
-    type: '/INVENTORORIES/CHANGE_FILTER',
+    type: '/INVENTORIES/CHANGE_FILTER',
     payload: {
       filter
     },
@@ -290,7 +290,7 @@ export function inventoryDetailChangeFilter(filter: IFilterCar): IDetailChangeFi
 
 export function inventoryDetailChangeFilterText(filter: IFilterCar): IDetailChangeFilter {
   return {
-    type: '/INVENTORORIES/CHANGE_FILTER',
+    type: '/INVENTORIES/CHANGE_FILTER',
     payload: {
       filter
     },
@@ -303,7 +303,7 @@ export function inventoryDetailChangeFilterText(filter: IFilterCar): IDetailChan
 }
 
 interface ILoadInventory {
-  type: '/INVENTORORIES/LOAD_INVENTORY_DATA';
+  type: '/INVENTORIES/LOAD_INVENTORY_DATA';
   payload: {
     summary: IInventorySummary;
     detailByVenue: IDetailByVenue[];
@@ -323,7 +323,7 @@ export function loadInventoryAction(
   resetFilter: boolean
 ): ILoadInventory {
   return {
-    type: '/INVENTORORIES/LOAD_INVENTORY_DATA',
+    type: '/INVENTORIES/LOAD_INVENTORY_DATA',
     payload: {
       resetFilter: !resetFilter,
       summary,

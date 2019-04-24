@@ -29,6 +29,20 @@ const venueSchema = new mongoose.Schema({
         enum: exports.choicesStatusCarInventory,
         default: ChoicesTypeVenue.receiver
     },
+    sendTo: {
+        type: [{
+                type: mongoose.Schema.Types.ObjectId,
+                ref: 'Venue'
+            }],
+        default: []
+    },
+    receiveFrom: {
+        type: [{
+                type: mongoose.Schema.Types.ObjectId,
+                ref: 'Venue'
+            }],
+        default: []
+    },
     deleted: {
         type: Boolean,
         default: false

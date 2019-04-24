@@ -7,6 +7,8 @@ export interface IBaseVenue {
   _id: any;
   name: string;
   company?: ICompany | any;
+  sendTo: IVenue[]
+  receiveFrom: IVenue[]
   type: string;
 }
 

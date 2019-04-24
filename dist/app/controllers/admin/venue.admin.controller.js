@@ -35,11 +35,19 @@ class AdminVenueController {
             select: {
                 _id: true,
                 name: true,
+                sendTo: true,
+                receiveFrom: true,
                 type: true,
                 updatedAt: true,
                 createdAt: true
             },
             populate: [{
+                    path: 'sendTo',
+                    select: ['_id', 'name']
+                }, {
+                    path: 'receiveFrom',
+                    select: ['_id', 'name']
+                }, {
                     path: 'users',
                     select: ['_id']
                 }, {
@@ -92,7 +100,7 @@ class AdminVenueController {
                 message: 'No tienes permisos para esta operación'
             });
         }
-        const { name, type, company } = req.body;
+        const { name, type, company, sendTo, receiveFrom } = req.body;
         const { team } = req.user;
         if (!name || !name.trim().length) {
             res.status(400).json({
@@ -116,6 +124,8 @@ class AdminVenueController {
                     name,
                     team,
                     company,
+                    sendTo,
+                    receiveFrom,
                     type
                 }).save();
                 server_1.io.to(`venue-list-${team}`).emit('REFRESH', {
@@ -124,7 +134,13 @@ class AdminVenueController {
                 });
                 res.status(201).json({
                     message: 'Sucursal agregada satisfactoriamente.',
-                    venue: newVenue
+                    venue: await newVenue.populate([{
+                            path: 'sendTo',
+                            select: ['_id', 'name']
+                        }, {
+                            path: 'receiveFrom',
+                            select: ['_id', 'name']
+                        }])
                 });
             }
         }
@@ -144,7 +160,7 @@ class AdminVenueController {
         }
         const { id } = req.params;
         const { team } = req.user;
-        const { name, type, company } = req.body;
+        const { name, type, company, sendTo, receiveFrom } = req.body;
         if (!name || !name.length) {
             res.status(400).json({
                 message: 'The name is are required',
@@ -158,11 +174,19 @@ class AdminVenueController {
             }, {
                 name,
                 company,
+                sendTo,
+                receiveFrom,
                 type
             }, {
                 new: true
             }).populate([{
                     path: 'company',
+                    select: ['_id', 'name']
+                }, {
+                    path: 'sendTo',
+                    select: ['_id', 'name']
+                }, {
+                    path: 'receiveFrom',
                     select: ['_id', 'name']
                 }]);
             if (venue) {

@@ -7,6 +7,7 @@ import {showModal, statusFooterButttonsModal} from '../utils/common';
 
 export interface IVenuesState {
   venues: IVenue[];
+  allVenues: IVenue[];
   companies: ICompany[];
   loading: boolean;
   tempVenue: IBaseVenue;
@@ -78,7 +79,7 @@ interface IChangeTempVenue {
   };
 }
 
-export function changeTempVenueAction(venue: IBaseVenue): IChangeTempVenue {
+export function changeTempVenueAction(venue: IBaseVenue, noDelay?: boolean): IChangeTempVenue {
   return {
     type: '/VENUES/CHANGE_TEMP_VENUE',
     payload: {
@@ -86,7 +87,7 @@ export function changeTempVenueAction(venue: IBaseVenue): IChangeTempVenue {
     },
     meta: {
       debounce: {
-        time: 300
+        time: noDelay ? 0 : 300
       }
     }
   };
@@ -115,15 +116,31 @@ export function loadVenuesAction(venues: any, count: number, pages: number): ILo
 interface ILoadCompaniesVenue {
   type: '/VENUES/LOAD_COMPANIES';
   payload: {
-    compenies: ICompany[];
+    companies: ICompany[];
   };
 }
 
-export function loadCompaniesVenueAction(compenies: ICompany[]): ILoadCompaniesVenue {
+export function loadCompaniesVenueAction(companies: ICompany[]): ILoadCompaniesVenue {
   return {
     type: '/VENUES/LOAD_COMPANIES',
     payload: {
-      compenies
+      companies
+    }
+  };
+}
+
+interface ILoadAllVenue {
+  type: '/VENUES/LOAD_ALL_VENUES';
+  payload: {
+    allVenues: IVenue[];
+  };
+}
+
+export function loadAllVenueAction(allVenues: IVenue[]): ILoadAllVenue {
+  return {
+    type: '/VENUES/LOAD_ALL_VENUES',
+    payload: {
+      allVenues
     }
   };
 }
@@ -141,10 +158,14 @@ export function getVenuesAction(nextPage: number) {
       dispatch(changePageAction(nextPage));
     }
     if (!state.venues.companies.length) {
-      api.getCompanies(1, 200)
-        .then((response: AxiosResponse) => {
-          dispatch(loadCompaniesVenueAction(response.data.results));
-        })
+      Axios.all([
+        api.getCompanies(1, 200),
+        api.getVenues(1, 200)
+      ])
+        .then(Axios.spread((companies: AxiosResponse, venues: AxiosResponse) => {
+          dispatch(loadCompaniesVenueAction(companies.data.results));
+          dispatch(loadAllVenueAction(venues.data.results));
+        }))
         .catch((err: AxiosError): void => {
           api.errorHandler(err);
         });
@@ -272,4 +293,4 @@ export function deleteVenueAction(id: string) {
   };
 }
 
-export type VenueReduxAction = ICancelRequest | IIsLoading | IChangePage | ILoadVenues | IDeleteVenue | IChangeTempVenue | IChangeVenue | ILoadCompaniesVenue;
+export type VenueReduxAction = ICancelRequest | IIsLoading | IChangePage | ILoadVenues | IDeleteVenue | IChangeTempVenue | IChangeVenue | ILoadCompaniesVenue | ILoadAllVenue;

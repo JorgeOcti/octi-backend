@@ -52,50 +52,50 @@ export interface IFilterCar {
 
 export function inventoriesReducer(state = initialState, action: InventoryReduxAction): IInventoryState {
   switch (action.type) {
-    case '/INVENTORORIES/IS_LOADING':
+    case '/INVENTORIES/IS_LOADING':
       return {
         ...state,
         loading: action.payload.loading
       };
-    case '/INVENTORORIES/CANCEL_REQUEST':
+    case '/INVENTORIES/CANCEL_REQUEST':
       return {
         ...state,
         source: action.payload.source
       };
-    case '/INVENTORORIES/LOAD_DATA':
+    case '/INVENTORIES/LOAD_DATA':
       return {
         ...state,
         inventories: action.payload.inventories
       };
-    case '/INVENTORORIES/UPDATE_INVENTORY_CAR':
+    case '/INVENTORIES/UPDATE_INVENTORY_CAR':
       return {
         ...state,
         inventoryCar: action.payload.inventoryCar
       };
-    case '/INVENTORORIES/CHANGE_FILTER':
+    case '/INVENTORIES/CHANGE_FILTER':
       return {
         ...state,
         carsTable: processCars(state.detail.cars, state.selectedItems, action.payload.filter),
         filter: action.payload.filter
       };
-    case '/INVENTORORIES/CHANGE_SELECTED':
+    case '/INVENTORIES/CHANGE_SELECTED':
       const newSelected = processSelected(state.selectedItems, action.payload.item);
       return {
         ...state,
         selectedItems: newSelected,
         carsTable: processCars(state.detail.cars, newSelected, state.filter)
       };
-    case '/INVENTORORIES/LOADING_INVENTORY_DETAIL':
+    case '/INVENTORIES/LOADING_INVENTORY_DETAIL':
       return {
         ...state,
         loadingDetail: action.payload.loadingDetail
       };
-    case '/INVENTORORIES/FETCHING_INVENTORY_DETAIL':
+    case '/INVENTORIES/FETCHING_INVENTORY_DETAIL':
       return {
         ...state,
         fetchingDetail: action.payload.fetchingDetail
       };
-    case '/INVENTORORIES/LOAD_INVENTORY_DATA':
+    case '/INVENTORIES/LOAD_INVENTORY_DATA':
       const selectedItems = action.payload.resetFilter ? initialState.selectedItems : state.selectedItems;
       const filter = action.payload.resetFilter ? initialState.filter : state.filter;
       return {
@@ -110,7 +110,7 @@ export function inventoriesReducer(state = initialState, action: InventoryReduxA
         detail: action.payload.detail,
         detailByBrand: action.payload.detailByBrand
       };
-    case '/INVENTORORIES/ADD_COMMENT':
+    case '/INVENTORIES/ADD_COMMENT':
       if (state.inventoryCar) {
         return {
           ...state,

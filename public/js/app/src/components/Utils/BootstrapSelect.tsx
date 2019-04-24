@@ -107,7 +107,7 @@ class BootstrapSelect extends React.Component<IPropsType, IStateType> {
             aria-expanded="false"
             tabIndex={-1}
           >
-            <ul className="dropdown-menu inner" style={{maxHeight: '50vh', overflowY: 'auto'}}>
+            <ul className="dropdown-menu inner" style={{maxHeight: '30vh', overflowY: 'auto'}}>
               {
                 options.map((option) => {
                   const isSelected = selected.includes(option.value);

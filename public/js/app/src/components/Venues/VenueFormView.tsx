@@ -5,12 +5,13 @@ import {connect} from 'react-redux';
 import {IBaseVenue} from '../../../../../../src/interfaces/venue.interface';
 import {changeTempVenueAction, IVenuesState, VenueReduxAction} from '../../actions/venues.actions';
 import {updateTooltip} from '../../utils/common';
+import BootstrapSelect from '../Utils/BootstrapSelect';
 import Checkbox from '../Utils/CheckBox';
 
 interface IPropsType {
   venues?: IVenuesState;
   update?: boolean;
-  changeTempVenueAction?: (venue: IBaseVenue) => VenueReduxAction;
+  changeTempVenueAction?: (venue: IBaseVenue, noDelay?: boolean) => VenueReduxAction;
 }
 
 interface IStateType {
@@ -22,6 +23,7 @@ class VenueFormView extends React.Component<IPropsType, IStateType> {
   constructor(props: IPropsType) {
     super(props);
     this.changeTypeAction = this.changeTypeAction.bind(this);
+    this.handleSelectVenues = this.handleSelectVenues.bind(this);
   }
 
   public componentDidMount(): void {
@@ -45,6 +47,13 @@ class VenueFormView extends React.Component<IPropsType, IStateType> {
     $('#id-company').trigger('chosen:updated');
   }
 
+  public componentWillReceiveProps(nextProps: Readonly<IPropsType>, nextContext: any): void {
+    if (nextProps.venues) {
+      const {tempVenue} = nextProps.venues;
+      $('#id-company').val(tempVenue && tempVenue.company ? tempVenue.company._id : '').trigger('chosen:updated');
+    }
+  }
+
   public componentDidCatch(error: Error, errorInfo: ErrorInfo): void {
     this.setState({error});
     Raven.captureException(error, {
@@ -55,7 +64,7 @@ class VenueFormView extends React.Component<IPropsType, IStateType> {
   render(): React.ReactElement<IPropsType> | null {
     if (this.props.venues && this.props.changeTempVenueAction) {
       const {changeTempVenueAction, update} = this.props;
-      const {tempVenue, companies} = this.props.venues;
+      const {tempVenue, companies, allVenues} = this.props.venues;
       return (
         <div className="row">
           <div className="col-md-12">
@@ -104,11 +113,55 @@ class VenueFormView extends React.Component<IPropsType, IStateType> {
                 </div> : null
             }
           </div>
-          <div className="col col-md-6">
+          <div className="col-md-12">
+            <div className="form-group">
+              <label htmlFor="venues" className="control-label">Envia <i className="fa fa-info-circle text-black" data-toggle="tooltip" data-placement="top" title="Usuarios asignados a esta sucursal, pueden enviar a estas sucursales."/></label>
+              <BootstrapSelect
+                noneSelectedText="Seleccione"
+                displayItems={2}
+                selectedText="sucursales seleccionadas."
+                selected={tempVenue.sendTo.map((venue) => venue._id)}
+                allOption={true}
+                selectAll={(value: boolean) => this.handleSelectVenues('sendTo', true, value)}
+                options={allVenues.map((venue: any) => ({
+                  value: venue._id,
+                  text: venue.name
+                }))}
+                onClick={(value: string) => this.handleSelectVenues('sendTo', false, value)}
+              />
+            </div>
+          </div>
+          <div className="col-md-12">
+            <div className="form-group">
+              <label htmlFor="venues" className="control-label">Recibe <i className="fa fa-info-circle text-black" data-toggle="tooltip" data-placement="top" title="Usuarios asignados a esta sucursal, pueden recepcionar de estas sucursales."/></label>
+              <BootstrapSelect
+                noneSelectedText="Seleccione"
+                displayItems={2}
+                selectedText="sucursales seleccionadas."
+                selected={tempVenue.receiveFrom.map((venue) => venue._id)}
+                allOption={true}
+                selectAll={(value: boolean) => this.handleSelectVenues('receiveFrom', true, value)}
+                options={allVenues.map((venue: any) => ({
+                  value: venue._id,
+                  text: venue.name
+                }))}
+                onClick={(value: string) => this.handleSelectVenues('receiveFrom', false, value)}
+              />
+            </div>
+          </div>
+          <div className="col col-md-12">
             <div className="checkbox">
               <label style={{paddingLeft: '0'}} onClick={this.changeTypeAction} >
                 <Checkbox active={tempVenue.type === 'distributor'} action={this.changeTypeAction} classes="icheck-in-checkbox"/>
-                Distribuidor <i className="fa fa-info-circle" data-toggle="tooltip" data-placement="top" title="Activa funcionalidades a la sucursal."/>
+                <span
+                  style={{
+                    paddingLeft: '5px',
+                    top: '2px',
+                    position: 'relative'
+                  }}
+                >
+                  Distribuidor <i className="fa fa-info-circle" data-toggle="tooltip" data-placement="top" title="Activa funcionalidades a la sucursal."/>
+                </span>
               </label>
             </div>
           </div>
@@ -119,6 +172,28 @@ class VenueFormView extends React.Component<IPropsType, IStateType> {
     }
   }
 
+  private handleSelectVenues(where: 'receiveFrom' | 'sendTo', all: boolean, value: string | boolean) {
+    if (this.props.changeTempVenueAction && this.props.venues) {
+      const {tempVenue, allVenues} = this.props.venues;
+      let values = [];
+      if (all) {
+        values = value ? allVenues : [];
+      } else {
+        const add = tempVenue[where].find((venue) => venue._id === value) === undefined;
+        const venue = allVenues.find((venue) => venue._id === value);
+        if (add) {
+          values = [...tempVenue[where], venue];
+        } else {
+          values = tempVenue[where].filter((venue) => venue._id !== value);
+        }
+      }
+      this.props.changeTempVenueAction({
+        ...tempVenue,
+        [where]: values
+      }, true);
+    }
+  }
+
   private changeTypeAction() {
     if (this.props.venues && this.props.changeTempVenueAction) {
       const {changeTempVenueAction} = this.props;
@@ -126,7 +201,7 @@ class VenueFormView extends React.Component<IPropsType, IStateType> {
       changeTempVenueAction({
         ...tempVenue,
         type: tempVenue.type === 'receiver' ? 'distributor' : 'receiver'
-      });
+      }, true);
     }
   }
 }
@@ -140,7 +215,7 @@ const mapStateToProps = (state: { venues: IVenuesState }) => {
 const mapDispatchToProps = (dispatch: any ) => {
   return {
     dispatch,
-    changeTempVenueAction: (venue: IBaseVenue) => dispatch(changeTempVenueAction(venue))
+    changeTempVenueAction: (venue: IBaseVenue, noDelay?: boolean) => dispatch(changeTempVenueAction(venue, noDelay))
   };
 };
 

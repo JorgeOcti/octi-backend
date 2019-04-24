@@ -3,13 +3,16 @@ import {IVenuesState, VenueReduxAction} from '../actions/venues.actions';
 
 const initialState: IVenuesState = {
   venues: [],
+  allVenues: [],
   companies: [],
   loading: true,
   source: null,
   tempVenue: {
     _id: '',
     name: '',
-    type: 'receiver'
+    type: 'receiver',
+    sendTo: [],
+    receiveFrom: []
   },
   pagination: {
     count: 0,
@@ -41,7 +44,12 @@ export function venuesReducer(state = initialState, action: VenueReduxAction): I
     case '/VENUES/LOAD_COMPANIES':
       return {
         ...state,
-        companies: action.payload.compenies
+        companies: action.payload.companies
+      };
+    case '/VENUES/LOAD_ALL_VENUES':
+      return {
+        ...state,
+        allVenues: action.payload.allVenues
       };
     case '/VENUES/CHANGE_VENUE':
       return {
@@ -51,6 +59,8 @@ export function venuesReducer(state = initialState, action: VenueReduxAction): I
             venue.name = action.payload.venue.name;
             venue.company = action.payload.venue.company;
             venue.type = action.payload.venue.type;
+            venue.sendTo = action.payload.venue.sendTo;
+            venue.receiveFrom = action.payload.venue.receiveFrom;
           }
           return venue;
         })
