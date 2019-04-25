@@ -129,6 +129,12 @@ class AdminVenueController {
           receiveFrom,
           type
         }).save();
+        // reverse assing send to and reveive from
+        const id = newVenue._id;
+        await Venue.update({_id: {$in: receiveFrom}, team, sendTo: {$ne: id}}, {$push: {sendTo: id}}, {multi: true});
+        await Venue.update({_id: {$nin: receiveFrom}, team, sendTo: id}, {$pull: {sendTo: id}}, {multi: true});
+        await Venue.update({_id: {$in: sendTo}, team, receiveFrom: {$ne: id}}, {$push: {receiveFrom: id}}, {multi: true});
+        await Venue.update({_id: {$nin: sendTo}, team, receiveFrom: id}, {$pull: {receiveFrom: id}}, {multi: true});
         io.to(`venue-list-${team}`).emit('REFRESH', {
           update: true,
           updatedBy: req.user._id
@@ -193,6 +199,11 @@ class AdminVenueController {
       if (venue) {
         // fix users in venue
         await User.update({venue: id}, {company: venue.company._id}, {multi: true});
+        // reverse assing send to and reveive from
+        await Venue.update({_id: {$in: receiveFrom}, team, sendTo: {$ne: id}}, {$push: {sendTo: id}}, {multi: true});
+        await Venue.update({_id: {$nin: receiveFrom}, team, sendTo: id}, {$pull: {sendTo: id}}, {multi: true});
+        await Venue.update({_id: {$in: sendTo}, team, receiveFrom: {$ne: id}}, {$push: {receiveFrom: id}}, {multi: true});
+        await Venue.update({_id: {$nin: sendTo}, team, receiveFrom: id}, {$pull: {receiveFrom: id}}, {multi: true});
         const response = {
           message: 'Sucursal editada satisfactoriamente.',
           venue
@@ -264,6 +275,9 @@ class AdminVenueController {
             });
           } else {
             await venue.remove();
+            // clear venues
+            await Venue.update({team, sendTo: id}, {$pull: {sendTo: id}}, {multi: true});
+            await Venue.update({team, receiveFrom: id}, {$pull: {receiveFrom: id}}, {multi: true});
             const response = {
               message: 'Sucursal eliminada satisfactoriamente.',
               id: venue._id

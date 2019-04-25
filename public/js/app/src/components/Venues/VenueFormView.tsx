@@ -64,7 +64,11 @@ class VenueFormView extends React.Component<IPropsType, IStateType> {
   render(): React.ReactElement<IPropsType> | null {
     if (this.props.venues && this.props.changeTempVenueAction) {
       const {changeTempVenueAction, update} = this.props;
-      const {tempVenue, companies, allVenues} = this.props.venues;
+      const {tempVenue, companies} = this.props.venues;
+      let {allVenues} = this.props.venues;
+      if (update) {
+        allVenues = allVenues.filter((venue) => venue._id !== tempVenue._id);
+      }
       return (
         <div className="row">
           <div className="col-md-12">

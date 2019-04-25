@@ -157,19 +157,17 @@ export function getVenuesAction(nextPage: number) {
     if (nextPage) {
       dispatch(changePageAction(nextPage));
     }
-    if (!state.venues.companies.length) {
-      Axios.all([
-        api.getCompanies(1, 200),
-        api.getVenues(1, 200)
-      ])
-        .then(Axios.spread((companies: AxiosResponse, venues: AxiosResponse) => {
-          dispatch(loadCompaniesVenueAction(companies.data.results));
-          dispatch(loadAllVenueAction(venues.data.results));
-        }))
-        .catch((err: AxiosError): void => {
-          api.errorHandler(err);
-        });
-    }
+    Axios.all([
+      api.getCompanies(1, 200),
+      api.getVenues(1, 200)
+    ])
+      .then(Axios.spread((companies: AxiosResponse, venues: AxiosResponse) => {
+        dispatch(loadCompaniesVenueAction(companies.data.results));
+        dispatch(loadAllVenueAction(venues.data.results));
+      }))
+      .catch((err: AxiosError): void => {
+        api.errorHandler(err);
+      });
     api.getVenues(page)
       .then((response: AxiosResponse) => {
         dispatch(loadVenuesAction(response.data.results, response.data.count, response.data.pages));
@@ -195,9 +193,9 @@ export function createVenueAction() {
     const api: ApiService = new ApiService();
     api.createVenue(tempVenue)
       .then((response: AxiosResponse) => {
+        dispatch(getVenuesAction(state.venues.pagination.page) as any);
         statusFooterButttonsModal(false);
         showModal(false);
-        dispatch(getVenuesAction(1) as any);
         swal(response.data.message, {
           icon: 'success'
         });
@@ -235,9 +233,9 @@ export function updateVenueAction() {
     const api: ApiService = new ApiService();
     api.updateVenue(tempVenue)
       .then((response: AxiosResponse) => {
+        dispatch(getVenuesAction(state.venues.pagination.page) as any);
         statusFooterButttonsModal(false);
         showModal(false);
-        dispatch(changeVenueAction(response.data.venue));
         $venue.addClass('editing-item');
         swal(response.data.message, {
           icon: 'success'
