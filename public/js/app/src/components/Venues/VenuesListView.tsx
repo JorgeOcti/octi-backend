@@ -101,7 +101,8 @@ class VenuesListView extends React.Component<IPropsType, IStateType> {
       <AppContainer title="" cMenu="10" cSubMenu="10.4" cAction="Listado">
         <section className="content">
           <div className="box">
-            <div className="box-header with-border"><h3 className="box-title">Sucursales <small>{pagination.count}</small></h3>
+            <div className="box-header with-border">
+              <h3 className="box-title">Sucursales <small>{pagination.count}</small></h3>
               {
                 hasPermission(window.user, 'addVenue') ?
                   <div className="box-tools pull-right">
@@ -110,12 +111,12 @@ class VenuesListView extends React.Component<IPropsType, IStateType> {
                   : null
               }
             </div>
-            <div className="box-body no-padding">
+            <div className="box-body table-responsive no-padding">
               <table className="table table-striped">
                 <thead>
                   <tr>
                     <th style={{width: '60%'}} className="middle">Nombre</th>
-                    <th style={{width: '10%'}} className="middle-center">Distribuidor</th>
+                    <th style={{width: '10%'}} className="middle-center  hidden-xs">Distribuidor</th>
                     <th style={{width: '10%'}} className="middle">Asignaciones</th>
                     <th style={{width: '20%'}} className="middle hidden-xs">Modificado</th>
                     {
@@ -139,14 +140,26 @@ class VenuesListView extends React.Component<IPropsType, IStateType> {
                           className={'background-transition'}
                         >
                           <td className="middle">{venue.name}<br/>
-                            {venue.company ? <span className={'text-sm text-muted'}>{venue.company.name}</span> : null}
+                            {
+                              venue.company ? <span className={'text-sm text-muted'}>{venue.company.name}</span> : null
+                            }
                           </td>
-                          <td className="middle-center">{venue.type === 'distributor' ? <i className="fa fa-check-circle text-green" /> : <i className="fa fa-times-circle text-blue" /> }</td>
+                          <td className="middle-center  hidden-xs">
+                            {
+                              venue.type === 'distributor' ?
+                                <i className="fa fa-check-circle text-green"/>
+                                : <i className="fa fa-times-circle text-blue"/>
+                            }
+                          </td>
                           <td className="text-sm">
                             Usuarios: {venue.users ? venue.users.length : 0}<br/>
                             Revisiones: {venue.participants ? venue.participants.length : 0}<br/>
                           </td>
-                          <td className="middle hidden-xs">{moment(venue.updatedAt).format('LLL')}</td>
+                          <td className="middle hidden-xs">
+                            {
+                              moment(venue.updatedAt).format('LLL')
+                            }
+                          </td>
                           {
                             hasPermission(window.user, 'changeVenue') ?
                               <td
@@ -160,7 +173,9 @@ class VenuesListView extends React.Component<IPropsType, IStateType> {
                               <td
                                 className={canDelete ? 'middle text-red pointer' : 'middle text-muted not-allowed'}
                                 onClick={canDelete ? () => this.deleteVenue(venue) : undefined}
-                              ><i className="fa fa-minus-circle"/></td> : null
+                              >
+                                <i className="fa fa-minus-circle"/>
+                              </td> : null
                           }
                         </tr>
                       );

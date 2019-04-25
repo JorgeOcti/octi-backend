@@ -96,6 +96,8 @@ export interface IParticipant {
 
   user: IUserModel;
   venue: IVenueModel;
+  sendTo: IVenueModel;
+  receiveFrom: IVenueModel;
   car: ICarModel;
 
   description: string;

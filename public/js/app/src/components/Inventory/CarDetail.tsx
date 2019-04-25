@@ -36,7 +36,9 @@ class CarDetail extends React.Component<IPropsType, IStateType> {
             car.hasWarnings && car.warning.vin ?
               <i
                 className="fa fa-warning pointer"
-                style={{color: '#f2aa2e'}}
+                style={{
+                  color: '#f2aa2e'
+                }}
                 data-toggle="tooltip"
                 data-placement="top"
                 title="El vin debe tener al menos 17 dígitos."
@@ -47,7 +49,9 @@ class CarDetail extends React.Component<IPropsType, IStateType> {
             car.hasWarnings && car.warning.patent ?
               <i
                 className="fa fa-warning pointer"
-                style={{color: '#f2aa2e'}}
+                style={{
+                  color: '#f2aa2e'
+                }}
                 data-toggle="tooltip"
                 data-placement="top"
                 title="La patente debe tener al menos 6 dígitos."

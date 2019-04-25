@@ -268,6 +268,14 @@ const participantSchema = new mongoose.Schema({
             type: mongoose.Schema.Types.ObjectId,
             ref: 'ParticipantFile'
         }],
+    sendTo: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Venue'
+    },
+    receiveFrom: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Venue'
+    },
     conciliation: {
         type: Boolean,
         default: false

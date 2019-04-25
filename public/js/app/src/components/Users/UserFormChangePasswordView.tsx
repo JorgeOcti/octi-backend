@@ -52,7 +52,9 @@ class UserFormChangePasswordView extends React.Component<IPropsType, IStateType>
                 defaultValue={tempUser ? tempUser.password : undefined}
                 onChange={(e: React.ChangeEvent<HTMLInputElement>) => changeTempUser({password: e.target.value})}
               />
-              <span className="input-group-addon pointer" onClick={this.changeType}><i className={`fa ${this.state.type === 'text' ? 'fa-eye-slash' : 'fa-eye'}`} /></span>
+              <span className="input-group-addon pointer" onClick={this.changeType}>
+                <i className={`fa ${this.state.type === 'text' ? 'fa-eye-slash' : 'fa-eye'}`} />
+              </span>
             </div>
           </div>
         </div>

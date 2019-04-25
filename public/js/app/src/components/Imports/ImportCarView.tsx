@@ -343,10 +343,6 @@ class ImportCarsView extends React.Component<IPropsType, IStateType> {
                 car.status = carStatus.Pending;
                 return car;
               })
-              // carsObj: cars.reduce((acc: any, cur: any) => {
-              //   acc[cur.vin] = cur;
-              //   return acc;
-              // }, {})
             });
           } else {
             swal('Importador de autos', 'Este excel no cumple con los requisitos mínimos o no tiene autos.', 'error');

@@ -111,15 +111,19 @@ class VenueFormView extends React.Component<IPropsType, IStateType> {
             {
               update ?
                 <div className="alert alert-warning alert-dismissible">
-                  {/*<button type="button" className="close" data-dismiss="alert" aria-hidden="true">×</button>*/}
-                  {/*<h4><i className="icon fa fa-warning"></i> Alert!</h4>*/}
                   Si se modifica la empresa, los usuarios asignados a esta sucursal también se verán afectados.
                 </div> : null
             }
           </div>
           <div className="col-md-12">
             <div className="form-group">
-              <label htmlFor="venues" className="control-label">Envia <i className="fa fa-info-circle text-black" data-toggle="tooltip" data-placement="top" title="Usuarios asignados a esta sucursal, pueden enviar a estas sucursales."/></label>
+              <label htmlFor="venues" className="control-label">
+                Envia <i
+                className="fa fa-info-circle text-black"
+                data-toggle="tooltip" data-placement="top"
+                title="Usuarios asignados a esta sucursal, pueden enviar a estas sucursales."
+              />
+              </label>
               <BootstrapSelect
                 noneSelectedText="Seleccione"
                 displayItems={2}
@@ -137,7 +141,14 @@ class VenueFormView extends React.Component<IPropsType, IStateType> {
           </div>
           <div className="col-md-12">
             <div className="form-group">
-              <label htmlFor="venues" className="control-label">Recibe <i className="fa fa-info-circle text-black" data-toggle="tooltip" data-placement="top" title="Usuarios asignados a esta sucursal, pueden recepcionar de estas sucursales."/></label>
+              <label htmlFor="venues" className="control-label">
+                Recibe <i
+                className="fa fa-info-circle text-black"
+                data-toggle="tooltip"
+                data-placement="top"
+                title="Usuarios asignados a esta sucursal, pueden recepcionar de estas sucursales."
+              />
+              </label>
               <BootstrapSelect
                 noneSelectedText="Seleccione"
                 displayItems={2}
@@ -164,7 +175,12 @@ class VenueFormView extends React.Component<IPropsType, IStateType> {
                     position: 'relative'
                   }}
                 >
-                  Distribuidor <i className="fa fa-info-circle" data-toggle="tooltip" data-placement="top" title="Activa funcionalidades a la sucursal."/>
+                  Distribuidor <i
+                  className="fa fa-info-circle"
+                  data-toggle="tooltip"
+                  data-placement="top"
+                  title="Activa funcionalidades a la sucursal."
+                />
                 </span>
               </label>
             </div>
