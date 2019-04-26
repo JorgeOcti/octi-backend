@@ -1,11 +1,10 @@
-///<reference path="../../../node_modules/sweetalert/typings/sweetalert.d.ts"/>
-import * as PropTypes from 'prop-types';
 import * as Raven from 'raven-js';
 import * as React from 'react';
 import {ErrorInfo} from 'react';
 import {connect} from 'react-redux';
 import {RouteComponentProps} from 'react-router';
 import {Dispatch} from 'redux';
+import * as swal from 'sweetalert';
 import {IAlert} from '../../../../../../src/interfaces/alert.interface';
 import {AlertReduxAction, createAlertAction, deleteAlertAction, getAlertsAction, IAlertsState} from '../../actions/alerts.actions';
 import {loadDataAction, ModalReduxAction} from '../../actions/modal.actions';
@@ -13,9 +12,6 @@ import AppContainer from '../../container/AppContainer';
 import {statusFooterButttonsModal} from '../../utils/common';
 import ModalView from '../Modal/ModalView';
 import AlertFormView from './AlertFormView';
-// import {IWindow} from '../../interfaces/window';
-
-// declare let window: IWindow;
 
 interface IPropsType extends RouteComponentProps<{ ticket: string }> {
   alerts: IAlertsState;
@@ -101,7 +97,7 @@ class AlertViews extends React.Component<IPropsType, IStateType> {
               </div>
             </div>
             <div className="box-body no-padding">
-              <table className="table table-striped">
+              <table className="table table-andes table-striped">
                 <thead>
                   <tr>
                     <th className="middle">Nombre</th>

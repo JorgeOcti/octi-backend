@@ -2,6 +2,7 @@ const webpack = require('webpack');
 const path = require('path');
 const DashboardPlugin = require('webpack-dashboard/plugin');
 const SentryCliPlugin = require('@sentry/webpack-plugin');
+const ForkTsCheckerWebpackPlugin = require('fork-ts-checker-webpack-plugin');
 
 let plugins;
 const sourcePath = path.join(__dirname, './src');
@@ -18,24 +19,24 @@ if (process.env.NODE_ENV === 'production') {
       dryRun: true
     })
   ];
-}
-else {
+} else {
   plugins = [
     new DashboardPlugin(),
+    new ForkTsCheckerWebpackPlugin(),
     new webpack.EnvironmentPlugin(['NODE_ENV'])
   ];
 }
 
 const setDevTool = () => {
-    if (process.env.NODE_ENV === 'development') {
-        return 'inline-source-map';
-    } else if (process.env.NODE_ENV === 'production') {
-        return 'source-map';
-    }
+  if (process.env.NODE_ENV === 'development') {
+    return 'inline-source-map';
+  } else if (process.env.NODE_ENV === 'production') {
+    return 'source-map';
+  }
 };
 
 module.exports = {// entry: process.env.NODE_ENV === 'production'?['babel-polyfill', './src/app.jsx']:['./src/app.jsx'],
-  entry:  process.env.NODE_ENV === 'production'?['babel-polyfill', `${sourcePath}/app.tsx`]:[`${sourcePath}/app.tsx`],
+  entry: process.env.NODE_ENV === 'production' ? [`${sourcePath}/app.tsx`] : [`${sourcePath}/app.tsx`],
   output: {
     // filename: '[name].bundle.[hash].js',
     filename: '[name].bundle.js',
@@ -53,20 +54,23 @@ module.exports = {// entry: process.env.NODE_ENV === 'production'?['babel-polyfi
         exclude: /node_modules/,
         use: {
           loader: 'babel-loader'
-        }
+        },
       },
       {
         test: /\.(ts|tsx)$/,
         exclude: /node_modules/,
-        use: process.env.NODE_ENV === 'production'?[{
+        use: process.env.NODE_ENV === 'production' ? [{
           loader: 'babel-loader'
         }, {
-          loader: 'awesome-typescript-loader'
-        }]:{
-          loader: 'awesome-typescript-loader'
-        }
-      }
-    ]
+          loader: 'ts-loader'
+        }] : {
+          loader: 'ts-loader',
+          options: {
+            transpileOnly: true,
+          },
+        },
+      },
+    ],
   },
   plugins: plugins,
   resolve: {
@@ -79,9 +83,7 @@ module.exports = {// entry: process.env.NODE_ENV === 'production'?['babel-polyfi
     'react-dom': 'ReactDOM',
     'echarts': 'echarts',
     'xlsx': 'XLSX',
-    sweetalert: {
-      root: 'swal'
-    },
+    sweetalert: 'swal',
     moment: 'moment'
   },
   devtool: setDevTool(),

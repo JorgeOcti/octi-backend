@@ -1,4 +1,3 @@
-///<reference path="../../../node_modules/sweetalert/typings/sweetalert.d.ts"/>
 import {AxiosError} from 'axios';
 import * as Raven from 'raven-js';
 import * as React from 'react';
@@ -6,6 +5,7 @@ import {ErrorInfo, RefObject} from 'react';
 import {connect} from 'react-redux';
 import {RouteComponentProps} from 'react-router';
 import {Dispatch} from 'redux';
+import * as swal from 'sweetalert';
 import * as uuid from 'uuid';
 import * as XLSX from 'xlsx';
 import {IUsersState, UserReduxAction} from '../../actions/users.actions';

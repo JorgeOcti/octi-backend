@@ -1,6 +1,6 @@
-///<reference path="../../node_modules/sweetalert/typings/sweetalert.d.ts"/>
 import {AxiosError, AxiosResponse, CancelTokenSource, default as Axios} from 'axios';
 import {Dispatch} from 'redux';
+import * as swal from 'sweetalert';
 import {ICompany} from '../../../../../src/interfaces/company.interface';
 import {IForm} from '../../../../../src/interfaces/form.interface';
 import {IPermission} from '../../../../../src/interfaces/permision.interface';

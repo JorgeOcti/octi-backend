@@ -1,4 +1,3 @@
-///<reference path="../../node_modules/sweetalert/typings/sweetalert.d.ts"/>
 import Axios, {
   AxiosError,
   AxiosInstance,
@@ -7,6 +6,7 @@ import Axios, {
   CancelTokenStatic
 } from 'axios';
 import * as Raven from 'raven-js';
+import * as swal from 'sweetalert';
 import {
   IBaseCompany
 } from '../../../../../src/interfaces/company.interface';
@@ -14,9 +14,6 @@ import {
   IBaseVenue
 } from '../../../../../src/interfaces/venue.interface';
 import {ITempUser} from '../actions/users.actions';
-// import {IWindow} from '../interfaces/window';
-
-// declare let window: IWindow;
 
 export interface IHeaders {
   'X-CSRFToken'?: string;

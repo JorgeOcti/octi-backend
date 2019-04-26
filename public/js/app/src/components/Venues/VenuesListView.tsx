@@ -1,4 +1,3 @@
-///<reference path="../../../node_modules/sweetalert/typings/sweetalert.d.ts"/>
 import * as moment from 'moment';
 import * as Raven from 'raven-js';
 import * as React from 'react';
@@ -6,6 +5,7 @@ import {ErrorInfo} from 'react';
 import {connect} from 'react-redux';
 import {RouteComponentProps} from 'react-router';
 import {Dispatch} from 'redux';
+import * as swal from 'sweetalert';
 import {IBaseVenue, IVenue} from '../../../../../../src/interfaces/venue.interface';
 import {loadDataAction, ModalReduxAction} from '../../actions/modal.actions';
 import {
@@ -112,7 +112,7 @@ class VenuesListView extends React.Component<IPropsType, IStateType> {
               }
             </div>
             <div className="box-body table-responsive no-padding">
-              <table className="table table-striped">
+              <table className="table table-andes table-striped">
                 <thead>
                   <tr>
                     <th style={{width: '60%'}} className="middle">Nombre</th>

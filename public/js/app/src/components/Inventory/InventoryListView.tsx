@@ -1,4 +1,3 @@
-///<reference path="../../../node_modules/sweetalert/typings/sweetalert.d.ts"/>
 import * as moment from 'moment';
 import * as Raven from 'raven-js';
 import * as React from 'react';
@@ -7,6 +6,7 @@ import {connect} from 'react-redux';
 import {RouteComponentProps} from 'react-router';
 import {Dispatch} from 'redux';
 import * as io from 'socket.io-client';
+import * as swal from 'sweetalert';
 import {
   deleteInventoryAction,
   finishInventoryAction,

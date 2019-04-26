@@ -1,13 +1,12 @@
-///<reference path="../../../node_modules/sweetalert/typings/sweetalert.d.ts"/>
 import {AxiosError, default as Axios} from 'axios';
 import * as moment from 'moment';
-// import * as PropTypes from 'prop-types';
 import * as Raven from 'raven-js';
 import * as React from 'react';
 import {ErrorInfo} from 'react';
 import {connect} from 'react-redux';
 import {RouteComponentProps} from 'react-router';
 import {Dispatch} from 'redux';
+import * as swal from 'sweetalert';
 import {debounce} from 'throttle-debounce';
 import {IUser} from '../../../../../../src/interfaces/user.interface';
 import {loadDataAction, ModalReduxAction} from '../../actions/modal.actions';
@@ -215,7 +214,7 @@ class UserListView extends React.Component<IPropsType, IStateType> {
                   </div>
                 </div>
               </div>
-              <table className="table table-striped">
+              <table className="table table-andes table-striped">
                 <thead>
                   <tr>
                     <th style={{width: '33%'}}>Usuario</th>
@@ -463,7 +462,7 @@ class UserListView extends React.Component<IPropsType, IStateType> {
           text: 'Sí'
         }
       }
-    }).then((willDelete) => {
+    }).then((willDelete: any) => {
       if (willDelete) {
         this.props.deleteUserAction(user._id);
       }

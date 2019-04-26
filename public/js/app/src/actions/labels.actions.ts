@@ -1,5 +1,6 @@
 import {AxiosError, AxiosResponse, CancelTokenSource, default as Axios} from 'axios';
 import {Dispatch} from 'redux';
+import * as swal from 'sweetalert';
 import {
   IInventoryLabel
 } from '../../../../../src/interfaces/inventoryLabel.interface';

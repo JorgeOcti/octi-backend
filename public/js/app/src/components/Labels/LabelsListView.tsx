@@ -1,9 +1,10 @@
 import * as Raven from 'raven-js';
-import {ErrorInfo} from 'react';
 import * as React from 'react';
+import {ErrorInfo} from 'react';
 import {connect} from 'react-redux';
 import {RouteComponentProps} from 'react-router';
 import {Dispatch} from 'redux';
+import * as swal from 'sweetalert';
 import {IInventoryLabel} from '../../../../../../src/interfaces/inventoryLabel.interface';
 import {
   changeLabelAction,
@@ -125,7 +126,7 @@ class LabelsListView extends React.Component<IPropsType, IStateType> {
               </div>
             </div>
             <div className="box-body no-padding">
-              <table className="table table-striped">
+              <table className="table  table-andes table-striped">
                 <thead>
                   <tr>
                     <th className="middle">Nombre</th>
@@ -265,7 +266,7 @@ class LabelsListView extends React.Component<IPropsType, IStateType> {
           text: 'Sí'
         }
       }
-    }).then((willDelete) => {
+    }).then((willDelete: any) => {
       if (willDelete) {
         this.props.deleteLabelAction(label._id);
       }

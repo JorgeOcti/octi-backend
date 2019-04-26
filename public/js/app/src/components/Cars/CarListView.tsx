@@ -1,4 +1,3 @@
-///<reference path="../../../node_modules/sweetalert/typings/sweetalert.d.ts"/>
 import * as moment from 'moment';
 import * as Raven from 'raven-js';
 import {ErrorInfo} from 'react';
@@ -107,7 +106,7 @@ class CarListView extends React.Component<IPropsType, IStateType> {
                   </div>
                 </div>
               </div>
-              <table className="table table-striped">
+              <table className="table table-andes table-striped">
                 <thead>
                   <tr>
                     <th style={{width: '20%'}}>VIN</th>

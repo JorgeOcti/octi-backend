@@ -167,7 +167,7 @@ class DashboardVinView extends React.Component<IPropsType, IStateType> {
               </div>
               {
                 cars.length ?
-                  <table className="table table-striped">
+                  <table className="table table-andes table-striped">
                     <thead>
                     <tr>
                       <th style={{width: '20%'}} className="middle">VIN</th>

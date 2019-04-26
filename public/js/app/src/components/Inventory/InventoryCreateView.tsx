@@ -1,5 +1,3 @@
-// <reference path="../../../node_modules/sweetalert/typings/sweetalert.d.ts"/>
-// import * as PropTypes from 'prop-types';
 import * as moment from 'moment';
 import * as Raven from 'raven-js';
 import {ErrorInfo} from 'react';
@@ -8,6 +6,7 @@ import {RefObject} from 'react';
 import {connect} from 'react-redux';
 import {RouteComponentProps} from 'react-router';
 import {Dispatch} from 'redux';
+import * as swal from 'sweetalert';
 import * as XLSX from 'xlsx';
 import {AlertReduxAction, IAlertsState} from '../../actions/alerts.actions';
 import {loadDataAction, ModalReduxAction} from '../../actions/modal.actions';

@@ -1,5 +1,6 @@
 import {AxiosError, AxiosResponse, CancelTokenSource} from 'axios';
 import {Dispatch} from 'redux';
+import * as swal from 'sweetalert';
 import {IAlert} from '../../../../../src/interfaces/alert.interface';
 import {IUser} from '../../../../../src/interfaces/user.interface';
 import ApiService from '../utils/axios';

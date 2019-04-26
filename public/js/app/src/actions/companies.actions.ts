@@ -1,5 +1,6 @@
 import {AxiosError, AxiosResponse, CancelTokenSource, default as Axios} from 'axios';
 import {Dispatch} from 'redux';
+import * as swal from 'sweetalert';
 import {IBaseCompany, ICompany} from '../../../../../src/interfaces/company.interface';
 import ApiService from '../utils/axios';
 import {showModal, statusFooterButttonsModal} from '../utils/common';

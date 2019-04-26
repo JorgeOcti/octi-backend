@@ -2,6 +2,7 @@
     "compilerOptions": {
         "outDir": "dist/",
         "sourceMap": true,
+        "incremental": true,
         "noImplicitReturns": true,
         "noImplicitThis": true,
         "noImplicitAny": true,

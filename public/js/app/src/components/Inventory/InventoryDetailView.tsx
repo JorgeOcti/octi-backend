@@ -1,4 +1,3 @@
-///<reference path="../../../node_modules/sweetalert/typings/sweetalert.d.ts"/>
 ///<reference path="../../../src/types/react-bootstrap-table-next.d.ts"/>
 ///<reference path="../../../src/types/react-bootstrap-table2-filter.d.ts"/>
 ///<reference path="../../../src/types/react-bootstrap-table2-paginator.d.ts"/>
@@ -15,6 +14,7 @@ import {RouteComponentProps} from 'react-router';
 import {RouterState} from 'react-router-redux';
 import {Dispatch} from 'redux';
 import * as io from 'socket.io-client';
+import * as swal from 'sweetalert';
 import * as XLSX from 'xlsx';
 import {IInventoryCar} from '../../../../../../src/interfaces/inventory.interface';
 import {IInventoryLabel} from '../../../../../../src/interfaces/inventoryLabel.interface';
@@ -379,6 +379,8 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
     Raven.captureException(error, {
       extra: errorInfo
     });
+    console.log('error', error);
+    console.log('errorInfo', JSON.stringify(errorInfo));
   }
 
   public componentDidMount(): void {
