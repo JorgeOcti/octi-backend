@@ -107,12 +107,16 @@ export interface IParticipant {
   shippingText: string;
   shippingImages: IParticipantFile[];
   shippingConfirmation: boolean;
+  shippingVenue: boolean;
+  shippingVenueText: string;
   sendTo: IVenueModel;
 
   reception: boolean;
   receptionText: string;
   receptionImages: IParticipantFile[];
   receptionConfirmation: boolean;
+  receptionVenue: boolean;
+  receptionVenueText: string;
   receiveFrom: IVenueModel;
 
   conciliation: boolean;

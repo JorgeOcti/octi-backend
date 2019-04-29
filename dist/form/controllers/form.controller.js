@@ -6,7 +6,6 @@ const GraphicsMagick = require("gm");
 const HtmlPdf = require("html-pdf");
 const moment = require("moment-timezone");
 const path = require("path");
-// import * as puppeteer from 'puppeteer';
 const QRCode = require("qrcode");
 const Raven = require("raven");
 const app_1 = require("../../app");
@@ -22,6 +21,7 @@ const form_model_1 = require("../models/form.model");
 const participant_model_1 = require("../models/participant.model");
 const participantFile_model_1 = require("../models/participantFile.model");
 const scale_model_1 = require("../models/scale.model");
+// import * as puppeteer from 'puppeteer';
 class FormController {
     constructor() {
         this.list = this.list.bind(this);
@@ -244,7 +244,22 @@ class FormController {
                     message: 'No tienes permisos para esta operación'
                 });
             }
-            const form = await this.getForm({ _id: id, team });
+            const user = await user_model_1.default.findById(req.user._id, {
+                venue: true
+            }).populate([{
+                    path: 'venue',
+                    populate: [{
+                            path: 'sendTo',
+                            select: ['_id', 'name']
+                        }, {
+                            path: 'receiveFrom',
+                            select: ['_id', 'name']
+                        }]
+                }]);
+            const form = await this.getForm({
+                _id: id,
+                team
+            });
             // generate array of scale ids
             const scalesIds = [];
             form.sections.forEach((section) => {
@@ -259,7 +274,7 @@ class FormController {
                 accessories: []
             };
             const extraSection = {
-                _id: '',
+                _id: 'extraSection',
                 name: '',
                 questions: [],
                 weight: 0,
@@ -267,6 +282,22 @@ class FormController {
             };
             const extraScales = [];
             const response = {};
+            if (form.shippingVenue) {
+                extraSection.questions.push({
+                    _id: 'shippingVenue',
+                    question: form.shippingVenueText,
+                    scale: null,
+                    conciliation: false,
+                    risk: '',
+                    observe: '',
+                    accessories: null,
+                    damages: null,
+                    venues: user.venue.sendTo,
+                    weight: 0,
+                    kind: form_model_1.KindQuestion.venue,
+                    order: extraSection.questions.length + 1
+                });
+            }
             if (form.shipping) {
                 extraSection.questions.push({
                     _id: 'shipping',
@@ -278,7 +309,7 @@ class FormController {
                     accessories: null,
                     weight: 0,
                     kind: form_model_1.KindQuestion.scale,
-                    order: 1000
+                    order: extraSection.questions.length + 1
                 });
                 extraScales.push({
                     _id: 'shipping',
@@ -308,6 +339,22 @@ class FormController {
                     ]
                 });
             }
+            if (form.receptionVenue) {
+                extraSection.questions.push({
+                    _id: 'receptionVenue',
+                    question: form.receptionVenueText,
+                    scale: null,
+                    conciliation: false,
+                    risk: '',
+                    observe: '',
+                    accessories: null,
+                    damages: null,
+                    venues: user.venue.receiveFrom,
+                    weight: 0,
+                    kind: form_model_1.KindQuestion.venue,
+                    order: extraSection.questions.length + 1
+                });
+            }
             if (form.reception) {
                 extraSection.questions.push({
                     _id: 'reception',
@@ -319,7 +366,7 @@ class FormController {
                     accessories: null,
                     weight: 0,
                     kind: form_model_1.KindQuestion.scale,
-                    order: 1000
+                    order: extraSection.questions.length + 1
                 });
                 extraScales.push({
                     _id: 'reception',
@@ -360,7 +407,7 @@ class FormController {
                     accessories: null,
                     weight: 0,
                     kind: form_model_1.KindQuestion.scale,
-                    order: 1000
+                    order: extraSection.questions.length + 1
                 });
                 extraScales.push({
                     _id: 'conciliation',
@@ -482,23 +529,35 @@ class FormController {
                     if (form.reception) {
                         participantObject.reception = form.reception;
                         participantObject.receptionText = form.receptionText;
+                        participantObject.receptionVenue = form.receptionVenue;
+                        participantObject.receptionVenueText = form.receptionVenueText;
                         if ('reception' in answers) {
-                            const reception = answers.reception;
+                            const { reception } = answers;
                             participantObject.receptionConfirmation = [true, 'true'].includes(reception.value);
                             if (reception.images) {
                                 participantObject.receptionImages = reception.images.map((image) => (new bson_1.ObjectID(image)));
                             }
                         }
+                        if ('receptionVenue' in answers) {
+                            const { receptionVenue } = answers;
+                            participantObject.receiveFrom = receptionVenue.value;
+                        }
                     }
                     if (form.shipping) {
                         participantObject.shipping = form.shipping;
                         participantObject.shippingText = form.shippingText;
+                        participantObject.shippingVenue = form.shippingVenue;
+                        participantObject.shippingVenueText = form.shippingVenueText;
                         if ('shipping' in answers) {
-                            const shipping = answers.shipping;
+                            const { shipping } = answers;
                             participantObject.shippingConfirmation = [true, 'true'].includes(shipping.value);
                             if (shipping.images) {
                                 participantObject.shippingImages = shipping.images.map((image) => (new bson_1.ObjectID(image)));
                             }
+                        }
+                        if ('shippingVenue' in answers) {
+                            const { shippingVenue } = answers;
+                            participantObject.sendTo = shippingVenue.value;
                         }
                     }
                     if (form.conciliation && 'conciliation' in answers) {

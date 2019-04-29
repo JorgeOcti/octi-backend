@@ -251,6 +251,12 @@ const participantSchema = new mongoose.Schema({
     shippingConfirmation: {
         type: Boolean
     },
+    shippingVenue: {
+        type: Boolean
+    },
+    shippingVenueText: {
+        type: String
+    },
     sendTo: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Venue'
@@ -269,6 +275,12 @@ const participantSchema = new mongoose.Schema({
         }],
     receptionConfirmation: {
         type: Boolean
+    },
+    receptionVenue: {
+        type: Boolean
+    },
+    receptionVenueText: {
+        type: String
     },
     receiveFrom: {
         type: mongoose.Schema.Types.ObjectId,

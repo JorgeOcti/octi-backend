@@ -26,6 +26,7 @@ export enum KindQuestion {
   scale = 'scale',
   accessory = 'accessory',
   text = 'text',
+  venue = 'venue',
   damage = 'damage'
 }
 
@@ -33,7 +34,8 @@ export const kindQuestion = [
   KindQuestion.scale,
   KindQuestion.text,
   KindQuestion.accessory,
-  KindQuestion.damage
+  KindQuestion.damage,
+  KindQuestion.venue
 ];
 
 export interface IFormQuestionModel extends IFormQuestion, mongoose.Types.Subdocument {}
@@ -138,6 +140,7 @@ const formSchema = new mongoose.Schema({
     trim: true
   },
 
+    // if shipping form
   shipping: {
     type: Boolean,
     default: false
@@ -150,7 +153,18 @@ const formSchema = new mongoose.Schema({
     type: Boolean,
     default: false
   },
+  // mark if require venue
+  shippingVenue: {
+    type: Boolean,
+    default: false
+  },
+  // text if require venue
+  shippingVenueText: {
+    type: String,
+    default: ''
+  },
 
+  // if reception form
   reception: {
     type: Boolean,
     default: false
@@ -162,6 +176,16 @@ const formSchema = new mongoose.Schema({
   receptionImage: {
     type: Boolean,
     default: false
+  },
+  // mark if require venue
+  receptionVenue: {
+    type: Boolean,
+    default: false
+  },
+  // text if require venue
+  receptionVenueText: {
+    type: String,
+    default: ''
   },
 
   conciliation: {

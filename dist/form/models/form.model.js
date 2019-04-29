@@ -22,13 +22,15 @@ var KindQuestion;
     KindQuestion["scale"] = "scale";
     KindQuestion["accessory"] = "accessory";
     KindQuestion["text"] = "text";
+    KindQuestion["venue"] = "venue";
     KindQuestion["damage"] = "damage";
 })(KindQuestion = exports.KindQuestion || (exports.KindQuestion = {}));
 exports.kindQuestion = [
     KindQuestion.scale,
     KindQuestion.text,
     KindQuestion.accessory,
-    KindQuestion.damage
+    KindQuestion.damage,
+    KindQuestion.venue
 ];
 const formQuestionsSchema = new mongoose.Schema({
     question: {
@@ -118,6 +120,7 @@ const formSchema = new mongoose.Schema({
         type: String,
         trim: true
     },
+    // if shipping form
     shipping: {
         type: Boolean,
         default: false
@@ -130,6 +133,17 @@ const formSchema = new mongoose.Schema({
         type: Boolean,
         default: false
     },
+    // mark if require venue
+    shippingVenue: {
+        type: Boolean,
+        default: false
+    },
+    // text if require venue
+    shippingVenueText: {
+        type: String,
+        default: ''
+    },
+    // if reception form
     reception: {
         type: Boolean,
         default: false
@@ -141,6 +155,16 @@ const formSchema = new mongoose.Schema({
     receptionImage: {
         type: Boolean,
         default: false
+    },
+    // mark if require venue
+    receptionVenue: {
+        type: Boolean,
+        default: false
+    },
+    // text if require venue
+    receptionVenueText: {
+        type: String,
+        default: ''
     },
     conciliation: {
         type: Boolean,

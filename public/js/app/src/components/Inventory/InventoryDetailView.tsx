@@ -667,7 +667,6 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
               </div>
             </div>
           </Row>
-          {/*<Row>*/}
           <Row style={{display: tab === 'summary' ? 'block' : 'none'}}>
             <div className="col-md-4 col-lg-4 pointer" onClick={() => this.sendToDetailFilteredByState('found')}>
               <div className="info-box bg-green">
