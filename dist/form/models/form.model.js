@@ -130,10 +130,6 @@ const formSchema = new mongoose.Schema({
         type: Boolean,
         default: false
     },
-    shippingVenue: {
-        type: Boolean,
-        default: false
-    },
     reception: {
         type: Boolean,
         default: false

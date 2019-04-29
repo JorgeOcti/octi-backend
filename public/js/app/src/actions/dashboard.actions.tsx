@@ -212,7 +212,7 @@ export function getParticipant(id: string) {
                     <td style={{width: '40%'}}>
                       <strong>Recepcionado</strong>
                     </td>
-                    <td>{data.reception ? <i className="fa fa-check text-success" /> : <i className="fa fa-close text-danger" />}</td>
+                    <td>{data.receptionConfirmation ? <i className="fa fa-check text-success" /> : <i className="fa fa-close text-danger" />}</td>
                   </tr> : null
               }
               {

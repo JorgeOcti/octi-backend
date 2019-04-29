@@ -61,7 +61,6 @@ export interface IForm {
   shipping: boolean;
   shippingText: string;
   shippingImage: boolean;
-  shippingVenue: boolean;
 
   reception: boolean;
   receptionText: string;

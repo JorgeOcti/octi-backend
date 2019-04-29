@@ -112,6 +112,7 @@ describe('formularies', () => {
                         'conciliation',
                         'observe',
                         'weight',
+                        'kind',
                         'order'
                     ]);
                 }
@@ -134,7 +135,6 @@ describe('formularies', () => {
                 'backgroundColor',
                 'requireAccesories',
                 'requireComment',
-                'requireVenue',
                 'requireConciliation',
                 'value',
                 'order'

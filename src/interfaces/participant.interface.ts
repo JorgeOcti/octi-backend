@@ -21,7 +21,6 @@ export interface IParticipantChoices {
   value: number;
   backgroundColor: string;
   requireImage: boolean;
-  requireVenue: boolean;
   requireComment: boolean;
   requireAccesories: boolean;
   requireConciliation: boolean;
@@ -96,8 +95,6 @@ export interface IParticipant {
 
   user: IUserModel;
   venue: IVenueModel;
-  sendTo: IVenueModel;
-  receiveFrom: IVenueModel;
   car: ICarModel;
 
   description: string;
@@ -109,10 +106,15 @@ export interface IParticipant {
   shipping: boolean;
   shippingText: string;
   shippingImages: IParticipantFile[];
-  shippingVenue: boolean;
-  receptionText: string;
+  shippingConfirmation: boolean;
+  sendTo: IVenueModel;
+
   reception: boolean;
+  receptionText: string;
   receptionImages: IParticipantFile[];
+  receptionConfirmation: boolean;
+  receiveFrom: IVenueModel;
+
   conciliation: boolean;
   conciliationText: string;
   conciliationImages: IParticipantFile[];

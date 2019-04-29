@@ -14,7 +14,6 @@ const alert_model_1 = require("../../app/models/alert.model");
 const car_model_1 = require("../../app/models/car.model");
 const user_model_1 = require("../../app/models/user.model");
 const user_model_2 = require("../../app/models/user.model");
-const venue_model_1 = require("../../app/models/venue.model");
 const server_1 = require("../../server");
 const logger_service_1 = require("../../services/logger.service");
 const redis_service_1 = require("../../services/redis.service");
@@ -267,7 +266,7 @@ class FormController {
                 order: form.sections.length + 1
             };
             const extraScales = [];
-            let response = {};
+            const response = {};
             if (form.shipping) {
                 extraSection.questions.push({
                     _id: 'shipping',
@@ -290,7 +289,6 @@ class FormController {
                             choice: 'No',
                             backgroundColor: 'red',
                             requireImage: form.shippingImage,
-                            requireVenue: false,
                             requireComment: false,
                             requireAccesories: false,
                             requireConciliation: false,
@@ -300,7 +298,6 @@ class FormController {
                             _id: 'true',
                             choice: 'Si',
                             backgroundColor: 'green',
-                            requireVenue: form.shippingVenue,
                             requireImage: false,
                             requireComment: false,
                             requireAccesories: false,
@@ -310,12 +307,6 @@ class FormController {
                         }
                     ]
                 });
-                if (form.shippingVenue) {
-                    response = {
-                        ...response,
-                        venues: await venue_model_1.default.find({ team, active: true, deleted: false }, { name: true })
-                    };
-                }
             }
             if (form.reception) {
                 extraSection.questions.push({
@@ -339,7 +330,6 @@ class FormController {
                             choice: 'No',
                             backgroundColor: 'red',
                             requireImage: form.receptionImage,
-                            requireVenue: false,
                             requireComment: false,
                             requireAccesories: false,
                             requireConciliation: false,
@@ -350,7 +340,6 @@ class FormController {
                             choice: 'Si',
                             backgroundColor: 'green',
                             requireImage: false,
-                            requireVenue: false,
                             requireComment: false,
                             requireAccesories: false,
                             requireConciliation: false,
@@ -382,7 +371,6 @@ class FormController {
                             choice: 'No',
                             backgroundColor: 'red',
                             requireImage: false,
-                            requireVenue: false,
                             requireComment: false,
                             requireAccesories: false,
                             requireConciliation: false,
@@ -393,7 +381,6 @@ class FormController {
                             choice: 'Si',
                             backgroundColor: 'green',
                             requireImage: form.conciliationImage,
-                            requireVenue: false,
                             requireComment: false,
                             requireAccesories: false,
                             requireConciliation: false,
@@ -492,23 +479,28 @@ class FormController {
                         venue,
                         active: form.active
                     };
-                    if (form.reception && 'reception' in answers) {
-                        const reception = answers.reception;
-                        participantObject.reception = [true, 'true'].includes(reception.value);
+                    if (form.reception) {
+                        participantObject.reception = form.reception;
                         participantObject.receptionText = form.receptionText;
-                        if (reception.images) {
-                            participantObject.receptionImages = reception.images.map((image) => (new bson_1.ObjectID(image)));
+                        if ('reception' in answers) {
+                            const reception = answers.reception;
+                            participantObject.receptionConfirmation = [true, 'true'].includes(reception.value);
+                            if (reception.images) {
+                                participantObject.receptionImages = reception.images.map((image) => (new bson_1.ObjectID(image)));
+                            }
                         }
                     }
-                    if (form.shipping && 'shipping' in answers) {
-                        const shipping = answers.shipping;
-                        participantObject.shipping = [true, 'true'].includes(shipping.value);
+                    if (form.shipping) {
+                        participantObject.shipping = form.shipping;
                         participantObject.shippingText = form.shippingText;
-                        if (shipping.images) {
-                            participantObject.shippingImages = shipping.images.map((image) => (new bson_1.ObjectID(image)));
+                        if ('shipping' in answers) {
+                            const shipping = answers.shipping;
+                            participantObject.shippingConfirmation = [true, 'true'].includes(shipping.value);
+                            if (shipping.images) {
+                                participantObject.shippingImages = shipping.images.map((image) => (new bson_1.ObjectID(image)));
+                            }
                         }
                     }
-                    participantObject.shippingVenue = form.shippingVenue;
                     if (form.conciliation && 'conciliation' in answers) {
                         const conciliation = answers.conciliation;
                         participantObject.conciliation = [true, 'true'].includes(conciliation.value);

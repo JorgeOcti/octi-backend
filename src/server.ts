@@ -1,5 +1,4 @@
 import * as bluebird from 'bluebird';
-// import * as cp from 'console-probe';
 import * as jwt from 'jsonwebtoken';
 import * as mongoose from 'mongoose';
 import * as socketIO from 'socket.io';

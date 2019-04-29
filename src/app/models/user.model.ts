@@ -128,7 +128,9 @@ userSchema.methods.generateToken = function() {
     company: this.company,
     venue: this.venue
   };
-  return jwt.sign(userInfo, process.env.SECRET_KEY || 'secretKey', {expiresIn: '7 days'});
+  return jwt.sign(userInfo, process.env.SECRET_KEY || 'secretKey', {
+    expiresIn: '7 days'
+  });
 };
 
 userSchema.methods.venuesPermissions = function(inString?: boolean) {
@@ -160,7 +162,9 @@ userSchema.pre('save', function(this: IUserModel, next) {
   bcrypt.genSalt(10, (err, salt) => {
     if (err) { return next(err); }
     bcrypt.hash(user.password, salt, (err: mongoose.Error, hash) => {
-      if (err) { return next(err); }
+      if (err) {
+        return next(err);
+      }
       user.password = hash;
       next();
     });
