@@ -7,6 +7,7 @@ const fs = require("fs");
 const GraphicsMagick = require("gm");
 const https = require("https");
 const mongoose = require("mongoose");
+const moment = require("moment");
 const app_1 = require("../../app");
 const car_model_1 = require("../../app/models/car.model");
 const car_model_2 = require("../../app/models/car.model");
@@ -42,6 +43,7 @@ class InventoryController {
         this.addComment = this.addComment.bind(this);
         this.downloadFile = this.downloadFile.bind(this);
         this.downloadImages = this.downloadImages.bind(this);
+        this.dashboard = this.dashboard.bind(this);
     }
     async index(req, res) {
         try {
@@ -1568,6 +1570,84 @@ class InventoryController {
                 }
             });
         });
+    }
+    async dashboard(req, res) {
+        const { team } = req.user;
+        const venuesPermissions = req.user.venuesPermissions();
+        const venues = req.body.venues;
+        console.log("venues", req.body.venues);
+        try {
+            // summary
+            const inventory = await inventory_model_2.default.aggregate([
+                {
+                    $match: { team },
+                }, {
+                    $lookup: {
+                        from: 'inventorycars',
+                        localField: '_id',
+                        foreignField: 'inventory',
+                        as: 'cars'
+                    }
+                }, {
+                    $unwind: '$cars'
+                }, {
+                    $match: {
+                        $and: [{
+                                'cars.venue': {
+                                    $in: venuesPermissions.map((v) => mongoose.Types.ObjectId(v))
+                                }
+                            }, {
+                                'cars.venue': {
+                                    $in: venues.map((v) => mongoose.Types.ObjectId(v))
+                                }
+                            }]
+                    }
+                },
+                {
+                    $group: {
+                        _id: {
+                            category: '$_id',
+                            status: '$status',
+                            carStatus: '$cars.status',
+                            month: { $dateToString: { format: "%Y-%m", date: "$createdAt" } }
+                        },
+                        total: {
+                            $sum: 1
+                        }
+                    }
+                }
+            ]);
+            var data = {};
+            const total = 6;
+            let months = [];
+            for (let i = 0; i < total; i++) {
+                let month = moment().subtract(total - 1 - i, 'months').format("YYYY-MM");
+                months.push(month);
+                data[month] = {};
+                data[month][inventoryCar_model_1.ChoicesStatusCarInventory.found] = 0;
+                data[month][inventoryCar_model_1.ChoicesStatusCarInventory.leftover] = 0;
+                data[month][inventoryCar_model_1.ChoicesStatusCarInventory.missing] = 0;
+                data[month][inventoryCar_model_1.ChoicesStatusCarInventory.pending] = 0;
+                data[month][inventoryCar_model_1.ChoicesStatusCarInventory.reported] = 0;
+            }
+            for (let item of inventory) {
+                data[item._id.month][item._id.carStatus] = item.total;
+            }
+            res.json(data);
+        }
+        catch (e) {
+            /* istanbul ignore next */
+            logger_service_1.default.error(`detaill: Async Error.`);
+            /* istanbul ignore next */
+            logger_service_1.default.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
+            /* istanbul ignore next */
+            logger_service_1.default.error(e);
+            /* istanbul ignore next */
+            res.status(400).json({
+                message: JSON.stringify(e),
+                status: 400
+            });
+        }
     }
     resizeImage(path) {
         // doc http://aheckmann.github.io/gm/docs.html

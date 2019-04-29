@@ -8,12 +8,14 @@ const inventoryRouter = express.Router();
 exports.inventoryRouter = inventoryRouter;
 // Inventories List
 inventoryRouter.get('/inventory/', middlewares_1.default.isLoggedIn, inventory_controller_1.default.index);
+inventoryRouter.get('/inventory/dashboard/', middlewares_1.default.isLoggedIn, inventory_controller_1.default.index);
 inventoryRouter.get('/settings/labels/', middlewares_1.default.isLoggedIn, label_controller_1.default.index);
 inventoryRouter.get('/inventory/create/', middlewares_1.default.isLoggedIn, inventory_controller_1.default.index);
 inventoryRouter.get('/inventory/:id/', middlewares_1.default.isLoggedIn, inventory_controller_1.default.detail);
 inventoryRouter.get('/inventory/:id/:tab/', middlewares_1.default.isLoggedIn, inventory_controller_1.default.detail);
 // Inventories API Web
 inventoryRouter.get('/api/inventory/', middlewares_1.default.isLoggedIn, inventory_controller_1.default.list);
+inventoryRouter.post('/api/inventory/dashboard/', middlewares_1.default.isLoggedIn, inventory_controller_1.default.dashboard);
 inventoryRouter.post('/api/inventory/', middlewares_1.default.isLoggedIn, inventory_controller_1.default.create);
 inventoryRouter.post('/api/inventory/:inventory/comment/', middlewares_1.default.isLoggedIn, inventory_controller_1.default.addComment);
 inventoryRouter.post('/api/inventory/:id/download-images/', middlewares_1.default.isJWTAuthenticated, inventory_controller_1.default.downloadImages);

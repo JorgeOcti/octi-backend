@@ -15,6 +15,7 @@ import ImportCarsView from './components/Imports/ImportCarView';
 import InventoryCreateView from './components/Inventory/InventoryCreateView';
 import InventoryDetailView from './components/Inventory/InventoryDetailView';
 import InventoryListView from './components/Inventory/InventoryListView';
+import InventoryDashboardView from './components/Inventory/InventoryDashboardView';
 import LabelsListView from './components/Labels/LabelsListView';
 import UsersListView from './components/Users/UserListView';
 import VenuesListView from './components/Venues/VenuesListView';
@@ -39,6 +40,7 @@ const App = () => (
                 <Route exact path="/cars/" component={ DashboardVinView }/>
                 <Route exact path="/cars/:id/" component={ DashboardVinDetail }/>
                 <Route exact path="/inventory/" component={ InventoryListView }/>
+                <Route exact path="/inventory/dashboard/" component={ InventoryDashboardView }/>
                 <Route exact path="/inventory/create/" component={ InventoryCreateView }/>
                 <Route exact path="/inventory/:id/" component={ InventoryDetailView }/>
                 <Route exact path="/inventory/:id/:tab/" component={ InventoryDetailView }/>

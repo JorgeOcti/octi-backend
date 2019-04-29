@@ -6,6 +6,7 @@ import * as fs from 'fs';
 import * as GraphicsMagick from 'gm';
 import * as https from 'https';
 import * as mongoose from 'mongoose';
+import * as moment from 'moment';
 import {queue} from '../../app';
 import Car, {
   ICarModel
@@ -51,6 +52,7 @@ class InventoryController {
     this.addComment = this.addComment.bind(this);
     this.downloadFile = this.downloadFile.bind(this);
     this.downloadImages = this.downloadImages.bind(this);
+    this.dashboard = this.dashboard.bind(this);
   }
 
   public async index(req: IRequest, res: Response) {
@@ -1572,6 +1574,94 @@ class InventoryController {
           }
         });
     });
+  }
+
+  public async dashboard(req: IRequest, res: Response) {
+    const {team} = req.user;
+    const venuesPermissions = req.user.venuesPermissions();
+    const venues = req.body.venues;
+
+
+      console.log("venues", req.body.venues);
+
+
+    try {
+      // summary
+      const inventory : any = await InventoryModel.aggregate([
+        {
+          $match: { team },
+        }, { 
+          $lookup: {
+            from: 'inventorycars',
+            localField: '_id',
+            foreignField: 'inventory',
+            as: 'cars'
+          }
+        }, {
+          $unwind: '$cars'
+        }, {
+          $match: {
+            $and: [{
+              'cars.venue': {
+                $in: venuesPermissions.map((v) => mongoose.Types.ObjectId(v))
+              }
+            }, {
+              'cars.venue': {
+                $in: venues.map((v) => mongoose.Types.ObjectId(v))
+              }
+            }]
+          }
+        },
+        {
+          $group: {
+            _id: {
+              category: '$_id',
+              status: '$status',
+              carStatus: '$cars.status',
+              month: { $dateToString: { format: "%Y-%m", date: "$createdAt" } }
+            },
+            total: {
+              $sum: 1
+            }
+          }
+        }
+       ]
+      );
+
+      var data : any = {};
+      const total = 6;
+      let months : string[] = [];
+      for(let i = 0; i < total; i++) {
+
+        let month = moment().subtract(total - 1 - i, 'months').format("YYYY-MM");
+        months.push(month);
+
+        data[month] = {}
+        data[month][ChoicesStatusCarInventory.found] = 0;
+        data[month][ChoicesStatusCarInventory.leftover] = 0;
+        data[month][ChoicesStatusCarInventory.missing] = 0;
+        data[month][ChoicesStatusCarInventory.pending] = 0;
+        data[month][ChoicesStatusCarInventory.reported] = 0;
+      }
+
+      for(let item of inventory) {
+        data[item._id.month][item._id.carStatus] = item.total;
+      }
+
+      res.json(data);
+    } catch (e) {
+      /* istanbul ignore next */
+      logger.error(`detaill: Async Error.`);
+      /* istanbul ignore next */
+      logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
+      /* istanbul ignore next */
+      logger.error(e);
+      /* istanbul ignore next */
+      res.status(400).json({
+        message: JSON.stringify(e),
+        status: 400
+      });
+    }
   }
 
   private resizeImage(path: string) {
