@@ -251,6 +251,15 @@ export function getParticipant(id: string) {
                   </tr> : null
               }
               {
+                data.sendTo ?
+                  <tr>
+                    <td style={{width: '40%'}}>
+                      <strong>Enviado a</strong>
+                    </td>
+                    <td>{data.sendTo.name}</td>
+                  </tr> : null
+              }
+              {
                 data.shippingText && data.shippingText.length ?
                   <tr>
                     <td style={{width: '40%'}}>
