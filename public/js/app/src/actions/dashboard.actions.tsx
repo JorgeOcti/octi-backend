@@ -242,6 +242,15 @@ export function getParticipant(id: string) {
                   </tr> : null
               }
               {
+                data.receiveFrom ?
+                  <tr>
+                    <td style={{width: '40%'}}>
+                      <strong>Recepcionado en</strong>
+                    </td>
+                    <td>{data.receiveFrom.name}</td>
+                  </tr> : null
+              }
+              {
                 data.shippingText && data.shippingText.length ?
                   <tr>
                     <td style={{width: '40%'}}>

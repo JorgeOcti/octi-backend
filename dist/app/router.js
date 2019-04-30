@@ -5,6 +5,7 @@ const express = require("express");
 const middlewares_1 = require("../middlewares/middlewares");
 const alert_admin_controller_1 = require("./controllers/admin/alert.admin.controller");
 const car_admin_controller_1 = require("./controllers/admin/car.admin.controller");
+const carrier_admin_controller_1 = require("./controllers/admin/carrier.admin.controller");
 const company_admin_controller_1 = require("./controllers/admin/company.admin.controller");
 const permission_admin_controller_1 = require("./controllers/admin/permission.admin.controller");
 const team_admin_controller_1 = require("./controllers/admin/team.admin.controller");
@@ -65,6 +66,7 @@ appRouter.get('/settings/cars/:id/', middlewares_1.default.isLoggedIn, car_admin
 appRouter.get('/api/admin/cars/', middlewares_1.default.isLoggedIn, car_admin_controller_1.default.apiListCars);
 // permissions
 appRouter.get('/api/admin/permissions/', middlewares_1.default.isLoggedIn, permission_admin_controller_1.default.apiList);
+appRouter.get('/api/admin/carriers/', middlewares_1.default.isLoggedIn, carrier_admin_controller_1.default.apiList);
 // alerts
 appRouter.get('/settings/alerts/', middlewares_1.default.isLoggedIn, alert_admin_controller_1.default.index);
 // api alerts

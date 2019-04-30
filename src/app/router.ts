@@ -3,6 +3,7 @@ import * as express from 'express';
 import Middlewares from '../middlewares/middlewares';
 import AdminAlertsController from './controllers/admin/alert.admin.controller';
 import AdminCarsController from './controllers/admin/car.admin.controller';
+import AdminCarrierController from './controllers/admin/carrier.admin.controller';
 import AdminCompaniesController from './controllers/admin/company.admin.controller';
 import AdminPermissionController from './controllers/admin/permission.admin.controller';
 import AdminTeamsController from './controllers/admin/team.admin.controller';
@@ -78,6 +79,7 @@ appRouter.get('/api/admin/cars/', Middlewares.isLoggedIn, AdminCarsController.ap
 
 // permissions
 appRouter.get('/api/admin/permissions/', Middlewares.isLoggedIn, AdminPermissionController.apiList);
+appRouter.get('/api/admin/carriers/', Middlewares.isLoggedIn, AdminCarrierController.apiList);
 
 // alerts
 appRouter.get('/settings/alerts/', Middlewares.isLoggedIn, AdminAlertsController.index);

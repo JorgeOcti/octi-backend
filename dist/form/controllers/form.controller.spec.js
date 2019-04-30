@@ -86,9 +86,7 @@ describe('formularies', () => {
                 '_id',
                 'name',
                 'description',
-                'sections',
-                'team',
-                'shippingVenue'
+                'sections'
             ]);
             expect(res.body.data.form.sections).be.a('array');
             // validate sections keys
@@ -103,18 +101,20 @@ describe('formularies', () => {
                 // validate question keys
                 expect(section.questions).be.a('array');
                 for (const question of section.questions) {
-                    expect(question).to.have.all.keys([
-                        '_id',
-                        'question',
-                        'scale',
-                        'risk',
-                        'accessories',
-                        'conciliation',
-                        'observe',
-                        'weight',
-                        'kind',
-                        'order'
-                    ]);
+                    if (question.kind === 'scale') {
+                        expect(question).to.have.all.keys([
+                            '_id',
+                            'question',
+                            'scale',
+                            'risk',
+                            'accessories',
+                            'conciliation',
+                            'observe',
+                            'weight',
+                            'kind',
+                            'order'
+                        ]);
+                    }
                 }
             }
             // validate scales keys

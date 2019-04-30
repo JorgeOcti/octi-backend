@@ -379,8 +379,6 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
     Raven.captureException(error, {
       extra: errorInfo
     });
-    console.log('error', error);
-    console.log('errorInfo', JSON.stringify(errorInfo));
   }
 
   public componentDidMount(): void {

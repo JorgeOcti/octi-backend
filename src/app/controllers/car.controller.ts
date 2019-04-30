@@ -658,10 +658,20 @@ class CarController {
           receptionImages: true,
           conciliation: true,
           conciliationText: true,
+          receiveFrom: true,
+          receptionVenueText: true,
+          sendTo: true,
+          shippingVenueText: true,
           conciliationImages: true,
           createdAt: true
         })
         .populate([{
+          path: 'receiveFrom',
+          select: ['name']
+        }, {
+          path: 'sendTo',
+          select: ['name']
+        }, {
           path: 'user',
           select: ['firstName', 'lastName']
         }, {
