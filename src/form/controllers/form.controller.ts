@@ -464,7 +464,12 @@ class FormController {
       // get scales from db
       res.json({
         data: {
-          form,
+          form: {
+            _id: form._id,
+            name: form.name,
+            description: form.description,
+            sections: form.sections,
+          },
           scales,
           extra,
           ...response
