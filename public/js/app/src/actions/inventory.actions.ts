@@ -442,4 +442,14 @@ export function actionSetLabel(inventory: string, car: string, carID: string, la
   };
 }
 
-export type InventoryReduxAction = ICancelRequest | IIsLoading | ILoadInventories | ILoadInventory | ILoadingDetailInventory | IUpdateInventoryCar | IAddComment | IDetailChangeFilter| IDetailInventorySelected | IFetchingDetailInventory;
+export type InventoryReduxAction =
+  ICancelRequest |
+  IIsLoading |
+  ILoadInventories |
+  ILoadInventory |
+  ILoadingDetailInventory |
+  IUpdateInventoryCar |
+  IAddComment |
+  IDetailChangeFilter |
+  IDetailInventorySelected |
+  IFetchingDetailInventory;

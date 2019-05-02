@@ -8,6 +8,7 @@ const car_admin_controller_1 = require("./controllers/admin/car.admin.controller
 const carrier_admin_controller_1 = require("./controllers/admin/carrier.admin.controller");
 const company_admin_controller_1 = require("./controllers/admin/company.admin.controller");
 const permission_admin_controller_1 = require("./controllers/admin/permission.admin.controller");
+const region_admin_controller_1 = require("./controllers/admin/region.admin.controller");
 const team_admin_controller_1 = require("./controllers/admin/team.admin.controller");
 const user_admin_controller_1 = require("./controllers/admin/user.admin.controller");
 const venue_admin_controller_1 = require("./controllers/admin/venue.admin.controller");
@@ -67,6 +68,7 @@ appRouter.get('/api/admin/cars/', middlewares_1.default.isLoggedIn, car_admin_co
 // permissions
 appRouter.get('/api/admin/permissions/', middlewares_1.default.isLoggedIn, permission_admin_controller_1.default.apiList);
 appRouter.get('/api/admin/carriers/', middlewares_1.default.isLoggedIn, carrier_admin_controller_1.default.apiList);
+appRouter.get('/api/admin/regions/', middlewares_1.default.isLoggedIn, region_admin_controller_1.default.apiList);
 // alerts
 appRouter.get('/settings/alerts/', middlewares_1.default.isLoggedIn, alert_admin_controller_1.default.index);
 // api alerts

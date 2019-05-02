@@ -274,4 +274,12 @@ export function deleteLabelAction(id: string) {
   };
 }
 
-export type LabelsReduxAction = ICancelRequest | IIsLoading | IChangePage | ILoadLabels | IChangeTempLabel | IChangeLabel | IDeleteLabel | ICreateLabel;
+export type LabelsReduxAction =
+  ICancelRequest |
+  IIsLoading |
+  IChangePage |
+  ILoadLabels |
+  IChangeTempLabel |
+  IChangeLabel |
+  IDeleteLabel |
+  ICreateLabel;

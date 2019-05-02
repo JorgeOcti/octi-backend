@@ -155,6 +155,18 @@ export default class ApiService {
     );
   }
 
+  public getCarriers(page: number, pageSize?: number): AxiosPromise {
+    return this.instance.get(
+      `/api/admin/carriers/?page=${page}${pageSize ? `&pageSize=${pageSize}` : ''}`
+    );
+  }
+
+  public getRegions(page: number, pageSize?: number): AxiosPromise {
+    return this.instance.get(
+      `/api/admin/regions/?page=${page}${pageSize ? `&pageSize=${pageSize}` : ''}`
+    );
+  }
+
   public getPermissions(page: number, pageSize?: number): AxiosPromise {
     return this.instance.get(
       `/api/admin/permissions/?page=${page}${pageSize ? `&pageSize=${pageSize}` : ''}`

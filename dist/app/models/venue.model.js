@@ -24,6 +24,10 @@ const venueSchema = new mongoose.Schema({
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Company'
     },
+    region: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Region'
+    },
     type: {
         type: String,
         enum: exports.choicesStatusCarInventory,
@@ -40,6 +44,20 @@ const venueSchema = new mongoose.Schema({
         type: [{
                 type: mongoose.Schema.Types.ObjectId,
                 ref: 'Venue'
+            }],
+        default: []
+    },
+    receptionCarriers: {
+        type: [{
+                type: mongoose.Schema.Types.ObjectId,
+                ref: 'Carrier'
+            }],
+        default: []
+    },
+    shippingCarriers: {
+        type: [{
+                type: mongoose.Schema.Types.ObjectId,
+                ref: 'Carrier'
             }],
         default: []
     },

@@ -209,18 +209,18 @@ class VenuesListView extends React.Component<IPropsType, IStateType> {
       name: '',
       type: 'receiver',
       sendTo: [],
-      receiveFrom: []
+      receiveFrom: [],
+    shippingCarriers: [],
+    receptionCarriers: []
     });
-    setTimeout(() => {
-      this.props.loadDataAction(
-        'Agregar Sucursal',
-        <VenueFormView/>,
-        <React.Fragment>
-          <button type="button" className="btn btn-sm btn-default" data-dismiss="modal">Cancelar</button>
-          <button type="button" className="btn btn-sm btn-primary" onClick={this.processAddVenue}>Grabar</button>
-        </React.Fragment>
-      );
-    }, 300);
+    this.props.loadDataAction(
+      'Agregar Sucursal',
+      <VenueFormView/>,
+      <React.Fragment>
+        <button type="button" className="btn btn-sm btn-default" data-dismiss="modal">Cancelar</button>
+        <button type="button" className="btn btn-sm btn-primary" onClick={this.processAddVenue}>Grabar</button>
+      </React.Fragment>
+    );
   }
 
   private processAddVenue(): void {
@@ -239,20 +239,21 @@ class VenuesListView extends React.Component<IPropsType, IStateType> {
       _id: venue._id,
       name: venue.name,
       company: venue.company,
+      region: venue.region,
       type: venue.type ? venue.type : 'receiver',
-      sendTo: venue.sendTo,
-      receiveFrom: venue.receiveFrom
+      sendTo: venue.sendTo ? venue.sendTo : [],
+      receiveFrom: venue.receiveFrom ? venue.receiveFrom : [],
+      shippingCarriers: venue.shippingCarriers ? venue.shippingCarriers : [],
+      receptionCarriers: venue.receptionCarriers ? venue.receptionCarriers : []
     });
-    setTimeout(() => {
-      this.props.loadDataAction(
-        'Editar Sucursal',
-        <VenueFormView update={true} />,
-        <React.Fragment>
-          <button type="button" className="btn btn-sm btn-default" data-dismiss="modal">Cancelar</button>
-          <button type="button" className="btn btn-sm btn-primary" onClick={this.processUpdateVenue}>Editar</button>
-        </React.Fragment>
-      );
-    }, 300);
+    this.props.loadDataAction(
+      'Editar Sucursal',
+      <VenueFormView update={true} />,
+      <React.Fragment>
+        <button type="button" className="btn btn-sm btn-default" data-dismiss="modal">Cancelar</button>
+        <button type="button" className="btn btn-sm btn-primary" onClick={this.processUpdateVenue}>Editar</button>
+      </React.Fragment>
+    );
   }
 
   private processUpdateVenue(): void {

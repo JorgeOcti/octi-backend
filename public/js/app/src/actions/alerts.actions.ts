@@ -160,4 +160,9 @@ export function getAlertsAction() {
   };
 }
 
-export type AlertReduxAction = ICancelRequest | IIsLoading | ILoadAlerts | IDeleteAlert |ICreateAlert;
+export type AlertReduxAction =
+  ICancelRequest |
+  IIsLoading |
+  ILoadAlerts |
+  IDeleteAlert |
+  ICreateAlert;

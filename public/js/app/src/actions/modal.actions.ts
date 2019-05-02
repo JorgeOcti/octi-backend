@@ -29,4 +29,6 @@ interface IClear {
   type: '/MODAL/CLEAR';
 }
 
-export type ModalReduxAction = ILoadData | IClear;
+export type ModalReduxAction =
+  ILoadData |
+  IClear;

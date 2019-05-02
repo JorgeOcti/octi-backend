@@ -155,6 +155,7 @@ class JWTController {
       jwt.verify(refreshToken, req.app.locals.secretKey, (err: any, decode: any) => {
         if (err) {
           logger.error(`token: JWT error`);
+          logger.error(`{body: ${req.body}, headers: ${JSON.stringify(req.headers)}}`);
           res.status(401).json({
             message: err.message,
             status: 401

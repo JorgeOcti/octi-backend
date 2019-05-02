@@ -5,6 +5,8 @@ const initialState: IVenuesState = {
   venues: [],
   allVenues: [],
   companies: [],
+  carriers: [],
+  regions: [],
   loading: true,
   source: null,
   tempVenue: {
@@ -12,7 +14,9 @@ const initialState: IVenuesState = {
     name: '',
     type: 'receiver',
     sendTo: [],
-    receiveFrom: []
+    receiveFrom: [],
+    shippingCarriers: [],
+    receptionCarriers: []
   },
   pagination: {
     count: 0,
@@ -50,6 +54,16 @@ export function venuesReducer(state = initialState, action: VenueReduxAction): I
       return {
         ...state,
         allVenues: action.payload.allVenues
+      };
+    case '/VENUES/LOAD_CARRIERS':
+      return {
+        ...state,
+        carriers: action.payload.carriers
+      };
+    case '/VENUES/LOAD_REGIONS':
+      return {
+        ...state,
+        regions: action.payload.regions
       };
     case '/VENUES/CHANGE_VENUE':
       return {

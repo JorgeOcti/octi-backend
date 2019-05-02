@@ -1,19 +1,19 @@
 import {Response} from 'express';
 import {IRequest} from '../../../interfaces/global.interface';
-import Carrier, {CarrierSchema} from '../../models/carrier.model';
+import Region, {RegionSchema} from '../../models/region.model';
 import BaseAdminController from './base.admin.controller';
 
-class AdminCarrierController extends BaseAdminController<CarrierSchema> {
+class AdminRegionController extends BaseAdminController<RegionSchema> {
 
   constructor() {
-    super(Carrier);
+    super(Region);
     this.apiList = this.apiList.bind(this);
   }
 
   public async apiCreate(req: IRequest, res: Response): Promise<any> {
     const {name} = req.body;
     const {team} = req.user;
-    this.name = 'Transportista';
+    this.name = 'Region';
     this.filter = {
       team,
       name
@@ -34,4 +34,4 @@ class AdminCarrierController extends BaseAdminController<CarrierSchema> {
   }
 }
 
-export default new AdminCarrierController();
+export default new AdminRegionController();

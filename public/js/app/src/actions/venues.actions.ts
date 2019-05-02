@@ -1,7 +1,9 @@
 import {AxiosError, AxiosResponse, CancelTokenSource, default as Axios} from 'axios';
 import {Dispatch} from 'redux';
 import * as swal from 'sweetalert';
+import {ICarrier} from '../../../../../src/interfaces/carrier.interface';
 import {ICompany} from '../../../../../src/interfaces/company.interface';
+import {IRegion} from '../../../../../src/interfaces/region.interface';
 import {IBaseVenue, IVenue} from '../../../../../src/interfaces/venue.interface';
 import ApiService from '../utils/axios';
 import {showModal, statusFooterButttonsModal} from '../utils/common';
@@ -10,6 +12,8 @@ export interface IVenuesState {
   venues: IVenue[];
   allVenues: IVenue[];
   companies: ICompany[];
+  regions: IRegion[];
+  carriers: ICarrier[];
   loading: boolean;
   tempVenue: IBaseVenue;
   source: CancelTokenSource | null;
@@ -146,6 +150,38 @@ export function loadAllVenueAction(allVenues: IVenue[]): ILoadAllVenue {
   };
 }
 
+interface ILoadCarriers {
+  type: '/VENUES/LOAD_CARRIERS';
+  payload: {
+    carriers: ICarrier[];
+  };
+}
+
+export function loadCarriersAction(carriers: ICarrier[]): ILoadCarriers {
+  return {
+    type: '/VENUES/LOAD_CARRIERS',
+    payload: {
+      carriers
+    }
+  };
+}
+
+interface ILoadRegions {
+  type: '/VENUES/LOAD_REGIONS';
+  payload: {
+    regions: IRegion[];
+  };
+}
+
+export function loadRegionsAction(regions: IRegion[]): ILoadRegions {
+  return {
+    type: '/VENUES/LOAD_REGIONS',
+    payload: {
+      regions
+    }
+  };
+}
+
 export function getVenuesAction(nextPage: number) {
   return (dispatch: Dispatch<VenueReduxAction>, getState: () => {venues: IVenuesState}) => {
     const api: ApiService = new ApiService();
@@ -160,11 +196,15 @@ export function getVenuesAction(nextPage: number) {
     }
     Axios.all([
       api.getCompanies(1, 200),
-      api.getVenues(1, 200)
+      api.getVenues(1, 200),
+      api.getCarriers(1, 200),
+      api.getRegions(1, 200)
     ])
-      .then(Axios.spread((companies: AxiosResponse, venues: AxiosResponse) => {
+      .then(Axios.spread((companies: AxiosResponse, venues: AxiosResponse, carriers: AxiosResponse, regions: AxiosResponse) => {
         dispatch(loadCompaniesVenueAction(companies.data.results));
         dispatch(loadAllVenueAction(venues.data.results));
+        dispatch(loadCarriersAction(carriers.data.results));
+        dispatch(loadRegionsAction(regions.data.results));
       }))
       .catch((err: AxiosError): void => {
         api.errorHandler(err);
@@ -292,4 +332,15 @@ export function deleteVenueAction(id: string) {
   };
 }
 
-export type VenueReduxAction = ICancelRequest | IIsLoading | IChangePage | ILoadVenues | IDeleteVenue | IChangeTempVenue | IChangeVenue | ILoadCompaniesVenue | ILoadAllVenue;
+export type VenueReduxAction =
+  ICancelRequest |
+  IIsLoading |
+  IChangePage |
+  ILoadVenues |
+  IDeleteVenue |
+  IChangeTempVenue |
+  IChangeVenue |
+  ILoadCompaniesVenue |
+  ILoadAllVenue |
+  ILoadCarriers |
+  ILoadRegions;

@@ -151,4 +151,9 @@ export function getCarsAction(nextPage: number, search?: string) {
   };
 }
 
-export type CarReduxAction = ICancelRequest | IIsLoading | IChangePage | ILoadCars | ILoadCar;
+export type CarReduxAction =
+  ICancelRequest |
+  IIsLoading |
+  IChangePage |
+  ILoadCars |
+  ILoadCar;

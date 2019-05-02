@@ -592,4 +592,12 @@ export function getCarAction(id: string) {
   };
 }
 
-export type DashboardReduxAction = IIsLoading | ICancelRequest | ILoadCars | ILoadCar | ILoadParticipantsPerDate | ILoadingParticipant | IChangePage | ILoadParticipantInCar;
+export type DashboardReduxAction =
+  IIsLoading |
+  ICancelRequest |
+  ILoadCars |
+  ILoadCar |
+  ILoadParticipantsPerDate |
+  ILoadingParticipant |
+  IChangePage |
+  ILoadParticipantInCar;

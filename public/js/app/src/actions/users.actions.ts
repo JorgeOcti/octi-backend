@@ -351,4 +351,15 @@ export function deleteUserAction(id: string) {
   };
 }
 
-export type UserReduxAction = IIsLoading | ILoadUsers | IChangePage | IDeleteUser | ICancelRequest | IChangeTempUser | IChangeUser | ILoadVenuesUser | ILoadPermissionsUser | ILoadFormsUser |ILoadCompaniesUser;
+export type UserReduxAction =
+  IIsLoading |
+  ILoadUsers |
+  IChangePage |
+  IDeleteUser |
+  ICancelRequest |
+  IChangeTempUser |
+  IChangeUser |
+  ILoadVenuesUser |
+  ILoadPermissionsUser |
+  ILoadFormsUser |
+  ILoadCompaniesUser;

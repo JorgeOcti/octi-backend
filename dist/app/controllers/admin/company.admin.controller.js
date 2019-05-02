@@ -104,7 +104,7 @@ class AdminCompaniesController {
                 }
                 await newCompany.save();
                 res.status(201).json({
-                    message: 'Empresa agregada satisfactoriamente.',
+                    message: 'Empresa creada satisfactoriamente.',
                     company: newCompany
                 });
             }

@@ -1,13 +1,39 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 class BaseAdminController {
-    constructor(instandeModel) {
-        this.instandeModel = instandeModel;
+    constructor(instanceModel) {
+        this.instanceModel = instanceModel;
         this.apiList = this.apiList.bind(this);
+        this.apiCreate = this.apiCreate.bind(this);
         this.getDataPaginated = this.getDataPaginated.bind(this);
     }
     async index(req, res) {
         res.render('app/index', { token: await req.user.generateToken() });
+    }
+    async apiCreate(req, res) {
+        try {
+            const existInstance = await this.instanceModel.find(this.filter ? this.filter : {});
+            if (existInstance.length) {
+                res.status(400).json({
+                    message: `${this.name} ya existe.`,
+                    status: 400
+                });
+            }
+            else {
+                const result = new this.instanceModel(this.data);
+                await result.save();
+                res.status(201).json({
+                    message: `${this.name} creado/a satisfactoriamente.`,
+                    result
+                });
+            }
+        }
+        catch (e) {
+            /* istanbul ignore next  */
+            if (e) {
+                res.status(500).json(e);
+            }
+        }
     }
     async apiList(req, res) {
         const { page, pageSize } = req.query;
@@ -18,7 +44,9 @@ class BaseAdminController {
             limit: parseInt(pageSize ? pageSize : 20, 10)
         };
         try {
-            const data = await this.getDataPaginated(this.filter);
+            const data = await this.getDataPaginated({
+                filter: this.filter ? this.filter : {}
+            });
             // validate exist page
             /* istanbul ignore if  */
             if (this.paginateOptions.page && data.pages && data.pages < this.paginateOptions.page) {
@@ -45,15 +73,15 @@ class BaseAdminController {
             }
         }
     }
-    getDataPaginated(filter) {
-        return new Promise((resolve, reject) => {
-            this.instandeModel.paginate(filter, this.paginateOptions, (err, result) => {
-                /* istanbul ignore next */
-                if (err) {
-                    return reject(err);
-                }
-                return resolve(result);
-            });
+    getDataPaginated({ filter }) {
+        return new Promise(async (resolve, reject) => {
+            try {
+                resolve(await this.instanceModel.paginate(filter, this.paginateOptions));
+            }
+            catch (e) {
+                /* istanbul ignore next  */
+                reject(e);
+            }
         });
     }
 }

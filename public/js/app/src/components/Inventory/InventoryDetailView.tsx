@@ -33,7 +33,10 @@ import {
   sendCommentAction,
   updateInventoryCarAction
 } from '../../actions/inventory.actions';
-import {loadDataAction, ModalReduxAction} from '../../actions/modal.actions';
+import {
+  loadDataAction,
+  ModalReduxAction
+} from '../../actions/modal.actions';
 import AppContainer from '../../container/AppContainer';
 import {IWindow} from '../../interfaces/window';
 import {IFilterCar} from '../../reducers/inventory.reducer';

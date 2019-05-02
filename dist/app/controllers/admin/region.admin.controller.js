@@ -1,16 +1,16 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-const carrier_model_1 = require("../../models/carrier.model");
+const region_model_1 = require("../../models/region.model");
 const base_admin_controller_1 = require("./base.admin.controller");
-class AdminCarrierController extends base_admin_controller_1.default {
+class AdminRegionController extends base_admin_controller_1.default {
     constructor() {
-        super(carrier_model_1.default);
+        super(region_model_1.default);
         this.apiList = this.apiList.bind(this);
     }
     async apiCreate(req, res) {
         const { name } = req.body;
         const { team } = req.user;
-        this.name = 'Transportista';
+        this.name = 'Region';
         this.filter = {
             team,
             name
@@ -29,5 +29,5 @@ class AdminCarrierController extends base_admin_controller_1.default {
         super.apiList(req, res);
     }
 }
-exports.default = new AdminCarrierController();
-//# sourceMappingURL=carrier.admin.controller.js.map
+exports.default = new AdminRegionController();
+//# sourceMappingURL=region.admin.controller.js.map

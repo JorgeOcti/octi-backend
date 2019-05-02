@@ -31,27 +31,10 @@ class VenueFormView extends React.Component<IPropsType, IStateType> {
       no_results_text: 'Sin resultados para:'
     };
     updateTooltip();
-    ($('#id-company') as any).chosen(chosenOptions).change((e: React.ChangeEvent<HTMLSelectElement>) => {
-      if (this.props.changeTempVenueAction && this.props.venues) {
-        const {tempVenue, companies} = this.props.venues;
-        this.props.changeTempVenueAction({
-          ...tempVenue,
-          company: companies.find((company) => (company._id === e.target.value))
-        });
-      }
-    });
   }
 
   public componentDidUpdate(): void {
     updateTooltip();
-    $('#id-company').trigger('chosen:updated');
-  }
-
-  public componentWillReceiveProps(nextProps: Readonly<IPropsType>, nextContext: any): void {
-    if (nextProps.venues) {
-      const {tempVenue} = nextProps.venues;
-      $('#id-company').val(tempVenue && tempVenue.company ? tempVenue.company._id : '').trigger('chosen:updated');
-    }
   }
 
   public componentDidCatch(error: Error, errorInfo: ErrorInfo): void {
@@ -64,7 +47,7 @@ class VenueFormView extends React.Component<IPropsType, IStateType> {
   render(): React.ReactElement<IPropsType> | null {
     if (this.props.venues && this.props.changeTempVenueAction) {
       const {changeTempVenueAction, update} = this.props;
-      const {tempVenue, companies} = this.props.venues;
+      const {tempVenue, companies, carriers, regions} = this.props.venues;
       let {allVenues} = this.props.venues;
       if (update) {
         allVenues = allVenues.filter((venue) => venue._id !== tempVenue._id);
@@ -92,21 +75,22 @@ class VenueFormView extends React.Component<IPropsType, IStateType> {
           <div className="col-md-12">
             <div className="form-group">
               <label htmlFor="id-company">Empresa</label>
-              <select
-                className="chosen-select form-control"
-                id="id-company"
-                name="company"
-                defaultValue={tempVenue && tempVenue.company ? tempVenue.company._id : undefined}
-                data-placeholder={'Seleccione empresa'}
-                onChange={undefined}
-              >
-                <option value="" />
-                {
-                  companies.map((company) => (
-                    <option key={company._id} value={company._id}>{company.name}</option>
-                  ))
+              <BootstrapSelect
+                noneSelectedText="Seleccione"
+                options={
+                  companies
+                    .map((company) => ({
+                      value: company._id,
+                      text: company.name
+                    }))
                 }
-              </select>
+                selected={tempVenue.company ? [tempVenue.company._id] : []}
+                autoClouse={true}
+                onClick={(value: string) => changeTempVenueAction({
+                  ...tempVenue,
+                  company: companies.find((company) => (company._id === value))
+                }, true)}
+              />
             </div>
             {
               update ?
@@ -114,6 +98,27 @@ class VenueFormView extends React.Component<IPropsType, IStateType> {
                   Si se modifica la empresa, los usuarios asignados a esta sucursal también se verán afectados.
                 </div> : null
             }
+          </div>
+          <div className="col-md-12">
+            <div className="form-group">
+              <label htmlFor="id-company">Región</label>
+              <BootstrapSelect
+                noneSelectedText="Seleccione"
+                options={
+                  regions
+                    .map((region) => ({
+                      value: region._id,
+                      text: region.name
+                    }))
+                }
+                selected={tempVenue.region ? [tempVenue.region._id] : []}
+                autoClouse={true}
+                onClick={(value: string) => changeTempVenueAction({
+                  ...tempVenue,
+                  region: regions.find((region) => (region._id === value))
+                }, true)}
+              />
+            </div>
           </div>
           <div className="col-md-12">
             <div className="form-group">
@@ -142,6 +147,30 @@ class VenueFormView extends React.Component<IPropsType, IStateType> {
           <div className="col-md-12">
             <div className="form-group">
               <label htmlFor="venues" className="control-label">
+                Transportistas de envio <i
+                className="fa fa-info-circle text-black"
+                data-toggle="tooltip" data-placement="top"
+                title="Usuarios asignados a esta sucursal, pueden enviar de estos transportista."
+              />
+              </label>
+              <BootstrapSelect
+                noneSelectedText="Seleccione"
+                displayItems={2}
+                selectedText="sucursales seleccionadas."
+                selected={tempVenue.shippingCarriers.map((carrier) => carrier._id)}
+                allOption={true}
+                selectAll={(value: boolean) => this.handleSelectCarriers('shippingCarriers', true, value)}
+                options={carriers.map((carrier: any) => ({
+                  value: carrier._id,
+                  text: carrier.name
+                }))}
+                onClick={(value: string) => this.handleSelectCarriers('shippingCarriers', false, value)}
+              />
+            </div>
+          </div>
+          <div className="col-md-12">
+            <div className="form-group">
+              <label htmlFor="venues" className="control-label">
                 Recibe <i
                 className="fa fa-info-circle text-black"
                 data-toggle="tooltip"
@@ -161,6 +190,30 @@ class VenueFormView extends React.Component<IPropsType, IStateType> {
                   text: venue.name
                 }))}
                 onClick={(value: string) => this.handleSelectVenues('receiveFrom', false, value)}
+              />
+            </div>
+          </div>
+          <div className="col-md-12">
+            <div className="form-group">
+              <label htmlFor="venues" className="control-label">
+                Transportistas de recepción <i
+                className="fa fa-info-circle text-black"
+                data-toggle="tooltip" data-placement="top"
+                title="Usuarios asignados a esta sucursal, pueden receocionar de estos transportista."
+              />
+              </label>
+              <BootstrapSelect
+                noneSelectedText="Seleccione"
+                displayItems={2}
+                selectedText="sucursales seleccionadas."
+                selected={tempVenue.receptionCarriers.map((carrier) => carrier._id)}
+                allOption={true}
+                selectAll={(value: boolean) => this.handleSelectCarriers('receptionCarriers', true, value)}
+                options={carriers.map((carrier: any) => ({
+                  value: carrier._id,
+                  text: carrier.name
+                }))}
+                onClick={(value: string) => this.handleSelectCarriers('receptionCarriers', false, value)}
               />
             </div>
           </div>
@@ -205,6 +258,27 @@ class VenueFormView extends React.Component<IPropsType, IStateType> {
           values = [...tempVenue[where], venue];
         } else {
           values = tempVenue[where].filter((venue) => venue._id !== value);
+        }
+      }
+      this.props.changeTempVenueAction({
+        ...tempVenue,
+        [where]: values
+      }, true);
+    }
+  }
+  private handleSelectCarriers(where: 'shippingCarriers' | 'receptionCarriers', all: boolean, value: string | boolean) {
+    if (this.props.changeTempVenueAction && this.props.venues) {
+      const {tempVenue, carriers} = this.props.venues;
+      let values = [];
+      if (all) {
+        values = value ? carriers : [];
+      } else {
+        const add = tempVenue[where].find((carrier) => carrier._id === value) === undefined;
+        const carrier = carriers.find((carrier) => carrier._id === value);
+        if (add) {
+          values = [...tempVenue[where], carrier];
+        } else {
+          values = tempVenue[where].filter((carrier) => carrier._id !== value);
         }
       }
       this.props.changeTempVenueAction({

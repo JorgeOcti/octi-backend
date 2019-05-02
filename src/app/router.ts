@@ -6,6 +6,7 @@ import AdminCarsController from './controllers/admin/car.admin.controller';
 import AdminCarrierController from './controllers/admin/carrier.admin.controller';
 import AdminCompaniesController from './controllers/admin/company.admin.controller';
 import AdminPermissionController from './controllers/admin/permission.admin.controller';
+import AdminRegionController from './controllers/admin/region.admin.controller';
 import AdminTeamsController from './controllers/admin/team.admin.controller';
 import AdminUsersController from './controllers/admin/user.admin.controller';
 import AdminVenuesController from './controllers/admin/venue.admin.controller';
@@ -79,7 +80,10 @@ appRouter.get('/api/admin/cars/', Middlewares.isLoggedIn, AdminCarsController.ap
 
 // permissions
 appRouter.get('/api/admin/permissions/', Middlewares.isLoggedIn, AdminPermissionController.apiList);
+
 appRouter.get('/api/admin/carriers/', Middlewares.isLoggedIn, AdminCarrierController.apiList);
+
+appRouter.get('/api/admin/regions/', Middlewares.isLoggedIn, AdminRegionController.apiList);
 
 // alerts
 appRouter.get('/settings/alerts/', Middlewares.isLoggedIn, AdminAlertsController.index);

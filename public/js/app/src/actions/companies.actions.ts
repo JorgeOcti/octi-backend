@@ -249,4 +249,11 @@ export function deleteCompanyAction(id: string) {
   };
 }
 
-export type CompaniesReduxAction = ICancelRequest | IIsLoading | IChangePage | ILoadCompanies | IChangeTempCompany | IChangeCompany |IDeleteCompany;
+export type CompaniesReduxAction =
+  ICancelRequest |
+  IIsLoading |
+  IChangePage |
+  ILoadCompanies |
+  IChangeTempCompany |
+  IChangeCompany |
+  IDeleteCompany;

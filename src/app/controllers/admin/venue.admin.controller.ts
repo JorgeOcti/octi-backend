@@ -38,6 +38,8 @@ class AdminVenueController {
       select: {
         _id: true,
         name: true,
+        receptionCarriers: true,
+        shippingCarriers: true,
         sendTo: true,
         receiveFrom: true,
         type: true,
@@ -45,6 +47,12 @@ class AdminVenueController {
         createdAt: true
       },
       populate: [{
+        path: 'receptionCarriers',
+        select: ['_id', 'name']
+      }, {
+        path: 'shippingCarriers',
+        select: ['_id', 'name']
+      }, {
         path: 'sendTo',
         select: ['_id', 'name']
       }, {
@@ -56,6 +64,9 @@ class AdminVenueController {
       }, {
         path: 'participants',
         select: ['_id']
+      }, {
+        path: 'region',
+        select: ['name']
       }, {
         path: 'company',
         select: ['name']
@@ -102,7 +113,10 @@ class AdminVenueController {
         message: 'No tienes permisos para esta operación'
       });
     }
-    const {name, type, company, sendTo, receiveFrom} = req.body;
+    const {
+      name, type, company, sendTo, receiveFrom,
+      receptionCarriers, shippingCarriers, region
+    } = req.body;
     const {team} = req.user;
     if (!name || !name.trim().length) {
       res.status(400).json({
@@ -125,8 +139,11 @@ class AdminVenueController {
           name,
           team,
           company,
+          region,
           sendTo,
           receiveFrom,
+          receptionCarriers,
+          shippingCarriers,
           type
         }).save();
         // reverse assing send to and reveive from
@@ -142,10 +159,22 @@ class AdminVenueController {
         res.status(201).json({
           message: 'Sucursal agregada satisfactoriamente.',
           venue: await newVenue.populate([{
+            path: 'company',
+            select: ['_id', 'name']
+          }, {
+            path: 'region',
+            select: ['_id', 'name']
+          }, {
             path: 'sendTo',
             select: ['_id', 'name']
           }, {
             path: 'receiveFrom',
+            select: ['_id', 'name']
+          }, {
+            path: 'receptionCarriers',
+            select: ['_id', 'name']
+          }, {
+            path: 'shippingCarriers',
             select: ['_id', 'name']
           }])
         });
@@ -167,7 +196,10 @@ class AdminVenueController {
     }
     const {id} = req.params;
     const {team} = req.user;
-    const {name, type, company, sendTo, receiveFrom} = req.body;
+    const {
+      name, type, company, sendTo, receiveFrom,
+      receptionCarriers, shippingCarriers, region
+    } = req.body;
     if (!name || !name.length) {
       res.status(400).json({
         message: 'The name is are required',
@@ -181,8 +213,11 @@ class AdminVenueController {
       }, {
         name,
         company,
+        region,
         sendTo,
         receiveFrom,
+        shippingCarriers,
+        receptionCarriers,
         type
       }, {
         new: true
@@ -190,10 +225,19 @@ class AdminVenueController {
         path: 'company',
         select: ['_id', 'name']
       }, {
+        path: 'region',
+        select: ['_id', 'name']
+      }, {
         path: 'sendTo',
         select: ['_id', 'name']
       }, {
         path: 'receiveFrom',
+        select: ['_id', 'name']
+      }, {
+        path: 'receptionCarriers',
+        select: ['_id', 'name']
+      }, {
+        path: 'shippingCarriers',
         select: ['_id', 'name']
       }]);
       if (venue) {

@@ -1,21 +1,48 @@
 import {Response} from 'express';
 import {PaginateOptions, PaginateResult} from 'mongoose';
 import {IAnyObject, IRequest} from '../../../interfaces/global.interface';
-import {IPermissionModel} from '../../models/permision.model';
 
 export default abstract class BaseAdminController<T> {
-  public paginateOptions: PaginateOptions;
-  public filter: IAnyObject;
-  protected instandeModel: T | any;
 
-  constructor(instandeModel: T) {
-    this.instandeModel = instandeModel;
+  public paginateOptions: PaginateOptions;
+  public data?: IAnyObject;
+  public name?: string;
+  public filter?: IAnyObject;
+  protected instanceModel: T | any;
+
+  constructor(instanceModel: T) {
+    this.instanceModel = instanceModel;
     this.apiList = this.apiList.bind(this);
+    this.apiCreate = this.apiCreate.bind(this);
     this.getDataPaginated = this.getDataPaginated.bind(this);
   }
 
   public async index(req: IRequest, res: Response) {
     res.render('app/index', {token: await req.user.generateToken()});
+  }
+
+  public async apiCreate(req: IRequest, res: Response): Promise<any> {
+    try {
+      const existInstance = await this.instanceModel.find(this.filter ? this.filter : {});
+      if (existInstance.length) {
+        res.status(400).json({
+          message: `${this.name} ya existe.`,
+          status: 400
+        });
+      } else {
+        const result = new this.instanceModel(this.data);
+        await result.save();
+        res.status(201).json({
+          message: `${this.name} creado/a satisfactoriamente.`,
+          result
+        });
+      }
+    } catch (e) {
+      /* istanbul ignore next  */
+      if (e) {
+        res.status(500).json(e);
+      }
+    }
   }
 
   public async apiList(req: IRequest, res: Response): Promise<any> {
@@ -27,7 +54,9 @@ export default abstract class BaseAdminController<T> {
       limit: parseInt(pageSize ? pageSize : 20, 10)
     };
     try {
-      const data = await this.getDataPaginated(this.filter);
+      const data = await this.getDataPaginated({
+        filter: this.filter ? this.filter : {}
+      });
       // validate exist page
       /* istanbul ignore if  */
       if (this.paginateOptions.page && data.pages && data.pages < this.paginateOptions.page) {
@@ -53,15 +82,14 @@ export default abstract class BaseAdminController<T> {
     }
   }
 
-  private getDataPaginated(filter: IAnyObject): Promise<PaginateResult<IPermissionModel>> {
-    return new Promise((resolve, reject) => {
-      this.instandeModel.paginate(filter,  this.paginateOptions, (err: any, result: any) => {
-        /* istanbul ignore next */
-        if (err) {
-          return reject(err);
-        }
-        return resolve(result);
-      });
+  private getDataPaginated({filter}: { filter: IAnyObject }): Promise<PaginateResult<T>> {
+    return new Promise(async (resolve, reject) => {
+      try {
+        resolve(await this.instanceModel.paginate(filter, this.paginateOptions));
+      } catch (e) {
+        /* istanbul ignore next  */
+        reject(e);
+      }
     });
   }
 }
