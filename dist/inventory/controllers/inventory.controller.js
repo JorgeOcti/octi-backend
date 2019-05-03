@@ -1551,6 +1551,89 @@ class InventoryController {
             });
         }
     }
+    async dashboard(req, res) {
+        let venuesPermissions = req.user.venuesPermissions(true);
+        const { venues } = req.body;
+        if (venues && venues.length) {
+            venuesPermissions = venuesPermissions.filter((v) => venues.includes(v));
+        }
+        venuesPermissions = venuesPermissions.map((v) => mongoose.Types.ObjectId(v));
+        const total = 6;
+        try {
+            const inventory = await inventoryCar_model_1.default.aggregate([{
+                    $match: {
+                        $and: [{
+                                createdAt: {
+                                    $gte: moment()
+                                        .subtract(total, 'months')
+                                        .startOf('month')
+                                        .toDate()
+                                }
+                            }, {
+                                $or: [{
+                                        venue: {
+                                            $in: venuesPermissions
+                                        },
+                                        venueFound: {
+                                            $in: venuesPermissions
+                                        }
+                                    }]
+                            }
+                        ]
+                    }
+                }, {
+                    $group: {
+                        _id: {
+                            car: '$car',
+                            status: '$status',
+                            month: {
+                                $dateToString: { format: '%Y-%m', date: '$createdAt' }
+                            }
+                        }
+                    }
+                }, {
+                    $group: {
+                        _id: {
+                            status: '$_id.status',
+                            month: '$_id.month'
+                        },
+                        total: {
+                            $sum: 1
+                        }
+                    }
+                }]);
+            const data = {};
+            for (let i = 0; i <= total; i++) {
+                const month = moment()
+                    .subtract(total - i, 'months')
+                    .format('YYYY-MM');
+                data[month] = {
+                    [inventoryCar_model_1.ChoicesStatusCarInventory.found]: 0,
+                    [inventoryCar_model_1.ChoicesStatusCarInventory.leftover]: 0,
+                    [inventoryCar_model_1.ChoicesStatusCarInventory.missing]: 0,
+                    [inventoryCar_model_1.ChoicesStatusCarInventory.pending]: 0,
+                    [inventoryCar_model_1.ChoicesStatusCarInventory.reported]: 0
+                };
+            }
+            for (const item of inventory) {
+                data[item._id.month][item._id.status] = item.total;
+            }
+            res.json(data);
+        }
+        catch (e) {
+            /* istanbul ignore next */
+            logger_service_1.default.error(`inventory dashboard: Async Error.`);
+            /* istanbul ignore next */
+            logger_service_1.default.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
+            /* istanbul ignore next */
+            logger_service_1.default.error(e);
+            /* istanbul ignore next */
+            res.status(500).json({
+                message: JSON.stringify(e),
+                status: 500
+            });
+        }
+    }
     autoRotate(path) {
         // doc http://aheckmann.github.io/gm/docs.html
         /**** REQUIRE *****
@@ -1570,86 +1653,6 @@ class InventoryController {
                 }
             });
         });
-    }
-    async dashboard(req, res) {
-        const venuesPermissions = req.user.venuesPermissions(true);
-        const { venues } = req.body;
-        const venuesAccess = venues ?
-            venuesPermissions.filter((v) => venues.includes(v)) :
-            venuesPermissions;
-        const total = 6;
-        let t0 = moment().subtract(total, 'months').startOf('month');
-        try {
-            // summary
-            const inventory = await inventoryCar_model_1.default.aggregate([
-                {
-                    $match: {
-                        $and: [{
-                                createdAt: { $gte: t0.toDate() }
-                            }, {
-                                $or: [{
-                                        venue: {
-                                            $in: venuesAccess.map((v) => mongoose.Types.ObjectId(v))
-                                        },
-                                        venueFound: {
-                                            $in: venuesAccess.map((v) => mongoose.Types.ObjectId(v))
-                                        }
-                                    }]
-                            }
-                        ]
-                    }
-                },
-                {
-                    $group: {
-                        _id: {
-                            car: '$car',
-                            status: '$status',
-                            month: { $dateToString: { format: "%Y-%m", date: "$createdAt" } },
-                        }
-                    }
-                },
-                {
-                    $group: {
-                        _id: {
-                            status: '$_id.status',
-                            month: '$_id.month'
-                        },
-                        total: {
-                            $sum: 1
-                        }
-                    }
-                }
-            ]);
-            var data = {};
-            let months = [];
-            for (let i = 0; i <= total; i++) {
-                let month = moment().subtract(total - i, 'months').format("YYYY-MM");
-                months.push(month);
-                data[month] = {};
-                data[month][inventoryCar_model_1.ChoicesStatusCarInventory.found] = 0;
-                data[month][inventoryCar_model_1.ChoicesStatusCarInventory.leftover] = 0;
-                data[month][inventoryCar_model_1.ChoicesStatusCarInventory.missing] = 0;
-                data[month][inventoryCar_model_1.ChoicesStatusCarInventory.pending] = 0;
-                data[month][inventoryCar_model_1.ChoicesStatusCarInventory.reported] = 0;
-            }
-            for (let item of inventory) {
-                data[item._id.month][item._id.status] = item.total;
-            }
-            res.json(data);
-        }
-        catch (e) {
-            /* istanbul ignore next */
-            logger_service_1.default.error(`dashbooard: Async Error.`);
-            /* istanbul ignore next */
-            logger_service_1.default.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
-            /* istanbul ignore next */
-            logger_service_1.default.error(e);
-            /* istanbul ignore next */
-            res.status(400).json({
-                message: JSON.stringify(e),
-                status: 400
-            });
-        }
     }
     resizeImage(path) {
         // doc http://aheckmann.github.io/gm/docs.html

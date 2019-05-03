@@ -1556,6 +1556,89 @@ class InventoryController {
     }
   }
 
+  public async dashboard(req: IRequest, res: Response) {
+    let venuesPermissions: any = req.user.venuesPermissions(true);
+    const {venues} = req.body;
+    if (venues && venues.length) {
+      venuesPermissions = venuesPermissions.filter((v: any) => venues.includes(v));
+    }
+    venuesPermissions = venuesPermissions.map((v: any) => mongoose.Types.ObjectId(v));
+    const total = 6;
+    try {
+      const inventory: any = await InventoryCar.aggregate([{
+        $match: {
+          $and: [{
+            createdAt: {
+              $gte: moment()
+                .subtract(total, 'months')
+                .startOf('month')
+                .toDate()
+            }
+          }, {
+            $or: [{
+              venue: {
+                $in: venuesPermissions
+              },
+              venueFound: {
+                $in: venuesPermissions
+              }
+            }]
+          }
+          ]
+        }
+      }, {
+        $group: {
+          _id: {
+            car: '$car',
+            status: '$status',
+            month: {
+              $dateToString: {format: '%Y-%m', date: '$createdAt'}
+            }
+          }
+        }
+      }, {
+        $group: {
+          _id: {
+            status: '$_id.status',
+            month: '$_id.month'
+          },
+          total: {
+            $sum: 1
+          }
+        }
+      }]);
+      const data: any = {};
+      for (let i = 0; i <= total; i++) {
+        const month = moment()
+          .subtract(total - i, 'months')
+          .format('YYYY-MM');
+        data[month] = {
+          [ChoicesStatusCarInventory.found]: 0,
+          [ChoicesStatusCarInventory.leftover]: 0,
+          [ChoicesStatusCarInventory.missing]: 0,
+          [ChoicesStatusCarInventory.pending]: 0,
+          [ChoicesStatusCarInventory.reported]: 0
+        };
+      }
+      for (const item of inventory) {
+        data[item._id.month][item._id.status] = item.total;
+      }
+      res.json(data);
+    } catch (e) {
+      /* istanbul ignore next */
+      logger.error(`inventory dashboard: Async Error.`);
+      /* istanbul ignore next */
+      logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
+      /* istanbul ignore next */
+      logger.error(e);
+      /* istanbul ignore next */
+      res.status(500).json({
+        message: JSON.stringify(e),
+        status: 500
+      });
+    }
+  }
+
   private autoRotate(path: string) {
     // doc http://aheckmann.github.io/gm/docs.html
     /**** REQUIRE *****
@@ -1574,98 +1657,6 @@ class InventoryController {
           }
         });
     });
-  }
-
-  public async dashboard(req: IRequest, res: Response) {
-
-    const venuesPermissions = req.user.venuesPermissions(true);
-    const {venues} = req.body
-
-    const venuesAccess = venues ?
-      venuesPermissions.filter((v) => venues.includes(v)) :
-      venuesPermissions
-
-    const total = 6;
-    let t0 = moment().subtract(total, 'months').startOf('month')
-
-    try {
-      // summary
-      const inventory: any = await InventoryCar.aggregate([
-          {
-            $match: {
-              $and: [{
-                createdAt: {$gte: t0.toDate()}
-              }, {
-                $or: [{
-                  venue: {
-                    $in: venuesAccess.map((v: any) => mongoose.Types.ObjectId(v))
-                  },
-                  venueFound: {
-                    $in: venuesAccess.map((v: any) => mongoose.Types.ObjectId(v))
-                  }
-                }]
-              }
-              ]
-            }
-          },
-          {
-            $group: {
-              _id: {
-                car: '$car',
-                status: '$status',
-                month: {$dateToString: {format: "%Y-%m", date: "$createdAt"}},
-              }
-            }
-
-          },
-          {
-            $group: {
-              _id: {
-                status: '$_id.status',
-                month: '$_id.month'
-              },
-              total: {
-                $sum: 1
-              }
-            }
-          }
-        ]
-      );
-
-      var data: any = {};
-      let months: string[] = [];
-      for (let i = 0; i <= total; i++) {
-
-        let month = moment().subtract(total - i, 'months').format("YYYY-MM");
-        months.push(month);
-
-        data[month] = {}
-        data[month][ChoicesStatusCarInventory.found] = 0;
-        data[month][ChoicesStatusCarInventory.leftover] = 0;
-        data[month][ChoicesStatusCarInventory.missing] = 0;
-        data[month][ChoicesStatusCarInventory.pending] = 0;
-        data[month][ChoicesStatusCarInventory.reported] = 0;
-      }
-
-
-      for (let item of inventory) {
-        data[item._id.month][item._id.status] = item.total;
-      }
-
-      res.json(data);
-    } catch (e) {
-      /* istanbul ignore next */
-      logger.error(`dashbooard: Async Error.`);
-      /* istanbul ignore next */
-      logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
-      /* istanbul ignore next */
-      logger.error(e);
-      /* istanbul ignore next */
-      res.status(400).json({
-        message: JSON.stringify(e),
-        status: 400
-      });
-    }
   }
 
   private resizeImage(path: string) {
