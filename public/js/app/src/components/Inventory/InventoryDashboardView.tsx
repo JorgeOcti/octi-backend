@@ -46,6 +46,7 @@ class InventoryDashboardView extends React.Component<IPropsType, IStateType> {
 
   constructor(props: IPropsType) {
     super(props);
+    this.resizeCharts = this.resizeCharts.bind(this);
 
     this.filterVenues = this.filterVenues.bind(this);
     this.filterAllVenues = this.filterAllVenues.bind(this);
@@ -55,6 +56,9 @@ class InventoryDashboardView extends React.Component<IPropsType, IStateType> {
     // set the title of the page
     document.title = 'OSA Andes | Inventarios';
     window.scrollTo(0, 0);
+
+    // add listeners
+    window.addEventListener('resize', this.resizeCharts, false);
 
     // get data
     const { filter } = this.props.inventoryDashboard;
@@ -77,6 +81,9 @@ class InventoryDashboardView extends React.Component<IPropsType, IStateType> {
   }
 
   public componentWillUnmount(): void {
+
+    // remove listeners
+    window.removeEventListener('resize', this.resizeCharts, false);
 
   }
 
@@ -126,6 +133,15 @@ class InventoryDashboardView extends React.Component<IPropsType, IStateType> {
         </section>
       </AppContainer>
     );
+  }
+
+  private resizeCharts(): void {
+    if (this.monthlyReport) {
+      this.monthlyReport.resize();
+      setTimeout(() => {
+        this.monthlyReport.resize();
+      }, 400);
+    }
   }
 
   private filterVenues(value: any) {
