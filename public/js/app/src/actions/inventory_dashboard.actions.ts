@@ -63,13 +63,13 @@ export function loadInventoriesDashboardFilteredAction(filter: IFilterCar, month
   };
 }
 
-export function getInventoryDashboard(filter: IFilterCar) {
+export function getInventoryDashboard() {
   return (dispatch: Dispatch<InventoryDashboardReduxAction>) => {
     const api: ApiService = new ApiService();
     dispatch(isLoadingAction(true));
     Axios.all([
       api.getVenues(1, 200),
-      api.getInventoryDashboard(filter)
+      api.getInventoryDashboard(null)
     ]).then(Axios.spread((venues, dashboard) => {
       dispatch(loadInventoriesDashboardAction(venues.data.results, dashboard.data));
     })).catch((err: AxiosError): void => {

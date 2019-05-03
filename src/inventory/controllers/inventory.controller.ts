@@ -2,6 +2,8 @@ import * as archiver from 'archiver';
 import * as bluebird from 'bluebird';
 import {ObjectID} from 'bson';
 import {Response} from 'express';
+import * as excel from 'exceljs';
+import * as tempfile from 'tempfile';
 import * as fs from 'fs';
 import * as GraphicsMagick from 'gm';
 import * as https from 'https';
@@ -1577,63 +1579,66 @@ class InventoryController {
   }
 
   public async dashboard(req: IRequest, res: Response) {
-    const {team} = req.user;
-    const venuesPermissions = req.user.venuesPermissions();
-    const venues = req.body.venues;
 
+    const venuesPermissions = req.user.venuesPermissions(true);
+    const {venues} = req.body
 
-      console.log("venues", req.body.venues);
+    const venuesAccess = venues ?
+      venuesPermissions.filter((v) => venues.includes(v)) :
+      venuesPermissions
 
+    const total = 6;
+    let t0 = moment().subtract(total, 'months').startOf('month')
 
     try {
       // summary
-      const inventory : any = await InventoryModel.aggregate([
-        {
-          $match: { team },
-        }, { 
-          $lookup: {
-            from: 'inventorycars',
-            localField: '_id',
-            foreignField: 'inventory',
-            as: 'cars'
-          }
-        }, {
-          $unwind: '$cars'
-        }, {
-          $match: {
-            $and: [{
-              'cars.venue': {
-                $in: venuesPermissions.map((v) => mongoose.Types.ObjectId(v))
+      const inventory: any = await InventoryCar.aggregate([
+          {
+            $match: {
+              $and: [{
+                createdAt: {$gte: t0.toDate()}
+              }, {
+                $or: [{
+                  venue: {
+                    $in: venuesAccess.map((v: any) => mongoose.Types.ObjectId(v))
+                  },
+                  venueFound: {
+                    $in: venuesAccess.map((v: any) => mongoose.Types.ObjectId(v))
+                  }
+                }]
               }
-            }, {
-              'cars.venue': {
-                $in: venues.map((v) => mongoose.Types.ObjectId(v))
+              ]
+            }
+          },
+          {
+            $group: {
+              _id: {
+                car: '$car',
+                status: '$status',
+                month: {$dateToString: {format: "%Y-%m", date: "$createdAt"}},
               }
-            }]
-          }
-        },
-        {
-          $group: {
-            _id: {
-              category: '$_id',
-              status: '$status',
-              carStatus: '$cars.status',
-              month: { $dateToString: { format: "%Y-%m", date: "$createdAt" } }
-            },
-            total: {
-              $sum: 1
+            }
+
+          },
+          {
+            $group: {
+              _id: {
+                status: '$_id.status',
+                month: '$_id.month'
+              },
+              total: {
+                $sum: 1
+              }
             }
           }
-        }
-       ]
+        ]
       );
 
-      var data : any = {};
-      const total = 6;
-      let months : string[] = [];
-      for(let i = 0; i < total; i++) {
+      var data: any = {};
+      let months: string[] = [];
+      for (let i = 0; i <= total; i++) {
 
-        let month = moment().subtract(total - 1 - i, 'months').format("YYYY-MM");
+        let month = moment().subtract(total - i, 'months').format("YYYY-MM");
         months.push(month);
 
         data[month] = {}
@@ -1644,14 +1649,15 @@ class InventoryController {
         data[month][ChoicesStatusCarInventory.reported] = 0;
       }
 
-      for(let item of inventory) {
-        data[item._id.month][item._id.carStatus] = item.total;
+
+      for (let item of inventory) {
+        data[item._id.month][item._id.status] = item.total;
       }
 
       res.json(data);
     } catch (e) {
       /* istanbul ignore next */
-      logger.error(`detaill: Async Error.`);
+      logger.error(`dashbooard: Async Error.`);
       /* istanbul ignore next */
       logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
       /* istanbul ignore next */

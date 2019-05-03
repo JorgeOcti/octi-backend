@@ -35,19 +35,21 @@ if (dashboardItems.length) {
 *****************/
 const inventoryItems = [];
 
+if (hasPermission(window.user, 'viewInventoryDashboard')) {
+  inventoryItems.push({
+    id: '2.3',
+    icon: 'fa-circle-o',
+    text: 'Dashboard',
+    url: '/inventory/dashboard/'
+  });
+}
+
 if (hasPermission(window.user, 'viewInventory')) {
   inventoryItems.push({
     id: '2.1',
     icon: 'fa-circle-o',
     text: 'Gestión',
     url: '/inventory/'
-  });
-
-  inventoryItems.push({
-    id: '2.3',
-    icon: 'fa-circle-o',
-    text: 'Dashboard',
-    url: '/inventory/dashboard/'
   });
 }
 

@@ -1572,44 +1572,47 @@ class InventoryController {
         });
     }
     async dashboard(req, res) {
-        const { team } = req.user;
-        const venuesPermissions = req.user.venuesPermissions();
-        const venues = req.body.venues;
-        console.log("venues", req.body.venues);
+        const venuesPermissions = req.user.venuesPermissions(true);
+        const { venues } = req.body;
+        const venuesAccess = venues ?
+            venuesPermissions.filter((v) => venues.includes(v)) :
+            venuesPermissions;
+        const total = 6;
+        let t0 = moment().subtract(total, 'months').startOf('month');
         try {
             // summary
-            const inventory = await inventory_model_2.default.aggregate([
+            const inventory = await inventoryCar_model_1.default.aggregate([
                 {
-                    $match: { team },
-                }, {
-                    $lookup: {
-                        from: 'inventorycars',
-                        localField: '_id',
-                        foreignField: 'inventory',
-                        as: 'cars'
-                    }
-                }, {
-                    $unwind: '$cars'
-                }, {
                     $match: {
                         $and: [{
-                                'cars.venue': {
-                                    $in: venuesPermissions.map((v) => mongoose.Types.ObjectId(v))
-                                }
+                                createdAt: { $gte: t0.toDate() }
                             }, {
-                                'cars.venue': {
-                                    $in: venues.map((v) => mongoose.Types.ObjectId(v))
-                                }
-                            }]
+                                $or: [{
+                                        venue: {
+                                            $in: venuesAccess.map((v) => mongoose.Types.ObjectId(v))
+                                        },
+                                        venueFound: {
+                                            $in: venuesAccess.map((v) => mongoose.Types.ObjectId(v))
+                                        }
+                                    }]
+                            }
+                        ]
                     }
                 },
                 {
                     $group: {
                         _id: {
-                            category: '$_id',
+                            car: '$car',
                             status: '$status',
-                            carStatus: '$cars.status',
-                            month: { $dateToString: { format: "%Y-%m", date: "$createdAt" } }
+                            month: { $dateToString: { format: "%Y-%m", date: "$createdAt" } },
+                        }
+                    }
+                },
+                {
+                    $group: {
+                        _id: {
+                            status: '$_id.status',
+                            month: '$_id.month'
                         },
                         total: {
                             $sum: 1
@@ -1618,10 +1621,9 @@ class InventoryController {
                 }
             ]);
             var data = {};
-            const total = 6;
             let months = [];
-            for (let i = 0; i < total; i++) {
-                let month = moment().subtract(total - 1 - i, 'months').format("YYYY-MM");
+            for (let i = 0; i <= total; i++) {
+                let month = moment().subtract(total - i, 'months').format("YYYY-MM");
                 months.push(month);
                 data[month] = {};
                 data[month][inventoryCar_model_1.ChoicesStatusCarInventory.found] = 0;
@@ -1631,13 +1633,13 @@ class InventoryController {
                 data[month][inventoryCar_model_1.ChoicesStatusCarInventory.reported] = 0;
             }
             for (let item of inventory) {
-                data[item._id.month][item._id.carStatus] = item.total;
+                data[item._id.month][item._id.status] = item.total;
             }
             res.json(data);
         }
         catch (e) {
             /* istanbul ignore next */
-            logger_service_1.default.error(`detaill: Async Error.`);
+            logger_service_1.default.error(`dashbooard: Async Error.`);
             /* istanbul ignore next */
             logger_service_1.default.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
             /* istanbul ignore next */

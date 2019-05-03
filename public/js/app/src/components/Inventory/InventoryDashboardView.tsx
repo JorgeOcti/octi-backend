@@ -139,12 +139,12 @@ class InventoryDashboardView extends React.Component<IPropsType, IStateType> {
     });
   }
 
-  private filterAllVenues(value: any) {
+  private filterAllVenues(value: boolean) {
 
     const { filter, venues} = this.props.inventoryDashboard;
     this.props.getInventoryDashboardFiltered({
       ...filter,
-      venues: venues.map((v) => v._id)
+      venues: value ? venues.map((v) => v._id) : [],
     })
 
   }
@@ -153,19 +153,15 @@ class InventoryDashboardView extends React.Component<IPropsType, IStateType> {
   {
     const { monthly_report } = this.props.inventoryDashboard;
 
-    console.log("lala");
-
-    var posList = [
-      'left', 'right', 'top', 'bottom',
-      'inside',
-      'insideTop', 'insideLeft', 'insideRight', 'insideBottom',
-      'insideTopLeft', 'insideTopRight', 'insideBottomLeft', 'insideBottomRight'
-    ];
-
     let labelOption = {
       normal: {
         show: true,
-        fontSize: 16,
+        position: 'inside',
+        align: 'center',
+        verticalAlign: 'middle',
+        rotate: 90,
+        formatter: '{c}',
+        fontSize: 12,
         rich: {
           name: {
             textBorderColor: '#fff'
@@ -182,7 +178,7 @@ class InventoryDashboardView extends React.Component<IPropsType, IStateType> {
     const reported = Object.values(monthly_report).map((v) => v.reported);
 
     const option: any = {
-      color: ['#003366', '#006699', '#4cabce', '#e5323e'],
+      color: ['#00aa51', '#ff9600', '#f1392c', '#00c2f4', '#96a4b3'],
       tooltip: {
         trigger: 'axis',
         axisPointer: {
@@ -190,7 +186,9 @@ class InventoryDashboardView extends React.Component<IPropsType, IStateType> {
         }
       },
       legend: {
-        data: ['Encontrados', 'Pendientes', 'Sobrantes', 'Faltantes', 'Reportados']
+        x: 'center',
+        bottom: 50,
+        data: ['Encontrados', 'Sobrantes', 'Faltantes', 'Pendientes', 'Reportados']
       },
       calculable: true,
       xAxis: [
@@ -205,35 +203,48 @@ class InventoryDashboardView extends React.Component<IPropsType, IStateType> {
           type: 'value'
         }
       ],
+      grid: {
+        top: 30,
+        bottom: 100,
+        // left
+        x: 0,
+        // right
+        x2: 10,
+        containLabel: true
+      },
       series: [
         {
           name: 'Encontrados',
           type: 'bar',
-          barGap: 0,
+          barMaxWidth: 100,
           label: labelOption,
           data: found
         },
         {
           name: 'Pendientes',
           type: 'bar',
+          barMaxWidth: 100,
           label: labelOption,
           data: pending
         },
         {
           name: 'Sobrantes',
           type: 'bar',
+          barMaxWidth: 100,
           label: labelOption,
           data: leftover
         },
         {
           name: 'Faltantes',
           type: 'bar',
+          barMaxWidth: 100,
           label: labelOption,
           data: missing
         },
         {
           name: 'Reportados',
           type: 'bar',
+          barMaxWidth: 100,
           label: labelOption,
           data: reported,
         }
@@ -254,7 +265,7 @@ const mapStateToProps = (state: { inventoryDashboard: IInventoryDashboardState }
 const mapDispatchToProps = (dispatch: any ) => {
   return {
     dispatch,
-    getInventoryDashboard: (filter: IFilterCar) => dispatch(getInventoryDashboard(filter)),
+    getInventoryDashboard: () => dispatch(getInventoryDashboard()),
     getInventoryDashboardFiltered: (filter: IFilterCar) => dispatch(getInventoryDashboardFiltered(filter)),
   };
 };

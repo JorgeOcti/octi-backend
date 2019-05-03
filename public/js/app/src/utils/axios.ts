@@ -14,6 +14,7 @@ import {
   IBaseVenue
 } from '../../../../../src/interfaces/venue.interface';
 import {ITempUser} from '../actions/users.actions';
+import {IFilterCar} from "../reducers/inventory.reducer";
 
 export interface IHeaders {
   'X-CSRFToken'?: string;
@@ -335,6 +336,12 @@ export default class ApiService {
     return this.instance.delete(
       `/api/admin/labels/${id}`
     );
+  }
+
+  public getInventoryDashboard(filter: IFilterCar | null): AxiosPromise {
+    return this.instance.post(
+      '/api/inventory/dashboard/', filter ? { venues: filter.venues } : {}
+    )
   }
 
 }
