@@ -62,12 +62,12 @@ class VenueFormView extends React.Component<IPropsType, IStateType> {
                 name="name"
                 className="form-control"
                 maxLength={50}
-                defaultValue={tempVenue ? tempVenue.name : ''}
+                value={tempVenue.name}
                 onChange={
                   (e: React.ChangeEvent<HTMLInputElement>) => changeTempVenueAction({
                     ...tempVenue,
                     name: e.target.value.trim()
-                  })
+                  }, true)
                 }
               />
             </div>

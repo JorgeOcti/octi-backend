@@ -2,6 +2,7 @@ import * as React from 'react';
 import {connect} from 'react-redux';
 import {IBaseCompany} from '../../../../../../src/interfaces/company.interface';
 import {changeTempCompanyAction, CompaniesReduxAction, ICompaniesState} from '../../actions/companies.actions';
+import ImageLazyLoad from '../Utils/ImageLazyLoad';
 
 interface IPropsType {
   companies?: ICompaniesState;
@@ -60,12 +61,13 @@ class CompaniesFormView extends React.Component<IPropsType, IStateType> {
               {
                 tempCompany.imageURI ?
                   <div
-                    className="change-image-wrapper"
+                    className="change-image-wrapper text-center"
+                    style={{display: 'table', width: '100%', color: '#2776b8'}}
                     onClick={this.clickUploadFile}
                   >
-                    <img
-                      src={tempCompany.imageURI}
-                      className="pointer"
+                    <ImageLazyLoad
+                      url={tempCompany.imageURI}
+                      height={'200px'}
                       style={{maxWidth: '100%'}}
                     />
                     <div className="text-layer pointer">
