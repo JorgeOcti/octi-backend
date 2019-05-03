@@ -1,30 +1,29 @@
-import {Dispatch} from "redux";
-import { AxiosError, AxiosResponse, default as Axios } from "axios";
-import ApiService from "../utils/axios";
-import {IFilterCar} from "../reducers/inventory.reducer";
+import { AxiosError, default as Axios } from 'axios';
+import {Dispatch} from 'redux';
+import {IFilterCar} from '../reducers/inventory.reducer';
+import ApiService from '../utils/axios';
 
 export interface IInventoryDashboardState {
-  venues: any[],
-  monthly_report: any[],
-  filter: IFilterCar,
+  venues: any[];
+  monthlyReport: any[];
+  filter: IFilterCar;
   loading: boolean;
 }
 
-interface ILoadInventoryDashboard
-{
+interface ILoadInventoryDashboard {
   type: '/INVENTORY_DASHBOARD/LOAD_DATA';
   payload: {
-    venues: any[],
-    monthly_report: any[],
-  }
+    venues: any[];
+    monthlyReport: any[];
+  };
 }
 
-export function loadInventoriesDashboardAction(venues: any[], monthly_report: any[]): ILoadInventoryDashboard {
+export function loadInventoriesDashboardAction(venues: any[], monthlyReport: any[]): ILoadInventoryDashboard {
   return {
     type: '/INVENTORY_DASHBOARD/LOAD_DATA',
     payload: {
-      venues: venues,
-      monthly_report: monthly_report
+      venues,
+      monthlyReport
     }
   };
 }
@@ -44,21 +43,20 @@ export function isLoadingAction(loading: boolean): IIsLoading {
   };
 }
 
-interface ILoadInventoryDashboardFiltered
-{
+interface ILoadInventoryDashboardFiltered {
   type: '/INVENTORY_DASHBOARD/LOAD_DATA_FILTERED';
   payload: {
-    filter: IFilterCar,
-    monthly_report: any[],
-  }
+    filter: IFilterCar;
+    monthlyReport: any[];
+  };
 }
 
-export function loadInventoriesDashboardFilteredAction(filter: IFilterCar, monthly_report: any[]): ILoadInventoryDashboardFiltered {
+export function loadInventoriesDashboardFilteredAction(filter: IFilterCar, monthlyReport: any[]): ILoadInventoryDashboardFiltered {
   return {
     type: '/INVENTORY_DASHBOARD/LOAD_DATA_FILTERED',
     payload: {
-      filter: filter,
-      monthly_report: monthly_report
+      filter,
+      monthlyReport
     }
   };
 }
@@ -69,7 +67,7 @@ export function getInventoryDashboard() {
     dispatch(isLoadingAction(true));
     Axios.all([
       api.getVenues(1, 200),
-      api.getInventoryDashboard(null)
+      api.getInventoryDashboard()
     ]).then(Axios.spread((venues, dashboard) => {
       dispatch(loadInventoriesDashboardAction(venues.data.results, dashboard.data));
     })).catch((err: AxiosError): void => {

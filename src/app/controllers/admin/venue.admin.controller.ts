@@ -7,6 +7,7 @@ import User from '../../models/user.model';
 import Venue, {IVenueModel} from '../../models/venue.model';
 
 class AdminVenueController {
+
   constructor() {
     this.index = this.index.bind(this);
     this.getVenues = this.getVenues.bind(this);

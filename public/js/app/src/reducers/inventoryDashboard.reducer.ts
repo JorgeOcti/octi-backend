@@ -1,7 +1,7 @@
 import {
   IInventoryDashboardState,
-  InventoryDashboardReduxAction,
-} from '../actions/inventory_dashboard.actions';
+  InventoryDashboardReduxAction
+} from '../actions/inventoryDashboard.actions';
 
 const initialState: IInventoryDashboardState = {
   filter: {
@@ -12,8 +12,8 @@ const initialState: IInventoryDashboardState = {
     states: []
   },
   venues: [],
-  monthly_report: [],
-  loading: true,
+  monthlyReport: [],
+  loading: true
 };
 
 export function inventoriesDashboardReducer(state = initialState, action: InventoryDashboardReduxAction): IInventoryDashboardState {
@@ -28,7 +28,7 @@ export function inventoriesDashboardReducer(state = initialState, action: Invent
         ...state,
         loading: false,
         venues: action.payload.venues,
-        monthly_report: action.payload.monthly_report
+        monthlyReport: action.payload.monthlyReport
       };
     case '/INVENTORY_DASHBOARD/LOAD_DATA_FILTERED':
       return {
@@ -37,7 +37,7 @@ export function inventoriesDashboardReducer(state = initialState, action: Invent
           ...action.payload.filter,
           venues: action.payload.filter.venues,
         },
-        monthly_report: action.payload.monthly_report
+        monthlyReport: action.payload.monthlyReport
       };
     default:
       return state;

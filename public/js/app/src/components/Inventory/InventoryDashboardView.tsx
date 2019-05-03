@@ -1,8 +1,6 @@
-///<reference path="../../../node_modules/sweetalert/typings/sweetalert.d.ts"/>
-import * as moment from 'moment';
 import * as Raven from 'raven-js';
-import * as React from 'react';
 import {ErrorInfo} from 'react';
+import * as React from 'react';
 import {connect} from 'react-redux';
 import {RouteComponentProps} from 'react-router';
 import {Dispatch} from 'redux';
@@ -10,13 +8,13 @@ import {
   getInventoryDashboard,
   getInventoryDashboardFiltered,
   IInventoryDashboardState,
-  InventoryDashboardReduxAction,
-} from '../../actions/inventory_dashboard.actions';
+  InventoryDashboardReduxAction
+} from '../../actions/inventoryDashboard.actions';
 import AppContainer from '../../container/AppContainer';
 import {IWindow} from '../../interfaces/window';
+import {IFilterCar} from '../../reducers/inventory.reducer';
 import BootstrapSelect from '../Utils/BootstrapSelect';
 import Row from '../Utils/Row';
-import {IFilterCar} from "../../reducers/inventory.reducer";
 
 declare let window: IWindow;
 
@@ -33,16 +31,11 @@ interface IStateType {
 
 class InventoryDashboardView extends React.Component<IPropsType, IStateType> {
 
-  // static propTypes = {
-  //   dispatch: PropTypes.func.isRequired
-  // };
-
   monthlyReport: echarts.ECharts;
 
   state = {
     error: null
   };
-  private socket: SocketIOClient.Socket;
 
   constructor(props: IPropsType) {
     super(props);
@@ -54,7 +47,7 @@ class InventoryDashboardView extends React.Component<IPropsType, IStateType> {
 
   public componentWillMount(): void {
     // set the title of the page
-    document.title = 'OSA Andes | Inventarios';
+    document.title = 'OSA Andes | Dashboard de inventarios';
     window.scrollTo(0, 0);
 
     // add listeners
@@ -74,17 +67,14 @@ class InventoryDashboardView extends React.Component<IPropsType, IStateType> {
 
   public componentDidUpdate(prevProps: IPropsType, prevState: IStateType): void {
     const {loading} = this.props.inventoryDashboard;
-    console.log("--loading", loading)
     if (!loading) {
       this.updateDashboardChart();
     }
   }
 
   public componentWillUnmount(): void {
-
     // remove listeners
     window.removeEventListener('resize', this.resizeCharts, false);
-
   }
 
   public componentDidCatch(error: Error, errorInfo: ErrorInfo): void {
@@ -119,7 +109,7 @@ class InventoryDashboardView extends React.Component<IPropsType, IStateType> {
                     }))}
                     onClick={this.filterVenues}
                   />
-                  <div id="inventory-monthly-report" style={{height: '400px', maxWidth: '100%'}} />
+                  <div id="inventory-monthly-report" style={{height: '50vh', maxWidth: '100%'}} />
                 </div>
               </Row>
             </div>
@@ -148,28 +138,25 @@ class InventoryDashboardView extends React.Component<IPropsType, IStateType> {
 
     const {filter} = this.props.inventoryDashboard;
 
-    const venues = filter.venues.includes(value) ? filter.venues.filter((venue) => venue !== value) : [value, ...filter.venues]
+    const venues = filter.venues.includes(value) ? filter.venues.filter((venue) => venue !== value) : [value, ...filter.venues];
     this.props.getInventoryDashboardFiltered({
       ...filter,
-      venues: venues
+      venues
     });
   }
 
   private filterAllVenues(value: boolean) {
-
     const { filter, venues} = this.props.inventoryDashboard;
     this.props.getInventoryDashboardFiltered({
       ...filter,
-      venues: value ? venues.map((v) => v._id) : [],
-    })
-
+      venues: value ? venues.map((v) => v._id) : []
+    });
   }
 
-  public updateDashboardChart()
-  {
-    const { monthly_report } = this.props.inventoryDashboard;
+  private updateDashboardChart() {
+    const { monthlyReport } = this.props.inventoryDashboard;
 
-    let labelOption = {
+    const labelOption = {
       normal: {
         show: true,
         position: 'inside',
@@ -186,12 +173,12 @@ class InventoryDashboardView extends React.Component<IPropsType, IStateType> {
       }
     };
 
-    const xSerie = Object.keys(monthly_report);
-    const found = Object.values(monthly_report).map((v) => v.found);
-    const pending = Object.values(monthly_report).map((v) => v.pending);
-    const leftover = Object.values(monthly_report).map((v) => v.leftover);
-    const missing = Object.values(monthly_report).map((v) => v.missing);
-    const reported = Object.values(monthly_report).map((v) => v.reported);
+    const xSerie = Object.keys(monthlyReport);
+    const found = Object.values(monthlyReport).map((v) => v.found);
+    const pending = Object.values(monthlyReport).map((v) => v.pending);
+    const leftover = Object.values(monthlyReport).map((v) => v.leftover);
+    const missing = Object.values(monthlyReport).map((v) => v.missing);
+    const reported = Object.values(monthlyReport).map((v) => v.reported);
 
     const option: any = {
       color: ['#00aa51', '#ff9600', '#f1392c', '#00c2f4', '#96a4b3'],
@@ -262,7 +249,7 @@ class InventoryDashboardView extends React.Component<IPropsType, IStateType> {
           type: 'bar',
           barMaxWidth: 100,
           label: labelOption,
-          data: reported,
+          data: reported
         }
       ]
     };
@@ -282,7 +269,7 @@ const mapDispatchToProps = (dispatch: any ) => {
   return {
     dispatch,
     getInventoryDashboard: () => dispatch(getInventoryDashboard()),
-    getInventoryDashboardFiltered: (filter: IFilterCar) => dispatch(getInventoryDashboardFiltered(filter)),
+    getInventoryDashboardFiltered: (filter: IFilterCar) => dispatch(getInventoryDashboardFiltered(filter))
   };
 };
 

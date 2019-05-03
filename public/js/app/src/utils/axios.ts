@@ -338,7 +338,7 @@ export default class ApiService {
     );
   }
 
-  public getInventoryDashboard(filter: IFilterCar | null): AxiosPromise {
+  public getInventoryDashboard(filter?: IFilterCar): AxiosPromise {
     return this.instance.post(
       '/api/inventory/dashboard/', filter ? { venues: filter.venues } : {}
     )

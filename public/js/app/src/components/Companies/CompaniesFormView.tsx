@@ -1,7 +1,11 @@
 import * as React from 'react';
 import {connect} from 'react-redux';
 import {IBaseCompany} from '../../../../../../src/interfaces/company.interface';
-import {changeTempCompanyAction, CompaniesReduxAction, ICompaniesState} from '../../actions/companies.actions';
+import {
+  changeTempCompanyAction,
+  CompaniesReduxAction,
+  ICompaniesState
+} from '../../actions/companies.actions';
 import ImageLazyLoad from '../Utils/ImageLazyLoad';
 
 interface IPropsType {
@@ -68,10 +72,14 @@ class CompaniesFormView extends React.Component<IPropsType, IStateType> {
                     <ImageLazyLoad
                       url={tempCompany.imageURI}
                       height={'200px'}
-                      style={{maxWidth: '100%'}}
+                      style={{
+                        maxWidth: '100%'
+                      }}
                     />
                     <div className="text-layer pointer">
-                      <p className="text"><i className="fa fa-2x fa-cloud-upload" /> <br/>Haz click aquí para cambiar la imágen.</p>
+                      <p className="text">
+                        <i className="fa fa-2x fa-cloud-upload" /> <br/>Haz click aquí para cambiar la imágen.
+                      </p>
                     </div>
                   </div> :
                   <div
@@ -171,8 +179,8 @@ class CompaniesFormView extends React.Component<IPropsType, IStateType> {
     if (file && this.props.companies && this.props.changeTempCompanyAction) {
       const {tempCompany} = this.props.companies;
       const {changeTempCompanyAction} = this.props;
-      const reader = new FileReader();
-      reader.onload = (e) => {
+      const reader: FileReader = new FileReader();
+      reader.onload = (e: ProgressEvent) => {
         if (e.target) {
           changeTempCompanyAction({
             ...tempCompany,
