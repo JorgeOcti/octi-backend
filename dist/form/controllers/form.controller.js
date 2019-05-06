@@ -440,7 +440,7 @@ class FormController {
                 risk: '',
                 observe: '',
                 accessories: null,
-                damages: [],
+                damages: null,
                 venues: [],
                 carriers: [],
                 conciliation: false,
