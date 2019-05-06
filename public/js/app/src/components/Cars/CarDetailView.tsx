@@ -66,7 +66,7 @@ class CarDetailView extends React.Component<IPropsType, IStateType> {
 
   public render(): React.ReactElement<IPropsType> {
     const {loading, car, carEvents} = this.props.cars;
-    // const {loadingParticipant} = this.props.dashboard;
+    const {loadingParticipant} = this.props.dashboard;
     const {getParticipant} = this.props;
     return (
       <AppContainer title={`Detalle VIN ${car ? car.vin : null}`} cMenu="10" cSubMenu="10.2"  cAction="Detalle Vehículo">
@@ -195,7 +195,7 @@ class CarDetailView extends React.Component<IPropsType, IStateType> {
                                           </div>
                                         </li>
                                         : data.typeEvent === 'revision' ?
-                                        <TimeLineForm form={data} getParticipant={getParticipant} key={data._id}/>
+                                        <TimeLineForm form={data} getParticipant={getParticipant} loadingParticipant={loadingParticipant} key={data._id}/>
                                         : <TimeLineInventory inventory={data} key={data._id}/>
                                     );
                                   })

@@ -324,6 +324,19 @@ const participantSchema = new mongoose.Schema({
     ref: 'Venue'
   },
 
+  carrier: {
+    type: Boolean,
+    default: false
+  },
+  carrierText: {
+    type: String,
+    default: false
+  },
+  carrierBy: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Carrier'
+  },
+
   conciliation: {
     type: Boolean,
     default: false

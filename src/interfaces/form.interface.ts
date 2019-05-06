@@ -70,6 +70,9 @@ export interface IForm {
   receptionVenue: boolean;
   receptionVenueText: string;
 
+  carrier: boolean;
+  carrierText: string;
+
   conciliation: boolean;
   conciliationText: string;
   conciliationImage: boolean;

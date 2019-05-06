@@ -254,6 +254,12 @@ class FormController {
                         }, {
                             path: 'receiveFrom',
                             select: ['_id', 'name']
+                        }, {
+                            path: 'receptionCarriers',
+                            select: ['_id', 'name']
+                        }, {
+                            path: 'shippingCarriers',
+                            select: ['_id', 'name']
                         }]
                 }]);
             const form = await this.getForm({
@@ -286,14 +292,7 @@ class FormController {
                 extraSection.questions.push({
                     _id: 'shippingVenue',
                     question: form.shippingVenueText,
-                    scale: null,
-                    conciliation: false,
-                    risk: '',
-                    observe: '',
-                    accessories: null,
-                    damages: null,
                     venues: user.venue.sendTo,
-                    weight: 0,
                     kind: form_model_1.KindQuestion.venue,
                     order: extraSection.questions.length + 1
                 });
@@ -303,11 +302,6 @@ class FormController {
                     _id: 'shipping',
                     question: form.shippingText,
                     scale: 'shipping',
-                    conciliation: false,
-                    risk: '',
-                    observe: '',
-                    accessories: null,
-                    weight: 0,
                     kind: form_model_1.KindQuestion.scale,
                     order: extraSection.questions.length + 1
                 });
@@ -343,14 +337,7 @@ class FormController {
                 extraSection.questions.push({
                     _id: 'receptionVenue',
                     question: form.receptionVenueText,
-                    scale: null,
-                    conciliation: false,
-                    risk: '',
-                    observe: '',
-                    accessories: null,
-                    damages: null,
                     venues: user.venue.receiveFrom,
-                    weight: 0,
                     kind: form_model_1.KindQuestion.venue,
                     order: extraSection.questions.length + 1
                 });
@@ -360,11 +347,6 @@ class FormController {
                     _id: 'reception',
                     question: form.receptionText,
                     scale: 'reception',
-                    conciliation: false,
-                    risk: '',
-                    observe: '',
-                    accessories: null,
-                    weight: 0,
                     kind: form_model_1.KindQuestion.scale,
                     order: extraSection.questions.length + 1
                 });
@@ -396,16 +378,20 @@ class FormController {
                     ]
                 });
             }
+            if (form.carrier && (form.reception || form.shipping)) {
+                extraSection.questions.push({
+                    _id: 'carrier',
+                    question: form.carrierText,
+                    carriers: form.reception ? user.venue.receptionCarriers : user.venue.shippingCarriers,
+                    kind: form_model_1.KindQuestion.carrier,
+                    order: extraSection.questions.length + 1
+                });
+            }
             if (form.conciliation) {
                 extraSection.questions.push({
                     _id: 'conciliation',
                     question: form.conciliationText,
                     scale: 'conciliation',
-                    conciliation: false,
-                    risk: '',
-                    observe: '',
-                    accessories: null,
-                    weight: 0,
                     kind: form_model_1.KindQuestion.scale,
                     order: extraSection.questions.length + 1
                 });
@@ -437,13 +423,6 @@ class FormController {
                     ]
                 });
             }
-            // delete keys from object returned by api
-            const deleteKeys = ['shipping', 'shippingText', 'shippingImage', 'reception', 'receptionText', 'receptionImage', 'conciliation', 'conciliationText', 'conciliationImage'];
-            deleteKeys.forEach((key) => {
-                if (form.hasOwnProperty(key)) {
-                    delete form[key];
-                }
-            });
             let scales = await this.getScales({
                 _id: {
                     $in: scalesIds
@@ -454,6 +433,21 @@ class FormController {
             if (extraSection.questions.length) {
                 form.sections = [...form.sections, extraSection];
             }
+            const baseQuestion = {
+                _id: '',
+                question: '',
+                scale: null,
+                risk: '',
+                observe: '',
+                accessories: null,
+                damages: [],
+                venues: [],
+                carriers: [],
+                conciliation: false,
+                kind: '',
+                weight: 0,
+                order: 0
+            };
             // get scales from db
             res.json({
                 data: {
@@ -461,7 +455,21 @@ class FormController {
                         _id: form._id,
                         name: form.name,
                         description: form.description,
-                        sections: form.sections
+                        // norrmalize questions in sections
+                        sections: form.sections.map((section) => {
+                            return {
+                                _id: section._id,
+                                name: section.name,
+                                questions: section.questions.map((question) => {
+                                    return {
+                                        ...baseQuestion,
+                                        ...question
+                                    };
+                                }),
+                                weight: section.weight,
+                                order: section.order
+                            };
+                        })
                     },
                     scales,
                     extra,
@@ -565,6 +573,14 @@ class FormController {
                             participantObject.sendTo = shippingVenue.value;
                         }
                     }
+                    if (form.carrier) {
+                        participantObject.carrier = form.carrier;
+                        participantObject.carrierText = form.carrierText;
+                        if ('carrier' in answers) {
+                            const { carrier } = answers;
+                            participantObject.carrierBy = carrier.value;
+                        }
+                    }
                     if (form.conciliation && 'conciliation' in answers) {
                         const conciliation = answers.conciliation;
                         participantObject.conciliation = [true, 'true'].includes(conciliation.value);
@@ -577,7 +593,7 @@ class FormController {
                     // var sum sections
                     let sumSectionWeigths = 0;
                     let sumSectionQualifications = 0;
-                    // array images ids
+                    // array of images ids
                     let allImages = [];
                     for (const section of form.sections) {
                         // var sum questions
@@ -912,7 +928,7 @@ class FormController {
     }
     autoRotate(path) {
         // doc http://aheckmann.github.io/gm/docs.html
-        /**** REQUIRE *****
+        /**** REQUIRE: imagemagick and graphicsmagick *****
           brew install imagemagick
           brew install graphicsmagick
         * */

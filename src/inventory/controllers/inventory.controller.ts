@@ -5,8 +5,8 @@ import {Response} from 'express';
 import * as fs from 'fs';
 import * as GraphicsMagick from 'gm';
 import * as https from 'https';
-import * as mongoose from 'mongoose';
 import * as moment from 'moment';
+import * as mongoose from 'mongoose';
 import {queue} from '../../app';
 import Car, {
   ICarModel
@@ -1556,7 +1556,7 @@ class InventoryController {
     }
   }
 
-  public async dashboard(req: IRequest, res: Response) {
+  public async dashboard(req: IRequest, res: Response): Promise<any> {
     let venuesPermissions: any = req.user.venuesPermissions(true);
     const {venues} = req.body;
     if (venues && venues.length) {
@@ -1659,7 +1659,7 @@ class InventoryController {
     });
   }
 
-  private resizeImage(path: string) {
+  private resizeImage(path: string): Promise<boolean> {
     // doc http://aheckmann.github.io/gm/docs.html
     /**** REQUIRE *****
      brew install imagemagick
@@ -1673,7 +1673,7 @@ class InventoryController {
             /* istanbul ignore next */
             reject(err);
           } else {
-            resolve();
+            resolve(true);
           }
         });
     });

@@ -101,20 +101,21 @@ describe('formularies', () => {
                 // validate question keys
                 expect(section.questions).be.a('array');
                 for (const question of section.questions) {
-                    if (question.kind === 'scale') {
-                        expect(question).to.have.all.keys([
-                            '_id',
-                            'question',
-                            'scale',
-                            'risk',
-                            'accessories',
-                            'conciliation',
-                            'observe',
-                            'weight',
-                            'kind',
-                            'order'
-                        ]);
-                    }
+                    expect(question).to.have.all.keys([
+                        '_id',
+                        'question',
+                        'scale',
+                        'risk',
+                        'accessories',
+                        'damages',
+                        'venues',
+                        'carriers',
+                        'conciliation',
+                        'observe',
+                        'weight',
+                        'kind',
+                        'order'
+                    ]);
                 }
             }
             // validate scales keys

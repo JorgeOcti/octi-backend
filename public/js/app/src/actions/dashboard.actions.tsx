@@ -192,7 +192,7 @@ export function getParticipant(id: string) {
         dispatch(loadDataAction(
           data.name,
           <div id="form-detail">
-            <table>
+            <table style={{width: '100%'}}>
               <tbody>
               <tr>
                 <td style={{width: '40%'}}><strong>Supervisor</strong></td>
@@ -245,7 +245,7 @@ export function getParticipant(id: string) {
                 data.receiveFrom ?
                   <tr>
                     <td style={{width: '40%'}}>
-                      <strong>Recepcionado en</strong>
+                      <strong>Recepcionado desde</strong>
                     </td>
                     <td>{data.receiveFrom.name}</td>
                   </tr> : null
@@ -257,6 +257,15 @@ export function getParticipant(id: string) {
                       <strong>Enviado a</strong>
                     </td>
                     <td>{data.sendTo.name}</td>
+                  </tr> : null
+              }
+              {
+                data.carrier && data.carrierBy ?
+                  <tr>
+                    <td style={{width: '40%'}}>
+                      <strong>Transportista</strong>
+                    </td>
+                    <td>{data.carrierBy.name}</td>
                   </tr> : null
               }
               {
@@ -351,8 +360,6 @@ export function getParticipant(id: string) {
                             acc[cur._id] = cur.name;
                             return acc;
                           }, {}) : {};
-                          // const positions =
-                          // const parts =
                           // no show conciliation questions if no require
                           if (answer.conciliation && !selectChoice) {
                             return null;

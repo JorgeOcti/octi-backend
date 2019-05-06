@@ -6,8 +6,8 @@ const bson_1 = require("bson");
 const fs = require("fs");
 const GraphicsMagick = require("gm");
 const https = require("https");
-const mongoose = require("mongoose");
 const moment = require("moment");
+const mongoose = require("mongoose");
 const app_1 = require("../../app");
 const car_model_1 = require("../../app/models/car.model");
 const car_model_2 = require("../../app/models/car.model");
@@ -1669,7 +1669,7 @@ class InventoryController {
                     reject(err);
                 }
                 else {
-                    resolve();
+                    resolve(true);
                 }
             });
         });

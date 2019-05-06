@@ -656,6 +656,9 @@ class CarController {
           receptionConfirmation: true,
           receptionText: true,
           receptionImages: true,
+          carrier: true,
+          carrierText: true,
+          carrierBy: true,
           conciliation: true,
           conciliationText: true,
           receiveFrom: true,
@@ -666,6 +669,9 @@ class CarController {
           createdAt: true
         })
         .populate([{
+          path: 'carrierBy',
+          select: ['name']
+        }, {
           path: 'receiveFrom',
           select: ['name']
         }, {

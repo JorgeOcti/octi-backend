@@ -4,6 +4,7 @@ import Row from '../Utils/Row';
 
 interface IPropsType {
   form: any;
+  loadingParticipant: string | null;
   getParticipant(id: string): void;
 }
 
@@ -25,7 +26,7 @@ class TimeLineForm extends React.Component<IPropsType, IStateType> {
   }
 
   render(): React.ReactElement<IPropsType> {
-    const {form} = this.props;
+    const {form, loadingParticipant} = this.props;
     return (
       <li style={{marginRight: '0'}}>
         <i className={`fa fa-check-square-o ${this.getColor(form.qualification)}`}/>
@@ -63,10 +64,17 @@ class TimeLineForm extends React.Component<IPropsType, IStateType> {
                 style={{
                   padding: '5px 15px'
                 }}>
-                <a
+                <button
                   className="btn btn-primary btn-flat btn-xs"
+                  disabled={loadingParticipant && loadingParticipant === form._id ? true : false}
                   onClick={() => this.props.getParticipant(form._id)}
-                >Ver detalle</a>
+                >
+                  {
+                  loadingParticipant && loadingParticipant === form._id ?
+                    <React.Fragment><i className="fa fa-spin fa-spinner"/> Cargando...</React.Fragment>
+                    : `Ver detalle`
+                  }
+                </button>
               </div>
               <div className="col col-md-6 text-right" style={{
                 color: '#888',

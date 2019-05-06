@@ -15,6 +15,7 @@ import {
 } from '../form/models/participant.model';
 import {IDamages, IDamageSelected} from './damage.interface';
 import {IParticipantFile} from './participantFile.interface';
+import {ICarrierModel} from "../app/models/carrier.model";
 
 export interface IParticipantChoices {
   choice: string;
@@ -118,6 +119,10 @@ export interface IParticipant {
   receptionVenue: boolean;
   receptionVenueText: string;
   receiveFrom: IVenueModel;
+
+  carrier: boolean;
+  carrierText: string;
+  carrierBy: ICarrierModel;
 
   conciliation: boolean;
   conciliationText: string;

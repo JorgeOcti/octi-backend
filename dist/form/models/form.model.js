@@ -24,13 +24,15 @@ var KindQuestion;
     KindQuestion["text"] = "text";
     KindQuestion["venue"] = "venue";
     KindQuestion["damage"] = "damage";
+    KindQuestion["carrier"] = "carrier";
 })(KindQuestion = exports.KindQuestion || (exports.KindQuestion = {}));
 exports.kindQuestion = [
     KindQuestion.scale,
     KindQuestion.text,
     KindQuestion.accessory,
     KindQuestion.damage,
-    KindQuestion.venue
+    KindQuestion.venue,
+    KindQuestion.carrier
 ];
 const formQuestionsSchema = new mongoose.Schema({
     question: {
@@ -163,6 +165,15 @@ const formSchema = new mongoose.Schema({
     },
     // text if require venue
     receptionVenueText: {
+        type: String,
+        default: ''
+    },
+    // if require select carrier
+    carrier: {
+        type: Boolean,
+        default: false
+    },
+    carrierText: {
         type: String,
         default: ''
     },
