@@ -23,7 +23,7 @@ import ModalView from '../Modal/ModalView';
 import Paginator from '../Utils/Paginator';
 import CompaniesFormView from './CompaniesFormView';
 
-interface IPropsType extends RouteComponentProps<{ ticket: string }> {
+interface IPropsType extends RouteComponentProps<{ company: string }> {
   dispatch: Dispatch<CompaniesReduxAction>;
   companies: ICompaniesState;
 
@@ -50,7 +50,6 @@ class CompaniesListView extends React.Component<IPropsType, IStateType> {
     this.udpateCompany = this.udpateCompany.bind(this);
     this.processUpdateCompany = this.processUpdateCompany.bind(this);
     this.deleteCompany = this.deleteCompany.bind(this);
-    this.changePage = this.changePage.bind(this);
   }
 
   public componentWillMount(): void {
@@ -141,7 +140,7 @@ class CompaniesListView extends React.Component<IPropsType, IStateType> {
             {
               pagination.pages > 1 &&
                 <div className="box-footer text-right">
-                  <Paginator changePage={this.changePage} page={pagination.page} pages={pagination.pages} />
+                  <Paginator changePage={this.props.getCompaniesAction} page={pagination.page} pages={pagination.pages} />
                 </div>
             }
             {
@@ -229,11 +228,6 @@ class CompaniesListView extends React.Component<IPropsType, IStateType> {
         this.props.deleteCompanyAction(company._id);
       }
     });
-  }
-
-  private changePage(page: number): void {
-    // change the page
-    this.props.getCompaniesAction(page);
   }
 }
 

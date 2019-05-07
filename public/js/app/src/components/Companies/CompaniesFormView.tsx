@@ -112,9 +112,8 @@ class CompaniesFormView extends React.Component<IPropsType, IStateType> {
           </div>
         </div>
       );
-    } else {
-      return null;
     }
+    return null;
   }
 
   private clickUploadFile() {

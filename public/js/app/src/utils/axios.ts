@@ -8,13 +8,17 @@ import Axios, {
 import * as Raven from 'raven-js';
 import * as swal from 'sweetalert';
 import {
+  IBaseCarrier,
+  ICarrier
+} from '../../../../../src/interfaces/carrier.interface';
+import {
   IBaseCompany
 } from '../../../../../src/interfaces/company.interface';
 import {
   IBaseVenue
 } from '../../../../../src/interfaces/venue.interface';
 import {ITempUser} from '../actions/users.actions';
-import {IFilterCar} from "../reducers/inventory.reducer";
+import {IFilterCar} from '../reducers/inventory.reducer';
 
 export interface IHeaders {
   'X-CSRFToken'?: string;
@@ -132,15 +136,9 @@ export default class ApiService {
     );
   }
 
-  public getVenues(page: number, pageSize?: number): AxiosPromise {
-    return this.instance.get(
-      `/api/admin/venues/?page=${page}${pageSize ? `&pageSize=${pageSize}` : ''}`
-    );
-  }
-
-  public deleteVenue(id: string): AxiosPromise {
-    return this.instance.delete(
-      `/api/admin/venues/${id}/`
+  public createVenue(venue: IBaseVenue): AxiosPromise {
+    return this.instance.post(
+      `/api/admin/venues/`, venue
     );
   }
 
@@ -150,9 +148,33 @@ export default class ApiService {
     );
   }
 
-  public createVenue(venue: IBaseVenue): AxiosPromise {
+  public deleteVenue(id: string): AxiosPromise {
+    return this.instance.delete(
+      `/api/admin/venues/${id}/`
+    );
+  }
+
+  public getVenues(page: number, pageSize?: number): AxiosPromise {
+    return this.instance.get(
+      `/api/admin/venues/?page=${page}${pageSize ? `&pageSize=${pageSize}` : ''}`
+    );
+  }
+
+  public createCarrier(carrier: IBaseCarrier): AxiosPromise {
     return this.instance.post(
-      `/api/admin/venues/`, venue
+      `/api/admin/carriers/`, carrier
+    );
+  }
+
+  public updateCarrier(carrier: IBaseCarrier): AxiosPromise {
+    return this.instance.patch(
+      `/api/admin/carriers/${carrier._id}`, carrier
+    );
+  }
+
+  public deleteCarrier(id: string): AxiosPromise {
+    return this.instance.delete(
+      `/api/admin/carriers/${id}`
     );
   }
 
@@ -341,7 +363,7 @@ export default class ApiService {
   public getInventoryDashboard(filter?: IFilterCar): AxiosPromise {
     return this.instance.post(
       '/api/inventory/dashboard/', filter ? { venues: filter.venues } : {}
-    )
+    );
   }
 
 }

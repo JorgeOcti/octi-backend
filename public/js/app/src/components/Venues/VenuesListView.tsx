@@ -49,9 +49,9 @@ class VenuesListView extends React.Component<IPropsType, IStateType> {
   constructor(props: IPropsType) {
     super(props);
     this.changePage = this.changePage.bind(this);
-    this.addVenue = this.addVenue.bind(this);
-    this.processAddVenue = this.processAddVenue.bind(this);
-    this.editVenue = this.editVenue.bind(this);
+    this.createVenue = this.createVenue.bind(this);
+    this.processCreateVenue = this.processCreateVenue.bind(this);
+    this.updateVenue = this.updateVenue.bind(this);
     this.processUpdateVenue = this.processUpdateVenue.bind(this);
     this.deleteVenue = this.deleteVenue.bind(this);
   }
@@ -106,7 +106,7 @@ class VenuesListView extends React.Component<IPropsType, IStateType> {
               {
                 hasPermission(window.user, 'addVenue') ?
                   <div className="box-tools pull-right">
-                    <button className="btn btn-sm btn-success" onClick={this.addVenue}>Agregar</button>
+                    <button className="btn btn-sm btn-success" onClick={this.createVenue}>Agregar</button>
                   </div>
                   : null
               }
@@ -164,7 +164,7 @@ class VenuesListView extends React.Component<IPropsType, IStateType> {
                             hasPermission(window.user, 'changeVenue') ?
                               <td
                                 className="middle text-blue pointer"
-                                onClick={() => this.editVenue(venue)}>
+                                onClick={() => this.updateVenue(venue)}>
                                 <i className="fa fa-pencil"/>
                               </td> : null
                           }
@@ -203,27 +203,27 @@ class VenuesListView extends React.Component<IPropsType, IStateType> {
     );
   }
 
-  private addVenue(): void {
+  private createVenue(): void {
     this.props.changeTempVenueAction({
       _id: '',
       name: '',
       type: 'receiver',
       sendTo: [],
       receiveFrom: [],
-    shippingCarriers: [],
-    receptionCarriers: []
+      shippingCarriers: [],
+      receptionCarriers: []
     });
     this.props.loadDataAction(
       'Agregar Sucursal',
       <VenueFormView/>,
       <React.Fragment>
         <button type="button" className="btn btn-sm btn-default" data-dismiss="modal">Cancelar</button>
-        <button type="button" className="btn btn-sm btn-primary" onClick={this.processAddVenue}>Grabar</button>
+        <button type="button" className="btn btn-sm btn-primary" onClick={this.processCreateVenue}>Grabar</button>
       </React.Fragment>
     );
   }
 
-  private processAddVenue(): void {
+  private processCreateVenue(): void {
     const {tempVenue} = this.props.venues;
     if (!tempVenue.name || !tempVenue.name.trim()) {
       swal('Agregar sucursal', 'El nombres es requerido', 'error');
@@ -234,7 +234,7 @@ class VenuesListView extends React.Component<IPropsType, IStateType> {
     }
   }
 
-  private editVenue(venue: IVenue): void {
+  private updateVenue(venue: IVenue): void {
     this.props.changeTempVenueAction({
       _id: venue._id,
       name: venue.name,

@@ -22,7 +22,8 @@ const configureStore = () => {
     middlewares.push(ThunkMiddleware);
     // middlewares.push(LogerMiddleware);
     middlewares.push(createDebounce());
-    enhancers = composeWithDevTools(applyMiddleware(...middlewares));
+    const composeEnhancers = composeWithDevTools({trace: true, traceLimit: 10 });
+    enhancers = composeEnhancers(applyMiddleware(...middlewares));
   } else {
     middlewares.push(ThunkMiddleware);
     middlewares.push(createDebounce());

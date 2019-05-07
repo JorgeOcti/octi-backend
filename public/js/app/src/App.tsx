@@ -3,8 +3,9 @@ import * as moment from 'moment';
 import * as React from 'react';
 import * as ReactDOM from 'react-dom';
 import { Provider } from 'react-redux';
-import { Route, RouteComponentProps, Router as BrowserRouter, Switch } from 'react-router-dom';
+import { Route, RouteComponentProps, Switch } from 'react-router-dom';
 import AlertsViews from './components/Alerts/AlertViews';
+import CarriersListView from './components/Carriers/CarriersListView';
 import CarDetailView from './components/Cars/CarDetailView';
 import CarsListView from './components/Cars/CarListView';
 import CompaniesListView from './components/Companies/CompaniesListView';
@@ -13,9 +14,9 @@ import DashboardVinDetail from './components/DashboardVin/DashboardVinDetail';
 import DashboardVinView from './components/DashboardVin/DashboardVinView';
 import ImportCarsView from './components/Imports/ImportCarView';
 import InventoryCreateView from './components/Inventory/InventoryCreateView';
+import InventoryDashboardView from './components/Inventory/InventoryDashboardView';
 import InventoryDetailView from './components/Inventory/InventoryDetailView';
 import InventoryListView from './components/Inventory/InventoryListView';
-import InventoryDashboardView from './components/Inventory/InventoryDashboardView';
 import LabelsListView from './components/Labels/LabelsListView';
 import UsersListView from './components/Users/UserListView';
 import VenuesListView from './components/Venues/VenuesListView';
@@ -50,6 +51,7 @@ const App = () => (
                 <Route exact path="/settings/cars/:id/" component={ CarDetailView }/>
                 <Route exact path="/settings/labels/" component={ LabelsListView }/>
                 <Route exact path="/settings/venues/" component={ VenuesListView }/>
+                <Route exact path="/settings/carriers/" component={ CarriersListView }/>
                 <Route exact path="/settings/companies/" component={ CompaniesListView }/>
                 <Route exact path="/settings/alerts/" component={ AlertsViews }/>
                 <Route component={ NoMatch }/>

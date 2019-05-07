@@ -1,5 +1,6 @@
 import {Response} from 'express';
 import {PaginateOptions, PaginateResult} from 'mongoose';
+import * as Raven from 'raven';
 import {IAnyObject, IRequest} from '../../../interfaces/global.interface';
 
 export default abstract class BaseAdminController<T> {
@@ -7,23 +8,34 @@ export default abstract class BaseAdminController<T> {
   public paginateOptions: PaginateOptions;
   public data?: IAnyObject;
   public name?: string;
-  public filter?: IAnyObject;
+  public permissionRequired?: string;
+  public filter: IAnyObject;
   protected instanceModel: T | any;
 
   constructor(instanceModel: T) {
     this.instanceModel = instanceModel;
     this.apiList = this.apiList.bind(this);
     this.apiCreate = this.apiCreate.bind(this);
+    this.apiUpdate = this.apiUpdate.bind(this);
+    this.apiDelete = this.apiDelete.bind(this);
     this.getDataPaginated = this.getDataPaginated.bind(this);
   }
 
-  public async index(req: IRequest, res: Response) {
+  public async index(req: IRequest, res: Response): Promise<any> {
+    if (this.permissionRequired && !req.user.hasPermission(this.permissionRequired)) {
+      res.status(403).render('403');
+    }
     res.render('app/index', {token: await req.user.generateToken()});
   }
 
   public async apiCreate(req: IRequest, res: Response): Promise<any> {
+    if (this.permissionRequired && !req.user.hasPermission(this.permissionRequired)) {
+      return res.status(403).json({
+        message: 'No tienes permisos para esta operación'
+      });
+    }
     try {
-      const existInstance = await this.instanceModel.find(this.filter ? this.filter : {});
+      const existInstance = await this.instanceModel.find(this.filter);
       if (existInstance.length) {
         res.status(400).json({
           message: `${this.name} ya existe.`,
@@ -39,9 +51,69 @@ export default abstract class BaseAdminController<T> {
       }
     } catch (e) {
       /* istanbul ignore next  */
-      if (e) {
-        res.status(500).json(e);
+      Raven.captureException(e);
+      res.status(500).json(e);
+    }
+  }
+
+  public async apiUpdate(req: IRequest, res: Response): Promise<any> {
+    if (this.permissionRequired && !req.user.hasPermission(this.permissionRequired)) {
+      return res.status(403).json({
+        message: 'No tienes permisos para esta operación'
+      });
+    }
+    const {id} = req.params;
+    try {
+      const result = await this.instanceModel
+        .findOneAndUpdate(
+          this.filter,
+          this.data,
+          {
+            new: true
+          });
+      if (result) {
+        res.status(200).json({
+          message: `${this.name} editado/a satisfactoriamente.`,
+          result
+        });
+      } else {
+        res.status(400).json({
+          id,
+          message: `${this.name} no encontrado/a.`
+        });
       }
+    } catch (e) {
+      /* istanbul ignore next  */
+      Raven.captureException(e);
+      res.status(500).json(e);
+    }
+  }
+
+  public async apiDelete(req: IRequest, res: Response): Promise<any> {
+    if (this.permissionRequired && !req.user.hasPermission(this.permissionRequired)) {
+      return res.status(403).json({
+        message: 'No tienes permisos para esta operación'
+      });
+    }
+    const {id} = req.params;
+    try {
+      const existInstance = await this.instanceModel.findOne(this.filter);
+      if (!existInstance) {
+        res.status(400).json({
+          message: `${this.name} no encontrado/a.`,
+          status: 400
+        });
+      } else {
+        await existInstance.remove();
+        res.status(200).json({
+          id,
+          message: `${this.name} eliminado/a satisfactoriamente.`
+        });
+      }
+    } catch (e) {
+      /* istanbul ignore next  */
+      Raven.captureException(e);
+      res.status(500).json(e);
     }
   }
 
@@ -55,7 +127,7 @@ export default abstract class BaseAdminController<T> {
     };
     try {
       const data = await this.getDataPaginated({
-        filter: this.filter ? this.filter : {}
+        filter: this.filter
       });
       // validate exist page
       /* istanbul ignore if  */
@@ -76,9 +148,8 @@ export default abstract class BaseAdminController<T> {
       }
     } catch (e) {
       /* istanbul ignore next  */
-      if (e) {
-        res.status(500).json(e);
-      }
+      Raven.captureException(e);
+      res.status(500).json(e);
     }
   }
 

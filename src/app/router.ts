@@ -81,7 +81,11 @@ appRouter.get('/api/admin/cars/', Middlewares.isLoggedIn, AdminCarsController.ap
 // permissions
 appRouter.get('/api/admin/permissions/', Middlewares.isLoggedIn, AdminPermissionController.apiList);
 
+appRouter.get('/settings/carriers/', Middlewares.isLoggedIn, AdminCarrierController.index);
 appRouter.get('/api/admin/carriers/', Middlewares.isLoggedIn, AdminCarrierController.apiList);
+appRouter.post('/api/admin/carriers/', Middlewares.isLoggedIn, AdminCarrierController.apiCreate);
+appRouter.patch('/api/admin/carriers/:id', Middlewares.isLoggedIn, AdminCarrierController.apiUpdate);
+appRouter.delete('/api/admin/carriers/:id', Middlewares.isLoggedIn, AdminCarrierController.apiDelete);
 
 appRouter.get('/api/admin/regions/', Middlewares.isLoggedIn, AdminRegionController.apiList);
 

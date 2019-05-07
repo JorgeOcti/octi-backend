@@ -1,18 +1,29 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+const Raven = require("raven");
 class BaseAdminController {
     constructor(instanceModel) {
         this.instanceModel = instanceModel;
         this.apiList = this.apiList.bind(this);
         this.apiCreate = this.apiCreate.bind(this);
+        this.apiUpdate = this.apiUpdate.bind(this);
+        this.apiDelete = this.apiDelete.bind(this);
         this.getDataPaginated = this.getDataPaginated.bind(this);
     }
     async index(req, res) {
+        if (this.permissionRequired && !req.user.hasPermission(this.permissionRequired)) {
+            res.status(403).render('403');
+        }
         res.render('app/index', { token: await req.user.generateToken() });
     }
     async apiCreate(req, res) {
+        if (this.permissionRequired && !req.user.hasPermission(this.permissionRequired)) {
+            return res.status(403).json({
+                message: 'No tienes permisos para esta operación'
+            });
+        }
         try {
-            const existInstance = await this.instanceModel.find(this.filter ? this.filter : {});
+            const existInstance = await this.instanceModel.find(this.filter);
             if (existInstance.length) {
                 res.status(400).json({
                     message: `${this.name} ya existe.`,
@@ -30,9 +41,68 @@ class BaseAdminController {
         }
         catch (e) {
             /* istanbul ignore next  */
-            if (e) {
-                res.status(500).json(e);
+            Raven.captureException(e);
+            res.status(500).json(e);
+        }
+    }
+    async apiUpdate(req, res) {
+        if (this.permissionRequired && !req.user.hasPermission(this.permissionRequired)) {
+            return res.status(403).json({
+                message: 'No tienes permisos para esta operación'
+            });
+        }
+        const { id } = req.params;
+        try {
+            const result = await this.instanceModel
+                .findOneAndUpdate(this.filter, this.data, {
+                new: true
+            });
+            if (result) {
+                res.status(200).json({
+                    message: `${this.name} editado/a satisfactoriamente.`,
+                    result
+                });
             }
+            else {
+                res.status(400).json({
+                    id,
+                    message: `${this.name} no encontrado/a.`
+                });
+            }
+        }
+        catch (e) {
+            /* istanbul ignore next  */
+            Raven.captureException(e);
+            res.status(500).json(e);
+        }
+    }
+    async apiDelete(req, res) {
+        if (this.permissionRequired && !req.user.hasPermission(this.permissionRequired)) {
+            return res.status(403).json({
+                message: 'No tienes permisos para esta operación'
+            });
+        }
+        const { id } = req.params;
+        try {
+            const existInstance = await this.instanceModel.findOne(this.filter);
+            if (!existInstance) {
+                res.status(400).json({
+                    message: `${this.name} no encontrado/a.`,
+                    status: 400
+                });
+            }
+            else {
+                await existInstance.remove();
+                res.status(200).json({
+                    id,
+                    message: `${this.name} eliminado/a satisfactoriamente.`
+                });
+            }
+        }
+        catch (e) {
+            /* istanbul ignore next  */
+            Raven.captureException(e);
+            res.status(500).json(e);
         }
     }
     async apiList(req, res) {
@@ -45,7 +115,7 @@ class BaseAdminController {
         };
         try {
             const data = await this.getDataPaginated({
-                filter: this.filter ? this.filter : {}
+                filter: this.filter
             });
             // validate exist page
             /* istanbul ignore if  */
@@ -68,9 +138,8 @@ class BaseAdminController {
         }
         catch (e) {
             /* istanbul ignore next  */
-            if (e) {
-                res.status(500).json(e);
-            }
+            Raven.captureException(e);
+            res.status(500).json(e);
         }
     }
     getDataPaginated({ filter }) {

@@ -67,7 +67,11 @@ appRouter.get('/settings/cars/:id/', middlewares_1.default.isLoggedIn, car_admin
 appRouter.get('/api/admin/cars/', middlewares_1.default.isLoggedIn, car_admin_controller_1.default.apiListCars);
 // permissions
 appRouter.get('/api/admin/permissions/', middlewares_1.default.isLoggedIn, permission_admin_controller_1.default.apiList);
+appRouter.get('/settings/carriers/', middlewares_1.default.isLoggedIn, carrier_admin_controller_1.default.index);
 appRouter.get('/api/admin/carriers/', middlewares_1.default.isLoggedIn, carrier_admin_controller_1.default.apiList);
+appRouter.post('/api/admin/carriers/', middlewares_1.default.isLoggedIn, carrier_admin_controller_1.default.apiCreate);
+appRouter.patch('/api/admin/carriers/:id', middlewares_1.default.isLoggedIn, carrier_admin_controller_1.default.apiUpdate);
+appRouter.delete('/api/admin/carriers/:id', middlewares_1.default.isLoggedIn, carrier_admin_controller_1.default.apiDelete);
 appRouter.get('/api/admin/regions/', middlewares_1.default.isLoggedIn, region_admin_controller_1.default.apiList);
 // alerts
 appRouter.get('/settings/alerts/', middlewares_1.default.isLoggedIn, alert_admin_controller_1.default.index);

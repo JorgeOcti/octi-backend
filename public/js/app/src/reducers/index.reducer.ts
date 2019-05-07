@@ -1,6 +1,7 @@
 import { connectRouter } from 'connected-react-router';
 import { combineReducers } from 'redux';
 import { alertsReducer } from './alerts.reducer';
+import {carriersReducer} from './carriers.reducer';
 import { carsReducer } from './cars.reducer';
 import {companiesReducer} from './companies.reducer';
 import { dashboardReducer } from './dashboard.reducer';
@@ -15,6 +16,7 @@ export default (history: any) => combineReducers({
   users: usersReducer,
   cars: carsReducer,
   modal: modalReducer,
+  carriers: carriersReducer,
   dashboard: dashboardReducer,
   inventories: inventoriesReducer,
   inventoryDashboard: inventoriesDashboardReducer,

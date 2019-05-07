@@ -109,6 +109,15 @@ if (hasPermission(window.user, 'viewVenue')) {
   });
 }
 
+if (hasPermission(window.user, 'viewCarrier')) {
+  settingItems.push({
+    id: '10.6',
+    icon: 'fa-circle-o',
+    text: 'Transportistas',
+    url: '/settings/carriers/'
+  });
+}
+
 if (hasPermission(window.user, 'viewUser')) {
   settingItems.push({
     id: '10.5',
