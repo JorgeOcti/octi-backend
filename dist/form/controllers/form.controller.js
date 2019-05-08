@@ -651,7 +651,7 @@ class FormController {
                                     answer.accesories.map((accesory) => new bson_1.ObjectID(accesory))
                                     : [],
                                 risk: question.risk,
-                                comment: choice && choice.requireComment && answer && answer.comment ?
+                                comment: (question.kind === form_model_1.KindQuestion.text || choice && choice.requireComment) && answer && answer.comment ?
                                     answer.comment
                                     : '',
                                 observe: question.observe,

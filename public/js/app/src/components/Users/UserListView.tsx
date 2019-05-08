@@ -9,7 +9,10 @@ import {Dispatch} from 'redux';
 import * as swal from 'sweetalert';
 import {debounce} from 'throttle-debounce';
 import {IUser} from '../../../../../../src/interfaces/user.interface';
-import {loadDataAction, ModalReduxAction} from '../../actions/modal.actions';
+import {
+  loadDataAction,
+  ModalReduxAction
+} from '../../actions/modal.actions';
 import {
   changeSearchUserAction,
   changeTempUserAction,
@@ -24,7 +27,11 @@ import {
 import AppContainer from '../../container/AppContainer';
 import {IWindow} from '../../interfaces/window';
 import ApiService from '../../utils/axios';
-import {hasPermission, showModal, statusFooterButttonsModal} from '../../utils/common';
+import {
+  hasPermission,
+  showModal,
+  statusFooterButttonsModal
+} from '../../utils/common';
 import ModalView from '../Modal/ModalView';
 import Paginator from '../Utils/Paginator';
 import UserFormChangePasswordView from './UserFormChangePasswordView';
