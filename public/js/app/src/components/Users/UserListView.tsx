@@ -181,12 +181,15 @@ class UserListView extends React.Component<IPropsType, IStateType> {
 
   public render(): React.ReactElement<IPropsType> {
     const {exporing} = this.state;
-    const {loading, users, pagination, searchText} = this.props.users;
+    const {
+      loading, users, pagination, searchText
+    } = this.props.users;
     return (
       <AppContainer title="" cMenu="10" cSubMenu="10.5" cAction="Listado">
         <section className="content">
           <div className="box">
-            <div className="box-header with-border"><h3 className="box-title">Usuarios <small>{pagination.count}</small></h3>
+            <div className="box-header with-border">
+              <h3 className="box-title">Usuarios <small>{pagination.count}</small></h3>
               <div className="box-tools pull-right">
                 {
                   hasPermission(window.user, 'addUser') ?
@@ -198,11 +201,16 @@ class UserListView extends React.Component<IPropsType, IStateType> {
                   onClick={this.exportExcel}
                   disabled={exporing}
                   style={{marginLeft: '5px'}}
-                >{
-                  exporing ?
-                    <React.Fragment><i className="fa fa-spin fa-spinner"/> Exportando</React.Fragment>
-                    : <React.Fragment><i className="fa fa-fw fa-download"/> Exportar</React.Fragment>
-                }
+                >
+                  {
+                    exporing ?
+                      <React.Fragment>
+                        <i className="fa fa-spin fa-spinner"/> Exportando
+                      </React.Fragment>
+                      : <React.Fragment>
+                        <i className="fa fa-fw fa-download"/> Exportar
+                      </React.Fragment>
+                  }
                 </button>
               </div>
             </div>

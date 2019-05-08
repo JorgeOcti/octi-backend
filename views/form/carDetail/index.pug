@@ -120,24 +120,29 @@ body
                           | <i class="far fa-square"></i>
                         | #{' '}#{item.item}
         if answer.kind === 'damage'
-          each ds in answer.damagesSelected
+          if !answer.damagesSelected.length
             tr.item-damage
               td(colspan=2)
-                table(class='damage-table', cellpadding='0', cellspacing='0', style="margin-bottom:0;padding-bottom:0")
-                  tr
-                    td
-                      strong=getDamageItem(answer.damages.parts, ds.part)
-                  tr
-                    td
-                      strong Daño:
-                      | #{' ' + getDamageItem(answer.damages.kinds, ds.kind) + ' '}
-                      strong Posición:
-                      | #{' ' +getDamageItem(answer.damages.positions, ds.position)}
-              td(class="text-center")
-                if ds.images.length
-                  | Si
-                else
-                  | No
+                | No se encontraron daños
+          else
+            each ds in answer.damagesSelected
+              tr.item-damage
+                td(colspan=2)
+                  table(class='damage-table', cellpadding='0', cellspacing='0', style="margin-bottom:0;padding-bottom:0")
+                    tr
+                      td
+                        strong=getDamageItem(answer.damages.parts, ds.part)
+                    tr
+                      td
+                        strong Daño:
+                        | #{' ' + getDamageItem(answer.damages.kinds, ds.kind) + ' '}
+                        strong Posición:
+                        | #{' ' +getDamageItem(answer.damages.positions, ds.position)}
+                td(class="text-center")
+                  if ds.images.length
+                    | Si
+                  else
+                    | No
         if answer.comment
           tr.item
             td(colspan=3, style="padding: 0 5px")
