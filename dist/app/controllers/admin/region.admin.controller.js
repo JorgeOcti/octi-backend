@@ -10,10 +10,9 @@ class AdminRegionController extends base_admin_controller_1.default {
     async apiCreate(req, res) {
         const { name } = req.body;
         const { team } = req.user;
-        this.name = 'Region';
-        this.filter = {
-            team,
-            name
+        req.context = {
+            name: 'Region',
+            filter: { team, name }
         };
         super.apiCreate(req, res);
     }

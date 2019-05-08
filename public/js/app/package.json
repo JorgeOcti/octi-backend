@@ -5,7 +5,7 @@
   "scripts": {
     "start": "NODE_ENV=development webpack-dashboard -- webpack --mode development --watch",
     "dev": "NODE_ENV=development webpack-dev-server --mode development --hot --progress --color --open ",
-    "build": "rm -Rf dist && NODE_ENV=production SENTRY_ORG=osa webpack --mode production"
+    "build": "NODE_ENV=production SENTRY_ORG=osa webpack --mode production"
   },
   "author": "Gonzalo Muñoz Coloma",
   "license": "ISC",

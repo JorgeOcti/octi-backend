@@ -26,6 +26,10 @@ class Middlewares {
             res.redirect('/account/login/');
         }
     }
+    async context(req, res, next) {
+        req.context = {};
+        return next();
+    }
     isJWTAuthenticated(req, res, next) {
         if (req.isAuthenticated()) {
             /* istanbul ignore else */

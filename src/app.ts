@@ -238,6 +238,7 @@ if (app.get('env') !== 'testing') {
 
 // The request handler must be the first middleware on the app
 app.use(Raven.requestHandler());
+app.use(Middlewares.context);
 
 // Routes
 app.use('/', appRouter);

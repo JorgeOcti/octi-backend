@@ -20,7 +20,9 @@ class AdminPermissionController extends BaseAdminController<PermissionSchema> {
         name: 1
       }
     };
-    this.filter = {};
+    req.context = {
+      filter: {}
+    };
     super.apiList(req, res);
   }
 }

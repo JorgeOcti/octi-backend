@@ -28,6 +28,11 @@ class Middlewares {
     }
   }
 
+  public async context(req: IRequest, res: Response, next: NextFunction) {
+    req.context = {};
+    return next();
+  }
+
   public isJWTAuthenticated(req: IRequest, res: Response, next: NextFunction) {
     if (req.isAuthenticated()) {
       /* istanbul ignore else */

@@ -17,7 +17,9 @@ class AdminPermissionController extends base_admin_controller_1.default {
                 name: 1
             }
         };
-        this.filter = {};
+        req.context = {
+            filter: {}
+        };
         super.apiList(req, res);
     }
 }

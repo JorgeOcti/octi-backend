@@ -15,17 +15,21 @@ class AdminCarrierController extends BaseAdminController<CarrierSchema> {
   }
 
   public async index(req: IRequest, res: Response): Promise<any> {
-    this.permissionRequired = 'viewCarrier';
+    req.context = {
+      permissionRequired: 'viewCarrier'
+    };
     super.index(req, res);
   }
 
   public async apiCreate(req: IRequest, res: Response): Promise<any> {
     const {name} = req.body;
     const {team} = req.user;
-    this.name = 'Transportista';
-    this.filter = {team, name};
-    this.data = {team, name};
-    this.permissionRequired = 'addCarrier';
+    req.context = {
+      name: 'Transportista',
+      filter: {team, name},
+      data: {team, name},
+      permissionRequired: 'addCarrier'
+    };
     super.apiCreate(req, res);
   }
 
@@ -33,19 +37,23 @@ class AdminCarrierController extends BaseAdminController<CarrierSchema> {
     const {id} = req.params;
     const {team} = req.user;
     const {name} = req.body;
-    this.name = 'Transportista';
-    this.filter = {team, _id: id};
-    this.data = {name};
-    this.permissionRequired = 'changeCarrier';
+    req.context = {
+      name: 'Transportista',
+      filter: {team, _id: id},
+      data: {name},
+      permissionRequired: 'changeCarrier'
+    };
     super.apiUpdate(req, res);
   }
 
   public async apiDelete(req: IRequest, res: Response): Promise<any> {
     const {id} = req.params;
     const {team} = req.user;
-    this.name = 'Transportista';
-    this.filter = {team, _id: id};
-    this.permissionRequired = 'deleteCarrier';
+    req.context = {
+      name: 'Transportista',
+      filter: {team, _id: id},
+      permissionRequired: 'deleteCarrier'
+    };
     super.apiDelete(req, res);
   }
 
@@ -59,8 +67,9 @@ class AdminCarrierController extends BaseAdminController<CarrierSchema> {
         name: 1
       }
     };
-    this.filter = {team};
-    // TODO: VALIDATE PERMISSION AND IMPLEMENT IN BASE ADMIN  CONTROLLER
+    req.context = {
+      filter: {team}
+    };
     super.apiList(req, res);
   }
 }

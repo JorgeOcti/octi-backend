@@ -13,10 +13,9 @@ class AdminRegionController extends BaseAdminController<RegionSchema> {
   public async apiCreate(req: IRequest, res: Response): Promise<any> {
     const {name} = req.body;
     const {team} = req.user;
-    this.name = 'Region';
-    this.filter = {
-      team,
-      name
+    req.context = {
+      name: 'Region',
+      filter: {team, name}
     };
     super.apiCreate(req, res);
   }

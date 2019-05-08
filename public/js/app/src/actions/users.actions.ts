@@ -18,6 +18,7 @@ export interface IUsersState {
   loading: boolean;
   tempUser: ITempUser;
   source: CancelTokenSource | null;
+  searchText: string;
   pagination: {
     count: number;
     page: number;
@@ -200,6 +201,22 @@ export function createUserAction() {
   };
 }
 
+interface IChangeSearchUser {
+  type: '/USERS/CHANGE_SEARCH';
+  payload: {
+    searchText: string;
+  };
+}
+
+export function changeSearchUserAction(searchText: string): IChangeSearchUser {
+  return {
+    type: '/USERS/CHANGE_SEARCH',
+    payload: {
+      searchText
+    }
+  };
+}
+
 interface ILoadVenuesUser {
   type: '/USERS/LOAD_VENUES';
   payload: {
@@ -273,7 +290,7 @@ export function getUsersAction(nextPage: number, search?: string) {
       dispatch(isLoadingAction(true));
     }
     // get venues and permissions
-    if (!search) {
+    if (!state.users.searchText.length) {
       Axios.all([
         api.getCompanies(1, 200),
         api.getVenues(1, 200),
@@ -296,7 +313,7 @@ export function getUsersAction(nextPage: number, search?: string) {
     if (nextPage) {
       dispatch(changePageAction(nextPage));
     }
-    api.getUsers(page, search)
+    api.getUsers(page, state.users.searchText)
       .then((response: AxiosResponse): void => {
         dispatch(loadUserAction(response.data.results, response.data.count, response.data.pages));
         dispatch(isLoadingAction(false));
@@ -356,6 +373,7 @@ export type UserReduxAction =
   ILoadUsers |
   IChangePage |
   IDeleteUser |
+  IChangeSearchUser |
   ICancelRequest |
   IChangeTempUser |
   IChangeUser |

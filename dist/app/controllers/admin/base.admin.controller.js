@@ -11,30 +11,30 @@ class BaseAdminController {
         this.getDataPaginated = this.getDataPaginated.bind(this);
     }
     async index(req, res) {
-        if (this.permissionRequired && !req.user.hasPermission(this.permissionRequired)) {
+        if (req.context.permissionRequired && !req.user.hasPermission(req.context.permissionRequired)) {
             res.status(403).render('403');
         }
         res.render('app/index', { token: await req.user.generateToken() });
     }
     async apiCreate(req, res) {
-        if (this.permissionRequired && !req.user.hasPermission(this.permissionRequired)) {
+        if (req.context.permissionRequired && !req.user.hasPermission(req.context.permissionRequired)) {
             return res.status(403).json({
                 message: 'No tienes permisos para esta operación'
             });
         }
         try {
-            const existInstance = await this.instanceModel.find(this.filter);
+            const existInstance = await this.instanceModel.find(req.context.filter);
             if (existInstance.length) {
                 res.status(400).json({
-                    message: `${this.name} ya existe.`,
+                    message: `${req.context.name} ya existe.`,
                     status: 400
                 });
             }
             else {
-                const result = new this.instanceModel(this.data);
+                const result = new this.instanceModel(req.context.data);
                 await result.save();
                 res.status(201).json({
-                    message: `${this.name} creado/a satisfactoriamente.`,
+                    message: `${req.context.name} creado/a satisfactoriamente.`,
                     result
                 });
             }
@@ -46,7 +46,7 @@ class BaseAdminController {
         }
     }
     async apiUpdate(req, res) {
-        if (this.permissionRequired && !req.user.hasPermission(this.permissionRequired)) {
+        if (req.context.permissionRequired && !req.user.hasPermission(req.context.permissionRequired)) {
             return res.status(403).json({
                 message: 'No tienes permisos para esta operación'
             });
@@ -54,19 +54,19 @@ class BaseAdminController {
         const { id } = req.params;
         try {
             const result = await this.instanceModel
-                .findOneAndUpdate(this.filter, this.data, {
+                .findOneAndUpdate(req.context.filter, req.context.data, {
                 new: true
             });
             if (result) {
                 res.status(200).json({
-                    message: `${this.name} editado/a satisfactoriamente.`,
+                    message: `${req.context.name} editado/a satisfactoriamente.`,
                     result
                 });
             }
             else {
                 res.status(400).json({
                     id,
-                    message: `${this.name} no encontrado/a.`
+                    message: `${req.context.name} no encontrado/a.`
                 });
             }
         }
@@ -77,17 +77,17 @@ class BaseAdminController {
         }
     }
     async apiDelete(req, res) {
-        if (this.permissionRequired && !req.user.hasPermission(this.permissionRequired)) {
+        if (req.context.permissionRequired && !req.user.hasPermission(req.context.permissionRequired)) {
             return res.status(403).json({
                 message: 'No tienes permisos para esta operación'
             });
         }
         const { id } = req.params;
         try {
-            const existInstance = await this.instanceModel.findOne(this.filter);
+            const existInstance = await this.instanceModel.findOne(req.context.filter);
             if (!existInstance) {
                 res.status(400).json({
-                    message: `${this.name} no encontrado/a.`,
+                    message: `${req.context.name} no encontrado/a.`,
                     status: 400
                 });
             }
@@ -95,7 +95,7 @@ class BaseAdminController {
                 await existInstance.remove();
                 res.status(200).json({
                     id,
-                    message: `${this.name} eliminado/a satisfactoriamente.`
+                    message: `${req.context.name} eliminado/a satisfactoriamente.`
                 });
             }
         }
@@ -106,6 +106,11 @@ class BaseAdminController {
         }
     }
     async apiList(req, res) {
+        if (req.context.permissionRequired && !req.user.hasPermission(req.context.permissionRequired)) {
+            return res.status(403).json({
+                message: 'No tienes permisos para esta operación'
+            });
+        }
         const { page, pageSize } = req.query;
         // paginate options
         this.paginateOptions = {
@@ -115,7 +120,7 @@ class BaseAdminController {
         };
         try {
             const data = await this.getDataPaginated({
-                filter: this.filter
+                filter: req.context.filter
             });
             // validate exist page
             /* istanbul ignore if  */

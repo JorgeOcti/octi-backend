@@ -11,6 +11,7 @@ import {debounce} from 'throttle-debounce';
 import {IUser} from '../../../../../../src/interfaces/user.interface';
 import {loadDataAction, ModalReduxAction} from '../../actions/modal.actions';
 import {
+  changeSearchUserAction,
   changeTempUserAction,
   createUserAction,
   deleteUserAction,
@@ -39,6 +40,7 @@ interface IPropsType extends RouteComponentProps<{ ticket: string }> {
   deleteUserAction(id?: string): UserReduxAction;
   changeTempUserAction(user: ITempUser): UserReduxAction;
   loadDataAction(title: string, body: JSX.Element, footer: JSX.Element): ModalReduxAction;
+  changeSearchUserAction(searchText: string): UserReduxAction;
 }
 
 interface IStateType {
@@ -172,7 +174,7 @@ class UserListView extends React.Component<IPropsType, IStateType> {
 
   public render(): React.ReactElement<IPropsType> {
     const {exporing} = this.state;
-    const {loading, users, pagination} = this.props.users;
+    const {loading, users, pagination, searchText} = this.props.users;
     return (
       <AppContainer title="" cMenu="10" cSubMenu="10.5" cAction="Listado">
         <section className="content">
@@ -205,6 +207,7 @@ class UserListView extends React.Component<IPropsType, IStateType> {
                   >
                     <input
                       type="text"
+                      value={searchText}
                       className="form-control pull-right"
                       onChange={this.onChangeSearch}
                       placeholder="Buscar"/>
@@ -299,19 +302,12 @@ class UserListView extends React.Component<IPropsType, IStateType> {
   private onChangeSearch(e: React.ChangeEvent<HTMLInputElement>): void {
     e.preventDefault();
     const value = e.target.value.trim();
-    this.setState({
-      searchText: value
-    });
+    this.props.changeSearchUserAction(value);
     this.debounceOnChangeSearch();
   }
 
   private debounceOnChangeSearch(): void {
-    const {searchText} = this.state;
-    if (searchText && searchText.length) {
-      this.props.getUsersAction(1, searchText);
-    } else {
-      this.props.getUsersAction(1);
-    }
+    this.props.getUsersAction(1);
   }
 
   private createUser(): void {
@@ -490,7 +486,8 @@ const mapDispatchToProps = (dispatch: any ) => {
     changeTempUserAction: (user: ITempUser) => dispatch(changeTempUserAction(user)),
     createUserAction: () => dispatch(createUserAction()),
     updateUserAction: () => dispatch(updateUserAction()),
-    loadDataAction: (title: string, body: JSX.Element, footer: JSX.Element) => dispatch(loadDataAction(title, body, footer))
+    loadDataAction: (title: string, body: JSX.Element, footer: JSX.Element) => dispatch(loadDataAction(title, body, footer)),
+    changeSearchUserAction: (searchText: string) => dispatch(changeSearchUserAction(searchText))
   };
 };
 

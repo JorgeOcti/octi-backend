@@ -1,4 +1,4 @@
-import {Request, Response} from 'express';
+import {Response} from 'express';
 import {PaginateOptions, PaginateResult} from 'mongoose';
 import {IRequest} from '../../../interfaces/global.interface';
 import GeneralUtils from '../../../utils/general.utils';
@@ -14,7 +14,7 @@ class AdminCompaniesController {
     this.apiDeleteCompany = this.apiDeleteCompany.bind(this);
   }
 
-  public async index(req: Request, res: Response) {
+  public async index(req: IRequest, res: Response) {
     if (req.user.hasPermission('viewCompany')) {
       res.render('app/index', {token: await req.user.generateToken()});
     } else {

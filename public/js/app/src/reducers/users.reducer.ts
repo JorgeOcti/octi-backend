@@ -9,6 +9,7 @@ const initialState: IUsersState = {
   users: [],
   venues: [],
   companies: [],
+  searchText: '',
   permissions: [],
   forms: [],
   loading: true,
@@ -46,6 +47,11 @@ export function usersReducer(state = initialState, action: UserReduxAction): IUs
       return {
         ...state,
         permissions: action.payload.permissions
+      };
+    case '/USERS/CHANGE_SEARCH':
+      return {
+        ...state,
+        searchText: action.payload.searchText
       };
     case '/USERS/LOAD_FORMS':
       return {

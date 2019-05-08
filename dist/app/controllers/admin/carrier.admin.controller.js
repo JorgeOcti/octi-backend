@@ -12,34 +12,42 @@ class AdminCarrierController extends base_admin_controller_1.default {
         this.apiDelete = this.apiDelete.bind(this);
     }
     async index(req, res) {
-        this.permissionRequired = 'viewCarrier';
+        req.context = {
+            permissionRequired: 'viewCarrier'
+        };
         super.index(req, res);
     }
     async apiCreate(req, res) {
         const { name } = req.body;
         const { team } = req.user;
-        this.name = 'Transportista';
-        this.filter = { team, name };
-        this.data = { team, name };
-        this.permissionRequired = 'addCarrier';
+        req.context = {
+            name: 'Transportista',
+            filter: { team, name },
+            data: { team, name },
+            permissionRequired: 'addCarrier'
+        };
         super.apiCreate(req, res);
     }
     async apiUpdate(req, res) {
         const { id } = req.params;
         const { team } = req.user;
         const { name } = req.body;
-        this.name = 'Transportista';
-        this.filter = { team, _id: id };
-        this.data = { name };
-        this.permissionRequired = 'changeCarrier';
+        req.context = {
+            name: 'Transportista',
+            filter: { team, _id: id },
+            data: { name },
+            permissionRequired: 'changeCarrier'
+        };
         super.apiUpdate(req, res);
     }
     async apiDelete(req, res) {
         const { id } = req.params;
         const { team } = req.user;
-        this.name = 'Transportista';
-        this.filter = { team, _id: id };
-        this.permissionRequired = 'deleteCarrier';
+        req.context = {
+            name: 'Transportista',
+            filter: { team, _id: id },
+            permissionRequired: 'deleteCarrier'
+        };
         super.apiDelete(req, res);
     }
     async apiList(req, res) {
@@ -52,8 +60,9 @@ class AdminCarrierController extends base_admin_controller_1.default {
                 name: 1
             }
         };
-        this.filter = { team };
-        // TODO: VALIDATE PERMISSION AND IMPLEMENT IN BASE ADMIN  CONTROLLER
+        req.context = {
+            filter: { team }
+        };
         super.apiList(req, res);
     }
 }
