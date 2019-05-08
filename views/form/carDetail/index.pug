@@ -9,6 +9,22 @@ mixin headerDetail(first, second, third, quarter)
     if third
       td(width="18%", class="strong")=third
       if quarter
+        td(width="32%")=quarter
+      else
+        td(width="32%")
+          .border-bottom-dashed
+
+mixin headerDetailRight(first, second, third, quarter)
+  tr
+    td(width="12%", class="strong")=first
+    if second
+      td(width="38%")=second
+    else
+      td(width="38%")
+        .border-bottom-dashed
+    if third
+      td(width="18%", class="strong")=third
+      if quarter
         td(width="32%").text-right=quarter
       else
         td(width="32%").text-right
@@ -57,10 +73,10 @@ body
   table(cellpadding='0', cellspacing='0')
     tr
       td(colspan=4, class="middle-center strong", style="font-size:10px;padding-bottom:10px")=participant.name
-    +headerDetail('Nº TRASLADO', '', 'FECHA', moment(participant.createdAt).format('LLL'))
+    +headerDetailRight('Nº TRASLADO', '', 'FECHA', moment(participant.createdAt).format('LLL'))
     +headerDetail('ENCARGADO', `${participant.user.firstName} ${participant.user.lastName}`)
-    +headerDetail('ORIGEN', false, 'DESTINO', false)
-    +headerDetail('E. CARGUIO', false, 'E. TRANSPORTADORA', false)
+    +headerDetail('ORIGEN', origin(), 'DESTINO', destination())
+    +headerDetail('E. CARGUIO', false, 'E. TRANSPORTADORA', carrier())
 
   table(cellpadding='0', cellspacing='0', class="border")
     tr

@@ -49,18 +49,20 @@ class FormController {
           bottom: '0.3in',
           left: '0.5in'
         },
-        // "header": {
-        //   "height": "45mm",
-        //   "contents": '<div style="text-align: center;">Author: Marc Bachmann</div>'
+        // header: {
+        //   height: '2mm',
+        //   contents: `<div class="header">
+        //       Reporte generado por OSA Andes. Página <span style="color: #444;">{{page}}</span>/<span>{{pages}}</span>
+        //   </div>`
         // },
-        footer: {
+        /*footer: {
           // height: '5mm',
           contents: {
             default: `<div class="footer">
                 Reporte generado por OSA Andes. Página <span style="color: #444;">{{page}}</span>/<span>{{pages}}</span>
             </div>`
           }
-        },
+        },*/
         type: 'pdf',
         quality: '75'
       };
@@ -89,6 +91,7 @@ class FormController {
           shipping: true,
           shippingText: true,
           shippingImages: true,
+          carrier: true,
           reception: true,
           receptionText: true,
           receptionImages: true,
@@ -107,8 +110,20 @@ class FormController {
             }]
           }]
         }, {
+          path: 'receiveFrom',
+          select: 'name'
+        }, {
+          path: 'venue',
+          select: 'name'
+        }, {
+          path: 'sendTo',
+          select: 'name'
+        }, {
+          path: 'carrierBy',
+          select: 'name'
+        }, {
           path: 'car',
-          select: ['vin', 'internalNumber', 'brand', 'denomination', 'color' ]
+          select: ['vin', 'internalNumber', 'brand', 'denomination', 'color']
         }, {
           path: 'sections.answers.images'
         }, {
@@ -133,6 +148,30 @@ class FormController {
           }
         }),
         moment,
+        origin: () => {
+          if (participant.reception && participant.receiveFrom) {
+            return participant.receiveFrom.name;
+          }
+          if (participant.shipping && participant.venue) {
+            return participant.venue.name;
+          }
+          return false;
+        },
+        destination: () => {
+          if (participant.reception && participant.venue) {
+            return participant.venue.name;
+          }
+          if (participant.shipping && participant.sendTo) {
+            return participant.sendTo.name;
+          }
+          return false;
+        },
+        carrier: () => {
+          if (participant.carrier && participant.carrierBy) {
+            return participant.carrierBy.name;
+          }
+          return false;
+        },
         getAnswer: ((scale: any, answer: any) => {
           if (answer && answer.hasOwnProperty('answer') && answer.answer) {
             const choice = scale.choices.find((choice: any) => choice._id.toString() === answer.answer.toString());
