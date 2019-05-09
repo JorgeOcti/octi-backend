@@ -1083,12 +1083,26 @@ class FormController {
                 };
             }
             var receiverVenues = [];
+            const receptions = await participant_model_1.default.find({
+                team,
+                venue: { $in: receivers.map((v) => v._id) },
+                receiveFrom: distributor._id
+            }, ['car', 'venue', 'createdAt'], {
+                sort: {
+                    createdAt: 1
+                }
+            });
+            var firstReceptions = {};
+            for (let reception of receptions) {
+                let car = reception.car.toString();
+                if (car in firstReceptions) {
+                }
+                else {
+                    firstReceptions[car] = reception;
+                }
+            }
             for (let participant of participants) {
-                let received = await participant_model_1.default.findOne({
-                    car: participant.car,
-                    createdAt: { $gt: participant.createdAt },
-                    receiveFrom: distributor._id
-                });
+                let received = firstReceptions[participant.car.toString()];
                 if (received) {
                     let receivedVenue = receivers.find((v) => v._id.toString() == received.venue.toString());
                     if (!receiverVenues.includes(received.venue.toString())) {
