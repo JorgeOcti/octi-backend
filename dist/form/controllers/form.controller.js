@@ -910,6 +910,103 @@ class FormController {
             });
         }
     }
+    async damagesDashboard(req, res) {
+        try {
+            const { team } = req.user;
+            const total = 6;
+            let t0 = moment().subtract(total, 'months').startOf('month');
+            let damaged = await participant_model_1.default.aggregate([{
+                    $match: {
+                        team,
+                        venue: {
+                            $in: req.user.venuesPermissions()
+                        },
+                        "sections.answers.kind": "damage",
+                        "sections.answers.damagesSelected._id": { $exists: true }
+                    }
+                },
+                {
+                    $group: {
+                        _id: {
+                            /*
+                            period: {
+                              $dateToString: {
+                                format: '%Y-%m',
+                                date: '$createdAt'
+                              }
+                            },
+                            */
+                            venue: '$venue',
+                        },
+                        count: { $sum: 1 }
+                    }
+                }
+            ]);
+            let undamaged = await participant_model_1.default.aggregate([{
+                    $match: {
+                        team,
+                        venue: {
+                            $in: req.user.venuesPermissions()
+                        },
+                        "sections.answers.kind": "damage",
+                        "sections.answers.damagesSelected._id": { $exists: false }
+                    }
+                },
+                {
+                    $group: {
+                        _id: {
+                            /*
+                            period: {
+                              $dateToString: {
+                                format: '%Y-%m',
+                                date: '$createdAt'
+                              }
+                            },
+                            */
+                            venue: '$venue',
+                        },
+                        count: { $sum: 1 }
+                    }
+                }
+            ]);
+            var allVenues = [];
+            damaged.forEach((item) => {
+                if (!allVenues.includes(item._id.venue.toString()))
+                    allVenues.push(item._id.venue.toString());
+            });
+            undamaged.forEach((item) => {
+                if (!allVenues.includes(item._id.venue.toString()))
+                    allVenues.push(item._id.venue.toString());
+            });
+            const venuesPermissions = req.user.venuesPermissions(true);
+            const venues = venuesPermissions.filter((v) => allVenues.includes(v));
+            var damagesData = {};
+            venues.forEach((venue) => damagesData[venue] = { damaged: 0, undamaged: 0 });
+            damaged.forEach((item) => {
+                damagesData[item._id.venue]['damaged'] = item.count;
+            });
+            undamaged.forEach((item) => {
+                damagesData[item._id.venue]['undamaged'] = item.count;
+            });
+            var data = {};
+            data['damaged'] = venues.map((v) => damagesData[v].damaged);
+            data['undamaged'] = venues.map((v) => damagesData[v].undamaged);
+            data['venues'] = venues;
+            res.json(data);
+        }
+        catch (e) {
+            /* istanbul ignore next */
+            logger_service_1.default.error(`dashboard damages: Async Error.`);
+            /* istanbul ignore next */
+            logger_service_1.default.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
+            /* istanbul ignore next */
+            logger_service_1.default.error(e);
+            res.status(400).json({
+                message: 'Ha ocurrido un error',
+                status: 400
+            });
+        }
+    }
     autoRotate(path) {
         // doc http://aheckmann.github.io/gm/docs.html
         /**** REQUIRE *****

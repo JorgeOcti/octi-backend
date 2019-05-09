@@ -10,12 +10,14 @@ import {labelsReducer} from './labels.reducer';
 import { modalReducer } from './modal.reducer';
 import { usersReducer } from './users.reducer';
 import {venuesReducer} from './venues.reducer';
+import {dashboardDamagesReducer} from "./dashboardDamages.reducer";
 
 export default (history: any) => combineReducers({
   users: usersReducer,
   cars: carsReducer,
   modal: modalReducer,
   dashboard: dashboardReducer,
+  dashboardDamages: dashboardDamagesReducer,
   inventories: inventoriesReducer,
   inventoryDashboard: inventoriesDashboardReducer,
   alerts: alertsReducer,

@@ -18,9 +18,10 @@ import logger from '../../services/logger.service';
 import redisClient from '../../services/redis.service';
 import GeneralUtils from '../../utils/general.utils';
 import FormModel, {IFormModel, KindQuestion} from '../models/form.model';
-import ParticipantModel from '../models/participant.model';
+import ParticipantModel, {default as Participant} from '../models/participant.model';
 import ParticipantFile from '../models/participantFile.model';
 import ScaleModel, {IScaleModel} from '../models/scale.model';
+import {ChoicesStatusCarInventory} from "../../inventory/models/inventoryCar.model";
 // import * as puppeteer from 'puppeteer';
 
 class FormController {
@@ -922,6 +923,115 @@ class FormController {
         status: 400
       });
     }
+  }
+
+  public async damagesDashboard(req: IRequest, res: Response): Promise<any>
+  {
+
+    try {
+      const {team} = req.user;
+
+      const total = 6;
+      let t0 = moment().subtract(total, 'months').startOf('month')
+
+      let damaged = await ParticipantModel.aggregate([{
+        $match: {
+          team,
+          venue: {
+            $in: req.user.venuesPermissions()
+          },
+          "sections.answers.kind": "damage",
+          "sections.answers.damagesSelected._id": {$exists: true}
+        }
+      },
+        {
+          $group: {
+            _id: {
+              /*
+              period: {
+                $dateToString: {
+                  format: '%Y-%m',
+                  date: '$createdAt'
+                }
+              },
+              */
+              venue: '$venue',
+            },
+            count: {$sum: 1}
+          }
+        }
+      ])
+
+      let undamaged = await ParticipantModel.aggregate([{
+        $match: {
+          team,
+          venue: {
+            $in: req.user.venuesPermissions()
+          },
+          "sections.answers.kind": "damage",
+          "sections.answers.damagesSelected._id": {$exists: false}
+        }
+      },
+        {
+          $group: {
+            _id: {
+              /*
+              period: {
+                $dateToString: {
+                  format: '%Y-%m',
+                  date: '$createdAt'
+                }
+              },
+              */
+              venue: '$venue',
+            },
+            count: {$sum: 1}
+          }
+        }
+      ])
+
+      var allVenues: any[] = []
+      damaged.forEach((item) => {
+        if(!allVenues.includes(item._id.venue.toString()))
+          allVenues.push(item._id.venue.toString())
+      })
+      undamaged.forEach((item) => {
+        if(!allVenues.includes(item._id.venue.toString()))
+          allVenues.push(item._id.venue.toString())
+      })
+
+      const venuesPermissions = req.user.venuesPermissions(true);
+      const venues = venuesPermissions.filter((v) => allVenues.includes(v))
+
+      var damagesData: any = {}
+      venues.forEach((venue) => damagesData[venue] = { damaged: 0, undamaged: 0 })
+
+      damaged.forEach((item) => {
+        damagesData[item._id.venue]['damaged'] = item.count
+      })
+      undamaged.forEach((item) => {
+        damagesData[item._id.venue]['undamaged'] = item.count
+      })
+
+      var data: any = {}
+      data['damaged'] = venues.map((v) => damagesData[v].damaged )
+      data['undamaged'] = venues.map((v) => damagesData[v].undamaged )
+      data['venues'] = venues
+      res.json(data)
+
+    } catch (e) {
+      /* istanbul ignore next */
+      logger.error(`dashboard damages: Async Error.`);
+      /* istanbul ignore next */
+      logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
+      /* istanbul ignore next */
+      logger.error(e);
+      res.status(400).json({
+        message: 'Ha ocurrido un error',
+        status: 400
+      });
+    }
+
   }
 
   private autoRotate(path: string) {

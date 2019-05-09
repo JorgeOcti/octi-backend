@@ -22,6 +22,7 @@ exports.appRouter = appRouter;
 const csrfProtection = csrf({ cookie: true });
 // DashBoard Principal
 appRouter.get('/', middlewares_1.default.isLoggedIn, car_controller_1.default.generalDashboard);
+appRouter.get('/dashboard/damages/', middlewares_1.default.isLoggedIn, car_controller_1.default.generalDashboard);
 // DashBoard Cars
 appRouter.get('/cars/', middlewares_1.default.isLoggedIn, car_controller_1.default.vinDashboard);
 appRouter.get('/cars/:id', middlewares_1.default.isLoggedIn, car_controller_1.default.vinDashboardDetail);

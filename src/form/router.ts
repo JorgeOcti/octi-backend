@@ -7,7 +7,11 @@ import FormController from './controllers/form.controller';
 const router = express.Router();
 
 // apiListAlerts form avaibles
+router.get('/data/generate/', Middlewares.isLoggedIn, FormController.generateData);
 router.get('/api/v1/forms/', Middlewares.isJWTAuthenticated, FormController.list);
+
+// forms API Web
+router.get('/api/dashboard/damages/', Middlewares.isLoggedIn, FormController.damagesDashboard);
 
 router.put('/api/v1/forms/preferred/', Middlewares.isJWTAuthenticated, FormController.changePreferred);
 

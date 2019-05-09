@@ -20,6 +20,14 @@ const dashboardItems = [{
   url: '/cars/'
 }];
 
+dashboardItems.push({
+  id: '1.3',
+  icon: 'fa-circle-o',
+  text: 'Dashboard daños',
+  url: '/dashboard/damages/'
+});
+
+
 if (dashboardItems.length) {
   menus.push({
     id: '1',
