@@ -366,4 +366,10 @@ export default class ApiService {
     );
   }
 
+  public getDashboardDamages(): AxiosPromise {
+    return this.instance.get(
+      '/api/dashboard/damages'
+    )
+  }
+
 }

@@ -7,7 +7,10 @@ const form_admin_controller_1 = require("./controllers/admin/form.admin.controll
 const form_controller_1 = require("./controllers/form.controller");
 const router = express.Router();
 // apiListAlerts form avaibles
+router.get('/data/generate/', middlewares_1.default.isLoggedIn, form_controller_1.default.generateData);
 router.get('/api/v1/forms/', middlewares_1.default.isJWTAuthenticated, form_controller_1.default.list);
+// forms API Web
+router.get('/api/dashboard/damages/', middlewares_1.default.isLoggedIn, form_controller_1.default.damagesDashboard);
 router.put('/api/v1/forms/preferred/', middlewares_1.default.isJWTAuthenticated, form_controller_1.default.changePreferred);
 router.post('/api/v1/forms/:id/upload-file/', middlewares_1.default.isJWTAuthenticated, form_controller_1.default.uploadFile);
 // detail information of the form
