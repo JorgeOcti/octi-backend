@@ -368,7 +368,13 @@ export default class ApiService {
 
   public getDashboardDamages(): AxiosPromise {
     return this.instance.get(
-      '/api/dashboard/damages'
+      '/api/dashboard/damages/'
+    )
+  }
+
+  public getDashboardTiming(): AxiosPromise {
+    return this.instance.get(
+      '/api/dashboard/timing/'
     )
   }
 

@@ -24,6 +24,7 @@ import {IWindow} from './interfaces/window';
 import configureStore, {history} from './store/configureStore';
 import {isIntenertExplorer} from './utils/common';
 import DashboardDamagesView from "./components/DashboardGeneral/DashboardDamagesView";
+import DashboardTimingView from "./components/DashboardGeneral/DashboardTimingView";
 
 declare let window: IWindow;
 
@@ -41,6 +42,7 @@ const App = () => (
                 <Route exact path="/" component={ DashboardGeneralView }/>
                 <Route exact path="/cars/" component={ DashboardVinView }/>
                 <Route exact path="/dashboard/damages/" component={ DashboardDamagesView }/>
+                <Route exact path="/dashboard/timing/" component={ DashboardTimingView }/>
                 <Route exact path="/cars/:id/" component={ DashboardVinDetail }/>
                 <Route exact path="/inventory/" component={ InventoryListView }/>
                 <Route exact path="/inventory/dashboard/" component={ InventoryDashboardView }/>

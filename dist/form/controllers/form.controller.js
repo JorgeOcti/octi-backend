@@ -21,6 +21,7 @@ const form_model_1 = require("../models/form.model");
 const participant_model_1 = require("../models/participant.model");
 const participantFile_model_1 = require("../models/participantFile.model");
 const scale_model_1 = require("../models/scale.model");
+const venue_model_1 = require("../../app/models/venue.model");
 // import * as puppeteer from 'puppeteer';
 class FormController {
     constructor() {
@@ -1062,12 +1063,78 @@ class FormController {
             });
         }
     }
+    async timingDashboard(req, res) {
+        try {
+            const { team } = req.user;
+            let distributor = await venue_model_1.default.findById("5c3605307eb40314d3c46e75");
+            let receivers = await venue_model_1.default.find({ team, type: "receiver" });
+            // autos que han llegado al distribuidor
+            const threshold = 60 * 24 * 5;
+            let participants = await participant_model_1.default.find({ venue: distributor });
+            const total = 6;
+            const months = [];
+            var receivedPerMonth = {};
+            for (let i = 0; i <= total; i++) {
+                const month = moment().subtract(total - i, 'months').startOf('month').format('YYYY-MM');
+                months.push(month);
+                receivedPerMonth[month] = {
+                    overdue: 0,
+                    ontime: 0
+                };
+            }
+            var receiverVenues = [];
+            for (let participant of participants) {
+                let received = await participant_model_1.default.findOne({
+                    car: participant.car,
+                    createdAt: { $gt: participant.createdAt },
+                    receiveFrom: distributor._id
+                });
+                if (received) {
+                    let receivedVenue = receivers.find((v) => v._id.toString() == received.venue.toString());
+                    if (!receiverVenues.includes(received.venue.toString())) {
+                        receiverVenues.push(received.venue);
+                    }
+                    var t0 = moment(participant.createdAt);
+                    const month = t0.format("YYYY-MM");
+                    var t1 = moment(received.createdAt);
+                    var dm = t1.diff(t0, 'minutes');
+                    if (dm < threshold) {
+                        receivedPerMonth[month].ontime += 1;
+                    }
+                    else {
+                        receivedPerMonth[month].overdue += 1;
+                    }
+                }
+            }
+            var data = { months: months, overdue: [], ontime: [] };
+            data["overdue"] = Array(months.length).fill(0);
+            data["ontime"] = Array(months.length).fill(0);
+            for (let index in months) {
+                const month = months[index];
+                data.overdue[index] = receivedPerMonth[month].overdue;
+                data.ontime[index] = receivedPerMonth[month].ontime;
+            }
+            res.json(data);
+        }
+        catch (e) {
+            /* istanbul ignore next */
+            logger_service_1.default.error(`dashboard timing: Async Error.`);
+            /* istanbul ignore next */
+            logger_service_1.default.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
+            /* istanbul ignore next */
+            logger_service_1.default.error(e);
+            res.status(400).json({
+                message: 'Ha ocurrido un error',
+                status: 400
+            });
+        }
+    }
     autoRotate(path) {
         // doc http://aheckmann.github.io/gm/docs.html
         /**** REQUIRE: imagemagick and graphicsmagick *****
-          brew install imagemagick
-          brew install graphicsmagick
-        * */
+         brew install imagemagick
+         brew install graphicsmagick
+         * */
         return new Promise((resolve, reject) => {
             GraphicsMagick(path)
                 .autoOrient()

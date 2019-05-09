@@ -127,7 +127,7 @@ async function generateFormData() {
       car,
       sections,
       name: "RECEPCION",
-      venue: distributor,
+      venue: distributor._id,
       sendTo: receiver,
       damagesSelected: damages
     })
@@ -139,8 +139,8 @@ async function generateFormData() {
     // 2º recepcion
     let isDamaged2 = random.float() > 0.7
 
-    let minutes2 = random.float(0, totalMinutes - minutes)
-    let t1 = moment().subtract(minutes2, 'minutes')
+    let maximum = random.float(0, 60 * 24 * 20)
+    let t1 = moment(t0).add(maximum, 'minutes')
 
     if (isDamaged2)
       damaged += 1
@@ -182,6 +182,7 @@ async function generateFormData() {
       company,
       user,
       car,
+      receiveFrom: distributor._id,
       sections: sections2,
       name: "RECEPCION 2",
       venue: receiver._id,

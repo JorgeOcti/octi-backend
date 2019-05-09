@@ -18,10 +18,11 @@ import logger from '../../services/logger.service';
 import redisClient from '../../services/redis.service';
 import GeneralUtils from '../../utils/general.utils';
 import FormModel, {IFormModel, KindQuestion} from '../models/form.model';
-import ParticipantModel, {default as Participant} from '../models/participant.model';
+import ParticipantModel from "../models/participant.model";
 import ParticipantFile from '../models/participantFile.model';
 import ScaleModel, {IScaleModel} from '../models/scale.model';
-import {ChoicesStatusCarInventory} from "../../inventory/models/inventoryCar.model";
+import Venue from "../../app/models/venue.model";
+
 // import * as puppeteer from 'puppeteer';
 
 class FormController {
@@ -940,7 +941,7 @@ class FormController {
     logger.info(`changePreferred`);
     logger.info(`{user: {_id: ${req.user._id}, email: ${req.user.email}}, body: ${JSON.stringify(req.body)}}`);
     try {
-      const user = await UserModel.findOne({_id: req.user._id, team,  active: true});
+      const user = await UserModel.findOne({_id: req.user._id, team, active: true});
       // validate exist user
       if (user) {
         form = await FormModel.findOne({_id: form, team});
@@ -982,8 +983,7 @@ class FormController {
     }
   }
 
-  public async damagesDashboard(req: IRequest, res: Response): Promise<any>
-  {
+  public async damagesDashboard(req: IRequest, res: Response): Promise<any> {
 
     try {
       const {team} = req.user;
@@ -1049,11 +1049,11 @@ class FormController {
 
       var allVenues: any[] = []
       damaged.forEach((item) => {
-        if(!allVenues.includes(item._id.venue.toString()))
+        if (!allVenues.includes(item._id.venue.toString()))
           allVenues.push(item._id.venue.toString())
       })
       undamaged.forEach((item) => {
-        if(!allVenues.includes(item._id.venue.toString()))
+        if (!allVenues.includes(item._id.venue.toString()))
           allVenues.push(item._id.venue.toString())
       })
 
@@ -1061,7 +1061,7 @@ class FormController {
       const venues = venuesPermissions.filter((v) => allVenues.includes(v))
 
       var damagesData: any = {}
-      venues.forEach((venue) => damagesData[venue] = { damaged: 0, undamaged: 0 })
+      venues.forEach((venue) => damagesData[venue] = {damaged: 0, undamaged: 0})
 
       damaged.forEach((item) => {
         damagesData[item._id.venue]['damaged'] = item.count
@@ -1071,8 +1071,8 @@ class FormController {
       })
 
       var data: any = {}
-      data['damaged'] = venues.map((v) => damagesData[v].damaged )
-      data['undamaged'] = venues.map((v) => damagesData[v].undamaged )
+      data['damaged'] = venues.map((v) => damagesData[v].damaged)
+      data['undamaged'] = venues.map((v) => damagesData[v].undamaged)
       data['venues'] = venues
       res.json(data)
 
@@ -1091,12 +1091,95 @@ class FormController {
 
   }
 
+  public async timingDashboard(req: IRequest, res: Response): Promise<any> {
+
+    try {
+      const {team} = req.user;
+
+      let distributor = await Venue.findById("5c3605307eb40314d3c46e75")
+      let receivers = await Venue.find({team, type: "receiver"})
+
+      // autos que han llegado al distribuidor
+      const threshold = 60 * 24 * 5
+      let participants = await ParticipantModel.find({venue: distributor})
+
+      const total = 6;
+      const months: string[] = [];
+      var receivedPerMonth: any = {}
+      for (let i = 0; i <= total; i++) {
+        const month = moment().subtract(total - i, 'months').startOf('month').format('YYYY-MM');
+        months.push(month)
+
+        receivedPerMonth[month] = {
+          overdue: 0,
+          ontime: 0
+        }
+      }
+
+      var receiverVenues: any[] = []
+      for (let participant of participants) {
+
+        let received = await ParticipantModel.findOne(
+          {
+            car: participant.car,
+            createdAt: {$gt: participant.createdAt},
+            receiveFrom: distributor._id
+          }
+        )
+        if (received) {
+
+          let receivedVenue = receivers.find((v) => v._id.toString() == received.venue.toString())
+          if (!receiverVenues.includes(received.venue.toString())) {
+            receiverVenues.push(received.venue)
+          }
+
+          var t0 = moment(participant.createdAt)
+          const month = t0.format("YYYY-MM")
+          var t1 = moment(received.createdAt)
+          var dm = t1.diff(t0, 'minutes');
+          if (dm < threshold) {
+            receivedPerMonth[month].ontime += 1
+          }
+          else {
+            receivedPerMonth[month].overdue += 1
+          }
+        }
+      }
+
+      var data: any = {months: months, overdue: [], ontime: []}
+
+      data["overdue"] = Array(months.length).fill(0);
+      data["ontime"] = Array(months.length).fill(0);
+
+      for (let index in months) {
+        const month = months[index]
+        data.overdue[index] = receivedPerMonth[month].overdue
+        data.ontime[index] = receivedPerMonth[month].ontime
+      }
+
+      res.json(data)
+
+    } catch (e) {
+      /* istanbul ignore next */
+      logger.error(`dashboard timing: Async Error.`);
+      /* istanbul ignore next */
+      logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
+      /* istanbul ignore next */
+      logger.error(e);
+      res.status(400).json({
+        message: 'Ha ocurrido un error',
+        status: 400
+      });
+    }
+
+  }
+
   private autoRotate(path: string) {
     // doc http://aheckmann.github.io/gm/docs.html
     /**** REQUIRE: imagemagick and graphicsmagick *****
-      brew install imagemagick
-      brew install graphicsmagick
-    * */
+     brew install imagemagick
+     brew install graphicsmagick
+     * */
     return new Promise((resolve, reject) => {
       GraphicsMagick(path)
         .autoOrient()

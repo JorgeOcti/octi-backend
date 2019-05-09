@@ -27,6 +27,13 @@ dashboardItems.push({
   url: '/dashboard/damages/'
 });
 
+dashboardItems.push({
+  id: '1.4',
+  icon: 'fa-circle-o',
+  text: 'Dashboard tiempos traslado',
+  url: '/dashboard/timing/'
+});
+
 
 if (dashboardItems.length) {
   menus.push({

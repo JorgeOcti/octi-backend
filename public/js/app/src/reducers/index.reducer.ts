@@ -12,6 +12,7 @@ import { modalReducer } from './modal.reducer';
 import { usersReducer } from './users.reducer';
 import {venuesReducer} from './venues.reducer';
 import {dashboardDamagesReducer} from "./dashboardDamages.reducer";
+import {dashboardTimingReducer} from "./dashboardTiming.reducer";
 
 export default (history: any) => combineReducers({
   users: usersReducer,
@@ -20,6 +21,7 @@ export default (history: any) => combineReducers({
   carriers: carriersReducer,
   dashboard: dashboardReducer,
   dashboardDamages: dashboardDamagesReducer,
+  dashboardTiming: dashboardTimingReducer,
   inventories: inventoriesReducer,
   inventoryDashboard: inventoriesDashboardReducer,
   alerts: alertsReducer,
