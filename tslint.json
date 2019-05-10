@@ -22,7 +22,8 @@
         "no-unused-variable": [true, "react"],
         "no-var-requires": false,
         "no-empty": false,
-         "forin": true
+        "forin": true,
+        "max-classes-per-file": false
     },
     "rulesDirectory": []
 }

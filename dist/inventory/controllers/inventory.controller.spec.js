@@ -10,6 +10,8 @@ const server_1 = require("../../server");
 const inventory_model_1 = require("../models/inventory.model");
 const request = require('supertest');
 chai.use(chaiHttp);
+chai.config.includeStack = true;
+chai.config.showDiff = true;
 const expect = chai.expect;
 let token = '';
 const authenticatedUser = request.agent(server_1.default);

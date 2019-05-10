@@ -210,6 +210,14 @@ export default class ApiService {
     );
   }
 
+  public getRevisions(page: number, search?: string): AxiosPromise {
+    return this.instance.get(
+      `/api/revisions/?page=${page}${search ? `&search=${search}` : ''}`, {
+        cancelToken: this.source.token
+      }
+    );
+  }
+
   public getAdminCars(page?: number, search?: string): AxiosPromise {
     return this.instance.get(
       `/api/admin/cars/?page=${page}${search ? `&search=${search}` : ''}`, {

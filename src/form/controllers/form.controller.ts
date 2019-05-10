@@ -49,20 +49,21 @@ class FormController {
           bottom: '0.3in',
           left: '0.5in'
         },
-        // header: {
-        //   height: '2mm',
-        //   contents: `<div class="header">
-        //       Reporte generado por OSA Andes. Página <span style="color: #444;">{{page}}</span>/<span>{{pages}}</span>
-        //   </div>`
-        // },
-        /*footer: {
-          // height: '5mm',
+        /*
+        header: {
+          height: '2mm',
+          contents: `<div class="header">
+              Reporte generado por OSA Andes. Página <span>{{page}}</span>/<span>{{pages}}</span>
+          </div>`
+        },
+        footer: {
           contents: {
             default: `<div class="footer">
-                Reporte generado por OSA Andes. Página <span style="color: #444;">{{page}}</span>/<span>{{pages}}</span>
+                Reporte generado por OSA Andes. Página <span>{{page}}</span>/<span>{{pages}}</span>
             </div>`
           }
-        },*/
+        },
+        */
         type: 'pdf',
         quality: '75'
       };
@@ -792,7 +793,7 @@ class FormController {
                         Para ver el detalle has click aquí
                         ${process.env.SITE_URL}cars/${car._id}
 
-                        © 2018 OSA SpA. Todos los derechos reservados.`,
+                        © 2019 OSA SpA. Todos los derechos reservados.`,
                       view: 'alerts/lowQualification',
                       context: {
                         userName,

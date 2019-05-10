@@ -4,12 +4,14 @@ import * as mongoose from 'mongoose';
 import {PaginateOptions, PaginateResult} from 'mongoose';
 import app from '../../app';
 import ParticipantModel from '../../form/models/participant.model';
-import {IRequest} from '../../interfaces/global.interface';
+import {IAnyObject, IRequest} from '../../interfaces/global.interface';
 import InventoryModel, {ChoicesStatusInventory} from '../../inventory/models/inventory.model';
 import {ChoicesStatusCarInventory} from '../../inventory/models/inventoryCar.model';
 import logger from '../../services/logger.service';
 import VINService from '../../services/vin.service';
 import CarModel, {ChoicesStatusCar, ICarModel} from '../models/car.model';
+import User from '../models/user.model';
+import Venue from '../models/venue.model';
 
 class CarController {
   protected carBrands: any = {
@@ -53,6 +55,7 @@ class CarController {
     this.vinDashboardDetail = this.vinDashboardDetail.bind(this);
     this.checkVIN = this.checkVIN.bind(this);
     this.apiCars = this.apiCars.bind(this);
+    this.apiRevisions = this.apiRevisions.bind(this);
     this.apiCarDetail = this.apiCarDetail.bind(this);
     this.getCars = this.getCars.bind(this);
     this.apiParticipantDetail = this.apiParticipantDetail.bind(this);
@@ -829,6 +832,126 @@ class CarController {
     }
   }
 
+  public async apiRevisions(req: IRequest, res: Response) {
+    const {page, pageSize, search} = req.query;
+    const {team} = req.user;
+    // paginate options
+    const options: PaginateOptions = {
+      select: {
+        vin: true,
+        brand: true,
+        denomination: true,
+        color: true
+      },
+      collation: {
+        locale: 'en',
+        strength: 1
+      },
+      populate: [{
+        path: 'lastForm',
+        select: ['createdAt', 'user', 'qualification', 'venue'],
+        populate: [{
+          path: 'user',
+          select: ['firstName', 'lastName']
+        }, {
+          path: 'venue',
+          select: ['name']
+        }]
+      }],
+      sort: {
+        updatedAt: -1
+      },
+      page: parseInt(page ? page : 1, 10),
+      limit: parseInt(pageSize ? pageSize : 20, 10)
+    };
+    try {
+      const participantFilter: IAnyObject = {
+        $and: [{
+          venue: {
+            $in: req.user.venuesPermissions()
+          }
+        }]
+      };
+      const carFilter: IAnyObject = {
+        team
+      };
+      if (search && search.length) {
+        const searchText = new RegExp(search, 'i');
+        const searchUser = await User.find({
+          $and: [{
+            $or: [{
+              firstName: {$regex: searchText}
+            }, {
+              lastName: {$regex: searchText}
+            }]
+          }, {team}]
+        }, {_id: true});
+        const searchVenue = await Venue.find({
+          _id: {
+            $in: req.user.venuesPermissions()
+          },
+          name: {
+            $regex: searchText
+          },
+          team
+        }, {_id: true});
+        if (searchUser.length) {
+          participantFilter.$and.push({
+            user: {
+              $in: searchUser
+            }
+          });
+        } else if (searchVenue.length) {
+          participantFilter.$and.push({
+            venue: {
+              $in: searchVenue
+            }
+          });
+        } else {
+          carFilter.$and = [{
+            $or: [{
+              vin: {
+                $regex: searchText
+              }
+            }, {
+              brand: {
+                $regex: searchText
+              }
+            }]
+          }];
+        }
+      }
+      carFilter.lastForm = {
+        $exists: true,
+        $ne: null,
+        $in: await ParticipantModel.find(participantFilter, {_id: true})
+      };
+      const cars = await this.getRevisions(carFilter, options, search);
+
+      // validate exist page
+      if (options.page && cars.pages && cars.pages < options.page) {
+        res.status(400).json({
+          message: 'La página solicitada no existe.',
+          status: 200
+        });
+      } else {
+        res.json({
+          count: cars.total,
+          pages: cars.pages,
+          hasPrevious: options.page && options.page > 1 && cars.pages && cars.pages >= options.page,
+          hasNext: options.page && cars.pages && cars.pages > options.page,
+          results: cars.docs,
+          status: 200
+        });
+      }
+    } catch (e) {
+      /* istanbul ignore next */
+      if (e) {
+        res.status(500).json(e);
+      }
+    }
+  }
+
   public async apiCars(req: IRequest, res: Response) {
     const {page, pageSize, search} = req.query;
 
@@ -843,11 +966,6 @@ class CarController {
       populate: [{
         path: 'lastForm',
         select: ['createdAt', 'user', 'qualification', 'venue'],
-        // options: {
-        //   sort: {
-        //     updatedAt: -1
-        //   }
-        // }
         populate: [{
           path: 'user',
           select: ['firstName', 'lastName']
@@ -898,6 +1016,18 @@ class CarController {
         res.status(500).json(e);
       }
     }
+  }
+
+  private getRevisions(filters: any, options: PaginateOptions, search?: string): Promise<PaginateResult<ICarModel>> {
+    return new Promise((resolve, reject) => {
+      CarModel.paginate(filters, options, (err, result) => {
+        if (err) {
+          /* istanbul ignore next */
+          return reject(err);
+        }
+        return resolve(result);
+      });
+    });
   }
 
   private getCars(filters: any, options: PaginateOptions, search?: string): Promise<PaginateResult<ICarModel>> {

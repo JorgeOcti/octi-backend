@@ -12,6 +12,8 @@ import {IInventoryCarModel} from '../models/inventoryCar.model';
 const request = require('supertest');
 
 chai.use(chaiHttp);
+chai.config.includeStack = true;
+chai.config.showDiff = true;
 const expect = chai.expect;
 
 let token: string = '';

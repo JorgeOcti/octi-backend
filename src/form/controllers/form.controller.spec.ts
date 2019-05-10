@@ -7,6 +7,8 @@ import server from '../../server';
 import {IFormModel} from '../models/form.model';
 
 // chai.should();
+chai.config.includeStack = true;
+chai.config.showDiff = true;
 chai.use(chaiHttp);
 const expect = chai.expect;
 let token = '';

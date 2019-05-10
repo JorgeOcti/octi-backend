@@ -7,6 +7,8 @@ require("mocha");
 const server_1 = require("../../../server");
 const request = require('supertest');
 chai.use(chaiHttp);
+chai.config.includeStack = true;
+chai.config.showDiff = true;
 const expect = chai.expect;
 const authenticatedUser = request.agent(server_1.default);
 describe('amin alert', () => {

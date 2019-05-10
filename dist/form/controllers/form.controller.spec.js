@@ -7,6 +7,8 @@ require("mocha");
 const path = require("path");
 const server_1 = require("../../server");
 // chai.should();
+chai.config.includeStack = true;
+chai.config.showDiff = true;
 chai.use(chaiHttp);
 const expect = chai.expect;
 let token = '';
