@@ -7,6 +7,8 @@ import server from '../../../server';
 const request = require('supertest');
 
 chai.use(chaiHttp);
+chai.config.includeStack = true;
+chai.config.showDiff = true;
 const expect = chai.expect;
 
 const authenticatedUser: SuperTest<Test> = request.agent(server);

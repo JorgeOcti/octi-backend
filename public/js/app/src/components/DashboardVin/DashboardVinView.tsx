@@ -8,7 +8,7 @@ import {Dispatch} from 'redux';
 import * as io from 'socket.io-client';
 import {debounce} from 'throttle-debounce';
 import {ICar} from '../../../../../../src/interfaces/car.interface';
-import {DashboardReduxAction, getCarsAction, IDashboardState} from '../../actions/dashboard.actions';
+import {changeSearchDashboardAction, DashboardReduxAction, getRevisionsAction, IDashboardState} from '../../actions/dashboard.actions';
 import AppContainer from '../../container/AppContainer';
 import {IWindow} from '../../interfaces/window';
 import Paginator from '../Utils/Paginator';
@@ -18,7 +18,8 @@ declare let window: IWindow;
 interface IPropsType extends RouteComponentProps<{ ticket: string }> {
   dispatch: Dispatch<DashboardReduxAction>;
   dashboard: IDashboardState;
-  getCarsAction(page: number, loading: boolean, search?: string): void;
+  getRevisionsAction(page: number, loading: boolean, search?: string): void;
+  changeSearchDashboardAction(searchText: string): DashboardReduxAction;
 }
 
 interface IStateType {
@@ -29,12 +30,6 @@ interface IStateType {
 }
 
 class DashboardVinView extends React.Component<IPropsType, IStateType> {
-
-  // static propTypes = {
-  //   dashboard: PropTypes.object.isRequired,
-  //   dispatch: PropTypes.func.isRequired,
-  //   getCarsAction: PropTypes.func.isRequired
-  // };
 
   readonly state = {
     error: null,
@@ -78,7 +73,7 @@ class DashboardVinView extends React.Component<IPropsType, IStateType> {
     // set the title of the page
     const {page} = this.props.dashboard.pagination;
     document.title = 'OSA Andes | Revisiones';
-    this.props.getCarsAction(page, true);
+    this.props.getRevisionsAction(page, true);
 
     // socket
     this.socket = io.connect(`${location.protocol}//${location.host}`, {
@@ -95,7 +90,7 @@ class DashboardVinView extends React.Component<IPropsType, IStateType> {
     this.socket.on('REFRESH', (data: any): void => {
       const {page} = this.props.dashboard.pagination;
       if (data.update) {
-        this.props.getCarsAction(page, false);
+        this.props.getRevisionsAction(page, false);
         if (!this.state.highlight.includes(data.car as never)) {
           this.setState({
             highlight: [data.car, ...this.state.highlight]
@@ -138,13 +133,13 @@ class DashboardVinView extends React.Component<IPropsType, IStateType> {
   }
 
   public render(): React.ReactElement<IPropsType> {
-    const {loading, cars, pagination} = this.props.dashboard;
+    const {loading, cars, pagination, searchText} = this.props.dashboard;
     const {highlight, carLoading} = this.state;
     return (
       <AppContainer title="" cMenu="1" cSubMenu="1.2">
         <section className="content">
           <div className="box">
-            <div className="box-header with-border"><h3 className="box-title">Revisiones</h3>
+            <div className="box-header with-border"><h3 className="box-title">Revisiones <small>{pagination.count}</small></h3>
               <div className="box-tools pull-right">
               </div>
             </div>
@@ -158,6 +153,7 @@ class DashboardVinView extends React.Component<IPropsType, IStateType> {
                       type="text"
                       className="form-control pull-right"
                       onChange={this.onChangeSearch}
+                      value={searchText}
                       placeholder="Buscar"/>
                     <div className="input-group-btn">
                       <button className="btn btn-default"><i className="fa fa-search"/></button>
@@ -245,24 +241,22 @@ class DashboardVinView extends React.Component<IPropsType, IStateType> {
   private onChangeSearch(e: React.ChangeEvent<HTMLInputElement>): void {
     e.preventDefault();
     const value = e.target.value.trim();
-    this.setState({
-      searchText: value
-    });
+    this.props.changeSearchDashboardAction(value);
     this.debounceOnChangeSearch();
   }
 
   private debounceOnChangeSearch(): void {
     const {searchText} = this.state;
     if (searchText && searchText.length) {
-      this.props.getCarsAction(1, true, searchText);
+      this.props.getRevisionsAction(1, true, searchText);
     } else {
-      this.props.getCarsAction(1, true);
+      this.props.getRevisionsAction(1, true);
     }
   }
 
   private changePage(page: number): void {
     // change the page
-    this.props.getCarsAction(page, true);
+    this.props.getRevisionsAction(page, true);
   }
 }
 
@@ -275,7 +269,8 @@ const mapStateToProps = (state: { dashboard: IDashboardState }) => {
 const mapDispatchToProps = (dispatch: any ) => {
   return {
     dispatch,
-    getCarsAction: (page: number, loading: boolean, search?: string) => dispatch(getCarsAction(page, loading, search))
+    changeSearchDashboardAction: (searchText: string) => dispatch(changeSearchDashboardAction(searchText)),
+    getRevisionsAction: (page: number, loading: boolean, search?: string) => dispatch(getRevisionsAction(page, loading, search))
   };
 };
 

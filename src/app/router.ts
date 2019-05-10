@@ -32,6 +32,7 @@ appRouter.get('/cars/:id', Middlewares.isLoggedIn, CarController.vinDashboardDet
 // api cars
 appRouter.get('/api/cars/:id', Middlewares.isLoggedIn, CarController.apiCarDetail);
 appRouter.get('/api/cars/', Middlewares.isLoggedIn, CarController.apiCars);
+appRouter.get('/api/revisions/', Middlewares.isLoggedIn, CarController.apiRevisions);
 
 // form detail
 appRouter.get('/api/participant/csv/', Middlewares.isLoggedIn, CarController.apiParticipantCSV);

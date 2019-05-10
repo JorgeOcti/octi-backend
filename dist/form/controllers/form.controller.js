@@ -13,6 +13,7 @@ const alert_model_1 = require("../../app/models/alert.model");
 const car_model_1 = require("../../app/models/car.model");
 const user_model_1 = require("../../app/models/user.model");
 const user_model_2 = require("../../app/models/user.model");
+const venue_model_1 = require("../../app/models/venue.model");
 const server_1 = require("../../server");
 const logger_service_1 = require("../../services/logger.service");
 const redis_service_1 = require("../../services/redis.service");
@@ -21,7 +22,6 @@ const form_model_1 = require("../models/form.model");
 const participant_model_1 = require("../models/participant.model");
 const participantFile_model_1 = require("../models/participantFile.model");
 const scale_model_1 = require("../models/scale.model");
-const venue_model_1 = require("../../app/models/venue.model");
 // import * as puppeteer from 'puppeteer';
 class FormController {
     constructor() {
@@ -47,20 +47,21 @@ class FormController {
                     bottom: '0.3in',
                     left: '0.5in'
                 },
-                // header: {
-                //   height: '2mm',
-                //   contents: `<div class="header">
-                //       Reporte generado por OSA Andes. Página <span style="color: #444;">{{page}}</span>/<span>{{pages}}</span>
-                //   </div>`
-                // },
-                /*footer: {
-                  // height: '5mm',
+                /*
+                header: {
+                  height: '2mm',
+                  contents: `<div class="header">
+                      Reporte generado por OSA Andes. Página <span>{{page}}</span>/<span>{{pages}}</span>
+                  </div>`
+                },
+                footer: {
                   contents: {
                     default: `<div class="footer">
-                        Reporte generado por OSA Andes. Página <span style="color: #444;">{{page}}</span>/<span>{{pages}}</span>
+                        Reporte generado por OSA Andes. Página <span>{{page}}</span>/<span>{{pages}}</span>
                     </div>`
                   }
-                },*/
+                },
+                */
                 type: 'pdf',
                 quality: '75'
             };
@@ -775,7 +776,7 @@ class FormController {
                         Para ver el detalle has click aquí
                         ${process.env.SITE_URL}cars/${car._id}
 
-                        © 2018 OSA SpA. Todos los derechos reservados.`,
+                        © 2019 OSA SpA. Todos los derechos reservados.`,
                                             view: 'alerts/lowQualification',
                                             context: {
                                                 userName,
@@ -969,85 +970,66 @@ class FormController {
     async damagesDashboard(req, res) {
         try {
             const { team } = req.user;
-            const total = 6;
-            let t0 = moment().subtract(total, 'months').startOf('month');
-            let damaged = await participant_model_1.default.aggregate([{
+            const damaged = await participant_model_1.default.aggregate([{
                     $match: {
                         team,
-                        venue: {
+                        'venue': {
                             $in: req.user.venuesPermissions()
                         },
-                        "sections.answers.kind": "damage",
-                        "sections.answers.damagesSelected._id": { $exists: true }
+                        'sections.answers.kind': 'damage',
+                        'sections.answers.damagesSelected._id': { $exists: true }
                     }
-                },
-                {
+                }, {
                     $group: {
                         _id: {
-                            /*
-                            period: {
-                              $dateToString: {
-                                format: '%Y-%m',
-                                date: '$createdAt'
-                              }
-                            },
-                            */
-                            venue: '$venue',
+                            venue: '$venue'
                         },
                         count: { $sum: 1 }
                     }
-                }
-            ]);
-            let undamaged = await participant_model_1.default.aggregate([{
+                }]);
+            const undamaged = await participant_model_1.default.aggregate([{
                     $match: {
                         team,
-                        venue: {
+                        'venue': {
                             $in: req.user.venuesPermissions()
                         },
-                        "sections.answers.kind": "damage",
-                        "sections.answers.damagesSelected._id": { $exists: false }
+                        'sections.answers.kind': 'damage',
+                        'sections.answers.damagesSelected._id': { $exists: false }
                     }
-                },
-                {
+                }, {
                     $group: {
                         _id: {
-                            /*
-                            period: {
-                              $dateToString: {
-                                format: '%Y-%m',
-                                date: '$createdAt'
-                              }
-                            },
-                            */
-                            venue: '$venue',
+                            venue: '$venue'
                         },
                         count: { $sum: 1 }
                     }
-                }
-            ]);
-            var allVenues = [];
+                }]);
+            const allVenues = [];
             damaged.forEach((item) => {
-                if (!allVenues.includes(item._id.venue.toString()))
+                if (!allVenues.includes(item._id.venue.toString())) {
                     allVenues.push(item._id.venue.toString());
+                }
             });
             undamaged.forEach((item) => {
-                if (!allVenues.includes(item._id.venue.toString()))
+                if (!allVenues.includes(item._id.venue.toString())) {
                     allVenues.push(item._id.venue.toString());
+                }
             });
             const venuesPermissions = req.user.venuesPermissions(true);
             const venues = venuesPermissions.filter((v) => allVenues.includes(v));
-            var damagesData = {};
+            const damagesData = {};
             venues.forEach((venue) => damagesData[venue] = { damaged: 0, undamaged: 0 });
             damaged.forEach((item) => {
-                damagesData[item._id.venue]['damaged'] = item.count;
+                damagesData[item._id.venue].damaged = item.count;
             });
             undamaged.forEach((item) => {
-                damagesData[item._id.venue]['undamaged'] = item.count;
+                damagesData[item._id.venue].undamaged = item.count;
             });
-            var data = {};
-            data['damaged'] = venues.map((v) => damagesData[v].damaged);
-            data['undamaged'] = venues.map((v) => damagesData[v].undamaged);
-            data['venues'] = venues;
+            const data = {
+                damaged: venues.map((v) => damagesData[v].damaged),
+                undamaged: venues.map((v) => damagesData[v].undamaged),
+                venues
+            };
             res.json(data);
         }
         catch (e) {
@@ -1066,14 +1048,14 @@ class FormController {
     async timingDashboard(req, res) {
         try {
             const { team } = req.user;
-            let distributor = await venue_model_1.default.findById("5c3605307eb40314d3c46e75");
-            let receivers = await venue_model_1.default.find({ team, type: "receiver" });
+            const distributor = await venue_model_1.default.findById('5c3605307eb40314d3c46e75');
+            const receivers = await venue_model_1.default.find({ team, type: 'receiver' });
             // autos que han llegado al distribuidor
             const threshold = 60 * 24 * 5;
-            let participants = await participant_model_1.default.find({ venue: distributor });
+            const participants = await participant_model_1.default.find({ venue: distributor });
             const total = 6;
             const months = [];
-            var receivedPerMonth = {};
+            const receivedPerMonth = {};
             for (let i = 0; i <= total; i++) {
                 const month = moment().subtract(total - i, 'months').startOf('month').format('YYYY-MM');
                 months.push(month);
@@ -1082,7 +1064,7 @@ class FormController {
                     ontime: 0
                 };
             }
-            var receiverVenues = [];
+            const receiverVenues = [];
             const receptions = await participant_model_1.default.find({
                 team,
                 venue: { $in: receivers.map((v) => v._id) },
@@ -1092,26 +1074,25 @@ class FormController {
                     createdAt: 1
                 }
             });
-            var firstReceptions = {};
-            for (let reception of receptions) {
-                let car = reception.car.toString();
+            const firstReceptions = {};
+            for (const reception of receptions) {
+                const car = reception.car.toString();
                 if (car in firstReceptions) {
                 }
                 else {
                     firstReceptions[car] = reception;
                 }
             }
-            for (let participant of participants) {
-                let received = firstReceptions[participant.car.toString()];
+            for (const participant of participants) {
+                const received = firstReceptions[participant.car.toString()];
                 if (received) {
-                    let receivedVenue = receivers.find((v) => v._id.toString() == received.venue.toString());
                     if (!receiverVenues.includes(received.venue.toString())) {
                         receiverVenues.push(received.venue);
                     }
-                    var t0 = moment(participant.createdAt);
-                    const month = t0.format("YYYY-MM");
-                    var t1 = moment(received.createdAt);
-                    var dm = t1.diff(t0, 'minutes');
+                    const t0 = moment(participant.createdAt);
+                    const month = t0.format('YYYY-MM');
+                    const t1 = moment(received.createdAt);
+                    const dm = t1.diff(t0, 'minutes');
                     if (dm < threshold) {
                         receivedPerMonth[month].ontime += 1;
                     }
@@ -1120,10 +1101,11 @@ class FormController {
                     }
                 }
             }
-            var data = { months: months, overdue: [], ontime: [] };
-            data["overdue"] = Array(months.length).fill(0);
-            data["ontime"] = Array(months.length).fill(0);
-            for (let index in months) {
+            const data = { months, overdue: [], ontime: [] };
+            data.overdue = Array(months.length).fill(0);
+            data.ontime = Array(months.length).fill(0);
+            // tslint:disable-next-line:forin
+            for (const index in months) {
                 const month = months[index];
                 data.overdue[index] = receivedPerMonth[month].overdue;
                 data.ontime[index] = receivedPerMonth[month].ontime;

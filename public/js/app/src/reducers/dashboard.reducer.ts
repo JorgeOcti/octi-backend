@@ -9,6 +9,7 @@ const initialState: IDashboardState = {
   participantsPerDate: [],
   participantPerRange: [],
   carsPerDate: [],
+  searchText: '',
   carsByVenue: [],
   totalCars: 0,
   loadingParticipant: null,
@@ -35,6 +36,11 @@ export function dashboardReducer(state = initialState, action: DashboardReduxAct
           pages: action.payload.pages,
           count: action.payload.count
         }
+      };
+    case '/DASHBOARD/CHANGE_SEARCH':
+      return {
+        ...state,
+        searchText: action.payload.searchText
       };
     case '/DASHBOARD/LOADING_PARTICIPANT':
       return {

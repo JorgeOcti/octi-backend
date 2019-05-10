@@ -9,6 +9,8 @@ const inventoryCar_model_1 = require("../../inventory/models/inventoryCar.model"
 const logger_service_1 = require("../../services/logger.service");
 const vin_service_1 = require("../../services/vin.service");
 const car_model_1 = require("../models/car.model");
+const user_model_1 = require("../models/user.model");
+const venue_model_1 = require("../models/venue.model");
 class CarController {
     constructor() {
         this.carBrands = {
@@ -50,6 +52,7 @@ class CarController {
         this.vinDashboardDetail = this.vinDashboardDetail.bind(this);
         this.checkVIN = this.checkVIN.bind(this);
         this.apiCars = this.apiCars.bind(this);
+        this.apiRevisions = this.apiRevisions.bind(this);
         this.apiCarDetail = this.apiCarDetail.bind(this);
         this.getCars = this.getCars.bind(this);
         this.apiParticipantDetail = this.apiParticipantDetail.bind(this);
@@ -836,6 +839,124 @@ class CarController {
             }
         }
     }
+    async apiRevisions(req, res) {
+        const { page, pageSize, search } = req.query;
+        const { team } = req.user;
+        // paginate options
+        const options = {
+            select: {
+                vin: true,
+                brand: true,
+                denomination: true,
+                color: true
+            },
+            populate: [{
+                    path: 'lastForm',
+                    select: ['createdAt', 'user', 'qualification', 'venue'],
+                    populate: [{
+                            path: 'user',
+                            select: ['firstName', 'lastName']
+                        }, {
+                            path: 'venue',
+                            select: ['name']
+                        }]
+                }],
+            sort: {
+                updatedAt: -1
+            },
+            page: parseInt(page ? page : 1, 10),
+            limit: parseInt(pageSize ? pageSize : 20, 10)
+        };
+        try {
+            const participantFilter = {
+                $and: [{
+                        venue: {
+                            $in: req.user.venuesPermissions()
+                        }
+                    }]
+            };
+            const carFilter = {
+                team
+            };
+            if (search && search.length) {
+                const searchText = new RegExp(search, 'i');
+                const searchUser = await user_model_1.default.find({
+                    $and: [{
+                            $or: [{
+                                    firstName: { $regex: searchText }
+                                }, {
+                                    lastName: { $regex: searchText }
+                                }]
+                        }, { team }]
+                }, { _id: true });
+                const searchVenue = await venue_model_1.default.find({
+                    _id: {
+                        $in: req.user.venuesPermissions()
+                    },
+                    name: {
+                        $regex: searchText
+                    },
+                    team
+                }, { _id: true });
+                if (searchUser.length) {
+                    participantFilter.$and.push({
+                        user: {
+                            $in: searchUser
+                        }
+                    });
+                }
+                else if (searchVenue.length) {
+                    participantFilter.$and.push({
+                        venue: {
+                            $in: searchVenue
+                        }
+                    });
+                }
+                else {
+                    carFilter.$and = [{
+                            $or: [{
+                                    vin: {
+                                        $regex: searchText
+                                    }
+                                }, {
+                                    brand: {
+                                        $regex: searchText
+                                    }
+                                }]
+                        }];
+                }
+            }
+            carFilter.lastForm = {
+                $exists: true,
+                $ne: null,
+                $in: await participant_model_1.default.find(participantFilter, { _id: true })
+            };
+            const cars = await this.getRevisions(carFilter, options, search);
+            // validate exist page
+            if (options.page && cars.pages && cars.pages < options.page) {
+                res.status(400).json({
+                    message: 'La página solicitada no existe.',
+                    status: 200
+                });
+            }
+            else {
+                res.json({
+                    count: cars.total,
+                    pages: cars.pages,
+                    hasPrevious: options.page && options.page > 1 && cars.pages && cars.pages >= options.page,
+                    hasNext: options.page && cars.pages && cars.pages > options.page,
+                    results: cars.docs,
+                    status: 200
+                });
+            }
+        }
+        catch (e) {
+            /* istanbul ignore next */
+            if (e) {
+                res.status(500).json(e);
+            }
+        }
+    }
     async apiCars(req, res) {
         const { page, pageSize, search } = req.query;
         // paginate options
@@ -849,11 +970,6 @@ class CarController {
             populate: [{
                     path: 'lastForm',
                     select: ['createdAt', 'user', 'qualification', 'venue'],
-                    // options: {
-                    //   sort: {
-                    //     updatedAt: -1
-                    //   }
-                    // }
                     populate: [{
                             path: 'user',
                             select: ['firstName', 'lastName']
@@ -904,6 +1020,17 @@ class CarController {
                 res.status(500).json(e);
             }
         }
+    }
+    getRevisions(filters, options, search) {
+        return new Promise((resolve, reject) => {
+            car_model_1.default.paginate(filters, options, (err, result) => {
+                if (err) {
+                    /* istanbul ignore next */
+                    return reject(err);
+                }
+                return resolve(result);
+            });
+        });
     }
     getCars(filters, options, search) {
         let filter = { ...filters };
