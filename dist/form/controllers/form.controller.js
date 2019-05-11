@@ -1016,7 +1016,11 @@ class FormController {
                 }
             });
             const venuesPermissions = req.user.venuesPermissions(true);
-            const venues = venuesPermissions.filter((v) => allVenues.includes(v));
+            var venues = [];
+            venuesPermissions.forEach((v) => {
+                if (allVenues.includes(v) && !venues.includes(v))
+                    venues.push(v);
+            });
             const damagesData = {};
             venues.forEach((venue) => damagesData[venue] = { damaged: 0, undamaged: 0 });
             damaged.forEach((item) => {
@@ -1110,6 +1114,81 @@ class FormController {
                 data.overdue[index] = receivedPerMonth[month].overdue;
                 data.ontime[index] = receivedPerMonth[month].ontime;
             }
+            res.json(data);
+        }
+        catch (e) {
+            /* istanbul ignore next */
+            logger_service_1.default.error(`dashboard timing: Async Error.`);
+            /* istanbul ignore next */
+            logger_service_1.default.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
+            /* istanbul ignore next */
+            logger_service_1.default.error(e);
+            res.status(400).json({
+                message: 'Ha ocurrido un error',
+                status: 400
+            });
+        }
+    }
+    async timingDashboardPerVenue(req, res) {
+        try {
+            const { team } = req.user;
+            const { period } = req.params;
+            //TODO: how to setup this?
+            const distributor = await venue_model_1.default.findById('5c3605307eb40314d3c46e75');
+            const receivers = await venue_model_1.default.find({ team, type: 'receiver' });
+            const receiversDict = {};
+            receivers.forEach((r) => receiversDict[r._id.toString()] = r);
+            // autos que han llegado al distribuidor
+            const t0 = moment(period).startOf('month');
+            const t1 = moment(period).endOf('month');
+            const threshold = 60 * 24 * 5;
+            const participants = await participant_model_1.default.find({
+                venue: distributor,
+                createdAt: { $gt: t0.toDate(), $lt: t1.toDate() },
+            });
+            const receptions = await participant_model_1.default.find({
+                team,
+                venue: { $in: receivers.map((v) => v._id) },
+                receiveFrom: distributor._id,
+                createdAt: { $gt: t0.toDate() },
+            }, ['car', 'venue', 'createdAt'], {
+                sort: {
+                    createdAt: 1
+                }
+            });
+            const firstReceptions = {};
+            for (const reception of receptions) {
+                const car = reception.car.toString();
+                if (car in firstReceptions) {
+                }
+                else {
+                    firstReceptions[car] = reception;
+                }
+            }
+            const receivedPerVenue = {};
+            const venues = [];
+            for (const participant of participants) {
+                const received = firstReceptions[participant.car.toString()];
+                if (received) {
+                    const venue = received.venue.toString();
+                    if (!venues.includes(venue)) {
+                        venues.push(venue);
+                        receivedPerVenue[venue] = 0;
+                    }
+                    const t0 = moment(participant.createdAt);
+                    const t1 = moment(received.createdAt);
+                    const dm = t1.diff(t0, 'minutes');
+                    receivedPerVenue[venue] += 1;
+                    if (dm < threshold) {
+                        //receivedPerMonth[month].ontime += 1;
+                    }
+                    else {
+                        //receivedPerMonth[month].overdue += 1;
+                    }
+                }
+            }
+            const per_venue = venues.map((v) => receivedPerVenue[v]);
+            const data = { venues, per_venue };
             res.json(data);
         }
         catch (e) {
