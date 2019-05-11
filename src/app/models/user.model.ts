@@ -5,6 +5,7 @@ import * as mongoosePaginate from 'mongoose-paginate';
 import * as passportLocalMongoose from 'passport-local-mongoose';
 import {IUser} from '../../interfaces/user.interface';
 import {IPermissionModel} from './permision.model';
+import {ObjectID} from 'bson';
 
 export interface IUserModel extends IUser, mongoose.Document {
   comparePassword: (candidatePassword: string, cb: (err: any, isMatch: any) => {}) => boolean;
@@ -148,9 +149,11 @@ userSchema.methods.venuesPermissions = function(inString?: boolean) {
     );
   }
   if (inString) {
-      return venuesPermissions.map((ve) => ve.toString());
+      return [... new Set(venuesPermissions.map((ve) => ve.toString()))];
+  } else{
+    return [... new Set(venuesPermissions.map((id) => id.toString()))]
+      .map((id) => new ObjectID(id));
   }
-  return venuesPermissions;
 };
 
 /**

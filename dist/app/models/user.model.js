@@ -5,6 +5,7 @@ const jwt = require("jsonwebtoken");
 const mongoose = require("mongoose");
 const mongoosePaginate = require("mongoose-paginate");
 const passportLocalMongoose = require("passport-local-mongoose");
+const bson_1 = require("bson");
 const userSchema = new mongoose.Schema({
     username: {
         type: String,
@@ -128,9 +129,12 @@ userSchema.methods.venuesPermissions = function (inString) {
         ]));
     }
     if (inString) {
-        return venuesPermissions.map((ve) => ve.toString());
+        return [...new Set(venuesPermissions.map((ve) => ve.toString()))];
     }
-    return venuesPermissions;
+    else {
+        return [...new Set(venuesPermissions.map((id) => id.toString()))]
+            .map((id) => new bson_1.ObjectID(id));
+    }
 };
 /**
  * Password hash middleware.
