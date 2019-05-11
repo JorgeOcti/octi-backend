@@ -1036,7 +1036,11 @@ class FormController {
       });
 
       const venuesPermissions = req.user.venuesPermissions(true);
-      const venues = venuesPermissions.filter((v) => allVenues.includes(v));
+      var venues: string[] = []
+      venuesPermissions.forEach((v) => {
+        if(allVenues.includes(v) && !venues.includes(v))
+          venues.push(v);
+      });
 
       const damagesData: any = {};
       venues.forEach((venue) => damagesData[venue] = {damaged: 0, undamaged: 0});
