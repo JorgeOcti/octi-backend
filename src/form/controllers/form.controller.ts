@@ -1217,6 +1217,10 @@ class FormController {
         const received = firstReceptions[participant.car.toString()];
 
         if (received) {
+          if(received.createdAt < participant.createdAt)
+          {
+            continue;
+          }
           const venue = received.venue.toString()
           if (!venues.includes(venue)) {
             venues.push(venue);
