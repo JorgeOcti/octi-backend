@@ -1,11 +1,11 @@
 import * as bcrypt from 'bcrypt';
+import {ObjectID} from 'bson';
 import * as jwt from 'jsonwebtoken';
 import * as mongoose from 'mongoose';
 import * as mongoosePaginate from 'mongoose-paginate';
 import * as passportLocalMongoose from 'passport-local-mongoose';
 import {IUser} from '../../interfaces/user.interface';
 import {IPermissionModel} from './permision.model';
-import {ObjectID} from 'bson';
 
 export interface IUserModel extends IUser, mongoose.Document {
   comparePassword: (candidatePassword: string, cb: (err: any, isMatch: any) => {}) => boolean;
@@ -151,8 +151,8 @@ userSchema.methods.venuesPermissions = function(inString?: boolean) {
   venuesPermissions = venuesPermissions
     .map((id) => id.toString())
     .filter((elem, pos, arr) => {
-    return arr.indexOf(elem) === pos;
-  });
+      return arr.indexOf(elem) === pos;
+    });
   if (inString) {
       return venuesPermissions;
   } else {

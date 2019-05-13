@@ -30,6 +30,7 @@ import InventoryModel, {
 import InventoryCar, {ChoicesStatusCarInventory} from '../models/inventoryCar.model';
 import InventoryFileModel from '../models/inventoryFile.model';
 import InventoryLabel from '../models/inventoryLabel.model';
+import * as Raven from "raven";
 
 class InventoryController {
 
@@ -1631,6 +1632,7 @@ class InventoryController {
       logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
       /* istanbul ignore next */
       logger.error(e);
+      Raven.captureException(e, {req});
       /* istanbul ignore next */
       res.status(500).json({
         message: JSON.stringify(e),

@@ -76,7 +76,7 @@ class DashboardDamagesView extends React.Component<IPropsType, IStateType> {
                   </div>
                 </div>
                 <div className="box-body">
-                  <div id="damages-per-venue" style={{height: '500px', maxWidth: '100%'}}/>
+                  <div id="damages-per-venue" style={{height: '50vh', maxWidth: '100%'}} />
                 </div>
                 {
                   loading &&

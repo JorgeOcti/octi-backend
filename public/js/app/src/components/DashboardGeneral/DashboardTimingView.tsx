@@ -90,7 +90,7 @@ class DashboardTimingView extends React.Component<IPropsType, IStateType> {
                   </div>
                 </div>
                 <div className="box-body">
-                  <div id="damages-per-month" style={{height: '500px', maxWidth: '100%'}}/>
+                  <div id="damages-per-month" style={{height: '40vh', maxWidth: '100%'}} />
                 </div>
                 {
                   loading &&
@@ -109,7 +109,7 @@ class DashboardTimingView extends React.Component<IPropsType, IStateType> {
                   </div>
                 </div>
                 <div className="box-body">
-                  <div id="damages-per-venue" style={{height: '500px', maxWidth: '100%'}}/>
+                  <div id="damages-per-venue" style={{height: '40vh', maxWidth: '100%'}} />
                 </div>
                 {
                   loadingPerVenue &&
