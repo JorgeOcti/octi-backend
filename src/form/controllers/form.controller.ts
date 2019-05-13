@@ -1078,7 +1078,7 @@ class FormController {
 
     try {
       const {team} = req.user;
-      const distributor: IVenueModel = await Venue.findById('5c3605307eb40314d3c46e75');
+      const distributor = await Venue.findOne({team, type: "distributor"})
       const receivers = await Venue.find({team, type: 'receiver'});
 
       // autos que han llegado al distribuidor
@@ -1171,11 +1171,11 @@ class FormController {
 
     try {
       const {team} = req.user;
-      const {period}  = req.query
+      const {period} = req.query
 
       //TODO: how to setup this?
-      const distributor = await Venue.findById('5c3605307eb40314d3c46e75');
-      if(distributor) {
+      const distributor = await Venue.findOne({team, type: "distributor"})
+      if (distributor) {
         const receivers = await Venue.find({team, type: 'receiver'});
 
         const receiversDict: any = {}
@@ -1187,7 +1187,7 @@ class FormController {
 
         const threshold = 60 * 24 * 5;
         const participants = await ParticipantModel.find({
-          venue: distributor as IVenueModel,
+          venue: distributor._id,
           createdAt: {$gt: t0.toDate(), $lt: t1.toDate()},
         });
 

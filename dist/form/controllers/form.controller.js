@@ -1052,7 +1052,7 @@ class FormController {
     async timingDashboard(req, res) {
         try {
             const { team } = req.user;
-            const distributor = await venue_model_1.default.findById('5c3605307eb40314d3c46e75');
+            const distributor = await venue_model_1.default.findOne({ team, type: "distributor" });
             const receivers = await venue_model_1.default.find({ team, type: 'receiver' });
             // autos que han llegado al distribuidor
             const threshold = 60 * 24 * 5;
@@ -1134,7 +1134,7 @@ class FormController {
             const { team } = req.user;
             const { period } = req.query;
             //TODO: how to setup this?
-            const distributor = await venue_model_1.default.findById('5c3605307eb40314d3c46e75');
+            const distributor = await venue_model_1.default.findOne({ team, type: "distributor" });
             if (distributor) {
                 const receivers = await venue_model_1.default.find({ team, type: 'receiver' });
                 const receiversDict = {};
@@ -1144,7 +1144,7 @@ class FormController {
                 const t1 = moment(period).endOf('month');
                 const threshold = 60 * 24 * 5;
                 const participants = await participant_model_1.default.find({
-                    venue: distributor,
+                    venue: distributor._id,
                     createdAt: { $gt: t0.toDate(), $lt: t1.toDate() },
                 });
                 const receptions = await participant_model_1.default.find({
