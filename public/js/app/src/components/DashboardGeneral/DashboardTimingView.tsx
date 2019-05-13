@@ -212,7 +212,7 @@ class DashboardTimingView extends React.Component<IPropsType, IStateType> {
       selected[v.name] = i < 10
     })
 
-    const option = {
+    const option: any = {
       title : {
         text: 'Resultados por sucursal',
         x:'center'
