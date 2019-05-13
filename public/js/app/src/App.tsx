@@ -9,7 +9,9 @@ import CarriersListView from './components/Carriers/CarriersListView';
 import CarDetailView from './components/Cars/CarDetailView';
 import CarsListView from './components/Cars/CarListView';
 import CompaniesListView from './components/Companies/CompaniesListView';
+import DashboardDamagesView from './components/DashboardGeneral/DashboardDamagesView';
 import DashboardGeneralView from './components/DashboardGeneral/DashboardGeneralView';
+import DashboardTimingView from './components/DashboardGeneral/DashboardTimingView';
 import DashboardVinDetail from './components/DashboardVin/DashboardVinDetail';
 import DashboardVinView from './components/DashboardVin/DashboardVinView';
 import ImportCarsView from './components/Imports/ImportCarView';
@@ -23,8 +25,6 @@ import VenuesListView from './components/Venues/VenuesListView';
 import {IWindow} from './interfaces/window';
 import configureStore, {history} from './store/configureStore';
 import {isIntenertExplorer} from './utils/common';
-import DashboardDamagesView from "./components/DashboardGeneral/DashboardDamagesView";
-import DashboardTimingView from "./components/DashboardGeneral/DashboardTimingView";
 
 declare let window: IWindow;
 

@@ -6,13 +6,13 @@ import {connect} from 'react-redux';
 import {RouteComponentProps} from 'react-router';
 import {Dispatch} from 'redux';
 import {DashboardReduxAction} from '../../actions/dashboard.actions';
+import {getDashboardDamages, IDashboardDamagesState} from '../../actions/dashboardDamages.actions';
 import AppContainer from '../../container/AppContainer';
 import Row from '../Utils/Row';
-import {getDashboardDamages, IDashboardDamagesState} from "../../actions/dashboardDamages.actions";
 
 interface IPropsType extends RouteComponentProps<{ ticket: string }> {
   dispatch: Dispatch<DashboardReduxAction>;
-  dashboard: IDashboardDamagesState
+  dashboard: IDashboardDamagesState;
 
   getDashboardDamages(): void;
 }
@@ -22,16 +22,7 @@ interface IStateType {
 }
 
 class DashboardDamagesView extends React.Component<IPropsType, IStateType> {
-
-  // static propTypes = {
-  //   dashboard: PropTypes.object.isRequired,
-  //   dispatch: PropTypes.func.isRequired,
-  //   getParticipantsPerDateAction: PropTypes.func.isRequired
-  // };
-
   damagesPerVenueChart: echarts.ECharts;
-
-  // chartsColors: string[] = ['#3085c1', '#5c4b55', '#55b188', '#4d5c99', '#c53e5a', '#f8d991'];
 
   constructor(props: IPropsType) {
     super(props);
@@ -49,8 +40,7 @@ class DashboardDamagesView extends React.Component<IPropsType, IStateType> {
   }
 
   public componentDidMount(): void {
-
-    const $damagesPerVenue = document.getElementById('damages-per-venue') as HTMLDivElement
+    const $damagesPerVenue = document.getElementById('damages-per-venue') as HTMLDivElement;
     this.damagesPerVenueChart = echarts.init($damagesPerVenue);
   }
 
@@ -64,14 +54,13 @@ class DashboardDamagesView extends React.Component<IPropsType, IStateType> {
   public componentDidUpdate(prevProps: IPropsType, prevState: IStateType): void {
     const {loading} = this.props.dashboard;
     if (!loading) {
-      this.updateDamagesPerVenueChart()
+      this.updateDamagesPerVenueChart();
     }
   }
 
   public componentWillUnmount() {
     // remove listeners
     window.removeEventListener('resize', this.resizeCharts, false);
-
   }
 
   public render(): React.ReactElement<IPropsType> {
@@ -118,10 +107,10 @@ class DashboardDamagesView extends React.Component<IPropsType, IStateType> {
       legend: {
         data: ['Sin daños', 'Con daños'],
         x: 'center',
-        bottom: 50,
+        bottom: 50
       },
       xAxis: {
-        data: data.venues.map((v: string) => venues.find((v2: any) => v2._id == v).name),
+        data: data.venues.map((v: string) => venues.find((v2: any) => v2._id === v).name),
         axisLabel: {
           rotate: 60
         }
@@ -144,7 +133,7 @@ class DashboardDamagesView extends React.Component<IPropsType, IStateType> {
           name: 'Sin daños',
           type: 'bar',
           data: data.undamaged,
-          stack: '1',
+          stack: '1'
         },
         {
           name: 'Con daños',
@@ -159,7 +148,7 @@ class DashboardDamagesView extends React.Component<IPropsType, IStateType> {
   }
 
   private resizeCharts() {
-    if (this.damagesPerVenueChart && this.damagesPerVenueChart !== undefined) {
+    if (this.damagesPerVenueChart) {
       this.damagesPerVenueChart.resize();
       setTimeout(() => {
         this.damagesPerVenueChart.resize();

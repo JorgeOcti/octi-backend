@@ -1,4 +1,4 @@
-import {DashboardTimingReduxAction, IDashboardTimingState} from "../actions/dashboardTiming.actions";
+import {DashboardTimingReduxAction, IDashboardTimingState} from '../actions/dashboardTiming.actions';
 
 const initialState: IDashboardTimingState = {
   data: {
@@ -6,7 +6,7 @@ const initialState: IDashboardTimingState = {
     overdue: [],
     ontime: []
   },
-  per_venue: {},
+  perVenue: {},
   venues: [],
   venuesDict: {},
   loading: true,
@@ -21,8 +21,8 @@ export function dashboardTimingReducer(state = initialState, action: DashboardTi
         loading: action.payload.loading
       };
     case '/DASHBOARD/TIMING/LOAD_DATA':
-      var venuesDict: any = {}
-      action.payload.venues.forEach((v: any) => venuesDict[v._id] = v )
+      const venuesDict: any = {};
+      action.payload.venues.forEach((v: any) => venuesDict[v._id] = v );
       return {
         ...state,
         loading: false,
@@ -39,7 +39,7 @@ export function dashboardTimingReducer(state = initialState, action: DashboardTi
       return {
         ...state,
         loadingPerVenue: false,
-        per_venue: action.payload.per_venue
+        perVenue: action.payload.perVenue
       };
 
     default:

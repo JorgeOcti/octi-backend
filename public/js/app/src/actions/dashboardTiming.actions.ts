@@ -2,20 +2,19 @@ import {AxiosError, default as Axios} from 'axios';
 import {Dispatch} from 'redux';
 import ApiService from '../utils/axios';
 
-interface ITimingData
-{
-  months: string[]
-  overdue: number[],
-  ontime: number[]
+interface ITimingData {
+  months: string[];
+  overdue: number[];
+  ontime: number[];
 }
 
 export interface IDashboardTimingState {
-  data: ITimingData,
-  venues: any[],
-  venuesDict: any,
-  loading: boolean,
-  loadingPerVenue: boolean,
-  per_venue: any
+  data: ITimingData;
+  venues: any[];
+  venuesDict: any;
+  loading: boolean;
+  loadingPerVenue: boolean;
+  perVenue: any;
 }
 
 interface ILoadDashboardTiming {
@@ -39,15 +38,15 @@ export function loadDashboardTimingAction(venues: any[], data: any): ILoadDashbo
 interface ILoadDashboardTimingPerVenue {
   type: '/DASHBOARD/TIMING/LOAD_DATA_PER_VENUE';
   payload: {
-    per_venue: number[]
+    perVenue: number[]
   };
 }
 
-export function loadDashboardTimingPerVenueAction(per_venue: number[]): ILoadDashboardTimingPerVenue {
+export function loadDashboardTimingPerVenueAction(perVenue: number[]): ILoadDashboardTimingPerVenue {
   return {
     type: '/DASHBOARD/TIMING/LOAD_DATA_PER_VENUE',
     payload: {
-      per_venue
+      perVenue
     }
   };
 }
@@ -102,8 +101,8 @@ export function getDashboardTimingPerVenue(period: string) {
   return (dispatch: Dispatch<DashboardTimingReduxAction>) => {
     const api: ApiService = new ApiService();
     dispatch(isLoadingPerVenueAction(true));
-    api.getTimingPerVenue(period).then((per_venue: any) => {
-      dispatch(loadDashboardTimingPerVenueAction(per_venue.data));
+    api.getTimingPerVenue(period).then((perVenue: any) => {
+      dispatch(loadDashboardTimingPerVenueAction(perVenue.data));
     }).catch((err: AxiosError): void => {
       api.errorHandler(err);
     });

@@ -567,6 +567,13 @@ class FormController {
     }
     vin = vin.replace(/[\W_]+/g, '');
     try {
+      const updatedUser = await User.findById(req.user._id);
+      if (!updatedUser) {
+        return res.status(404).json({
+          message: 'No se ha encontrado el formulario solicitado.',
+          status: 404
+        });
+      }
       const car = await CarModel.findOne({
         $or: [{vin: {$eq: vin}}, {vin2: {$eq: vin}}],
         team
@@ -586,7 +593,7 @@ class FormController {
             car,
             description: form.description,
             user: req.user._id,
-            venue,
+            venue: updatedUser.venue,
             active: form.active
           };
 
@@ -1240,8 +1247,8 @@ class FormController {
           }
         }
 
-        const per_venue: number[] = venues.map((v) => receivedPerVenue[v]);
-        const data: any = {venues, per_venue}
+        const perVenue: number[] = venues.map((v) => receivedPerVenue[v]);
+        const data: any = {venues, perVenue}
 
         res.json(data);
       }
