@@ -8,6 +8,7 @@ import {Dispatch} from 'redux';
 import * as io from 'socket.io-client';
 import {debounce} from 'throttle-debounce';
 import {ICar} from '../../../../../../src/interfaces/car.interface';
+import {IParticipant} from '../../../../../../src/interfaces/participant.interface';
 import {changeSearchDashboardAction, DashboardReduxAction, getRevisionsAction, IDashboardState} from '../../actions/dashboard.actions';
 import AppContainer from '../../container/AppContainer';
 import {IWindow} from '../../interfaces/window';
@@ -31,7 +32,7 @@ interface IStateType {
 
 class DashboardVinView extends React.Component<IPropsType, IStateType> {
 
-  readonly state = {
+  readonly state: IStateType = {
     error: null,
     highlight: [],
     searchText: '',
@@ -47,6 +48,7 @@ class DashboardVinView extends React.Component<IPropsType, IStateType> {
     this.changePage = this.changePage.bind(this);
     this.onChangeSearch = this.onChangeSearch.bind(this);
     this.printPdf = this.printPdf.bind(this);
+    this.hasDamages = this.hasDamages.bind(this);
     this.debounceOnChangeSearch = debounce(300, this.debounceOnChangeSearch);
   }
 
@@ -91,7 +93,7 @@ class DashboardVinView extends React.Component<IPropsType, IStateType> {
       const {page} = this.props.dashboard.pagination;
       if (data.update) {
         this.props.getRevisionsAction(page, false);
-        if (!this.state.highlight.includes(data.car as never)) {
+        if (!this.state.highlight.includes(data.car)) {
           this.setState({
             highlight: [data.car, ...this.state.highlight]
           });
@@ -130,6 +132,10 @@ class DashboardVinView extends React.Component<IPropsType, IStateType> {
       this.props.dashboard.source.cancel('Operation canceled by the user.');
     }
     this.socket.disconnect();
+  }
+
+  public componentDidUpdate(prevProps: Readonly<IPropsType>, prevState: Readonly<IStateType>, snapshot?: any): void {
+    $('[data-toggle="tooltip"]').tooltip();
   }
 
   public render(): React.ReactElement<IPropsType> {
@@ -193,7 +199,22 @@ class DashboardVinView extends React.Component<IPropsType, IStateType> {
                               {`${car.lastForm.venue ? `${car.lastForm.venue.name}` : '-'}`}
                             </td>
                             <td className="middle">
-                              {`${car.lastForm && car.lastForm.hasOwnProperty('qualification') ? `${Math.round(car.lastForm.qualification)}%` : ''}`}
+                              {
+                                `${car.lastForm && car.lastForm.hasOwnProperty('qualification') ?
+                                  `${Math.round(car.lastForm.qualification)}%` : ''}`
+                              }
+                              {
+                                this.hasDamages(car.lastForm) ?
+                                  <React.Fragment>
+                                    {' '}<i
+                                    className="fa fa-warning text-red"
+                                    data-toggle="tooltip"
+                                    data-placement="top"
+                                    title="Daños encontrados en esta revisión."
+                                  />
+                                  </React.Fragment>
+                                  : null
+                              }
                             </td>
                             <td className="middle hidden-xs">
                               {moment(car.lastForm.createdAt).format('LLL')}
@@ -236,6 +257,16 @@ class DashboardVinView extends React.Component<IPropsType, IStateType> {
         </section>
       </AppContainer>
     );
+  }
+
+  private hasDamages(participant: IParticipant): boolean {
+    let damages: number = 0;
+    for (const section of participant.sections) {
+      for (const answer of section.answers) {
+        damages += answer.damagesSelected ? answer.damagesSelected.length : 0;
+      }
+    }
+    return damages > 0;
   }
 
   private onChangeSearch(e: React.ChangeEvent<HTMLInputElement>): void {

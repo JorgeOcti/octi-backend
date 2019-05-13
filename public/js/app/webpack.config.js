@@ -44,8 +44,14 @@ module.exports = {// entry: process.env.NODE_ENV === 'production'?['babel-polyfi
   },
   optimization: {
     splitChunks: {
-      chunks: 'all'
+      chunks: 'all',
+      // maxSize: 128000,
     }
+  },
+  performance: {
+    // hints: false,
+    maxEntrypointSize: 1024000,
+    maxAssetSize: 512000
   },
   module: {
     rules: [

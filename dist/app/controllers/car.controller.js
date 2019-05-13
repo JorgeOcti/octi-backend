@@ -852,7 +852,7 @@ class CarController {
             },
             populate: [{
                     path: 'lastForm',
-                    select: ['createdAt', 'user', 'qualification', 'venue'],
+                    select: ['createdAt', 'user', 'qualification', 'venue', 'sections', 'sections.answers.damagesSelected'],
                     populate: [{
                             path: 'user',
                             select: ['firstName', 'lastName']

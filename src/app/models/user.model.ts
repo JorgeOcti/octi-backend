@@ -148,11 +148,15 @@ userSchema.methods.venuesPermissions = function(inString?: boolean) {
       ])
     );
   }
+  venuesPermissions = venuesPermissions
+    .map((id) => id.toString())
+    .filter((elem, pos, arr) => {
+    return arr.indexOf(elem) === pos;
+  });
   if (inString) {
-      return [... new Set(venuesPermissions.map((ve) => ve.toString()))];
-  } else{
-    return [... new Set(venuesPermissions.map((id) => id.toString()))]
-      .map((id) => new ObjectID(id));
+      return venuesPermissions;
+  } else {
+    return venuesPermissions.map((id) => new ObjectID(id));
   }
 };
 

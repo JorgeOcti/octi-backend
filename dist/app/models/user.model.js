@@ -128,12 +128,16 @@ userSchema.methods.venuesPermissions = function (inString) {
             ...this.venuesAccess
         ]));
     }
+    venuesPermissions = venuesPermissions
+        .map((id) => id.toString())
+        .filter((elem, pos, arr) => {
+        return arr.indexOf(elem) === pos;
+    });
     if (inString) {
-        return [...new Set(venuesPermissions.map((ve) => ve.toString()))];
+        return venuesPermissions;
     }
     else {
-        return [...new Set(venuesPermissions.map((id) => id.toString()))]
-            .map((id) => new bson_1.ObjectID(id));
+        return venuesPermissions.map((id) => new bson_1.ObjectID(id));
     }
 };
 /**
