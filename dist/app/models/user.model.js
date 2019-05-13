@@ -1,11 +1,11 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 const bcrypt = require("bcrypt");
+const bson_1 = require("bson");
 const jwt = require("jsonwebtoken");
 const mongoose = require("mongoose");
 const mongoosePaginate = require("mongoose-paginate");
 const passportLocalMongoose = require("passport-local-mongoose");
-const bson_1 = require("bson");
 const userSchema = new mongoose.Schema({
     username: {
         type: String,

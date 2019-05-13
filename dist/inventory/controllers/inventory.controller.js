@@ -23,6 +23,7 @@ const inventory_model_2 = require("../models/inventory.model");
 const inventoryCar_model_1 = require("../models/inventoryCar.model");
 const inventoryFile_model_1 = require("../models/inventoryFile.model");
 const inventoryLabel_model_1 = require("../models/inventoryLabel.model");
+const Raven = require("raven");
 class InventoryController {
     constructor() {
         this.index = this.index.bind(this);
@@ -1627,6 +1628,7 @@ class InventoryController {
             logger_service_1.default.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
             /* istanbul ignore next */
             logger_service_1.default.error(e);
+            Raven.captureException(e, { req });
             /* istanbul ignore next */
             res.status(500).json({
                 message: JSON.stringify(e),

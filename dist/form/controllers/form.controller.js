@@ -1044,6 +1044,7 @@ class FormController {
             res.json(data);
         }
         catch (e) {
+            Raven.captureException(e, { req });
             /* istanbul ignore next */
             logger_service_1.default.error(`dashboard damages: Async Error.`);
             /* istanbul ignore next */
@@ -1124,6 +1125,7 @@ class FormController {
             res.json(data);
         }
         catch (e) {
+            Raven.captureException(e, { req });
             /* istanbul ignore next */
             logger_service_1.default.error(`dashboard timing: Async Error.`);
             /* istanbul ignore next */
@@ -1204,6 +1206,7 @@ class FormController {
             }
         }
         catch (e) {
+            Raven.captureException(e, { req });
             /* istanbul ignore next */
             logger_service_1.default.error(`dashboard timing: Async Error.`);
             /* istanbul ignore next */
