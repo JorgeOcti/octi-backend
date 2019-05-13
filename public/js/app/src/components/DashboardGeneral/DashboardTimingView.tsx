@@ -70,10 +70,13 @@ class DashboardTimingView extends React.Component<IPropsType, IStateType> {
   }
 
   public componentDidUpdate(prevProps: IPropsType, prevState: IStateType): void {
-    const {loading, per_venue} = this.props.dashboard;
+    const {loading, loadingPerVenue, per_venue} = this.props.dashboard;
     if (!loading) {
       this.updateTimingPerMonthChart()
+    }
 
+    if(!loadingPerVenue)
+    {
       //TODO. how to check empty dict?
       if(Object.keys(per_venue).length > 0)
         this.updateTimingPerVenueChart()
@@ -88,7 +91,7 @@ class DashboardTimingView extends React.Component<IPropsType, IStateType> {
   }
 
   public render(): React.ReactElement<IPropsType> {
-    const {loading} = this.props.dashboard;
+    const {loading, loadingPerVenue} = this.props.dashboard;
     return (
       <AppContainer title="" cMenu="1" cSubMenu="1.4">
         <section className="content">
@@ -112,9 +115,9 @@ class DashboardTimingView extends React.Component<IPropsType, IStateType> {
             </div>
           </Row>
           <Row>
-            <div className="col-md-12">
+            <div id="per-venue" className="col-md-12">
               <div className="box">
-                <div className="box-header with-border"><h3 className="box-title">Detalle por período</h3>
+                <div className="box-header with-border"><h3 className="box-title">Detalle por sucursal</h3>
                   <div className="box-tools pull-right">
                   </div>
                 </div>
@@ -122,7 +125,7 @@ class DashboardTimingView extends React.Component<IPropsType, IStateType> {
                   <div id="damages-per-venue" style={{height: '500px', maxWidth: '100%'}}/>
                 </div>
                 {
-                  loading &&
+                  loadingPerVenue &&
                   <div className="overlay">
                     <i className="fa fa-spinner fa-spin text-purple"/>
                   </div>
@@ -250,13 +253,18 @@ class DashboardTimingView extends React.Component<IPropsType, IStateType> {
 
   private onClickBar(param: any)
   {
-    console.log(param);
-    console.log(this.props.dashboard);
-    const { data } = this.props.dashboard;
-    const { months } = data
+    if(param.componentIndex == 0)
+    {
+      const { data } = this.props.dashboard;
+      const { months } = data
 
-    const period = months[param.dataIndex];
-    this.props.getDashboardTimingPerVenue(period)
+      const period = months[param.dataIndex];
+      this.props.getDashboardTimingPerVenue(period)
+
+      $([document.documentElement, document.body]).animate({
+        scrollTop: $("#per-venue").offset().top
+      }, 500);
+    }
   }
 
   private resizeCharts() {

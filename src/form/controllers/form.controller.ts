@@ -1171,79 +1171,80 @@ class FormController {
 
     try {
       const {team} = req.user;
-      const {period}  = req.params
+      const {period}  = req.query
 
       //TODO: how to setup this?
-      const distributor: IVenueModel = await Venue.findById('5c3605307eb40314d3c46e75');
-      const receivers = await Venue.find({team, type: 'receiver'});
+      const distributor = await Venue.findById('5c3605307eb40314d3c46e75');
+      if(distributor) {
+        const receivers = await Venue.find({team, type: 'receiver'});
 
-      const receiversDict: any = {}
-      receivers.forEach((r) => receiversDict[r._id.toString()] = r )
+        const receiversDict: any = {}
+        receivers.forEach((r) => receiversDict[r._id.toString()] = r)
 
-      // autos que han llegado al distribuidor
-      const t0 = moment(period).startOf('month')
-      const t1 = moment(period).endOf('month')
+        // autos que han llegado al distribuidor
+        const t0 = moment(period).startOf('month')
+        const t1 = moment(period).endOf('month')
 
-      const threshold = 60 * 24 * 5;
-      const participants = await ParticipantModel.find({
-        venue: distributor,
-        createdAt: { $gt: t0.toDate(), $lt: t1.toDate() },
-      });
+        const threshold = 60 * 24 * 5;
+        const participants = await ParticipantModel.find({
+          venue: distributor as IVenueModel,
+          createdAt: {$gt: t0.toDate(), $lt: t1.toDate()},
+        });
 
-      const receptions = await ParticipantModel.find({
-        team,
-        venue: { $in: receivers.map((v) => v._id )},
-        receiveFrom: distributor._id,
-        createdAt: { $gt: t0.toDate() },
-      }, ['car', 'venue', 'createdAt'], {
-        sort: {
-          createdAt: 1
-        }
-      });
-
-      const firstReceptions: any = {};
-      for (const reception of receptions) {
-        const car = reception.car.toString();
-        if (car in firstReceptions) {
-        } else {
-          firstReceptions[car] = reception;
-        }
-      }
-
-      const receivedPerVenue: any = {}
-      const venues: string[] = [];
-      for (const participant of participants) {
-
-        const received = firstReceptions[participant.car.toString()];
-
-        if (received) {
-          if(received.createdAt < participant.createdAt)
-          {
-            continue;
+        const receptions = await ParticipantModel.find({
+          team,
+          venue: {$in: receivers.map((v) => v._id)},
+          receiveFrom: distributor._id,
+          createdAt: {$gt: t0.toDate()},
+        }, ['car', 'venue', 'createdAt'], {
+          sort: {
+            createdAt: 1
           }
-          const venue = received.venue.toString()
-          if (!venues.includes(venue)) {
-            venues.push(venue);
-            receivedPerVenue[venue] = 0;
-          }
+        });
 
-          const t0 = moment(participant.createdAt);
-          const t1 = moment(received.createdAt);
-          const dm = t1.diff(t0, 'minutes');
-
-          receivedPerVenue[venue] += 1
-          if (dm < threshold) {
-            //receivedPerMonth[month].ontime += 1;
+        const firstReceptions: any = {};
+        for (const reception of receptions) {
+          const car = reception.car.toString();
+          if (car in firstReceptions) {
           } else {
-            //receivedPerMonth[month].overdue += 1;
+            firstReceptions[car] = reception;
           }
         }
+
+        const receivedPerVenue: any = {}
+        const venues: string[] = [];
+        for (const participant of participants) {
+
+          const received = firstReceptions[participant.car.toString()];
+
+          if (received) {
+            if (received.createdAt < participant.createdAt) {
+              continue;
+            }
+            const venue = received.venue.toString()
+            if (!venues.includes(venue)) {
+              venues.push(venue);
+              receivedPerVenue[venue] = 0;
+            }
+
+            const t0 = moment(participant.createdAt);
+            const t1 = moment(received.createdAt);
+            const dm = t1.diff(t0, 'minutes');
+
+            receivedPerVenue[venue] += 1
+            if (dm < threshold) {
+              //receivedPerMonth[month].ontime += 1;
+            } else {
+              //receivedPerMonth[month].overdue += 1;
+            }
+          }
+        }
+
+        const per_venue: number[] = venues.map((v) => receivedPerVenue[v]);
+        const data: any = {venues, per_venue}
+
+        res.json(data);
       }
-
-      const per_venue: number[] = venues.map((v) => receivedPerVenue[v]);
-      const data: any = { venues, per_venue }
-
-      res.json(data);
 
     } catch (e) {
       /* istanbul ignore next */

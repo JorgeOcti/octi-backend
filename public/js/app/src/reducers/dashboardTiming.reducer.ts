@@ -10,6 +10,7 @@ const initialState: IDashboardTimingState = {
   venues: [],
   venuesDict: {},
   loading: true,
+  loadingPerVenue: false
 };
 
 export function dashboardTimingReducer(state = initialState, action: DashboardTimingReduxAction): IDashboardTimingState {
@@ -29,12 +30,18 @@ export function dashboardTimingReducer(state = initialState, action: DashboardTi
         venuesDict,
         data: action.payload.data
       };
+    case '/DASHBOARD/TIMING/IS_LOADING_PER_VENUE':
+      return {
+        ...state,
+        loadingPerVenue: true
+      };
     case '/DASHBOARD/TIMING/LOAD_DATA_PER_VENUE':
       return {
         ...state,
-        loading: false,
+        loadingPerVenue: false,
         per_venue: action.payload.per_venue
       };
+
     default:
       return state;
   }
