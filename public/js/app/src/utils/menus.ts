@@ -20,20 +20,23 @@ const dashboardItems = [{
   url: '/cars/'
 }];
 
-dashboardItems.push({
-  id: '1.3',
-  icon: 'fa-circle-o',
-  text: 'Dashboard daños',
-  url: '/dashboard/damages/'
-});
+if (hasPermission(window.user, 'viewDashboardDamages')) {
+  dashboardItems.push({
+    id: '1.3',
+    icon: 'fa-circle-o',
+    text: 'Dashboard daños',
+    url: '/dashboard/damages/'
+  });
+}
 
-dashboardItems.push({
-  id: '1.4',
-  icon: 'fa-circle-o',
-  text: 'Dashboard tiempos traslado',
-  url: '/dashboard/timing/'
-});
-
+if (hasPermission(window.user, 'viewDashboardTiming')) {
+  dashboardItems.push({
+    id: '1.4',
+    icon: 'fa-circle-o',
+    text: 'Dashboard tiempos traslado',
+    url: '/dashboard/timing/'
+  });
+}
 
 if (dashboardItems.length) {
   menus.push({

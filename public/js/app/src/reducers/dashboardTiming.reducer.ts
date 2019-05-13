@@ -1,9 +1,16 @@
-import {DashboardTimingReduxAction, IDashboardTimingState} from "../actions/dashboardTiming.actions";
+import {DashboardTimingReduxAction, IDashboardTimingState} from '../actions/dashboardTiming.actions';
 
 const initialState: IDashboardTimingState = {
-  data: {},
+  data: {
+    months: [],
+    overdue: [],
+    ontime: []
+  },
+  perVenue: {},
   venues: [],
+  venuesDict: {},
   loading: true,
+  loadingPerVenue: false
 };
 
 export function dashboardTimingReducer(state = initialState, action: DashboardTimingReduxAction): IDashboardTimingState {
@@ -14,12 +21,27 @@ export function dashboardTimingReducer(state = initialState, action: DashboardTi
         loading: action.payload.loading
       };
     case '/DASHBOARD/TIMING/LOAD_DATA':
+      const venuesDict: any = {};
+      action.payload.venues.forEach((v: any) => venuesDict[v._id] = v );
       return {
         ...state,
         loading: false,
         venues: action.payload.venues,
+        venuesDict,
         data: action.payload.data
       };
+    case '/DASHBOARD/TIMING/IS_LOADING_PER_VENUE':
+      return {
+        ...state,
+        loadingPerVenue: true
+      };
+    case '/DASHBOARD/TIMING/LOAD_DATA_PER_VENUE':
+      return {
+        ...state,
+        loadingPerVenue: false,
+        perVenue: action.payload.perVenue
+      };
+
     default:
       return state;
   }

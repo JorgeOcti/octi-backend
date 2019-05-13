@@ -2,10 +2,19 @@ import {AxiosError, default as Axios} from 'axios';
 import {Dispatch} from 'redux';
 import ApiService from '../utils/axios';
 
+interface ITimingData {
+  months: string[];
+  overdue: number[];
+  ontime: number[];
+}
+
 export interface IDashboardTimingState {
-  data: any;
-  venues: any[],
+  data: ITimingData;
+  venues: any[];
+  venuesDict: any;
   loading: boolean;
+  loadingPerVenue: boolean;
+  perVenue: any;
 }
 
 interface ILoadDashboardTiming {
@@ -26,6 +35,22 @@ export function loadDashboardTimingAction(venues: any[], data: any): ILoadDashbo
   };
 }
 
+interface ILoadDashboardTimingPerVenue {
+  type: '/DASHBOARD/TIMING/LOAD_DATA_PER_VENUE';
+  payload: {
+    perVenue: number[]
+  };
+}
+
+export function loadDashboardTimingPerVenueAction(perVenue: number[]): ILoadDashboardTimingPerVenue {
+  return {
+    type: '/DASHBOARD/TIMING/LOAD_DATA_PER_VENUE',
+    payload: {
+      perVenue
+    }
+  };
+}
+
 interface IIsLoading {
   type: '/DASHBOARD/TIMING/IS_LOADING';
   payload: {
@@ -41,11 +66,26 @@ export function isLoadingAction(loading: boolean): IIsLoading {
   };
 }
 
+interface IIsLoadingPerVenue {
+  type: '/DASHBOARD/TIMING/IS_LOADING_PER_VENUE';
+  payload: {
+    loading: boolean;
+  };
+}
+
+export function isLoadingPerVenueAction(loading: boolean): IIsLoadingPerVenue {
+  return {
+    type: '/DASHBOARD/TIMING/IS_LOADING_PER_VENUE',
+    payload: {
+      loading
+    }
+  };
+}
 
 export function getDashboardTiming() {
   return (dispatch: Dispatch<DashboardTimingReduxAction>) => {
     const api: ApiService = new ApiService();
-    dispatch(isLoadingAction(true));
+    dispatch(isLoadingPerVenueAction(true));
     Axios.all([
       api.getVenues(1, 200),
       api.getDashboardTiming()
@@ -57,4 +97,16 @@ export function getDashboardTiming() {
   };
 }
 
-export type DashboardTimingReduxAction = ILoadDashboardTiming | IIsLoading;
+export function getDashboardTimingPerVenue(period: string) {
+  return (dispatch: Dispatch<DashboardTimingReduxAction>) => {
+    const api: ApiService = new ApiService();
+    dispatch(isLoadingPerVenueAction(true));
+    api.getTimingPerVenue(period).then((perVenue: any) => {
+      dispatch(loadDashboardTimingPerVenueAction(perVenue.data));
+    }).catch((err: AxiosError): void => {
+      api.errorHandler(err);
+    });
+  };
+}
+
+export type DashboardTimingReduxAction = ILoadDashboardTiming | ILoadDashboardTimingPerVenue | IIsLoading | IIsLoadingPerVenue;
