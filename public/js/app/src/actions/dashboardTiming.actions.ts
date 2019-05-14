@@ -85,7 +85,7 @@ export function isLoadingPerVenueAction(loading: boolean): IIsLoadingPerVenue {
 export function getDashboardTiming() {
   return (dispatch: Dispatch<DashboardTimingReduxAction>) => {
     const api: ApiService = new ApiService();
-    dispatch(isLoadingPerVenueAction(true));
+    dispatch(isLoadingAction(true));
     Axios.all([
       api.getVenues(1, 200),
       api.getDashboardTiming()
