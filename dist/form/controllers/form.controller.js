@@ -695,7 +695,7 @@ class FormController {
                                 accessories: question.accessories,
                                 damages: question.damages,
                                 damagesSelected: answer && answer.damages ? answer.damages : [],
-                                accesoriesSelected: choice && choice.requireAccesories && answer && answer.accesories ?
+                                accesoriesSelected: (question.kind === form_model_1.KindQuestion.accessory || choice && choice.requireAccesories) && answer && answer.accesories ?
                                     answer.accesories.map((accesory) => new bson_1.ObjectID(accesory))
                                     : [],
                                 risk: question.risk,
@@ -1279,13 +1279,28 @@ class FormController {
                             select: ['name', 'positions', 'kinds', 'parts'],
                             populate: [{
                                     path: 'positions',
-                                    select: ['name']
+                                    select: ['name'],
+                                    options: {
+                                        sort: {
+                                            name: 1
+                                        }
+                                    }
                                 }, {
                                     path: 'kinds',
-                                    select: ['name']
+                                    select: ['name'],
+                                    options: {
+                                        sort: {
+                                            name: 1
+                                        }
+                                    }
                                 }, {
                                     path: 'parts',
-                                    select: ['name']
+                                    select: ['name'],
+                                    options: {
+                                        sort: {
+                                            name: 1
+                                        }
+                                    }
                                 }]
                         }])
                         .lean()
