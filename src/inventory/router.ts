@@ -13,7 +13,6 @@ inventoryRouter.get('/inventory/create/', Middlewares.isLoggedIn, InventoryContr
 inventoryRouter.get('/inventory/:id/', Middlewares.isLoggedIn, InventoryController.detail);
 inventoryRouter.get('/inventory/:id/:tab/', Middlewares.isLoggedIn, InventoryController.detail);
 
-
 // Inventories API Web
 inventoryRouter.get('/api/inventory/', Middlewares.isLoggedIn, InventoryController.list);
 inventoryRouter.post('/api/inventory/dashboard/', Middlewares.isLoggedIn, InventoryController.dashboard);
