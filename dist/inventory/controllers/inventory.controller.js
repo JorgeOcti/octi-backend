@@ -8,6 +8,7 @@ const GraphicsMagick = require("gm");
 const https = require("https");
 const moment = require("moment");
 const mongoose = require("mongoose");
+const Raven = require("raven");
 const app_1 = require("../../app");
 const car_model_1 = require("../../app/models/car.model");
 const car_model_2 = require("../../app/models/car.model");
@@ -23,7 +24,6 @@ const inventory_model_2 = require("../models/inventory.model");
 const inventoryCar_model_1 = require("../models/inventoryCar.model");
 const inventoryFile_model_1 = require("../models/inventoryFile.model");
 const inventoryLabel_model_1 = require("../models/inventoryLabel.model");
-const Raven = require("raven");
 class InventoryController {
     constructor() {
         this.index = this.index.bind(this);
@@ -58,7 +58,7 @@ class InventoryController {
         const { team } = req.user;
         const { id } = req.params;
         try {
-            const inventory = await inventory_model_2.default.findOne({ _id: id, team });
+            const inventory = await inventory_model_1.default.findOne({ _id: id, team });
             if (!inventory) {
                 return res.status(404).render('404');
             }
@@ -138,13 +138,13 @@ class InventoryController {
                     }
                 }
             }
-            const inventory = new inventory_model_2.default({
+            const inventory = new inventory_model_1.default({
                 name,
                 company,
                 team,
                 venues: venuesIDs,
                 createdBy: req.user._id,
-                status: inventory_model_2.ChoicesStatusInventory.inProcess,
+                status: inventory_model_1.ChoicesStatusInventory.inProcess,
                 settings: {
                     photos: {
                         manual: manualPhoto,
@@ -169,7 +169,7 @@ class InventoryController {
             });
             await inventoryCar_model_1.default.insertMany(inventoryCars);
             if (notification) {
-                const usersIDs = await user_model_1.default.find({
+                const usersIDs = await user_model_2.default.find({
                     venue: {
                         $in: venuesIDs
                     },
@@ -206,8 +206,14 @@ class InventoryController {
         const { team } = req.user;
         const venuesPermissions = req.user.venuesPermissions();
         try {
+            // fix Manuel Aravena DERCO
+            const specialFilter = req.user._id.toString() === '5b636fd9a50daf3030c00e2e' ? {
+                'cars.car': {
+                    $in: (await car_model_1.default.find({ team, type: 'NEC' }, { _id: true }).lean()).map((car) => car._id)
+                }
+            } : {};
             const response = [];
-            const inventories = await inventory_model_2.default.aggregate([{
+            const inventories = await inventory_model_1.default.aggregate([{
                     $match: {
                         team,
                         venues: {
@@ -227,7 +233,8 @@ class InventoryController {
                     $match: {
                         'cars.venue': {
                             $in: venuesPermissions
-                        }
+                        },
+                        ...specialFilter
                     }
                 }, {
                     $group: {
@@ -370,7 +377,7 @@ class InventoryController {
         logger_service_1.default.info(`apiDetail`);
         logger_service_1.default.info(`{user: {_id: ${req.user._id}, email: ${req.user.email}}, inventory: ${id}}`);
         try {
-            const updatedUser = await user_model_2.default.findById(req.user._id);
+            const updatedUser = await user_model_1.default.findById(req.user._id);
             if (!updatedUser) {
                 res.status(404).json({
                     message: 'No se ha encontrado el inventario solicitado.',
@@ -379,12 +386,12 @@ class InventoryController {
             }
             else {
                 // const venuesPermissions = req.user.venuesPermissions();
-                const inventory = await inventory_model_1.default
+                const inventory = await inventory_model_2.default
                     .findOne({
                     _id: id,
                     venues: updatedUser.venue,
                     status: {
-                        $in: [inventory_model_2.ChoicesStatusInventory.inProcess]
+                        $in: [inventory_model_1.ChoicesStatusInventory.inProcess]
                     },
                     team
                 })
@@ -555,7 +562,7 @@ class InventoryController {
         logger_service_1.default.info(`apiFoundCar`);
         logger_service_1.default.info(`{user: {_id: ${req.user._id}, email: ${req.user.email}}, body: ${JSON.stringify(req.body)}}`);
         try {
-            const updatedUser = await user_model_2.default.findById(req.user._id).populate([{
+            const updatedUser = await user_model_1.default.findById(req.user._id).populate([{
                     path: 'venue',
                     select: ['name']
                 }]);
@@ -566,10 +573,10 @@ class InventoryController {
                 });
             }
             const venueId = updatedUser.venue._id;
-            const inventory = await inventory_model_2.default.findOne({
+            const inventory = await inventory_model_1.default.findOne({
                 _id: id,
                 team,
-                status: inventory_model_2.ChoicesStatusInventory.inProcess
+                status: inventory_model_1.ChoicesStatusInventory.inProcess
             });
             if (inventory) {
                 const car = await car_model_1.default.findOne({
@@ -672,10 +679,10 @@ class InventoryController {
             });
         }
         try {
-            const inventory = await inventory_model_2.default.findOne({ _id: id, team });
+            const inventory = await inventory_model_1.default.findOne({ _id: id, team });
             if (inventory) {
                 await inventory.update({
-                    status: inventory_model_2.ChoicesStatusInventory.finalized,
+                    status: inventory_model_1.ChoicesStatusInventory.finalized,
                     finalizedAt: new Date(),
                     finalizedBy: req.user._id
                 });
@@ -719,7 +726,7 @@ class InventoryController {
             });
         }
         try {
-            const inventory = await inventory_model_2.default.findOne({
+            const inventory = await inventory_model_1.default.findOne({
                 _id: id,
                 team
             });
@@ -811,14 +818,14 @@ class InventoryController {
         const { cars } = req.body;
         const { team } = req.user;
         try {
-            const inventory = await inventory_model_2.default.findOne({
+            const inventory = await inventory_model_1.default.findOne({
                 _id: id,
                 team
             }, {
                 name: true
             });
             if (inventory) {
-                const inventoriesCars = await inventory_model_2.default.aggregate([{
+                const inventoriesCars = await inventory_model_1.default.aggregate([{
                         $match: {
                             team,
                             _id: mongoose.Types.ObjectId(id)
@@ -974,7 +981,7 @@ class InventoryController {
         logger_service_1.default.info(`reportCar`);
         logger_service_1.default.info(`{user: {_id: ${req.user._id}, email: ${req.user.email}}, body: ${JSON.stringify(req.body)}}`);
         try {
-            const updatedUser = await user_model_2.default.findById(req.user._id).populate([{
+            const updatedUser = await user_model_1.default.findById(req.user._id).populate([{
                     path: 'venue',
                     select: ['name']
                 }]);
@@ -985,9 +992,9 @@ class InventoryController {
                 });
             }
             const venueId = updatedUser.venue._id;
-            const inventory = await inventory_model_2.default.findOne({
+            const inventory = await inventory_model_1.default.findOne({
                 _id: id,
-                status: inventory_model_2.ChoicesStatusInventory.inProcess,
+                status: inventory_model_1.ChoicesStatusInventory.inProcess,
                 team
             });
             if (inventory) {
@@ -1121,13 +1128,13 @@ class InventoryController {
         logger_service_1.default.info(`apiList`);
         logger_service_1.default.info(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
         try {
-            const updatedUser = await user_model_2.default.findById(req.user._id);
+            const updatedUser = await user_model_1.default.findById(req.user._id);
             if (updatedUser) {
-                const inventories = await inventory_model_2.default.find({
+                const inventories = await inventory_model_1.default.find({
                     team,
                     venues: updatedUser.venue,
                     status: {
-                        $in: [inventory_model_2.ChoicesStatusInventory.inProcess]
+                        $in: [inventory_model_1.ChoicesStatusInventory.inProcess]
                     }
                 }, {
                     _id: true,
@@ -1168,8 +1175,19 @@ class InventoryController {
         const { team } = req.user;
         const venuesPermissions = req.user.venuesPermissions();
         try {
+            // fix Manuel Aravena DERCO
+            const specialFilter = req.user._id.toString() === '5b636fd9a50daf3030c00e2e' ? {
+                'cars.car': {
+                    $in: (await car_model_1.default.find({ team, type: 'NEC' }, { _id: true }).lean()).map((car) => car._id)
+                }
+            } : {};
+            const specialFilterDetail = req.user._id.toString() === '5b636fd9a50daf3030c00e2e' ? {
+                car: {
+                    $in: (await car_model_1.default.find({ team, type: 'NEC' }, { _id: true }).lean()).map((car) => car._id)
+                }
+            } : {};
             // summary
-            const inventory = await inventory_model_2.default.aggregate([
+            const inventory = await inventory_model_1.default.aggregate([
                 {
                     $match: {
                         team,
@@ -1197,7 +1215,8 @@ class InventoryController {
                                     $in: venuesPermissions
                                 }
                             }
-                        ]
+                        ],
+                        ...specialFilter
                     }
                 }, {
                     $group: {
@@ -1266,7 +1285,7 @@ class InventoryController {
                 }
             ]);
             // detail by venue
-            const detailByVenues = await inventory_model_2.default.aggregate([
+            const detailByVenues = await inventory_model_1.default.aggregate([
                 {
                     $match: {
                         team,
@@ -1294,7 +1313,8 @@ class InventoryController {
                                     $in: venuesPermissions
                                 }
                             }
-                        ]
+                        ],
+                        ...specialFilter
                     }
                 }, {
                     $group: {
@@ -1341,7 +1361,7 @@ class InventoryController {
               console.log('################');
             * */
             // detail by brands
-            const detailByBrands = await inventory_model_2.default.aggregate([
+            const detailByBrands = await inventory_model_1.default.aggregate([
                 {
                     $match: {
                         team,
@@ -1369,7 +1389,8 @@ class InventoryController {
                                     $in: venuesPermissions
                                 }
                             }
-                        ]
+                        ],
+                        ...specialFilter
                     }
                 }, {
                     $lookup: {
@@ -1460,7 +1481,7 @@ class InventoryController {
                     createdAt: currentInventory.createdAt,
                     finalizedAt: currentInventory.finalizedAt ? currentInventory.finalizedAt : null
                 };
-                const detailInventory = await inventory_model_2.default.findById(id, {
+                const detailInventory = await inventory_model_1.default.findById(id, {
                     name: true,
                     status: true,
                     cars: true,
@@ -1476,7 +1497,8 @@ class InventoryController {
                                     venueFound: {
                                         $in: venuesPermissions
                                     }
-                                }]
+                                }],
+                            ...specialFilterDetail
                         },
                         populate: [{
                                 path: 'car',
