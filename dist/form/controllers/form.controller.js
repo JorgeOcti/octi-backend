@@ -291,16 +291,36 @@ class FormController {
                     path: 'venue',
                     populate: [{
                             path: 'sendTo',
-                            select: ['_id', 'name']
+                            select: ['name'],
+                            options: {
+                                sort: {
+                                    name: 1
+                                }
+                            }
                         }, {
                             path: 'receiveFrom',
-                            select: ['_id', 'name']
+                            select: ['name'],
+                            options: {
+                                sort: {
+                                    name: 1
+                                }
+                            }
                         }, {
                             path: 'receptionCarriers',
-                            select: ['_id', 'name']
+                            select: ['name'],
+                            options: {
+                                sort: {
+                                    name: 1
+                                }
+                            }
                         }, {
                             path: 'shippingCarriers',
-                            select: ['_id', 'name']
+                            select: ['name'],
+                            options: {
+                                sort: {
+                                    name: 1
+                                }
+                            }
                         }]
                 }]);
             const form = await this.getForm({
