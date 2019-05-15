@@ -7,13 +7,14 @@ import * as GraphicsMagick from 'gm';
 import * as https from 'https';
 import * as moment from 'moment';
 import * as mongoose from 'mongoose';
+import * as Raven from 'raven';
 import {queue} from '../../app';
 import Car, {
   ICarModel
 } from '../../app/models/car.model';
 import CarModel, {ChoicesStatusCar} from '../../app/models/car.model';
-import UserModel from '../../app/models/user.model';
 import User from '../../app/models/user.model';
+import UserModel from '../../app/models/user.model';
 import VenueModel, {
   IVenueModel
 } from '../../app/models/venue.model';
@@ -23,14 +24,13 @@ import {io} from '../../server';
 import logger from '../../services/logger.service';
 import PushService from '../../services/push.service';
 import GeneralUtils from '../../utils/general.utils';
-import Inventory from '../models/inventory.model';
 import InventoryModel, {
   ChoicesStatusInventory
 } from '../models/inventory.model';
+import Inventory from '../models/inventory.model';
 import InventoryCar, {ChoicesStatusCarInventory} from '../models/inventoryCar.model';
 import InventoryFileModel from '../models/inventoryFile.model';
 import InventoryLabel from '../models/inventoryLabel.model';
-import * as Raven from "raven";
 
 class InventoryController {
 
@@ -221,6 +221,12 @@ class InventoryController {
     const {team} = req.user;
     const venuesPermissions = req.user.venuesPermissions();
     try {
+      // fix Manuel Aravena DERCO
+      const specialFilter = req.user._id.toString() === '5b636fd9a50daf3030c00e2e' ? {
+        'cars.car': {
+          $in: (await Car.find({team, type: 'NEC'}, {_id: true}).lean() as Array<{ _id: string }>).map((car) => car._id)
+        }
+      } : {};
       const response: any[] = [];
       const inventories = await InventoryModel.aggregate([{
         $match: {
@@ -242,7 +248,8 @@ class InventoryController {
         $match: {
           'cars.venue': {
             $in: venuesPermissions
-          }
+          },
+          ...specialFilter
         }
       }, {
         $group: {
@@ -1174,6 +1181,17 @@ class InventoryController {
     const {team} = req.user;
     const venuesPermissions = req.user.venuesPermissions();
     try {
+      // fix Manuel Aravena DERCO
+      const specialFilter = req.user._id.toString() === '5b636fd9a50daf3030c00e2e' ? {
+        'cars.car': {
+          $in: (await Car.find({team, type: 'NEC'}, {_id: true}).lean() as Array<{ _id: string }>).map((car) => car._id)
+        }
+      } : {};
+      const specialFilterDetail = req.user._id.toString() === '5b636fd9a50daf3030c00e2e' ? {
+        car: {
+          $in: (await Car.find({team, type: 'NEC'}, {_id: true}).lean() as Array<{ _id: string }>).map((car) => car._id)
+        }
+      } : {};
       // summary
       const inventory = await InventoryModel.aggregate([
         {
@@ -1202,7 +1220,8 @@ class InventoryController {
                 'cars.venueFound': {
                   $in: venuesPermissions
                 }
-              }]
+              }],
+            ...specialFilter
           }
         }, {
           $group: {
@@ -1298,7 +1317,8 @@ class InventoryController {
                 'cars.venueFound': {
                   $in: venuesPermissions
                 }
-              }]
+              }],
+            ...specialFilter
           }
         }, {
           $group: {
@@ -1371,7 +1391,8 @@ class InventoryController {
                 'cars.venueFound': {
                   $in: venuesPermissions
                 }
-              }]
+              }],
+            ...specialFilter
           }
         }, {
           $lookup: {
@@ -1481,7 +1502,8 @@ class InventoryController {
               venueFound: {
                 $in: venuesPermissions
               }
-            }]
+            }],
+            ...specialFilterDetail
           },
           populate: [{
             path: 'car',
