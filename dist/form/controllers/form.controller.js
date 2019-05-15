@@ -187,7 +187,7 @@ class FormController {
                 }),
                 logo: participantCompany.image && participantCompany.image.hasOwnProperty('url') ? decodeURI(participantCompany.image.url) : false,
                 accesorySelected: (answer, item) => {
-                    return item ? answer.accesoriesSelected.map((a) => a.toString()).includes(item._id.toString()) : false;
+                    return item ? answer.accesoriesAnswered.find((accesory) => accesory.item === item._id.toString()) !== undefined : false;
                 }
             });
             if (debug) {
@@ -234,6 +234,7 @@ class FormController {
             }
         }
         catch (e) {
+            Raven.captureException(e, { req });
             res.status(500).json(e.message);
         }
     }
@@ -267,6 +268,7 @@ class FormController {
             }
         }
         catch (e) {
+            Raven.captureException(e, { req });
             /* istanbul ignore next */
             logger_service_1.default.error(`Async Error.`);
             res.status(400).json({
@@ -541,6 +543,7 @@ class FormController {
             });
         }
         catch (e) {
+            Raven.captureException(e, { req });
             /* istanbul ignore next */
             logger_service_1.default.error(`detail form: Async Error.`);
             /* istanbul ignore next */
@@ -869,6 +872,7 @@ class FormController {
             }
         }
         catch (e) {
+            Raven.captureException(e, { req });
             /* istanbul ignore next */
             console.log(e);
             /* istanbul ignore next */
@@ -928,6 +932,7 @@ class FormController {
                 });
             }
             catch (e) {
+                Raven.captureException(e, { req });
                 /* istanbul ignore next */
                 logger_service_1.default.error(`async error:`);
                 /* istanbul ignore next */
@@ -982,6 +987,7 @@ class FormController {
             }
         }
         catch (e) {
+            Raven.captureException(e, { req });
             /* istanbul ignore next */
             logger_service_1.default.error(`changePreferred: Async Error.`);
             /* istanbul ignore next */
