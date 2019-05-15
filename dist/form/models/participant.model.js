@@ -64,7 +64,24 @@ const itemSchema = new mongoose.Schema({
         type: String,
         required: true,
         trim: true
+    },
+    amount: {
+        type: Boolean,
+        default: false
     }
+});
+const accesorySchema = new mongoose.Schema({
+    item: {
+        type: String,
+        required: true,
+        trim: true
+    },
+    amount: {
+        type: Number,
+        default: 1
+    }
+}, {
+    _id: false
 });
 const accessorySchema = new mongoose.Schema({
     question: {
@@ -72,7 +89,7 @@ const accessorySchema = new mongoose.Schema({
         required: true,
         trim: true
     },
-    items: [itemSchema]
+    items: [{ type: itemSchema }]
 });
 const positionSchema = new mongoose.Schema({
     name: {
@@ -123,6 +140,9 @@ const participantAnswersSchema = new mongoose.Schema({
         default: null
     },
     accesoriesSelected: [mongoose.Schema.Types.ObjectId],
+    accesoriesAnswered: [{
+            type: accesorySchema
+        }],
     conciliation: {
         type: Boolean,
         default: false

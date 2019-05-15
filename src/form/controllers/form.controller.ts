@@ -3,6 +3,7 @@ import {Response} from 'express';
 import * as fs from 'fs';
 import * as GraphicsMagick from 'gm';
 import * as HtmlPdf from 'html-pdf';
+import * as Joi from 'joi';
 import * as moment from 'moment-timezone';
 import * as path from 'path';
 import * as QRCode from 'qrcode';
@@ -731,9 +732,8 @@ class FormController {
                 accessories: question.accessories,
                 damages: question.damages,
                 damagesSelected: answer && answer.damages ? answer.damages : [],
-                accesoriesSelected: (question.kind === KindQuestion.accessory || choice && choice.requireAccesories) && answer && answer.accesories ?
-                  answer.accesories.map((accesory: any) => new ObjectID(accesory))
-                  : [],
+                accesoriesAnswered: (question.kind === KindQuestion.accessory || choice && choice.requireAccesories) && answer && answer.accesories ?
+                  await this.processAccesoryItems(answer.accesories) : [],
                 risk: question.risk,
                 comment: (question.kind === KindQuestion.text || choice && choice.requireComment) && answer && answer.comment ?
                   answer.comment
@@ -1063,10 +1063,11 @@ class FormController {
       });
 
       const venuesPermissions = req.user.venuesPermissions(true);
-      var venues: string[] = []
+      const venues: string[] = [];
       venuesPermissions.forEach((v) => {
-        if(allVenues.includes(v) && !venues.includes(v))
+        if (allVenues.includes(v) && !venues.includes(v)) {
           venues.push(v);
+        }
       });
 
       const damagesData: any = {};
@@ -1106,7 +1107,7 @@ class FormController {
 
     try {
       const {team} = req.user;
-      const distributor = await Venue.findOne({team, type: "distributor"})
+      const distributor = await Venue.findOne({team, type: 'distributor'});
       const receivers = await Venue.find({team, type: 'receiver'});
 
       // autos que han llegado al distribuidor
@@ -1200,31 +1201,30 @@ class FormController {
 
     try {
       const {team} = req.user;
-      const {period} = req.query
-
-      //TODO: how to setup this?
-      const distributor = await Venue.findOne({team, type: "distributor"})
+      const {period} = req.query;
+      // TODO: how to setup this?
+      const distributor = await Venue.findOne({team, type: 'distributor'});
       if (distributor) {
         const receivers = await Venue.find({team, type: 'receiver'});
 
-        const receiversDict: any = {}
-        receivers.forEach((r) => receiversDict[r._id.toString()] = r)
+        const receiversDict: any = {};
+        receivers.forEach((r) => receiversDict[r._id.toString()] = r);
 
         // autos que han llegado al distribuidor
-        const t0 = moment(period).startOf('month')
-        const t1 = moment(period).endOf('month')
+        const t0 = moment(period).startOf('month');
+        const t1 = moment(period).endOf('month');
 
         const threshold = 60 * 24 * 5;
         const participants = await ParticipantModel.find({
           venue: distributor._id,
-          createdAt: {$gt: t0.toDate(), $lt: t1.toDate()},
+          createdAt: {$gt: t0.toDate(), $lt: t1.toDate()}
         });
 
         const receptions = await ParticipantModel.find({
           team,
           venue: {$in: receivers.map((v) => v._id)},
           receiveFrom: distributor._id,
-          createdAt: {$gt: t0.toDate()},
+          createdAt: {$gt: t0.toDate()}
         }, ['car', 'venue', 'createdAt'], {
           sort: {
             createdAt: 1
@@ -1240,7 +1240,7 @@ class FormController {
           }
         }
 
-        const receivedPerVenue: any = {}
+        const receivedPerVenue: any = {};
         const venues: string[] = [];
         for (const participant of participants) {
 
@@ -1250,7 +1250,7 @@ class FormController {
             if (received.createdAt < participant.createdAt) {
               continue;
             }
-            const venue = received.venue.toString()
+            const venue = received.venue.toString();
             if (!venues.includes(venue)) {
               venues.push(venue);
               receivedPerVenue[venue] = 0;
@@ -1260,17 +1260,17 @@ class FormController {
             const t1 = moment(received.createdAt);
             const dm = t1.diff(t0, 'minutes');
 
-            receivedPerVenue[venue] += 1
+            receivedPerVenue[venue] += 1;
             if (dm < threshold) {
-              //receivedPerMonth[month].ontime += 1;
+              // receivedPerMonth[month].ontime += 1;
             } else {
-              //receivedPerMonth[month].overdue += 1;
+              // receivedPerMonth[month].overdue += 1;
             }
           }
         }
 
         const perVenue: number[] = venues.map((v) => receivedPerVenue[v]);
-        const data: any = {venues, perVenue}
+        const data: any = {venues, perVenue};
 
         res.json(data);
       }
@@ -1390,6 +1390,29 @@ class FormController {
         }
       });
     });
+  }
+
+  private async processAccesoryItems(accesories: any[]) {
+    const accesorySchema: Joi.ObjectSchema = Joi.object({
+      item: Joi.string(),
+      amount: Joi.number()
+    });
+    const newAccesories: any[] = [];
+    accesories.map(async (accesory: any) => {
+      try {
+        const newAccesory = await accesorySchema.validate(accesory);
+        newAccesories.push({
+          item: newAccesory.item,
+          amount: newAccesory.amount
+        });
+      } catch (e) {
+        newAccesories.push({
+          item: accesory,
+          amount: 1
+        });
+      }
+    });
+    return newAccesories;
   }
 
   private getFormWithScale(filter: any): Promise<IFormModel> {

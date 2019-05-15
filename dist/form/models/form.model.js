@@ -7,6 +7,10 @@ const itemSchema = new mongoose.Schema({
         type: String,
         required: true,
         trim: true
+    },
+    amount: {
+        type: Boolean,
+        default: false
     }
 });
 const accessorySchema = new mongoose.Schema({

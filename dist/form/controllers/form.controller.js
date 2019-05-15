@@ -4,6 +4,7 @@ const bson_1 = require("bson");
 const fs = require("fs");
 const GraphicsMagick = require("gm");
 const HtmlPdf = require("html-pdf");
+const Joi = require("joi");
 const moment = require("moment-timezone");
 const path = require("path");
 const QRCode = require("qrcode");
@@ -715,9 +716,8 @@ class FormController {
                                 accessories: question.accessories,
                                 damages: question.damages,
                                 damagesSelected: answer && answer.damages ? answer.damages : [],
-                                accesoriesSelected: (question.kind === form_model_1.KindQuestion.accessory || choice && choice.requireAccesories) && answer && answer.accesories ?
-                                    answer.accesories.map((accesory) => new bson_1.ObjectID(accesory))
-                                    : [],
+                                accesoriesAnswered: (question.kind === form_model_1.KindQuestion.accessory || choice && choice.requireAccesories) && answer && answer.accesories ?
+                                    await this.processAccesoryItems(answer.accesories) : [],
                                 risk: question.risk,
                                 comment: (question.kind === form_model_1.KindQuestion.text || choice && choice.requireComment) && answer && answer.comment ?
                                     answer.comment
@@ -1043,10 +1043,11 @@ class FormController {
                 }
             });
             const venuesPermissions = req.user.venuesPermissions(true);
-            var venues = [];
+            const venues = [];
             venuesPermissions.forEach((v) => {
-                if (allVenues.includes(v) && !venues.includes(v))
+                if (allVenues.includes(v) && !venues.includes(v)) {
                     venues.push(v);
+                }
             });
             const damagesData = {};
             venues.forEach((venue) => damagesData[venue] = { damaged: 0, undamaged: 0 });
@@ -1080,7 +1081,7 @@ class FormController {
     async timingDashboard(req, res) {
         try {
             const { team } = req.user;
-            const distributor = await venue_model_1.default.findOne({ team, type: "distributor" });
+            const distributor = await venue_model_1.default.findOne({ team, type: 'distributor' });
             const receivers = await venue_model_1.default.find({ team, type: 'receiver' });
             // autos que han llegado al distribuidor
             const threshold = 60 * 24 * 5;
@@ -1162,8 +1163,8 @@ class FormController {
         try {
             const { team } = req.user;
             const { period } = req.query;
-            //TODO: how to setup this?
-            const distributor = await venue_model_1.default.findOne({ team, type: "distributor" });
+            // TODO: how to setup this?
+            const distributor = await venue_model_1.default.findOne({ team, type: 'distributor' });
             if (distributor) {
                 const receivers = await venue_model_1.default.find({ team, type: 'receiver' });
                 const receiversDict = {};
@@ -1174,13 +1175,13 @@ class FormController {
                 const threshold = 60 * 24 * 5;
                 const participants = await participant_model_1.default.find({
                     venue: distributor._id,
-                    createdAt: { $gt: t0.toDate(), $lt: t1.toDate() },
+                    createdAt: { $gt: t0.toDate(), $lt: t1.toDate() }
                 });
                 const receptions = await participant_model_1.default.find({
                     team,
                     venue: { $in: receivers.map((v) => v._id) },
                     receiveFrom: distributor._id,
-                    createdAt: { $gt: t0.toDate() },
+                    createdAt: { $gt: t0.toDate() }
                 }, ['car', 'venue', 'createdAt'], {
                     sort: {
                         createdAt: 1
@@ -1213,10 +1214,10 @@ class FormController {
                         const dm = t1.diff(t0, 'minutes');
                         receivedPerVenue[venue] += 1;
                         if (dm < threshold) {
-                            //receivedPerMonth[month].ontime += 1;
+                            // receivedPerMonth[month].ontime += 1;
                         }
                         else {
-                            //receivedPerMonth[month].overdue += 1;
+                            // receivedPerMonth[month].overdue += 1;
                         }
                     }
                 }
@@ -1338,6 +1339,29 @@ class FormController {
                 }
             });
         });
+    }
+    async processAccesoryItems(accesories) {
+        const accesorySchema = Joi.object({
+            item: Joi.string(),
+            amount: Joi.number()
+        });
+        const newAccesories = [];
+        accesories.map(async (accesory) => {
+            try {
+                const newAccesory = await accesorySchema.validate(accesory);
+                newAccesories.push({
+                    item: newAccesory.item,
+                    amount: newAccesory.amount
+                });
+            }
+            catch (e) {
+                newAccesories.push({
+                    item: accesory,
+                    amount: 1
+                });
+            }
+        });
+        return newAccesories;
     }
     getFormWithScale(filter) {
         return new Promise((resolve, reject) => {

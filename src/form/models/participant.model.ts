@@ -77,7 +77,25 @@ const itemSchema = new mongoose.Schema({
     type: String,
     required: true,
     trim: true
+  },
+  amount: {
+    type: Boolean,
+    default: false
   }
+});
+
+const accesorySchema = new mongoose.Schema({
+  item: {
+    type: String,
+    required: true,
+    trim: true
+  },
+  amount: {
+    type: Number,
+    default: 1
+  }
+}, {
+  _id: false
 });
 
 export interface IParticipantAccesoryModel extends IparticipantAccesory, mongoose.Types.Subdocument {}
@@ -88,7 +106,7 @@ const accessorySchema = new mongoose.Schema({
     trim: true
   },
 
-  items: [itemSchema]
+  items: [{type: itemSchema}]
 });
 
 const positionSchema = new mongoose.Schema({
@@ -146,6 +164,9 @@ const participantAnswersSchema = new mongoose.Schema({
     default: null
   },
   accesoriesSelected: [mongoose.Schema.Types.ObjectId],
+  accesoriesAnswered: [{
+    type: accesorySchema
+  }],
   conciliation: {
     type: Boolean,
     default: false
