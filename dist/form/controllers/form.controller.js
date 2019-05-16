@@ -178,11 +178,13 @@ class FormController {
                     return '';
                 }),
                 getDamageItem: ((items, item) => {
-                    const result = items.find((i) => i._id.toString() === item.toString());
-                    if (result && result.hasOwnProperty('name')) {
-                        return result.name;
+                    if (item) {
+                        const result = items.find((i) => i._id.toString() === item.toString());
+                        if (result && result.hasOwnProperty('name')) {
+                            return result.name;
+                        }
                     }
-                    return '';
+                    return '-';
                 }),
                 logo: participantCompany.image && participantCompany.image.hasOwnProperty('url') ? decodeURI(participantCompany.image.url) : false,
                 accesorySelected: (answer, item) => {
