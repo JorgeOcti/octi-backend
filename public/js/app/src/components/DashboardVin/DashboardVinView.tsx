@@ -1,4 +1,4 @@
-import * as moment from 'moment';
+import * as moment from 'moment-timezone';
 import * as Raven from 'raven-js';
 import {ErrorInfo} from 'react';
 import * as React from 'react';
@@ -55,6 +55,7 @@ class DashboardVinView extends React.Component<IPropsType, IStateType> {
   public printPdf(url: string, carLoading: string) {
     this.setState({carLoading});
     let iframe: any = this.printIframe;
+    const timezone = moment.tz.guess();
     if (!this.printIframe) {
       iframe = this.printIframe = document.createElement('iframe');
       document.body.appendChild(iframe);
@@ -68,7 +69,7 @@ class DashboardVinView extends React.Component<IPropsType, IStateType> {
         }, 1);
       };
     }
-    iframe.src = url;
+    iframe.src = `${url}?timezone=${timezone}`;
   }
 
   public componentWillMount(): void {

@@ -33,7 +33,7 @@ class FormController {
         this.uploadFile = this.uploadFile.bind(this);
     }
     async pdf(req, res) {
-        const { debug } = req.query;
+        const { debug, timezone } = req.query;
         const { id } = req.params;
         const { team } = req.user;
         try {
@@ -132,6 +132,7 @@ class FormController {
                     path: 'conciliationImages'
                 }]).lean();
             moment.locale('es');
+            moment.tz.setDefault(timezone ? timezone : 'America/Santiago');
             const css = fs.readFileSync(path.join(__dirname, '../../../views/') + 'form/carDetail/style.css', 'utf8');
             const templatePath = path.join(__dirname, '../../../views/') + 'form/carDetail/index.pug';
             const participantCompany = participant.user.venue && participant.user.venue.company || {};
