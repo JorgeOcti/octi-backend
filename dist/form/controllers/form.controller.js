@@ -23,6 +23,7 @@ const form_model_1 = require("../models/form.model");
 const participant_model_1 = require("../models/participant.model");
 const participantFile_model_1 = require("../models/participantFile.model");
 const scale_model_1 = require("../models/scale.model");
+const team_model_1 = require("../../app/models/team.model");
 // import * as puppeteer from 'puppeteer';
 class FormController {
     constructor() {
@@ -84,6 +85,7 @@ class FormController {
                     }]
             }, {
                 name: true,
+                number: true,
                 user: true,
                 sections: true,
                 qualification: true,
@@ -759,6 +761,10 @@ class FormController {
                     const formQualification = sumSectionQualifications ? sumSectionQualifications / sumSectionWeigths : 0;
                     newParticipant.qualification = formQualification;
                     try {
+                        const updateTeam = await team_model_1.default.findOneAndUpdate({ _id: team._id }, { $inc: { formsNumber: 1 } }, { new: true });
+                        if (updateTeam) {
+                            newParticipant.number = updateTeam.formsNumber;
+                        }
                         // save the participant
                         await newParticipant.save();
                         // associate file to participant
@@ -830,7 +836,7 @@ class FormController {
                         });
                         // send refresh with websocket to dashboard detail
                         server_1.io.to(`dashboard-vin-detail-${car._id}`).emit(`ADD_PARTICIPANT`, await participant_model_1.default
-                            .findById(newParticipant._id, { name: 1, user: 1, venue: 1, createdAt: 1, qualification: 1 })
+                            .findById(newParticipant._id, { number: 1, name: 1, user: 1, venue: 1, createdAt: 1, qualification: 1 })
                             .populate([{
                                 path: 'user',
                                 select: ['firstName', 'lastName']

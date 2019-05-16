@@ -173,7 +173,8 @@ class DashboardVinView extends React.Component<IPropsType, IStateType> {
                   <table className="table table-andes table-striped">
                     <thead>
                     <tr>
-                      <th style={{width: '20%'}} className="middle">VIN</th>
+                      <th style={{width: '5%'}} className="middle">Nº</th>
+                      <th style={{width: '15%'}} className="middle">VIN</th>
                       <th style={{width: '10%'}} className="middle hidden-xs">Marca</th>
                       <th style={{width: '20%'}} className="middle hidden-xs">Supervisor</th>
                       <th style={{width: '20%'}} className="middle">Sucursal</th>
@@ -191,6 +192,7 @@ class DashboardVinView extends React.Component<IPropsType, IStateType> {
                             key={car._id} id={`car-${car._id}`}
                             className={highlight.length && highlight.includes(car._id as never) ? 'highlight-info' : ''}
                           >
+                            <td className="middle">{car.lastForm.number}</td>
                             <td className="middle">{car.vin}</td>
                             <td className="middle hidden-xs">{car.brand}</td>
                             <td className="middle hidden-xs">

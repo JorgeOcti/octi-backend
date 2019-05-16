@@ -23,6 +23,7 @@ import FormModel, {IFormModel, KindQuestion} from '../models/form.model';
 import ParticipantModel from '../models/participant.model';
 import ParticipantFile from '../models/participantFile.model';
 import ScaleModel, {IScaleModel} from '../models/scale.model';
+import Team from "../../app/models/team.model";
 
 // import * as puppeteer from 'puppeteer';
 
@@ -89,6 +90,7 @@ class FormController {
           }]
         }, {
           name: true,
+          number: true,
           user: true,
           sections: true,
           qualification: true,
@@ -775,6 +777,10 @@ class FormController {
           const formQualification = sumSectionQualifications ? sumSectionQualifications / sumSectionWeigths : 0;
           newParticipant.qualification = formQualification;
           try {
+            const updateTeam = await Team.findOneAndUpdate({_id: team._id}, {$inc: {formsNumber: 1}}, {new: true});
+            if (updateTeam) {
+              newParticipant.number = updateTeam.formsNumber;
+            }
             // save the participant
             await newParticipant.save();
 
@@ -850,7 +856,7 @@ class FormController {
 
             // send refresh with websocket to dashboard detail
             io.to(`dashboard-vin-detail-${car._id}`).emit(`ADD_PARTICIPANT`, await ParticipantModel
-              .findById(newParticipant._id, {name: 1, user: 1, venue: 1, createdAt: 1, qualification: 1})
+              .findById(newParticipant._id, {number: 1, name: 1, user: 1, venue: 1, createdAt: 1, qualification: 1})
               .populate([{
                 path: 'user',
                 select: ['firstName', 'lastName']

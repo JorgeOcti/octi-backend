@@ -90,6 +90,7 @@ export interface IParticipantSection {
 
 export interface IParticipant {
   _id: any;
+  number: number;
   name: string;
 
   form: IFormModel;

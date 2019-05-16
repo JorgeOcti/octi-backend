@@ -248,7 +248,9 @@ const participantSchema = new mongoose.Schema({
     required: true,
     trim: true
   },
-
+  number: {
+    type: Number
+  },
   form: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Form',
