@@ -38,6 +38,8 @@ html
       script(src=`/static${getVersionedPath('/js/vendor/jquery/jquery.min.js')}`)
       //- moment
       script(src=`/static${getVersionedPath('/js/vendor/moment/moment-with-locales.min.js')}`)
+      //- moment-timezone
+      script(src=`/static${getVersionedPath('/js/vendor/moment/moment-timezone-with-data.min.js')}`)
       //- React
       script(src=`/static${process.env.ENV == 'production' ? getVersionedPath('/js/vendor/react/react.min.js') : getVersionedPath('/js/vendor/react/react.js')}`)
       script(src=`/static${process.env.ENV == 'production' ? getVersionedPath('/js/vendor/react/react-dom.min.js') : getVersionedPath('/js/vendor/react/react-dom.js')}`)

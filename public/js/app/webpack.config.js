@@ -90,7 +90,8 @@ module.exports = {// entry: process.env.NODE_ENV === 'production'?['babel-polyfi
     'echarts': 'echarts',
     'xlsx': 'XLSX',
     sweetalert: 'swal',
-    moment: 'moment'
+    moment: 'moment',
+    'moment-timezone': 'moment'
   },
   devtool: setDevTool(),
   devServer: {

@@ -1,33 +1,33 @@
 mixin headerDetail(first, second, third, quarter)
   tr
-    td(width="12%", class="strong")=first
+    td(width="18%", class="strong")=first
     if second
-      td(width="38%")=second
+      td(width="32%")=second
     else
-      td(width="38%")
+      td(width="32%")
         .border-bottom-dashed
     if third
-      td(width="18%", class="strong")=third
+      td(width="12%", class="strong")=third
       if quarter
-        td(width="32%")=quarter
+        td(width="38%")=quarter
       else
-        td(width="32%")
+        td(width="38%")
           .border-bottom-dashed
 
 mixin headerDetailRight(first, second, third, quarter)
   tr
-    td(width="12%", class="strong")=first
+    td(width="18%", class="strong")=first
     if second
-      td(width="38%")=second
+      td(width="32%")=second
     else
-      td(width="38%")
+      td(width="32%")
         .border-bottom-dashed
     if third
-      td(width="18%", class="strong")=third
+      td(width="12%", class="strong")=third
       if quarter
-        td(width="32%").text-right=quarter
+        td(width="38%").text-right=quarter
       else
-        td(width="32%").text-right
+        td(width="38%").text-right
           .border-bottom-dashed
 
 mixin carDetail(first, second, third, quarter, fifth, sixth)
@@ -76,13 +76,13 @@ body
     +headerDetailRight('Nº TRASLADO', '', 'FECHA', moment(participant.createdAt).format('LLL'))
     +headerDetail('ENCARGADO', `${participant.user.firstName} ${participant.user.lastName}`)
     +headerDetail('ORIGEN', origin(), 'DESTINO', destination())
-    +headerDetail('E. CARGUIO', false, 'E. TRANSPORTADORA', carrier())
+    +headerDetail('E. TRANSPORTADORA', carrier(), false, false)
 
   table(cellpadding='0', cellspacing='0', class="border")
     tr
       td(colspan=4, class="strong")="DETALLES DE LA UNIDAD"
     +carDetail('CHASIS', participant.car.vin, 'MARCA', participant.car.brand, 'MODELO', participant.car.denomination)
-    +carDetail('COLOR', participant.car.color, 'MOTOR', '', 'PATENTE', participant.car.patent)
+    +carDetail('COLOR', participant.car.color, participant.car.patent ? 'PATENTE': false, participant.car.patent ? participant.car.patent: false, false, false)
 
   table(cellpadding='0', cellspacing='0', class="border")
     each section in participant.sections
