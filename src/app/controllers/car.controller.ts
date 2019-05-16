@@ -855,7 +855,7 @@ class CarController {
         }]
       }],
       sort: {
-        updatedAt: -1
+        lastForm: -1
       },
       page: parseInt(page ? page : 1, 10),
       limit: parseInt(pageSize ? pageSize : 20, 10)
