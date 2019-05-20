@@ -1219,6 +1219,94 @@ class FormController {
             });
         }
     }
+    async cleaningDashboard(req, res) {
+        try {
+            const { team } = req.user;
+            let form = await form_model_1.default.findById("5b0487db835536612bab1b61");
+            let answer = new bson_1.ObjectID("5b64b2e8de5557c85fa14fa0");
+            var days = [];
+            if (form) {
+                var daysDict = {};
+                var total = 30 * 6;
+                var t0 = moment().subtract(total, 'days');
+                for (var i = 0; i < total; i++) {
+                    const day = moment().subtract(total - i, 'days').format('YYYY-MM-DD');
+                    daysDict[day] = {
+                        'clean': 0,
+                        'notClean': 0
+                    };
+                    days.push(day);
+                }
+                const cleanDispatch = await participant_model_1.default.aggregate([
+                    {
+                        $match: {
+                            team,
+                            form: form._id,
+                            "sections.answers.answer": answer,
+                            createdAt: { $gt: t0.toDate() }
+                        }
+                    },
+                    {
+                        $group: {
+                            _id: {
+                                $dateToString: { format: '%Y-%m-%d', date: '$createdAt' }
+                            },
+                            count: { $sum: 1 }
+                        }
+                    }
+                ]);
+                for (var datum of cleanDispatch) {
+                    const day = datum._id;
+                    const sum = datum.count;
+                    console.log(datum);
+                    daysDict[day].clean = sum;
+                }
+                const notCleanDispatch = await participant_model_1.default.aggregate([
+                    {
+                        $match: {
+                            team,
+                            form: form._id,
+                            "sections.answers.answer": { $ne: answer },
+                            createdAt: { $gt: t0.toDate() }
+                        }
+                    },
+                    {
+                        $group: {
+                            _id: {
+                                $dateToString: { format: '%Y-%m-%d', date: '$createdAt' }
+                            },
+                            count: { $sum: 1 }
+                        }
+                    }
+                ]);
+                for (var datum of notCleanDispatch) {
+                    const day = datum._id;
+                    const sum = datum.count;
+                    console.log(day);
+                    daysDict[day].notClean = sum;
+                }
+            }
+            var data = {
+                days: days,
+                clean: days.map((d) => daysDict[d].clean),
+                notClean: days.map((d) => daysDict[d].notClean),
+            };
+            res.json(data);
+        }
+        catch (e) {
+            Raven.captureException(e, { req });
+            /* istanbul ignore next */
+            logger_service_1.default.error(`dashboard timing: Async Error.`);
+            /* istanbul ignore next */
+            logger_service_1.default.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
+            /* istanbul ignore next */
+            logger_service_1.default.error(e);
+            res.status(400).json({
+                message: 'Ha ocurrido un error',
+                status: 400
+            });
+        }
+    }
     autoRotate(path) {
         // doc http://aheckmann.github.io/gm/docs.html
         /**** REQUIRE: imagemagick and graphicsmagick *****
