@@ -209,7 +209,7 @@ class InventoryController {
             // fix Manuel Aravena DERCO
             const specialFilter = req.user._id.toString() === '5b636fd9a50daf3030c00e2e' ? {
                 'cars.car': {
-                    $in: (await car_model_1.default.find({ team, type: 'NEC' }, { _id: true }).lean()).map((car) => car._id)
+                    $in: (await car_model_1.default.find({ team, type: 'USC' }, { _id: true }).lean()).map((car) => car._id)
                 }
             } : {};
             const response = [];
@@ -1178,12 +1178,12 @@ class InventoryController {
             // fix Manuel Aravena DERCO
             const specialFilter = req.user._id.toString() === '5b636fd9a50daf3030c00e2e' ? {
                 'cars.car': {
-                    $in: (await car_model_1.default.find({ team, type: 'NEC' }, { _id: true }).lean()).map((car) => car._id)
+                    $in: (await car_model_1.default.find({ team, type: 'USC' }, { _id: true }).lean()).map((car) => car._id)
                 }
             } : {};
             const specialFilterDetail = req.user._id.toString() === '5b636fd9a50daf3030c00e2e' ? {
                 car: {
-                    $in: (await car_model_1.default.find({ team, type: 'NEC' }, { _id: true }).lean()).map((car) => car._id)
+                    $in: (await car_model_1.default.find({ team, type: 'USC' }, { _id: true }).lean()).map((car) => car._id)
                 }
             } : {};
             // summary
