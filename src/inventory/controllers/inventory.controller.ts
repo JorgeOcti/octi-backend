@@ -224,7 +224,7 @@ class InventoryController {
       // fix Manuel Aravena DERCO
       const specialFilter = req.user._id.toString() === '5b636fd9a50daf3030c00e2e' ? {
         'cars.car': {
-          $in: (await Car.find({team, type: 'NEC'}, {_id: true}).lean() as Array<{ _id: string }>).map((car) => car._id)
+          $in: (await Car.find({team, type: 'USC'}, {_id: true}).lean() as Array<{ _id: string }>).map((car) => car._id)
         }
       } : {};
       const response: any[] = [];
@@ -1184,12 +1184,12 @@ class InventoryController {
       // fix Manuel Aravena DERCO
       const specialFilter = req.user._id.toString() === '5b636fd9a50daf3030c00e2e' ? {
         'cars.car': {
-          $in: (await Car.find({team, type: 'NEC'}, {_id: true}).lean() as Array<{ _id: string }>).map((car) => car._id)
+          $in: (await Car.find({team, type: 'USC'}, {_id: true}).lean() as Array<{ _id: string }>).map((car) => car._id)
         }
       } : {};
       const specialFilterDetail = req.user._id.toString() === '5b636fd9a50daf3030c00e2e' ? {
         car: {
-          $in: (await Car.find({team, type: 'NEC'}, {_id: true}).lean() as Array<{ _id: string }>).map((car) => car._id)
+          $in: (await Car.find({team, type: 'USC'}, {_id: true}).lean() as Array<{ _id: string }>).map((car) => car._id)
         }
       } : {};
       // summary
