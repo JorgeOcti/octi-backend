@@ -96,7 +96,7 @@ body
         tr.item
           td
             p.no-margin.strong=answer.question
-          if answer.kind === 'scale' && answer.scale
+          if ['scale', 'accessory'].includes(answer.kind) && answer.scale
             td.text-center=getAnswer(answer.scale, answer)
           else
             td
@@ -106,19 +106,30 @@ body
                 | Si
               else
                 | No
-        if answer.kind === 'accessory'
+        if answer.kind === 'accessory' && requireAccesory(answer.scale, answer)
+          tr
+            td(colspan=3, style="padding-bottom:0px").text-center
+              strong=answer.accessories.question
           tr.item
-            td(colspan=3)
-              table(cellpadding='0', cellspacing='0', style="margin-bottom:0;padding-bottom:0")
-                while answer.accessories.items.length
-                  tr
-                    each item in answer.accessories.items.splice(0,3)
-                      td.no-border-bottom
-                        if accesorySelected(answer, item)
-                          | <i class="far fa-check-square"></i>
-                        else
-                          | <i class="far fa-square"></i>
-                        | #{' '}#{item.item}
+            td(colspan=3, style="padding-top:0px")
+              - const accesorySeletedIds = answer.accesoriesAnswered?answer.accesoriesAnswered.map(accesory=>accesory.item):[];
+              - const items = answer.accessories.items.filter((item)=>accesorySeletedIds.includes(item._id.toString()));
+              if items.length
+                table(cellpadding='0', cellspacing='0', style="margin-bottom:0;padding-bottom:0")
+                  while items.length
+                    tr
+                      each item in items.splice(0,4)
+                        td(style="padding:4px 0", width="25%").no-border-bottom
+                          - const accesory = accesorySelected(answer, item);
+                          | #{'- '}#{item.item} #{accesory && item.amount ? `(${accesory.amount})` : ''}
+                          //- if accesory
+                          //-   | <i class="far fa-check-square"></i>
+                          //- else
+                          //-   | <i class="far fa-square"></i>
+              else
+                tr.item-damage
+                  td(colspan=2)
+                    | No se seleccionarón items.
         if answer.kind === 'damage'
           if !answer.damagesSelected.length
             tr.item-damage

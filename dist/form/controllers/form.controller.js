@@ -12,6 +12,7 @@ const Raven = require("raven");
 const app_1 = require("../../app");
 const alert_model_1 = require("../../app/models/alert.model");
 const car_model_1 = require("../../app/models/car.model");
+const team_model_1 = require("../../app/models/team.model");
 const user_model_1 = require("../../app/models/user.model");
 const user_model_2 = require("../../app/models/user.model");
 const venue_model_1 = require("../../app/models/venue.model");
@@ -23,7 +24,6 @@ const form_model_1 = require("../models/form.model");
 const participant_model_1 = require("../models/participant.model");
 const participantFile_model_1 = require("../models/participantFile.model");
 const scale_model_1 = require("../models/scale.model");
-const team_model_1 = require("../../app/models/team.model");
 // import * as puppeteer from 'puppeteer';
 class FormController {
     constructor() {
@@ -181,6 +181,13 @@ class FormController {
                     }
                     return '';
                 }),
+                requireAccesory: ((scale, answer) => {
+                    if (answer && answer.hasOwnProperty('answer') && answer.answer) {
+                        const choice = scale.choices.find((choice) => choice._id.toString() === answer.answer.toString());
+                        return choice.requireAccesories;
+                    }
+                    return false;
+                }),
                 getDamageItem: ((items, item) => {
                     if (item) {
                         const result = items.find((i) => i._id.toString() === item.toString());
@@ -192,7 +199,9 @@ class FormController {
                 }),
                 logo: participantCompany.image && participantCompany.image.hasOwnProperty('url') ? decodeURI(participantCompany.image.url) : false,
                 accesorySelected: (answer, item) => {
-                    return item ? answer.accesoriesAnswered.find((accesory) => accesory.item === item._id.toString()) !== undefined : false;
+                    return item && answer.accesoriesAnswered ? answer.accesoriesAnswered.find((accesory) => {
+                        return accesory.item === item._id.toString();
+                    }) : false;
                 }
             });
             if (debug) {
@@ -248,7 +257,7 @@ class FormController {
         logger_service_1.default.info(`list forms`);
         logger_service_1.default.info(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
         try {
-            const updatedUser = await user_model_2.default.findById(req.user._id).populate([{
+            const updatedUser = await user_model_1.default.findById(req.user._id).populate([{
                     path: 'userForms',
                     select: ['_id']
                 }]);
@@ -288,12 +297,12 @@ class FormController {
         logger_service_1.default.info(`detail forms`);
         logger_service_1.default.info(`{user: {_id: ${req.user._id}, email: ${req.user.email}}, {form: ${id}}}`);
         try {
-            if (await user_model_2.default.find({ _id: req.user._id, userForms: id }).count() < 1) {
+            if (await user_model_1.default.find({ _id: req.user._id, userForms: id }).count() < 1) {
                 return res.status(403).json({
                     message: 'No tienes permisos para esta operación'
                 });
             }
-            const user = await user_model_1.default.findById(req.user._id, {
+            const user = await user_model_2.default.findById(req.user._id, {
                 venue: true
             }).populate([{
                     path: 'venue',
@@ -587,7 +596,7 @@ class FormController {
         }
         vin = vin.replace(/[\W_]+/g, '');
         try {
-            const updatedUser = await user_model_2.default.findById(req.user._id);
+            const updatedUser = await user_model_1.default.findById(req.user._id);
             if (!updatedUser) {
                 return res.status(404).json({
                     message: 'No se ha encontrado el formulario solicitado.',
@@ -964,7 +973,7 @@ class FormController {
         logger_service_1.default.info(`changePreferred`);
         logger_service_1.default.info(`{user: {_id: ${req.user._id}, email: ${req.user.email}}, body: ${JSON.stringify(req.body)}}`);
         try {
-            const user = await user_model_1.default.findOne({ _id: req.user._id, team, active: true });
+            const user = await user_model_2.default.findOne({ _id: req.user._id, team, active: true });
             // validate exist user
             if (user) {
                 form = await form_model_1.default.findOne({ _id: form, team });

@@ -11,8 +11,9 @@ import * as Raven from 'raven';
 import {queue} from '../../app';
 import Alert from '../../app/models/alert.model';
 import CarModel from '../../app/models/car.model';
-import UserModel, {IUserModel} from '../../app/models/user.model';
+import Team from '../../app/models/team.model';
 import User from '../../app/models/user.model';
+import UserModel, {IUserModel} from '../../app/models/user.model';
 import Venue, {IVenueModel} from '../../app/models/venue.model';
 import {IAnyObject, IRequest} from '../../interfaces/global.interface';
 import {io} from '../../server';
@@ -23,7 +24,6 @@ import FormModel, {IFormModel, KindQuestion} from '../models/form.model';
 import ParticipantModel from '../models/participant.model';
 import ParticipantFile from '../models/participantFile.model';
 import ScaleModel, {IScaleModel} from '../models/scale.model';
-import Team from "../../app/models/team.model";
 
 // import * as puppeteer from 'puppeteer';
 
@@ -186,6 +186,13 @@ class FormController {
           }
           return '';
         }),
+        requireAccesory: ((scale: any, answer: any) => {
+          if (answer && answer.hasOwnProperty('answer') && answer.answer) {
+            const choice = scale.choices.find((choice: any) => choice._id.toString() === answer.answer.toString());
+            return choice.requireAccesories;
+          }
+          return false;
+        }),
         getDamageItem: ((items: any, item: string) => {
           if (item) {
             const result = items.find((i: any) => i._id.toString() === item.toString());
@@ -197,7 +204,9 @@ class FormController {
         }),
         logo: participantCompany.image && participantCompany.image.hasOwnProperty('url') ? decodeURI(participantCompany.image.url) : false,
         accesorySelected: (answer: any, item: any) => {
-          return item ? answer.accesoriesAnswered.find((accesory: any) => accesory.item === item._id.toString()) !== undefined : false;
+          return item && answer.accesoriesAnswered ? answer.accesoriesAnswered.find((accesory: any) => {
+            return accesory.item === item._id.toString();
+          }) : false;
         }
       });
       if (debug) {
