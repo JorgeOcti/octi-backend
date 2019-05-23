@@ -341,6 +341,7 @@ const participantSchema = new mongoose.Schema({
     timestamps: true
 });
 participantSchema.index({ _id: 1 });
+participantSchema.index({ createdAt: 1 });
 participantSchema.index({ venue: 1 });
 participantSchema.index({ survey: 1, completed: 1 });
 participantSchema.index({ form: 1, user: 1 });
