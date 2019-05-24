@@ -15,7 +15,7 @@ async function fixAccesories() {
   mongoose.set('debug', true);
   const teams = await Team.find({});
   for (const team  of teams) {
-    const participants = await Participant.find({team}).sort({createdAt: 1});
+    const participants = await Participant.find({team}, {number: true}).sort({createdAt: 1});
     for (const participant  of participants) {
       const updateTeam = await Team.findOneAndUpdate({_id: team._id}, {$inc: {formsNumber: 1}}, {new: true});
       if (updateTeam) {

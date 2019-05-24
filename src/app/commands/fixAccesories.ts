@@ -13,7 +13,26 @@ async function fixAccesories() {
   (mongoose as any).Promise = bluebird;
   await mongoose.connect(MONGODB_URI, {useMongoClient: true});
   mongoose.set('debug', true);
-  const participants = await Participant.find({});
+  const forms = await Form.find({});
+  for (const form  of forms) {
+    for (const section  of form.sections) {
+      for (const question  of section.questions) {
+        if (question.accessories) {
+          for (const item  of question.accessories.items) {
+            if (!item.amount) {
+              item.amount = false;
+            }
+          }
+        }
+      }
+    }
+    await form.save();
+  }
+  const participants = await Participant.find({}, {
+    'sections.answers.accessories': true,
+    'sections.answers.accesoriesAnswered': true,
+    'sections.answers.accesoriesSelected': true
+  });
   for (const participant  of participants) {
     for (const section  of participant.sections) {
       for (const answer  of section.answers) {
@@ -35,19 +54,6 @@ async function fixAccesories() {
       }
     }
     await participant.save();
-  }
-  const forms = await Form.find({});
-  for (const form  of forms) {
-    for (const section  of form.sections) {
-      for (const question  of section.questions) {
-        if (question.accessories) {
-          for (const item  of question.accessories.items) {
-            item.amount = false;
-          }
-        }
-      }
-    }
-    await form.save();
   }
   process.exit(1);
 }

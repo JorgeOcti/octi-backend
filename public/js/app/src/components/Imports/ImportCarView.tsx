@@ -120,7 +120,13 @@ class ImportCarsView extends React.Component<IPropsType, IStateType> {
             <div className="box-body margin">
               <div className="row">
                 <div className="col-md-12">
-                  <input type="file" ref={this.inputFile} style={{display: 'none'}} onChange={this.handleChangeInputFile} />
+                  <input
+                    type="file"
+                    ref={this.inputFile}
+                    style={{display: 'none'}}
+                    onChange={this.handleChangeInputFile}
+                    accept=".xlsx, .xls"
+                  />
                 </div>
               </div>
               {
@@ -302,6 +308,7 @@ class ImportCarsView extends React.Component<IPropsType, IStateType> {
       patente: '',
       marca: '',
       denominacion: '',
+      motor: '',
       color: '',
       destino: ''
     }];
@@ -311,7 +318,7 @@ class ImportCarsView extends React.Component<IPropsType, IStateType> {
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, 'Autos');
     /* generate an XLSX file */
-    XLSX.writeFile(wb, 'template_import_cars_v1.xlsx');
+    XLSX.writeFile(wb, 'template_import_cars_v1.1.xlsx');
   }
 
   private handleChangeInputFile(e: React.ChangeEvent<HTMLInputElement>) {

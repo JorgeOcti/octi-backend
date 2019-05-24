@@ -124,7 +124,7 @@ class FormController {
                     select: 'name'
                 }, {
                     path: 'car',
-                    select: ['vin', 'internalNumber', 'brand', 'denomination', 'color']
+                    select: ['vin', 'internalNumber', 'engineNumber', 'brand', 'denomination', 'color', 'patent']
                 }, {
                     path: 'sections.answers.images'
                 }, {
@@ -184,7 +184,7 @@ class FormController {
                 requireAccesory: ((scale, answer) => {
                     if (answer && answer.hasOwnProperty('answer') && answer.answer) {
                         const choice = scale.choices.find((choice) => choice._id.toString() === answer.answer.toString());
-                        return choice.requireAccesories;
+                        return choice ? choice.requireAccesories : false;
                     }
                     return false;
                 }),

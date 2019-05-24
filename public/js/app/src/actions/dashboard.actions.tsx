@@ -482,7 +482,7 @@ export function getParticipant(id: string) {
                                               } - {item.item} {item.amount ? `(${answer.accesoriesAnswered.find((accesory) => accesory.item === item._id).amount})` : ''}
                                             </p>
                                           );
-                                        }) : 'No se seleccionarón items.'
+                                        }) : 'No se seleccionaron items.'
                                       }
                                     </div>
                                   </div>

@@ -68,6 +68,7 @@ class AdminCarController {
               newCar.vin2 = vin2;
               newCar.brand = car.marca ? car.marca : newCar.brand;
               newCar.denomination = car.denominacion ? car.denominacion : newCar.denomination;
+              newCar.engineNumber = car.motor ? car.motor : newCar.engineNumber;
               newCar.color = car.color ? car.color : newCar.color;
               newCar.patent = car.patente ? car.patente : newCar.patent;
               newCar.internalNumber = car.NInterno ? car.NInterno : newCar.internalNumber;
@@ -80,6 +81,7 @@ class AdminCarController {
                 vin2,
                 brand: car.marca ? car.marca : '',
                 denomination: car.denominacion ? car.denominacion : '',
+                engineNumber: car.motor ? car.motor : car.engineNumber,
                 color: car.color ? car.color : '',
                 internalNumber: car.NInterno ? car.NInterno : '',
                 destination: car.destino ? car.destino : '',

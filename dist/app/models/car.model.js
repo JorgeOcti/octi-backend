@@ -31,6 +31,11 @@ const carSchema = new mongoose.Schema({
         default: '',
         trim: true
     },
+    engineNumber: {
+        type: String,
+        default: '',
+        trim: true
+    },
     destination: {
         type: String,
         trim: true
