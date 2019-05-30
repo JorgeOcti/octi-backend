@@ -167,7 +167,7 @@ export function updateUserAction() {
         setTimeout(() => {
           $(`#user-${tempUser._id}`).removeClass('editing-item');
         }, 1000);
-        dispatch(getUsersAction(1) as any);
+        dispatch(getUsersAction(state.users.pagination.page) as any);
       })
       .catch((err: AxiosError) => {
         statusFooterButttonsModal(false);

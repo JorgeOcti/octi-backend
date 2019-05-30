@@ -23,30 +23,29 @@ interface IPropsType {
 
 interface IStateType {
   open: boolean;
+  searchText: string;
 }
 
 class BootstrapSelect extends React.Component<IPropsType, IStateType> {
 
-  state = {
-    open: false
+  readonly state = {
+    open: false,
+    searchText: ''
   };
 
   constructor(props: IPropsType) {
     super(props);
     this.handlerOpen = this.handlerOpen.bind(this);
+    this.search = this.search.bind(this);
   }
 
-  handlerOpen() {
-    this.setState({
-      open: !this.state.open
-    });
-  }
-
-  render(): React.ReactElement<IPropsType> {
+  public render(): React.ReactElement<IPropsType> {
     const {
       options, selected, onClick, displayItems, noneSelectedText, selectedText, separator, allOption, search, autoClouse, selectAll
     } = this.props;
+    const  {searchText} = this.state;
     const selectedItems = options.filter((option) => (selected.includes(option.value)));
+
     return (
       <div className={`dropdown bootstrap-select form-control show-tick ${autoClouse ? '' : 'keep-inside-clicks-open'}`}>
         <button
@@ -54,6 +53,7 @@ class BootstrapSelect extends React.Component<IPropsType, IStateType> {
           className={`btn dropdown-toggle bs-placeholder btn-filter btn-default`}
           data-toggle="dropdown"
           style={{borderRadius: '0px'}}
+          onClick={this.handlerOpen}
         >
           <div className="filter-option">
             <div className="filter-option-inner">
@@ -84,7 +84,15 @@ class BootstrapSelect extends React.Component<IPropsType, IStateType> {
           {
             search ?
               <div className="bs-searchbox">
-                <input type="text" className="form-control input-sm" autoComplete="off"/>
+                <input
+                  type="text"
+                  className="form-control input-sm"
+                  autoComplete="off"
+                  value={this.state.searchText}
+                  onChange={
+                    (e: React.ChangeEvent<HTMLInputElement>) => this.search(e.target.value)
+                  }
+                />
               </div> : null
           }
           {
@@ -109,7 +117,16 @@ class BootstrapSelect extends React.Component<IPropsType, IStateType> {
           >
             <ul className="dropdown-menu inner" style={{maxHeight: '30vh', overflowY: 'auto'}}>
               {
-                options.map((option) => {
+                options.filter((option) => {
+                  if (!searchText || !searchText.length) {
+                    return true;
+                  }
+                  return option.text
+                    .normalize('NFD')
+                    .replace(/[\u0300-\u036f]/g, '')
+                    .toLowerCase()
+                    .includes(searchText.toLowerCase());
+                }).map((option) => {
                   const isSelected = selected.includes(option.value);
                   return (
                     <li key={option.value} className={`${isSelected ? 'selected' : ''}`} onClick={() => onClick(option.value)}>
@@ -126,6 +143,23 @@ class BootstrapSelect extends React.Component<IPropsType, IStateType> {
         </div>
       </div>
     );
+  }
+
+  private handlerOpen() {
+    this.setState({
+        open: !this.state.open
+      }, () => {
+        if (!this.state.open) {
+          this.search('');
+        }
+      }
+    );
+  }
+
+  private search(searchText: string) {
+    this.setState({
+      searchText: searchText.normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+    });
   }
 }
 

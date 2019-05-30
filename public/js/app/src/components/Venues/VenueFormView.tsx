@@ -77,6 +77,7 @@ class VenueFormView extends React.Component<IPropsType, IStateType> {
               <label htmlFor="id-company">Empresa</label>
               <BootstrapSelect
                 noneSelectedText="Seleccione"
+                search={true}
                 options={
                   companies
                     .map((company) => ({
@@ -132,6 +133,7 @@ class VenueFormView extends React.Component<IPropsType, IStateType> {
               <BootstrapSelect
                 noneSelectedText="Seleccione"
                 displayItems={2}
+                search={true}
                 selectedText="sucursales seleccionadas."
                 selected={tempVenue.sendTo.map((venue) => venue._id)}
                 allOption={true}
@@ -156,6 +158,7 @@ class VenueFormView extends React.Component<IPropsType, IStateType> {
               <BootstrapSelect
                 noneSelectedText="Seleccione"
                 displayItems={2}
+                search={true}
                 selectedText="sucursales seleccionadas."
                 selected={tempVenue.shippingCarriers.map((carrier) => carrier._id)}
                 allOption={true}
@@ -181,6 +184,7 @@ class VenueFormView extends React.Component<IPropsType, IStateType> {
               <BootstrapSelect
                 noneSelectedText="Seleccione"
                 displayItems={2}
+                search={true}
                 selectedText="sucursales seleccionadas."
                 selected={tempVenue.receiveFrom.map((venue) => venue._id)}
                 allOption={true}
@@ -205,6 +209,7 @@ class VenueFormView extends React.Component<IPropsType, IStateType> {
               <BootstrapSelect
                 noneSelectedText="Seleccione"
                 displayItems={2}
+                search={true}
                 selectedText="sucursales seleccionadas."
                 selected={tempVenue.receptionCarriers.map((carrier) => carrier._id)}
                 allOption={true}
