@@ -13,6 +13,7 @@ import { usersReducer } from './users.reducer';
 import {venuesReducer} from './venues.reducer';
 import {dashboardDamagesReducer} from "./dashboardDamages.reducer";
 import {dashboardTimingReducer} from "./dashboardTiming.reducer";
+import {dashboardDercoReducer} from "./dashboardDerco.reducer";
 
 export default (history: any) => combineReducers({
   users: usersReducer,
@@ -22,6 +23,7 @@ export default (history: any) => combineReducers({
   dashboard: dashboardReducer,
   dashboardDamages: dashboardDamagesReducer,
   dashboardTiming: dashboardTimingReducer,
+  dashboardDerco: dashboardDercoReducer,
   inventories: inventoriesReducer,
   inventoryDashboard: inventoriesDashboardReducer,
   alerts: alertsReducer,

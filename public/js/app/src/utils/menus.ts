@@ -38,6 +38,15 @@ if (hasPermission(window.user, 'viewDashboardTiming')) {
   });
 }
 
+if (hasPermission(window.user, 'viewDashboardDerco')) {
+  dashboardItems.push({
+    id: '1.5',
+    icon: 'fa-circle-o',
+    text: 'Dashboard derco',
+    url: '/dashboard/derco/'
+  });
+}
+
 if (dashboardItems.length) {
   menus.push({
     id: '1',
