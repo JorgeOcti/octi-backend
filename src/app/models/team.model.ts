@@ -10,6 +10,10 @@ const teamSchema = new mongoose.Schema({
     trim: true,
     required: true
   },
+  formsNumber: {
+    type: Number,
+    default: 0
+  },
   active: {
     type: Boolean,
     default: true

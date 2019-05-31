@@ -1,4 +1,4 @@
-import * as moment from 'moment';
+import * as moment from 'moment-timezone';
 import * as Raven from 'raven-js';
 import {ErrorInfo} from 'react';
 import * as React from 'react';
@@ -55,6 +55,7 @@ class DashboardVinView extends React.Component<IPropsType, IStateType> {
   public printPdf(url: string, carLoading: string) {
     this.setState({carLoading});
     let iframe: any = this.printIframe;
+    const timezone = moment.tz.guess();
     if (!this.printIframe) {
       iframe = this.printIframe = document.createElement('iframe');
       document.body.appendChild(iframe);
@@ -68,7 +69,7 @@ class DashboardVinView extends React.Component<IPropsType, IStateType> {
         }, 1);
       };
     }
-    iframe.src = url;
+    iframe.src = `${url}?timezone=${timezone}`;
   }
 
   public componentWillMount(): void {
@@ -172,7 +173,8 @@ class DashboardVinView extends React.Component<IPropsType, IStateType> {
                   <table className="table table-andes table-striped">
                     <thead>
                     <tr>
-                      <th style={{width: '20%'}} className="middle">VIN</th>
+                      <th style={{width: '5%'}} className="middle">Nº</th>
+                      <th style={{width: '15%'}} className="middle">VIN</th>
                       <th style={{width: '10%'}} className="middle hidden-xs">Marca</th>
                       <th style={{width: '20%'}} className="middle hidden-xs">Supervisor</th>
                       <th style={{width: '20%'}} className="middle">Sucursal</th>
@@ -190,6 +192,7 @@ class DashboardVinView extends React.Component<IPropsType, IStateType> {
                             key={car._id} id={`car-${car._id}`}
                             className={highlight.length && highlight.includes(car._id as never) ? 'highlight-info' : ''}
                           >
+                            <td className="middle">{car.lastForm.number}</td>
                             <td className="middle">{car.vin}</td>
                             <td className="middle hidden-xs">{car.brand}</td>
                             <td className="middle hidden-xs">

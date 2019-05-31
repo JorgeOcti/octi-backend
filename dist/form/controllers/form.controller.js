@@ -4,6 +4,7 @@ const bson_1 = require("bson");
 const fs = require("fs");
 const GraphicsMagick = require("gm");
 const HtmlPdf = require("html-pdf");
+const Joi = require("joi");
 const moment = require("moment-timezone");
 const path = require("path");
 const QRCode = require("qrcode");
@@ -11,6 +12,7 @@ const Raven = require("raven");
 const app_1 = require("../../app");
 const alert_model_1 = require("../../app/models/alert.model");
 const car_model_1 = require("../../app/models/car.model");
+const team_model_1 = require("../../app/models/team.model");
 const user_model_1 = require("../../app/models/user.model");
 const user_model_2 = require("../../app/models/user.model");
 const venue_model_1 = require("../../app/models/venue.model");
@@ -33,7 +35,7 @@ class FormController {
         this.uploadFile = this.uploadFile.bind(this);
     }
     async pdf(req, res) {
-        const { debug } = req.query;
+        const { debug, timezone } = req.query;
         const { id } = req.params;
         const { team } = req.user;
         try {
@@ -83,6 +85,7 @@ class FormController {
                     }]
             }, {
                 name: true,
+                number: true,
                 user: true,
                 sections: true,
                 qualification: true,
@@ -121,7 +124,7 @@ class FormController {
                     select: 'name'
                 }, {
                     path: 'car',
-                    select: ['vin', 'internalNumber', 'brand', 'denomination', 'color']
+                    select: ['vin', 'internalNumber', 'engineNumber', 'brand', 'denomination', 'color', 'patent']
                 }, {
                     path: 'sections.answers.images'
                 }, {
@@ -132,6 +135,7 @@ class FormController {
                     path: 'conciliationImages'
                 }]).lean();
             moment.locale('es');
+            moment.tz.setDefault(timezone ? timezone : 'America/Santiago');
             const css = fs.readFileSync(path.join(__dirname, '../../../views/') + 'form/carDetail/style.css', 'utf8');
             const templatePath = path.join(__dirname, '../../../views/') + 'form/carDetail/index.pug';
             const participantCompany = participant.user.venue && participant.user.venue.company || {};
@@ -177,16 +181,27 @@ class FormController {
                     }
                     return '';
                 }),
-                getDamageItem: ((items, item) => {
-                    const result = items.find((i) => i._id.toString() === item.toString());
-                    if (result && result.hasOwnProperty('name')) {
-                        return result.name;
+                requireAccesory: ((scale, answer) => {
+                    if (answer && answer.hasOwnProperty('answer') && answer.answer) {
+                        const choice = scale.choices.find((choice) => choice._id.toString() === answer.answer.toString());
+                        return choice ? choice.requireAccesories : false;
                     }
-                    return '';
+                    return false;
+                }),
+                getDamageItem: ((items, item) => {
+                    if (item) {
+                        const result = items.find((i) => i._id.toString() === item.toString());
+                        if (result && result.hasOwnProperty('name')) {
+                            return result.name;
+                        }
+                    }
+                    return '-';
                 }),
                 logo: participantCompany.image && participantCompany.image.hasOwnProperty('url') ? decodeURI(participantCompany.image.url) : false,
                 accesorySelected: (answer, item) => {
-                    return item ? answer.accesoriesSelected.map((a) => a.toString()).includes(item._id.toString()) : false;
+                    return item && answer.accesoriesAnswered ? answer.accesoriesAnswered.find((accesory) => {
+                        return accesory.item === item._id.toString();
+                    }) : false;
                 }
             });
             if (debug) {
@@ -233,6 +248,7 @@ class FormController {
             }
         }
         catch (e) {
+            Raven.captureException(e, { req });
             res.status(500).json(e.message);
         }
     }
@@ -241,7 +257,7 @@ class FormController {
         logger_service_1.default.info(`list forms`);
         logger_service_1.default.info(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
         try {
-            const updatedUser = await user_model_2.default.findById(req.user._id).populate([{
+            const updatedUser = await user_model_1.default.findById(req.user._id).populate([{
                     path: 'userForms',
                     select: ['_id']
                 }]);
@@ -266,6 +282,7 @@ class FormController {
             }
         }
         catch (e) {
+            Raven.captureException(e, { req });
             /* istanbul ignore next */
             logger_service_1.default.error(`Async Error.`);
             res.status(400).json({
@@ -280,27 +297,47 @@ class FormController {
         logger_service_1.default.info(`detail forms`);
         logger_service_1.default.info(`{user: {_id: ${req.user._id}, email: ${req.user.email}}, {form: ${id}}}`);
         try {
-            if (await user_model_2.default.find({ _id: req.user._id, userForms: id }).count() < 1) {
+            if (await user_model_1.default.find({ _id: req.user._id, userForms: id }).count() < 1) {
                 return res.status(403).json({
                     message: 'No tienes permisos para esta operación'
                 });
             }
-            const user = await user_model_1.default.findById(req.user._id, {
+            const user = await user_model_2.default.findById(req.user._id, {
                 venue: true
             }).populate([{
                     path: 'venue',
                     populate: [{
                             path: 'sendTo',
-                            select: ['_id', 'name']
+                            select: ['name'],
+                            options: {
+                                sort: {
+                                    name: 1
+                                }
+                            }
                         }, {
                             path: 'receiveFrom',
-                            select: ['_id', 'name']
+                            select: ['name'],
+                            options: {
+                                sort: {
+                                    name: 1
+                                }
+                            }
                         }, {
                             path: 'receptionCarriers',
-                            select: ['_id', 'name']
+                            select: ['name'],
+                            options: {
+                                sort: {
+                                    name: 1
+                                }
+                            }
                         }, {
                             path: 'shippingCarriers',
-                            select: ['_id', 'name']
+                            select: ['name'],
+                            options: {
+                                sort: {
+                                    name: 1
+                                }
+                            }
                         }]
                 }]);
             const form = await this.getForm({
@@ -520,6 +557,7 @@ class FormController {
             });
         }
         catch (e) {
+            Raven.captureException(e, { req });
             /* istanbul ignore next */
             logger_service_1.default.error(`detail form: Async Error.`);
             /* istanbul ignore next */
@@ -558,7 +596,7 @@ class FormController {
         }
         vin = vin.replace(/[\W_]+/g, '');
         try {
-            const updatedUser = await user_model_2.default.findById(req.user._id);
+            const updatedUser = await user_model_1.default.findById(req.user._id);
             if (!updatedUser) {
                 return res.status(404).json({
                     message: 'No se ha encontrado el formulario solicitado.',
@@ -695,9 +733,8 @@ class FormController {
                                 accessories: question.accessories,
                                 damages: question.damages,
                                 damagesSelected: answer && answer.damages ? answer.damages : [],
-                                accesoriesSelected: choice && choice.requireAccesories && answer && answer.accesories ?
-                                    answer.accesories.map((accesory) => new bson_1.ObjectID(accesory))
-                                    : [],
+                                accesoriesAnswered: (question.kind === form_model_1.KindQuestion.accessory || choice && choice.requireAccesories) && answer && answer.accesories ?
+                                    await this.processAccesoryItems(answer.accesories) : [],
                                 risk: question.risk,
                                 comment: (question.kind === form_model_1.KindQuestion.text || choice && choice.requireComment) && answer && answer.comment ?
                                     answer.comment
@@ -733,6 +770,10 @@ class FormController {
                     const formQualification = sumSectionQualifications ? sumSectionQualifications / sumSectionWeigths : 0;
                     newParticipant.qualification = formQualification;
                     try {
+                        const updateTeam = await team_model_1.default.findOneAndUpdate({ _id: team._id }, { $inc: { formsNumber: 1 } }, { new: true });
+                        if (updateTeam) {
+                            newParticipant.number = updateTeam.formsNumber;
+                        }
                         // save the participant
                         await newParticipant.save();
                         // associate file to participant
@@ -804,7 +845,7 @@ class FormController {
                         });
                         // send refresh with websocket to dashboard detail
                         server_1.io.to(`dashboard-vin-detail-${car._id}`).emit(`ADD_PARTICIPANT`, await participant_model_1.default
-                            .findById(newParticipant._id, { name: 1, user: 1, venue: 1, createdAt: 1, qualification: 1 })
+                            .findById(newParticipant._id, { number: 1, name: 1, user: 1, venue: 1, createdAt: 1, qualification: 1 })
                             .populate([{
                                 path: 'user',
                                 select: ['firstName', 'lastName']
@@ -849,6 +890,7 @@ class FormController {
             }
         }
         catch (e) {
+            Raven.captureException(e, { req });
             /* istanbul ignore next */
             console.log(e);
             /* istanbul ignore next */
@@ -908,6 +950,7 @@ class FormController {
                 });
             }
             catch (e) {
+                Raven.captureException(e, { req });
                 /* istanbul ignore next */
                 logger_service_1.default.error(`async error:`);
                 /* istanbul ignore next */
@@ -930,7 +973,7 @@ class FormController {
         logger_service_1.default.info(`changePreferred`);
         logger_service_1.default.info(`{user: {_id: ${req.user._id}, email: ${req.user.email}}, body: ${JSON.stringify(req.body)}}`);
         try {
-            const user = await user_model_1.default.findOne({ _id: req.user._id, team, active: true });
+            const user = await user_model_2.default.findOne({ _id: req.user._id, team, active: true });
             // validate exist user
             if (user) {
                 form = await form_model_1.default.findOne({ _id: form, team });
@@ -962,6 +1005,7 @@ class FormController {
             }
         }
         catch (e) {
+            Raven.captureException(e, { req });
             /* istanbul ignore next */
             logger_service_1.default.error(`changePreferred: Async Error.`);
             /* istanbul ignore next */
@@ -1023,10 +1067,11 @@ class FormController {
                 }
             });
             const venuesPermissions = req.user.venuesPermissions(true);
-            var venues = [];
+            const venues = [];
             venuesPermissions.forEach((v) => {
-                if (allVenues.includes(v) && !venues.includes(v))
+                if (allVenues.includes(v) && !venues.includes(v)) {
                     venues.push(v);
+                }
             });
             const damagesData = {};
             venues.forEach((venue) => damagesData[venue] = { damaged: 0, undamaged: 0 });
@@ -1060,7 +1105,7 @@ class FormController {
     async timingDashboard(req, res) {
         try {
             const { team } = req.user;
-            const distributor = await venue_model_1.default.findOne({ team, type: "distributor" });
+            const distributor = await venue_model_1.default.findOne({ team, type: 'distributor' });
             const receivers = await venue_model_1.default.find({ team, type: 'receiver' });
             // autos que han llegado al distribuidor
             const threshold = 60 * 24 * 5;
@@ -1142,8 +1187,8 @@ class FormController {
         try {
             const { team } = req.user;
             const { period } = req.query;
-            //TODO: how to setup this?
-            const distributor = await venue_model_1.default.findOne({ team, type: "distributor" });
+            // TODO: how to setup this?
+            const distributor = await venue_model_1.default.findOne({ team, type: 'distributor' });
             if (distributor) {
                 const receivers = await venue_model_1.default.find({ team, type: 'receiver' });
                 const receiversDict = {};
@@ -1154,13 +1199,13 @@ class FormController {
                 const threshold = 60 * 24 * 5;
                 const participants = await participant_model_1.default.find({
                     venue: distributor._id,
-                    createdAt: { $gt: t0.toDate(), $lt: t1.toDate() },
+                    createdAt: { $gt: t0.toDate(), $lt: t1.toDate() }
                 });
                 const receptions = await participant_model_1.default.find({
                     team,
                     venue: { $in: receivers.map((v) => v._id) },
                     receiveFrom: distributor._id,
-                    createdAt: { $gt: t0.toDate() },
+                    createdAt: { $gt: t0.toDate() }
                 }, ['car', 'venue', 'createdAt'], {
                     sort: {
                         createdAt: 1
@@ -1193,10 +1238,10 @@ class FormController {
                         const dm = t1.diff(t0, 'minutes');
                         receivedPerVenue[venue] += 1;
                         if (dm < threshold) {
-                            //receivedPerMonth[month].ontime += 1;
+                            // receivedPerMonth[month].ontime += 1;
                         }
                         else {
-                            //receivedPerMonth[month].overdue += 1;
+                            // receivedPerMonth[month].overdue += 1;
                         }
                     }
                 }
@@ -1367,13 +1412,28 @@ class FormController {
                             select: ['name', 'positions', 'kinds', 'parts'],
                             populate: [{
                                     path: 'positions',
-                                    select: ['name']
+                                    select: ['name'],
+                                    options: {
+                                        sort: {
+                                            name: 1
+                                        }
+                                    }
                                 }, {
                                     path: 'kinds',
-                                    select: ['name']
+                                    select: ['name'],
+                                    options: {
+                                        sort: {
+                                            name: 1
+                                        }
+                                    }
                                 }, {
                                     path: 'parts',
-                                    select: ['name']
+                                    select: ['name'],
+                                    options: {
+                                        sort: {
+                                            name: 1
+                                        }
+                                    }
                                 }]
                         }])
                         .lean()
@@ -1391,6 +1451,29 @@ class FormController {
                 }
             });
         });
+    }
+    async processAccesoryItems(accesories) {
+        const accesorySchema = Joi.object({
+            item: Joi.string(),
+            amount: Joi.number()
+        });
+        const newAccesories = [];
+        accesories.map(async (accesory) => {
+            try {
+                const newAccesory = await accesorySchema.validate(accesory);
+                newAccesories.push({
+                    item: newAccesory.item,
+                    amount: newAccesory.amount
+                });
+            }
+            catch (e) {
+                newAccesories.push({
+                    item: accesory,
+                    amount: 1
+                });
+            }
+        });
+        return newAccesories;
     }
     getFormWithScale(filter) {
         return new Promise((resolve, reject) => {

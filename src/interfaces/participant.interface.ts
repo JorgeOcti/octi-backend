@@ -40,6 +40,7 @@ export interface IParticipantScale {
 export interface IparticipantItems {
   _id: any;
   item: string;
+  amount: boolean;
 }
 
 export interface IparticipantAccesory {
@@ -59,6 +60,7 @@ export interface IParticipantAnswer {
 
   accessories: IParticipantAccesoryModel;
   accesoriesSelected: any[];
+  accesoriesAnswered: any[];
   conciliation: boolean;
 
   answer: string;
@@ -88,6 +90,7 @@ export interface IParticipantSection {
 
 export interface IParticipant {
   _id: any;
+  number: number;
   name: string;
 
   form: IFormModel;

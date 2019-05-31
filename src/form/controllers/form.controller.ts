@@ -3,6 +3,7 @@ import {Response} from 'express';
 import * as fs from 'fs';
 import * as GraphicsMagick from 'gm';
 import * as HtmlPdf from 'html-pdf';
+import * as Joi from 'joi';
 import * as moment from 'moment-timezone';
 import * as path from 'path';
 import * as QRCode from 'qrcode';
@@ -10,8 +11,9 @@ import * as Raven from 'raven';
 import {queue} from '../../app';
 import Alert from '../../app/models/alert.model';
 import CarModel from '../../app/models/car.model';
-import UserModel, {IUserModel} from '../../app/models/user.model';
+import Team from '../../app/models/team.model';
 import User from '../../app/models/user.model';
+import UserModel, {IUserModel} from '../../app/models/user.model';
 import Venue, {IVenueModel} from '../../app/models/venue.model';
 import {IAnyObject, IRequest} from '../../interfaces/global.interface';
 import {io} from '../../server';
@@ -38,7 +40,7 @@ class FormController {
   }
 
   public async pdf(req: IRequest, res: Response): Promise<any> {
-    const {debug} = req.query;
+    const {debug, timezone} = req.query;
     const {id} = req.params;
     const {team} = req.user;
     try {
@@ -89,6 +91,7 @@ class FormController {
           }]
         }, {
           name: true,
+          number: true,
           user: true,
           sections: true,
           qualification: true,
@@ -127,7 +130,7 @@ class FormController {
           select: 'name'
         }, {
           path: 'car',
-          select: ['vin', 'internalNumber', 'brand', 'denomination', 'color']
+          select: ['vin', 'internalNumber', 'engineNumber', 'brand', 'denomination', 'color', 'patent']
         }, {
           path: 'sections.answers.images'
         }, {
@@ -138,6 +141,7 @@ class FormController {
           path: 'conciliationImages'
         }]).lean();
       moment.locale('es');
+      moment.tz.setDefault(timezone ? timezone : 'America/Santiago');
       const css = fs.readFileSync(path.join(__dirname, '../../../views/') + 'form/carDetail/style.css', 'utf8');
       const templatePath: string = path.join(__dirname, '../../../views/') + 'form/carDetail/index.pug';
       const participantCompany = participant.user.venue && participant.user.venue.company || {};
@@ -183,16 +187,27 @@ class FormController {
           }
           return '';
         }),
-        getDamageItem: ((items: any, item: string) => {
-          const result = items.find((i: any) => i._id.toString() === item.toString());
-          if (result && result.hasOwnProperty('name')) {
-            return result.name;
+        requireAccesory: ((scale: any, answer: any) => {
+          if (answer && answer.hasOwnProperty('answer') && answer.answer) {
+            const choice = scale.choices.find((choice: any) => choice._id.toString() === answer.answer.toString());
+            return choice ? choice.requireAccesories : false;
           }
-          return '';
+          return false;
+        }),
+        getDamageItem: ((items: any, item: string) => {
+          if (item) {
+            const result = items.find((i: any) => i._id.toString() === item.toString());
+            if (result && result.hasOwnProperty('name')) {
+              return result.name;
+            }
+          }
+          return '-';
         }),
         logo: participantCompany.image && participantCompany.image.hasOwnProperty('url') ? decodeURI(participantCompany.image.url) : false,
         accesorySelected: (answer: any, item: any) => {
-          return item ? answer.accesoriesSelected.map((a: any) => a.toString()).includes(item._id.toString()) : false;
+          return item && answer.accesoriesAnswered ? answer.accesoriesAnswered.find((accesory: any) => {
+            return accesory.item === item._id.toString();
+          }) : false;
         }
       });
       if (debug) {
@@ -236,6 +251,7 @@ class FormController {
         });
       }
     } catch (e) {
+      Raven.captureException(e, {req});
       res.status(500).json(e.message);
     }
   }
@@ -268,6 +284,7 @@ class FormController {
         });
       }
     } catch (e) {
+      Raven.captureException(e, {req});
       /* istanbul ignore next */
       logger.error(`Async Error.`);
       res.status(400).json({
@@ -294,16 +311,36 @@ class FormController {
         path: 'venue',
         populate: [{
           path: 'sendTo',
-          select: ['_id', 'name']
+          select: ['name'],
+          options: {
+            sort: {
+              name: 1
+            }
+          }
         }, {
           path: 'receiveFrom',
-          select: ['_id', 'name']
+          select: ['name'],
+          options: {
+            sort: {
+              name: 1
+            }
+          }
         }, {
           path: 'receptionCarriers',
-          select: ['_id', 'name']
+          select: ['name'],
+          options: {
+            sort: {
+              name: 1
+            }
+          }
         }, {
           path: 'shippingCarriers',
-          select: ['_id', 'name']
+          select: ['name'],
+          options: {
+            sort: {
+              name: 1
+            }
+          }
         }]
       }]) as IUserModel);
       const form = await this.getForm({
@@ -529,6 +566,7 @@ class FormController {
         status: 200
       });
     } catch (e) {
+      Raven.captureException(e, {req});
       /* istanbul ignore next */
       logger.error(`detail form: Async Error.`);
       /* istanbul ignore next */
@@ -712,9 +750,8 @@ class FormController {
                 accessories: question.accessories,
                 damages: question.damages,
                 damagesSelected: answer && answer.damages ? answer.damages : [],
-                accesoriesSelected: choice && choice.requireAccesories && answer && answer.accesories ?
-                  answer.accesories.map((accesory: any) => new ObjectID(accesory))
-                  : [],
+                accesoriesAnswered: (question.kind === KindQuestion.accessory || choice && choice.requireAccesories) && answer && answer.accesories ?
+                  await this.processAccesoryItems(answer.accesories) : [],
                 risk: question.risk,
                 comment: (question.kind === KindQuestion.text || choice && choice.requireComment) && answer && answer.comment ?
                   answer.comment
@@ -750,6 +787,10 @@ class FormController {
           const formQualification = sumSectionQualifications ? sumSectionQualifications / sumSectionWeigths : 0;
           newParticipant.qualification = formQualification;
           try {
+            const updateTeam = await Team.findOneAndUpdate({_id: team._id}, {$inc: {formsNumber: 1}}, {new: true});
+            if (updateTeam) {
+              newParticipant.number = updateTeam.formsNumber;
+            }
             // save the participant
             await newParticipant.save();
 
@@ -825,7 +866,7 @@ class FormController {
 
             // send refresh with websocket to dashboard detail
             io.to(`dashboard-vin-detail-${car._id}`).emit(`ADD_PARTICIPANT`, await ParticipantModel
-              .findById(newParticipant._id, {name: 1, user: 1, venue: 1, createdAt: 1, qualification: 1})
+              .findById(newParticipant._id, {number: 1, name: 1, user: 1, venue: 1, createdAt: 1, qualification: 1})
               .populate([{
                 path: 'user',
                 select: ['firstName', 'lastName']
@@ -868,6 +909,7 @@ class FormController {
         });
       }
     } catch (e) {
+      Raven.captureException(e, {req});
       /* istanbul ignore next */
       console.log(e);
       /* istanbul ignore next */
@@ -927,6 +969,7 @@ class FormController {
           }
         });
       } catch (e) {
+        Raven.captureException(e, {req});
         /* istanbul ignore next */
         logger.error(`async error:`);
         /* istanbul ignore next */
@@ -979,6 +1022,7 @@ class FormController {
         });
       }
     } catch (e) {
+      Raven.captureException(e, {req});
       /* istanbul ignore next */
       logger.error(`changePreferred: Async Error.`);
       /* istanbul ignore next */
@@ -1044,10 +1088,11 @@ class FormController {
       });
 
       const venuesPermissions = req.user.venuesPermissions(true);
-      var venues: string[] = []
+      const venues: string[] = [];
       venuesPermissions.forEach((v) => {
-        if(allVenues.includes(v) && !venues.includes(v))
+        if (allVenues.includes(v) && !venues.includes(v)) {
           venues.push(v);
+        }
       });
 
       const damagesData: any = {};
@@ -1087,7 +1132,7 @@ class FormController {
 
     try {
       const {team} = req.user;
-      const distributor = await Venue.findOne({team, type: "distributor"})
+      const distributor = await Venue.findOne({team, type: 'distributor'});
       const receivers = await Venue.find({team, type: 'receiver'});
 
       // autos que han llegado al distribuidor
@@ -1181,31 +1226,30 @@ class FormController {
 
     try {
       const {team} = req.user;
-      const {period} = req.query
-
-      //TODO: how to setup this?
-      const distributor = await Venue.findOne({team, type: "distributor"})
+      const {period} = req.query;
+      // TODO: how to setup this?
+      const distributor = await Venue.findOne({team, type: 'distributor'});
       if (distributor) {
         const receivers = await Venue.find({team, type: 'receiver'});
 
-        const receiversDict: any = {}
-        receivers.forEach((r) => receiversDict[r._id.toString()] = r)
+        const receiversDict: any = {};
+        receivers.forEach((r) => receiversDict[r._id.toString()] = r);
 
         // autos que han llegado al distribuidor
-        const t0 = moment(period).startOf('month')
-        const t1 = moment(period).endOf('month')
+        const t0 = moment(period).startOf('month');
+        const t1 = moment(period).endOf('month');
 
         const threshold = 60 * 24 * 5;
         const participants = await ParticipantModel.find({
           venue: distributor._id,
-          createdAt: {$gt: t0.toDate(), $lt: t1.toDate()},
+          createdAt: {$gt: t0.toDate(), $lt: t1.toDate()}
         });
 
         const receptions = await ParticipantModel.find({
           team,
           venue: {$in: receivers.map((v) => v._id)},
           receiveFrom: distributor._id,
-          createdAt: {$gt: t0.toDate()},
+          createdAt: {$gt: t0.toDate()}
         }, ['car', 'venue', 'createdAt'], {
           sort: {
             createdAt: 1
@@ -1221,7 +1265,7 @@ class FormController {
           }
         }
 
-        const receivedPerVenue: any = {}
+        const receivedPerVenue: any = {};
         const venues: string[] = [];
         for (const participant of participants) {
 
@@ -1231,7 +1275,7 @@ class FormController {
             if (received.createdAt < participant.createdAt) {
               continue;
             }
-            const venue = received.venue.toString()
+            const venue = received.venue.toString();
             if (!venues.includes(venue)) {
               venues.push(venue);
               receivedPerVenue[venue] = 0;
@@ -1241,17 +1285,17 @@ class FormController {
             const t1 = moment(received.createdAt);
             const dm = t1.diff(t0, 'minutes');
 
-            receivedPerVenue[venue] += 1
+            receivedPerVenue[venue] += 1;
             if (dm < threshold) {
-              //receivedPerMonth[month].ontime += 1;
+              // receivedPerMonth[month].ontime += 1;
             } else {
-              //receivedPerMonth[month].overdue += 1;
+              // receivedPerMonth[month].overdue += 1;
             }
           }
         }
 
         const perVenue: number[] = venues.map((v) => receivedPerVenue[v]);
-        const data: any = {venues, perVenue}
+        const data: any = {venues, perVenue};
 
         res.json(data);
       }
@@ -1438,13 +1482,28 @@ class FormController {
               select: ['name', 'positions', 'kinds', 'parts'],
               populate: [{
                 path: 'positions',
-                select: ['name']
+                select: ['name'],
+                options: {
+                  sort: {
+                    name: 1
+                  }
+                }
               }, {
                 path: 'kinds',
-                select: ['name']
+                select: ['name'],
+                options: {
+                  sort: {
+                    name: 1
+                  }
+                }
               }, {
                 path: 'parts',
-                select: ['name']
+                select: ['name'],
+                options: {
+                  sort: {
+                    name: 1
+                  }
+                }
               }]
             }])
             .lean()
@@ -1462,6 +1521,29 @@ class FormController {
         }
       });
     });
+  }
+
+  private async processAccesoryItems(accesories: any[]) {
+    const accesorySchema: Joi.ObjectSchema = Joi.object({
+      item: Joi.string(),
+      amount: Joi.number()
+    });
+    const newAccesories: any[] = [];
+    accesories.map(async (accesory: any) => {
+      try {
+        const newAccesory = await accesorySchema.validate(accesory);
+        newAccesories.push({
+          item: newAccesory.item,
+          amount: newAccesory.amount
+        });
+      } catch (e) {
+        newAccesories.push({
+          item: accesory,
+          amount: 1
+        });
+      }
+    });
+    return newAccesories;
   }
 
   private getFormWithScale(filter: any): Promise<IFormModel> {

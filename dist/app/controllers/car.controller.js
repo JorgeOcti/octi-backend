@@ -788,7 +788,7 @@ class CarController {
                 }, {
                     // reverse populate
                     path: 'participants',
-                    select: ['name', 'user', 'createdAt', 'updatedAt', 'qualification', 'venue', 'shipping', 'reception'],
+                    select: ['number', 'name', 'user', 'createdAt', 'updatedAt', 'qualification', 'venue', 'shipping', 'reception'],
                     match: {
                         $or: [{
                                 venue: {
@@ -852,7 +852,7 @@ class CarController {
             },
             populate: [{
                     path: 'lastForm',
-                    select: ['createdAt', 'user', 'qualification', 'venue', 'sections', 'sections.answers.damagesSelected'],
+                    select: ['number', 'createdAt', 'user', 'qualification', 'venue', 'sections', 'sections.answers.damagesSelected'],
                     populate: [{
                             path: 'user',
                             select: ['firstName', 'lastName']
@@ -862,7 +862,7 @@ class CarController {
                         }]
                 }],
             sort: {
-                updatedAt: -1
+                lastForm: -1
             },
             page: parseInt(page ? page : 1, 10),
             limit: parseInt(pageSize ? pageSize : 20, 10)

@@ -1,33 +1,33 @@
 mixin headerDetail(first, second, third, quarter)
   tr
-    td(width="12%", class="strong")=first
+    td(width="18%", class="strong")=first
     if second
-      td(width="38%")=second
+      td(width="32%")=second
     else
-      td(width="38%")
+      td(width="32%")
         .border-bottom-dashed
     if third
-      td(width="18%", class="strong")=third
+      td(width="12%", class="strong")=third
       if quarter
-        td(width="32%")=quarter
+        td(width="38%")=quarter
       else
-        td(width="32%")
+        td(width="38%")
           .border-bottom-dashed
 
 mixin headerDetailRight(first, second, third, quarter)
   tr
-    td(width="12%", class="strong")=first
+    td(width="18%", class="strong")=first
     if second
-      td(width="38%")=second
+      td(width="32%")=second
     else
-      td(width="38%")
+      td(width="32%")
         .border-bottom-dashed
     if third
-      td(width="18%", class="strong")=third
+      td(width="12%", class="strong")=third
       if quarter
-        td(width="32%").text-right=quarter
+        td(width="38%").text-right=quarter
       else
-        td(width="32%").text-right
+        td(width="38%").text-right
           .border-bottom-dashed
 
 mixin carDetail(first, second, third, quarter, fifth, sixth)
@@ -73,16 +73,16 @@ body
   table(cellpadding='0', cellspacing='0')
     tr
       td(colspan=4, class="middle-center strong", style="font-size:10px;padding-bottom:10px")=participant.name
-    +headerDetailRight('Nº TRASLADO', '', 'FECHA', moment(participant.createdAt).format('LLL'))
+    +headerDetailRight('Nº TRASLADO', participant.number, 'FECHA', moment(participant.createdAt).format('LLL'))
     +headerDetail('ENCARGADO', `${participant.user.firstName} ${participant.user.lastName}`)
     +headerDetail('ORIGEN', origin(), 'DESTINO', destination())
-    +headerDetail('E. CARGUIO', false, 'E. TRANSPORTADORA', carrier())
+    +headerDetail('E. TRANSPORTADORA', carrier(), false, false)
 
   table(cellpadding='0', cellspacing='0', class="border")
     tr
-      td(colspan=4, class="strong")="DETALLES DE LA UNIDAD"
+      td(colspan=6, class="strong")="DETALLES DE LA UNIDAD"
     +carDetail('CHASIS', participant.car.vin, 'MARCA', participant.car.brand, 'MODELO', participant.car.denomination)
-    +carDetail('COLOR', participant.car.color, 'MOTOR', '', 'PATENTE', participant.car.patent)
+    +carDetail('COLOR', participant.car.color, participant.car.patent ? 'PATENTE': false, participant.car.patent ? participant.car.patent: false, participant.car.engineNumber ? 'MOTOR': false, participant.car.engineNumber ? participant.car.engineNumber: false)
 
   table(cellpadding='0', cellspacing='0', class="border")
     each section in participant.sections
@@ -96,7 +96,7 @@ body
         tr.item
           td
             p.no-margin.strong=answer.question
-          if answer.kind === 'scale' && answer.scale
+          if ['scale', 'accessory'].includes(answer.kind) && answer.scale
             td.text-center=getAnswer(answer.scale, answer)
           else
             td
@@ -106,19 +106,30 @@ body
                 | Si
               else
                 | No
-        if answer.kind === 'accessory'
+        if answer.kind === 'accessory' && requireAccesory(answer.scale, answer)
+          tr
+            td(colspan=3, style="padding-bottom:0px").text-center
+              strong=answer.accessories.question
           tr.item
-            td(colspan=3)
-              table(cellpadding='0', cellspacing='0', style="margin-bottom:0;padding-bottom:0")
-                while answer.accessories.items.length
-                  tr
-                    each item in answer.accessories.items.splice(0,3)
-                      td.no-border-bottom
-                        if accesorySelected(answer, item)
-                          | <i class="far fa-check-square"></i>
-                        else
-                          | <i class="far fa-square"></i>
-                        | #{' '}#{item.item}
+            td(colspan=3, style="padding-top:0px")
+              - const accesorySeletedIds = answer.accesoriesAnswered?answer.accesoriesAnswered.map(accesory=>accesory.item):[];
+              - const items = answer.accessories.items.filter((item)=>accesorySeletedIds.includes(item._id.toString()));
+              if items.length
+                table(cellpadding='0', cellspacing='0', style="margin-bottom:0;padding-bottom:0")
+                  while items.length
+                    tr
+                      each item in items.splice(0,4)
+                        td(style="padding:4px 0", width="25%").no-border-bottom
+                          - const accesory = accesorySelected(answer, item);
+                          | #{'- '}#{item.item} #{accesory && item.amount ? `(${accesory.amount})` : ''}
+                          //- if accesory
+                          //-   | <i class="far fa-check-square"></i>
+                          //- else
+                          //-   | <i class="far fa-square"></i>
+              else
+                tr.item-damage
+                  td(colspan=2)
+                    | No se seleccionaron items.
         if answer.kind === 'damage'
           if !answer.damagesSelected.length
             tr.item-damage

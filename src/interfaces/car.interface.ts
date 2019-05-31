@@ -7,6 +7,7 @@ export interface ICar {
   _id: any;
   internalNumber: string;
   patent: string;
+  engineNumber: string;
   vin: string;
   vin2: string;
   brand: string;

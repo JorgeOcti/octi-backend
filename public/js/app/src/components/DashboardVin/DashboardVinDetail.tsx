@@ -81,6 +81,7 @@ class DashboardVinDetail extends React.Component<IPropsType, IStateType> {
   public printPdf(url: string, carLoading: string) {
     this.setState({carLoading});
     let iframe: any = this.printIframe;
+    const timezone = moment.tz.guess();
     if (!this.printIframe) {
       iframe = this.printIframe = document.createElement('iframe');
       document.body.appendChild(iframe);
@@ -94,7 +95,7 @@ class DashboardVinDetail extends React.Component<IPropsType, IStateType> {
         }, 1);
       };
     }
-    iframe.src = url;
+    iframe.src = `${url}?timezone=${timezone}`;
   }
 
   public componentDidCatch(error: Error, errorInfo: ErrorInfo) {
@@ -165,6 +166,7 @@ class DashboardVinDetail extends React.Component<IPropsType, IStateType> {
               <table className="table table-striped">
                 <thead>
                   <tr>
+                    <th>Nº</th>
                     <th>Fecha</th>
                     <th>Formulario</th>
                     <th className="hidden-xs">Supervisor</th>
@@ -178,6 +180,7 @@ class DashboardVinDetail extends React.Component<IPropsType, IStateType> {
                 {
                   car &&  car.participants && car.participants.map((participant) => (
                     <tr key={participant._id} className={highlight.length && highlight.includes(participant._id as never) ? 'highlight-info' : ''}>
+                      <td className="middle">{participant.number}</td>
                       <td className="middle">{moment(participant.createdAt).format('LLL')}</td>
                       <td className="middle">{participant.name}</td>
                       <td className="middle hidden-xs">{participant.user ? participant.user.firstName : ''} {participant.user ? participant.user.lastName : ''}</td>

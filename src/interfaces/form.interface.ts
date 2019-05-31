@@ -13,6 +13,7 @@ import {ITeam} from './team.interface';
 export interface IFormItems {
   _id: any;
   item: string;
+  amount: boolean;
 }
 
 export interface IFormAccesory {
@@ -27,7 +28,7 @@ export interface IFormQuestion {
   shortName: string;
 
   scale: IScaleModel;
-  accessories: IFormAccesoryModel;
+  accessories: IFormAccesoryModel | IFormAccesory;
   damages: IDamagesModel;
 
   conciliation: boolean;

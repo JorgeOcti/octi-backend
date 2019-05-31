@@ -381,6 +381,8 @@ export function getParticipant(id: string) {
                           if (answer.conciliation && !selectChoice) {
                             return null;
                           }
+                          const accesorySeletedIds = answer.accesoriesAnswered ? answer.accesoriesAnswered.map((accesory) => accesory.item) : [];
+                          const items = answer.accessories ? answer.accessories.items.filter((item) => accesorySeletedIds.includes(item._id)) : [];
                           return (
                             <div className="question" key={answer._id}>
                               <p><strong>{answer.order} {answer.question}</strong></p>
@@ -466,16 +468,21 @@ export function getParticipant(id: string) {
                                     <div className="col-md-12">
                                       <p><strong>{answer.accessories.question}</strong></p>
                                       {
-                                        answer.accessories.items.map((item) => {
+                                        items.length ? items.map((item) => {
                                           return (
                                             <p key={item._id}
-                                               className={answer.accesoriesSelected.includes(item._id) ? 'text-green' : 'text-red'}
-                                            >{answer.accesoriesSelected.includes(item._id) ?
-                                              <i className="fa fa-check" style={{marginRight: '5px'}}/> :
-                                              <i className="fa fa-times" style={{marginRight: '5px', width: '14px'}}/>} {item.item}
+                                              // className={answer.accesoriesAnswered.includes(item._id) ? 'text-green' : 'text-red'}
+                                            >
+                                              {
+                                                /*
+                                                answer.accesoriesSelected.includes(item._id) ?
+                                                  <i className="fa fa-check" style={{marginRight: '5px'}}/> :
+                                                  <i className="fa fa-times" style={{marginRight: '5px', width: '14px'}}/>
+                                                 */
+                                              } - {item.item} {item.amount ? `(${answer.accesoriesAnswered.find((accesory) => accesory.item === item._id).amount})` : ''}
                                             </p>
                                           );
-                                        })
+                                        }) : 'No se seleccionaron items.'
                                       }
                                     </div>
                                   </div>

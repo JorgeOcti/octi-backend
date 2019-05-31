@@ -9,7 +9,7 @@ html
     //- Tell the browser to be responsive to screen width
     meta(content='width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no', name='viewport')
     //- polyfill.io
-    script(src='https://polyfill.io/v3/polyfill.min.js?flags=gated&features=es2015%2Ces2016%2Ces2017')
+    script(src='https://polyfill.io/v3/polyfill.min.js?flags=gated&features=default%2Ces2015%2Ces2016%2Ces2017%2Ces5%2Ces6%2Ces7')
     //- Bootstrap 3.3.7
     link(rel='stylesheet', href=`/static${getVersionedPath('/css/vendor/bootstrap/bootstrap.min.css')}`)
     //- Font Awesome
@@ -38,6 +38,8 @@ html
       script(src=`/static${getVersionedPath('/js/vendor/jquery/jquery.min.js')}`)
       //- moment
       script(src=`/static${getVersionedPath('/js/vendor/moment/moment-with-locales.min.js')}`)
+      //- moment-timezone
+      script(src=`/static${getVersionedPath('/js/vendor/moment/moment-timezone-with-data.min.js')}`)
       //- React
       script(src=`/static${process.env.ENV == 'production' ? getVersionedPath('/js/vendor/react/react.min.js') : getVersionedPath('/js/vendor/react/react.js')}`)
       script(src=`/static${process.env.ENV == 'production' ? getVersionedPath('/js/vendor/react/react-dom.min.js') : getVersionedPath('/js/vendor/react/react-dom.js')}`)
