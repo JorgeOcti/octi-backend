@@ -1,3 +1,4 @@
+import * as unorm from 'unorm';
 import {
   IInventoryCar
 } from '../../../../../src/interfaces/inventory.interface';
@@ -182,7 +183,7 @@ function processCars(cars: IInventoryCar[], selectedItems: { [key: string]: any 
     }
     if (add && filter && filter.text && filter.text.length) {
       const result: boolean[] = filter.text.toLowerCase().split(' ').map((text) => (
-        `${car.car.vin}${car.car.brand}${car.car.denomination}${car.car.patent}`.normalize('NFD')
+        unorm.nfd(`${car.car.vin}${car.car.brand}${car.car.denomination}${car.car.patent}`)
           .replace(/[\u0300-\u036f]/g, '')
           .toLowerCase()
           .includes(text.toLowerCase())

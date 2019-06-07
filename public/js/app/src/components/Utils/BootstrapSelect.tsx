@@ -1,4 +1,5 @@
 import * as React from 'react';
+import * as unorm from 'unorm';
 
 interface IOption {
   value: string;
@@ -121,8 +122,7 @@ class BootstrapSelect extends React.Component<IPropsType, IStateType> {
                   if (!searchText || !searchText.length) {
                     return true;
                   }
-                  return option.text
-                    .normalize('NFD')
+                  return unorm.nfd(option.text)
                     .replace(/[\u0300-\u036f]/g, '')
                     .toLowerCase()
                     .includes(searchText.toLowerCase());
@@ -158,7 +158,7 @@ class BootstrapSelect extends React.Component<IPropsType, IStateType> {
 
   private search(searchText: string) {
     this.setState({
-      searchText: searchText.normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+      searchText: unorm.nfd(searchText).replace(/[\u0300-\u036f]/g, '')
     });
   }
 }
