@@ -10,6 +10,7 @@ const router = express.Router();
 router.get('/api/v1/forms/', Middlewares.isJWTAuthenticated, FormController.list);
 
 // forms API Web
+router.get('/api/dashboard/damages/per-venue/', Middlewares.isLoggedIn, FormController.damagesDashboardPerDay);
 router.get('/api/dashboard/damages/', Middlewares.isLoggedIn, FormController.damagesDashboard);
 router.get('/api/dashboard/timing/', Middlewares.isLoggedIn, FormController.timingDashboard);
 router.get('/api/dashboard/timing/per-venue/', Middlewares.isLoggedIn, FormController.timingDashboardPerVenue);

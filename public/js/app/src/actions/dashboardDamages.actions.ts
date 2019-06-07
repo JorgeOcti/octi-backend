@@ -42,13 +42,13 @@ export function isLoadingAction(loading: boolean): IIsLoading {
 }
 
 
-export function getDashboardDamages() {
+export function getDashboardDamagesPerVenue() {
   return (dispatch: Dispatch<DashboardDamagesReduxAction>) => {
     const api: ApiService = new ApiService();
     dispatch(isLoadingAction(true));
     Axios.all([
       api.getVenues(1, 200),
-      api.getDashboardDamages()
+      api.getDashboardDamagesPerVenue()
     ]).then(Axios.spread((venues, dashboard) => {
       dispatch(loadDashboardDamagesAction(venues.data.results, dashboard.data));
     })).catch((err: AxiosError): void => {

@@ -1033,7 +1033,7 @@ class FormController {
                 }, {
                     $group: {
                         _id: {
-                            venue: '$venue'
+                            $dateToString: { format: '%Y-%m-%d', date: '$createdAt' }
                         },
                         count: { $sum: 1 }
                     }
@@ -1050,7 +1050,7 @@ class FormController {
                 }, {
                     $group: {
                         _id: {
-                            venue: '$venue'
+                            $dateToString: { format: '%Y-%m-%d', date: '$createdAt' }
                         },
                         count: { $sum: 1 }
                     }
@@ -1085,6 +1085,98 @@ class FormController {
                 damaged: venues.map((v) => damagesData[v].damaged),
                 undamaged: venues.map((v) => damagesData[v].undamaged),
                 venues
+            };
+            res.json(data);
+        }
+        catch (e) {
+            Raven.captureException(e, { req });
+            /* istanbul ignore next */
+            logger_service_1.default.error(`dashboard damages: Async Error.`);
+            /* istanbul ignore next */
+            logger_service_1.default.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
+            /* istanbul ignore next */
+            logger_service_1.default.error(e);
+            res.status(400).json({
+                message: 'Ha ocurrido un error',
+                status: 400
+            });
+        }
+    }
+    async damagesDashboardPerDay(req, res) {
+        try {
+            const { team } = req.user;
+            // autos que han llegado al distribuidor
+            const total = 14;
+            const daysDict = {};
+            var days = [];
+            for (let i = 0; i <= total; i++) {
+                const day = moment().subtract(total - i, 'days').startOf('day').format('YYYY-MM-DD');
+                daysDict[day] = i;
+                days.push(day);
+            }
+            const dataPerVenueDay = {};
+            const allVenues = [];
+            for (const venue of req.user.venuesPermissions()) {
+                const damaged = await participant_model_1.default.aggregate([{
+                        $match: {
+                            team,
+                            venue,
+                            'sections.answers.kind': 'damage',
+                            'sections.answers.damagesSelected._id': { $exists: true }
+                        }
+                    }, {
+                        $group: {
+                            _id: {
+                                $dateToString: { format: '%Y-%m-%d', date: '$createdAt' }
+                            },
+                            count: { $sum: 1 }
+                        }
+                    }]);
+                const undamaged = await participant_model_1.default.aggregate([{
+                        $match: {
+                            team,
+                            venue,
+                            'sections.answers.kind': 'damage',
+                            'sections.answers.damagesSelected._id': { $exists: false }
+                        }
+                    }, {
+                        $group: {
+                            _id: {
+                                $dateToString: { format: '%Y-%m-%d', date: '$createdAt' }
+                            },
+                            count: { $sum: 1 }
+                        }
+                    }]);
+                // no data for this venues, no data
+                if (damaged.length == 0 && undamaged.length == 0)
+                    continue;
+                var dataPerVenue = {
+                    damaged: Array(total).fill(0),
+                    undamaged: Array(total).fill(0)
+                };
+                for (let group of damaged) {
+                    const index = daysDict[group._id];
+                    console.log(index, group.count, dataPerVenue.damaged);
+                    dataPerVenue.damaged[index] = group.count;
+                }
+                for (let group of undamaged) {
+                    const index = days[group._id];
+                    console.log(index, group.count, dataPerVenue.undamaged);
+                    dataPerVenue.undamaged[index] = group.count;
+                }
+                dataPerVenueDay[venue] = dataPerVenue;
+                allVenues.push(venue);
+            }
+            const venues = await venue_model_1.default.find({
+                team,
+                _id: {
+                    $in: allVenues
+                }
+            });
+            const data = {
+                dataPerVenueDay,
+                venues,
+                days
             };
             res.json(data);
         }

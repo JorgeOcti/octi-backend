@@ -9,6 +9,7 @@ const router = express.Router();
 // apiListAlerts form avaibles
 router.get('/api/v1/forms/', middlewares_1.default.isJWTAuthenticated, form_controller_1.default.list);
 // forms API Web
+router.get('/api/dashboard/damages/per-venue/', middlewares_1.default.isLoggedIn, form_controller_1.default.damagesDashboardPerDay);
 router.get('/api/dashboard/damages/', middlewares_1.default.isLoggedIn, form_controller_1.default.damagesDashboard);
 router.get('/api/dashboard/timing/', middlewares_1.default.isLoggedIn, form_controller_1.default.timingDashboard);
 router.get('/api/dashboard/timing/per-venue/', middlewares_1.default.isLoggedIn, form_controller_1.default.timingDashboardPerVenue);

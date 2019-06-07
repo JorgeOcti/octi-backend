@@ -6,7 +6,7 @@ import {connect} from 'react-redux';
 import {RouteComponentProps} from 'react-router';
 import {Dispatch} from 'redux';
 import {DashboardReduxAction} from '../../actions/dashboard.actions';
-import {getDashboardDamages, IDashboardDamagesState} from '../../actions/dashboardDamages.actions';
+import {getDashboardDamagesPerVenue, IDashboardDamagesState} from '../../actions/dashboardDamages.actions';
 import AppContainer from '../../container/AppContainer';
 import Row from '../Utils/Row';
 
@@ -14,7 +14,7 @@ interface IPropsType extends RouteComponentProps<{ ticket: string }> {
   dispatch: Dispatch<DashboardReduxAction>;
   dashboard: IDashboardDamagesState;
 
-  getDashboardDamages(): void;
+  getDashboardDamagesPerVenue(): void;
 }
 
 interface IStateType {
@@ -34,7 +34,7 @@ class DashboardDamagesView extends React.Component<IPropsType, IStateType> {
     // set the title of the page
     document.title = 'OSA Andes | Reportería de daños';
     // get data
-    this.props.getDashboardDamages();
+    this.props.getDashboardDamagesPerVenue();
     // add listeners
     window.addEventListener('resize', this.resizeCharts, false);
   }
@@ -76,7 +76,7 @@ class DashboardDamagesView extends React.Component<IPropsType, IStateType> {
                   </div>
                 </div>
                 <div className="box-body">
-                  <div id="damages-per-venue" style={{height: '50vh', maxWidth: '100%'}} />
+                  <div id="damages-per-venue" style={{height: '70vh', maxWidth: '100%'}} />
                 </div>
                 {
                   loading &&
@@ -96,6 +96,30 @@ class DashboardDamagesView extends React.Component<IPropsType, IStateType> {
 
     const {data, venues} = this.props.dashboard;
 
+    console.log(data);
+
+    var series = []
+    for(let venue of data.venues)
+    {
+      series.push({
+        name: 'Sin daños',
+        type: 'bar',
+        //barWidth: 60,
+        data: data.dataPerVenueDay[venue._id].undamaged,
+        stack: venue.name,
+      })
+
+      series.push({
+        name: venue.name,
+        type: 'bar',
+        //barWidth: 60,
+        data: data.dataPerVenueDay[venue._id].damaged,
+        stack: venue.name,
+      })
+    }
+
+    console.log("series", series)
+
     const option: any = {
       color: ['#00aa51', '#f1392c'],
       tooltip: {
@@ -106,13 +130,13 @@ class DashboardDamagesView extends React.Component<IPropsType, IStateType> {
       },
       legend: {
         data: ['Sin daños', 'Con daños'],
-        x: 'center',
+        x: 'right',
         bottom: 50
       },
       xAxis: {
-        data: data.venues.map((v: string) => venues.find((v2: any) => v2._id === v).name),
+        data: data.days,
         axisLabel: {
-          rotate: 60
+          rotate: 30
         }
 
       },
@@ -121,27 +145,14 @@ class DashboardDamagesView extends React.Component<IPropsType, IStateType> {
       },
       grid: {
         top: 30,
-        bottom: 100,
+        bottom: 40,
         // left
         x: 20,
         // right
         x2: 10,
         containLabel: true
       },
-      series: [
-        {
-          name: 'Sin daños',
-          type: 'bar',
-          data: data.undamaged,
-          stack: '1'
-        },
-        {
-          name: 'Con daños',
-          type: 'bar',
-          data: data.damaged,
-          stack: '1'
-        }
-      ]
+      series: series
     };
     this.damagesPerVenueChart.setOption(option);
 
@@ -166,7 +177,7 @@ const mapStateToProps = (state: { dashboardDamages: IDashboardDamagesState }) =>
 const mapDispatchToProps = (dispatch: any) => {
   return {
     dispatch,
-    getDashboardDamages: () => dispatch(getDashboardDamages())
+    getDashboardDamagesPerVenue: () => dispatch(getDashboardDamagesPerVenue())
   };
 };
 

@@ -1038,6 +1038,7 @@ class FormController {
 
   public async damagesDashboard(req: IRequest, res: Response): Promise<any> {
     try {
+
       const {team} = req.user;
       const damaged = await ParticipantModel.aggregate([{
         $match: {
@@ -1051,7 +1052,7 @@ class FormController {
       }, {
         $group: {
           _id: {
-            venue: '$venue'
+            $dateToString: {format: '%Y-%m-%d', date: '$createdAt'}
           },
           count: {$sum: 1}
         }
@@ -1069,7 +1070,7 @@ class FormController {
       }, {
         $group: {
           _id: {
-            venue: '$venue'
+            $dateToString: {format: '%Y-%m-%d', date: '$createdAt'}
           },
           count: {$sum: 1}
         }
@@ -1109,6 +1110,118 @@ class FormController {
         damaged: venues.map((v) => damagesData[v].damaged),
         undamaged: venues.map((v) => damagesData[v].undamaged),
         venues
+      };
+      res.json(data);
+
+    } catch (e) {
+      Raven.captureException(e, {req});
+      /* istanbul ignore next */
+      logger.error(`dashboard damages: Async Error.`);
+      /* istanbul ignore next */
+      logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
+      /* istanbul ignore next */
+      logger.error(e);
+      res.status(400).json({
+        message: 'Ha ocurrido un error',
+        status: 400
+      });
+    }
+
+  }
+
+  public async damagesDashboardPerDay(req: IRequest, res: Response): Promise<any> {
+    try {
+
+      const {team} = req.user
+
+      // autos que han llegado al distribuidor
+      const total = 14;
+      const daysDict: any = {}
+      var days: any = []
+      for (let i = 0; i <= total; i++) {
+        const day = moment().subtract(total - i, 'days').startOf('day').format('YYYY-MM-DD');
+        daysDict[day] = i;
+        days.push(day)
+      }
+
+      const dataPerVenueDay: any = {}
+      const allVenues: any[] = []
+
+      for(const venue of req.user.venuesPermissions())
+      {
+        const damaged = await ParticipantModel.aggregate([{
+          $match: {
+            team,
+            venue,
+            'sections.answers.kind': 'damage',
+            'sections.answers.damagesSelected._id': {$exists: true}
+          }
+        }, {
+          $group: {
+            _id: {
+              $dateToString: {format: '%Y-%m-%d', date: '$createdAt'}
+            },
+            count: {$sum: 1}
+          }
+        }]);
+
+        const undamaged = await ParticipantModel.aggregate([{
+          $match: {
+            team,
+            venue,
+            'sections.answers.kind': 'damage',
+            'sections.answers.damagesSelected._id': {$exists: false}
+          }
+        }, {
+          $group: {
+            _id: {
+              $dateToString: {format: '%Y-%m-%d', date: '$createdAt'}
+            },
+            count: {$sum: 1}
+          }
+        }]);
+
+        // no data for this venues, no data
+        if(damaged.length == 0 && undamaged.length == 0)
+          continue;
+
+        var dataPerVenue = {
+          damaged: Array(total).fill(0),
+          undamaged: Array(total).fill(0)
+        }
+
+        for(let group of damaged)
+        {
+          const index = daysDict[group._id]
+          console.log(index, group.count, dataPerVenue.damaged)
+          dataPerVenue.damaged[index] = group.count
+        }
+
+        for(let group of undamaged)
+        {
+          const index = days[group._id]
+          console.log(index, group.count, dataPerVenue.undamaged)
+          dataPerVenue.undamaged[index] = group.count
+        }
+
+        dataPerVenueDay[venue] = dataPerVenue
+
+        allVenues.push(venue)
+
+      }
+
+      const venues = await Venue.find(
+        {
+          team,
+          _id: {
+            $in: allVenues
+          }
+        });
+
+      const data: any = {
+        dataPerVenueDay,
+        venues,
+        days
       };
       res.json(data);
 
