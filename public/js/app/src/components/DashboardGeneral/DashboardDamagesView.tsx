@@ -287,7 +287,7 @@ class DashboardDamagesView extends React.Component<IPropsType, IStateType> {
     const {data} = this.props.dashboard;
     if(!detail && data.hasOwnProperty(name)){
       const day = data[name];
-      if(day.damaged && day.undamaged){
+      if(day.damaged || day.undamaged){
         this.setState({
           detailName: name,
           detail: true
