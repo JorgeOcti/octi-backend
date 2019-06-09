@@ -1,4 +1,4 @@
-FROM node:10.15.3-stretch-slim
+FROM node:10.16.0-stretch-slim
 MAINTAINER Gonzalo Muñoz Coloma gmunoz@osacontrol.com
 
 RUN apt-get update && \

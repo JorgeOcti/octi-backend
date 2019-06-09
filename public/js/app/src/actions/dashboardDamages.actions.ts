@@ -11,16 +11,14 @@ export interface IDashboardDamagesState {
 interface ILoadDashboardDamages {
   type: '/DASHBOARD/DAMAGES/LOAD_DATA';
   payload: {
-    venues: any[],
     data: any
   };
 }
 
-export function loadDashboardDamagesAction(venues: any[], data: any): ILoadDashboardDamages {
+export function loadDashboardDamagesAction(data: any): ILoadDashboardDamages {
   return {
     type: '/DASHBOARD/DAMAGES/LOAD_DATA',
     payload: {
-      venues,
       data
     }
   };
@@ -41,17 +39,19 @@ export function isLoadingAction(loading: boolean): IIsLoading {
   };
 }
 
-
-export function getDashboardDamagesPerVenue() {
+export function getDashboardDamagesPerVenue(update?: boolean) {
   return (dispatch: Dispatch<DashboardDamagesReduxAction>) => {
     const api: ApiService = new ApiService();
-    dispatch(isLoadingAction(true));
+    if (update) {
+      dispatch(isLoadingAction(true));
+    }
     Axios.all([
-      api.getVenues(1, 200),
       api.getDashboardDamagesPerVenue()
-    ]).then(Axios.spread((venues, dashboard) => {
-      dispatch(loadDashboardDamagesAction(venues.data.results, dashboard.data));
+    ]).then(Axios.spread((dashboard) => {
+      dispatch(isLoadingAction(false));
+      dispatch(loadDashboardDamagesAction(dashboard.data));
     })).catch((err: AxiosError): void => {
+      dispatch(isLoadingAction(false));
       api.errorHandler(err);
     });
   };

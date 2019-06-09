@@ -24,7 +24,7 @@ if (hasPermission(window.user, 'viewDashboardDamages')) {
   dashboardItems.push({
     id: '1.3',
     icon: 'fa-circle-o',
-    text: 'Dashboard daños',
+    text: 'Daños',
     url: '/dashboard/damages/'
   });
 }
@@ -33,7 +33,7 @@ if (hasPermission(window.user, 'viewDashboardTiming')) {
   dashboardItems.push({
     id: '1.4',
     icon: 'fa-circle-o',
-    text: 'Dashboard tiempos traslado',
+    text: 'Tiempos de traslado',
     url: '/dashboard/timing/'
   });
 }
@@ -42,7 +42,7 @@ if (hasPermission(window.user, 'viewDashboardDerco')) {
   dashboardItems.push({
     id: '1.5',
     icon: 'fa-circle-o',
-    text: 'Dashboard derco',
+    text: 'Derco',
     url: '/dashboard/derco/'
   });
 }

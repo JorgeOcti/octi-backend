@@ -3,7 +3,7 @@ import {DashboardDamagesReduxAction, IDashboardDamagesState} from "../actions/da
 const initialState: IDashboardDamagesState = {
   data: {},
   venues: [],
-  loading: true,
+  loading: true
 };
 
 export function dashboardDamagesReducer(state = initialState, action: DashboardDamagesReduxAction): IDashboardDamagesState {
@@ -16,8 +16,6 @@ export function dashboardDamagesReducer(state = initialState, action: DashboardD
     case '/DASHBOARD/DAMAGES/LOAD_DATA':
       return {
         ...state,
-        loading: false,
-        venues: action.payload.venues,
         data: action.payload.data
       };
     default:

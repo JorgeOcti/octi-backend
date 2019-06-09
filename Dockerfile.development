@@ -1,4 +1,4 @@
-FROM node:10.15.3-stretch-slim
+FROM node:10.16.0-stretch-slim
 MAINTAINER Gonzalo Muñoz Coloma gmunoz@osacontrol.com
 
 RUN apt-get update && \
@@ -36,9 +36,9 @@ WORKDIR /srv
 
 COPY ./package.json /srv/package.json
 
-RUN npm --unsafe-perm --production install && \
+RUN npm --unsafe-perm install && \
     npm i -g nodemon && \
-    npm i -g pm2 && \
+    npm i -g typescript && \
     touch /srv/s3-config.json && \
     echo "{}" >> /srv/s3-config.json && \
     touch /srv/ses-config.json && \

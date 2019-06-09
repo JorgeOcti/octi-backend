@@ -1438,7 +1438,21 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
           }
         },
         axisLabel: {
-          rotate: 60
+          rotate: 60,
+          fontSize: 10,
+          formatter: function (value: string) {
+              let text = '';
+              const array = value.split(" ");
+              for (let i = 0; i < array.length; i++) {
+                text += `${array[i]}`;
+                if (i > 0 && i % 2 !== 0){
+                  text += ' \n';
+                } else{
+                  text += ' ';
+                }
+              }
+              return text;
+          }
         }
       },
       yAxis: {

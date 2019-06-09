@@ -88,7 +88,7 @@ class DashboardVinView extends React.Component<IPropsType, IStateType> {
       }
     });
     this.socket.on('connect', () => {
-      this.socket.emit('join', {room: `dashboard-vin-view-${window.user.company}`});
+      this.socket.emit('join', {room: `dashboard-vin-view-${window.user.team}`});
     });
     this.socket.on('REFRESH', (data: any): void => {
       const {page} = this.props.dashboard.pagination;

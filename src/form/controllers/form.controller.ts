@@ -21,10 +21,10 @@ import logger from '../../services/logger.service';
 import redisClient from '../../services/redis.service';
 import GeneralUtils from '../../utils/general.utils';
 import FormModel, {IFormModel, KindQuestion} from '../models/form.model';
-import ParticipantModel, {IParticipantAnswerModel} from '../models/participant.model';
+import ParticipantModel from '../models/participant.model';
 import ParticipantFile from '../models/participantFile.model';
 import ScaleModel, {IScaleModel} from '../models/scale.model';
-import {IParticipantAnswer} from "../../interfaces/participant.interface";
+import * as bluebird from 'bluebird';
 
 // import * as puppeteer from 'puppeteer';
 
@@ -37,6 +37,8 @@ class FormController {
     this.complete = this.complete.bind(this);
     this.changePreferred = this.changePreferred.bind(this);
     this.uploadFile = this.uploadFile.bind(this);
+    this.damagesDashboardPerDay = this.damagesDashboardPerDay.bind(this);
+    this.participantWithDamages = this.participantWithDamages.bind(this);
   }
 
   public async pdf(req: IRequest, res: Response): Promise<any> {
@@ -859,7 +861,7 @@ class FormController {
               });
             }
             // send refresh with websocket to dashboard list
-            io.to(`dashboard-vin-view-${company._id}`).emit('REFRESH', {
+            io.to(`dashboard-vin-view-${team._id}`).emit('REFRESH', {
               update: true,
               car: car._id
             });
@@ -1077,13 +1079,15 @@ class FormController {
       }]);
 
       const allVenues: any[] = [];
-      damaged.forEach((item) => {
-        if (!allVenues.includes(item._id.venue.toString())) {
-          allVenues.push(item._id.venue.toString());
-        }
-      });
+      if (damaged){
+        damaged.forEach((item) => {
+          if (item._id.venue && !allVenues.includes(item._id.venue.toString())) {
+            allVenues.push(item._id.venue.toString());
+          }
+        });
+      }
       undamaged.forEach((item) => {
-        if (!allVenues.includes(item._id.venue.toString())) {
+        if (item._id.venue && !allVenues.includes(item._id.venue.toString())) {
           allVenues.push(item._id.venue.toString());
         }
       });
@@ -1100,10 +1104,15 @@ class FormController {
       venues.forEach((venue) => damagesData[venue] = {damaged: 0, undamaged: 0});
 
       damaged.forEach((item) => {
-        damagesData[item._id.venue].damaged = item.count;
+        if(item._id.venue in damagesData){
+          damagesData[item._id.venue].damaged = item.count;
+
+        }
       });
       undamaged.forEach((item) => {
-        damagesData[item._id.venue].undamaged = item.count;
+        if(item._id.venue in damagesData) {
+          damagesData[item._id.venue].undamaged = item.count;
+        }
       });
 
       const data: any = {
@@ -1129,102 +1138,81 @@ class FormController {
 
   }
 
+  public participantWithDamages(participant: any): Promise<any> {
+    return new Promise((resolve) => {
+      participant.hasDamages = participant.sections.some((section: any) => {
+        return section.answers.some((answer: any) => {
+          return answer.damagesSelected.length > 0;
+        });
+      });
+      resolve(participant)
+    });
+  }
+
   public async damagesDashboardPerDay(req: IRequest, res: Response): Promise<any> {
     try {
-
-      const {team} = req.user
-
-      // autos que han llegado al distribuidor
-      const total = 14;
-      const daysDict: any = {}
-      var days: any = []
-      for (let i = 0; i <= total; i++) {
-        const day = moment().subtract(total - i, 'days').startOf('day').format('YYYY-MM-DD');
-        daysDict[day] = i;
-        days.push(day)
+      const days = 15;
+      moment.locale('es');
+      moment.tz.setDefault('America/Santiago');
+      const participants = await ParticipantModel.find({
+        venue: {
+          $in: req.user.venuesPermissions()
+        },
+        createdAt: {
+          $gte: moment().endOf('day').subtract(days, 'd').toDate()
+        }
+      }, {
+        _id: true,
+        venue: true,
+        createdAt: true,
+        'sections.answers.damagesSelected': true
+      }).populate([{
+        path: 'venue',
+        select: ['_id', 'name']
+      }]).lean();
+      const data: any = {};
+      for (let i = 0; i < days; i++) {
+        const key = moment()
+          .subtract(i, 'days')
+          .startOf('day')
+          .format('YYYY-MM-DD');
+        data[key] = {
+            damaged: 0,
+            undamaged: 0
+          };
       }
 
-      const dataPerVenueDay: any = {}
-      const allVenues: any[] = []
-
-      for(const venue of req.user.venuesPermissions())
-      {
-        const damaged = await ParticipantModel.aggregate([{
-          $match: {
-            team,
-            venue,
-            'sections.answers.kind': 'damage',
-            'sections.answers.damagesSelected._id': {$exists: true}
-          }
-        }, {
-          $group: {
-            _id: {
-              $dateToString: {format: '%Y-%m-%d', date: '$createdAt'}
-            },
-            count: {$sum: 1}
-          }
-        }]);
-
-        const undamaged = await ParticipantModel.aggregate([{
-          $match: {
-            team,
-            venue,
-            'sections.answers.kind': 'damage',
-            'sections.answers.damagesSelected._id': {$exists: false}
-          }
-        }, {
-          $group: {
-            _id: {
-              $dateToString: {format: '%Y-%m-%d', date: '$createdAt'}
-            },
-            count: {$sum: 1}
-          }
-        }]);
-
-        // no data for this venues, no data
-        if(damaged.length == 0 && undamaged.length == 0)
-          continue;
-
-        var dataPerVenue = {
-          damaged: Array(total).fill(0),
-          undamaged: Array(total).fill(0)
-        }
-
-        for(let group of damaged)
-        {
-          const index = daysDict[group._id]
-          console.log(index, group.count, dataPerVenue.damaged)
-          dataPerVenue.damaged[index] = group.count
-        }
-
-        for(let group of undamaged)
-        {
-          const index = days[group._id]
-          console.log(index, group.count, dataPerVenue.undamaged)
-          dataPerVenue.undamaged[index] = group.count
-        }
-
-        dataPerVenueDay[venue] = dataPerVenue
-
-        allVenues.push(venue)
-
+      const promises = [];
+      for (const participant of participants) {
+        promises.push(this.participantWithDamages(participant));
       }
-
-      const venues = await Venue.find(
-        {
-          team,
-          _id: {
-            $in: allVenues
-          }
-        });
-
-      const data: any = {
-        dataPerVenueDay,
-        venues,
-        days
-      };
+      let participantsWithDamages: any[] = [];
+      while (promises.length) {
+        participantsWithDamages = [
+          ...participantsWithDamages,
+          ...await bluebird.all(promises.splice(0, 500))
+        ]
+      }
+      for (const participant of participantsWithDamages) {
+        const venueId = participant.venue._id.toString();
+        const dayKey = moment(participant.createdAt).format('YYYY-MM-DD');
+        if (!data.hasOwnProperty(dayKey)) {
+          data[dayKey] = {
+            damaged: 0,
+            undamaged: 0
+          };
+        }
+        if (!data[dayKey].hasOwnProperty(venueId)) {
+          data[dayKey][venueId] = {
+            name: participant.venue.name,
+            damaged: 0,
+            undamaged: 0
+          };
+        }
+        data[dayKey][participant.hasDamages ? 'damaged' : 'undamaged']++;
+        data[dayKey][venueId][participant.hasDamages ? 'damaged' : 'undamaged']++;
+      }
       res.json(data);
-
     } catch (e) {
       Raven.captureException(e, {req});
       /* istanbul ignore next */
@@ -1238,7 +1226,6 @@ class FormController {
         status: 400
       });
     }
-
   }
 
   public async timingDashboard(req: IRequest, res: Response): Promise<any> {
@@ -1532,8 +1519,6 @@ class FormController {
     }
 
   }
-
-
 
   private autoRotate(path: string) {
     // doc http://aheckmann.github.io/gm/docs.html

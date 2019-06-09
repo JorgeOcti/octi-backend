@@ -66,7 +66,7 @@ class VenueFormView extends React.Component<IPropsType, IStateType> {
                 onChange={
                   (e: React.ChangeEvent<HTMLInputElement>) => changeTempVenueAction({
                     ...tempVenue,
-                    name: e.target.value.trim()
+                    name: e.target.value
                   }, true)
                 }
               />
