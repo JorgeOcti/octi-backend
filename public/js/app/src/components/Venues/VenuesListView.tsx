@@ -80,6 +80,12 @@ class VenuesListView extends React.Component<IPropsType, IStateType> {
     });
   }
 
+  public componentDidUpdate(prevProps: Readonly<IPropsType>, prevState: Readonly<IStateType>, snapshot?: any): void {
+    if(this.props.venues.pagination !== prevProps.venues.pagination){
+      window.scrollTo(0, 0);
+    }
+  }
+
   public componentDidCatch(error: Error, errorInfo: ErrorInfo): void {
     this.setState({error});
     Raven.captureException(error, {

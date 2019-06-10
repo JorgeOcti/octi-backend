@@ -101,6 +101,12 @@ class LabelsListView extends React.Component<IPropsType, IStateType> {
     });
   }
 
+  public componentDidUpdate(prevProps: Readonly<IPropsType>, prevState: Readonly<IStateType>, snapshot?: any): void {
+    if(this.props.labels.pagination !== prevProps.labels.pagination){
+      window.scrollTo(0, 0);
+    }
+  }
+
   public componentDidMount(): void {
     window.scrollTo(0, 0);
   }

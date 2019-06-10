@@ -60,6 +60,12 @@ class CarListView extends React.Component<IPropsType, IStateType> {
     });
   }
 
+  public componentDidUpdate(prevProps: Readonly<IPropsType>, prevState: Readonly<IStateType>, snapshot?: any): void {
+    if(this.props.cars.pagination !== prevProps.cars.pagination){
+      window.scrollTo(0, 0);
+    }
+  }
+
   public componentWillUnmount() {
     // cancel request if component is inmounted
     if (this.props.cars.source) {

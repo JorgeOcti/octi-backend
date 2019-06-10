@@ -119,6 +119,12 @@ class UserListView extends React.Component<IPropsType, IStateType> {
     });
   }
 
+  public componentDidUpdate(prevProps: Readonly<IPropsType>, prevState: Readonly<IStateType>, snapshot?: any): void {
+    if(this.props.users.pagination !== prevProps.users.pagination){
+      window.scrollTo(0, 0);
+    }
+  }
+
   public componentWillUnmount(): void {
     // cancel request if component is inmounted
     if (this.props.users.source) {

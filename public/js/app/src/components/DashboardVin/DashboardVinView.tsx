@@ -136,6 +136,9 @@ class DashboardVinView extends React.Component<IPropsType, IStateType> {
   }
 
   public componentDidUpdate(prevProps: Readonly<IPropsType>, prevState: Readonly<IStateType>, snapshot?: any): void {
+    if(this.props.dashboard.pagination !== prevProps.dashboard.pagination){
+      window.scrollTo(0, 0);
+    }
     $('[data-toggle="tooltip"]').tooltip();
   }
 
