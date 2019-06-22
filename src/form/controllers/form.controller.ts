@@ -1164,12 +1164,16 @@ class FormController {
       }, {
         _id: true,
         venue: true,
+        // user: true,
         createdAt: true,
         'sections.answers.damagesSelected': true
       }).populate([{
         path: 'venue',
         select: ['_id', 'name']
-      }]).lean();
+      } /*,{
+        path: 'user',
+        select: ['_id', 'email']
+      }*/]).lean();
       const data: any = {};
       for (let i = 0; i < days; i++) {
         const key = moment()
@@ -1195,6 +1199,7 @@ class FormController {
       }
       for (const participant of participantsWithDamages) {
         const venueId = participant.venue._id.toString();
+        // const userId = participant.user._id.toString();
         const dayKey = moment(participant.createdAt).format('YYYY-MM-DD');
         if (!data.hasOwnProperty(dayKey)) {
           data[dayKey] = {
@@ -1209,8 +1214,16 @@ class FormController {
             undamaged: 0
           };
         }
+        // if (!data[dayKey][venueId].hasOwnProperty(userId)) {
+        //   data[dayKey][venueId][userId] = {
+        //     email: participant.user.email,
+        //     damaged: 0,
+        //     undamaged: 0
+        //   };
+        // }
         data[dayKey][participant.hasDamages ? 'damaged' : 'undamaged']++;
         data[dayKey][venueId][participant.hasDamages ? 'damaged' : 'undamaged']++;
+        // data[dayKey][venueId][userId][participant.hasDamages ? 'damaged' : 'undamaged']++;
       }
       res.json(data);
     } catch (e) {

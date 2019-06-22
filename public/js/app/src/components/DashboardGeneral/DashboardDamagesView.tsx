@@ -144,8 +144,8 @@ class DashboardDamagesView extends React.Component<IPropsType, IStateType> {
     if (!loading) {
       const {data} = this.props.dashboard;
       const {detail, detailName} = this.state;
-      const damages = [],
-            undamages = [];
+      let damages = [],
+          undamages = [];
       let category = Object.keys(data).reverse();
       if (detail) {
         let detailData = [];
@@ -171,6 +171,8 @@ class DashboardDamagesView extends React.Component<IPropsType, IStateType> {
             undamages.push(day.undamaged);
           }
         }
+        damages = damages.reverse()
+        undamages = undamages.reverse()
       }
 
       const option: echarts.EChartOption = {
@@ -253,14 +255,14 @@ class DashboardDamagesView extends React.Component<IPropsType, IStateType> {
             type: 'bar',
             barGap: 0.1,
             barMaxWidth: 50,
-            data: undamages.reverse()
+            data: undamages
           },
           {
             name: 'Con daños',
             type: 'bar',
             barGap: 0.1,
             barMaxWidth: 50,
-            data: damages.reverse()
+            data: damages
           }
         ],
         dataZoom: [{
