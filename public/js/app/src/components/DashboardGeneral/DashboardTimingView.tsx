@@ -245,9 +245,11 @@ class DashboardTimingView extends React.Component<IPropsType, IStateType> {
       const period = months[param.dataIndex];
       this.props.getDashboardTimingPerVenue(period);
       if ($perVenue) {
-        $([document.documentElement, document.body]).animate({
-          scrollTop: ($perVenue as any).offset().top
-        }, 500);
+        setTimeout(()=>{
+          $([document.documentElement, document.body]).animate({
+            scrollTop: ($perVenue as any).offset().top
+          }, 500);
+        }, 600);
       }
     }
   }
