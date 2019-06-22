@@ -1248,15 +1248,23 @@ class FormController {
       const distributor = await Venue.findOne({team, type: 'distributor'});
       const receivers = await Venue.find({team, type: 'receiver'});
 
+      const total = 6;
       // autos que han llegado al distribuidor
       const threshold = 60 * 24 * 5;
-      const participants = await ParticipantModel.find({venue: distributor});
+      const participants = await ParticipantModel.find({
+        venue: distributor,
+        createdAt: {
+          $gte: moment().subtract(total, 'months').startOf('month').toDate()
+        }
+      }, ['car', 'createdAt']);
 
-      const total = 6;
       const months: string[] = [];
       const receivedPerMonth: any = {};
       for (let i = 0; i <= total; i++) {
-        const month = moment().subtract(total - i, 'months').startOf('month').format('YYYY-MM');
+        const month = moment()
+          .subtract(total - i, 'months')
+          .startOf('month')
+          .format('YYYY-MM');
         months.push(month);
         receivedPerMonth[month] = {
           overdue: 0,
@@ -1268,7 +1276,10 @@ class FormController {
       const receptions = await ParticipantModel.find({
         team,
         venue: { $in: receivers.map((v) => v._id )},
-        receiveFrom: (distributor as IVenueModel)._id
+        receiveFrom: (distributor as IVenueModel)._id,
+        createdAt: {
+          $gte: moment().subtract(total, 'months').startOf('month').toDate()
+        }
       }, ['car', 'venue', 'createdAt'], {
         sort: {
           createdAt: 1
@@ -1356,7 +1367,7 @@ class FormController {
         const participants = await ParticipantModel.find({
           venue: distributor._id,
           createdAt: {$gt: t0.toDate(), $lt: t1.toDate()}
-        });
+        }, ['car', 'createdAt']);
 
         const receptions = await ParticipantModel.find({
           team,

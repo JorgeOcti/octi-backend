@@ -67,6 +67,7 @@ class DashboardTimingView extends React.Component<IPropsType, IStateType> {
     if (!loadingPerVenue) {
       if (Object.keys(perVenue).length > 0) {
         this.updateTimingPerVenueChart();
+        this.resizeCharts()
       }
     }
   }
@@ -78,7 +79,7 @@ class DashboardTimingView extends React.Component<IPropsType, IStateType> {
   }
 
   public render(): React.ReactElement<IPropsType> {
-    const {loading, loadingPerVenue} = this.props.dashboard;
+    const {loading, loadingPerVenue, perVenue} = this.props.dashboard;
     return (
       <AppContainer title="" cMenu="1" cSubMenu="1.4">
         <section className="content">
@@ -90,6 +91,10 @@ class DashboardTimingView extends React.Component<IPropsType, IStateType> {
                   </div>
                 </div>
                 <div className="box-body">
+                <p
+                  className="text-muted text-center"
+                  style={{padding: '10px 0 0 0', margin: '0'}}
+                >Haz click en el gráfico para ver detalles de no cumplimiento.</p>
                   <div id="damages-per-month" style={{height: '40vh', maxWidth: '100%'}} />
                 </div>
                 {
@@ -101,7 +106,7 @@ class DashboardTimingView extends React.Component<IPropsType, IStateType> {
               </div>
             </div>
           </Row>
-          <Row>
+          <Row style={Object.keys(perVenue).length ? {} : { display: 'none'}}>
             <div id="per-venue" className="col-md-12">
               <div className="box">
                 <div className="box-header with-border"><h3 className="box-title">Detalle por sucursal</h3>

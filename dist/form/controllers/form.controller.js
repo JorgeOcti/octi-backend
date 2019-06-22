@@ -1218,14 +1218,22 @@ class FormController {
             const { team } = req.user;
             const distributor = await venue_model_1.default.findOne({ team, type: 'distributor' });
             const receivers = await venue_model_1.default.find({ team, type: 'receiver' });
+            const total = 6;
             // autos que han llegado al distribuidor
             const threshold = 60 * 24 * 5;
-            const participants = await participant_model_1.default.find({ venue: distributor });
-            const total = 6;
+            const participants = await participant_model_1.default.find({
+                venue: distributor,
+                createdAt: {
+                    $gte: moment().subtract(total, 'months').startOf('month').toDate()
+                }
+            }, ['car', 'createdAt']);
             const months = [];
             const receivedPerMonth = {};
             for (let i = 0; i <= total; i++) {
-                const month = moment().subtract(total - i, 'months').startOf('month').format('YYYY-MM');
+                const month = moment()
+                    .subtract(total - i, 'months')
+                    .startOf('month')
+                    .format('YYYY-MM');
                 months.push(month);
                 receivedPerMonth[month] = {
                     overdue: 0,
@@ -1236,7 +1244,10 @@ class FormController {
             const receptions = await participant_model_1.default.find({
                 team,
                 venue: { $in: receivers.map((v) => v._id) },
-                receiveFrom: distributor._id
+                receiveFrom: distributor._id,
+                createdAt: {
+                    $gte: moment().subtract(total, 'months').startOf('month').toDate()
+                }
             }, ['car', 'venue', 'createdAt'], {
                 sort: {
                     createdAt: 1
@@ -1311,7 +1322,7 @@ class FormController {
                 const participants = await participant_model_1.default.find({
                     venue: distributor._id,
                     createdAt: { $gt: t0.toDate(), $lt: t1.toDate() }
-                });
+                }, ['car', 'createdAt']);
                 const receptions = await participant_model_1.default.find({
                     team,
                     venue: { $in: receivers.map((v) => v._id) },
