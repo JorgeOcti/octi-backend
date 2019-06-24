@@ -347,7 +347,7 @@ class CarController {
   }
 
   public async apiParticipantsPerDate(req: IRequest, res: Response) {
-    const {company} = req.user;
+    const {team} = req.user;
     try {
       const participantPerDay = await ParticipantModel
         .aggregate([{
@@ -426,7 +426,7 @@ class CarController {
       const importCarsPerDay = await CarModel
         .aggregate([{
           $match: {
-            company,
+            team,
             createdAt: {
               $gte: moment().subtract(14, 'd').toDate()
             }
@@ -581,7 +581,7 @@ class CarController {
         participants,
         participantPerRange,
         cars,
-        totalCars: await CarModel.count({company}),
+        totalCars: await CarModel.count({team}),
         status: 200
       });
     } catch (e) {
