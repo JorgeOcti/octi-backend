@@ -1245,90 +1245,179 @@ class FormController {
 
     try {
       const {team} = req.user;
-      const distributor = await Venue.findOne({team, type: 'distributor'});
-      const receivers = await Venue.find({team, type: 'receiver'});
+      let userObject = await User.findOne({ _id: req.user._id})
 
-      const total = 6;
-      // autos que han llegado al distribuidor
-      const threshold = 60 * 24 * 5;
-      const participants = await ParticipantModel.find({
-        venue: distributor,
-        createdAt: {
-          $gte: moment().subtract(total, 'months').startOf('month').toDate()
-        }
-      }, ['car', 'createdAt']);
+      if (userObject.team == '5bf2de34caf8ef7096105cda') // Derco
+      {
 
-      const months: string[] = [];
-      const receivedPerMonth: any = {};
-      for (let i = 0; i <= total; i++) {
-        const month = moment()
-          .subtract(total - i, 'months')
-          .startOf('month')
-          .format('YYYY-MM');
-        months.push(month);
-        receivedPerMonth[month] = {
-          overdue: 0,
-          ontime: 0
-        };
-      }
+        const total = 6
+        // el lead time supuesto es de 48 horas
+        const threshold = 60 * 24 * 2;
 
-      const receiverVenues: any[] = [];
-      const receptions = await ParticipantModel.find({
-        team,
-        venue: { $in: receivers.map((v) => v._id )},
-        receiveFrom: (distributor as IVenueModel)._id,
-        createdAt: {
-          $gte: moment().subtract(total, 'months').startOf('month').toDate()
-        }
-      }, ['car', 'venue', 'createdAt'], {
-        sort: {
-          createdAt: 1
-        }
-      });
-
-      const firstReceptions: any = {};
-      for (const reception of receptions) {
-        const car = reception.car.toString();
-        if (car in firstReceptions) {
-        } else {
-          firstReceptions[car] = reception;
-        }
-      }
-
-      for (const participant of participants) {
-
-        const received = firstReceptions[participant.car.toString()];
-
-        if (received) {
-          if (!receiverVenues.includes(received.venue.toString())) {
-            receiverVenues.push(received.venue);
+        let reception = await FormModel.findOne({_id: "5b1ae5799ebea419025b3e41"})
+        let cars = await CarModel.find({
+          team,
+          lastForm: { $ne: null },
+          createdAt: {
+            $gte: moment().subtract(total, 'months').startOf('month').toDate()
           }
+        })
 
-          const t0 = moment(participant.createdAt);
-          const month = t0.format('YYYY-MM');
-          const t1 = moment(received.createdAt);
-          const dm = t1.diff(t0, 'minutes');
-          if (dm < threshold) {
-            receivedPerMonth[month].ontime += 1;
+        let carsCreatedAt = {}
+        for(const car of cars)
+          carsCreatedAt[car._id.toString()] = car.createdAt
+
+        const months: string[] = [];
+        const receivedPerMonth: any = {};
+        for (let i = 0; i <= total; i++) {
+          const month = moment()
+            .subtract(total - i, 'months')
+            .startOf('month')
+            .format('YYYY-MM');
+          months.push(month);
+          receivedPerMonth[month] = {
+            overdue: 0,
+            ontime: 0
+          };
+        }
+
+
+        const receptions = await ParticipantModel.find({
+          team,
+          form: reception._id,
+          createdAt: {
+            $gte: moment().subtract(total, 'months').startOf('month').toDate()
+          }
+        }, ['car', 'venue', 'createdAt'], {
+          sort: {
+            createdAt: -1
+          }
+        });
+
+        for(const reception of receptions)
+        {
+          let car = reception.car.toString()
+          if(car in carsCreatedAt)
+          {
+            const carCreatedAt = carsCreatedAt[car];
+
+            const t0 = moment(carCreatedAt);
+            const t1 = moment(reception.createdAt);
+            const dm = t1.diff(t0, 'minutes');
+
+            const month = t0.format('YYYY-MM');
+
+            if(dm > 10) {
+              if (dm < threshold)
+                receivedPerMonth[month].ontime += 1;
+              else
+                receivedPerMonth[month].overdue += 1;
+            }
+
+          }
+        }
+
+        const data: any = {months, overdue: [], ontime: []};
+
+        data.overdue = Array(months.length).fill(0);
+        data.ontime = Array(months.length).fill(0);
+
+        // tslint:disable-next-line:forin
+        for (const index in months) {
+          const month = months[index];
+          data.overdue[index] = receivedPerMonth[month].overdue;
+          data.ontime[index] = receivedPerMonth[month].ontime;
+        }
+
+        res.json(data);
+
+      }
+      else {
+        const distributor = await Venue.findOne({team, type: 'distributor'});
+        const receivers = await Venue.find({team, type: 'receiver'});
+
+        const total = 6;
+        // autos que han llegado al distribuidor
+        const threshold = 60 * 24 * 5;
+        const participants = await ParticipantModel.find({
+          venue: distributor,
+          createdAt: {
+            $gte: moment().subtract(total, 'months').startOf('month').toDate()
+          }
+        }, ['car', 'createdAt']);
+
+        const months: string[] = [];
+        const receivedPerMonth: any = {};
+        for (let i = 0; i <= total; i++) {
+          const month = moment()
+            .subtract(total - i, 'months')
+            .startOf('month')
+            .format('YYYY-MM');
+          months.push(month);
+          receivedPerMonth[month] = {
+            overdue: 0,
+            ontime: 0
+          };
+        }
+
+        const receiverVenues: any[] = [];
+        const receptions = await ParticipantModel.find({
+          team,
+          venue: {$in: receivers.map((v) => v._id)},
+          receiveFrom: (distributor as IVenueModel)._id,
+          createdAt: {
+            $gte: moment().subtract(total, 'months').startOf('month').toDate()
+          }
+        }, ['car', 'venue', 'createdAt'], {
+          sort: {
+            createdAt: 1
+          }
+        });
+
+        const firstReceptions: any = {};
+        for (const reception of receptions) {
+          const car = reception.car.toString();
+          if (car in firstReceptions) {
           } else {
-            receivedPerMonth[month].overdue += 1;
+            firstReceptions[car] = reception;
           }
         }
+
+        for (const participant of participants) {
+
+          const received = firstReceptions[participant.car.toString()];
+
+          if (received) {
+            if (!receiverVenues.includes(received.venue.toString())) {
+              receiverVenues.push(received.venue);
+            }
+
+            const t0 = moment(participant.createdAt);
+            const month = t0.format('YYYY-MM');
+            const t1 = moment(received.createdAt);
+            const dm = t1.diff(t0, 'minutes');
+            if (dm < threshold) {
+              receivedPerMonth[month].ontime += 1;
+            } else {
+              receivedPerMonth[month].overdue += 1;
+            }
+          }
+        }
+
+        const data: any = {months, overdue: [], ontime: []};
+
+        data.overdue = Array(months.length).fill(0);
+        data.ontime = Array(months.length).fill(0);
+
+        // tslint:disable-next-line:forin
+        for (const index in months) {
+          const month = months[index];
+          data.overdue[index] = receivedPerMonth[month].overdue;
+          data.ontime[index] = receivedPerMonth[month].ontime;
+        }
+
+        res.json(data);
       }
-
-      const data: any = {months, overdue: [], ontime: []};
-
-      data.overdue = Array(months.length).fill(0);
-      data.ontime = Array(months.length).fill(0);
-
-      // tslint:disable-next-line:forin
-      for (const index in months) {
-        const month = months[index];
-        data.overdue[index] = receivedPerMonth[month].overdue;
-        data.ontime[index] = receivedPerMonth[month].ontime;
-      }
-
-      res.json(data);
 
     } catch (e) {
       Raven.captureException(e, {req});
