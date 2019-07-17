@@ -13,6 +13,7 @@ router.get('/api/v1/forms/', Middlewares.isJWTAuthenticated, FormController.list
 router.get('/api/dashboard/damages/per-venue/', Middlewares.isLoggedIn, FormController.damagesDashboardPerDay);
 router.get('/api/dashboard/damages/', Middlewares.isLoggedIn, FormController.damagesDashboard);
 router.get('/api/dashboard/timing/', Middlewares.isLoggedIn, FormController.timingDashboard);
+router.get('/api/dashboard/timing-derco/', Middlewares.isLoggedIn, FormController.timingDerco);
 router.get('/api/dashboard/timing/per-venue/', Middlewares.isLoggedIn, FormController.timingDashboardPerVenue);
 router.get('/api/dashboard/cleaning/', Middlewares.isLoggedIn, FormController.cleaningDashboard);
 

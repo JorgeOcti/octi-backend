@@ -12,6 +12,7 @@ router.get('/api/v1/forms/', middlewares_1.default.isJWTAuthenticated, form_cont
 router.get('/api/dashboard/damages/per-venue/', middlewares_1.default.isLoggedIn, form_controller_1.default.damagesDashboardPerDay);
 router.get('/api/dashboard/damages/', middlewares_1.default.isLoggedIn, form_controller_1.default.damagesDashboard);
 router.get('/api/dashboard/timing/', middlewares_1.default.isLoggedIn, form_controller_1.default.timingDashboard);
+router.get('/api/dashboard/timing-derco/', middlewares_1.default.isLoggedIn, form_controller_1.default.timingDerco);
 router.get('/api/dashboard/timing/per-venue/', middlewares_1.default.isLoggedIn, form_controller_1.default.timingDashboardPerVenue);
 router.get('/api/dashboard/cleaning/', middlewares_1.default.isLoggedIn, form_controller_1.default.cleaningDashboard);
 router.put('/api/v1/forms/preferred/', middlewares_1.default.isJWTAuthenticated, form_controller_1.default.changePreferred);

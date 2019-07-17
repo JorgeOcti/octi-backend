@@ -1,3 +1,5 @@
+import * as excel from 'exceljs';
+import * as tempfile from 'tempfile';
 import {ObjectID} from 'bson';
 import {Response} from 'express';
 import * as fs from 'fs';
@@ -1241,6 +1243,137 @@ class FormController {
     }
   }
 
+  public async timingDerco(req: IRequest, res: Response): Promise<any> {
+
+    try {
+
+      const {team} = req.user;
+      let userObject = await User.findOne({_id: req.user._id})
+
+
+      if (userObject.team == '5bf2de34caf8ef7096105cda') // Derco
+      {
+
+        const total = 2
+        // el lead time supuesto es de 48 horas
+        const threshold = 60 * 24 * 3
+
+        // despacho:  5b0487db835536612bab1b61
+        // recepcion: 5b1ae5799ebea419025b3e41
+        let reception = await FormModel.findOne({_id: "5b0487db835536612bab1b61"})
+        let cars = await CarModel.find({
+          team,
+          lastForm: {$ne: null},
+        })
+
+        let carsDict = {}
+        for (const car of cars)
+          carsDict[car._id.toString()] = car
+
+        var receptions = [];
+        for(var i = 0; i < total; i++) {
+          const aux = await ParticipantModel.find({
+            team,
+            form: reception._id,
+            createdAt: {
+              $gt: moment().subtract((i + 1) * 30, 'days').toDate(),
+              $lt: moment().subtract(i * 30, 'days').toDate()
+            }
+          }, ['car', 'createdAt'], {
+            sort: {
+              createdAt: -1
+            }
+          });
+
+          console.log("found. ", aux.length)
+
+          receptions = receptions.concat(aux);
+        }
+
+        const workbook = new excel.Workbook();
+        const worksheet = workbook.addWorksheet('Revisiones', {
+          properties: {
+            defaultRowHeight: 30
+          }, pageSetup: {
+            fitToPage: true, fitToHeight: 100, fitToWidth: 1
+          }
+        });
+
+        worksheet.columns = [{
+          header: 'VIN', key: 'vin', width: 30
+        }, {
+          header: 'Marca', key: 'brand', width: 30
+        }, {
+          header: 'Fecha carga', key: 'createdAt', width: 30
+        }, {
+          header: 'Mes carga', key: 'createdAtMonth', width: 30
+        }, {
+          header: 'Fecha revisión', key: 'checkedAt', width: 30
+        }, {
+          header: 'Mes revisión', key: 'checkedAtMonth', width: 30
+        }, {
+          header: 'Delta tiempo', key: 'leadtime', width: 20
+        }, {
+          header: 'On time', key: 'ontime', width: 20
+        }
+        ];
+
+        for (const reception of receptions) {
+          let carID = reception.car.toString()
+
+          if (carID in carsDict) {
+            const car = carsDict[carID]
+
+            const t0 = moment(car.createdAt).subtract(4, 'hours');
+            const t1 = moment(reception.createdAt).subtract(4, 'hours');
+
+            const hour = parseInt(t0.format('HH'))
+            if(hour >= 20 || hour <= 2)
+              continue;
+
+            const dm = t1.diff(t0, 'minutes');
+
+            if(dm > 10) {
+              const ontime = dm < threshold ? 1 : 0;
+
+              worksheet.addRow({
+                vin: car.vin,
+                brand: car.brand,
+                createdAt: t0.format('YYYY-MM-DD HH:mm:ss'),
+                createdAtMonth: t0.format('MM'),
+                checkedAt: t1.format('YYYY-MM-DD HH:mm:ss'),
+                checkedAtMonth: t1.format('MM'),
+                leadtime: dm,
+                ontime: ontime
+              });
+            }
+
+          }
+        }
+
+        const tempFilePath = tempfile('.xlsx');
+        await workbook.xlsx.writeFile(tempFilePath);
+        res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+        res.setHeader('Content-Disposition', 'attachment; filename=revisiones-03-07-2019.xlsx');
+        return res.sendFile(tempFilePath);
+
+      }
+    } catch (e) {
+      Raven.captureException(e, {req});
+      /* istanbul ignore next */
+      logger.error(`dashboard timing derco: Async Error.`);
+      /* istanbul ignore next */
+      logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
+      /* istanbul ignore next */
+      logger.error(e);
+      res.status(400).json({
+        message: 'Ha ocurrido un error',
+        status: 400
+      });
+    }
+
+  }
+
   public async timingDashboard(req: IRequest, res: Response): Promise<any> {
 
     try {
@@ -1252,7 +1385,7 @@ class FormController {
 
         const total = 6
         // el lead time supuesto es de 48 horas
-        const threshold = 60 * 24 * 2;
+        const threshold = 60 * 24 * 7;
 
         let reception = await FormModel.findOne({_id: "5b1ae5799ebea419025b3e41"})
         let cars = await CarModel.find({
