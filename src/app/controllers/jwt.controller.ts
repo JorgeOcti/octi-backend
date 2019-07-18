@@ -12,7 +12,7 @@ import UserModel, {IUserModel} from '../models/user.model';
 
 class JWTController {
 
-  private androidVersion: string = '2.3.7';
+  private androidVersion: string = '2.3.8';
   private iosVersion: string = '1.4.0';
 
   constructor() {
