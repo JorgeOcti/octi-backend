@@ -39,6 +39,8 @@ class AdminVenueController {
       select: {
         _id: true,
         name: true,
+        lat: true,
+        lng: true,
         receptionCarriers: true,
         shippingCarriers: true,
         sendTo: true,
@@ -115,7 +117,7 @@ class AdminVenueController {
       });
     }
     const {
-      name, type, company, sendTo, receiveFrom,
+      name, lat, lng, type, company, sendTo, receiveFrom,
       receptionCarriers, shippingCarriers, region
     } = req.body;
     const {team} = req.user;
@@ -138,6 +140,8 @@ class AdminVenueController {
       } else {
         const newVenue = await new Venue({
           name,
+          lat,
+          lng,
           team,
           company,
           region,
@@ -198,7 +202,7 @@ class AdminVenueController {
     const {id} = req.params;
     const {team} = req.user;
     const {
-      name, type, company, sendTo, receiveFrom,
+      name, lat, lng, type, company, sendTo, receiveFrom,
       receptionCarriers, shippingCarriers, region
     } = req.body;
     if (!name || !name.length) {
@@ -213,6 +217,8 @@ class AdminVenueController {
         team
       }, {
         name,
+        lat,
+        lng,
         company,
         region,
         sendTo,

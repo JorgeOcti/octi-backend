@@ -396,4 +396,20 @@ export default class ApiService {
     )
   }
 
+  public getVersions(): AxiosPromise {
+    return this.instance.get(
+      `/api/admin/versions/`, {
+        cancelToken: this.source.token
+      }
+    );
+  }
+
+
+  public createVersion(version: any): AxiosPromise {
+    return this.instance.post(
+      `/api/admin/versions/`,
+      version
+    );
+  }
+
 }

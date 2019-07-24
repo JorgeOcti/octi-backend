@@ -16,6 +16,14 @@ const venueSchema = new mongoose.Schema({
         type: String,
         required: true
     },
+    lat: {
+        type: Number,
+        required: true
+    },
+    lng: {
+        type: Number,
+        required: true
+    },
     team: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Team'

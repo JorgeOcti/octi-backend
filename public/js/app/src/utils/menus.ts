@@ -154,6 +154,17 @@ if (hasPermission(window.user, 'viewUser')) {
   });
 }
 
+//if (hasPermission(window.user, 'viewUser')) {
+if(true) {
+  settingItems.push({
+    id: '10.7',
+    icon: 'fa-circle-o',
+    text: 'Versiones',
+    url: '/settings/versions/'
+  });
+}
+
+
 if (settingItems.length) {
   menus.push({
     id: '10',

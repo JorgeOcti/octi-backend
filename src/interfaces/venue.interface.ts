@@ -8,6 +8,8 @@ import {IUser} from './user.interface';
 export interface IBaseVenue {
   _id: any;
   name: string;
+  lat: number;
+  lng: number;
   company?: ICompany | any;
   region?: IRegion[] | any;
   sendTo: IVenue[];

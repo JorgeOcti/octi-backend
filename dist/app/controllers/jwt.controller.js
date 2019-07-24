@@ -44,7 +44,7 @@ class JWTController {
             })
                 .populate([{
                     path: 'venue',
-                    select: ['name']
+                    select: ['name', 'lat', 'lng']
                 }, {
                     path: 'team',
                     select: ['name']

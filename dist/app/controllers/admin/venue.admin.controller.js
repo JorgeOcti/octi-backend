@@ -35,6 +35,8 @@ class AdminVenueController {
             select: {
                 _id: true,
                 name: true,
+                lat: true,
+                lng: true,
                 receptionCarriers: true,
                 shippingCarriers: true,
                 sendTo: true,
@@ -111,7 +113,7 @@ class AdminVenueController {
                 message: 'No tienes permisos para esta operación'
             });
         }
-        const { name, type, company, sendTo, receiveFrom, receptionCarriers, shippingCarriers, region } = req.body;
+        const { name, lat, lng, type, company, sendTo, receiveFrom, receptionCarriers, shippingCarriers, region } = req.body;
         const { team } = req.user;
         if (!name || !name.trim().length) {
             res.status(400).json({
@@ -133,6 +135,8 @@ class AdminVenueController {
             else {
                 const newVenue = await new venue_model_1.default({
                     name,
+                    lat,
+                    lng,
                     team,
                     company,
                     region,
@@ -192,7 +196,7 @@ class AdminVenueController {
         }
         const { id } = req.params;
         const { team } = req.user;
-        const { name, type, company, sendTo, receiveFrom, receptionCarriers, shippingCarriers, region } = req.body;
+        const { name, lat, lng, type, company, sendTo, receiveFrom, receptionCarriers, shippingCarriers, region } = req.body;
         if (!name || !name.length) {
             res.status(400).json({
                 message: 'The name is are required',
@@ -205,6 +209,8 @@ class AdminVenueController {
                 team
             }, {
                 name,
+                lat,
+                lng,
                 company,
                 region,
                 sendTo,

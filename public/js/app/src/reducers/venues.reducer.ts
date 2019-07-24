@@ -11,6 +11,8 @@ const initialState: IVenuesState = {
   source: null,
   tempVenue: {
     _id: '',
+    lat: 0,
+    lng: 0,
     name: '',
     type: 'receiver',
     sendTo: [],

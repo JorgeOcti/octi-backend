@@ -59,7 +59,8 @@ class VenueFormView extends React.Component<IPropsType, IStateType> {
               <label>Nombre</label>
               <input
                 type="text"
-                name="name"
+                name="number"
+                step="any"
                 className="form-control"
                 maxLength={50}
                 value={tempVenue.name}
@@ -67,6 +68,43 @@ class VenueFormView extends React.Component<IPropsType, IStateType> {
                   (e: React.ChangeEvent<HTMLInputElement>) => changeTempVenueAction({
                     ...tempVenue,
                     name: e.target.value
+                  }, true)
+                }
+              />
+            </div>
+          </div>
+          <div className="col-md-6">
+            <div className="form-group">
+              <label>Latitud</label>
+              <input
+                type="number"
+                name="lng"
+                step="any"
+                className="form-control"
+                maxLength={50}
+                value={tempVenue.lat}
+                onChange={
+                  (e: React.ChangeEvent<HTMLInputElement>) => changeTempVenueAction({
+                    ...tempVenue,
+                    lat: parseFloat(e.target.value)
+                  }, true)
+                }
+              />
+            </div>
+          </div>
+          <div className="col-md-6">
+            <div className="form-group">
+              <label>Longitud</label>
+              <input
+                type="number"
+                name="lng"
+                className="form-control"
+                maxLength={50}
+                value={tempVenue.lng}
+                onChange={
+                  (e: React.ChangeEvent<HTMLInputElement>) => changeTempVenueAction({
+                    ...tempVenue,
+                    lng: parseFloat(e.target.value)
                   }, true)
                 }
               />
