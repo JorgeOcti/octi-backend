@@ -15,11 +15,26 @@ class AdminVersionController {
     async apiListVersions(req, res) {
         const { team } = req.user;
         try {
-            const versions = await version_model_1.default
-                .find({})
-                .sort({
-                createdAt: -1
-            });
+            const options = {
+                select: {
+                    _id: true,
+                    description: true,
+                    ios: true,
+                    android: true,
+                    user: true,
+                    createdAt: true
+                }, populate: [{
+                        path: 'createdBy',
+                        select: ['_id', 'firstName', 'lastName']
+                    }],
+                sort: {
+                    createdAt: -1
+                },
+                page: 1,
+                limit: 100
+            };
+            const data = await this.getVersions({}, options);
+            const versions = data.docs;
             res.json({
                 versions
             });
@@ -96,6 +111,17 @@ class AdminVersionController {
             /* istanbul ignore next */
             res.status(500).json(e);
         }
+    }
+    getVersions(filter, options) {
+        return new Promise((resolve, reject) => {
+            version_model_1.default.paginate(filter, options, (err, result) => {
+                /* istanbul ignore next  */
+                if (err) {
+                    return reject(err);
+                }
+                return resolve(result);
+            });
+        });
     }
 }
 exports.default = new AdminVersionController();

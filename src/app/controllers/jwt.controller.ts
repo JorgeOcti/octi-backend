@@ -9,6 +9,7 @@ import logger from '../../services/logger.service';
 import GeneralUtils from '../../utils/general.utils';
 import User from '../models/user.model';
 import UserModel, {IUserModel} from '../models/user.model';
+import Version from "../models/version.model";
 
 class JWTController {
 
@@ -22,12 +23,22 @@ class JWTController {
     this.forgotPassword = this.forgotPassword.bind(this);
   }
 
-  public login(req: Request, res: Response) {
+  public async login(req: Request, res: Response) {
     logger.info(`login: {username: ${req.body.username}`);
     if (req.body.username === null || req.body.username === undefined || req.body.password === null || req.body.password === undefined) {
       logger.error(`login: Authentication failed. Invalid user or password.`);
       res.status(401).json({message: 'Authentication failed. Invalid user or password.'});
     } else {
+
+      // last versions
+      const version = await Version.findOne({
+
+      }, ['ios', 'android'],  {
+        sort: {
+          createdAt: -1
+        }
+      });
+
       User
         .findOne({
           email: req.body.username
@@ -119,6 +130,7 @@ class JWTController {
                     },
                     count
                   };
+
                   res.json({
                     data: {
                       token: jwt.sign(userInfo, req.app.locals.secretKey, {
@@ -130,8 +142,8 @@ class JWTController {
                       refreshToken: jwt.sign(userInfo, req.app.locals.secretKey, {
                         expiresIn: '30 days'
                       }),
-                      iosVersion: this.iosVersion,
-                      androidVersion: this.androidVersion,
+                      iosVersion: version.ios,
+                      androidVersion: version.android,
                       user: userInfo
                     },
                     status: 200

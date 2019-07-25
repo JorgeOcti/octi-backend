@@ -1,3 +1,4 @@
+import * as moment from 'moment';
 import * as Raven from 'raven-js';
 import * as React from 'react';
 import {ErrorInfo} from 'react';
@@ -80,7 +81,7 @@ class VersionListView extends React.Component<IPropsType, IStateType> {
   }
 
   public render(): React.ReactElement<IPropsType> {
-    console.log("--props", this.props)
+
     const {versions, loading} = this.props.versions;
 
     return (
@@ -100,6 +101,8 @@ class VersionListView extends React.Component<IPropsType, IStateType> {
                     <th className="middle">Descripción</th>
                     <th className="middle text-center">iOS Version</th>
                     <th className="middle text-center">Android Version</th>
+                    <th className="middle">Creada por</th>
+                    <th className="middle">Fecha creación</th>
                     <th className="middle width-10" />
                   </tr>
                 </thead>
@@ -116,6 +119,12 @@ class VersionListView extends React.Component<IPropsType, IStateType> {
                           <td className="middle">{version.description}</td>
                           <td className="middle text-center">{version.ios}</td>
                           <td className="middle text-center">{version.android}</td>
+                          <td className="middle">
+                            {
+                              version.createdBy ? version.createdBy.firstName + " " + version.createdBy.lastName : '-'
+                            }
+                          </td>
+                          <td className="middle">{moment(version.createdAt).format('LLL')}</td>
                           <td className="text-red pointer" onClick={() => this.deleteVersion(version)}><i className="fa fa-minus-circle"/></td>
                         </tr>
                       );

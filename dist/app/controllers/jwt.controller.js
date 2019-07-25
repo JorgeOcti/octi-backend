@@ -9,6 +9,7 @@ const logger_service_1 = require("../../services/logger.service");
 const general_utils_1 = require("../../utils/general.utils");
 const user_model_1 = require("../models/user.model");
 const user_model_2 = require("../models/user.model");
+const version_model_1 = require("../models/version.model");
 class JWTController {
     constructor() {
         this.androidVersion = '2.3.8';
@@ -18,13 +19,19 @@ class JWTController {
         // this.isJWTAuthenticated = this.isJWTAuthenticated.bind(this);
         this.forgotPassword = this.forgotPassword.bind(this);
     }
-    login(req, res) {
+    async login(req, res) {
         logger_service_1.default.info(`login: {username: ${req.body.username}`);
         if (req.body.username === null || req.body.username === undefined || req.body.password === null || req.body.password === undefined) {
             logger_service_1.default.error(`login: Authentication failed. Invalid user or password.`);
             res.status(401).json({ message: 'Authentication failed. Invalid user or password.' });
         }
         else {
+            // last versions
+            const version = await version_model_1.default.findOne({}, ['ios', 'android'], {
+                sort: {
+                    createdAt: -1
+                }
+            });
             user_model_1.default
                 .findOne({
                 email: req.body.username
@@ -130,8 +137,8 @@ class JWTController {
                                         refreshToken: jwt.sign(userInfo, req.app.locals.secretKey, {
                                             expiresIn: '30 days'
                                         }),
-                                        iosVersion: this.iosVersion,
-                                        androidVersion: this.androidVersion,
+                                        iosVersion: version.ios,
+                                        androidVersion: version.android,
                                         user: userInfo
                                     },
                                     status: 200

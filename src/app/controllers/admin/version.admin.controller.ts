@@ -2,6 +2,8 @@ import {Response} from 'express';
 import {IRequest} from '../../../interfaces/global.interface';
 import Alert from '../../models/alert.model';
 import Version from "../../models/version.model";
+import {PaginateOptions, PaginateResult} from "mongoose";
+import Company, {ICompanyModel} from "../../models/company.model";
 
 class AdminVersionController {
 
@@ -20,11 +22,28 @@ class AdminVersionController {
     const {team} = req.user;
     try {
 
-      const versions = await Version
-        .find({})
-        .sort({
+      const options: PaginateOptions = {
+        select: {
+          _id: true,
+          description: true,
+          ios: true,
+          android: true,
+          user: true,
+          createdAt: true
+        }, populate: [{
+          path: 'createdBy',
+          select: ['_id', 'firstName', 'lastName']
+        }],
+        sort: {
           createdAt: -1
-        });
+        },
+        page: 1,
+        limit: 100
+      };
+
+      const data = await this.getVersions({}, options);
+      const versions= data.docs
+
       res.json({
         versions
       })
@@ -103,6 +122,18 @@ class AdminVersionController {
       /* istanbul ignore next */
       res.status(500).json(e);
     }
+  }
+
+  private getVersions(filter: any, options: PaginateOptions): Promise<PaginateResult<Version>> {
+    return new Promise((resolve, reject) => {
+      Version.paginate(filter, options, (err, result) => {
+        /* istanbul ignore next  */
+        if (err) {
+          return reject(err);
+        }
+        return resolve(result);
+      });
+    });
   }
 }
 
