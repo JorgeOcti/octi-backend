@@ -105,7 +105,9 @@ class JWTController {
                     userForms: user.userForms,
                     venue: {
                       _id: GeneralUtils.getObjectProperty(user.venue, '_id', null),
-                      name: GeneralUtils.getObjectProperty(user.venue, 'name', null)
+                      name: GeneralUtils.getObjectProperty(user.venue, 'name', null),
+                      lat: GeneralUtils.getObjectProperty(user.venue, 'lat', 0),
+                      lng: GeneralUtils.getObjectProperty(user.venue, 'lng', 0)
                     },
                     company: {
                       _id: GeneralUtils.getObjectProperty(user.company, '_id', null),
