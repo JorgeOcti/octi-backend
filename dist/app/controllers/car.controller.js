@@ -1,5 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+const excel = require("exceljs");
+const tempfile = require("tempfile");
 const moment = require("moment");
 const mongoose = require("mongoose");
 const app_1 = require("../../app");
@@ -956,6 +958,140 @@ class CarController {
                 res.status(500).json(e);
             }
         }
+    }
+    async apiDamagesExport(req, res) {
+        try {
+            const revisions = await participant_model_1.default.find({
+                $and: [
+                    {
+                        venue: {
+                            $in: req.user.venuesPermissions()
+                        },
+                        'sections.answers.kind': 'damage',
+                        'sections.answers.damagesSelected._id': { $exists: true }
+                    }
+                ]
+            }, {
+                createdAt: true,
+                user: true,
+                venue: true,
+                car: true,
+                'sections.answers.damages': true,
+                'sections.answers.damagesSelected': true
+            }).populate([
+                {
+                    path: 'user',
+                    select: ['firstName', 'lastName']
+                },
+                {
+                    path: 'car',
+                    select: ['vin', 'vin2', 'denomination', 'color', 'brand']
+                },
+                {
+                    path: 'venue',
+                    select: ['name']
+                }
+            ]);
+            var rows = [];
+            var maxDamages = 0;
+            for (var revision of revisions) {
+                var damages = [];
+                for (var section of revision.sections) {
+                    for (const answer of section.answers) {
+                        for (const damage of answer.damagesSelected) {
+                            const kind = answer.damages.kinds.find((d) => d._id && damage.kind && d._id.toString() == damage.kind.toString());
+                            const part = answer.damages.parts.find((d) => d._id && damage.part && d._id.toString() == damage.part.toString());
+                            const position = answer.damages.positions.find((d) => d._id && damage.position && d._id.toString() == damage.position.toString());
+                            damages.push({ kind, part, position });
+                        }
+                    }
+                }
+                var row = {};
+                for (var i in damages) {
+                    var idx = parseInt(i) + 1;
+                    s;
+                    row[`position_${idx}`] = damages[i].position ? damages[i].position.name : "-";
+                    row[`kind_${idx}`] = damages[i].kind.name;
+                    row[`part_${idx}`] = damages[i].part.name;
+                }
+                if (damages.length > maxDamages)
+                    maxDamages = damages.length;
+                row['vin'] = revision.car.vin;
+                row['denomination'] = revision.car.denomination;
+                row['color'] = revision.car.color;
+                row['brand'] = revision.car.brand;
+                row['venue'] = revision.venue.name;
+                row['created_at'] = revision.createdAt;
+                row['user'] = `${revision.user.firstName} ${revision.user.lastName}`;
+                rows.push(row);
+            }
+            const workbook = new excel.Workbook();
+            const worksheet = workbook.addWorksheet('Daños', {
+                properties: {
+                    defaultRowHeight: 30
+                }, pageSetup: {
+                    fitToPage: true, fitToHeight: 100, fitToWidth: 1
+                }
+            });
+            worksheet.autoFilter = { from: 'A1', to: 'F1' };
+            var columns = [{
+                    header: 'VIN', key: 'vin', width: 30
+                }, {
+                    header: 'Denominación', key: 'denomination', width: 30
+                }, {
+                    header: 'Color', key: 'color', width: 30
+                }, {
+                    header: 'Marca', key: 'brand', width: 30
+                }, {
+                    header: 'Sucursal', key: 'venue', width: 30
+                }, {
+                    header: 'Fecha', key: 'created_at', width: 30, style: { numFmt: 'dd/mm/yyyy hh:mm' }
+                }, {
+                    header: 'Usuario', key: 'user', width: 30
+                }];
+            for (var i = 0; i < maxDamages; i++) {
+                columns.push({ header: `Parte ${i + 1}`, key: `part_${i + 1}`, width: 30 });
+                columns.push({ header: `Tipo ${i + 1}`, key: `kind_${i + 1}`, width: 30 });
+                columns.push({ header: `Posición ${i + 1}`, key: `position_${i + 1}`, width: 30 });
+            }
+            /* headers */
+            worksheet.columns = columns;
+            for (const row of rows) {
+                worksheet.addRow(row);
+            }
+            /* formats */
+            worksheet.getRow(1).eachCell((cell) => {
+                cell.font = {
+                    bold: true
+                };
+            });
+            // const idCol = worksheet.getColumn('id');
+            // idCol.eachCell({includeEmpty: true}, (cell) => {
+            //   cell.alignment = {vertical: 'middle', horizontal: 'center'};
+            // });
+            const tempFilePath = tempfile('.xlsx');
+            await workbook.xlsx.writeFile(tempFilePath);
+            res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+            res.setHeader('Content-Disposition', 'attachment; filename=usuarios-21-03-2019.xlsx');
+            return res.sendFile(tempFilePath);
+        }
+        catch (e) {
+            console.log(e);
+            /* istanbul ignore next */
+            if (e) {
+                res.status(500).json(e);
+            }
+        }
+    }
+    participantWithDamages(participant) {
+        return new Promise((resolve) => {
+            participant.hasDamages = participant.sections.some((section) => {
+                return section.answers.some((answer) => {
+                    return answer.damagesSelected.length > 0;
+                });
+            });
+            resolve(participant);
+        });
     }
     async apiCars(req, res) {
         const { page, pageSize, search } = req.query;
