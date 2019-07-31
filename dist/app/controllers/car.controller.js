@@ -961,70 +961,6 @@ class CarController {
     }
     async apiDamagesExport(req, res) {
         try {
-            const revisions = await participant_model_1.default.find({
-                $and: [
-                    {
-                        venue: {
-                            $in: req.user.venuesPermissions()
-                        },
-                        'sections.answers.kind': 'damage',
-                        'sections.answers.damagesSelected._id': { $exists: true }
-                    }
-                ]
-            }, {
-                createdAt: true,
-                user: true,
-                venue: true,
-                car: true,
-                'sections.answers.damages': true,
-                'sections.answers.damagesSelected': true
-            }).populate([
-                {
-                    path: 'user',
-                    select: ['firstName', 'lastName']
-                },
-                {
-                    path: 'car',
-                    select: ['vin', 'vin2', 'denomination', 'color', 'brand']
-                },
-                {
-                    path: 'venue',
-                    select: ['name']
-                }
-            ]);
-            var rows = [];
-            var maxDamages = 0;
-            for (var revision of revisions) {
-                var damages = [];
-                for (var section of revision.sections) {
-                    for (const answer of section.answers) {
-                        for (const damage of answer.damagesSelected) {
-                            const kind = answer.damages.kinds.find((d) => d._id && damage.kind && d._id.toString() == damage.kind.toString());
-                            const part = answer.damages.parts.find((d) => d._id && damage.part && d._id.toString() == damage.part.toString());
-                            const position = answer.damages.positions.find((d) => d._id && damage.position && d._id.toString() == damage.position.toString());
-                            damages.push({ kind, part, position });
-                        }
-                    }
-                }
-                var row = {};
-                for (var i in damages) {
-                    var idx = parseInt(i) + 1;
-                    s;
-                    row[`position_${idx}`] = damages[i].position ? damages[i].position.name : "-";
-                    row[`kind_${idx}`] = damages[i].kind.name;
-                    row[`part_${idx}`] = damages[i].part.name;
-                }
-                if (damages.length > maxDamages)
-                    maxDamages = damages.length;
-                row['vin'] = revision.car.vin;
-                row['denomination'] = revision.car.denomination;
-                row['color'] = revision.car.color;
-                row['brand'] = revision.car.brand;
-                row['venue'] = revision.venue.name;
-                row['created_at'] = revision.createdAt;
-                row['user'] = `${revision.user.firstName} ${revision.user.lastName}`;
-                rows.push(row);
-            }
             const workbook = new excel.Workbook();
             const worksheet = workbook.addWorksheet('Daños', {
                 properties: {
@@ -1048,7 +984,12 @@ class CarController {
                     header: 'Fecha', key: 'created_at', width: 30, style: { numFmt: 'dd/mm/yyyy hh:mm' }
                 }, {
                     header: 'Usuario', key: 'user', width: 30
+                }, {
+                    header: 'Tiene daños', key: 'has_damages', width: 30
+                }, {
+                    header: 'Daños reportados', key: 'damages', width: 30
                 }];
+            const maxDamages = 17;
             for (var i = 0; i < maxDamages; i++) {
                 columns.push({ header: `Parte ${i + 1}`, key: `part_${i + 1}`, width: 30 });
                 columns.push({ header: `Tipo ${i + 1}`, key: `kind_${i + 1}`, width: 30 });
@@ -1056,8 +997,76 @@ class CarController {
             }
             /* headers */
             worksheet.columns = columns;
-            for (const row of rows) {
-                worksheet.addRow(row);
+            const periods = 12;
+            for (let i = periods; i >= 0; i--) {
+                const t0 = moment().subtract(i, 'weeks').startOf('week');
+                const t1 = moment().subtract(i, 'weeks').endOf('week');
+                const revisions = await participant_model_1.default.find({
+                    $and: [
+                        {
+                            createdAt: {
+                                $gte: t0,
+                                $lte: t1,
+                            },
+                        },
+                        {
+                            venue: {
+                                $in: req.user.venuesPermissions()
+                            },
+                        }
+                    ]
+                }, {
+                    createdAt: true,
+                    user: true,
+                    venue: true,
+                    car: true,
+                    'sections.answers.damages': true,
+                    'sections.answers.damagesSelected': true
+                }).populate([
+                    {
+                        path: 'user',
+                        select: ['firstName', 'lastName']
+                    },
+                    {
+                        path: 'car',
+                        select: ['vin', 'vin2', 'denomination', 'color', 'brand']
+                    },
+                    {
+                        path: 'venue',
+                        select: ['name']
+                    }
+                ]);
+                for (var revision of revisions) {
+                    var damages = [];
+                    for (var section of revision.sections) {
+                        for (const answer of section.answers) {
+                            for (const damage of answer.damagesSelected) {
+                                const kind = answer.damages.kinds.find((d) => d._id && damage.kind && d._id.toString() == damage.kind.toString());
+                                const part = answer.damages.parts.find((d) => d._id && damage.part && d._id.toString() == damage.part.toString());
+                                const position = answer.damages.positions.find((d) => d._id && damage.position && d._id.toString() == damage.position.toString());
+                                if (kind && part)
+                                    damages.push({ kind, part, position });
+                            }
+                        }
+                    }
+                    var row = {};
+                    for (let j in damages) {
+                        var idx = parseInt(j) + 1;
+                        row[`position_${idx}`] = damages[j].position ? damages[j].position.name : "-";
+                        row[`kind_${idx}`] = damages[j].kind.name;
+                        row[`part_${idx}`] = damages[j].part.name;
+                    }
+                    row['vin'] = revision.car.vin;
+                    row['denomination'] = revision.car.denomination;
+                    row['color'] = revision.car.color;
+                    row['brand'] = revision.car.brand;
+                    row['venue'] = revision.venue.name;
+                    row['created_at'] = revision.createdAt;
+                    row['user'] = `${revision.user.firstName} ${revision.user.lastName}`;
+                    row['damages'] = `${damages.length}`;
+                    row['has_damages'] = damages.length > 0 ? 'Sí' : 'No';
+                    worksheet.addRow(row);
+                }
             }
             /* formats */
             worksheet.getRow(1).eachCell((cell) => {
@@ -1076,7 +1085,6 @@ class CarController {
             return res.sendFile(tempFilePath);
         }
         catch (e) {
-            console.log(e);
             /* istanbul ignore next */
             if (e) {
                 res.status(500).json(e);
