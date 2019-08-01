@@ -14,6 +14,7 @@ router.get('/api/dashboard/damages/', middlewares_1.default.isLoggedIn, form_con
 router.get('/api/dashboard/timing/', middlewares_1.default.isLoggedIn, form_controller_1.default.timingDashboard);
 router.get('/api/dashboard/timing/per-venue/', middlewares_1.default.isLoggedIn, form_controller_1.default.timingDashboardPerVenue);
 router.get('/api/dashboard/cleaning/', middlewares_1.default.isLoggedIn, form_controller_1.default.cleaningDashboard);
+router.get('/api/export/revisions/', middlewares_1.default.isLoggedIn, form_controller_1.default.exportRevisionsDifference);
 router.put('/api/v1/forms/preferred/', middlewares_1.default.isJWTAuthenticated, form_controller_1.default.changePreferred);
 router.post('/api/v1/forms/:id/upload-file/', middlewares_1.default.isJWTAuthenticated, form_controller_1.default.uploadFile);
 // detail information of the form

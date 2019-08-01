@@ -1,10 +1,10 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+const excel = require("exceljs");
+const tempfile = require("tempfile");
 const bson_1 = require("bson");
 const fs = require("fs");
-const GraphicsMagick = require("gm");
 const HtmlPdf = require("html-pdf");
-const Joi = require("joi");
 const moment = require("moment-timezone");
 const path = require("path");
 const QRCode = require("qrcode");
@@ -18,12 +18,10 @@ const user_model_2 = require("../../app/models/user.model");
 const venue_model_1 = require("../../app/models/venue.model");
 const server_1 = require("../../server");
 const logger_service_1 = require("../../services/logger.service");
-const redis_service_1 = require("../../services/redis.service");
 const general_utils_1 = require("../../utils/general.utils");
 const form_model_1 = require("../models/form.model");
 const participant_model_1 = require("../models/participant.model");
 const participantFile_model_1 = require("../models/participantFile.model");
-const scale_model_1 = require("../models/scale.model");
 const bluebird = require("bluebird");
 // import * as puppeteer from 'puppeteer';
 class FormController {
@@ -1456,282 +1454,428 @@ class FormController {
             });
         }
     }
-    async cleaningDashboard(req, res) {
+    async exportRevisionsDifference(req, res) {
         try {
-            const { team } = req.user;
-            let form = await form_model_1.default.findById("5b0487db835536612bab1b61");
-            let answer = new bson_1.ObjectID("5b64b2e8de5557c85fa14fa0");
-            var days = [];
-            if (form) {
-                var daysDict = {};
-                var total = 30 * 6;
-                var t0 = moment().subtract(total, 'days');
-                for (var i = 0; i < total; i++) {
-                    const day = moment().subtract(total - i, 'days').format('YYYY-MM-DD');
-                    daysDict[day] = {
-                        'clean': 0,
-                        'notClean': 0
-                    };
-                    days.push(day);
-                }
-                const cleanDispatch = await participant_model_1.default.aggregate([
-                    {
-                        $match: {
-                            team,
-                            form: form._id,
-                            "sections.answers.answer": answer,
-                            createdAt: { $gt: t0.toDate() }
-                        }
-                    },
-                    {
-                        $group: {
-                            _id: {
-                                $dateToString: { format: '%Y-%m-%d', date: '$createdAt' }
-                            },
-                            count: { $sum: 1 }
-                        }
-                    }
-                ]);
-                for (var datum of cleanDispatch) {
-                    const day = datum._id;
-                    const sum = datum.count;
-                    console.log(datum);
-                    daysDict[day].clean = sum;
-                }
-                const notCleanDispatch = await participant_model_1.default.aggregate([
-                    {
-                        $match: {
-                            team,
-                            form: form._id,
-                            "sections.answers.answer": { $ne: answer },
-                            createdAt: { $gt: t0.toDate() }
-                        }
-                    },
-                    {
-                        $group: {
-                            _id: {
-                                $dateToString: { format: '%Y-%m-%d', date: '$createdAt' }
-                            },
-                            count: { $sum: 1 }
-                        }
-                    }
-                ]);
-                for (var datum of notCleanDispatch) {
-                    const day = datum._id;
-                    const sum = datum.count;
-                    console.log(day);
-                    daysDict[day].notClean = sum;
-                }
-            }
-            var data = {
-                days: days,
-                clean: days.map((d) => daysDict[d].clean),
-                notClean: days.map((d) => daysDict[d].notClean),
-            };
-            res.json(data);
-        }
-        catch (e) {
-            Raven.captureException(e, { req });
-            /* istanbul ignore next */
-            logger_service_1.default.error(`dashboard timing: Async Error.`);
-            /* istanbul ignore next */
-            logger_service_1.default.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
-            /* istanbul ignore next */
-            logger_service_1.default.error(e);
-            res.status(400).json({
-                message: 'Ha ocurrido un error',
-                status: 400
-            });
-        }
-    }
-    autoRotate(path) {
-        // doc http://aheckmann.github.io/gm/docs.html
-        /**** REQUIRE: imagemagick and graphicsmagick *****
-         brew install imagemagick
-         brew install graphicsmagick
-         * */
-        return new Promise((resolve, reject) => {
-            GraphicsMagick(path)
-                .autoOrient()
-                .write(path, (err) => {
-                if (err) {
-                    /* istanbul ignore next */
-                    reject(err);
-                }
-                else {
-                    resolve();
+            const workbook = new excel.Workbook();
+            const worksheet = workbook.addWorksheet('Daños', {
+                properties: {
+                    defaultRowHeight: 30
+                }, pageSetup: {
+                    fitToPage: true, fitToHeight: 100, fitToWidth: 1
                 }
             });
-        });
-    }
-    getForms(filter) {
-        return new Promise((resolve, reject) => {
-            form_model_1.default
-                .find(filter, {
-                _id: 1,
-                name: 1
-            })
-                .lean()
-                .exec((err, forms) => {
-                if (err) {
-                    /* istanbul ignore next */
-                    return reject(err);
-                }
-                return resolve(forms);
-            });
-        });
-    }
-    getForm(filter) {
-        const keyCache = `form-${filter._id}`;
-        return new Promise((resolve, reject) => {
-            redis_service_1.default.get(keyCache, async (error, result) => {
-                if (result) {
-                    resolve(JSON.parse(result));
-                }
-                else {
-                    form_model_1.default
-                        .findOne(filter, {
-                        'company': false,
-                        'updatedAt': false,
-                        'createdAt': false,
-                        'active': false,
-                        'sections.shortName': false,
-                        'sections.questions.shortName': false,
-                        '__v': false
-                    })
-                        .populate([{
-                            path: 'sections.questions.damages',
-                            select: ['name', 'positions', 'kinds', 'parts'],
-                            populate: [{
-                                    path: 'positions',
-                                    select: ['name'],
-                                    options: {
-                                        sort: {
-                                            name: 1
-                                        }
-                                    }
-                                }, {
-                                    path: 'kinds',
-                                    select: ['name'],
-                                    options: {
-                                        sort: {
-                                            name: 1
-                                        }
-                                    }
-                                }, {
-                                    path: 'parts',
-                                    select: ['name'],
-                                    options: {
-                                        sort: {
-                                            name: 1
-                                        }
-                                    }
-                                }]
-                        }])
-                        .lean()
-                        .exec((err, form) => {
-                        if (err) {
-                            /* istanbul ignore next */
-                            return reject(err);
-                        }
-                        if (form) {
-                            redis_service_1.default.setex(keyCache, 60, JSON.stringify(form));
-                            return resolve(form);
-                        }
-                        return reject('No se encontro formularío');
-                    });
-                }
-            });
-        });
-    }
-    async processAccesoryItems(accesories) {
-        const accesorySchema = Joi.object({
-            item: Joi.string(),
-            amount: Joi.number()
-        });
-        const newAccesories = [];
-        accesories.map(async (accesory) => {
-            try {
-                const newAccesory = await accesorySchema.validate(accesory);
-                newAccesories.push({
-                    item: newAccesory.item,
-                    amount: newAccesory.amount
-                });
-            }
-            catch (e) {
-                newAccesories.push({
-                    item: accesory,
-                    amount: 1
-                });
-            }
-        });
-        return newAccesories;
-    }
-    getFormWithScale(filter) {
-        return new Promise((resolve, reject) => {
-            form_model_1.default
-                .findOne(filter)
-                .populate([{
-                    path: 'sections.questions.scale'
+            worksheet.autoFilter = { from: 'A1', to: 'F1' };
+            var columns = [{
+                    header: 'VIN', key: 'vin', width: 30
                 }, {
-                    path: 'sections.questions.damages',
-                    select: ['name', 'positions', 'kinds', 'parts'],
-                    populate: [{
-                            path: 'positions',
-                            select: ['name']
-                        }, {
-                            path: 'kinds',
-                            select: ['name']
-                        }, {
-                            path: 'parts',
-                            select: ['name']
-                        }]
-                }])
-                .exec((err, form) => {
-                if (err) {
-                    /* istanbul ignore next */
-                    return reject(err);
+                    header: 'Marca', key: 'brand', width: 30
+                }, {
+                    header: 'Fecha despacho', key: 'p0CreatedAt', width: 30
+                }, {
+                    header: 'Sucursal despacho', key: 'p0Venue', width: 30
+                }, {
+                    header: 'Calificación despacho', key: 'p0Qualification', width: 30
+                }, {
+                    header: 'Gas despacho', key: 'p0Gas', width: 30
+                }, {
+                    header: 'Fecha recepción', key: 'p1CreatedAt', width: 30
+                }, {
+                    header: 'Sucursal recepción', key: 'p1Venue', width: 30
+                }, {
+                    header: 'Calificación recepción', key: 'p1Qualification', width: 30
+                }, {
+                    header: 'Gas recepción', key: 'p1Gas', width: 30
+                },];
+            worksheet.columns = columns;
+            const { team } = req.user;
+            const t0 = moment().subtract(1, 'month');
+            let cars = await car_model_1.default.find({
+                team,
+                lastForm: { $exists: true },
+                createdAt: {
+                    $gte: t0
                 }
-                if (form) {
-                    return resolve(form);
+            }).populate({
+                path: 'participants',
+                populate: {
+                    path: 'venue',
+                    model: 'Venue'
                 }
-                return reject('No se encontro formularío');
             });
-        });
-    }
-    getScales(filter) {
-        const keyCache = `scales-${JSON.stringify(filter)}`;
-        return new Promise((resolve, reject) => {
-            redis_service_1.default.get(keyCache, async (error, result) => {
-                if (result) {
-                    resolve(JSON.parse(result));
+            let f0 = '5b0487db835536612bab1b61';
+            let f1 = '5b1ae5799ebea419025b3e41';
+            let gasQuestion = '5b64b543cee543c2afda41bd';
+            for (const car of cars) {
+                if (car.participants.length == 0)
+                    continue;
+                let participants = car.participants.sort((p0, p1) => p0.createdAt > p1.createdAt);
+                let p0 = null;
+                let p1 = null;
+                // only one form
+                if (participants.length < 2) {
+                    if (participants[0].form.toString() == f0)
+                        p0 = participants[0];
+                    else if (participants[0].form.toString() == f1)
+                        p1 = participants[0];
                 }
                 else {
-                    scale_model_1.default
-                        .find(filter, {
-                        'updatedAt': false,
-                        'createdAt': false,
-                        'active': false,
-                        'company': false,
-                        'minValue': false,
-                        'maxValue': false,
-                        'choices.na': false,
-                        'team': false,
-                        '__v': false
-                    })
-                        .lean()
-                        .exec((err, scales) => {
-                        if (err) {
-                            /* istanbul ignore next */
-                            return reject(err);
-                        }
-                        redis_service_1.default.setex(keyCache, 30, JSON.stringify(scales));
-                        return resolve(scales);
-                    });
+                    p0 = participants[0];
+                    p1 = participants[1];
                 }
+                var choice0Gas = null;
+                var choice1Gas = null;
+                if (p0) {
+                    const answer0Gas = p0.sections.map((s) => s.answers).reduce((x, y) => [...x, ...y], []).find((a) => a._id.toString() == gasQuestion);
+                    choice0Gas = answer0Gas.scale.choices.find((c) => c._id.toString() == answer0Gas.answer.toString());
+                }
+                if (p1) {
+                    const answer1Gas = p1.sections.map((s) => s.answers).reduce((x, y) => [...x, ...y], []).find((a) => a._id.toString() == gasQuestion);
+                    choice1Gas = answer1Gas.scale.choices.find((c) => c._id.toString() == answer1Gas.answer.toString());
+                }
+                const row = {
+                    vin: car.vin,
+                    brand: car.brand,
+                    p0CreatedAt: p0 ? p0.createdAt : '-',
+                    p0Venue: p0 ? p0.venue.name : '-',
+                    p0Qualification: p0 ? p0.qualification : '-',
+                    p0Gas: choice0Gas ? choice0Gas.choice : '-',
+                    p1CreatedAt: p1 ? p1.createdAt : '-',
+                    p1Venue: p1 ? p1.venue.name : '-',
+                    p1Qualification: p1 ? p1.qualification : '-',
+                    p1Gas: choice1Gas ? choice1Gas.choice : '-',
+                };
+                worksheet.addRow(row);
+            }
+            /* formats */
+            worksheet.getRow(1).eachCell((cell) => {
+                cell.font = {
+                    bold: true
+                };
             });
-        });
+            // const idCol = worksheet.getColumn('id');
+            // idCol.eachCell({includeEmpty: true}, (cell) => {
+            //   cell.alignment = {vertical: 'middle', horizontal: 'center'};
+            // });
+            const tempFilePath = tempfile('.xlsx');
+            await workbook.xlsx.writeFile(tempFilePath);
+            res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+            res.setHeader('Content-Disposition', `attachment; filename=revisiones-${moment().format('YYYY-MM-DD')}.xlsx');
+      return res.sendFile(tempFilePath);
+
+    }
+  }
+
+  public async cleaningDashboard(req: IRequest, res: Response): Promise<any> {
+
+    try {
+      const {team} = req.user
+
+      let form = await FormModel.findById("5b0487db835536612bab1b61")
+      let answer = new ObjectID("5b64b2e8de5557c85fa14fa0")
+
+      var days: string[] = [];
+      if(form) {
+
+        var daysDict: any = {}
+        var total = 30 * 6
+        var t0 = moment().subtract(total, 'days')
+        for(var i = 0; i < total; i++) {
+          const day = moment().subtract(total - i, 'days').format('YYYY-MM-DD');
+          daysDict[day] = {
+            'clean': 0,
+            'notClean': 0
+          }
+          days.push(day)
+        }
+
+
+        const cleanDispatch = await ParticipantModel.aggregate([
+          {
+            $match: {
+              team,
+              form: form._id,
+              "sections.answers.answer": answer,
+              createdAt: { $gt: t0.toDate() }
+            }
+          },
+          {
+            $group: {
+              _id: {
+                $dateToString: {format: '%Y-%m-%d', date: '$createdAt'}
+              },
+              count: {$sum: 1}
+            }
+          }
+        ])
+
+        for(var datum of cleanDispatch)
+        {
+          const day = datum._id
+          const sum = datum.count
+          console.log(datum)
+          daysDict[day].clean = sum
+        }
+
+        const notCleanDispatch = await ParticipantModel.aggregate([
+          {
+            $match: {
+              team,
+              form: form._id,
+              "sections.answers.answer": { $ne: answer },
+              createdAt: { $gt: t0.toDate() }
+            }
+          },
+          {
+            $group: {
+              _id: {
+                $dateToString: {format: '%Y-%m-%d', date: '$createdAt'}
+              },
+              count: {$sum: 1}
+            }
+          }
+        ])
+
+        for(var datum of notCleanDispatch)
+        {
+          const day = datum._id
+          const sum = datum.count
+          console.log(day)
+          daysDict[day].notClean = sum
+        }
+      }
+
+      var data = {
+        days: days,
+        clean: days.map((d) => daysDict[d].clean),
+        notClean: days.map((d) => daysDict[d].notClean),
+      }
+
+      res.json(data);
+
+
+    } catch (e) {
+      Raven.captureException(e, {req});
+      /* istanbul ignore next */
+      logger.error(`, dashboard, timing, Async, Error. `);
+      /* istanbul ignore next */
+      logger.error(`, { user: { _id: $ } }, { req, : .user._id }, email, $, { req, : .user.email });
+        }
+        finally /* istanbul ignore next */ { }
     }
 }
-exports.default = new FormController();
+`);
+      /* istanbul ignore next */
+      logger.error(e);
+      res.status(400).json({
+        message: 'Ha ocurrido un error',
+        status: 400
+      });
+    }
+
+  }
+
+  private autoRotate(path: string) {
+    // doc http://aheckmann.github.io/gm/docs.html
+    /**** REQUIRE: imagemagick and graphicsmagick *****
+     brew install imagemagick
+     brew install graphicsmagick
+     * */
+    return new Promise((resolve, reject) => {
+      GraphicsMagick(path)
+        .autoOrient()
+        .write(path, (err) => {
+          if (err) {
+            /* istanbul ignore next */
+            reject(err);
+          } else {
+            resolve();
+          }
+        });
+    });
+  }
+
+  private getForms(filter: any): Promise<IFormModel[]> {
+    return new Promise((resolve, reject) => {
+      FormModel
+        .find(filter, {
+          _id: 1,
+          name: 1
+        })
+        .lean()
+        .exec((err, forms: IFormModel[]) => {
+          if (err) {
+            /* istanbul ignore next */
+            return reject(err);
+          }
+          return resolve(forms);
+        });
+    });
+  }
+
+  private getForm(filter: any): Promise<IFormModel> {
+    const keyCache = `;
+form - $;
+{
+    filter._id;
+}
+`;
+    return new Promise((resolve, reject) => {
+      redisClient.get(keyCache, async (error, result) => {
+        if (result) {
+          resolve(JSON.parse(result));
+        } else {
+          FormModel
+            .findOne(filter, {
+              'company': false,
+              'updatedAt': false,
+              'createdAt': false,
+              'active': false,
+              'sections.shortName': false,
+              'sections.questions.shortName': false,
+              '__v': false
+            })
+            .populate([{
+              path: 'sections.questions.damages',
+              select: ['name', 'positions', 'kinds', 'parts'],
+              populate: [{
+                path: 'positions',
+                select: ['name'],
+                options: {
+                  sort: {
+                    name: 1
+                  }
+                }
+              }, {
+                path: 'kinds',
+                select: ['name'],
+                options: {
+                  sort: {
+                    name: 1
+                  }
+                }
+              }, {
+                path: 'parts',
+                select: ['name'],
+                options: {
+                  sort: {
+                    name: 1
+                  }
+                }
+              }]
+            }])
+            .lean()
+            .exec((err, form: IFormModel) => {
+              if (err) {
+                /* istanbul ignore next */
+                return reject(err);
+              }
+              if (form) {
+                redisClient.setex(keyCache, 60, JSON.stringify(form));
+                return resolve(form);
+              }
+              return reject('No se encontro formularío');
+            });
+        }
+      });
+    });
+  }
+
+  private async processAccesoryItems(accesories: any[]) {
+    const accesorySchema: Joi.ObjectSchema = Joi.object({
+      item: Joi.string(),
+      amount: Joi.number()
+    });
+    const newAccesories: any[] = [];
+    accesories.map(async (accesory: any) => {
+      try {
+        const newAccesory = await accesorySchema.validate(accesory);
+        newAccesories.push({
+          item: newAccesory.item,
+          amount: newAccesory.amount
+        });
+      } catch (e) {
+        newAccesories.push({
+          item: accesory,
+          amount: 1
+        });
+      }
+    });
+    return newAccesories;
+  }
+
+  private getFormWithScale(filter: any): Promise<IFormModel> {
+    return new Promise((resolve, reject) => {
+      FormModel
+        .findOne(filter)
+        .populate([{
+          path: 'sections.questions.scale'
+        }, {
+          path: 'sections.questions.damages',
+          select: ['name', 'positions', 'kinds', 'parts'],
+          populate: [{
+            path: 'positions',
+            select: ['name']
+          }, {
+            path: 'kinds',
+            select: ['name']
+          }, {
+            path: 'parts',
+            select: ['name']
+          }]
+        }])
+        .exec((err, form) => {
+          if (err) {
+            /* istanbul ignore next */
+            return reject(err);
+          }
+          if (form) {
+            return resolve(form);
+          }
+          return reject('No se encontro formularío');
+        });
+    });
+  }
+
+  private getScales(filter: any): Promise<IScaleModel[]> {
+    const keyCache = `;
+scales - $;
+{
+    JSON.stringify(filter);
+}
+`;
+    return new Promise((resolve, reject) => {
+      redisClient.get(keyCache, async (error, result) => {
+        if (result) {
+          resolve(JSON.parse(result));
+        } else {
+          ScaleModel
+            .find(filter, {
+              'updatedAt': false,
+              'createdAt': false,
+              'active': false,
+              'company': false,
+              'minValue': false,
+              'maxValue': false,
+              'choices.na': false,
+              'team': false,
+              '__v': false
+            })
+            .lean()
+            .exec((err, scales: IScaleModel[]) => {
+              if (err) {
+                /* istanbul ignore next */
+                return reject(err);
+              }
+              redisClient.setex(keyCache, 30, JSON.stringify(scales));
+              return resolve(scales);
+            });
+        }
+      });
+    });
+  }
+
+}
+
+export default new FormController();
+;
 //# sourceMappingURL=form.controller.js.map

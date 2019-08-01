@@ -15,6 +15,7 @@ router.get('/api/dashboard/damages/', Middlewares.isLoggedIn, FormController.dam
 router.get('/api/dashboard/timing/', Middlewares.isLoggedIn, FormController.timingDashboard);
 router.get('/api/dashboard/timing/per-venue/', Middlewares.isLoggedIn, FormController.timingDashboardPerVenue);
 router.get('/api/dashboard/cleaning/', Middlewares.isLoggedIn, FormController.cleaningDashboard);
+router.get('/api/export/revisions/', Middlewares.isLoggedIn, FormController.exportRevisionsDifference);
 
 router.put('/api/v1/forms/preferred/', Middlewares.isJWTAuthenticated, FormController.changePreferred);
 
