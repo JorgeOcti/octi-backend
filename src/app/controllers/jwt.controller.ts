@@ -13,7 +13,7 @@ import Version from "../models/version.model";
 
 class JWTController {
 
-  private androidVersion: string = '2.3.8';
+  private androidVersion: string = '2.4.2';
   private iosVersion: string = '1.4.0';
 
   constructor() {

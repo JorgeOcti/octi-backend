@@ -12,7 +12,7 @@ const user_model_2 = require("../models/user.model");
 const version_model_1 = require("../models/version.model");
 class JWTController {
     constructor() {
-        this.androidVersion = '2.3.8';
+        this.androidVersion = '2.4.2';
         this.iosVersion = '1.4.0';
         this.login = this.login.bind(this);
         this.token = this.token.bind(this);
