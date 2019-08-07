@@ -119,6 +119,14 @@ class DashboardVinView extends React.Component<IPropsType, IStateType> {
     this.isMount = true;
   }
 
+  public componentDidMount(): void {
+    ($('input[name="daterange"]') as any).daterangepicker({
+      opens: 'left'
+    }, function (start: any, end: any, label: any) {
+      console.log("A new date selection was made: " + start.format('YYYY-MM-DD') + ' to ' + end.format('YYYY-MM-DD'));
+    });
+  }
+
   public componentDidCatch(error: Error, errorInfo: ErrorInfo) {
     this.setState({error});
     Raven.captureException(error, {
@@ -155,9 +163,14 @@ class DashboardVinView extends React.Component<IPropsType, IStateType> {
             </div>
             <div className={`box-body no-padding`}>
               <div className="row">
-                <div className="col-md-offset-8 col-md-4">
+                <div className="col-md-offset-5 col-md-3">
+                  <div className="container-date-picker" style={{padding: '10px 5px'}}>
+                    <input type="text" className="form-control input-sm" name="daterange" />
+                  </div>
+                </div>
+                <div className="col-md-4">
                   <div className="input-group input-group-sm"
-                       style={{padding: '10px'}}
+                       style={{padding: '10px 5px'}}
                   >
                     <input
                       type="text"
