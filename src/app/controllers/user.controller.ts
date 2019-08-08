@@ -65,7 +65,9 @@ class UserController {
             },
             team
           }, {
-            name: true
+            name: true,
+            lat: true,
+            lng: true,
           }),
           status: 200
         });

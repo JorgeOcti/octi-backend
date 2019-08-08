@@ -12,6 +12,7 @@ const region_admin_controller_1 = require("./controllers/admin/region.admin.cont
 const team_admin_controller_1 = require("./controllers/admin/team.admin.controller");
 const user_admin_controller_1 = require("./controllers/admin/user.admin.controller");
 const venue_admin_controller_1 = require("./controllers/admin/venue.admin.controller");
+const version_admin_controller_1 = require("./controllers/admin/version.admin.controller");
 const app_controller_1 = require("./controllers/app.controller");
 const car_controller_1 = require("./controllers/car.controller");
 const jwt_controller_1 = require("./controllers/jwt.controller");
@@ -32,6 +33,8 @@ appRouter.get('/cars/:id', middlewares_1.default.isLoggedIn, car_controller_1.de
 appRouter.get('/api/cars/:id', middlewares_1.default.isLoggedIn, car_controller_1.default.apiCarDetail);
 appRouter.get('/api/cars/', middlewares_1.default.isLoggedIn, car_controller_1.default.apiCars);
 appRouter.get('/api/revisions/', middlewares_1.default.isLoggedIn, car_controller_1.default.apiRevisions);
+appRouter.get('/api/damages/export/', middlewares_1.default.isLoggedIn, car_controller_1.default.apiDamagesExport);
+appRouter.get('/api/rotation/export/', middlewares_1.default.isLoggedIn, car_controller_1.default.apiRotationExport);
 // form detail
 appRouter.get('/api/participant/csv/', middlewares_1.default.isLoggedIn, car_controller_1.default.apiParticipantCSV);
 appRouter.get('/api/participant/:id/', middlewares_1.default.isLoggedIn, car_controller_1.default.apiParticipantDetail);
@@ -83,6 +86,11 @@ appRouter.get('/settings/alerts/', middlewares_1.default.isLoggedIn, alert_admin
 appRouter.get('/api/admin/alerts/', middlewares_1.default.isLoggedIn, alert_admin_controller_1.default.apiListAlerts);
 appRouter.post('/api/admin/alerts/', middlewares_1.default.isLoggedIn, alert_admin_controller_1.default.apiCreateAlert);
 appRouter.delete('/api/admin/alerts/:id', middlewares_1.default.isLoggedIn, alert_admin_controller_1.default.apiDeleteAlert);
+// versions
+appRouter.get('/settings/versions/', middlewares_1.default.isLoggedIn, alert_admin_controller_1.default.index);
+// api versions
+appRouter.get('/api/admin/versions/', middlewares_1.default.isLoggedIn, version_admin_controller_1.default.apiListVersions);
+appRouter.post('/api/admin/versions/', middlewares_1.default.isLoggedIn, version_admin_controller_1.default.apiCreateVersion);
 // validate vins
 appRouter.post('/api/v1/check-vin/', middlewares_1.default.isJWTAuthenticated, car_controller_1.default.checkVIN);
 // change password

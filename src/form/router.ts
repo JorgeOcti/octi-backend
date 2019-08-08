@@ -16,6 +16,7 @@ router.get('/api/dashboard/timing/', Middlewares.isLoggedIn, FormController.timi
 router.get('/api/dashboard/timing-derco/', Middlewares.isLoggedIn, FormController.timingDerco);
 router.get('/api/dashboard/timing/per-venue/', Middlewares.isLoggedIn, FormController.timingDashboardPerVenue);
 router.get('/api/dashboard/cleaning/', Middlewares.isLoggedIn, FormController.cleaningDashboard);
+router.get('/api/export/revisions/', Middlewares.isLoggedIn, FormController.apiRevisionsGapExport);
 
 router.put('/api/v1/forms/preferred/', Middlewares.isJWTAuthenticated, FormController.changePreferred);
 

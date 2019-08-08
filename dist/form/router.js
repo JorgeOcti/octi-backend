@@ -15,6 +15,7 @@ router.get('/api/dashboard/timing/', middlewares_1.default.isLoggedIn, form_cont
 router.get('/api/dashboard/timing-derco/', middlewares_1.default.isLoggedIn, form_controller_1.default.timingDerco);
 router.get('/api/dashboard/timing/per-venue/', middlewares_1.default.isLoggedIn, form_controller_1.default.timingDashboardPerVenue);
 router.get('/api/dashboard/cleaning/', middlewares_1.default.isLoggedIn, form_controller_1.default.cleaningDashboard);
+router.get('/api/export/revisions/', middlewares_1.default.isLoggedIn, form_controller_1.default.apiRevisionsGapExport);
 router.put('/api/v1/forms/preferred/', middlewares_1.default.isJWTAuthenticated, form_controller_1.default.changePreferred);
 router.post('/api/v1/forms/:id/upload-file/', middlewares_1.default.isJWTAuthenticated, form_controller_1.default.uploadFile);
 // detail information of the form

@@ -121,8 +121,9 @@ class VenuesListView extends React.Component<IPropsType, IStateType> {
               <table className="table table-andes table-striped">
                 <thead>
                   <tr>
-                    <th style={{width: '60%'}} className="middle">Nombre</th>
-                    <th style={{width: '10%'}} className="middle-center  hidden-xs">Distribuidor</th>
+                    <th style={{width: '50%'}} className="middle">Nombre</th>
+                    <th style={{width: '10%'}} className="middle-center hidden-xs">Ubicación</th>
+                    <th style={{width: '10%'}} className="middle-center hidden-xs">Distribuidor</th>
                     <th style={{width: '10%'}} className="middle">Asignaciones</th>
                     <th style={{width: '20%'}} className="middle hidden-xs">Modificado</th>
                     {
@@ -150,6 +151,7 @@ class VenuesListView extends React.Component<IPropsType, IStateType> {
                               venue.company ? <span className={'text-sm text-muted'}>{venue.company.name}</span> : null
                             }
                           </td>
+                          <td className="middle">{venue.lat}, {venue.lng}</td>
                           <td className="middle-center  hidden-xs">
                             {
                               venue.type === 'distributor' ?
@@ -212,6 +214,8 @@ class VenuesListView extends React.Component<IPropsType, IStateType> {
   private createVenue(): void {
     this.props.changeTempVenueAction({
       _id: '',
+      lat: 0,
+      lng: 0,
       name: '',
       type: 'receiver',
       sendTo: [],
@@ -244,6 +248,8 @@ class VenuesListView extends React.Component<IPropsType, IStateType> {
     this.props.changeTempVenueAction({
       _id: venue._id,
       name: venue.name,
+      lat: venue.lat,
+      lng: venue.lng,
       company: venue.company,
       region: venue.region,
       type: venue.type ? venue.type : 'receiver',

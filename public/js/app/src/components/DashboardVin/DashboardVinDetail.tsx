@@ -76,6 +76,7 @@ class DashboardVinDetail extends React.Component<IPropsType, IStateType> {
       });
       this.props.loadParticipantInCarAction(data);
     });
+
   }
 
   public printPdf(url: string, carLoading: string) {
@@ -102,6 +103,14 @@ class DashboardVinDetail extends React.Component<IPropsType, IStateType> {
     this.setState({error});
     Raven.captureException(error, {
       extra: errorInfo
+    });
+  }
+
+  public componentDidMount()
+  {
+    console.log("--did mount")
+    $('#datepicker').datepicker({
+      autoClose: true
     });
   }
 

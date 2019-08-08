@@ -1,5 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+const excel = require("exceljs");
+const tempfile = require("tempfile");
 const moment = require("moment");
 const mongoose = require("mongoose");
 const app_1 = require("../../app");
@@ -840,7 +842,7 @@ class CarController {
         }
     }
     async apiRevisions(req, res) {
-        const { page, pageSize, search } = req.query;
+        const { page, pageSize, search, from, to } = req.query;
         const { team } = req.user;
         // paginate options
         const options = {
@@ -926,6 +928,18 @@ class CarController {
                         }];
                 }
             }
+            // check if any date filter
+            if (from || to) {
+                const createdAtFilter = {};
+                if (from)
+                    createdAtFilter.$gte = moment(from, 'YYYY-MM-DD');
+                if (to)
+                    createdAtFilter.$lte = moment(to, 'YYYY-MM-DD');
+                // TODO. this is only querying for the last revisions
+                participantFilter.$and.push({
+                    createdAt: createdAtFilter
+                });
+            }
             carFilter.lastForm = {
                 $exists: true,
                 $ne: null,
@@ -952,10 +966,252 @@ class CarController {
         }
         catch (e) {
             /* istanbul ignore next */
+            console.log(e);
             if (e) {
                 res.status(500).json(e);
             }
         }
+    }
+    async apiDamagesExport(req, res) {
+        if (!req.user.hasPermission('exportDamages')) {
+            return res.status(403).json({
+                message: 'No tienes permisos para esta operación'
+            });
+        }
+        try {
+            const workbook = new excel.Workbook();
+            const worksheet = workbook.addWorksheet('Daños', {
+                properties: {
+                    defaultRowHeight: 30
+                }, pageSetup: {
+                    fitToPage: true, fitToHeight: 100, fitToWidth: 1
+                }
+            });
+            worksheet.autoFilter = { from: 'A1', to: 'F1' };
+            var columns = [{
+                    header: 'VIN', key: 'vin', width: 30
+                }, {
+                    header: 'Denominación', key: 'denomination', width: 30
+                }, {
+                    header: 'Color', key: 'color', width: 30
+                }, {
+                    header: 'Marca', key: 'brand', width: 30
+                }, {
+                    header: 'Sucursal', key: 'venue', width: 30
+                }, {
+                    header: 'Fecha', key: 'created_at', width: 30, style: { numFmt: 'dd/mm/yyyy hh:mm' }
+                }, {
+                    header: 'Usuario', key: 'user', width: 30
+                }, {
+                    header: 'Tiene daños', key: 'has_damages', width: 30
+                }, {
+                    header: 'Daños reportados', key: 'damages', width: 30
+                }];
+            columns.push({ header: 'Daño', key: 'damage', width: 30 });
+            columns.push({ header: 'Parte', key: 'part', width: 30 });
+            columns.push({ header: 'Tipo', key: 'kind', width: 30 });
+            columns.push({ header: 'Posición', key: 'position', width: 30 });
+            /* headers */
+            worksheet.columns = columns;
+            const periods = 12;
+            for (let i = periods; i >= 0; i--) {
+                const t0 = moment().subtract(i, 'weeks').startOf('week');
+                const t1 = moment().subtract(i, 'weeks').endOf('week');
+                const revisions = await participant_model_1.default.find({
+                    $and: [
+                        {
+                            createdAt: {
+                                $gte: t0,
+                                $lte: t1,
+                            },
+                        },
+                        {
+                            venue: {
+                                $in: req.user.venuesPermissions()
+                            },
+                        }
+                    ]
+                }, {
+                    createdAt: true,
+                    user: true,
+                    venue: true,
+                    car: true,
+                    'sections.answers.damages': true,
+                    'sections.answers.damagesSelected': true
+                }).populate([
+                    {
+                        path: 'user',
+                        select: ['firstName', 'lastName']
+                    },
+                    {
+                        path: 'car',
+                        select: ['vin', 'vin2', 'denomination', 'color', 'brand']
+                    },
+                    {
+                        path: 'venue',
+                        select: ['name']
+                    }
+                ]);
+                for (var revision of revisions) {
+                    var damages = [];
+                    for (var section of revision.sections) {
+                        for (const answer of section.answers) {
+                            for (const damage of answer.damagesSelected) {
+                                const kind = answer.damages.kinds.find((d) => d._id && damage.kind && d._id.toString() == damage.kind.toString());
+                                const part = answer.damages.parts.find((d) => d._id && damage.part && d._id.toString() == damage.part.toString());
+                                const position = answer.damages.positions.find((d) => d._id && damage.position && d._id.toString() == damage.position.toString());
+                                if (kind && part)
+                                    damages.push({ kind, part, position });
+                            }
+                        }
+                    }
+                    for (let j in damages) {
+                        var idx = parseInt(j) + 1;
+                        const row = {
+                            vin: revision.car.vin,
+                            denomination: revision.car.denomination,
+                            color: revision.car.color,
+                            brand: revision.car.brand,
+                            venue: revision.venue.name,
+                            created_at: revision.createdAt,
+                            user: `${revision.user.firstName} ${revision.user.lastName}`,
+                            damages: `${damages.length}`,
+                            has_damages: damages.length > 0 ? 'Sí' : 'No',
+                            damage: idx,
+                            position: damages[j].position ? damages[j].position.name : "-",
+                            kind: damages[j].kind.name,
+                            part: damages[j].part.name
+                        };
+                        worksheet.addRow(row);
+                    }
+                }
+            }
+            /* formats */
+            worksheet.getRow(1).eachCell((cell) => {
+                cell.font = {
+                    bold: true
+                };
+            });
+            // const idCol = worksheet.getColumn('id');
+            // idCol.eachCell({includeEmpty: true}, (cell) => {
+            //   cell.alignment = {vertical: 'middle', horizontal: 'center'};
+            // });
+            const tempFilePath = tempfile('.xlsx');
+            await workbook.xlsx.writeFile(tempFilePath);
+            res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+            res.setHeader('Content-Disposition', 'attachment; filename=usuarios-21-03-2019.xlsx');
+            return res.sendFile(tempFilePath);
+        }
+        catch (e) {
+            /* istanbul ignore next */
+            if (e) {
+                console.log(e);
+                res.status(500).json(e);
+            }
+        }
+    }
+    async apiRotationExport(req, res) {
+        if (!req.user.hasPermission('exportRotation')) {
+            return res.status(403).json({
+                message: 'No tienes permisos para esta operación'
+            });
+        }
+        try {
+            const { team } = req.user;
+            const workbook = new excel.Workbook();
+            const worksheet = workbook.addWorksheet('Rotación de unidades', {
+                properties: {
+                    defaultRowHeight: 30
+                }, pageSetup: {
+                    fitToPage: true, fitToHeight: 100, fitToWidth: 1
+                }
+            });
+            worksheet.autoFilter = { from: 'A1', to: 'F1' };
+            worksheet.columns = [{
+                    header: 'VIN', key: 'vin', width: 30
+                }, {
+                    header: 'Denominación', key: 'denomination', width: 30
+                }, {
+                    header: 'Color', key: 'color', width: 30
+                }, {
+                    header: 'Marca', key: 'brand', width: 30
+                }, {
+                    header: 'Tiempo inicio', key: 't0', width: 30
+                }, {
+                    header: 'Tiempo fin', key: 't1', width: 30
+                }, {
+                    header: 'Inventarios', key: 'inventories', width: 30
+                }, {
+                    header: 'Rotación', key: 'rotation', width: 30
+                }];
+            var i = 12;
+            while (--i > 0) {
+                const ti = moment().subtract(i * 15, 'day');
+                const tf = moment().subtract((i - 1) * 15, 'day');
+                console.log(ti.format("YYYY-MM-DD"), tf.format("YYYY-MM-DD"));
+                let cars = await car_model_1.default.find({
+                    team,
+                    lastForm: { $exists: true },
+                    createdAt: {
+                        $gte: ti,
+                        $lte: tf,
+                    }
+                }).populate({
+                    path: 'inventories',
+                    populate: {
+                        path: 'venue',
+                        model: 'Venue'
+                    }
+                }).populate({
+                    path: 'participants',
+                    populate: {
+                        path: 'venue',
+                        model: 'Venue'
+                    }
+                });
+                for (const car of cars) {
+                    const inventories = car.inventories.sort((i0, i1) => i0.createdAt > i1.createdAt);
+                    if (inventories.length == 0)
+                        continue;
+                    const n = inventories.length;
+                    const t0 = inventories[0].createdAt;
+                    const t1 = inventories[n - 1].createdAt;
+                    const row = {
+                        vin: car.vin,
+                        denomination: car.denomination,
+                        color: car.color,
+                        brand: car.brand,
+                        t0: t0,
+                        t1: t1,
+                        inventories: n,
+                        rotation: moment(t1).diff(moment(t0), 'days', true)
+                    };
+                    worksheet.addRow(row);
+                }
+            }
+            const tempFilePath = tempfile('.xlsx');
+            await workbook.xlsx.writeFile(tempFilePath);
+            res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+            res.setHeader('Content-Disposition', 'attachment; filename=usuarios-21-03-2019.xlsx');
+            return res.sendFile(tempFilePath);
+        }
+        catch (e) {
+            /* istanbul ignore next */
+            if (e) {
+                console.log(e);
+                res.status(500).json(e);
+            }
+        }
+    }
+    participantWithDamages(participant) {
+        return new Promise((resolve) => {
+            participant.hasDamages = participant.sections.some((section) => {
+                return section.answers.some((answer) => {
+                    return answer.damagesSelected.length > 0;
+                });
+            });
+            resolve(participant);
+        });
     }
     async apiCars(req, res) {
         const { page, pageSize, search } = req.query;

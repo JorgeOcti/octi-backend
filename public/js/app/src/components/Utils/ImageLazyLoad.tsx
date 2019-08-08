@@ -143,8 +143,9 @@ class ImageLazyLoad extends React.Component<IPropsType, IStateType> {
       eventRuning: true
     });
     // const modal = document.getElementById('andesModal');
-    const modal = ($('#andesModal').data('bs.modal') || {}).isShown;
+    let modal = ($('#andesModal').data('bs.modal') || {}).isShown;
     if (modal) {
+      modal = document.getElementById('andesModal');
       modal.addEventListener('scroll', this.isInViewport, false);
       modal.addEventListener('rezise', this.isInViewport, false);
       setTimeout(() => {
@@ -162,8 +163,9 @@ class ImageLazyLoad extends React.Component<IPropsType, IStateType> {
       eventRuning: false
     });
     // const modal = document.getElementById('andesModal');
-    const modal = ($('#andesModal').data('bs.modal') || {}).isShown;
+    let modal = ($('#andesModal').data('bs.modal') || {}).isShown;
     if (modal) {
+      modal = document.getElementById('andesModal');
       modal.removeEventListener('scroll', this.isInViewport, false);
       modal.removeEventListener('rezise', this.isInViewport, false);
     } else {

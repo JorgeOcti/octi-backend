@@ -22,6 +22,7 @@ import InventoryListView from './components/Inventory/InventoryListView';
 import LabelsListView from './components/Labels/LabelsListView';
 import UsersListView from './components/Users/UserListView';
 import VenuesListView from './components/Venues/VenuesListView';
+import VersionListView from './components/Versions/VersionListView';
 import {IWindow} from './interfaces/window';
 import configureStore, {history} from './store/configureStore';
 import {isIntenertExplorer} from './utils/common';
@@ -61,6 +62,7 @@ const App = () => (
                 <Route exact path="/settings/carriers/" component={ CarriersListView }/>
                 <Route exact path="/settings/companies/" component={ CompaniesListView }/>
                 <Route exact path="/settings/alerts/" component={ AlertsViews }/>
+                <Route exact path="/settings/versions/" component={ VersionListView }/>
                 <Route component={ NoMatch }/>
             </Switch>
         </ConnectedRouter>

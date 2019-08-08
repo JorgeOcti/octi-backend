@@ -10,6 +10,7 @@ import AdminRegionController from './controllers/admin/region.admin.controller';
 import AdminTeamsController from './controllers/admin/team.admin.controller';
 import AdminUsersController from './controllers/admin/user.admin.controller';
 import AdminVenuesController from './controllers/admin/venue.admin.controller';
+import AdminVersionsController from './controllers/admin/version.admin.controller';
 import AppController from './controllers/app.controller';
 import CarController from './controllers/car.controller';
 import JWTController from './controllers/jwt.controller';
@@ -35,6 +36,8 @@ appRouter.get('/cars/:id', Middlewares.isLoggedIn, CarController.vinDashboardDet
 appRouter.get('/api/cars/:id', Middlewares.isLoggedIn, CarController.apiCarDetail);
 appRouter.get('/api/cars/', Middlewares.isLoggedIn, CarController.apiCars);
 appRouter.get('/api/revisions/', Middlewares.isLoggedIn, CarController.apiRevisions);
+appRouter.get('/api/damages/export/', Middlewares.isLoggedIn, CarController.apiDamagesExport);
+appRouter.get('/api/rotation/export/', Middlewares.isLoggedIn, CarController.apiRotationExport);
 
 // form detail
 appRouter.get('/api/participant/csv/', Middlewares.isLoggedIn, CarController.apiParticipantCSV);
@@ -100,6 +103,13 @@ appRouter.get('/settings/alerts/', Middlewares.isLoggedIn, AdminAlertsController
 appRouter.get('/api/admin/alerts/', Middlewares.isLoggedIn, AdminAlertsController.apiListAlerts);
 appRouter.post('/api/admin/alerts/', Middlewares.isLoggedIn, AdminAlertsController.apiCreateAlert);
 appRouter.delete('/api/admin/alerts/:id', Middlewares.isLoggedIn, AdminAlertsController.apiDeleteAlert);
+
+// versions
+appRouter.get('/settings/versions/', Middlewares.isLoggedIn, AdminAlertsController.index);
+
+// api versions
+appRouter.get('/api/admin/versions/', Middlewares.isLoggedIn, AdminVersionsController.apiListVersions);
+appRouter.post('/api/admin/versions/', Middlewares.isLoggedIn, AdminVersionsController.apiCreateVersion);
 
 // validate vins
 appRouter.post('/api/v1/check-vin/', Middlewares.isJWTAuthenticated, CarController.checkVIN);

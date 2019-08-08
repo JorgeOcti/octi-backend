@@ -9,22 +9,29 @@ const logger_service_1 = require("../../services/logger.service");
 const general_utils_1 = require("../../utils/general.utils");
 const user_model_1 = require("../models/user.model");
 const user_model_2 = require("../models/user.model");
+const version_model_1 = require("../models/version.model");
 class JWTController {
     constructor() {
-        this.androidVersion = '2.3.7';
+        this.androidVersion = '2.4.2';
         this.iosVersion = '1.4.0';
         this.login = this.login.bind(this);
         this.token = this.token.bind(this);
         // this.isJWTAuthenticated = this.isJWTAuthenticated.bind(this);
         this.forgotPassword = this.forgotPassword.bind(this);
     }
-    login(req, res) {
+    async login(req, res) {
         logger_service_1.default.info(`login: {username: ${req.body.username}`);
         if (req.body.username === null || req.body.username === undefined || req.body.password === null || req.body.password === undefined) {
             logger_service_1.default.error(`login: Authentication failed. Invalid user or password.`);
             res.status(401).json({ message: 'Authentication failed. Invalid user or password.' });
         }
         else {
+            // last versions
+            const version = await version_model_1.default.findOne({}, ['ios', 'android'], {
+                sort: {
+                    createdAt: -1
+                }
+            });
             user_model_1.default
                 .findOne({
                 email: req.body.username
@@ -44,7 +51,7 @@ class JWTController {
             })
                 .populate([{
                     path: 'venue',
-                    select: ['name']
+                    select: ['name', 'lat', 'lng']
                 }, {
                     path: 'team',
                     select: ['name']
@@ -105,7 +112,9 @@ class JWTController {
                                     userForms: user.userForms,
                                     venue: {
                                         _id: general_utils_1.default.getObjectProperty(user.venue, '_id', null),
-                                        name: general_utils_1.default.getObjectProperty(user.venue, 'name', null)
+                                        name: general_utils_1.default.getObjectProperty(user.venue, 'name', null),
+                                        lat: general_utils_1.default.getObjectProperty(user.venue, 'lat', 0),
+                                        lng: general_utils_1.default.getObjectProperty(user.venue, 'lng', 0)
                                     },
                                     company: {
                                         _id: general_utils_1.default.getObjectProperty(user.company, '_id', null),
@@ -128,8 +137,8 @@ class JWTController {
                                         refreshToken: jwt.sign(userInfo, req.app.locals.secretKey, {
                                             expiresIn: '30 days'
                                         }),
-                                        iosVersion: this.iosVersion,
-                                        androidVersion: this.androidVersion,
+                                        iosVersion: version.ios,
+                                        androidVersion: version.android,
                                         user: userInfo
                                     },
                                     status: 200
