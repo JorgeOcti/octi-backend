@@ -34,6 +34,7 @@ appRouter.get('/api/cars/:id', middlewares_1.default.isLoggedIn, car_controller_
 appRouter.get('/api/cars/', middlewares_1.default.isLoggedIn, car_controller_1.default.apiCars);
 appRouter.get('/api/revisions/', middlewares_1.default.isLoggedIn, car_controller_1.default.apiRevisions);
 appRouter.get('/api/damages/export/', middlewares_1.default.isLoggedIn, car_controller_1.default.apiDamagesExport);
+appRouter.get('/api/rotation/export/', middlewares_1.default.isLoggedIn, car_controller_1.default.apiRotationExport);
 // form detail
 appRouter.get('/api/participant/csv/', middlewares_1.default.isLoggedIn, car_controller_1.default.apiParticipantCSV);
 appRouter.get('/api/participant/:id/', middlewares_1.default.isLoggedIn, car_controller_1.default.apiParticipantDetail);

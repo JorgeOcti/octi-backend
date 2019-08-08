@@ -210,9 +210,19 @@ export default class ApiService {
     );
   }
 
-  public getRevisions(page: number, search?: string): AxiosPromise {
+  public getRevisions(page: number, search?: string, from?: string, to?: string): AxiosPromise {
+    var query = `?page=${page}`;
+    if(search)
+      query += `&search=${search}`;
+
+    if(from)
+      query += `&from=${from}`;
+
+    if(to)
+      query += `&to=${to}`;
+
     return this.instance.get(
-      `/api/revisions/?page=${page}${search ? `&search=${search}` : ''}`, {
+      `/api/revisions/${query}`, {
         cancelToken: this.source.token
       }
     );

@@ -21,6 +21,8 @@ export interface IDashboardState {
   carsPerDate: any[];
   carsByVenue: any[];
   searchText: string;
+  searchFrom: string,
+  searchTo: string,
   participantPerRange: any[];
   loadingParticipant: string | null;
   totalCars: number;
@@ -147,7 +149,26 @@ export function changeSearchDashboardAction(searchText: string): IChangeSearchDa
   };
 }
 
-export function getRevisionsAction(nextPage: number, loading: boolean, search?: string) {
+interface IChangeRangeDashboard {
+  type: '/DASHBOARD/CHANGE_RANGE';
+  payload: {
+    from: string,
+    to: string,
+  };
+}
+
+export function changeRangeDashboardAction(from: string, to: string): IChangeRangeDashboard
+{
+  return {
+    type: '/DASHBOARD/CHANGE_RANGE',
+    payload: {
+      from,
+      to
+    }
+  }
+}
+
+export function getRevisionsAction(nextPage: number, loading: boolean, search?: string, from?: string, to?: string) {
   return (dispatch: Dispatch<DashboardReduxAction>, getState: () => {dashboard: IDashboardState}) => {
     const api: ApiService = new ApiService();
     const state = getState();
@@ -159,7 +180,8 @@ export function getRevisionsAction(nextPage: number, loading: boolean, search?: 
     if (nextPage) {
       dispatch(changePageAction(nextPage));
     }
-    api.getRevisions(page, state.dashboard.searchText)
+    const { searchText, searchFrom, searchTo } = state.dashboard;
+    api.getRevisions(page, searchText, searchFrom, searchTo)
       .then((response: AxiosResponse) => {
         dispatch(loadCarsAction(response.data.results, response.data.count, response.data.pages));
         if (loading) {
@@ -628,6 +650,7 @@ export type DashboardReduxAction =
   ICancelRequest |
   ILoadCars |
   IChangeSearchDashboard |
+  IChangeRangeDashboard |
   ILoadCar |
   ILoadParticipantsPerDate |
   ILoadingParticipant |

@@ -154,8 +154,7 @@ if (hasPermission(window.user, 'viewUser')) {
   });
 }
 
-//if (hasPermission(window.user, 'viewUser')) {
-if(true) {
+if(hasPermission(window.user, 'viewVersion')) {
   settingItems.push({
     id: '10.7',
     icon: 'fa-circle-o',

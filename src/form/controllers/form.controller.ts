@@ -1531,7 +1531,13 @@ class FormController {
 
   }
 
-  public async exportRevisionsDifference(req: IRequest, res: Response) : Promise<any> {
+  public async apiRevisionsGapExport(req: IRequest, res: Response) : Promise<any> {
+
+    if (!req.user.hasPermission('revisionsGap')) {
+      return res.status(403).json({
+        message: 'No tienes permisos para esta operación'
+      });
+    }
 
     try
     {
@@ -1660,7 +1666,7 @@ class FormController {
       const tempFilePath = tempfile('.xlsx');
       await workbook.xlsx.writeFile(tempFilePath);
       res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-      res.setHeader('Content-Disposition', `attachment; filename=revisiones-${moment().format('YYYY-MM-DD')}.xlsx');
+      res.setHeader('Content-Disposition', `attachment; filename=revisiones-${moment().format('YYYY-MM-DD')}.xlsx`);
       return res.sendFile(tempFilePath);
 
     }

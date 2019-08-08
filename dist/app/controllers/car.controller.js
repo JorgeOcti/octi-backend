@@ -842,7 +842,7 @@ class CarController {
         }
     }
     async apiRevisions(req, res) {
-        const { page, pageSize, search } = req.query;
+        const { page, pageSize, search, from, to } = req.query;
         const { team } = req.user;
         // paginate options
         const options = {
@@ -928,6 +928,18 @@ class CarController {
                         }];
                 }
             }
+            // check if any date filter
+            if (from || to) {
+                const createdAtFilter = {};
+                if (from)
+                    createdAtFilter.$gte = moment(from, 'YYYY-MM-DD');
+                if (to)
+                    createdAtFilter.$lte = moment(to, 'YYYY-MM-DD');
+                // TODO. this is only querying for the last revisions
+                participantFilter.$and.push({
+                    createdAt: createdAtFilter
+                });
+            }
             carFilter.lastForm = {
                 $exists: true,
                 $ne: null,
@@ -954,12 +966,18 @@ class CarController {
         }
         catch (e) {
             /* istanbul ignore next */
+            console.log(e);
             if (e) {
                 res.status(500).json(e);
             }
         }
     }
     async apiDamagesExport(req, res) {
+        if (!req.user.hasPermission('exportDamages')) {
+            return res.status(403).json({
+                message: 'No tienes permisos para esta operación'
+            });
+        }
         try {
             const workbook = new excel.Workbook();
             const worksheet = workbook.addWorksheet('Daños', {
@@ -989,12 +1007,10 @@ class CarController {
                 }, {
                     header: 'Daños reportados', key: 'damages', width: 30
                 }];
-            const maxDamages = 17;
-            for (var i = 0; i < maxDamages; i++) {
-                columns.push({ header: `Parte ${i + 1}`, key: `part_${i + 1}`, width: 30 });
-                columns.push({ header: `Tipo ${i + 1}`, key: `kind_${i + 1}`, width: 30 });
-                columns.push({ header: `Posición ${i + 1}`, key: `position_${i + 1}`, width: 30 });
-            }
+            columns.push({ header: 'Daño', key: 'damage', width: 30 });
+            columns.push({ header: 'Parte', key: 'part', width: 30 });
+            columns.push({ header: 'Tipo', key: 'kind', width: 30 });
+            columns.push({ header: 'Posición', key: 'position', width: 30 });
             /* headers */
             worksheet.columns = columns;
             const periods = 12;
@@ -1049,23 +1065,25 @@ class CarController {
                             }
                         }
                     }
-                    var row = {};
                     for (let j in damages) {
                         var idx = parseInt(j) + 1;
-                        row[`position_${idx}`] = damages[j].position ? damages[j].position.name : "-";
-                        row[`kind_${idx}`] = damages[j].kind.name;
-                        row[`part_${idx}`] = damages[j].part.name;
+                        const row = {
+                            vin: revision.car.vin,
+                            denomination: revision.car.denomination,
+                            color: revision.car.color,
+                            brand: revision.car.brand,
+                            venue: revision.venue.name,
+                            created_at: revision.createdAt,
+                            user: `${revision.user.firstName} ${revision.user.lastName}`,
+                            damages: `${damages.length}`,
+                            has_damages: damages.length > 0 ? 'Sí' : 'No',
+                            damage: idx,
+                            position: damages[j].position ? damages[j].position.name : "-",
+                            kind: damages[j].kind.name,
+                            part: damages[j].part.name
+                        };
+                        worksheet.addRow(row);
                     }
-                    row['vin'] = revision.car.vin;
-                    row['denomination'] = revision.car.denomination;
-                    row['color'] = revision.car.color;
-                    row['brand'] = revision.car.brand;
-                    row['venue'] = revision.venue.name;
-                    row['created_at'] = revision.createdAt;
-                    row['user'] = `${revision.user.firstName} ${revision.user.lastName}`;
-                    row['damages'] = `${damages.length}`;
-                    row['has_damages'] = damages.length > 0 ? 'Sí' : 'No';
-                    worksheet.addRow(row);
                 }
             }
             /* formats */
@@ -1087,6 +1105,100 @@ class CarController {
         catch (e) {
             /* istanbul ignore next */
             if (e) {
+                console.log(e);
+                res.status(500).json(e);
+            }
+        }
+    }
+    async apiRotationExport(req, res) {
+        if (!req.user.hasPermission('exportRotation')) {
+            return res.status(403).json({
+                message: 'No tienes permisos para esta operación'
+            });
+        }
+        try {
+            const { team } = req.user;
+            const workbook = new excel.Workbook();
+            const worksheet = workbook.addWorksheet('Rotación de unidades', {
+                properties: {
+                    defaultRowHeight: 30
+                }, pageSetup: {
+                    fitToPage: true, fitToHeight: 100, fitToWidth: 1
+                }
+            });
+            worksheet.autoFilter = { from: 'A1', to: 'F1' };
+            worksheet.columns = [{
+                    header: 'VIN', key: 'vin', width: 30
+                }, {
+                    header: 'Denominación', key: 'denomination', width: 30
+                }, {
+                    header: 'Color', key: 'color', width: 30
+                }, {
+                    header: 'Marca', key: 'brand', width: 30
+                }, {
+                    header: 'Tiempo inicio', key: 't0', width: 30
+                }, {
+                    header: 'Tiempo fin', key: 't1', width: 30
+                }, {
+                    header: 'Inventarios', key: 'inventories', width: 30
+                }, {
+                    header: 'Rotación', key: 'rotation', width: 30
+                }];
+            var i = 12;
+            while (--i > 0) {
+                const ti = moment().subtract(i * 15, 'day');
+                const tf = moment().subtract((i - 1) * 15, 'day');
+                console.log(ti.format("YYYY-MM-DD"), tf.format("YYYY-MM-DD"));
+                let cars = await car_model_1.default.find({
+                    team,
+                    lastForm: { $exists: true },
+                    createdAt: {
+                        $gte: ti,
+                        $lte: tf,
+                    }
+                }).populate({
+                    path: 'inventories',
+                    populate: {
+                        path: 'venue',
+                        model: 'Venue'
+                    }
+                }).populate({
+                    path: 'participants',
+                    populate: {
+                        path: 'venue',
+                        model: 'Venue'
+                    }
+                });
+                for (const car of cars) {
+                    const inventories = car.inventories.sort((i0, i1) => i0.createdAt > i1.createdAt);
+                    if (inventories.length == 0)
+                        continue;
+                    const n = inventories.length;
+                    const t0 = inventories[0].createdAt;
+                    const t1 = inventories[n - 1].createdAt;
+                    const row = {
+                        vin: car.vin,
+                        denomination: car.denomination,
+                        color: car.color,
+                        brand: car.brand,
+                        t0: t0,
+                        t1: t1,
+                        inventories: n,
+                        rotation: moment(t1).diff(moment(t0), 'days', true)
+                    };
+                    worksheet.addRow(row);
+                }
+            }
+            const tempFilePath = tempfile('.xlsx');
+            await workbook.xlsx.writeFile(tempFilePath);
+            res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+            res.setHeader('Content-Disposition', 'attachment; filename=usuarios-21-03-2019.xlsx');
+            return res.sendFile(tempFilePath);
+        }
+        catch (e) {
+            /* istanbul ignore next */
+            if (e) {
+                console.log(e);
                 res.status(500).json(e);
             }
         }

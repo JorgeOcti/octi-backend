@@ -9,7 +9,13 @@ import * as io from 'socket.io-client';
 import {debounce} from 'throttle-debounce';
 import {ICar} from '../../../../../../src/interfaces/car.interface';
 import {IParticipant} from '../../../../../../src/interfaces/participant.interface';
-import {changeSearchDashboardAction, DashboardReduxAction, getRevisionsAction, IDashboardState} from '../../actions/dashboard.actions';
+import {
+  changeRangeDashboardAction,
+  changeSearchDashboardAction,
+  DashboardReduxAction,
+  getRevisionsAction,
+  IDashboardState
+} from '../../actions/dashboard.actions';
 import AppContainer from '../../container/AppContainer';
 import {IWindow} from '../../interfaces/window';
 import Paginator from '../Utils/Paginator';
@@ -21,6 +27,8 @@ interface IPropsType extends RouteComponentProps<{ ticket: string }> {
   dashboard: IDashboardState;
   getRevisionsAction(page: number, loading: boolean, search?: string): void;
   changeSearchDashboardAction(searchText: string): DashboardReduxAction;
+  changeRangeDashboardAction(from: string, to: string): DashboardReduxAction;
+
 }
 
 interface IStateType {
@@ -120,10 +128,12 @@ class DashboardVinView extends React.Component<IPropsType, IStateType> {
   }
 
   public componentDidMount(): void {
+    let $this = this;
     ($('input[name="daterange"]') as any).daterangepicker({
       opens: 'left'
-    }, function (start: any, end: any, label: any) {
-      console.log("A new date selection was made: " + start.format('YYYY-MM-DD') + ' to ' + end.format('YYYY-MM-DD'));
+    }, function (from: any, to: any, label: any) {
+        $this.props.changeRangeDashboardAction(from.format('YYYY-MM-DD'), to.format('YYYY-MM-DD'));
+        $this.debounceOnChangeSearch();
     });
   }
 
@@ -320,6 +330,7 @@ const mapDispatchToProps = (dispatch: any ) => {
   return {
     dispatch,
     changeSearchDashboardAction: (searchText: string) => dispatch(changeSearchDashboardAction(searchText)),
+    changeRangeDashboardAction: (from: string, to: string) => dispatch(changeRangeDashboardAction(from, to)),
     getRevisionsAction: (page: number, loading: boolean, search?: string) => dispatch(getRevisionsAction(page, loading, search))
   };
 };
