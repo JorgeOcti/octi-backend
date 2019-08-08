@@ -7,7 +7,6 @@ import {RouteComponentProps} from 'react-router';
 import {Dispatch} from 'redux';
 import * as swal from 'sweetalert';
 import {IVersion} from '../../../../../../src/interfaces/version.interface';
-import {AlertReduxAction, deleteAlertAction} from '../../actions/alerts.actions';
 import {createVersionAction, IVersionsState, getVersionsAction} from '../../actions/versions.actions';
 import {loadDataAction, ModalReduxAction} from '../../actions/modal.actions';
 import AppContainer from '../../container/AppContainer';
@@ -17,11 +16,10 @@ import VersionFormView from './VersionFormView';
 
 interface IPropsType extends RouteComponentProps<{ ticket: string }> {
   versions: IVersionsState;
-  dispatch: Dispatch<AlertReduxAction>;
+  dispatch: Dispatch<ModalReduxAction>;
   loadDataAction(title: string, body: JSX.Element, footer: JSX.Element): ModalReduxAction;
   getVersionsAction(): ModalReduxAction;
 
-  deleteVersionAction(id: string): ModalReduxAction;
   createVersionAction(version: ITempVersion): ModalReduxAction;
 }
 
@@ -57,7 +55,6 @@ class VersionListView extends React.Component<IPropsType, IStateType> {
     this.addVersion = this.addVersion.bind(this);
     this.processAddAlert = this.processAddAlert.bind(this);
 
-    this.deleteVersion = this.deleteVersion.bind(this);
   }
 
   public componentWillMount() {
@@ -85,7 +82,7 @@ class VersionListView extends React.Component<IPropsType, IStateType> {
     const {versions, loading} = this.props.versions;
 
     return (
-      <AppContainer title="" cMenu="10" cSubMenu="10.1">
+      <AppContainer title="" cMenu="10" cSubMenu="10.7">
         <section className="content">
           <div className="box">
             <div className="box-header with-border">
@@ -103,7 +100,6 @@ class VersionListView extends React.Component<IPropsType, IStateType> {
                     <th className="middle text-center">Android Version</th>
                     <th className="middle">Creada por</th>
                     <th className="middle">Fecha creación</th>
-                    <th className="middle width-10" />
                   </tr>
                 </thead>
                 <tbody>
@@ -125,7 +121,6 @@ class VersionListView extends React.Component<IPropsType, IStateType> {
                             }
                           </td>
                           <td className="middle">{moment(version.createdAt).format('LLL')}</td>
-                          <td className="text-red pointer" onClick={() => this.deleteVersion(version)}><i className="fa fa-minus-circle"/></td>
                         </tr>
                       );
                     }) : <tr>
@@ -146,26 +141,6 @@ class VersionListView extends React.Component<IPropsType, IStateType> {
         </section>
       </AppContainer>
     );
-  }
-
-  private deleteVersion(version: IVersion) {
-    // ask if you are sure that you are going to delete the alert?
-    swal({
-      title: '¿Estás seguro?',
-      text: `Vas a eliminar la alerta ${alert.name}`,
-      icon: 'warning',
-      dangerMode: true,
-      buttons: {
-        cancel: 'Cancelar' as any,
-        confirm: {
-          text: 'Sí'
-        }
-      }
-    }).then((willDelete) => {
-      if (willDelete) {
-        this.props.deleteVersionAction(version._id);
-      }
-    });
   }
 
   private addVersion() {
@@ -218,7 +193,6 @@ const mapDispatchToProps = (dispatch: any ) => {
     dispatch,
     loadDataAction: (title: string, body: JSX.Element, footer: JSX.Element) => dispatch(loadDataAction(title, body, footer)),
     getVersionsAction: () => dispatch(getVersionsAction()),
-    deleteAlertAction: (id: string) => dispatch(deleteAlertAction(id)),
     createVersionAction: (version: ITempVersion) => dispatch(createVersionAction(version))
   };
 };

@@ -2,8 +2,6 @@ import {Response} from 'express';
 import {IRequest} from '../../../interfaces/global.interface';
 import Alert from '../../models/alert.model';
 import Version from "../../models/version.model";
-import {PaginateOptions, PaginateResult} from "mongoose";
-import Company, {ICompanyModel} from "../../models/company.model";
 
 class AdminVersionController {
 
@@ -60,8 +58,7 @@ class AdminVersionController {
   public async apiCreateVersion(req: IRequest, res: Response) {
     const {description, ios, android} = req.body;
 
-    //if (!req.user.hasPermission('viewCar')) {
-    if(false) {
+    if(!req.user.hasPermission('viewVersion')) {
       return res.status(403).json({
         message: 'No tienes permisos para esta operación'
       });
@@ -69,20 +66,18 @@ class AdminVersionController {
 
     try {
       if (description && ios && android) {
-        const version = await Version
-          .create({
+        const version = await new Version({
             description,
             ios,
             android,
             createdBy: req.user
-          });
+          }).save();
         res.status(201).json({
           message: 'Versión agregada satisfactoriamente',
-          version: await Version
-            .findOne({
-              _id: version._id,
-              //team
-            })
+          version: await version.populate([{
+            path: 'createdBy',
+            select: ['_id', 'firstName', 'lastName']
+          }])
         });
       } else {
         /* istanbul ignore next */

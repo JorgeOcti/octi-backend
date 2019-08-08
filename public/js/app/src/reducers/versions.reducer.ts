@@ -23,13 +23,6 @@ export function versionsReducer(state = initialState, action: VersionReduxAction
         ...state,
         source: action.payload.source
       };
-      /*
-    case '/ALERTS/DELETE':
-      return {
-        ...state,
-        alerts: state.alerts.filter((alert) => alert._id !== action.payload.id)
-      };
-      */
     case '/VERSIONS/CREATE':
       return {
         ...state,

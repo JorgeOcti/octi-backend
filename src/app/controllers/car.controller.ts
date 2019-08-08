@@ -351,7 +351,6 @@ class CarController {
   public async apiParticipantsPerDate(req: IRequest, res: Response) {
 
     const {company, team} = req.user;
-    console.log("company", company);
     try {
       const participantPerDay = await ParticipantModel
         .aggregate([{

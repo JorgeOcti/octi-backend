@@ -49,27 +49,25 @@ class AdminVersionController {
     }
     async apiCreateVersion(req, res) {
         const { description, ios, android } = req.body;
-        //if (!req.user.hasPermission('viewCar')) {
-        if (false) {
+        if (!req.user.hasPermission('viewVersion')) {
             return res.status(403).json({
                 message: 'No tienes permisos para esta operación'
             });
         }
         try {
             if (description && ios && android) {
-                const version = await version_model_1.default
-                    .create({
+                const version = await new version_model_1.default({
                     description,
                     ios,
                     android,
                     createdBy: req.user
-                });
+                }).save();
                 res.status(201).json({
                     message: 'Versión agregada satisfactoriamente',
-                    version: await version_model_1.default
-                        .findOne({
-                        _id: version._id,
-                    })
+                    version: await version.populate([{
+                            path: 'createdBy',
+                            select: ['_id', 'firstName', 'lastName']
+                        }])
                 });
             }
             else {

@@ -49,43 +49,6 @@ export function isLoadingAction(loading: boolean): IIsLoading {
   };
 }
 
-interface IDeleteAlert {
-  type: '/ALERTS/DELETE';
-  payload: {
-    id: string;
-  };
-}
-
-export function deleteAlert(id: string): IDeleteAlert {
-  return {
-    type: '/ALERTS/DELETE',
-    payload: {
-      id
-    }
-  };
-}
-
-export function deleteAlertAction(id: string) {
-  return (dispatch: Dispatch<VersionReduxAction>) => {
-    const api: ApiService = new ApiService();
-    api.deleteAlert(id)
-      .then((response: AxiosResponse) => {
-        const data = response.data;
-        swal(response.data.message, {
-          icon: 'success'
-        });
-        $(`#alert-${id}`)
-          .addClass('deleted-item');
-        setTimeout(() => {
-          dispatch(deleteAlert(data.id));
-        }, 500);
-      })
-      .catch((err: AxiosError) => {
-        api.errorHandler(err);
-      });
-  };
-}
-
 interface ICreateVersion {
   type: '/VERSIONS/CREATE';
   payload: {
@@ -163,5 +126,4 @@ export type VersionReduxAction =
   ICancelRequest |
   IIsLoading |
   ILoadVersions |
-  IDeleteAlert |
   ICreateVersion;

@@ -1695,6 +1695,10 @@ class FormController {
       }, {
         header: 'Gas despacho', key: 'p0Gas', width: 30
       }, {
+        header: 'Pintura despacho', key: 'p0Paint', width: 30
+      }, {
+        header: 'Lata despacho', key: 'p0SheetMetal', width: 30
+      }, {
         header: 'Fecha recepción', key: 'p1CreatedAt', width: 30
       }, {
         header: 'Sucursal recepción', key: 'p1Venue', width: 30
@@ -1702,6 +1706,10 @@ class FormController {
         header: 'Calificación recepción', key: 'p1Qualification', width: 30
       }, {
         header: 'Gas recepción', key: 'p1Gas', width: 30
+      }, {
+        header: 'Pintura recepción', key: 'p1Paint', width: 30
+      }, {
+        header: 'Lata recepción', key: 'p1SheetMetal', width: 30
       }, ];
 
       worksheet.columns = columns;
@@ -1726,6 +1734,8 @@ class FormController {
       let f1 = '5b1ae5799ebea419025b3e41';
 
       let gasQuestion = '5b64b543cee543c2afda41bd';
+      let paintQuestion = '5b64b1f6cc5e14f59724f8d1';
+      let sheetMetalQuestion = '5b64b22245f69e40fc5713fb';
 
       for(const car of cars)
       {
@@ -1765,6 +1775,31 @@ class FormController {
           choice1Gas = answer1Gas.scale.choices.find((c) => c._id.toString() == answer1Gas.answer.toString())
         }
 
+        var choice0Paint = null;
+        var choice1Paint = null;
+        if(p0) {
+          const answer0Paint = p0.sections.map((s) => s.answers).reduce((x, y) => [...x, ...y], []).find((a) => a._id.toString() == paintQuestion);
+          choice0Paint = answer0Paint.scale.choices.find((c) => c._id.toString() == answer0Paint.answer.toString())
+        }
+
+        if(p1) {
+          const answer1Paint = p1.sections.map((s) => s.answers).reduce((x, y) => [...x, ...y], []).find((a) => a._id.toString() == paintQuestion);
+          choice1Paint = answer1Paint.scale.choices.find((c) => c._id.toString() == answer1Paint.answer.toString())
+        }
+
+        // lata
+        var choice0SheetMetal = null;
+        var choice1SheetMetal = null;
+        if(p0) {
+          const answer0SheetMetal = p0.sections.map((s) => s.answers).reduce((x, y) => [...x, ...y], []).find((a) => a._id.toString() == sheetMetalQuestion);
+          choice0SheetMetal = answer0SheetMetal.scale.choices.find((c) => c._id.toString() == answer0SheetMetal.answer.toString())
+        }
+
+        if(p1) {
+          const answer1SheetMetal = p1.sections.map((s) => s.answers).reduce((x, y) => [...x, ...y], []).find((a) => a._id.toString() == sheetMetalQuestion);
+          choice1SheetMetal = answer1SheetMetal.scale.choices.find((c) => c._id.toString() == answer1SheetMetal.answer.toString())
+        }
+
         const row = {
           vin: car.vin,
           brand: car.brand,
@@ -1773,11 +1808,15 @@ class FormController {
           p0Venue: p0 ? p0.venue.name : '-',
           p0Qualification: p0 ? p0.qualification : '-',
           p0Gas: choice0Gas ? choice0Gas.choice : '-',
+          p0Paint: choice0Paint ? choice0Paint.choice : '-',
+          p0SheetMetal: choice0SheetMetal ? choice0SheetMetal.choice : '-',
 
           p1CreatedAt: p1 ? p1.createdAt : '-',
           p1Venue: p1 ? p1.venue.name : '-',
           p1Qualification: p1 ? p1.qualification : '-',
           p1Gas: choice1Gas ? choice1Gas.choice : '-',
+          p1Paint: choice1Paint ? choice1Paint.choice : '-',
+          p1SheetMetal: choice1SheetMetal ? choice1SheetMetal.choice : '-',
         }
 
         worksheet.addRow(row);
@@ -1794,6 +1833,7 @@ class FormController {
       // idCol.eachCell({includeEmpty: true}, (cell) => {
       //   cell.alignment = {vertical: 'middle', horizontal: 'center'};
       // });
+
       const tempFilePath = tempfile('.xlsx');
       await workbook.xlsx.writeFile(tempFilePath);
       res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');

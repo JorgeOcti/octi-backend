@@ -106,14 +106,6 @@ class DashboardVinDetail extends React.Component<IPropsType, IStateType> {
     });
   }
 
-  public componentDidMount()
-  {
-    console.log("--did mount")
-    $('#datepicker').datepicker({
-      autoClose: true
-    });
-  }
-
   public componentWillUnmount() {
     // cancel request if component is inmounted
     if (this.props.dashboard.source) {

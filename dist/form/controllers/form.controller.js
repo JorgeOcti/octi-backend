@@ -1215,6 +1215,114 @@ class FormController {
             });
         }
     }
+    async timingDerco(req, res) {
+        try {
+            const { team } = req.user;
+            let userObject = await user_model_1.default.findOne({ _id: req.user._id });
+            if (userObject.team == '5bf2de34caf8ef7096105cda') // Derco
+             {
+                const total = 2;
+                // el lead time supuesto es de 48 horas
+                const threshold = 60 * 24 * 3;
+                // despacho:  5b0487db835536612bab1b61
+                // recepcion: 5b1ae5799ebea419025b3e41
+                let reception = await form_model_1.default.findOne({ _id: "5b0487db835536612bab1b61" });
+                let cars = await car_model_1.default.find({
+                    team,
+                    lastForm: { $ne: null },
+                });
+                let carsDict = {};
+                for (const car of cars)
+                    carsDict[car._id.toString()] = car;
+                var receptions = [];
+                for (var i = 0; i < total; i++) {
+                    const aux = await participant_model_1.default.find({
+                        team,
+                        form: reception._id,
+                        createdAt: {
+                            $gt: moment().subtract((i + 1) * 30, 'days').toDate(),
+                            $lt: moment().subtract(i * 30, 'days').toDate()
+                        }
+                    }, ['car', 'createdAt'], {
+                        sort: {
+                            createdAt: -1
+                        }
+                    });
+                    console.log("found. ", aux.length);
+                    receptions = receptions.concat(aux);
+                }
+                const workbook = new excel.Workbook();
+                const worksheet = workbook.addWorksheet('Revisiones', {
+                    properties: {
+                        defaultRowHeight: 30
+                    }, pageSetup: {
+                        fitToPage: true, fitToHeight: 100, fitToWidth: 1
+                    }
+                });
+                worksheet.columns = [{
+                        header: 'VIN', key: 'vin', width: 30
+                    }, {
+                        header: 'Marca', key: 'brand', width: 30
+                    }, {
+                        header: 'Fecha carga', key: 'createdAt', width: 30
+                    }, {
+                        header: 'Mes carga', key: 'createdAtMonth', width: 30
+                    }, {
+                        header: 'Fecha revisión', key: 'checkedAt', width: 30
+                    }, {
+                        header: 'Mes revisión', key: 'checkedAtMonth', width: 30
+                    }, {
+                        header: 'Delta tiempo', key: 'leadtime', width: 20
+                    }, {
+                        header: 'On time', key: 'ontime', width: 20
+                    }
+                ];
+                for (const reception of receptions) {
+                    let carID = reception.car.toString();
+                    if (carID in carsDict) {
+                        const car = carsDict[carID];
+                        const t0 = moment(car.createdAt).subtract(4, 'hours');
+                        const t1 = moment(reception.createdAt).subtract(4, 'hours');
+                        const hour = parseInt(t0.format('HH'));
+                        if (hour >= 20 || hour <= 2)
+                            continue;
+                        const dm = t1.diff(t0, 'minutes');
+                        if (dm > 10) {
+                            const ontime = dm < threshold ? 1 : 0;
+                            worksheet.addRow({
+                                vin: car.vin,
+                                brand: car.brand,
+                                createdAt: t0.format('YYYY-MM-DD HH:mm:ss'),
+                                createdAtMonth: t0.format('MM'),
+                                checkedAt: t1.format('YYYY-MM-DD HH:mm:ss'),
+                                checkedAtMonth: t1.format('MM'),
+                                leadtime: dm,
+                                ontime: ontime
+                            });
+                        }
+                    }
+                }
+                const tempFilePath = tempfile('.xlsx');
+                await workbook.xlsx.writeFile(tempFilePath);
+                res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+                res.setHeader('Content-Disposition', 'attachment; filename=revisiones-03-07-2019.xlsx');
+                return res.sendFile(tempFilePath);
+            }
+        }
+        catch (e) {
+            Raven.captureException(e, { req });
+            /* istanbul ignore next */
+            logger_service_1.default.error(`dashboard timing derco: Async Error.`);
+            /* istanbul ignore next */
+            logger_service_1.default.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
+            /* istanbul ignore next */
+            logger_service_1.default.error(e);
+            res.status(400).json({
+                message: 'Ha ocurrido un error',
+                status: 400
+            });
+        }
+    }
     async timingDashboard(req, res) {
         try {
             const { team } = req.user;
@@ -1223,7 +1331,7 @@ class FormController {
              {
                 const total = 6;
                 // el lead time supuesto es de 48 horas
-                const threshold = 60 * 24 * 2;
+                const threshold = 60 * 24 * 7;
                 let reception = await form_model_1.default.findOne({ _id: "5b1ae5799ebea419025b3e41" });
                 let cars = await car_model_1.default.find({
                     team,
@@ -1487,6 +1595,10 @@ class FormController {
                 }, {
                     header: 'Gas despacho', key: 'p0Gas', width: 30
                 }, {
+                    header: 'Pintura despacho', key: 'p0Paint', width: 30
+                }, {
+                    header: 'Lata despacho', key: 'p0SheetMetal', width: 30
+                }, {
                     header: 'Fecha recepción', key: 'p1CreatedAt', width: 30
                 }, {
                     header: 'Sucursal recepción', key: 'p1Venue', width: 30
@@ -1494,6 +1606,10 @@ class FormController {
                     header: 'Calificación recepción', key: 'p1Qualification', width: 30
                 }, {
                     header: 'Gas recepción', key: 'p1Gas', width: 30
+                }, {
+                    header: 'Pintura recepción', key: 'p1Paint', width: 30
+                }, {
+                    header: 'Lata recepción', key: 'p1SheetMetal', width: 30
                 },];
             worksheet.columns = columns;
             const { team } = req.user;
@@ -1514,6 +1630,8 @@ class FormController {
             let f0 = '5b0487db835536612bab1b61';
             let f1 = '5b1ae5799ebea419025b3e41';
             let gasQuestion = '5b64b543cee543c2afda41bd';
+            let paintQuestion = '5b64b1f6cc5e14f59724f8d1';
+            let sheetMetalQuestion = '5b64b22245f69e40fc5713fb';
             for (const car of cars) {
                 if (car.participants.length == 0)
                     continue;
@@ -1541,6 +1659,27 @@ class FormController {
                     const answer1Gas = p1.sections.map((s) => s.answers).reduce((x, y) => [...x, ...y], []).find((a) => a._id.toString() == gasQuestion);
                     choice1Gas = answer1Gas.scale.choices.find((c) => c._id.toString() == answer1Gas.answer.toString());
                 }
+                var choice0Paint = null;
+                var choice1Paint = null;
+                if (p0) {
+                    const answer0Paint = p0.sections.map((s) => s.answers).reduce((x, y) => [...x, ...y], []).find((a) => a._id.toString() == paintQuestion);
+                    choice0Paint = answer0Paint.scale.choices.find((c) => c._id.toString() == answer0Paint.answer.toString());
+                }
+                if (p1) {
+                    const answer1Paint = p1.sections.map((s) => s.answers).reduce((x, y) => [...x, ...y], []).find((a) => a._id.toString() == paintQuestion);
+                    choice1Paint = answer1Paint.scale.choices.find((c) => c._id.toString() == answer1Paint.answer.toString());
+                }
+                // lata
+                var choice0SheetMetal = null;
+                var choice1SheetMetal = null;
+                if (p0) {
+                    const answer0SheetMetal = p0.sections.map((s) => s.answers).reduce((x, y) => [...x, ...y], []).find((a) => a._id.toString() == sheetMetalQuestion);
+                    choice0SheetMetal = answer0SheetMetal.scale.choices.find((c) => c._id.toString() == answer0SheetMetal.answer.toString());
+                }
+                if (p1) {
+                    const answer1SheetMetal = p1.sections.map((s) => s.answers).reduce((x, y) => [...x, ...y], []).find((a) => a._id.toString() == sheetMetalQuestion);
+                    choice1SheetMetal = answer1SheetMetal.scale.choices.find((c) => c._id.toString() == answer1SheetMetal.answer.toString());
+                }
                 const row = {
                     vin: car.vin,
                     brand: car.brand,
@@ -1548,10 +1687,14 @@ class FormController {
                     p0Venue: p0 ? p0.venue.name : '-',
                     p0Qualification: p0 ? p0.qualification : '-',
                     p0Gas: choice0Gas ? choice0Gas.choice : '-',
+                    p0Paint: choice0Paint ? choice0Paint.choice : '-',
+                    p0SheetMetal: choice0SheetMetal ? choice0SheetMetal.choice : '-',
                     p1CreatedAt: p1 ? p1.createdAt : '-',
                     p1Venue: p1 ? p1.venue.name : '-',
                     p1Qualification: p1 ? p1.qualification : '-',
                     p1Gas: choice1Gas ? choice1Gas.choice : '-',
+                    p1Paint: choice1Paint ? choice1Paint.choice : '-',
+                    p1SheetMetal: choice1SheetMetal ? choice1SheetMetal.choice : '-',
                 };
                 worksheet.addRow(row);
             }
