@@ -920,19 +920,23 @@ class CarController {
                     });
                 }
                 else {
-                    participantFilter.car = {
-                        $and: [{
-                                $or: [{
-                                        vin: {
-                                            $regex: searchText
-                                        }
-                                    }, {
-                                        brand: {
-                                            $regex: searchText
-                                        }
-                                    }]
-                            }]
-                    };
+                    const searchCar = await car_model_1.default.find({
+                        $or: [{
+                                vin: {
+                                    $regex: searchText
+                                }
+                            }, {
+                                brand: {
+                                    $regex: searchText
+                                }
+                            }],
+                        team
+                    }, { _id: true });
+                    participantFilter.$and.push({
+                        car: {
+                            $in: searchCar
+                        }
+                    });
                 }
             }
             // check if any date filter

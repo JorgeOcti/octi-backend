@@ -914,19 +914,23 @@ class CarController {
             }
           });
         } else {
-          participantFilter.car = {
-            $and: [{
-              $or: [{
-                vin: {
-                  $regex: searchText
-                }
-              }, {
-                brand: {
-                  $regex: searchText
-                }
-              }]
-            }]
-          }
+          const searchCar = await CarModel.find({
+            $or: [{
+              vin: {
+                $regex: searchText
+              }
+            }, {
+              brand: {
+                $regex: searchText
+              }
+            }],
+            team
+          }, {_id: true});
+          participantFilter.$and.push({
+            car: {
+              $in: searchCar
+            }
+          })
         }
       }
 

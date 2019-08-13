@@ -105,6 +105,9 @@ class DashboardDamagesView extends React.Component<IPropsType, IStateType> {
               <div className="box">
                 <div className="box-header with-border"><h3 className="box-title">Dashboard de daños</h3>
                   <div className="box-tools pull-right">
+                    <button className="btn btn-sm btn-primary hidden-xs hidden-sm">
+                      <i className="fa fa-fw fa-download"></i> Descargar reporte
+                    </button>
                   </div>
                 </div>
                 <div className="box-body">
