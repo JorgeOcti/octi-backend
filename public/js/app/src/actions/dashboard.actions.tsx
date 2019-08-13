@@ -14,7 +14,7 @@ import {loadDataAction} from './modal.actions';
 export interface IDashboardState {
   loading: boolean;
   source: CancelTokenSource | null;
-  cars: any[];
+  participants: any[];
   car: ICar | null;
   carEvents: any;
   participantsPerDate: any[];
@@ -65,20 +65,20 @@ export function cancelRequestAction(source: CancelTokenSource): ICancelRequest {
   };
 }
 
-interface ILoadCars {
-  type: '/DASHBOARD/LOAD_CARS';
+interface ILoadRevisions {
+  type: '/DASHBOARD/LOAD_PARTICIPANTS';
   payload: {
-    cars: ICar[];
+    participants: IParticipant[];
     count: number;
     pages: number
   };
 }
 
-export function loadCarsAction(cars: ICar[], count: number, pages: number): ILoadCars {
+export function loadCarsAction(participants: IParticipant[], count: number, pages: number): ILoadRevisions {
   return {
-    type: '/DASHBOARD/LOAD_CARS',
+    type: '/DASHBOARD/LOAD_PARTICIPANTS',
     payload: {
-      cars,
+      participants,
       count,
       pages
     }

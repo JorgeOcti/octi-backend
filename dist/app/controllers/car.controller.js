@@ -848,24 +848,30 @@ class CarController {
         // paginate options
         const options = {
             select: {
-                vin: true,
-                brand: true,
-                denomination: true,
-                color: true
+                createdAt: true,
+                number: true,
+                car: true,
+                venue: true,
+                user: true,
+                sections: true,
+                qualification: true,
             },
             populate: [{
-                    path: 'lastForm',
-                    select: ['number', 'createdAt', 'user', 'qualification', 'venue', 'sections', 'sections.answers.damagesSelected'],
-                    populate: [{
-                            path: 'user',
-                            select: ['firstName', 'lastName']
-                        }, {
-                            path: 'venue',
-                            select: ['name']
-                        }]
+                    path: 'car',
+                    select: ['vin', 'brand', 'denomination', 'color', 'lastForm'],
+                    populate: {
+                        path: 'lastForm',
+                        select: ['createdAt']
+                    }
+                }, {
+                    path: 'user',
+                    select: ['firstName', 'lastName']
+                }, {
+                    path: 'venue',
+                    select: ['name']
                 }],
             sort: {
-                lastForm: -1
+                createdAt: -1
             },
             page: parseInt(page ? page : 1, 10),
             limit: parseInt(pageSize ? pageSize : 20, 10)
@@ -875,11 +881,9 @@ class CarController {
                 $and: [{
                         venue: {
                             $in: req.user.venuesPermissions()
-                        }
+                        },
+                        team
                     }]
-            };
-            const carFilter = {
-                team
             };
             if (search && search.length) {
                 const searchText = new RegExp(search, 'i');
@@ -916,17 +920,19 @@ class CarController {
                     });
                 }
                 else {
-                    carFilter.$and = [{
-                            $or: [{
-                                    vin: {
-                                        $regex: searchText
-                                    }
-                                }, {
-                                    brand: {
-                                        $regex: searchText
-                                    }
-                                }]
-                        }];
+                    participantFilter.car = {
+                        $and: [{
+                                $or: [{
+                                        vin: {
+                                            $regex: searchText
+                                        }
+                                    }, {
+                                        brand: {
+                                            $regex: searchText
+                                        }
+                                    }]
+                            }]
+                    };
                 }
             }
             // check if any date filter
@@ -941,14 +947,9 @@ class CarController {
                     createdAt: createdAtFilter
                 });
             }
-            carFilter.lastForm = {
-                $exists: true,
-                $ne: null,
-                $in: await participant_model_1.default.find(participantFilter, { _id: true })
-            };
-            const cars = await this.getRevisions(carFilter, options, search);
+            const revisions = await this.getRevisions(participantFilter, options, search);
             // validate exist page
-            if (options.page && cars.pages && cars.pages < options.page) {
+            if (options.page && revisions.pages && revisions.pages < options.page) {
                 res.status(400).json({
                     message: 'La página solicitada no existe.',
                     status: 200
@@ -956,11 +957,11 @@ class CarController {
             }
             else {
                 res.json({
-                    count: cars.total,
-                    pages: cars.pages,
-                    hasPrevious: options.page && options.page > 1 && cars.pages && cars.pages >= options.page,
-                    hasNext: options.page && cars.pages && cars.pages > options.page,
-                    results: cars.docs,
+                    count: revisions.total,
+                    pages: revisions.pages,
+                    hasPrevious: options.page && options.page > 1 && revisions.pages && revisions.pages >= options.page,
+                    hasNext: options.page && revisions.pages && revisions.pages > options.page,
+                    results: revisions.docs,
                     status: 200
                 });
             }
@@ -1280,7 +1281,7 @@ class CarController {
     }
     getRevisions(filters, options, search) {
         return new Promise((resolve, reject) => {
-            car_model_1.default.paginate(filters, options, (err, result) => {
+            participant_model_1.default.paginate(filters, options, (err, result) => {
                 if (err) {
                     /* istanbul ignore next */
                     return reject(err);

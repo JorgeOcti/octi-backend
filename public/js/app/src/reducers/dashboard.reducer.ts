@@ -3,7 +3,7 @@ import {DashboardReduxAction, IDashboardState} from '../actions/dashboard.action
 const initialState: IDashboardState = {
   loading: true,
   source: null,
-  cars: [],
+  participants: [],
   car: null,
   carEvents: {} ,
   participantsPerDate: [],
@@ -29,10 +29,10 @@ export function dashboardReducer(state = initialState, action: DashboardReduxAct
         ...state,
         loading: action.payload.loading
       };
-    case '/DASHBOARD/LOAD_CARS':
+    case '/DASHBOARD/LOAD_PARTICIPANTS':
       return {
         ...state,
-        cars: action.payload.cars,
+        participants: action.payload.participants,
         pagination: {
           ...state.pagination,
           pages: action.payload.pages,

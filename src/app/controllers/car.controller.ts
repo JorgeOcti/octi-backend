@@ -89,13 +89,13 @@ class CarController {
           $exists: true,
           $ne: null,
           $in: await ParticipantModel.find(
-          {
-            venue: {
-              $in: req.user.venuesPermissions()
-            }
-          }, {
-            _id: true
-          })
+            {
+              venue: {
+                $in: req.user.venuesPermissions()
+              }
+            }, {
+              _id: true
+            })
         },
         team
       });
@@ -138,7 +138,7 @@ class CarController {
     if (inventory) {
       try {
         const inventoryStatus = await InventoryModel.findOne({
-            _id: inventory
+          _id: inventory
         }, {status: true});
         if (inventoryStatus && inventoryStatus.status !== ChoicesStatusInventory.inProcess) {
           logger.error(`checkVIN: Este inventario ya no se encuentra disponible.`);
@@ -156,7 +156,7 @@ class CarController {
           }
           if (vin2) {
             if (vin2[0] === '0') {
-              const vinRegex = new RegExp( vin2.substr(vin2.length - 5), 'i');
+              const vinRegex = new RegExp(vin2.substr(vin2.length - 5), 'i');
               inventoryQuery.vin2 = {$regex: vinRegex};
             } else {
               const patentRegex = new RegExp(vin2, 'i');
@@ -430,9 +430,9 @@ class CarController {
         .aggregate([{
           $match: {
             team,
-            destination: { $ne: '' },
+            destination: {$ne: ''},
             createdAt: {
-              $gte: moment().subtract(2 , 'd').toDate()
+              $gte: moment().subtract(2, 'd').toDate()
             }
           }
         }, {
@@ -606,7 +606,7 @@ class CarController {
       }, {
         path: 'user',
         populate: [{
-            path: 'venue'
+          path: 'venue'
         }]
       }, {
         path: 'form'
@@ -842,39 +842,45 @@ class CarController {
     // paginate options
     const options: PaginateOptions = {
       select: {
-        vin: true,
-        brand: true,
-        denomination: true,
-        color: true
+        createdAt: true,
+        number: true,
+        car: true,
+        venue: true,
+        user: true,
+        sections: true,
+        qualification: true,
       },
       populate: [{
-        path: 'lastForm',
-        select: ['number', 'createdAt', 'user', 'qualification', 'venue', 'sections', 'sections.answers.damagesSelected'],
-        populate: [{
-          path: 'user',
-          select: ['firstName', 'lastName']
-        }, {
-          path: 'venue',
-          select: ['name']
-        }]
+        path: 'car',
+        select: ['vin', 'brand', 'denomination', 'color', 'lastForm'],
+        populate: {
+          path: 'lastForm',
+          select: ['createdAt']
+        }
+      }, {
+        path: 'user',
+        select: ['firstName', 'lastName']
+      }, {
+        path: 'venue',
+        select: ['name']
       }],
       sort: {
-        lastForm: -1
+        createdAt: -1
       },
       page: parseInt(page ? page : 1, 10),
       limit: parseInt(pageSize ? pageSize : 20, 10)
     };
+
     try {
       const participantFilter: IAnyObject = {
         $and: [{
           venue: {
             $in: req.user.venuesPermissions()
-          }
+          },
+          team
         }]
       };
-      const carFilter: IAnyObject = {
-        team
-      };
+
       if (search && search.length) {
         const searchText = new RegExp(search, 'i');
         const searchUser = await User.find({
@@ -908,29 +914,30 @@ class CarController {
             }
           });
         } else {
-          carFilter.$and = [{
-            $or: [{
-              vin: {
-                $regex: searchText
-              }
-            }, {
-              brand: {
-                $regex: searchText
-              }
+          participantFilter.car = {
+            $and: [{
+              $or: [{
+                vin: {
+                  $regex: searchText
+                }
+              }, {
+                brand: {
+                  $regex: searchText
+                }
+              }]
             }]
-          }];
+          }
         }
       }
 
       // check if any date filter
-      if(from || to)
-      {
-        const createdAtFilter = { }
+      if (from || to) {
+        const createdAtFilter = {}
 
-        if(from)
+        if (from)
           createdAtFilter.$gte = moment(from, 'YYYY-MM-DD');
 
-        if(to)
+        if (to)
           createdAtFilter.$lte = moment(to, 'YYYY-MM-DD');
 
 
@@ -940,26 +947,21 @@ class CarController {
         });
       }
 
-      carFilter.lastForm = {
-        $exists: true,
-        $ne: null,
-        $in: await ParticipantModel.find(participantFilter, {_id: true})
-      };
-      const cars = await this.getRevisions(carFilter, options, search);
+      const revisions = await this.getRevisions(participantFilter, options, search);
 
       // validate exist page
-      if (options.page && cars.pages && cars.pages < options.page) {
+      if (options.page && revisions.pages && revisions.pages < options.page) {
         res.status(400).json({
           message: 'La página solicitada no existe.',
           status: 200
         });
       } else {
         res.json({
-          count: cars.total,
-          pages: cars.pages,
-          hasPrevious: options.page && options.page > 1 && cars.pages && cars.pages >= options.page,
-          hasNext: options.page && cars.pages && cars.pages > options.page,
-          results: cars.docs,
+          count: revisions.total,
+          pages: revisions.pages,
+          hasPrevious: options.page && options.page > 1 && revisions.pages && revisions.pages >= options.page,
+          hasNext: options.page && revisions.pages && revisions.pages > options.page,
+          results: revisions.docs,
           status: 200
         });
       }
@@ -1012,10 +1014,10 @@ class CarController {
         header: 'Daños reportados', key: 'damages', width: 30
       }];
 
-      columns.push({ header: 'Daño', key: 'damage', width: 30 })
-      columns.push({ header: 'Parte', key: 'part', width: 30 })
-      columns.push({ header: 'Tipo', key: 'kind', width: 30 })
-      columns.push({ header: 'Posición', key: 'position', width: 30 })
+      columns.push({header: 'Daño', key: 'damage', width: 30})
+      columns.push({header: 'Parte', key: 'part', width: 30})
+      columns.push({header: 'Tipo', key: 'kind', width: 30})
+      columns.push({header: 'Posición', key: 'position', width: 30})
 
       /* headers */
       worksheet.columns = columns;
@@ -1064,28 +1066,23 @@ class CarController {
           }
         ])
 
-        for(var revision of revisions)
-        {
+        for (var revision of revisions) {
           var damages = [];
-          for(var section of revision.sections)
-          {
-            for(const answer of section.answers)
-            {
-              for(const damage of answer.damagesSelected)
-              {
+          for (var section of revision.sections) {
+            for (const answer of section.answers) {
+              for (const damage of answer.damagesSelected) {
                 const kind = answer.damages.kinds.find((d) => d._id && damage.kind && d._id.toString() == damage.kind.toString());
                 const part = answer.damages.parts.find((d) => d._id && damage.part && d._id.toString() == damage.part.toString());
                 const position = answer.damages.positions.find((d) => d._id && damage.position && d._id.toString() == damage.position.toString());
 
-                if(kind && part)
+                if (kind && part)
                   damages.push({kind, part, position});
               }
             }
           }
 
-          for(let j in damages)
-          {
-            var idx = parseInt(j)+1;
+          for (let j in damages) {
+            var idx = parseInt(j) + 1;
             const row = {
               vin: revision.car.vin,
               denomination: revision.car.denomination,
@@ -1124,8 +1121,7 @@ class CarController {
       res.setHeader('Content-Disposition', 'attachment; filename=usuarios-21-03-2019.xlsx');
       return res.sendFile(tempFilePath);
 
-    } catch(e)
-    {
+    } catch (e) {
       /* istanbul ignore next */
       if (e) {
         console.log(e);
@@ -1177,10 +1173,9 @@ class CarController {
 
 
       var i = 12;
-      while(--i > 0)
-      {
+      while (--i > 0) {
         const ti = moment().subtract(i * 15, 'day');
-        const tf = moment().subtract((i-1) * 15, 'day')
+        const tf = moment().subtract((i - 1) * 15, 'day')
         console.log(ti.format("YYYY-MM-DD"), tf.format("YYYY-MM-DD"))
         let cars = await CarModel.find({
           team,
@@ -1235,8 +1230,7 @@ class CarController {
       return res.sendFile(tempFilePath);
 
 
-    } catch(e)
-    {
+    } catch (e) {
       /* istanbul ignore next */
       if (e) {
         console.log(e);
@@ -1290,11 +1284,11 @@ class CarController {
           $exists: true,
           $ne: null,
           $in: await ParticipantModel.find(
-          {
-            venue: {
-              $in: req.user.venuesPermissions()
-            }
-          }, {_id: true})
+            {
+              venue: {
+                $in: req.user.venuesPermissions()
+              }
+            }, {_id: true})
         }
       }, options, search);
 
@@ -1324,7 +1318,7 @@ class CarController {
 
   private getRevisions(filters: any, options: PaginateOptions, search?: string): Promise<PaginateResult<ICarModel>> {
     return new Promise((resolve, reject) => {
-      CarModel.paginate(filters, options, (err, result) => {
+      ParticipantModel.paginate(filters, options, (err, result) => {
         if (err) {
           /* istanbul ignore next */
           return reject(err);

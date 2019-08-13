@@ -1567,7 +1567,7 @@ class FormController {
         }
     }
     async apiRevisionsGapExport(req, res) {
-        if (!req.user.hasPermission('revisionsGap')) {
+        if (!req.user.hasPermission('exportRevisionsGap')) {
             return res.status(403).json({
                 message: 'No tienes permisos para esta operación'
             });
@@ -1613,106 +1613,111 @@ class FormController {
                 },];
             worksheet.columns = columns;
             const { team } = req.user;
-            const t0 = moment().subtract(1, 'month');
-            let cars = await car_model_1.default.find({
-                team,
-                lastForm: { $exists: true },
-                createdAt: {
-                    $gte: t0
-                }
-            }).populate({
-                path: 'participants',
-                populate: {
-                    path: 'venue',
-                    model: 'Venue'
-                }
-            });
-            let f0 = '5b0487db835536612bab1b61';
-            let f1 = '5b1ae5799ebea419025b3e41';
-            let gasQuestion = '5b64b543cee543c2afda41bd';
-            let paintQuestion = '5b64b1f6cc5e14f59724f8d1';
-            let sheetMetalQuestion = '5b64b22245f69e40fc5713fb';
-            for (const car of cars) {
-                if (car.participants.length == 0)
-                    continue;
-                let participants = car.participants.sort((p0, p1) => p0.createdAt > p1.createdAt);
-                let p0 = null;
-                let p1 = null;
-                // only one form
-                if (participants.length < 2) {
-                    if (participants[0].form.toString() == f0)
+            let periods = 3;
+            for (let i = periods; i >= 0; i--) {
+                const t0 = moment().subtract(i + 1, 'months');
+                const t1 = moment().subtract(i, 'months');
+                let cars = await car_model_1.default.find({
+                    team,
+                    lastForm: { $exists: true },
+                    createdAt: {
+                        $gte: t0,
+                        $lte: t1,
+                    }
+                }).populate({
+                    path: 'participants',
+                    populate: {
+                        path: 'venue',
+                        model: 'Venue'
+                    }
+                });
+                let f0 = '5b0487db835536612bab1b61';
+                let f1 = '5b1ae5799ebea419025b3e41';
+                let gasQuestion = '5b64b543cee543c2afda41bd';
+                let paintQuestion = '5b64b1f6cc5e14f59724f8d1';
+                let sheetMetalQuestion = '5b64b22245f69e40fc5713fb';
+                for (const car of cars) {
+                    if (car.participants.length == 0)
+                        continue;
+                    let participants = car.participants.sort((p0, p1) => p0.createdAt > p1.createdAt);
+                    let p0 = null;
+                    let p1 = null;
+                    // only one form
+                    if (participants.length < 2) {
+                        if (participants[0].form.toString() == f0)
+                            p0 = participants[0];
+                        else if (participants[0].form.toString() == f1)
+                            p1 = participants[0];
+                    }
+                    else {
                         p0 = participants[0];
-                    else if (participants[0].form.toString() == f1)
-                        p1 = participants[0];
+                        p1 = participants[1];
+                    }
+                    var choice0Gas = null;
+                    var choice1Gas = null;
+                    if (p0) {
+                        const answer0Gas = p0.sections.map((s) => s.answers).reduce((x, y) => [...x, ...y], []).find((a) => a._id.toString() == gasQuestion);
+                        choice0Gas = answer0Gas.scale.choices.find((c) => c._id.toString() == answer0Gas.answer.toString());
+                    }
+                    if (p1) {
+                        const answer1Gas = p1.sections.map((s) => s.answers).reduce((x, y) => [...x, ...y], []).find((a) => a._id.toString() == gasQuestion);
+                        choice1Gas = answer1Gas.scale.choices.find((c) => c._id.toString() == answer1Gas.answer.toString());
+                    }
+                    var choice0Paint = null;
+                    var choice1Paint = null;
+                    if (p0) {
+                        const answer0Paint = p0.sections.map((s) => s.answers).reduce((x, y) => [...x, ...y], []).find((a) => a._id.toString() == paintQuestion);
+                        choice0Paint = answer0Paint.scale.choices.find((c) => c._id.toString() == answer0Paint.answer.toString());
+                    }
+                    if (p1) {
+                        const answer1Paint = p1.sections.map((s) => s.answers).reduce((x, y) => [...x, ...y], []).find((a) => a._id.toString() == paintQuestion);
+                        choice1Paint = answer1Paint.scale.choices.find((c) => c._id.toString() == answer1Paint.answer.toString());
+                    }
+                    // lata
+                    var choice0SheetMetal = null;
+                    var choice1SheetMetal = null;
+                    if (p0) {
+                        const answer0SheetMetal = p0.sections.map((s) => s.answers).reduce((x, y) => [...x, ...y], []).find((a) => a._id.toString() == sheetMetalQuestion);
+                        choice0SheetMetal = answer0SheetMetal.scale.choices.find((c) => c._id.toString() == answer0SheetMetal.answer.toString());
+                    }
+                    if (p1) {
+                        const answer1SheetMetal = p1.sections.map((s) => s.answers).reduce((x, y) => [...x, ...y], []).find((a) => a._id.toString() == sheetMetalQuestion);
+                        choice1SheetMetal = answer1SheetMetal.scale.choices.find((c) => c._id.toString() == answer1SheetMetal.answer.toString());
+                    }
+                    const row = {
+                        vin: car.vin,
+                        brand: car.brand,
+                        p0CreatedAt: p0 ? p0.createdAt : '-',
+                        p0Venue: p0 ? p0.venue.name : '-',
+                        p0Qualification: p0 ? p0.qualification : '-',
+                        p0Gas: choice0Gas ? choice0Gas.choice : '-',
+                        p0Paint: choice0Paint ? choice0Paint.choice : '-',
+                        p0SheetMetal: choice0SheetMetal ? choice0SheetMetal.choice : '-',
+                        p1CreatedAt: p1 ? p1.createdAt : '-',
+                        p1Venue: p1 ? p1.venue.name : '-',
+                        p1Qualification: p1 ? p1.qualification : '-',
+                        p1Gas: choice1Gas ? choice1Gas.choice : '-',
+                        p1Paint: choice1Paint ? choice1Paint.choice : '-',
+                        p1SheetMetal: choice1SheetMetal ? choice1SheetMetal.choice : '-',
+                    };
+                    worksheet.addRow(row);
                 }
-                else {
-                    p0 = participants[0];
-                    p1 = participants[1];
-                }
-                var choice0Gas = null;
-                var choice1Gas = null;
-                if (p0) {
-                    const answer0Gas = p0.sections.map((s) => s.answers).reduce((x, y) => [...x, ...y], []).find((a) => a._id.toString() == gasQuestion);
-                    choice0Gas = answer0Gas.scale.choices.find((c) => c._id.toString() == answer0Gas.answer.toString());
-                }
-                if (p1) {
-                    const answer1Gas = p1.sections.map((s) => s.answers).reduce((x, y) => [...x, ...y], []).find((a) => a._id.toString() == gasQuestion);
-                    choice1Gas = answer1Gas.scale.choices.find((c) => c._id.toString() == answer1Gas.answer.toString());
-                }
-                var choice0Paint = null;
-                var choice1Paint = null;
-                if (p0) {
-                    const answer0Paint = p0.sections.map((s) => s.answers).reduce((x, y) => [...x, ...y], []).find((a) => a._id.toString() == paintQuestion);
-                    choice0Paint = answer0Paint.scale.choices.find((c) => c._id.toString() == answer0Paint.answer.toString());
-                }
-                if (p1) {
-                    const answer1Paint = p1.sections.map((s) => s.answers).reduce((x, y) => [...x, ...y], []).find((a) => a._id.toString() == paintQuestion);
-                    choice1Paint = answer1Paint.scale.choices.find((c) => c._id.toString() == answer1Paint.answer.toString());
-                }
-                // lata
-                var choice0SheetMetal = null;
-                var choice1SheetMetal = null;
-                if (p0) {
-                    const answer0SheetMetal = p0.sections.map((s) => s.answers).reduce((x, y) => [...x, ...y], []).find((a) => a._id.toString() == sheetMetalQuestion);
-                    choice0SheetMetal = answer0SheetMetal.scale.choices.find((c) => c._id.toString() == answer0SheetMetal.answer.toString());
-                }
-                if (p1) {
-                    const answer1SheetMetal = p1.sections.map((s) => s.answers).reduce((x, y) => [...x, ...y], []).find((a) => a._id.toString() == sheetMetalQuestion);
-                    choice1SheetMetal = answer1SheetMetal.scale.choices.find((c) => c._id.toString() == answer1SheetMetal.answer.toString());
-                }
-                const row = {
-                    vin: car.vin,
-                    brand: car.brand,
-                    p0CreatedAt: p0 ? p0.createdAt : '-',
-                    p0Venue: p0 ? p0.venue.name : '-',
-                    p0Qualification: p0 ? p0.qualification : '-',
-                    p0Gas: choice0Gas ? choice0Gas.choice : '-',
-                    p0Paint: choice0Paint ? choice0Paint.choice : '-',
-                    p0SheetMetal: choice0SheetMetal ? choice0SheetMetal.choice : '-',
-                    p1CreatedAt: p1 ? p1.createdAt : '-',
-                    p1Venue: p1 ? p1.venue.name : '-',
-                    p1Qualification: p1 ? p1.qualification : '-',
-                    p1Gas: choice1Gas ? choice1Gas.choice : '-',
-                    p1Paint: choice1Paint ? choice1Paint.choice : '-',
-                    p1SheetMetal: choice1SheetMetal ? choice1SheetMetal.choice : '-',
-                };
-                worksheet.addRow(row);
+                /* formats */
+                worksheet.getRow(1).eachCell((cell) => {
+                    cell.font = {
+                        bold: true
+                    };
+                });
+                // const idCol = worksheet.getColumn('id');
+                // idCol.eachCell({includeEmpty: true}, (cell) => {
+                //   cell.alignment = {vertical: 'middle', horizontal: 'center'};
+                // });
+                const tempFilePath = tempfile('.xlsx');
+                await workbook.xlsx.writeFile(tempFilePath);
+                res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+                res.setHeader('Content-Disposition', `attachment; filename=revisiones-${moment().format('YYYY-MM-DD')}.xlsx`);
+                return res.sendFile(tempFilePath);
             }
-            /* formats */
-            worksheet.getRow(1).eachCell((cell) => {
-                cell.font = {
-                    bold: true
-                };
-            });
-            // const idCol = worksheet.getColumn('id');
-            // idCol.eachCell({includeEmpty: true}, (cell) => {
-            //   cell.alignment = {vertical: 'middle', horizontal: 'center'};
-            // });
-            const tempFilePath = tempfile('.xlsx');
-            await workbook.xlsx.writeFile(tempFilePath);
-            res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-            res.setHeader('Content-Disposition', `attachment; filename=revisiones-${moment().format('YYYY-MM-DD')}.xlsx`);
-            return res.sendFile(tempFilePath);
         }
         finally {
         }

@@ -130,6 +130,9 @@ class DashboardVinView extends React.Component<IPropsType, IStateType> {
   public componentDidMount(): void {
     let $this = this;
     ($('input[name="daterange"]') as any).daterangepicker({
+      startDate: moment().subtract(30, 'days'),
+      endDate: moment(),
+      maxDate: moment(),
       opens: 'left'
     }, function (from: any, to: any, label: any) {
         $this.props.changeRangeDashboardAction(from.format('YYYY-MM-DD'), to.format('YYYY-MM-DD'));
@@ -161,7 +164,7 @@ class DashboardVinView extends React.Component<IPropsType, IStateType> {
   }
 
   public render(): React.ReactElement<IPropsType> {
-    const {loading, cars, pagination, searchText} = this.props.dashboard;
+    const {loading, participants, pagination, searchText} = this.props.dashboard;
     const {highlight, carLoading} = this.state;
     return (
       <AppContainer title="" cMenu="1" cSubMenu="1.2">
@@ -173,9 +176,12 @@ class DashboardVinView extends React.Component<IPropsType, IStateType> {
             </div>
             <div className={`box-body no-padding`}>
               <div className="row">
-                <div className="col-md-offset-5 col-md-3">
-                  <div className="container-date-picker" style={{padding: '10px 5px'}}>
+                <div className="col-md-offset-4 col-md-4">
+                  <div className="input-group input-group-sm" style={{padding: '10px 5px'}}>
                     <input type="text" className="form-control input-sm" name="daterange" />
+                    <div className="input-group-btn">
+                      <button className="btn btn-default"><i className="fa fa-calendar"/></button>
+                    </div>
                   </div>
                 </div>
                 <div className="col-md-4">
@@ -195,45 +201,46 @@ class DashboardVinView extends React.Component<IPropsType, IStateType> {
                 </div>
               </div>
               {
-                cars.length ?
+                participants.length ?
                   <table className="table table-andes table-striped">
                     <thead>
                     <tr>
                       <th style={{width: '5%'}} className="middle">Nº</th>
-                      <th style={{width: '15%'}} className="middle">VIN</th>
+                      <th style={{width: '12%'}} className="middle">VIN</th>
                       <th style={{width: '10%'}} className="middle hidden-xs">Marca</th>
-                      <th style={{width: '20%'}} className="middle hidden-xs">Supervisor</th>
+                      <th style={{width: '15%'}} className="middle hidden-xs">Supervisor</th>
                       <th style={{width: '20%'}} className="middle">Sucursal</th>
                       <th style={{width: '10%'}} className="hidden-xs">Calificación</th>
-                      <th style={{width: '20%'}} className="hidden-xs">Último checkeo</th>
+                      <th style={{width: '15%'}} className="hidden-xs">Fecha calificación</th>
+                      <th style={{width: '15%'}} className="hidden-xs">Último checkeo</th>
                       <th className="width-10"/>
                       <th className="width-10"/>
                     </tr>
                     </thead>
                     <tbody>
                     {
-                      cars.map((car: ICar) => {
+                      participants.map((participant: IParticipant) => {
                         return (
                           <tr
-                            key={car._id} id={`car-${car._id}`}
-                            className={highlight.length && highlight.includes(car._id as never) ? 'highlight-info' : ''}
+                            key={participant._id} id={`car-${participant._id}`}
+                            className={highlight.length && highlight.includes(participant._id as never) ? 'highlight-info' : ''}
                           >
-                            <td className="middle">{car.lastForm.number}</td>
-                            <td className="middle">{car.vin}</td>
-                            <td className="middle hidden-xs">{car.brand}</td>
+                            <td className="middle">{participant.number}</td>
+                            <td className="middle">{participant.car.vin}</td>
+                            <td className="middle hidden-xs">{participant.car.brand}</td>
                             <td className="middle hidden-xs">
-                              {`${car.lastForm.user ? `${car.lastForm.user.firstName} ${car.lastForm.user.lastName}` : ''}`}
+                              {`${participant.user ? `${participant.user.firstName} ${participant.user.lastName}` : ''}`}
                             </td>
                             <td className="middle">
-                              {`${car.lastForm.venue ? `${car.lastForm.venue.name}` : '-'}`}
+                              {`${participant.venue ? `${participant.venue.name}` : '-'}`}
                             </td>
                             <td className="middle">
                               {
-                                `${car.lastForm && car.lastForm.hasOwnProperty('qualification') ?
-                                  `${Math.round(car.lastForm.qualification)}%` : ''}`
+                                `${participant.hasOwnProperty('qualification') ?
+                                  `${Math.round(participant.qualification)}%` : ''}`
                               }
                               {
-                                this.hasDamages(car.lastForm) ?
+                                this.hasDamages(participant) ?
                                   <React.Fragment>
                                     {' '}<i
                                     className="fa fa-warning text-red"
@@ -246,19 +253,26 @@ class DashboardVinView extends React.Component<IPropsType, IStateType> {
                               }
                             </td>
                             <td className="middle hidden-xs">
-                              {moment(car.lastForm.createdAt).format('LLL')}
+                              {moment(participant.createdAt).format('L HH:mm:ss')}
+                            </td>
+                            <td className="middle hidden-xs">
+                              {participant.car.lastForm && participant.car.lastForm.createdAt ?
+                                moment(participant.car.lastForm.createdAt).format('L HH:mm:ss')
+                                :
+                                '-'
+                              }
                             </td>
                             <td className="text-primary middle-center">
                               <button
                                 className="btn btn-xs btn-default"
-                                disabled={carLoading === car._id}
-                                onClick={() => this.printPdf(`/report/forms/pdf/${car.lastForm._id}.pdf`, car._id)}
-                              ><i className={carLoading === car._id ? 'fa fa-spinner fa-spin' : 'fa fa-print'}/></button>
+                                disabled={carLoading === participant._id}
+                                onClick={() => this.printPdf(`/report/forms/pdf/${participant._id}.pdf`, participant._id)}
+                              ><i className={carLoading === participant._id ? 'fa fa-spinner fa-spin' : 'fa fa-print'}/></button>
                             </td>
                             <td className="text-primary middle-center">
                               <button
                                 className="btn btn-xs btn-primary"
-                                onClick={() => this.props.history.push(`/cars/${car._id}`)}
+                                onClick={() => this.props.history.push(`/cars/${participant.car._id}`)}
                               ><i className="fa fa-bars"/></button>
                             </td>
                           </tr>
