@@ -272,6 +272,7 @@ class CarController {
             company,
             team,
             brand,
+            createdBy: req.user,
             status: ChoicesStatusCar.active
           });
           res.json({
