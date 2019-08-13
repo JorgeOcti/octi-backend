@@ -275,6 +275,7 @@ class CarController {
                         company,
                         team,
                         brand,
+                        createdBy: req.user,
                         status: car_model_1.ChoicesStatusCar.active
                     });
                     res.json({

@@ -73,6 +73,7 @@ class AdminCarController {
               newCar.patent = car.patente ? car.patente : newCar.patent;
               newCar.internalNumber = car.NInterno ? car.NInterno : newCar.internalNumber;
               newCar.destination = car.destino ? car.destino : newCar.destination;
+              newCar.createdBy = req.user;
               newCar.status = ChoicesStatusCar.active;
               await newCar.save();
             } else {
@@ -88,6 +89,7 @@ class AdminCarController {
                 patent: car.patente ? car.patente : '',
                 company,
                 team,
+                createdBy: req.user,
                 status: ChoicesStatusCar.active
               });
             }
