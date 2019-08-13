@@ -86,6 +86,11 @@ const carSchema = new mongoose.Schema({
     enum: choicesStatusCar,
     required: true,
     default: ChoicesStatusCar.active
+  },
+  createdBy: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
+    default: null
   }
 }, {
   timestamps: true

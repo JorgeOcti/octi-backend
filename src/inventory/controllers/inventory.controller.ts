@@ -126,6 +126,7 @@ class InventoryController {
                   denomination: car.denomination,
                   brand: car.brand,
                   patent: car.patent,
+                  createdBy: req.user,
                   status: ChoicesStatusCar.active
                 });
                 await currentCar.save();
@@ -1019,6 +1020,7 @@ class InventoryController {
           color,
           team,
           company,
+          createdBy: req.user,
           status: ChoicesStatusCar.inventory
         });
         const inventoryCar = new InventoryCar({
