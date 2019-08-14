@@ -648,7 +648,7 @@ export function getCarAction(id: string) {
 export type DashboardReduxAction =
   IIsLoading |
   ICancelRequest |
-  ILoadCars |
+  ILoadRevisions |
   IChangeSearchDashboard |
   IChangeRangeDashboard |
   ILoadCar |

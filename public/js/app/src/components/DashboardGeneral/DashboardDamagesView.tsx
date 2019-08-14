@@ -1,5 +1,6 @@
 // import * as PropTypes from 'prop-types';
 import * as Raven from 'raven-js';
+import * as moment from 'moment';
 import * as React from 'react';
 import {ErrorInfo} from 'react';
 import {connect} from 'react-redux';
@@ -11,6 +12,10 @@ import AppContainer from '../../container/AppContainer';
 import Row from '../Utils/Row';
 import * as io from "socket.io-client";
 import {IWindow} from "../../interfaces/window";
+import * as swal from "sweetalert";
+import {default as Axios} from "axios";
+import ApiService from "../../utils/axios";
+import {hasPermission} from "../../utils/common";
 
 declare let window: IWindow;
 
@@ -25,6 +30,7 @@ interface IStateType {
   error: Error | null;
   detail: boolean;
   detailName: string;
+  exporting: boolean
 }
 
 class DashboardDamagesView extends React.Component<IPropsType, IStateType> {
@@ -32,7 +38,8 @@ class DashboardDamagesView extends React.Component<IPropsType, IStateType> {
   readonly state: IStateType = {
     error: null,
     detail: false,
-    detailName: ''
+    detailName: '',
+    exporting: false,
   };
   protected damagesPerVenueChart: echarts.ECharts;
   private socket: SocketIOClient.Socket;
@@ -43,6 +50,7 @@ class DashboardDamagesView extends React.Component<IPropsType, IStateType> {
     this.showdetail = this.showdetail.bind(this);
     this.back = this.back.bind(this);
     this.updateDamagesPerVenueChart = this.updateDamagesPerVenueChart.bind(this);
+    this.exportDamages = this.exportDamages.bind(this);
   }
 
   public componentWillMount(): void {
@@ -94,9 +102,61 @@ class DashboardDamagesView extends React.Component<IPropsType, IStateType> {
     this.socket.disconnect();
   }
 
+  public exportDamages() {
+    this.setState({
+      exporting: true
+    });
+    const api: ApiService = new ApiService();
+    const instance = api.getInstance();
+    instance.defaults.responseType = 'blob';
+    instance
+      .get(`/api/damages/export/`)
+      .then((response) => {
+        const blob = new Blob([response.data], {
+          type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+        });
+        const fileName = `${moment().format('YYYYMMDD')}-danos.xlsx`;
+        if (typeof window.navigator.msSaveBlob !== 'undefined') {
+          // IE workaround for "HTML7007: One or more blob URLs were
+          // revoked by closing the blob for which they were created.
+          // These URLs will no longer resolve as the data backing
+          // the URL has been freed."
+          window.navigator.msSaveBlob(blob, fileName);
+        } else {
+          const blobURL = window.URL.createObjectURL(blob);
+          const tempLink = document.createElement('a');
+          tempLink.style.display = 'none';
+          tempLink.href = blobURL;
+          tempLink.setAttribute('download', fileName);
+          // Safari thinks _blank anchor are pop ups. We only want to set _blank
+          // target if the browser does not support the HTML5 download attribute.
+          // This allows you to download files in desktop safari if pop up blocking
+          // is enabled.
+          if (typeof tempLink.download === 'undefined') {
+            tempLink.setAttribute('target', '_blank');
+          }
+          this.setState({
+            exporting: false
+          });
+          document.body.appendChild(tempLink);
+          tempLink.click();
+          document.body.removeChild(tempLink);
+          window.URL.revokeObjectURL(blobURL);
+        }
+      })
+      .catch((err) => {
+        this.setState({
+          exporting: false
+        });
+        if (!Axios.isCancel(err)) {
+          swal('Exportar usuarios', 'Ha ocurrido un error al general el excel.', 'error');
+        }
+      });
+  }
+
   public render(): React.ReactElement<IPropsType> {
     const {loading} = this.props.dashboard;
-    const {detail, detailName} = this.state;
+    const {detail, detailName, exporting} = this.state;
     return (
       <AppContainer title="" cMenu="1" cSubMenu="1.3">
         <section className="content">
@@ -104,11 +164,28 @@ class DashboardDamagesView extends React.Component<IPropsType, IStateType> {
             <div className="col-md-12">
               <div className="box">
                 <div className="box-header with-border"><h3 className="box-title">Dashboard de daños</h3>
-                  <div className="box-tools pull-right">
-                    <button className="btn btn-sm btn-primary hidden-xs hidden-sm">
-                      <i className="fa fa-fw fa-download"></i> Descargar reporte
-                    </button>
-                  </div>
+                  {hasPermission(window.user, 'exportDamages') ?
+                    <div className="box-tools pull-right">
+                      <button
+                        className="btn btn-sm btn-primary hidden-xs hidden-sm"
+                        onClick={this.exportDamages}
+                        disabled={exporting}
+                      >
+                        {
+                          exporting ?
+                            <React.Fragment>
+                              <i className="fa fa-fw fa-download"></i> Exportando reporte
+                            </React.Fragment>
+                            :
+                            <React.Fragment>
+                              <i className="fa fa-fw fa-download"></i> Exportar reporte
+                            </React.Fragment>
+                        }
+                      </button>
+                    </div>
+                    :
+                    null
+                  }
                 </div>
                 <div className="box-body">
                   {

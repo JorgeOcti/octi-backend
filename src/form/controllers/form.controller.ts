@@ -1081,7 +1081,7 @@ class FormController {
       }]);
 
       const allVenues: any[] = [];
-      if (damaged){
+      if (damaged) {
         damaged.forEach((item) => {
           if (item._id.venue && !allVenues.includes(item._id.venue.toString())) {
             allVenues.push(item._id.venue.toString());
@@ -1106,13 +1106,13 @@ class FormController {
       venues.forEach((venue) => damagesData[venue] = {damaged: 0, undamaged: 0});
 
       damaged.forEach((item) => {
-        if(item._id.venue in damagesData){
+        if (item._id.venue in damagesData) {
           damagesData[item._id.venue].damaged = item.count;
 
         }
       });
       undamaged.forEach((item) => {
-        if(item._id.venue in damagesData) {
+        if (item._id.venue in damagesData) {
           damagesData[item._id.venue].undamaged = item.count;
         }
       });
@@ -1183,9 +1183,9 @@ class FormController {
           .startOf('day')
           .format('YYYY-MM-DD');
         data[key] = {
-            damaged: 0,
-            undamaged: 0
-          };
+          damaged: 0,
+          undamaged: 0
+        };
       }
 
       const promises = [];
@@ -1271,7 +1271,7 @@ class FormController {
           carsDict[car._id.toString()] = car
 
         var receptions = [];
-        for(var i = 0; i < total; i++) {
+        for (var i = 0; i < total; i++) {
           const aux = await ParticipantModel.find({
             team,
             form: reception._id,
@@ -1328,12 +1328,12 @@ class FormController {
             const t1 = moment(reception.createdAt).subtract(4, 'hours');
 
             const hour = parseInt(t0.format('HH'))
-            if(hour >= 20 || hour <= 2)
+            if (hour >= 20 || hour <= 2)
               continue;
 
             const dm = t1.diff(t0, 'minutes');
 
-            if(dm > 10) {
+            if (dm > 10) {
               const ontime = dm < threshold ? 1 : 0;
 
               worksheet.addRow({
@@ -1378,7 +1378,7 @@ class FormController {
 
     try {
       const {team} = req.user;
-      let userObject = await User.findOne({ _id: req.user._id})
+      let userObject = await User.findOne({_id: req.user._id})
 
       if (userObject.team == '5bf2de34caf8ef7096105cda') // Derco
       {
@@ -1390,14 +1390,14 @@ class FormController {
         let reception = await FormModel.findOne({_id: "5b1ae5799ebea419025b3e41"})
         let cars = await CarModel.find({
           team,
-          lastForm: { $ne: null },
+          lastForm: {$ne: null},
           createdAt: {
             $gte: moment().subtract(total, 'months').startOf('month').toDate()
           }
         })
 
         let carsCreatedAt = {}
-        for(const car of cars)
+        for (const car of cars)
           carsCreatedAt[car._id.toString()] = car.createdAt
 
         const months: string[] = [];
@@ -1427,11 +1427,9 @@ class FormController {
           }
         });
 
-        for(const reception of receptions)
-        {
+        for (const reception of receptions) {
           let car = reception.car.toString()
-          if(car in carsCreatedAt)
-          {
+          if (car in carsCreatedAt) {
             const carCreatedAt = carsCreatedAt[car];
 
             const t0 = moment(carCreatedAt);
@@ -1440,7 +1438,7 @@ class FormController {
 
             const month = t0.format('YYYY-MM');
 
-            if(dm > 10) {
+            if (dm > 10) {
               if (dm < threshold)
                 receivedPerMonth[month].ontime += 1;
               else
@@ -1662,7 +1660,7 @@ class FormController {
 
   }
 
-  public async apiRevisionsGapExport(req: IRequest, res: Response) : Promise<any> {
+  public async apiRevisionsGapExport(req: IRequest, res: Response): Promise<any> {
 
     if (!req.user.hasPermission('exportRevisionsGap')) {
       return res.status(403).json({
@@ -1715,8 +1713,8 @@ class FormController {
 
       const {team} = req.user;
 
-      let periods = 3;
-      for (let i = periods; i >= 0; i--) {
+      let periods = 6;
+      for (let i = 0; i < periods; i++) {
 
         const t0 = moment().subtract(i + 1, 'months')
         const t1 = moment().subtract(i, 'months')
@@ -1744,85 +1742,92 @@ class FormController {
         let sheetMetalQuestion = '5b64b22245f69e40fc5713fb';
 
         for (const car of cars) {
-          if (car.participants.length == 0)
-            continue;
 
-          let participants = car.participants.sort((p0, p1) => p0.createdAt > p1.createdAt)
+          if (car.participants.length > 0) {
 
-          let p0 = null;
-          let p1 = null;
+            let participants = car.participants.sort((p0, p1) => p0.createdAt > p1.createdAt)
 
-          // only one form
-          if (participants.length < 2) {
-            if (participants[0].form.toString() == f0)
+            let p0 = null;
+            let p1 = null;
+
+            // only one form
+            if (participants.length < 2) {
+              if (participants[0].form.toString() == f0)
+                p0 = participants[0];
+
+              else if (participants[0].form.toString() == f1)
+                p1 = participants[0];
+
+            }
+            else {
               p0 = participants[0];
+              p1 = participants[1];
+            }
 
-            else if (participants[0].form.toString() == f1)
-              p1 = participants[0];
+            var choice0Gas = null;
+            var choice1Gas = null;
+            if (p0) {
+              const answer0Gas = p0.sections.map((s) => s.answers).reduce((x, y) => [...x, ...y], []).find((a) => a._id.toString() == gasQuestion);
+              if (answer0Gas)
+                choice0Gas = answer0Gas.scale.choices.find((c) => c._id.toString() == answer0Gas.answer.toString())
+            }
 
+            if (p1) {
+              const answer1Gas = p1.sections.map((s) => s.answers).reduce((x, y) => [...x, ...y], []).find((a) => a._id.toString() == gasQuestion);
+              if (answer1Gas)
+                choice1Gas = answer1Gas.scale.choices.find((c) => c._id.toString() == answer1Gas.answer.toString())
+            }
+
+            var choice0Paint = null;
+            var choice1Paint = null;
+            if (p0) {
+              const answer0Paint = p0.sections.map((s) => s.answers).reduce((x, y) => [...x, ...y], []).find((a) => a._id.toString() == paintQuestion);
+              if (answer0Paint)
+                choice0Paint = answer0Paint.scale.choices.find((c) => c._id.toString() == answer0Paint.answer.toString())
+            }
+
+            if (p1) {
+              const answer1Paint = p1.sections.map((s) => s.answers).reduce((x, y) => [...x, ...y], []).find((a) => a._id.toString() == paintQuestion);
+              if (answer1Paint)
+                choice1Paint = answer1Paint.scale.choices.find((c) => c._id.toString() == answer1Paint.answer.toString())
+            }
+
+            // lata
+            var choice0SheetMetal = null;
+            var choice1SheetMetal = null;
+            if (p0) {
+              const answer0SheetMetal = p0.sections.map((s) => s.answers).reduce((x, y) => [...x, ...y], []).find((a) => a._id.toString() == sheetMetalQuestion);
+              if (answer0SheetMetal)
+                choice0SheetMetal = answer0SheetMetal.scale.choices.find((c) => c._id.toString() == answer0SheetMetal.answer.toString())
+            }
+
+            if (p1) {
+              const answer1SheetMetal = p1.sections.map((s) => s.answers).reduce((x, y) => [...x, ...y], []).find((a) => a._id.toString() == sheetMetalQuestion);
+              if (answer1SheetMetal)
+                choice1SheetMetal = answer1SheetMetal.scale.choices.find((c) => c._id.toString() == answer1SheetMetal.answer.toString())
+            }
+
+            const row = {
+              vin: car.vin,
+              brand: car.brand,
+
+              p0CreatedAt: p0 ? p0.createdAt : '-',
+              p0Venue: p0 ? p0.venue.name : '-',
+              p0Qualification: p0 ? p0.qualification : '-',
+              p0Gas: choice0Gas ? choice0Gas.choice : '-',
+              p0Paint: choice0Paint ? choice0Paint.choice : '-',
+              p0SheetMetal: choice0SheetMetal ? choice0SheetMetal.choice : '-',
+
+              p1CreatedAt: p1 ? p1.createdAt : '-',
+              p1Venue: p1 ? p1.venue.name : '-',
+              p1Qualification: p1 ? p1.qualification : '-',
+              p1Gas: choice1Gas ? choice1Gas.choice : '-',
+              p1Paint: choice1Paint ? choice1Paint.choice : '-',
+              p1SheetMetal: choice1SheetMetal ? choice1SheetMetal.choice : '-',
+            }
+
+            worksheet.addRow(row);
           }
-          else {
-            p0 = participants[0];
-            p1 = participants[1];
-          }
-
-          var choice0Gas = null;
-          var choice1Gas = null;
-          if (p0) {
-            const answer0Gas = p0.sections.map((s) => s.answers).reduce((x, y) => [...x, ...y], []).find((a) => a._id.toString() == gasQuestion);
-            choice0Gas = answer0Gas.scale.choices.find((c) => c._id.toString() == answer0Gas.answer.toString())
-          }
-
-          if (p1) {
-            const answer1Gas = p1.sections.map((s) => s.answers).reduce((x, y) => [...x, ...y], []).find((a) => a._id.toString() == gasQuestion);
-            choice1Gas = answer1Gas.scale.choices.find((c) => c._id.toString() == answer1Gas.answer.toString())
-          }
-
-          var choice0Paint = null;
-          var choice1Paint = null;
-          if (p0) {
-            const answer0Paint = p0.sections.map((s) => s.answers).reduce((x, y) => [...x, ...y], []).find((a) => a._id.toString() == paintQuestion);
-            choice0Paint = answer0Paint.scale.choices.find((c) => c._id.toString() == answer0Paint.answer.toString())
-          }
-
-          if (p1) {
-            const answer1Paint = p1.sections.map((s) => s.answers).reduce((x, y) => [...x, ...y], []).find((a) => a._id.toString() == paintQuestion);
-            choice1Paint = answer1Paint.scale.choices.find((c) => c._id.toString() == answer1Paint.answer.toString())
-          }
-
-          // lata
-          var choice0SheetMetal = null;
-          var choice1SheetMetal = null;
-          if (p0) {
-            const answer0SheetMetal = p0.sections.map((s) => s.answers).reduce((x, y) => [...x, ...y], []).find((a) => a._id.toString() == sheetMetalQuestion);
-            choice0SheetMetal = answer0SheetMetal.scale.choices.find((c) => c._id.toString() == answer0SheetMetal.answer.toString())
-          }
-
-          if (p1) {
-            const answer1SheetMetal = p1.sections.map((s) => s.answers).reduce((x, y) => [...x, ...y], []).find((a) => a._id.toString() == sheetMetalQuestion);
-            choice1SheetMetal = answer1SheetMetal.scale.choices.find((c) => c._id.toString() == answer1SheetMetal.answer.toString())
-          }
-
-          const row = {
-            vin: car.vin,
-            brand: car.brand,
-
-            p0CreatedAt: p0 ? p0.createdAt : '-',
-            p0Venue: p0 ? p0.venue.name : '-',
-            p0Qualification: p0 ? p0.qualification : '-',
-            p0Gas: choice0Gas ? choice0Gas.choice : '-',
-            p0Paint: choice0Paint ? choice0Paint.choice : '-',
-            p0SheetMetal: choice0SheetMetal ? choice0SheetMetal.choice : '-',
-
-            p1CreatedAt: p1 ? p1.createdAt : '-',
-            p1Venue: p1 ? p1.venue.name : '-',
-            p1Qualification: p1 ? p1.qualification : '-',
-            p1Gas: choice1Gas ? choice1Gas.choice : '-',
-            p1Paint: choice1Paint ? choice1Paint.choice : '-',
-            p1SheetMetal: choice1SheetMetal ? choice1SheetMetal.choice : '-',
-          }
-
-          worksheet.addRow(row);
 
         }
 
@@ -1857,12 +1862,12 @@ class FormController {
       let answer = new ObjectID("5b64b2e8de5557c85fa14fa0")
 
       var days: string[] = [];
-      if(form) {
+      if (form) {
 
         var daysDict: any = {}
         var total = 30 * 6
         var t0 = moment().subtract(total, 'days')
-        for(var i = 0; i < total; i++) {
+        for (var i = 0; i < total; i++) {
           const day = moment().subtract(total - i, 'days').format('YYYY-MM-DD');
           daysDict[day] = {
             'clean': 0,
@@ -1878,7 +1883,7 @@ class FormController {
               team,
               form: form._id,
               "sections.answers.answer": answer,
-              createdAt: { $gt: t0.toDate() }
+              createdAt: {$gt: t0.toDate()}
             }
           },
           {
@@ -1891,8 +1896,7 @@ class FormController {
           }
         ])
 
-        for(var datum of cleanDispatch)
-        {
+        for (var datum of cleanDispatch) {
           const day = datum._id
           const sum = datum.count
           console.log(datum)
@@ -1904,8 +1908,8 @@ class FormController {
             $match: {
               team,
               form: form._id,
-              "sections.answers.answer": { $ne: answer },
-              createdAt: { $gt: t0.toDate() }
+              "sections.answers.answer": {$ne: answer},
+              createdAt: {$gt: t0.toDate()}
             }
           },
           {
@@ -1918,8 +1922,7 @@ class FormController {
           }
         ])
 
-        for(var datum of notCleanDispatch)
-        {
+        for (var datum of notCleanDispatch) {
           const day = datum._id
           const sum = datum.count
           console.log(day)
