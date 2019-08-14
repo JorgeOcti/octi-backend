@@ -84,12 +84,20 @@ const carSchema = new mongoose.Schema({
         enum: exports.choicesStatusCar,
         required: true,
         default: ChoicesStatusCar.active
+    },
+    createdBy: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User',
+        default: null
     }
 }, {
     timestamps: true
 });
 carSchema.index({
     team: 1, status: 1, createdAt: -1
+});
+carSchema.index({
+    team: 1, lastForm: -1
 });
 carSchema.index({
     team: 1, vin2: 1
