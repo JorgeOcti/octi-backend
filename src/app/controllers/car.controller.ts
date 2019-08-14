@@ -1027,7 +1027,7 @@ class CarController {
       /* headers */
       worksheet.columns = columns;
 
-      const periods = 12;
+      const periods = 6;
       for (let i = periods; i >= 0; i--) {
 
         const t0 = moment().subtract(i, 'weeks').startOf('week');

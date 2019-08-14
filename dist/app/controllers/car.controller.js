@@ -1020,7 +1020,7 @@ class CarController {
             columns.push({ header: 'Posición', key: 'position', width: 30 });
             /* headers */
             worksheet.columns = columns;
-            const periods = 12;
+            const periods = 6;
             for (let i = periods; i >= 0; i--) {
                 const t0 = moment().subtract(i, 'weeks').startOf('week');
                 const t1 = moment().subtract(i, 'weeks').endOf('week');
