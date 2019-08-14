@@ -944,9 +944,9 @@ class CarController {
             if (from || to) {
                 const createdAtFilter = {};
                 if (from)
-                    createdAtFilter.$gte = moment(from, 'YYYY-MM-DD');
+                    createdAtFilter.$gte = moment(from, 'YYYY-MM-DD').startOf('day');
                 if (to)
-                    createdAtFilter.$lte = moment(to, 'YYYY-MM-DD');
+                    createdAtFilter.$lte = moment(to, 'YYYY-MM-DD').endOf('day');
                 // TODO. this is only querying for the last revisions
                 participantFilter.$and.push({
                     createdAt: createdAtFilter
