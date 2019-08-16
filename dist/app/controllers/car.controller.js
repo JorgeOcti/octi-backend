@@ -1069,7 +1069,13 @@ class CarController {
             for (const revision of revisions) {
                 revisionsToProcess.push(this.processDamagedCar(damagesCache, revision));
             }
-            resolve(revisionsToProcess);
+            let results = [];
+            while (revisionsToProcess.length) {
+                results = [...results, ...await bluebird
+                        .all(revisionsToProcess.splice(0, 100))
+                ];
+            }
+            resolve(results);
         });
     }
     async apiDamagesExport(req, res) {
@@ -1136,17 +1142,7 @@ class CarController {
             for (let i = periods; i >= 0; i--) {
                 periodToProcess.push(this.addRevisions(req.user, i, damagesCache));
             }
-            const resultPeriods = await bluebird.all(periodToProcess);
-            const revisionsToProcess = [];
-            for (const result of resultPeriods) {
-                revisionsToProcess.push(...result);
-            }
-            let results = [];
-            while (revisionsToProcess.length) {
-                results = [...results, ...await bluebird
-                        .all(revisionsToProcess.splice(0, 100))
-                ];
-            }
+            const results = await bluebird.all(periodToProcess);
             for (const rows of results) {
                 for (const row of rows) {
                     worksheet.addRow(row);

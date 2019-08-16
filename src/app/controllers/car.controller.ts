@@ -1075,7 +1075,13 @@ class CarController {
       for (const revision of revisions) {
         revisionsToProcess.push(this.processDamagedCar(damagesCache, revision));
       }
-      resolve(revisionsToProcess);
+      let results: any[] = [];
+      while (revisionsToProcess.length) {
+        results = [...results, ...await bluebird
+          .all(revisionsToProcess.splice(0, 100))
+        ];
+      }
+      resolve(results);
     })
   }
 
@@ -1148,18 +1154,7 @@ class CarController {
       for (let i = periods; i >= 0; i--) {
         periodToProcess.push(this.addRevisions(req.user, i, damagesCache));
       }
-      const resultPeriods: any[] = await bluebird.all(periodToProcess);
-      const revisionsToProcess: any[] = [];
-      for (const result of resultPeriods) {
-        revisionsToProcess.push(...result);
-      }
-
-      let results: any[] = [];
-      while (revisionsToProcess.length) {
-        results = [...results, ...await bluebird
-          .all(revisionsToProcess.splice(0, 100))
-        ];
-      }
+      const results: any[] = await bluebird.all(periodToProcess);
 
       for (const rows of results) {
         for (const row of rows) {
