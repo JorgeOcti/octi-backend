@@ -1043,6 +1043,7 @@ class CarController {
                         venue: {
                             $in: user.venuesPermissions()
                         },
+                        'sections.answers.kind': 'damage',
                     }
                 ]
             }, {

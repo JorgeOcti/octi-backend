@@ -1047,7 +1047,7 @@ class CarController {
             venue: {
               $in: user.venuesPermissions()
             },
-            //'sections.answers.kind': 'damage',
+            'sections.answers.kind': 'damage',
             //'sections.answers.damagesSelected._id': {$exists: true}
           }
         ]
