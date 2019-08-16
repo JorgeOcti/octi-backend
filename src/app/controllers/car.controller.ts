@@ -1029,12 +1029,12 @@ class CarController {
     });
   }
 
-  public addRevisions(user: any, period: number, damagesCache: any, worksheet) {
+  public addRevisions(user: any, period: number, damagesCache: any, worksheet: any) {
     return new Promise(async (resolve, reject) => {
       const revisionsToProcess = [];
       const t0 = moment().subtract(period, 'weeks').startOf('week');
       const t1 = moment().subtract(period, 'weeks').endOf('week');
-      const revisions = await ParticipantModel.find({
+      /*const revisions = await ParticipantModel.find({
         $and: [
           {
             createdAt: {
@@ -1071,7 +1071,60 @@ class CarController {
           path: 'venue',
           select: ['name']
         }
-      ]);
+      ]); */
+      const revisions = await ParticipantModel.aggregate([{
+        $match: {
+          $and: [
+            {
+              venue: {
+                $in: user.venuesPermissions()
+              },
+            }, {
+              createdAt: {
+                $gte: t0.toDate(),
+                $lte: t1.toDate(),
+              }
+            },{
+              'sections.answers.kind': 'damage'
+            }]
+        }
+      }, {
+        $project: {
+          createdAt: true,
+          user: true,
+          venue: true,
+          car: true,
+          'sections.answers.damages': true,
+          'sections.answers.damagesSelected': true
+        }
+      }, {
+        $lookup: {
+          from: 'users',
+          localField: 'user',
+          foreignField: '_id',
+          as: 'user'
+        }
+      }, {
+        $unwind: '$user'
+      }, {
+        $lookup: {
+          from: 'cars',
+          localField: 'car',
+          foreignField: '_id',
+          as: 'car'
+        }
+      }, {
+        $unwind: '$car'
+      }, {
+        $lookup: {
+          from: 'venues',
+          localField: 'venue',
+          foreignField: '_id',
+          as: 'venue'
+        }
+      }, {
+        $unwind: '$venue'
+      }]);
       for (const revision of revisions) {
         revisionsToProcess.push(this.processDamagedCar(damagesCache, revision, worksheet));
       }

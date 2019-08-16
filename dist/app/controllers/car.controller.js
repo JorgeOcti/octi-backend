@@ -1031,42 +1031,98 @@ class CarController {
             const revisionsToProcess = [];
             const t0 = moment().subtract(period, 'weeks').startOf('week');
             const t1 = moment().subtract(period, 'weeks').endOf('week');
-            const revisions = await participant_model_1.default.find({
-                $and: [
-                    {
-                        createdAt: {
-                            $gte: t0,
-                            $lte: t1,
-                        },
-                    },
-                    {
-                        venue: {
-                            $in: user.venuesPermissions()
-                        },
-                        'sections.answers.kind': 'damage',
-                    }
-                ]
-            }, {
-                createdAt: true,
-                user: true,
-                venue: true,
-                car: true,
-                'sections.answers.damages': true,
-                'sections.answers.damagesSelected': true
-            }).populate([
+            /*const revisions = await ParticipantModel.find({
+              $and: [
                 {
-                    path: 'user',
-                    select: ['firstName', 'lastName']
+                  createdAt: {
+                    $gte: t0,
+                    $lte: t1,
+                  },
+      
                 },
                 {
-                    path: 'car',
-                    select: ['vin', 'vin2', 'denomination', 'color', 'brand']
-                },
-                {
-                    path: 'venue',
-                    select: ['name']
+                  venue: {
+                    $in: user.venuesPermissions()
+                  },
+                  'sections.answers.kind': 'damage',
+                  //'sections.answers.damagesSelected._id': {$exists: true}
                 }
-            ]);
+              ]
+            }, {
+              createdAt: true,
+              user: true,
+              venue: true,
+              car: true,
+              'sections.answers.damages': true,
+              'sections.answers.damagesSelected': true
+            }).populate([
+              {
+                path: 'user',
+                select: ['firstName', 'lastName']
+              },
+              {
+                path: 'car',
+                select: ['vin', 'vin2', 'denomination', 'color', 'brand']
+              },
+              {
+                path: 'venue',
+                select: ['name']
+              }
+            ]); */
+            const revisions = await participant_model_1.default.aggregate([{
+                    $match: {
+                        $and: [
+                            {
+                                venue: {
+                                    $in: user.venuesPermissions()
+                                },
+                            }, {
+                                createdAt: {
+                                    $gte: t0.toDate(),
+                                    $lte: t1.toDate(),
+                                }
+                            }, {
+                                'sections.answers.kind': 'damage'
+                            }
+                        ]
+                    }
+                }, {
+                    $project: {
+                        createdAt: true,
+                        user: true,
+                        venue: true,
+                        car: true,
+                        'sections.answers.damages': true,
+                        'sections.answers.damagesSelected': true
+                    }
+                }, {
+                    $lookup: {
+                        from: 'users',
+                        localField: 'user',
+                        foreignField: '_id',
+                        as: 'user'
+                    }
+                }, {
+                    $unwind: '$user'
+                }, {
+                    $lookup: {
+                        from: 'cars',
+                        localField: 'car',
+                        foreignField: '_id',
+                        as: 'car'
+                    }
+                }, {
+                    $unwind: '$car'
+                }, {
+                    $lookup: {
+                        from: 'venues',
+                        localField: 'venue',
+                        foreignField: '_id',
+                        as: 'venue'
+                    }
+                }, {
+                    $unwind: '$venue'
+                }]);
             for (const revision of revisions) {
                 revisionsToProcess.push(this.processDamagedCar(damagesCache, revision, worksheet));
             }
