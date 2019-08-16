@@ -1143,9 +1143,11 @@ class CarController {
                 periodToProcess.push(this.addRevisions(req.user, i, damagesCache));
             }
             const results = await bluebird.all(periodToProcess);
-            for (const rows of results) {
-                for (const row of rows) {
-                    worksheet.addRow(row);
+            for (const result of results) {
+                for (const rows of result) {
+                    for (const row of rows) {
+                        worksheet.addRow(row);
+                    }
                 }
             }
             /* formats */
