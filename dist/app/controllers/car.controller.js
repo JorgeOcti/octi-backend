@@ -986,7 +986,7 @@ class CarController {
             }
         }
     }
-    processDamagedCar(cache, participant) {
+    processDamagedCar(cache, participant, worksheet) {
         return new Promise(async (resolve, reject) => {
             const rows = [];
             const damages = [];
@@ -1021,12 +1021,12 @@ class CarController {
                     kind: damages[d].kind.name,
                     part: damages[d].part.name
                 };
-                rows.push(row);
+                worksheet.addRow(row);
             }
             resolve(rows);
         });
     }
-    addRevisions(user, period, damagesCache) {
+    addRevisions(user, period, damagesCache, worksheet) {
         return new Promise(async (resolve, reject) => {
             const revisionsToProcess = [];
             const t0 = moment().subtract(period, 'weeks').startOf('week');
@@ -1067,7 +1067,7 @@ class CarController {
                 }
             ]);
             for (const revision of revisions) {
-                revisionsToProcess.push(this.processDamagedCar(damagesCache, revision));
+                revisionsToProcess.push(this.processDamagedCar(damagesCache, revision, worksheet));
             }
             let results = [];
             while (revisionsToProcess.length) {
@@ -1140,16 +1140,9 @@ class CarController {
             };
             const periodToProcess = [];
             for (let i = periods; i >= 0; i--) {
-                periodToProcess.push(this.addRevisions(req.user, i, damagesCache));
+                periodToProcess.push(this.addRevisions(req.user, i, damagesCache, worksheet));
             }
-            const results = await bluebird.all(periodToProcess);
-            for (const result of results) {
-                for (const rows of result) {
-                    for (const row of rows) {
-                        worksheet.addRow(row);
-                    }
-                }
-            }
+            await bluebird.all(periodToProcess);
             /* formats */
             worksheet.getRow(1).eachCell((cell) => {
                 cell.font = {

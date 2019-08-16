@@ -986,9 +986,9 @@ class CarController {
     }
   }
 
-  public processDamagedCar(cache: any, participant: IParticipant): Promise<any> {
+  public processDamagedCar(cache: any, participant: IParticipant, worksheet:any): Promise<any> {
     return new Promise(async (resolve, reject) => {
-      const rows = [];
+      const rows: any[] = [];
       const damages = [];
       for (const section of participant.sections) {
         for (const answer of section.answers) {
@@ -1023,13 +1023,13 @@ class CarController {
           kind: damages[d].kind.name,
           part: damages[d].part.name
         };
-        rows.push(row);
+        worksheet.addRow(row)
       }
       resolve(rows);
     });
   }
 
-  public addRevisions(user: any, period: number, damagesCache: any) {
+  public addRevisions(user: any, period: number, damagesCache: any, worksheet) {
     return new Promise(async (resolve, reject) => {
       const revisionsToProcess = [];
       const t0 = moment().subtract(period, 'weeks').startOf('week');
@@ -1073,7 +1073,7 @@ class CarController {
         }
       ]);
       for (const revision of revisions) {
-        revisionsToProcess.push(this.processDamagedCar(damagesCache, revision));
+        revisionsToProcess.push(this.processDamagedCar(damagesCache, revision, worksheet));
       }
       let results: any[] = [];
       while (revisionsToProcess.length) {
@@ -1152,17 +1152,9 @@ class CarController {
 
       const periodToProcess = [];
       for (let i = periods; i >= 0; i--) {
-        periodToProcess.push(this.addRevisions(req.user, i, damagesCache));
+        periodToProcess.push(this.addRevisions(req.user, i, damagesCache, worksheet));
       }
-      const results: any[] = await bluebird.all(periodToProcess);
-
-      for (const result of results) {
-        for (const rows of result) {
-          for (const row of rows) {
-            worksheet.addRow(row);
-          }
-        }
-      }
+      await bluebird.all(periodToProcess);
 
       /* formats */
       worksheet.getRow(1).eachCell((cell) => {
