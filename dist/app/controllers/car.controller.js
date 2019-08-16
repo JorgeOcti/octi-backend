@@ -1120,7 +1120,7 @@ class CarController {
             columns.push({ header: 'Posición', key: 'position', width: 30 });
             /* headers */
             worksheet.columns = columns;
-            const periods = 4;
+            const periods = 2;
             const kinds = await kind_model_1.default.find({ team }, { name: true });
             const parts = await part_model_1.default.find({ team }, { name: true });
             const positions = await position_model_1.default.find({ team }, { name: true });

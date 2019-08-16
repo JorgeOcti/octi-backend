@@ -1131,7 +1131,7 @@ class CarController {
 
       /* headers */
       worksheet.columns = columns;
-      const periods = 4;
+      const periods = 2;
       const kinds = await Kind.find({team}, {name: true});
       const parts = await Part.find({team}, {name: true});
       const positions = await Position.find({team}, {name: true});
