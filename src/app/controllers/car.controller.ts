@@ -1,4 +1,5 @@
 import * as excel from 'exceljs';
+import * as bluebird from 'bluebird';
 import * as tempfile from 'tempfile';
 import {Response} from 'express';
 import * as moment from 'moment';
@@ -14,6 +15,10 @@ import VINService from '../../services/vin.service';
 import CarModel, {ChoicesStatusCar, ICarModel} from '../models/car.model';
 import User from '../models/user.model';
 import Venue from '../models/venue.model';
+import {IParticipant} from "../../interfaces/participant.interface";
+import Kind from "../../form/models/kind.model";
+import Part from "../../form/models/part.model";
+import Position from "../../form/models/position.model";
 
 class CarController {
   protected carBrands: any = {
@@ -56,6 +61,9 @@ class CarController {
     this.vinDashboard = this.vinDashboard.bind(this);
     this.vinDashboardDetail = this.vinDashboardDetail.bind(this);
     this.checkVIN = this.checkVIN.bind(this);
+    this.processDamagedCar = this.processDamagedCar.bind(this);
+    this.apiDamagesExport = this.apiDamagesExport.bind(this);
+    this.addRevisions = this.addRevisions.bind(this);
     this.apiCars = this.apiCars.bind(this);
     this.apiRevisions = this.apiRevisions.bind(this);
     this.apiCarDetail = this.apiCarDetail.bind(this);
@@ -350,8 +358,7 @@ class CarController {
   }
 
   public async apiParticipantsPerDate(req: IRequest, res: Response) {
-
-    const {company, team} = req.user;
+    const {team} = req.user;
     try {
       const participantPerDay = await ParticipantModel
         .aggregate([{
@@ -979,8 +986,100 @@ class CarController {
     }
   }
 
-  public async apiDamagesExport(req: IRequest, res: Response) {
+  public processDamagedCar(cache: any, participant: IParticipant): Promise<any> {
+    return new Promise(async (resolve, reject) => {
+      const rows = [];
+      const damages = [];
+      for (const section of participant.sections) {
+        for (const answer of section.answers) {
+          for (const damage of answer.damagesSelected) {
+            const kind = damage.kind && cache.kinds.hasOwnProperty(damage.kind.toString()) ? cache.kinds[damage.kind.toString()] : answer.damages.kinds
+              .find((d) => d._id && damage.kind && d._id.toString() == damage.kind.toString());
+            const part = damage.part && cache.parts.hasOwnProperty(damage.part.toString()) ? cache.parts[damage.part.toString()] : answer.damages.parts
+              .find((d) => d._id && damage.part && d._id.toString() == damage.part.toString());
+            const position = damage.position && cache.positions.hasOwnProperty(damage.position.toString()) ? cache.positions[damage.position.toString()] : answer.damages.positions
+              .find((d) => d._id && damage.position && d._id.toString() == damage.position.toString());
 
+            if (kind && part)
+              damages.push({kind, part, position});
+          }
+        }
+      }
+
+      for (const d in damages) {
+        const idx = parseInt(d) + 1;
+        const row = {
+          vin: participant.car.vin,
+          denomination: participant.car.denomination,
+          color: participant.car.color,
+          brand: participant.car.brand,
+          venue: participant.venue.name,
+          created_at: participant.createdAt,
+          user: `${participant.user.firstName} ${participant.user.lastName}`,
+          damages: `${damages.length}`,
+          has_damages: damages.length > 0 ? 'Sí' : 'No',
+          damage: idx,
+          position: damages[d].position ? damages[d].position.name : "-",
+          kind: damages[d].kind.name,
+          part: damages[d].part.name
+        };
+        rows.push(row);
+      }
+      resolve(rows);
+    });
+  }
+
+  public addRevisions(user: any, period: number, damagesCache: any) {
+    return new Promise(async (resolve, reject) => {
+      const revisionsToProcess = [];
+      const t0 = moment().subtract(period, 'weeks').startOf('week');
+      const t1 = moment().subtract(period, 'weeks').endOf('week');
+      const revisions = await ParticipantModel.find({
+        $and: [
+          {
+            createdAt: {
+              $gte: t0,
+              $lte: t1,
+            },
+
+          },
+          {
+            venue: {
+              $in: user.venuesPermissions()
+            },
+            //'sections.answers.kind': 'damage',
+            //'sections.answers.damagesSelected._id': {$exists: true}
+          }
+        ]
+      }, {
+        createdAt: true,
+        user: true,
+        venue: true,
+        car: true,
+        'sections.answers.damages': true,
+        'sections.answers.damagesSelected': true
+      }).populate([
+        {
+          path: 'user',
+          select: ['firstName', 'lastName']
+        },
+        {
+          path: 'car',
+          select: ['vin', 'vin2', 'denomination', 'color', 'brand']
+        },
+        {
+          path: 'venue',
+          select: ['name']
+        }
+      ]);
+      for (const revision of revisions) {
+        revisionsToProcess.push(this.processDamagedCar(damagesCache, revision));
+      }
+      resolve(revisionsToProcess);
+    })
+  }
+
+  public async apiDamagesExport(req: IRequest, res: Response) {
     if (!req.user.hasPermission('exportDamages')) {
       return res.status(403).json({
         message: 'No tienes permisos para esta operación'
@@ -988,7 +1087,7 @@ class CarController {
     }
 
     try {
-
+      const {team} = req.user;
       const workbook = new excel.Workbook();
       const worksheet = workbook.addWorksheet('Daños', {
         properties: {
@@ -999,7 +1098,7 @@ class CarController {
       });
       worksheet.autoFilter = {from: 'A1', to: 'F1'};
 
-      var columns = [{
+      const columns = [{
         header: 'VIN', key: 'vin', width: 30
       }, {
         header: 'Denominación', key: 'denomination', width: 30
@@ -1019,93 +1118,52 @@ class CarController {
         header: 'Daños reportados', key: 'damages', width: 30
       }];
 
-      columns.push({header: 'Daño', key: 'damage', width: 30})
-      columns.push({header: 'Parte', key: 'part', width: 30})
-      columns.push({header: 'Tipo', key: 'kind', width: 30})
-      columns.push({header: 'Posición', key: 'position', width: 30})
+      columns.push({header: 'Daño', key: 'damage', width: 30});
+      columns.push({header: 'Parte', key: 'part', width: 30});
+      columns.push({header: 'Tipo', key: 'kind', width: 30});
+      columns.push({header: 'Posición', key: 'position', width: 30});
 
       /* headers */
       worksheet.columns = columns;
+      const periods = 4;
+      const kinds = await Kind.find({team}, {name: true});
+      const parts = await Part.find({team}, {name: true});
+      const positions = await Position.find({team}, {name: true});
+      const damagesCache = {
+        kinds: kinds.reduce((acc: any, cur: any) => {
+          acc[cur._id.toString()] = cur;
+          return acc;
+        }, {}),
+        parts: parts.reduce((acc: any, cur: any) => {
+          acc[cur._id.toString()] = cur;
+          return acc;
+        }, {}),
+        positions: positions.reduce((acc: any, cur: any) => {
+          acc[cur._id.toString()] = cur;
+          return acc;
+        }, {}),
+      };
 
-      const periods = 6;
+      const periodToProcess = [];
       for (let i = periods; i >= 0; i--) {
+        periodToProcess.push(this.addRevisions(req.user, i, damagesCache));
+      }
+      const resultPeriods: any[] = await bluebird.all(periodToProcess);
+      const revisionsToProcess: any[] = [];
+      for (const result of resultPeriods) {
+        revisionsToProcess.push(...result);
+      }
 
-        const t0 = moment().subtract(i, 'weeks').startOf('week');
-        const t1 = moment().subtract(i, 'weeks').endOf('week');
+      let results: any[] = [];
+      while (revisionsToProcess.length) {
+        results = [...results, ...await bluebird
+          .all(revisionsToProcess.splice(0, 100))
+        ];
+      }
 
-        const revisions = await ParticipantModel.find({
-          $and: [
-            {
-              createdAt: {
-                $gte: t0,
-                $lte: t1,
-              },
-            },
-            {
-              venue: {
-                $in: req.user.venuesPermissions()
-              },
-              //'sections.answers.kind': 'damage',
-              //'sections.answers.damagesSelected._id': {$exists: true}
-            }
-          ]
-        }, {
-          createdAt: true,
-          user: true,
-          venue: true,
-          car: true,
-          'sections.answers.damages': true,
-          'sections.answers.damagesSelected': true
-        }).populate([
-          {
-            path: 'user',
-            select: ['firstName', 'lastName']
-          },
-          {
-            path: 'car',
-            select: ['vin', 'vin2', 'denomination', 'color', 'brand']
-          },
-          {
-            path: 'venue',
-            select: ['name']
-          }
-        ])
-
-        for (var revision of revisions) {
-          var damages = [];
-          for (var section of revision.sections) {
-            for (const answer of section.answers) {
-              for (const damage of answer.damagesSelected) {
-                const kind = answer.damages.kinds.find((d) => d._id && damage.kind && d._id.toString() == damage.kind.toString());
-                const part = answer.damages.parts.find((d) => d._id && damage.part && d._id.toString() == damage.part.toString());
-                const position = answer.damages.positions.find((d) => d._id && damage.position && d._id.toString() == damage.position.toString());
-
-                if (kind && part)
-                  damages.push({kind, part, position});
-              }
-            }
-          }
-
-          for (let j in damages) {
-            var idx = parseInt(j) + 1;
-            const row = {
-              vin: revision.car.vin,
-              denomination: revision.car.denomination,
-              color: revision.car.color,
-              brand: revision.car.brand,
-              venue: revision.venue.name,
-              created_at: revision.createdAt,
-              user: `${revision.user.firstName} ${revision.user.lastName}`,
-              damages: `${damages.length}`,
-              has_damages: damages.length > 0 ? 'Sí' : 'No',
-              damage: idx,
-              position: damages[j].position ? damages[j].position.name : "-",
-              kind: damages[j].kind.name,
-              part: damages[j].part.name
-            }
-
-            worksheet.addRow(row);
-          }
+      for (const rows of results) {
+        for (const row of rows) {
+          worksheet.addRow(row);
         }
       }
 
@@ -1204,7 +1262,7 @@ class CarController {
         });
 
         for (const car of cars) {
-          const inventories = car.inventories.sort((i0, i1) => i0.createdAt > i1.createdAt;
+          const inventories = car.inventories.sort((i0, i1) => i0.createdAt > i1.createdAt);
 
           if (inventories.length == 0)
             continue;

@@ -1,6 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 const excel = require("exceljs");
+const bluebird = require("bluebird");
 const tempfile = require("tempfile");
 const moment = require("moment");
 const mongoose = require("mongoose");
@@ -13,6 +14,9 @@ const vin_service_1 = require("../../services/vin.service");
 const car_model_1 = require("../models/car.model");
 const user_model_1 = require("../models/user.model");
 const venue_model_1 = require("../models/venue.model");
+const kind_model_1 = require("../../form/models/kind.model");
+const part_model_1 = require("../../form/models/part.model");
+const position_model_1 = require("../../form/models/position.model");
 class CarController {
     constructor() {
         this.carBrands = {
@@ -53,6 +57,9 @@ class CarController {
         this.vinDashboard = this.vinDashboard.bind(this);
         this.vinDashboardDetail = this.vinDashboardDetail.bind(this);
         this.checkVIN = this.checkVIN.bind(this);
+        this.processDamagedCar = this.processDamagedCar.bind(this);
+        this.apiDamagesExport = this.apiDamagesExport.bind(this);
+        this.addRevisions = this.addRevisions.bind(this);
         this.apiCars = this.apiCars.bind(this);
         this.apiRevisions = this.apiRevisions.bind(this);
         this.apiCarDetail = this.apiCarDetail.bind(this);
@@ -355,7 +362,7 @@ class CarController {
         }
     }
     async apiParticipantsPerDate(req, res) {
-        const { company, team } = req.user;
+        const { team } = req.user;
         try {
             const participantPerDay = await participant_model_1.default
                 .aggregate([{
@@ -979,6 +986,92 @@ class CarController {
             }
         }
     }
+    processDamagedCar(cache, participant) {
+        return new Promise(async (resolve, reject) => {
+            const rows = [];
+            const damages = [];
+            for (const section of participant.sections) {
+                for (const answer of section.answers) {
+                    for (const damage of answer.damagesSelected) {
+                        const kind = damage.kind && cache.kinds.hasOwnProperty(damage.kind.toString()) ? cache.kinds[damage.kind.toString()] : answer.damages.kinds
+                            .find((d) => d._id && damage.kind && d._id.toString() == damage.kind.toString());
+                        const part = damage.part && cache.parts.hasOwnProperty(damage.part.toString()) ? cache.parts[damage.part.toString()] : answer.damages.parts
+                            .find((d) => d._id && damage.part && d._id.toString() == damage.part.toString());
+                        const position = damage.position && cache.positions.hasOwnProperty(damage.position.toString()) ? cache.positions[damage.position.toString()] : answer.damages.positions
+                            .find((d) => d._id && damage.position && d._id.toString() == damage.position.toString());
+                        if (kind && part)
+                            damages.push({ kind, part, position });
+                    }
+                }
+            }
+            for (const d in damages) {
+                const idx = parseInt(d) + 1;
+                const row = {
+                    vin: participant.car.vin,
+                    denomination: participant.car.denomination,
+                    color: participant.car.color,
+                    brand: participant.car.brand,
+                    venue: participant.venue.name,
+                    created_at: participant.createdAt,
+                    user: `${participant.user.firstName} ${participant.user.lastName}`,
+                    damages: `${damages.length}`,
+                    has_damages: damages.length > 0 ? 'Sí' : 'No',
+                    damage: idx,
+                    position: damages[d].position ? damages[d].position.name : "-",
+                    kind: damages[d].kind.name,
+                    part: damages[d].part.name
+                };
+                rows.push(row);
+            }
+            resolve(rows);
+        });
+    }
+    addRevisions(user, period, damagesCache) {
+        return new Promise(async (resolve, reject) => {
+            const revisionsToProcess = [];
+            const t0 = moment().subtract(period, 'weeks').startOf('week');
+            const t1 = moment().subtract(period, 'weeks').endOf('week');
+            const revisions = await participant_model_1.default.find({
+                $and: [
+                    {
+                        createdAt: {
+                            $gte: t0,
+                            $lte: t1,
+                        },
+                    },
+                    {
+                        venue: {
+                            $in: user.venuesPermissions()
+                        },
+                    }
+                ]
+            }, {
+                createdAt: true,
+                user: true,
+                venue: true,
+                car: true,
+                'sections.answers.damages': true,
+                'sections.answers.damagesSelected': true
+            }).populate([
+                {
+                    path: 'user',
+                    select: ['firstName', 'lastName']
+                },
+                {
+                    path: 'car',
+                    select: ['vin', 'vin2', 'denomination', 'color', 'brand']
+                },
+                {
+                    path: 'venue',
+                    select: ['name']
+                }
+            ]);
+            for (const revision of revisions) {
+                revisionsToProcess.push(this.processDamagedCar(damagesCache, revision));
+            }
+            resolve(revisionsToProcess);
+        });
+    }
     async apiDamagesExport(req, res) {
         if (!req.user.hasPermission('exportDamages')) {
             return res.status(403).json({
@@ -986,6 +1079,7 @@ class CarController {
             });
         }
         try {
+            const { team } = req.user;
             const workbook = new excel.Workbook();
             const worksheet = workbook.addWorksheet('Daños', {
                 properties: {
@@ -995,7 +1089,7 @@ class CarController {
                 }
             });
             worksheet.autoFilter = { from: 'A1', to: 'F1' };
-            var columns = [{
+            const columns = [{
                     header: 'VIN', key: 'vin', width: 30
                 }, {
                     header: 'Denominación', key: 'denomination', width: 30
@@ -1020,77 +1114,42 @@ class CarController {
             columns.push({ header: 'Posición', key: 'position', width: 30 });
             /* headers */
             worksheet.columns = columns;
-            const periods = 6;
+            const periods = 4;
+            const kinds = await kind_model_1.default.find({ team }, { name: true });
+            const parts = await part_model_1.default.find({ team }, { name: true });
+            const positions = await position_model_1.default.find({ team }, { name: true });
+            const damagesCache = {
+                kinds: kinds.reduce((acc, cur) => {
+                    acc[cur._id.toString()] = cur;
+                    return acc;
+                }, {}),
+                parts: parts.reduce((acc, cur) => {
+                    acc[cur._id.toString()] = cur;
+                    return acc;
+                }, {}),
+                positions: positions.reduce((acc, cur) => {
+                    acc[cur._id.toString()] = cur;
+                    return acc;
+                }, {}),
+            };
+            const periodToProcess = [];
             for (let i = periods; i >= 0; i--) {
-                const t0 = moment().subtract(i, 'weeks').startOf('week');
-                const t1 = moment().subtract(i, 'weeks').endOf('week');
-                const revisions = await participant_model_1.default.find({
-                    $and: [
-                        {
-                            createdAt: {
-                                $gte: t0,
-                                $lte: t1,
-                            },
-                        },
-                        {
-                            venue: {
-                                $in: req.user.venuesPermissions()
-                            },
-                        }
-                    ]
-                }, {
-                    createdAt: true,
-                    user: true,
-                    venue: true,
-                    car: true,
-                    'sections.answers.damages': true,
-                    'sections.answers.damagesSelected': true
-                }).populate([
-                    {
-                        path: 'user',
-                        select: ['firstName', 'lastName']
-                    },
-                    {
-                        path: 'car',
-                        select: ['vin', 'vin2', 'denomination', 'color', 'brand']
-                    },
-                    {
-                        path: 'venue',
-                        select: ['name']
-                    }
-                ]);
-                for (var revision of revisions) {
-                    var damages = [];
-                    for (var section of revision.sections) {
-                        for (const answer of section.answers) {
-                            for (const damage of answer.damagesSelected) {
-                                const kind = answer.damages.kinds.find((d) => d._id && damage.kind && d._id.toString() == damage.kind.toString());
-                                const part = answer.damages.parts.find((d) => d._id && damage.part && d._id.toString() == damage.part.toString());
-                                const position = answer.damages.positions.find((d) => d._id && damage.position && d._id.toString() == damage.position.toString());
-                                if (kind && part)
-                                    damages.push({ kind, part, position });
-                            }
-                        }
-                    }
-                    for (let j in damages) {
-                        var idx = parseInt(j) + 1;
-                        const row = {
-                            vin: revision.car.vin,
-                            denomination: revision.car.denomination,
-                            color: revision.car.color,
-                            brand: revision.car.brand,
-                            venue: revision.venue.name,
-                            created_at: revision.createdAt,
-                            user: `${revision.user.firstName} ${revision.user.lastName}`,
-                            damages: `${damages.length}`,
-                            has_damages: damages.length > 0 ? 'Sí' : 'No',
-                            damage: idx,
-                            position: damages[j].position ? damages[j].position.name : "-",
-                            kind: damages[j].kind.name,
-                            part: damages[j].part.name
-                        };
-                        worksheet.addRow(row);
-                    }
+                periodToProcess.push(this.addRevisions(req.user, i, damagesCache));
+            }
+            const resultPeriods = await bluebird.all(periodToProcess);
+            const revisionsToProcess = [];
+            for (const result of resultPeriods) {
+                revisionsToProcess.push(...result);
+            }
+            let results = [];
+            while (revisionsToProcess.length) {
+                results = [...results, ...await bluebird
+                        .all(revisionsToProcess.splice(0, 100))
+                ];
+            }
+            for (const rows of results) {
+                for (const row of rows) {
+                    worksheet.addRow(row);
                 }
             }
             /* formats */
