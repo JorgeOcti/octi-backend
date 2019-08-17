@@ -41,7 +41,7 @@ import AppContainer from '../../container/AppContainer';
 import {IWindow} from '../../interfaces/window';
 import {IFilterCar} from '../../reducers/inventory.reducer';
 import ApiService from '../../utils/axios';
-import {goToSection, maxText} from '../../utils/common';
+import {goToSection, hasPermission, maxText} from '../../utils/common';
 import ModalView from '../Modal/ModalView';
 import BootstrapSelect from '../Utils/BootstrapSelect';
 import Checkbox from '../Utils/CheckBox';
@@ -127,7 +127,8 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
     found: 'fa-check',
     leftover: 'fa-arrow-up',
     missing: 'fa-arrow-down',
-    reported: 'fa-exclamation'
+    reported: 'fa-exclamation',
+    deleted: 'fa-close',
   };
 
   private classLabelStatus: any = {
@@ -506,7 +507,20 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
   public optionsFormatter(cell: any, row: any) {
     const {labels} = this.props.inventories;
     const {id} = this.props.match.params;
-    const options = labels.filter((label) => {
+    const newLabels = [...labels];
+    if (hasPermission(window.user, 'deleteReported')) {
+      newLabels.push({
+        _id: 'deleted',
+        name: 'Eliminar vehículo',
+        sendTo: 'deleted',
+        requireCustomText: false,
+        isExhibition: false,
+        affected: ['reported'],
+        color: '',
+        active: true
+      });
+    }
+    const options = newLabels.filter((label) => {
       return label.affected.includes(row.status);
     });
     if (options.length) {

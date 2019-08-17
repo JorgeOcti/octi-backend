@@ -758,6 +758,15 @@ class CarController {
                 _id: true
               })
             },
+            status: {
+              $in: [
+                ChoicesStatusCarInventory.pending,
+                ChoicesStatusCarInventory.found,
+                ChoicesStatusCarInventory.missing,
+                ChoicesStatusCarInventory.leftover,
+                ChoicesStatusCarInventory.reported
+              ]
+            },
             $or: [{
               venue: {
                 $in: venuesPermissions
@@ -942,24 +951,22 @@ class CarController {
         }
       }
 
-      // check if any date filter
       if (from || to) {
-        const createdAtFilter = {}
+        const createdAtFilter: any = {};
 
-        if (from)
+        if (from){
           createdAtFilter.$gte = moment(from, 'YYYY-MM-DD').startOf('day');
-
-        if (to)
+        }
+        if (to){
           createdAtFilter.$lte = moment(to, 'YYYY-MM-DD').endOf('day');
+        }
 
-
-        // TODO. this is only querying for the last revisions
         participantFilter.$and.push({
           createdAt: createdAtFilter
         });
       }
 
-      const revisions = await this.getRevisions(participantFilter, options, search);
+      const revisions = await this.getRevisions(participantFilter, options);
 
       // validate exist page
       if (options.page && revisions.pages && revisions.pages < options.page) {
@@ -987,21 +994,33 @@ class CarController {
   }
 
   public processDamagedCar(cache: any, participant: IParticipant, worksheet:any): Promise<any> {
-    return new Promise(async (resolve, reject) => {
+    return new Promise(async (resolve) => {
       const rows: any[] = [];
       const damages = [];
       for (const section of participant.sections) {
         for (const answer of section.answers) {
           for (const damage of answer.damagesSelected) {
-            const kind = damage.kind && cache.kinds.hasOwnProperty(damage.kind.toString()) ? cache.kinds[damage.kind.toString()] : answer.damages.kinds
-              .find((d) => d._id && damage.kind && d._id.toString() == damage.kind.toString());
-            const part = damage.part && cache.parts.hasOwnProperty(damage.part.toString()) ? cache.parts[damage.part.toString()] : answer.damages.parts
-              .find((d) => d._id && damage.part && d._id.toString() == damage.part.toString());
-            const position = damage.position && cache.positions.hasOwnProperty(damage.position.toString()) ? cache.positions[damage.position.toString()] : answer.damages.positions
-              .find((d) => d._id && damage.position && d._id.toString() == damage.position.toString());
-
-            if (kind && part)
+            const kind = damage.kind && cache.kinds.hasOwnProperty(damage.kind.toString())
+              ? cache.kinds[damage.kind.toString()]
+              : answer.damages.kinds
+                .find((d) =>
+                  Boolean(d._id && damage.kind && d._id.toString() == damage.kind.toString())
+                );
+            const part = damage.part && cache.parts.hasOwnProperty(damage.part.toString())
+              ? cache.parts[damage.part.toString()]
+              : answer.damages.parts
+                .find((d) =>
+                  Boolean(d._id && damage.part && d._id.toString() == damage.part.toString())
+                );
+            const position = damage.position && cache.positions.hasOwnProperty(damage.position.toString())
+              ? cache.positions[damage.position.toString()]
+              : answer.damages.positions
+                .find((d) =>
+                  Boolean(d._id && damage.position && d._id.toString() == damage.position.toString())
+                );
+            if (kind && part){
               damages.push({kind, part, position});
+            }
           }
         }
       }
@@ -1030,48 +1049,10 @@ class CarController {
   }
 
   public addRevisions(user: any, period: number, damagesCache: any, worksheet: any) {
-    return new Promise(async (resolve, reject) => {
+    return new Promise(async (resolve) => {
       const revisionsToProcess = [];
       const t0 = moment().subtract(period, 'weeks').startOf('week');
       const t1 = moment().subtract(period, 'weeks').endOf('week');
-      /*const revisions = await ParticipantModel.find({
-        $and: [
-          {
-            createdAt: {
-              $gte: t0,
-              $lte: t1,
-            },
-
-          },
-          {
-            venue: {
-              $in: user.venuesPermissions()
-            },
-            'sections.answers.kind': 'damage',
-            //'sections.answers.damagesSelected._id': {$exists: true}
-          }
-        ]
-      }, {
-        createdAt: true,
-        user: true,
-        venue: true,
-        car: true,
-        'sections.answers.damages': true,
-        'sections.answers.damagesSelected': true
-      }).populate([
-        {
-          path: 'user',
-          select: ['firstName', 'lastName']
-        },
-        {
-          path: 'car',
-          select: ['vin', 'vin2', 'denomination', 'color', 'brand']
-        },
-        {
-          path: 'venue',
-          select: ['name']
-        }
-      ]); */
       const revisions = await ParticipantModel.aggregate([{
         $match: {
           $and: [
@@ -1277,11 +1258,11 @@ class CarController {
       }];
 
 
-      var i = 12;
+      let i = 12;
       while (--i > 0) {
         const ti = moment().subtract(i * 15, 'day');
-        const tf = moment().subtract((i - 1) * 15, 'day')
-        console.log(ti.format("YYYY-MM-DD"), tf.format("YYYY-MM-DD"))
+        const tf = moment().subtract((i - 1) * 15, 'day');
+        console.log(ti.format("YYYY-MM-DD"), tf.format("YYYY-MM-DD"));
         let cars = await CarModel.find({
           team,
           lastForm: {$exists: true},
@@ -1291,6 +1272,11 @@ class CarController {
           }
         }).populate({
           path: 'inventories',
+          options: {
+            sort: {
+              createdAt: 1
+            }
+          },
           populate: {
             path: 'venue',
             model: 'Venue'
@@ -1304,10 +1290,11 @@ class CarController {
         });
 
         for (const car of cars) {
-          const inventories = car.inventories.sort((i0, i1) => i0.createdAt > i1.createdAt);
+          const inventories = car.inventories!;
 
-          if (inventories.length == 0)
+          if (inventories.length === 0){
             continue;
+          }
 
           const n = inventories.length;
           const t0 = inventories[0].createdAt;
@@ -1322,7 +1309,7 @@ class CarController {
             t1: t1,
             inventories: n,
             rotation: moment(t1).diff(moment(t0), 'days', true)
-          }
+          };
 
           worksheet.addRow(row);
         }
@@ -1342,17 +1329,6 @@ class CarController {
         res.status(500).json(e);
       }
     }
-  }
-
-  private participantWithDamages(participant: any): Promise<any> {
-    return new Promise((resolve) => {
-      participant.hasDamages = participant.sections.some((section: any) => {
-        return section.answers.some((answer: any) => {
-          return answer.damagesSelected.length > 0;
-        });
-      });
-      resolve(participant)
-    });
   }
 
   public async apiCars(req: IRequest, res: Response) {
@@ -1421,14 +1397,14 @@ class CarController {
     }
   }
 
-  private getRevisions(filters: any, options: PaginateOptions, search?: string): Promise<PaginateResult<ICarModel>> {
+  private getRevisions(filters: any, options: PaginateOptions): Promise<PaginateResult<IParticipant>> {
     return new Promise((resolve, reject) => {
       ParticipantModel.paginate(filters, options, (err, result) => {
         if (err) {
           /* istanbul ignore next */
-          return reject(err);
+          reject(err);
         }
-        return resolve(result);
+        resolve(result);
       });
     });
   }

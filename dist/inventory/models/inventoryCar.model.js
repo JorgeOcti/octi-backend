@@ -21,6 +21,7 @@ var ChoicesStatusCarInventory;
     ChoicesStatusCarInventory["missing"] = "missing";
     ChoicesStatusCarInventory["leftover"] = "leftover";
     ChoicesStatusCarInventory["reported"] = "reported";
+    ChoicesStatusCarInventory["deleted"] = "deleted";
 })(ChoicesStatusCarInventory = exports.ChoicesStatusCarInventory || (exports.ChoicesStatusCarInventory = {}));
 exports.choicesStatusCarInventory = [
     ChoicesStatusCarInventory.pending,
@@ -64,6 +65,10 @@ const inventoryCarSchema = new mongoose.Schema({
         default: ''
     },
     labelBy: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User'
+    },
+    deletedBy: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User'
     },

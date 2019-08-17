@@ -237,6 +237,15 @@ class InventoryController {
                         'cars.venue': {
                             $in: venuesPermissions
                         },
+                        'cars.status': {
+                            $in: [
+                                inventoryCar_model_1.ChoicesStatusCarInventory.pending,
+                                inventoryCar_model_1.ChoicesStatusCarInventory.found,
+                                inventoryCar_model_1.ChoicesStatusCarInventory.missing,
+                                inventoryCar_model_1.ChoicesStatusCarInventory.leftover,
+                                inventoryCar_model_1.ChoicesStatusCarInventory.reported
+                            ]
+                        },
                         ...specialFilter
                     }
                 }, {
@@ -1073,32 +1082,19 @@ class InventoryController {
         logger_service_1.default.info(`setLabel`);
         logger_service_1.default.info(`{user: {_id: ${req.user._id}, email: ${req.user.email}}, body: ${JSON.stringify(req.body)}, params: ${req.params}}`);
         try {
-            const newLabel = await inventoryLabel_model_1.default.findOne({
-                _id: label,
-                team
-            });
-            if (newLabel) {
+            // console.log('label', label);
+            if (label === 'deleted') {
                 const inventoryCar = await inventoryCar_model_1.default.findById(car, { venue: true });
                 if (inventoryCar) {
                     await inventoryCar_model_1.default.update({
                         _id: car,
                         inventory: id
                     }, {
-                        status: newLabel.sendTo,
-                        label: newLabel._id,
-                        labelBy: req.user._id,
-                        labelText: custom
+                        status: inventoryCar_model_1.ChoicesStatusCarInventory.deleted,
+                        deletedBy: req.user._id
                     }, {
                         upsert: true
                     });
-                    if (newLabel.isExhibition) {
-                        await car_model_2.default.findOneAndUpdate({
-                            _id: carID,
-                            team
-                        }, {
-                            isExhibition: true
-                        });
-                    }
                     server_1.io.to(`inventory-detail-${id}`).emit('REFRESH', {
                         update: true,
                         venue: inventoryCar.venue
@@ -1106,10 +1102,51 @@ class InventoryController {
                     server_1.io.to(`inventory-list-${team}`).emit('REFRESH', {
                         update: true
                     });
-                    res.json({
-                        message: 'Opción procesada correctamente.',
-                        status: 200
-                    });
+                }
+                res.json({
+                    message: 'Opción procesada correctamente.',
+                    status: 200
+                });
+            }
+            else {
+                const newLabel = await inventoryLabel_model_1.default.findOne({
+                    _id: label,
+                    team
+                });
+                if (newLabel) {
+                    const inventoryCar = await inventoryCar_model_1.default.findById(car, { venue: true });
+                    if (inventoryCar) {
+                        await inventoryCar_model_1.default.update({
+                            _id: car,
+                            inventory: id
+                        }, {
+                            status: newLabel.sendTo,
+                            label: newLabel._id,
+                            labelBy: req.user._id,
+                            labelText: custom
+                        }, {
+                            upsert: true
+                        });
+                        if (newLabel.isExhibition) {
+                            await car_model_2.default.findOneAndUpdate({
+                                _id: carID,
+                                team
+                            }, {
+                                isExhibition: true
+                            });
+                        }
+                        server_1.io.to(`inventory-detail-${id}`).emit('REFRESH', {
+                            update: true,
+                            venue: inventoryCar.venue
+                        });
+                        server_1.io.to(`inventory-list-${team}`).emit('REFRESH', {
+                            update: true
+                        });
+                        res.json({
+                            message: 'Opción procesada correctamente.',
+                            status: 200
+                        });
+                    }
                 }
             }
         }
@@ -1219,6 +1256,15 @@ class InventoryController {
                         'cars.venue': {
                             $in: venuesPermissions
                         },
+                        'cars.status': {
+                            $in: [
+                                inventoryCar_model_1.ChoicesStatusCarInventory.pending,
+                                inventoryCar_model_1.ChoicesStatusCarInventory.found,
+                                inventoryCar_model_1.ChoicesStatusCarInventory.missing,
+                                inventoryCar_model_1.ChoicesStatusCarInventory.leftover,
+                                inventoryCar_model_1.ChoicesStatusCarInventory.reported
+                            ]
+                        },
                         ...specialFilter
                     }
                 }, {
@@ -1308,6 +1354,15 @@ class InventoryController {
                         'cars.venue': {
                             $in: venuesPermissions
                         },
+                        'cars.status': {
+                            $in: [
+                                inventoryCar_model_1.ChoicesStatusCarInventory.pending,
+                                inventoryCar_model_1.ChoicesStatusCarInventory.found,
+                                inventoryCar_model_1.ChoicesStatusCarInventory.missing,
+                                inventoryCar_model_1.ChoicesStatusCarInventory.leftover,
+                                inventoryCar_model_1.ChoicesStatusCarInventory.reported
+                            ]
+                        },
                         ...specialFilter
                     }
                 }, {
@@ -1374,6 +1429,15 @@ class InventoryController {
                     $match: {
                         'cars.venue': {
                             $in: venuesPermissions
+                        },
+                        'cars.status': {
+                            $in: [
+                                inventoryCar_model_1.ChoicesStatusCarInventory.pending,
+                                inventoryCar_model_1.ChoicesStatusCarInventory.found,
+                                inventoryCar_model_1.ChoicesStatusCarInventory.missing,
+                                inventoryCar_model_1.ChoicesStatusCarInventory.leftover,
+                                inventoryCar_model_1.ChoicesStatusCarInventory.reported
+                            ]
                         },
                         ...specialFilter
                     }
@@ -1476,6 +1540,15 @@ class InventoryController {
                         match: {
                             venue: {
                                 $in: venuesPermissions
+                            },
+                            status: {
+                                $in: [
+                                    inventoryCar_model_1.ChoicesStatusCarInventory.pending,
+                                    inventoryCar_model_1.ChoicesStatusCarInventory.found,
+                                    inventoryCar_model_1.ChoicesStatusCarInventory.missing,
+                                    inventoryCar_model_1.ChoicesStatusCarInventory.leftover,
+                                    inventoryCar_model_1.ChoicesStatusCarInventory.reported
+                                ]
                             },
                             ...specialFilterDetail
                         },

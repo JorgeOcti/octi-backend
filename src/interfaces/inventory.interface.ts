@@ -16,6 +16,7 @@ export interface IInventoryCar {
   comments: IInventoryComment[];
   label?: IInventoryLabel;
   labelText?: string;
+  deletedBy?: IUserModel;
   labelBy?: IUserModel;
   inventoriedBy?: IUserModel;
   images: IInventoryFile[];

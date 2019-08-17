@@ -252,6 +252,15 @@ class InventoryController {
           'cars.venue': {
             $in: venuesPermissions
           },
+          'cars.status': {
+            $in: [
+              ChoicesStatusCarInventory.pending,
+              ChoicesStatusCarInventory.found,
+              ChoicesStatusCarInventory.missing,
+              ChoicesStatusCarInventory.leftover,
+              ChoicesStatusCarInventory.reported
+            ]
+          },
           ...specialFilter
         }
       }, {
@@ -1080,32 +1089,19 @@ class InventoryController {
     logger.info(`setLabel`);
     logger.info(`{user: {_id: ${req.user._id}, email: ${req.user.email}}, body: ${JSON.stringify(req.body)}, params: ${req.params}}`);
     try {
-      const newLabel = await InventoryLabel.findOne({
-        _id: label,
-        team
-      });
-      if (newLabel) {
+      // console.log('label', label);
+      if(label === 'deleted'){
         const inventoryCar = await InventoryCar.findById(car, {venue: true});
         if (inventoryCar) {
           await InventoryCar.update({
             _id: car,
             inventory: id
           }, {
-            status: newLabel.sendTo,
-            label: newLabel._id,
-            labelBy: req.user._id,
-            labelText: custom
+            status: ChoicesStatusCarInventory.deleted,
+            deletedBy: req.user._id
           }, {
             upsert: true
           });
-          if (newLabel.isExhibition) {
-            await CarModel.findOneAndUpdate({
-              _id: carID,
-              team
-            }, {
-              isExhibition: true
-            });
-          }
           io.to(`inventory-detail-${id}`).emit('REFRESH', {
             update: true,
             venue: inventoryCar.venue
@@ -1113,10 +1109,50 @@ class InventoryController {
           io.to(`inventory-list-${team}`).emit('REFRESH', {
             update: true
           });
-          res.json({
-            message: 'Opción procesada correctamente.',
-            status: 200
-          });
+        }
+        res.json({
+          message: 'Opción procesada correctamente.',
+          status: 200
+        });
+      } else {
+        const newLabel = await InventoryLabel.findOne({
+          _id: label,
+          team
+        });
+        if (newLabel) {
+          const inventoryCar = await InventoryCar.findById(car, {venue: true});
+          if (inventoryCar) {
+            await InventoryCar.update({
+              _id: car,
+              inventory: id
+            }, {
+              status: newLabel.sendTo,
+              label: newLabel._id,
+              labelBy: req.user._id,
+              labelText: custom
+            }, {
+              upsert: true
+            });
+            if (newLabel.isExhibition) {
+              await CarModel.findOneAndUpdate({
+                _id: carID,
+                team
+              }, {
+                isExhibition: true
+              });
+            }
+            io.to(`inventory-detail-${id}`).emit('REFRESH', {
+              update: true,
+              venue: inventoryCar.venue
+            });
+            io.to(`inventory-list-${team}`).emit('REFRESH', {
+              update: true
+            });
+            res.json({
+              message: 'Opción procesada correctamente.',
+              status: 200
+            });
+          }
         }
       }
     } catch (e) {
@@ -1225,6 +1261,15 @@ class InventoryController {
             'cars.venue': {
               $in: venuesPermissions
             },
+            'cars.status':{
+              $in: [
+                ChoicesStatusCarInventory.pending,
+                ChoicesStatusCarInventory.found,
+                ChoicesStatusCarInventory.missing,
+                ChoicesStatusCarInventory.leftover,
+                ChoicesStatusCarInventory.reported
+              ]
+            },
             ...specialFilter
           }
         }, {
@@ -1314,6 +1359,15 @@ class InventoryController {
             'cars.venue': {
               $in: venuesPermissions
             },
+            'cars.status':{
+              $in: [
+                ChoicesStatusCarInventory.pending,
+                ChoicesStatusCarInventory.found,
+                ChoicesStatusCarInventory.missing,
+                ChoicesStatusCarInventory.leftover,
+                ChoicesStatusCarInventory.reported
+              ]
+            },
             ...specialFilter
           }
         }, {
@@ -1379,6 +1433,15 @@ class InventoryController {
           $match: {
             'cars.venue': {
               $in: venuesPermissions
+            },
+            'cars.status':{
+              $in: [
+                ChoicesStatusCarInventory.pending,
+                ChoicesStatusCarInventory.found,
+                ChoicesStatusCarInventory.missing,
+                ChoicesStatusCarInventory.leftover,
+                ChoicesStatusCarInventory.reported
+              ]
             },
             ...specialFilter
           }
@@ -1484,6 +1547,15 @@ class InventoryController {
           match: {
             venue: {
               $in: venuesPermissions
+            },
+            status:{
+              $in: [
+                ChoicesStatusCarInventory.pending,
+                ChoicesStatusCarInventory.found,
+                ChoicesStatusCarInventory.missing,
+                ChoicesStatusCarInventory.leftover,
+                ChoicesStatusCarInventory.reported
+              ]
             },
             ...specialFilterDetail
           },

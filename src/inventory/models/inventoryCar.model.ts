@@ -24,7 +24,8 @@ export enum ChoicesStatusCarInventory {
   found = 'found',
   missing = 'missing',
   leftover = 'leftover',
-  reported = 'reported'
+  reported = 'reported',
+  deleted = 'deleted',
 }
 export const choicesStatusCarInventory = [
   ChoicesStatusCarInventory.pending,
@@ -70,6 +71,10 @@ const inventoryCarSchema = new mongoose.Schema({
     default: ''
   },
   labelBy: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User'
+  },
+  deletedBy: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User'
   },
