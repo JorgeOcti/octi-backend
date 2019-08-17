@@ -139,10 +139,10 @@ spec:
         - containerPort: 3030
         resources:
           limits:
-            cpu: 500m
-            memory: 600Mi
+            cpu: 800m
+            memory: 800Mi
           requests:
-            cpu: 500m
-            memory: 500Mi
+            cpu: 600m
+            memory: 600Mi
       imagePullSecrets:
           - name: awskey
