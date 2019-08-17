@@ -149,7 +149,7 @@ class DashboardDamagesView extends React.Component<IPropsType, IStateType> {
           exporting: false
         });
         if (!Axios.isCancel(err)) {
-          swal('Exportar usuarios', 'Ha ocurrido un error al general el excel.', 'error');
+          swal('Exportar daños', 'Ha ocurrido un error al general el excel.', 'error');
         }
       });
   }
@@ -174,7 +174,7 @@ class DashboardDamagesView extends React.Component<IPropsType, IStateType> {
                         {
                           exporting ?
                             <React.Fragment>
-                              <i className="fa fa-fw fa-download"></i> Exportando reporte
+                              <i className="fa fa-fw fa-spinner fa-spin"></i> Exportando reporte
                             </React.Fragment>
                             :
                             <React.Fragment>
