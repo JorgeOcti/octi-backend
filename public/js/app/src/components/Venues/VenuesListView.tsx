@@ -6,6 +6,7 @@ import {connect} from 'react-redux';
 import {RouteComponentProps} from 'react-router';
 import {Dispatch} from 'redux';
 import * as swal from 'sweetalert';
+var mapboxgl = require('mapbox-gl/dist/mapbox-gl.js');
 import {IBaseVenue, IVenue} from '../../../../../../src/interfaces/venue.interface';
 import {loadDataAction, ModalReduxAction} from '../../actions/modal.actions';
 import {
@@ -45,6 +46,7 @@ declare let window: IWindow;
 class VenuesListView extends React.Component<IPropsType, IStateType> {
 
   private socket: SocketIOClient.Socket;
+  private map: any;
 
   constructor(props: IPropsType) {
     super(props);
@@ -54,6 +56,7 @@ class VenuesListView extends React.Component<IPropsType, IStateType> {
     this.updateVenue = this.updateVenue.bind(this);
     this.processUpdateVenue = this.processUpdateVenue.bind(this);
     this.deleteVenue = this.deleteVenue.bind(this);
+    this.onChangeTab = this.onChangeTab.bind(this);
   }
 
   public componentWillMount(): void {
@@ -80,10 +83,68 @@ class VenuesListView extends React.Component<IPropsType, IStateType> {
     });
   }
 
+  private onChangeTab()
+  {
+
+    const {venues} = this.props.venues;
+
+    var geojson = {
+      type: 'FeatureCollection',
+      features: venues.map((venue: any) => {
+        return {
+          type: 'Feature',
+          geometry: {
+            type: 'Point',
+            coordinates: [venue.lng, venue.lat]
+          },
+          properties: {
+            title: 'Sucursal',
+            description: venue.name
+          }
+        }
+      })
+    }
+
+    const $map = this.map;
+    geojson.features.forEach((marker) => {
+
+      // create a HTML element for each feature
+      var el = document.createElement('div');
+      el.className = 'marker';
+
+      // make a marker for each feature and add to the map
+      new mapboxgl.Marker(el)
+        .setLngLat(marker.geometry.coordinates)
+        .addTo($map);
+    });
+  }
+
+  public componentDidMount()
+  {
+    console.log("did-mount");
+
+    mapboxgl.accessToken = 'pk.eyJ1IjoicmliYXJyYWNsIiwiYSI6ImNqems3dW85bTAwZmUzbnF0a2xubnl5ejUifQ.tfPmGSbHYdh2nMA6Fmxcxw';
+    this.map = new mapboxgl.Map({
+      container: 'map',
+      style: 'mapbox://styles/mapbox/streets-v11',
+      center: [-70.593536, -33.509243],
+      zoom: 9,
+    });
+
+    $("a[href='#tab_2']").on('shown.bs.tab', (e) => {
+      this.onChangeTab();
+    });
+
+  }
+
+
   public componentDidUpdate(prevProps: Readonly<IPropsType>, prevState: Readonly<IStateType>, snapshot?: any): void {
     if(this.props.venues.pagination !== prevProps.venues.pagination){
       window.scrollTo(0, 0);
     }
+
+
+
   }
 
   public componentDidCatch(error: Error, errorInfo: ErrorInfo): void {
@@ -117,93 +178,115 @@ class VenuesListView extends React.Component<IPropsType, IStateType> {
                   : null
               }
             </div>
-            <div className="box-body table-responsive no-padding">
-              <table className="table table-andes table-striped">
-                <thead>
-                  <tr>
-                    <th style={{width: '50%'}} className="middle">Nombre</th>
-                    <th style={{width: '10%'}} className="middle-center hidden-xs">Ubicación</th>
-                    <th style={{width: '10%'}} className="middle-center hidden-xs">Distribuidor</th>
-                    <th style={{width: '10%'}} className="middle">Asignaciones</th>
-                    <th style={{width: '20%'}} className="middle hidden-xs">Modificado</th>
-                    {
-                      hasPermission(window.user, 'changeVenue') ?
-                        <th style={{width: '1%'}} className="width-10"/> : null
-                    }
-                    {
-                      hasPermission(window.user, 'deleteVenue') ?
-                        <th style={{width: '1%'}} className="width-10"/> : null
-                    }
-                  </tr>
-                </thead>
-                <tbody>
+            <div className="nav-tabs-custom">
+              <ul className="nav nav-tabs">
+                <li className="active">
+                  <a href="#tab_1" data-toggle="tab" aria-expanded="true">Listado</a>
+                </li>
+                {false ?
+                  <li>
+                    <a href="#tab_2" data-toggle="tab" aria-expanded="true">Mapa</a>
+                  </li>
+                  : null
+                }
+              </ul>
+              <div className="tab-content">
+                <div className="tab-pane active" id="tab_1">
+                  <div className="box-body table-responsive no-padding">
+                    <table className="table table-andes table-striped">
+                      <thead>
+                      <tr>
+                        <th style={{width: '50%'}} className="middle">Nombre</th>
+                        <th style={{width: '10%'}} className="middle-center hidden-xs">Ubicación</th>
+                        <th style={{width: '10%'}} className="middle-center hidden-xs">Distribuidor</th>
+                        <th style={{width: '10%'}} className="middle">Asignaciones</th>
+                        <th style={{width: '20%'}} className="middle hidden-xs">Modificado</th>
+                        {
+                          hasPermission(window.user, 'changeVenue') ?
+                            <th style={{width: '1%'}} className="width-10"/> : null
+                        }
+                        {
+                          hasPermission(window.user, 'deleteVenue') ?
+                            <th style={{width: '1%'}} className="width-10"/> : null
+                        }
+                      </tr>
+                      </thead>
+                      <tbody>
+                      {
+                        venues.map((venue: IVenue) => {
+                          const canDelete = venue.users && venue.users.length === 0 && venue.participants && venue.participants.length === 0;
+                          return (
+                            <tr
+                              key={venue._id}
+                              id={`venue-${venue._id}`}
+                              className={'background-transition'}
+                            >
+                              <td className="middle">{venue.name}<br/>
+                                {
+                                  venue.company ? <span className={'text-sm text-muted'}>{venue.company.name}</span> : null
+                                }
+                              </td>
+                              <td className="middle">{venue.lat}, {venue.lng}</td>
+                              <td className="middle-center  hidden-xs">
+                                {
+                                  venue.type === 'distributor' ?
+                                    <i className="fa fa-check-circle text-green"/>
+                                    : <i className="fa fa-times-circle text-blue"/>
+                                }
+                              </td>
+                              <td className="text-sm">
+                                Usuarios: {venue.users ? venue.users.length : 0}<br/>
+                                Revisiones: {venue.participants ? venue.participants.length : 0}<br/>
+                              </td>
+                              <td className="middle hidden-xs">
+                                {
+                                  moment(venue.updatedAt).format('LLL')
+                                }
+                              </td>
+                              {
+                                hasPermission(window.user, 'changeVenue') ?
+                                  <td
+                                    className="middle text-blue pointer"
+                                    onClick={() => this.updateVenue(venue)}>
+                                    <i className="fa fa-pencil"/>
+                                  </td> : null
+                              }
+                              {
+                                hasPermission(window.user, 'deleteVenue') ?
+                                  <td
+                                    className={canDelete ? 'middle text-red pointer' : 'middle text-muted not-allowed'}
+                                    onClick={canDelete ? () => this.deleteVenue(venue) : undefined}
+                                  >
+                                    <i className="fa fa-minus-circle"/>
+                                  </td> : null
+                              }
+                            </tr>
+                          );
+                        })
+                      }
+                      </tbody>
+                    </table>
+                  </div>
                   {
-                    venues.map((venue: IVenue) => {
-                      const canDelete = venue.users && venue.users.length === 0 && venue.participants && venue.participants.length === 0;
-                      return (
-                        <tr
-                          key={venue._id}
-                          id={`venue-${venue._id}`}
-                          className={'background-transition'}
-                        >
-                          <td className="middle">{venue.name}<br/>
-                            {
-                              venue.company ? <span className={'text-sm text-muted'}>{venue.company.name}</span> : null
-                            }
-                          </td>
-                          <td className="middle">{venue.lat}, {venue.lng}</td>
-                          <td className="middle-center  hidden-xs">
-                            {
-                              venue.type === 'distributor' ?
-                                <i className="fa fa-check-circle text-green"/>
-                                : <i className="fa fa-times-circle text-blue"/>
-                            }
-                          </td>
-                          <td className="text-sm">
-                            Usuarios: {venue.users ? venue.users.length : 0}<br/>
-                            Revisiones: {venue.participants ? venue.participants.length : 0}<br/>
-                          </td>
-                          <td className="middle hidden-xs">
-                            {
-                              moment(venue.updatedAt).format('LLL')
-                            }
-                          </td>
-                          {
-                            hasPermission(window.user, 'changeVenue') ?
-                              <td
-                                className="middle text-blue pointer"
-                                onClick={() => this.updateVenue(venue)}>
-                                <i className="fa fa-pencil"/>
-                              </td> : null
-                          }
-                          {
-                            hasPermission(window.user, 'deleteVenue') ?
-                              <td
-                                className={canDelete ? 'middle text-red pointer' : 'middle text-muted not-allowed'}
-                                onClick={canDelete ? () => this.deleteVenue(venue) : undefined}
-                              >
-                                <i className="fa fa-minus-circle"/>
-                              </td> : null
-                          }
-                        </tr>
-                      );
-                    })
+                    pagination.pages > 1 &&
+                    <div className="box-footer text-right">
+                      <Paginator changePage={this.changePage} page={pagination.page} pages={pagination.pages} />
+                    </div>
                   }
-                </tbody>
-              </table>
+                  {
+                    loading &&
+                    <div className="overlay">
+                      <i className="fa fa-spinner fa-spin text-purple"/>
+                    </div>
+                  }
+                </div>
+                <div className="tab-pane" id="tab_2">
+                  <div id="map" style={{position: "absolute", top:0, bottom:0, width:"100%" }}></div>
+                </div>
+              </div>
             </div>
-            {
-              pagination.pages > 1 &&
-                <div className="box-footer text-right">
-                  <Paginator changePage={this.changePage} page={pagination.page} pages={pagination.pages} />
-                </div>
-            }
-            {
-              loading &&
-                <div className="overlay">
-                  <i className="fa fa-spinner fa-spin text-purple"/>
-                </div>
-            }
+
+
           </div>
           <ModalView />
         </section>

@@ -17,6 +17,7 @@ import Team from '../../app/models/team.model';
 import User from '../../app/models/user.model';
 import UserModel, {IUserModel} from '../../app/models/user.model';
 import Venue, {IVenueModel} from '../../app/models/venue.model';
+import GPSPosition from '../models/gpsPosition.model';
 import {IAnyObject, IRequest} from '../../interfaces/global.interface';
 import {io} from '../../server';
 import logger from '../../services/logger.service';
@@ -27,6 +28,9 @@ import ParticipantModel from '../models/participant.model';
 import ParticipantFile from '../models/participantFile.model';
 import ScaleModel, {IScaleModel} from '../models/scale.model';
 import * as bluebird from 'bluebird';
+import {ITeam} from "../../interfaces/team.interface";
+import {IUser} from "../../interfaces/user.interface";
+import {ICompany} from "../../interfaces/company.interface";
 
 // import * as puppeteer from 'puppeteer';
 
@@ -2143,6 +2147,49 @@ class FormController {
         }
       });
     });
+  }
+
+  public async createPosition(req: IRequest, res: Response): Promise<any> {
+
+    try {
+      const {team, company, venue} = req.user
+      const {lat, lng, accuracy, provider} = req.body
+
+      let os = "user-agent" in req.headers ? req.headers["user-agent"] : ""
+
+      let gpsPosition = new GPSPosition({
+        lat,
+        lng,
+        user: req.user,
+        company,
+        team,
+        venue,
+        os: os,
+        accuracy,
+        provider
+      });
+
+      await gpsPosition.save();
+
+      res.json({
+        status: 200
+      });
+
+
+    } catch (e) {
+      Raven.captureException(e, {req});
+      /* istanbul ignore next */
+      logger.error(`position create. Error`);
+      /* istanbul ignore next */
+      logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
+      /* istanbul ignore next */
+      logger.error(e);
+      res.status(400).json({
+        message: 'Ha ocurrido un error',
+        status: 400
+      });
+    }
+
   }
 
 }

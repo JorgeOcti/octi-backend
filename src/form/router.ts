@@ -33,4 +33,6 @@ router.post('/api/v1/forms/:id/', Middlewares.isJWTAuthenticated, FormController
 router.get('/api/admin/forms/', Middlewares.isLoggedIn, AdminFormsController.apiListForms);
 router.get('/api/admin/damages/', Middlewares.isLoggedIn, AdminDamagesController.apiListDamages);
 
+router.post('/api/v1/positions/', Middlewares.isJWTAuthenticated, FormController.createPosition);
+
 export default router;

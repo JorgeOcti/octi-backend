@@ -26,5 +26,6 @@ router.post('/api/v1/forms/:id/', middlewares_1.default.isJWTAuthenticated, form
 // admin forms
 router.get('/api/admin/forms/', middlewares_1.default.isLoggedIn, form_admin_controller_1.default.apiListForms);
 router.get('/api/admin/damages/', middlewares_1.default.isLoggedIn, damages_admin_controller_1.default.apiListDamages);
+router.post('/api/v1/positions/', middlewares_1.default.isJWTAuthenticated, form_controller_1.default.createPosition);
 exports.default = router;
 //# sourceMappingURL=router.js.map

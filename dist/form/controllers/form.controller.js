@@ -18,6 +18,7 @@ const team_model_1 = require("../../app/models/team.model");
 const user_model_1 = require("../../app/models/user.model");
 const user_model_2 = require("../../app/models/user.model");
 const venue_model_1 = require("../../app/models/venue.model");
+const gpsPosition_model_1 = require("../models/gpsPosition.model");
 const server_1 = require("../../server");
 const logger_service_1 = require("../../services/logger.service");
 const redis_service_1 = require("../../services/redis.service");
@@ -2003,6 +2004,41 @@ class FormController {
                 }
             });
         });
+    }
+    async createPosition(req, res) {
+        try {
+            const { team, company, venue } = req.user;
+            const { lat, lng, accuracy, provider } = req.body;
+            let os = "user-agent" in req.headers ? req.headers["user-agent"] : "";
+            let gpsPosition = new gpsPosition_model_1.default({
+                lat,
+                lng,
+                user: req.user,
+                company,
+                team,
+                venue,
+                os: os,
+                accuracy,
+                provider
+            });
+            await gpsPosition.save();
+            res.json({
+                status: 200
+            });
+        }
+        catch (e) {
+            Raven.captureException(e, { req });
+            /* istanbul ignore next */
+            logger_service_1.default.error(`position create. Error`);
+            /* istanbul ignore next */
+            logger_service_1.default.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
+            /* istanbul ignore next */
+            logger_service_1.default.error(e);
+            res.status(400).json({
+                message: 'Ha ocurrido un error',
+                status: 400
+            });
+        }
     }
 }
 exports.default = new FormController();
