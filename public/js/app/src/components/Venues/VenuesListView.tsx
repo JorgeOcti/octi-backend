@@ -106,6 +106,8 @@ class VenuesListView extends React.Component<IPropsType, IStateType> {
     }
 
     const $map = this.map;
+    $('#map').css('width', $('#tab_2').width() as any);
+    let bounds = new mapboxgl.LngLatBounds();
     geojson.features.forEach((marker) => {
 
       // create a HTML element for each feature
@@ -113,10 +115,20 @@ class VenuesListView extends React.Component<IPropsType, IStateType> {
       el.className = 'marker';
 
       // make a marker for each feature and add to the map
-      new mapboxgl.Marker(el)
-        .setLngLat(marker.geometry.coordinates)
-        .addTo($map);
+      if(Math.abs(marker.geometry.coordinates[0]) > 0.1) // skip sucursales sin lat, lng
+      {
+        new mapboxgl.Marker(el)
+          .setLngLat(marker.geometry.coordinates)
+          .setPopup(new mapboxgl.Popup({offset: 25})
+            .setHTML(`<p>${marker.properties.description}</p>`))
+          .addTo($map);
+
+        bounds.extend(marker.geometry.coordinates);
+      }
     });
+    $map.resize();
+    $map.fitBounds(bounds);
+
   }
 
   public componentDidMount()
@@ -129,6 +141,7 @@ class VenuesListView extends React.Component<IPropsType, IStateType> {
       style: 'mapbox://styles/mapbox/streets-v11',
       center: [-70.593536, -33.509243],
       zoom: 9,
+      trackResize: true,
     });
 
     $("a[href='#tab_2']").on('shown.bs.tab', (e) => {
@@ -183,12 +196,9 @@ class VenuesListView extends React.Component<IPropsType, IStateType> {
                 <li className="active">
                   <a href="#tab_1" data-toggle="tab" aria-expanded="true">Listado</a>
                 </li>
-                {false ?
-                  <li>
-                    <a href="#tab_2" data-toggle="tab" aria-expanded="true">Mapa</a>
-                  </li>
-                  : null
-                }
+                <li>
+                  <a href="#tab_2" data-toggle="tab" aria-expanded="true">Mapa</a>
+                </li>
               </ul>
               <div className="tab-content">
                 <div className="tab-pane active" id="tab_1">
@@ -281,7 +291,7 @@ class VenuesListView extends React.Component<IPropsType, IStateType> {
                   }
                 </div>
                 <div className="tab-pane" id="tab_2">
-                  <div id="map" style={{position: "absolute", top:0, bottom:0, width:"100%" }}></div>
+                  <div id="map" style={{position: "relative", width:"100%", height: '60vh'}}></div>
                 </div>
               </div>
             </div>
