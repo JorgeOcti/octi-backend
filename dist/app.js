@@ -84,6 +84,8 @@ app.set('views', viewDirectory);
 app.set('env', process.env.ENV || 'development');
 app.set('port', process.env.PORT || 3000);
 app.locals.secretKey = process.env.SECRET_KEY;
+app.locals.MIXPANEL = process.env.MIXPANEL;
+app.locals.MAPBOX = process.env.MAPBOX;
 // Remove x-powered-by
 app.disable('x-powered-by');
 // strict routing

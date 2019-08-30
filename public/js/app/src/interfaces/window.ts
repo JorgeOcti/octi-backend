@@ -14,6 +14,8 @@ interface IURL {
 export interface IWindow extends Window {
   urls: IURL;
   user: IUser;
+  MAPBOX: string;
+  MIXPANEL: string;
   token: string;
   sentry_dns: string;
   __REACT_DEVTOOLS_GLOBAL_HOOK__?: any;
