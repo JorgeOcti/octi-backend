@@ -65,6 +65,16 @@ spec:
               secretKeyRef:
                 name: env
                 key: SITE_URL
+          - name: MIXPANEL
+            valueFrom:
+              secretKeyRef:
+                name: env
+                key: MIXPANEL
+          - name: MAPBOX
+            valueFrom:
+              secretKeyRef:
+                name: env
+                key: MAPBOX
           - name: AWS_REGION
             valueFrom:
               secretKeyRef:
