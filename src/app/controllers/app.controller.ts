@@ -115,7 +115,7 @@ class AppController {
       if (csrfUsed) {
         return res.redirect('/account/forgot-password/');
       }
-      redisClient.setex(_csrf, 60 * 10, 'forgot-password');
+      redisClient.set(_csrf, 'forgot-password', "ex", 60*10);
 
       const user = await UserModel.findOne({email: username});
       if (user) {

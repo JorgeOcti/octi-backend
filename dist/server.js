@@ -8,6 +8,8 @@ const socketRedis = require("socket.io-redis");
 const app_1 = require("./app");
 const logger_service_1 = require("./services/logger.service");
 const redis_service_1 = require("./services/redis.service");
+const Redis = require("ioredis");
+const general_utils_1 = require("./utils/general.utils");
 // Mongoose setting
 const MONGODB_URI = process.env.MONGODB_URI || '';
 // Mongoose connect
@@ -38,10 +40,30 @@ const server = app_1.default.listen(parseInt(app_1.default.get('port'), 10) + NO
     }
 });
 exports.io = socketIO(server);
-exports.io.adapter(socketRedis({
-    host: process.env.REDIS_SERVICE_SERVICE_HOST ? process.env.REDIS_SERVICE_SERVICE_HOST : 'localhost',
-    port: 6379
-}));
+if (process.env.REDIS_CLUSTERED === "true") {
+    exports.io.adapter(socketRedis({
+        pubClient: new Redis.Cluster([{
+                host: general_utils_1.default.getFromEnviroment('REDIS_SERVICE_SERVICE_HOST', 'localhost'),
+                port: 6379
+            }]),
+        subClient: new Redis.Cluster([{
+                host: general_utils_1.default.getFromEnviroment('REDIS_SERVICE_SERVICE_HOST', 'localhost'),
+                port: 6379
+            }])
+    }));
+}
+else {
+    exports.io.adapter(socketRedis({
+        pubClient: new Redis({
+            host: general_utils_1.default.getFromEnviroment('REDIS_SERVICE_SERVICE_HOST', 'localhost'),
+            port: 6379
+        }),
+        subClient: new Redis({
+            host: general_utils_1.default.getFromEnviroment('REDIS_SERVICE_SERVICE_HOST', 'localhost'),
+            port: 6379
+        })
+    }));
+}
 /* istanbul ignore next */
 exports.io.use(async (socket, next) => {
     // validate token to use socket
@@ -93,7 +115,7 @@ exports.io.on('connection', async (socket) => {
                             lastName: socket.user.lastName
                         }
                     };
-                    redis_service_1.default.setex(room, 60 * 60 * 24, JSON.stringify(data));
+                    redis_service_1.default.set(room, JSON.stringify(data), "ex", 60 * 60 * 24);
                 }
             }
             else {
@@ -103,7 +125,7 @@ exports.io.on('connection', async (socket) => {
                         lastName: socket.user.lastName
                     }
                 };
-                redis_service_1.default.setex(room, 60 * 60 * 24, JSON.stringify(data));
+                redis_service_1.default.set(room, JSON.stringify(data), "ex", 60 * 60 * 24);
             }
             // logger.info(`socket.join.${room}: {user: ${JSON.stringify((socket as any).user)}}`);
             socket.join(room);
@@ -119,7 +141,7 @@ exports.io.on('connection', async (socket) => {
                 const key = socket.user._id;
                 if (data.hasOwnProperty(key)) {
                     delete data[key];
-                    redis_service_1.default.setex(room, 60 * 60 * 24, JSON.stringify(data));
+                    redis_service_1.default.set(room, JSON.stringify(data), "ex", 60 * 60 * 24);
                 }
             }
             exports.io.to(room).emit('USERS_IN_CHANNEL', data);

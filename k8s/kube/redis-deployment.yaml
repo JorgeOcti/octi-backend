@@ -1,8 +1,24 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  namespace: andes-stage
+  labels:
+    name: redis
+  name: redis-conf
+data:
+  update-node.sh: |
+    #!/bin/sh
+    echo never > /sys/kernel/mm/transparent_hugepage/enabled
+    echo never > sys/kernel/mm/transparent_hugepage/defrag
+    exec "$@"
+  redis.conf: |
+    port 6379
+    protected-mode no
 ---
 apiVersion: apps/v1
-kind: Deployment
+kind: StatefulSet
 metadata:
-  namespace: ${NAMESPACE}
+  namespace: andes-stage
   labels:
     app: redis
   name: redis
@@ -11,28 +27,55 @@ spec:
   selector:
     matchLabels:
       app: redis
+  serviceName: redis
   template:
     metadata:
       labels:
          app: redis
     spec:
       containers:
-      - image: redis:latest
+      - image: redis:5.0.5-buster
+        command: ["redis-server"]
+        args: ["/etc/redis/redis.conf"]
+        readinessProbe:
+          exec:
+            command:
+            - sh
+            - -c
+            - "redis-cli -h $(hostname) ping"
+          initialDelaySeconds: 15
+          timeoutSeconds: 5
+        livenessProbe:
+          exec:
+            command:
+            - sh
+            - -c
+            - "redis-cli -h $(hostname) ping"
+          initialDelaySeconds: 20
+          periodSeconds:
         name: redis
         ports:
         - containerPort: 6379
         volumeMounts:
-          - mountPath: /data
-            name: redis-volume
+          - name: redis-volume
+            mountPath: /data
+          - name: redis-conf
+            mountPath: /etc/redis
       volumes:
         - name: redis-volume
           persistentVolumeClaim:
             claimName: redis-volume
+        - name: redis-conf
+          configMap:
+            name: redis-conf
+            items:
+              - key: redis.conf
+                path: redis.conf
 ---
 apiVersion: v1
 kind: Service
 metadata:
-  namespace: ${NAMESPACE}
+  namespace: andes-stage
   name: redis-service
 spec:
   ports:

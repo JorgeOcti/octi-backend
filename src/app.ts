@@ -24,6 +24,8 @@ import formRouter from './form/router';
 import {inventoryRouter} from './inventory/router';
 import InventoryQueue from './inventory/taks/inventory.task';
 import Middlewares from './middlewares/middlewares';
+import * as Redis from "ioredis";
+import GeneralUtils from "./utils/general.utils";
 
 // Create Express server
 const app = express();
@@ -250,9 +252,20 @@ app.use('/api/v1', jwtRouter);
 
 /* queues */
 export const queue = kue.createQueue({
-  redis: {
-    host: process.env.REDIS_SERVICE_SERVICE_HOST ? process.env.REDIS_SERVICE_SERVICE_HOST : 'localhost',
-    port: 6379
+  redis: process.env.REDIS_CLUSTERED === "true" ? {
+    createClientFactory: function () {
+      return new Redis.Cluster([{
+        host: GeneralUtils.getFromEnviroment('REDIS_SERVICE_SERVICE_HOST', 'localhost'),
+        port: 6379
+      }])
+    }
+  } : {
+    createClientFactory: function () {
+      return new Redis({
+        host: GeneralUtils.getFromEnviroment('REDIS_SERVICE_SERVICE_HOST', 'localhost'),
+        port: 6379
+      })
+    }
   }
 });
 

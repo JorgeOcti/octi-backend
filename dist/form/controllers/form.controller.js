@@ -1856,12 +1856,15 @@ class FormController {
     }
     getForm(filter) {
         const keyCache = `form-${filter._id}`;
+        console.log('keyCache', keyCache);
         return new Promise((resolve, reject) => {
             redis_service_1.default.get(keyCache, async (error, result) => {
                 if (result) {
+                    console.log('FROM CACHE');
                     resolve(JSON.parse(result));
                 }
                 else {
+                    console.log('NEW CACHE');
                     form_model_1.default
                         .findOne(filter, {
                         'company': false,
@@ -1908,7 +1911,7 @@ class FormController {
                             return reject(err);
                         }
                         if (form) {
-                            redis_service_1.default.setex(keyCache, 60, JSON.stringify(form));
+                            redis_service_1.default.set(keyCache, JSON.stringify(form), "ex", 60);
                             return resolve(form);
                         }
                         return reject('No se encontro formularío');
@@ -1998,7 +2001,7 @@ class FormController {
                             /* istanbul ignore next */
                             return reject(err);
                         }
-                        redis_service_1.default.setex(keyCache, 30, JSON.stringify(scales));
+                        redis_service_1.default.set(keyCache, JSON.stringify(scales), "ex", 30);
                         return resolve(scales);
                     });
                 }

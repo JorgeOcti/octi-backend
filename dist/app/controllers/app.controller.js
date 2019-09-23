@@ -109,7 +109,7 @@ class AppController {
             if (csrfUsed) {
                 return res.redirect('/account/forgot-password/');
             }
-            redis_service_1.default.setex(_csrf, 60 * 10, 'forgot-password');
+            redis_service_1.default.set(_csrf, 'forgot-password', "ex", 60 * 10);
             const user = await user_model_1.default.findOne({ email: username });
             if (user) {
                 const token = uuid.v4();

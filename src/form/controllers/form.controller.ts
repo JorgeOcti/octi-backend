@@ -28,9 +28,6 @@ import ParticipantModel from '../models/participant.model';
 import ParticipantFile from '../models/participantFile.model';
 import ScaleModel, {IScaleModel} from '../models/scale.model';
 import * as bluebird from 'bluebird';
-import {ITeam} from "../../interfaces/team.interface";
-import {IUser} from "../../interfaces/user.interface";
-import {ICompany} from "../../interfaces/company.interface";
 
 // import * as puppeteer from 'puppeteer';
 
@@ -1999,11 +1996,14 @@ class FormController {
 
   private getForm(filter: any): Promise<IFormModel> {
     const keyCache = `form-${filter._id}`;
+    console.log('keyCache', keyCache);
     return new Promise((resolve, reject) => {
       redisClient.get(keyCache, async (error, result) => {
         if (result) {
+          console.log('FROM CACHE');
           resolve(JSON.parse(result));
         } else {
+          console.log('NEW CACHE');
           FormModel
             .findOne(filter, {
               'company': false,
@@ -2050,7 +2050,7 @@ class FormController {
                 return reject(err);
               }
               if (form) {
-                redisClient.setex(keyCache, 60, JSON.stringify(form));
+                redisClient.set(keyCache, JSON.stringify(form), "ex", 60);
                 return resolve(form);
               }
               return reject('No se encontro formularío');
@@ -2141,7 +2141,7 @@ class FormController {
                 /* istanbul ignore next */
                 return reject(err);
               }
-              redisClient.setex(keyCache, 30, JSON.stringify(scales));
+              redisClient.set(keyCache, JSON.stringify(scales), "ex", 30);
               return resolve(scales);
             });
         }

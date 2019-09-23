@@ -26,6 +26,8 @@ const router_2 = require("./form/router");
 const router_3 = require("./inventory/router");
 const inventory_task_1 = require("./inventory/taks/inventory.task");
 const middlewares_1 = require("./middlewares/middlewares");
+const Redis = require("ioredis");
+const general_utils_1 = require("./utils/general.utils");
 // Create Express server
 const app = express();
 // Configure sentry
@@ -228,9 +230,20 @@ app.use('/', router_3.inventoryRouter);
 app.use('/api/v1', router_1.jwtRouter);
 /* queues */
 exports.queue = kue.createQueue({
-    redis: {
-        host: process.env.REDIS_SERVICE_SERVICE_HOST ? process.env.REDIS_SERVICE_SERVICE_HOST : 'localhost',
-        port: 6379
+    redis: process.env.REDIS_CLUSTERED === "true" ? {
+        createClientFactory: function () {
+            return new Redis.Cluster([{
+                    host: general_utils_1.default.getFromEnviroment('REDIS_SERVICE_SERVICE_HOST', 'localhost'),
+                    port: 6379
+                }]);
+        }
+    } : {
+        createClientFactory: function () {
+            return new Redis({
+                host: general_utils_1.default.getFromEnviroment('REDIS_SERVICE_SERVICE_HOST', 'localhost'),
+                port: 6379
+            });
+        }
     }
 });
 new email_task_1.default(exports.queue).run();
