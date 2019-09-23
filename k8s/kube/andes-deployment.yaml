@@ -65,6 +65,11 @@ spec:
               secretKeyRef:
                 name: env
                 key: PORT
+          - name: REDIS_CLUSTERED
+            valueFrom:
+              secretKeyRef:
+                name: env
+                key: REDIS_CLUSTERED
           - name: SECRET_KEY
             valueFrom:
               secretKeyRef:

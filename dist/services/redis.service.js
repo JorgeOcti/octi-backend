@@ -2,11 +2,27 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 const bluebird = require("bluebird");
 const redis = require("redis");
+const RedisClustr = require("redis-clustr");
 const general_utils_1 = require("../utils/general.utils");
-const client = redis.createClient({
-    host: general_utils_1.default.getFromEnviroment('REDIS_SERVICE_SERVICE_HOST', 'localhost'),
-    port: 6379
-});
+let client;
+if (process.env.REDIS_CLUSTERED === "true") {
+    client = new RedisClustr({
+        servers: [{
+                host: general_utils_1.default.getFromEnviroment('REDIS_SERVICE_SERVICE_HOST', 'localhost'),
+                port: 6379
+            }],
+        createClient: function (port, host) {
+            // this is the default behaviour
+            return redis.createClient(port, host);
+        }
+    });
+}
+else {
+    client = redis.createClient({
+        host: general_utils_1.default.getFromEnviroment('REDIS_SERVICE_SERVICE_HOST', 'localhost'),
+        port: 6379
+    });
+}
 /* istanbul ignore next */
 client.on('error', (err) => {
     console.log('Redis Error ' + err);

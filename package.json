@@ -65,6 +65,7 @@
     "randomstring": "~1.1.5",
     "raven": "~2.6.4",
     "redis": "~2.8.0",
+    "redis-clustr": "^1.7.0",
     "request": "~2.88.0",
     "response-time": "~2.3.2",
     "socket.io": "~2.2.0",

@@ -4,14 +4,9 @@ const isuuid = require("is-uuid");
 const moment = require("moment");
 const passport = require("passport");
 const uuid = require("uuid");
-const Raven = require("raven");
-const GraphicsMagick = require("gm");
 const app_1 = require("../../app");
 const redis_service_1 = require("../../services/redis.service");
 const user_model_1 = require("../models/user.model");
-const general_utils_1 = require("../../utils/general.utils");
-const recoverFile_model_1 = require("../models/recoverFile.model");
-const logger_service_1 = require("../../services/logger.service");
 class AppController {
     constructor() {
         this.index = this.index.bind(this);
@@ -24,7 +19,6 @@ class AppController {
         this.recovery = this.recovery.bind(this);
         this.processRecovery = this.processRecovery.bind(this);
         this.logout = this.logout.bind(this);
-        this.recoverFile = this.recoverFile.bind(this);
     }
     /* istanbul ignore next */
     index(req, res) {
@@ -231,93 +225,6 @@ class AppController {
     logout(req, res) {
         req.logout();
         res.redirect('/account/login/');
-    }
-    async recoverFile(req, res) {
-        const company = req.user.company;
-        const team = req.user.team;
-        const file = general_utils_1.default.getFileFromRequest(req.files, 'file');
-        logger_service_1.default.info(`uploadFile`);
-        logger_service_1.default.info(`{user: {_id: ${req.user._id}, email: ${req.user.email}}, file: ${JSON.stringify(file)}}}`);
-        if (file) {
-            try {
-                const recoverFile = new recoverFile_model_1.default();
-                /*
-                  {
-                    fieldname: 'file',
-                    originalname: 'Captura de pantalla 2018-06-28 a la(s) 11.59.58.png',
-                    encoding: '7bit',
-                    mimetype: 'image/png',
-                    destination: '/tmp/',
-                    filename: 'Captura de pantalla 2018-06-28 a la(s) 11.59.58.png',
-                    path: '/tmp/Captura de pantalla 2018-06-28 a la(s) 11.59.58.png',
-                    size: 794429
-                  }
-                */
-                // fix exif
-                if (new RegExp('\\bimage\\b').test(file.mimetype)) {
-                    await this.autoRotate(file.path);
-                }
-                file.headers = {
-                    'Content-Type': file.mimetype
-                };
-                recoverFile.user = req.user._id;
-                recoverFile.company = company._id;
-                recoverFile.team = team._id;
-                recoverFile.attach('file', file, async (error) => {
-                    if (error) {
-                        /* istanbul ignore next */
-                        res.status(400).json(error);
-                    }
-                    else {
-                        await recoverFile.save();
-                        res.status(201).json({
-                            data: {
-                                _id: recoverFile._id,
-                                file: recoverFile.file
-                            },
-                            status: 201
-                        });
-                    }
-                });
-            }
-            catch (e) {
-                Raven.captureException(e, { req });
-                /* istanbul ignore next */
-                console.log(e);
-                logger_service_1.default.error(`recover file error:`);
-                /* istanbul ignore next */
-                logger_service_1.default.error(e);
-                /* istanbul ignore next */
-                res.status(400).json(e);
-            }
-        }
-        else {
-            logger_service_1.default.error(`uploadFile: La imagen es obligatoria.`);
-            res.status(400).json({
-                message: 'La imagen es obligatoria.',
-                status: 400
-            });
-        }
-    }
-    autoRotate(path) {
-        // doc http://aheckmann.github.io/gm/docs.html
-        /**** REQUIRE: imagemagick and graphicsmagick *****
-         brew install imagemagick
-         brew install graphicsmagick
-         * */
-        return new Promise((resolve, reject) => {
-            GraphicsMagick(path)
-                .autoOrient()
-                .write(path, (err) => {
-                if (err) {
-                    /* istanbul ignore next */
-                    reject(err);
-                }
-                else {
-                    resolve();
-                }
-            });
-        });
     }
 }
 exports.default = new AppController();
