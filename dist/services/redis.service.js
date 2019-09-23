@@ -23,6 +23,10 @@ else {
 client.on('error', (err) => {
     console.log('Redis Error ' + err);
 });
+/* istanbul ignore next */
+client.on('connect', () => {
+    console.log('Redis Connected');
+});
 bluebird.promisifyAll(Redis);
 exports.default = client;
 //# sourceMappingURL=redis.service.js.map

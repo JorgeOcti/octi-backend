@@ -24,8 +24,9 @@ import formRouter from './form/router';
 import {inventoryRouter} from './inventory/router';
 import InventoryQueue from './inventory/taks/inventory.task';
 import Middlewares from './middlewares/middlewares';
+import redisClient from './services/redis.service';
+import GeneralUtils from './utils/general.utils';
 import * as Redis from "ioredis";
-import GeneralUtils from "./utils/general.utils";
 
 // Create Express server
 const app = express();
@@ -139,10 +140,7 @@ app.use(session({
   cookie: {
     maxAge: 2592000000 // 30 * 24 * 60 * 60 * 1000 Rememeber 'me' for 30 days
   },
-  store: new redisStore( {
-    host: process.env.REDIS_SERVICE_SERVICE_HOST ? process.env.REDIS_SERVICE_SERVICE_HOST : 'localhost',
-    port: 6379
-  })
+  store: new redisStore({client: redisClient})
 }));
 
 // passport

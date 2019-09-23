@@ -26,8 +26,9 @@ const router_2 = require("./form/router");
 const router_3 = require("./inventory/router");
 const inventory_task_1 = require("./inventory/taks/inventory.task");
 const middlewares_1 = require("./middlewares/middlewares");
-const Redis = require("ioredis");
+const redis_service_1 = require("./services/redis.service");
 const general_utils_1 = require("./utils/general.utils");
+const Redis = require("ioredis");
 // Create Express server
 const app = express();
 // Configure sentry
@@ -124,10 +125,7 @@ app.use(session({
     cookie: {
         maxAge: 2592000000 // 30 * 24 * 60 * 60 * 1000 Rememeber 'me' for 30 days
     },
-    store: new redisStore({
-        host: process.env.REDIS_SERVICE_SERVICE_HOST ? process.env.REDIS_SERVICE_SERVICE_HOST : 'localhost',
-        port: 6379
-    })
+    store: new redisStore({ client: redis_service_1.default })
 }));
 // passport
 app.use(passport.initialize());

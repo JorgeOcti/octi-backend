@@ -40,30 +40,22 @@ const server = app_1.default.listen(parseInt(app_1.default.get('port'), 10) + NO
     }
 });
 exports.io = socketIO(server);
-if (process.env.REDIS_CLUSTERED === "true") {
-    exports.io.adapter(socketRedis({
-        pubClient: new Redis.Cluster([{
-                host: general_utils_1.default.getFromEnviroment('REDIS_SERVICE_SERVICE_HOST', 'localhost'),
-                port: 6379
-            }]),
-        subClient: new Redis.Cluster([{
-                host: general_utils_1.default.getFromEnviroment('REDIS_SERVICE_SERVICE_HOST', 'localhost'),
-                port: 6379
-            }])
-    }));
-}
-else {
-    exports.io.adapter(socketRedis({
-        pubClient: new Redis({
+exports.io.adapter(socketRedis({
+    pubClient: process.env.REDIS_CLUSTERED === "true" ? new Redis.Cluster([{
             host: general_utils_1.default.getFromEnviroment('REDIS_SERVICE_SERVICE_HOST', 'localhost'),
             port: 6379
-        }),
-        subClient: new Redis({
+        }]) : new Redis({
+        host: general_utils_1.default.getFromEnviroment('REDIS_SERVICE_SERVICE_HOST', 'localhost'),
+        port: 6379
+    }),
+    subClient: process.env.REDIS_CLUSTERED === "true" ? new Redis.Cluster([{
             host: general_utils_1.default.getFromEnviroment('REDIS_SERVICE_SERVICE_HOST', 'localhost'),
             port: 6379
-        })
-    }));
-}
+        }]) : new Redis({
+        host: general_utils_1.default.getFromEnviroment('REDIS_SERVICE_SERVICE_HOST', 'localhost'),
+        port: 6379
+    })
+}));
 /* istanbul ignore next */
 exports.io.use(async (socket, next) => {
     // validate token to use socket

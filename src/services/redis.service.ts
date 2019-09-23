@@ -22,6 +22,10 @@ if (process.env.REDIS_CLUSTERED === "true") {
 client.on('error', (err: any) => {
   console.log('Redis Error ' + err);
 });
+/* istanbul ignore next */
+client.on('connect', () => {
+  console.log('Redis Connected');
+});
 
 bluebird.promisifyAll(Redis);
 
