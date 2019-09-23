@@ -17,7 +17,6 @@ const app_controller_1 = require("./controllers/app.controller");
 const car_controller_1 = require("./controllers/car.controller");
 const jwt_controller_1 = require("./controllers/jwt.controller");
 const user_controller_1 = require("./controllers/user.controller");
-const router_1 = require("../form/router");
 // setup route middlewares
 const appRouter = express.Router();
 exports.appRouter = appRouter;
@@ -107,8 +106,6 @@ appRouter.post('/account/forgot-password/', csrfProtection, app_controller_1.def
 appRouter.get('/account/recovery/:token', csrfProtection, app_controller_1.default.recovery);
 appRouter.post('/account/recovery/:token', csrfProtection, app_controller_1.default.processRecovery);
 appRouter.get('/account/logout/', app_controller_1.default.logout);
-// recover files
-router_1.default.post('/api/v1/recover/upload-file/', middlewares_1.default.isJWTAuthenticated, app_controller_1.default.recoverFile);
 // JWT authentication API
 const jwtRouter = express.Router();
 exports.jwtRouter = jwtRouter;
