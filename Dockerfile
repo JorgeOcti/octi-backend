@@ -34,8 +34,8 @@ WORKDIR /srv
 
 COPY ./package.json /srv/package.json
 
-RUN npm --unsafe-perm install node-pre-gyp@0.13.0 -g && \
-    npm --unsafe-perm --production install  && \
+RUN npm --build-from-source install bcrypt && \
+    npm --unsafe-perm --production install && \
     npm i -g pm2 && \
     touch /srv/s3-config.json && \
     echo "{}" >> /srv/s3-config.json && \

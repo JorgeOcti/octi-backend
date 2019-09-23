@@ -36,7 +36,8 @@ WORKDIR /srv
 
 COPY ./package.json /srv/package.json
 
-RUN npm --unsafe-perm install && \
+RUN npm --build-from-source install bcrypt && \
+    npm --unsafe-perm install && \
     npm i -g nodemon && \
     npm i -g typescript && \
     touch /srv/s3-config.json && \
