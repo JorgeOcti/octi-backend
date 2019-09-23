@@ -1249,33 +1249,32 @@ class FormController {
     try {
 
       const {team} = req.user;
-      let userObject = await User.findOne({_id: req.user._id})
+      let userObject = await User.findOne({_id: req.user._id});
 
-
-      if (userObject.team == '5bf2de34caf8ef7096105cda') // Derco
-      {
-
-        const total = 2
+       // Derco
+      if (userObject && userObject.team.toString() === '5bf2de34caf8ef7096105cda') {
+        const total = 2;
         // el lead time supuesto es de 48 horas
-        const threshold = 60 * 24 * 3
+        const threshold = 60 * 24 * 3;
 
         // despacho:  5b0487db835536612bab1b61
         // recepcion: 5b1ae5799ebea419025b3e41
-        let reception = await FormModel.findOne({_id: "5b0487db835536612bab1b61"})
+        let reception = await FormModel.findOne({_id: "5b0487db835536612bab1b61"});
         let cars = await CarModel.find({
           team,
           lastForm: {$ne: null},
-        })
+        });
 
-        let carsDict = {}
-        for (const car of cars)
+        let carsDict: any = {};
+        for (const car of cars){
           carsDict[car._id.toString()] = car
+        }
 
-        var receptions = [];
-        for (var i = 0; i < total; i++) {
+        let receptions: any[] = [];
+        for (let i = 0; i < total; i++) {
           const aux = await ParticipantModel.find({
             team,
-            form: reception._id,
+            form: reception!._id,
             createdAt: {
               $gt: moment().subtract((i + 1) * 30, 'days').toDate(),
               $lt: moment().subtract(i * 30, 'days').toDate()
@@ -1285,9 +1284,7 @@ class FormController {
               createdAt: -1
             }
           });
-
-          console.log("found. ", aux.length)
-
+          console.log("found. ", aux.length);
           receptions = receptions.concat(aux);
         }
 
@@ -1320,15 +1317,15 @@ class FormController {
         ];
 
         for (const reception of receptions) {
-          let carID = reception.car.toString()
+          let carID = reception.car.toString();
 
           if (carID in carsDict) {
-            const car = carsDict[carID]
+            const car = carsDict[carID];
 
             const t0 = moment(car.createdAt).subtract(4, 'hours');
             const t1 = moment(reception.createdAt).subtract(4, 'hours');
 
-            const hour = parseInt(t0.format('HH'))
+            const hour = parseInt(t0.format('HH'));
             if (hour >= 20 || hour <= 2)
               continue;
 
@@ -1379,27 +1376,26 @@ class FormController {
 
     try {
       const {team} = req.user;
-      let userObject = await User.findOne({_id: req.user._id})
-
-      if (userObject.team == '5bf2de34caf8ef7096105cda') // Derco
-      {
-
-        const total = 6
+      let userObject = await User.findOne({_id: req.user._id});
+      // Derco
+      if (userObject && userObject.team.toString() === '5bf2de34caf8ef7096105cda') {
+        const total = 6;
         // el lead time supuesto es de 48 horas
         const threshold = 60 * 24 * 7;
 
-        let reception = await FormModel.findOne({_id: "5b1ae5799ebea419025b3e41"})
+        let reception = await FormModel.findOne({_id: "5b1ae5799ebea419025b3e41"});
         let cars = await CarModel.find({
           team,
           lastForm: {$ne: null},
           createdAt: {
             $gte: moment().subtract(total, 'months').startOf('month').toDate()
           }
-        })
+        });
 
-        let carsCreatedAt = {}
-        for (const car of cars)
-          carsCreatedAt[car._id.toString()] = car.createdAt
+        let carsCreatedAt: any = {};
+        for (const car of cars){
+          carsCreatedAt[car._id.toString()] = car.createdAt;
+        }
 
         const months: string[] = [];
         const receivedPerMonth: any = {};
@@ -1418,7 +1414,7 @@ class FormController {
 
         const receptions = await ParticipantModel.find({
           team,
-          form: reception._id,
+          form: reception!._id,
           createdAt: {
             $gte: moment().subtract(total, 'months').startOf('month').toDate()
           }
@@ -1429,7 +1425,7 @@ class FormController {
         });
 
         for (const reception of receptions) {
-          let car = reception.car.toString()
+          let car = reception.car.toString();
           if (car in carsCreatedAt) {
             const carCreatedAt = carsCreatedAt[car];
 
@@ -1680,7 +1676,7 @@ class FormController {
       });
       worksheet.autoFilter = {from: 'A1', to: 'F1'};
 
-      var columns = [{
+      worksheet.columns = [{
         header: 'VIN', key: 'vin', width: 30
       }, {
         header: 'Marca', key: 'brand', width: 30
@@ -1708,17 +1704,15 @@ class FormController {
         header: 'Pintura recepción', key: 'p1Paint', width: 30
       }, {
         header: 'Lata recepción', key: 'p1SheetMetal', width: 30
-      },];
-
-      worksheet.columns = columns;
+      }];
 
       const {team} = req.user;
 
       let periods = 6;
       for (let i = 0; i < periods; i++) {
 
-        const t0 = moment().subtract(i + 1, 'months')
-        const t1 = moment().subtract(i, 'months')
+        const t0 = moment().subtract(i + 1, 'months');
+        const t1 = moment().subtract(i, 'months');
 
         let cars = await CarModel.find({
           team,
@@ -1744,9 +1738,9 @@ class FormController {
 
         for (const car of cars) {
 
-          if (car.participants.length > 0) {
+          if (car.participants!.length > 0) {
 
-            let participants = car.participants.sort((p0, p1) => p0.createdAt > p1.createdAt)
+            let participants = car.participants!.sort((p0, p1) => p0.createdAt >= p1.createdAt ? 1 : 0);
 
             let p0 = null;
             let p1 = null;
@@ -1765,8 +1759,8 @@ class FormController {
               p1 = participants[1];
             }
 
-            var choice0Gas = null;
-            var choice1Gas = null;
+            let choice0Gas = null;
+            let choice1Gas = null;
             if (p0) {
               const answer0Gas = p0.sections.map((s) => s.answers).reduce((x, y) => [...x, ...y], []).find((a) => a._id.toString() == gasQuestion);
               if (answer0Gas)
@@ -1779,8 +1773,8 @@ class FormController {
                 choice1Gas = answer1Gas.scale.choices.find((c) => c._id.toString() == answer1Gas.answer.toString())
             }
 
-            var choice0Paint = null;
-            var choice1Paint = null;
+            let choice0Paint = null;
+            let choice1Paint = null;
             if (p0) {
               const answer0Paint = p0.sections.map((s) => s.answers).reduce((x, y) => [...x, ...y], []).find((a) => a._id.toString() == paintQuestion);
               if (answer0Paint)
@@ -1794,8 +1788,8 @@ class FormController {
             }
 
             // lata
-            var choice0SheetMetal = null;
-            var choice1SheetMetal = null;
+            let choice0SheetMetal = null;
+            let choice1SheetMetal = null;
             if (p0) {
               const answer0SheetMetal = p0.sections.map((s) => s.answers).reduce((x, y) => [...x, ...y], []).find((a) => a._id.toString() == sheetMetalQuestion);
               if (answer0SheetMetal)
@@ -1825,7 +1819,7 @@ class FormController {
               p1Gas: choice1Gas ? choice1Gas.choice : '-',
               p1Paint: choice1Paint ? choice1Paint.choice : '-',
               p1SheetMetal: choice1SheetMetal ? choice1SheetMetal.choice : '-',
-            }
+            };
 
             worksheet.addRow(row);
           }
@@ -1851,29 +1845,33 @@ class FormController {
         return res.sendFile(tempFilePath);
 
       }
+    } catch (e) {
+      res.status(400).json({
+        message: 'Ha ocurrido un error',
+        status: 400
+      });
     }
   }
 
   public async cleaningDashboard(req: IRequest, res: Response): Promise<any> {
-
     try {
-      const {team} = req.user
+      const {team} = req.user;
 
-      let form = await FormModel.findById("5b0487db835536612bab1b61")
-      let answer = new ObjectID("5b64b2e8de5557c85fa14fa0")
+      let form = await FormModel.findById("5b0487db835536612bab1b61");
+      let answer = new ObjectID("5b64b2e8de5557c85fa14fa0");
 
-      var days: string[] = [];
+      let days: string[] = [];
+      let daysDict: any = {};
       if (form) {
 
-        var daysDict: any = {}
-        var total = 30 * 6
-        var t0 = moment().subtract(total, 'days')
-        for (var i = 0; i < total; i++) {
+        const total = 30 * 6;
+        const t0 = moment().subtract(total, 'days');
+        for (let i = 0; i < total; i++) {
           const day = moment().subtract(total - i, 'days').format('YYYY-MM-DD');
           daysDict[day] = {
             'clean': 0,
             'notClean': 0
-          }
+          };
           days.push(day)
         }
 
@@ -1895,12 +1893,12 @@ class FormController {
               count: {$sum: 1}
             }
           }
-        ])
+        ]);
 
-        for (var datum of cleanDispatch) {
-          const day = datum._id
-          const sum = datum.count
-          console.log(datum)
+        for (let datum of cleanDispatch) {
+          const day = datum._id;
+          const sum = datum.count;
+          console.log(datum);
           daysDict[day].clean = sum
         }
 
@@ -1921,25 +1919,20 @@ class FormController {
               count: {$sum: 1}
             }
           }
-        ])
+        ]);
 
-        for (var datum of notCleanDispatch) {
-          const day = datum._id
-          const sum = datum.count
-          console.log(day)
+        for (let datum of notCleanDispatch) {
+          const day = datum._id;
+          const sum = datum.count;
+          console.log(day);
           daysDict[day].notClean = sum
         }
       }
-
-      var data = {
+      res.json({
         days: days,
         clean: days.map((d) => daysDict[d].clean),
         notClean: days.map((d) => daysDict[d].notClean),
-      }
-
-      res.json(data);
-
-
+      });
     } catch (e) {
       Raven.captureException(e, {req});
       /* istanbul ignore next */
@@ -2152,10 +2145,10 @@ class FormController {
   public async createPosition(req: IRequest, res: Response): Promise<any> {
 
     try {
-      const {team, company, venue} = req.user
-      const {lat, lng, accuracy, provider} = req.body
+      const {team, company, venue} = req.user;
+      const {lat, lng, accuracy, provider} = req.body;
 
-      let os = "user-agent" in req.headers ? req.headers["user-agent"] : ""
+      let os = "user-agent" in req.headers ? req.headers["user-agent"] : "";
 
       let gpsPosition = new GPSPosition({
         lat,
@@ -2164,7 +2157,7 @@ class FormController {
         company,
         team,
         venue,
-        os: os,
+        os,
         accuracy,
         provider
       });

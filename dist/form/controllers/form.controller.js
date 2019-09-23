@@ -1220,8 +1220,8 @@ class FormController {
         try {
             const { team } = req.user;
             let userObject = await user_model_1.default.findOne({ _id: req.user._id });
-            if (userObject.team == '5bf2de34caf8ef7096105cda') // Derco
-             {
+            // Derco
+            if (userObject && userObject.team.toString() === '5bf2de34caf8ef7096105cda') {
                 const total = 2;
                 // el lead time supuesto es de 48 horas
                 const threshold = 60 * 24 * 3;
@@ -1233,10 +1233,11 @@ class FormController {
                     lastForm: { $ne: null },
                 });
                 let carsDict = {};
-                for (const car of cars)
+                for (const car of cars) {
                     carsDict[car._id.toString()] = car;
-                var receptions = [];
-                for (var i = 0; i < total; i++) {
+                }
+                let receptions = [];
+                for (let i = 0; i < total; i++) {
                     const aux = await participant_model_1.default.find({
                         team,
                         form: reception._id,
@@ -1328,8 +1329,8 @@ class FormController {
         try {
             const { team } = req.user;
             let userObject = await user_model_1.default.findOne({ _id: req.user._id });
-            if (userObject.team == '5bf2de34caf8ef7096105cda') // Derco
-             {
+            // Derco
+            if (userObject && userObject.team.toString() === '5bf2de34caf8ef7096105cda') {
                 const total = 6;
                 // el lead time supuesto es de 48 horas
                 const threshold = 60 * 24 * 7;
@@ -1342,8 +1343,9 @@ class FormController {
                     }
                 });
                 let carsCreatedAt = {};
-                for (const car of cars)
+                for (const car of cars) {
                     carsCreatedAt[car._id.toString()] = car.createdAt;
+                }
                 const months = [];
                 const receivedPerMonth = {};
                 for (let i = 0; i <= total; i++) {
@@ -1583,7 +1585,7 @@ class FormController {
                 }
             });
             worksheet.autoFilter = { from: 'A1', to: 'F1' };
-            var columns = [{
+            worksheet.columns = [{
                     header: 'VIN', key: 'vin', width: 30
                 }, {
                     header: 'Marca', key: 'brand', width: 30
@@ -1611,8 +1613,7 @@ class FormController {
                     header: 'Pintura recepción', key: 'p1Paint', width: 30
                 }, {
                     header: 'Lata recepción', key: 'p1SheetMetal', width: 30
-                },];
-            worksheet.columns = columns;
+                }];
             const { team } = req.user;
             let periods = 6;
             for (let i = 0; i < periods; i++) {
@@ -1639,7 +1640,7 @@ class FormController {
                 let sheetMetalQuestion = '5b64b22245f69e40fc5713fb';
                 for (const car of cars) {
                     if (car.participants.length > 0) {
-                        let participants = car.participants.sort((p0, p1) => p0.createdAt > p1.createdAt);
+                        let participants = car.participants.sort((p0, p1) => p0.createdAt >= p1.createdAt ? 1 : 0);
                         let p0 = null;
                         let p1 = null;
                         // only one form
@@ -1653,8 +1654,8 @@ class FormController {
                             p0 = participants[0];
                             p1 = participants[1];
                         }
-                        var choice0Gas = null;
-                        var choice1Gas = null;
+                        let choice0Gas = null;
+                        let choice1Gas = null;
                         if (p0) {
                             const answer0Gas = p0.sections.map((s) => s.answers).reduce((x, y) => [...x, ...y], []).find((a) => a._id.toString() == gasQuestion);
                             if (answer0Gas)
@@ -1665,8 +1666,8 @@ class FormController {
                             if (answer1Gas)
                                 choice1Gas = answer1Gas.scale.choices.find((c) => c._id.toString() == answer1Gas.answer.toString());
                         }
-                        var choice0Paint = null;
-                        var choice1Paint = null;
+                        let choice0Paint = null;
+                        let choice1Paint = null;
                         if (p0) {
                             const answer0Paint = p0.sections.map((s) => s.answers).reduce((x, y) => [...x, ...y], []).find((a) => a._id.toString() == paintQuestion);
                             if (answer0Paint)
@@ -1678,8 +1679,8 @@ class FormController {
                                 choice1Paint = answer1Paint.scale.choices.find((c) => c._id.toString() == answer1Paint.answer.toString());
                         }
                         // lata
-                        var choice0SheetMetal = null;
-                        var choice1SheetMetal = null;
+                        let choice0SheetMetal = null;
+                        let choice1SheetMetal = null;
                         if (p0) {
                             const answer0SheetMetal = p0.sections.map((s) => s.answers).reduce((x, y) => [...x, ...y], []).find((a) => a._id.toString() == sheetMetalQuestion);
                             if (answer0SheetMetal)
@@ -1726,7 +1727,11 @@ class FormController {
                 return res.sendFile(tempFilePath);
             }
         }
-        finally {
+        catch (e) {
+            res.status(400).json({
+                message: 'Ha ocurrido un error',
+                status: 400
+            });
         }
     }
     async cleaningDashboard(req, res) {
@@ -1734,12 +1739,12 @@ class FormController {
             const { team } = req.user;
             let form = await form_model_1.default.findById("5b0487db835536612bab1b61");
             let answer = new bson_1.ObjectID("5b64b2e8de5557c85fa14fa0");
-            var days = [];
+            let days = [];
+            let daysDict = {};
             if (form) {
-                var daysDict = {};
-                var total = 30 * 6;
-                var t0 = moment().subtract(total, 'days');
-                for (var i = 0; i < total; i++) {
+                const total = 30 * 6;
+                const t0 = moment().subtract(total, 'days');
+                for (let i = 0; i < total; i++) {
                     const day = moment().subtract(total - i, 'days').format('YYYY-MM-DD');
                     daysDict[day] = {
                         'clean': 0,
@@ -1765,7 +1770,7 @@ class FormController {
                         }
                     }
                 ]);
-                for (var datum of cleanDispatch) {
+                for (let datum of cleanDispatch) {
                     const day = datum._id;
                     const sum = datum.count;
                     console.log(datum);
@@ -1789,19 +1794,18 @@ class FormController {
                         }
                     }
                 ]);
-                for (var datum of notCleanDispatch) {
+                for (let datum of notCleanDispatch) {
                     const day = datum._id;
                     const sum = datum.count;
                     console.log(day);
                     daysDict[day].notClean = sum;
                 }
             }
-            var data = {
+            res.json({
                 days: days,
                 clean: days.map((d) => daysDict[d].clean),
                 notClean: days.map((d) => daysDict[d].notClean),
-            };
-            res.json(data);
+            });
         }
         catch (e) {
             Raven.captureException(e, { req });
@@ -2020,7 +2024,7 @@ class FormController {
                 company,
                 team,
                 venue,
-                os: os,
+                os,
                 accuracy,
                 provider
             });
