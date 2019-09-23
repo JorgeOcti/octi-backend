@@ -23,6 +23,7 @@
     "mixpanel": "~0.10.2",
     "moment": "~2.24.0",
     "moment-timezone": "^0.5.25",
+    "node-pre-gyp": "^0.13.0",
     "pusher-js": "~4.4.0",
     "raven-for-redux": "~1.4.0",
     "raven-js": "~3.27.0",
