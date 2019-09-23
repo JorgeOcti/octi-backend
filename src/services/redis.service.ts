@@ -3,20 +3,26 @@ import * as bluebird from 'bluebird';
 import * as Redis from 'ioredis';
 import GeneralUtils from '../utils/general.utils';
 
-let client: Redis.Redis | Redis.Cluster;
-if (process.env.REDIS_CLUSTERED === "true") {
-  console.log("REDIS CLUSTER ON");
-  client = new Redis.Cluster([{
-    host: GeneralUtils.getFromEnviroment('REDIS_SERVICE_SERVICE_HOST', 'localhost'),
-    port: 6379
-  }]);
-} else {
-  console.log("REDIS CLUSTER OFF");
-  client = new Redis({
-    host: GeneralUtils.getFromEnviroment('REDIS_SERVICE_SERVICE_HOST', 'localhost'),
-    port: 6379
-  });
+
+export function createRedisClient(): Redis.Redis | Redis.Cluster{
+  let client: Redis.Redis | Redis.Cluster;
+  if (process.env.REDIS_CLUSTERED === "true") {
+    console.log("REDIS CLUSTER ON");
+    client = new Redis.Cluster([{
+      host: GeneralUtils.getFromEnviroment('REDIS_SERVICE_SERVICE_HOST', 'localhost'),
+      port: 6379,
+    }]);
+  } else {
+    console.log("REDIS CLUSTER OFF");
+    client = new Redis({
+      host: GeneralUtils.getFromEnviroment('REDIS_SERVICE_SERVICE_HOST', 'localhost'),
+      port: 6379,
+      db: 0
+    });
+  }
+  return client;
 }
+let client = createRedisClient();
 
 /* istanbul ignore next */
 client.on('error', (err: any) => {

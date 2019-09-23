@@ -5,9 +5,7 @@ import * as socketIO from 'socket.io';
 import * as socketRedis from 'socket.io-redis';
 import app from './app';
 import logger from './services/logger.service';
-import redisClient from './services/redis.service';
-import * as Redis from "ioredis";
-import GeneralUtils from "./utils/general.utils";
+import redisClient, {createRedisClient} from './services/redis.service';
 
 // Mongoose setting
 const MONGODB_URI: string = process.env.MONGODB_URI || '';
@@ -46,20 +44,8 @@ const server = app.listen(parseInt(app.get('port'), 10) + NODE_APP_INSTANCE, () 
 
 export const io = socketIO(server);
 io.adapter(socketRedis({
-  pubClient: process.env.REDIS_CLUSTERED === "true" ? new Redis.Cluster([{
-    host: GeneralUtils.getFromEnviroment('REDIS_SERVICE_SERVICE_HOST', 'localhost'),
-    port: 6379
-  }]) : new Redis({
-    host: GeneralUtils.getFromEnviroment('REDIS_SERVICE_SERVICE_HOST', 'localhost'),
-    port: 6379
-  }),
-  subClient: process.env.REDIS_CLUSTERED === "true" ? new Redis.Cluster([{
-    host: GeneralUtils.getFromEnviroment('REDIS_SERVICE_SERVICE_HOST', 'localhost'),
-    port: 6379
-  }]) : new Redis({
-    host: GeneralUtils.getFromEnviroment('REDIS_SERVICE_SERVICE_HOST', 'localhost'),
-    port: 6379
-  })
+  pubClient: createRedisClient(),
+  subClient: createRedisClient()
 }));
 
 /* istanbul ignore next */
