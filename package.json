@@ -23,7 +23,6 @@
     "bson": "~4.0.2",
     "cheerio": "~1.0.0-rc.2",
     "compression": "~1.7.4",
-    "connect-ioredis": "^1.4.5",
     "connect-redis": "~3.4.1",
     "cookie-parser": "~1.4.3",
     "crypto": "~1.0.1",

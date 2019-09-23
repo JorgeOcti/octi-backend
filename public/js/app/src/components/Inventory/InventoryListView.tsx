@@ -87,6 +87,7 @@ class InventoryListView extends React.Component<IPropsType, IStateType> {
     if (this.props.inventories.source) {
       this.props.inventories.source.cancel('Operation canceled by the user.');
     }
+    this.socket.emit('leave', {room: `inventory-list-${window.user.team}`});
     this.socket.disconnect();
   }
 

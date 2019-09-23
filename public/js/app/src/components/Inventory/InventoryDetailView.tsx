@@ -375,6 +375,8 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
     if (this.state.source) {
       (this.state.source as any).cancel('Operation canceled by the user.');
     }
+    const {id} = this.props.match.params;
+    this.socket.emit('leave', {room: `inventory-detail-${id}`});
     this.socket.disconnect();
   }
 

@@ -6,6 +6,7 @@ import {connect} from 'react-redux';
 import {RouteComponentProps} from 'react-router';
 import {Dispatch} from 'redux';
 import * as swal from 'sweetalert';
+// import * as mapboxgl from 'mapboxgl';
 var mapboxgl = require('mapbox-gl/dist/mapbox-gl.js');
 import {IBaseVenue, IVenue} from '../../../../../../src/interfaces/venue.interface';
 import {loadDataAction, ModalReduxAction} from '../../actions/modal.actions';
