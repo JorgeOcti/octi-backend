@@ -6,6 +6,7 @@ const RedisClustr = require("redis-clustr");
 const general_utils_1 = require("../utils/general.utils");
 let client;
 if (process.env.REDIS_CLUSTERED === "true") {
+    console.log("REDIS CLUSTER ON");
     client = new RedisClustr({
         servers: [{
                 host: general_utils_1.default.getFromEnviroment('REDIS_SERVICE_SERVICE_HOST', 'localhost'),
@@ -18,6 +19,7 @@ if (process.env.REDIS_CLUSTERED === "true") {
     });
 }
 else {
+    console.log("REDIS CLUSTER OFF");
     client = redis.createClient({
         host: general_utils_1.default.getFromEnviroment('REDIS_SERVICE_SERVICE_HOST', 'localhost'),
         port: 6379

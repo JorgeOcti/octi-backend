@@ -5,6 +5,7 @@ import GeneralUtils from '../utils/general.utils';
 
 let client: any;
 if (process.env.REDIS_CLUSTERED === "true") {
+  console.log("REDIS CLUSTER ON");
   client = new RedisClustr({
     servers: [{
       host: GeneralUtils.getFromEnviroment('REDIS_SERVICE_SERVICE_HOST', 'localhost'),
@@ -16,6 +17,7 @@ if (process.env.REDIS_CLUSTERED === "true") {
     }
   });
 } else {
+  console.log("REDIS CLUSTER OFF");
   client = redis.createClient({
     host: GeneralUtils.getFromEnviroment('REDIS_SERVICE_SERVICE_HOST', 'localhost'),
     port: 6379
