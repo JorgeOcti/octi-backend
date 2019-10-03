@@ -1369,7 +1369,6 @@ class FormController {
         status: 400
       });
     }
-
   }
 
   public async timingDashboard(req: IRequest, res: Response): Promise<any> {
@@ -1849,6 +1848,13 @@ class FormController {
 
       }
     } catch (e) {
+      Raven.captureException(e, { req });
+      /* istanbul ignore next */
+      logger.error(`dashboard revisiones: Async Error.`);
+      /* istanbul ignore next */
+      logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
+      /* istanbul ignore next */
+      logger.error(e);
       res.status(400).json({
         message: 'Ha ocurrido un error',
         status: 400

@@ -1731,6 +1731,13 @@ class FormController {
             }
         }
         catch (e) {
+            Raven.captureException(e, { req });
+            /* istanbul ignore next */
+            logger_service_1.default.error(`dashboard revisiones: Async Error.`);
+            /* istanbul ignore next */
+            logger_service_1.default.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
+            /* istanbul ignore next */
+            logger_service_1.default.error(e);
             res.status(400).json({
                 message: 'Ha ocurrido un error',
                 status: 400
