@@ -1251,7 +1251,7 @@ class FormController {
       const {team} = req.user;
       let userObject = await User.findOne({_id: req.user._id});
 
-       // Derco
+      // Derco
       if (userObject && userObject.team.toString() === '5bf2de34caf8ef7096105cda') {
         const total = 2;
         // el lead time supuesto es de 48 horas
@@ -1267,7 +1267,7 @@ class FormController {
 
         let carsDict: any = {};
         for (const car of cars){
-          carsDict[car._id.toString()] = car
+          carsDict[car._id.toString()] = car;
         }
 
         let receptions: any[] = [];
@@ -1681,6 +1681,8 @@ class FormController {
       }, {
         header: 'Marca', key: 'brand', width: 30
       }, {
+        header: 'Total revisiones', key: 'participants', width: 30
+      }, {
         header: 'Fecha despacho', key: 'p0CreatedAt', width: 30
       }, {
         header: 'Sucursal despacho', key: 'p0Venue', width: 30
@@ -1755,8 +1757,9 @@ class FormController {
 
             }
             else {
+              const length = participants.length;
               p0 = participants[0];
-              p1 = participants[1];
+              p1 = participants[length-1];
             }
 
             let choice0Gas = null;

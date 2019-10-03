@@ -1590,6 +1590,8 @@ class FormController {
                 }, {
                     header: 'Marca', key: 'brand', width: 30
                 }, {
+                    header: 'Total revisiones', key: 'participants', width: 30
+                }, {
                     header: 'Fecha despacho', key: 'p0CreatedAt', width: 30
                 }, {
                     header: 'Sucursal despacho', key: 'p0Venue', width: 30
@@ -1651,8 +1653,9 @@ class FormController {
                                 p1 = participants[0];
                         }
                         else {
+                            const length = participants.length;
                             p0 = participants[0];
-                            p1 = participants[1];
+                            p1 = participants[length - 1];
                         }
                         let choice0Gas = null;
                         let choice1Gas = null;
