@@ -1280,7 +1280,6 @@ class CarController {
                     const inv1 = inventories[n - 1];
                     const t0 = inv0.createdAt;
                     const t1 = inv1.createdAt;
-                    console.log(inv0.venue.name, inv0.venueFound ? inv0.venueFound.name : '');
                     const row = {
                         vin: car.vin,
                         denomination: car.denomination,

@@ -1284,7 +1284,6 @@ class FormController {
               createdAt: -1
             }
           });
-          console.log("found. ", aux.length);
           receptions = receptions.concat(aux);
         }
 
