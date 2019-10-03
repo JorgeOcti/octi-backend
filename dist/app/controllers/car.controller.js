@@ -1228,7 +1228,11 @@ class CarController {
                 }, {
                     header: 'Marca', key: 'brand', width: 30
                 }, {
+                    header: 'Sucursal entrada', key: 'v0', width: 30
+                }, {
                     header: 'Tiempo inicio', key: 't0', width: 30
+                }, {
+                    header: 'Sucursal salida', key: 'v1', width: 30
                 }, {
                     header: 'Tiempo fin', key: 't1', width: 30
                 }, {
@@ -1272,14 +1276,19 @@ class CarController {
                         continue;
                     }
                     const n = inventories.length;
-                    const t0 = inventories[0].createdAt;
-                    const t1 = inventories[n - 1].createdAt;
+                    const inv0 = inventories[0];
+                    const inv1 = inventories[n - 1];
+                    const t0 = inv0.createdAt;
+                    const t1 = inv1.createdAt;
+                    console.log(inv0.venue.name, inv0.venueFound ? inv0.venueFound.name : '');
                     const row = {
                         vin: car.vin,
                         denomination: car.denomination,
                         color: car.color,
                         brand: car.brand,
+                        v0: inv0.venue.name,
                         t0: t0,
+                        v1: inv1.venue.name,
                         t1: t1,
                         inventories: n,
                         rotation: moment(t1).diff(moment(t0), 'days', true)

@@ -1588,6 +1588,8 @@ class FormController {
                 }, {
                     header: 'Marca', key: 'brand', width: 30
                 }, {
+                    header: 'Total revisiones', key: 'participants', width: 30
+                }, {
                     header: 'Fecha despacho', key: 'p0CreatedAt', width: 30
                 }, {
                     header: 'Sucursal despacho', key: 'p0Venue', width: 30
@@ -1650,8 +1652,9 @@ class FormController {
                                 p1 = participants[0];
                         }
                         else {
+                            const length = participants.length;
                             p0 = participants[0];
-                            p1 = participants[1];
+                            p1 = participants[length - 1];
                         }
                         var choice0Gas = null;
                         var choice1Gas = null;
@@ -1693,6 +1696,7 @@ class FormController {
                         const row = {
                             vin: car.vin,
                             brand: car.brand,
+                            participants: participants.length,
                             p0CreatedAt: p0 ? p0.createdAt : '-',
                             p0Venue: p0 ? p0.venue.name : '-',
                             p0Qualification: p0 ? p0.qualification : '-',
@@ -1708,25 +1712,37 @@ class FormController {
                         };
                         worksheet.addRow(row);
                     }
+                    cars = [];
                 }
-                /* formats */
-                worksheet.getRow(1).eachCell((cell) => {
-                    cell.font = {
-                        bold: true
-                    };
-                });
-                // const idCol = worksheet.getColumn('id');
-                // idCol.eachCell({includeEmpty: true}, (cell) => {
-                //   cell.alignment = {vertical: 'middle', horizontal: 'center'};
-                // });
-                const tempFilePath = tempfile('.xlsx');
-                await workbook.xlsx.writeFile(tempFilePath);
-                res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-                res.setHeader('Content-Disposition', `attachment; filename=revisiones-${moment().format('YYYY-MM-DD')}.xlsx`);
-                return res.sendFile(tempFilePath);
             }
+            /* formats */
+            worksheet.getRow(1).eachCell((cell) => {
+                cell.font = {
+                    bold: true
+                };
+            });
+            // const idCol = worksheet.getColumn('id');
+            // idCol.eachCell({includeEmpty: true}, (cell) => {
+            //   cell.alignment = {vertical: 'middle', horizontal: 'center'};
+            // });
+            const tempFilePath = tempfile('.xlsx');
+            await workbook.xlsx.writeFile(tempFilePath);
+            res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+            res.setHeader('Content-Disposition', `attachment; filename=revisiones-${moment().format('YYYY-MM-DD')}.xlsx`);
+            return res.sendFile(tempFilePath);
         }
-        finally {
+        catch (e) {
+            Raven.captureException(e, { req });
+            /* istanbul ignore next */
+            logger_service_1.default.error(`dashboard revisiones: Async Error.`);
+            /* istanbul ignore next */
+            logger_service_1.default.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
+            /* istanbul ignore next */
+            logger_service_1.default.error(e);
+            res.status(400).json({
+                message: 'Ha ocurrido un error',
+                status: 400
+            });
         }
     }
     async cleaningDashboard(req, res) {

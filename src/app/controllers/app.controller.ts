@@ -3,9 +3,15 @@ import * as isuuid from 'is-uuid';
 import * as moment from 'moment';
 import * as passport from 'passport';
 import * as uuid from 'uuid';
+import * as Raven from 'raven';
+import * as GraphicsMagick from 'gm';
 import {queue} from '../../app';
 import redisClient from '../../services/redis.service';
 import UserModel from '../models/user.model';
+import GeneralUtils from "../../utils/general.utils";
+import {IRequest} from "../../interfaces/global.interface";
+import RecoverFile from "../models/recoverFile.model";
+import logger from "../../services/logger.service";
 
 class AppController {
 
@@ -24,6 +30,8 @@ class AppController {
     this.processRecovery = this.processRecovery.bind(this);
 
     this.logout = this.logout.bind(this);
+    this.recoverFile = this.recoverFile.bind(this);
+
   }
 
   /* istanbul ignore next */
@@ -229,6 +237,93 @@ class AppController {
   public logout(req: Request, res: Response) {
     req.logout();
     res.redirect('/account/login/');
+  }
+
+  public async recoverFile(req: IRequest, res: Response): Promise<any> {
+    const company = req.user.company;
+    const team = req.user.team;
+    const file: any = GeneralUtils.getFileFromRequest(req.files, 'file');
+    logger.info(`uploadFile`);
+    logger.info(`{user: {_id: ${req.user._id}, email: ${req.user.email}}, file: ${JSON.stringify(file)}}}`);
+    if (file) {
+      try {
+        const recoverFile = new RecoverFile();
+        /*
+          {
+            fieldname: 'file',
+            originalname: 'Captura de pantalla 2018-06-28 a la(s) 11.59.58.png',
+            encoding: '7bit',
+            mimetype: 'image/png',
+            destination: '/tmp/',
+            filename: 'Captura de pantalla 2018-06-28 a la(s) 11.59.58.png',
+            path: '/tmp/Captura de pantalla 2018-06-28 a la(s) 11.59.58.png',
+            size: 794429
+          }
+        */
+        // fix exif
+        if (new RegExp('\\bimage\\b').test(file.mimetype)) {
+          await this.autoRotate(file.path);
+        }
+        file.headers = {
+          'Content-Type': file.mimetype
+        };
+
+        recoverFile.user = req.user._id;
+        recoverFile.company = company._id;
+        recoverFile.team = team._id;
+        recoverFile.attach('file', file, async (error: any) => {
+          if (error) {
+            /* istanbul ignore next */
+            res.status(400).json(error);
+          } else {
+            await recoverFile.save();
+            res.status(201).json({
+              data: {
+                _id: recoverFile._id,
+                file: recoverFile.file
+              },
+              status: 201
+            });
+          }
+        });
+      } catch (e) {
+        Raven.captureException(e, {req});
+        /* istanbul ignore next */
+        console.log(e);
+        logger.error(`recover file error:`);
+        /* istanbul ignore next */
+        logger.error(e);
+        /* istanbul ignore next */
+        res.status(400).json(e);
+      }
+
+    } else {
+      logger.error(`uploadFile: La imagen es obligatoria.`);
+      res.status(400).json({
+        message: 'La imagen es obligatoria.',
+        status: 400
+      });
+    }
+  }
+
+  private autoRotate(path: string) {
+    // doc http://aheckmann.github.io/gm/docs.html
+    /**** REQUIRE: imagemagick and graphicsmagick *****
+     brew install imagemagick
+     brew install graphicsmagick
+     * */
+    return new Promise((resolve, reject) => {
+      GraphicsMagick(path)
+        .autoOrient()
+        .write(path, (err) => {
+          if (err) {
+            /* istanbul ignore next */
+            reject(err);
+          } else {
+            resolve();
+          }
+        });
+    });
   }
 }
 
