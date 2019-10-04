@@ -42,11 +42,17 @@ interface IPropsType extends RouteComponentProps<{ ticket: string }> {
   users: IUsersState;
 
   getUsersAction(page: number, search?: string): UserReduxAction;
+
   createUserAction(): UserReduxAction;
+
   updateUserAction(): UserReduxAction;
+
   deleteUserAction(id?: string): UserReduxAction;
+
   changeTempUserAction(user: ITempUser): UserReduxAction;
+
   loadDataAction(title: string, body: JSX.Element, footer: JSX.Element): ModalReduxAction;
+
   changeSearchUserAction(searchText: string): UserReduxAction;
 }
 
@@ -120,7 +126,7 @@ class UserListView extends React.Component<IPropsType, IStateType> {
   }
 
   public componentDidUpdate(prevProps: Readonly<IPropsType>, prevState: Readonly<IStateType>, snapshot?: any): void {
-    if(this.props.users.pagination !== prevProps.users.pagination){
+    if (this.props.users.pagination !== prevProps.users.pagination) {
       window.scrollTo(0, 0);
     }
   }
@@ -240,81 +246,96 @@ class UserListView extends React.Component<IPropsType, IStateType> {
               </div>
               <table className="table table-andes table-striped">
                 <thead>
-                  <tr>
-                    <th style={{width: '33%'}}>Usuario</th>
-                    <th style={{width: '33%'}} className="hidden-xs">Sucursal</th>
-                    <th style={{width: '33%'}} className="hidden-xs">Modificado</th>
-                    {
-                      hasPermission(window.user, 'changeUser') ?
-                        <th style={{width: '1%'}} className="width-10"/> : null
-                    }
-                    {
-                      hasPermission(window.user, 'changeUser') ?
-                        <th style={{width: '1%'}} className="width-10"/> : null
-                    }
-                    {
-                      hasPermission(window.user, 'deleteUser') ?
+                <tr>
+                  <th style={{width: '24%'}}>Usuario</th>
+                  <th style={{width: '24%'}} className="hidden-xs">Sucursal</th>
+                  <th style={{width: '24%'}} className="hidden-xs">Formularios</th>
+                  <th style={{width: '24%'}} className="hidden-xs">Modificado</th>
+                  {
+                    hasPermission(window.user, 'changeUser') ?
                       <th style={{width: '1%'}} className="width-10"/> : null
-                    }
-                  </tr>
+                  }
+                  {
+                    hasPermission(window.user, 'changeUser') ?
+                      <th style={{width: '1%'}} className="width-10"/> : null
+                  }
+                  {
+                    hasPermission(window.user, 'deleteUser') ?
+                      <th style={{width: '1%'}} className="width-10"/> : null
+                  }
+                </tr>
                 </thead>
                 <tbody>
-                  {
-                    !loading && users.length === 0 && users ? <tr>
-                      <td colSpan={6}>No se han encontrado resultados.</td>
-                    </tr> : null
-                  }
-                  {
-                    users.map((user: IUser) => {
-                      return (
-                        <tr
-                          key={user._id}
-                          id={`user-${user._id}`}
-                          className={'background-transition'}
-                        >
-                          <td className="middle">{user.firstName} {user.lastName}<br />
-                            <span className="text-sm text-muted">{user.email}</span>
-                            <div className="hidden-lg hidden-md hidden-sm text-sm">
-                              <span className="text-sm text-muted">{user.venue ? user.venue.name : ''} - {user.company ? user.company.name : ''}</span>
-                            </div>
-                          </td>
-                          <td className="hidden-xs">{user.venue ? user.venue.name : ''}<br />
-                            <span className="text-sm text-muted">{user.company ? user.company.name : ''}</span>
-                          </td>
-                          <td className="middle hidden-xs text-muted">{moment(user.updatedAt).format('LLL')}</td>
-                          {
-                            hasPermission(window.user, 'changeUser') ?
-                              <td className="middle-center text-yellow pointer" onClick={() => this.changePassword(user)}><i className="fa fa-lock"/></td> : null
-                          }
-                          {
-                            hasPermission(window.user, 'changeUser') ?
-                              <td className="middle-center text-blue pointer" onClick={() => this.updateUser(user)}><i className="fa fa-pencil"/></td> : null
-                          }
-                          {
-                            hasPermission(window.user, 'deleteUser') ?
-                              <td className="middle-center text-red pointer" onClick={() => this.deleteUser(user)}><i className="fa fa-minus-circle"/></td> : null
-                          }
-                        </tr>
-                      );
-                    })
-                  }
+                {
+                  !loading && users.length === 0 && users ? <tr>
+                    <td colSpan={6}>No se han encontrado resultados.</td>
+                  </tr> : null
+                }
+                {
+                  users.map((user: IUser) => {
+                    const forms = user.userForms;
+                    return (
+                      <tr
+                        key={user._id}
+                        id={`user-${user._id}`}
+                        className={'background-transition'}
+                      >
+                        <td className="middle">{user.firstName} {user.lastName}<br/>
+                          <span className="text-sm text-muted">{user.email}</span>
+                          <div className="hidden-lg hidden-md hidden-sm text-sm">
+                            <span
+                              className="text-sm text-muted">{user.venue ? user.venue.name : ''} - {user.company ? user.company.name : ''}</span>
+                          </div>
+                        </td>
+                        <td className="hidden-xs">{user.venue ? user.venue.name : ''}<br/>
+                          <span className="text-sm text-muted">{user.company ? user.company.name : ''}</span>
+                        </td>
+                        <td className="hidden-xs">
+                          {forms.map((form, index) => {
+                            return <React.Fragment key={`${form._id}-${index}`}>
+                              {index > 0 ?
+                                <br/> : null}
+                              <span>{form.name}</span>
+                            </React.Fragment>
+                          })}
+                        </td>
+                        <td className="middle hidden-xs text-muted">{moment(user.updatedAt).format('LLL')}</td>
+                        {
+                          hasPermission(window.user, 'changeUser') ?
+                            <td className="middle-center text-yellow pointer" onClick={() => this.changePassword(user)}>
+                              <i className="fa fa-lock"/></td> : null
+                        }
+                        {
+                          hasPermission(window.user, 'changeUser') ?
+                            <td className="middle-center text-blue pointer" onClick={() => this.updateUser(user)}><i
+                              className="fa fa-pencil"/></td> : null
+                        }
+                        {
+                          hasPermission(window.user, 'deleteUser') ?
+                            <td className="middle-center text-red pointer" onClick={() => this.deleteUser(user)}><i
+                              className="fa fa-minus-circle"/></td> : null
+                        }
+                      </tr>
+                    );
+                  })
+                }
                 </tbody>
               </table>
             </div>
             {
               pagination.pages > 1 &&
-                <div className="box-footer text-right">
-                  <Paginator changePage={this.changePage} page={pagination.page} pages={pagination.pages} />
-                </div>
+              <div className="box-footer text-right">
+                <Paginator changePage={this.changePage} page={pagination.page} pages={pagination.pages}/>
+              </div>
             }
             {
               loading &&
-                <div className="overlay">
-                  <i className="fa fa-spinner fa-spin text-purple"/>
-                </div>
+              <div className="overlay">
+                <i className="fa fa-spinner fa-spin text-purple"/>
+              </div>
             }
           </div>
-          <ModalView />
+          <ModalView/>
         </section>
       </AppContainer>
     );
@@ -348,7 +369,8 @@ class UserListView extends React.Component<IPropsType, IStateType> {
     setTimeout(() => {
       this.props.loadDataAction(
         'Agregar Usuario',
-        <UserFormView create={true} changeTempUser={changeTempUser} venues={venues} companies={companies} users={this.props.users} forms={forms} permissions={permissions}/>,
+        <UserFormView create={true} changeTempUser={changeTempUser} venues={venues} companies={companies}
+                      users={this.props.users} forms={forms} permissions={permissions}/>,
         <React.Fragment>
           <button type="button" className="btn btn-sm btn-default" data-dismiss="modal">Cancelar</button>
           <button type="button" className="btn btn-sm btn-primary" onClick={this.processCreateUser}>Grabar</button>
@@ -424,7 +446,8 @@ class UserListView extends React.Component<IPropsType, IStateType> {
     setTimeout(() => {
       this.props.loadDataAction(
         `Editando a ${user.firstName} ${user.lastName}`,
-        <UserFormView create={false}  changeTempUser={changeTempUser} companies={companies} venues={venues} users={this.props.users} forms={forms} permissions={permissions} user={user}/>,
+        <UserFormView create={false} changeTempUser={changeTempUser} companies={companies} venues={venues}
+                      users={this.props.users} forms={forms} permissions={permissions} user={user}/>,
         <React.Fragment>
           <button type="button" className="btn btn-sm btn-default" data-dismiss="modal">Cancelar</button>
           <button type="button" className="btn btn-sm btn-primary" onClick={this.processUpdateUser}>Editar</button>
@@ -499,7 +522,7 @@ const mapStateToProps = (state: { users: IUsersState }) => {
 };
 
 // const mapDispatchToProps = (dispatch: Dispatch<UserReduxAction> ) => {
-const mapDispatchToProps = (dispatch: any ) => {
+const mapDispatchToProps = (dispatch: any) => {
   return {
     dispatch,
     getUsersAction: (page: number, search?: string) => dispatch(getUsersAction(page, search)),
