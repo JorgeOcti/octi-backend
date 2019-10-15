@@ -1,4 +1,4 @@
-import {Request, Response} from 'express';
+import {Response} from 'express';
 import {PaginateOptions, PaginateResult} from 'mongoose';
 import {IRequest} from '../../../interfaces/global.interface';
 import Team, {ITeamModel} from '../../models/team.model';
@@ -9,7 +9,7 @@ class AdminsTeamController {
     this.apiListTeams = this.apiListTeams.bind(this);
   }
 
-  public async index(req: Request, res: Response) {
+  public async index(req: IRequest, res: Response) {
     // if (req.user.hasPermission('viewCompanies')) {
       res.render('app/index', {token: await req.user.generateToken()});
     // } else {

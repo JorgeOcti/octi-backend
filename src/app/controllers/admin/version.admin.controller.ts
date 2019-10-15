@@ -1,7 +1,8 @@
 import {Response} from 'express';
 import {IRequest} from '../../../interfaces/global.interface';
 import Alert from '../../models/alert.model';
-import Version from "../../models/version.model";
+import Version, {IVersionModel} from "../../models/version.model";
+import {PaginateOptions, PaginateResult} from "mongoose";
 
 class AdminVersionController {
 
@@ -17,9 +18,7 @@ class AdminVersionController {
   }
 
   public async apiListVersions(req: IRequest, res: Response) {
-    const {team} = req.user;
     try {
-
       const options: PaginateOptions = {
         select: {
           _id: true,
@@ -55,7 +54,7 @@ class AdminVersionController {
     }
   }
 
-  public async apiCreateVersion(req: IRequest, res: Response) {
+  public async apiCreateVersion(req: IRequest, res: Response): Promise<any> {
     const {description, ios, android} = req.body;
 
     if(!req.user.hasPermission('viewVersion')) {
@@ -119,7 +118,7 @@ class AdminVersionController {
     }
   }
 
-  private getVersions(filter: any, options: PaginateOptions): Promise<PaginateResult<Version>> {
+  private getVersions(filter: any, options: PaginateOptions): Promise<PaginateResult<IVersionModel>> {
     return new Promise((resolve, reject) => {
       Version.paginate(filter, options, (err, result) => {
         /* istanbul ignore next  */

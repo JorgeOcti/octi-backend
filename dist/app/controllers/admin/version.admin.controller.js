@@ -13,7 +13,6 @@ class AdminVersionController {
         res.render('app/index', { token: await req.user.generateToken() });
     }
     async apiListVersions(req, res) {
-        const { team } = req.user;
         try {
             const options = {
                 select: {

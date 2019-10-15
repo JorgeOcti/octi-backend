@@ -144,7 +144,7 @@ class DashboardTimingView extends React.Component<IPropsType, IStateType> {
       },
       legend: {
         data: ['No cumple', 'Cumple'],
-        x: 'center',
+        // x: 'center',
         bottom: 50
       },
       xAxis: {
@@ -159,9 +159,9 @@ class DashboardTimingView extends React.Component<IPropsType, IStateType> {
         top: 30,
         bottom: 100,
         // left
-        x: 20,
+        left: 5,
         // right
-        x2: 40,
+        right: 10,
         containLabel: true
       },
       series: [

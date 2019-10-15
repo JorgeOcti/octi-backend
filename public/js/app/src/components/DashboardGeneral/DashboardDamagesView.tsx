@@ -265,7 +265,7 @@ class DashboardDamagesView extends React.Component<IPropsType, IStateType> {
         },
         legend: {
           data: ['Sin daños', 'Con daños'],
-          x: 'center',
+          // x: 'center',
           bottom: 50,
         },
         xAxis: {
@@ -306,9 +306,9 @@ class DashboardDamagesView extends React.Component<IPropsType, IStateType> {
           top: 10,
           bottom: 100,
           // left
-          x: 20,
+          left: 5,
           // right
-          x2: 10,
+          right: 10,
           containLabel: true
         },
         yAxis: [

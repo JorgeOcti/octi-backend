@@ -142,8 +142,8 @@ class JWTController {
                       refreshToken: jwt.sign(userInfo, req.app.locals.secretKey, {
                         expiresIn: '30 days'
                       }),
-                      iosVersion: version.ios,
-                      androidVersion: version.android,
+                      iosVersion: version!.ios,
+                      androidVersion: version!.android,
                       user: userInfo
                     },
                     status: 200

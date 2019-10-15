@@ -1111,8 +1111,9 @@ class CarController {
       }
       let results: any[] = [];
       while (revisionsToProcess.length) {
-        results = [...results, ...await bluebird
-          .all(revisionsToProcess.splice(0, 100))
+        results = [
+          ...results,
+          ...await bluebird.all(revisionsToProcess.splice(0, 100))
         ];
       }
       resolve(results);
@@ -1149,7 +1150,9 @@ class CarController {
       }, {
         header: 'Sucursal', key: 'venue', width: 30
       }, {
-        header: 'Fecha', key: 'created_at', width: 30, style: {numFmt: 'dd/mm/yyyy hh:mm'}
+        header: 'Fecha', key: 'created_at', width: 30, style: {
+          numFmt: 'dd/mm/yyyy hh:mm'
+        }
       }, {
         header: 'Usuario', key: 'user', width: 30
       }, {

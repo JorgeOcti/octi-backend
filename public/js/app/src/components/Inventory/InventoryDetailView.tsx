@@ -1441,7 +1441,7 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
         }
       },
       legend: {
-        x: 'center',
+        // x: 'center',
         bottom: 50,
         data: ['Encontrados', 'Sobrantes', 'Faltantes', 'Pendientes', 'Reportados']
       },
@@ -1491,9 +1491,9 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
         top: 30,
         bottom: 100,
         // left
-        x: 0,
+        left: 5,
         // right
-        x2: 10,
+        right: 10,
         containLabel: true
       },
       color: ['#00aa51', '#ff9600', '#f1392c', '#00c2f4', '#96a4b3'],
@@ -1563,7 +1563,7 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
     };
     if (!update) {
       optionVenues.legend = {
-        ...optionVenues,
+        ...optionVenues.legend,
         selected: {
           Reportados: false
         }
@@ -1635,7 +1635,7 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
         }
       },
       legend: {
-        x: 'center',
+        // x: 'center',
         bottom: 50,
         data: ['Encontrados', 'Sobrantes', 'Faltantes', 'Pendientes', 'Reportados']
       },
@@ -1670,9 +1670,9 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
         top: 30,
         bottom: 100,
         // left
-        x: 10,
+        left: 5,
         // right
-        x2: 5,
+        right: 10,
         containLabel: true
       },
       color: ['#00aa51', '#ff9600', '#f1392c', '#00c2f4', '#96a4b3'],
@@ -1715,7 +1715,7 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
     };
     if (!update) {
       optionBrands.legend = {
-        ...optionBrands,
+        ...optionBrands.legend,
         selected: {
           Reportados: false
         }

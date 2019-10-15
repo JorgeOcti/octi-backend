@@ -385,8 +385,8 @@ export function getParticipant(id: string) {
                   <div className="section" key={index}>
                     <h4>{section.name} <small>{Math.round(section.qualification)}%</small></h4>
                       {
-                        section.answers.map((answer) => {
-                          const selectChoice = answer.scale ? answer.scale.choices.find((choice) => choice._id === answer.answer) : undefined;
+                        section.answers.map((answer: any) => {
+                          const selectChoice = answer.scale ? answer.scale.choices.find((choice: any) => choice._id === answer.answer) : undefined;
                           const kinds: any = answer.damages && answer.damages.hasOwnProperty('kinds') ? answer.damages.kinds.reduce((acc: any, cur: any) => {
                             acc[cur._id] = cur.name;
                             return acc;
@@ -403,8 +403,8 @@ export function getParticipant(id: string) {
                           if (answer.conciliation && !selectChoice) {
                             return null;
                           }
-                          const accesorySeletedIds = answer.accesoriesAnswered ? answer.accesoriesAnswered.map((accesory) => accesory.item) : [];
-                          const items = answer.accessories ? answer.accessories.items.filter((item) => accesorySeletedIds.includes(item._id)) : [];
+                          const accesorySeletedIds = answer.accesoriesAnswered ? answer.accesoriesAnswered.map((accesory:any) => accesory.item) : [];
+                          const items = answer.accessories ? answer.accessories.items.filter((item:any) => accesorySeletedIds.includes(item._id)) : [];
                           return (
                             <div className="question" key={answer._id}>
                               <p><strong>{answer.order} {answer.question}</strong></p>
@@ -412,7 +412,7 @@ export function getParticipant(id: string) {
                                 answer.scale ?
                                   <div className="btn-group btn-group-justified" role="group" aria-label="...">
                                     {
-                                      answer.scale.choices.map((choice) => {
+                                      answer.scale.choices.map((choice: any) => {
                                         const btnDefault = 'btn-default';
                                         const optionsClass: any = {
                                           blue: 'btn-primary',
@@ -440,7 +440,7 @@ export function getParticipant(id: string) {
                                 answer.damagesSelected && answer.damagesSelected.length ?
                                   <div className="row" style={{marginTop: '10px'}}>
                                     {
-                                      answer.damagesSelected.map((ds, index) => (
+                                      answer.damagesSelected.map((ds: any, index: number) => (
                                         <div className="col-md-12 damage" key={index}>
                                           <div className="damage-detail">
                                             <p className="damage-description">
@@ -450,7 +450,7 @@ export function getParticipant(id: string) {
                                             </p>
                                             <div className="row images">
                                               {
-                                                ds.images.map((image) => {
+                                                ds.images.map((image: any) => {
                                                   return (
                                                     <div className="col-md-3 col-sm-4 col-xs-4 text-center" key={image._id}>
                                                       <a
@@ -490,7 +490,7 @@ export function getParticipant(id: string) {
                                     <div className="col-md-12">
                                       <p><strong>{answer.accessories.question}</strong></p>
                                       {
-                                        items.length ? items.map((item) => {
+                                        items.length ? items.map((item:any) => {
                                           return (
                                             <p key={item._id}
                                               // className={answer.accesoriesAnswered.includes(item._id) ? 'text-green' : 'text-red'}
@@ -501,7 +501,7 @@ export function getParticipant(id: string) {
                                                   <i className="fa fa-check" style={{marginRight: '5px'}}/> :
                                                   <i className="fa fa-times" style={{marginRight: '5px', width: '14px'}}/>
                                                  */
-                                              } - {item.item} {item.amount ? `(${answer.accesoriesAnswered.find((accesory) => accesory.item === item._id).amount})` : ''}
+                                              } - {item.item} {item.amount ? `(${answer.accesoriesAnswered.find((accesory:any) => accesory.item === item._id).amount})` : ''}
                                             </p>
                                           );
                                         }) : 'No se seleccionaron items.'
@@ -514,7 +514,7 @@ export function getParticipant(id: string) {
                                 selectChoice && selectChoice.requireImage && answer.images && answer.images.length ?
                                   <div className="row images">
                                     {
-                                      answer.images.map((image) => {
+                                      answer.images.map((image: any) => {
                                         return (
                                           <div className="col-md-3 col-sm-4 col-xs-4 text-center" key={image._id}>
                                             <a
@@ -615,7 +615,7 @@ export function getParticipantsPerDateAction() {
         if (Axios.isCancel(err)) {
           dispatch(isLoadingAction(true));
         } else {
-          dispatch(isLoadingAction(false));
+          dispatch(isLoadingAction(true));
           api.errorHandler(err);
         }
       });
@@ -638,7 +638,7 @@ export function getCarAction(id: string) {
         if (Axios.isCancel(err)) {
           dispatch(isLoadingAction(true));
         } else {
-          dispatch(isLoadingAction(false));
+          dispatch(isLoadingAction(true));
           api.errorHandler(err);
         }
       });

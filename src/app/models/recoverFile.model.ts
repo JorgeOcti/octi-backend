@@ -51,7 +51,7 @@ recoverFileSchema.plugin(mongooseCrate, {
     acl: 'public-read', // defaults to public-read
     region: process.env.S3_REGION || s3Config.region, // defaults to us-standard
     // where the file is stored in the bucket - defaults to this function
-    path: (attachment) => {
+    path: (attachment: any) => {
       /* attachment params:
       estination:"/tmp/"
       encoding:"7bit"

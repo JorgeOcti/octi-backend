@@ -1,7 +1,6 @@
 import * as mongoose from 'mongoose';
 import * as mongoosePaginate from 'mongoose-paginate';
 import {IGPSPosition} from "../../interfaces/gpsPosition.interface";
-import {IVenue} from "../../interfaces/venue.interface";
 
 export interface IGPSPositionModel extends IGPSPosition, mongoose.Document {
 }

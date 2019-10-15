@@ -11,7 +11,7 @@ export interface IIFile {
 
 export interface IInventoryFile {
   _id: any;
-  inventory: IInventoryModel;
+  inventory: IInventoryModel | string;
   company: ICompanyModel;
   user: IUserModel;
   file: IIFile;

@@ -390,7 +390,7 @@ class DashboardGeneralView extends React.Component<IPropsType, IStateType> {
         formatter: '{a} <br/>{b} : {c} ({d}%)'
       },
       legend: {
-        x: 'center',
+        // x: 'center',
         // type: 'scroll',
         // orient: 'vertical',
         // right: 10,
