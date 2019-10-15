@@ -66,7 +66,13 @@ export function inventoriesReducer(state = initialState, action: InventoryReduxA
     case '/INVENTORIES/LOAD_DATA':
       return {
         ...state,
-        inventories: action.payload.inventories
+        inventories: action.payload.inventories,
+        pagination: {
+          ...state.pagination,
+          pages: action.payload.pages,
+          page: action.payload.page,
+          count: action.payload.count
+        }
       };
     case '/INVENTORIES/UPDATE_INVENTORY_CAR':
       return {

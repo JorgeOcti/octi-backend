@@ -5,6 +5,7 @@ const mongooseCrate = require("mongoose-crate");
 const MongooseCrateS3 = require("mongoose-crate-s3");
 const uuid = require("uuid");
 const s3Config = require("../../../s3-config.json");
+const mongoosePaginate = require("mongoose-paginate");
 const fileSchema = new mongoose.Schema({
     url: {
         type: String
@@ -140,6 +141,7 @@ inventorySchema.virtual('cars', {
 });
 inventorySchema.index({ team: 1 });
 inventorySchema.index({ team: 1, status: 1, venues: 1 });
+inventorySchema.plugin(mongoosePaginate);
 const Inventory = mongoose.model('Inventory', inventorySchema);
 exports.default = Inventory;
 //# sourceMappingURL=inventory.model.js.map

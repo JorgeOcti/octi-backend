@@ -18,13 +18,15 @@ import AppContainer from '../../container/AppContainer';
 import {IWindow} from '../../interfaces/window';
 import {hasPermission} from '../../utils/common';
 import Row from '../Utils/Row';
+import Paginator from "../Utils/Paginator";
 
 declare let window: IWindow;
 
 interface IPropsType extends RouteComponentProps<{ ticket: string }> {
   inventories: IInventoryState;
   dispatch: Dispatch<InventoryReduxAction>;
-  getInventoriesAction(loading: boolean): void;
+
+  getInventoriesAction(loading: boolean, page: number): void;
   finishInventoryAction(id: string): void;
   deleteInventoryAction(id: string): void;
 }
@@ -47,6 +49,7 @@ class InventoryListView extends React.Component<IPropsType, IStateType> {
   constructor(props: IPropsType) {
     super(props);
     this.create = this.create.bind(this);
+    this.changePage = this.changePage.bind(this);
     this.labelStatus = this.labelStatus.bind(this);
     this.finishInventoryAction = this.finishInventoryAction.bind(this);
     this.deleteInventoryAction = this.deleteInventoryAction.bind(this);
@@ -59,7 +62,7 @@ class InventoryListView extends React.Component<IPropsType, IStateType> {
     window.scrollTo(0, 0);
 
     // get data
-    this.props.getInventoriesAction(true);
+    this.props.getInventoriesAction(true, 1);
 
     // socket
     this.socket = io.connect(`${location.protocol}//${location.host}`, {
@@ -73,7 +76,8 @@ class InventoryListView extends React.Component<IPropsType, IStateType> {
     });
     this.socket.on('REFRESH', (data: any): void => {
       if (data.update) {
-        this.props.getInventoriesAction(false);
+        const {pagination} = this.props.inventories;
+        this.props.getInventoriesAction(false, pagination.page);
       }
     });
   }
@@ -99,13 +103,13 @@ class InventoryListView extends React.Component<IPropsType, IStateType> {
   }
 
   public render(): React.ReactElement<IPropsType> {
-    const {inventories, loading} = this.props.inventories;
+    const {inventories, loading, pagination} = this.props.inventories;
     return (
       <AppContainer title="" cMenu="2" cSubMenu="2.1">
         <section className="content">
           <div className="box">
             <div className="box-header with-border">
-              <h3 className="box-title">Gestión de inventarios</h3>
+              <h3 className="box-title">Gestión de inventarios <small>{pagination.count}</small></h3>
               <div className="pull-right box-tools">
                 {
                   hasPermission(window.user, 'createInventory') ?
@@ -245,6 +249,16 @@ class InventoryListView extends React.Component<IPropsType, IStateType> {
               </Row>
             </div>
             {
+              pagination.pages > 1 &&
+                <div className="box-footer">
+                  <div className="row">
+                    <div className="col-md-12 text-right">
+                      <Paginator changePage={this.changePage} page={pagination.page} pages={pagination.pages} />
+                    </div>
+                  </div>
+                </div>
+            }
+            {
               loading &&
                 <div className="overlay">
                   <i className="fa fa-spinner fa-spin text-purple"/>
@@ -254,6 +268,10 @@ class InventoryListView extends React.Component<IPropsType, IStateType> {
         </section>
       </AppContainer>
     );
+  }
+
+  private changePage(page: number): void {
+    this.props.getInventoriesAction(true, page);
   }
 
   private goToDetail(id: string, detail?: boolean): void {
@@ -327,7 +345,7 @@ const mapStateToProps = (state: { inventories: IInventoryState }) => {
 const mapDispatchToProps = (dispatch: any ) => {
   return {
     dispatch,
-    getInventoriesAction: (loading: boolean) => dispatch(getInventoriesAction(loading)),
+    getInventoriesAction: (loading: boolean, page: number) => dispatch(getInventoriesAction(loading, page)),
     finishInventoryAction: (id: string) => dispatch(finishInventoryAction(id)),
     deleteInventoryAction: (id: string) => dispatch(deleteInventoryAction(id))
   };

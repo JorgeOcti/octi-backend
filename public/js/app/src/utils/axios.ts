@@ -252,9 +252,9 @@ export default class ApiService {
     );
   }
 
-  public getInventories(): AxiosPromise  {
+  public getInventories(page: number): AxiosPromise  {
     return this.instance.get(
-      `/api/inventory/`,  {
+      `/api/inventory/?page=${page}`,  {
         cancelToken: this.source.token
       }
     );

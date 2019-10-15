@@ -6,6 +6,7 @@ import {IInventoryComment} from '../../../../../src/interfaces/inventoryComment.
 import {IInventoryLabel} from '../../../../../src/interfaces/inventoryLabel.interface';
 import {IFilterCar} from '../reducers/inventory.reducer';
 import ApiService from '../utils/axios';
+import {ICarsState} from "./cars.actions";
 
 export interface IInventorySummaryResult {
   pending: number;
@@ -145,29 +146,38 @@ interface ILoadInventories {
   type: '/INVENTORIES/LOAD_DATA';
   payload: {
     inventories: any[];
+    count: number;
+    pages: number
+    page: number
   };
 }
 
-export function loadInventoriesAction(inventories: any[]): ILoadInventories {
+export function loadInventoriesAction(inventories: any[], count: number, pages: number, page: number): ILoadInventories {
   return {
     type: '/INVENTORIES/LOAD_DATA',
     payload: {
-      inventories
+      inventories,
+      count,
+      pages,
+      page
     }
   };
 }
 
-export function getInventoriesAction(loading: boolean) {
-  return (dispatch: Dispatch<InventoryReduxAction>) => {
+export function getInventoriesAction(loading: boolean, nextPage: number,) {
+  return (dispatch: Dispatch<InventoryReduxAction>, getState: () => {inventories: IInventoryState}) => {
     const api: ApiService = new ApiService();
-    // if (loading) {
-    //   dispatch(isLoadingAction(true));
-    // }
+    const state = getState();
+    if (loading) {
+      window.scrollTo(0, 0);
+      dispatch(isLoadingAction(true));
+    }
+    const page = nextPage ? nextPage : state.inventories.pagination.page;
     dispatch(cancelRequestAction(api.getSource()));
-    api.getInventories()
+    api.getInventories(page)
       .then((response: AxiosResponse) => {
         const data = response.data;
-        dispatch(loadInventoriesAction(data.inventories));
+        dispatch(loadInventoriesAction(data.inventories, data.count, data.pages, page));
         if (loading) {
           dispatch(isLoadingAction(false));
         }
@@ -182,12 +192,13 @@ export function getInventoriesAction(loading: boolean) {
 }
 
 export function finishInventoryAction(id: string) {
-  return (dispatch: Dispatch<InventoryReduxAction>) => {
+  return (dispatch: Dispatch<InventoryReduxAction>, getState: () => {inventories: IInventoryState}) => {
+    const state = getState();
     const api: ApiService = new ApiService();
     api.finishInventory(id)
       .then((response: AxiosResponse) => {
         const data = response.data;
-        dispatch(getInventoriesAction(false) as any);
+        dispatch(getInventoriesAction(false, state.inventories.pagination.page) as any);
         swal('Inventarios', data.message, 'success');
       })
       .catch((err: AxiosError) => {
@@ -197,7 +208,8 @@ export function finishInventoryAction(id: string) {
 }
 
 export function deleteInventoryAction(id: string) {
-  return (dispatch: Dispatch<InventoryReduxAction>) => {
+  return (dispatch: Dispatch<InventoryReduxAction>, getState: () => {inventories: IInventoryState}) => {
+    const state = getState();
     const api: ApiService = new ApiService();
     api.deleteInventory(id)
       .then((response: AxiosResponse) => {
@@ -206,7 +218,7 @@ export function deleteInventoryAction(id: string) {
         const data = response.data;
         swal('Inventarios', data.message, 'success');
         setTimeout(() => {
-          dispatch(getInventoriesAction(false) as any);
+          dispatch(getInventoriesAction(false, state.inventories.pagination.page) as any);
         }, 500);
       })
       .catch((err: AxiosError) => {

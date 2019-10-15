@@ -409,9 +409,9 @@ class AdminUsersController {
     }
     const {team} = req.user;
     const {id} = req.params;
-    const company = req.user.company;
+    // const company = req.user.company;
     try {
-      const user = await User.findOneAndRemove({_id: id, company});
+      const user = await User.findOneAndRemove({_id: id, team});
       if (user) {
         const response = {
           message: 'Usuario eliminado satisfactoriamente.',
