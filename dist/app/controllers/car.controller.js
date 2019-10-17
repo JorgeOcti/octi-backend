@@ -17,6 +17,7 @@ const venue_model_1 = require("../models/venue.model");
 const kind_model_1 = require("../../form/models/kind.model");
 const part_model_1 = require("../../form/models/part.model");
 const position_model_1 = require("../../form/models/position.model");
+const form_model_1 = require("../../form/models/form.model");
 class CarController {
     constructor() {
         this.carBrands = {
@@ -995,12 +996,26 @@ class CarController {
             }
         }
     }
-    processDamagedCar(cache, participant, worksheet) {
+    processDamagedCar(cache, participant, extraColums) {
         return new Promise(async (resolve) => {
             const rows = [];
             const damages = [];
+            let extraRow = {};
             for (const section of participant.sections) {
                 for (const answer of section.answers) {
+                    if (answer.kind === form_model_1.KindQuestion.text || (answer.comment && answer.comment.length)) {
+                        const answerID = answer._id.toString();
+                        if (!extraColums.keys.includes(answerID)) {
+                            extraColums.keys.push(answerID);
+                            extraColums.data.push({
+                                header: answer.question, key: answerID, width: 50
+                            });
+                        }
+                        extraRow = {
+                            ...extraRow,
+                            [answerID]: answer.comment
+                        };
+                    }
                     for (const damage of answer.damagesSelected) {
                         const kind = damage.kind && cache.kinds.hasOwnProperty(damage.kind.toString())
                             ? cache.kinds[damage.kind.toString()]
@@ -1020,8 +1035,29 @@ class CarController {
                     }
                 }
             }
-            for (const d in damages) {
-                const idx = parseInt(d) + 1;
+            if (damages.length) {
+                for (const d in damages) {
+                    const idx = parseInt(d) + 1;
+                    const row = {
+                        vin: participant.car.vin,
+                        denomination: participant.car.denomination,
+                        color: participant.car.color,
+                        brand: participant.car.brand,
+                        venue: participant.venue.name,
+                        created_at: participant.createdAt,
+                        user: `${participant.user.firstName} ${participant.user.lastName}`,
+                        damages: `${damages.length}`,
+                        has_damages: damages.length > 0 ? 'Sí' : 'No',
+                        damage: idx,
+                        position: damages[d].position ? damages[d].position.name : "-",
+                        kind: damages[d].kind.name,
+                        part: damages[d].part.name,
+                        ...extraRow
+                    };
+                    rows.push(row);
+                }
+            }
+            else {
                 const row = {
                     vin: participant.car.vin,
                     denomination: participant.car.denomination,
@@ -1032,17 +1068,18 @@ class CarController {
                     user: `${participant.user.firstName} ${participant.user.lastName}`,
                     damages: `${damages.length}`,
                     has_damages: damages.length > 0 ? 'Sí' : 'No',
-                    damage: idx,
-                    position: damages[d].position ? damages[d].position.name : "-",
-                    kind: damages[d].kind.name,
-                    part: damages[d].part.name
+                    damage: "-",
+                    position: "-",
+                    kind: "-",
+                    part: "-",
+                    ...extraRow
                 };
-                worksheet.addRow(row);
+                rows.push(row);
             }
             resolve(rows);
         });
     }
-    addRevisions(user, period, damagesCache, worksheet) {
+    addRevisions(user, period, damagesCache, extraColums) {
         return new Promise(async (resolve) => {
             const revisionsToProcess = [];
             const t0 = moment().subtract(period, 'weeks').startOf('week');
@@ -1059,9 +1096,9 @@ class CarController {
                                     $gte: t0.toDate(),
                                     $lte: t1.toDate(),
                                 }
-                            }, {
-                                'sections.answers.kind': 'damage'
-                            }
+                            } /*,{
+                              'sections.answers.kind': 'damage'
+                            }*/
                         ]
                     }
                 }, {
@@ -1070,6 +1107,10 @@ class CarController {
                         user: true,
                         venue: true,
                         car: true,
+                        'sections.answers._id': true,
+                        'sections.answers.kind': true,
+                        'sections.answers.question': true,
+                        'sections.answers.comment': true,
                         'sections.answers.damages': true,
                         'sections.answers.damagesSelected': true
                     }
@@ -1102,13 +1143,14 @@ class CarController {
                     $unwind: '$venue'
                 }]);
             for (const revision of revisions) {
-                revisionsToProcess.push(this.processDamagedCar(damagesCache, revision, worksheet));
+                revisionsToProcess.push(this.processDamagedCar(damagesCache, revision, extraColums));
             }
             let results = [];
             while (revisionsToProcess.length) {
+                const data = [].concat.apply([], await bluebird.all(revisionsToProcess.splice(0, 100)));
                 results = [
                     ...results,
-                    ...await bluebird.all(revisionsToProcess.splice(0, 100))
+                    ...data
                 ];
             }
             resolve(results);
@@ -1130,7 +1172,10 @@ class CarController {
                     fitToPage: true, fitToHeight: 100, fitToWidth: 1
                 }
             });
-            worksheet.autoFilter = { from: 'A1', to: 'F1' };
+            const extraColums = {
+                keys: [],
+                data: []
+            };
             const columns = [{
                     header: 'VIN', key: 'vin', width: 30
                 }, {
@@ -1157,7 +1202,6 @@ class CarController {
             columns.push({ header: 'Tipo', key: 'kind', width: 30 });
             columns.push({ header: 'Posición', key: 'position', width: 30 });
             /* headers */
-            worksheet.columns = columns;
             const periods = 4;
             const kinds = await kind_model_1.default.find({ team }, { name: true });
             const parts = await part_model_1.default.find({ team }, { name: true });
@@ -1178,9 +1222,16 @@ class CarController {
             };
             const periodToProcess = [];
             for (let i = periods; i >= 0; i--) {
-                periodToProcess.push(this.addRevisions(req.user, i, damagesCache, worksheet));
+                periodToProcess.push(this.addRevisions(req.user, i, damagesCache, extraColums));
             }
-            await bluebird.all(periodToProcess);
+            const rows = await bluebird.all(periodToProcess);
+            // create titles of the table with filters
+            const newColumns = [...columns, ...extraColums.data];
+            worksheet.columns = newColumns;
+            worksheet.autoFilter = { from: 'A1', to: { row: 1, column: newColumns.length } };
+            // add data in excel
+            const dataRow = [].concat.apply([], rows);
+            worksheet.addRows(dataRow);
             /* formats */
             worksheet.getRow(1).eachCell((cell) => {
                 cell.font = {
