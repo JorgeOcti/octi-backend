@@ -652,9 +652,9 @@ class InventoryController {
           if (inventoriedCar) {
             logger.error(`apiFoundCar: Este vehículo ya ha sido inventariado`);
             logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
-            res.status(400).json({
+            res.status(200).json({
               message: 'Este vehículo ya ha sido inventariado',
-              status: 400
+              status: 200
             });
           } else {
             const inventoryCar = await InventoryCar.findOne({
