@@ -9,7 +9,6 @@ const express = require("express");
 const session = require("express-session");
 const fileStreamRotator = require("file-stream-rotator");
 const kue = require("kue");
-// import * as lusca from 'lusca';
 const morgan = require("morgan");
 const multer = require("multer");
 const passport = require("passport");

@@ -2,7 +2,6 @@ import {NextFunction, Response} from 'express';
 import * as jwt from 'jsonwebtoken';
 import {IRequest} from '../interfaces/global.interface';
 import logger from '../services/logger.service';
-// import User from "../app/models/user.model";
 
 class Middlewares {
 

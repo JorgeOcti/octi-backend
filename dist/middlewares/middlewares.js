@@ -2,7 +2,6 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 const jwt = require("jsonwebtoken");
 const logger_service_1 = require("../services/logger.service");
-// import User from "../app/models/user.model";
 class Middlewares {
     constructor() {
         this.isLoggedIn = this.isLoggedIn.bind(this);

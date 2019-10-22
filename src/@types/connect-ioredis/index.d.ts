@@ -1,4 +1,3 @@
-
 declare module "connect-ioredis" {
     import * as express from "express";
     import * as session from "express-session";

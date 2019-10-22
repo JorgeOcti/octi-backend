@@ -7,7 +7,6 @@ import * as express from 'express';
 import * as session from 'express-session';
 import * as fileStreamRotator from 'file-stream-rotator';
 import * as kue from 'kue';
-// import * as lusca from 'lusca';
 import * as morgan from 'morgan';
 import * as multer from 'multer';
 import * as passport from 'passport';
