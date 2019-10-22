@@ -154,8 +154,8 @@ spec:
         - containerPort: 3030
         resources:
           limits:
-            cpu: 800m
-            memory: 800Mi
+            cpu: 1000m
+            memory: 1000Mi
           requests:
             cpu: 600m
             memory: 600Mi
