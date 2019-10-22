@@ -1209,7 +1209,7 @@ class CarController {
       columns.push({header: 'Posición', key: 'position', width: 30});
 
       /* headers */
-      const periods = 12;
+      const periods = 8;
       const kinds = await Kind.find({team}, {name: true});
       const parts = await Part.find({team}, {name: true});
       const positions = await Position.find({team}, {name: true});

@@ -1202,7 +1202,7 @@ class CarController {
             columns.push({ header: 'Tipo', key: 'kind', width: 30 });
             columns.push({ header: 'Posición', key: 'position', width: 30 });
             /* headers */
-            const periods = 12;
+            const periods = 8;
             const kinds = await kind_model_1.default.find({ team }, { name: true });
             const parts = await part_model_1.default.find({ team }, { name: true });
             const positions = await position_model_1.default.find({ team }, { name: true });
