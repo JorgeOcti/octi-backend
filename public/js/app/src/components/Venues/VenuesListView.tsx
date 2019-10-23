@@ -1,3 +1,4 @@
+import {AxiosError, default as Axios} from 'axios';
 import * as moment from 'moment';
 import * as Raven from 'raven-js';
 import * as React from 'react';
@@ -7,6 +8,7 @@ import {RouteComponentProps} from 'react-router';
 import {Dispatch} from 'redux';
 import * as swal from 'sweetalert';
 // import * as mapboxgl from 'mapboxgl';
+import ApiService from '../../utils/axios'
 var mapboxgl = require('mapbox-gl/dist/mapbox-gl.js');
 import {IBaseVenue, IVenue} from '../../../../../../src/interfaces/venue.interface';
 import {loadDataAction, ModalReduxAction} from '../../actions/modal.actions';
@@ -40,6 +42,7 @@ interface IPropsType extends RouteComponentProps<{ ticket: string }> {
 
 interface IStateType {
   error: Error | null;
+  exporing: boolean;
 }
 
 declare let window: IWindow;
@@ -48,6 +51,10 @@ class VenuesListView extends React.Component<IPropsType, IStateType> {
 
   private socket: SocketIOClient.Socket;
   private map: any;
+  readonly state = {
+    error: null,
+    exporing: false
+  };
 
   constructor(props: IPropsType) {
     super(props);
@@ -58,6 +65,7 @@ class VenuesListView extends React.Component<IPropsType, IStateType> {
     this.processUpdateVenue = this.processUpdateVenue.bind(this);
     this.deleteVenue = this.deleteVenue.bind(this);
     this.onChangeTab = this.onChangeTab.bind(this);
+    this.exportExcel = this.exportExcel.bind(this);
   }
 
   public componentWillMount(): void {
@@ -84,8 +92,59 @@ class VenuesListView extends React.Component<IPropsType, IStateType> {
     });
   }
 
-  private onChangeTab()
-  {
+  public exportExcel() {
+    this.setState({
+      exporing: true
+    });
+    const api: ApiService = new ApiService();
+    const instance = api.getInstance();
+    instance.defaults.responseType = 'blob';
+    instance
+      .get(`/settings/venues/export-access/`)
+      .then((response) => {
+        const blob = new Blob([response.data], {
+          type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+        });
+        const fileName = `${moment().format('YYYYMMDD')}-acceso-sucursales.xlsx`;
+        if (typeof window.navigator.msSaveBlob !== 'undefined') {
+          // IE workaround for "HTML7007: One or more blob URLs were
+          // revoked by closing the blob for which they were created.
+          // These URLs will no longer resolve as the data backing
+          // the URL has been freed."
+          window.navigator.msSaveBlob(blob, fileName);
+        } else {
+          const blobURL = window.URL.createObjectURL(blob);
+          const tempLink = document.createElement('a');
+          tempLink.style.display = 'none';
+          tempLink.href = blobURL;
+          tempLink.setAttribute('download', fileName);
+          // Safari thinks _blank anchor are pop ups. We only want to set _blank
+          // target if the browser does not support the HTML5 download attribute.
+          // This allows you to download files in desktop safari if pop up blocking
+          // is enabled.
+          if (typeof tempLink.download === 'undefined') {
+            tempLink.setAttribute('target', '_blank');
+          }
+          this.setState({
+            exporing: false
+          });
+          document.body.appendChild(tempLink);
+          tempLink.click();
+          document.body.removeChild(tempLink);
+          window.URL.revokeObjectURL(blobURL);
+        }
+      })
+      .catch((err) => {
+        this.setState({
+          exporing: false
+        });
+        if (!Axios.isCancel(err)) {
+          swal('Exportar usuarios', 'Ha ocurrido un error al general el excel.', 'error');
+        }
+      });
+  }
+
+  private onChangeTab() {
 
     const {venues} = this.props.venues;
 
@@ -177,6 +236,7 @@ class VenuesListView extends React.Component<IPropsType, IStateType> {
   }
 
   public render(): React.ReactElement<IPropsType> {
+    const {exporing} = this.state;
     const {loading, venues, pagination} = this.props.venues;
     return (
       <AppContainer title="" cMenu="10" cSubMenu="10.4" cAction="Listado">
@@ -184,13 +244,29 @@ class VenuesListView extends React.Component<IPropsType, IStateType> {
           <div className="box">
             <div className="box-header with-border">
               <h3 className="box-title">Sucursales <small>{pagination.count}</small></h3>
-              {
-                hasPermission(window.user, 'addVenue') ?
-                  <div className="box-tools pull-right">
+              <div className="box-tools pull-right">
+                {
+                  hasPermission(window.user, 'addVenue') ?
                     <button className="btn btn-sm btn-success" onClick={this.createVenue}>Agregar</button>
-                  </div>
-                  : null
-              }
+                    : null
+                }
+                <button
+                  className="btn btn-sm btn-primary  hidden-xs"
+                  onClick={this.exportExcel}
+                  disabled={exporing}
+                  style={{marginLeft: '5px'}}
+                >
+                  {
+                    exporing ?
+                      <React.Fragment>
+                        <i className="fa fa-spin fa-spinner"/> Exportando
+                      </React.Fragment>
+                      : <React.Fragment>
+                        <i className="fa fa-fw fa-download"/> Exportar
+                      </React.Fragment>
+                  }
+                </button>
+              </div>
             </div>
             <div className="nav-tabs-custom">
               <ul className="nav nav-tabs">

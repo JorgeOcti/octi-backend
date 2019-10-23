@@ -2,8 +2,11 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 const inventory_model_1 = require("../../../inventory/models/inventory.model");
 const server_1 = require("../../../server");
+const moment = require("moment");
 const user_model_1 = require("../../models/user.model");
 const venue_model_1 = require("../../models/venue.model");
+const excel = require("exceljs");
+const tempfile = require("tempfile");
 class AdminVenueController {
     constructor() {
         this.index = this.index.bind(this);
@@ -21,6 +24,76 @@ class AdminVenueController {
         else {
             res.status(403).render('403');
         }
+    }
+    async accessByVenue(req, res) {
+        const { team } = req.user;
+        const workbook = new excel.Workbook();
+        const worksheetSend = workbook.addWorksheet('Sucursales', {
+            properties: {
+                defaultRowHeight: 30
+            },
+            pageSetup: {
+                fitToPage: true, fitToHeight: 100, fitToWidth: 1
+            }
+        });
+        worksheetSend.views = [{
+                state: 'frozen',
+                xSplit: 1,
+                ySplit: 1,
+                topLeftCell: 'B2',
+                activeCell: 'A1'
+            }];
+        const sendColumns = [{
+                header: "Sucursal\r\n(FILAS ENVIAN / COLUMNAS RECIBEN)", key: "sucursal", width: 30, alignment: { wrapText: true }
+            }];
+        const sendRows = [];
+        const venues = await venue_model_1.default.find({ deleted: false, team }).sort('name');
+        for (const venue of venues) {
+            sendColumns.push({
+                header: venue.name, key: venue._id.toString(), width: 5
+            });
+            let dataSend = {};
+            for (const to of venue.sendTo) {
+                dataSend[to] = "X";
+            }
+            sendRows.push({
+                sucursal: venue.name,
+                ...dataSend
+            });
+        }
+        worksheetSend.columns = sendColumns;
+        worksheetSend.autoFilter = { from: 'A1', to: { row: 1, column: sendColumns.length } };
+        worksheetSend.addRows(sendRows);
+        worksheetSend.getColumn(1).eachCell((cell) => {
+            cell.alignment = {
+                vertical: 'middle',
+                textRotation: 0,
+                wrapText: true
+            };
+            cell.font = {
+                bold: true,
+            };
+        });
+        worksheetSend.getRow(1).eachCell((cell) => {
+            const alignment = {
+                vertical: 'middle',
+                horizontal: 'center',
+                textRotation: 0,
+                wrapText: true
+            };
+            if (parseInt(cell.col, 10) !== 1) {
+                alignment.textRotation = 90;
+            }
+            cell.alignment = alignment;
+            cell.font = {
+                bold: true,
+            };
+        });
+        const tempFilePath = tempfile('.xlsx');
+        await workbook.xlsx.writeFile(tempFilePath);
+        res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+        res.setHeader('Content-Disposition', `attachment; filename=acceso-sucursales-${moment().format('YYYY-MM-DD')}.xlsx`);
+        return res.sendFile(tempFilePath);
     }
     async apiListVenues(req, res) {
         if (!req.user.hasPermission('viewVenue') && !req.user.hasPermission('viewUser')) {

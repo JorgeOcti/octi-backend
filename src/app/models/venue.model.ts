@@ -21,9 +21,11 @@ const venueSchema = new mongoose.Schema({
   },
   lat: {
     type: Number,
+    default: 0
   },
   lng: {
     type: Number,
+    default: 0
   },
   team: {
     type: mongoose.Schema.Types.ObjectId,

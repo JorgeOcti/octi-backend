@@ -59,6 +59,7 @@ appRouter.delete('/api/admin/users/:id/', Middlewares.isLoggedIn, AdminUsersCont
 
 // admin venues
 appRouter.get('/settings/venues/', Middlewares.isLoggedIn, AdminVenuesController.index);
+appRouter.get('/settings/venues/export-access/', Middlewares.isLoggedIn, AdminVenuesController.accessByVenue);
 
 // venue companies
 // appRouter.get('/venues/', Middlewares.isLoggedIn, AdminVenuesController.index);
