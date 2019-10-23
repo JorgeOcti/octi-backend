@@ -56,7 +56,13 @@ class AdminVenueController {
     const venues = await Venue.find({deleted: false, team}).sort('name');
     for (const venue of venues) {
       sendColumns.push({
-        header: venue.name, key: venue._id.toString(), width: 5
+        header: venue.name, key: venue._id.toString(), width: 5,
+        style: {
+          alignment: {
+          vertical: 'middle',
+          horizontal: 'center'
+          }
+        }
       });
       let dataSend:any = {};
       for(const to of venue.sendTo){
