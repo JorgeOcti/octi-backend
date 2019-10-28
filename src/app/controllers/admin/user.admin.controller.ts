@@ -13,6 +13,8 @@ import {io} from '../../../server';
 import User, {
   IUserModel
 } from '../../models/user.model';
+import Venue from "../../models/venue.model";
+import {Alignment} from "exceljs";
 
 class AdminUsersController {
 
@@ -53,6 +55,74 @@ class AdminUsersController {
         }
       });
       worksheet.autoFilter = {from: 'A1', to: 'F1'};
+      const worksheetAccess = workbook.addWorksheet('Accesos', {
+        properties: {
+          defaultRowHeight: 30
+        }, pageSetup: {
+          fitToPage: true, fitToHeight: 100, fitToWidth: 1
+        }
+      });
+      worksheetAccess.views = [{
+        state: 'frozen',
+        xSplit: 1,
+        ySplit: 1,
+        topLeftCell: 'B2',
+        activeCell: 'A1'
+      }];
+      const accessColumns: any[] = [{
+        header: "Usuario",
+        key: "usuario",
+        width: 30,
+        alignment: {
+          wrapText: true
+        }
+      }];
+      const accessRow: any[] = [];
+      const venues = await Venue.find({team, deleted: false});
+      for (const venue of venues) {
+        accessColumns.push({
+          header: venue.name, key: venue._id.toString(), width: 5,
+          style: {
+            alignment: {
+              vertical: 'middle',
+              horizontal: 'center'
+            }
+          }
+        });
+      }
+      worksheetAccess.columns = accessColumns;
+      worksheetAccess.autoFilter = {
+        from: 'A1',
+        to: {
+          row: 1,
+          column: accessColumns.length
+        }
+      };
+      worksheetAccess.getColumn(1).eachCell((cell) => {
+        cell.alignment = {
+          vertical: 'middle',
+          textRotation: 0,
+          wrapText: true
+        };
+        cell.font = {
+          bold: true,
+        };
+      });
+      worksheetAccess.getRow(1).eachCell((cell) => {
+        const alignment: Partial<Alignment> = {
+          vertical: 'middle',
+          horizontal: 'center',
+          textRotation: 0,
+          wrapText: true
+        };
+        if (parseInt(cell.col, 10) !== 1) {
+          alignment.textRotation = 90
+        }
+        cell.alignment = alignment;
+        cell.font = {
+          bold: true,
+        };
+      });
 
       /* headers */
       worksheet.columns = [{
@@ -64,9 +134,9 @@ class AdminUsersController {
       }, {
         header: 'Empresa', key: 'company', width: 20
       }, {
-        header: 'Creado', key: 'created', width: 21, style: { numFmt: 'dd/mm/yyyy hh:mm' }
+        header: 'Creado', key: 'created', width: 21, style: {numFmt: 'dd/mm/yyyy hh:mm'}
       }, {
-        header: 'Último inicio de sesión', key: 'lastLogin', width: 21, style: { numFmt: 'dd/mm/yyyy hh:mm' }
+        header: 'Último inicio de sesión', key: 'lastLogin', width: 21, style: {numFmt: 'dd/mm/yyyy hh:mm'}
       }];
 
       /* body */
@@ -102,15 +172,21 @@ class AdminUsersController {
           venue: user.venue ? user.venue.name : '',
           company: user.venue && user.venue.company ? user.venue.company.name : ''
         });
+        const dataVenues: any = {};
         user.venuesAccess.forEach((venue: any) => {
-          worksheet.addRow({
-            ...detailUser,
-            venue: venue.name,
-            company: venue.company.name
-          });
+          dataVenues[venue.id.toString()] = "X":
+          // worksheet.addRow({
+          //   ...detailUser,
+          //   venue: venue.name,
+          //   company: venue.company.name
+          // });
         });
+        accessRow.push({
+          usuario: user.fullName(),
+          ...dataVenues
+        })
       });
-
+      worksheetAccess.addRows(accessRow);
       /* formats */
       worksheet.getRow(1).eachCell((cell) => {
         cell.font = {

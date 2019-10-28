@@ -148,7 +148,7 @@ class VenuesListView extends React.Component<IPropsType, IStateType> {
 
     const {venues} = this.props.venues;
 
-    var geojson = {
+    const geojson = {
       type: 'FeatureCollection',
       features: venues.map((venue: any) => {
         return {
@@ -163,7 +163,7 @@ class VenuesListView extends React.Component<IPropsType, IStateType> {
           }
         }
       })
-    }
+    };
 
     const $map = this.map;
     $('#map').css('width', $('#tab_2').width() as any);
@@ -171,7 +171,7 @@ class VenuesListView extends React.Component<IPropsType, IStateType> {
     geojson.features.forEach((marker) => {
 
       // create a HTML element for each feature
-      var el = document.createElement('div');
+      const el: HTMLDivElement = document.createElement('div');
       el.className = 'marker';
 
       // make a marker for each feature and add to the map
@@ -191,10 +191,7 @@ class VenuesListView extends React.Component<IPropsType, IStateType> {
 
   }
 
-  public componentDidMount()
-  {
-    console.log("did-mount");
-
+  public componentDidMount() {
     mapboxgl.accessToken = 'pk.eyJ1IjoicmliYXJyYWNsIiwiYSI6ImNqems3dW85bTAwZmUzbnF0a2xubnl5ejUifQ.tfPmGSbHYdh2nMA6Fmxcxw';
     this.map = new mapboxgl.Map({
       container: 'map',

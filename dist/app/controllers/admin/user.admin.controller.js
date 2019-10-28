@@ -5,6 +5,7 @@ const tempfile = require("tempfile");
 const app_1 = require("../../../app");
 const server_1 = require("../../../server");
 const user_model_1 = require("../../models/user.model");
+const venue_model_1 = require("../../models/venue.model");
 class AdminUsersController {
     constructor() {
         this.index = this.index.bind(this);
@@ -42,6 +43,74 @@ class AdminUsersController {
                 }
             });
             worksheet.autoFilter = { from: 'A1', to: 'F1' };
+            const worksheetAccess = workbook.addWorksheet('Accesos', {
+                properties: {
+                    defaultRowHeight: 30
+                }, pageSetup: {
+                    fitToPage: true, fitToHeight: 100, fitToWidth: 1
+                }
+            });
+            worksheetAccess.views = [{
+                    state: 'frozen',
+                    xSplit: 1,
+                    ySplit: 1,
+                    topLeftCell: 'B2',
+                    activeCell: 'A1'
+                }];
+            const accessColumns = [{
+                    header: "Usuario",
+                    key: "usuario",
+                    width: 30,
+                    alignment: {
+                        wrapText: true
+                    }
+                }];
+            const accessRow = [];
+            const venues = await venue_model_1.default.find({ team, deleted: false });
+            for (const venue of venues) {
+                accessColumns.push({
+                    header: venue.name, key: venue._id.toString(), width: 5,
+                    style: {
+                        alignment: {
+                            vertical: 'middle',
+                            horizontal: 'center'
+                        }
+                    }
+                });
+            }
+            worksheetAccess.columns = accessColumns;
+            worksheetAccess.autoFilter = {
+                from: 'A1',
+                to: {
+                    row: 1,
+                    column: accessColumns.length
+                }
+            };
+            worksheetAccess.getColumn(1).eachCell((cell) => {
+                cell.alignment = {
+                    vertical: 'middle',
+                    textRotation: 0,
+                    wrapText: true
+                };
+                cell.font = {
+                    bold: true,
+                };
+            });
+            worksheetAccess.getRow(1).eachCell((cell) => {
+                const alignment = {
+                    vertical: 'middle',
+                    horizontal: 'center',
+                    textRotation: 0,
+                    wrapText: true
+                };
+                if (parseInt(cell.col, 10) !== 1) {
+                    alignment.textRotation = 90;
+                }
+                cell.alignment = alignment;
+                cell.font = {
+                    bold: true,
+                };
+            });
             /* headers */
             worksheet.columns = [{
                     header: 'Nombre', key: 'name', width: 30
@@ -89,14 +158,21 @@ class AdminUsersController {
                     venue: user.venue ? user.venue.name : '',
                     company: user.venue && user.venue.company ? user.venue.company.name : ''
                 });
+                const dataVenues = {};
                 user.venuesAccess.forEach((venue) => {
-                    worksheet.addRow({
-                        ...detailUser,
-                        venue: venue.name,
-                        company: venue.company.name
-                    });
+                    dataVenues[venue.id.toString()] = "X";
+                    // worksheet.addRow({
+                    //   ...detailUser,
+                    //   venue: venue.name,
+                    //   company: venue.company.name
+                    // });
+                });
+                accessRow.push({
+                    usuario: user.fullName(),
+                    ...dataVenues
                 });
             });
+            worksheetAccess.addRows(accessRow);
             /* formats */
             worksheet.getRow(1).eachCell((cell) => {
                 cell.font = {

@@ -44,7 +44,12 @@ class AdminVenueController {
                 activeCell: 'A1'
             }];
         const sendColumns = [{
-                header: "Sucursal\r\n(FILAS ENVIAN / COLUMNAS RECIBEN)", key: "sucursal", width: 30, alignment: { wrapText: true }
+                header: "Sucursal\r\n(FILAS ENVIAN / COLUMNAS RECIBEN)",
+                key: "sucursal",
+                width: 30,
+                alignment: {
+                    wrapText: true
+                }
             }];
         const sendRows = [];
         const venues = await venue_model_1.default.find({ deleted: false, team }).sort('name');
@@ -68,7 +73,13 @@ class AdminVenueController {
             });
         }
         worksheetSend.columns = sendColumns;
-        worksheetSend.autoFilter = { from: 'A1', to: { row: 1, column: sendColumns.length } };
+        worksheetSend.autoFilter = {
+            from: 'A1',
+            to: {
+                row: 1,
+                column: sendColumns.length
+            }
+        };
         worksheetSend.addRows(sendRows);
         worksheetSend.getColumn(1).eachCell((cell) => {
             cell.alignment = {
