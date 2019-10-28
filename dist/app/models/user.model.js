@@ -125,7 +125,7 @@ userSchema.methods.venuesPermissions = function (inString) {
     if (this.venuesAccess && this.venuesAccess.length) {
         venuesPermissions = Array.from(new Set([
             ...venuesPermissions,
-            ...this.venuesAccess
+            ...this.venuesAccess.map((venue) => (venue && venue._id ? venue._id : venue))
         ]));
     }
     venuesPermissions = venuesPermissions

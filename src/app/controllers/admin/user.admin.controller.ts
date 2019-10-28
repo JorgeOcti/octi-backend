@@ -173,8 +173,8 @@ class AdminUsersController {
           company: user.venue && user.venue.company ? user.venue.company.name : ''
         });
         const dataVenues: any = {};
-        user.venuesAccess.forEach((venue: any) => {
-          dataVenues[venue.id.toString()] = "X";
+        user.venuesPermissions(true).forEach((venue: string) => {
+          dataVenues[venue] = "X";
           // worksheet.addRow({
           //   ...detailUser,
           //   venue: venue.name,
@@ -203,6 +203,7 @@ class AdminUsersController {
       res.setHeader('Content-Disposition', 'attachment; filename=usuarios-21-03-2019.xlsx');
       return res.sendFile(tempFilePath);
     } catch (e) {
+      console.log(e);
       return res.status(500).json({
         message: 'Ha ocurrido un error. Comunicate con soporte para que te ayudemos a solucionarlo.'
       });
