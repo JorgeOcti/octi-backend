@@ -66,7 +66,7 @@ class AdminUsersController {
                     }
                 }];
             const accessRow = [];
-            const venues = await venue_model_1.default.find({ team, deleted: false });
+            const venues = await venue_model_1.default.find({ team, deleted: false }).sort('name');
             for (const venue of venues) {
                 accessColumns.push({
                     header: venue.name, key: venue._id.toString(), width: 5,
@@ -145,7 +145,7 @@ class AdminUsersController {
                             path: 'company',
                             select: ['name']
                         }]
-                }]);
+                }]).sort('firstName');
             users.forEach((user) => {
                 const detailUser = {
                     name: user.fullName(),
