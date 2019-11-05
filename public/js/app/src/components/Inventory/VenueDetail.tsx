@@ -50,9 +50,15 @@ class VenueDetail extends React.Component<IPropsType, IStateType> {
             </a>
             <i className="fa fa-minus-circle text-red pull-right pointer" onClick={() => this.props.deleteVenue(venue.name)} />
             {
+              venue.warningNoExist ?
+                <span className="text-muted pull-right" style={{marginLeft: '5px'}}>
+                  <i className="fa fa-warning" style={{color: '#f2aa2e'}}/> Esta sucursal se creará.
+                </span> : null
+            }
+            {
               warnings ?
-                <span className="text-muted pull-right">
-                  <i className="fa fa-warning" style={{color: '#f2aa2e'}}/> {warnings} posibles problemas {'  '}
+                <span className="text-muted pull-right" style={{marginLeft: '5px'}}>
+                  <i className="fa fa-warning" style={{color: '#f2aa2e'}}/> {warnings} posibles problemas.
                 </span> : null
             }
           </h4>

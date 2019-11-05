@@ -15,6 +15,7 @@ import ApiService from '../../utils/axios';
 import {getExtension, getIconFromExtension} from '../../utils/common';
 import Checkbox from '../Utils/CheckBox';
 import VenueDetail from './VenueDetail';
+import {AxiosError, AxiosResponse} from "axios";
 
 interface IPropsType extends RouteComponentProps<{ ticket: string }> {
   alerts: IAlertsState;
@@ -28,6 +29,8 @@ interface IStateType {
   notification: boolean;
   loadingSettings: boolean;
   carsByVenue: any;
+  venues: any[];
+  loading: boolean;
   name: string;
   sending: boolean;
   file: File | null;
@@ -51,6 +54,8 @@ class InventoryCreateView extends React.Component<IPropsType, IStateType> {
     canDrop: false,
     loadingSettings: false,
     carsByVenue: [],
+    venues: [],
+    loading: true,
     notification: true,
     name: `Inventario del ${moment().format('DD-MM-YYYY')}`,
     sending: false,
@@ -65,6 +70,7 @@ class InventoryCreateView extends React.Component<IPropsType, IStateType> {
     super(props);
     this.clickUploadFile = this.clickUploadFile.bind(this);
     this.clickUploadBackup = this.clickUploadBackup.bind(this);
+    this.getVenues = this.getVenues.bind(this);
     this.processSettings = this.processSettings.bind(this);
     this.deleteVenue = this.deleteVenue.bind(this);
     this.handleChangeInputFile = this.handleChangeInputFile.bind(this);
@@ -85,6 +91,7 @@ class InventoryCreateView extends React.Component<IPropsType, IStateType> {
   public componentWillMount() {
     // set the title of the page
     document.title = 'OSA Andes | Crear Inventario';
+    this.getVenues();
   }
 
   public componentWillUnmount() {
@@ -122,7 +129,7 @@ class InventoryCreateView extends React.Component<IPropsType, IStateType> {
     const {
       loadingSettings, carsByVenue, name,
       sending, notification, backupFile,
-      backupUri, manualPhoto
+      backupUri, manualPhoto, loading
     } = this.state;
     let carsInSettings = 0;
     return (
@@ -160,8 +167,8 @@ class InventoryCreateView extends React.Component<IPropsType, IStateType> {
                       </div>
                     </div>
                     <div className="col-md-6">
-                        <p><strong>Total de sucursales:</strong> {carsByVenue.length}</p>
-                        <p><strong>Total de vehiculos:</strong> {carsInSettings}</p>
+                      <p><strong>Total de sucursales:</strong> {carsByVenue.length}</p>
+                      <p><strong>Total de vehiculos:</strong> {carsInSettings}</p>
                     </div>
                     <div className="col-md-6 text-right">
                       <button className="btn btn-sm btn-primary" onClick={this.downloadTemplate}>
@@ -327,7 +334,7 @@ class InventoryCreateView extends React.Component<IPropsType, IStateType> {
               <button className="btn btn-sm btn-default" onClick={() => this.props.history.push('/inventory/')}>Cancelar</button>
               <button className="btn btn-sm btn-primary" style={{marginLeft: '5px'}} onClick={this.sendCreate} disabled={sending}>
                 {
-                  sending ?
+                  sending || loading ?
                     <React.Fragment>
                       <i className="fa fa-fw fa-spin fa-spinner"/> Creando...
                     </React.Fragment>
@@ -336,7 +343,7 @@ class InventoryCreateView extends React.Component<IPropsType, IStateType> {
               </button>
             </div>
             {
-              sending || loadingSettings ?
+              sending || loading || loadingSettings ?
                 <div className="overlay">
                   <i className="fa fa-spinner fa-spin text-purple"/>
                 </div> : null
@@ -424,6 +431,7 @@ class InventoryCreateView extends React.Component<IPropsType, IStateType> {
   }
 
   private processSettings(file: File): void {
+    const {venues} = this.state;
     this.setState({
       loadingSettings: true
     });
@@ -478,8 +486,12 @@ class InventoryCreateView extends React.Component<IPropsType, IStateType> {
             const carsByVenueArray: any[] = [];
             for (const cv in carsByVenue) {
               if (carsByVenue.hasOwnProperty(cv)) {
+                const existVenue = venues.some((venue: any) => {
+                  return venue.name.trim().toLowerCase() === cv.trim().toLowerCase()
+                });
                 carsByVenueArray.push({
-                  name: cv,
+                  name: cv.trim(),
+                  warningNoExist: !existVenue,
                   cars: carsByVenue[cv].cars.sort((x: any, y: any) => {
                     return (x.hasWarnings === y.hasWarnings) ? 0 : x.hasWarnings ? -1 : 1;
                   })
@@ -608,6 +620,21 @@ class InventoryCreateView extends React.Component<IPropsType, IStateType> {
       // Use DataTransfer interface to remove the drag data
       e.dataTransfer.clearData();
     }
+  }
+
+  private getVenues(){
+    this.setState({loading: true});
+    const api: ApiService = new ApiService();
+    api.getVenues(1, 200)
+      .then((response: AxiosResponse):void =>{
+        this.setState({
+          venues: response.data.results,
+          loading: false
+        });
+      })
+    .catch((err: AxiosError): void => {
+      api.errorHandler(err);
+    });
   }
 
   private sendCreate(): void {
