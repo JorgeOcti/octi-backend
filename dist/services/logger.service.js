@@ -38,11 +38,11 @@ class LoggerService {
     }
     /* istanbul ignore next */
     error(message, propagate) {
-        if (propagate) {
-            Raven.captureException(new Error(this.message));
-        }
         this.logger('ERROR', 'production', message, this.colors.brighRed);
         this.logger('ERROR', 'development', message, this.colors.brighRed);
+        if (propagate) {
+            Raven.captureException(new Error(message));
+        }
     }
     /* istanbul ignore next */
     now() {

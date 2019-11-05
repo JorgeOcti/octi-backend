@@ -93,7 +93,7 @@ class InventoryController {
       const inventoryCars: IInventoryCar[] = [];
       const venuesIDs: string[] = [];
       for (const venue of carsByVenue) {
-        if (venue.name && venue.name.length) {
+        if (venue.name && venue.name.trim().length) {
           const venueRegExp = new RegExp(venue.name.trim(), 'i');
           let currentVenue: IVenueModel | null = await VenueModel.findOne({
             team,
@@ -139,11 +139,16 @@ class InventoryController {
                   comments: [],
                   images: []
                 });
-                queue.create('updateCar', {
-                  title: `updateCar ${car.vin}`,
-                  currentCar: currentCar._id,
-                  car
-                }).delay(10000).priority('high').attempts(5).save();
+                queue
+                  .create('updateCar', {
+                    title: `updateCar ${car.vin}`,
+                    currentCar: currentCar._id,
+                    car
+                  })
+                  .delay(10000)
+                  .priority('high')
+                  .attempts(5)
+                  .save();
               }
             }
           }
@@ -1121,9 +1126,8 @@ class InventoryController {
     const {id} = req.params;
     const {car, label, custom, carID} = req.body;
     logger.info(`setLabel`);
-    logger.info(`{user: {_id: ${req.user._id}, email: ${req.user.email}}, body: ${JSON.stringify(req.body)}, params: ${req.params}}`);
+    logger.info(`{user: {_id: ${req.user._id}, email: ${req.user.email}}, body: ${JSON.stringify(req.body)}, params: ${JSON.stringify(req.params)}}`);
     try {
-      // console.log('label', label);
       if(label === 'deleted'){
         const inventoryCar = await InventoryCar.findById(car, {venue: true});
         if (inventoryCar) {

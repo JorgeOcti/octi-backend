@@ -1362,6 +1362,7 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
             ['Denominación']: car.car.denomination && car.car.denomination.length ? car.car.denomination : '-',
             Color: car.car.color && car.car.color.length ? car.car.color : '-',
             Sucursal: car.venue && car.venue.hasOwnProperty('name') ? car.venue.name : '-',
+            Tipo: car.car.type && car.car.type ? car.car.type : '-',
             Propiedad: car.car.property && car.car.property ? car.car.property : '-',
             ['Sucursal encontrado']: car.venueFound && car.venueFound.hasOwnProperty('name') ? car.venueFound.name : '-',
             ['Encontrado por']: car.inventoriedBy ? `${car.inventoriedBy.firstName} ${car.inventoriedBy.lastName}` : '-',

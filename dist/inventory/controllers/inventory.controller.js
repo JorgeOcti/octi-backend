@@ -83,7 +83,7 @@ class InventoryController {
             const inventoryCars = [];
             const venuesIDs = [];
             for (const venue of carsByVenue) {
-                if (venue.name && venue.name.length) {
+                if (venue.name && venue.name.trim().length) {
                     const venueRegExp = new RegExp(venue.name.trim(), 'i');
                     let currentVenue = await venue_model_1.default.findOne({
                         team,
@@ -129,11 +129,16 @@ class InventoryController {
                                     comments: [],
                                     images: []
                                 });
-                                app_1.queue.create('updateCar', {
+                                app_1.queue
+                                    .create('updateCar', {
                                     title: `updateCar ${car.vin}`,
                                     currentCar: currentCar._id,
                                     car
-                                }).delay(10000).priority('high').attempts(5).save();
+                                })
+                                    .delay(10000)
+                                    .priority('high')
+                                    .attempts(5)
+                                    .save();
                             }
                         }
                     }
@@ -1111,9 +1116,8 @@ class InventoryController {
         const { id } = req.params;
         const { car, label, custom, carID } = req.body;
         logger_service_1.default.info(`setLabel`);
-        logger_service_1.default.info(`{user: {_id: ${req.user._id}, email: ${req.user.email}}, body: ${JSON.stringify(req.body)}, params: ${req.params}}`);
+        logger_service_1.default.info(`{user: {_id: ${req.user._id}, email: ${req.user.email}}, body: ${JSON.stringify(req.body)}, params: ${JSON.stringify(req.params)}}`);
         try {
-            // console.log('label', label);
             if (label === 'deleted') {
                 const inventoryCar = await inventoryCar_model_1.default.findById(car, { venue: true });
                 if (inventoryCar) {
