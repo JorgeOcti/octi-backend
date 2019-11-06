@@ -40,6 +40,10 @@ class PushService {
                     body
                 }
             }
+        }).then((publishResponse) => {
+            logger_service_1.default.info(`PUSH Just published:, ${publishResponse.publishId}`);
+        }).catch((error) => {
+            logger_service_1.default.info(`PUSH Error:, ${error}`);
         });
     }
     massiveSend(title, subtitle, body, interests) {

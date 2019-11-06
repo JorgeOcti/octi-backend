@@ -42,6 +42,10 @@ class PushService {
           body
         }
       }
+    }).then((publishResponse: PushNotifications.PublishResponse) => {
+      logger.info(`PUSH Just published:, ${publishResponse.publishId}`);
+    }).catch((error: any) => {
+      logger.info(`PUSH Error:, ${error}`);
     });
   }
 

@@ -13,7 +13,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "@pusher/push-notifications-server": "~1.1.1",
+    "@pusher/push-notifications-server": "~1.2.0",
     "archiver": "~3.0.0",
     "async": "~2.6.1",
     "aws-sdk": "~2.439.0",
