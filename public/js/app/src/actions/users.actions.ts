@@ -82,6 +82,7 @@ export interface ITempUser {
   venue?: string | null;
   venuesAccess: IVenue[];
   userForms: IForm[];
+  isAdmin: boolean;
   preferred?: string | null;
   userPermissions: IPermission[];
   company: ICompany | null;

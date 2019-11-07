@@ -8,6 +8,8 @@ import {IPermission} from '../../../../../../src/interfaces/permision.interface'
 import {IUser} from '../../../../../../src/interfaces/user.interface';
 import {IVenue} from '../../../../../../src/interfaces/venue.interface';
 import {IUsersState} from '../../actions/users.actions';
+import {IWindow} from "../../interfaces/window";
+import Checkbox from "../Utils/CheckBox";
 
 interface IPropsType {
   users: IUsersState;
@@ -19,6 +21,7 @@ interface IPropsType {
   create: boolean;
   changeTempUser(user: any): void;
 }
+declare let window: IWindow;
 
 interface IStateType {
   error: Error | null;
@@ -41,6 +44,7 @@ class UserFormView extends React.Component<IPropsType, IStateType> {
     this.deletePermission = this.deletePermission.bind(this);
     this.addVenueAccess = this.addVenueAccess.bind(this);
     this.deleteVenueAccess = this.deleteVenueAccess.bind(this);
+    this.changeIsAdmin = this.changeIsAdmin.bind(this);
     this.addForm = this.addForm.bind(this);
     this.deleteForm = this.deleteForm.bind(this);
   }
@@ -125,7 +129,11 @@ class UserFormView extends React.Component<IPropsType, IStateType> {
       <React.Fragment>
         <ul className="nav nav-tabs" style={{marginBottom: '15px'}}>
           <li className="active"><a data-toggle="tab" href="#general">General</a></li>
-          <li><a data-toggle="tab" href="#permissions">Permisos</a></li>
+          {
+            window.user.isAdmin ?
+              <li><a data-toggle="tab" href="#permissions">Permisos</a></li>
+              : null
+          }
           <li><a data-toggle="tab" href="#access">Accesos</a></li>
         </ul>
         <div className="tab-content">
@@ -288,60 +296,81 @@ class UserFormView extends React.Component<IPropsType, IStateType> {
                   </select>
                 </div>
               </div>
+              {
+                window.user.isAdmin ?
+                  <div className="col-md-12">
+                    <div className="checkbox">
+                      <Checkbox
+                        active={tempUser && tempUser.isAdmin}
+                        action={this.changeIsAdmin}
+                        classes="icheck-in-checkbox"
+                        style={{marginTop: '-4px', marginRight: '5px'}}
+                      />
+                      Es ADMIN
+                    </div>
+                  </div>
+                  : null
+              }
             </div>
           </div>
-          <div id="permissions" className="tab-pane fade">
-            <div className="row">
-              <div className="col-md-12">
-                <div className="form-group">
-                  <label>Permisos</label>
-                  <select
-                    id="id-permissions"
-                    className="chosen-select form-control"
-                    style={{minWidth: '200px'}}
-                    data-placeholder={'Seleccione permiso'}
-                  >
-                    <option value="" />
-                    {
-                      selectPermissions.map((permission) => {
-                        return (
-                          <option key={permission._id} value={permission._id}>{permission.name}</option>
-                        );
-                      })
-                    }
-                  </select>
+          {
+            window.user.isAdmin ?
+              <div id="permissions" className="tab-pane fade">
+                <div className="row">
+                  <div className="col-md-12">
+                    <div className="form-group">
+                      <label>Permisos</label>
+                      <select
+                        id="id-permissions"
+                        className="chosen-select form-control"
+                        style={{minWidth: '200px'}}
+                        data-placeholder={'Seleccione permiso'}
+                      >
+                        <option value=""/>
+                        {
+                          selectPermissions.map((permission) => {
+                            return (
+                              <option key={permission._id} value={permission._id}>{permission.name}</option>
+                            );
+                          })
+                        }
+                      </select>
+                    </div>
+                  </div>
+                  <div className="col-md-12">
+                    <table className="table table-striped">
+                      <thead>
+                      <tr>
+                        <th style={{width: '20%'}}>Code</th>
+                        <th style={{width: '70%'}}>Name</th>
+                        <th style={{width: '10%'}}/>
+                      </tr>
+                      </thead>
+                      <tbody>
+                      {
+                        userPermissions.length ?
+                          userPermissions.map((permission: any) => {
+                            return (
+                              <tr key={permission._id}>
+                                <td>{permission.codeName}</td>
+                                <td>{permission.name}</td>
+                                <td className="text-center text-red pointer" onClick={() => this.deletePermission(permission._id)}>
+                                  <i className="fa fa-minus-circle"/>
+                                </td>
+                              </tr>
+                            );
+                          })
+                          : <tr>
+                            <td colSpan={3}>Aún no se han seleccionado permisos.</td>
+                          </tr>
+                      }
+                      </tbody>
+                    </table>
+                  </div>
                 </div>
               </div>
-              <div className="col-md-12">
-                <table className="table table-striped">
-                  <thead>
-                  <tr>
-                    <th style={{width: '20%'}}>Code</th>
-                    <th style={{width: '70%'}}>Name</th>
-                    <th style={{width: '10%'}}/>
-                  </tr>
-                  </thead>
-                  <tbody>
-                  {
-                    userPermissions.length ? userPermissions.map((permission: any) => {
-                      return (
-                        <tr key={permission._id}>
-                          <td>{permission.codeName}</td>
-                          <td>{permission.name}</td>
-                          <td className="text-center text-red pointer" onClick={() => this.deletePermission(permission._id)}><i
-                            className="fa fa-minus-circle"/></td>
-                        </tr>
-                      );
-                    }) :
-                      <tr>
-                        <td colSpan={3}>Aún no se han seleccionado permisos.</td>
-                      </tr>
-                  }
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          </div>
+              : null
+          }
           <div id="access" className="tab-pane fade">
             <div className="row">
               <div className="col-md-12">
@@ -416,6 +445,11 @@ class UserFormView extends React.Component<IPropsType, IStateType> {
         </div>
       </React.Fragment>
     );
+  }
+
+  private changeIsAdmin() {
+    const {isAdmin} = this.props.users.tempUser;
+    this.props.changeTempUser({isAdmin: !isAdmin})
   }
 
   private addVenueAccess(id: string) {

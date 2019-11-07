@@ -15,6 +15,7 @@ const initialState: IUsersState = {
   loading: true,
   tempUser: {
     _id: '',
+    isAdmin: false,
     firstName: '',
     company: null,
     lastName: '',

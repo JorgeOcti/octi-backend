@@ -19,7 +19,7 @@ block js
   script(src=`/static${getVersionedPath('/js/vendor/daterangepicker/daterangepicker.js')}`)
   link(rel='stylesheet', href=`/static${getVersionedPath('/css/vendor/daterangepicker/daterangepicker.css')}`)
   script.
-    window.user = {_id: '!{`${user.id}`}', firstName: '!{`${user.firstName}`}', lastName: '!{`${user.lastName}`}', email: '!{`${user.email}`}', company: '!{`${user.company._id}`}', venuesAccess: !{`${JSON.stringify(user.venuesPermissions())}`}, team: '!{`${user.team}`}', userPermissions: !{`${JSON.stringify(user.userPermissions.toObject())}`}, token: '!{`${token}`}'};
+    window.user = {_id: '!{`${user.id}`}', isAdmin: !{`${user.isAdmin === true}`}, firstName: '!{`${user.firstName}`}', lastName: '!{`${user.lastName}`}', email: '!{`${user.email}`}', company: '!{`${user.company._id}`}', venuesAccess: !{`${JSON.stringify(user.venuesPermissions())}`}, team: '!{`${user.team}`}', userPermissions: !{`${JSON.stringify(user.userPermissions.toObject())}`}, token: '!{`${token}`}'};
     window.MAPBOX="!{`${MAPBOX}`}";
     window.MIXPANEL="!{`${MIXPANEL}`}";
   //- React App

@@ -211,6 +211,7 @@ class AdminUsersController {
                 lastName: true,
                 preferred: true,
                 email: true,
+                isAdmin: true,
                 updatedAt: true
             },
             populate: [{
@@ -374,7 +375,7 @@ class AdminUsersController {
         }
         const { id } = req.params;
         const { team } = req.user;
-        const { firstName, lastName, email, venue, venuesAccess, userPermissions, userForms, preferred, company } = req.body;
+        const { firstName, lastName, email, venue, venuesAccess, userPermissions, userForms, preferred, company, isAdmin } = req.body;
         // validate fields required
         if (!firstName || !firstName.length || !lastName || !lastName.length || !email || !email.length || !venue || !venue.length) {
             res.status(400).json({
@@ -392,19 +393,25 @@ class AdminUsersController {
                 });
             }
             else {
-                let user = await user_model_1.default
-                    .findOneAndUpdate({
-                    _id: id, team
-                }, {
+                let updateItems = {
                     firstName,
                     lastName,
                     company,
                     preferred,
-                    userPermissions: userPermissions && userPermissions.length ? userPermissions.map((userPermission) => userPermission._id) : [],
                     userForms: userForms && userForms.length ? userForms.map((userForm) => userForm._id) : [],
                     venue,
                     venuesAccess
-                }, {
+                };
+                if (req.user.isAdmin) {
+                    console.log('----------------------------------------');
+                    console.log(isAdmin);
+                    updateItems.userPermissions = userPermissions && userPermissions.length ? userPermissions.map((userPermission) => userPermission._id) : [];
+                    updateItems.isAdmin = isAdmin;
+                }
+                let user = await user_model_1.default
+                    .findOneAndUpdate({
+                    _id: id, team
+                }, updateItems, {
                     new: true
                 })
                     .populate([{

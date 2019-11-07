@@ -90,7 +90,7 @@ class InventoryCreateView extends React.Component<IPropsType, IStateType> {
 
   public componentWillMount() {
     // set the title of the page
-    document.title = 'OSA Andes | Crear Inventario';
+    document.title = 'OSA Andes | Creando Inventario';
     this.getVenues();
   }
 
@@ -137,7 +137,7 @@ class InventoryCreateView extends React.Component<IPropsType, IStateType> {
         <section className="content">
           <div className="box">
             <div className="box-header with-border">
-              <h3 className="box-title">Creando auditoria de inventario</h3>
+              <h3 className="box-title">Creando Inventario</h3>
             </div>
             <div className="box-body margin">
               <div className="row">
@@ -168,7 +168,7 @@ class InventoryCreateView extends React.Component<IPropsType, IStateType> {
                     </div>
                     <div className="col-md-6">
                       <p><strong>Total de sucursales:</strong> {carsByVenue.length}</p>
-                      <p><strong>Total de vehiculos:</strong> {carsInSettings}</p>
+                      <p><strong>Total de vehículos:</strong> {carsInSettings}</p>
                     </div>
                     <div className="col-md-6 text-right">
                       <button className="btn btn-sm btn-primary" onClick={this.downloadTemplate}>

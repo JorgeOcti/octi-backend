@@ -225,6 +225,7 @@ class AdminUsersController {
         lastName: true,
         preferred: true,
         email: true,
+        isAdmin: true,
         updatedAt: true
       },
       populate: [{
@@ -389,7 +390,7 @@ class AdminUsersController {
     }
     const {id} = req.params;
     const {team} = req.user;
-    const {firstName, lastName, email, venue, venuesAccess, userPermissions, userForms, preferred, company} = req.body;
+    const {firstName, lastName, email, venue, venuesAccess, userPermissions, userForms, preferred, company, isAdmin} = req.body;
     // validate fields required
     if (!firstName || !firstName.length || !lastName || !lastName.length || !email || !email.length || !venue || !venue.length) {
       res.status(400).json({
@@ -406,19 +407,25 @@ class AdminUsersController {
           status: 400
         });
       } else {
+        let updateItems: any = {
+          firstName,
+          lastName,
+          company,
+          preferred,
+          userForms: userForms && userForms.length ? userForms.map((userForm: IForm) => userForm._id) : [],
+          venue,
+          venuesAccess
+        };
+        if (req.user.isAdmin) {
+          console.log('----------------------------------------');
+          console.log(isAdmin);
+          updateItems.userPermissions = userPermissions && userPermissions.length ? userPermissions.map((userPermission: IPermission) => userPermission._id) : [];
+          updateItems.isAdmin = isAdmin;
+        }
         let user = await User
           .findOneAndUpdate({
             _id: id, team
-          }, {
-            firstName,
-            lastName,
-            company,
-            preferred,
-            userPermissions: userPermissions && userPermissions.length ? userPermissions.map((userPermission: IPermission) => userPermission._id) : [],
-            userForms: userForms && userForms.length ? userForms.map((userForm: IForm) => userForm._id) : [],
-            venue,
-            venuesAccess
-          }, {
+          }, updateItems, {
             new: true
           })
           .populate([{

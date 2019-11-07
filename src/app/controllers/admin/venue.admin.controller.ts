@@ -346,7 +346,7 @@ class AdminVenueController {
         select: ['_id', 'name']
       }]);
       if (venue) {
-        // fix users in venue
+        // fix the "company" to users in this venue
         await User.update({venue: id}, {company: venue.company._id}, {multi: true});
         // reverse assing send to and reveive from
         await Venue.update({_id: {$in: receiveFrom}, team, sendTo: {$ne: id}}, {$push: {sendTo: id}}, {multi: true});

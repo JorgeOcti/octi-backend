@@ -361,6 +361,7 @@ class UserListView extends React.Component<IPropsType, IStateType> {
       lastName: '',
       company: null,
       email: '',
+      isAdmin: false,
       venue: '',
       userPermissions: [],
       venuesAccess: [],
@@ -472,11 +473,12 @@ class UserListView extends React.Component<IPropsType, IStateType> {
     }
   }
 
-  private changeTempUser({_id, firstName, lastName, email, venue, userPermissions, preferred, userForms, company, venuesAccess, password}: ITempUser) {
+  private changeTempUser({_id, firstName, lastName, email, venue, userPermissions, preferred, userForms, company, venuesAccess, password, isAdmin}: ITempUser) {
     const tempUser: ITempUser = {
       _id: _id ? _id : this.props.users.tempUser._id,
       firstName: firstName ? firstName : this.props.users.tempUser.firstName,
       lastName: lastName ? lastName : this.props.users.tempUser.lastName,
+      isAdmin: isAdmin,
       password: password ? password : '',
       email: email ? email : this.props.users.tempUser.email,
       userPermissions: userPermissions ? userPermissions : this.props.users.tempUser.userPermissions,
