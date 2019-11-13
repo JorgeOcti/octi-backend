@@ -49,6 +49,7 @@ services:
       MAPBOX: pk.eyJ1IjoicmliYXJyYWNsIiwiYSI6ImNqems3dW85bTAwZmUzbnF0a2xubnl5ejUifQ.tfPmGSbHYdh2nMA6Fmxcxw
     ports:
       - 3030:3030
+      - 3070:3070
     volumes:
       - ./dist:/srv/dist
       - ./public:/srv/public

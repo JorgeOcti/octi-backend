@@ -41,18 +41,8 @@ html(xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en" style="backgro
                             table(style="border-collapse:collapse;border-spacing:0;padding:0;text-align:left;vertical-align:top;width:100%")
                               tr(style="padding:0;text-align:left;vertical-align:top")
                                 th(style="Margin:0;color:#0a0a0a;font-family:Helvetica,Arial,sans-serif;font-size:16px;font-weight:400;line-height:1.3;margin:0;padding:0;text-align:left")
-                                  h4(style="Margin:0;Margin-bottom:10px;color:inherit;font-family:Helvetica,Arial,sans-serif;font-size:24px;font-weight:400;line-height:1.3;margin:0;margin-bottom:10px;padding:0;text-align:left;word-wrap:normal")=`Hola ${userName}`
-                                  p(style="Margin:0;Margin-bottom:10px;color:#0a0a0a;font-family:Helvetica,Arial,sans-serif;font-size:16px;font-weight:400;line-height:1.3;margin:0;margin-bottom:10px;padding:0;text-align:left")=`Se ha evaluado un VIN con calificación ${qualification}%`
-                                th.expander(style="Margin:0;color:#0a0a0a;font-family:Helvetica,Arial,sans-serif;font-size:16px;font-weight:400;line-height:1.3;margin:0;padding:0!important;text-align:left;visibility:hidden;width:0")
-                    table.row(style="border-collapse:collapse;border-spacing:0;display:table;padding:0;position:relative;text-align:left;vertical-align:top;width:100%")
-                      tbody
-                        tr(style="padding:0;text-align:left;vertical-align:top")
-                          th.small-12.large-12.columns.first.last(style="Margin:0 auto;color:#0a0a0a;font-family:Helvetica,Arial,sans-serif;font-size:16px;font-weight:400;line-height:1.3;margin:0 auto;padding:0;padding-bottom:16px;padding-left:16px;padding-right:16px;text-align:left;width:664px")
-                            table(style="border-collapse:collapse;border-spacing:0;padding:0;text-align:left;vertical-align:top;width:100%")
-                              tr(style="padding:0;text-align:left;vertical-align:top")
-                                th(style="Margin:0;color:#0a0a0a;font-family:Helvetica,Arial,sans-serif;font-size:16px;font-weight:400;line-height:1.3;margin:0;padding:0;text-align:left")
-                                  p(style="Margin:0;Margin-bottom:10px;color:#0a0a0a;font-family:Helvetica,Arial,sans-serif;font-size:16px;font-weight:400;line-height:1.3;margin:0;margin-bottom:10px;padding:0;text-align:left")
-                                    strong Datos del Vehiculo
+                                  h4(style="Margin:0;Margin-bottom:10px;color:inherit;font-family:Helvetica,Arial,sans-serif;font-size:24px;font-weight:400;line-height:1.3;margin:0;margin-bottom:10px;padding:0;text-align:left;word-wrap:normal") Hola Soporte
+                                  p(style="Margin:0;Margin-bottom:10px;color:#0a0a0a;font-family:Helvetica,Arial,sans-serif;font-size:16px;font-weight:400;line-height:1.3;margin:0;margin-bottom:10px;padding:0;text-align:left") Se ha creado un nuevo inventario.
                                 th.expander(style="Margin:0;color:#0a0a0a;font-family:Helvetica,Arial,sans-serif;font-size:16px;font-weight:400;line-height:1.3;margin:0;padding:0!important;text-align:left;visibility:hidden;width:0")
                     table.row(style="border-collapse:collapse;border-spacing:0;display:table;padding:0;position:relative;text-align:left;vertical-align:top;width:100%")
                       tbody
@@ -62,13 +52,13 @@ html(xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en" style="backgro
                               tr(style="padding:0;text-align:left;vertical-align:top")
                                 th(style="Margin:0;color:#0a0a0a;font-family:Helvetica,Arial,sans-serif;font-size:16px;font-weight:400;line-height:1.3;margin:0;padding:0;text-align:left")
                                   p(style="Margin:0;Margin-bottom:10px;color:#0a0a0a;font-family:Helvetica,Arial,sans-serif;font-size:16px;font-weight:400;line-height:1.3;margin:0;margin-bottom:10px;padding:0;text-align:left")
-                                    strong VIN
+                                    strong Team
                                 th.expander(style="Margin:0;color:#0a0a0a;font-family:Helvetica,Arial,sans-serif;font-size:16px;font-weight:400;line-height:1.3;margin:0;padding:0!important;text-align:left;visibility:hidden;width:0")
                           th.small-12.large-12.columns.last(style="Margin:0 auto;color:#0a0a0a;font-family:Helvetica,Arial,sans-serif;font-size:16px;font-weight:400;line-height:1.3;margin:0 auto;padding:0;padding-bottom:16px;padding-left:8px;padding-right:16px;text-align:left;width:664px")
                             table(style="border-collapse:collapse;border-spacing:0;padding:0;text-align:left;vertical-align:top;width:100%")
                               tr(style="padding:0;text-align:left;vertical-align:top")
                                 th(style="Margin:0;color:#0a0a0a;font-family:Helvetica,Arial,sans-serif;font-size:16px;font-weight:400;line-height:1.3;margin:0;padding:0;text-align:left")
-                                  p(style="Margin:0;Margin-bottom:10px;color:#0a0a0a;font-family:Helvetica,Arial,sans-serif;font-size:16px;font-weight:400;line-height:1.3;margin:0;margin-bottom:10px;padding:0;text-align:left")=`${vin}`
+                                  p(style="Margin:0;Margin-bottom:10px;color:#0a0a0a;font-family:Helvetica,Arial,sans-serif;font-size:16px;font-weight:400;line-height:1.3;margin:0;margin-bottom:10px;padding:0;text-align:left")=`${team.name}`
                                 th.expander(style="Margin:0;color:#0a0a0a;font-family:Helvetica,Arial,sans-serif;font-size:16px;font-weight:400;line-height:1.3;margin:0;padding:0!important;text-align:left;visibility:hidden;width:0")
                     table.row(style="border-collapse:collapse;border-spacing:0;display:table;padding:0;position:relative;text-align:left;vertical-align:top;width:100%")
                       tbody
@@ -78,23 +68,26 @@ html(xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en" style="backgro
                               tr(style="padding:0;text-align:left;vertical-align:top")
                                 th(style="Margin:0;color:#0a0a0a;font-family:Helvetica,Arial,sans-serif;font-size:16px;font-weight:400;line-height:1.3;margin:0;padding:0;text-align:left")
                                   p(style="Margin:0;Margin-bottom:10px;color:#0a0a0a;font-family:Helvetica,Arial,sans-serif;font-size:16px;font-weight:400;line-height:1.3;margin:0;margin-bottom:10px;padding:0;text-align:left")
-                                    strong Marca
+                                    strong Usuario
                           th.small-12.large-6.columns.last(style="Margin:0 auto;color:#0a0a0a;font-family:Helvetica,Arial,sans-serif;font-size:16px;font-weight:400;line-height:1.3;margin:0 auto;padding:0;padding-bottom:16px;padding-left:8px;padding-right:16px;text-align:left;width:324px")
                             table(style="border-collapse:collapse;border-spacing:0;padding:0;text-align:left;vertical-align:top;width:100%")
                               tr(style="padding:0;text-align:left;vertical-align:top")
                                 th(style="Margin:0;color:#0a0a0a;font-family:Helvetica,Arial,sans-serif;font-size:16px;font-weight:400;line-height:1.3;margin:0;padding:0;text-align:left")
-                                  p(style="Margin:0;Margin-bottom:10px;color:#0a0a0a;font-family:Helvetica,Arial,sans-serif;font-size:16px;font-weight:400;line-height:1.3;margin:0;margin-bottom:10px;padding:0;text-align:left")=`${brand}`
+                                  p(style="Margin:0;Margin-bottom:10px;color:#0a0a0a;font-family:Helvetica,Arial,sans-serif;font-size:16px;font-weight:400;line-height:1.3;margin:0;margin-bottom:10px;padding:0;text-align:left")=`${user.firstName} ${user.lastName}`
                     table.row(style="border-collapse:collapse;border-spacing:0;display:table;padding:0;position:relative;text-align:left;vertical-align:top;width:100%")
                       tbody
                         tr(style="padding:0;text-align:left;vertical-align:top")
-                          th.small-12.large-12.columns.first.last(style="Margin:0 auto;color:#0a0a0a;font-family:Helvetica,Arial,sans-serif;font-size:16px;font-weight:400;line-height:1.3;margin:0 auto;padding:0;padding-bottom:16px;padding-left:16px;padding-right:16px;text-align:left;width:664px")
+                          th.small-12.large-6.columns.first(style="Margin:0 auto;color:#0a0a0a;font-family:Helvetica,Arial,sans-serif;font-size:16px;font-weight:400;line-height:1.3;margin:0 auto;padding:0;padding-bottom:16px;padding-left:16px;padding-right:8px;text-align:left;width:324px")
                             table(style="border-collapse:collapse;border-spacing:0;padding:0;text-align:left;vertical-align:top;width:100%")
                               tr(style="padding:0;text-align:left;vertical-align:top")
                                 th(style="Margin:0;color:#0a0a0a;font-family:Helvetica,Arial,sans-serif;font-size:16px;font-weight:400;line-height:1.3;margin:0;padding:0;text-align:left")
                                   p(style="Margin:0;Margin-bottom:10px;color:#0a0a0a;font-family:Helvetica,Arial,sans-serif;font-size:16px;font-weight:400;line-height:1.3;margin:0;margin-bottom:10px;padding:0;text-align:left")
-                                    | Para ver el detalle haz&nbsp;
-                                    a(href=url style="Margin:0;color:#2199e8;font-family:Helvetica,Arial,sans-serif;font-weight:400;line-height:1.3;margin:0;padding:0;text-align:left;text-decoration:none") click aquí
-                                th.expander(style="Margin:0;color:#0a0a0a;font-family:Helvetica,Arial,sans-serif;font-size:16px;font-weight:400;line-height:1.3;margin:0;padding:0!important;text-align:left;visibility:hidden;width:0")
+                                    strong ENV
+                          th.small-12.large-6.columns.last(style="Margin:0 auto;color:#0a0a0a;font-family:Helvetica,Arial,sans-serif;font-size:16px;font-weight:400;line-height:1.3;margin:0 auto;padding:0;padding-bottom:16px;padding-left:8px;padding-right:16px;text-align:left;width:324px")
+                            table(style="border-collapse:collapse;border-spacing:0;padding:0;text-align:left;vertical-align:top;width:100%")
+                              tr(style="padding:0;text-align:left;vertical-align:top")
+                                th(style="Margin:0;color:#0a0a0a;font-family:Helvetica,Arial,sans-serif;font-size:16px;font-weight:400;line-height:1.3;margin:0;padding:0;text-align:left")
+                                  p(style="Margin:0;Margin-bottom:10px;color:#0a0a0a;font-family:Helvetica,Arial,sans-serif;font-size:16px;font-weight:400;line-height:1.3;margin:0;margin-bottom:10px;padding:0;text-align:left")=`${env}`
                     table.row(style="border-collapse:collapse;border-spacing:0;display:table;padding:0;position:relative;text-align:left;vertical-align:top;width:100%")
                       tbody
                         tr(style="padding:0;text-align:left;vertical-align:top")
@@ -105,7 +98,7 @@ html(xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en" style="backgro
                                   p(style="Margin:0;Margin-bottom:10px;color:#0a0a0a;font-family:Helvetica,Arial,sans-serif;font-size:16px;font-weight:400;line-height:1.3;margin:0;margin-bottom:10px;padding:0;text-align:left")
                                     | En caso de dudas o consultas puedes contactarte a&nbsp;
                                     a(href="mailto:soporte@osacontrol.com" style="Margin:0;color:#2199e8;font-family:Helvetica,Arial,sans-serif;font-weight:400;line-height:1.3;margin:0;padding:0;text-align:left;text-decoration:none") soporte@osacontrol.com
-                                    |  o a nuestro twitter&nbsp;
+                                    |  o a nuestro twitter
                                     a(href="https://twitter.com/taskforceosa" style="Margin:0;color:#2199e8;font-family:Helvetica,Arial,sans-serif;font-weight:400;line-height:1.3;margin:0;padding:0;text-align:left;text-decoration:none") @TaskforceOSA
                                     | .
                                 th.expander(style="Margin:0;color:#0a0a0a;font-family:Helvetica,Arial,sans-serif;font-size:16px;font-weight:400;line-height:1.3;margin:0;padding:0!important;text-align:left;visibility:hidden;width:0")

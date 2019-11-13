@@ -24,6 +24,7 @@ const inventory_model_2 = require("../models/inventory.model");
 const inventoryCar_model_1 = require("../models/inventoryCar.model");
 const inventoryFile_model_1 = require("../models/inventoryFile.model");
 const inventoryLabel_model_1 = require("../models/inventoryLabel.model");
+const team_model_1 = require("../../app/models/team.model");
 class InventoryController {
     constructor() {
         this.index = this.index.bind(this);
@@ -188,6 +189,28 @@ class InventoryController {
             server_1.io.to(`inventory-list-${team}`).emit('REFRESH', {
                 update: true
             });
+            const currentTeam = await team_model_1.default.findById(req.user.team);
+            app_1.queue.create('email', {
+                from: '',
+                title: `Inventory Notification`,
+                to: `"soporte"<soporte@osacontrol.com>`,
+                subject: `${req.user.firstName} ha creado un inventario en ${currentTeam.name}`,
+                text: `Hola Soporte
+
+        Se ha creado un nuevo inventario.
+
+        Team: ${team.name}
+        Usuario: ${req.user.firstName} ${req.user.lastName}
+        ENV: ${process.env.ENV}
+        
+        En caso de dudas o consultas puedes contactarte a soporte@osacontrol.com o a nuestro twitter@TaskforceOSA.`,
+                view: 'alerts/inventoryNotification',
+                context: {
+                    team: currentTeam,
+                    user: req.user,
+                    env: process.env.ENV
+                }
+            }).priority('high').attempts(5).save();
             res.json({
                 _id: inventory._id.toString(),
                 message: 'Inventario creado satisfactoriamente',
