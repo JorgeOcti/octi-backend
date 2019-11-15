@@ -2,7 +2,7 @@ version: '3.2'
 
 services:
   mongo:
-    image: mongo:3.4-jessie
+    image: mongo:4.2.1
     restart: unless-stopped
     environment:
       MONGO_INITDB_ROOT_USERNAME: 'osacontrol'
@@ -45,6 +45,7 @@ services:
       REDIS_SERVICE_SERVICE_HOST: redis
       REDIS_CLUSTERED: "false"
       MONGODB_URI: mongodb://osacontrol:osacontrol@mongo:27017/osaAndesProduction?authSource=admin
+#      MONGODB_URI: mongodb+srv://osacontrol:B72R32mTPJeuw8ni7v4AYJ7ZzMyf6f9@osaproduction-uln1t.mongodb.net/osaAndesProduction?retryWrites=true&w=majority
       MIXPANEL: 6ec1276c5e0f03c5ca84343e96503bd0
       MAPBOX: pk.eyJ1IjoicmliYXJyYWNsIiwiYSI6ImNqems3dW85bTAwZmUzbnF0a2xubnl5ejUifQ.tfPmGSbHYdh2nMA6Fmxcxw
     ports:
