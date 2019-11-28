@@ -38,7 +38,7 @@ services:
       context: .
     image: andes:latest
     restart: unless-stopped
-    command: ['nodemon', 'dist/server.js']
+    command: ['nodemon', 'dist/server.js', ' --max-old-space-size=4096']
     env_file:
       - .env
     environment:

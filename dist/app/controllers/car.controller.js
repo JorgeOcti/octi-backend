@@ -1301,27 +1301,35 @@ class CarController {
                 console.log(ti.format("YYYY-MM-DD"), tf.format("YYYY-MM-DD"));
                 let cars = await car_model_1.default.find({
                     team,
-                    lastForm: { $exists: true },
+                    isExhibition: false,
+                    lastForm: {
+                        $exists: true
+                    },
                     createdAt: {
                         $gte: ti,
                         $lte: tf,
                     }
+                }, {
+                    vin: true,
+                    denomination: true,
+                    color: true,
+                    brand: true,
                 }).populate({
                     path: 'inventories',
+                    select: ['name', 'createdAt', 'venueFound', 'status'],
+                    match: {
+                        status: {
+                            $in: [inventoryCar_model_1.ChoicesStatusCarInventory.found]
+                        }
+                    },
                     options: {
                         sort: {
                             createdAt: 1
                         }
                     },
                     populate: {
-                        path: 'venue',
-                        model: 'Venue'
-                    }
-                }).populate({
-                    path: 'participants',
-                    populate: {
-                        path: 'venue',
-                        model: 'Venue'
+                        path: 'venueFound',
+                        select: ['name']
                     }
                 });
                 for (const car of cars) {
@@ -1339,9 +1347,9 @@ class CarController {
                         denomination: car.denomination,
                         color: car.color,
                         brand: car.brand,
-                        v0: inv0.venue.name,
+                        v0: inv0.venueFound ? inv0.venueFound.name : inv0.venue.name,
                         t0: t0,
-                        v1: inv1.venue.name,
+                        v1: inv1.venueFound ? inv1.venueFound.name : inv1.venue.name,
                         t1: t1,
                         inventories: n,
                         rotation: moment(t1).diff(moment(t0), 'days', true)

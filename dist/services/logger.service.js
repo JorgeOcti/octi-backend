@@ -47,7 +47,7 @@ class LoggerService {
     /* istanbul ignore next */
     now() {
         // return moment();
-        return moment().utc().format('DD/MMM/YYYY:HH:mm:ss ZZ');
+        return moment().utc().format('DD/MMM/YYYY:HH:mm:ss ZZ').replace(".", "");
     }
     /* istanbul ignore next */
     logger(type, env, message, color, textColor) {
