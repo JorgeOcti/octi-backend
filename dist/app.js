@@ -213,7 +213,7 @@ if (app.get('env') !== 'testing') {
     app.use(morgan('[:date[clf]] [INFO]: :remote-addr - :remote-user ":method :url HTTP/:http-version" :status :res[content-length] ":referrer" ":user-agent" :response-time', {
         stream: exports.accessLogStream
     }));
-    app.use(morgan('[:date[clf]] [INFO]: :remote-addr :method :url :status :response-time ms - :res[content-length]'));
+    app.use(morgan('\x1b[90m[:date[clf]] [INFO]:\x1b[0m :remote-addr :method :url :status :response-time ms - :res[content-length]'));
 }
 // The request handler must be the first middleware on the app
 app.use(Raven.requestHandler());
