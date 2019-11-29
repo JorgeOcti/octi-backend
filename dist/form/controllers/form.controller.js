@@ -1869,15 +1869,15 @@ class FormController {
     }
     getForm(filter) {
         const keyCache = `form-${filter._id}`;
-        console.log('keyCache', keyCache);
+        logger_service_1.default.debug(`keyCache ${keyCache}`);
         return new Promise((resolve, reject) => {
             redis_service_1.default.get(keyCache, async (error, result) => {
                 if (result) {
-                    console.log('FROM CACHE');
+                    logger_service_1.default.debug(`FROM CACHE`);
                     resolve(JSON.parse(result));
                 }
                 else {
-                    console.log('NEW CACHE');
+                    logger_service_1.default.debug(`NEW CACHE`);
                     form_model_1.default
                         .findOne(filter, {
                         'company': false,

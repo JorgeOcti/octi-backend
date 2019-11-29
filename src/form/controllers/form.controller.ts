@@ -1997,14 +1997,14 @@ class FormController {
 
   private getForm(filter: any): Promise<IFormModel> {
     const keyCache = `form-${filter._id}`;
-    console.log('keyCache', keyCache);
+    logger.debug(`keyCache ${keyCache}`);
     return new Promise((resolve, reject) => {
       redisClient.get(keyCache, async (error, result) => {
         if (result) {
-          console.log('FROM CACHE');
+          logger.debug(`FROM CACHE`);
           resolve(JSON.parse(result));
         } else {
-          console.log('NEW CACHE');
+          logger.debug(`NEW CACHE`);
           FormModel
             .findOne(filter, {
               'company': false,
