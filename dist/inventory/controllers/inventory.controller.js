@@ -25,6 +25,9 @@ const inventoryCar_model_1 = require("../models/inventoryCar.model");
 const inventoryFile_model_1 = require("../models/inventoryFile.model");
 const inventoryLabel_model_1 = require("../models/inventoryLabel.model");
 const team_model_1 = require("../../app/models/team.model");
+const excel = require("exceljs");
+const venue_model_2 = require("../../app/models/venue.model");
+const tempfile = require("tempfile");
 class InventoryController {
     constructor() {
         this.index = this.index.bind(this);
@@ -45,6 +48,7 @@ class InventoryController {
         this.addComment = this.addComment.bind(this);
         this.downloadFile = this.downloadFile.bind(this);
         this.downloadImages = this.downloadImages.bind(this);
+        this.inventoryByCars = this.inventoryByCars.bind(this);
         this.dashboard = this.dashboard.bind(this);
     }
     async index(req, res) {
@@ -1765,6 +1769,144 @@ class InventoryController {
             res.status(500).json({
                 message: JSON.stringify(e),
                 status: 500
+            });
+        }
+    }
+    async inventoryByCars(req, res) {
+        const { team } = req.user;
+        try {
+            /* generate file */
+            const workbook = new excel.Workbook();
+            const worksheet = workbook.addWorksheet('Detalle', {
+                properties: {
+                    defaultRowHeight: 30
+                }, pageSetup: {
+                    fitToPage: true, fitToHeight: 100, fitToWidth: 1
+                }
+            });
+            worksheet.views = [{
+                    state: 'frozen',
+                    xSplit: 3,
+                    ySplit: 1,
+                    topLeftCell: 'D2',
+                    activeCell: 'D2'
+                }];
+            const columns = [{
+                    header: "VIN",
+                    key: "vin",
+                    width: 30,
+                    alignment: {
+                        wrapText: true
+                    }
+                }, {
+                    header: "MARCA",
+                    key: "marca",
+                    width: 30,
+                    alignment: {
+                        wrapText: true
+                    }
+                }, {
+                    header: "MODELO",
+                    key: "modelo",
+                    width: 40,
+                    alignment: {
+                        wrapText: true
+                    }
+                }];
+            const venues = await venue_model_2.default.find({ team, deleted: false }).sort('name');
+            for (const venue of venues) {
+                columns.push({
+                    header: venue.name, key: venue._id.toString(), width: 5,
+                    style: {
+                        alignment: {
+                            vertical: 'middle',
+                            horizontal: 'center'
+                        }
+                    }
+                });
+            }
+            worksheet.columns = columns;
+            worksheet.autoFilter = {
+                from: 'A1',
+                to: {
+                    row: 1,
+                    column: columns.length
+                }
+            };
+            worksheet.getColumn(1).eachCell((cell) => {
+                cell.alignment = {
+                    vertical: 'middle',
+                    textRotation: 0,
+                    wrapText: true
+                };
+                cell.font = {
+                    bold: true,
+                };
+            });
+            worksheet.getRow(1).eachCell((cell) => {
+                const alignment = {
+                    vertical: 'middle',
+                    horizontal: 'center',
+                    textRotation: 0,
+                    wrapText: true
+                };
+                if (parseInt(cell.col, 10) > 3) {
+                    alignment.textRotation = 90;
+                }
+                cell.alignment = alignment;
+                cell.font = {
+                    bold: true,
+                };
+            });
+            const cars = await car_model_2.default.find({
+                team,
+                isExhibition: false,
+                createdAt: {
+                    $gte: moment().subtract(6, 'months'),
+                }
+            }, {
+                vin: true,
+                denomination: true,
+                color: true,
+                brand: true,
+            }).populate({
+                path: 'inventories',
+                select: ['name', 'createdAt', 'venueFound', 'status'],
+                match: {
+                    status: {
+                        $in: [inventoryCar_model_1.ChoicesStatusCarInventory.found]
+                    }
+                },
+                options: {
+                    sort: {
+                        createdAt: 1
+                    }
+                }
+            });
+            for (const car of cars) {
+                const inventories = car.inventories;
+                if (inventories.length) {
+                    let carData = {
+                        vin: car.vin,
+                        marca: car.brand,
+                        modelo: car.denomination,
+                    };
+                    for (const inventory of inventories) {
+                        carData[inventory.venueFound] = carData.hasOwnProperty(inventory.venueFound) ? carData[inventory.venueFound] + 1 : 1;
+                    }
+                    worksheet.addRow(carData);
+                }
+            }
+            const tempFilePath = tempfile('.xlsx');
+            await workbook.xlsx.writeFile(tempFilePath);
+            res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+            res.setHeader('Content-Disposition', 'attachment; filename=detalle-inventarios.xlsx');
+            return res.sendFile(tempFilePath);
+        }
+        catch (e) {
+            console.log(e);
+            return res.status(500).json({
+                message: 'Ha ocurrido un error. Comunicate con soporte para que te ayudemos a solucionarlo.'
             });
         }
     }
