@@ -381,7 +381,6 @@ const participantSchema = new mongoose.Schema({
   timestamps: true
 });
 
-participantSchema.index({_id: 1});
 participantSchema.index({createdAt: 1});
 participantSchema.index({createdAt: -1});
 participantSchema.index({team: 1, createdAt: 1});

@@ -11,6 +11,7 @@ inventoryRouter.get('/inventory/', middlewares_1.default.isLoggedIn, inventory_c
 inventoryRouter.get('/inventory/dashboard/', middlewares_1.default.isLoggedIn, inventory_controller_1.default.index);
 inventoryRouter.get('/settings/labels/', middlewares_1.default.isLoggedIn, label_controller_1.default.index);
 inventoryRouter.get('/inventory/create/', middlewares_1.default.isLoggedIn, inventory_controller_1.default.index);
+inventoryRouter.get('/inventory/excel/', middlewares_1.default.isLoggedIn, inventory_controller_1.default.inventoryByCars);
 inventoryRouter.get('/inventory/:id/', middlewares_1.default.isLoggedIn, inventory_controller_1.default.detail);
 inventoryRouter.get('/inventory/:id/:tab/', middlewares_1.default.isLoggedIn, inventory_controller_1.default.detail);
 // Inventories API Web
