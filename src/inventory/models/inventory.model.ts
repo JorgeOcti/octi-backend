@@ -46,11 +46,13 @@ const settingSchema = new mongoose.Schema({
 export interface IInventoryModel extends IInventory, mongoose.Document {
   attach(fieldName: string, file: any, error?: (err: any) => void): void;
 }
+
 export enum ChoicesStatusInventory {
   pending = 'pending',
   inProcess = 'inProcess',
   finalized = 'finalized'
 }
+
 export const choicesStatusInventory = [
   ChoicesStatusInventory.pending,
   ChoicesStatusInventory.inProcess,

@@ -6,14 +6,12 @@ import {connect} from 'react-redux';
 import {RouteComponentProps} from 'react-router';
 import {Dispatch} from 'redux';
 import * as swal from 'sweetalert';
-import {IVersion} from '../../../../../../src/interfaces/version.interface';
 import {createVersionAction, IVersionsState, getVersionsAction} from '../../actions/versions.actions';
 import {loadDataAction, ModalReduxAction} from '../../actions/modal.actions';
 import AppContainer from '../../container/AppContainer';
 import {statusFooterButttonsModal} from '../../utils/common';
 import ModalView from '../Modal/ModalView';
 import VersionFormView from './VersionFormView';
-import {DragEventHandler} from "react";
 import Row from "../Utils/Row";
 
 interface IPropsType extends RouteComponentProps<{ ticket: string }> {

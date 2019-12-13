@@ -21,6 +21,7 @@ import {appRouter, jwtRouter} from './app/router';
 import EmailQueue from './app/tasks/email.task';
 import formRouter from './form/router';
 import {inventoryRouter} from './inventory/router';
+import {requestRouter} from './request/router';
 import InventoryQueue from './inventory/taks/inventory.task';
 import Middlewares from './middlewares/middlewares';
 import redisClient, {createRedisClient} from './services/redis.service';
@@ -243,6 +244,7 @@ app.use(Middlewares.context);
 app.use('/', appRouter);
 app.use('/', formRouter);
 app.use('/', inventoryRouter);
+app.use('/', requestRouter);
 app.use('/api/v1', jwtRouter);
 
 /* queues */

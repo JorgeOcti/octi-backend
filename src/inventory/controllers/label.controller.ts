@@ -7,7 +7,7 @@ import InventoryLabel, {IInventoryLabelModel} from '../models/inventoryLabel.mod
 class LabelController {
   constructor() {
     this.index = this.index.bind(this);
-    this.apilist = this.apilist.bind(this);
+    this.apiList = this.apiList.bind(this);
     this.apiUpdateLabel = this.apiUpdateLabel.bind(this);
   }
 
@@ -15,7 +15,7 @@ class LabelController {
     res.render('app/index', {token: await req.user.generateToken()});
   }
 
-  public async apilist(req: IRequest, res: Response) {
+  public async apiList(req: IRequest, res: Response) {
     const {team} = req.user;
     const {page, pageSize} = req.query;
     // paginate options
@@ -48,9 +48,7 @@ class LabelController {
       }
     } catch (e) {
       /* istanbul ignore next  */
-      if (e) {
-        res.status(500).json(e);
-      }
+      res.status(500).json(e);
     }
   }
 

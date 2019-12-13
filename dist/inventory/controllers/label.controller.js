@@ -5,13 +5,13 @@ const inventoryLabel_model_1 = require("../models/inventoryLabel.model");
 class LabelController {
     constructor() {
         this.index = this.index.bind(this);
-        this.apilist = this.apilist.bind(this);
+        this.apiList = this.apiList.bind(this);
         this.apiUpdateLabel = this.apiUpdateLabel.bind(this);
     }
     async index(req, res) {
         res.render('app/index', { token: await req.user.generateToken() });
     }
-    async apilist(req, res) {
+    async apiList(req, res) {
         const { team } = req.user;
         const { page, pageSize } = req.query;
         // paginate options
@@ -46,9 +46,7 @@ class LabelController {
         }
         catch (e) {
             /* istanbul ignore next  */
-            if (e) {
-                res.status(500).json(e);
-            }
+            res.status(500).json(e);
         }
     }
     async apiCreateLabel(req, res) {

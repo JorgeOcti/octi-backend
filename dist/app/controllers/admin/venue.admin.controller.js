@@ -119,9 +119,9 @@ class AdminVenueController {
             });
         }
         const { team } = req.user;
-        const { page, pageSize } = req.query;
+        const { page, pageSize, noPopulate } = req.query;
         // paginate options
-        const options = {
+        let options = {
             select: {
                 _id: true,
                 name: true,
@@ -167,6 +167,9 @@ class AdminVenueController {
             page: parseInt(page ? page : 1, 10),
             limit: parseInt(pageSize ? pageSize : 20, 10)
         };
+        if (noPopulate) {
+            delete options.populate;
+        }
         try {
             const venues = await this.getVenues({
                 deleted: false,

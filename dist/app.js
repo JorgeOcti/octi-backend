@@ -23,6 +23,7 @@ const router_1 = require("./app/router");
 const email_task_1 = require("./app/tasks/email.task");
 const router_2 = require("./form/router");
 const router_3 = require("./inventory/router");
+const router_4 = require("./request/router");
 const inventory_task_1 = require("./inventory/taks/inventory.task");
 const middlewares_1 = require("./middlewares/middlewares");
 const redis_service_1 = require("./services/redis.service");
@@ -222,6 +223,7 @@ app.use(middlewares_1.default.context);
 app.use('/', router_1.appRouter);
 app.use('/', router_2.default);
 app.use('/', router_3.inventoryRouter);
+app.use('/', router_4.requestRouter);
 app.use('/api/v1', router_1.jwtRouter);
 /* queues */
 exports.queue = kue.createQueue({

@@ -13,6 +13,7 @@ export interface ICar {
   vin2: string;
   brand: string;
   denomination: string;
+  material: string;
   destination: string;
   property: string;
   type: string;

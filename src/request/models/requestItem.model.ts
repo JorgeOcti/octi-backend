@@ -1,0 +1,77 @@
+import * as mongoose from "mongoose";
+import {PaginateModel} from "mongoose";
+import {IRequestItem} from "../../interfaces/requestItem.interface";
+import * as mongoosePaginate from "mongoose-paginate";
+
+export interface IRequestItemModel extends IRequestItem, mongoose.Document {}
+
+const requestItemSchema = new mongoose.Schema({
+  request: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Request'
+  },
+  team: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Team'
+  },
+  origin: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Venue'
+  },
+  destination: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Venue'
+  },
+  position: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Venue'
+  },
+  car: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Car'
+  },
+  reason: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Reason'
+  },
+  priority: {
+    type: Boolean,
+    default: false
+  },
+  observation: {
+    type: String,
+    default: ""
+  },
+  equipment: {
+    type: Boolean,
+    default: false
+  },
+  washed: {
+    type: Boolean,
+    default: false
+  },
+  review: {
+    type: Boolean,
+    default: false
+  },
+  body: {
+    type: Boolean,
+    default: false
+  },
+  createdBy: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
+    default: null
+  }
+}, {
+  timestamps: true
+});
+
+requestItemSchema.plugin(mongoosePaginate);
+
+export type RequestItemSchema = mongoose.Model<IRequestItemModel> & PaginateModel<IRequestItemModel>;
+
+const RequestItem = mongoose.model<IRequestItemModel, RequestItemSchema>('RequestItem', requestItemSchema);
+
+export default RequestItem;
+

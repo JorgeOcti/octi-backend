@@ -1,0 +1,101 @@
+.request-list
+  font-size: 12px
+  .request
+    border: 1px solid #9c9c9c4d
+    margin: 10px 0 0 0
+    min-width: 1000px
+    div
+      display: flex
+      // aling vertical
+      align-items: center
+      // aling horizontal
+      //justify-content: center
+      height: 40px
+      padding: 0 7px
+      &.center
+        justify-content: center
+    .status-circle
+      &-red
+        color: #cf2a27
+        margin-right: 5px
+    .chevron
+      display: flex
+      justify-content: flex-end
+      padding: 0 15px
+  .table-request
+    width: 100%
+    max-width: 100%
+    min-width: 1000px
+    .material-icons
+      font-size: 14px
+      margin-top: 2px
+    thead
+      border: 1px solid #9c9c9c4d
+      border-top: none
+      border-bottom: none
+      tr
+        border: none
+        th
+          border: none
+          padding: 4px
+          font-size: 9px
+          font-weight: normal
+    tbody
+      border: 1px solid #9c9c9c4d
+      border-top: none
+      td
+        padding: 7px 4px
+        font-size: 12px
+
+.create-detail
+  border: 1px solid #9c9c9c4d
+  min-width: 100%
+  min-height: 300px
+  max-height: 450px
+  overflow-y: auto
+  padding: 5px
+  font-size: 11px
+  .material-icons
+    font-size: 14px
+    margin-top: 2px
+  table
+    tbody
+      border: 1px solid #9c9c9c4d
+      td
+        padding: 5px
+        border-top: 1px solid #9c9c9c4d
+
+.create-request
+  h3
+    margin: 5px 0 15px 0
+    font-size: 20px
+  .material-icons
+    font-size: 13px
+  .checkbox
+    label
+      color: #333
+  .add-cars
+    display: flex
+    flex-wrap: wrap
+    .arrow
+      display: flex
+      align-items: center
+      padding: 5px 15px 5px 0
+    .detail
+      display: flex
+      flex: 1
+      flex-direction: column
+      //.form-horizontal
+      //  margin-top: 10px
+
+
+.flex-wrap
+  display: flex
+  justify-content: space-between
+  flex-wrap: wrap
+  &-item
+    flex-grow: 1
+  &-item-center
+    display: flex
+    flex-grow: 1
+    justify-content: center

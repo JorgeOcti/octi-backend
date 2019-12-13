@@ -27,6 +27,8 @@ import {IWindow} from './interfaces/window';
 import configureStore, {history} from './store/configureStore';
 import {isIntenertExplorer} from './utils/common';
 import DashboardDercoView from "./components/DashboardGeneral/DashboardDercoView";
+import RequestListView from "./components/Request/RequestListView";
+import RequestCreateView from "./components/Request/RequestCreateView";
 
 
 declare let window: IWindow;
@@ -63,6 +65,8 @@ const App = () => (
                 <Route exact path="/settings/companies/" component={ CompaniesListView }/>
                 <Route exact path="/settings/alerts/" component={ AlertsViews }/>
                 <Route exact path="/settings/versions/" component={ VersionListView }/>
+                <Route exact path="/requests/create/" component={ RequestCreateView }/>
+                <Route exact path="/requests/" component={ RequestListView }/>
                 <Route component={ NoMatch }/>
             </Switch>
         </ConnectedRouter>

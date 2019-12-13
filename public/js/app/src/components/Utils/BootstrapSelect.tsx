@@ -1,5 +1,6 @@
 import * as React from 'react';
 import * as unorm from 'unorm';
+import {RefObject} from "react";
 
 interface IOption {
   value: string;
@@ -20,6 +21,7 @@ interface IPropsType {
   allOption?: boolean;
   autoClouse?: boolean;
   search?: boolean;
+  sm?: boolean;
 }
 
 interface IStateType {
@@ -34,21 +36,24 @@ class BootstrapSelect extends React.Component<IPropsType, IStateType> {
     searchText: ''
   };
 
+  readonly input: RefObject<HTMLInputElement>;
+
   constructor(props: IPropsType) {
     super(props);
     this.handlerOpen = this.handlerOpen.bind(this);
     this.search = this.search.bind(this);
+    this.input = React.createRef();
   }
 
   public render(): React.ReactElement<IPropsType> {
     const {
-      options, selected, onClick, displayItems, noneSelectedText, selectedText, separator, allOption, search, autoClouse, selectAll
+      sm, options, selected, onClick, displayItems, noneSelectedText, selectedText, separator, allOption, search, autoClouse, selectAll
     } = this.props;
     const  {searchText} = this.state;
     const selectedItems = options.filter((option) => (selected.includes(option.value)));
 
     return (
-      <div className={`dropdown bootstrap-select form-control show-tick ${autoClouse ? '' : 'keep-inside-clicks-open'}`}>
+      <div className={`dropdown bootstrap-select form-control show-tick ${autoClouse ? '' : 'keep-inside-clicks-open'} ${sm?'bootstrap-select-sm':''}`}>
         <button
           type="button"
           className={`btn dropdown-toggle bs-placeholder btn-filter btn-default`}
@@ -86,6 +91,7 @@ class BootstrapSelect extends React.Component<IPropsType, IStateType> {
             search ?
               <div className="bs-searchbox">
                 <input
+                  ref={this.input}
                   type="text"
                   className="form-control input-sm"
                   autoComplete="off"
@@ -146,6 +152,9 @@ class BootstrapSelect extends React.Component<IPropsType, IStateType> {
   }
 
   private handlerOpen() {
+    if(this.input.current){
+      this.input.current.focus()
+    }
     this.setState({
         open: !this.state.open
       }, () => {

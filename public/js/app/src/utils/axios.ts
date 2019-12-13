@@ -154,9 +154,15 @@ export default class ApiService {
     );
   }
 
-  public getVenues(page: number, pageSize?: number): AxiosPromise {
+  public getVenues(page: number, pageSize?: number, noPopulate?:boolean): AxiosPromise {
     return this.instance.get(
-      `/api/admin/venues/?page=${page}${pageSize ? `&pageSize=${pageSize}` : ''}`
+      `/api/admin/venues/?page=${page}${pageSize ? `&pageSize=${pageSize}` : ''}${noPopulate ? `&noPopulate=${noPopulate}` : ''}`
+    );
+  }
+
+  public getReasons(page: number, pageSize?: number): AxiosPromise {
+    return this.instance.get(
+      `/api/v1/reasons/?page=${page}${pageSize ? `&pageSize=${pageSize}` : ''}`
     );
   }
 
@@ -422,4 +428,22 @@ export default class ApiService {
     );
   }
 
+  public getRequests(page: number, pageSize?: number): AxiosPromise {
+    return this.instance.get(
+      `/api/v1/requests/?page=${page}${pageSize ? `&pageSize=${pageSize}` : ''}`
+    );
+  }
+
+  public createRequest(data: any){
+    return this.instance.post(
+      `/api/v1/requests/`,
+      data
+    )
+  }
+
+  public searchCar(text: string): AxiosPromise {
+    return this.instance.get(
+      `/api/v1/requests/search-car/?search=${text}`
+    );
+  }
 }

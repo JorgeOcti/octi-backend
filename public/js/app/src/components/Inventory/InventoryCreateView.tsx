@@ -300,7 +300,7 @@ class InventoryCreateView extends React.Component<IPropsType, IStateType> {
                           textAlign: 'left'
                         }}
                       >
-                        Nº imágenes al reporta
+                        Nº imágenes al reportar
                       </span>
                       <input id="report-photo" type="text" className="col-sm-2 col-md-4 col-lg-3 form-control" />
                     </div>
@@ -625,7 +625,7 @@ class InventoryCreateView extends React.Component<IPropsType, IStateType> {
   private getVenues(){
     this.setState({loading: true});
     const api: ApiService = new ApiService();
-    api.getVenues(1, 200)
+    api.getVenues(1, 200, true)
       .then((response: AxiosResponse):void =>{
         this.setState({
           venues: response.data.results,

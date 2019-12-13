@@ -52,13 +52,43 @@ if (dashboardItems.length) {
     id: '1',
     text: 'Dashboards',
     icon: 'fa-dashboard',
-    url: '/',
+    url: dashboardItems[0].url,
     items: dashboardItems
   });
 }
 
 /* *****************
-* 1. Inventory
+* 3. Request and Distribution
+*****************/
+const distributionItems = [{
+  id: '3.1',
+  icon: 'fa-circle-o',
+  text: 'Solicitudes',
+  url: '/requests/'
+}, {
+  id: '3.2',
+  icon: 'fa-circle-o',
+  text: 'Vehículos',
+  url: '/requests/'
+}, {
+  id: '3.3',
+  icon: 'fa-circle-o',
+  text: 'Transporte',
+  url: '/requests/'
+}];
+
+if (distributionItems.length) {
+  menus.push({
+    id: '3',
+    text: 'Distribución',
+    icon: 'fa-cubes',
+    url: distributionItems[0].url,
+    items: distributionItems
+  });
+}
+
+/* *****************
+* 2. Inventory
 *****************/
 const inventoryItems = [];
 
@@ -93,11 +123,12 @@ if (inventoryItems.length) {
   menus.push({
     id: '2',
     text: 'Inventario',
-    icon: 'fa-navicon',
-    url: '/inventory/',
+    icon: 'fa-book',
+    url: inventoryItems[0].url,
     items: inventoryItems
   });
 }
+
 
 /* *****************
 * 10. Settings
@@ -169,7 +200,7 @@ if (settingItems.length) {
     id: '10',
     text: 'Settings',
     icon: 'fa-cog',
-    url: '/settings/users/',
+    url: settingItems[0].url,
     items: settingItems
   });
 }
