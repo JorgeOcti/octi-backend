@@ -43,7 +43,7 @@ class VenueDetail extends React.Component<IPropsType, IStateType> {
           }}>
             <a data-toggle="collapse"
                data-parent="#accordion"
-               href={`#${slugify(venue.name.toLowerCase())}`}
+               href={`#${slugify(venue.name.toLowerCase(), {remove: /[*+~.()'"!:@]/g})}`}
                aria-expanded="false"
                className="collapsed">
               {index + 1} {venue.name} ({venue.cars.length} Vehículos)
@@ -63,7 +63,7 @@ class VenueDetail extends React.Component<IPropsType, IStateType> {
             }
           </h4>
         </div>
-        <div id={`${slugify(venue.name.toLowerCase())}`} className="panel-collapse collapse" aria-expanded="false">
+        <div id={`${slugify(venue.name.toLowerCase(), {remove: /[*+~.()'"!:@]/g})}`} className="panel-collapse collapse" aria-expanded="false">
           <div className="box-body no-padding">
             <table className="table table-striped">
               <thead>
