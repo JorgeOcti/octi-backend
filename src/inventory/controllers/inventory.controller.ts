@@ -100,7 +100,7 @@ class InventoryController {
       const venuesIDs: string[] = [];
       for (const venue of carsByVenue) {
         if (venue.name && venue.name.trim().length) {
-          const venueRegExp = new RegExp(venue.name.trim(), 'i');
+          const venueRegExp = new RegExp(`^${venue.name.trim()}$`, 'i');
           let currentVenue: IVenueModel | null = await VenueModel.findOne({
             team,
             name: venueRegExp
@@ -223,7 +223,7 @@ class InventoryController {
         Team: ${team.name}
         Usuario: ${req.user.firstName} ${req.user.lastName}
         ENV: ${process.env.ENV}
-        
+
         En caso de dudas o consultas puedes contactarte a soporte@osacontrol.com o a nuestro twitter@TaskforceOSA.`,
         view: 'alerts/inventoryNotification',
         context: {
