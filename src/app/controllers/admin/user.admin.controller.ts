@@ -354,7 +354,7 @@ class AdminUsersController {
           Contraseña ${password}
           En caso de dudas o consultas puedes contactarte asoporte@osacontrol.com o a nuestro twitter @TaskforceOSA.
 
-          © 2019 OSA SpA. All rights reserved.`,
+          © 2020 OSA SpA. All rights reserved.`,
           view: 'account/welcome',
           context: {
             fullname,

@@ -17,6 +17,7 @@ spec:
   tls:
   - hosts:
     - andes.osacontrol.com
+    - andes.osacontrol.cl
     secretName: letsencrypt-prod
   rules:
   - host: andes.osacontrol.com
@@ -24,5 +25,12 @@ spec:
       paths:
       - path: /
         backend:        
+          serviceName: osa-andes-service
+          servicePort: 3030
+  - host: andes.osacontrol.cl
+    http:
+      paths:
+      - path: /
+        backend:
           serviceName: osa-andes-service
           servicePort: 3030

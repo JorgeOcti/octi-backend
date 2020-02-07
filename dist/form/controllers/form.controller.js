@@ -830,7 +830,7 @@ class FormController {
                         Para ver el detalle has click aquí
                         ${process.env.SITE_URL}cars/${car._id}
 
-                        © 2019 OSA SpA. Todos los derechos reservados.`,
+                        © 2020 OSA SpA. Todos los derechos reservados.`,
                                             view: 'alerts/lowQualification',
                                             context: {
                                                 userName,
