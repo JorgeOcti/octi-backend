@@ -29,6 +29,14 @@ teamSchema.virtual('users', {
   justOne: false
 });
 
+teamSchema.virtual('settings', {
+  ref: 'TeamSetting', // The model to use
+  localField: '_id', // Find field in this model
+  foreignField: 'team', // is equal to field in another model
+  justOne: true
+});
+
+
 teamSchema.plugin(mongoosePaginate);
 
 const Team = mongoose.model<ITeamModel>('Team', teamSchema);

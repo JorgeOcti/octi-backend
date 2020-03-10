@@ -4,6 +4,7 @@ import {IRequest} from '../../../interfaces/global.interface';
 import Team, {ITeamModel} from '../../models/team.model';
 
 class AdminsTeamController {
+
   constructor() {
     this.index = this.index.bind(this);
     this.apiListTeams = this.apiListTeams.bind(this);

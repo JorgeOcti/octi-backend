@@ -6,6 +6,24 @@ import {IInventoryState, InventoryReduxAction} from '../actions/inventory.action
 
 const initialState: IInventoryState = {
   inventories: [],
+  inventorySettings: {
+    leftoverDifferentVenue: false,
+    pending: "",
+    pendingClass: "aqua",
+    pendingColor: "",
+    found: "",
+    foundClass: "green",
+    foundColor: "",
+    missing: "",
+    missingClass: "red",
+    missingColor: "",
+    leftover: "",
+    leftoverClass: "yellow",
+    leftoverColor: "",
+    reported: "",
+    reportedClass: "gray-dark",
+    reportedColor: ""
+  },
   loading: true,
   inventoryCar: null,
   source: null,
@@ -67,6 +85,7 @@ export function inventoriesReducer(state = initialState, action: InventoryReduxA
       return {
         ...state,
         inventories: action.payload.inventories,
+        inventorySettings: action.payload.inventorySettings,
         pagination: {
           ...state.pagination,
           pages: action.payload.pages,
@@ -113,6 +132,7 @@ export function inventoriesReducer(state = initialState, action: InventoryReduxA
         filter,
         labels: action.payload.labels,
         summary: action.payload.summary,
+        inventorySettings: action.payload.inventorySettings,
         detailByVenue: action.payload.detailByVenue,
         detail: action.payload.detail,
         detailByBrand: action.payload.detailByBrand

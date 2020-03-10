@@ -28,6 +28,7 @@ const team_model_1 = require("../../app/models/team.model");
 const excel = require("exceljs");
 const venue_model_2 = require("../../app/models/venue.model");
 const tempfile = require("tempfile");
+const teamSetting_model_1 = require("../../app/models/teamSetting.model");
 class InventoryController {
     constructor() {
         this.index = this.index.bind(this);
@@ -422,8 +423,10 @@ class InventoryController {
                         finalizedAt: inventory.finalizedAt ? inventory.finalizedAt : null
                     });
                 }
+                const teamSettings = await teamSetting_model_1.default.findOne({ team });
                 res.json({
                     inventories: response,
+                    inventorySettings: teamSettings.inventory,
                     count: paginatedInventories.total,
                     pages: paginatedInventories.pages,
                     hasPrevious: options.page && options.page > 1 && paginatedInventories.pages && paginatedInventories.pages >= options.page,
@@ -641,6 +644,7 @@ class InventoryController {
                     path: 'venue',
                     select: ['name']
                 }]);
+            const teamSettings = await teamSetting_model_1.default.findOne({ team });
             if (!updatedUser) {
                 return res.status(404).json({
                     message: 'No se ha encontrado el inventario solicitado.',
@@ -682,17 +686,29 @@ class InventoryController {
                         // if car in inventory
                         if (inventoryCar) {
                             inventoryCar.venueFound = venueId;
-                            inventoryCar.status = inventoryCar_model_1.ChoicesStatusCarInventory.found;
+                            if (teamSettings.inventory.leftoverDifferentVenue && inventoryCar.venue !== venueId) {
+                                inventoryCar.status = inventoryCar_model_1.ChoicesStatusCarInventory.leftover;
+                                server_1.io.to(`inventory-detail-${inventory._id}`).emit('REFRESH', {
+                                    title: 'Vehículo encontrado',
+                                    text: `${req.user.firstName} ${req.user.lastName} encontró ${car.brand} (${car.denomination}) en ${updatedUser.venue.name}.`,
+                                    status: inventoryCar_model_1.ChoicesStatusCarInventory.leftover,
+                                    venue: venueId,
+                                    update: true
+                                });
+                            }
+                            else {
+                                inventoryCar.status = inventoryCar_model_1.ChoicesStatusCarInventory.found;
+                                server_1.io.to(`inventory-detail-${inventory._id}`).emit('REFRESH', {
+                                    title: 'Vehículo encontrado',
+                                    text: `${req.user.firstName} ${req.user.lastName} encontró ${car.brand} (${car.denomination}) en ${updatedUser.venue.name}.`,
+                                    status: inventoryCar_model_1.ChoicesStatusCarInventory.found,
+                                    venue: venueId,
+                                    update: true
+                                });
+                            }
                             inventoryCar.images = images ? images.map((image) => (new bson_1.ObjectID(image))) : [];
                             inventoryCar.inventoriedBy = req.user._id;
                             await inventoryCar.save();
-                            server_1.io.to(`inventory-detail-${inventory._id}`).emit('REFRESH', {
-                                title: 'Vehículo encontrado',
-                                text: `${req.user.firstName} ${req.user.lastName} encontró ${car.brand} (${car.denomination}) en ${updatedUser.venue.name}.`,
-                                status: inventoryCar_model_1.ChoicesStatusCarInventory.found,
-                                venue: venueId,
-                                update: true
-                            });
                             server_1.io.to(`inventory-list-${team._id}`).emit('REFRESH', {
                                 update: true
                             });
@@ -1648,19 +1664,22 @@ class InventoryController {
                             }
                         }
                     }]).lean();
+                const teamSettings = await teamSetting_model_1.default.findOne({ team });
+                const labels = await inventoryLabel_model_1.default.find({
+                    team,
+                    active: true
+                }, {
+                    name: true,
+                    color: true,
+                    affected: true,
+                    sendTo: true,
+                    isExhibition: true,
+                    requireCustomText: true
+                });
                 res.json({
                     summary: response,
-                    labels: await inventoryLabel_model_1.default.find({
-                        team,
-                        active: true
-                    }, {
-                        name: true,
-                        color: true,
-                        affected: true,
-                        sendTo: true,
-                        isExhibition: true,
-                        requireCustomText: true
-                    }),
+                    inventorySettings: teamSettings.inventory,
+                    labels,
                     detailByVenue,
                     detailByBrand,
                     detail: detailInventory,

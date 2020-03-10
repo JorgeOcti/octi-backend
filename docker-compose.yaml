@@ -39,6 +39,7 @@ services:
     image: andes:latest
     restart: unless-stopped
     command: ['nodemon', 'dist/server.js', ' --max-old-space-size=4096']
+    # command: ['nodemon', '--inspect=0.0.0.0:9229', 'dist/server.js', ' --max-old-space-size=4096']
     env_file:
       - .env
     environment:
@@ -50,6 +51,7 @@ services:
       MAPBOX: pk.eyJ1IjoicmliYXJyYWNsIiwiYSI6ImNqems3dW85bTAwZmUzbnF0a2xubnl5ejUifQ.tfPmGSbHYdh2nMA6Fmxcxw
     ports:
       - 3030:3030
+      - 9229:9229
       - 3070:3070
     volumes:
       - ./dist:/srv/dist

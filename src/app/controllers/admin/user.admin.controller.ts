@@ -15,8 +15,10 @@ import User, {
 } from '../../models/user.model';
 import Venue from "../../models/venue.model";
 import {Alignment} from "exceljs";
+import TeamSetting from "../../models/teamSetting.model";
 
 class AdminUsersController {
+  private teamSetting: any;
 
   constructor() {
     this.index = this.index.bind(this);
@@ -26,6 +28,7 @@ class AdminUsersController {
     this.apiDeleteUser = this.apiDeleteUser.bind(this);
     this.exportXLS = this.exportXLS.bind(this);
     this.apiChangePasswordUser = this.apiChangePasswordUser.bind(this);
+    this.teamSetting = TeamSetting
   }
 
   public async index(req: IRequest, res: Response) {
@@ -416,9 +419,7 @@ class AdminUsersController {
           venue,
           venuesAccess
         };
-        if (req.user.isAdmin) {
-          console.log('----------------------------------------');
-          console.log(isAdmin);
+        if (req.user.isAdmin && [true, false].includes(isAdmin)) {
           updateItems.userPermissions = userPermissions && userPermissions.length ? userPermissions.map((userPermission: IPermission) => userPermission._id) : [];
           updateItems.isAdmin = isAdmin;
         }
