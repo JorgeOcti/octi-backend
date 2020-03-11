@@ -6,6 +6,11 @@
     "type": "git",
     "url": "git://github.com/almasaeed2010/AdminLTE.git"
   },
+  "scripts": {
+    "start": "grunt",
+    "less": "grunt less",
+    "production": "grunt less:production"
+  },
   "license": "MIT",
   "devDependencies": {
     "R2": "^1.4.3",

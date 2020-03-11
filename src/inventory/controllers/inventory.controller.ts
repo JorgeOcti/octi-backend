@@ -37,6 +37,7 @@ import * as excel from "exceljs";
 import Venue from "../../app/models/venue.model";
 import * as tempfile from "tempfile";
 import {Alignment} from "exceljs";
+import TeamSetting from "../../app/models/teamSetting.model";
 
 class InventoryController {
 
@@ -441,8 +442,10 @@ class InventoryController {
              finalizedAt: inventory.finalizedAt ? inventory.finalizedAt : null
            });
          }
+         const teamSettings = await TeamSetting.findOne({team});
          res.json({
            inventories: response,
+           inventorySettings: teamSettings!.inventory,
            count: paginatedInventories.total,
            pages: paginatedInventories.pages,
            hasPrevious: options.page && options.page > 1 && paginatedInventories.pages && paginatedInventories.pages >= options.page,
@@ -657,6 +660,7 @@ class InventoryController {
         path: 'venue',
         select: ['name']
       }]);
+      const teamSettings = await TeamSetting.findOne({team});
       if (!updatedUser) {
         return res.status(404).json({
           message: 'No se ha encontrado el inventario solicitado.',
@@ -697,18 +701,29 @@ class InventoryController {
             // if car in inventory
             if (inventoryCar) {
               inventoryCar.venueFound = venueId;
-              inventoryCar.status = ChoicesStatusCarInventory.found;
+              if (teamSettings!.inventory.leftoverDifferentVenue && inventoryCar.venue.toString() !== venueId.toString() ) {
+                inventoryCar.status = ChoicesStatusCarInventory.leftover;
+                io.to(`inventory-detail-${inventory._id}`).emit('REFRESH', {
+                  title: 'Vehículo encontrado',
+                  text: `${req.user.firstName} ${req.user.lastName} encontró ${car.brand} (${car.denomination}) en ${updatedUser.venue.name}.`,
+                  status: ChoicesStatusCarInventory.leftover,
+                  venue: venueId,
+                  update: true
+                });
+              } else {
+                inventoryCar.status = ChoicesStatusCarInventory.found;
+                io.to(`inventory-detail-${inventory._id}`).emit('REFRESH', {
+                  title: 'Vehículo encontrado',
+                  text: `${req.user.firstName} ${req.user.lastName} encontró ${car.brand} (${car.denomination}) en ${updatedUser.venue.name}.`,
+                  status: ChoicesStatusCarInventory.found,
+                  venue: venueId,
+                  update: true
+                });
+              }
               inventoryCar.images = images ? images.map((image: string) => (new ObjectID(image))) : [];
               inventoryCar.inventoriedBy = req.user._id;
               await inventoryCar.save();
 
-              io.to(`inventory-detail-${inventory._id}`).emit('REFRESH', {
-                title: 'Vehículo encontrado',
-                text: `${req.user.firstName} ${req.user.lastName} encontró ${car.brand} (${car.denomination}) en ${updatedUser.venue.name}.`,
-                status: ChoicesStatusCarInventory.found,
-                venue: venueId,
-                update: true
-              });
               io.to(`inventory-list-${team._id}`).emit('REFRESH', {
                 update: true
               });
@@ -1659,20 +1674,22 @@ class InventoryController {
             }
           }
         }]).lean();
-
+        const teamSettings = await TeamSetting.findOne({team});
+        const labels = await InventoryLabel.find({
+          team,
+          active: true
+        }, {
+          name: true,
+          color: true,
+          affected: true,
+          sendTo: true,
+          isExhibition: true,
+          requireCustomText: true
+        });
         res.json({
           summary: response,
-          labels: await InventoryLabel.find({
-            team,
-            active: true
-          }, {
-            name: true,
-            color: true,
-            affected: true,
-            sendTo: true,
-            isExhibition: true,
-            requireCustomText: true
-          }),
+          inventorySettings: teamSettings!.inventory,
+          labels,
           detailByVenue,
           detailByBrand,
           detail: detailInventory,

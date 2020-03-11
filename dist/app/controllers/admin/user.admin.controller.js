@@ -6,6 +6,7 @@ const app_1 = require("../../../app");
 const server_1 = require("../../../server");
 const user_model_1 = require("../../models/user.model");
 const venue_model_1 = require("../../models/venue.model");
+const teamSetting_model_1 = require("../../models/teamSetting.model");
 class AdminUsersController {
     constructor() {
         this.index = this.index.bind(this);
@@ -15,6 +16,7 @@ class AdminUsersController {
         this.apiDeleteUser = this.apiDeleteUser.bind(this);
         this.exportXLS = this.exportXLS.bind(this);
         this.apiChangePasswordUser = this.apiChangePasswordUser.bind(this);
+        this.teamSetting = teamSetting_model_1.default;
     }
     async index(req, res) {
         /* istanbul ignore else  */
@@ -402,9 +404,7 @@ class AdminUsersController {
                     venue,
                     venuesAccess
                 };
-                if (req.user.isAdmin) {
-                    console.log('----------------------------------------');
-                    console.log(isAdmin);
+                if (req.user.isAdmin && [true, false].includes(isAdmin)) {
                     updateItems.userPermissions = userPermissions && userPermissions.length ? userPermissions.map((userPermission) => userPermission._id) : [];
                     updateItems.isAdmin = isAdmin;
                 }
