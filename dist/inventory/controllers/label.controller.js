@@ -2,6 +2,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 const server_1 = require("../../server");
 const inventoryLabel_model_1 = require("../models/inventoryLabel.model");
+const teamSetting_model_1 = require("../../app/models/teamSetting.model");
 class LabelController {
     constructor() {
         this.index = this.index.bind(this);
@@ -34,7 +35,9 @@ class LabelController {
                 });
             }
             else {
+                const teamSettings = await teamSetting_model_1.default.findOne({ team });
                 res.json({
+                    inventorySettings: teamSettings.inventory,
                     count: labels.total,
                     pages: labels.pages,
                     hasPrevious: options.page && options.page > 1 && labels.pages && labels.pages >= options.page,

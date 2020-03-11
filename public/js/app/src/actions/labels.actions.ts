@@ -4,11 +4,13 @@ import * as swal from 'sweetalert';
 import {
   IInventoryLabel
 } from '../../../../../src/interfaces/inventoryLabel.interface';
+import {IInventorySettting} from '../../../../../src/interfaces/teamSetting.interface';
 import ApiService from '../utils/axios';
 import {showModal, statusFooterButttonsModal} from '../utils/common';
 
 export interface ILabelsState {
   labels: IInventoryLabel[];
+  inventorySettings: IInventorySettting;
   loading: boolean;
   tempLabel: IInventoryLabel;
   source: CancelTokenSource | null;
@@ -143,16 +145,18 @@ interface ILoadLabels {
   type: '/LABELS/LOAD_LABELS';
   payload: {
     labels: any;
+    inventorySettings: IInventorySettting;
     count: number;
     pages: number
   };
 }
 
-export function loadLabelsAction(labels: any, count: number, pages: number): ILoadLabels {
+export function loadLabelsAction(labels: any, inventorySettings: IInventorySettting, count: number, pages: number): ILoadLabels {
   return {
     type: '/LABELS/LOAD_LABELS',
     payload: {
       labels,
+      inventorySettings,
       count,
       pages
     }
@@ -173,7 +177,7 @@ export function getLabelsAction(nextPage: number) {
     }
     api.getLabels(page)
       .then((response: AxiosResponse) => {
-        dispatch(loadLabelsAction(response.data.results, response.data.count, response.data.pages));
+        dispatch(loadLabelsAction(response.data.results, response.data.inventorySettings, response.data.count, response.data.pages));
         dispatch(isLoadingAction(false));
       })
       .catch((err: AxiosError) => {

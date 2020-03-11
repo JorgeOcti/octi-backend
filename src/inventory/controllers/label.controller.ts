@@ -3,6 +3,7 @@ import {PaginateOptions, PaginateResult} from 'mongoose';
 import {IRequest} from '../../interfaces/global.interface';
 import {io} from '../../server';
 import InventoryLabel, {IInventoryLabelModel} from '../models/inventoryLabel.model';
+import TeamSetting from "../../app/models/teamSetting.model";
 
 class LabelController {
   constructor() {
@@ -37,7 +38,9 @@ class LabelController {
           status: 400
         });
       } else {
+        const teamSettings = await TeamSetting.findOne({team});
         res.json({
+          inventorySettings: teamSettings!.inventory,
           count: labels.total,
           pages: labels.pages,
           hasPrevious: options.page && options.page > 1 && labels.pages && labels.pages >= options.page,

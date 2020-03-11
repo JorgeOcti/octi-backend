@@ -686,7 +686,7 @@ class InventoryController {
                         // if car in inventory
                         if (inventoryCar) {
                             inventoryCar.venueFound = venueId;
-                            if (teamSettings.inventory.leftoverDifferentVenue && inventoryCar.venue !== venueId) {
+                            if (teamSettings.inventory.leftoverDifferentVenue && inventoryCar.venue.toString() !== venueId.toString()) {
                                 inventoryCar.status = inventoryCar_model_1.ChoicesStatusCarInventory.leftover;
                                 server_1.io.to(`inventory-detail-${inventory._id}`).emit('REFRESH', {
                                     title: 'Vehículo encontrado',

@@ -53,7 +53,7 @@ import InventoryCarComments from './InventoryCarComments';
 
 declare let window: IWindow;
 
-type CarStatusType = Extract<keyof IInventorySettting, string>;
+export type CarStatusType = Extract<keyof IInventorySettting, string>;
 
 interface IPropsType extends RouteComponentProps<{ id: string, tab?: string }> {
   inventories: IInventoryState;
