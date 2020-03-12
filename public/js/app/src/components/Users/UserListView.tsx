@@ -478,7 +478,7 @@ class UserListView extends React.Component<IPropsType, IStateType> {
       _id: _id ? _id : this.props.users.tempUser._id,
       firstName: firstName ? firstName : this.props.users.tempUser.firstName,
       lastName: lastName ? lastName : this.props.users.tempUser.lastName,
-      isAdmin: isAdmin,
+      isAdmin: isAdmin === true,
       password: password ? password : '',
       email: email ? email : this.props.users.tempUser.email,
       userPermissions: userPermissions ? userPermissions : this.props.users.tempUser.userPermissions,
