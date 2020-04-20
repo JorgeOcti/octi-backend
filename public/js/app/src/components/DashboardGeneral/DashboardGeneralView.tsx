@@ -86,7 +86,7 @@ class DashboardGeneralView extends React.Component<IPropsType, IStateType> {
   }
 
   public render(): React.ReactElement<IPropsType> {
-    const {loading, participantsPerDate, carsPerDate, totalCars} = this.props.dashboard;
+    const {loading, participantsReceivedPerDate, participantsSentPerDate, carsPerDate, totalCars} = this.props.dashboard;
     return (
       <AppContainer title="" cMenu="1" cSubMenu="1.1">
         <section className="content">
@@ -97,7 +97,7 @@ class DashboardGeneralView extends React.Component<IPropsType, IStateType> {
                 <div className="info-box-content">
                   <span className="info-box-text">Revisiones Hoy</span>
                   <span className="info-box-number">
-                    {participantsPerDate.length ? participantsPerDate[participantsPerDate.length - 1 ].total : 0}
+                    {(participantsReceivedPerDate.length ? participantsReceivedPerDate[participantsReceivedPerDate.length - 1 ].total : 0) +participantsSentPerDate.length ? participantsSentPerDate[participantsSentPerDate.length - 1 ].total : 0 }
                   </span>
                 </div>
               </div>
@@ -180,15 +180,22 @@ class DashboardGeneralView extends React.Component<IPropsType, IStateType> {
   }
 
   private updateParticipantsChart() {
-    const {participantsPerDate, carsPerDate} = this.props.dashboard;
+    const {participantsReceivedPerDate, participantsSentPerDate, carsPerDate} = this.props.dashboard;
     const categories: any[] = [];
-    const totals: any[] = [];
+    const totalsReceibed: any[] = [];
+    const totalsSent: any[] = [];
     const totalsCars: any[] = [];
 
-    if (participantsPerDate.length) {
-      participantsPerDate.forEach((day) => {
+    if (participantsReceivedPerDate.length) {
+      participantsReceivedPerDate.forEach((day) => {
         categories.push(day._id);
-        totals.push(day.total);
+        totalsReceibed.push(day.total);
+      });
+    }
+    if (participantsSentPerDate.length) {
+      participantsSentPerDate.forEach((day) => {
+        // categories.push(day._id);
+        totalsSent.push(day.total);
       });
     }
     if (carsPerDate.length) {
@@ -211,7 +218,7 @@ class DashboardGeneralView extends React.Component<IPropsType, IStateType> {
       legend: {
         x: 'center',
         y: 'bottom',
-        data: ['Revisiones', 'Cargados']
+        data: ['Recepciones', 'Envíos', 'Cargados']
       },
       xAxis: {
         type: 'category',
@@ -260,10 +267,16 @@ class DashboardGeneralView extends React.Component<IPropsType, IStateType> {
         // borderColor: '#FF0000'
       },
       series: [{
-        data: totals,
-        name: 'Revisiones',
+        data: totalsReceibed,
+        name: 'Recepciones',
         type: 'line',
-        color: '#76b7f9',
+        color: '#337AB7',
+        smooth: true
+      },{
+        data: totalsSent,
+        name: 'Envíos',
+        type: 'line',
+        color: '#2DB06B',
         smooth: true
       }, {
         data: totalsCars,
@@ -429,19 +442,19 @@ class DashboardGeneralView extends React.Component<IPropsType, IStateType> {
   }
 
   private resizeCharts() {
-    if (this.participantsPerDayChart && this.participantsPerDayChart !== undefined) {
+    if (this.participantsPerDayChart) {
       this.participantsPerDayChart.resize();
       setTimeout(() => {
         this.participantsPerDayChart.resize();
       }, 400);
     }
-    if (this.carsByVenueChart && this.carsByVenueChart !== undefined) {
+    if (this.carsByVenueChart) {
       this.carsByVenueChart.resize();
       setTimeout(() => {
         this.carsByVenueChart.resize();
       }, 400);
     }
-    if (this.participantsRangeChart && this.participantsRangeChart !== undefined) {
+    if (this.participantsRangeChart) {
       this.participantsRangeChart.resize();
       setTimeout(() => {
         this.participantsRangeChart.resize();

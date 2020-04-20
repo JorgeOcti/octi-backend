@@ -365,14 +365,89 @@ class CarController {
     async apiParticipantsPerDate(req, res) {
         const { team } = req.user;
         try {
-            const participantPerDay = await participant_model_1.default
+            const participantReceivedPerDay = await participant_model_1.default
                 .aggregate([{
                     $match: {
                         venue: {
                             $in: req.user.venuesPermissions()
                         },
+                        reception: true,
                         createdAt: {
-                            $gte: moment().subtract(14, 'd').toDate()
+                            $gte: moment().subtract(30, 'd').toDate()
+                        }
+                    }
+                }, {
+                    $project: {
+                        _id: 1, user: 1, form: 1, car: 1, createdAt: {
+                            $subtract: ['$createdAt', 4 * 60 * 60 * 1000]
+                        }
+                    }
+                }, {
+                    $group: {
+                        // _id: {
+                        //   $dateToString: {
+                        //     format: '%Y-%m-%d',
+                        //     date: '$createdAt'
+                        //   },
+                        // },
+                        _id: {
+                            category: {
+                                $dateToString: {
+                                    format: '%Y-%m-%d',
+                                    date: '$createdAt'
+                                    // timezone: 'America/Santiago'
+                                }
+                            },
+                            user: '$user'
+                        },
+                        total: {
+                            $sum: 1
+                        }
+                    }
+                }, {
+                    $lookup: {
+                        from: 'users',
+                        localField: '_id.user',
+                        foreignField: '_id',
+                        as: 'userInfo'
+                    }
+                }, {
+                    $unwind: '$userInfo'
+                }, {
+                    $project: {
+                        '_id.category': 1,
+                        '_id.user': 1,
+                        'total': 1,
+                        'userInfo._id': 1,
+                        'userInfo.firstName': 1,
+                        'userInfo.lastName': 1
+                    }
+                }, {
+                    $group: {
+                        _id: '$_id.category',
+                        users: {
+                            $push: {
+                                user: '$_id.user',
+                                userInfo: '$userInfo',
+                                total: '$total'
+                            }
+                        },
+                        total: { $sum: '$total' }
+                    }
+                }, {
+                    $sort: {
+                        _id: 1
+                    }
+                }]);
+            const participantSentPerDay = await participant_model_1.default
+                .aggregate([{
+                    $match: {
+                        venue: {
+                            $in: req.user.venuesPermissions()
+                        },
+                        shipping: true,
+                        createdAt: {
+                            $gte: moment().subtract(30, 'd').toDate()
                         }
                     }
                 }, {
@@ -444,7 +519,7 @@ class CarController {
                         team,
                         destination: { $ne: '' },
                         createdAt: {
-                            $gte: moment().subtract(2, 'd').toDate()
+                            $gte: moment().subtract(30, 'd').toDate()
                         }
                     }
                 }, {
@@ -468,21 +543,33 @@ class CarController {
                     }
                 }]);
             // normalize show last 14 days
-            const participants = [];
+            const participantsReceived = [];
+            const participantsSent = [];
             const cars = [];
-            for (let i = 13; i >= 0; i--) {
+            for (let i = 29; i >= 0; i--) {
                 const key = moment().subtract(i, 'd').format('YYYY-MM-DD');
-                const existInParticipantPerDay = participantPerDay.find((day) => day._id.toString() === key);
+                const existInParticipantReceivedPerDay = participantReceivedPerDay.find((day) => day._id.toString() === key);
+                const existInParticipantSentPerDay = participantSentPerDay.find((day) => day._id.toString() === key);
                 const existInImportCarsPerDay = importCarsPerDay.find((day) => day._id.toString() === key);
-                if (!existInParticipantPerDay) {
-                    participants.push({
+                if (!existInParticipantReceivedPerDay) {
+                    participantsReceived.push({
                         _id: key,
                         users: [],
                         total: 0
                     });
                 }
                 else {
-                    participants.push(existInParticipantPerDay);
+                    participantsReceived.push(existInParticipantReceivedPerDay);
+                }
+                if (!existInParticipantSentPerDay) {
+                    participantsSent.push({
+                        _id: key,
+                        users: [],
+                        total: 0
+                    });
+                }
+                else {
+                    participantsSent.push(existInParticipantSentPerDay);
                 }
                 if (!existInImportCarsPerDay) {
                     cars.push({
@@ -549,10 +636,14 @@ class CarController {
             for (let i = 0; i < 100; i += proyectionInterval) {
                 const max = i + proyectionInterval;
                 if (i === 0) {
-                    proyection.push({ $cond: [{ $and: [{ $gte: ['$qualification', i] }, { $lte: ['$qualification', max] }] }, `${i}-${max}`, ''] });
+                    proyection.push({
+                        $cond: [{ $and: [{ $gte: ['$qualification', i] }, { $lte: ['$qualification', max] }] }, `${i}-${max}`, '']
+                    });
                 }
                 else {
-                    proyection.push({ $cond: [{ $and: [{ $gt: ['$qualification', i] }, { $lte: ['$qualification', max] }] }, `${i}-${max}`, ''] });
+                    proyection.push({
+                        $cond: [{ $and: [{ $gt: ['$qualification', i] }, { $lte: ['$qualification', max] }] }, `${i}-${max}`, '']
+                    });
                 }
             }
             // get data
@@ -595,7 +686,8 @@ class CarController {
                 }]);
             res.json({
                 carsByVenue: [],
-                participants,
+                participantsReceived,
+                participantsSent,
                 participantPerRange,
                 cars,
                 totalCars: await car_model_1.default.count({ team }),

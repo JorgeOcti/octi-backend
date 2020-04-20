@@ -17,7 +17,8 @@ export interface IDashboardState {
   participants: any[];
   car: ICar | null;
   carEvents: any;
-  participantsPerDate: any[];
+  participantsReceivedPerDate: any[];
+  participantsSentPerDate: any[];
   carsPerDate: any[];
   carsByVenue: any[];
   searchText: string;
@@ -579,7 +580,8 @@ export function getParticipant(id: string) {
 interface ILoadParticipantsPerDate {
   type: '/DASHBOARD/LOAD_PARTICIPANTS_PER_DATE';
   payload: {
-    participantsPerDate: any;
+    participantsReceivedPerDate: any;
+    participantsSentPerDate: any;
     carsPerDate: any;
     carsByVenue: any;
     totalCars: number;
@@ -587,11 +589,12 @@ interface ILoadParticipantsPerDate {
   };
 }
 
-export function loadParticipantsPerDateAction(participantsPerDate: any, carsPerDate: any, totalCars: number, carsByVenue: any, participantPerRange: any): ILoadParticipantsPerDate {
+export function loadParticipantsPerDateAction(participantsReceivedPerDate: any, participantsSentPerDate:any, carsPerDate: any, totalCars: number, carsByVenue: any, participantPerRange: any): ILoadParticipantsPerDate {
   return {
     type: '/DASHBOARD/LOAD_PARTICIPANTS_PER_DATE',
     payload: {
-      participantsPerDate,
+      participantsReceivedPerDate,
+      participantsSentPerDate,
       carsPerDate,
       carsByVenue,
       totalCars,
@@ -607,7 +610,7 @@ export function getParticipantsPerDateAction() {
     dispatch(isLoadingAction(true));
     api.getParticipantsPerDate()
       .then((response: AxiosResponse) => {
-        dispatch(loadParticipantsPerDateAction(response.data.participants, response.data.cars, response.data.totalCars, response.data.carsByVenue, response.data.participantPerRange));
+        dispatch(loadParticipantsPerDateAction(response.data.participantsReceived, response.data.participantsSent, response.data.cars, response.data.totalCars, response.data.carsByVenue, response.data.participantPerRange));
         dispatch(isLoadingAction(false));
       })
       .catch((err: AxiosError) => {
