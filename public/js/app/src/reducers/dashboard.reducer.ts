@@ -4,6 +4,7 @@ const initialState: IDashboardState = {
   loading: true,
   source: null,
   participants: [],
+  companies:[],
   car: null,
   carEvents: {} ,
   participantsReceivedPerDate: [],
@@ -59,6 +60,7 @@ export function dashboardReducer(state = initialState, action: DashboardReduxAct
     case '/DASHBOARD/LOAD_PARTICIPANTS_PER_DATE':
       return {
         ...state,
+        companies: action.payload.companies,
         participantsReceivedPerDate: action.payload.participantsReceivedPerDate,
         participantsSentPerDate: action.payload.participantsSentPerDate,
         carsPerDate: action.payload.carsPerDate,

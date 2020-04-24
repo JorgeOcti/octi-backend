@@ -90,9 +90,9 @@ export default class ApiService {
     );
   }
 
-  public getParticipantsPerDate() {
+  public getParticipantsPerDate(companies?:string) {
     return this.instance.get(
-      `/api/participants-per-date/`
+      `/api/participants-per-date/${companies?`?companies=${companies}`:""}`
     );
   }
   public getParticipant(id: string) {

@@ -361,11 +361,23 @@ class CarController {
   public async apiParticipantsPerDate(req: IRequest, res: Response) {
     const {team} = req.user;
     try {
+      const {companies} = req.query;
+      const venuesPermissions = req.user.venuesPermissions();
+      const query: any = {
+        _id: {$in: venuesPermissions}
+      };
+      if(companies){
+        query["company"] = {
+          $in: [companies]
+        }
+      }
+      const venuesByCompanies = await Venue.find(query);
+      const venuesPermissionsFilterByCompanies = venuesByCompanies.map(venue => venue._id);
       const participantReceivedPerDay = await ParticipantModel
         .aggregate([{
           $match: {
             venue: {
-              $in: req.user.venuesPermissions()
+              $in: venuesPermissionsFilterByCompanies
             },
             reception: true,
             createdAt: {
@@ -439,7 +451,7 @@ class CarController {
         .aggregate([{
           $match: {
             venue: {
-              $in: req.user.venuesPermissions()
+              $in: venuesPermissionsFilterByCompanies
             },
             shipping: true,
             createdAt: {
@@ -645,7 +657,7 @@ class CarController {
         .aggregate([{
           $match: {
             venue: {
-              $in: req.user.venuesPermissions()
+              $in: venuesPermissions
             },
             createdAt: {
               $gte: moment().subtract(14, 'd').toDate()
@@ -678,9 +690,22 @@ class CarController {
             }
           }
         }]);
-
+      const venues = await Venue.find({_id: {$in: venuesPermissions}}).populate([{
+        path: 'company',
+        select: ['id', 'name']
+      }]);
+      const companiesData = [];
+      const companiesIDS: string[] = [];
+      for (const venue of venues) {
+        const companieID = venue.company.id.toString();
+        if (!companiesIDS.includes(companieID)) {
+          companiesData.push(venue.company);
+          companiesIDS.push(companieID);
+        }
+      }
       res.json({
         carsByVenue: [],
+        companies: companiesData,
         participantsReceived,
         participantsSent,
         participantPerRange,

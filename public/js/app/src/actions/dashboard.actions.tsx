@@ -15,6 +15,7 @@ export interface IDashboardState {
   loading: boolean;
   source: CancelTokenSource | null;
   participants: any[];
+  companies: any[];
   car: ICar | null;
   carEvents: any;
   participantsReceivedPerDate: any[];
@@ -580,6 +581,7 @@ export function getParticipant(id: string) {
 interface ILoadParticipantsPerDate {
   type: '/DASHBOARD/LOAD_PARTICIPANTS_PER_DATE';
   payload: {
+    companies: any[];
     participantsReceivedPerDate: any;
     participantsSentPerDate: any;
     carsPerDate: any;
@@ -589,10 +591,11 @@ interface ILoadParticipantsPerDate {
   };
 }
 
-export function loadParticipantsPerDateAction(participantsReceivedPerDate: any, participantsSentPerDate:any, carsPerDate: any, totalCars: number, carsByVenue: any, participantPerRange: any): ILoadParticipantsPerDate {
+export function loadParticipantsPerDateAction(companies: any[], participantsReceivedPerDate: any, participantsSentPerDate:any, carsPerDate: any, totalCars: number, carsByVenue: any, participantPerRange: any): ILoadParticipantsPerDate {
   return {
     type: '/DASHBOARD/LOAD_PARTICIPANTS_PER_DATE',
     payload: {
+      companies,
       participantsReceivedPerDate,
       participantsSentPerDate,
       carsPerDate,
@@ -603,14 +606,14 @@ export function loadParticipantsPerDateAction(participantsReceivedPerDate: any, 
   };
 }
 
-export function getParticipantsPerDateAction() {
+export function getParticipantsPerDateAction(companies?:string) {
   return (dispatch: Dispatch<DashboardReduxAction>) => {
     const api: ApiService = new ApiService();
     dispatch(cancelRequestAction(api.getSource()));
     dispatch(isLoadingAction(true));
-    api.getParticipantsPerDate()
+    api.getParticipantsPerDate(companies)
       .then((response: AxiosResponse) => {
-        dispatch(loadParticipantsPerDateAction(response.data.participantsReceived, response.data.participantsSent, response.data.cars, response.data.totalCars, response.data.carsByVenue, response.data.participantPerRange));
+        dispatch(loadParticipantsPerDateAction(response.data.companies, response.data.participantsReceived, response.data.participantsSent, response.data.cars, response.data.totalCars, response.data.carsByVenue, response.data.participantPerRange));
         dispatch(isLoadingAction(false));
       })
       .catch((err: AxiosError) => {

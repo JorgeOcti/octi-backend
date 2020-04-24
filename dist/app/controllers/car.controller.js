@@ -365,11 +365,23 @@ class CarController {
     async apiParticipantsPerDate(req, res) {
         const { team } = req.user;
         try {
+            const { companies } = req.query;
+            const venuesPermissions = req.user.venuesPermissions();
+            const query = {
+                _id: { $in: venuesPermissions }
+            };
+            if (companies) {
+                query["company"] = {
+                    $in: [companies]
+                };
+            }
+            const venuesByCompanies = await venue_model_1.default.find(query);
+            const venuesPermissionsFilterByCompanies = venuesByCompanies.map(venue => venue._id);
             const participantReceivedPerDay = await participant_model_1.default
                 .aggregate([{
                     $match: {
                         venue: {
-                            $in: req.user.venuesPermissions()
+                            $in: venuesPermissionsFilterByCompanies
                         },
                         reception: true,
                         createdAt: {
@@ -443,7 +455,7 @@ class CarController {
                 .aggregate([{
                     $match: {
                         venue: {
-                            $in: req.user.venuesPermissions()
+                            $in: venuesPermissionsFilterByCompanies
                         },
                         shipping: true,
                         createdAt: {
@@ -651,7 +663,7 @@ class CarController {
                 .aggregate([{
                     $match: {
                         venue: {
-                            $in: req.user.venuesPermissions()
+                            $in: venuesPermissions
                         },
                         createdAt: {
                             $gte: moment().subtract(14, 'd').toDate()
@@ -684,8 +696,22 @@ class CarController {
                         }
                     }
                 }]);
+            const venues = await venue_model_1.default.find({ _id: { $in: venuesPermissions } }).populate([{
+                    path: 'company',
+                    select: ['id', 'name']
+                }]);
+            const companiesData = [];
+            const companiesIDS = [];
+            for (const venue of venues) {
+                const companieID = venue.company.id.toString();
+                if (!companiesIDS.includes(companieID)) {
+                    companiesData.push(venue.company);
+                    companiesIDS.push(companieID);
+                }
+            }
             res.json({
                 carsByVenue: [],
+                companies: companiesData,
                 participantsReceived,
                 participantsSent,
                 participantPerRange,
