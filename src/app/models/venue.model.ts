@@ -43,6 +43,10 @@ const venueSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Region'
   },
+  shippingMaxDays: {
+    type: Number,
+    default: 5
+  },
   type: {
     type: String,
     enum: choicesStatusCarInventory,
