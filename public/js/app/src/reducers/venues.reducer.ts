@@ -17,6 +17,7 @@ const initialState: IVenuesState = {
     abbreviation: '',
     type: 'receiver',
     sendTo: [],
+    shippingMaxDays: 5,
     receiveFrom: [],
     shippingCarriers: [],
     receptionCarriers: []
@@ -78,6 +79,7 @@ export function venuesReducer(state = initialState, action: VenueReduxAction): I
             venue.company = action.payload.venue.company;
             venue.type = action.payload.venue.type;
             venue.sendTo = action.payload.venue.sendTo;
+            venue.shippingMaxDays = action.payload.venue.shippingMaxDays;
             venue.receiveFrom = action.payload.venue.receiveFrom;
           }
           return venue;

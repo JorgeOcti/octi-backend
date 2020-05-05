@@ -45,6 +45,7 @@ class VenueFormView extends React.Component<IPropsType, IStateType> {
   }
 
   render(): React.ReactElement<IPropsType> | null {
+
     if (this.props.venues && this.props.changeTempVenueAction) {
       const {changeTempVenueAction, update} = this.props;
       const {tempVenue, companies, carriers, regions} = this.props.venues;
@@ -200,6 +201,25 @@ class VenueFormView extends React.Component<IPropsType, IStateType> {
                   text: venue.name
                 }))}
                 onClick={(value: string) => this.handleSelectVenues('sendTo', false, value)}
+              />
+            </div>
+          </div>
+          <div className="col-md-12">
+            <div className="form-group">
+              <label>Tiempo de traslado (días)</label>
+              <input
+                type="number"
+                name="ShippingDays"
+                step="any"
+                className="form-control"
+                min={1}
+                value={tempVenue.shippingMaxDays || ''}
+                onChange={
+                  (e: React.ChangeEvent<HTMLInputElement>) => changeTempVenueAction({
+                    ...tempVenue,
+                    shippingMaxDays: parseInt(e.target.value)
+                  }, true)
+                }
               />
             </div>
           </div>

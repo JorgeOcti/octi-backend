@@ -389,6 +389,7 @@ class VenuesListView extends React.Component<IPropsType, IStateType> {
       sendTo: [],
       receiveFrom: [],
       shippingCarriers: [],
+      shippingMaxDays: 5,
       receptionCarriers: []
     });
     this.props.loadDataAction(
@@ -423,6 +424,7 @@ class VenuesListView extends React.Component<IPropsType, IStateType> {
       region: venue.region,
       type: venue.type ? venue.type : 'receiver',
       sendTo: venue.sendTo ? venue.sendTo : [],
+      shippingMaxDays : venue.shippingMaxDays,
       receiveFrom: venue.receiveFrom ? venue.receiveFrom : [],
       shippingCarriers: venue.shippingCarriers ? venue.shippingCarriers : [],
       receptionCarriers: venue.receptionCarriers ? venue.receptionCarriers : []

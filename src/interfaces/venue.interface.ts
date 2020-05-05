@@ -14,6 +14,7 @@ export interface IBaseVenue {
   company?: ICompany | any;
   region?: IRegion[] | any;
   sendTo: IVenue[];
+  shippingMaxDays: number;
   receiveFrom: IVenue[];
   receptionCarriers: ICarrier[];
   shippingCarriers: ICarrier[];
