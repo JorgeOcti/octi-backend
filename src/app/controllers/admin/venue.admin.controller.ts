@@ -215,8 +215,8 @@ class AdminVenueController {
       });
     }
     const {
-      name, lat, lng, type, company, sendTo, receiveFrom,
-      receptionCarriers, shippingCarriers, region
+      name, abbreviation, lat, lng, type, company, sendTo, receiveFrom,
+      shippingMaxDays, receptionCarriers, shippingCarriers, region
     } = req.body;
     const {team} = req.user;
     if (!name || !name.trim().length) {
@@ -238,11 +238,13 @@ class AdminVenueController {
       } else {
         const newVenue = await new Venue({
           name,
+          abbreviation,
           lat,
           lng,
           team,
           company,
           region,
+          shippingMaxDays,
           sendTo,
           receiveFrom,
           receptionCarriers,
@@ -300,8 +302,8 @@ class AdminVenueController {
     const {id} = req.params;
     const {team} = req.user;
     const {
-      name, lat, lng, type, company, sendTo, receiveFrom,
-      receptionCarriers, shippingCarriers, region
+      name, abbreviation, lat, lng, type, company, sendTo, receiveFrom,
+      receptionCarriers, shippingCarriers, region, shippingMaxDays
     } = req.body;
     if (!name || !name.length) {
       res.status(400).json({
@@ -315,10 +317,12 @@ class AdminVenueController {
         team
       }, {
         name,
+        abbreviation,
         lat,
         lng,
         company,
         region,
+        shippingMaxDays,
         sendTo,
         receiveFrom,
         shippingCarriers,
