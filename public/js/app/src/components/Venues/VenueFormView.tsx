@@ -45,7 +45,6 @@ class VenueFormView extends React.Component<IPropsType, IStateType> {
   }
 
   render(): React.ReactElement<IPropsType> | null {
-
     if (this.props.venues && this.props.changeTempVenueAction) {
       const {changeTempVenueAction, update} = this.props;
       const {tempVenue, companies, carriers, regions} = this.props.venues;

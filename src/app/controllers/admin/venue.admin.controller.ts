@@ -137,10 +137,12 @@ class AdminVenueController {
       select: {
         _id: true,
         name: true,
+        abbreviation: true,
         lat: true,
         lng: true,
         receptionCarriers: true,
         shippingCarriers: true,
+        shippingMaxDays: true,
         sendTo: true,
         receiveFrom: true,
         type: true,
