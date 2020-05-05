@@ -384,6 +384,7 @@ class VenuesListView extends React.Component<IPropsType, IStateType> {
       lat: 0,
       lng: 0,
       name: '',
+      abbreviation: '',
       type: 'receiver',
       sendTo: [],
       receiveFrom: [],
@@ -415,6 +416,7 @@ class VenuesListView extends React.Component<IPropsType, IStateType> {
     this.props.changeTempVenueAction({
       _id: venue._id,
       name: venue.name,
+      abbreviation: venue.abbreviation,
       lat: venue.lat,
       lng: venue.lng,
       company: venue.company,
@@ -439,6 +441,8 @@ class VenuesListView extends React.Component<IPropsType, IStateType> {
     const {tempVenue} = this.props.venues;
     if (!tempVenue.name || !tempVenue.name.trim()) {
       swal('Editar sucursal', 'El nombres es requerido', 'error');
+    } else if (!tempVenue.abbreviation || !tempVenue.abbreviation.trim()) {
+      swal('Editar sucursal', 'Una abreviación/sigla del nombre es requerida', 'error');
     } else if (!tempVenue.company || !tempVenue.company._id) {
       swal('Editar sucursal', 'La empresa es requerida', 'error');
     } else {

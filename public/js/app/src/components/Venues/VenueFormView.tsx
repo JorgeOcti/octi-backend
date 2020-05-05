@@ -73,6 +73,25 @@ class VenueFormView extends React.Component<IPropsType, IStateType> {
               />
             </div>
           </div>
+          <div className="col-md-12">
+            <div className="form-group">
+              <label>Abreviación</label>
+              <input
+                type="text"
+                name="abbreviation"
+                step="any"
+                className="form-control"
+                maxLength={10}
+                value={tempVenue.abbreviation || ''}
+                onChange={
+                  (e: React.ChangeEvent<HTMLInputElement>) => changeTempVenueAction({
+                    ...tempVenue,
+                    abbreviation: e.target.value.toUpperCase()
+                  }, true)
+                }
+              />
+            </div>
+          </div>
           <div className="col-md-6">
             <div className="form-group">
               <label>Latitud</label>
