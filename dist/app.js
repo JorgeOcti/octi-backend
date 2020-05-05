@@ -26,6 +26,7 @@ const router_3 = require("./inventory/router");
 const inventory_task_1 = require("./inventory/taks/inventory.task");
 const middlewares_1 = require("./middlewares/middlewares");
 const redis_service_1 = require("./services/redis.service");
+const router_4 = require("./planning/router");
 // Create Express server
 const app = express();
 // Configure sentry
@@ -221,6 +222,7 @@ app.use(middlewares_1.default.context);
 // Routes
 app.use('/', router_1.appRouter);
 app.use('/', router_2.default);
+app.use('/', router_4.planningRouter);
 app.use('/', router_3.inventoryRouter);
 app.use('/api/v1', router_1.jwtRouter);
 /* queues */

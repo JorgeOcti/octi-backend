@@ -11,6 +11,8 @@ const initialState: IDashboardState = {
   participantsSentPerDate: [],
   participantPerRange: [],
   carsPerDate: [],
+  planningPerDate: [],
+  planningProcessPerDate: [],
   searchText: '',
   searchFrom: '',
   searchTo: '',
@@ -64,6 +66,8 @@ export function dashboardReducer(state = initialState, action: DashboardReduxAct
         participantsReceivedPerDate: action.payload.participantsReceivedPerDate,
         participantsSentPerDate: action.payload.participantsSentPerDate,
         carsPerDate: action.payload.carsPerDate,
+        planningPerDate: action.payload.planningPerDate,
+        planningProcessPerDate: action.payload.planningProcessPerDate,
         totalCars: action.payload.totalCars,
         carsByVenue: action.payload.carsByVenue,
         participantPerRange: action.payload.participantPerRange

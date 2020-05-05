@@ -100,6 +100,37 @@ if (inventoryItems.length) {
 }
 
 /* *****************
+* 3. Planning
+*****************/
+const planningItems = [];
+if (hasPermission(window.user, 'viewPlanning')) {
+  planningItems.push({
+    id: '3.1',
+    icon: 'fa-circle-o',
+    text: 'Detalle',
+    url: '/planning/'
+  })
+}
+if (hasPermission(window.user, 'viewPlanning')) {
+  planningItems.push({
+    id: '3.2',
+    icon: 'fa-circle-o',
+    text: 'Importar',
+    url: '/planning/import/'
+  })
+}
+
+if (planningItems.length) {
+  menus.push({
+    id: '3',
+    text: 'Planificación',
+    icon: 'fa-calendar-check-o',
+    url: '/planning/',
+    items: planningItems
+  });
+}
+
+/* *****************
 * 10. Settings
 *****************/
 const settingItems = [{
@@ -171,6 +202,26 @@ if (settingItems.length) {
     icon: 'fa-cog',
     url: '/settings/users/',
     items: settingItems
+  });
+}
+
+/* *****************
+* 3. Planning
+*****************/
+const accountItems = [{
+  id: '100.1',
+  icon: 'fa-circle-o',
+  text: 'Información',
+  url: '/my-account/'
+}];
+
+if (process.env.NODE_ENV === 'development' && accountItems.length) {
+  menus.push({
+    id: '100',
+    text: 'Mi Cuenta',
+    icon: 'fa-user',
+    url: '/my-account/',
+    items: planningItems
   });
 }
 

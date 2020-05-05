@@ -26,7 +26,9 @@ import VersionListView from './components/Versions/VersionListView';
 import {IWindow} from './interfaces/window';
 import configureStore, {history} from './store/configureStore';
 import {isIntenertExplorer} from './utils/common';
-import DashboardDercoView from "./components/DashboardGeneral/DashboardDercoView";
+import DashboardDercoView from './components/DashboardGeneral/DashboardDercoView';
+import PlanningListView from './components/Planning/PlanningListView';
+import PlanningImportView from "./components/Planning/PlanningImportView";
 
 
 declare let window: IWindow;
@@ -44,6 +46,8 @@ const App = () => (
             <Switch>
                 <Route exact path="/" component={ DashboardGeneralView }/>
                 <Route exact path="/cars/" component={ DashboardVinView }/>
+                <Route exact path="/planning/import/" component={ PlanningImportView }/>
+                <Route exact path="/planning/" component={ PlanningListView }/>
                 <Route exact path="/dashboard/damages/" component={ DashboardDamagesView }/>
                 <Route exact path="/dashboard/timing/" component={ DashboardTimingView }/>
                 <Route exact path="/dashboard/derco/" component={ DashboardDercoView }/>

@@ -24,6 +24,7 @@ import {inventoryRouter} from './inventory/router';
 import InventoryQueue from './inventory/taks/inventory.task';
 import Middlewares from './middlewares/middlewares';
 import redisClient, {createRedisClient} from './services/redis.service';
+import {planningRouter} from "./planning/router";
 
 // Create Express server
 const app = express();
@@ -171,7 +172,7 @@ passport.use(new LocalStrategy({ usernameField: 'username' }, (username, passwor
 
 passport.serializeUser((User as any).serializeUser());
 // passport.deserializeUser((User as any).deserializeUser());
-passport.deserializeUser(async (email, done) => {
+passport.deserializeUser(async (email: string, done) => {
   try {
     const user = await User.findOne({email}).populate([{
       path: 'userPermissions',
@@ -242,6 +243,7 @@ app.use(Middlewares.context);
 // Routes
 app.use('/', appRouter);
 app.use('/', formRouter);
+app.use('/', planningRouter);
 app.use('/', inventoryRouter);
 app.use('/api/v1', jwtRouter);
 

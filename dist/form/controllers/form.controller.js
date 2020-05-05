@@ -1491,7 +1491,6 @@ class FormController {
         try {
             const { team } = req.user;
             const { period } = req.query;
-            // TODO: how to setup this?
             const distributor = await venue_model_1.default.findOne({ team, type: 'distributor' });
             if (distributor) {
                 const receivers = await venue_model_1.default.find({ team, type: 'receiver' });

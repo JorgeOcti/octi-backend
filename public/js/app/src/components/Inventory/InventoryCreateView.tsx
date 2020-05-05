@@ -538,12 +538,12 @@ class InventoryCreateView extends React.Component<IPropsType, IStateType> {
     }
   }
 
-  private validateSize(size: number) {
+  private validateSize(size: number): boolean {
     const maxSize = Math.pow(1024, 2) * 10; // 10MB
     return size <= maxSize;
   }
 
-  private clearBackup() {
+  private clearBackup(): void {
     this.setState({
       backupFile: null,
       backupUri: ''

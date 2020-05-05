@@ -1566,7 +1566,6 @@ class FormController {
     try {
       const {team} = req.user;
       const {period} = req.query;
-      // TODO: how to setup this?
       const distributor = await Venue.findOne({team, type: 'distributor'});
       if (distributor) {
         const receivers = await Venue.find({team, type: 'receiver'});
@@ -1740,10 +1739,10 @@ class FormController {
 
           if (car.participants!.length > 0) {
 
-            let participants = car.participants!.sort((p0, p1) => p0.createdAt >= p1.createdAt ? 1 : 0);
+            let participants = car.participants!.sort((p0: any, p1: any) => p0.createdAt >= p1.createdAt ? 1 : 0);
 
-            let p0 = null;
-            let p1 = null;
+            let p0:any = null;
+            let p1:any = null;
 
             // only one form
             if (participants.length < 2) {
@@ -1763,44 +1762,44 @@ class FormController {
             let choice0Gas = null;
             let choice1Gas = null;
             if (p0) {
-              const answer0Gas = p0.sections.map((s) => s.answers).reduce((x, y) => [...x, ...y], []).find((a) => a._id.toString() == gasQuestion);
+              const answer0Gas = p0.sections.map((s: any) => s.answers).reduce((x: any[], y: any[]) => [...x, ...y], []).find((a: any) => a._id.toString() == gasQuestion);
               if (answer0Gas)
-                choice0Gas = answer0Gas.scale.choices.find((c) => c._id.toString() == answer0Gas.answer.toString())
+                choice0Gas = answer0Gas.scale.choices.find((c: any) => c._id.toString() == answer0Gas.answer.toString())
             }
 
             if (p1) {
-              const answer1Gas = p1.sections.map((s) => s.answers).reduce((x, y) => [...x, ...y], []).find((a) => a._id.toString() == gasQuestion);
+              const answer1Gas = p1.sections.map((s: any) => s.answers).reduce((x: any[], y: any[]) => [...x, ...y], []).find((a: any) => a._id.toString() == gasQuestion);
               if (answer1Gas)
-                choice1Gas = answer1Gas.scale.choices.find((c) => c._id.toString() == answer1Gas.answer.toString())
+                choice1Gas = answer1Gas.scale.choices.find((c: any) => c._id.toString() == answer1Gas.answer.toString())
             }
 
             let choice0Paint = null;
             let choice1Paint = null;
             if (p0) {
-              const answer0Paint = p0.sections.map((s) => s.answers).reduce((x, y) => [...x, ...y], []).find((a) => a._id.toString() == paintQuestion);
+              const answer0Paint = p0.sections.map((s: any) => s.answers).reduce((x: any[], y: any[]) => [...x, ...y], []).find((a: any) => a._id.toString() == paintQuestion);
               if (answer0Paint)
-                choice0Paint = answer0Paint.scale.choices.find((c) => c._id.toString() == answer0Paint.answer.toString())
+                choice0Paint = answer0Paint.scale.choices.find((c: any) => c._id.toString() == answer0Paint.answer.toString())
             }
 
             if (p1) {
-              const answer1Paint = p1.sections.map((s) => s.answers).reduce((x, y) => [...x, ...y], []).find((a) => a._id.toString() == paintQuestion);
+              const answer1Paint = p1.sections.map((s: any) => s.answers).reduce((x: any[], y: any[]) => [...x, ...y], []).find((a: any) => a._id.toString() == paintQuestion);
               if (answer1Paint)
-                choice1Paint = answer1Paint.scale.choices.find((c) => c._id.toString() == answer1Paint.answer.toString())
+                choice1Paint = answer1Paint.scale.choices.find((c: any) => c._id.toString() == answer1Paint.answer.toString())
             }
 
             // lata
             let choice0SheetMetal = null;
             let choice1SheetMetal = null;
             if (p0) {
-              const answer0SheetMetal = p0.sections.map((s) => s.answers).reduce((x, y) => [...x, ...y], []).find((a) => a._id.toString() == sheetMetalQuestion);
+              const answer0SheetMetal = p0.sections.map((s: any) => s.answers).reduce((x: any[], y: any[]) => [...x, ...y], []).find((a:any) => a._id.toString() == sheetMetalQuestion);
               if (answer0SheetMetal)
-                choice0SheetMetal = answer0SheetMetal.scale.choices.find((c) => c._id.toString() == answer0SheetMetal.answer.toString())
+                choice0SheetMetal = answer0SheetMetal.scale.choices.find((c: any) => c._id.toString() == answer0SheetMetal.answer.toString())
             }
 
             if (p1) {
-              const answer1SheetMetal = p1.sections.map((s) => s.answers).reduce((x, y) => [...x, ...y], []).find((a) => a._id.toString() == sheetMetalQuestion);
+              const answer1SheetMetal = p1.sections.map((s: any) => s.answers).reduce((x: any[], y: any[]) => [...x, ...y], []).find((a:any) => a._id.toString() == sheetMetalQuestion);
               if (answer1SheetMetal)
-                choice1SheetMetal = answer1SheetMetal.scale.choices.find((c) => c._id.toString() == answer1SheetMetal.answer.toString())
+                choice1SheetMetal = answer1SheetMetal.scale.choices.find((c: any) => c._id.toString() == answer1SheetMetal.answer.toString())
             }
 
             const row = {
