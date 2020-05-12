@@ -1523,7 +1523,7 @@ class FormController {
     return user && user.team.toString() === DERCO_TEAM;
   }
 
-  private static parseReception(reception : IParticipant) {
+  private static parseReception(reception : IParticipant) : any {
 
     const recivedparticipant : IParticipant = (reception as any).recived_participants as IParticipant;
     const recivedVenue : IVenueModel = recivedparticipant.venue;
@@ -1544,10 +1544,10 @@ class FormController {
     }
   }
 
-  private static async parseDercoReception(reception: IParticipant) : Promise<any> {
+  private static parseDercoReception(reception: IParticipant, dercoDistributionVenue: IVenueModel) : any {
     const car: ICarModel = (reception as any).related_car as ICarModel;
     // TODO: Get The real origin Venue
-    const recivedVenue = await Venue.findOne({team: DERCO_TEAM, type: 'distributor'});
+    const recivedVenue = dercoDistributionVenue;
     const venue = (reception as any).to as IVenueModel;
 
     const threshold = (recivedVenue!.shippingMaxDays || 5) * 60 * 24;
@@ -1569,6 +1569,7 @@ class FormController {
     try {
       const {team} = req.user as {team: ITeamModel};
       let userObject = await User.findOne({_id: req.user._id});
+      let dercoDistVenue = await Venue.findOne({team: DERCO_TEAM, type: 'distributor'});
 
       let data : any = {};
       const total_months = 6;
@@ -1587,7 +1588,7 @@ class FormController {
         await this.getDeliveryParticipants(team, total_months);
 
       for (const reception of receptions) {
-        const value : any  = isDercoUser ? await FormController.parseDercoReception(reception) :
+        const value : any  = isDercoUser ? FormController.parseDercoReception(reception, dercoDistVenue!) :
           FormController.parseReception(reception);
         const month = value.date_send.format('MM-YYYY');
         data[month].push(value);
