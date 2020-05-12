@@ -9,7 +9,7 @@ interface ITimingData {
 }
 
 export interface IDashboardTimingState {
-  data: ITimingData;
+  data: any;
   venues: any[];
   venuesDict: any;
   loading: boolean;

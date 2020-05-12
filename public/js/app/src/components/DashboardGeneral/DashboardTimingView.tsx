@@ -2,6 +2,7 @@
 import * as Raven from 'raven-js';
 import * as React from 'react';
 import {ErrorInfo} from 'react';
+import * as moment from 'moment';
 import {connect} from 'react-redux';
 import {RouteComponentProps} from 'react-router';
 import {Dispatch} from 'redux';
@@ -20,6 +21,8 @@ interface IPropsType extends RouteComponentProps<{ ticket: string }> {
 
 interface IStateType {
   error: Error | null;
+  showDrilldown: boolean,
+  selectedDate: string | null,
 }
 
 class DashboardTimingView extends React.Component<IPropsType, IStateType> {
@@ -27,11 +30,18 @@ class DashboardTimingView extends React.Component<IPropsType, IStateType> {
   timingPerMonthChart: echarts.ECharts;
   timingPerVenueChart: echarts.ECharts;
 
+  state = {
+    showDrilldown: false,
+    error: null,
+    selectedDate: null
+  }
+
   constructor(props: IPropsType) {
     super(props);
     this.resizeCharts = this.resizeCharts.bind(this);
     this.updateTimingPerMonthChart = this.updateTimingPerMonthChart.bind(this);
-    this.onClickBar = this.onClickBar.bind(this);
+    this.showVenueChart = this.showVenueChart.bind(this);
+    this.showDateChart = this.showDateChart.bind(this);
   }
 
   public componentWillMount(): void {
@@ -46,9 +56,7 @@ class DashboardTimingView extends React.Component<IPropsType, IStateType> {
   public componentDidMount(): void {
     const $timingPerMonth = document.getElementById('damages-per-month') as HTMLDivElement;
     this.timingPerMonthChart = echarts.init($timingPerMonth);
-    this.timingPerMonthChart.on('click', this.onClickBar);
-    const $timingPerVenueChart = document.getElementById('damages-per-venue') as HTMLDivElement;
-    this.timingPerVenueChart = echarts.init($timingPerVenueChart);
+    this.timingPerMonthChart.on('click', this.showVenueChart);
   }
 
   public componentDidCatch(error: Error, errorInfo: ErrorInfo): void {
@@ -60,15 +68,10 @@ class DashboardTimingView extends React.Component<IPropsType, IStateType> {
 
   public componentDidUpdate(prevProps: IPropsType, prevState: IStateType): void {
     const {loading, loadingPerVenue, perVenue} = this.props.dashboard;
+    const {showDrilldown} = this.state;
     if (!loading) {
-      this.updateTimingPerMonthChart();
-    }
-
-    if (!loadingPerVenue) {
-      if (Object.keys(perVenue).length > 0) {
-        this.updateTimingPerVenueChart();
-        this.resizeCharts()
-      }
+      showDrilldown ? this.updateTimingPerVenueChart() :
+        this.updateTimingPerMonthChart();
     }
   }
 
@@ -79,14 +82,18 @@ class DashboardTimingView extends React.Component<IPropsType, IStateType> {
   }
 
   public render(): React.ReactElement<IPropsType> {
-    const {loading, loadingPerVenue, perVenue} = this.props.dashboard;
+    const {loading} = this.props.dashboard;
+    const {selectedDate} = this.state;
+    let selectedMonth = selectedDate ?
+      this.capitalizeFirstLetter(moment(selectedDate, 'MM-YYYY').format('MMMM YYYY'))  : "";
+
     return (
       <AppContainer title="" cMenu="1" cSubMenu="1.4">
         <section className="content">
           <Row>
             <div className="col-md-12">
               <div className="box">
-                <div className="box-header with-border"><h3 className="box-title">Traslados nacionales por mes</h3>
+                <div className="box-header with-border"><h3 className="box-title">{selectedDate ?`Traslados nacionales: ${selectedMonth}` : 'Traslados nacionales por mes'}</h3>
                   <div className="box-tools pull-right">
                   </div>
                 </div>
@@ -94,30 +101,11 @@ class DashboardTimingView extends React.Component<IPropsType, IStateType> {
                 <p
                   className="text-muted text-center"
                   style={{padding: '10px 0 0 0', margin: '0'}}
-                >Haz click en el gráfico para ver detalles de no cumplimiento.</p>
-                  <div id="damages-per-month" style={{height: '40vh', maxWidth: '100%'}} />
+                >{selectedDate ? '' : 'Haz click en el gráfico para ver detalles de no cumplimiento'}.</p>
+                  <div id="damages-per-month" style={{minHeight: '350px', maxWidth: '100%'}} />
                 </div>
                 {
                   loading &&
-                  <div className="overlay">
-                    <i className="fa fa-spinner fa-spin text-purple"/>
-                  </div>
-                }
-              </div>
-            </div>
-          </Row>
-          <Row style={Object.keys(perVenue).length ? {} : { display: 'none'}}>
-            <div id="per-venue" className="col-md-12">
-              <div className="box">
-                <div className="box-header with-border"><h3 className="box-title">Detalle por sucursal</h3>
-                  <div className="box-tools pull-right">
-                  </div>
-                </div>
-                <div className="box-body">
-                  <div id="damages-per-venue" style={{height: '40vh', maxWidth: '100%'}} />
-                </div>
-                {
-                  loadingPerVenue &&
                   <div className="overlay">
                     <i className="fa fa-spinner fa-spin text-purple"/>
                   </div>
@@ -130,9 +118,28 @@ class DashboardTimingView extends React.Component<IPropsType, IStateType> {
     );
   }
 
-  private updateTimingPerMonthChart() {
+  private capitalizeFirstLetter(str: string) {
+    return str.charAt(0).toUpperCase() + str.slice(1);
+  }
 
+  private updateTimingPerMonthChart() {
     const {data} = this.props.dashboard;
+    let months : string[] = [];
+    let overdue : any[] = []
+    let ontime : any[] = [];
+    const createDataElement = (n: number) => n > 0 ? {
+        value: n,
+        label : n > 0 ? {show: true, position: 'insideRight'} : {show: false}
+      } : null;
+
+    Object.keys(data).map( k => {
+      months.push(this.capitalizeFirstLetter(moment(k, "MM-YYYY").format('MMMM YYYY')));
+      ontime.push(data[k].filter( (d: { atTime: boolean; }) => d.atTime).length);
+      overdue.push(data[k].filter( (d: { atTime: boolean; }) => !d.atTime).length);
+    });
+
+    ontime = ontime.map(createDataElement)
+    overdue = overdue.map(createDataElement)
 
     const option: echarts.EChartOption = {
       color: ['#f1392c', '#00aa51'],
@@ -153,105 +160,169 @@ class DashboardTimingView extends React.Component<IPropsType, IStateType> {
       },
       yAxis: {
         type: 'category',
-        data: data.months
+        data: months
       },
       grid: {
         top: 30,
         bottom: 100,
-        // left
-        left: 5,
-        // right
+        left: 10,
         right: 10,
-        containLabel: true
+        containLabel: true,
+        height: (months.length * 20) + 50
       },
       series: [
         {
           name: 'No cumple',
           type: 'bar',
           stack: '1',
-          itemStyle : { normal: {label : {show: true, position: 'insideRight'}}},
-          data: data.overdue
-
+          data: overdue,
+          barMinHeight: 15,
         },
         {
           name: 'Cumple',
           type: 'bar',
           stack: '1',
-          itemStyle : { normal: {label : {show: true, position: 'insideRight'}}},
-          data: data.ontime
+          data: ontime,
+          barMinHeight: 15,
         }
-      ]
+      ],
+      toolbox: [],
     };
-    this.timingPerMonthChart.setOption(option);
 
+    this.timingPerMonthChart.setOption(option, true);
   }
 
   private updateTimingPerVenueChart() {
-    const { perVenue, venuesDict } = this.props.dashboard;
-    const venues = perVenue.venues.map((v: any) => venuesDict[v]);
-    const data = perVenue.perVenue.map((value: number, i: number) => {
-      return {
-        name: venues[i].name,
-        value
-      };
+    const { selectedDate } = this.state;
+    const { data } = this.props.dashboard;
+    let values = data[selectedDate!];
+    let routes : any = {};
+    let names : string[] = [];
+
+    const createDataElement = (n: number) =>  n > 0 ? {
+        value: n,
+        label : n > 0 ? {show: true, position: 'insideRight'} : {show: false}
+      } : null;
+
+    values.map( (d : any) => {
+      let routeName = d.from + " - " + d.to;
+      if (routes[routeName] === undefined) {
+        routes[routeName] = {overdue: 0, ontime: 0};
+        names.push(routeName);
+      }
+      d.atTime ?  routes[routeName].ontime++ : routes[routeName].overdue++;
     });
 
-    const selected: any = {};
-    venues.forEach((v: any, i: number) => {
-      selected[v.name] = i < 10;
+    names.sort();
+    let ontime : any[] = [];
+    let overdue : any[] = [];
+
+    names.map((n : string) => {
+      let data = routes[n];
+      ontime.push(createDataElement(data.ontime as number));
+      overdue.push(createDataElement(data.overdue as number));
     });
 
     const option: echarts.EChartOption = {
-      tooltip : {
-        trigger: 'item',
-        formatter: '{a} <br/>{b} : {c} ({d}%)'
+      color: ['#f1392c', '#00aa51'],
+      tooltip: {
+        trigger: 'axis',
+        axisPointer: {
+          type: 'shadow'
+        }
       },
       legend: {
-        type: 'scroll',
-        orient: 'vertical',
-        right: 10,
-        top: 20,
-        bottom: 20,
-        data: venues.map((v: any) => v.name),
-        selected
+        data: ['No cumple', 'Cumple'],
+        // x: 'center',
+        bottom: 50
       },
-      series : [
+      xAxis: {
+        type: 'value',
+        position: 'top'
+      },
+      yAxis: {
+        type: 'category',
+        data: names
+      },
+      grid: {
+        top: 30,
+        bottom: 100,
+        left: 10,
+        right: 10,
+        containLabel: true,
+        height: (names.length * 20) + 50
+      },
+      series: [
         {
-          name: 'Resultados por sucursal',
-          type: 'pie',
-          radius : '55%',
-          center: ['40%', '50%'],
-          data,
-          itemStyle: {
-            emphasis: {
-              shadowBlur: 10,
-              shadowOffsetX: 0,
-              shadowColor: 'rgba(0, 0, 0, 0.5)'
-            }
+          name: 'No cumple',
+          type: 'bar',
+          stack: '1',
+          data: overdue,
+          barMinHeight: 15,
+          barMinWidth: 25,
+        },
+        {
+          name: 'Cumple',
+          type: 'bar',
+          stack: '1',
+          data: ontime,
+          barMinHeight: 15,
+          barMinWidth: 25,
+        }
+      ],
+      toolbox: {
+        left: 20,
+        top: 0,
+        feature: {
+          myBackBtn: {
+            show: true,
+            icon: 'path://M16.6666667 9.16666667 6.525 9.16666667 11.1833333 4.50833333 10 3.33333333 3.33333333 10 10 16.6666667 11.175 15.4916667 6.525 10.8333333 16.6666667 10.8333333z',
+            title: ' ',
+            onclick: this.showDateChart
+          }
+        },
+        iconStyle: {
+          color: 'rgba(0, 0, 0, 0.8)',
+          fontWeight: 'bolder',
+          borderColor: 'rgba(0, 0, 0, 0)',
+          shadowColor: 'rgba(0, 0, 0, 0)',
+          emphasis: {
+            color: '#a94442',
+            borderColor: 'rgba(0, 0, 0, 0)',
+            shadowColor: 'rgba(0, 0, 0, 0)',
           }
         }
-      ]
+      },
     };
-    this.timingPerVenueChart.setOption(option);
+
+    this.timingPerMonthChart.setOption(option, true);
 
   }
 
-  private onClickBar(param: any) {
-    if (param.componentIndex === 0) {
-      const { data } = this.props.dashboard;
-      const { months } = data;
-      const $perVenue = $('#per-venue');
+  private showVenueChart(param: any) {
+    const { data } = this.props.dashboard;
+    const month = moment(param.name.toLowerCase(), 'MMMM YYYY').format('MM-YYYY');
+    this.setState({
+      showDrilldown: true,
+      selectedDate: month
+    }, () => {
+      setTimeout(() => {
+        this.timingPerMonthChart.off('click');
+      }, 200)
+    });
+  }
 
-      const period = months[param.dataIndex];
-      this.props.getDashboardTimingPerVenue(period);
-      if ($perVenue) {
-        setTimeout(()=>{
-          $([document.documentElement, document.body]).animate({
-            scrollTop: ($perVenue as any).offset().top
-          }, 500);
-        }, 600);
-      }
-    }
+  private showDateChart(){
+    this.setState({
+      showDrilldown: false,
+      selectedDate: null,
+    }, () => {
+      setTimeout(()=> {
+        this.timingPerMonthChart.on('click', this.showVenueChart);
+      }, 500);
+      const $timingPerMonth = document.getElementById('damages-per-month') as HTMLDivElement;
+      this.timingPerMonthChart = echarts.init($timingPerMonth);
+    })
   }
 
   private resizeCharts() {
