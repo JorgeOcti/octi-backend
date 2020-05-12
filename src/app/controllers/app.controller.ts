@@ -31,7 +31,6 @@ class AppController {
 
     this.logout = this.logout.bind(this);
     this.recoverFile = this.recoverFile.bind(this);
-
   }
 
   /* istanbul ignore next */

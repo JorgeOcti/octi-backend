@@ -211,7 +211,7 @@ export default class ApiService {
   }
 
   public getRevisions(page: number, search?: string, from?: string, to?: string): AxiosPromise {
-    var query = `?page=${page}`;
+    let query = `?page=${page}`;
     if(search)
       query += `&search=${search}`;
 
@@ -296,6 +296,14 @@ export default class ApiService {
     this.instance.defaults.headers.common['Content-Type'] = 'multipart/form-data';
     return this.instance.post(
       `/api/inventory/`, formData, {
+        cancelToken: this.source.token
+      }
+    );
+  }
+
+  public importPlanning(data: any): AxiosPromise{
+    return this.instance.post(
+      `/api/admin/planning/`, data, {
         cancelToken: this.source.token
       }
     );
@@ -410,6 +418,11 @@ export default class ApiService {
     );
   }
 
+  public getPlanning(page: number, pageSize?: number): AxiosPromise {
+    return this.instance.get(
+      `/api/admin/planning/?page=${page}${pageSize ? `&pageSize=${pageSize}` : ''}`
+    );
+  }
 
   public createVersion(version: any): AxiosPromise {
     return this.instance.post(

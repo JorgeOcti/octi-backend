@@ -127,7 +127,7 @@ class DashboardGeneralView extends React.Component<IPropsType, IStateType> {
                 <span className="info-box-icon bg-green"><i className="fa fa-car"/></span>
                 <div className="info-box-content">
                   <span className="info-box-text">Total Cargas</span>
-                  <span className="info-box-number">{totalCars}</span>
+                  <span className="info-box-number">{new Intl.NumberFormat("es-CL").format(totalCars)}</span>
                 </div>
               </div>
             </div>
@@ -221,21 +221,25 @@ class DashboardGeneralView extends React.Component<IPropsType, IStateType> {
   }
 
   private updateParticipantsChart() {
-    const {participantsReceivedPerDate, participantsSentPerDate, carsPerDate} = this.props.dashboard;
+    const {
+      participantsReceivedPerDate,participantsSentPerDate, carsPerDate,
+      planningPerDate, planningProcessPerDate
+    } = this.props.dashboard;
     const categories: any[] = [];
-    const totalsReceibed: any[] = [];
+    const totalsReceived: any[] = [];
     const totalsSent: any[] = [];
     const totalsCars: any[] = [];
+    const totalsPlanning: any[] = [];
+    const totalsplanningProcess: any[] = [];
 
     if (participantsReceivedPerDate.length) {
       participantsReceivedPerDate.forEach((day) => {
         categories.push(day._id);
-        totalsReceibed.push(day.total);
+        totalsReceived.push(day.total);
       });
     }
     if (participantsSentPerDate.length) {
       participantsSentPerDate.forEach((day) => {
-        // categories.push(day._id);
         totalsSent.push(day.total);
       });
     }
@@ -243,6 +247,16 @@ class DashboardGeneralView extends React.Component<IPropsType, IStateType> {
       carsPerDate.forEach((day) => {
         totalsCars.push(day.total);
       });
+    }
+    if (planningPerDate.length) {
+      planningPerDate.forEach((day) => {
+        totalsPlanning.push(day.total);
+      });
+    }
+    if (planningProcessPerDate.length) {
+      planningProcessPerDate.forEach((day) => {
+        totalsplanningProcess.push(day.total)
+      })
     }
     // const option: echarts.EChartOption = {
     const option: any = {
@@ -260,7 +274,7 @@ class DashboardGeneralView extends React.Component<IPropsType, IStateType> {
         x: 'center',
         bottom: 50,
         // y: 'bottom',
-        data: ['Recepciones', 'Envíos', 'Cargados']
+        data: ['Recepciones', 'Envíos', 'Planificados', 'Linea de control', 'Cargados']
       },
       xAxis: {
         type: 'category',
@@ -316,7 +330,7 @@ class DashboardGeneralView extends React.Component<IPropsType, IStateType> {
         end: 100
       },
       series: [{
-        data: totalsReceibed,
+        data: totalsReceived,
         name: 'Recepciones',
         type: 'line',
         color: '#337AB7',
@@ -328,6 +342,18 @@ class DashboardGeneralView extends React.Component<IPropsType, IStateType> {
         color: '#2DB06B',
         smooth: true
       }, {
+        data: totalsPlanning,
+        name: 'Planificados',
+        type: 'line',
+        color: '#00b5fd',
+        smooth: true
+      }, {
+        data: totalsplanningProcess,
+        name: 'Linea de control',
+        type: 'line',
+        color: '#7c344c',
+        smooth: true
+      }, {
         data: totalsCars,
         name: 'Cargados',
         type: 'line',
@@ -336,8 +362,6 @@ class DashboardGeneralView extends React.Component<IPropsType, IStateType> {
       }]
     };
     this.participantsPerDayChart.setOption(option);
-    console.log('option', option)
-
   }
 
   private updateChartParticipantRange() {

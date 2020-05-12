@@ -15,6 +15,7 @@ import {dashboardDamagesReducer} from "./dashboardDamages.reducer";
 import {dashboardTimingReducer} from "./dashboardTiming.reducer";
 import {dashboardDercoReducer} from "./dashboardDerco.reducer";
 import {versionsReducer} from "./versions.reducer";
+import {planningReducer} from "./planning.reducer";
 
 export default (history: any) => combineReducers({
   users: usersReducer,
@@ -32,5 +33,6 @@ export default (history: any) => combineReducers({
   venues: venuesReducer,
   companies: companiesReducer,
   labels: labelsReducer,
+  planning: planningReducer,
   router: connectRouter(history)
 });

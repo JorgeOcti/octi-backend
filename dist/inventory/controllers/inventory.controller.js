@@ -54,7 +54,9 @@ class InventoryController {
     }
     async index(req, res) {
         try {
-            res.render('app/index', { token: await req.user.generateToken() });
+            res.render('app/index', {
+                token: await req.user.generateToken()
+            });
         }
         catch (e) {
             console.log(e);

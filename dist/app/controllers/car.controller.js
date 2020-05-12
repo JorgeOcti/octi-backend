@@ -3,7 +3,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const excel = require("exceljs");
 const bluebird = require("bluebird");
 const tempfile = require("tempfile");
-const moment = require("moment");
+const moment = require("moment-timezone");
 const mongoose = require("mongoose");
 const app_1 = require("../../app");
 const participant_model_1 = require("../../form/models/participant.model");
@@ -18,6 +18,8 @@ const kind_model_1 = require("../../form/models/kind.model");
 const part_model_1 = require("../../form/models/part.model");
 const position_model_1 = require("../../form/models/position.model");
 const form_model_1 = require("../../form/models/form.model");
+const planning_model_1 = require("../../planning/models/planning.model");
+moment.tz.setDefault('America/Santiago');
 class CarController {
     constructor() {
         this.carBrands = {
@@ -378,7 +380,8 @@ class CarController {
             const venuesByCompanies = await venue_model_1.default.find(query);
             const venuesPermissionsFilterByCompanies = venuesByCompanies.map(venue => venue._id);
             const participantReceivedPerDay = await participant_model_1.default
-                .aggregate([{
+                .aggregate([
+                {
                     $match: {
                         venue: {
                             $in: venuesPermissionsFilterByCompanies
@@ -450,9 +453,11 @@ class CarController {
                     $sort: {
                         _id: 1
                     }
-                }]);
+                }
+            ]);
             const participantSentPerDay = await participant_model_1.default
-                .aggregate([{
+                .aggregate([
+                {
                     $match: {
                         venue: {
                             $in: venuesPermissionsFilterByCompanies
@@ -464,7 +469,11 @@ class CarController {
                     }
                 }, {
                     $project: {
-                        _id: 1, user: 1, form: 1, car: 1, createdAt: {
+                        _id: 1,
+                        user: 1,
+                        form: 1,
+                        car: 1,
+                        createdAt: {
                             $subtract: ['$createdAt', 4 * 60 * 60 * 1000]
                         }
                     }
@@ -524,9 +533,11 @@ class CarController {
                     $sort: {
                         _id: 1
                     }
-                }]);
+                }
+            ]);
             const importCarsPerDay = await car_model_1.default
-                .aggregate([{
+                .aggregate([
+                {
                     $match: {
                         team,
                         destination: { $ne: '' },
@@ -553,16 +564,96 @@ class CarController {
                             $sum: 1
                         }
                     }
-                }]);
-            // normalize show last 14 days
+                }
+            ]);
+            const planningPerDay = await planning_model_1.default
+                .aggregate([
+                {
+                    $match: {
+                        team,
+                        date: {
+                            $gte: moment().subtract(30, 'd').toDate()
+                        }
+                    }
+                }, {
+                    $project: {
+                        _id: 1,
+                        date: 1,
+                    }
+                }, {
+                    $group: {
+                        _id: {
+                            $dateToString: {
+                                format: '%Y-%m-%d',
+                                date: '$date',
+                                timezone: 'America/Santiago'
+                            }
+                        },
+                        total: {
+                            $sum: 1
+                        }
+                    }
+                }
+            ]);
+            const planningByProcessing = await planning_model_1.default
+                .find({
+                team,
+                date: {
+                    $gte: moment().subtract(30, 'd').toDate()
+                }
+            }, { car: 1, date: 1 })
+                .populate([{
+                    path: 'car',
+                    select: ['vin', 'participants'],
+                    populate: [{
+                            path: 'participants',
+                            select: ['createdAt']
+                        }]
+                }]).lean();
+            const planningByProcessingByKey = {};
+            for (const process of planningByProcessing) {
+                const key = moment(process.date).format('YYYY-MM-DD');
+                if (!planningByProcessingByKey.hasOwnProperty(key)) {
+                    planningByProcessingByKey[key] = {
+                        total: 0
+                    };
+                }
+                const isChecked = process.car.participants.filter((participant) => moment(participant.createdAt).format('YYYY-MM-DD') === key).length;
+                planningByProcessingByKey[key].total = isChecked ? planningByProcessingByKey[key].total + 1 : planningByProcessingByKey[key].total;
+            }
+            // normalize show last days
             const participantsReceived = [];
+            const planning = [];
+            const planningProcess = [];
             const participantsSent = [];
             const cars = [];
             for (let i = 29; i >= 0; i--) {
                 const key = moment().subtract(i, 'd').format('YYYY-MM-DD');
+                const existInplanningPerDay = planningPerDay.find((day) => day._id.toString() === key);
                 const existInParticipantReceivedPerDay = participantReceivedPerDay.find((day) => day._id.toString() === key);
                 const existInParticipantSentPerDay = participantSentPerDay.find((day) => day._id.toString() === key);
                 const existInImportCarsPerDay = importCarsPerDay.find((day) => day._id.toString() === key);
+                if (!planningByProcessingByKey.hasOwnProperty(key)) {
+                    planningProcess.push({
+                        _id: key,
+                        total: 0
+                    });
+                }
+                else {
+                    planningProcess.push({
+                        id: key,
+                        total: planningByProcessingByKey[key].total
+                    });
+                }
+                if (!existInplanningPerDay) {
+                    planning.push({
+                        _id: key,
+                        total: 0
+                    });
+                }
+                else {
+                    planning.push(existInplanningPerDay);
+                }
                 if (!existInParticipantReceivedPerDay) {
                     participantsReceived.push({
                         _id: key,
@@ -593,56 +684,7 @@ class CarController {
                     cars.push(existInImportCarsPerDay);
                 }
             }
-            /* Update Venue in lastForm*/
-            // const carsWithLastForm = await CarModel.find({
-            //   company,
-            //   $and: [{
-            //       lastForm: {
-            //         $exists: true
-            //       }
-            //     }, {
-            //       lastForm: {
-            //         $ne: null
-            //       }
-            //     }]
-            // }, {
-            //   lastForm: true
-            // }).populate({
-            //   path: 'lastForm',
-            //   select: ['venue', 'reception', 'shipping', 'createdAt'],
-            //   options: {
-            //     sort: {
-            //       createdAt: -1
-            //     }
-            //   },
-            //   populate: [{
-            //     path: 'venue',
-            //     select: 'name'
-            //   }]
-            // });
-            // const carsByVenue: any = {
-            //   inTransit: {
-            //     cars: []
-            //   }
-            // };
-            // for (const car of carsWithLastForm) {
-            //   if (car.lastForm.venue) {
-            //     if (car.lastForm.reception) {
-            //       if (!carsByVenue.hasOwnProperty(car.lastForm.venue.name)) {
-            //         carsByVenue[car.lastForm.venue.name] = {
-            //           cars: []
-            //         };
-            //       }
-            //       carsByVenue[car.lastForm.venue.name].cars.push(car._id.toString());
-            //     // } else if (car.lastForm.shipping) {
-            //     } else {
-            //       carsByVenue.inTransit.cars.push(car._id.toString());
-            //     }
-            //   }
-            // }
-            /* END Update Venue in lastForm */
             /* search participant and group per range qualification */
-            // generate ranges
             const proyection = [];
             const proyectionInterval = 5;
             for (let i = 0; i < 100; i += proyectionInterval) {
@@ -658,9 +700,9 @@ class CarController {
                     });
                 }
             }
-            // get data
             const participantPerRange = await participant_model_1.default
-                .aggregate([{
+                .aggregate([
+                {
                     $match: {
                         venue: {
                             $in: venuesPermissions
@@ -674,16 +716,6 @@ class CarController {
                         range: {
                             $concat: [
                                 { $cond: [{ $lt: ['$qualification', 0] }, 'Unknown', ''] },
-                                // {$cond: [{$and: [{$gte: ['$qualification', 1]}, {$lt: ['$qualification', 10]}]}, '1-10', '']},
-                                // {$cond: [{$and: [{$gte: ['$qualification', 11]}, {$lt: ['$qualification', 20]}]}, '11-20', '']},
-                                // {$cond: [{$and: [{$gte: ['$qualification', 21]}, {$lt: ['$qualification', 30]}]}, '25-30', '']},
-                                // {$cond: [{$and: [{$gte: ['$qualification', 31]}, {$lt: ['$qualification', 40]}]}, '31-40', '']},
-                                // {$cond: [{$and: [{$gte: ['$qualification', 41]}, {$lt: ['$qualification', 50]}]}, '41-50', '']},
-                                // {$cond: [{$and: [{$gte: ['$qualification', 51]}, {$lt: ['$qualification', 60]}]}, '51-60', '']},
-                                // {$cond: [{$and: [{$gte: ['$qualification', 61]}, {$lt: ['$qualification', 70]}]}, '61-70', '']},
-                                // {$cond: [{$and: [{$gte: ['$qualification', 71]}, {$lt: ['$qualification', 80]}]}, '71-80', '']},
-                                // {$cond: [{$and: [{$gte: ['$qualification', 81]}, {$lt: ['$qualification', 90]}]}, '81-90', '']},
-                                // {$cond: [{$and: [{$gte: ['$qualification', 91]}, {$lt: ['$qualification', 100]}]}, '91-100', '']},
                                 ...proyection
                             ]
                         }
@@ -695,7 +727,8 @@ class CarController {
                             $sum: 1
                         }
                     }
-                }]);
+                }
+            ]);
             const venues = await venue_model_1.default.find({ _id: { $in: venuesPermissions } }).populate([{
                     path: 'company',
                     select: ['id', 'name']
@@ -710,11 +743,14 @@ class CarController {
                 }
             }
             res.json({
+                planningPerDay,
                 carsByVenue: [],
                 companies: companiesData,
                 participantsReceived,
                 participantsSent,
                 participantPerRange,
+                planning,
+                planningProcess,
                 cars,
                 totalCars: await car_model_1.default.count({ team }),
                 status: 200
@@ -1555,7 +1591,7 @@ class CarController {
     }
     getRevisions(filters, options) {
         return new Promise((resolve, reject) => {
-            participant_model_1.default.paginate(filters, options, (err, result) => {
+            !participant_model_1.default.paginate(filters, options, (err, result) => {
                 if (err) {
                     /* istanbul ignore next */
                     reject(err);
@@ -1584,7 +1620,7 @@ class CarController {
             };
         }
         return new Promise((resolve, reject) => {
-            car_model_1.default.paginate(filter, options, (err, result) => {
+            !car_model_1.default.paginate(filter, options, (err, result) => {
                 if (err) {
                     /* istanbul ignore next */
                     return reject(err);
