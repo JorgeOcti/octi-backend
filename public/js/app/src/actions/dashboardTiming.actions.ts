@@ -35,22 +35,6 @@ export function loadDashboardTimingAction(venues: any[], data: any): ILoadDashbo
   };
 }
 
-interface ILoadDashboardTimingPerVenue {
-  type: '/DASHBOARD/TIMING/LOAD_DATA_PER_VENUE';
-  payload: {
-    perVenue: number[]
-  };
-}
-
-export function loadDashboardTimingPerVenueAction(perVenue: number[]): ILoadDashboardTimingPerVenue {
-  return {
-    type: '/DASHBOARD/TIMING/LOAD_DATA_PER_VENUE',
-    payload: {
-      perVenue
-    }
-  };
-}
-
 interface IIsLoading {
   type: '/DASHBOARD/TIMING/IS_LOADING';
   payload: {
@@ -97,16 +81,5 @@ export function getDashboardTiming() {
   };
 }
 
-export function getDashboardTimingPerVenue(period: string) {
-  return (dispatch: Dispatch<DashboardTimingReduxAction>) => {
-    const api: ApiService = new ApiService();
-    dispatch(isLoadingPerVenueAction(true));
-    api.getTimingPerVenue(period).then((perVenue: any) => {
-      dispatch(loadDashboardTimingPerVenueAction(perVenue.data));
-    }).catch((err: AxiosError): void => {
-      api.errorHandler(err);
-    });
-  };
-}
 
-export type DashboardTimingReduxAction = ILoadDashboardTiming | ILoadDashboardTimingPerVenue | IIsLoading | IIsLoadingPerVenue;
+export type DashboardTimingReduxAction = ILoadDashboardTiming | IIsLoading | IIsLoadingPerVenue;

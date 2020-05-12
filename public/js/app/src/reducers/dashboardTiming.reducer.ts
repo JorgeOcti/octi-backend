@@ -35,13 +35,6 @@ export function dashboardTimingReducer(state = initialState, action: DashboardTi
         ...state,
         loadingPerVenue: true
       };
-    case '/DASHBOARD/TIMING/LOAD_DATA_PER_VENUE':
-      return {
-        ...state,
-        loadingPerVenue: false,
-        perVenue: action.payload.perVenue
-      };
-
     default:
       return state;
   }

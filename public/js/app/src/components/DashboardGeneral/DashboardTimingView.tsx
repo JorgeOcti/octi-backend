@@ -7,7 +7,7 @@ import {connect} from 'react-redux';
 import {RouteComponentProps} from 'react-router';
 import {Dispatch} from 'redux';
 import {DashboardReduxAction} from '../../actions/dashboard.actions';
-import { getDashboardTiming, getDashboardTimingPerVenue, IDashboardTimingState} from '../../actions/dashboardTiming.actions';
+import { getDashboardTiming, IDashboardTimingState} from '../../actions/dashboardTiming.actions';
 import AppContainer from '../../container/AppContainer';
 import Row from '../Utils/Row';
 
@@ -16,7 +16,6 @@ interface IPropsType extends RouteComponentProps<{ ticket: string }> {
   dashboard: IDashboardTimingState;
 
   getDashboardTiming(): void;
-  getDashboardTimingPerVenue(period: string): void;
 }
 
 interface IStateType {
@@ -352,7 +351,6 @@ const mapDispatchToProps = (dispatch: any) => {
   return {
     dispatch,
     getDashboardTiming: () => dispatch(getDashboardTiming()),
-    getDashboardTimingPerVenue: (period: string) => dispatch(getDashboardTimingPerVenue(period))
   };
 };
 

@@ -396,10 +396,6 @@ export default class ApiService {
     )
   }
 
-  public getTimingPerVenue(period: string): AxiosPromise {
-    return this.instance.get(`/api/dashboard/timing/per-venue/?period=${period}`)
-  }
-
   public getDashboardCleaning(): AxiosPromise {
     return this.instance.get(
       '/api/dashboard/cleaning/'
