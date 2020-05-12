@@ -33,6 +33,7 @@ import {IParticipant} from "../../interfaces/participant.interface";
 ``
 
 // import * as puppeteer from 'puppeteer';
+global const DERCO_TEAM = '5bf2de34caf8ef7096105cda';
 
 class FormController {
 
@@ -1519,7 +1520,7 @@ class FormController {
   }
 
   private static isDercoUser(user: IUserModel) : boolean{
-    return user && user.team.toString() === '5bf2de34caf8ef7096105cda'
+    return user && user.team.toString() === DERCO_TEAM;
   }
 
   private static parseReception(reception : IParticipant) {
@@ -1543,11 +1544,13 @@ class FormController {
     }
   }
 
-  private static parseDercoReception(reception : IParticipant) {
-    const car : ICarModel = (reception as any).related_car as ICarModel;
+  private static async parseDercoReception(reception: IParticipant) : Promise<any> {
+    const car: ICarModel = (reception as any).related_car as ICarModel;
+    // TODO: Get The real origin Venue
+    const recivedVenue = await Venue.findOne({team: DERCO_TEAM, type: 'distributor'});
     const venue = (reception as any).to as IVenueModel;
 
-    const threshold = /*(recivedVenue.shippingMaxDays || 5)*/ 5 * 60 * 24;
+    const threshold = (recivedVenue!.shippingMaxDays || 5) * 60 * 24;
     const t0 = moment(car.createdAt);
     const t1 = moment(reception.createdAt);
     const dm = t1.diff(t0, 'minutes');
@@ -1556,8 +1559,7 @@ class FormController {
       date_send: t0,
       date_recived: t1,
       reception_id: reception._id,
-      car_id: car._id,
-      from: 'Lo Boza'/*recivedVenue.abbreviation || recivedVenue.name*/,
+      from: recivedVenue!.abbreviation || recivedVenue!.name,
       to: venue.abbreviation || venue.name,
       atTime: dm <= threshold
     }
@@ -1585,7 +1587,7 @@ class FormController {
         await this.getDeliveryParticipants(team, total_months);
 
       for (const reception of receptions) {
-        const value : any  = isDercoUser ? FormController.parseDercoReception(reception) :
+        const value : any  = isDercoUser ? await FormController.parseDercoReception(reception) :
           FormController.parseReception(reception);
         const month = value.date_send.format('MM-YYYY');
         data[month].push(value);
