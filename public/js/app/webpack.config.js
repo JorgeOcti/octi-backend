@@ -36,7 +36,7 @@ const setDevTool = () => {
 };
 
 module.exports = {// entry: process.env.NODE_ENV === 'production'?['babel-polyfill', './src/app.jsx']:['./src/app.jsx'],
-  entry: process.env.NODE_ENV === 'production' ? [`${sourcePath}/App.tsx`] : [`${sourcePath}/App.tsx`],
+  entry: process.env.NODE_ENV === 'production' ? [`${sourcePath}/app.tsx`] : [`${sourcePath}/app.tsx`],
   output: {
     // filename: '[name].bundle.[hash].js',
     filename: '[name].bundle.js',
