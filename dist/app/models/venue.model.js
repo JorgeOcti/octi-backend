@@ -16,6 +16,10 @@ const venueSchema = new mongoose.Schema({
         type: String,
         required: true
     },
+    abbreviation: {
+        type: String,
+        required: true
+    },
     lat: {
         type: Number,
         default: 0
@@ -35,6 +39,10 @@ const venueSchema = new mongoose.Schema({
     region: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Region'
+    },
+    shippingMaxDays: {
+        type: Number,
+        default: 5
     },
     type: {
         type: String,

@@ -28,7 +28,10 @@ const participant_model_1 = require("../models/participant.model");
 const participantFile_model_1 = require("../models/participantFile.model");
 const scale_model_1 = require("../models/scale.model");
 const bluebird = require("bluebird");
+``;
 // import * as puppeteer from 'puppeteer';
+global;
+const DERCO_TEAM = '5bf2de34caf8ef7096105cda';
 class FormController {
     constructor() {
         this.list = this.list.bind(this);
@@ -39,6 +42,7 @@ class FormController {
         this.uploadFile = this.uploadFile.bind(this);
         this.damagesDashboardPerDay = this.damagesDashboardPerDay.bind(this);
         this.participantWithDamages = this.participantWithDamages.bind(this);
+        this.timingDashboard = this.timingDashboard.bind(this);
     }
     async pdf(req, res) {
         const { debug, timezone } = req.query;
@@ -1324,234 +1328,207 @@ class FormController {
             });
         }
     }
+    static async getDercoDeliveryParticipants(team, total_months) {
+        let receptionForm = await form_model_1.default.findOne({ _id: "5b1ae5799ebea419025b3e41" });
+        return participant_model_1.default.aggregate([
+            {
+                $match: {
+                    team: team,
+                    form: receptionForm._id,
+                    createdAt: {
+                        $gte: moment().subtract(total_months, 'months').startOf('month').toDate()
+                    },
+                }
+            },
+            {
+                $project: {
+                    car: 1,
+                    venue: 1,
+                    receiveFrom: 1,
+                    form: 1,
+                    createdAt: 1,
+                }
+            },
+            {
+                $lookup: {
+                    from: "cars",
+                    localField: "car",
+                    foreignField: "_id",
+                    as: "related_car",
+                }
+            },
+            { $unwind: '$related_car' },
+            {
+                $match: {
+                    'related_car.team': team,
+                    'related_car.lastForm': { $ne: null },
+                    'related_car.createdAt': {
+                        $gte: moment().subtract(total_months, 'months').startOf('month').toDate()
+                    }
+                }
+            },
+            {
+                $lookup: {
+                    from: "venues",
+                    localField: "venue",
+                    foreignField: "_id",
+                    as: "to",
+                }
+            },
+            { $unwind: '$to' },
+        ]);
+    }
+    async getDeliveryParticipants(team, total_months) {
+        const distributors = await venue_model_1.default.find({ team, type: 'distributor' });
+        const receivers = await venue_model_1.default.find({ team, type: 'receiver' });
+        let receptions = await participant_model_1.default.aggregate([
+            {
+                $lookup: {
+                    from: "participants",
+                    localField: "car",
+                    foreignField: "car",
+                    as: "recived_participants",
+                }
+            },
+            {
+                $unwind: '$recived_participants'
+            },
+            {
+                $match: {
+                    team: team,
+                    venue: { $in: receivers.map((v) => v._id) },
+                    receiveFrom: { $in: distributors.map((v) => v._id) },
+                    reception: true,
+                    createdAt: {
+                        $gte: moment().subtract(total_months, 'months').startOf('month').toDate()
+                    },
+                    'recived_participants.venue': { $in: distributors.map((v) => v._id) },
+                    'recived_participants.reception': false,
+                    'recived_participants.createdAt': {
+                        $gte: moment().subtract(total_months, 'months').startOf('month').toDate()
+                    }
+                }
+            },
+            {
+                $project: {
+                    car: 1,
+                    venue: 1,
+                    createdAt: 1,
+                    'recived_participants.createdAt': 1,
+                    'recived_participants.car': 1,
+                    'recived_participants.team': 1,
+                    'recived_participants.venue': 1,
+                    'recived_participants._id': 1,
+                }
+            },
+            {
+                $sort: { 'recived_participants.createdAt': -1 }
+            },
+            {
+                $lookup: {
+                    from: "venues",
+                    localField: "venue",
+                    foreignField: "_id",
+                    as: "venue",
+                }
+            },
+            { $unwind: "$venue" },
+            {
+                $lookup: {
+                    from: "venues",
+                    localField: "recived_participants.venue",
+                    foreignField: "_id",
+                    as: "recived_participants.venue",
+                }
+            },
+            { $unwind: "$recived_participants.venue" },
+            {
+                $group: {
+                    _id: "$_id",
+                    car: { $first: '$car' },
+                    venue: { $first: '$venue' },
+                    createdAt: { $first: '$createdAt' },
+                    recived_participants: { $push: "$recived_participants" }
+                }
+            },
+            {
+                $project: {
+                    car: 1,
+                    venue: 1,
+                    createdAt: 1,
+                    "recived_participants": { "$arrayElemAt": ["$recived_participants", 0] }
+                }
+            }
+        ]);
+        return receptions.filter((reception, index) => {
+            return index === receptions.findIndex(obj => {
+                return obj.recived_participants._id.toString() === reception.recived_participants._id.toString();
+            });
+        });
+    }
+    static isDercoUser(user) {
+        return user && user.team.toString() === DERCO_TEAM;
+    }
+    static parseReception(reception) {
+        const recivedparticipant = reception.recived_participants;
+        const recivedVenue = recivedparticipant.venue;
+        const threshold = (recivedVenue.shippingMaxDays || 5) * 60 * 24;
+        const t0 = moment(recivedparticipant.createdAt);
+        const t1 = moment(reception.createdAt);
+        const dm = t1.diff(t0, 'minutes');
+        return {
+            date_send: t0,
+            date_recived: t1,
+            reception_id: reception._id,
+            send_id: recivedparticipant._id,
+            from: recivedVenue.abbreviation || recivedVenue.name,
+            to: reception.venue.abbreviation || reception.venue.name,
+            atTime: dm <= threshold
+        };
+    }
+    static parseDercoReception(reception, dercoDistributionVenue) {
+        const car = reception.related_car;
+        // TODO: Get The real origin Venue
+        const recivedVenue = dercoDistributionVenue;
+        const venue = reception.to;
+        const threshold = (recivedVenue.shippingMaxDays || 5) * 60 * 24;
+        const t0 = moment(car.createdAt);
+        const t1 = moment(reception.createdAt);
+        const dm = t1.diff(t0, 'minutes');
+        return {
+            date_send: t0,
+            date_recived: t1,
+            reception_id: reception._id,
+            from: recivedVenue.abbreviation || recivedVenue.name,
+            to: venue.abbreviation || venue.name,
+            atTime: dm <= threshold
+        };
+    }
     async timingDashboard(req, res) {
         try {
             const { team } = req.user;
             let userObject = await user_model_1.default.findOne({ _id: req.user._id });
-            // Derco
-            if (userObject && userObject.team.toString() === '5bf2de34caf8ef7096105cda') {
-                const total = 6;
-                // el lead time supuesto es de 48 horas
-                const threshold = 60 * 24 * 7;
-                let reception = await form_model_1.default.findOne({ _id: "5b1ae5799ebea419025b3e41" });
-                let cars = await car_model_1.default.find({
-                    team,
-                    lastForm: { $ne: null },
-                    createdAt: {
-                        $gte: moment().subtract(total, 'months').startOf('month').toDate()
-                    }
-                });
-                let carsCreatedAt = {};
-                for (const car of cars) {
-                    carsCreatedAt[car._id.toString()] = car.createdAt;
-                }
-                const months = [];
-                const receivedPerMonth = {};
-                for (let i = 0; i <= total; i++) {
-                    const month = moment()
-                        .subtract(total - i, 'months')
-                        .startOf('month')
-                        .format('YYYY-MM');
-                    months.push(month);
-                    receivedPerMonth[month] = {
-                        overdue: 0,
-                        ontime: 0
-                    };
-                }
-                const receptions = await participant_model_1.default.find({
-                    team,
-                    form: reception._id,
-                    createdAt: {
-                        $gte: moment().subtract(total, 'months').startOf('month').toDate()
-                    }
-                }, ['car', 'venue', 'createdAt'], {
-                    sort: {
-                        createdAt: -1
-                    }
-                });
-                for (const reception of receptions) {
-                    let car = reception.car.toString();
-                    if (car in carsCreatedAt) {
-                        const carCreatedAt = carsCreatedAt[car];
-                        const t0 = moment(carCreatedAt);
-                        const t1 = moment(reception.createdAt);
-                        const dm = t1.diff(t0, 'minutes');
-                        const month = t0.format('YYYY-MM');
-                        if (dm > 10) {
-                            if (dm < threshold)
-                                receivedPerMonth[month].ontime += 1;
-                            else
-                                receivedPerMonth[month].overdue += 1;
-                        }
-                    }
-                }
-                const data = { months, overdue: [], ontime: [] };
-                data.overdue = Array(months.length).fill(0);
-                data.ontime = Array(months.length).fill(0);
-                // tslint:disable-next-line:forin
-                for (const index in months) {
-                    const month = months[index];
-                    data.overdue[index] = receivedPerMonth[month].overdue;
-                    data.ontime[index] = receivedPerMonth[month].ontime;
-                }
-                res.json(data);
+            let dercoDistVenue = await venue_model_1.default.findOne({ team: DERCO_TEAM, type: 'distributor' });
+            let data = {};
+            const total_months = 6;
+            for (let i = 0; i <= total_months; i++) {
+                const month = moment()
+                    .subtract(total_months - i, 'months')
+                    .startOf('month')
+                    .format('MM-YYYY');
+                data[month] = [];
             }
-            else {
-                const distributor = await venue_model_1.default.findOne({ team, type: 'distributor' });
-                const receivers = await venue_model_1.default.find({ team, type: 'receiver' });
-                const total = 6;
-                // autos que han llegado al distribuidor
-                const threshold = 60 * 24 * 5;
-                const participants = await participant_model_1.default.find({
-                    venue: distributor,
-                    createdAt: {
-                        $gte: moment().subtract(total, 'months').startOf('month').toDate()
-                    }
-                }, ['car', 'createdAt']);
-                const months = [];
-                const receivedPerMonth = {};
-                for (let i = 0; i <= total; i++) {
-                    const month = moment()
-                        .subtract(total - i, 'months')
-                        .startOf('month')
-                        .format('YYYY-MM');
-                    months.push(month);
-                    receivedPerMonth[month] = {
-                        overdue: 0,
-                        ontime: 0
-                    };
-                }
-                const receiverVenues = [];
-                const receptions = await participant_model_1.default.find({
-                    team,
-                    venue: { $in: receivers.map((v) => v._id) },
-                    receiveFrom: distributor._id,
-                    createdAt: {
-                        $gte: moment().subtract(total, 'months').startOf('month').toDate()
-                    }
-                }, ['car', 'venue', 'createdAt'], {
-                    sort: {
-                        createdAt: 1
-                    }
-                });
-                const firstReceptions = {};
-                for (const reception of receptions) {
-                    const car = reception.car.toString();
-                    if (car in firstReceptions) {
-                    }
-                    else {
-                        firstReceptions[car] = reception;
-                    }
-                }
-                for (const participant of participants) {
-                    const received = firstReceptions[participant.car.toString()];
-                    if (received) {
-                        if (!receiverVenues.includes(received.venue.toString())) {
-                            receiverVenues.push(received.venue);
-                        }
-                        const t0 = moment(participant.createdAt);
-                        const month = t0.format('YYYY-MM');
-                        const t1 = moment(received.createdAt);
-                        const dm = t1.diff(t0, 'minutes');
-                        if (dm < threshold) {
-                            receivedPerMonth[month].ontime += 1;
-                        }
-                        else {
-                            receivedPerMonth[month].overdue += 1;
-                        }
-                    }
-                }
-                const data = { months, overdue: [], ontime: [] };
-                data.overdue = Array(months.length).fill(0);
-                data.ontime = Array(months.length).fill(0);
-                // tslint:disable-next-line:forin
-                for (const index in months) {
-                    const month = months[index];
-                    data.overdue[index] = receivedPerMonth[month].overdue;
-                    data.ontime[index] = receivedPerMonth[month].ontime;
-                }
-                res.json(data);
+            const isDercoUser = FormController.isDercoUser(userObject);
+            const receptions = isDercoUser ?
+                await FormController.getDercoDeliveryParticipants(team, total_months) :
+                await this.getDeliveryParticipants(team, total_months);
+            for (const reception of receptions) {
+                const value = isDercoUser ? FormController.parseDercoReception(reception, dercoDistVenue) :
+                    FormController.parseReception(reception);
+                const month = value.date_send.format('MM-YYYY');
+                data[month].push(value);
             }
-        }
-        catch (e) {
-            Raven.captureException(e, { req });
-            /* istanbul ignore next */
-            logger_service_1.default.error(`dashboard timing: Async Error.`);
-            /* istanbul ignore next */
-            logger_service_1.default.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
-            /* istanbul ignore next */
-            logger_service_1.default.error(e);
-            res.status(400).json({
-                message: 'Ha ocurrido un error',
-                status: 400
-            });
-        }
-    }
-    async timingDashboardPerVenue(req, res) {
-        try {
-            const { team } = req.user;
-            const { period } = req.query;
-            const distributor = await venue_model_1.default.findOne({ team, type: 'distributor' });
-            if (distributor) {
-                const receivers = await venue_model_1.default.find({ team, type: 'receiver' });
-                const receiversDict = {};
-                receivers.forEach((r) => receiversDict[r._id.toString()] = r);
-                // autos que han llegado al distribuidor
-                const t0 = moment(period).startOf('month');
-                const t1 = moment(period).endOf('month');
-                const threshold = 60 * 24 * 5;
-                const participants = await participant_model_1.default.find({
-                    venue: distributor._id,
-                    createdAt: { $gt: t0.toDate(), $lt: t1.toDate() }
-                }, ['car', 'createdAt']);
-                const receptions = await participant_model_1.default.find({
-                    team,
-                    venue: { $in: receivers.map((v) => v._id) },
-                    receiveFrom: distributor._id,
-                    createdAt: { $gt: t0.toDate() }
-                }, ['car', 'venue', 'createdAt'], {
-                    sort: {
-                        createdAt: 1
-                    }
-                });
-                const firstReceptions = {};
-                for (const reception of receptions) {
-                    const car = reception.car.toString();
-                    if (car in firstReceptions) {
-                    }
-                    else {
-                        firstReceptions[car] = reception;
-                    }
-                }
-                const receivedPerVenue = {};
-                const venues = [];
-                for (const participant of participants) {
-                    const received = firstReceptions[participant.car.toString()];
-                    if (received) {
-                        if (received.createdAt < participant.createdAt) {
-                            continue;
-                        }
-                        const venue = received.venue.toString();
-                        if (!venues.includes(venue)) {
-                            venues.push(venue);
-                            receivedPerVenue[venue] = 0;
-                        }
-                        const t0 = moment(participant.createdAt);
-                        const t1 = moment(received.createdAt);
-                        const dm = t1.diff(t0, 'minutes');
-                        receivedPerVenue[venue] += 1;
-                        if (dm < threshold) {
-                            // receivedPerMonth[month].ontime += 1;
-                        }
-                        else {
-                            // receivedPerMonth[month].overdue += 1;
-                        }
-                    }
-                }
-                const perVenue = venues.map((v) => receivedPerVenue[v]);
-                const data = { venues, perVenue };
-                res.json(data);
-            }
+            return res.json(data);
         }
         catch (e) {
             Raven.captureException(e, { req });

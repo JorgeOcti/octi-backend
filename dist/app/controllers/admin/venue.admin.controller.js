@@ -125,10 +125,12 @@ class AdminVenueController {
             select: {
                 _id: true,
                 name: true,
+                abbreviation: true,
                 lat: true,
                 lng: true,
                 receptionCarriers: true,
                 shippingCarriers: true,
+                shippingMaxDays: true,
                 sendTo: true,
                 receiveFrom: true,
                 type: true,
@@ -203,7 +205,7 @@ class AdminVenueController {
                 message: 'No tienes permisos para esta operación'
             });
         }
-        const { name, lat, lng, type, company, sendTo, receiveFrom, receptionCarriers, shippingCarriers, region } = req.body;
+        const { name, abbreviation, lat, lng, type, company, sendTo, receiveFrom, shippingMaxDays, receptionCarriers, shippingCarriers, region } = req.body;
         const { team } = req.user;
         if (!name || !name.trim().length) {
             res.status(400).json({
@@ -225,11 +227,13 @@ class AdminVenueController {
             else {
                 const newVenue = await new venue_model_1.default({
                     name,
+                    abbreviation,
                     lat,
                     lng,
                     team,
                     company,
                     region,
+                    shippingMaxDays,
                     sendTo,
                     receiveFrom,
                     receptionCarriers,
@@ -286,7 +290,7 @@ class AdminVenueController {
         }
         const { id } = req.params;
         const { team } = req.user;
-        const { name, lat, lng, type, company, sendTo, receiveFrom, receptionCarriers, shippingCarriers, region } = req.body;
+        const { name, abbreviation, lat, lng, type, company, sendTo, receiveFrom, receptionCarriers, shippingCarriers, region, shippingMaxDays } = req.body;
         if (!name || !name.length) {
             res.status(400).json({
                 message: 'The name is are required',
@@ -299,10 +303,12 @@ class AdminVenueController {
                 team
             }, {
                 name,
+                abbreviation,
                 lat,
                 lng,
                 company,
                 region,
+                shippingMaxDays,
                 sendTo,
                 receiveFrom,
                 shippingCarriers,
