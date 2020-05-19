@@ -206,7 +206,7 @@ class DashboardTimingView extends React.Component<IPropsType, IStateType> {
     values.map( (d : any) => {
       let routeName = d.from + " - " + d.to;
       if (routes[routeName] === undefined) {
-        routes[routeName] = {overdue: 0, ontime: 0};
+        routes[routeName] = {overdue: 0, ontime: 0, limitTime: d.daysLimit};
         names.push(routeName);
       }
       d.atTime ?  routes[routeName].ontime++ : routes[routeName].overdue++;
@@ -218,14 +218,27 @@ class DashboardTimingView extends React.Component<IPropsType, IStateType> {
 
     names.map((n : string) => {
       let data = routes[n];
-      ontime.push(createDataElement(data.ontime as number));
-      overdue.push(createDataElement(data.overdue as number));
+      ontime.push({...createDataElement(data.ontime as number), limitTime: data.limitTime });
+      overdue.push({...createDataElement(data.overdue as number), limitTime: data.limitTime });
     });
 
     const option: echarts.EChartOption = {
       color: ['#f1392c', '#00aa51'],
       tooltip: {
         trigger: 'axis',
+        formatter: function(params : any) {
+          let timeLimit = 0;
+          let output = '<b>' + params[0].name + '</b><br/>'
+
+          params.map(p => {
+            output += p.marker + p.seriesName + ': ' + (p.value ? p.value : '-')  + '<br/>'; // : every 2nth
+            if (timeLimit === 0)
+              timeLimit = p.data.limitTime
+          });
+
+          output += `Tiempo límite de entrega: ${timeLimit} días`
+          return output
+        },
         axisPointer: {
           type: 'shadow'
         }
