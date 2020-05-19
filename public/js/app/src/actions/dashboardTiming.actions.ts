@@ -66,13 +66,13 @@ export function isLoadingPerVenueAction(loading: boolean): IIsLoadingPerVenue {
   };
 }
 
-export function getDashboardTiming() {
+export function getDashboardTiming(from: string, to: string) {
   return (dispatch: Dispatch<DashboardTimingReduxAction>) => {
     const api: ApiService = new ApiService();
     dispatch(isLoadingAction(true));
     Axios.all([
       api.getVenues(1, 200),
-      api.getDashboardTiming()
+      api.getDashboardTiming(from, to)
     ]).then(Axios.spread((venues, dashboard) => {
       dispatch(loadDashboardTimingAction(venues.data.results, dashboard.data));
     })).catch((err: AxiosError): void => {

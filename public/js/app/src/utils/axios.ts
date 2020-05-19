@@ -398,9 +398,9 @@ export default class ApiService {
     )
   }
 
-  public getDashboardTiming(): AxiosPromise {
+  public getDashboardTiming(from: string, to: string): AxiosPromise {
     return this.instance.get(
-      '/api/dashboard/timing/'
+      `/api/dashboard/timing/?start=${from}&end=${to}`
     )
   }
 

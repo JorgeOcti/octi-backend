@@ -14,8 +14,7 @@ import Row from '../Utils/Row';
 interface IPropsType extends RouteComponentProps<{ ticket: string }> {
   dispatch: Dispatch<DashboardReduxAction>;
   dashboard: IDashboardTimingState;
-
-  getDashboardTiming(): void;
+  getDashboardTiming(from: string, to: string): void;
 }
 
 interface IStateType {
@@ -47,7 +46,9 @@ class DashboardTimingView extends React.Component<IPropsType, IStateType> {
     // set the title of the page
     document.title = 'OSA Andes | Reportería de tiempos de traslado';
     // get data
-    this.props.getDashboardTiming();
+    let from = moment().subtract(2, 'months').startOf('month');
+    let to = moment().endOf('month');
+    this.props.getDashboardTiming(from.format('YYYY-MM-DD'), to.format('YYYY-MM-DD'));
     // add listeners
     window.addEventListener('resize', this.resizeCharts, false);
   }
@@ -363,7 +364,7 @@ const mapStateToProps = (state: { dashboardTiming: IDashboardTimingState }) => {
 const mapDispatchToProps = (dispatch: any) => {
   return {
     dispatch,
-    getDashboardTiming: () => dispatch(getDashboardTiming()),
+    getDashboardTiming: (from: string, to: string) => dispatch(getDashboardTiming(from, to)),
   };
 };
 
