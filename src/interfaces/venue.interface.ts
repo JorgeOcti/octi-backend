@@ -4,8 +4,10 @@ import {IParticipant} from './participant.interface';
 import {IRegion} from './region.interface';
 import {ITeam} from './team.interface';
 import {IUser} from './user.interface';
+import {IVenueDay} from "./venueDay.interface";
 
 export interface IBaseVenue {
+  sendToDays: IVenueDay[];
   _id: any;
   name: string;
   abbreviation: string;
