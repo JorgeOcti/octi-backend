@@ -2,6 +2,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 const mongoose = require("mongoose");
 const mongoosePaginate = require("mongoose-paginate");
+const venueDay_model_1 = require("./venueDay.model");
 var ChoicesTypeVenue;
 (function (ChoicesTypeVenue) {
     ChoicesTypeVenue["distributor"] = "distributor";
@@ -48,6 +49,9 @@ const venueSchema = new mongoose.Schema({
         type: String,
         enum: exports.choicesStatusCarInventory,
         default: ChoicesTypeVenue.receiver
+    },
+    sendToDays: {
+        type: [venueDay_model_1.venueDaySchema]
     },
     sendTo: {
         type: [{

@@ -1328,7 +1328,7 @@ class FormController {
             });
         }
     }
-    static async getDercoDeliveryParticipants(team, total_months) {
+    static async getDercoDeliveryParticipants(team, from, to) {
         let receptionForm = await form_model_1.default.findOne({ _id: "5b1ae5799ebea419025b3e41" });
         return participant_model_1.default.aggregate([
             {
@@ -1336,7 +1336,8 @@ class FormController {
                     team: team,
                     form: receptionForm._id,
                     createdAt: {
-                        $gte: moment().subtract(total_months, 'months').startOf('month').toDate()
+                        $gte: from,
+                        $lte: to
                     },
                 }
             },
@@ -1363,7 +1364,8 @@ class FormController {
                     'related_car.team': team,
                     'related_car.lastForm': { $ne: null },
                     'related_car.createdAt': {
-                        $gte: moment().subtract(total_months, 'months').startOf('month').toDate()
+                        $gte: from,
+                        $lte: to
                     }
                 }
             },
@@ -1378,7 +1380,7 @@ class FormController {
             { $unwind: '$to' },
         ]);
     }
-    async getDeliveryParticipants(team, total_months) {
+    async getDeliveryParticipants(team, from, to) {
         const distributors = await venue_model_1.default.find({ team, type: 'distributor' });
         const receivers = await venue_model_1.default.find({ team, type: 'receiver' });
         let receptions = await participant_model_1.default.aggregate([
@@ -1400,12 +1402,14 @@ class FormController {
                     receiveFrom: { $in: distributors.map((v) => v._id) },
                     reception: true,
                     createdAt: {
-                        $gte: moment().subtract(total_months, 'months').startOf('month').toDate()
+                        $gte: from,
+                        $lte: to
                     },
                     'recived_participants.venue': { $in: distributors.map((v) => v._id) },
                     'recived_participants.reception': false,
                     'recived_participants.createdAt': {
-                        $gte: moment().subtract(total_months, 'months').startOf('month').toDate()
+                        $gte: from,
+                        $lte: to
                     }
                 }
             },
@@ -1469,10 +1473,14 @@ class FormController {
     static isDercoUser(user) {
         return user && user.team.toString() === DERCO_TEAM;
     }
-    static parseReception(reception) {
+    static parseReception(reception, distributorTable) {
         const recivedparticipant = reception.recived_participants;
-        const recivedVenue = recivedparticipant.venue;
-        const threshold = (recivedVenue.shippingMaxDays || 5) * 60 * 24;
+        const sendingVenue = recivedparticipant.venue;
+        let daysLimit = distributorTable[sendingVenue._id.toString()] &&
+            distributorTable[sendingVenue._id.toString()][reception.venue._id.toString()] ?
+            distributorTable[sendingVenue._id.toString()][reception.venue._id.toString()] :
+            5;
+        const threshold = daysLimit * 60 * 24;
         const t0 = moment(recivedparticipant.createdAt);
         const t1 = moment(reception.createdAt);
         const dm = t1.diff(t0, 'minutes');
@@ -1481,17 +1489,22 @@ class FormController {
             date_recived: t1,
             reception_id: reception._id,
             send_id: recivedparticipant._id,
-            from: recivedVenue.abbreviation || recivedVenue.name,
+            from: sendingVenue.abbreviation || sendingVenue.name,
             to: reception.venue.abbreviation || reception.venue.name,
-            atTime: dm <= threshold
+            atTime: dm <= threshold,
+            daysLimit: daysLimit
         };
     }
-    static parseDercoReception(reception, dercoDistributionVenue) {
+    static parseDercoReception(reception, distributorTable, dercoDistributionVenue) {
         const car = reception.related_car;
         // TODO: Get The real origin Venue
-        const recivedVenue = dercoDistributionVenue;
+        const sendingVenue = dercoDistributionVenue;
         const venue = reception.to;
-        const threshold = (recivedVenue.shippingMaxDays || 5) * 60 * 24;
+        let daysLimit = distributorTable[sendingVenue._id.toString()] &&
+            distributorTable[sendingVenue._id.toString()][venue._id.toString()] ?
+            distributorTable[sendingVenue._id.toString()][venue._id.toString()] :
+            5;
+        const threshold = daysLimit * 60 * 24;
         const t0 = moment(car.createdAt);
         const t1 = moment(reception.createdAt);
         const dm = t1.diff(t0, 'minutes');
@@ -1499,32 +1512,54 @@ class FormController {
             date_send: t0,
             date_recived: t1,
             reception_id: reception._id,
-            from: recivedVenue.abbreviation || recivedVenue.name,
+            from: sendingVenue.abbreviation || sendingVenue.name,
             to: venue.abbreviation || venue.name,
-            atTime: dm <= threshold
+            atTime: dm <= threshold,
+            daysLimit: daysLimit
         };
     }
     async timingDashboard(req, res) {
         try {
             const { team } = req.user;
             let userObject = await user_model_1.default.findOne({ _id: req.user._id });
-            let dercoDistVenue = await venue_model_1.default.findOne({ team: DERCO_TEAM, type: 'distributor' });
+            let distributors = await venue_model_1.default.find({ team: team, type: 'distributor' }, {}).populate({
+                path: 'sendToDays.venue',
+                select: ['_id']
+            });
+            let start = req.query.start;
+            let to = req.query.end;
+            let startDate = start && start !== "" ? moment(start, 'YYYY-MM-DD') :
+                moment().subtract(3, "months").startOf('month').startOf('day');
+            let toDate = to && to !== "" ? moment(to, 'YYYY-MM-DD') :
+                moment().endOf('month').endOf('day');
+            let distributorTable = {};
+            distributors.map((distributor) => {
+                let distributorId = distributor._id.toString();
+                if (!(distributorId in distributors))
+                    distributorTable[distributorId] = {};
+                distributor.sendToDays.map((venueDay) => {
+                    let venueId = venueDay.venue._id.toString();
+                    distributorTable[distributorId][venueId] = venueDay.shippingMaxDays;
+                });
+            });
             let data = {};
             const total_months = 6;
-            for (let i = 0; i <= total_months; i++) {
-                const month = moment()
-                    .subtract(total_months - i, 'months')
-                    .startOf('month')
-                    .format('MM-YYYY');
+            for (let i = startDate; i <= toDate; i = i.add(1, "month")) {
+                const month = i.format('MM-YYYY');
                 data[month] = [];
             }
+            startDate = start && start !== "" ? moment(start, 'YYYY-MM-DD') :
+                moment().subtract(3, "months").startOf('month').startOf('day');
+            console.log(req.query);
+            console.log(start, startDate.toDate());
+            console.log(to, toDate.toDate());
             const isDercoUser = FormController.isDercoUser(userObject);
             const receptions = isDercoUser ?
-                await FormController.getDercoDeliveryParticipants(team, total_months) :
-                await this.getDeliveryParticipants(team, total_months);
+                await FormController.getDercoDeliveryParticipants(team, startDate.toDate(), toDate.toDate()) :
+                await this.getDeliveryParticipants(team, startDate.toDate(), toDate.toDate());
             for (const reception of receptions) {
-                const value = isDercoUser ? FormController.parseDercoReception(reception, dercoDistVenue) :
-                    FormController.parseReception(reception);
+                const value = isDercoUser ? FormController.parseDercoReception(reception, distributorTable, distributors[0]) :
+                    FormController.parseReception(reception, distributorTable);
                 const month = value.date_send.format('MM-YYYY');
                 data[month].push(value);
             }

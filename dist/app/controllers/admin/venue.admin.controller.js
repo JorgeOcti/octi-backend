@@ -131,6 +131,7 @@ class AdminVenueController {
                 receptionCarriers: true,
                 shippingCarriers: true,
                 shippingMaxDays: true,
+                sendToDays: true,
                 sendTo: true,
                 receiveFrom: true,
                 type: true,
@@ -142,6 +143,9 @@ class AdminVenueController {
                     select: ['_id', 'name']
                 }, {
                     path: 'shippingCarriers',
+                    select: ['_id', 'name']
+                }, {
+                    path: 'sendToDays.venue',
                     select: ['_id', 'name']
                 }, {
                     path: 'sendTo',
@@ -205,7 +209,8 @@ class AdminVenueController {
                 message: 'No tienes permisos para esta operación'
             });
         }
-        const { name, abbreviation, lat, lng, type, company, sendTo, receiveFrom, shippingMaxDays, receptionCarriers, shippingCarriers, region } = req.body;
+        const { name, abbreviation, lat, lng, type, company, sendToDays, receiveFrom, shippingMaxDays, receptionCarriers, shippingCarriers, region } = req.body;
+        const sendTo = sendToDays.map((venueDay) => venueDay.venue._id);
         const { team } = req.user;
         if (!name || !name.trim().length) {
             res.status(400).json({
@@ -234,6 +239,7 @@ class AdminVenueController {
                     company,
                     region,
                     shippingMaxDays,
+                    sendToDays,
                     sendTo,
                     receiveFrom,
                     receptionCarriers,
@@ -290,7 +296,8 @@ class AdminVenueController {
         }
         const { id } = req.params;
         const { team } = req.user;
-        const { name, abbreviation, lat, lng, type, company, sendTo, receiveFrom, receptionCarriers, shippingCarriers, region, shippingMaxDays } = req.body;
+        const { name, abbreviation, lat, lng, type, company, sendToDays, receiveFrom, receptionCarriers, shippingCarriers, region, shippingMaxDays } = req.body;
+        const sendTo = sendToDays.map((venueDay) => venueDay.venue._id);
         if (!name || !name.length) {
             res.status(400).json({
                 message: 'The name is are required',
@@ -309,6 +316,7 @@ class AdminVenueController {
                 company,
                 region,
                 shippingMaxDays,
+                sendToDays,
                 sendTo,
                 receiveFrom,
                 shippingCarriers,
