@@ -143,6 +143,7 @@ class AdminVenueController {
         receptionCarriers: true,
         shippingCarriers: true,
         shippingMaxDays: true,
+        sendToDays: true,
         sendTo: true,
         receiveFrom: true,
         type: true,
@@ -156,6 +157,9 @@ class AdminVenueController {
         path: 'shippingCarriers',
         select: ['_id', 'name']
       }, {
+        path: 'sendToDays.venue',
+        select: ['_id', 'name']
+      },{
         path: 'sendTo',
         select: ['_id', 'name']
       }, {

@@ -1,6 +1,7 @@
 import * as mongoose from 'mongoose';
 import * as mongoosePaginate from 'mongoose-paginate';
 import {IVenue} from '../../interfaces/venue.interface';
+import {venueDaySchema} from "./venueDay.model";
 
 export interface IVenueModel extends IVenue, mongoose.Document {}
 
@@ -51,6 +52,9 @@ const venueSchema = new mongoose.Schema({
     type: String,
     enum: choicesStatusCarInventory,
     default: ChoicesTypeVenue.receiver
+  },
+  sendToDays: {
+    type: [venueDaySchema]
   },
   sendTo: {
     type: [{
