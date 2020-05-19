@@ -1550,9 +1550,6 @@ class FormController {
             }
             startDate = start && start !== "" ? moment(start, 'YYYY-MM-DD') :
                 moment().subtract(3, "months").startOf('month').startOf('day');
-            console.log(req.query);
-            console.log(start, startDate.toDate());
-            console.log(to, toDate.toDate());
             const isDercoUser = FormController.isDercoUser(userObject);
             const receptions = isDercoUser ?
                 await FormController.getDercoDeliveryParticipants(team, startDate.toDate(), toDate.toDate()) :

@@ -1622,9 +1622,6 @@ class FormController {
 
       startDate = start && start !== "" ? moment(start, 'YYYY-MM-DD') :
         moment().subtract(3, "months").startOf('month').startOf('day');
-      console.log(req.query);
-      console.log(start, startDate.toDate())
-      console.log(to, toDate.toDate())
 
       const isDercoUser : boolean = FormController.isDercoUser(userObject!);
       const receptions : IParticipant[] = isDercoUser ?
