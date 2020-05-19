@@ -9,6 +9,7 @@ import Venue, {IVenueModel} from '../../models/venue.model';
 import * as excel from "exceljs";
 import * as tempfile from "tempfile";
 import {Alignment} from "exceljs";
+import {IVenueDay} from "../../../interfaces/venueDay.interface";
 
 class AdminVenueController {
 
@@ -221,9 +222,10 @@ class AdminVenueController {
       });
     }
     const {
-      name, abbreviation, lat, lng, type, company, sendTo, receiveFrom,
+      name, abbreviation, lat, lng, type, company, sendToDays, receiveFrom,
       shippingMaxDays, receptionCarriers, shippingCarriers, region
     } = req.body;
+    const sendTo = sendToDays.map((venueDay : IVenueDay) => venueDay.venue._id);
     const {team} = req.user;
     if (!name || !name.trim().length) {
       res.status(400).json({
@@ -251,6 +253,7 @@ class AdminVenueController {
           company,
           region,
           shippingMaxDays,
+          sendToDays,
           sendTo,
           receiveFrom,
           receptionCarriers,
@@ -308,9 +311,10 @@ class AdminVenueController {
     const {id} = req.params;
     const {team} = req.user;
     const {
-      name, abbreviation, lat, lng, type, company, sendTo, receiveFrom,
+      name, abbreviation, lat, lng, type, company, sendToDays, receiveFrom,
       receptionCarriers, shippingCarriers, region, shippingMaxDays
     } = req.body;
+    const sendTo = sendToDays.map((venueDay : IVenueDay) => venueDay.venue._id);
     if (!name || !name.length) {
       res.status(400).json({
         message: 'The name is are required',
@@ -329,6 +333,7 @@ class AdminVenueController {
         company,
         region,
         shippingMaxDays,
+        sendToDays,
         sendTo,
         receiveFrom,
         shippingCarriers,
