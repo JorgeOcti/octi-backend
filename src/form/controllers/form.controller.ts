@@ -1376,7 +1376,7 @@ class FormController {
     }
   }
 
-  private static async getDercoDeliveryParticipants(team: ITeamModel, total_months: number): Promise<IParticipant[]> {
+  private static async getDercoDeliveryParticipants(team: ITeamModel, from: moment.Moment, to: moment.Moment): Promise<IParticipant[]> {
 
     let receptionForm = await FormModel.findOne({_id: "5b1ae5799ebea419025b3e41"});
     return ParticipantModel.aggregate([
@@ -1385,7 +1385,8 @@ class FormController {
           team: team,
           form: receptionForm!._id,
           createdAt: {
-            $gte: moment().subtract(total_months, 'months').startOf('month').toDate()
+            $gte: from,
+            $lte: to
           },
         }
       },
@@ -1412,7 +1413,8 @@ class FormController {
           'related_car.team': team,
           'related_car.lastForm': {$ne: null},
           'related_car.createdAt': {
-            $gte: moment().subtract(total_months, 'months').startOf('month').toDate()
+            $gte: from,
+            $lte: to
           }
         }
       },
@@ -1429,7 +1431,7 @@ class FormController {
 
   }
 
-  private async getDeliveryParticipants(team: ITeamModel, total_months: number) : Promise<IParticipant[]>{
+  private async getDeliveryParticipants(team: ITeamModel, from: moment.Moment, to: moment.Moment) : Promise<IParticipant[]>{
     const distributors = await Venue.find({team, type: 'distributor'});
     const receivers = await Venue.find({team, type: 'receiver'});
 
@@ -1452,12 +1454,14 @@ class FormController {
           receiveFrom: {$in: distributors.map((v) => v._id)},
           reception: true,
           createdAt: {
-            $gte: moment().subtract(total_months, 'months').startOf('month').toDate()
+            $gte: from,
+            $lte: to
           },
           'recived_participants.venue': {$in: distributors.map((v) => v._id)},
           'recived_participants.reception': false,
           'recived_participants.createdAt': {
-            $gte: moment().subtract(total_months, 'months').startOf('month').toDate()
+            $gte: from,
+            $lte: to
           }
         }
       },
@@ -1584,6 +1588,18 @@ class FormController {
         path: 'sendToDays.venue',
         select: ['_id']
       });
+
+      let start = req.query.start;
+      let to = req.query.end;
+
+      let startDate = start && start !== "" ? moment(start, 'YYYY-MM-DD') :
+        moment().subtract(3, "months").startOf('month').startOf('day');
+
+      let toDate = to && to !== "" ? moment(to, 'YYYY-MM-DD') :
+        moment().endOf('month').endOf('day');
+
+
+
       let distributorTable : any = {};
       distributors.map((distributor: IVenueModel) => {
         let distributorId = distributor._id.toString();
@@ -1599,18 +1615,21 @@ class FormController {
       let data : any = {};
       const total_months = 6;
 
-      for (let i = 0; i <= total_months; i++) {
-        const month = moment()
-          .subtract(total_months - i, 'months')
-          .startOf('month')
-          .format('MM-YYYY');
+      for (let i : moment.Moment = startDate; i <= toDate; i=i.add(1, "month") ) {
+        const month = i.format('MM-YYYY');
         data[month] = [];
       }
 
+      startDate = start && start !== "" ? moment(start, 'YYYY-MM-DD') :
+        moment().subtract(3, "months").startOf('month').startOf('day');
+      console.log(req.query);
+      console.log(start, startDate.toDate())
+      console.log(to, toDate.toDate())
+
       const isDercoUser : boolean = FormController.isDercoUser(userObject!);
       const receptions : IParticipant[] = isDercoUser ?
-        await FormController.getDercoDeliveryParticipants(team, total_months) :
-        await this.getDeliveryParticipants(team, total_months);
+        await FormController.getDercoDeliveryParticipants(team, startDate.toDate(), toDate.toDate()) :
+        await this.getDeliveryParticipants(team, startDate.toDate(), toDate.toDate());
 
       for (const reception of receptions) {
         const value : any  = isDercoUser ? FormController.parseDercoReception(reception, distributorTable, distributors[0]) :
