@@ -230,7 +230,7 @@ class DashboardTimingView extends React.Component<IPropsType, IStateType> {
           let timeLimit = 0;
           let output = '<b>' + params[0].name + '</b><br/>'
 
-          params.map(p => {
+          params.map((p: any) => {
             output += p.marker + p.seriesName + ': ' + (p.value ? p.value : '-')  + '<br/>'; // : every 2nth
             if (timeLimit === 0)
               timeLimit = p.data.limitTime
