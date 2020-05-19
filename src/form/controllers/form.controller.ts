@@ -29,6 +29,7 @@ import ParticipantFile from '../models/participantFile.model';
 import ScaleModel, {IScaleModel} from '../models/scale.model';
 import * as bluebird from 'bluebird';
 import {IParticipant} from "../../interfaces/participant.interface";
+import {IVenueDay} from "../../interfaces/venueDay.interface";
 
 ``
 
@@ -1523,12 +1524,16 @@ class FormController {
     return user && user.team.toString() === DERCO_TEAM;
   }
 
-  private static parseReception(reception : IParticipant) : any {
-    
-    const recivedparticipant : IParticipant = (reception as any).recived_participants as IParticipant;
-    const recivedVenue : IVenueModel = recivedparticipant.venue;
+  private static parseReception(reception : IParticipant, distributorTable : any) : any {
 
-    const threshold = (recivedVenue.shippingMaxDays || 5) * 60 * 24;
+    const recivedparticipant : IParticipant = (reception as any).recived_participants as IParticipant;
+    const sendingVenue : IVenueModel = recivedparticipant.venue;
+
+    let daysLimit = distributorTable[sendingVenue._id.toString()] &&
+    distributorTable[sendingVenue._id.toString()][reception.venue._id.toString()] ?
+      distributorTable[sendingVenue._id.toString()][reception.venue._id.toString()] :
+      5
+    const threshold = daysLimit * 60 * 24;
     const t0 = moment(recivedparticipant.createdAt);
     const t1 = moment(reception.createdAt);
     const dm = t1.diff(t0, 'minutes');
@@ -1538,19 +1543,24 @@ class FormController {
       date_recived: t1,
       reception_id: reception._id,
       send_id: recivedparticipant._id,
-      from: recivedVenue.abbreviation || recivedVenue.name,
+      from: sendingVenue.abbreviation || sendingVenue.name,
       to: reception.venue.abbreviation || reception.venue.name,
-      atTime: dm <= threshold
+      atTime: dm <= threshold,
+      daysLimit: daysLimit
     }
   }
 
-  private static parseDercoReception(reception: IParticipant, dercoDistributionVenue: IVenueModel) : any {
+  private static parseDercoReception(reception: IParticipant, distributorTable : any, dercoDistributionVenue: IVenueModel) : any {
     const car: ICarModel = (reception as any).related_car as ICarModel;
     // TODO: Get The real origin Venue
-    const recivedVenue = dercoDistributionVenue;
+    const sendingVenue = dercoDistributionVenue;
     const venue = (reception as any).to as IVenueModel;
 
-    const threshold = (recivedVenue!.shippingMaxDays || 5) * 60 * 24;
+    let daysLimit = distributorTable[sendingVenue._id.toString()] &&
+      distributorTable[sendingVenue._id.toString()][venue._id.toString()] ?
+      distributorTable[sendingVenue._id.toString()][venue._id.toString()] :
+      5
+    const threshold = daysLimit * 60 * 24;
     const t0 = moment(car.createdAt);
     const t1 = moment(reception.createdAt);
     const dm = t1.diff(t0, 'minutes');
@@ -1559,9 +1569,10 @@ class FormController {
       date_send: t0,
       date_recived: t1,
       reception_id: reception._id,
-      from: recivedVenue!.abbreviation || recivedVenue!.name,
+      from: sendingVenue!.abbreviation || sendingVenue!.name,
       to: venue.abbreviation || venue.name,
-      atTime: dm <= threshold
+      atTime: dm <= threshold,
+      daysLimit: daysLimit
     }
   }
 
@@ -1569,7 +1580,21 @@ class FormController {
     try {
       const {team} = req.user as {team: ITeamModel};
       let userObject = await User.findOne({_id: req.user._id});
-      let dercoDistVenue = await Venue.findOne({team: DERCO_TEAM, type: 'distributor'});
+      let distributors = await Venue.find({team: team, type: 'distributor'}, {}).populate({
+        path: 'sendToDays.venue',
+        select: ['_id']
+      });
+      let distributorTable : any = {};
+      distributors.map((distributor: IVenueModel) => {
+        let distributorId = distributor._id.toString();
+        if (!(distributorId in distributors))
+          distributorTable[distributorId] = {};
+
+        distributor.sendToDays.map((venueDay : IVenueDay) => {
+          let venueId = venueDay.venue._id.toString();
+          distributorTable[distributorId][venueId] = venueDay.shippingMaxDays;
+        });
+      });
 
       let data : any = {};
       const total_months = 6;
@@ -1588,8 +1613,8 @@ class FormController {
         await this.getDeliveryParticipants(team, total_months);
 
       for (const reception of receptions) {
-        const value : any  = isDercoUser ? FormController.parseDercoReception(reception, dercoDistVenue!) :
-          FormController.parseReception(reception);
+        const value : any  = isDercoUser ? FormController.parseDercoReception(reception, distributorTable, distributors[0]) :
+          FormController.parseReception(reception, distributorTable);
         const month = value.date_send.format('MM-YYYY');
         data[month].push(value);
       }
