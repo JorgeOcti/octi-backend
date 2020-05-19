@@ -54,9 +54,29 @@ class DashboardTimingView extends React.Component<IPropsType, IStateType> {
   }
 
   public componentDidMount(): void {
+    let $this = this;
     const $timingPerMonth = document.getElementById('damages-per-month') as HTMLDivElement;
     this.timingPerMonthChart = echarts.init($timingPerMonth);
     this.timingPerMonthChart.on('click', this.showVenueChart);
+    ($('input[name="daterange"]') as any).daterangepicker({
+      startDate: moment().subtract(2, 'months').startOf('month'),
+      endDate: moment().endOf('month'),
+      maxDate: moment(),
+      locale: {
+        format: 'MM/YYYY',
+        customRangeLabel: "Período personalizado",
+        applyLabel: "Aplicar",
+        cancelLabel: "Cancelar",
+      },
+      ranges: {
+        'Este mes': [moment().startOf('month'), moment().endOf('month')],
+        'Últimos 3 meses': [moment().subtract(2, 'months').startOf('month'), moment().endOf('month')],
+        'Últimos 6 meses': [moment().subtract(5, 'months').startOf('month'), moment().endOf('month')],
+        'Último año': [moment().subtract(11, 'months').startOf('month'), moment().endOf('month')],
+      }
+    }, function (from: any, to: any, label: any) {
+      $this.props.getDashboardTiming(from.format('YYYY-MM-DD'), to.format('YYYY-MM-DD'));
+    });
   }
 
   public componentDidCatch(error: Error, errorInfo: ErrorInfo): void {
@@ -97,6 +117,18 @@ class DashboardTimingView extends React.Component<IPropsType, IStateType> {
                   <div className="box-tools pull-right">
                   </div>
                 </div>
+
+                <div className="row">
+                  <div className="col-md-offset-8 col-md-4">
+                    <div className="input-group input-group-sm" style={{padding: '10px 5px'}}>
+                      <input type="text" className="form-control input-sm" name="daterange" />
+                      <div className="input-group-btn">
+                        <button className="btn btn-default"><i className="fa fa-calendar"/></button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
                 <div className="box-body">
                 <p
                   className="text-muted text-center"
@@ -152,7 +184,7 @@ class DashboardTimingView extends React.Component<IPropsType, IStateType> {
       legend: {
         data: ['No cumple', 'Cumple'],
         // x: 'center',
-        bottom: 50
+        bottom: 5
       },
       xAxis: {
         type: 'value',
@@ -168,7 +200,7 @@ class DashboardTimingView extends React.Component<IPropsType, IStateType> {
         left: 10,
         right: 10,
         containLabel: true,
-        height: (months.length * 20) + 50
+        height: 290
       },
       series: [
         {
@@ -247,7 +279,7 @@ class DashboardTimingView extends React.Component<IPropsType, IStateType> {
       legend: {
         data: ['No cumple', 'Cumple'],
         // x: 'center',
-        bottom: 50
+        bottom: 5
       },
       xAxis: {
         type: 'value',
@@ -263,7 +295,7 @@ class DashboardTimingView extends React.Component<IPropsType, IStateType> {
         left: 10,
         right: 10,
         containLabel: true,
-        height: (names.length * 20) + 50
+        height: 290
       },
       series: [
         {
