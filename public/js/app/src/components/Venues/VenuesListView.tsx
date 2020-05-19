@@ -310,7 +310,7 @@ class VenuesListView extends React.Component<IPropsType, IStateType> {
                                   venue.company ? <span className={'text-sm text-muted'}>{venue.company.name}</span> : null
                                 }
                               </td>
-                              <td className="middle">{venue.lat}, {venue.lng}</td>
+                              <td className="middle-center">{venue.lat}, {venue.lng}</td>
                               <td className="middle-center  hidden-xs">
                                 {
                                   venue.type === 'distributor' ?
