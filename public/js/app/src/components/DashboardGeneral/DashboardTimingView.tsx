@@ -118,7 +118,7 @@ class DashboardTimingView extends React.Component<IPropsType, IStateType> {
                   </div>
                 </div>
 
-                {selectedDate ? null : <div className="row">
+                 <div className="row" style={{display: selectedDate ? 'none' : 'inherit'}}>
                   <div className="col-md-offset-8 col-md-4">
                     <div className="input-group input-group-sm" style={{padding: '10px 5px'}}>
                       <input type="text" className="form-control input-sm" name="daterange" />
@@ -127,8 +127,7 @@ class DashboardTimingView extends React.Component<IPropsType, IStateType> {
                       </div>
                     </div>
                   </div>
-                </div>}
-
+                </div>
                 <div className="box-body">
                 <p
                   className="text-muted text-center"
