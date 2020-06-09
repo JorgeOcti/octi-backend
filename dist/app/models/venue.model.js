@@ -19,7 +19,6 @@ const venueSchema = new mongoose.Schema({
     },
     abbreviation: {
         type: String,
-        required: true
     },
     lat: {
         type: Number,
