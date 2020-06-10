@@ -209,7 +209,7 @@ function processCars(cars: IInventoryCar[], selectedItems: { [key: string]: any 
     }
     if (add && filter && filter.text && filter.text.length) {
       const result: boolean[] = filter.text.toLowerCase().split(' ').map((text) => (
-        unorm.nfd(`${car.car.vin}${car.car.brand}${car.car.denomination}${car.car.patent}`)
+        unorm.nfd(`${car.car.vin}${car.car.brand}${car.car.denomination}${car.car.patent}${car.car.internalNumber}`)
           .replace(/[\u0300-\u036f]/g, '')
           .toLowerCase()
           .includes(text.toLowerCase())
@@ -235,6 +235,7 @@ function processCars(cars: IInventoryCar[], selectedItems: { [key: string]: any 
         vin: car.car.vin,
         brand: car.car.brand,
         denomination: car.car.denomination,
+        internalNumber: car.car.internalNumber,
         label: car.label,
         labelName: car.label && car.label.hasOwnProperty('name') ? car.label.name : 'z',
         labelBy: car.labelBy,

@@ -471,6 +471,9 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
             : <CopyText value={row.vin}><strong>{row.vin}</strong></CopyText>
         }<br/>
         <span className="text-muted text-sm">{cell} / {row.denomination}</span>
+        {
+          row.internalNumber ? <React.Fragment><br/><span className="text-muted text-sm">{row.internalNumber}</span></React.Fragment> : null
+        }
         <div className="visible-xs">
           {this.labelFormatter(cell, row)}
         </div>
