@@ -188,7 +188,7 @@ class CompaniesListView extends React.Component<IPropsType, IStateType> {
       _id: company._id,
       name: company.name,
       image: null,
-      imageURI: company.image.hasOwnProperty('url') ? decodeURI(company.image.url) : null
+      imageURI: company.image && company.image.hasOwnProperty('url') ? decodeURI(company.image.url) : null
     });
     setTimeout(() => {
       this.props.loadDataAction(
