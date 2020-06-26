@@ -1341,9 +1341,17 @@ class InventoryController {
           $unwind: '$cars'
         }, {
           $match: {
-            'cars.venue': {
-              $in: venuesPermissions
-            },
+            $or: [
+              {
+                'cars.venue': {
+                  $in: venuesPermissions
+                }
+              }, {
+                'cars.venueFound': {
+                  $in: venuesPermissions
+                },
+              }
+            ],
             'cars.status':{
               $in: [
                 ChoicesStatusCarInventory.pending,
@@ -1439,9 +1447,17 @@ class InventoryController {
           $unwind: '$cars'
         }, {
           $match: {
-            'cars.venue': {
-              $in: venuesPermissions
-            },
+            $or: [
+              {
+                'cars.venue': {
+                  $in: venuesPermissions
+                }
+              }, {
+                'cars.venueFound': {
+                  $in: venuesPermissions
+                },
+              }
+            ],
             'cars.status':{
               $in: [
                 ChoicesStatusCarInventory.pending,
@@ -1514,9 +1530,17 @@ class InventoryController {
           $unwind: '$cars'
         }, {
           $match: {
-            'cars.venue': {
-              $in: venuesPermissions
-            },
+            $or: [
+              {
+                'cars.venue': {
+                  $in: venuesPermissions
+                }
+              }, {
+                'cars.venueFound': {
+                  $in: venuesPermissions
+                },
+              }
+            ],
             'cars.status':{
               $in: [
                 ChoicesStatusCarInventory.pending,
@@ -1628,9 +1652,17 @@ class InventoryController {
         }).populate([{
           path: 'cars',
           match: {
-            venue: {
-              $in: venuesPermissions
-            },
+            $or:[
+              {
+                venue: {
+                  $in: venuesPermissions
+                },
+              }, {
+                venueFound: {
+                  $in: venuesPermissions
+                },
+              }
+            ],
             status:{
               $in: [
                 ChoicesStatusCarInventory.pending,
