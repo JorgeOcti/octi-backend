@@ -7,6 +7,7 @@ import * as express from 'express';
 import * as session from 'express-session';
 import * as fileStreamRotator from 'file-stream-rotator';
 import * as kue from 'kue';
+import * as kueScheduler from 'kue-scheduler';
 import * as morgan from 'morgan';
 import * as multer from 'multer';
 import * as passport from 'passport';
@@ -25,6 +26,7 @@ import InventoryQueue from './inventory/taks/inventory.task';
 import Middlewares from './middlewares/middlewares';
 import redisClient, {createRedisClient} from './services/redis.service';
 import {planningRouter} from "./planning/router";
+import {Job} from "kue";
 
 // Create Express server
 const app = express();
@@ -155,7 +157,7 @@ passport.use(new LocalStrategy({ usernameField: 'username' }, (username, passwor
   User.findOne({
     username: username.toLowerCase(),
     active: true
-  }, (err, user: any) => {
+  }, (err: any, user: any) => {
     if (err) { return done(err); }
     if (!user) {
       return done(undefined, false, { message: `username ${username} not found.` });
@@ -254,6 +256,29 @@ export const queue = kue.createQueue({
       return createRedisClient();
     }
   }
+});
+
+export const queueScheduler = kueScheduler.createQueue({
+  redis: {
+    createClientFactory: function () {
+      return createRedisClient();
+    }
+  }
+});
+
+const job = queueScheduler
+  .createJob('billing', {})
+  .attempts(3)
+  .priority('normal')
+  .unique('billing');
+
+//schedule it to run every 2 seconds
+queueScheduler.every('2 seconds', job);
+
+//somewhere process your scheduled jobs
+queueScheduler.process('billing', function (job: Job, done: (error?: Error | null, data?: object) => void) {
+  console.log('test 2 seconds');
+  done();
 });
 
 new EmailQueue(queue).run();

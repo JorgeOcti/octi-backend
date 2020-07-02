@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.createRedisClient = void 0;
 const bluebird = require("bluebird");
 // import * as redis from 'redis';
 const Redis = require("ioredis");

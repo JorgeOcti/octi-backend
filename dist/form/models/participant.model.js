@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.scaleSchema = void 0;
 const mongoose = require("mongoose");
 const form_model_1 = require("./form.model");
 const scale_model_1 = require("./scale.model");

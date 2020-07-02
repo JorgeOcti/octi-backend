@@ -28,9 +28,7 @@ const participant_model_1 = require("../models/participant.model");
 const participantFile_model_1 = require("../models/participantFile.model");
 const scale_model_1 = require("../models/scale.model");
 const bluebird = require("bluebird");
-``;
 // import * as puppeteer from 'puppeteer';
-global;
 const DERCO_TEAM = '5bf2de34caf8ef7096105cda';
 class FormController {
     constructor() {

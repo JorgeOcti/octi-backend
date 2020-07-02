@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.kindQuestion = exports.KindQuestion = void 0;
 const mongoose = require("mongoose");
 const mongoosePaginate = require("mongoose-paginate");
 const itemSchema = new mongoose.Schema({

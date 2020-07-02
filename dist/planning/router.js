@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.planningRouter = void 0;
 const express = require("express");
 const middlewares_1 = require("../middlewares/middlewares");
 const planning_controller_1 = require("./controllers/planning.controller");

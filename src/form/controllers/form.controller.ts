@@ -31,10 +31,9 @@ import * as bluebird from 'bluebird';
 import {IParticipant} from "../../interfaces/participant.interface";
 import {IVenueDay} from "../../interfaces/venueDay.interface";
 
-``
 
 // import * as puppeteer from 'puppeteer';
-global const DERCO_TEAM = '5bf2de34caf8ef7096105cda';
+const DERCO_TEAM = '5bf2de34caf8ef7096105cda';
 
 class FormController {
 

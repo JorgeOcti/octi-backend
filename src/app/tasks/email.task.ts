@@ -25,7 +25,7 @@ class EmailQueue {
     return pugCompile(context);
   }
 
-  private processEmail(job?: Job, done?: (error?: Error | null, data?: object) => void) {
+  private processEmail(job: Job, done: (error?: Error | null, data?: object) => void) {
     if (job && done) {
       job.log('start process');
       // generate email

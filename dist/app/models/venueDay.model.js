@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.venueDaySchema = void 0;
 const mongoose = require("mongoose");
 exports.venueDaySchema = new mongoose.Schema({
     venue: {

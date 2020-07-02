@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.inventoryRouter = void 0;
 const express = require("express");
 const middlewares_1 = require("../middlewares/middlewares");
 const inventory_controller_1 = require("./controllers/inventory.controller");

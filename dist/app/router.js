@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.jwtRouter = exports.appRouter = void 0;
 const csrf = require("csurf");
 const express = require("express");
 const middlewares_1 = require("../middlewares/middlewares");

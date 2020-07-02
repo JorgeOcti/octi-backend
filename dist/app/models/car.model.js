@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.choicesStatusCar = exports.ChoicesStatusCar = void 0;
 const mongoose = require("mongoose");
 const mongoosePaginate = require("mongoose-paginate");
 var ChoicesStatusCar;

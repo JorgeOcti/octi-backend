@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.scaleSchema = exports.choiceBackgroundColors = void 0;
 const mongoose = require("mongoose");
 exports.choiceBackgroundColors = ['red', 'green', 'yellow', 'blue'];
 const choiceSchema = new mongoose.Schema({
