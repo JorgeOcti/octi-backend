@@ -151,6 +151,7 @@ class AdminCompaniesController {
           };
           file.team = team._id;
           await company.attach('image', file);
+          await company.update({image: company.image})
         }
         await company.save();
         const response = {
