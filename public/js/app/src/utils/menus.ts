@@ -194,7 +194,7 @@ if (hasPermission(window.user, 'viewVersion')) {
   });
 }
 
-if (hasPermission(window.user, 'viewVersion')) {
+if (hasPermission(window.user, 'viewBilling')) {
   settingItems.push({
     id: '10.8',
     icon: 'fa-circle-o',
