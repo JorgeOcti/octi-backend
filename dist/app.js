@@ -243,7 +243,8 @@ exports.queue = kue.createQueue({
 const billingQueue = new Bull('billing', {
     createClient: function () {
         return redis_service_1.createRedisClient();
-    }
+    },
+    prefix: '{}'
 });
 billingQueue.process(async () => {
     await new billing_task_1.default().processBilling();
