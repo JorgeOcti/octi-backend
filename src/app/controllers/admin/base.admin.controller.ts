@@ -119,12 +119,12 @@ export default abstract class BaseAdminController<T> {
         message: 'No tienes permisos para esta operación'
       });
     }
-    const {page, pageSize} = req.query;
+    const {page, pageSize} = req.query as { page: string, pageSize: string };
     // paginate options
     this.paginateOptions = {
       ...this.paginateOptions,
-      page: parseInt(page ? page : 1, 10),
-      limit: parseInt(pageSize ? pageSize : 20, 10)
+      page: parseInt(page ? page : "1", 10),
+      limit: parseInt(pageSize ? pageSize : "20", 10)
     };
     try {
       const data = await this.getDataPaginated({

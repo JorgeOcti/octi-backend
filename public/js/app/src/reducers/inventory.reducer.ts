@@ -239,6 +239,7 @@ function processCars(cars: IInventoryCar[], selectedItems: { [key: string]: any 
         label: car.label,
         labelName: car.label && car.label.hasOwnProperty('name') ? car.label.name : 'z',
         labelBy: car.labelBy,
+        color: car.car.color,
         labelText: car.labelText,
         venue: car.venue ? car.venue.name : '-',
         images: car.images && car.images.length ? car.images : [],

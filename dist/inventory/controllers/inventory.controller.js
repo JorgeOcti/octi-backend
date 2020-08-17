@@ -29,6 +29,7 @@ const excel = require("exceljs");
 const venue_model_2 = require("../../app/models/venue.model");
 const tempfile = require("tempfile");
 const teamSetting_model_1 = require("../../app/models/teamSetting.model");
+const activityHistory_model_1 = require("../../billing/models/activityHistory.model");
 class InventoryController {
     constructor() {
         this.index = this.index.bind(this);
@@ -89,6 +90,7 @@ class InventoryController {
         notification = notification === 'true';
         try {
             const inventoryCars = [];
+            const activityHistories = [];
             const venuesIDs = [];
             for (const venue of carsByVenue) {
                 if (venue.name && venue.name.trim().length) {
@@ -137,6 +139,16 @@ class InventoryController {
                                     comments: [],
                                     images: []
                                 });
+                                activityHistories.push({
+                                    team,
+                                    company,
+                                    user: req.user._id,
+                                    type: activityHistory_model_1.ChoicesTypeActivity.inventory,
+                                    car: {
+                                        _id: currentCar._id,
+                                        vin: currentCar.vin
+                                    }
+                                });
                                 app_1.queue
                                     .create('updateCar', {
                                     title: `updateCar ${car.vin}`,
@@ -181,6 +193,14 @@ class InventoryController {
                 i.inventory = inventory._id;
                 return i;
             });
+            activityHistories.map((a) => {
+                a.inventory = {
+                    _id: inventory._id,
+                    name: inventory.name
+                };
+                return a;
+            });
+            await activityHistory_model_1.default.insertMany(activityHistories);
             await inventoryCar_model_1.default.insertMany(inventoryCars);
             if (notification) {
                 const usersIDs = await user_model_2.default.find({
@@ -261,8 +281,8 @@ class InventoryController {
                 sort: {
                     createdAt: -1
                 },
-                page: parseInt(page ? page : 1, 10),
-                limit: parseInt(pageSize ? pageSize : 10, 10)
+                page: parseInt(page ? page : "1", 10),
+                limit: parseInt(pageSize ? pageSize : "10", 10)
             };
             const paginatedInventories = await inventory_model_1.default.paginate({
                 team,

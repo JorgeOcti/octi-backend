@@ -15,17 +15,16 @@ export function dashboardDercoReducer(state = initialState, action: DashboardDer
       return {
         ...state,
         cleaning: {
-          loading: true,
-          ...state.cleaning
+          ...state.cleaning,
+          loading: true
         },
       };
     case '/DASHBOARD/CLEANING/LOAD_DATA_DAILY':
-      console.log("--payload", action.payload)
       return {
         ...state,
         cleaning: {
-          loading: false,
-          ...action.payload.cleaning
+          ...action.payload.cleaning,
+          loading: false
         },
 
       };

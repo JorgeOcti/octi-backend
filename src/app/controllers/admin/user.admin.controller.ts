@@ -15,10 +15,8 @@ import User, {
 } from '../../models/user.model';
 import Venue from "../../models/venue.model";
 import {Alignment} from "exceljs";
-import TeamSetting from "../../models/teamSetting.model";
 
 class AdminUsersController {
-  private teamSetting: any;
 
   constructor() {
     this.index = this.index.bind(this);
@@ -28,7 +26,6 @@ class AdminUsersController {
     this.apiDeleteUser = this.apiDeleteUser.bind(this);
     this.exportXLS = this.exportXLS.bind(this);
     this.apiChangePasswordUser = this.apiChangePasswordUser.bind(this);
-    this.teamSetting = TeamSetting
   }
 
   public async index(req: IRequest, res: Response) {
@@ -219,7 +216,7 @@ class AdminUsersController {
         message: 'No tienes permisos para esta operación'
       });
     }
-    const {page, pageSize, search} = req.query;
+    const {page, pageSize, search} = req.query as { page: string, pageSize: string, search: string};
     const {team} = req.user;
     // paginate options
     const options: PaginateOptions = {
@@ -260,8 +257,8 @@ class AdminUsersController {
         firstName: 1,
         lastName: 1
       },
-      page: parseInt(page ? page : 1, 10),
-      limit: parseInt(pageSize ? pageSize : 20, 10)
+      page: parseInt(page ? page : "1", 10),
+      limit: parseInt(pageSize ? pageSize : "20", 10)
     };
     try {
       const users = await this.getUsers({

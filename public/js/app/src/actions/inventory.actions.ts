@@ -422,7 +422,7 @@ export function actionSetLabel(inventory: string, car: string, carID: string, la
   return (dispatch: Dispatch<InventoryReduxAction>) => {
     const api: ApiService = new ApiService();
     if (label.requireCustomText) {
-      (swal as any)('Ingrese la etiqueta personaliza:', {
+      (swal as any)('Agregar datos adicionales:', {
         content: 'input'
       }).then((custom: string) => {
         if (custom && custom.trim().length) {

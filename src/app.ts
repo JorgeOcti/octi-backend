@@ -7,9 +7,9 @@ import * as express from 'express';
 import * as session from 'express-session';
 import * as fileStreamRotator from 'file-stream-rotator';
 import * as kue from 'kue';
-import * as kueScheduler from 'kue-scheduler';
 import * as morgan from 'morgan';
 import * as multer from 'multer';
+import * as Bull from 'bull';
 import * as passport from 'passport';
 import * as passportLocal from 'passport-local';
 import * as path from 'path';
@@ -26,7 +26,8 @@ import InventoryQueue from './inventory/taks/inventory.task';
 import Middlewares from './middlewares/middlewares';
 import redisClient, {createRedisClient} from './services/redis.service';
 import {planningRouter} from "./planning/router";
-import {Job} from "kue";
+import BillingQueue from "./billing/tasks/billing.task";
+import { billingRouter } from './billing/router';
 
 // Create Express server
 const app = express();
@@ -67,12 +68,14 @@ Raven.config(process.env.SENTRY_DNS, {
   dataCallback: (data) => {
     const stacktrace = data.exception && data.exception[0].stacktrace;
 
-    if (stacktrace && stacktrace.frames) {
-      stacktrace.frames.forEach((frame: any) => {
-        if (frame.filename.startsWith('/')) {
-          frame.filename = 'app:///' + path.relative(root, frame.filename);
-        }
-      });
+    if (stacktrace) {
+      if (stacktrace.frames) {
+        stacktrace.frames.forEach((frame: any) => {
+          if (frame.filename.startsWith('/')) {
+            frame.filename = 'app:///' + path.relative(root, frame.filename);
+          }
+        });
+      }
     }
 
     return data;
@@ -247,6 +250,7 @@ app.use('/', appRouter);
 app.use('/', formRouter);
 app.use('/', planningRouter);
 app.use('/', inventoryRouter);
+app.use('/', billingRouter);
 app.use('/api/v1', jwtRouter);
 
 /* queues */
@@ -258,6 +262,40 @@ export const queue = kue.createQueue({
   }
 });
 
+const billingQueue = new Bull('billing', {
+  createClient: function () {
+    return createRedisClient();
+  }
+});
+
+billingQueue.process(async () => {
+  await new BillingQueue().processBilling()
+});
+
+const addCronTask = async () => {
+  try {
+    // let job = await billingQueue.removeRepeatable('task', {cron: '0 47 6 * * 4'});
+    let jobs = await billingQueue.getRepeatableJobs();
+    if (jobs && jobs.length){
+      for(const job of jobs){
+        await billingQueue.removeRepeatableByKey(job.key);
+        console.log(`${jobs[0].key} Removida`)
+      }
+    }
+  } catch (error) {
+    console.log(error);
+    console.log("NO existen tareas")
+  }
+  if (process.env.ENV === 'development') {
+    // billingQueue.add({}, {repeat: {cron: '0 */1 * * *'}, jobId: 'billing'});
+    // billingQueue.add({}, {repeat: {cron: '*/10 * * * *'}, jobId: 'billing'});
+  } else if (process.env.ENV === 'production') {
+    billingQueue.add({}, {repeat: {cron: '0 1 1 * *'}, jobId: 'billing'});
+  }
+};
+addCronTask();
+//
+/*
 export const queueScheduler = kueScheduler.createQueue({
   redis: {
     createClientFactory: function () {
@@ -273,13 +311,13 @@ const job = queueScheduler
   .unique('billing');
 
 //schedule it to run every 2 seconds
-queueScheduler.every('2 seconds', job);
+queueScheduler.every('30 seconds', job);
+// queueScheduler.every('30 minutes', job);
 
 //somewhere process your scheduled jobs
-queueScheduler.process('billing', function (job: Job, done: (error?: Error | null, data?: object) => void) {
-  console.log('test 2 seconds');
-  done();
-});
+queueScheduler.process('billing', new BillingQueue().processBilling);
+
+*/
 
 new EmailQueue(queue).run();
 new InventoryQueue(queue).run();

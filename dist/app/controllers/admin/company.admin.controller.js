@@ -29,17 +29,17 @@ class AdminCompaniesController {
         const { page, pageSize, search } = req.query;
         // paginate options
         const options = {
-            select: {
-                name: true,
-                image: true,
-                updatedAt: true,
-                createdAt: true
-            },
+            // select: {
+            //   name: true,
+            //   image: true,
+            //   updatedAt: true,
+            //   createdAt: true
+            // },
             sort: {
                 name: 1
             },
-            page: parseInt(page ? page : 1, 10),
-            limit: parseInt(pageSize ? pageSize : 20, 10)
+            page: parseInt(page ? page : "1", 10),
+            limit: parseInt(pageSize ? pageSize : "20", 10)
         };
         const companies = await this.getCompanies({
             deleted: false,
@@ -69,7 +69,7 @@ class AdminCompaniesController {
                 message: 'No tienes permisos para esta operación'
             });
         }
-        const { name } = req.body;
+        const { name, billing, notifications } = req.body;
         const { team } = req.user;
         const file = general_utils_1.default.getFileFromRequest(req.files, 'file');
         if (!name || !name.trim().length) {
@@ -93,6 +93,8 @@ class AdminCompaniesController {
             else {
                 const newCompany = new company_model_1.default({
                     name,
+                    billing: JSON.parse(billing),
+                    notifications: JSON.parse(notifications),
                     team
                 });
                 if (file) {
@@ -124,7 +126,7 @@ class AdminCompaniesController {
         }
         const { id } = req.params;
         const { team } = req.user;
-        const { name } = req.body;
+        const { name, billing, notifications } = req.body;
         const file = general_utils_1.default.getFileFromRequest(req.files, 'file');
         if (!name || !name.length) {
             res.status(400).json({
@@ -139,6 +141,8 @@ class AdminCompaniesController {
             });
             if (company) {
                 company.name = name;
+                company.billing = JSON.parse(billing);
+                company.notifications = JSON.parse(notifications);
                 if (file) {
                     file.headers = {
                         'Content-Type': file.mimetype

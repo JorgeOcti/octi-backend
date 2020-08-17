@@ -114,7 +114,7 @@ class AdminCarController {
         message: 'No tienes permisos para esta operación'
       });
     }
-    const {page, pageSize, search} = req.query;
+    const {page, pageSize, search} = req.query as { page: string, pageSize: string, search: string };
     const {team} = req.user;
     // paginate options
     const options: PaginateOptions = {
@@ -136,8 +136,8 @@ class AdminCarController {
       sort: {
         createdAt: -1
       },
-      page: parseInt(page ? page : 1, 10),
-      limit: parseInt(pageSize ? pageSize : 20, 10)
+      page: parseInt(page ? page : "1", 10),
+      limit: parseInt(pageSize ? pageSize : "20", 10)
     };
     try {
       const cars = await this.getCars({

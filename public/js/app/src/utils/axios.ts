@@ -109,6 +109,8 @@ export default class ApiService {
   public createCompany(company: IBaseCompany): AxiosPromise {
     const formData = new FormData();
     formData.append('name', company.name);
+    formData.append('billing', JSON.stringify(company.billing));
+    formData.append('notifications', JSON.stringify(company.notifications));
     if (company.image) {
       formData.append('file', company.image);
     }
@@ -121,6 +123,8 @@ export default class ApiService {
   public updateCompany(company: IBaseCompany): AxiosPromise {
     const formData = new FormData();
     formData.append('name', company.name);
+    formData.append('billing', JSON.stringify(company.billing));
+    formData.append('notifications', JSON.stringify(company.notifications));
     if (company.image) {
       formData.append('file', company.image);
     }
@@ -281,13 +285,13 @@ export default class ApiService {
   public createInventory({
     carsByVenue, name, notification, file, backupFile, manualPhoto, reportPhoto
   }: {
-    carsByVenue: any, name: string, notification: boolean, file: File, backupFile: File | null, manualPhoto: number, reportPhoto: number
+    carsByVenue: any, name: string, notification: boolean, file: File | null, backupFile: File | null, manualPhoto: number, reportPhoto: number
   }): AxiosPromise {
     const formData = new FormData();
     formData.append('carsByVenue', JSON.stringify(carsByVenue));
     formData.append('name', name);
     formData.append('notification', notification.toString());
-    formData.append('file', file);
+    formData.append('file', file!);
     formData.append('manualPhoto', manualPhoto.toString());
     formData.append('reportPhoto', reportPhoto.toString());
     if (backupFile) {
@@ -421,6 +425,12 @@ export default class ApiService {
   public getPlanning(page: number, pageSize?: number): AxiosPromise {
     return this.instance.get(
       `/api/admin/planning/?page=${page}${pageSize ? `&pageSize=${pageSize}` : ''}`
+    );
+  }
+
+  public getBilling(page: number, pageSize?: number): AxiosPromise {
+    return this.instance.get(
+      `/api/admin/billing/?page=${page}${pageSize ? `&pageSize=${pageSize}` : ''}`
     );
   }
 

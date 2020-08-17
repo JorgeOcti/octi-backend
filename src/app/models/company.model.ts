@@ -27,6 +27,40 @@ const imageSchema = new mongoose.Schema({
   _id: false
 });
 
+const billingSchema = new mongoose.Schema({
+  checklistPrice: {
+    type: Number,
+    default: 0
+  },
+  inventoryPrice: {
+    type: Number,
+    default: 0
+  },
+  active: {
+    type: Boolean,
+    default: false
+  }
+}, {
+  _id: true
+});
+
+const billingNotificationsSchema = new mongoose.Schema({
+  name: {
+    type: String,
+    default: ""
+  },
+  email: {
+    type: String,
+    default: ""
+  },
+  active: {
+    type: Boolean,
+    default: true
+  }
+}, {
+  _id: true
+});
+
 const companySchema = new mongoose.Schema({
   name: {
     type: String,
@@ -41,6 +75,18 @@ const companySchema = new mongoose.Schema({
     type: Boolean,
     default: false
   },
+  billing: {
+    type: billingSchema,
+    default: {
+      active: true,
+      checklistPrice: 0.07,
+      inventoryPrice: 0.022
+    }
+  },
+  notifications: {
+    type: [billingNotificationsSchema],
+    default: []
+  },
   image: {
     type: imageSchema,
     default: {}
@@ -52,6 +98,7 @@ const companySchema = new mongoose.Schema({
 }, {
   timestamps: true
 });
+// {billing:{ active: true, checklistPrice: 0.07 , inventoryPrice: 0.022}, notifications:[]}
 
 companySchema.plugin(mongoosePaginate);
 

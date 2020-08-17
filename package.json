@@ -21,6 +21,7 @@
     "bluebird": "~3.5.4",
     "body-parser": "~1.18.3",
     "bson": "~4.0.4",
+    "bull": "^3.16.0",
     "cheerio": "~1.0.0-rc.2",
     "compression": "~1.7.4",
     "connect-redis": "~3.4.1",
@@ -50,7 +51,7 @@
     "moment": "~2.24.0",
     "moment-timezone": "~0.5.25",
     "mongoose": "~5.7.10",
-    "mongoose-crate": "~1.1.0",
+    "mongoose-crate": "git+https://github.com/gmunozc/mongoose-crate.git#master",
     "mongoose-crate-s3": "~1.2.0",
     "mongoose-paginate": "~5.0.3",
     "morgan": "~1.9.1",
@@ -83,6 +84,7 @@
     "@types/bcrypt": "~3.0.0",
     "@types/bluebird": "~3.5.30",
     "@types/body-parser": "~1.17.0",
+    "@types/bull": "^3.14.0",
     "@types/chai": "~4.1.7",
     "@types/chai-http": "~4.2.0",
     "@types/cheerio": "~0.22.11",
@@ -136,9 +138,9 @@
     "source-map-support": "~0.5.12",
     "supertest": "~4.0.2",
     "ts-mocha": "~6.0.0",
-    "ts-node": "~8.1.0",
-    "typescript": "~3.8.3",
+    "ts-node": "~8.10.2",
+    "typescript": "~3.9.7",
     "typings": "~2.1.1",
-    "webpack": "~4.30.0"
+    "webpack": "~4.44.1"
   }
 }

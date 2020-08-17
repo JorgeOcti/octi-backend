@@ -34,20 +34,20 @@ class AppController {
   }
 
   /* istanbul ignore next */
-  public index(req: Request, res: Response) {
+  public index(req: Request, res: Response): void {
     res.render('app/index');
   }
 
-  public healthCheck(req: Request, res: Response) {
+  public healthCheck(req: Request, res: Response): void {
     res.json({status: 'success'});
   }
 
-  public robots(req: Request, res: Response) {
+  public robots(req: Request, res: Response): void {
     res.setHeader('content-type', 'text/plain; charset=utf-8');
     res.send(`User-Agent: *\nDisallow: /`);
   }
 
-  public login(req: Request, res: Response) {
+  public login(req: Request, res: Response): void {
     if (req.user) {
       return res.redirect('/');
     } else {
@@ -55,7 +55,7 @@ class AppController {
     }
   }
 
-  public processLogin(req: Request, res: Response, next: NextFunction) {
+  public processLogin(req: Request, res: Response, next: NextFunction): void {
     /* istanbul ignore if */
     if (req.user) {
       return res.redirect('/');

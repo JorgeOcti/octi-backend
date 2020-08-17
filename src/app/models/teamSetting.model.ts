@@ -1,5 +1,4 @@
 import * as mongoose from 'mongoose';
-import * as mongoosePaginate from 'mongoose-paginate';
 import {ITeamSetting} from '../../interfaces/teamSetting.interface';
 
 export interface ITeamSettingModel extends ITeamSetting, mongoose.Document {}
@@ -65,8 +64,6 @@ const teamSettingSchema = new mongoose.Schema({
 }, {
   timestamps: true
 });
-
-teamSettingSchema.plugin(mongoosePaginate);
 
 const TeamSetting = mongoose.model<ITeamSettingModel>('TeamSetting', teamSettingSchema);
 

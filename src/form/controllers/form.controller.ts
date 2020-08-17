@@ -30,6 +30,7 @@ import ScaleModel, {IScaleModel} from '../models/scale.model';
 import * as bluebird from 'bluebird';
 import {IParticipant} from "../../interfaces/participant.interface";
 import {IVenueDay} from "../../interfaces/venueDay.interface";
+import ActivityHistory, {ChoicesTypeActivity} from "../../billing/models/activityHistory.model";
 
 
 // import * as puppeteer from 'puppeteer';
@@ -50,7 +51,7 @@ class FormController {
   }
 
   public async pdf(req: IRequest, res: Response): Promise<any> {
-    const {debug, timezone} = req.query;
+    const {debug, timezone} = req.query as { debug: string, timezone: string };
     const {id} = req.params;
     const {team} = req.user;
     try {
@@ -886,6 +887,17 @@ class FormController {
               }])
             );
 
+            await ActivityHistory.create({
+              team,
+              company,
+              user: req.user._id,
+              type: ChoicesTypeActivity.checklist,
+              car: {
+                _id: car._id,
+                vin: car.vin
+              }
+            });
+
             return res.json({
               data: {
                 id,
@@ -1535,7 +1547,7 @@ class FormController {
     let daysLimit = distributorTable[sendingVenue._id.toString()] &&
     distributorTable[sendingVenue._id.toString()][reception.venue._id.toString()] ?
       distributorTable[sendingVenue._id.toString()][reception.venue._id.toString()] :
-      5
+      5;
     const threshold = daysLimit * 60 * 24;
     const t0 = moment(recivedparticipant.createdAt);
     const t1 = moment(reception.createdAt);
@@ -1562,7 +1574,7 @@ class FormController {
     let daysLimit = distributorTable[sendingVenue._id.toString()] &&
       distributorTable[sendingVenue._id.toString()][venue._id.toString()] ?
       distributorTable[sendingVenue._id.toString()][venue._id.toString()] :
-      5
+      5;
     const threshold = daysLimit * 60 * 24;
     const t0 = moment(car.createdAt);
     const t1 = moment(reception.createdAt);
@@ -1588,13 +1600,13 @@ class FormController {
         select: ['_id']
       });
 
-      let start = req.query.start;
-      let to = req.query.end;
+      let start: any = req.query.start;
+      let to: any = req.query.end;
 
-      let startDate = start && start !== "" ? moment(start, 'YYYY-MM-DD') :
+      let startDate: any = start && start !== "" ? moment(start, 'YYYY-MM-DD') :
         moment().subtract(3, "months").startOf('month').startOf('day');
 
-      let toDate = to && to !== "" ? moment(to, 'YYYY-MM-DD') :
+      let toDate: any = to && to !== "" ? moment(to, 'YYYY-MM-DD') :
         moment().endOf('month').endOf('day');
 
 
@@ -1612,7 +1624,6 @@ class FormController {
       });
 
       let data : any = {};
-      const total_months = 6;
 
       for (let i : moment.Moment = startDate; i <= toDate; i=i.add(1, "month") ) {
         const month = i.format('MM-YYYY');
@@ -1706,7 +1717,7 @@ class FormController {
       const {team} = req.user;
 
       let periods = 6;
-      for (let i = 0; i < periods; i++) {
+      for(let i = 0; i < periods; i++) {
 
         const t0 = moment().subtract(i + 1, 'months');
         const t1 = moment().subtract(i, 'months');

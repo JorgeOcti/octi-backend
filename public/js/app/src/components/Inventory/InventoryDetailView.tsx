@@ -191,7 +191,7 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
     if (tab && tab === 'detail') {
       this.state.tab = 'detail';
     }
-    this.columns = [ {
+    this.columns = [{
       dataField: 'selected',
       text: '',
       // headerFormatter: this.selectedHeaderFormatter,
@@ -473,6 +473,9 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
         <span className="text-muted text-sm">{cell} / {row.denomination}</span>
         {
           row.internalNumber ? <React.Fragment><br/><span className="text-muted text-sm">{row.internalNumber}</span></React.Fragment> : null
+        }
+        {
+          row.color ? <React.Fragment><br/><span className="text-muted text-sm">{row.color}</span></React.Fragment> : null
         }
         <div className="visible-xs">
           {this.labelFormatter(cell, row)}
@@ -1136,7 +1139,7 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
             // the URL has been freed."
             window.navigator.msSaveBlob(blob, fileName);
           } else {
-            const blobURL = window.URL.createObjectURL(blob);
+            const blobURL = URL.createObjectURL(blob);
             const tempLink = document.createElement('a');
             tempLink.style.display = 'none';
             tempLink.href = blobURL;
@@ -1151,7 +1154,7 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
             document.body.appendChild(tempLink);
             tempLink.click();
             document.body.removeChild(tempLink);
-            window.URL.revokeObjectURL(blobURL);
+            URL.revokeObjectURL(blobURL);
           }
           this.setState({
             downloadImages: {
@@ -1514,7 +1517,7 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
             ...this.labelOption.normal
           }
         },
-        barGap: 0
+        barGap: "0"
       }, {
         data: venuesLeftover,
         name: inventorySettings.leftover,
@@ -1527,7 +1530,7 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
 
           }
         },
-        barGap: 0
+        barGap: "0"
       }, {
         data: venuesMissing,
         name: inventorySettings.missing,
@@ -1539,7 +1542,7 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
             ...this.labelOption.normal
           }
         },
-        barGap: 0
+        barGap: "0"
       }, {
         data: venuesPending,
         name: inventorySettings.pending,
@@ -1552,7 +1555,7 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
             ...this.labelOption.normal
           }
         },
-        barGap: 0
+        barGap: "0"
       }, {
         data: venuesReported,
         name: inventorySettings.reported,
@@ -1564,7 +1567,7 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
             ...this.labelOption.normal
           }
         },
-        barGap: 0
+        barGap: "0"
       }]
     };
     if (!update) {
@@ -1688,35 +1691,35 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
         type: 'bar',
         stack: 'cars',
         barMaxWidth: 100,
-        barGap: 0
+        barGap: "0"
       }, {
         data: brandLeftover,
         name: inventorySettings.leftover,
         type: 'bar',
         stack: 'cars',
         barMaxWidth: 100,
-        barGap: 0
+        barGap: "0"
       }, {
         data: brandMissing,
         name: inventorySettings.missing,
         type: 'bar',
         stack: 'cars',
         barMaxWidth: 100,
-        barGap: 0
+        barGap: "0"
       }, {
         data: brandPending,
         name: inventorySettings.pending,
         type: 'bar',
         stack: 'cars',
         barMaxWidth: 100,
-        barGap: 0
+        barGap: "0"
       }, {
         data: brandReported,
         name: inventorySettings.reported,
         type: 'bar',
         stack: 'cars',
         barMaxWidth: 100,
-        barGap: 0
+        barGap: "0"
       }]
     };
     if (!update) {

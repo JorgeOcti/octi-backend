@@ -19,7 +19,7 @@ class AdminsTeamController {
   }
 
   public async apiListTeams(req: IRequest, res: Response) {
-    const {page, pageSize, search} = req.query;
+    const {page, pageSize, search} = req.query as { page: string, pageSize: string, search: string };
     // paginate options
     const options: PaginateOptions = {
       select: {
@@ -30,8 +30,8 @@ class AdminsTeamController {
       sort: {
         name: 1
       },
-      page: parseInt(page ? page : 1, 10),
-      limit: parseInt(pageSize ? pageSize : 20, 10)
+      page: parseInt(page ? page : "1", 10),
+      limit: parseInt(pageSize ? pageSize : "20", 10)
     };
     const teams = await this.getTeams({}, options, search);
     if (options.page && teams.pages && teams.pages < options.page) {

@@ -18,14 +18,14 @@ class LabelController {
 
   public async apilist(req: IRequest, res: Response) {
     const {team} = req.user;
-    const {page, pageSize} = req.query;
+    const {page, pageSize} = req.query as {page: string; pageSize: string};
     // paginate options
     const options: PaginateOptions = {
       sort: {
         createdAt: -1
       },
-      page: parseInt(page ? page : 1, 10),
-      limit: parseInt(pageSize ? pageSize : 20, 10)
+      page: parseInt(page ? page : "1", 10),
+      limit: parseInt(pageSize ? pageSize : "20", 10)
     };
     try {
       const labels = await this.getLabels({

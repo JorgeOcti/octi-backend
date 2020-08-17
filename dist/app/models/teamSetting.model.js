@@ -1,7 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 const mongoose = require("mongoose");
-const mongoosePaginate = require("mongoose-paginate");
 const inventorySettingSchema = new mongoose.Schema({
     pending: {
         type: String
@@ -62,7 +61,6 @@ const teamSettingSchema = new mongoose.Schema({
 }, {
     timestamps: true
 });
-teamSettingSchema.plugin(mongoosePaginate);
 const TeamSetting = mongoose.model('TeamSetting', teamSettingSchema);
 exports.default = TeamSetting;
 //# sourceMappingURL=teamSetting.model.js.map

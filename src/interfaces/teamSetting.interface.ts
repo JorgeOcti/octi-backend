@@ -1,3 +1,4 @@
+import {ITeam} from "./team.interface";
 
 export interface IInventorySettting {
   pending: string;
@@ -21,6 +22,7 @@ export interface IInventorySettting {
 export interface ITeamSetting {
   _id: any;
   inventory: IInventorySettting;
+  team: ITeam;
   updatedAt: Date;
   createdAt: Date;
 }

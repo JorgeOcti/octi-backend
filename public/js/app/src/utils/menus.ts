@@ -185,7 +185,7 @@ if (hasPermission(window.user, 'viewUser')) {
   });
 }
 
-if(hasPermission(window.user, 'viewVersion')) {
+if (hasPermission(window.user, 'viewVersion')) {
   settingItems.push({
     id: '10.7',
     icon: 'fa-circle-o',
@@ -194,6 +194,14 @@ if(hasPermission(window.user, 'viewVersion')) {
   });
 }
 
+if (hasPermission(window.user, 'viewVersion')) {
+  settingItems.push({
+    id: '10.8',
+    icon: 'fa-circle-o',
+    text: 'Billing',
+    url: '/settings/billing/'
+  });
+}
 
 if (settingItems.length) {
   menus.push({

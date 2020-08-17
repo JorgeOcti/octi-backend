@@ -38,6 +38,8 @@ import Venue from "../../app/models/venue.model";
 import * as tempfile from "tempfile";
 import {Alignment} from "exceljs";
 import TeamSetting from "../../app/models/teamSetting.model";
+import ActivityHistory, {ChoicesTypeActivity} from "../../billing/models/activityHistory.model";
+import {IActivityHistoryInterface} from "../../interfaces/activityHistory.interface";
 
 class InventoryController {
 
@@ -100,6 +102,7 @@ class InventoryController {
     notification = notification === 'true';
     try {
       const inventoryCars: IInventoryCar[] = [];
+      const activityHistories: IActivityHistoryInterface[] = [];
       const venuesIDs: string[] = [];
       for (const venue of carsByVenue) {
         if (venue.name && venue.name.trim().length) {
@@ -148,6 +151,16 @@ class InventoryController {
                   comments: [],
                   images: []
                 });
+                activityHistories.push({
+                  team,
+                  company,
+                  user: req.user._id,
+                  type: ChoicesTypeActivity.inventory,
+                  car: {
+                    _id: currentCar._id,
+                    vin: currentCar.vin
+                  }
+                });
                 queue
                   .create('updateCar', {
                     title: `updateCar ${car.vin}`,
@@ -192,6 +205,14 @@ class InventoryController {
         i.inventory = inventory._id;
         return i;
       });
+      activityHistories.map((a) => {
+        a.inventory = {
+          _id: inventory._id,
+          name: inventory.name
+        };
+        return a;
+      });
+      await ActivityHistory.insertMany(activityHistories);
       await InventoryCar.insertMany(inventoryCars);
 
       if (notification) {
@@ -257,7 +278,7 @@ class InventoryController {
 
   public async list(req: IRequest, res: Response) {
     const {team} = req.user;
-    const {page, pageSize} = req.query;
+    const {page, pageSize} = req.query as { page: string, pageSize: string };
     const venuesPermissions = req.user.venuesPermissions();
     try {
       // fix Manuel Aravena DERCO
@@ -279,8 +300,8 @@ class InventoryController {
         sort: {
           createdAt: -1
         },
-        page: parseInt(page ? page : 1, 10),
-        limit: parseInt(pageSize ? pageSize : 10, 10)
+        page: parseInt(page ? page : "1", 10),
+        limit: parseInt(pageSize ? pageSize : "10", 10)
       };
 
       const paginatedInventories = await InventoryModel.paginate({

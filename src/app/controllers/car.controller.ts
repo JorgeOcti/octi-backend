@@ -1004,7 +1004,10 @@ class CarController {
   }
 
   public async apiRevisions(req: IRequest, res: Response) {
-    const {page, pageSize, search, from, to} = req.query;
+    const {page, pageSize, search, from, to} = req.query as {
+      page: string, pageSize: string, search: string,
+      from: string, to: string
+    };
     const {team} = req.user;
     // paginate options
     const options: PaginateOptions = {
@@ -1034,8 +1037,8 @@ class CarController {
       sort: {
         _id: -1
       },
-      page: parseInt(page ? page : 1, 10),
-      limit: parseInt(pageSize ? pageSize : 20, 10)
+      page: parseInt(page ? page : "1", 10),
+      limit: parseInt(pageSize ? pageSize : "20", 10)
     };
 
     try {
@@ -1550,8 +1553,7 @@ class CarController {
   }
 
   public async apiCars(req: IRequest, res: Response) {
-    const {page, pageSize, search} = req.query;
-
+    const {page, pageSize, search} = req.query as { page: string, pageSize: string, search: string };
     // paginate options
     const options: PaginateOptions = {
       select: {
@@ -1574,8 +1576,8 @@ class CarController {
       sort: {
         updatedAt: -1
       },
-      page: parseInt(page ? page : 1, 10),
-      limit: parseInt(pageSize ? pageSize : 20, 10)
+      page: parseInt(page ? page : "1", 10),
+      limit: parseInt(pageSize ? pageSize : "20", 10)
     };
     try {
       const cars = await this.getCars({

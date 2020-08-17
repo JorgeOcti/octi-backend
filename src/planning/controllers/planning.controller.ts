@@ -87,7 +87,7 @@ class PlanningController {
 
   public async list(req: IRequest, res: Response) {
     const {team} = req.user;
-    const {page, pageSize} = req.query;
+    const {page, pageSize} = req.query as {page: string, pageSize: string};
 
     // paginate options
     const options: PaginateOptions = {
@@ -115,8 +115,8 @@ class PlanningController {
         date: -1
       },
 
-      page: parseInt(page ? page : 1, 10),
-      limit: parseInt(pageSize ? pageSize : 20, 10)
+      page: parseInt(page ? page : "1", 10),
+      limit: parseInt(pageSize ? pageSize : "20", 10)
     };
     try {
       const planning = await this.getPlanning({

@@ -21,8 +21,8 @@ class AdminFormsController {
             sort: {
                 firstName: 1
             },
-            page: parseInt(page ? page : 1, 10),
-            limit: parseInt(pageSize ? pageSize : 20, 10)
+            page: parseInt(page ? page : "1", 10),
+            limit: parseInt(pageSize ? pageSize : "20", 10)
         };
         try {
             const forms = await this.getForms({

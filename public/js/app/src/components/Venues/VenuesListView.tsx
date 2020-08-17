@@ -113,7 +113,7 @@ class VenuesListView extends React.Component<IPropsType, IStateType> {
           // the URL has been freed."
           window.navigator.msSaveBlob(blob, fileName);
         } else {
-          const blobURL = window.URL.createObjectURL(blob);
+          const blobURL = URL.createObjectURL(blob);
           const tempLink = document.createElement('a');
           tempLink.style.display = 'none';
           tempLink.href = blobURL;
@@ -131,7 +131,7 @@ class VenuesListView extends React.Component<IPropsType, IStateType> {
           document.body.appendChild(tempLink);
           tempLink.click();
           document.body.removeChild(tempLink);
-          window.URL.revokeObjectURL(blobURL);
+          URL.revokeObjectURL(blobURL);
         }
       })
       .catch((err) => {

@@ -6,7 +6,13 @@ const initialState: ICompaniesState = {
   tempCompany: {
     name: '',
     imageURI: null,
-    image: null
+    image: null,
+    billing: {
+      active: false,
+      inventoryPrice: 0.0,
+      checklistPrice: 0.0
+    },
+    notifications:[]
   },
   loading: true,
   source: null,
@@ -48,6 +54,8 @@ export function companiesReducer(state = initialState, action: CompaniesReduxAct
         companies: state.companies.map((company: ICompany) => {
           if (company._id === action.payload.company._id) {
             company.name = action.payload.company.name;
+            company.billing = action.payload.company.billing;
+            company.notifications = action.payload.company.notifications;
             company.image = action.payload.company.image;
           }
           return company;

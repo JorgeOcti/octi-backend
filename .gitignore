@@ -47,4 +47,6 @@ dump/
 tsconfig.tsbuildinfo
 secrets.yaml
 
+buildcache
+
 

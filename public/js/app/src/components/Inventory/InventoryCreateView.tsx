@@ -192,27 +192,27 @@ class InventoryCreateView extends React.Component<IPropsType, IStateType> {
                                 className="zoom-in"
                                 data-toggle="lightbox"
                                 data-title={`Vista previa de la imagen`}
-                                data-footer={(backupFile as File).name}
+                                data-footer={(backupFile as unknown as File).name}
                               >
                                 <img
                                   src={backupUri}
                                   data-toggle="tooltip"
                                   data-placement="bottom"
-                                  title={(backupFile as File).name}
+                                  title={(backupFile as unknown as File).name}
                                 />
                               </a>
                             </div>
                             : backupFile ?
                             <div className="file">
                               <i className="fa fa-minus-circle text-red pointer" onClick={this.clearBackup}/>
-                              <div className={`icon type-${getIconFromExtension(getExtension((backupFile as File).name))}`}/>
+                              <div className={`icon type-${getIconFromExtension(getExtension((backupFile as unknown as File).name))}`}/>
                               <div
                                 className="name-file"
                                 data-toggle="tooltip"
                                 data-placement="bottom"
-                                title={(backupFile as File).name}
+                                title={(backupFile as unknown as File).name}
                               >
-                                {(backupFile as File).name}
+                                {(backupFile as unknown as File).name}
                               </div>
                             </div>
                             : <div
@@ -265,6 +265,7 @@ class InventoryCreateView extends React.Component<IPropsType, IStateType> {
                     </div>
                   </div>
               }
+
               <input
                 type="file"
                 onChange={this.handleChangeInputFile}

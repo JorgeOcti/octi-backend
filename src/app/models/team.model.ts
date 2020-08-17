@@ -36,6 +36,13 @@ teamSchema.virtual('settings', {
   justOne: true
 });
 
+teamSchema.virtual('histories', {
+  ref: 'ActivityHistory', // The model to use
+  localField: '_id', // Find field in this model
+  foreignField: 'team', // is equal to field in another model
+  justOne: true
+});
+
 
 teamSchema.plugin(mongoosePaginate);
 

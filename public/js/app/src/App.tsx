@@ -29,6 +29,7 @@ import {isIntenertExplorer} from './utils/common';
 import DashboardDercoView from './components/DashboardGeneral/DashboardDercoView';
 import PlanningListView from './components/Planning/PlanningListView';
 import PlanningImportView from "./components/Planning/PlanningImportView";
+import BillingListView from "./components/Billing/BillingListView";
 
 
 declare let window: IWindow;
@@ -41,36 +42,37 @@ const NoMatch = ({location}: RouteComponentProps<{}>) => (
   </div>
 );
 const App = () => (
-    <Provider store={store}>
-        <ConnectedRouter history={history}>
-            <Switch>
-                <Route exact path="/" component={ DashboardGeneralView }/>
-                <Route exact path="/cars/" component={ DashboardVinView }/>
-                <Route exact path="/planning/import/" component={ PlanningImportView }/>
-                <Route exact path="/planning/" component={ PlanningListView }/>
-                <Route exact path="/dashboard/damages/" component={ DashboardDamagesView }/>
-                <Route exact path="/dashboard/timing/" component={ DashboardTimingView }/>
-                <Route exact path="/dashboard/derco/" component={ DashboardDercoView }/>
-                <Route exact path="/cars/:id/" component={ DashboardVinDetail }/>
-                <Route exact path="/inventory/" component={ InventoryListView }/>
-                <Route exact path="/inventory/dashboard/" component={ InventoryDashboardView }/>
-                <Route exact path="/inventory/create/" component={ InventoryCreateView }/>
-                <Route exact path="/inventory/:id/" component={ InventoryDetailView }/>
-                <Route exact path="/inventory/:id/:tab/" component={ InventoryDetailView }/>
-                <Route exact path="/settings/users/" component={ UsersListView }/>
-                <Route exact path="/settings/cars/" component={ CarsListView }/>
-                <Route exact path="/settings/cars/import/" component={ ImportCarsView }/>
-                <Route exact path="/settings/cars/:id/" component={ CarDetailView }/>
-                <Route exact path="/settings/labels/" component={ LabelsListView }/>
-                <Route exact path="/settings/venues/" component={ VenuesListView }/>
-                <Route exact path="/settings/carriers/" component={ CarriersListView }/>
-                <Route exact path="/settings/companies/" component={ CompaniesListView }/>
-                <Route exact path="/settings/alerts/" component={ AlertsViews }/>
-                <Route exact path="/settings/versions/" component={ VersionListView }/>
-                <Route component={ NoMatch }/>
-            </Switch>
-        </ConnectedRouter>
-    </Provider>
+  <Provider store={store}>
+    <ConnectedRouter history={history}>
+      <Switch>
+        <Route exact path="/" component={DashboardGeneralView}/>
+        <Route exact path="/cars/" component={DashboardVinView}/>
+        <Route exact path="/planning/import/" component={PlanningImportView}/>
+        <Route exact path="/planning/" component={PlanningListView}/>
+        <Route exact path="/dashboard/damages/" component={DashboardDamagesView}/>
+        <Route exact path="/dashboard/timing/" component={DashboardTimingView}/>
+        <Route exact path="/dashboard/derco/" component={DashboardDercoView}/>
+        <Route exact path="/cars/:id/" component={DashboardVinDetail}/>
+        <Route exact path="/inventory/" component={InventoryListView}/>
+        <Route exact path="/inventory/dashboard/" component={InventoryDashboardView}/>
+        <Route exact path="/inventory/create/" component={InventoryCreateView}/>
+        <Route exact path="/inventory/:id/" component={InventoryDetailView}/>
+        <Route exact path="/inventory/:id/:tab/" component={InventoryDetailView}/>
+        <Route exact path="/settings/users/" component={UsersListView}/>
+        <Route exact path="/settings/cars/" component={CarsListView}/>
+        <Route exact path="/settings/cars/import/" component={ImportCarsView}/>
+        <Route exact path="/settings/cars/:id/" component={CarDetailView}/>
+        <Route exact path="/settings/labels/" component={LabelsListView}/>
+        <Route exact path="/settings/venues/" component={VenuesListView}/>
+        <Route exact path="/settings/carriers/" component={CarriersListView}/>
+        <Route exact path="/settings/companies/" component={CompaniesListView}/>
+        <Route exact path="/settings/alerts/" component={AlertsViews}/>
+        <Route exact path="/settings/versions/" component={VersionListView}/>
+        <Route exact path="/settings/billing/" component={BillingListView}/>
+        <Route component={NoMatch}/>
+      </Switch>
+    </ConnectedRouter>
+  </Provider>
 );
 
 // clear state of the modeal on hidden

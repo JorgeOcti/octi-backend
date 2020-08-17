@@ -28,6 +28,7 @@ const participant_model_1 = require("../models/participant.model");
 const participantFile_model_1 = require("../models/participantFile.model");
 const scale_model_1 = require("../models/scale.model");
 const bluebird = require("bluebird");
+const activityHistory_model_1 = require("../../billing/models/activityHistory.model");
 // import * as puppeteer from 'puppeteer';
 const DERCO_TEAM = '5bf2de34caf8ef7096105cda';
 class FormController {
@@ -861,6 +862,16 @@ class FormController {
                                 path: 'venue',
                                 select: ['name']
                             }]));
+                        await activityHistory_model_1.default.create({
+                            team,
+                            company,
+                            user: req.user._id,
+                            type: activityHistory_model_1.ChoicesTypeActivity.checklist,
+                            car: {
+                                _id: car._id,
+                                vin: car.vin
+                            }
+                        });
                         return res.json({
                             data: {
                                 id,
@@ -1541,7 +1552,6 @@ class FormController {
                 });
             });
             let data = {};
-            const total_months = 6;
             for (let i = startDate; i <= toDate; i = i.add(1, "month")) {
                 const month = i.format('MM-YYYY');
                 data[month] = [];
