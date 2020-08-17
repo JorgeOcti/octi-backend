@@ -266,7 +266,7 @@ const billingQueue = new Bull('billing', {
   createClient: function () {
     return createRedisClient();
   },
-  prefix: '{}'
+  prefix: '{andes}'
 });
 
 billingQueue.process(async () => {
