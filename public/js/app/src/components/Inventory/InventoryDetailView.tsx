@@ -425,7 +425,7 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
       return (
         <div className="row">{
           row.images.map((image: any, index: number) => (
-            <div key={image._id} className={'col-md-3 images-25 text-center'} style={{display: index === 0 ? '' : 'none'}}>
+            <div key={image._id} className={'col-md-12 images-25 text-center'} style={{display: index === 0 ? '' : 'none'}}>
               <a href={decodeURI(image.file.url)}
                  data-toggle="lightbox"
                  data-gallery={row._id}

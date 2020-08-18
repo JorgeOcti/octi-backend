@@ -131,7 +131,7 @@ class LabelFormView extends React.Component<IPropsType, IStateType> {
                     requireCustomText: !tempLabel.requireCustomText
                   });
                 }}/>
-              <label className="switch-label">Texto personalizado</label>
+              <label className="switch-label">Requerir datos adicionales</label>
             </div>
           </div>
           <div className="col-md-12">
