@@ -123,6 +123,7 @@ class LabelsListView extends React.Component<IPropsType, IStateType> {
                 <thead>
                   <tr>
                     <th className="middle">Nombre</th>
+                    <th className="middle" style={{width: '100px'}}>Agregar opción en</th>
                     <th className="middle" style={{width: '80px'}}>Envia a</th>
                     <th className="middle-center" style={{width: '80px'}}>Activo</th>
                     <th style={{width: '1%'}} className="width-10"/>
@@ -137,7 +138,23 @@ class LabelsListView extends React.Component<IPropsType, IStateType> {
                           key={label._id} id={`label-${label._id}`}
                           className={`background-transition ${!label.active ? 'text-muted' : ''}`}
                         >
-                          <td className="middle text-ellipsis">{label.name}</td>
+                          <td className="middle text-ellipsis">
+                            {label.name}
+                            <p className={"text-muted text-sm"}>{label.description}</p>
+                          </td>
+                          <td className="middle" style={{lineHeight: 1.6}}>
+                            {
+                              label.affected.map((aff, key)=>(
+                                <React.Fragment key={key}>
+                                  <label
+                                    className={`label label-${inventorySettings[`${aff}Class` as CarStatusType]}`}
+                                  >
+                                    {inventorySettings[aff as CarStatusType]}
+                                  </label><br />
+                                  </React.Fragment>
+                              ))
+                            }
+                          </td>
                           <td className="middle">
                             <label className={`label label-${inventorySettings[`${label.sendTo}Class` as CarStatusType]}`}>
                               {inventorySettings[label.sendTo as CarStatusType]}
@@ -196,6 +213,7 @@ class LabelsListView extends React.Component<IPropsType, IStateType> {
     this.props.changeTempLabelAction({
       _id: '',
       name: '',
+      description: '',
       color: '',
       affected: [],
       sendTo: '',

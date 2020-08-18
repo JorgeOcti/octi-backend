@@ -23,6 +23,7 @@ const initialState: ILabelsState = {
   loading: true,
   tempLabel: {
     _id: '',
+    description: '',
     name: '',
     color: '',
     affected: [],

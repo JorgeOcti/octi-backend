@@ -134,6 +134,22 @@ class LabelFormView extends React.Component<IPropsType, IStateType> {
               <label className="switch-label">Texto personalizado</label>
             </div>
           </div>
+          <div className="col-md-12">
+            <div className="form-group">
+              <label>Descripción</label>
+              <textarea
+                name="description"
+                className="form-control"
+                defaultValue={tempLabel ? tempLabel.description : ''}
+                onChange={
+                  (e: React.ChangeEvent<HTMLTextAreaElement>) => changeTempLabelAction({
+                    ...tempLabel,
+                    description: e.target.value.trim()
+                  }, 300)
+                }
+              />
+            </div>
+          </div>
         </div>
       );
     } else {

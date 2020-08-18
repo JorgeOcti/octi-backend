@@ -13,6 +13,10 @@ exports.inventoryLabelSchema = new mongoose.Schema({
         type: String,
         required: true
     },
+    description: {
+        type: String,
+        default: ""
+    },
     color: {
         type: String,
         default: '#C4C4C4'

@@ -267,12 +267,13 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
       dataField: 'labelName',
       text: 'Etiqueta',
       sort: true,
-      classes: 'middle hidden-xs text-ellipsis',
+      classes: 'middle hidden-xs',
       filterValue: (cell: any, row: any) => `${cell ? cell.name : ''}`,
       formatter: this.labelFormatter,
       headerClasses: 'middle hidden-xs',
       style: {
-        width: '18%'
+        width: '18%',
+        maxWidth: '18%'
       },
       headerStyle: {
         verticalAlign: 'top'
@@ -457,7 +458,7 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
                 data-toggle="tooltip"
                 data-placement="top"
                 title="Este vehículo no fue encontrado en la sucursal esperada."
-                className="fa fa-warning text-red pointer"
+                className="fa fa-warning text-yellow pointer"
               /> {` `}
             </React.Fragment>
             : null
@@ -465,17 +466,20 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
         {
           row.patent && row.patent.length ?
             <React.Fragment>
-              <CopyText value={row.patent}><strong>{row.patent}</strong></CopyText>
+              <CopyText value={row.patent}><strong>{row.patent}</strong></CopyText>&nbsp;
               <CopyText value={row.vin} className="text-muted text-sm">{row.vin}</CopyText>
-            </React.Fragment>
-            : <CopyText value={row.vin}><strong>{row.vin}</strong></CopyText>
+            </React.Fragment> :
+            <CopyText value={row.vin}><strong>{row.vin}</strong></CopyText>
         }<br/>
         <span className="text-muted text-sm">{cell} / {row.denomination}</span>
         {
           row.internalNumber ? <React.Fragment><br/><span className="text-muted text-sm">{row.internalNumber}</span></React.Fragment> : null
         }
         {
-          row.color ? <React.Fragment><br/><span className="text-muted text-sm">{row.color}</span></React.Fragment> : null
+          row.color ?
+            <React.Fragment><br/>
+              <span className="text-muted text-sm">{row.color}</span>
+            </React.Fragment> : null
         }
         <div className="visible-xs">
           {this.labelFormatter(cell, row)}
@@ -518,6 +522,7 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
       newLabels.push({
         _id: 'deleted',
         name: 'Eliminar vehículo',
+        description: '',
         sendTo: 'deleted',
         requireCustomText: false,
         isExhibition: false,
@@ -535,7 +540,7 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
           marginLeft: '5px'
         }}>
           <button type="button" className="btn btn-default">
-            <i className="fa fa-fw fa-cogs"/> Opciones
+            <i className="fa fa-fw fa-cogs"/> Etiqueta
           </button>
           <button type="button" className="btn btn-default dropdown-toggle" data-toggle="dropdown">
             <span className="caret"/>
@@ -587,17 +592,43 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
       const {inventorySettings} = this.props.inventories;
       const className = `${sendTo}Class` as CarStatusType;
       return (
-        <span
-          className={
-            `label label-${inventorySettings.hasOwnProperty(className) ? inventorySettings[className] : ''}`
+        <React.Fragment>
+          <span
+            className={
+              `label label-${inventorySettings.hasOwnProperty(className) ? inventorySettings[className] : ''}`
+            }
+          >
+            <i className={`fa fa-fw ${this.iconStatus[sendTo]}`}/>
+            {row.label.name}
+          </span>
+          {/*<span*/}
+          {/*   data-toggle="tooltip"*/}
+          {/*   data-placement="top"*/}
+          {/*   title={row.labelText}*/}
+          {/* >*/}
+          {/*   Ver más*/}
+          {/* </span>*/}
+          {
+            row.label.requireCustomText ?
+              <React.Fragment>
+                <p
+                  style={{
+                    paddingTop: "5px",
+                    marginBottom: 0
+                  }}
+                  className={"text-sm"}
+                >
+                  <strong>Datos adicionales:</strong>
+                </p>
+                <p
+                  className={"text-sm text-muted"}
+                >
+                  {row.labelText}
+                </p>
+              </React.Fragment>:
+              ''
           }
-        >
-          <i className={`fa fa-fw ${this.iconStatus[sendTo]}`} />
-          {row.label.name} {row.label.requireCustomText ? <span
-                data-toggle="tooltip"
-                data-placement="top"
-                title={row.labelText}>Ver más</span> : ''}
-        </span>
+        </React.Fragment>
       );
     } else {
       return null;

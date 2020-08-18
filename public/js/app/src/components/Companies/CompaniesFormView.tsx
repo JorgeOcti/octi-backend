@@ -78,7 +78,7 @@ class CompaniesFormView extends React.Component<IPropsType, IStateType> {
                 />
               </div>
               <div className="form-group">
-                <label>Imágen</label>
+                <label>Imagen</label>
                 {
                   tempCompany.imageURI ?
                     <div
