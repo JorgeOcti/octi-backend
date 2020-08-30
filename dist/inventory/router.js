@@ -9,6 +9,7 @@ const inventoryRouter = express.Router();
 exports.inventoryRouter = inventoryRouter;
 // Inventories List
 inventoryRouter.get('/inventory/', middlewares_1.default.isLoggedIn, inventory_controller_1.default.index);
+inventoryRouter.get('/stock/', middlewares_1.default.isLoggedIn, inventory_controller_1.default.stock);
 inventoryRouter.get('/inventory/dashboard/', middlewares_1.default.isLoggedIn, inventory_controller_1.default.index);
 inventoryRouter.get('/settings/labels/', middlewares_1.default.isLoggedIn, label_controller_1.default.index);
 inventoryRouter.get('/inventory/create/', middlewares_1.default.isLoggedIn, inventory_controller_1.default.index);
@@ -17,6 +18,7 @@ inventoryRouter.get('/inventory/:id/', middlewares_1.default.isLoggedIn, invento
 inventoryRouter.get('/inventory/:id/:tab/', middlewares_1.default.isLoggedIn, inventory_controller_1.default.detail);
 // Inventories API Web
 inventoryRouter.get('/api/inventory/', middlewares_1.default.isLoggedIn, inventory_controller_1.default.list);
+inventoryRouter.get('/api/current-stock/', middlewares_1.default.isLoggedIn, inventory_controller_1.default.currentStock);
 inventoryRouter.post('/api/inventory/', middlewares_1.default.isLoggedIn, inventory_controller_1.default.create);
 inventoryRouter.post('/api/inventory/dashboard/', middlewares_1.default.isLoggedIn, inventory_controller_1.default.dashboard);
 inventoryRouter.post('/api/inventory/:inventory/comment/', middlewares_1.default.isLoggedIn, inventory_controller_1.default.addComment);

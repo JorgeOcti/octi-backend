@@ -33,6 +33,7 @@ const activityHistory_model_1 = require("../../billing/models/activityHistory.mo
 class InventoryController {
     constructor() {
         this.index = this.index.bind(this);
+        this.stock = this.stock.bind(this);
         this.detail = this.detail.bind(this);
         this.create = this.create.bind(this);
         this.list = this.list.bind(this);
@@ -54,6 +55,16 @@ class InventoryController {
         this.dashboard = this.dashboard.bind(this);
     }
     async index(req, res) {
+        try {
+            res.render('app/index', {
+                token: await req.user.generateToken()
+            });
+        }
+        catch (e) {
+            console.log(e);
+        }
+    }
+    async stock(req, res) {
         try {
             res.render('app/index', {
                 token: await req.user.generateToken()
@@ -1981,6 +1992,97 @@ class InventoryController {
             console.log(e);
             return res.status(500).json({
                 message: 'Ha ocurrido un error. Comunicate con soporte para que te ayudemos a solucionarlo.'
+            });
+        }
+    }
+    async currentStock(req, res) {
+        try {
+            const { company, venue } = req.user;
+            const inventory = await inventory_model_1.default
+                .findOne({
+                company
+            }, {
+                name: true,
+                status: true,
+                cars: true,
+            }, {
+                sort: { 'createdAt': -1 }
+            })
+                .populate([{
+                    path: 'cars',
+                    select: ['_id', 'car', 'venue', 'venueFound'],
+                    match: {
+                        status: {
+                            $in: [
+                                inventoryCar_model_1.ChoicesStatusCarInventory.found,
+                                inventoryCar_model_1.ChoicesStatusCarInventory.leftover
+                            ]
+                        },
+                    },
+                    populate: [{
+                            path: 'car',
+                            select: ['vin', 'vin2', 'internalNumber', 'color', 'denomination', 'brand', 'venue', 'patent', 'internalNumber', 'property', 'type']
+                        }, {
+                            path: 'venue',
+                            select: ['name'],
+                            populate: [{
+                                    path: "region",
+                                    select: ["code", "na,e"]
+                                }]
+                        }, {
+                            path: 'venueFound',
+                            select: ['name'],
+                            populate: [{
+                                    path: "region",
+                                    select: ["code", "na,e"]
+                                }]
+                        }]
+                }]).lean();
+            if (!inventory) {
+                res
+                    .status(200)
+                    .json({
+                    message: "No se han realizado inventarios para ver el stock.",
+                    cars: []
+                });
+            }
+            else if (inventory.status !== inventory_model_1.ChoicesStatusInventory.finalized) {
+                res
+                    .status(200)
+                    .json({
+                    message: "Se esta procesando la toma de inventario.",
+                    cars: []
+                });
+            }
+            else if (await inventoryCar_model_1.default.find({ inventory, venue, status: inventoryCar_model_1.ChoicesStatusCarInventory.pending }).count()) {
+                res
+                    .status(200)
+                    .json({
+                    message: "Tú sucursal no ha terminado el inventario.",
+                    cars: []
+                });
+            }
+            else {
+                res
+                    .status(200)
+                    .json({
+                    message: "",
+                    cars: inventory.cars
+                });
+            }
+        }
+        catch (e) {
+            /* istanbul ignore next */
+            logger_service_1.default.error(`inventory currentStock: Async Error.`);
+            /* istanbul ignore next */
+            logger_service_1.default.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
+            /* istanbul ignore next */
+            logger_service_1.default.error(e);
+            Raven.captureException(e, { req });
+            /* istanbul ignore next */
+            res.status(500).json({
+                message: JSON.stringify(e),
+                status: 500
             });
         }
     }

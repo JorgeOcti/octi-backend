@@ -7,6 +7,7 @@ const inventoryRouter = express.Router();
 
 // Inventories List
 inventoryRouter.get('/inventory/', Middlewares.isLoggedIn, InventoryController.index);
+inventoryRouter.get('/stock/', Middlewares.isLoggedIn, InventoryController.stock);
 inventoryRouter.get('/inventory/dashboard/', Middlewares.isLoggedIn, InventoryController.index);
 inventoryRouter.get('/settings/labels/', Middlewares.isLoggedIn, LabelController.index);
 inventoryRouter.get('/inventory/create/', Middlewares.isLoggedIn, InventoryController.index);
@@ -16,6 +17,7 @@ inventoryRouter.get('/inventory/:id/:tab/', Middlewares.isLoggedIn, InventoryCon
 
 // Inventories API Web
 inventoryRouter.get('/api/inventory/', Middlewares.isLoggedIn, InventoryController.list);
+inventoryRouter.get('/api/current-stock/', Middlewares.isLoggedIn, InventoryController.currentStock);
 inventoryRouter.post('/api/inventory/', Middlewares.isLoggedIn, InventoryController.create);
 inventoryRouter.post('/api/inventory/dashboard/', Middlewares.isLoggedIn, InventoryController.dashboard);
 inventoryRouter.post('/api/inventory/:inventory/comment/', Middlewares.isLoggedIn, InventoryController.addComment);

@@ -45,6 +45,7 @@ class InventoryController {
 
   constructor() {
     this.index = this.index.bind(this);
+    this.stock = this.stock.bind(this);
     this.detail = this.detail.bind(this);
     this.create = this.create.bind(this);
     this.list = this.list.bind(this);
@@ -67,6 +68,16 @@ class InventoryController {
   }
 
   public async index(req: IRequest, res: Response) {
+    try {
+      res.render('app/index', {
+        token: await req.user.generateToken()
+      });
+    } catch (e) {
+      console.log(e);
+    }
+  }
+
+  public async stock(req: IRequest, res: Response) {
     try {
       res.render('app/index', {
         token: await req.user.generateToken()
@@ -1994,6 +2005,94 @@ class InventoryController {
     }
   }
 
+  public async currentStock(req: IRequest, res: Response): Promise<any> {
+    try {
+      const {company, venue} = req.user;
+      const inventory = await InventoryModel
+        .findOne({
+          company
+        }, {
+          name: true,
+          status: true,
+          cars: true,
+        }, {
+          sort: {'createdAt': -1}
+        })
+        .populate([{
+          path: 'cars',
+          select: ['_id', 'car', 'venue', 'venueFound'],
+          match: {
+            status: {
+              $in: [
+                ChoicesStatusCarInventory.found,
+                ChoicesStatusCarInventory.leftover
+              ]
+            },
+          },
+          populate: [{
+            path: 'car',
+            select: ['vin', 'vin2', 'internalNumber', 'color', 'denomination', 'brand', 'venue', 'patent', 'internalNumber', 'property', 'type']
+          }, {
+            path: 'venue',
+            select: ['name'],
+            populate: [{
+              path: "region",
+              select: ["code", "na,e"]
+            }]
+          }, {
+            path: 'venueFound',
+            select: ['name'],
+            populate: [{
+              path: "region",
+              select: ["code", "na,e"]
+            }]
+          }]
+        }]).lean();
+      if (!inventory) {
+        res
+          .status(200)
+          .json({
+            message: "No se han realizado inventarios para ver el stock.",
+            cars: []
+          })
+      } else if (inventory.status !== ChoicesStatusInventory.finalized) {
+        res
+          .status(200)
+          .json({
+            message: "Se esta procesando la toma de inventario.",
+            cars: []
+          })
+      } else if (await InventoryCar.find({inventory, venue, status: ChoicesStatusCarInventory.pending}).count()) {
+        res
+          .status(200)
+          .json({
+            message: "Tú sucursal no ha terminado el inventario.",
+            cars: []
+          })
+      } else {
+        res
+          .status(200)
+          .json({
+            message: "",
+            cars: inventory.cars
+          })
+      }
+    } catch (e) {
+      /* istanbul ignore next */
+      logger.error(`inventory currentStock: Async Error.`);
+      /* istanbul ignore next */
+      logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
+      /* istanbul ignore next */
+      logger.error(e);
+      Raven.captureException(e, {req});
+      /* istanbul ignore next */
+      res.status(500).json({
+        message: JSON.stringify(e),
+        status: 500
+      });
+    }
+  }
+
   private autoRotate(path: string) {
     // doc http://aheckmann.github.io/gm/docs.html
     /**** REQUIRE *****
@@ -2033,6 +2132,6 @@ class InventoryController {
         });
     });
   }
-
 }
+
 export default new InventoryController();

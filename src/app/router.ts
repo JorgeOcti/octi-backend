@@ -4,6 +4,7 @@ import Middlewares from '../middlewares/middlewares';
 import AdminAlertsController from './controllers/admin/alert.admin.controller';
 import AdminCarsController from './controllers/admin/car.admin.controller';
 import AdminCarrierController from './controllers/admin/carrier.admin.controller';
+import AdminRegionsController from './controllers/admin/region.admin.controller';
 import AdminCompaniesController from './controllers/admin/company.admin.controller';
 import AdminPermissionController from './controllers/admin/permission.admin.controller';
 import AdminRegionController from './controllers/admin/region.admin.controller';
@@ -92,13 +93,19 @@ appRouter.get('/api/admin/cars/', Middlewares.isLoggedIn, AdminCarsController.ap
 // permissions
 appRouter.get('/api/admin/permissions/', Middlewares.isLoggedIn, AdminPermissionController.apiList);
 
+// carriers
 appRouter.get('/settings/carriers/', Middlewares.isLoggedIn, AdminCarrierController.index);
 appRouter.get('/api/admin/carriers/', Middlewares.isLoggedIn, AdminCarrierController.apiList);
 appRouter.post('/api/admin/carriers/', Middlewares.isLoggedIn, AdminCarrierController.apiCreate);
 appRouter.patch('/api/admin/carriers/:id', Middlewares.isLoggedIn, AdminCarrierController.apiUpdate);
 appRouter.delete('/api/admin/carriers/:id', Middlewares.isLoggedIn, AdminCarrierController.apiDelete);
 
+// regions
+appRouter.get('/settings/regions/', Middlewares.isLoggedIn, AdminRegionsController.index);
 appRouter.get('/api/admin/regions/', Middlewares.isLoggedIn, AdminRegionController.apiList);
+appRouter.post('/api/admin/regions/', Middlewares.isLoggedIn, AdminRegionController.apiCreate);
+appRouter.patch('/api/admin/regions/:id', Middlewares.isLoggedIn, AdminRegionController.apiUpdate);
+appRouter.delete('/api/admin/regions/:id', Middlewares.isLoggedIn, AdminRegionController.apiDelete);
 
 // alerts
 appRouter.get('/settings/alerts/', Middlewares.isLoggedIn, AdminAlertsController.index);

@@ -158,7 +158,7 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
     order: 'asc'
   }];
 
-  private columns: any[] = [];
+  private readonly columns: any[] = [];
 
   private socket: SocketIOClient.Socket;
 
@@ -268,7 +268,7 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
       text: 'Etiqueta',
       sort: true,
       classes: 'middle hidden-xs',
-      filterValue: (cell: any, row: any) => `${cell ? cell.name : ''}`,
+      filterValue: (cell: any) => `${cell ? cell.name : ''}`,
       formatter: this.labelFormatter,
       headerClasses: 'middle hidden-xs',
       style: {
@@ -499,7 +499,7 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
     );
   }
 
-  public statusFormatter(cell: CarStatusType, row: any) {
+  public statusFormatter(cell: CarStatusType) {
     const {inventorySettings} = this.props.inventories;
     const className = `${cell}Class` as CarStatusType;
     return (
@@ -1297,7 +1297,7 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
     }, 100);
   }
 
-  private clearFilter() {
+  private clearFilter(): void {
     this.props.inventoryDetailChangeFilter({
       venues: [],
       states: [],
@@ -1308,7 +1308,7 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
     $('#cars').val('');
   }
 
-  private handleChangeSearchText(e: React.ChangeEvent<HTMLInputElement>) {
+  private handleChangeSearchText(e: React.ChangeEvent<HTMLInputElement>): void {
     e.preventDefault();
     const value = e.target.value.trim();
     const {filter} = this.props.inventories;
@@ -1332,7 +1332,7 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
     });
   }
 
-  private selectedHeaderFormatter() {
+  private selectedHeaderFormatter(): React.ReactElement<IPropsType> | null  {
     return (
       <React.Fragment>
         <Checkbox
@@ -1369,7 +1369,7 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
     };
   }
 
-  private carComments(inventoryCar: IInventoryCar) {
+  private carComments(inventoryCar: IInventoryCar): void {
     const { inventories} = this.props;
     this.props.updateCommentsAction(inventoryCar);
     setTimeout(() => {

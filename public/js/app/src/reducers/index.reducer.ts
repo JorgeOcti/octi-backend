@@ -17,6 +17,8 @@ import {dashboardDercoReducer} from "./dashboardDerco.reducer";
 import {versionsReducer} from "./versions.reducer";
 import {planningReducer} from "./planning.reducer";
 import {billingReducer} from "./billing.reducers";
+import {regionsReducer} from "./regions.reducer";
+import {stockReducer} from "./stock.reducer";
 
 export default (history: any) => combineReducers({
   users: usersReducer,
@@ -35,6 +37,8 @@ export default (history: any) => combineReducers({
   venues: venuesReducer,
   companies: companiesReducer,
   labels: labelsReducer,
+  regions: regionsReducer,
+  stock: stockReducer,
   planning: planningReducer,
   router: connectRouter(history)
 });

@@ -9,11 +9,13 @@ import * as Raven from 'raven-js';
 import * as swal from 'sweetalert';
 import {
   IBaseCarrier,
-  ICarrier
 } from '../../../../../src/interfaces/carrier.interface';
 import {
   IBaseCompany
 } from '../../../../../src/interfaces/company.interface';
+import {
+  IBaseRegion,
+} from '../../../../../src/interfaces/region.interface';
 import {
   IBaseVenue
 } from '../../../../../src/interfaces/venue.interface';
@@ -112,7 +114,10 @@ export default class ApiService {
     formData.append('billing', JSON.stringify(company.billing));
     formData.append('notifications', JSON.stringify(company.notifications));
     if (company.image) {
-      formData.append('file', company.image);
+      formData.append('image', company.image);
+    }
+    if (company.marker) {
+      formData.append('marker', company.marker);
     }
     this.instance.defaults.headers.common['Content-Type'] = 'multipart/form-data';
     return this.instance.post(
@@ -126,7 +131,10 @@ export default class ApiService {
     formData.append('billing', JSON.stringify(company.billing));
     formData.append('notifications', JSON.stringify(company.notifications));
     if (company.image) {
-      formData.append('file', company.image);
+      formData.append('image', company.image);
+    }
+    if (company.marker) {
+      formData.append('marker', company.marker);
     }
     this.instance.defaults.headers.common['Content-Type'] = 'multipart/form-data';
     return this.instance.patch(
@@ -185,6 +193,24 @@ export default class ApiService {
   public getCarriers(page: number, pageSize?: number): AxiosPromise {
     return this.instance.get(
       `/api/admin/carriers/?page=${page}${pageSize ? `&pageSize=${pageSize}` : ''}`
+    );
+  }
+
+  public createRegion(region: IBaseRegion): AxiosPromise {
+    return this.instance.post(
+      `/api/admin/regions/`, region
+    );
+  }
+
+  public updateRegion(region: IBaseRegion): AxiosPromise {
+    return this.instance.patch(
+      `/api/admin/regions/${region._id}`, region
+    );
+  }
+
+  public deleteRegion(id: string): AxiosPromise {
+    return this.instance.delete(
+      `/api/admin/regions/${id}`
     );
   }
 
@@ -417,6 +443,14 @@ export default class ApiService {
   public getVersions(): AxiosPromise {
     return this.instance.get(
       `/api/admin/versions/`, {
+        cancelToken: this.source.token
+      }
+    );
+  }
+
+  public getStock(): AxiosPromise {
+    return this.instance.get(
+      `/api/current-stock/`, {
         cancelToken: this.source.token
       }
     );

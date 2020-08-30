@@ -177,6 +177,8 @@ class CompaniesListView extends React.Component<IPropsType, IStateType> {
       _id: '',
       name: '',
       image: null,
+      marker: null,
+      markerURI: "/static/images/files/pin_osa.svg",
       billing: {
         active: false,
         checklistPrice: 0.0,
@@ -210,7 +212,9 @@ class CompaniesListView extends React.Component<IPropsType, IStateType> {
       _id: company._id,
       name: company.name,
       image: null,
+      marker: null,
       imageURI: company.image && company.image.hasOwnProperty('url') ? decodeURI(company.image.url) : null,
+      markerURI: company.marker && company.marker.hasOwnProperty('url') ? decodeURI(company.marker.url) : "/static/images/files/pin_osa.svg",
       billing: company.billing,
       notifications: company.notifications
     });

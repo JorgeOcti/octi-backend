@@ -7,6 +7,8 @@ const initialState: ICompaniesState = {
     name: '',
     imageURI: null,
     image: null,
+    markerURI: null,
+    marker: null,
     billing: {
       active: false,
       inventoryPrice: 0.0,
@@ -57,6 +59,7 @@ export function companiesReducer(state = initialState, action: CompaniesReduxAct
             company.billing = action.payload.company.billing;
             company.notifications = action.payload.company.notifications;
             company.image = action.payload.company.image;
+            company.marker = action.payload.company.marker;
           }
           return company;
         })

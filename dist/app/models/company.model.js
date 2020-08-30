@@ -84,6 +84,10 @@ const companySchema = new mongoose.Schema({
         type: imageSchema,
         default: {}
     },
+    marker: {
+        type: imageSchema,
+        default: {}
+    },
     active: {
         type: Boolean,
         default: true
@@ -118,7 +122,8 @@ companySchema.plugin(mongooseCrate, {
         }
     }),
     fields: {
-        image: {}
+        image: {},
+        marker: {},
     }
 });
 companySchema.virtual('users', {

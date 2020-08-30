@@ -177,7 +177,7 @@ class AdminVenueController {
         select: ['name']
       }, {
         path: 'company',
-        select: ['name']
+        select: ['name', "marker"]
       }],
       lean: true,
       sort: {

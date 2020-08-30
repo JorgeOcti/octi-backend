@@ -19,6 +19,8 @@ export interface IBaseCompany {
   name: string;
   image: any;
   imageURI?: string | null;
+  marker: any;
+  markerURI?: string | null;
   billing: IBillingCompany;
   notifications: IBillingNotifications[];
 }

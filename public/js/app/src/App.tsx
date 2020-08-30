@@ -1,9 +1,9 @@
-import { ConnectedRouter } from 'connected-react-router';
+import {ConnectedRouter} from 'connected-react-router';
 import * as moment from 'moment';
 import * as React from 'react';
 import * as ReactDOM from 'react-dom';
-import { Provider } from 'react-redux';
-import { Route, RouteComponentProps, Switch } from 'react-router-dom';
+import {Provider} from 'react-redux';
+import {Route, RouteComponentProps, Switch} from 'react-router-dom';
 import AlertsViews from './components/Alerts/AlertViews';
 import CarriersListView from './components/Carriers/CarriersListView';
 import CarDetailView from './components/Cars/CarDetailView';
@@ -30,6 +30,8 @@ import DashboardDercoView from './components/DashboardGeneral/DashboardDercoView
 import PlanningListView from './components/Planning/PlanningListView';
 import PlanningImportView from "./components/Planning/PlanningImportView";
 import BillingListView from "./components/Billing/BillingListView";
+import RegionsListView from "./components/Region/RegionsListFiew";
+import StockView from "./components/Stock/StockListView";
 
 
 declare let window: IWindow;
@@ -52,6 +54,7 @@ const App = () => (
         <Route exact path="/dashboard/damages/" component={DashboardDamagesView}/>
         <Route exact path="/dashboard/timing/" component={DashboardTimingView}/>
         <Route exact path="/dashboard/derco/" component={DashboardDercoView}/>
+        <Route exact path="/stock/" component={StockView}/>
         <Route exact path="/cars/:id/" component={DashboardVinDetail}/>
         <Route exact path="/inventory/" component={InventoryListView}/>
         <Route exact path="/inventory/dashboard/" component={InventoryDashboardView}/>
@@ -64,6 +67,7 @@ const App = () => (
         <Route exact path="/settings/cars/:id/" component={CarDetailView}/>
         <Route exact path="/settings/labels/" component={LabelsListView}/>
         <Route exact path="/settings/venues/" component={VenuesListView}/>
+        <Route exact path="/settings/regions/" component={RegionsListView}/>
         <Route exact path="/settings/carriers/" component={CarriersListView}/>
         <Route exact path="/settings/companies/" component={CompaniesListView}/>
         <Route exact path="/settings/alerts/" component={AlertsViews}/>
@@ -116,6 +120,12 @@ $(() => {
 
   $(document).on('click.bs.dropdown.data-api', '.dropdown.keep-inside-clicks-open', function(event) {
     event.stopPropagation();
+  });
+  // prevenet show modal addons when is open and user change page
+  window.addEventListener('popstate', function(e){
+    $('.modal-backdrop').remove();
+    $('body').removeClass('modal-open');
+    // ($('#andesModal') as any).modal('hide');
   });
 });
 

@@ -61,6 +61,14 @@ if (dashboardItems.length) {
 * 1. Inventory
 *****************/
 const inventoryItems = [];
+if (hasPermission(window.user, 'currentStock')) {
+  inventoryItems.push({
+    id: '2.4',
+    icon: 'fa-circle-o',
+    text: 'Stock Actual',
+    url: '/stock/'
+  });
+}
 
 if (hasPermission(window.user, 'viewInventoryDashboard')) {
   inventoryItems.push({
@@ -166,6 +174,16 @@ if (hasPermission(window.user, 'viewVenue')) {
     url: '/settings/venues/'
   });
 }
+
+if (hasPermission(window.user, 'viewVenue')) {
+  settingItems.push({
+    id: '10.9',
+    icon: 'fa-circle-o',
+    text: 'Regiones',
+    url: '/settings/regions/'
+  });
+}
+
 
 if (hasPermission(window.user, 'viewCarrier')) {
   settingItems.push({

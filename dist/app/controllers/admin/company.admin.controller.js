@@ -71,7 +71,8 @@ class AdminCompaniesController {
         }
         const { name, billing, notifications } = req.body;
         const { team } = req.user;
-        const file = general_utils_1.default.getFileFromRequest(req.files, 'file');
+        const image = general_utils_1.default.getFileFromRequest(req.files, 'image');
+        const marker = general_utils_1.default.getFileFromRequest(req.files, 'marker');
         if (!name || !name.trim().length) {
             res.status(400).json({
                 message: 'El nombre es requerido.',
@@ -97,12 +98,19 @@ class AdminCompaniesController {
                     notifications: JSON.parse(notifications),
                     team
                 });
-                if (file) {
-                    file.headers = {
-                        'Content-Type': file.mimetype
+                if (image) {
+                    image.headers = {
+                        'Content-Type': image.mimetype
                     };
-                    file.team = team._id;
-                    await newCompany.attach('image', file);
+                    image.team = team._id;
+                    await newCompany.attach('image', image);
+                }
+                if (marker) {
+                    marker.headers = {
+                        'Content-Type': marker.mimetype
+                    };
+                    marker.team = team._id;
+                    await newCompany.attach('marker', marker);
                 }
                 await newCompany.save();
                 res.status(201).json({
@@ -127,7 +135,8 @@ class AdminCompaniesController {
         const { id } = req.params;
         const { team } = req.user;
         const { name, billing, notifications } = req.body;
-        const file = general_utils_1.default.getFileFromRequest(req.files, 'file');
+        const image = general_utils_1.default.getFileFromRequest(req.files, 'image');
+        const marker = general_utils_1.default.getFileFromRequest(req.files, 'marker');
         if (!name || !name.length) {
             res.status(400).json({
                 message: 'The name is are required',
@@ -143,13 +152,21 @@ class AdminCompaniesController {
                 company.name = name;
                 company.billing = JSON.parse(billing);
                 company.notifications = JSON.parse(notifications);
-                if (file) {
-                    file.headers = {
-                        'Content-Type': file.mimetype
+                if (image) {
+                    image.headers = {
+                        'Content-Type': image.mimetype
                     };
-                    file.team = team._id;
-                    await company.attach('image', file);
+                    image.team = team._id;
+                    await company.attach('image', image);
                     await company.update({ image: company.image });
+                }
+                if (marker) {
+                    marker.headers = {
+                        'Content-Type': marker.mimetype
+                    };
+                    marker.team = team._id;
+                    await company.attach('marker', marker);
+                    await company.update({ marker: company.marker });
                 }
                 await company.save();
                 const response = {
