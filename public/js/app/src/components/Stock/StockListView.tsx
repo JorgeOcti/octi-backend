@@ -171,14 +171,16 @@ class StockView extends React.Component<IPropsType, IStateType> {
           <div className="box">
             <div className="box-header with-border">
               <h3 className="box-title">Stock Actual</h3>
-              <div className="box-tools pull-right">
-                <button
-                  className="btn btn-sm btn-primary hidden-xs hidden-sm"
-                  onClick={this.xlsExport}
-                >
-                  <i className="fa fa-fw fa-download"/> Exportar Excel
-                </button>
-              </div>
+              <ShowIf condition={!loading && message.length < 1}>
+                <div className="box-tools pull-right">
+                  <button
+                    className="btn btn-sm btn-primary hidden-xs hidden-sm"
+                    onClick={this.xlsExport}
+                  >
+                    <i className="fa fa-fw fa-download"/> Exportar Excel
+                  </button>
+                </div>
+              </ShowIf>
             </div>
             <div className="box-body no-padding">
               <ShowIf condition={message.length > 1}>
