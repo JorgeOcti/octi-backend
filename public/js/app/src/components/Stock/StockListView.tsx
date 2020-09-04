@@ -27,8 +27,11 @@ import ImageLazyLoad from "../Utils/ImageLazyLoad";
 interface IPropsType extends RouteComponentProps<{}> {
   dispatch: Dispatch<StockReducerAction>;
   stock: IStockState;
+
   getStockAction(): StockReducerAction;
+
   changeFilter(filter: IFilterStock): StockReducerAction;
+
   changeFilterText(filter: IFilterStock): StockReducerAction;
 }
 
@@ -348,7 +351,7 @@ class StockView extends React.Component<IPropsType, IStateType> {
                   </Row>
                 </React.Fragment>
               </ShowIf>
-              <ShowIf condition={carsTable.length > 1 && !loading}>
+              <ShowIf condition={carsTable.length > 0 && !loading}>
                 <div className="stock-table">
                   <BootstrapTable
                     keyField="_id"

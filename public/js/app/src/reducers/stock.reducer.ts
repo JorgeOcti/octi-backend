@@ -147,13 +147,13 @@ function processCars(cars: IInventoryCar[], filter: IFilterStock) {
         add = (filter.venues as any).includes(car.venueFound._id);
       }
     }
-    if (filter && filter.brands && filter.brands.length && car.car.brand) {
+    if (add && filter && filter.brands && filter.brands.length && car.car.brand) {
       add = (filter.brands as any).includes(car.car.brand);
     }
-    if (filter && filter.denominations && filter.denominations.length && car.car.denomination) {
+    if (add && filter && filter.denominations && filter.denominations.length && car.car.denomination) {
       add = (filter.denominations as any).includes(car.car.denomination);
     }
-    if (filter && filter.colors && filter.colors.length && car.car.color) {
+    if (add && filter && filter.colors && filter.colors.length && car.car.color) {
       add = (filter.colors as any).includes(car.car.color);
     }
     if (add && filter && filter.property && filter.property.length) {
