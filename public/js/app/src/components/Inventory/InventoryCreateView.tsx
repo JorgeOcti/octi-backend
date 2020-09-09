@@ -116,6 +116,16 @@ class InventoryCreateView extends React.Component<IPropsType, IStateType> {
         reportPhoto: parseInt($reportPhoto.val(), 10)
       });
     });
+    const $manualPhoto: any = $('#manual-photo');
+    $manualPhoto.TouchSpin({
+      initval: 1,
+      min: 0,
+      max: 3
+    }).on('change', () => {
+      this.setState({
+        manualPhoto: parseInt($manualPhoto.val(), 10)
+      });
+    });
   }
 
   public componentDidCatch(error: Error, errorInfo: ErrorInfo) {
@@ -279,17 +289,31 @@ class InventoryCreateView extends React.Component<IPropsType, IStateType> {
                   </div>
                 </div>
                 <div className="col-md-6">
-                  <div className="checkbox">
-                    <label style={{paddingLeft: '0'}} onClick={this.handleChangeManualPhoto}>
-                      <Checkbox
-                        active={manualPhoto === 1}
-                        action={this.handleChangeManualPhoto}
-                        classes="icheck-in-checkbox"
-                        style={{marginTop: '-4px', marginRight: '5px'}}
-                      />
-                      Solicitar foto en modo manual
-                    </label>
+                  <div className="form-horizontal">
+                    <div className="form-group" style={{marginRight: '0', marginLeft: '0'}}>
+                      <span
+                        className="col-sm-10 col-md-8 col-lg-9 control-label"
+                        style={{
+                          paddingLeft: '0',
+                          textAlign: 'left'
+                        }}
+                      >
+                        Nº imágenes en modo manual
+                      </span>
+                      <input id="manual-photo" type="text" className="col-sm-2 col-md-4 col-lg-3 form-control" />
+                    </div>
                   </div>
+                  {/*<div className="checkbox">*/}
+                  {/*  <label style={{paddingLeft: '0'}} onClick={this.handleChangeManualPhoto}>*/}
+                  {/*    <Checkbox*/}
+                  {/*      active={manualPhoto === 1}*/}
+                  {/*      action={this.handleChangeManualPhoto}*/}
+                  {/*      classes="icheck-in-checkbox"*/}
+                  {/*      style={{marginTop: '-4px', marginRight: '5px'}}*/}
+                  {/*    />*/}
+                  {/*    Solicitar foto en modo manual*/}
+                  {/*  </label>*/}
+                  {/*</div>*/}
                 </div>
                 <div className="col-md-6">
                   <div className="form-horizontal">
