@@ -32,6 +32,7 @@ import PlanningImportView from "./components/Planning/PlanningImportView";
 import BillingListView from "./components/Billing/BillingListView";
 import RegionsListView from "./components/Region/RegionsListFiew";
 import StockView from "./components/Stock/StockListView";
+import StockImportView from "./components/Stock/StockImportView";
 
 
 declare let window: IWindow;
@@ -55,6 +56,7 @@ const App = () => (
         <Route exact path="/dashboard/timing/" component={DashboardTimingView}/>
         <Route exact path="/dashboard/derco/" component={DashboardDercoView}/>
         <Route exact path="/stock/" component={StockView}/>
+        <Route exact path="/stock/import/" component={StockImportView}/>
         <Route exact path="/cars/:id/" component={DashboardVinDetail}/>
         <Route exact path="/inventory/" component={InventoryListView}/>
         <Route exact path="/inventory/dashboard/" component={InventoryDashboardView}/>

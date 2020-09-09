@@ -41,7 +41,7 @@ class InventoryListView extends React.Component<IPropsType, IStateType> {
   //   dispatch: PropTypes.func.isRequired
   // };
 
-  state = {
+  readonly state = {
     error: null
   };
   private socket: SocketIOClient.Socket;

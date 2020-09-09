@@ -448,6 +448,16 @@ export default class ApiService {
     );
   }
 
+  public loadStock({carsByVenue}: { carsByVenue: any }): AxiosPromise {
+    return this.instance.post(
+      `/api/load-stock/`, {
+        carsByVenue
+      }, {
+        cancelToken: this.source.token
+      }
+    );
+  }
+
   public getStock(): AxiosPromise {
     return this.instance.get(
       `/api/current-stock/`, {
