@@ -1,0 +1,103 @@
+import * as Raven from 'raven-js';
+import * as React from 'react';
+import slugify from 'slugify';
+import StockCarDetail from './StockCarDetail';
+
+interface IPropsType {
+  venue: any;
+  index: number;
+
+  deleteVenue(venueName: string): void;
+}
+
+interface IStateType {
+  error: Error | null;
+}
+
+class StockVenueDetail extends React.Component<IPropsType, IStateType> {
+
+  readonly state = {
+    error: null
+  };
+
+  constructor(props: IPropsType) {
+    super(props);
+  }
+
+  public componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
+    this.setState({error});
+    Raven.captureException(error, {
+      extra: errorInfo
+    });
+  }
+
+  public render(): React.ReactElement<IPropsType> {
+    const {venue, index} = this.props;
+    const warnings = venue.cars.filter((car: any) => car.hasWarnings).length;
+    return (
+      <div className="panel box box-default" style={{borderTopWidth: '2px'}}>
+        <div className="box-header with-border" style={{padding: '10px 6px'}}>
+          <h4 className="box-title" style={{
+            fontSize: '15px',
+            display: 'block'
+          }}>
+            <a data-toggle="collapse"
+               data-parent="#accordion"
+               href={`#${slugify(venue.name.toLowerCase(), {remove: /[*+~.()'"!:@]/g})}`}
+               aria-expanded="false"
+               className="collapsed">
+              {index + 1} {venue.name} ({venue.cars.length} Vehículos)
+
+            {/*<i*/}
+            {/*  className="fa fa-minus-circle text-red pull-right pointer"*/}
+            {/*  onClick={() => this.props.deleteVenue(venue.name)}*/}
+            {/*/>*/}
+            {
+              venue.warningNoExist ?
+                <span className="text-muted pull-right" style={{marginLeft: '5px'}}>
+                  <i className="fa fa-warning" style={{color: '#f2aa2e'}}/> Esta sucursal se creará.
+                </span> : null
+            }
+            {
+              warnings ?
+                <span className="text-muted pull-right" style={{marginLeft: '5px'}}>
+                  <i className="fa fa-warning" style={{color: '#f2aa2e'}}/> {warnings} posibles alertas.
+                </span> : null
+            }
+            </a>
+          </h4>
+        </div>
+        <div
+          id={`${slugify(venue.name.toLowerCase(), {remove: /[*+~.()'"!:@]/g})}`}
+          className="panel-collapse collapse"
+          aria-expanded="false"
+        >
+          <div className="box-body no-padding">
+            <table className="table table-striped">
+              <thead>
+              <tr>
+                <th style={{width: '18%'}}>VIN</th>
+                <th style={{width: '10%'}}>PATENTE</th>
+                <th style={{width: '15%'}}>MARCA</th>
+                <th>DENOMINACION</th>
+                <th style={{width: '15%'}}>TIPO</th>
+              </tr>
+              </thead>
+              <tbody>
+              {
+                venue.cars.map((car: any, index: any) => {
+                  return (
+                    <StockCarDetail car={car} key={index}/>
+                  );
+                })
+              }
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    );
+  }
+}
+
+export default StockVenueDetail;

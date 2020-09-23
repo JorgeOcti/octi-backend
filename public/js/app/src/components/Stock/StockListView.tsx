@@ -2,6 +2,7 @@ import * as Raven from 'raven-js';
 import * as React from 'react';
 import {ErrorInfo} from 'react';
 import * as moment from 'moment-timezone';
+import * as io from 'socket.io-client';
 import {connect} from 'react-redux';
 import {RouteComponentProps} from 'react-router';
 import {Dispatch} from 'redux';
@@ -23,6 +24,9 @@ import Row from "../Utils/Row";
 import {IFilterStock} from "../../reducers/stock.reducer";
 import ShowIf from "../Utils/ShowIf";
 import ImageLazyLoad from "../Utils/ImageLazyLoad";
+import {IWindow} from "../../interfaces/window";
+
+declare let window: IWindow;
 
 interface IPropsType extends RouteComponentProps<{}> {
   dispatch: Dispatch<StockReducerAction>;
@@ -61,6 +65,8 @@ class StockView extends React.Component<IPropsType, IStateType> {
     }
   };
 
+  private socket: SocketIOClient.Socket;
+
   readonly columns: any[] = [];
 
   readonly defaultSorted = [{
@@ -80,6 +86,7 @@ class StockView extends React.Component<IPropsType, IStateType> {
     this.filterAllColors = this.filterAllColors.bind(this);
     this.filterColors = this.filterColors.bind(this);
     this.filterType = this.filterType.bind(this);
+    this.venueFormatter = this.venueFormatter.bind(this);
     this.filterProperty = this.filterProperty.bind(this);
     this.handleChangeSearchText = this.handleChangeSearchText.bind(this);
     this.clearFilter = this.clearFilter.bind(this);
@@ -118,6 +125,7 @@ class StockView extends React.Component<IPropsType, IStateType> {
     },{
       dataField: 'venueFound',
       text: 'Sucursal',
+      formatter: this.venueFormatter,
       classes: 'middle',
       headerClasses: 'middle pointer',
       sort: true
@@ -128,6 +136,21 @@ class StockView extends React.Component<IPropsType, IStateType> {
     // set the title of the page
     document.title = 'OSA Andes | Stock Actual';
     this.props.getStockAction();
+    // socket
+    this.socket = io.connect(`${location.protocol}//${location.host}`, {
+      secure: location.protocol === 'https:',
+      transports: ['websocket'],
+      reconnection: true,
+      query: {token: (window.user as any).token}
+    });
+    this.socket.on('connect', () => {
+      this.socket.emit('join', {room: `stock-${window.user.team}`});
+    });
+    this.socket.on('REFRESH', (data: any): void => {
+      if (data.update) {
+        this.props.getStockAction();
+      }
+    });
   }
 
   public componentWillUnmount(): void {
@@ -177,10 +200,10 @@ class StockView extends React.Component<IPropsType, IStateType> {
               <ShowIf condition={!loading && message.length < 1}>
                 <div className="box-tools pull-right">
                   <button
-                    className="btn btn-sm btn-primary hidden-xs hidden-sm"
-                    onClick={this.xlsExport}
-                  >
-                    <i className="fa fa-fw fa-download"/> Exportar Excel
+                      className="btn btn-sm btn-primary  hidden-xs"
+                      onClick={() => this.props.history.push(`/stock/import/`)}
+                    >
+                    <i className="fa fa-fw fa-cloud-upload" /> Importar
                   </button>
                 </div>
               </ShowIf>
@@ -338,14 +361,23 @@ class StockView extends React.Component<IPropsType, IStateType> {
                     </div>
                   </div>
                   <Row style={{margin: '5px 0'}}>
-                    <div className="col-md-3 col-md-push-9 text-right" style={{marginBottom: '10px'}}>
+                    <div
+                      className="col-md-6 col-md-push-6 text-right"
+                      style={{marginBottom: '10px'}}
+                    >
                       <button
                         className="btn btn-default btn-sm"
                         onClick={this.clearFilter}
-                        style={{paddingLeft: '5px'}}
                         disabled={!searching}
                       >
                         <i className="fa fa-fw fa-eraser"/> Limpiar Filtros
+                      </button>
+                      <button
+                        className="btn btn-sm btn-primary hidden-xs hidden-sm"
+                        onClick={this.xlsExport}
+                        style={{marginLeft: '5px'}}
+                      >
+                        <i className="fa fa-fw fa-download"/> Exportar Excel
                       </button>
                     </div>
                   </Row>
@@ -542,6 +574,10 @@ class StockView extends React.Component<IPropsType, IStateType> {
         &nbsp;&nbsp;Mostrando registros del {from} al {to} de {size} registros.
       </span>
     );
+  }
+
+  private venueFormatter(cell: string, row: any) {
+    return row.venueFound !== "-" ? row.venueFound : row.venue;
   }
 }
 

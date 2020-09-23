@@ -28,6 +28,7 @@ import InventoryModel, {
   ChoicesStatusInventory
 } from '../models/inventory.model';
 import Inventory from '../models/inventory.model';
+import Stock from '../models/stock.model';
 import InventoryCar, {ChoicesStatusCarInventory} from '../models/inventoryCar.model';
 import InventoryFileModel from '../models/inventoryFile.model';
 import InventoryLabel from '../models/inventoryLabel.model';
@@ -40,6 +41,8 @@ import {Alignment} from "exceljs";
 import TeamSetting from "../../app/models/teamSetting.model";
 import ActivityHistory, {ChoicesTypeActivity} from "../../billing/models/activityHistory.model";
 import {IActivityHistoryInterface} from "../../interfaces/activityHistory.interface";
+import {IStockCar} from "../../interfaces/stock.interface";
+import StockCar from "../models/stockCar.model";
 
 class InventoryController {
 
@@ -65,6 +68,8 @@ class InventoryController {
     this.downloadImages = this.downloadImages.bind(this);
     this.inventoryByCars = this.inventoryByCars.bind(this);
     this.dashboard = this.dashboard.bind(this);
+    this.currentStock = this.currentStock.bind(this);
+    this.loadStock = this.loadStock.bind(this);
   }
 
   public async index(req: IRequest, res: Response) {
@@ -243,6 +248,9 @@ class InventoryController {
         );
       }
       io.to(`inventory-list-${team}`).emit('REFRESH', {
+        update: true
+      });
+      io.to(`stock-${team}`).emit('REFRESH', {
         update: true
       });
       const currentTeam = await Team.findById(req.user.team);
@@ -826,6 +834,9 @@ class InventoryController {
         io.to(`inventory-list-${team}`).emit('REFRESH', {
           update: true
         });
+        io.to(`stock-${team}`).emit('REFRESH', {
+          update: true
+        });
         res.json({
           message: 'Se ha finalizado correctamente el inventario.',
           status: 200
@@ -871,6 +882,9 @@ class InventoryController {
         await InventoryCar.find({inventory}).remove();
         await inventory.remove();
         io.to(`inventory-list-${team}`).emit('REFRESH', {
+          update: true
+        });
+        io.to(`stock-${team}`).emit('REFRESH', {
           update: true
         });
         res.json({
@@ -2005,77 +2019,242 @@ class InventoryController {
     }
   }
 
+  public async loadStock(req: IRequest, res: Response): Promise<any> {
+    const {company, team} = req.user;
+    let {carsByVenue} = req.body;
+    try {
+      const stockCars: IStockCar[] = [];
+      for (const venue of carsByVenue) {
+        const venueRegExp = new RegExp(`^${venue.name.trim()}$`, 'i');
+        let currentVenue: IVenueModel | null = await VenueModel.findOne({
+          team,
+          name: venueRegExp
+        });
+        // create venue if no existe
+        if (currentVenue === null) {
+          currentVenue = new VenueModel({
+            name: venue.name.trim(),
+            team,
+            company
+          });
+          await currentVenue.save();
+        }
+        for (const car of venue.cars) {
+          let currentCar: ICarModel | null = await CarModel.findOne({
+            team,
+            vin: car.vin.trim()
+          });
+          if (currentCar === null && car.vin && car.vin.trim().length) {
+            currentCar = new CarModel({
+              team,
+              company,
+              vin: car.vin,
+              vin2: car.vin.substr(car.vin.length - 6),
+              color: car.color,
+              type: car.type,
+              property: car.property,
+              denomination: car.denomination,
+              brand: car.brand,
+              patent: car.patent,
+              createdBy: req.user,
+              status: ChoicesStatusCar.active
+            });
+            await currentCar.save();
+          }
+          if (currentVenue && currentCar) {
+            stockCars.push({
+              venue: currentVenue._id,
+              car: currentCar._id,
+            });
+            queue
+              .create('updateCar', {
+                title: `updateCar ${car.vin}`,
+                currentCar: currentCar._id,
+                car
+              })
+              .delay(10000)
+              .priority('high')
+              .attempts(5)
+              .save();
+          }
+        }
+      }
+      const stock = new Stock({
+        company,
+        team,
+        createdBy: req.user._id
+      });
+      await stock.save();
+      stockCars.map((s) => {
+        s.stock = stock._id;
+        return s;
+      });
+      await StockCar.insertMany(stockCars);
+      io.to(`stock-${team}`).emit('REFRESH', {
+        update: true
+      });
+      res.json({
+        message: 'Stock creado satisfactoriamente',
+        status: 200
+      });
+    }  catch (e) {
+      /* istanbul ignore next */
+      logger.error(`loadStock: Async Error.`);
+      /* istanbul ignore next */
+      logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
+      /* istanbul ignore next */
+      logger.error(e);
+      /* istanbul ignore next */
+      res.status(500).json({
+        message: e,
+        status: 500
+      });
+    }
+  }
+
   public async currentStock(req: IRequest, res: Response): Promise<any> {
     try {
       const {company, venue} = req.user;
-      const inventory = await InventoryModel
+      const lastInventory = await Inventory
         .findOne({
           company
         }, {
           name: true,
           status: true,
           cars: true,
+          createdAt: true,
         }, {
           sort: {'createdAt': -1}
-        })
-        .populate([{
-          path: 'cars',
-          select: ['_id', 'car', 'venue', 'venueFound'],
-          match: {
-            status: {
-              $in: [
-                ChoicesStatusCarInventory.found,
-                ChoicesStatusCarInventory.leftover
-              ]
+        });
+      const lastStock = await Stock
+        .findOne({
+          company
+        }, {}, {
+          sort: {'createdAt': -1}
+        });
+      let showInventory = false;
+      let showStock = false;
+      if(lastInventory && !lastStock){
+        showInventory = true;
+        console.log("showInventory")
+      } else if(!lastInventory && lastStock){
+        showStock = true;
+        console.log("showStock")
+      } else if(lastInventory && lastStock){
+        console.log('lastInventory.createdAt', lastInventory.createdAt);
+        console.log('lastStock.createdAt', lastStock.createdAt);
+        console.log('moment(lastInventory.createdAt).isAfter(lastStock.createdAt)', moment(lastInventory.createdAt).isAfter(lastStock.createdAt));
+        if(moment(lastInventory.createdAt).isAfter(lastStock.createdAt)){
+          showInventory = true;
+          console.log("showInventory")
+        } else {
+          showStock = true;
+          console.log("showStock")
+        }
+      }
+      if(showInventory) {
+        const inventory = await Inventory
+          .findOne({
+            company
+          }, {
+            name: true,
+            status: true,
+            cars: true,
+          }, {
+            sort: {'createdAt': -1}
+          })
+          .populate([{
+            path: 'cars',
+            select: ['_id', 'car', 'venue', 'venueFound'],
+            match: {
+              status: {
+                $in: [
+                  ChoicesStatusCarInventory.found,
+                  ChoicesStatusCarInventory.leftover
+                ]
+              },
             },
-          },
-          populate: [{
-            path: 'car',
-            select: ['vin', 'vin2', 'internalNumber', 'color', 'denomination', 'brand', 'venue', 'patent', 'internalNumber', 'property', 'type']
-          }, {
-            path: 'venue',
-            select: ['name'],
             populate: [{
-              path: "region",
-              select: ["code", "na,e"]
+              path: 'car',
+              select: ['vin', 'vin2', 'internalNumber', 'color', 'denomination', 'brand', 'venue', 'patent', 'internalNumber', 'property', 'type']
+            }, {
+              path: 'venue',
+              select: ['name'],
+              populate: [{
+                path: "region",
+                select: ["code", "name"]
+              }]
+            }, {
+              path: 'venueFound',
+              select: ['name'],
+              populate: [{
+                path: "region",
+                select: ["code", "name"]
+              }]
             }]
+          }]).lean();
+        if (!inventory) {
+          res
+            .status(200)
+            .json({
+              message: "No se han realizado inventarios para ver el stock.",
+              cars: []
+            })
+        } else if (inventory.status !== ChoicesStatusInventory.finalized) {
+          res
+            .status(200)
+            .json({
+              message: "Se esta procesando la toma de inventario.",
+              cars: []
+            })
+        } else if (await InventoryCar.find({inventory, venue, status: ChoicesStatusCarInventory.pending}).count()) {
+          res
+            .status(200)
+            .json({
+              message: "Tú sucursal no ha terminado el inventario.",
+              cars: []
+            })
+        } else {
+          res
+            .status(200)
+            .json({
+              message: "",
+              cars: inventory.cars
+            })
+        }
+      } else if (showStock) {
+        const stock = await Stock
+          .findOne({
+            company
           }, {
-            path: 'venueFound',
-            select: ['name'],
+            name: true,
+            status: true,
+            cars: true,
+          }, {
+            sort: {'createdAt': -1}
+          })
+          .populate([{
+            path: 'cars',
+            select: ['_id', 'car', 'venue'],
             populate: [{
-              path: "region",
-              select: ["code", "na,e"]
+              path: 'car',
+              select: ['vin', 'vin2', 'internalNumber', 'color', 'denomination', 'brand', 'venue', 'patent', 'internalNumber', 'property', 'type']
+            }, {
+              path: 'venue',
+              select: ['name'],
+              populate: [{
+                path: "region",
+                select: ["code", "name"]
+              }]
             }]
-          }]
-        }]).lean();
-      if (!inventory) {
-        res
-          .status(200)
-          .json({
-            message: "No se han realizado inventarios para ver el stock.",
-            cars: []
-          })
-      } else if (inventory.status !== ChoicesStatusInventory.finalized) {
-        res
-          .status(200)
-          .json({
-            message: "Se esta procesando la toma de inventario.",
-            cars: []
-          })
-      } else if (await InventoryCar.find({inventory, venue, status: ChoicesStatusCarInventory.pending}).count()) {
-        res
-          .status(200)
-          .json({
-            message: "Tú sucursal no ha terminado el inventario.",
-            cars: []
-          })
-      } else {
+          }]).lean();
         res
           .status(200)
           .json({
             message: "",
-            cars: inventory.cars
+            cars: stock!.cars
           })
+
       }
     } catch (e) {
       /* istanbul ignore next */

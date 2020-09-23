@@ -7,7 +7,6 @@ const inventoryRouter = express.Router();
 
 // Inventories List
 inventoryRouter.get('/inventory/', Middlewares.isLoggedIn, InventoryController.index);
-inventoryRouter.get('/stock/', Middlewares.isLoggedIn, InventoryController.stock);
 inventoryRouter.get('/inventory/dashboard/', Middlewares.isLoggedIn, InventoryController.index);
 inventoryRouter.get('/settings/labels/', Middlewares.isLoggedIn, LabelController.index);
 inventoryRouter.get('/inventory/create/', Middlewares.isLoggedIn, InventoryController.index);
@@ -17,7 +16,6 @@ inventoryRouter.get('/inventory/:id/:tab/', Middlewares.isLoggedIn, InventoryCon
 
 // Inventories API Web
 inventoryRouter.get('/api/inventory/', Middlewares.isLoggedIn, InventoryController.list);
-inventoryRouter.get('/api/current-stock/', Middlewares.isLoggedIn, InventoryController.currentStock);
 inventoryRouter.post('/api/inventory/', Middlewares.isLoggedIn, InventoryController.create);
 inventoryRouter.post('/api/inventory/dashboard/', Middlewares.isLoggedIn, InventoryController.dashboard);
 inventoryRouter.post('/api/inventory/:inventory/comment/', Middlewares.isLoggedIn, InventoryController.addComment);
@@ -39,6 +37,12 @@ inventoryRouter.get('/api/v1/inventory/:id/', Middlewares.isJWTAuthenticated, In
 inventoryRouter.post('/api/v1/inventory/:id/upload-file/', Middlewares.isJWTAuthenticated, InventoryController.uploadFile);
 inventoryRouter.post('/api/v1/inventory/:id/report-car/', Middlewares.isJWTAuthenticated, InventoryController.reportCar);
 inventoryRouter.post('/api/v1/inventory/:id/', Middlewares.isJWTAuthenticated, InventoryController.apiFoundCar);
+
+// Stock
+inventoryRouter.get('/stock/', Middlewares.isLoggedIn, InventoryController.stock);
+inventoryRouter.get('/stock/import/', Middlewares.isLoggedIn, InventoryController.stock);
+inventoryRouter.get('/api/current-stock/', Middlewares.isLoggedIn, InventoryController.currentStock);
+inventoryRouter.post('/api/load-stock/', Middlewares.isLoggedIn, InventoryController.loadStock);
 
 export {
   inventoryRouter

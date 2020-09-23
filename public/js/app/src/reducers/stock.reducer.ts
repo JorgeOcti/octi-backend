@@ -22,6 +22,7 @@ const initialState: IStockState = {
     types:[],
     properties:[],
   },
+  vinInStock: {},
   searching: false,
   message: "",
   loading: true,
@@ -54,7 +55,7 @@ export function stockReducer(state = initialState, action: StockReducerAction) {
      case '/STOCK/CHANGE_FILTER':
       return {
         ...state,
-        carsTable: processCars(state.cars, action.payload.filter),
+        ...processCars(state.cars, action.payload.filter),
         filter: action.payload.filter,
         searching: isSearching(action.payload.filter)
       };
@@ -62,7 +63,7 @@ export function stockReducer(state = initialState, action: StockReducerAction) {
       return {
         ...state,
         cars: action.payload.cars,
-        carsTable: processCars(action.payload.cars, state.filter),
+        ...processCars(action.payload.cars, state.filter),
         dataFilters: processfilters(action.payload.cars),
         message: action.payload.message
       };
@@ -96,7 +97,7 @@ function processfilters(cars:IInventoryCar[]){
 
   for (const car of cars) {
     const {color, property, type, brand, denomination} = car.car;
-    const {venueFound} = car;
+    const {venueFound, venue} = car;
     if (brand && brand.length && !brandsKeys.includes(brand)) {
       brandsKeys.push(brand);
       brands.push(brand);
@@ -121,6 +122,10 @@ function processfilters(cars:IInventoryCar[]){
       venuesKeys.push(venueFound._id);
       venues.push(venueFound);
     }
+    if (venue && !venuesKeys.includes(venue._id)) {
+      venuesKeys.push(venue._id);
+      venues.push(venue);
+    }
 
   }
   return {
@@ -137,8 +142,9 @@ function processfilters(cars:IInventoryCar[]){
   }
 }
 
-function processCars(cars: IInventoryCar[], filter: IFilterStock) {
+function processCars(cars: IInventoryCar[], filter: IFilterStock): { carsTable: any[]; vinInStock: any; } {
   const data: any[] = [];
+  let vinInStock: any = {};
   for (const car of cars) {
     let add = true;
     if (filter && filter.venues && filter.venues.length && car.venue) {
@@ -170,20 +176,15 @@ function processCars(cars: IInventoryCar[], filter: IFilterStock) {
           .includes(text.toLowerCase())
       ));
       add = result.every((element: boolean) => element === true) === true;
-      /*add = `${car.car.vin}${car.car.brand}${car.car.denomination}${car.car.patent}`.normalize('NFD')
-        .replace(/[\u0300-\u036f]/g, '')
-        .toLowerCase()
-        .includes(filter.text.toLowerCase());*/
     }
+
     const patent: string = car.car.patent ? car.car.patent : '';
-    // if (add && filter && filter && filter.type.length) {
-    //   if (filter.type === 'new') {
-    //     add = patent.length === 0;
-    //   } else if (filter.type === 'used') {
-    //     add = patent.length !== 0;
-    //   }
-    // }
     if (add) {
+      const {vin} = car.car;
+      if (!vinInStock.hasOwnProperty(vin)) {
+        vinInStock[vin] = {
+        }
+      }
       data.push({
         _id: (car as any)._id,
         carID: (car as any).car._id,
@@ -208,6 +209,9 @@ function processCars(cars: IInventoryCar[], filter: IFilterStock) {
       });
     }
   }
-  return data;
+  return {
+    carsTable: data,
+    vinInStock
+  };
 }
 

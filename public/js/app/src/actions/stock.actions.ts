@@ -16,6 +16,7 @@ export interface IStockState {
     types: any[];
     properties: any[];
   };
+  vinInStock: any;
   searching: boolean;
   message: string;
   loading: boolean;
