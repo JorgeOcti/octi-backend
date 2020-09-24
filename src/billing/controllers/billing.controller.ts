@@ -23,7 +23,7 @@ class BillingController {
     const {debug} = req.query as { debug: string };
     try {
       const invoice = await Invoice.findById(id).populate([{path: 'company'}]);
-      if (invoice){
+      if (invoice) {
         const billing = new BillingQueue();
         const html = billing.generateHTML(invoice);
         // new BillingQueue().createPDF(invoice);
@@ -31,28 +31,30 @@ class BillingController {
           res.send(html);
         } else {
           HtmlPdf.create(html, billing.PDFconfig).toStream((err, pdfStream) => {
-          if (err) {
-            console.log(err);
-            res.sendStatus(500);
-          } else {
-            // set header
-            res.setHeader('Content-Type', 'application/pdf');
-            res.setHeader('Content-disposition', `inline; filename=${invoice._id.toString()}.pdf`);
-            // res.setHeader('Content-disposition', `attachment; filename=${participant._id.toString()}.pdf`);
-            // send a status code of 200 OK
-            res.statusCode = 200;
-            // once we are done reading end the response
-            pdfStream.on('end', () => {
-              // done reading
-              res.end();
-            });
-            // pipe the contents of the PDF directly to the response
-            pdfStream.pipe(res);
-          }
-        });
-
+            if (err) {
+              console.log(err);
+              res.sendStatus(500);
+            } else {
+              // set header
+              res.setHeader('Content-Type', 'application/pdf');
+              res.setHeader('Content-disposition', `inline; filename=${invoice._id.toString()}.pdf`);
+              // res.setHeader('Content-disposition', `attachment; filename=${participant._id.toString()}.pdf`);
+              // send a status code of 200 OK
+              res.statusCode = 200;
+              // once we are done reading end the response
+              pdfStream.on('end', () => {
+                // done reading
+                res.end();
+              });
+              // pipe the contents of the PDF directly to the response
+              pdfStream.pipe(res);
+            }
+          });
         }
-
+      } else{
+        res.status(400).json({
+          message: "Invoice no encontrado."
+        });
       }
     } catch (e) {
       res.status(500).json(e);

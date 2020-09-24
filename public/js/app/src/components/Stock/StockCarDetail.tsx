@@ -30,7 +30,7 @@ class StockCarDetail extends React.Component<IPropsType, IStateType> {
   public render(): React.ReactElement<IPropsType> {
     const {car} = this.props;
     return (
-      <tr className={car.hasWarnings && car.warning.created?"text-green":""}>
+      <tr className={car.created ? "text-green" : ""}>
         <td style={{fontSize: "12px"}}>
           {
             car.hasWarnings && car.warning.vin ?
@@ -44,15 +44,12 @@ class StockCarDetail extends React.Component<IPropsType, IStateType> {
                 title="El vin debe tener al menos 17 dígitos."
               /> : null
           }{
-            car.hasWarnings && car.warning.created ?
+            car.created ?
               <i
-                className="fa fa-warning pointer"
-                style={{
-                  color: '#f2aa2e'
-                }}
+                className="fa fa-plus-circle text-green pointer"
                 data-toggle="tooltip"
                 data-placement="top"
-                title="Este vehículo se agregara al stock."
+                title="Este vehículo se agregará al stock."
               /> : null
           } {car.vin}
         </td>

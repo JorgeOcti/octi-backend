@@ -34,6 +34,7 @@ class StockVenueDetail extends React.Component<IPropsType, IStateType> {
   public render(): React.ReactElement<IPropsType> {
     const {venue, index} = this.props;
     const warnings = venue.cars.filter((car: any) => car.hasWarnings).length;
+    const created = venue.cars.filter((car: any) => car.created).length;
     return (
       <div className="panel box box-default" style={{borderTopWidth: '2px'}}>
         <div className="box-header with-border" style={{padding: '10px 6px'}}>
@@ -61,7 +62,13 @@ class StockVenueDetail extends React.Component<IPropsType, IStateType> {
             {
               warnings ?
                 <span className="text-muted pull-right" style={{marginLeft: '5px'}}>
-                  <i className="fa fa-warning" style={{color: '#f2aa2e'}}/> {warnings} posibles alertas.
+                  <i className="fa fa-warning" style={{color: '#f2aa2e'}}/> {warnings} alertas.
+                </span> : null
+            }
+            {
+              created ?
+                <span className="text-muted  text-green pull-right" style={{marginLeft: '5px'}}>
+                  <i className="fa fa-plus-circle text-green"/> {created} {created > 1 ? "unidades" : "unidad"}.
                 </span> : null
             }
             </a>

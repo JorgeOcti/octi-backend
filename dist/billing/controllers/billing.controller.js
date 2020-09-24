@@ -49,6 +49,11 @@ class BillingController {
                     });
                 }
             }
+            else {
+                res.status(400).json({
+                    message: "Invoice no encontrado."
+                });
+            }
         }
         catch (e) {
             res.status(500).json(e);

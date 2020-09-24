@@ -121,10 +121,10 @@ class StockImportView extends React.Component<IPropsType, IStateType> {
                         marginBottom: "10px"
                       }}>
                         <p className="text-green">
-                          <i className="fa fa-fw fa-plus-circle"/> Se {createdCard > 1 ? "agregarán" : "agregará"} {createdCard} {createdCard > 1 ? "vehículos" : "vehículo"} al stock.
+                          <i className="fa fa-fw fa-plus-circle"/> Se {createdCard > 1 ? "agregarán" : "agregará"} {createdCard} {createdCard > 1 ? "unidades" : "unidad"} al stock.
                         </p>
                         <p className="text-red">
-                          <i className="fa fa-fw fa-minus-circle" /> Se {deletedCard > 1 ? "eliminarán" : "eliminará"} {deletedCard} {deletedCard > 1 ? "vehículos" : "vehículo"} del stock.
+                          <i className="fa fa-fw fa-minus-circle" /> Se {deletedCard > 1 ? "eliminarán" : "eliminará"} {deletedCard} {deletedCard > 1 ? "unidades" : "unidad"} del stock.
                         </p>
                       </div>
                     </div>
@@ -149,12 +149,12 @@ class StockImportView extends React.Component<IPropsType, IStateType> {
                     </div>
                     <div className="col-md-6">
                       <p><strong>Total de sucursales:</strong> {carsByVenue.length}</p>
-                      <p><strong>Total de vehículos:</strong> {totalCars}</p>
+                      <p><strong>Total de unidades:</strong> {totalCars}</p>
                     </div>
                     <div className="col-md-6 text-right">
-                      <button className="btn btn-sm btn-default" onClick={this.clickUploadFile}>
-                        <i className="fa fa-fw fa-cogs" /> Cambiar configuración
-                      </button>
+                      {/*<button className="btn btn-sm btn-default" onClick={this.clickUploadFile}>*/}
+                      {/*  <i className="fa fa-fw fa-cogs" /> Cambiar configuración*/}
+                      {/*</button>*/}
                     </div>
                   </div> :
                   <div className="row">
@@ -175,7 +175,7 @@ class StockImportView extends React.Component<IPropsType, IStateType> {
                             borderRadius: '10px'
                           }}>
                           <i className="fa fa-2x fa-cloud-upload"/><br/>
-                          Prueba a soltanto el excel aquí, o haz click para seleccionar el excel a cargar.
+                          Prueba soltando el excel aquí, o haz click para seleccionar el excel a cargar.
                         </div>
                       </div>
                     </div>
@@ -316,9 +316,9 @@ class StockImportView extends React.Component<IPropsType, IStateType> {
                   patent: item.patente ? item.patente.trim() : '',
                   property: item.propiedad ? item.propiedad.trim().toUpperCase() : '',
                   type: item.tipo ? item.tipo.trim() : '',
-                  hasWarnings: vinWarning || patentWarning || !inStock,
+                  hasWarnings: vinWarning || patentWarning,
+                  created: !inStock,
                   warning: {
-                    created: !inStock,
                     vin: vinWarning,
                     patent: patentWarning
                   }
