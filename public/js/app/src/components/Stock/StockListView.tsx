@@ -112,7 +112,7 @@ class StockView extends React.Component<IPropsType, IStateType> {
       sort: true
     },{
       dataField: 'denomination',
-      text: 'Model',
+      text: 'Modelo',
       classes: 'middle',
       headerClasses: 'middle pointer',
       sort: true
