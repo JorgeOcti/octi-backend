@@ -288,46 +288,56 @@ class InventoryCreateView extends React.Component<IPropsType, IStateType> {
                     <label>Configuraciones</label>
                   </div>
                 </div>
-                <div className="col-md-6">
-                  <div className="form-horizontal">
-                    <div className="form-group" style={{marginRight: '0', marginLeft: '0'}}>
-                      <span
-                        className="col-sm-10 col-md-8 col-lg-9 control-label"
-                        style={{
-                          paddingLeft: '0',
-                          textAlign: 'left'
-                        }}
-                      >
-                        Nº imágenes en modo manual
-                      </span>
-                      <input id="manual-photo" type="text" className="col-sm-2 col-md-4 col-lg-3 form-control" />
+                <div className="col-md-12 no-padding">
+                  <div className="col-sm-12 col-md-8 col-lg-6">
+                    <div className="form-horizontal">
+                      <div className="form-group" style={{marginRight: '0', marginLeft: '0'}}>
+                        <div className="col-sm-6 col-md-8 col-lg-8 no-padding">
+                          <span
+                            className="control-label"
+                            style={{
+                              paddingLeft: '0',
+                              textAlign: 'left',
+                              fontWeight: 600
+                            }}
+                          >
+                          Nº imágenes al inventariar
+                        </span><br/>
+                          <span className={'text-sm text-muted'}>Cantidad de fotografías solicitadas al ingresar unidad digitando el VIN.</span>
+                        </div>
+                        <input id="manual-photo" type="text" className="col-sm-6 col-md-4 col-lg-4 form-control" />
+                      </div>
                     </div>
+                    {/*<div className="checkbox">*/}
+                    {/*  <label style={{paddingLeft: '0'}} onClick={this.handleChangeManualPhoto}>*/}
+                    {/*    <Checkbox*/}
+                    {/*      active={manualPhoto === 1}*/}
+                    {/*      action={this.handleChangeManualPhoto}*/}
+                    {/*      classes="icheck-in-checkbox"*/}
+                    {/*      style={{marginTop: '-4px', marginRight: '5px'}}*/}
+                    {/*    />*/}
+                    {/*    Solicitar foto en modo manual*/}
+                    {/*  </label>*/}
+                    {/*</div>*/}
                   </div>
-                  {/*<div className="checkbox">*/}
-                  {/*  <label style={{paddingLeft: '0'}} onClick={this.handleChangeManualPhoto}>*/}
-                  {/*    <Checkbox*/}
-                  {/*      active={manualPhoto === 1}*/}
-                  {/*      action={this.handleChangeManualPhoto}*/}
-                  {/*      classes="icheck-in-checkbox"*/}
-                  {/*      style={{marginTop: '-4px', marginRight: '5px'}}*/}
-                  {/*    />*/}
-                  {/*    Solicitar foto en modo manual*/}
-                  {/*  </label>*/}
-                  {/*</div>*/}
                 </div>
-                <div className="col-md-6">
+                <div className="col-sm-12 col-md-8 col-lg-6">
                   <div className="form-horizontal">
                     <div className="form-group" style={{marginRight: '0', marginLeft: '0'}}>
-                      <span
-                        className="col-sm-10 col-md-8 col-lg-9 control-label"
-                        style={{
-                          paddingLeft: '0',
-                          textAlign: 'left'
-                        }}
-                      >
-                        Nº imágenes al reporta
-                      </span>
-                      <input id="report-photo" type="text" className="col-sm-2 col-md-4 col-lg-3 form-control" />
+                      <div className="col-sm-6 col-md-8 col-lg-8 no-padding">
+                        <span
+                          className="control-label"
+                          style={{
+                            paddingLeft: '0',
+                            textAlign: 'left',
+                            fontWeight: 600
+                          }}
+                        >
+                        Nº imágenes al reportar
+                      </span><br/>
+                        <span className={'text-sm text-muted'}>Cantidad de fotografías solicitadas al reportar una unidad.</span>
+                      </div>
+                      <input id="report-photo" type="text" className="col-sm-6 col-md-4 col-lg-4 form-control" />
                     </div>
                   </div>
                     {/*<input*/}
@@ -340,9 +350,9 @@ class InventoryCreateView extends React.Component<IPropsType, IStateType> {
                     {/*/>*/}
                     {/*<span>Cantidad de imágenes al reportar</span>*/}
                 </div>
-                <div className="col-md-12">
+                <div className="col-md-8 col-sm-12">
                   <div className="checkbox">
-                    <label style={{paddingLeft: '0'}} onClick={this.handleChangeNotification}>
+                    <label style={{paddingLeft: '0', fontWeight: 600}} onClick={this.handleChangeNotification}>
                       <Checkbox
                         active={notification}
                         action={this.handleChangeNotification}
