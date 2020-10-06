@@ -12,7 +12,7 @@ const regionSchema = new mongoose.Schema({
   },
   code: {
     type: String,
-    trim: true
+    trim: true,
     default: ''
   },
   team: {
