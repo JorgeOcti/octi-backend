@@ -19,6 +19,7 @@ import {planningReducer} from "./planning.reducer";
 import {billingReducer} from "./billing.reducers";
 import {regionsReducer} from "./regions.reducer";
 import {stockReducer} from "./stock.reducer";
+import { reducer as formReducer } from 'redux-form'
 
 export default (history: any) => combineReducers({
   users: usersReducer,
@@ -40,5 +41,6 @@ export default (history: any) => combineReducers({
   regions: regionsReducer,
   stock: stockReducer,
   planning: planningReducer,
-  router: connectRouter(history)
+  router: connectRouter(history),
+  form: formReducer
 });

@@ -5,14 +5,19 @@ const tempfile = require("tempfile");
 const app_1 = require("../../../app");
 const server_1 = require("../../../server");
 const user_model_1 = require("../../models/user.model");
+const uuid = require("uuid");
 const venue_model_1 = require("../../models/venue.model");
+const jwt = require("jsonwebtoken");
 class AdminUsersController {
     constructor() {
         this.index = this.index.bind(this);
+        this.integrations = this.integrations.bind(this);
         this.apiUsers = this.apiUsers.bind(this);
         this.apiCreateUser = this.apiCreateUser.bind(this);
         this.apiUpdateUser = this.apiUpdateUser.bind(this);
         this.apiDeleteUser = this.apiDeleteUser.bind(this);
+        this.apiCreateIntegration = this.apiCreateIntegration.bind(this);
+        this.apiDeleteIntegration = this.apiDeleteIntegration.bind(this);
         this.exportXLS = this.exportXLS.bind(this);
         this.apiChangePasswordUser = this.apiChangePasswordUser.bind(this);
     }
@@ -24,6 +29,14 @@ class AdminUsersController {
         else {
             res.status(403).render('403');
         }
+    }
+    async integrations(req, res) {
+        /* istanbul ignore else  */
+        // if (req.user.hasPermission('viewUser')) {
+        res.render('app/index', { token: await req.user.generateToken() });
+        // } else {
+        //   res.status(403).render('403');
+        // }
     }
     async exportXLS(req, res) {
         if (!req.user.hasPermission('viewUser')) {
@@ -128,6 +141,7 @@ class AdminUsersController {
             /* body */
             const users = await user_model_1.default.find({
                 team,
+                type: user_model_1.UserTypes.common,
                 venue: {
                     $in: req.user.venuesPermissions()
                 }
@@ -161,11 +175,6 @@ class AdminUsersController {
                 const dataVenues = {};
                 user.venuesPermissions(true).forEach((venue) => {
                     dataVenues[venue] = "X";
-                    // worksheet.addRow({
-                    //   ...detailUser,
-                    //   venue: venue.name,
-                    //   company: venue.company.name
-                    // });
                 });
                 accessRow.push({
                     usuario: user.fullName(),
@@ -179,10 +188,6 @@ class AdminUsersController {
                     bold: true
                 };
             });
-            // const idCol = worksheet.getColumn('id');
-            // idCol.eachCell({includeEmpty: true}, (cell) => {
-            //   cell.alignment = {vertical: 'middle', horizontal: 'center'};
-            // });
             const tempFilePath = tempfile('.xlsx');
             await workbook.xlsx.writeFile(tempFilePath);
             res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
@@ -196,19 +201,105 @@ class AdminUsersController {
             });
         }
     }
+    async apiCreateIntegration(req, res) {
+        /* istanbul ignore next  */
+        // if (!req.user.hasPermission('addIntegration')) {
+        //   return res.status(403).json({
+        //     message: 'No tienes permisos para esta operación'
+        //   });
+        // }
+        const { firstName, company } = req.body;
+        const { team } = req.user;
+        // validate fields required
+        if (!firstName || !firstName.length) {
+            res.status(400).json({
+                message: 'Name are required',
+                status: 400
+            });
+        }
+        try {
+            // create user
+            const randomText = uuid.v4();
+            let newUser = await new user_model_1.default({
+                firstName,
+                username: randomText,
+                venuesAccess: [],
+                userPermissions: [],
+                company,
+                team,
+                password: randomText,
+                email: randomText,
+                type: user_model_1.UserTypes.integration,
+                active: true
+            }).save();
+            // this token no expire
+            newUser.token = jwt.sign({ _id: newUser._id.toString() }, req.app.locals.secretKey);
+            newUser.save();
+            // const errors = await newUser.validate();
+            // console.log(errors);
+            server_1.io.to(`integration-list-${team}`).emit('REFRESH', {
+                update: true,
+                updatedBy: req.user._id
+            });
+            res.status(201).json({
+                message: 'Integración agregada satisfactoriamente.',
+                user: newUser
+            });
+        }
+        catch (e) {
+            /* istanbul ignore next  */
+            res.status(500).json(e);
+        }
+    }
+    async apiDeleteIntegration(req, res) {
+        // if (!req.user.hasPermission('deleteUser')) {
+        //   return res.status(403).json({
+        //     message: 'No tienes permisos para esta operación'
+        //   });
+        // }
+        const { team } = req.user;
+        const { id } = req.params;
+        // const company = req.user.company;
+        try {
+            const user = await user_model_1.default.findOneAndRemove({ _id: id, team, type: user_model_1.UserTypes.integration });
+            if (user) {
+                const response = {
+                    message: 'Integración eliminada satisfactoriamente.',
+                    id: user._id
+                };
+                server_1.io.to(`integration-list-${team}`).emit('REFRESH', {
+                    update: true,
+                    updatedBy: req.user._id
+                });
+                res.status(200).json(response);
+            }
+            else {
+                const response = {
+                    id,
+                    message: 'Esta integración ya fue eliminado.'
+                };
+                res.status(200).json(response);
+            }
+        }
+        catch (e) {
+            /* istanbul ignore next  */
+            res.status(500).json(e);
+        }
+    }
     async apiUsers(req, res) {
         if (!req.user.hasPermission('viewUser')) {
             return res.status(403).json({
                 message: 'No tienes permisos para esta operación'
             });
         }
-        const { page, pageSize, search } = req.query;
+        const { page, pageSize, search, type } = req.query;
         const { team } = req.user;
         // paginate options
         const options = {
             select: {
                 firstName: true,
                 lastName: true,
+                token: true,
                 preferred: true,
                 email: true,
                 isAdmin: true,
@@ -247,12 +338,16 @@ class AdminUsersController {
             limit: parseInt(pageSize ? pageSize : "20", 10)
         };
         try {
-            const users = await this.getUsers({
+            let filter = {
                 team,
-                venue: {
+                type
+            };
+            if (type === user_model_1.UserTypes.common) {
+                filter.venue = {
                     $in: req.user.venuesPermissions()
-                }
-            }, options, search);
+                };
+            }
+            const users = await this.getUsers(filter, options, search);
             // validate exist page
             /* istanbul ignore if  */
             if (options.page && users.pages && users.pages < options.page) {
@@ -321,6 +416,7 @@ class AdminUsersController {
                     team,
                     password,
                     email,
+                    type: user_model_1.UserTypes.common,
                     active: true
                 }).save();
                 // const errors = await newUser.validate();
@@ -479,7 +575,7 @@ class AdminUsersController {
         const { id } = req.params;
         // const company = req.user.company;
         try {
-            const user = await user_model_1.default.findOneAndRemove({ _id: id, team });
+            const user = await user_model_1.default.findOneAndRemove({ _id: id, team, type: user_model_1.UserTypes.common });
             if (user) {
                 const response = {
                     message: 'Usuario eliminado satisfactoriamente.',

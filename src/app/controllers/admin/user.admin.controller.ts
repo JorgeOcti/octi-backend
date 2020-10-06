@@ -1,29 +1,29 @@
 import * as excel from 'exceljs';
+import {Alignment} from 'exceljs';
 import {Response} from 'express';
-import {
-  PaginateOptions,
-  PaginateResult
-} from 'mongoose';
+import {PaginateOptions, PaginateResult} from 'mongoose';
 import * as tempfile from 'tempfile';
 import {queue} from '../../../app';
 import {IForm} from '../../../interfaces/form.interface';
 import {IRequest} from '../../../interfaces/global.interface';
 import {IPermission} from '../../../interfaces/permision.interface';
 import {io} from '../../../server';
-import User, {
-  IUserModel
-} from '../../models/user.model';
+import User, {IUserModel, UserTypes} from '../../models/user.model';
+import * as uuid from "uuid";
 import Venue from "../../models/venue.model";
-import {Alignment} from "exceljs";
+import * as jwt from "jsonwebtoken";
 
 class AdminUsersController {
 
   constructor() {
     this.index = this.index.bind(this);
+    this.integrations = this.integrations.bind(this);
     this.apiUsers = this.apiUsers.bind(this);
     this.apiCreateUser = this.apiCreateUser.bind(this);
     this.apiUpdateUser = this.apiUpdateUser.bind(this);
     this.apiDeleteUser = this.apiDeleteUser.bind(this);
+    this.apiCreateIntegration = this.apiCreateIntegration.bind(this);
+    this.apiDeleteIntegration = this.apiDeleteIntegration.bind(this);
     this.exportXLS = this.exportXLS.bind(this);
     this.apiChangePasswordUser = this.apiChangePasswordUser.bind(this);
   }
@@ -35,6 +35,15 @@ class AdminUsersController {
     } else {
       res.status(403).render('403');
     }
+  }
+
+  public async integrations(req: IRequest, res: Response) {
+    /* istanbul ignore else  */
+    // if (req.user.hasPermission('viewUser')) {
+    res.render('app/index', {token: await req.user.generateToken()});
+    // } else {
+    //   res.status(403).render('403');
+    // }
   }
 
   public async exportXLS(req: IRequest, res: Response): Promise<any> {
@@ -142,6 +151,7 @@ class AdminUsersController {
       /* body */
       const users = await User.find({
         team,
+        type: UserTypes.common,
         venue: {
           $in: req.user.venuesPermissions()
         }
@@ -175,11 +185,6 @@ class AdminUsersController {
         const dataVenues: any = {};
         user.venuesPermissions(true).forEach((venue: string) => {
           dataVenues[venue] = "X";
-          // worksheet.addRow({
-          //   ...detailUser,
-          //   venue: venue.name,
-          //   company: venue.company.name
-          // });
         });
         accessRow.push({
           usuario: user.fullName(),
@@ -193,10 +198,6 @@ class AdminUsersController {
           bold: true
         };
       });
-      // const idCol = worksheet.getColumn('id');
-      // idCol.eachCell({includeEmpty: true}, (cell) => {
-      //   cell.alignment = {vertical: 'middle', horizontal: 'center'};
-      // });
       const tempFilePath = tempfile('.xlsx');
       await workbook.xlsx.writeFile(tempFilePath);
       res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
@@ -210,19 +211,105 @@ class AdminUsersController {
     }
   }
 
+   public async apiCreateIntegration(req: IRequest, res: Response): Promise<any> {
+    /* istanbul ignore next  */
+    // if (!req.user.hasPermission('addIntegration')) {
+    //   return res.status(403).json({
+    //     message: 'No tienes permisos para esta operación'
+    //   });
+    // }
+    const {firstName, company} = req.body;
+    const {team} = req.user;
+    // validate fields required
+    if (!firstName || !firstName.length) {
+      res.status(400).json({
+        message: 'Name are required',
+        status: 400
+      });
+    }
+    try {
+      // create user
+      const randomText = uuid.v4();
+      let newUser = await new User({
+        firstName,
+        username: randomText,
+        venuesAccess : [],
+        userPermissions: [],
+        company,
+        team,
+        password: randomText,
+        email: randomText,
+        type: UserTypes.integration,
+        active: true
+      }).save();
+      // this token no expire
+      newUser.token = jwt.sign({_id: newUser._id.toString()}, req.app.locals.secretKey);
+      newUser.save();
+
+      // const errors = await newUser.validate();
+      // console.log(errors);
+      io.to(`integration-list-${team}`).emit('REFRESH', {
+        update: true,
+        updatedBy: req.user._id
+      });
+      res.status(201).json({
+        message: 'Integración agregada satisfactoriamente.',
+        user: newUser
+      });
+    } catch (e) {
+      /* istanbul ignore next  */
+      res.status(500).json(e);
+    }
+  }
+
+  public async apiDeleteIntegration(req: IRequest, res: Response): Promise<any> {
+    // if (!req.user.hasPermission('deleteUser')) {
+    //   return res.status(403).json({
+    //     message: 'No tienes permisos para esta operación'
+    //   });
+    // }
+    const {team} = req.user;
+    const {id} = req.params;
+    // const company = req.user.company;
+    try {
+      const user = await User.findOneAndRemove({_id: id, team, type: UserTypes.integration});
+      if (user) {
+        const response = {
+          message: 'Integración eliminada satisfactoriamente.',
+          id: user._id
+        };
+        io.to(`integration-list-${team}`).emit('REFRESH', {
+          update: true,
+          updatedBy: req.user._id
+        });
+        res.status(200).json(response);
+      } else {
+        const response = {
+          id,
+          message: 'Esta integración ya fue eliminado.'
+        };
+        res.status(200).json(response);
+      }
+    } catch (e) {
+      /* istanbul ignore next  */
+      res.status(500).json(e);
+    }
+  }
+
   public async apiUsers(req: IRequest, res: Response): Promise<any> {
     if (!req.user.hasPermission('viewUser')) {
       return res.status(403).json({
         message: 'No tienes permisos para esta operación'
       });
     }
-    const {page, pageSize, search} = req.query as { page: string, pageSize: string, search: string};
+    const {page, pageSize, search, type} = req.query as { page: string, pageSize: string, search: string, type: string};
     const {team} = req.user;
     // paginate options
     const options: PaginateOptions = {
       select: {
         firstName: true,
         lastName: true,
+        token: true,
         preferred: true,
         email: true,
         isAdmin: true,
@@ -261,12 +348,16 @@ class AdminUsersController {
       limit: parseInt(pageSize ? pageSize : "20", 10)
     };
     try {
-      const users = await this.getUsers({
+      let filter: any = {
         team,
-        venue: {
+        type
+      };
+      if(type === UserTypes.common){
+        filter.venue = {
           $in: req.user.venuesPermissions()
         }
-      }, options, search);
+      }
+      const users = await this.getUsers(filter, options, search);
       // validate exist page
       /* istanbul ignore if  */
       if (options.page && users.pages && users.pages < options.page) {
@@ -333,6 +424,7 @@ class AdminUsersController {
           team,
           password,
           email,
+          type: UserTypes.common,
           active: true
         }).save();
 
@@ -493,7 +585,7 @@ class AdminUsersController {
     const {id} = req.params;
     // const company = req.user.company;
     try {
-      const user = await User.findOneAndRemove({_id: id, team});
+      const user = await User.findOneAndRemove({_id: id, team, type: UserTypes.common});
       if (user) {
         const response = {
           message: 'Usuario eliminado satisfactoriamente.',

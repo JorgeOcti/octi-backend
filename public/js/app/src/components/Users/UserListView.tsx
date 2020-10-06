@@ -9,6 +9,7 @@ import {Dispatch} from 'redux';
 import * as swal from 'sweetalert';
 import {debounce} from 'throttle-debounce';
 import {IUser} from '../../../../../../src/interfaces/user.interface';
+
 import {
   loadDataAction,
   ModalReduxAction
@@ -22,7 +23,8 @@ import {
   ITempUser,
   IUsersState,
   updateUserAction,
-  UserReduxAction
+  UserReduxAction,
+  UserTypes
 } from '../../actions/users.actions';
 import AppContainer from '../../container/AppContainer';
 import {IWindow} from '../../interfaces/window';
@@ -37,11 +39,11 @@ import Paginator from '../Utils/Paginator';
 import UserFormChangePasswordView from './UserFormChangePasswordView';
 import UserFormView from './UserFormView';
 
-interface IPropsType extends RouteComponentProps<{ ticket: string }> {
+interface IPropsType extends RouteComponentProps<{ }> {
   dispatch: Dispatch<UserReduxAction>;
   users: IUsersState;
 
-  getUsersAction(page: number, search?: string): UserReduxAction;
+  getUsersAction(nextPage: number, type: string, search?: string): UserReduxAction;
 
   createUserAction(): UserReduxAction;
 
@@ -98,7 +100,7 @@ class UserListView extends React.Component<IPropsType, IStateType> {
     const {pagination} = this.props.users;
     // set the title of the page
     document.title = 'OSA Andes | Listado de usuarios';
-    this.props.getUsersAction(pagination.page);
+    this.props.getUsersAction(1, UserTypes.common);
 
     // socket
     this.socket = io.connect(`${location.protocol}//${location.host}`, {
@@ -113,7 +115,7 @@ class UserListView extends React.Component<IPropsType, IStateType> {
     this.socket.on('REFRESH', (data: any): void => {
       if (data.update && data.updatedBy !== window.user._id) {
         const {pagination} = this.props.users;
-        this.props.getUsersAction(pagination.page);
+        this.props.getUsersAction(pagination.page, UserTypes.common);
       }
     });
   }
@@ -246,24 +248,24 @@ class UserListView extends React.Component<IPropsType, IStateType> {
               </div>
               <table className="table table-andes table-striped">
                 <thead>
-                <tr>
-                  <th style={{width: '24%'}}>Usuario</th>
-                  <th style={{width: '24%'}} className="hidden-xs">Sucursal</th>
-                  <th style={{width: '24%'}} className="hidden-xs">Formularios</th>
-                  <th style={{width: '24%'}} className="hidden-xs">Modificado</th>
-                  {
-                    hasPermission(window.user, 'changeUser') ?
-                      <th style={{width: '1%'}} className="width-10"/> : null
-                  }
-                  {
-                    hasPermission(window.user, 'changeUser') ?
-                      <th style={{width: '1%'}} className="width-10"/> : null
-                  }
-                  {
-                    hasPermission(window.user, 'deleteUser') ?
-                      <th style={{width: '1%'}} className="width-10"/> : null
-                  }
-                </tr>
+                  <tr>
+                    <th style={{width: '24%'}}>Usuario</th>
+                    <th style={{width: '24%'}} className="hidden-xs">Sucursal</th>
+                    <th style={{width: '24%'}} className="hidden-xs">Formularios</th>
+                    <th style={{width: '24%'}} className="hidden-xs">Modificado</th>
+                    {
+                      hasPermission(window.user, 'changeUser') ?
+                        <th style={{width: '1%'}} className="width-10"/> : null
+                    }
+                    {
+                      hasPermission(window.user, 'changeUser') ?
+                        <th style={{width: '1%'}} className="width-10"/> : null
+                    }
+                    {
+                      hasPermission(window.user, 'deleteUser') ?
+                        <th style={{width: '1%'}} className="width-10"/> : null
+                    }
+                  </tr>
                 </thead>
                 <tbody>
                 {
@@ -287,7 +289,7 @@ class UserListView extends React.Component<IPropsType, IStateType> {
                               className="text-sm text-muted">{user.venue ? user.venue.name : ''} - {user.company ? user.company.name : ''}</span>
                           </div>
                         </td>
-                        <td className="hidden-xs">{user.venue ? user.venue.name : ''}<br/>
+                        <td className="hidden-xs middle">{user.venue ? user.venue.name : ''}<br/>
                           <span className="text-sm text-muted">{user.company ? user.company.name : ''}</span>
                         </td>
                         <td className="hidden-xs">
@@ -307,13 +309,14 @@ class UserListView extends React.Component<IPropsType, IStateType> {
                         }
                         {
                           hasPermission(window.user, 'changeUser') ?
-                            <td className="middle-center text-blue pointer" onClick={() => this.updateUser(user)}><i
-                              className="fa fa-pencil"/></td> : null
+                            <td className="middle-center pointer" onClick={() => this.updateUser(user)}>
+                              <i className="fa fa-pencil text-blue"/></td> : null
                         }
                         {
                           hasPermission(window.user, 'deleteUser') ?
-                            <td className="middle-center text-red pointer" onClick={() => this.deleteUser(user)}><i
-                              className="fa fa-minus-circle"/></td> : null
+                            <td className="middle-center pointer" onClick={() => this.deleteUser(user)}>
+                              <i className="fa fa-minus-circle text-red"/>
+                            </td> : null
                         }
                       </tr>
                     );
@@ -349,7 +352,7 @@ class UserListView extends React.Component<IPropsType, IStateType> {
   }
 
   private debounceOnChangeSearch(): void {
-    this.props.getUsersAction(1);
+    this.props.getUsersAction(1, UserTypes.common);
   }
 
   private createUser(): void {
@@ -513,7 +516,7 @@ class UserListView extends React.Component<IPropsType, IStateType> {
 
   private changePage(page: number): void {
     // change the page
-    this.props.getUsersAction(page);
+    this.props.getUsersAction(page, UserTypes.common);
   }
 }
 
@@ -527,7 +530,7 @@ const mapStateToProps = (state: { users: IUsersState }) => {
 const mapDispatchToProps = (dispatch: any) => {
   return {
     dispatch,
-    getUsersAction: (page: number, search?: string) => dispatch(getUsersAction(page, search)),
+    getUsersAction: (nextPage: number, type: string, search?: string) => dispatch(getUsersAction(nextPage, type, search)),
     deleteUserAction: (id: string) => dispatch(deleteUserAction(id)),
     changeTempUserAction: (user: ITempUser) => dispatch(changeTempUserAction(user)),
     createUserAction: () => dispatch(createUserAction()),

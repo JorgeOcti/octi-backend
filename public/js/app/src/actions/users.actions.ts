@@ -9,6 +9,11 @@ import {IVenue} from '../../../../../src/interfaces/venue.interface';
 import ApiService from '../utils/axios';
 import {showModal, statusFooterButttonsModal} from '../utils/common';
 
+export enum UserTypes {
+  common = 'common',
+  integration = 'integration',
+}
+
 export interface IUsersState {
   users: IUser[];
   venues: IVenue[];
@@ -168,7 +173,7 @@ export function updateUserAction() {
         setTimeout(() => {
           $(`#user-${tempUser._id}`).removeClass('editing-item');
         }, 1000);
-        dispatch(getUsersAction(state.users.pagination.page) as any);
+        dispatch(getUsersAction(state.users.pagination.page, UserTypes.common) as any);
       })
       .catch((err: AxiosError) => {
         statusFooterButttonsModal(false);
@@ -189,7 +194,28 @@ export function createUserAction() {
       .then((response: AxiosResponse) => {
         statusFooterButttonsModal(false);
         showModal(false);
-        dispatch(getUsersAction(1) as any);
+        dispatch(getUsersAction(1, UserTypes.common) as any);
+        swal(response.data.message, {
+          icon: 'success'
+        });
+      })
+      .catch((err: AxiosError) => {
+        statusFooterButttonsModal(false);
+        dispatch(isLoadingAction(false));
+        api.errorHandler(err);
+      });
+  };
+}
+
+export function createIntegrationAction(user: any) {
+  return (dispatch: Dispatch<UserReduxAction>, getState: () => {users: IUsersState}) => {
+    dispatch(isLoadingAction(true));
+    const api: ApiService = new ApiService();
+    api.createIntegration(user)
+      .then((response: AxiosResponse) => {
+        statusFooterButttonsModal(false);
+        showModal(false);
+        dispatch(getUsersAction(1, UserTypes.integration) as any);
         swal(response.data.message, {
           icon: 'success'
         });
@@ -282,7 +308,7 @@ export function loadCompaniesUserAction(companies: ICompany[]): ILoadCompaniesUs
   };
 }
 
-export function getUsersAction(nextPage: number, search?: string) {
+export function getUsersAction(nextPage: number, type: string, search?: string) {
   return (dispatch: Dispatch<UserReduxAction>, getState: () => {users: IUsersState}) => {
     const api: ApiService = new ApiService();
     const state = getState();
@@ -314,7 +340,7 @@ export function getUsersAction(nextPage: number, search?: string) {
     if (nextPage) {
       dispatch(changePageAction(nextPage));
     }
-    api.getUsers(page, state.users.searchText)
+    api.getUsers(page, type, state.users.searchText)
       .then((response: AxiosResponse): void => {
         dispatch(loadUserAction(response.data.results, response.data.count, response.data.pages));
         dispatch(isLoadingAction(false));
@@ -351,6 +377,28 @@ export function deleteUserAction(id: string) {
   return (dispatch: Dispatch<UserReduxAction>) => {
     const api: ApiService = new ApiService();
     api.deleteUser(id)
+      .then((response: AxiosResponse): void => {
+        swal(response.data.message, {
+          icon: 'success'
+        });
+        // effect when removing user
+        $(`#user-${id}`)
+          .addClass('deleted-item');
+        setTimeout(() => {
+          dispatch(removeUserAction(id));
+        }, 1000);
+      })
+      .catch((err: AxiosError): void => {
+        dispatch(isLoadingAction(false));
+        api.errorHandler(err);
+      });
+  };
+}
+
+export function deleteIntegrationAction(id: string) {
+  return (dispatch: Dispatch<UserReduxAction>) => {
+    const api: ApiService = new ApiService();
+    api.deleteIntegration(id)
       .then((response: AxiosResponse): void => {
         swal(response.data.message, {
           icon: 'success'

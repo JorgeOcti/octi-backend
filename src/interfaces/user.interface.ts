@@ -22,6 +22,8 @@ export interface IUser {
   passwordResetToken: string | undefined;
   passwordResetExpires: Date | undefined;
   lastLogin: Date;
+  type: string;
+  token: string;
   active: boolean;
   updatedAt: Date;
   createdAt: Date;

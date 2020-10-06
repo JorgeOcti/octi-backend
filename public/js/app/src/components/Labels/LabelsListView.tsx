@@ -140,7 +140,10 @@ class LabelsListView extends React.Component<IPropsType, IStateType> {
                         >
                           <td className="middle text-ellipsis">
                             {label.name}
-                            <p className={"text-muted text-sm"}>{label.description}</p>
+                            <p
+                              className={"text-muted text-sm"}
+                              style={{marginBottom: "0"}}
+                            >{label.description}</p>
                           </td>
                           <td className="middle" style={{lineHeight: 1.6}}>
                             {

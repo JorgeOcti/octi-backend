@@ -1,11 +1,21 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.userTypes = exports.UserTypes = void 0;
 const bcrypt = require("bcrypt");
 const bson_1 = require("bson");
 const jwt = require("jsonwebtoken");
 const mongoose = require("mongoose");
 const mongoosePaginate = require("mongoose-paginate");
 const passportLocalMongoose = require("passport-local-mongoose");
+var UserTypes;
+(function (UserTypes) {
+    UserTypes["common"] = "common";
+    UserTypes["integration"] = "integration";
+})(UserTypes = exports.UserTypes || (exports.UserTypes = {}));
+exports.userTypes = [
+    UserTypes.common,
+    UserTypes.integration,
+];
 const userSchema = new mongoose.Schema({
     username: {
         type: String,
@@ -13,11 +23,11 @@ const userSchema = new mongoose.Schema({
     },
     firstName: {
         type: String,
-        default: null
+        default: ""
     },
     lastName: {
         type: String,
-        default: null
+        default: ""
     },
     team: {
         type: mongoose.Schema.Types.ObjectId,
@@ -26,13 +36,10 @@ const userSchema = new mongoose.Schema({
     company: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Company',
-        required: [true, 'La empresa es requerida'],
-        index: true
     },
     venue: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Venue',
-        required: [true, 'La sucursal es requerida']
     },
     venuesAccess: [{
             type: mongoose.Schema.Types.ObjectId,
@@ -62,6 +69,15 @@ const userSchema = new mongoose.Schema({
             type: mongoose.Schema.Types.ObjectId,
             ref: 'Form'
         }],
+    type: {
+        type: String,
+        enum: exports.userTypes,
+        default: UserTypes.common
+    },
+    token: {
+        type: String,
+        unique: true
+    },
     isAdmin: {
         type: Boolean,
         default: false

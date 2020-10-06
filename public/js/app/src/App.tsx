@@ -33,6 +33,7 @@ import BillingListView from "./components/Billing/BillingListView";
 import RegionsListView from "./components/Region/RegionsListFiew";
 import StockView from "./components/Stock/StockListView";
 import StockImportView from "./components/Stock/StockImportView";
+import IntegrationListView from "./components/Integration/IntegrationListView";
 
 
 declare let window: IWindow;
@@ -64,6 +65,7 @@ const App = () => (
         <Route exact path="/inventory/:id/" component={InventoryDetailView}/>
         <Route exact path="/inventory/:id/:tab/" component={InventoryDetailView}/>
         <Route exact path="/settings/users/" component={UsersListView}/>
+        <Route exact path="/settings/integrations/" component={IntegrationListView}/>
         <Route exact path="/settings/cars/" component={CarsListView}/>
         <Route exact path="/settings/cars/import/" component={ImportCarsView}/>
         <Route exact path="/settings/cars/:id/" component={CarDetailView}/>

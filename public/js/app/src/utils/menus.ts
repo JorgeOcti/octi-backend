@@ -203,6 +203,13 @@ if (hasPermission(window.user, 'viewUser')) {
   });
 }
 
+settingItems.push({
+  id: '10.10',
+  icon: 'fa-circle-o',
+  text: 'Integraciones',
+  url: '/settings/integrations/'
+});
+
 if (hasPermission(window.user, 'viewVersion')) {
   settingItems.push({
     id: '10.7',

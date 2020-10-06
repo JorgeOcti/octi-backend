@@ -56,9 +56,9 @@ export default class ApiService {
     }
   }
 
-  public getUsers(page: number, search?: string): AxiosPromise {
+  public getUsers(page: number, type: string, search?: string): AxiosPromise {
     return this.instance.get(
-      `/api/admin/users/?page=${page}${search ? `&search=${search}` : ''}`
+      `/api/admin/users/?type=${type}&page=${page}${search ? `&search=${search}` : ''}`
       , {
         cancelToken: this.source.token
       });
@@ -89,6 +89,18 @@ export default class ApiService {
   public deleteUser(id: string): AxiosPromise {
     return this.instance.delete(
       `/api/admin/users/${id}/`
+    );
+  }
+
+  public createIntegration(user: any): AxiosPromise {
+    return this.instance.post(
+      `/api/admin/integrations/`
+      , user);
+  }
+
+  public deleteIntegration(id: string): AxiosPromise {
+    return this.instance.delete(
+      `/api/admin/integrations/${id}/`
     );
   }
 
