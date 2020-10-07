@@ -11,6 +11,7 @@ class BillingController {
     this.index = this.index.bind(this);
     this.apiList = this.apiList.bind(this);
     this.pdf = this.pdf.bind(this);
+    this.run = this.run.bind(this);
   }
 
   /* istanbul ignore next */
@@ -93,6 +94,20 @@ class BillingController {
           status: 200
         });
       }
+    } catch (e) {
+      /* istanbul ignore next  */
+      if (e) {
+        res.status(500).json(e);
+      }
+    }
+  }
+
+  public async run(req: IRequest, res: Response) {
+    try {
+      await new BillingQueue().processBilling();
+      res.json({
+        status: "ok"
+      })
     } catch (e) {
       /* istanbul ignore next  */
       if (e) {

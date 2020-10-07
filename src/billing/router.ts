@@ -6,6 +6,7 @@ const billingRouter = express.Router();
 
 billingRouter.get('/settings/billing/pdf/:id', Middlewares.isLoggedIn, BillingController.pdf);
 billingRouter.get('/settings/billing/', Middlewares.isLoggedIn, BillingController.index);
+billingRouter.get('/settings/billing/run/', Middlewares.isLoggedIn, BillingController.run);
 billingRouter.get('/api/admin/billing/', Middlewares.isLoggedIn, BillingController.apiList);
 
 

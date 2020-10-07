@@ -217,7 +217,7 @@ class BillingQueue {
       console.log('start billing');
       // const valueUF = 28662.81; /*await this.getUFPrice();*/
       // const valueDolar = 767.98; /*await this.getDolarPrice();*/
-      const valueUF = await this.getUFPrice();
+      const valueUF =  28707.85; //await this.getUFPrice();
       // const valueDolar = await this.getDolarPrice();
       const companies = await Company.find({"billing.active": true});
       for (const company of companies) {
