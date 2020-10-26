@@ -2,6 +2,7 @@ import {NextFunction, Response} from 'express';
 import * as jwt from 'jsonwebtoken';
 import {IRequest} from '../interfaces/global.interface';
 import logger from '../services/logger.service';
+import User from "../app/models/user.model";
 
 class Middlewares {
 
@@ -42,7 +43,7 @@ class Middlewares {
       }
       return next();
     } else if (req.headers && req.headers.authorization && req.headers.authorization.split(' ')[0] === 'JWT') {
-      jwt.verify(req.headers.authorization.split(' ')[1], req.app.locals.secretKey, (err: any, decode: any) => {
+      jwt.verify(req.headers.authorization.split(' ')[1], req.app.locals.secretKey, async (err: any, decode: any) => {
         /* istanbul ignore if */
         if (err) {
           logger.error(`isJWTAuthenticated error: ${err.message} ${JSON.stringify(req.headers)}`);
@@ -51,7 +52,7 @@ class Middlewares {
             status: 401
           });
         } else {
-          req.user = decode;
+          req.user = await Middlewares.userInfo(decode);
           next();
         }
       });
@@ -62,6 +63,40 @@ class Middlewares {
         error: 'Debes estar autenticado para este recurso.',
         status: 401
       });
+    }
+  }
+
+  public static async userInfo(data: { _id: string }) : Promise<any> {
+    try {
+      const user = await User.findById(data._id, {
+        firstName: 1,
+        lastName: 1,
+        email: 1,
+        preferred: 1,
+        userPermissions: 1,
+        userForms: 1
+      })
+        .populate([{
+          path: 'venue',
+          select: ['name', 'lat', 'lng']
+        }, {
+          path: 'team',
+          select: ['name']
+        }, {
+          path: 'company',
+          select: ['name']
+        }, {
+          path: 'userPermissions',
+          select: ['codeName']
+        }, {
+          path: 'userForms',
+          select: ['name']
+        }]).lean();
+      return {
+        ...user
+      };
+    } catch (e){
+      logger.error(`userInfo error:e. ${e}`);
     }
   }
 

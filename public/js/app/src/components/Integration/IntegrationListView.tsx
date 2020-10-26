@@ -7,7 +7,7 @@ import {
   createIntegrationAction,
   deleteIntegrationAction,
   getUsersAction,
-  IUsersState,
+  IUsersState, updateIntegrationAction,
   UserReduxAction,
   UserTypes
 } from "../../actions/users.actions";
@@ -21,6 +21,7 @@ import {submit} from 'redux-form'
 import ModalView from "../Modal/ModalView";
 import Paginator from "../Utils/Paginator";
 import * as swal from "sweetalert";
+import CopyText from "../Utils/CopyText";
 
 interface IPropsType extends RouteComponentProps<{}> {
   dispatch: Dispatch<UserReduxAction>;
@@ -29,6 +30,7 @@ interface IPropsType extends RouteComponentProps<{}> {
   submitForm(form: string): UserReduxAction;
   createIntegrationAction(user: any): UserReduxAction;
   deleteIntegrationAction(id: string): UserReduxAction;
+  updateIntegrationAction(user: any): UserReduxAction;
   getUsersAction(nextPage: number, type: string, search?: string): UserReduxAction;
   loadDataAction(title: string, body: JSX.Element, footer: JSX.Element): ModalReduxAction;
 }
@@ -46,10 +48,9 @@ class IntegrationListView extends React.Component<IPropsType, IStateType> {
 
   constructor(props: IPropsType) {
     super(props);
+    this.showToken = this.showToken.bind(this);
     this.createIntegration = this.createIntegration.bind(this);
-    this.processCreateIntegration = this.processCreateIntegration.bind(this);
     this.updateIntegration = this.updateIntegration.bind(this);
-    this.processUpdateIntegration = this.processUpdateIntegration.bind(this);
     this.deleteIntegration = this.deleteIntegration.bind(this);
     this.changePage = this.changePage.bind(this);
   }
@@ -91,7 +92,7 @@ class IntegrationListView extends React.Component<IPropsType, IStateType> {
         <section className="content">
           <div className="box">
             <div className="box-header with-border">
-              <h3 className="box-title">Integraciones</h3>
+              <h3 className="box-title">Integraciones <small>{pagination.count}</small></h3>
               <div className="box-tools pull-right">
                 <button
                   className="btn btn-sm btn-success"
@@ -131,6 +132,7 @@ class IntegrationListView extends React.Component<IPropsType, IStateType> {
                           <td className="middle">{user.firstName}</td>
                           <td className="middle">{user.company.name}</td>
                           <td className="middle">••••••••••••••••••••• <button
+                            onClick={()=> this.showToken(user)}
                             className={"btn btn-xs btn-default"}
                           >
                             <i className="fa fa fa-eye" /></button>
@@ -176,10 +178,28 @@ class IntegrationListView extends React.Component<IPropsType, IStateType> {
     )
   }
 
+  private showToken(user: IUser): void {
+    this.props.loadDataAction(
+      `Token de ${user.firstName} `,
+      <div className="row">
+        <div className="col-md-12">
+          <p
+            style={{
+              wordBreak: "break-all"
+            }}
+          ><CopyText value={user.token}><strong>Token:</strong> {user.token}</CopyText></p>
+        </div>
+      </div>,
+      <React.Fragment>
+        <button type="button" className="btn btn-sm btn-default" data-dismiss="modal">Cerrar</button>
+      </React.Fragment>
+    );
+  }
+
   private createIntegration(): void {
     this.props.loadDataAction(
       'Agregar Integración',
-      <IntegrationFormView onSubmit={this.processCreateIntegration}/>,
+      <IntegrationFormView onSubmit={this.props.createIntegrationAction}/>,
       <React.Fragment>
         <button type="button" className="btn btn-sm btn-default" data-dismiss="modal">Cancelar</button>
         <button
@@ -193,15 +213,11 @@ class IntegrationListView extends React.Component<IPropsType, IStateType> {
     );
   }
 
-  private processCreateIntegration(values: any): void {
-    this.props.createIntegrationAction(values);
-  }
-
   private updateIntegration(user: IUser): void {
     this.props.loadDataAction(
       `Editando ${user.firstName} `,
       <IntegrationFormView
-        onSubmit={this.processUpdateIntegration}
+        onSubmit={this.props.updateIntegrationAction}
         initialValues={{
           _id: user._id,
           firstName: user.firstName,
@@ -219,10 +235,6 @@ class IntegrationListView extends React.Component<IPropsType, IStateType> {
         </button>
       </React.Fragment>
     );
-  }
-
-  private processUpdateIntegration(values: any): void {
-    console.log(values);
   }
 
   private deleteIntegration(user: IUser) {
@@ -263,6 +275,7 @@ const mapDispatchToProps = (dispatch: any) => {
     submitForm: (form: string) => dispatch(submit(form)),
     createIntegrationAction: (user: any) => dispatch(createIntegrationAction(user)),
     deleteIntegrationAction: (id: string) => dispatch(deleteIntegrationAction(id)),
+    updateIntegrationAction: (user: IUser) => dispatch(updateIntegrationAction(user)),
     loadDataAction: (title: string, body: JSX.Element, footer: JSX.Element) => dispatch(loadDataAction(title, body, footer)),
     getUsersAction: (nextPage: number, type: string, search?: string) => dispatch(getUsersAction(nextPage, type, search)),
   };

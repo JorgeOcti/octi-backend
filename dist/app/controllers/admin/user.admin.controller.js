@@ -17,6 +17,7 @@ class AdminUsersController {
         this.apiUpdateUser = this.apiUpdateUser.bind(this);
         this.apiDeleteUser = this.apiDeleteUser.bind(this);
         this.apiCreateIntegration = this.apiCreateIntegration.bind(this);
+        this.apiUpdateIntegration = this.apiUpdateIntegration.bind(this);
         this.apiDeleteIntegration = this.apiDeleteIntegration.bind(this);
         this.exportXLS = this.exportXLS.bind(this);
         this.apiChangePasswordUser = this.apiChangePasswordUser.bind(this);
@@ -247,6 +248,90 @@ class AdminUsersController {
             });
         }
         catch (e) {
+            /* istanbul ignore next  */
+            res.status(500).json(e);
+        }
+    }
+    async apiUpdateIntegration(req, res) {
+        /* istanbul ignore next  */
+        if (!req.user.hasPermission('changeUser')) {
+            return res.status(403).json({
+                message: 'No tienes permisos para esta operación'
+            });
+        }
+        const { id } = req.params;
+        const { team } = req.user;
+        const { firstName, company } = req.body;
+        // validate fields required
+        if (!firstName || !firstName.length) {
+            res.status(400).json({
+                message: 'firstName, lastName, email and venue are required',
+                status: 400
+            });
+        }
+        try {
+            let updateItems = {
+                firstName,
+                company
+            };
+            let user = await user_model_1.default
+                .findOneAndUpdate({
+                _id: id, team
+            }, updateItems, {
+                new: true
+            })
+                .populate([{
+                    path: 'company',
+                    select: ['name']
+                }, {
+                    path: 'venue',
+                    select: ['name', 'active']
+                }, {
+                    path: 'venuesAccess',
+                    select: ['name'],
+                    populate: [{
+                            path: 'company',
+                            select: ['name']
+                        }]
+                }, {
+                    path: 'userPermissions',
+                    select: ['name', 'codeName'],
+                    options: {
+                        sort: {
+                            name: 1
+                        }
+                    }
+                }, {
+                    path: 'userForms',
+                    select: ['name']
+                }]);
+            if (user) {
+                // prevent return password
+                user = user.toObject();
+                if (user && user.password) {
+                    delete user.password;
+                }
+                const response = {
+                    message: 'Integración editada satisfactoriamente.',
+                    user
+                };
+                server_1.io.to(`integration-list-${team}`).emit('REFRESH', {
+                    update: true,
+                    updatedBy: req.user._id
+                });
+                res.status(200).json(response);
+            }
+            else {
+                const response = {
+                    id,
+                    message: 'Usuario no encontrado'
+                };
+                res.status(200).json(response);
+            }
+        }
+        catch (e) {
+            /* istanbul ignore next  */
+            console.log(e);
             /* istanbul ignore next  */
             res.status(500).json(e);
         }

@@ -11,6 +11,7 @@ import User from '../models/user.model';
 import UserModel, {IUserModel} from '../models/user.model';
 import Version from "../models/version.model";
 
+
 class JWTController {
 
   private androidVersion: string = '2.4.2';

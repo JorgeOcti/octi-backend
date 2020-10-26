@@ -17,6 +17,7 @@ inventoryRouter.get('/inventory/:id/:tab/', Middlewares.isLoggedIn, InventoryCon
 // Inventories API Web
 inventoryRouter.get('/api/inventory/', Middlewares.isLoggedIn, InventoryController.list);
 inventoryRouter.post('/api/inventory/', Middlewares.isLoggedIn, InventoryController.create);
+inventoryRouter.post('/api/external/inventory/', Middlewares.isJWTAuthenticated, InventoryController.test);
 inventoryRouter.post('/api/inventory/dashboard/', Middlewares.isLoggedIn, InventoryController.dashboard);
 inventoryRouter.post('/api/inventory/:inventory/comment/', Middlewares.isLoggedIn, InventoryController.addComment);
 inventoryRouter.post('/api/inventory/:id/download-images/', Middlewares.isJWTAuthenticated, InventoryController.downloadImages);

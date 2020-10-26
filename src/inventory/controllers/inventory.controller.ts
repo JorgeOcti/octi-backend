@@ -43,11 +43,13 @@ import ActivityHistory, {ChoicesTypeActivity} from "../../billing/models/activit
 import {IActivityHistoryInterface} from "../../interfaces/activityHistory.interface";
 import {IStockCar} from "../../interfaces/stock.interface";
 import StockCar from "../models/stockCar.model";
+import * as  Joi from 'joi';
 
 class InventoryController {
 
   constructor() {
     this.index = this.index.bind(this);
+    this.test = this.test.bind(this);
     this.stock = this.stock.bind(this);
     this.detail = this.detail.bind(this);
     this.create = this.create.bind(this);
@@ -80,6 +82,28 @@ class InventoryController {
     } catch (e) {
       console.log(e);
     }
+  }
+
+  public test(req: IRequest, res: Response) {
+    const {user, body} = req;
+    const schema = Joi.object({
+      username: Joi.string()
+        .alphanum()
+        .min(3)
+        .max(30)
+        .required(),
+      password: Joi.string().pattern(new RegExp('^[a-zA-Z0-9]{3,30}$')),
+      access_token: [
+        Joi.string(),
+        Joi.number()
+      ],
+    })
+    .xor('password', 'access_token');
+    res.json({
+      status: "ok",
+      user,
+      validate: schema.validate(body)
+    })
   }
 
   public async stock(req: IRequest, res: Response) {
@@ -330,171 +354,171 @@ class InventoryController {
         }
       }, options);
 
-       if (options.page && paginatedInventories.pages && paginatedInventories.pages < options.page) {
+      if (options.page && paginatedInventories.pages && paginatedInventories.pages < options.page) {
         res.status(400).json({
           message: 'La página solicitada no existe.',
           status: 200
         });
       } else {
-         const response: any[] = [];
-         const inventories = await InventoryModel.aggregate([{
-           $match: {
-             _id:{
-               $in: paginatedInventories.docs.map(v => v._id)
-             },
-           }
-         }, {
-           $lookup: {
-             from: 'inventorycars',
-             localField: '_id',
-             foreignField: 'inventory',
-             as: 'cars'
-           }
-         }, {
-           $unwind: '$cars'
-         }, {
-           $match: {
-             'cars.venue': {
-               $in: venuesPermissions
-             },
-             'cars.status': {
-               $in: [
-                 ChoicesStatusCarInventory.pending,
-                 ChoicesStatusCarInventory.found,
-                 ChoicesStatusCarInventory.missing,
-                 ChoicesStatusCarInventory.leftover,
-                 ChoicesStatusCarInventory.reported
-               ]
-             },
-             ...specialFilter
-           }
-         }, {
-           $group: {
-             _id: {
-               category: '$_id',
-               status: '$status',
-               carStatus: '$cars.status',
-               name: '$name',
-               file: '$file',
-               backup: '$backup',
-               createdBy: '$createdBy',
-               createdAt: '$createdAt',
-               finalizedBy: '$finalizedBy',
-               finalizedAt: '$finalizedAt'
-             },
-             total: {
-               $sum: 1
-             }
-           }
-         }, {
-           $group: {
-             _id: '$_id.category',
-             name: {
-               $first: '$_id.name'
-             },
-             createdAt: {
-               $first: '$_id.createdAt'
-             },
-             file: {
-               $first: '$_id.file'
-             },
-             backup: {
-               $first: '$_id.backup'
-             },
-             finalizedAt: {
-               $first: '$_id.finalizedAt'
-             },
-             createdBy: {
-               $first: '$_id.createdBy'
-             },
-             finalizedBy: {
-               $first: '$_id.finalizedBy'
-             },
-             results: {
-               $push: {
-                 status: '$_id.carStatus',
-                 total: '$total'
-               }
-             },
-             status: {
-               $first: '$_id.status'
-             }
-           }
-         }, {
-           $lookup: {
-             from: 'users',
-             localField: 'createdBy',
-             foreignField: '_id',
-             as: 'createdBy'
-           }
-         }, {
-           $lookup: {
-             from: 'users',
-             localField: 'finalizedBy',
-             foreignField: '_id',
-             as: 'finalizedBy'
-           }
-         }, {
-           $project: {
-             '_id': 1,
-             'name': 1,
-             'results': 1,
-             'file': 1,
-             'backup': 1,
-             'createdBy.firstName': 1,
-             'createdBy.lastName': 1,
-             'finalizedBy.firstName': 1,
-             'finalizedBy.lastName': 1,
-             'status': 1,
-             'createdAt': 1,
-             'finalizedAt': 1
-           }
-         }, {
-           $sort: {
-             createdAt: -1
-           }
-         }]);
-         for (const inventory of inventories) {
-           const defaultResults = {
-             [ChoicesStatusCarInventory.pending]: 0,
-             [ChoicesStatusCarInventory.found]: 0,
-             [ChoicesStatusCarInventory.missing]: 0,
-             [ChoicesStatusCarInventory.reported]: 0,
-             [ChoicesStatusCarInventory.leftover]: 0
-           };
-           response.push({
-             _id: inventory._id,
-             name: inventory.name,
-             file: req.user.hasPermission('viewFilesInventory') ? inventory.file : null,
-             backup: req.user.hasPermission('viewFilesInventory') ? inventory.backup : null,
-             createdBy: inventory.createdBy.length ? {
-               fullName: `${inventory.createdBy[0].firstName} ${inventory.createdBy[0].lastName}`
-             } : {},
-             finalizedBy: inventory.finalizedBy.length ? {
-               fullName: `${inventory.finalizedBy[0].firstName} ${inventory.finalizedBy[0].lastName}`
-             } : {},
-             results: inventory.results.reduce((acc: any, cur: any) => {
-               acc[cur.status] = cur.total;
-               return acc;
-             }, {
-               ...defaultResults
-             }),
-             status: inventory.status,
-             createdAt: inventory.createdAt,
-             finalizedAt: inventory.finalizedAt ? inventory.finalizedAt : null
-           });
-         }
-         const teamSettings = await TeamSetting.findOne({team});
-         res.json({
-           inventories: response,
-           inventorySettings: teamSettings!.inventory,
-           count: paginatedInventories.total,
-           pages: paginatedInventories.pages,
-           hasPrevious: options.page && options.page > 1 && paginatedInventories.pages && paginatedInventories.pages >= options.page,
-           hasNext: options.page && paginatedInventories.pages && paginatedInventories.pages > options.page,
-           status: 200
-         });
-       }
+        const response: any[] = [];
+        const inventories = await InventoryModel.aggregate([{
+          $match: {
+            _id: {
+              $in: paginatedInventories.docs.map(v => v._id)
+            },
+          }
+        }, {
+          $lookup: {
+            from: 'inventorycars',
+            localField: '_id',
+            foreignField: 'inventory',
+            as: 'cars'
+          }
+        }, {
+          $unwind: '$cars'
+        }, {
+          $match: {
+            'cars.venue': {
+              $in: venuesPermissions
+            },
+            'cars.status': {
+              $in: [
+                ChoicesStatusCarInventory.pending,
+                ChoicesStatusCarInventory.found,
+                ChoicesStatusCarInventory.missing,
+                ChoicesStatusCarInventory.leftover,
+                ChoicesStatusCarInventory.reported
+              ]
+            },
+            ...specialFilter
+          }
+        }, {
+          $group: {
+            _id: {
+              category: '$_id',
+              status: '$status',
+              carStatus: '$cars.status',
+              name: '$name',
+              file: '$file',
+              backup: '$backup',
+              createdBy: '$createdBy',
+              createdAt: '$createdAt',
+              finalizedBy: '$finalizedBy',
+              finalizedAt: '$finalizedAt'
+            },
+            total: {
+              $sum: 1
+            }
+          }
+        }, {
+          $group: {
+            _id: '$_id.category',
+            name: {
+              $first: '$_id.name'
+            },
+            createdAt: {
+              $first: '$_id.createdAt'
+            },
+            file: {
+              $first: '$_id.file'
+            },
+            backup: {
+              $first: '$_id.backup'
+            },
+            finalizedAt: {
+              $first: '$_id.finalizedAt'
+            },
+            createdBy: {
+              $first: '$_id.createdBy'
+            },
+            finalizedBy: {
+              $first: '$_id.finalizedBy'
+            },
+            results: {
+              $push: {
+                status: '$_id.carStatus',
+                total: '$total'
+              }
+            },
+            status: {
+              $first: '$_id.status'
+            }
+          }
+        }, {
+          $lookup: {
+            from: 'users',
+            localField: 'createdBy',
+            foreignField: '_id',
+            as: 'createdBy'
+          }
+        }, {
+          $lookup: {
+            from: 'users',
+            localField: 'finalizedBy',
+            foreignField: '_id',
+            as: 'finalizedBy'
+          }
+        }, {
+          $project: {
+            '_id': 1,
+            'name': 1,
+            'results': 1,
+            'file': 1,
+            'backup': 1,
+            'createdBy.firstName': 1,
+            'createdBy.lastName': 1,
+            'finalizedBy.firstName': 1,
+            'finalizedBy.lastName': 1,
+            'status': 1,
+            'createdAt': 1,
+            'finalizedAt': 1
+          }
+        }, {
+          $sort: {
+            createdAt: -1
+          }
+        }]);
+        for (const inventory of inventories) {
+          const defaultResults = {
+            [ChoicesStatusCarInventory.pending]: 0,
+            [ChoicesStatusCarInventory.found]: 0,
+            [ChoicesStatusCarInventory.missing]: 0,
+            [ChoicesStatusCarInventory.reported]: 0,
+            [ChoicesStatusCarInventory.leftover]: 0
+          };
+          response.push({
+            _id: inventory._id,
+            name: inventory.name,
+            file: req.user.hasPermission('viewFilesInventory') ? inventory.file : null,
+            backup: req.user.hasPermission('viewFilesInventory') ? inventory.backup : null,
+            createdBy: inventory.createdBy.length ? {
+              fullName: `${inventory.createdBy[0].firstName} ${inventory.createdBy[0].lastName}`
+            } : {},
+            finalizedBy: inventory.finalizedBy.length ? {
+              fullName: `${inventory.finalizedBy[0].firstName} ${inventory.finalizedBy[0].lastName}`
+            } : {},
+            results: inventory.results.reduce((acc: any, cur: any) => {
+              acc[cur.status] = cur.total;
+              return acc;
+            }, {
+              ...defaultResults
+            }),
+            status: inventory.status,
+            createdAt: inventory.createdAt,
+            finalizedAt: inventory.finalizedAt ? inventory.finalizedAt : null
+          });
+        }
+        const teamSettings = await TeamSetting.findOne({team});
+        res.json({
+          inventories: response,
+          inventorySettings: teamSettings!.inventory,
+          count: paginatedInventories.total,
+          pages: paginatedInventories.pages,
+          hasPrevious: options.page && options.page > 1 && paginatedInventories.pages && paginatedInventories.pages >= options.page,
+          hasNext: options.page && paginatedInventories.pages && paginatedInventories.pages > options.page,
+          status: 200
+        });
+      }
     } catch (e) {
       /* istanbul ignore next */
       logger.error(`list: Async Error.`);

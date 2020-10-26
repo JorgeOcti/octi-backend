@@ -80,7 +80,7 @@ export default class ApiService {
       });
   }
 
-  public updteUser(user: ITempUser): AxiosPromise {
+  public updateUser(user: ITempUser): AxiosPromise {
     return this.instance.patch(
       `/api/admin/users/${user._id}`
       , user);
@@ -95,6 +95,12 @@ export default class ApiService {
   public createIntegration(user: any): AxiosPromise {
     return this.instance.post(
       `/api/admin/integrations/`
+      , user);
+  }
+
+  public updateIntegration(user: ITempUser): AxiosPromise {
+    return this.instance.patch(
+      `/api/admin/integrations/${user._id}`
       , user);
   }
 

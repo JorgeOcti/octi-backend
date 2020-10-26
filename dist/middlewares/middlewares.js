@@ -2,6 +2,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 const jwt = require("jsonwebtoken");
 const logger_service_1 = require("../services/logger.service");
+const user_model_1 = require("../app/models/user.model");
 class Middlewares {
     constructor() {
         this.isLoggedIn = this.isLoggedIn.bind(this);
@@ -41,7 +42,7 @@ class Middlewares {
             return next();
         }
         else if (req.headers && req.headers.authorization && req.headers.authorization.split(' ')[0] === 'JWT') {
-            jwt.verify(req.headers.authorization.split(' ')[1], req.app.locals.secretKey, (err, decode) => {
+            jwt.verify(req.headers.authorization.split(' ')[1], req.app.locals.secretKey, async (err, decode) => {
                 /* istanbul ignore if */
                 if (err) {
                     logger_service_1.default.error(`isJWTAuthenticated error: ${err.message} ${JSON.stringify(req.headers)}`);
@@ -51,7 +52,7 @@ class Middlewares {
                     });
                 }
                 else {
-                    req.user = decode;
+                    req.user = await Middlewares.userInfo(decode);
                     next();
                 }
             });
@@ -63,6 +64,40 @@ class Middlewares {
                 error: 'Debes estar autenticado para este recurso.',
                 status: 401
             });
+        }
+    }
+    static async userInfo(data) {
+        try {
+            const user = await user_model_1.default.findById(data._id, {
+                firstName: 1,
+                lastName: 1,
+                email: 1,
+                preferred: 1,
+                userPermissions: 1,
+                userForms: 1
+            })
+                .populate([{
+                    path: 'venue',
+                    select: ['name', 'lat', 'lng']
+                }, {
+                    path: 'team',
+                    select: ['name']
+                }, {
+                    path: 'company',
+                    select: ['name']
+                }, {
+                    path: 'userPermissions',
+                    select: ['codeName']
+                }, {
+                    path: 'userForms',
+                    select: ['name']
+                }]).lean();
+            return {
+                ...user
+            };
+        }
+        catch (e) {
+            logger_service_1.default.error(`userInfo error:e. ${e}`);
         }
     }
     cleanStaticFiles(req, res, next) {

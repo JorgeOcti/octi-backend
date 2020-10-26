@@ -32,9 +32,11 @@ const tempfile = require("tempfile");
 const teamSetting_model_1 = require("../../app/models/teamSetting.model");
 const activityHistory_model_1 = require("../../billing/models/activityHistory.model");
 const stockCar_model_1 = require("../models/stockCar.model");
+const Joi = require("joi");
 class InventoryController {
     constructor() {
         this.index = this.index.bind(this);
+        this.test = this.test.bind(this);
         this.stock = this.stock.bind(this);
         this.detail = this.detail.bind(this);
         this.create = this.create.bind(this);
@@ -67,6 +69,27 @@ class InventoryController {
         catch (e) {
             console.log(e);
         }
+    }
+    test(req, res) {
+        const { user, body } = req;
+        const schema = Joi.object({
+            username: Joi.string()
+                .alphanum()
+                .min(3)
+                .max(30)
+                .required(),
+            password: Joi.string().pattern(new RegExp('^[a-zA-Z0-9]{3,30}$')),
+            access_token: [
+                Joi.string(),
+                Joi.number()
+            ],
+        })
+            .xor('password', 'access_token');
+        res.json({
+            status: "ok",
+            user,
+            validate: schema.validate(body)
+        });
     }
     async stock(req, res) {
         try {

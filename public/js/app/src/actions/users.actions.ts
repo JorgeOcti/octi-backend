@@ -155,35 +155,6 @@ export function changeUserAction(user: IUser): IChangeUser {
   };
 }
 
-export function updateUserAction() {
-  return (dispatch: Dispatch<UserReduxAction>, getState: () => {users: IUsersState}) => {
-    // dispatch(isLoadingAction(true));
-    const state = getState();
-    const {tempUser} = state.users;
-    const api: ApiService = new ApiService();
-    api.updteUser(tempUser)
-      .then((response: AxiosResponse) => {
-        statusFooterButttonsModal(false);
-        showModal(false);
-        dispatch(changeUserAction(response.data.user));
-        $(`#user-${tempUser._id}`).addClass('editing-item');
-        swal(response.data.message, {
-          icon: 'success'
-        });
-        setTimeout(() => {
-          $(`#user-${tempUser._id}`).removeClass('editing-item');
-        }, 1000);
-        dispatch(getUsersAction(state.users.pagination.page, UserTypes.common) as any);
-      })
-      .catch((err: AxiosError) => {
-        statusFooterButttonsModal(false);
-        $(`#user-${tempUser._id}`).removeClass('editing-item');
-        dispatch(isLoadingAction(false));
-        api.errorHandler(err);
-      });
-  };
-}
-
 export function createUserAction() {
   return (dispatch: Dispatch<UserReduxAction>, getState: () => {users: IUsersState}) => {
     dispatch(isLoadingAction(true));
@@ -207,6 +178,35 @@ export function createUserAction() {
   };
 }
 
+export function updateUserAction() {
+  return (dispatch: Dispatch<UserReduxAction>, getState: () => {users: IUsersState}) => {
+    // dispatch(isLoadingAction(true));
+    const state = getState();
+    const {tempUser} = state.users;
+    const api: ApiService = new ApiService();
+    api.updateUser(tempUser)
+      .then((response: AxiosResponse) => {
+        statusFooterButttonsModal(false);
+        showModal(false);
+        dispatch(changeUserAction(response.data.user));
+        $(`#user-${tempUser._id}`).addClass('editing-item');
+        swal(response.data.message, {
+          icon: 'success'
+        });
+        setTimeout(() => {
+          $(`#user-${tempUser._id}`).removeClass('editing-item');
+        }, 1000);
+        dispatch(getUsersAction(state.users.pagination.page, UserTypes.common) as any);
+      })
+      .catch((err: AxiosError) => {
+        statusFooterButttonsModal(false);
+        $(`#user-${tempUser._id}`).removeClass('editing-item');
+        dispatch(isLoadingAction(false));
+        api.errorHandler(err);
+      });
+  };
+}
+
 export function createIntegrationAction(user: any) {
   return (dispatch: Dispatch<UserReduxAction>, getState: () => {users: IUsersState}) => {
     dispatch(isLoadingAction(true));
@@ -222,6 +222,34 @@ export function createIntegrationAction(user: any) {
       })
       .catch((err: AxiosError) => {
         statusFooterButttonsModal(false);
+        dispatch(isLoadingAction(false));
+        api.errorHandler(err);
+      });
+  };
+}
+
+export function updateIntegrationAction(user: any) {
+  return (dispatch: Dispatch<UserReduxAction>, getState: () => {users: IUsersState}) => {
+    // dispatch(isLoadingAction(true));
+    const api: ApiService = new ApiService();
+    const state = getState();
+    api.updateIntegration(user)
+      .then((response: AxiosResponse) => {
+        statusFooterButttonsModal(false);
+        showModal(false);
+        dispatch(changeUserAction(response.data.user));
+        $(`#user-${user._id}`).addClass('editing-item');
+        swal(response.data.message, {
+          icon: 'success'
+        });
+        setTimeout(() => {
+          $(`#user-${user._id}`).removeClass('editing-item');
+        }, 1000);
+        dispatch(getUsersAction(state.users.pagination.page, UserTypes.integration) as any);
+      })
+      .catch((err: AxiosError) => {
+        statusFooterButttonsModal(false);
+        $(`#user-${user._id}`).removeClass('editing-item');
         dispatch(isLoadingAction(false));
         api.errorHandler(err);
       });

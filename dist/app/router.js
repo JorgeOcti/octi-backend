@@ -54,6 +54,7 @@ appRouter.delete('/api/admin/users/:id/', middlewares_1.default.isLoggedIn, user
 // api admin integrations
 appRouter.get('/settings/integrations/', middlewares_1.default.isLoggedIn, user_admin_controller_1.default.integrations);
 appRouter.post('/api/admin/integrations/', middlewares_1.default.isLoggedIn, user_admin_controller_1.default.apiCreateIntegration);
+appRouter.patch('/api/admin/integrations/:id/', middlewares_1.default.isLoggedIn, user_admin_controller_1.default.apiUpdateIntegration);
 appRouter.delete('/api/admin/integrations/:id/', middlewares_1.default.isLoggedIn, user_admin_controller_1.default.apiDeleteIntegration);
 // admin venues
 appRouter.get('/settings/venues/', middlewares_1.default.isLoggedIn, venue_admin_controller_1.default.index);

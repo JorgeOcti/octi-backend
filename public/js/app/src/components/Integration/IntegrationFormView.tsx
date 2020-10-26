@@ -61,6 +61,12 @@ class Form extends React.Component<IPropsType, IStateType> {
               </div>
             </div>
           </div>
+          {/*<div id="permissions" className="tab-pane fade in">*/}
+          {/*  <div className="row">*/}
+          {/*    <div className="col-md-12">*/}
+          {/*    </div>*/}
+          {/*  </div>*/}
+          {/*</div>*/}
         </div>
       </React.Fragment>
     )

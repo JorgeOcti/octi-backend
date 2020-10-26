@@ -61,6 +61,7 @@ appRouter.delete('/api/admin/users/:id/', Middlewares.isLoggedIn, AdminUsersCont
 // api admin integrations
 appRouter.get('/settings/integrations/', Middlewares.isLoggedIn, AdminUsersController.integrations);
 appRouter.post('/api/admin/integrations/', Middlewares.isLoggedIn, AdminUsersController.apiCreateIntegration);
+appRouter.patch('/api/admin/integrations/:id/', Middlewares.isLoggedIn, AdminUsersController.apiUpdateIntegration);
 appRouter.delete('/api/admin/integrations/:id/', Middlewares.isLoggedIn, AdminUsersController.apiDeleteIntegration);
 
 // admin venues
