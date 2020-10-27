@@ -46,17 +46,20 @@ class BillingQueue {
       try {
         const now = moment().subtract(1, "day"),
           [year, month, day] = [now.format('YYYY'), now.format('MM'), now.format('DD')];
-        request.get(`https://api.sbif.cl/api-sbifv3/recursos_api/uf/${year}/${month}/dias/${day}?apikey=${this.apiKey}&formato=json`, function (err, resp, body) {
+        // request.get(`https://api.sbif.cl/api-sbifv3/recursos_api/uf/${year}/${month}/dias/${day}?apikey=${this.apiKey}&formato=json`, function (err, resp, body) {
+        request.get(`https://mindicador.cl/api/uf/${day}-${month}-${year}`, function (err, resp, body) {
           if (err) {
             reject(err);
           } else {
-            console.log(body);
-            const value = parseFloat(JSON.parse(body).UFs[0].Valor.replace(".", "").replace(",", "."));
+            // console.log('body', body);
+            const dailyIndicators = JSON.parse(body);
+            // console.log('dailyIndicators', dailyIndicators);
+            const value = parseFloat(dailyIndicators.serie[0].valor);
             resolve(value);
           }
         });
       } catch (error) {
-        setTimeout(() => this.getUFPrice(), 1000);
+        console.log(error);
       }
     })
   }
@@ -217,8 +220,7 @@ class BillingQueue {
       console.log('start billing');
       // const valueUF = 28662.81; /*await this.getUFPrice();*/
       // const valueDolar = 767.98; /*await this.getDolarPrice();*/
-      const valueUF =  28707.85; //await this.getUFPrice();
-      // const valueDolar = await this.getDolarPrice();
+      const valueUF =  await this.getUFPrice();
       const companies = await Company.find({"billing.active": true});
       for (const company of companies) {
         console.log(`calculating billing ${company.name}`);
