@@ -1787,73 +1787,76 @@ class InventoryController {
         }
     }
     async dashboard(req, res) {
-        let venuesPermissions = req.user.venuesPermissions(true);
+        let venuesPermissions = req.user.venuesPermissions();
         const { venues } = req.body;
+        const { team } = req.user;
         if (venues && venues.length) {
-            venuesPermissions = venuesPermissions.filter((v) => venues.includes(v));
+            venuesPermissions = venuesPermissions.filter((v) => venues.includes(v.toString()));
         }
-        venuesPermissions = venuesPermissions.map((v) => mongoose.Types.ObjectId(v));
         const total = 6;
         try {
             const inventory = await inventoryCar_model_1.default.aggregate([{
                     $match: {
-                        $and: [{
-                                createdAt: {
-                                    $gte: moment()
-                                        .subtract(total, 'months')
-                                        .startOf('month')
-                                        .toDate()
-                                }
-                            }, {
-                                $or: [{
-                                        venue: {
-                                            $in: venuesPermissions
-                                        },
-                                        venueFound: {
-                                            $in: venuesPermissions
-                                        }
-                                    }]
-                            }
-                        ]
+                        createdAt: {
+                            $gte: moment()
+                                .subtract(total, 'months')
+                                .startOf('month')
+                                .toDate()
+                        },
+                        venue: {
+                            $in: venuesPermissions
+                        },
                     }
                 }, {
                     $group: {
                         _id: {
-                            car: '$car',
                             status: '$status',
                             month: {
                                 $dateToString: { format: '%Y-%m', date: '$createdAt' }
                             }
-                        }
-                    }
-                }, {
-                    $group: {
-                        _id: {
-                            status: '$_id.status',
-                            month: '$_id.month'
                         },
                         total: {
                             $sum: 1
                         }
                     }
+                }, {
+                    $group: {
+                        _id: '$_id.month',
+                        results: {
+                            $push: {
+                                status: '$_id.status',
+                                total: '$total'
+                            }
+                        },
+                    }
                 }]);
             const data = {};
+            const defaultResults = {
+                [inventoryCar_model_1.ChoicesStatusCarInventory.pending]: 0,
+                [inventoryCar_model_1.ChoicesStatusCarInventory.found]: 0,
+                [inventoryCar_model_1.ChoicesStatusCarInventory.missing]: 0,
+                [inventoryCar_model_1.ChoicesStatusCarInventory.reported]: 0,
+                [inventoryCar_model_1.ChoicesStatusCarInventory.leftover]: 0
+            };
             for (let i = 0; i <= total; i++) {
                 const month = moment()
                     .subtract(total - i, 'months')
                     .format('YYYY-MM');
-                data[month] = {
-                    [inventoryCar_model_1.ChoicesStatusCarInventory.found]: 0,
-                    [inventoryCar_model_1.ChoicesStatusCarInventory.leftover]: 0,
-                    [inventoryCar_model_1.ChoicesStatusCarInventory.missing]: 0,
-                    [inventoryCar_model_1.ChoicesStatusCarInventory.pending]: 0,
-                    [inventoryCar_model_1.ChoicesStatusCarInventory.reported]: 0
-                };
+                data[month] = { ...defaultResults };
             }
             for (const item of inventory) {
-                data[item._id.month][item._id.status] = item.total;
+                data[item._id] = item.results.reduce((acc, cur) => {
+                    acc[cur.status] = cur.total;
+                    return acc;
+                }, {
+                    ...defaultResults
+                });
             }
-            res.json(data);
+            const teamSettings = await teamSetting_model_1.default.findOne({ team });
+            res.json({
+                data,
+                inventorySettings: teamSettings.inventory,
+            });
         }
         catch (e) {
             /* istanbul ignore next */

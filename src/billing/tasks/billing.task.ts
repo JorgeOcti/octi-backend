@@ -157,7 +157,6 @@ class BillingQueue {
 
   public async createPDF(invoice: IInvoiceModel, company: ICompany): Promise<void> {
     try {
-
       const newInvoice = await Invoice.findById(invoice._id)
         .populate([{
           path: 'company'

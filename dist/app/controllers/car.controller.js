@@ -409,8 +409,8 @@ class CarController {
                             category: {
                                 $dateToString: {
                                     format: '%Y-%m-%d',
-                                    date: '$createdAt'
-                                    // timezone: 'America/Santiago'
+                                    date: '$createdAt',
+                                    timezone: 'America/Santiago'
                                 }
                             },
                             user: '$user'
@@ -489,8 +489,8 @@ class CarController {
                             category: {
                                 $dateToString: {
                                     format: '%Y-%m-%d',
-                                    date: '$createdAt'
-                                    // timezone: 'America/Santiago'
+                                    date: '$createdAt',
+                                    timezone: 'America/Santiago'
                                 }
                             },
                             user: '$user'
@@ -556,8 +556,8 @@ class CarController {
                         _id: {
                             $dateToString: {
                                 format: '%Y-%m-%d',
-                                date: '$createdAt'
-                                // timezone: 'America/Santiago'
+                                date: '$createdAt',
+                                timezone: 'America/Santiago'
                             }
                         },
                         total: {

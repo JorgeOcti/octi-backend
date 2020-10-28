@@ -1797,73 +1797,76 @@ class InventoryController {
   }
 
   public async dashboard(req: IRequest, res: Response): Promise<any> {
-    let venuesPermissions: any = req.user.venuesPermissions(true);
+    let venuesPermissions: any = req.user.venuesPermissions();
     const {venues} = req.body;
+    const {team} = req.user;
     if (venues && venues.length) {
-      venuesPermissions = venuesPermissions.filter((v: any) => venues.includes(v));
+      venuesPermissions = venuesPermissions.filter((v: any) => venues.includes(v.toString()));
     }
-    venuesPermissions = venuesPermissions.map((v: any) => mongoose.Types.ObjectId(v));
     const total = 6;
     try {
       const inventory: any = await InventoryCar.aggregate([{
         $match: {
-          $and: [{
-            createdAt: {
-              $gte: moment()
-                .subtract(total, 'months')
-                .startOf('month')
-                .toDate()
-            }
-          }, {
-            $or: [{
-              venue: {
-                $in: venuesPermissions
-              },
-              venueFound: {
-                $in: venuesPermissions
-              }
-            }]
-          }
-          ]
+          createdAt: {
+            $gte: moment()
+              .subtract(total, 'months')
+              .startOf('month')
+              .toDate()
+          },
+          venue: {
+            $in: venuesPermissions
+          },
         }
       }, {
         $group: {
           _id: {
-            car: '$car',
             status: '$status',
             month: {
               $dateToString: {format: '%Y-%m', date: '$createdAt'}
             }
-          }
-        }
-      }, {
-        $group: {
-          _id: {
-            status: '$_id.status',
-            month: '$_id.month'
           },
           total: {
             $sum: 1
           }
         }
+      }, {
+        $group: {
+          _id: '$_id.month',
+          results: {
+            $push: {
+              status: '$_id.status',
+              total: '$total'
+            }
+          },
+        }
       }]);
       const data: any = {};
+      const defaultResults = {
+         [ChoicesStatusCarInventory.pending]: 0,
+         [ChoicesStatusCarInventory.found]: 0,
+         [ChoicesStatusCarInventory.missing]: 0,
+         [ChoicesStatusCarInventory.reported]: 0,
+         [ChoicesStatusCarInventory.leftover]: 0
+       };
       for (let i = 0; i <= total; i++) {
         const month = moment()
           .subtract(total - i, 'months')
           .format('YYYY-MM');
-        data[month] = {
-          [ChoicesStatusCarInventory.found]: 0,
-          [ChoicesStatusCarInventory.leftover]: 0,
-          [ChoicesStatusCarInventory.missing]: 0,
-          [ChoicesStatusCarInventory.pending]: 0,
-          [ChoicesStatusCarInventory.reported]: 0
-        };
+        data[month] = {...defaultResults};
       }
       for (const item of inventory) {
-        data[item._id.month][item._id.status] = item.total;
+        data[item._id] = item.results.reduce((acc: any, cur: any) => {
+          acc[cur.status] = cur.total;
+          return acc;
+        }, {
+          ...defaultResults
+        });
       }
-      res.json(data);
+      const teamSettings = await TeamSetting.findOne({team});
+      res.json({
+        data,
+        inventorySettings: teamSettings!.inventory,
+      });
     } catch (e) {
       /* istanbul ignore next */
       logger.error(`inventory dashboard: Async Error.`);

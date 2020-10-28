@@ -2070,14 +2070,14 @@ class FormController {
   }
 
   private async processAccesoryItems(accesories: any[]) {
-    const accesorySchema: Joi.ObjectSchema = Joi.object({
+    const accesorySchema = Joi.object({
       item: Joi.string(),
       amount: Joi.number()
     });
     const newAccesories: any[] = [];
     accesories.map(async (accesory: any) => {
       try {
-        const newAccesory = await accesorySchema.validate(accesory);
+        const newAccesory = await accesorySchema.validateAsync(accesory);
         newAccesories.push({
           item: newAccesory.item,
           amount: newAccesory.amount

@@ -30,7 +30,6 @@ appRouter.get('/dashboard/damages/', Middlewares.isLoggedIn, CarController.gener
 appRouter.get('/dashboard/timing/', Middlewares.isLoggedIn, CarController.generalDashboard);
 appRouter.get('/dashboard/derco/', Middlewares.isLoggedIn, CarController.generalDashboard);
 
-
 // DashBoard Cars
 appRouter.get('/cars/', Middlewares.isLoggedIn, CarController.vinDashboard);
 appRouter.get('/cars/:id', Middlewares.isLoggedIn, CarController.vinDashboardDetail);

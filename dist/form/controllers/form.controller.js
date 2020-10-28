@@ -1957,7 +1957,7 @@ class FormController {
         const newAccesories = [];
         accesories.map(async (accesory) => {
             try {
-                const newAccesory = await accesorySchema.validate(accesory);
+                const newAccesory = await accesorySchema.validateAsync(accesory);
                 newAccesories.push({
                     item: newAccesory.item,
                     amount: newAccesory.amount
