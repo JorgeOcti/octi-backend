@@ -66,13 +66,15 @@ class AdminCarController {
             });
             if (newCar) {
               newCar.vin2 = vin2;
-              newCar.brand = car.marca ? car.marca : newCar.brand;
-              newCar.denomination = car.denominacion ? car.denominacion : newCar.denomination;
-              newCar.engineNumber = car.motor ? car.motor : newCar.engineNumber;
+              newCar.type = car.tipo ? car.tipo : newCar.type;
               newCar.color = car.color ? car.color : newCar.color;
+              newCar.property = car.propiedad ? car.propiedad : newCar.property;
+              newCar.denomination = car.denominacion ? car.denominacion : newCar.denomination;
+              newCar.brand = car.marca ? car.marca : newCar.brand;
               newCar.patent = car.patente ? car.patente : newCar.patent;
+              // newCar.engineNumber = car.motor ? car.motor : newCar.engineNumber;
               newCar.internalNumber = car.NInterno ? car.NInterno : newCar.internalNumber;
-              newCar.destination = car.destino ? car.destino : newCar.destination;
+              // newCar.destination = car.destino ? car.destino : newCar.destination;
               newCar.createdBy = req.user;
               newCar.status = ChoicesStatusCar.active;
               await newCar.save();
@@ -80,13 +82,15 @@ class AdminCarController {
               await Car.create({
                 vin: car.vin,
                 vin2,
-                brand: car.marca ? car.marca : '',
-                denomination: car.denominacion ? car.denominacion : '',
-                engineNumber: car.motor ? car.motor : car.engineNumber,
+                type: car.tipo ? car.tipo : '',
                 color: car.color ? car.color : '',
-                internalNumber: car.NInterno ? car.NInterno : '',
-                destination: car.destino ? car.destino : '',
+                property: car.propiedad ? car.propiedad : '',
+                denomination: car.denominacion ? car.denominacion : '',
+                brand: car.marca ? car.marca : '',
                 patent: car.patente ? car.patente : '',
+                // engineNumber: car.motor ? car.motor : car.engineNumber,
+                internalNumber: car.NInterno ? car.NInterno : '',
+                // destination: car.destino ? car.destino : '',
                 company,
                 team,
                 createdBy: req.user,
@@ -194,9 +198,9 @@ class AdminCarController {
       Car.paginate(filter, options, (err, result) => {
         /* istanbul ignore if */
         if (err) {
-          return reject(err);
+          reject(err);
         }
-        return resolve(result);
+        resolve(result);
       });
     });
   }

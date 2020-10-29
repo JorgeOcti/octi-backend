@@ -25,6 +25,7 @@ import {IFilterStock} from "../../reducers/stock.reducer";
 import ShowIf from "../Utils/ShowIf";
 import ImageLazyLoad from "../Utils/ImageLazyLoad";
 import {IWindow} from "../../interfaces/window";
+import {hasPermission} from "../../utils/common";
 
 declare let window: IWindow;
 
@@ -198,14 +199,17 @@ class StockView extends React.Component<IPropsType, IStateType> {
             <div className="box-header with-border">
               <h3 className="box-title">Stock Actual</h3>
               <ShowIf condition={!loading && message.length < 1}>
-                <div className="box-tools pull-right">
-                  <button
-                      className="btn btn-sm btn-primary  hidden-xs"
-                      onClick={() => this.props.history.push(`/stock/import/`)}
-                    >
-                    <i className="fa fa-fw fa-cloud-upload" /> Importar
-                  </button>
-                </div>
+                {
+                  hasPermission(window.user, 'importStock') ?
+                    <div className="box-tools pull-right">
+                      <button
+                        className="btn btn-sm btn-primary  hidden-xs"
+                        onClick={() => this.props.history.push(`/stock/import/`)}
+                      >
+                        <i className="fa fa-fw fa-cloud-upload"/> Importar
+                      </button>
+                    </div> : null
+                }
               </ShowIf>
             </div>
             <div className="box-body no-padding">

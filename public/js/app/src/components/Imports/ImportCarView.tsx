@@ -303,14 +303,16 @@ class ImportCarsView extends React.Component<IPropsType, IStateType> {
   private downloadTemplate() {
     /* headers worksheet */
     const data = [{
-      NInterno: '',
+     NInterno: '',
       vin: '',
-      patente: '',
       marca: '',
+      patente: '',
       denominacion: '',
-      motor: '',
       color: '',
-      destino: ''
+      propiedad: '',
+      tipo: '',
+      // motor: '',
+      // destino: ''
     }];
     /* make the worksheet */
     const ws = XLSX.utils.json_to_sheet(data);
