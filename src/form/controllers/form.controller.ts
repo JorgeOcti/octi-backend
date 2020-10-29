@@ -2075,12 +2075,12 @@ class FormController {
       amount: Joi.number()
     });
     const newAccesories: any[] = [];
-    accesories.map(async (accesory: any) => {
+    accesories.map((accesory: any) => {
       try {
-        const newAccesory = await accesorySchema.validate(accesory);
+        const newAccesory: any = accesorySchema.validate(accesory);
         newAccesories.push({
-          item: newAccesory.item,
-          amount: newAccesory.amount
+          item: newAccesory.value.item,
+          amount: newAccesory.value.amount
         });
       } catch (e) {
         newAccesories.push({
