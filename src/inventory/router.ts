@@ -38,6 +38,12 @@ inventoryRouter.post('/api/v1/inventory/:id/upload-file/', Middlewares.isJWTAuth
 inventoryRouter.post('/api/v1/inventory/:id/report-car/', Middlewares.isJWTAuthenticated, InventoryController.reportCar);
 inventoryRouter.post('/api/v1/inventory/:id/', Middlewares.isJWTAuthenticated, InventoryController.apiFoundCar);
 
+// Stock
+inventoryRouter.get('/stock/', Middlewares.isLoggedIn, InventoryController.stock);
+inventoryRouter.get('/stock/import/', Middlewares.isLoggedIn, InventoryController.stock);
+inventoryRouter.get('/api/current-stock/', Middlewares.isLoggedIn, InventoryController.currentStock);
+inventoryRouter.post('/api/load-stock/', Middlewares.isLoggedIn, InventoryController.loadStock);
+
 export {
   inventoryRouter
 };

@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.kindSchema = void 0;
 const mongoose = require("mongoose");
 exports.kindSchema = new mongoose.Schema({
     team: {

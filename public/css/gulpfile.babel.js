@@ -41,8 +41,8 @@ gulp.task('css', function () {
 });
 
 gulp.task('watch', function () {
-  gulp.watch(paths.scss, ['css']);
+  gulp.watch(paths.scss, gulp.series('css'));
 });
 
 
-gulp.task('default', ['css', 'watch']);
+gulp.task('default', gulp.series('css', 'watch'));

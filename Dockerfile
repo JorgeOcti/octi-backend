@@ -1,4 +1,4 @@
-FROM node:10.16.0-stretch-slim
+FROM node:12.19.0-stretch-slim
 MAINTAINER Gonzalo Muñoz Coloma gmunoz@osacontrol.com
 
 RUN apt-get update && \
@@ -6,7 +6,9 @@ RUN apt-get update && \
     apt-get install -y --no-install-recommends \
         build-essential \
         cabextract \
+        wget \
         xfonts-utils \
+        ca-certificates \
         fontconfig \
         libfreetype6 \
         libfontconfig1 \
@@ -15,10 +17,11 @@ RUN apt-get update && \
         python \
         graphicsmagick \
         gettext \
+        git-core \
         imagemagick && \
     # install windows fonts
-    wget http://ftp.br.debian.org/debian/pool/contrib/m/msttcorefonts/ttf-mscorefonts-installer_3.7_all.deb && \
-    dpkg -i ttf-mscorefonts-installer_3.7_all.deb && \
+    wget http://ftp.br.debian.org/debian/pool/contrib/m/msttcorefonts/ttf-mscorefonts-installer_3.8_all.deb && \
+    dpkg -i ttf-mscorefonts-installer_3.8_all.deb && \
     fc-cache && \
     # install phantomjs
     PHANTOM_JS="phantomjs-2.1.1-linux-x86_64" && \

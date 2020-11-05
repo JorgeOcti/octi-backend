@@ -201,7 +201,7 @@ class AppController {
                 user.password = password;
                 user.passwordResetToken = undefined;
                 user.passwordResetExpires = undefined;
-                user.save();
+                await user.save();
                 req.login(user, (loginErr) => {
                     if (loginErr) {
                         return next(loginErr);

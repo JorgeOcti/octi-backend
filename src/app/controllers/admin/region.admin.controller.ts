@@ -8,22 +8,51 @@ class AdminRegionController extends BaseAdminController<RegionSchema> {
   constructor() {
     super(Region);
     this.apiList = this.apiList.bind(this);
+    this.apiCreate = this.apiCreate.bind(this);
+    this.apiUpdate = this.apiUpdate.bind(this);
+    this.apiDelete = this.apiDelete.bind(this);
   }
 
   public async apiCreate(req: IRequest, res: Response): Promise<any> {
-    const {name} = req.body;
+    const {name, code} = req.body;
     const {team} = req.user;
     req.context = {
-      name: 'Region',
+      name: 'Región',
+      data: {team, name, code},
       filter: {team, name}
     };
     super.apiCreate(req, res);
   }
 
+  public async apiUpdate(req: IRequest, res: Response): Promise<any> {
+    const {id} = req.params;
+    const {team} = req.user;
+    const {name, code} = req.body;
+    req.context = {
+      name: 'Región',
+      filter: {team, _id: id},
+      data: {name, code},
+      permissionRequired: 'changeRegion'
+    };
+    super.apiUpdate(req, res);
+  }
+
+  public async apiDelete(req: IRequest, res: Response): Promise<any> {
+    const {id} = req.params;
+    const {team} = req.user;
+    req.context = {
+      name: 'Región',
+      filter: {team, _id: id},
+      permissionRequired: 'deleteRegion'
+    };
+    super.apiDelete(req, res);
+  }
+
   public async apiList(req: IRequest, res: Response): Promise<any> {
     this.paginateOptions = {
       select: {
-        name: true
+        name: true,
+        code: true
       },
       sort: {
         name: 1

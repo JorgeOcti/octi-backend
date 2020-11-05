@@ -116,6 +116,16 @@ class InventoryCreateView extends React.Component<IPropsType, IStateType> {
         reportPhoto: parseInt($reportPhoto.val(), 10)
       });
     });
+    const $manualPhoto: any = $('#manual-photo');
+    $manualPhoto.TouchSpin({
+      initval: 1,
+      min: 0,
+      max: 3
+    }).on('change', () => {
+      this.setState({
+        manualPhoto: parseInt($manualPhoto.val(), 10)
+      });
+    });
   }
 
   public componentDidCatch(error: Error, errorInfo: ErrorInfo) {
@@ -192,27 +202,27 @@ class InventoryCreateView extends React.Component<IPropsType, IStateType> {
                                 className="zoom-in"
                                 data-toggle="lightbox"
                                 data-title={`Vista previa de la imagen`}
-                                data-footer={(backupFile as File).name}
+                                data-footer={(backupFile as unknown as File).name}
                               >
                                 <img
                                   src={backupUri}
                                   data-toggle="tooltip"
                                   data-placement="bottom"
-                                  title={(backupFile as File).name}
+                                  title={(backupFile as unknown as File).name}
                                 />
                               </a>
                             </div>
                             : backupFile ?
                             <div className="file">
                               <i className="fa fa-minus-circle text-red pointer" onClick={this.clearBackup}/>
-                              <div className={`icon type-${getIconFromExtension(getExtension((backupFile as File).name))}`}/>
+                              <div className={`icon type-${getIconFromExtension(getExtension((backupFile as unknown as File).name))}`}/>
                               <div
                                 className="name-file"
                                 data-toggle="tooltip"
                                 data-placement="bottom"
-                                title={(backupFile as File).name}
+                                title={(backupFile as unknown as File).name}
                               >
-                                {(backupFile as File).name}
+                                {(backupFile as unknown as File).name}
                               </div>
                             </div>
                             : <div
@@ -251,7 +261,7 @@ class InventoryCreateView extends React.Component<IPropsType, IStateType> {
                             borderRadius: '5px'
                           }}>
                           <i className="fa fa-2x fa-cloud-upload"/><br/>
-                          Prueba a soltanto el excel aquí, o haz click para seleccionar el excel a cargar.
+                          Prueba soltando el excel aquí, o haz click para seleccionar el excel a cargar.
                         </div>
                       </div>
                     </div>
@@ -265,6 +275,7 @@ class InventoryCreateView extends React.Component<IPropsType, IStateType> {
                     </div>
                   </div>
               }
+
               <input
                 type="file"
                 onChange={this.handleChangeInputFile}
@@ -277,32 +288,56 @@ class InventoryCreateView extends React.Component<IPropsType, IStateType> {
                     <label>Configuraciones</label>
                   </div>
                 </div>
-                <div className="col-md-6">
-                  <div className="checkbox">
-                    <label style={{paddingLeft: '0'}} onClick={this.handleChangeManualPhoto}>
-                      <Checkbox
-                        active={manualPhoto === 1}
-                        action={this.handleChangeManualPhoto}
-                        classes="icheck-in-checkbox"
-                        style={{marginTop: '-4px', marginRight: '5px'}}
-                      />
-                      Solicitar foto en modo manual
-                    </label>
+                <div className="col-md-12 no-padding">
+                  <div className="col-sm-12 col-md-8 col-lg-6">
+                    <div className="form-horizontal">
+                      <div className="form-group" style={{marginRight: '0', marginLeft: '0'}}>
+                        <div className="col-sm-6 col-md-8 col-lg-8 no-padding">
+                          <span
+                            className="control-label"
+                            style={{
+                              paddingLeft: '0',
+                              textAlign: 'left',
+                              fontWeight: 600
+                            }}
+                          >
+                          Nº imágenes al inventariar
+                        </span><br/>
+                          <span className={'text-sm text-muted'}>Cantidad de fotografías solicitadas al ingresar unidad digitando el VIN.</span>
+                        </div>
+                        <input id="manual-photo" type="text" className="col-sm-6 col-md-4 col-lg-4 form-control" />
+                      </div>
+                    </div>
+                    {/*<div className="checkbox">*/}
+                    {/*  <label style={{paddingLeft: '0'}} onClick={this.handleChangeManualPhoto}>*/}
+                    {/*    <Checkbox*/}
+                    {/*      active={manualPhoto === 1}*/}
+                    {/*      action={this.handleChangeManualPhoto}*/}
+                    {/*      classes="icheck-in-checkbox"*/}
+                    {/*      style={{marginTop: '-4px', marginRight: '5px'}}*/}
+                    {/*    />*/}
+                    {/*    Solicitar foto en modo manual*/}
+                    {/*  </label>*/}
+                    {/*</div>*/}
                   </div>
                 </div>
-                <div className="col-md-6">
+                <div className="col-sm-12 col-md-8 col-lg-6">
                   <div className="form-horizontal">
                     <div className="form-group" style={{marginRight: '0', marginLeft: '0'}}>
-                      <span
-                        className="col-sm-10 col-md-8 col-lg-9 control-label"
-                        style={{
-                          paddingLeft: '0',
-                          textAlign: 'left'
-                        }}
-                      >
+                      <div className="col-sm-6 col-md-8 col-lg-8 no-padding">
+                        <span
+                          className="control-label"
+                          style={{
+                            paddingLeft: '0',
+                            textAlign: 'left',
+                            fontWeight: 600
+                          }}
+                        >
                         Nº imágenes al reportar
-                      </span>
-                      <input id="report-photo" type="text" className="col-sm-2 col-md-4 col-lg-3 form-control" />
+                      </span><br/>
+                        <span className={'text-sm text-muted'}>Cantidad de fotografías solicitadas al reportar una unidad.</span>
+                      </div>
+                      <input id="report-photo" type="text" className="col-sm-6 col-md-4 col-lg-4 form-control" />
                     </div>
                   </div>
                     {/*<input*/}
@@ -315,9 +350,9 @@ class InventoryCreateView extends React.Component<IPropsType, IStateType> {
                     {/*/>*/}
                     {/*<span>Cantidad de imágenes al reportar</span>*/}
                 </div>
-                <div className="col-md-12">
+                <div className="col-md-8 col-sm-12">
                   <div className="checkbox">
-                    <label style={{paddingLeft: '0'}} onClick={this.handleChangeNotification}>
+                    <label style={{paddingLeft: '0', fontWeight: 600}} onClick={this.handleChangeNotification}>
                       <Checkbox
                         active={notification}
                         action={this.handleChangeNotification}
@@ -538,12 +573,12 @@ class InventoryCreateView extends React.Component<IPropsType, IStateType> {
     }
   }
 
-  private validateSize(size: number) {
+  private validateSize(size: number): boolean {
     const maxSize = Math.pow(1024, 2) * 10; // 10MB
     return size <= maxSize;
   }
 
-  private clearBackup() {
+  private clearBackup(): void {
     this.setState({
       backupFile: null,
       backupUri: ''

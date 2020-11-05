@@ -7,6 +7,7 @@ import {changeTempLabelAction, ILabelsState, LabelsReduxAction} from '../../acti
 import {updateTooltip} from '../../utils/common';
 import BootstrapSelect from '../Utils/BootstrapSelect';
 import BootstrapSwitch from '../Utils/BootstrapSwitch';
+import {CarStatusType} from "../Inventory/InventoryDetailView";
 
 interface IPropsType {
   labels?: ILabelsState;
@@ -28,26 +29,11 @@ class LabelFormView extends React.Component<IPropsType, IStateType> {
     reported: 'Reportado'
   };
 
-  private classLabelStatus: any = {
-    pending: 'label-info',
-    found: 'label-success',
-    missing: 'label-danger',
-    leftover: 'label-warning',
-    reported: 'label-default'
-  };
-
-  private options: any[] = Object
-    .keys(this.statusText)
-    .map((status) => ({
-      value: status,
-      text: this.statusText[status],
-      className: `label ${this.classLabelStatus[status]}`
-    }));
-
   constructor(props: IPropsType) {
     super(props);
     this.filterAffected = this.filterAffected.bind(this);
     this.filterSendTo = this.filterSendTo.bind(this);
+    this.getOptions = this.getOptions.bind(this);
   }
 
   public componentDidMount(): void {
@@ -64,6 +50,8 @@ class LabelFormView extends React.Component<IPropsType, IStateType> {
       extra: errorInfo
     });
   }
+
+
 
   render(): React.ReactElement<IPropsType> | null {
     const {changeTempLabelAction} = this.props;
@@ -97,7 +85,7 @@ class LabelFormView extends React.Component<IPropsType, IStateType> {
                 displayItems={5}
                 selectedText="estados seleccionados."
                 separator=" - "
-                options={this.options}
+                options={this.getOptions()}
                 selected={tempLabel.affected}
                 onClick={this.filterAffected}
               />
@@ -112,7 +100,7 @@ class LabelFormView extends React.Component<IPropsType, IStateType> {
                 autoClouse={true}
                 selectedText="estados seleccionados."
                 separator=" - "
-                options={this.options}
+                options={this.getOptions()}
                 selected={tempLabel.sendTo ? [tempLabel.sendTo] : []}
                 onClick={this.filterSendTo}
               />
@@ -143,7 +131,23 @@ class LabelFormView extends React.Component<IPropsType, IStateType> {
                     requireCustomText: !tempLabel.requireCustomText
                   });
                 }}/>
-              <label className="switch-label">Texto personalizado</label>
+              <label className="switch-label">Requerir datos adicionales</label>
+            </div>
+          </div>
+          <div className="col-md-12">
+            <div className="form-group">
+              <label>Descripción</label>
+              <textarea
+                name="description"
+                className="form-control"
+                defaultValue={tempLabel ? tempLabel.description : ''}
+                onChange={
+                  (e: React.ChangeEvent<HTMLTextAreaElement>) => changeTempLabelAction({
+                    ...tempLabel,
+                    description: e.target.value.trim()
+                  }, 300)
+                }
+              />
             </div>
           </div>
         </div>
@@ -151,6 +155,17 @@ class LabelFormView extends React.Component<IPropsType, IStateType> {
     } else {
       return null;
     }
+  }
+
+  private getOptions() {
+    const {inventorySettings} = this.props.labels!;
+    return Object
+      .keys(this.statusText)
+      .map((status: CarStatusType) => ({
+        value: status,
+        text: inventorySettings[status],
+        className: `label label-${inventorySettings[`${status}Class` as CarStatusType]}`
+      }));
   }
 
   private filterAffected(value: any): void  {

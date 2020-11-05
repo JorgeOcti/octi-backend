@@ -9,6 +9,7 @@ import Venue, {IVenueModel} from '../../models/venue.model';
 import * as excel from "exceljs";
 import * as tempfile from "tempfile";
 import {Alignment} from "exceljs";
+import {IVenueDay} from "../../../interfaces/venueDay.interface";
 
 class AdminVenueController {
 
@@ -125,22 +126,20 @@ class AdminVenueController {
   }
 
   public async apiListVenues(req: IRequest, res: Response): Promise<any> {
-    if (!req.user.hasPermission('viewVenue') && !req.user.hasPermission('viewUser')) {
-      return res.status(403).json({
-        message: 'No tienes permisos para esta operación'
-      });
-    }
     const {team} = req.user;
-    const {page, pageSize, noPopulate} = req.query;
+    const {page, pageSize, noPopulate} = req.query as {page: string, pageSize: string, noPopulate: any};
     // paginate options
     let options: PaginateOptions = {
       select: {
         _id: true,
         name: true,
+        abbreviation: true,
         lat: true,
         lng: true,
         receptionCarriers: true,
         shippingCarriers: true,
+        shippingMaxDays: true,
+        sendToDays: true,
         sendTo: true,
         receiveFrom: true,
         type: true,
@@ -154,6 +153,9 @@ class AdminVenueController {
         path: 'shippingCarriers',
         select: ['_id', 'name']
       }, {
+        path: 'sendToDays.venue',
+        select: ['_id', 'name']
+      },{
         path: 'sendTo',
         select: ['_id', 'name']
       }, {
@@ -170,14 +172,14 @@ class AdminVenueController {
         select: ['name']
       }, {
         path: 'company',
-        select: ['name']
+        select: ['name', "marker"]
       }],
       lean: true,
       sort: {
         name: 1
       },
-      page: parseInt(page ? page : 1, 10),
-      limit: parseInt(pageSize ? pageSize : 20, 10)
+      page: parseInt(page ? page : "1", 10),
+      limit: parseInt(pageSize ? pageSize : "20", 10)
     };
     if(noPopulate){
       delete options.populate;
@@ -218,9 +220,10 @@ class AdminVenueController {
       });
     }
     const {
-      name, lat, lng, type, company, sendTo, receiveFrom,
-      receptionCarriers, shippingCarriers, region
+      name, abbreviation, lat, lng, type, company, sendToDays, receiveFrom,
+      shippingMaxDays, receptionCarriers, shippingCarriers, region
     } = req.body;
+    const sendTo = sendToDays.map((venueDay : IVenueDay) => venueDay.venue._id);
     const {team} = req.user;
     if (!name || !name.trim().length) {
       res.status(400).json({
@@ -241,11 +244,14 @@ class AdminVenueController {
       } else {
         const newVenue = await new Venue({
           name,
+          abbreviation,
           lat,
           lng,
           team,
           company,
           region,
+          shippingMaxDays,
+          sendToDays,
           sendTo,
           receiveFrom,
           receptionCarriers,
@@ -303,9 +309,10 @@ class AdminVenueController {
     const {id} = req.params;
     const {team} = req.user;
     const {
-      name, lat, lng, type, company, sendTo, receiveFrom,
-      receptionCarriers, shippingCarriers, region
+      name, abbreviation, lat, lng, type, company, sendToDays, receiveFrom,
+      receptionCarriers, shippingCarriers, region, shippingMaxDays
     } = req.body;
+    const sendTo = sendToDays.map((venueDay : IVenueDay) => venueDay.venue._id);
     if (!name || !name.length) {
       res.status(400).json({
         message: 'The name is are required',
@@ -318,10 +325,13 @@ class AdminVenueController {
         team
       }, {
         name,
+        abbreviation,
         lat,
         lng,
         company,
         region,
+        shippingMaxDays,
+        sendToDays,
         sendTo,
         receiveFrom,
         shippingCarriers,

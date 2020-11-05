@@ -1,11 +1,28 @@
 import {ITeam} from './team.interface';
 import {IUser} from './user.interface';
 
+export interface IBillingCompany {
+  active: boolean;
+  checklistPrice: number;
+  inventoryPrice: number;
+}
+
+export interface IBillingNotifications {
+  _id?: any;
+  tempID?: any;
+  name: string;
+  email: string;
+}
+
 export interface IBaseCompany {
   _id?: any;
   name: string;
   image: any;
   imageURI?: string | null;
+  marker: any;
+  markerURI?: string | null;
+  billing: IBillingCompany;
+  notifications: IBillingNotifications[];
 }
 
 export interface ICompany extends IBaseCompany {

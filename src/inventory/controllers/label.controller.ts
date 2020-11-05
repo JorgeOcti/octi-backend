@@ -3,6 +3,7 @@ import {PaginateOptions, PaginateResult} from 'mongoose';
 import {IRequest} from '../../interfaces/global.interface';
 import {io} from '../../server';
 import InventoryLabel, {IInventoryLabelModel} from '../models/inventoryLabel.model';
+import TeamSetting from "../../app/models/teamSetting.model";
 
 class LabelController {
   constructor() {
@@ -17,14 +18,14 @@ class LabelController {
 
   public async apiList(req: IRequest, res: Response) {
     const {team} = req.user;
-    const {page, pageSize} = req.query;
+    const {page, pageSize} = req.query as {page: string; pageSize: string};
     // paginate options
     const options: PaginateOptions = {
       sort: {
         createdAt: -1
       },
-      page: parseInt(page ? page : 1, 10),
-      limit: parseInt(pageSize ? pageSize : 20, 10)
+      page: parseInt(page ? page : "1", 10),
+      limit: parseInt(pageSize ? pageSize : "20", 10)
     };
     try {
       const labels = await this.getLabels({
@@ -37,7 +38,9 @@ class LabelController {
           status: 400
         });
       } else {
+        const teamSettings = await TeamSetting.findOne({team});
         res.json({
+          inventorySettings: teamSettings!.inventory,
           count: labels.total,
           pages: labels.pages,
           hasPrevious: options.page && options.page > 1 && labels.pages && labels.pages >= options.page,
@@ -60,6 +63,7 @@ class LabelController {
         name: body.name,
         affected: body.affected,
         sendTo: body.sendTo,
+        description: body.description,
         isExhibition: body.isExhibition,
         color: body.color,
         requireCustomText: body.requireCustomText,
@@ -97,6 +101,7 @@ class LabelController {
         active: body.active,
         affected: body.affected,
         sendTo: body.sendTo,
+        description: body.description,
         isExhibition: body.isExhibition,
         color: body.color,
         requireCustomText: body.requireCustomText,

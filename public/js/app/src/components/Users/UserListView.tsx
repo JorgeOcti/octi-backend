@@ -160,7 +160,7 @@ class UserListView extends React.Component<IPropsType, IStateType> {
           // the URL has been freed."
           window.navigator.msSaveBlob(blob, fileName);
         } else {
-          const blobURL = window.URL.createObjectURL(blob);
+          const blobURL = URL.createObjectURL(blob);
           const tempLink = document.createElement('a');
           tempLink.style.display = 'none';
           tempLink.href = blobURL;
@@ -178,7 +178,7 @@ class UserListView extends React.Component<IPropsType, IStateType> {
           document.body.appendChild(tempLink);
           tempLink.click();
           document.body.removeChild(tempLink);
-          window.URL.revokeObjectURL(blobURL);
+          URL.revokeObjectURL(blobURL);
         }
       })
       .catch((err) => {
@@ -478,7 +478,7 @@ class UserListView extends React.Component<IPropsType, IStateType> {
       _id: _id ? _id : this.props.users.tempUser._id,
       firstName: firstName ? firstName : this.props.users.tempUser.firstName,
       lastName: lastName ? lastName : this.props.users.tempUser.lastName,
-      isAdmin: isAdmin,
+      isAdmin: typeof isAdmin === "boolean" ? isAdmin : this.props.users.tempUser.isAdmin,
       password: password ? password : '',
       email: email ? email : this.props.users.tempUser.email,
       userPermissions: userPermissions ? userPermissions : this.props.users.tempUser.userPermissions,

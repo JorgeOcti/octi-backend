@@ -2,11 +2,12 @@ import * as Raven from 'raven-js';
 import * as React from 'react';
 import {ErrorInfo} from 'react';
 import {connect} from 'react-redux';
-import {IBaseVenue} from '../../../../../../src/interfaces/venue.interface';
+import {IBaseVenue, IVenue} from '../../../../../../src/interfaces/venue.interface';
 import {changeTempVenueAction, IVenuesState, VenueReduxAction} from '../../actions/venues.actions';
 import {updateTooltip} from '../../utils/common';
 import BootstrapSelect from '../Utils/BootstrapSelect';
 import Checkbox from '../Utils/CheckBox';
+import {IVenueDay} from "../../../../../../src/interfaces/venueDay.interface";
 
 interface IPropsType {
   venues?: IVenuesState;
@@ -53,239 +54,325 @@ class VenueFormView extends React.Component<IPropsType, IStateType> {
         allVenues = allVenues.filter((venue) => venue._id !== tempVenue._id);
       }
       return (
-        <div className="row">
-          <div className="col-md-12">
-            <div className="form-group">
-              <label>Nombre</label>
-              <input
-                type="text"
-                name="number"
-                step="any"
-                className="form-control"
-                maxLength={50}
-                value={tempVenue.name}
-                onChange={
-                  (e: React.ChangeEvent<HTMLInputElement>) => changeTempVenueAction({
-                    ...tempVenue,
-                    name: e.target.value
-                  }, true)
-                }
-              />
-            </div>
-          </div>
-          <div className="col-md-6">
-            <div className="form-group">
-              <label>Latitud</label>
-              <input
-                type="number"
-                name="lng"
-                step="any"
-                className="form-control"
-                maxLength={50}
-                value={tempVenue.lat}
-                onChange={
-                  (e: React.ChangeEvent<HTMLInputElement>) => changeTempVenueAction({
-                    ...tempVenue,
-                    lat: parseFloat(e.target.value)
-                  }, true)
-                }
-              />
-            </div>
-          </div>
-          <div className="col-md-6">
-            <div className="form-group">
-              <label>Longitud</label>
-              <input
-                type="number"
-                name="lng"
-                className="form-control"
-                maxLength={50}
-                value={tempVenue.lng}
-                onChange={
-                  (e: React.ChangeEvent<HTMLInputElement>) => changeTempVenueAction({
-                    ...tempVenue,
-                    lng: parseFloat(e.target.value)
-                  }, true)
-                }
-              />
-            </div>
-          </div>
-          <div className="col-md-12">
-            <div className="form-group">
-              <label htmlFor="id-company">Empresa</label>
-              <BootstrapSelect
-                noneSelectedText="Seleccione"
-                search={true}
-                options={
-                  companies
-                    .map((company) => ({
-                      value: company._id,
-                      text: company.name
-                    }))
-                }
-                selected={tempVenue.company ? [tempVenue.company._id] : []}
-                autoClouse={true}
-                onClick={(value: string) => changeTempVenueAction({
-                  ...tempVenue,
-                  company: companies.find((company) => (company._id === value))
-                }, true)}
-              />
-            </div>
-            {
-              update ?
-                <div className="alert alert-warning alert-dismissible">
-                  Si se modifica la empresa, los usuarios asignados a esta sucursal también se verán afectados.
-                </div> : null
-            }
-          </div>
-          <div className="col-md-12">
-            <div className="form-group">
-              <label htmlFor="id-company">Región</label>
-              <BootstrapSelect
-                noneSelectedText="Seleccione"
-                options={
-                  regions
-                    .map((region) => ({
-                      value: region._id,
-                      text: region.name
-                    }))
-                }
-                selected={tempVenue.region ? [tempVenue.region._id] : []}
-                autoClouse={true}
-                onClick={(value: string) => changeTempVenueAction({
-                  ...tempVenue,
-                  region: regions.find((region) => (region._id === value))
-                }, true)}
-              />
-            </div>
-          </div>
-          <div className="col-md-12">
-            <div className="form-group">
-              <label htmlFor="venues" className="control-label">
-                Envia <i
-                className="fa fa-info-circle text-black"
-                data-toggle="tooltip" data-placement="top"
-                title="Usuarios asignados a esta sucursal, pueden enviar a estas sucursales."
-              />
-              </label>
-              <BootstrapSelect
-                noneSelectedText="Seleccione"
-                displayItems={2}
-                search={true}
-                selectedText="sucursales seleccionadas."
-                selected={tempVenue.sendTo.map((venue) => venue._id)}
-                allOption={true}
-                selectAll={(value: boolean) => this.handleSelectVenues('sendTo', true, value)}
-                options={allVenues.map((venue: any) => ({
-                  value: venue._id,
-                  text: venue.name
-                }))}
-                onClick={(value: string) => this.handleSelectVenues('sendTo', false, value)}
-              />
-            </div>
-          </div>
-          <div className="col-md-12">
-            <div className="form-group">
-              <label htmlFor="venues" className="control-label">
-                Transportistas de envio <i
-                className="fa fa-info-circle text-black"
-                data-toggle="tooltip" data-placement="top"
-                title="Usuarios asignados a esta sucursal, pueden enviar de estos transportista."
-              />
-              </label>
-              <BootstrapSelect
-                noneSelectedText="Seleccione"
-                displayItems={2}
-                search={true}
-                selectedText="sucursales seleccionadas."
-                selected={tempVenue.shippingCarriers.map((carrier) => carrier._id)}
-                allOption={true}
-                selectAll={(value: boolean) => this.handleSelectCarriers('shippingCarriers', true, value)}
-                options={carriers.map((carrier: any) => ({
-                  value: carrier._id,
-                  text: carrier.name
-                }))}
-                onClick={(value: string) => this.handleSelectCarriers('shippingCarriers', false, value)}
-              />
-            </div>
-          </div>
-          <div className="col-md-12">
-            <div className="form-group">
-              <label htmlFor="venues" className="control-label">
-                Recibe <i
-                className="fa fa-info-circle text-black"
-                data-toggle="tooltip"
-                data-placement="top"
-                title="Usuarios asignados a esta sucursal, pueden recepcionar de estas sucursales."
-              />
-              </label>
-              <BootstrapSelect
-                noneSelectedText="Seleccione"
-                displayItems={2}
-                search={true}
-                selectedText="sucursales seleccionadas."
-                selected={tempVenue.receiveFrom.map((venue) => venue._id)}
-                allOption={true}
-                selectAll={(value: boolean) => this.handleSelectVenues('receiveFrom', true, value)}
-                options={allVenues.map((venue: any) => ({
-                  value: venue._id,
-                  text: venue.name
-                }))}
-                onClick={(value: string) => this.handleSelectVenues('receiveFrom', false, value)}
-              />
-            </div>
-          </div>
-          <div className="col-md-12">
-            <div className="form-group">
-              <label htmlFor="venues" className="control-label">
-                Transportistas de recepción <i
-                className="fa fa-info-circle text-black"
-                data-toggle="tooltip" data-placement="top"
-                title="Usuarios asignados a esta sucursal, pueden receocionar de estos transportista."
-              />
-              </label>
-              <BootstrapSelect
-                noneSelectedText="Seleccione"
-                displayItems={2}
-                search={true}
-                selectedText="sucursales seleccionadas."
-                selected={tempVenue.receptionCarriers.map((carrier) => carrier._id)}
-                allOption={true}
-                selectAll={(value: boolean) => this.handleSelectCarriers('receptionCarriers', true, value)}
-                options={carriers.map((carrier: any) => ({
-                  value: carrier._id,
-                  text: carrier.name
-                }))}
-                onClick={(value: string) => this.handleSelectCarriers('receptionCarriers', false, value)}
-              />
-            </div>
-          </div>
-          <div className="col col-md-12">
-            <div className="checkbox">
-              <label style={{paddingLeft: '0'}} onClick={this.changeTypeAction} >
-                <Checkbox active={tempVenue.type === 'distributor'} action={this.changeTypeAction} classes="icheck-in-checkbox"/>
-                <span
-                  style={{
-                    paddingLeft: '5px',
-                    top: '2px',
-                    position: 'relative'
-                  }}
-                >
+        <React.Fragment>
+          <ul className="nav nav-tabs" style={{marginBottom: '15px'}}>
+            <li className="active"><a data-toggle="tab" href="#general">General</a></li>
+            {tempVenue.sendToDays.length > 0 ? <li><a data-toggle="tab" href="#diasSucursales">Tiempos de despacho</a></li> : null}
+          </ul>
+          <div className="tab-content">
+            <div id="general" className="tab-pane fade in active">
+              <div className="row">
+                <div className="col-md-12">
+                  <div className="form-group">
+                    <label>Nombre</label>
+                    <input
+                      type="text"
+                      name="number"
+                      step="any"
+                      className="form-control"
+                      maxLength={50}
+                      value={tempVenue.name}
+                      onChange={
+                        (e: React.ChangeEvent<HTMLInputElement>) => changeTempVenueAction({
+                          ...tempVenue,
+                          name: e.target.value
+                        }, true)
+                      }
+                    />
+                  </div>
+                </div>
+                <div className="col-md-12">
+                  <div className="form-group">
+                    <label>Abreviación</label>
+                    <input
+                      type="text"
+                      name="abbreviation"
+                      step="any"
+                      className="form-control"
+                      maxLength={10}
+                      value={tempVenue.abbreviation || ''}
+                      onChange={
+                        (e: React.ChangeEvent<HTMLInputElement>) => changeTempVenueAction({
+                          ...tempVenue,
+                          abbreviation: e.target.value.toUpperCase()
+                        }, true)
+                      }
+                    />
+                  </div>
+                </div>
+                <div className="col-md-6">
+                  <div className="form-group">
+                    <label>Latitud</label>
+                    <input
+                      type="number"
+                      name="lng"
+                      step="any"
+                      className="form-control"
+                      maxLength={50}
+                      value={tempVenue.lat}
+                      onChange={
+                        (e: React.ChangeEvent<HTMLInputElement>) => changeTempVenueAction({
+                          ...tempVenue,
+                          lat: parseFloat(e.target.value)
+                        }, true)
+                      }
+                    />
+                  </div>
+                </div>
+                <div className="col-md-6">
+                  <div className="form-group">
+                    <label>Longitud</label>
+                    <input
+                      type="number"
+                      name="lng"
+                      className="form-control"
+                      maxLength={50}
+                      value={tempVenue.lng}
+                      onChange={
+                        (e: React.ChangeEvent<HTMLInputElement>) => changeTempVenueAction({
+                          ...tempVenue,
+                          lng: parseFloat(e.target.value)
+                        }, true)
+                      }
+                    />
+                  </div>
+                </div>
+                <div className="col-md-12">
+                  <div className="form-group">
+                    <label htmlFor="id-company">Empresa</label>
+                    <BootstrapSelect
+                      noneSelectedText="Seleccione"
+                      search={true}
+                      options={
+                        companies
+                          .map((company) => ({
+                            value: company._id,
+                            text: company.name
+                          }))
+                      }
+                      selected={tempVenue.company ? [tempVenue.company._id] : []}
+                      autoClouse={true}
+                      onClick={(value: string) => changeTempVenueAction({
+                        ...tempVenue,
+                        company: companies.find((company) => (company._id === value))
+                      }, true)}
+                    />
+                  </div>
+                  {
+                    update ?
+                      <div className="alert alert-warning alert-dismissible">
+                        Si se modifica la empresa, los usuarios asignados a esta sucursal también se verán afectados.
+                      </div> : null
+                  }
+                </div>
+                <div className="col-md-12">
+                  <div className="form-group">
+                    <label htmlFor="id-company">Región</label>
+                    <BootstrapSelect
+                      noneSelectedText="Seleccione"
+                      options={
+                        regions
+                          .map((region) => ({
+                            value: region._id,
+                            text: region.name
+                          }))
+                      }
+                      selected={tempVenue.region ? [tempVenue.region._id] : []}
+                      autoClouse={true}
+                      onClick={(value: string) => changeTempVenueAction({
+                        ...tempVenue,
+                        region: regions.find((region) => (region._id === value))
+                      }, true)}
+                    />
+                  </div>
+                </div>
+                <div className="col-md-12">
+                  <div className="form-group">
+                    <label htmlFor="venues" className="control-label">
+                      Envia <i
+                      className="fa fa-info-circle text-black"
+                      data-toggle="tooltip" data-placement="top"
+                      title="Usuarios asignados a esta sucursal, pueden enviar a estas sucursales."
+                    />
+                    </label>
+                    <BootstrapSelect
+                      noneSelectedText="Seleccione"
+                      displayItems={2}
+                      search={true}
+                      selectedText="sucursales seleccionadas."
+                      selected={tempVenue.sendToDays.map((venueDay) => venueDay.venue._id)}
+                      allOption={true}
+                      selectAll={(value: boolean) => this.handleSelectVenuesSendToDays( true, value)}
+                      options={allVenues.map((venue: any) => ({
+                        value: venue._id,
+                        text: venue.name
+                      }))}
+                      onClick={(value: string) => this.handleSelectVenuesSendToDays(false, value)}
+                    />
+                  </div>
+                </div>
+                <div className="col-md-12">
+                  <div className="form-group">
+                    <label htmlFor="venues" className="control-label">
+                      Transportistas de envio <i
+                      className="fa fa-info-circle text-black"
+                      data-toggle="tooltip" data-placement="top"
+                      title="Usuarios asignados a esta sucursal, pueden enviar de estos transportista."
+                    />
+                    </label>
+                    <BootstrapSelect
+                      noneSelectedText="Seleccione"
+                      displayItems={2}
+                      search={true}
+                      selectedText="sucursales seleccionadas."
+                      selected={tempVenue.shippingCarriers.map((carrier) => carrier._id)}
+                      allOption={true}
+                      selectAll={(value: boolean) => this.handleSelectCarriers('shippingCarriers', true, value)}
+                      options={carriers.map((carrier: any) => ({
+                        value: carrier._id,
+                        text: carrier.name
+                      }))}
+                      onClick={(value: string) => this.handleSelectCarriers('shippingCarriers', false, value)}
+                    />
+                  </div>
+                </div>
+                <div className="col-md-12">
+                  <div className="form-group">
+                    <label htmlFor="venues" className="control-label">
+                      Recibe <i
+                      className="fa fa-info-circle text-black"
+                      data-toggle="tooltip"
+                      data-placement="top"
+                      title="Usuarios asignados a esta sucursal, pueden recepcionar de estas sucursales."
+                    />
+                    </label>
+                    <BootstrapSelect
+                      noneSelectedText="Seleccione"
+                      displayItems={2}
+                      search={true}
+                      selectedText="sucursales seleccionadas."
+                      selected={tempVenue.receiveFrom.map((venue) => venue._id)}
+                      allOption={true}
+                      selectAll={(value: boolean) => this.handleSelectVenues('receiveFrom', true, value)}
+                      options={allVenues.map((venue: any) => ({
+                        value: venue._id,
+                        text: venue.name
+                      }))}
+                      onClick={(value: string) => this.handleSelectVenues('receiveFrom', false, value)}
+                    />
+                  </div>
+                </div>
+                <div className="col-md-12">
+                  <div className="form-group">
+                    <label htmlFor="venues" className="control-label">
+                      Transportistas de recepción <i
+                      className="fa fa-info-circle text-black"
+                      data-toggle="tooltip" data-placement="top"
+                      title="Usuarios asignados a esta sucursal, pueden receocionar de estos transportista."
+                    />
+                    </label>
+                    <BootstrapSelect
+                      noneSelectedText="Seleccione"
+                      displayItems={2}
+                      search={true}
+                      selectedText="sucursales seleccionadas."
+                      selected={tempVenue.receptionCarriers.map((carrier) => carrier._id)}
+                      allOption={true}
+                      selectAll={(value: boolean) => this.handleSelectCarriers('receptionCarriers', true, value)}
+                      options={carriers.map((carrier: any) => ({
+                        value: carrier._id,
+                        text: carrier.name
+                      }))}
+                      onClick={(value: string) => this.handleSelectCarriers('receptionCarriers', false, value)}
+                    />
+                  </div>
+                </div>
+                <div className="col col-md-12">
+                  <div className="checkbox">
+                    <label style={{paddingLeft: '0'}} onClick={this.changeTypeAction}>
+                      <Checkbox active={tempVenue.type === 'distributor'} action={this.changeTypeAction}
+                                classes="icheck-in-checkbox"/>
+                      <span
+                        style={{
+                          paddingLeft: '5px',
+                          top: '2px',
+                          position: 'relative'
+                        }}
+                      >
                   Distribuidor <i
-                  className="fa fa-info-circle"
-                  data-toggle="tooltip"
-                  data-placement="top"
-                  title="Activa funcionalidades a la sucursal."
-                />
+                        className="fa fa-info-circle"
+                        data-toggle="tooltip"
+                        data-placement="top"
+                        title="Activa funcionalidades a la sucursal."
+                      />
                 </span>
-              </label>
+                    </label>
+                  </div>
+                </div>
+              </div>
             </div>
+            { tempVenue.sendToDays.length > 0 ? <div id="diasSucursales" className="tab-pane fade">
+              { tempVenue.sendToDays.map( (venueDay: IVenueDay) => {
+                let venueIndex = tempVenue.sendToDays.findIndex(v => v.venue._id === venueDay.venue._id);
+                  return <div className="row" key={venueDay.venue._id}>
+                    <div className="col-md-12">
+                      <div className="form-group">
+                        <label>{tempVenue.name} - {venueDay.venue.name}</label>
+                        <input
+                          type="number"
+                          name={venueDay.venue._id}
+                          step="any"
+                          className="form-control"
+                          min={1}
+                          value={venueDay.shippingMaxDays || ''}
+                          onChange={
+                            (e: React.ChangeEvent<HTMLInputElement>) => {
+                              tempVenue.sendToDays[venueIndex].shippingMaxDays = parseInt(e.target.value)
+                              changeTempVenueAction(tempVenue, true)
+                            }
+                          }
+                        />
+                      </div>
+                    </div>
+                  </div>
+                }
+              )}
+            </div> : null}
           </div>
-        </div>
+        </React.Fragment>
       );
     } else {
       return null;
     }
+  }
+
+  private handleSelectVenuesSendToDays(all: boolean, value: string | boolean){
+    if (this.props.changeTempVenueAction && this.props.venues) {
+      const {tempVenue, allVenues} = this.props.venues;
+      let values : IVenueDay[]= [];
+      if (all) {
+        values = value ? allVenues.map((venue: IVenue) => {
+          return {_id: null, shippingMaxDays : undefined, venue: venue}}) :
+          [];
+      } else {
+        const add = tempVenue.sendToDays.find((venueDay : IVenueDay) => venueDay.venue._id === value) === undefined;
+        const venueDay : IVenueDay = {
+          _id: null,
+          venue:allVenues.find((venue) => venue._id === value)!,
+          shippingMaxDays: undefined
+        };
+        if (add) {
+          values = [...tempVenue.sendToDays, venueDay];
+        } else {
+          values = tempVenue.sendToDays.filter((venueDay) => venueDay.venue._id !== value);
+        }
+      }
+      this.props.changeTempVenueAction({
+        ...tempVenue,
+        sendToDays: values
+      }, true);
+    }
+
   }
 
   private handleSelectVenues(where: 'receiveFrom' | 'sendTo', all: boolean, value: string | boolean) {

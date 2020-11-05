@@ -31,24 +31,23 @@ class AppController {
 
     this.logout = this.logout.bind(this);
     this.recoverFile = this.recoverFile.bind(this);
-
   }
 
   /* istanbul ignore next */
-  public index(req: Request, res: Response) {
+  public index(req: Request, res: Response): void {
     res.render('app/index');
   }
 
-  public healthCheck(req: Request, res: Response) {
+  public healthCheck(req: Request, res: Response): void {
     res.json({status: 'success'});
   }
 
-  public robots(req: Request, res: Response) {
+  public robots(req: Request, res: Response): void {
     res.setHeader('content-type', 'text/plain; charset=utf-8');
     res.send(`User-Agent: *\nDisallow: /`);
   }
 
-  public login(req: Request, res: Response) {
+  public login(req: Request, res: Response): void {
     if (req.user) {
       return res.redirect('/');
     } else {
@@ -56,7 +55,7 @@ class AppController {
     }
   }
 
-  public processLogin(req: Request, res: Response, next: NextFunction) {
+  public processLogin(req: Request, res: Response, next: NextFunction): void {
     /* istanbul ignore if */
     if (req.user) {
       return res.redirect('/');
@@ -210,7 +209,7 @@ class AppController {
         user.password = password;
         user.passwordResetToken = undefined;
         user.passwordResetExpires = undefined;
-        user.save();
+        await user.save();
         req.login(user, (loginErr) => {
           if (loginErr) {
             return next(loginErr);

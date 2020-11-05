@@ -10,6 +10,7 @@ interface IPropsType {
 interface ITempVersion {
   ios: string;
   android: string;
+  description: string;
 }
 
 interface IStateType {

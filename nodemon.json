@@ -8,7 +8,10 @@
   },
   "ignore": [
     ".git",
-    "node_modules/**/node_modules"
+    "node_modules/**/node_modules",
+    "node_modules/*",
+    "views/*",
+    "public/*"
   ],
   "ext": "js,json",
   "delay": "2500"

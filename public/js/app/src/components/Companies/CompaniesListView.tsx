@@ -31,7 +31,7 @@ interface IPropsType extends RouteComponentProps<{ company: string }> {
   createCompanyAction(): CompaniesReduxAction;
   updateCompanyAction(): CompaniesReduxAction;
   deleteCompanyAction(id?: string): CompaniesReduxAction;
-  changeTempCompanyAction(venue: IBaseCompany): CompaniesReduxAction;
+  changeTempCompanyAction(company: IBaseCompany): CompaniesReduxAction;
   loadDataAction(title: string, body: JSX.Element, footer: JSX.Element): ModalReduxAction;
 }
 
@@ -95,6 +95,10 @@ class CompaniesListView extends React.Component<IPropsType, IStateType> {
                     <th style={{width: '60%'}} className="middle">Nombre</th>
                     <th style={{width: '20%'}} className="middle hidden-xs">Modificado</th>
                     {
+                      window.user.isAdmin ?
+                        <th style={{width: '1%'}} className="width-10">Billing</th> : null
+                    }
+                    {
                       hasPermission(window.user, 'changeCompany') ?
                         <th style={{width: '1%'}} className="width-10"/> : null
                     }
@@ -115,6 +119,18 @@ class CompaniesListView extends React.Component<IPropsType, IStateType> {
                         >
                           <td className="middle">{company.name}</td>
                           <td className="middle hidden-xs">{moment(company.updatedAt).format('LLL')}</td>
+                          {
+                            window.user.isAdmin ?
+                              <td className="middle text-center">
+                                <i
+                                  className={
+                                    company.billing.active ?
+                                      "fa fa-check-circle text-green":
+                                      "fa fa-times-circle text-red"
+                                  }
+                                />
+                              </td> : null
+                          }
                           {
                             hasPermission(window.user, 'changeCompany') ?
                               <td
@@ -160,7 +176,15 @@ class CompaniesListView extends React.Component<IPropsType, IStateType> {
     this.props.changeTempCompanyAction({
       _id: '',
       name: '',
-      image: null
+      image: null,
+      marker: null,
+      markerURI: "/static/images/files/pin_osa.svg",
+      billing: {
+        active: false,
+        checklistPrice: 0.0,
+        inventoryPrice: 0.0
+      },
+      notifications: []
     });
     setTimeout(() => {
       this.props.loadDataAction(
@@ -188,7 +212,11 @@ class CompaniesListView extends React.Component<IPropsType, IStateType> {
       _id: company._id,
       name: company.name,
       image: null,
-      imageURI: company.image.hasOwnProperty('url') ? decodeURI(company.image.url) : null
+      marker: null,
+      imageURI: company.image && company.image.hasOwnProperty('url') ? decodeURI(company.image.url) : null,
+      markerURI: company.marker && company.marker.hasOwnProperty('url') ? decodeURI(company.marker.url) : "/static/images/files/pin_osa.svg",
+      billing: company.billing,
+      notifications: company.notifications
     });
     setTimeout(() => {
       this.props.loadDataAction(

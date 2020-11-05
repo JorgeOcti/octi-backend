@@ -243,8 +243,8 @@ class AdminUsersController {
                 firstName: 1,
                 lastName: 1
             },
-            page: parseInt(page ? page : 1, 10),
-            limit: parseInt(pageSize ? pageSize : 20, 10)
+            page: parseInt(page ? page : "1", 10),
+            limit: parseInt(pageSize ? pageSize : "20", 10)
         };
         try {
             const users = await this.getUsers({
@@ -402,9 +402,7 @@ class AdminUsersController {
                     venue,
                     venuesAccess
                 };
-                if (req.user.isAdmin) {
-                    console.log('----------------------------------------');
-                    console.log(isAdmin);
+                if (req.user.isAdmin && [true, false].includes(isAdmin)) {
                     updateItems.userPermissions = userPermissions && userPermissions.length ? userPermissions.map((userPermission) => userPermission._id) : [];
                     updateItems.isAdmin = isAdmin;
                 }

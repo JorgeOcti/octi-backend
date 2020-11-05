@@ -3,7 +3,6 @@ import * as Mail from 'nodemailer/lib/mailer';
 import * as path from 'path';
 import * as pug from 'pug';
 import {compileTemplate} from 'pug';
-import app from '../../app';
 import nodemailerTransporter from '../../services/aws-ses.service';
 
 class EmailQueue {
@@ -25,7 +24,7 @@ class EmailQueue {
     return pugCompile(context);
   }
 
-  private processEmail(job?: Job, done?: (error?: Error | null, data?: object) => void) {
+  private processEmail(job: Job, done: (error?: Error | null, data?: object) => void) {
     if (job && done) {
       job.log('start process');
       // generate email
@@ -54,11 +53,11 @@ class EmailQueue {
           done(error);
         }
         done(null, {});
-        job.log(`Message ${info.messageId} sent: ${info.response}`);
+        // job.log(`Message ${info.messageId} sent: ${info.response}`);
         /* istanbul ignore next */
-        if (app.get('env') !== 'testing') {
-          console.log('Message %s sent: %s', info.messageId, info.response);
-        }
+        // if (app.get('env') !== 'testing') {
+        //   console.log('Message %s sent: %s', info.messageId, info.response);
+        // }
         // console.log('Preview URL: %s', nodemailer.getTestMessageUrl(info));
       });
     }

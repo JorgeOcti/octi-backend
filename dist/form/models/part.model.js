@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.partSchema = void 0;
 const mongoose = require("mongoose");
 exports.partSchema = new mongoose.Schema({
     team: {

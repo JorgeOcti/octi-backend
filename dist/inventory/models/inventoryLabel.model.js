@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.inventoryLabelSchema = void 0;
 const mongoose = require("mongoose");
 const mongoosePaginate = require("mongoose-paginate");
 const inventoryCar_model_1 = require("./inventoryCar.model");
@@ -11,6 +12,10 @@ exports.inventoryLabelSchema = new mongoose.Schema({
     name: {
         type: String,
         required: true
+    },
+    description: {
+        type: String,
+        default: ""
     },
     color: {
         type: String,

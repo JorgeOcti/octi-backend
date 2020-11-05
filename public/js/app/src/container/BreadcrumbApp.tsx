@@ -9,7 +9,7 @@ interface IPropsType {
   cAction?: string;
 }
 
-const BreadcrumbApp: React.StatelessComponent<IPropsType> = (props) => {
+const BreadcrumbApp: React.FunctionComponent<IPropsType> = (props) => {
   const menu = menus.find((menu: any) => menu.id === props.cMenu);
   if (menu) {
     const subMenu = menu.items.find((item: any) => item.id === props.cSubMenu);

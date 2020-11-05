@@ -2,7 +2,6 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 const path = require("path");
 const pug = require("pug");
-const app_1 = require("../../app");
 const aws_ses_service_1 = require("../../services/aws-ses.service");
 class EmailQueue {
     constructor(queue) {
@@ -47,11 +46,11 @@ class EmailQueue {
                     done(error);
                 }
                 done(null, {});
-                job.log(`Message ${info.messageId} sent: ${info.response}`);
+                // job.log(`Message ${info.messageId} sent: ${info.response}`);
                 /* istanbul ignore next */
-                if (app_1.default.get('env') !== 'testing') {
-                    console.log('Message %s sent: %s', info.messageId, info.response);
-                }
+                // if (app.get('env') !== 'testing') {
+                //   console.log('Message %s sent: %s', info.messageId, info.response);
+                // }
                 // console.log('Preview URL: %s', nodemailer.getTestMessageUrl(info));
             });
         }

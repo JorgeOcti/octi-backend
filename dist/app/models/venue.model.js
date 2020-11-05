@@ -1,7 +1,9 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.choicesStatusCarInventory = exports.ChoicesTypeVenue = void 0;
 const mongoose = require("mongoose");
 const mongoosePaginate = require("mongoose-paginate");
+const venueDay_model_1 = require("./venueDay.model");
 var ChoicesTypeVenue;
 (function (ChoicesTypeVenue) {
     ChoicesTypeVenue["distributor"] = "distributor";
@@ -15,6 +17,9 @@ const venueSchema = new mongoose.Schema({
     name: {
         type: String,
         required: true
+    },
+    abbreviation: {
+        type: String,
     },
     lat: {
         type: Number,
@@ -36,10 +41,17 @@ const venueSchema = new mongoose.Schema({
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Region'
     },
+    shippingMaxDays: {
+        type: Number,
+        default: 5
+    },
     type: {
         type: String,
         enum: exports.choicesStatusCarInventory,
         default: ChoicesTypeVenue.receiver
+    },
+    sendToDays: {
+        type: [venueDay_model_1.venueDaySchema]
     },
     sendTo: {
         type: [{

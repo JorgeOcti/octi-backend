@@ -216,7 +216,7 @@ class AdminUsersController {
         message: 'No tienes permisos para esta operación'
       });
     }
-    const {page, pageSize, search} = req.query;
+    const {page, pageSize, search} = req.query as { page: string, pageSize: string, search: string};
     const {team} = req.user;
     // paginate options
     const options: PaginateOptions = {
@@ -257,8 +257,8 @@ class AdminUsersController {
         firstName: 1,
         lastName: 1
       },
-      page: parseInt(page ? page : 1, 10),
-      limit: parseInt(pageSize ? pageSize : 20, 10)
+      page: parseInt(page ? page : "1", 10),
+      limit: parseInt(pageSize ? pageSize : "20", 10)
     };
     try {
       const users = await this.getUsers({
@@ -416,9 +416,7 @@ class AdminUsersController {
           venue,
           venuesAccess
         };
-        if (req.user.isAdmin) {
-          console.log('----------------------------------------');
-          console.log(isAdmin);
+        if (req.user.isAdmin && [true, false].includes(isAdmin)) {
           updateItems.userPermissions = userPermissions && userPermissions.length ? userPermissions.map((userPermission: IPermission) => userPermission._id) : [];
           updateItems.isAdmin = isAdmin;
         }

@@ -5,6 +5,7 @@ export interface IInventoryLabel {
   _id: any;
   team?: ITeam;
   name: string;
+  description: string;
   color: string;
   affected: string[];
   sendTo: string;

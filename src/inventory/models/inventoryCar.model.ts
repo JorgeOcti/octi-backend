@@ -5,6 +5,7 @@ import {
 import {IInventoryComment} from '../../interfaces/inventoryComment.interface';
 
 export interface IIventoryCommentModel extends IInventoryComment, mongoose.Types.Subdocument {}
+
 const invetoryCommentCars = new mongoose.Schema({
   user: {
     type: mongoose.Schema.Types.ObjectId,
@@ -36,6 +37,7 @@ export const choicesStatusCarInventory = [
 ];
 
 export interface IInventoryCarModel extends IInventoryCar, mongoose.Document {}
+
 const inventoryCarSchema = new mongoose.Schema({
   inventory: {
     type: mongoose.Schema.Types.ObjectId,

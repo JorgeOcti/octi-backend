@@ -143,7 +143,7 @@ class RequestCreateView extends  React.Component<IPropsType, IStateType> {
                               newCar: {
                                 ...this.state.newCar,
                                 brand: item.brand,
-                                brans: [],
+                                brands: [],
                                 denomination: item.denomination,
                                 denominations: [],
                                 material: "",
@@ -177,7 +177,7 @@ class RequestCreateView extends  React.Component<IPropsType, IStateType> {
                               newCar: {
                                 ...this.state.newCar,
                                 brand: item.brand,
-                                brans: [],
+                                brands: [],
                                 denomination: item.denomination,
                                 denominations: [],
                                 material: "",
@@ -211,7 +211,7 @@ class RequestCreateView extends  React.Component<IPropsType, IStateType> {
                               newCar: {
                                 ...this.state.newCar,
                                 brand: item.brand,
-                                brans: [],
+                                brands: [],
                                 denomination: item.denomination,
                                 denominations: [],
                                 material: "",

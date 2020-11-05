@@ -7,7 +7,7 @@ import {composeWithDevTools} from 'redux-devtools-extension';
 // import LogerMiddleware from 'redux-logger';
 import ThunkMiddleware from 'redux-thunk';
 import {IWindow} from '../interfaces/window';
-import rootReducer from '../reducers/index.reducer';
+import createRootReducer from '../reducers/index.reducer';
 import browserHistort from '../utils/history';
 
 declare let window: IWindow;
@@ -44,7 +44,7 @@ const configureStore = () => {
     enhancers = applyMiddleware(...middlewares);
   }
 
-  return createStore(rootReducer(history), enhancers);
+  return createStore(createRootReducer(history), enhancers);
 };
 
 export default configureStore;

@@ -8,6 +8,7 @@
     "sourceMap": true,
     "inlineSources": true,
     "outDir": "dist",
+    "tsBuildInfoFile": "./buildcache/buildcache",
     "noImplicitReturns": true,
     "noImplicitAny": true,
     "noImplicitThis": false,
@@ -25,7 +26,7 @@
     ]
   },
   "include": [
-    "./src/**/*"
+    "./src"
   ],
   "exclude": [
     "views",

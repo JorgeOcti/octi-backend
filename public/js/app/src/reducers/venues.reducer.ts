@@ -14,8 +14,11 @@ const initialState: IVenuesState = {
     lat: 0,
     lng: 0,
     name: '',
+    abbreviation: '',
     type: 'receiver',
+    sendToDays: [],
     sendTo: [],
+    shippingMaxDays: 5,
     receiveFrom: [],
     shippingCarriers: [],
     receptionCarriers: []
@@ -73,9 +76,12 @@ export function venuesReducer(state = initialState, action: VenueReduxAction): I
         venues: state.venues.map((venue: IVenue) => {
           if (venue._id === action.payload.venue._id) {
             venue.name = action.payload.venue.name;
+            venue.abbreviation = action.payload.venue.abbreviation;
             venue.company = action.payload.venue.company;
             venue.type = action.payload.venue.type;
+            venue.sendToDays = action.payload.venue.sendToDays;
             venue.sendTo = action.payload.venue.sendTo;
+            venue.shippingMaxDays = action.payload.venue.shippingMaxDays;
             venue.receiveFrom = action.payload.venue.receiveFrom;
           }
           return venue;

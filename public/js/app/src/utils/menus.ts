@@ -91,6 +91,14 @@ if (distributionItems.length) {
 * 2. Inventory
 *****************/
 const inventoryItems = [];
+if (hasPermission(window.user, 'currentStock')) {
+  inventoryItems.push({
+    id: '2.4',
+    icon: 'fa-circle-o',
+    text: 'Stock Actual',
+    url: '/stock/'
+  });
+}
 
 if (hasPermission(window.user, 'viewInventoryDashboard')) {
   inventoryItems.push({
@@ -131,6 +139,37 @@ if (inventoryItems.length) {
 
 
 /* *****************
+* 3. Planning
+*****************/
+const planningItems = [];
+if (hasPermission(window.user, 'viewPlanning')) {
+  planningItems.push({
+    id: '4.1',
+    icon: 'fa-circle-o',
+    text: 'Detalle',
+    url: '/planning/'
+  })
+}
+if (hasPermission(window.user, 'viewPlanning')) {
+  planningItems.push({
+    id: '4.2',
+    icon: 'fa-circle-o',
+    text: 'Importar',
+    url: '/planning/import/'
+  })
+}
+
+if (planningItems.length) {
+  menus.push({
+    id: '4',
+    text: 'Planificación',
+    icon: 'fa-calendar-check-o',
+    url: '/planning/',
+    items: planningItems
+  });
+}
+
+/* *****************
 * 10. Settings
 *****************/
 const settingItems = [{
@@ -167,6 +206,16 @@ if (hasPermission(window.user, 'viewVenue')) {
   });
 }
 
+if (hasPermission(window.user, 'viewVenue')) {
+  settingItems.push({
+    id: '10.9',
+    icon: 'fa-circle-o',
+    text: 'Regiones',
+    url: '/settings/regions/'
+  });
+}
+
+
 if (hasPermission(window.user, 'viewCarrier')) {
   settingItems.push({
     id: '10.6',
@@ -185,7 +234,7 @@ if (hasPermission(window.user, 'viewUser')) {
   });
 }
 
-if(hasPermission(window.user, 'viewVersion')) {
+if (hasPermission(window.user, 'viewVersion')) {
   settingItems.push({
     id: '10.7',
     icon: 'fa-circle-o',
@@ -194,6 +243,14 @@ if(hasPermission(window.user, 'viewVersion')) {
   });
 }
 
+if (hasPermission(window.user, 'viewBilling')) {
+  settingItems.push({
+    id: '10.8',
+    icon: 'fa-circle-o',
+    text: 'Billing',
+    url: '/settings/billing/'
+  });
+}
 
 if (settingItems.length) {
   menus.push({
@@ -202,6 +259,26 @@ if (settingItems.length) {
     icon: 'fa-cog',
     url: settingItems[0].url,
     items: settingItems
+  });
+}
+
+/* *****************
+* 3. Planning
+*****************/
+const accountItems = [{
+  id: '100.1',
+  icon: 'fa-circle-o',
+  text: 'Información',
+  url: '/my-account/'
+}];
+
+if (process.env.NODE_ENV === 'development' && accountItems.length) {
+  menus.push({
+    id: '100',
+    text: 'Mi Cuenta',
+    icon: 'fa-user',
+    url: '/my-account/',
+    items: planningItems
   });
 }
 

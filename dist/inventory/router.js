@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.inventoryRouter = void 0;
 const express = require("express");
 const middlewares_1 = require("../middlewares/middlewares");
 const inventory_controller_1 = require("./controllers/inventory.controller");
@@ -35,4 +36,9 @@ inventoryRouter.get('/api/v1/inventory/:id/', middlewares_1.default.isJWTAuthent
 inventoryRouter.post('/api/v1/inventory/:id/upload-file/', middlewares_1.default.isJWTAuthenticated, inventory_controller_1.default.uploadFile);
 inventoryRouter.post('/api/v1/inventory/:id/report-car/', middlewares_1.default.isJWTAuthenticated, inventory_controller_1.default.reportCar);
 inventoryRouter.post('/api/v1/inventory/:id/', middlewares_1.default.isJWTAuthenticated, inventory_controller_1.default.apiFoundCar);
+// Stock
+inventoryRouter.get('/stock/', middlewares_1.default.isLoggedIn, inventory_controller_1.default.stock);
+inventoryRouter.get('/stock/import/', middlewares_1.default.isLoggedIn, inventory_controller_1.default.stock);
+inventoryRouter.get('/api/current-stock/', middlewares_1.default.isLoggedIn, inventory_controller_1.default.currentStock);
+inventoryRouter.post('/api/load-stock/', middlewares_1.default.isLoggedIn, inventory_controller_1.default.loadStock);
 //# sourceMappingURL=router.js.map

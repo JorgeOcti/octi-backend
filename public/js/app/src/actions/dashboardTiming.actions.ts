@@ -9,7 +9,7 @@ interface ITimingData {
 }
 
 export interface IDashboardTimingState {
-  data: ITimingData;
+  data: any;
   venues: any[];
   venuesDict: any;
   loading: boolean;
@@ -31,22 +31,6 @@ export function loadDashboardTimingAction(venues: any[], data: any): ILoadDashbo
     payload: {
       venues,
       data
-    }
-  };
-}
-
-interface ILoadDashboardTimingPerVenue {
-  type: '/DASHBOARD/TIMING/LOAD_DATA_PER_VENUE';
-  payload: {
-    perVenue: number[]
-  };
-}
-
-export function loadDashboardTimingPerVenueAction(perVenue: number[]): ILoadDashboardTimingPerVenue {
-  return {
-    type: '/DASHBOARD/TIMING/LOAD_DATA_PER_VENUE',
-    payload: {
-      perVenue
     }
   };
 }
@@ -82,13 +66,13 @@ export function isLoadingPerVenueAction(loading: boolean): IIsLoadingPerVenue {
   };
 }
 
-export function getDashboardTiming() {
+export function getDashboardTiming(from: string, to: string) {
   return (dispatch: Dispatch<DashboardTimingReduxAction>) => {
     const api: ApiService = new ApiService();
     dispatch(isLoadingAction(true));
     Axios.all([
       api.getVenues(1, 200),
-      api.getDashboardTiming()
+      api.getDashboardTiming(from, to)
     ]).then(Axios.spread((venues, dashboard) => {
       dispatch(loadDashboardTimingAction(venues.data.results, dashboard.data));
     })).catch((err: AxiosError): void => {
@@ -97,16 +81,5 @@ export function getDashboardTiming() {
   };
 }
 
-export function getDashboardTimingPerVenue(period: string) {
-  return (dispatch: Dispatch<DashboardTimingReduxAction>) => {
-    const api: ApiService = new ApiService();
-    dispatch(isLoadingPerVenueAction(true));
-    api.getTimingPerVenue(period).then((perVenue: any) => {
-      dispatch(loadDashboardTimingPerVenueAction(perVenue.data));
-    }).catch((err: AxiosError): void => {
-      api.errorHandler(err);
-    });
-  };
-}
 
-export type DashboardTimingReduxAction = ILoadDashboardTiming | ILoadDashboardTimingPerVenue | IIsLoading | IIsLoadingPerVenue;
+export type DashboardTimingReduxAction = ILoadDashboardTiming | IIsLoading | IIsLoadingPerVenue;

@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.requestRouter = void 0;
 const express = require("express");
 const middlewares_1 = require("../middlewares/middlewares");
 const request_controller_1 = require("./controllers/request.controller");

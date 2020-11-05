@@ -8,6 +8,11 @@ const regionSchema = new mongoose.Schema({
         trim: true,
         required: true
     },
+    code: {
+        type: String,
+        trim: true,
+        default: ''
+    },
     team: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Team'

@@ -29,6 +29,18 @@ teamSchema.virtual('users', {
     foreignField: 'team',
     justOne: false
 });
+teamSchema.virtual('settings', {
+    ref: 'TeamSetting',
+    localField: '_id',
+    foreignField: 'team',
+    justOne: true
+});
+teamSchema.virtual('histories', {
+    ref: 'ActivityHistory',
+    localField: '_id',
+    foreignField: 'team',
+    justOne: true
+});
 teamSchema.plugin(mongoosePaginate);
 const Team = mongoose.model('Team', teamSchema);
 exports.default = Team;

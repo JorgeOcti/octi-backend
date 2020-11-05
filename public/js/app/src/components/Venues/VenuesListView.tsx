@@ -7,9 +7,9 @@ import {connect} from 'react-redux';
 import {RouteComponentProps} from 'react-router';
 import {Dispatch} from 'redux';
 import * as swal from 'sweetalert';
-// import * as mapboxgl from 'mapboxgl';
+import * as mapboxgl from 'mapbox-gl';
 import ApiService from '../../utils/axios'
-var mapboxgl = require('mapbox-gl/dist/mapbox-gl.js');
+// var mapboxgl = require('mapbox-gl/dist/mapbox-gl.js');
 import {IBaseVenue, IVenue} from '../../../../../../src/interfaces/venue.interface';
 import {loadDataAction, ModalReduxAction} from '../../actions/modal.actions';
 import {
@@ -113,7 +113,7 @@ class VenuesListView extends React.Component<IPropsType, IStateType> {
           // the URL has been freed."
           window.navigator.msSaveBlob(blob, fileName);
         } else {
-          const blobURL = window.URL.createObjectURL(blob);
+          const blobURL = URL.createObjectURL(blob);
           const tempLink = document.createElement('a');
           tempLink.style.display = 'none';
           tempLink.href = blobURL;
@@ -131,7 +131,7 @@ class VenuesListView extends React.Component<IPropsType, IStateType> {
           document.body.appendChild(tempLink);
           tempLink.click();
           document.body.removeChild(tempLink);
-          window.URL.revokeObjectURL(blobURL);
+          URL.revokeObjectURL(blobURL);
         }
       })
       .catch((err) => {
@@ -159,7 +159,8 @@ class VenuesListView extends React.Component<IPropsType, IStateType> {
           },
           properties: {
             title: 'Sucursal',
-            description: venue.name
+            name: venue.name,
+            logo: venue.company.marker && venue.company.marker.hasOwnProperty("url") ? `url("${venue.company.marker.url}")` : 'url("/static/images/files/pin_osa.svg")'
           }
         }
       })
@@ -172,18 +173,24 @@ class VenuesListView extends React.Component<IPropsType, IStateType> {
 
       // create a HTML element for each feature
       const el: HTMLDivElement = document.createElement('div');
-      el.className = 'marker';
+      // here set class use in the marker
+      // el.className = 'marker';
+      el.style.backgroundImage = marker.properties.logo;
+      el.style.backgroundSize = 'cover';
+      el.style.width = '50px';
+      el.style.height = '50px';
+      el.style.borderRadius = '50p%';
+      el.style.cursor = 'pointer%';
 
       // make a marker for each feature and add to the map
       if(Math.abs(marker.geometry.coordinates[0]) > 0.1) // skip sucursales sin lat, lng
       {
         new mapboxgl.Marker(el)
-          .setLngLat(marker.geometry.coordinates)
-          .setPopup(new mapboxgl.Popup({offset: 25})
-            .setHTML(`<p>${marker.properties.description}</p>`))
+          .setLngLat((marker.geometry.coordinates as [number, number]))
+          .setPopup(new mapboxgl.Popup({offset: 25}).setHTML(`<p>${marker.properties.name}</p>`))
           .addTo($map);
 
-        bounds.extend(marker.geometry.coordinates);
+        bounds.extend((marker.geometry.coordinates as [number, number]));
       }
     });
     $map.resize();
@@ -192,19 +199,20 @@ class VenuesListView extends React.Component<IPropsType, IStateType> {
   }
 
   public componentDidMount() {
-    mapboxgl.accessToken = 'pk.eyJ1IjoicmliYXJyYWNsIiwiYSI6ImNqems3dW85bTAwZmUzbnF0a2xubnl5ejUifQ.tfPmGSbHYdh2nMA6Fmxcxw';
+    // mapboxgl.accessToken = 'pk.eyJ1IjoicmliYXJyYWNsIiwiYSI6ImNqems3dW85bTAwZmUzbnF0a2xubnl5ejUifQ.tfPmGSbHYdh2nMA6Fmxcxw';
     this.map = new mapboxgl.Map({
+      accessToken: 'pk.eyJ1IjoicmliYXJyYWNsIiwiYSI6ImNqems3dW85bTAwZmUzbnF0a2xubnl5ejUifQ.tfPmGSbHYdh2nMA6Fmxcxw',
       container: 'map',
       style: 'mapbox://styles/mapbox/streets-v11',
       center: [-70.593536, -33.509243],
-      zoom: 9,
+      zoom: 10,
       trackResize: true,
     });
+    this.map.addControl(new mapboxgl.NavigationControl(), 'bottom-right');
 
     $("a[href='#tab_2']").on('shown.bs.tab', (e) => {
       this.onChangeTab();
     });
-
   }
 
 
@@ -212,9 +220,6 @@ class VenuesListView extends React.Component<IPropsType, IStateType> {
     if(this.props.venues.pagination !== prevProps.venues.pagination){
       window.scrollTo(0, 0);
     }
-
-
-
   }
 
   public componentDidCatch(error: Error, errorInfo: ErrorInfo): void {
@@ -265,112 +270,119 @@ class VenuesListView extends React.Component<IPropsType, IStateType> {
                 </button>
               </div>
             </div>
-            <div className="nav-tabs-custom">
-              <ul className="nav nav-tabs">
-                <li className="active">
-                  <a href="#tab_1" data-toggle="tab" aria-expanded="true">Listado</a>
-                </li>
-                <li>
-                  <a href="#tab_2" data-toggle="tab" aria-expanded="true">Mapa</a>
-                </li>
-              </ul>
-              <div className="tab-content">
-                <div className="tab-pane active" id="tab_1">
-                  <div className="box-body table-responsive no-padding">
-                    <table className="table table-andes table-striped">
-                      <thead>
-                      <tr>
-                        <th style={{width: '50%'}} className="middle">Nombre</th>
-                        <th style={{width: '10%'}} className="middle-center hidden-xs">Ubicación</th>
-                        <th style={{width: '10%'}} className="middle-center hidden-xs">Distribuidor</th>
-                        <th style={{width: '10%'}} className="middle">Asignaciones</th>
-                        <th style={{width: '20%'}} className="middle hidden-xs">Modificado</th>
+            <div className="box-body no-padding">
+              <div className="nav-tabs-custom">
+                <ul className="nav nav-tabs">
+                  <li className="active">
+                    <a href="#tab_1" data-toggle="tab" aria-expanded="true">Listado</a>
+                  </li>
+                  <li>
+                    <a href="#tab_2" data-toggle="tab" aria-expanded="true">Mapa</a>
+                  </li>
+                </ul>
+                <div className="tab-content">
+                  <div className="tab-pane active" id="tab_1">
+                    <div className="box-body table-responsive no-padding">
+                      <table className="table table-andes table-striped">
+                        <thead>
+                        <tr>
+                          <th style={{width: '50%'}} className="middle">Nombre</th>
+                          <th style={{width: '10%'}} className="middle-center hidden-xs">Ubicación</th>
+                          <th style={{width: '10%'}} className="middle-center hidden-xs">Distribuidor</th>
+                          <th style={{width: '10%'}} className="middle">Asignaciones</th>
+                          <th style={{width: '20%'}} className="middle hidden-xs">Modificado</th>
+                          {
+                            hasPermission(window.user, 'changeVenue') ?
+                              <th style={{width: '1%'}} className="width-10"/> : null
+                          }
+                          {
+                            hasPermission(window.user, 'deleteVenue') ?
+                              <th style={{width: '1%'}} className="width-10"/> : null
+                          }
+                        </tr>
+                        </thead>
+                        <tbody>
                         {
-                          hasPermission(window.user, 'changeVenue') ?
-                            <th style={{width: '1%'}} className="width-10"/> : null
+                          venues.map((venue: IVenue) => {
+                            const canDelete = venue.users && venue.users.length === 0 && venue.participants && venue.participants.length === 0;
+                            return (
+                              <tr
+                                key={venue._id}
+                                id={`venue-${venue._id}`}
+                                className={'background-transition'}
+                              >
+                                <td className="middle">{venue.name}<br/>
+                                  {
+                                    venue.company ? <span className={'text-sm text-muted'}>{venue.company.name}</span> : null
+                                  }
+                                </td>
+                                <td className="middle-center">{venue.lat}, {venue.lng}</td>
+                                <td className="middle-center  hidden-xs">
+                                  {
+                                    venue.type === 'distributor' ?
+                                      <i className="fa fa-check-circle text-green"/>
+                                      : <i className="fa fa-times-circle text-blue"/>
+                                  }
+                                </td>
+                                <td className="text-sm">
+                                  Usuarios: {venue.users ? venue.users.length : 0}<br/>
+                                  Revisiones: {venue.participants ? venue.participants.length : 0}<br/>
+                                </td>
+                                <td className="middle hidden-xs">
+                                  {
+                                    moment(venue.updatedAt).format('LLL')
+                                  }
+                                </td>
+                                {
+                                  hasPermission(window.user, 'changeVenue') ?
+                                    <td
+                                      className="middle text-blue pointer"
+                                      onClick={() => this.updateVenue(venue)}>
+                                      <i className="fa fa-pencil"/>
+                                    </td> : null
+                                }
+                                {
+                                  hasPermission(window.user, 'deleteVenue') ?
+                                    <td
+                                      className={canDelete ? 'middle text-red pointer' : 'middle text-muted not-allowed'}
+                                      onClick={canDelete ? () => this.deleteVenue(venue) : undefined}
+                                    >
+                                      <i className="fa fa-minus-circle"/>
+                                    </td> : null
+                                }
+                              </tr>
+                            );
+                          })
                         }
-                        {
-                          hasPermission(window.user, 'deleteVenue') ?
-                            <th style={{width: '1%'}} className="width-10"/> : null
-                        }
-                      </tr>
-                      </thead>
-                      <tbody>
-                      {
-                        venues.map((venue: IVenue) => {
-                          const canDelete = venue.users && venue.users.length === 0 && venue.participants && venue.participants.length === 0;
-                          return (
-                            <tr
-                              key={venue._id}
-                              id={`venue-${venue._id}`}
-                              className={'background-transition'}
-                            >
-                              <td className="middle">{venue.name}<br/>
-                                {
-                                  venue.company ? <span className={'text-sm text-muted'}>{venue.company.name}</span> : null
-                                }
-                              </td>
-                              <td className="middle">{venue.lat}, {venue.lng}</td>
-                              <td className="middle-center  hidden-xs">
-                                {
-                                  venue.type === 'distributor' ?
-                                    <i className="fa fa-check-circle text-green"/>
-                                    : <i className="fa fa-times-circle text-blue"/>
-                                }
-                              </td>
-                              <td className="text-sm">
-                                Usuarios: {venue.users ? venue.users.length : 0}<br/>
-                                Revisiones: {venue.participants ? venue.participants.length : 0}<br/>
-                              </td>
-                              <td className="middle hidden-xs">
-                                {
-                                  moment(venue.updatedAt).format('LLL')
-                                }
-                              </td>
-                              {
-                                hasPermission(window.user, 'changeVenue') ?
-                                  <td
-                                    className="middle text-blue pointer"
-                                    onClick={() => this.updateVenue(venue)}>
-                                    <i className="fa fa-pencil"/>
-                                  </td> : null
-                              }
-                              {
-                                hasPermission(window.user, 'deleteVenue') ?
-                                  <td
-                                    className={canDelete ? 'middle text-red pointer' : 'middle text-muted not-allowed'}
-                                    onClick={canDelete ? () => this.deleteVenue(venue) : undefined}
-                                  >
-                                    <i className="fa fa-minus-circle"/>
-                                  </td> : null
-                              }
-                            </tr>
-                          );
-                        })
-                      }
-                      </tbody>
-                    </table>
+                        </tbody>
+                      </table>
+                    </div>
                   </div>
-                  {
-                    pagination.pages > 1 &&
-                    <div className="box-footer text-right">
-                      <Paginator changePage={this.changePage} page={pagination.page} pages={pagination.pages} />
-                    </div>
-                  }
-                  {
-                    loading &&
-                    <div className="overlay">
-                      <i className="fa fa-spinner fa-spin text-purple"/>
-                    </div>
-                  }
-                </div>
-                <div className="tab-pane" id="tab_2">
-                  <div id="map" style={{position: "relative", width:"100%", height: '60vh'}}></div>
+                  <div className="tab-pane" id="tab_2">
+                    <div
+                      id="map"
+                      style={{
+                        position: "relative",
+                        width: "100%",
+                        height: '60vh'
+                      }}
+                    />
+                  </div>
                 </div>
               </div>
             </div>
-
-
+            {
+              pagination.pages > 1 &&
+              <div className="box-footer text-right">
+                <Paginator changePage={this.changePage} page={pagination.page} pages={pagination.pages} />
+              </div>
+            }
+            {
+              loading &&
+              <div className="overlay">
+                <i className="fa fa-spinner fa-spin text-purple"/>
+              </div>
+            }
           </div>
           <ModalView />
         </section>
@@ -384,10 +396,13 @@ class VenuesListView extends React.Component<IPropsType, IStateType> {
       lat: 0,
       lng: 0,
       name: '',
+      abbreviation: '',
       type: 'receiver',
       sendTo: [],
+      sendToDays: [],
       receiveFrom: [],
       shippingCarriers: [],
+      shippingMaxDays: 5,
       receptionCarriers: []
     });
     this.props.loadDataAction(
@@ -415,12 +430,15 @@ class VenuesListView extends React.Component<IPropsType, IStateType> {
     this.props.changeTempVenueAction({
       _id: venue._id,
       name: venue.name,
+      abbreviation: venue.abbreviation,
       lat: venue.lat,
       lng: venue.lng,
       company: venue.company,
       region: venue.region,
       type: venue.type ? venue.type : 'receiver',
       sendTo: venue.sendTo ? venue.sendTo : [],
+      sendToDays: venue.sendToDays ? venue.sendToDays : [],
+      shippingMaxDays : venue.shippingMaxDays,
       receiveFrom: venue.receiveFrom ? venue.receiveFrom : [],
       shippingCarriers: venue.shippingCarriers ? venue.shippingCarriers : [],
       receptionCarriers: venue.receptionCarriers ? venue.receptionCarriers : []
@@ -439,6 +457,8 @@ class VenuesListView extends React.Component<IPropsType, IStateType> {
     const {tempVenue} = this.props.venues;
     if (!tempVenue.name || !tempVenue.name.trim()) {
       swal('Editar sucursal', 'El nombres es requerido', 'error');
+    } else if (!tempVenue.abbreviation || !tempVenue.abbreviation.trim()) {
+      swal('Editar sucursal', 'Una abreviación/sigla del nombre es requerida', 'error');
     } else if (!tempVenue.company || !tempVenue.company._id) {
       swal('Editar sucursal', 'La empresa es requerida', 'error');
     } else {

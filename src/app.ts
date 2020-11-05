@@ -9,6 +9,7 @@ import * as fileStreamRotator from 'file-stream-rotator';
 import * as kue from 'kue';
 import * as morgan from 'morgan';
 import * as multer from 'multer';
+import * as Bull from 'bull';
 import * as passport from 'passport';
 import * as passportLocal from 'passport-local';
 import * as path from 'path';
@@ -25,6 +26,9 @@ import {requestRouter} from './request/router';
 import InventoryQueue from './inventory/taks/inventory.task';
 import Middlewares from './middlewares/middlewares';
 import redisClient, {createRedisClient} from './services/redis.service';
+import {planningRouter} from "./planning/router";
+import BillingQueue from "./billing/tasks/billing.task";
+import { billingRouter } from './billing/router';
 
 // Create Express server
 const app = express();
@@ -65,12 +69,14 @@ Raven.config(process.env.SENTRY_DNS, {
   dataCallback: (data) => {
     const stacktrace = data.exception && data.exception[0].stacktrace;
 
-    if (stacktrace && stacktrace.frames) {
-      stacktrace.frames.forEach((frame: any) => {
-        if (frame.filename.startsWith('/')) {
-          frame.filename = 'app:///' + path.relative(root, frame.filename);
-        }
-      });
+    if (stacktrace) {
+      if (stacktrace.frames) {
+        stacktrace.frames.forEach((frame: any) => {
+          if (frame.filename.startsWith('/')) {
+            frame.filename = 'app:///' + path.relative(root, frame.filename);
+          }
+        });
+      }
     }
 
     return data;
@@ -155,7 +161,7 @@ passport.use(new LocalStrategy({ usernameField: 'username' }, (username, passwor
   User.findOne({
     username: username.toLowerCase(),
     active: true
-  }, (err, user: any) => {
+  }, (err: any, user: any) => {
     if (err) { return done(err); }
     if (!user) {
       return done(undefined, false, { message: `username ${username} not found.` });
@@ -172,7 +178,7 @@ passport.use(new LocalStrategy({ usernameField: 'username' }, (username, passwor
 
 passport.serializeUser((User as any).serializeUser());
 // passport.deserializeUser((User as any).deserializeUser());
-passport.deserializeUser(async (email, done) => {
+passport.deserializeUser(async (email: string, done) => {
   try {
     const user = await User.findOne({email}).populate([{
       path: 'userPermissions',
@@ -243,8 +249,10 @@ app.use(Middlewares.context);
 // Routes
 app.use('/', appRouter);
 app.use('/', formRouter);
+app.use('/', planningRouter);
 app.use('/', inventoryRouter);
 app.use('/', requestRouter);
+app.use('/', billingRouter);
 app.use('/api/v1', jwtRouter);
 
 /* queues */
@@ -255,6 +263,64 @@ export const queue = kue.createQueue({
     }
   }
 });
+
+const billingQueue = new Bull('billing', {
+  createClient: function () {
+    return createRedisClient();
+  },
+  prefix: '{andes}'
+});
+
+billingQueue.process(async () => {
+  await new BillingQueue().processBilling()
+});
+
+const addCronTask = async () => {
+  try {
+    // let job = await billingQueue.removeRepeatable('task', {cron: '0 47 6 * * 4'});
+    let jobs = await billingQueue.getRepeatableJobs();
+    if (jobs && jobs.length){
+      for(const job of jobs){
+        await billingQueue.removeRepeatableByKey(job.key);
+        console.log(`${jobs[0].key} Removida`)
+      }
+    }
+  } catch (error) {
+    console.log(error);
+    console.log("NO existen tareas")
+  }
+  if (process.env.ENV === 'development') {
+    // billingQueue.add({}, {repeat: {cron: '0 */1 * * *'}, jobId: 'billing'});
+    // billingQueue.add({}, {repeat: {cron: '*/10 * * * *'}, jobId: 'billing'});
+  } else if (process.env.ENV === 'production') {
+    billingQueue.add({}, {repeat: {cron: '0 1 1 * *'}, jobId: 'billing'});
+  }
+};
+addCronTask();
+//
+/*
+export const queueScheduler = kueScheduler.createQueue({
+  redis: {
+    createClientFactory: function () {
+      return createRedisClient();
+    }
+  }
+});
+
+const job = queueScheduler
+  .createJob('billing', {})
+  .attempts(3)
+  .priority('normal')
+  .unique('billing');
+
+//schedule it to run every 2 seconds
+queueScheduler.every('30 seconds', job);
+// queueScheduler.every('30 minutes', job);
+
+//somewhere process your scheduled jobs
+queueScheduler.process('billing', new BillingQueue().processBilling);
+
+*/
 
 new EmailQueue(queue).run();
 new InventoryQueue(queue).run();

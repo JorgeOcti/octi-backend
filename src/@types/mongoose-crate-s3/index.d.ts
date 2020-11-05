@@ -4,7 +4,9 @@ declare module 'mongoose-crate-s3' {
     path: string;
     originalname: string;
     name: string;
+    team: string;
     company: string;
+    createdAt: string;
   }
   interface IOptions {
     key: string;

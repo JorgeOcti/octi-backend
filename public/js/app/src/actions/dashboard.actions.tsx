@@ -15,10 +15,14 @@ export interface IDashboardState {
   loading: boolean;
   source: CancelTokenSource | null;
   participants: any[];
+  companies: any[];
   car: ICar | null;
   carEvents: any;
-  participantsPerDate: any[];
+  participantsReceivedPerDate: any[];
+  participantsSentPerDate: any[];
   carsPerDate: any[];
+  planningPerDate: any[];
+  planningProcessPerDate: any[];
   carsByVenue: any[];
   searchText: string;
   searchFrom: string,
@@ -579,20 +583,28 @@ export function getParticipant(id: string) {
 interface ILoadParticipantsPerDate {
   type: '/DASHBOARD/LOAD_PARTICIPANTS_PER_DATE';
   payload: {
-    participantsPerDate: any;
+    companies: any[];
+    participantsReceivedPerDate: any;
+    participantsSentPerDate: any;
     carsPerDate: any;
+    planningPerDate: any;
+    planningProcessPerDate: any;
     carsByVenue: any;
     totalCars: number;
     participantPerRange: any;
   };
 }
 
-export function loadParticipantsPerDateAction(participantsPerDate: any, carsPerDate: any, totalCars: number, carsByVenue: any, participantPerRange: any): ILoadParticipantsPerDate {
+export function loadParticipantsPerDateAction(companies: any[], participantsReceivedPerDate: any, participantsSentPerDate:any, carsPerDate: any, planningPerDate: any, planningProcessPerDate:any, totalCars: number, carsByVenue: any, participantPerRange: any): ILoadParticipantsPerDate {
   return {
     type: '/DASHBOARD/LOAD_PARTICIPANTS_PER_DATE',
     payload: {
-      participantsPerDate,
+      companies,
+      participantsReceivedPerDate,
+      participantsSentPerDate,
       carsPerDate,
+      planningPerDate,
+      planningProcessPerDate,
       carsByVenue,
       totalCars,
       participantPerRange
@@ -600,14 +612,14 @@ export function loadParticipantsPerDateAction(participantsPerDate: any, carsPerD
   };
 }
 
-export function getParticipantsPerDateAction() {
+export function getParticipantsPerDateAction(companies?:string) {
   return (dispatch: Dispatch<DashboardReduxAction>) => {
     const api: ApiService = new ApiService();
     dispatch(cancelRequestAction(api.getSource()));
     dispatch(isLoadingAction(true));
-    api.getParticipantsPerDate()
+    api.getParticipantsPerDate(companies)
       .then((response: AxiosResponse) => {
-        dispatch(loadParticipantsPerDateAction(response.data.participants, response.data.cars, response.data.totalCars, response.data.carsByVenue, response.data.participantPerRange));
+        dispatch(loadParticipantsPerDateAction(response.data.companies, response.data.participantsReceived, response.data.participantsSent, response.data.cars, response.data.planning, response.data.planningProcess, response.data.totalCars, response.data.carsByVenue, response.data.participantPerRange));
         dispatch(isLoadingAction(false));
       })
       .catch((err: AxiosError) => {

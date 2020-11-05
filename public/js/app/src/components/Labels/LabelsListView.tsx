@@ -8,7 +8,8 @@ import * as swal from 'sweetalert';
 import {IInventoryLabel} from '../../../../../../src/interfaces/inventoryLabel.interface';
 import {
   changeLabelAction,
-  changeTempLabelAction, createLabelAction,
+  changeTempLabelAction,
+  createLabelAction,
   deleteLabelAction,
   getLabelsAction,
   ILabelsState,
@@ -22,6 +23,7 @@ import ModalView from '../Modal/ModalView';
 import BootstrapSwitch from '../Utils/BootstrapSwitch';
 import Paginator from '../Utils/Paginator';
 import LabelFormView from './LabelFormView';
+import {CarStatusType} from "../Inventory/InventoryDetailView";
 
 interface IPropsType extends RouteComponentProps<{ ticket: string }> {
   dispatch: Dispatch<LabelsReduxAction>;
@@ -43,21 +45,6 @@ declare let window: IWindow;
 
 class LabelsListView extends React.Component<IPropsType, IStateType> {
 
-  private statusText: any = {
-    pending: 'Pendiente',
-    found: 'Encontrado',
-    leftover: 'Sobrante',
-    missing: 'Faltante',
-    reported: 'Reportado'
-  };
-
-  private classLabelStatus: any = {
-    pending: 'label-info',
-    found: 'label-success',
-    missing: 'label-danger',
-    leftover: 'label-warning',
-    reported: 'label-default'
-  };
   private socket: SocketIOClient.Socket;
 
   constructor(props: IPropsType) {
@@ -120,7 +107,7 @@ class LabelsListView extends React.Component<IPropsType, IStateType> {
   }
 
   public render(): React.ReactElement<IPropsType> {
-    const {loading, labels, pagination} = this.props.labels;
+    const {loading, labels, pagination, inventorySettings} = this.props.labels;
     return (
       <AppContainer title="" cMenu="2" cSubMenu="2.2" cAction="Listado">
         <section className="content">
@@ -136,6 +123,7 @@ class LabelsListView extends React.Component<IPropsType, IStateType> {
                 <thead>
                   <tr>
                     <th className="middle">Nombre</th>
+                    <th className="middle" style={{width: '100px'}}>Agregar opción en</th>
                     <th className="middle" style={{width: '80px'}}>Envia a</th>
                     <th className="middle-center" style={{width: '80px'}}>Activo</th>
                     <th style={{width: '1%'}} className="width-10"/>
@@ -150,10 +138,26 @@ class LabelsListView extends React.Component<IPropsType, IStateType> {
                           key={label._id} id={`label-${label._id}`}
                           className={`background-transition ${!label.active ? 'text-muted' : ''}`}
                         >
-                          <td className="middle text-ellipsis">{label.name}</td>
+                          <td className="middle text-ellipsis">
+                            {label.name}
+                            <p className={"text-muted text-sm"}>{label.description}</p>
+                          </td>
+                          <td className="middle" style={{lineHeight: 1.6}}>
+                            {
+                              label.affected.map((aff, key)=>(
+                                <React.Fragment key={key}>
+                                  <label
+                                    className={`label label-${inventorySettings[`${aff}Class` as CarStatusType]}`}
+                                  >
+                                    {inventorySettings[aff as CarStatusType]}
+                                  </label><br />
+                                  </React.Fragment>
+                              ))
+                            }
+                          </td>
                           <td className="middle">
-                            <label className={`label ${this.classLabelStatus[label.sendTo]}`}>
-                              {this.statusText[label.sendTo]}
+                            <label className={`label label-${inventorySettings[`${label.sendTo}Class` as CarStatusType]}`}>
+                              {inventorySettings[label.sendTo as CarStatusType]}
                             </label>
                           </td>
                           <td className="middle-center" style={{paddingTop: '15px'}}>
@@ -209,6 +213,7 @@ class LabelsListView extends React.Component<IPropsType, IStateType> {
     this.props.changeTempLabelAction({
       _id: '',
       name: '',
+      description: '',
       color: '',
       affected: [],
       sendTo: '',

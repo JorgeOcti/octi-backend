@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.WebError = exports.APIError = void 0;
 // import * as Raven from 'raven';
 /**
  * @extends Error

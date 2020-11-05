@@ -18,6 +18,7 @@ import * as swal from 'sweetalert';
 import * as XLSX from 'xlsx';
 import {IInventoryCar} from '../../../../../../src/interfaces/inventory.interface';
 import {IInventoryLabel} from '../../../../../../src/interfaces/inventoryLabel.interface';
+import {IInventorySettting} from '../../../../../../src/interfaces/teamSetting.interface';
 import {
   actionSetLabel,
   addCommentAction,
@@ -51,6 +52,8 @@ import Row from '../Utils/Row';
 import InventoryCarComments from './InventoryCarComments';
 
 declare let window: IWindow;
+
+export type CarStatusType = Extract<keyof IInventorySettting, string>;
 
 interface IPropsType extends RouteComponentProps<{ id: string, tab?: string }> {
   inventories: IInventoryState;
@@ -131,14 +134,6 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
     deleted: 'fa-close',
   };
 
-  private classLabelStatus: any = {
-    pending: 'label-info',
-    found: 'label-success',
-    missing: 'label-danger',
-    leftover: 'label-warning',
-    reported: 'label-default'
-  };
-
   private paginationOption: any = {
     // paginationSize: 4,
     showTotal: true,
@@ -163,7 +158,7 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
     order: 'asc'
   }];
 
-  private columns: any[] = [];
+  private readonly columns: any[] = [];
 
   private socket: SocketIOClient.Socket;
 
@@ -196,7 +191,7 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
     if (tab && tab === 'detail') {
       this.state.tab = 'detail';
     }
-    this.columns = [ {
+    this.columns = [{
       dataField: 'selected',
       text: '',
       // headerFormatter: this.selectedHeaderFormatter,
@@ -272,12 +267,13 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
       dataField: 'labelName',
       text: 'Etiqueta',
       sort: true,
-      classes: 'middle hidden-xs text-ellipsis',
-      filterValue: (cell: any, row: any) => `${cell ? cell.name : ''}`,
+      classes: 'middle hidden-xs',
+      filterValue: (cell: any) => `${cell ? cell.name : ''}`,
       formatter: this.labelFormatter,
       headerClasses: 'middle hidden-xs',
       style: {
-        width: '18%'
+        width: '18%',
+        maxWidth: '18%'
       },
       headerStyle: {
         verticalAlign: 'top'
@@ -429,7 +425,7 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
       return (
         <div className="row">{
           row.images.map((image: any, index: number) => (
-            <div key={image._id} className={'col-md-3 images-25 text-center'} style={{display: index === 0 ? '' : 'none'}}>
+            <div key={image._id} className={'col-md-12 images-25 text-center'} style={{display: index === 0 ? '' : 'none'}}>
               <a href={decodeURI(image.file.url)}
                  data-toggle="lightbox"
                  data-gallery={row._id}
@@ -462,7 +458,7 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
                 data-toggle="tooltip"
                 data-placement="top"
                 title="Este vehículo no fue encontrado en la sucursal esperada."
-                className="fa fa-warning text-red pointer"
+                className="fa fa-warning text-yellow pointer"
               /> {` `}
             </React.Fragment>
             : null
@@ -470,11 +466,21 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
         {
           row.patent && row.patent.length ?
             <React.Fragment>
-              <CopyText value={row.patent}><strong>{row.patent}</strong></CopyText> <CopyText value={row.vin} className="text-muted text-sm">{row.vin}</CopyText>
-            </React.Fragment>
-            : <CopyText value={row.vin}><strong>{row.vin}</strong></CopyText>
+              <CopyText value={row.patent}><strong>{row.patent}</strong></CopyText>&nbsp;
+              <CopyText value={row.vin} className="text-muted text-sm">{row.vin}</CopyText>
+            </React.Fragment> :
+            <CopyText value={row.vin}><strong>{row.vin}</strong></CopyText>
         }<br/>
         <span className="text-muted text-sm">{cell} / {row.denomination}</span>
+        {
+          row.internalNumber ? <React.Fragment><br/><span className="text-muted text-sm">{row.internalNumber}</span></React.Fragment> : null
+        }
+        {
+          row.color ?
+            <React.Fragment><br/>
+              <span className="text-muted text-sm">{row.color}</span>
+            </React.Fragment> : null
+        }
         <div className="visible-xs">
           {this.labelFormatter(cell, row)}
         </div>
@@ -493,15 +499,17 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
     );
   }
 
-  public statusFormatter(cell: any, row: any) {
+  public statusFormatter(cell: CarStatusType) {
+    const {inventorySettings} = this.props.inventories;
+    const className = `${cell}Class` as CarStatusType;
     return (
       <span
-        className={`label ${this.classLabelStatus.hasOwnProperty(cell) ? this.classLabelStatus[cell] : ''}`}
+        className={`label label-${inventorySettings.hasOwnProperty(className) ? inventorySettings[className] : ''}`}
         style={{
           padding: '5px 10px'
         }}
       >
-        {this.statusText.hasOwnProperty(cell) ? this.statusText[cell] : cell}
+        {inventorySettings.hasOwnProperty(cell) ? inventorySettings[cell] : cell}
         </span>
     );
   }
@@ -514,6 +522,7 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
       newLabels.push({
         _id: 'deleted',
         name: 'Eliminar vehículo',
+        description: '',
         sendTo: 'deleted',
         requireCustomText: false,
         isExhibition: false,
@@ -531,7 +540,7 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
           marginLeft: '5px'
         }}>
           <button type="button" className="btn btn-default">
-            <i className="fa fa-fw fa-cogs"/> Opciones
+            <i className="fa fa-fw fa-cogs"/> Etiqueta
           </button>
           <button type="button" className="btn btn-default dropdown-toggle" data-toggle="dropdown">
             <span className="caret"/>
@@ -579,19 +588,47 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
 
   public labelFormatter(cell: any, row: any) {
     if (row.label) {
-      const {sendTo} = row.label;
+      const sendTo = row.label.sendTo;
+      const {inventorySettings} = this.props.inventories;
+      const className = `${sendTo}Class` as CarStatusType;
       return (
-        <span
-          className={
-            `label ${this.classLabelStatus.hasOwnProperty(sendTo) ? this.classLabelStatus[sendTo] : ''}`
+        <React.Fragment>
+          <span
+            className={
+              `label label-${inventorySettings.hasOwnProperty(className) ? inventorySettings[className] : ''}`
+            }
+          >
+            <i className={`fa fa-fw ${this.iconStatus[sendTo]}`}/>
+            {row.label.name}
+          </span>
+          {/*<span*/}
+          {/*   data-toggle="tooltip"*/}
+          {/*   data-placement="top"*/}
+          {/*   title={row.labelText}*/}
+          {/* >*/}
+          {/*   Ver más*/}
+          {/* </span>*/}
+          {
+            row.label.requireCustomText ?
+              <React.Fragment>
+                <p
+                  style={{
+                    paddingTop: "5px",
+                    marginBottom: 0
+                  }}
+                  className={"text-sm"}
+                >
+                  <strong>Datos adicionales:</strong>
+                </p>
+                <p
+                  className={"text-sm text-muted"}
+                >
+                  {row.labelText}
+                </p>
+              </React.Fragment>:
+              ''
           }
-        >
-          <i className={`fa fa-fw ${this.iconStatus[sendTo]}`} />
-          {row.label.name} {row.label.requireCustomText ? <span
-                data-toggle="tooltip"
-                data-placement="top"
-                title={row.labelText}>Ver más</span> : ''}
-        </span>
+        </React.Fragment>
       );
     } else {
       return null;
@@ -607,7 +644,8 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
       filter,
       selectedItems,
       cardTypes,
-      cardProperties
+      cardProperties,
+      inventorySettings
     } = this.props.inventories;
     const { tab, source } = this.state;
     const selected = Object.keys(selectedItems);
@@ -686,10 +724,10 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
           </Row>
           <Row style={{display: tab === 'summary' ? 'block' : 'none'}}>
             <div className="col-md-4 col-lg-4 pointer" onClick={() => this.sendToDetailFilteredByState('found')}>
-              <div className="info-box bg-green">
+              <div className={`info-box bg-${inventorySettings.foundClass}`}>
                 <span className="info-box-icon"><i className="fa fa-check" /></span>
                 <div className="info-box-content">
-                  <span className="info-box-text">Encontrados</span>
+                  <span className="info-box-text">{inventorySettings.found}</span>
                   <span className="info-box-number count">
                     {!loadingDetail && summary.results ? summary.results.found : <i className="fa fa-spinner fa-spin"/>}
                   </span>
@@ -700,16 +738,16 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
                     }} />
                   </div>
                   <span className="progress-description">
-                    {!loadingDetail ? `${percentageFound.toFixed(1)}% encontrados.` : null}
+                    {!loadingDetail ? `${percentageFound.toFixed(1)}% ${inventorySettings.found.toLowerCase()}.` : null}
                   </span>
                 </div>
               </div>
             </div>
             <div className="col-md-4 col-lg-4 pointer" onClick={() => this.sendToDetailFilteredByState('leftover')}>
-              <div className="info-box bg-yellow">
+              <div className={`info-box bg-${inventorySettings.leftoverClass}`}>
                 <span className="info-box-icon"><i className="fa fa-arrow-up" /></span>
                 <div className="info-box-content">
-                  <span className="info-box-text">Sobrantes</span>
+                  <span className="info-box-text">{inventorySettings.leftover}</span>
                   <span className="info-box-number count">
                     {!loadingDetail && summary.results ? summary.results.leftover : <i className="fa fa-spinner fa-spin"/>}
                   </span>
@@ -720,18 +758,18 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
                     }}/>
                   </div>
                   <span className="progress-description">
-                    {!loadingDetail ? `${percentageLeftover.toFixed(1)}% sobrantes.` : null}
+                    {!loadingDetail ? `${percentageLeftover.toFixed(1)}% ${inventorySettings.leftover.toLowerCase()}.` : null}
                   </span>
                 </div>
               </div>
             </div>
             <div className="col-md-4 col-lg-4 pointer" onClick={() => this.sendToDetailFilteredByState('missing')}>
-              <div className="info-box bg-red">
+              <div className={`info-box bg-${inventorySettings.missingClass}`}>
                 <span className="info-box-icon">
                   <i className="fa fa-arrow-down"/>
                 </span>
                 <div className="info-box-content">
-                  <span className="info-box-text">Faltantes</span>
+                  <span className="info-box-text">{inventorySettings.missing}</span>
                   <span className="info-box-number count">
                     {!loadingDetail && summary.results ? summary.results.missing : <i className="fa fa-spinner fa-spin"/>}
                   </span>
@@ -742,7 +780,7 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
                     }} />
                   </div>
                   <span className="progress-description">
-                    {!loadingDetail ? `${percentageMissing.toFixed(1)}% faltantes.` : null}
+                    {!loadingDetail ? `${percentageMissing.toFixed(1)}% ${inventorySettings.missing.toLowerCase()}.` : null}
                   </span>
                 </div>
               </div>
@@ -796,10 +834,10 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
           </Row>
           <Row style={{display: tab === 'detail' ? 'block' : 'none'}}>
             <div className="col-md-6 col-lg-6 pointer" onClick={() => this.sendToDetailFilteredByState('pending')}>
-              <div className="info-box bg-aqua">
+              <div className={`info-box bg-${inventorySettings.pendingClass}`}>
                 <span className="info-box-icon"><i className="fa fa-clock-o" /></span>
                 <div className="info-box-content">
-                  <span className="info-box-text">Pendientes</span>
+                  <span className="info-box-text">{inventorySettings.pending}</span>
                   <span className="info-box-number count">
                     {!loadingDetail && summary.results ? summary.results.pending : <i className="fa fa-spinner fa-spin"/>}
                   </span>
@@ -810,16 +848,16 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
                     }} />
                   </div>
                   <span className="progress-description">
-                    {!loadingDetail ? `${percentagePending.toFixed(1)}% pendientes.` : null}
+                    {!loadingDetail ? `${percentagePending.toFixed(1)}% ${inventorySettings.pending.toLowerCase()}.` : null}
                   </span>
                 </div>
               </div>
             </div>
             <div className="col-md-6 col-lg-6 pointer" onClick={() => this.sendToDetailFilteredByState('reported')}>
-              <div className="info-box bg-gray-dark">
+              <div className={`info-box bg-${inventorySettings.reportedClass}`}>
                 <span className="info-box-icon"><i className="fa fa-exclamation" /></span>
                 <div className="info-box-content">
-                  <span className="info-box-text">Reportados</span>
+                  <span className="info-box-text">{inventorySettings.reported}</span>
                   <span className="info-box-number count">
                     {!loadingDetail && summary.results ? summary.results.reported : <i className="fa fa-spinner fa-spin"/>}
                   </span>
@@ -830,7 +868,7 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
                     }} />
                   </div>
                   <span className="progress-description">
-                    {!loadingDetail ? `${percentageReported.toFixed(1)}% reportados.` : null}
+                    {!loadingDetail ? `${percentageReported.toFixed(1)}% ${inventorySettings.reported.toLowerCase()}.` : null}
                   </span>
                 </div>
               </div>
@@ -911,10 +949,10 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
                           separator=" - "
                           options={Object
                             .keys(this.statusText)
-                            .map((status) => ({
+                            .map((status: CarStatusType ) => ({
                               value: status,
-                              text: this.statusText[status],
-                              className: `label ${this.classLabelStatus[status]}`
+                              text: inventorySettings[status],
+                              className: `label label-${inventorySettings[`${status}Class` as CarStatusType]}`
                             }))}
                           selected={filter.states}
                           onClick={this.filterStatus}
@@ -1104,7 +1142,7 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
           }, {
             cancelToken: source.token,
             onDownloadProgress: (progressEvent) => {
-              const sizeFile = parseInt(progressEvent.srcElement.getResponseHeader('size'), 10);
+              const sizeFile = parseInt(progressEvent.target.getResponseHeader('size'), 10);
               const {loaded} = progressEvent;
               if (sizeFile) {
                 const progress = Math.round((progressEvent.loaded * 100) / sizeFile);
@@ -1132,7 +1170,7 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
             // the URL has been freed."
             window.navigator.msSaveBlob(blob, fileName);
           } else {
-            const blobURL = window.URL.createObjectURL(blob);
+            const blobURL = URL.createObjectURL(blob);
             const tempLink = document.createElement('a');
             tempLink.style.display = 'none';
             tempLink.href = blobURL;
@@ -1147,7 +1185,7 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
             document.body.appendChild(tempLink);
             tempLink.click();
             document.body.removeChild(tempLink);
-            window.URL.revokeObjectURL(blobURL);
+            URL.revokeObjectURL(blobURL);
           }
           this.setState({
             downloadImages: {
@@ -1259,7 +1297,7 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
     }, 100);
   }
 
-  private clearFilter() {
+  private clearFilter(): void {
     this.props.inventoryDetailChangeFilter({
       venues: [],
       states: [],
@@ -1270,7 +1308,7 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
     $('#cars').val('');
   }
 
-  private handleChangeSearchText(e: React.ChangeEvent<HTMLInputElement>) {
+  private handleChangeSearchText(e: React.ChangeEvent<HTMLInputElement>): void {
     e.preventDefault();
     const value = e.target.value.trim();
     const {filter} = this.props.inventories;
@@ -1294,7 +1332,7 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
     });
   }
 
-  private selectedHeaderFormatter() {
+  private selectedHeaderFormatter(): React.ReactElement<IPropsType> | null  {
     return (
       <React.Fragment>
         <Checkbox
@@ -1331,7 +1369,7 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
     };
   }
 
-  private carComments(inventoryCar: IInventoryCar) {
+  private carComments(inventoryCar: IInventoryCar): void {
     const { inventories} = this.props;
     this.props.updateCommentsAction(inventoryCar);
     setTimeout(() => {
@@ -1350,6 +1388,7 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
   private xlsExport(status: string[]) {
     const {detail} = this.props.inventories;
     const data: any = [];
+    const {inventorySettings} = this.props.inventories;
     // Order data
     if (detail && detail.cars && detail.cars.length) {
       for (const car of detail.cars) {
@@ -1371,7 +1410,7 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
             ['Comentario etiqueta']: car.label && car.label.requireCustomText && car.labelText ? car.labelText : '-',
             ['Imágenes']: car.images.length ? car.images.length : '-',
             // ['Imágenes']: car.images.length ? car.images.map((image: any) => `${image.file.url}`).join('\n') : '-',
-            Status: this.statusText.hasOwnProperty(car.status) ? this.statusText[car.status] : '-'
+            Status: inventorySettings.hasOwnProperty(car.status) ? inventorySettings[car.status as CarStatusType] : '-'
           });
         }
       }
@@ -1386,7 +1425,7 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
   }
 
   private updateVenueChart(detailByVenue: IDetailByVenue[], update?: boolean) {
-    const {loadingDetail, detail} = this.props.inventories;
+    const {loadingDetail, detail, inventorySettings} = this.props.inventories;
     const venuesNames: string[] = [];
     const venuesFound: any[] = [];
     const venuesPending: any[] = [];
@@ -1444,7 +1483,7 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
       legend: {
         // x: 'center',
         bottom: 50,
-        data: ['Encontrados', 'Sobrantes', 'Faltantes', 'Pendientes', 'Reportados']
+        data: [inventorySettings.found, inventorySettings.leftover, inventorySettings.missing, inventorySettings.pending, inventorySettings.reported]
       },
       xAxis: {
         type: 'category',
@@ -1497,10 +1536,10 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
         right: 10,
         containLabel: true
       },
-      color: ['#00aa51', '#ff9600', '#f1392c', '#00c2f4', '#96a4b3'],
+      color: [inventorySettings.foundColor, inventorySettings.leftoverColor, inventorySettings.missingColor, inventorySettings.pendingColor, inventorySettings.reportedColor],
       series: [{
         data: venuesFound,
-        name: 'Encontrados',
+        name: inventorySettings.found,
         type: 'bar',
         stack: 'cars',
         barMaxWidth: 100,
@@ -1509,10 +1548,10 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
             ...this.labelOption.normal
           }
         },
-        barGap: 0
+        barGap: "0"
       }, {
         data: venuesLeftover,
-        name: 'Sobrantes',
+        name: inventorySettings.leftover,
         type: 'bar',
         stack: 'cars',
         barMaxWidth: 100,
@@ -1522,10 +1561,10 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
 
           }
         },
-        barGap: 0
+        barGap: "0"
       }, {
         data: venuesMissing,
-        name: 'Faltantes',
+        name: inventorySettings.missing,
         type: 'bar',
         stack: 'cars',
         barMaxWidth: 100,
@@ -1534,10 +1573,10 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
             ...this.labelOption.normal
           }
         },
-        barGap: 0
+        barGap: "0"
       }, {
         data: venuesPending,
-        name: 'Pendientes',
+        name: inventorySettings.pending,
         type: 'bar',
         stack: 'cars',
         barMaxWidth: 100,
@@ -1547,10 +1586,10 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
             ...this.labelOption.normal
           }
         },
-        barGap: 0
+        barGap: "0"
       }, {
         data: venuesReported,
-        name: 'Reportados',
+        name: inventorySettings.reported,
         type: 'bar',
         stack: 'cars',
         barMaxWidth: 100,
@@ -1559,7 +1598,7 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
             ...this.labelOption.normal
           }
         },
-        barGap: 0
+        barGap: "0"
       }]
     };
     if (!update) {
@@ -1595,7 +1634,7 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
   }
 
   private updateBrandChart(detailByBrand: IDetailByBrand[], update?: boolean) {
-    const {loadingDetail, detail} = this.props.inventories;
+    const {loadingDetail, detail, inventorySettings} = this.props.inventories;
     const brandNames: string[] = [];
     const brandFound: any[] = [];
     const brandPending: any[] = [];
@@ -1638,7 +1677,7 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
       legend: {
         // x: 'center',
         bottom: 50,
-        data: ['Encontrados', 'Sobrantes', 'Faltantes', 'Pendientes', 'Reportados']
+        data: [inventorySettings.found, inventorySettings.leftover, inventorySettings.missing, inventorySettings.pending, inventorySettings.reported]
       },
       xAxis: {
         type: 'category',
@@ -1676,42 +1715,42 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
         right: 10,
         containLabel: true
       },
-      color: ['#00aa51', '#ff9600', '#f1392c', '#00c2f4', '#96a4b3'],
+      color: [inventorySettings.foundColor, inventorySettings.leftoverColor, inventorySettings.missingColor, inventorySettings.pendingColor, inventorySettings.reportedColor],
       series: [{
         data: brandFound,
-        name: 'Encontrados',
+        name: inventorySettings.found,
         type: 'bar',
         stack: 'cars',
         barMaxWidth: 100,
-        barGap: 0
+        barGap: "0"
       }, {
         data: brandLeftover,
-        name: 'Sobrantes',
+        name: inventorySettings.leftover,
         type: 'bar',
         stack: 'cars',
         barMaxWidth: 100,
-        barGap: 0
+        barGap: "0"
       }, {
         data: brandMissing,
-        name: 'Faltantes',
+        name: inventorySettings.missing,
         type: 'bar',
         stack: 'cars',
         barMaxWidth: 100,
-        barGap: 0
+        barGap: "0"
       }, {
         data: brandPending,
-        name: 'Pendientes',
+        name: inventorySettings.pending,
         type: 'bar',
         stack: 'cars',
         barMaxWidth: 100,
-        barGap: 0
+        barGap: "0"
       }, {
         data: brandReported,
-        name: 'Reportados',
+        name: inventorySettings.reported,
         type: 'bar',
         stack: 'cars',
         barMaxWidth: 100,
-        barGap: 0
+        barGap: "0"
       }]
     };
     if (!update) {
@@ -1766,9 +1805,13 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
 
   private labelStatus(option: string): React.ReactElement<IPropsType> | null {
     if (option === 'finalized') {
-      return <span className="label label-success" style={{padding: '5px 10px', fontSize: '11px'}}><i className="fa fa-fw fa-check"/> Finalizado</span>;
+      return <span className="label label-success" style={{
+        padding: '5px 10px', fontSize: '11px'
+      }}><i className="fa fa-fw fa-check"/> Finalizado</span>;
     } else if (option === 'inProcess') {
-      return <span className="label label-primary" style={{padding: '5px 10px', fontSize: '11px'}}><i className="fa fa-fw fa-spin fa-spinner"/> En progreso</span>;
+      return <span className="label label-primary" style={{
+        padding: '5px 10px', fontSize: '11px'
+      }}><i className="fa fa-fw fa-spin fa-spinner"/> En progreso</span>;
     } else {
       return null;
     }

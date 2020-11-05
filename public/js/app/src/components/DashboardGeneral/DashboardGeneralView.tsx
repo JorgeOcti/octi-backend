@@ -8,15 +8,17 @@ import {Dispatch} from 'redux';
 import {DashboardReduxAction, getParticipantsPerDateAction, IDashboardState} from '../../actions/dashboard.actions';
 import AppContainer from '../../container/AppContainer';
 import Row from '../Utils/Row';
+import BootstrapSelect from "../Utils/BootstrapSelect";
 
 interface IPropsType extends RouteComponentProps<{ ticket: string }> {
   dispatch: Dispatch<DashboardReduxAction>;
   dashboard: IDashboardState;
 
-  getParticipantsPerDateAction(): void;
+  getParticipantsPerDateAction(companies?:string): void;
 }
 
 interface IStateType {
+  selectedCompanies: any[];
   error: Error | null;
 }
 
@@ -27,6 +29,10 @@ class DashboardGeneralView extends React.Component<IPropsType, IStateType> {
   //   dispatch: PropTypes.func.isRequired,
   //   getParticipantsPerDateAction: PropTypes.func.isRequired
   // };
+  readonly state = {
+    error: null,
+    selectedCompanies: [""]
+  };
 
   participantsPerDayChart: echarts.ECharts;
   participantsRangeChart: echarts.ECharts;
@@ -40,6 +46,7 @@ class DashboardGeneralView extends React.Component<IPropsType, IStateType> {
     this.updateParticipantsChart = this.updateParticipantsChart.bind(this);
     this.updateCarsChart = this.updateCarsChart.bind(this);
     this.updateChartParticipantRange = this.updateChartParticipantRange.bind(this);
+    this.filterCompanies = this.filterCompanies.bind(this);
   }
 
   public componentWillMount(): void {
@@ -71,7 +78,7 @@ class DashboardGeneralView extends React.Component<IPropsType, IStateType> {
     const {loading} = this.props.dashboard;
     if (!loading) {
       this.updateParticipantsChart();
-      this.updateCarsChart();
+      // this.updateCarsChart();
       this.updateChartParticipantRange();
     }
   }
@@ -86,7 +93,11 @@ class DashboardGeneralView extends React.Component<IPropsType, IStateType> {
   }
 
   public render(): React.ReactElement<IPropsType> {
-    const {loading, participantsPerDate, carsPerDate, totalCars} = this.props.dashboard;
+    const {
+      loading, participantsReceivedPerDate, participantsSentPerDate, carsPerDate, totalCars, companies
+    } = this.props.dashboard;
+    const {selectedCompanies} = this.state;
+
     return (
       <AppContainer title="" cMenu="1" cSubMenu="1.1">
         <section className="content">
@@ -97,7 +108,7 @@ class DashboardGeneralView extends React.Component<IPropsType, IStateType> {
                 <div className="info-box-content">
                   <span className="info-box-text">Revisiones Hoy</span>
                   <span className="info-box-number">
-                    {participantsPerDate.length ? participantsPerDate[participantsPerDate.length - 1 ].total : 0}
+                    {(participantsReceivedPerDate.length ? participantsReceivedPerDate[participantsReceivedPerDate.length - 1 ].total : 0) +participantsSentPerDate.length ? participantsSentPerDate[participantsSentPerDate.length - 1 ].total : 0 }
                   </span>
                 </div>
               </div>
@@ -116,7 +127,7 @@ class DashboardGeneralView extends React.Component<IPropsType, IStateType> {
                 <span className="info-box-icon bg-green"><i className="fa fa-car"/></span>
                 <div className="info-box-content">
                   <span className="info-box-text">Total Cargas</span>
-                  <span className="info-box-number">{totalCars}</span>
+                  <span className="info-box-number">{new Intl.NumberFormat("es-CL").format(totalCars)}</span>
                 </div>
               </div>
             </div>
@@ -129,7 +140,30 @@ class DashboardGeneralView extends React.Component<IPropsType, IStateType> {
                   </div>
                 </div>
                 <div className="box-body">
-                  <div id="participant-per-date" style={{height: '400px', maxWidth: '100%'}}/>
+                  <div className="row">
+                    <div className="col-md-8" />
+                    <div className="col-md-4">
+                      <BootstrapSelect
+                        noneSelectedText="Todas las empresas"
+                        displayItems={2}
+                        selectedText="empresas seleccionadas."
+                        selected={selectedCompanies}
+                        autoClouse={true}
+                        allOption={false}
+                        selectAll={() => {
+                        }}
+                        options={[{value: "", text: "Todas las empresas"},
+                          ...companies.map((company: any) => ({
+                          value: company._id,
+                          text: company.name
+                        }))]}
+                        onClick={this.filterCompanies}
+                      />
+                    </div>
+                    <div className="col-md-12">
+                      <div id="participant-per-date" style={{height: '450px', maxWidth: '100%'}}/>
+                    </div>
+                  </div>
                 </div>
                 {
                   loading &&
@@ -179,22 +213,50 @@ class DashboardGeneralView extends React.Component<IPropsType, IStateType> {
     );
   }
 
-  private updateParticipantsChart() {
-    const {participantsPerDate, carsPerDate} = this.props.dashboard;
-    const categories: any[] = [];
-    const totals: any[] = [];
-    const totalsCars: any[] = [];
+  private filterCompanies(value: any) {
+    this.props.getParticipantsPerDateAction(value);
+    this.setState({
+      selectedCompanies: [value]
+    });
+  }
 
-    if (participantsPerDate.length) {
-      participantsPerDate.forEach((day) => {
+  private updateParticipantsChart() {
+    const {
+      participantsReceivedPerDate,participantsSentPerDate, carsPerDate,
+      planningPerDate, planningProcessPerDate
+    } = this.props.dashboard;
+    const categories: any[] = [];
+    const totalsReceived: any[] = [];
+    const totalsSent: any[] = [];
+    const totalsCars: any[] = [];
+    const totalsPlanning: any[] = [];
+    const totalsplanningProcess: any[] = [];
+
+    if (participantsReceivedPerDate.length) {
+      participantsReceivedPerDate.forEach((day) => {
         categories.push(day._id);
-        totals.push(day.total);
+        totalsReceived.push(day.total);
+      });
+    }
+    if (participantsSentPerDate.length) {
+      participantsSentPerDate.forEach((day) => {
+        totalsSent.push(day.total);
       });
     }
     if (carsPerDate.length) {
       carsPerDate.forEach((day) => {
         totalsCars.push(day.total);
       });
+    }
+    if (planningPerDate.length) {
+      planningPerDate.forEach((day) => {
+        totalsPlanning.push(day.total);
+      });
+    }
+    if (planningProcessPerDate.length) {
+      planningProcessPerDate.forEach((day) => {
+        totalsplanningProcess.push(day.total)
+      })
     }
     // const option: echarts.EChartOption = {
     const option: any = {
@@ -210,8 +272,9 @@ class DashboardGeneralView extends React.Component<IPropsType, IStateType> {
       },
       legend: {
         x: 'center',
-        y: 'bottom',
-        data: ['Revisiones', 'Cargados']
+        bottom: 50,
+        // y: 'bottom',
+        data: ['Recepciones', 'Envíos', 'Planificados', 'Linea de control', 'Cargados']
       },
       xAxis: {
         type: 'category',
@@ -252,6 +315,7 @@ class DashboardGeneralView extends React.Component<IPropsType, IStateType> {
       },
       grid: {
         top: 30,
+        bottom: 80,
         // left
         x: 20,
         // right
@@ -259,11 +323,35 @@ class DashboardGeneralView extends React.Component<IPropsType, IStateType> {
         containLabel: true
         // borderColor: '#FF0000'
       },
+      dataZoom: {
+        show: true,
+        realtime: true,
+        start: 0,
+        end: 100
+      },
       series: [{
-        data: totals,
-        name: 'Revisiones',
+        data: totalsReceived,
+        name: 'Recepciones',
         type: 'line',
-        color: '#76b7f9',
+        color: '#337AB7',
+        smooth: true
+      },{
+        data: totalsSent,
+        name: 'Envíos',
+        type: 'line',
+        color: '#2DB06B',
+        smooth: true
+      }, {
+        data: totalsPlanning,
+        name: 'Planificados',
+        type: 'line',
+        color: '#00b5fd',
+        smooth: true
+      }, {
+        data: totalsplanningProcess,
+        name: 'Linea de control',
+        type: 'line',
+        color: '#7c344c',
         smooth: true
       }, {
         data: totalsCars,
@@ -274,7 +362,6 @@ class DashboardGeneralView extends React.Component<IPropsType, IStateType> {
       }]
     };
     this.participantsPerDayChart.setOption(option);
-
   }
 
   private updateChartParticipantRange() {
@@ -429,19 +516,19 @@ class DashboardGeneralView extends React.Component<IPropsType, IStateType> {
   }
 
   private resizeCharts() {
-    if (this.participantsPerDayChart && this.participantsPerDayChart !== undefined) {
+    if (this.participantsPerDayChart) {
       this.participantsPerDayChart.resize();
       setTimeout(() => {
         this.participantsPerDayChart.resize();
       }, 400);
     }
-    if (this.carsByVenueChart && this.carsByVenueChart !== undefined) {
+    if (this.carsByVenueChart) {
       this.carsByVenueChart.resize();
       setTimeout(() => {
         this.carsByVenueChart.resize();
       }, 400);
     }
-    if (this.participantsRangeChart && this.participantsRangeChart !== undefined) {
+    if (this.participantsRangeChart) {
       this.participantsRangeChart.resize();
       setTimeout(() => {
         this.participantsRangeChart.resize();
@@ -459,7 +546,7 @@ const mapStateToProps = (state: { dashboard: IDashboardState }) => {
 const mapDispatchToProps = (dispatch: any ) => {
   return {
     dispatch,
-    getParticipantsPerDateAction: () => dispatch(getParticipantsPerDateAction())
+    getParticipantsPerDateAction: (companies?:string) => dispatch(getParticipantsPerDateAction(companies))
   };
 };
 

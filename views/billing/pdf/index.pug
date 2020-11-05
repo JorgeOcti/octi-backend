@@ -1,0 +1,88 @@
+doctype html
+head
+  title OSA Andes
+  meta(charset='utf8')
+  meta(content='text/html; charset=utf-8', http-equiv='Content-Type')
+  link(rel='stylesheet' href='https://use.fontawesome.com/releases/v5.8.1/css/all.css' integrity='sha384-50oBUHEmvpQ+1lW4y57PTFmhCaXp0ML5d60M1M7uH2+nqUivzIebhndOJK28anvf' crossorigin='anonymous')
+  style(type='text/css')=css
+body
+  table(cellpadding='0', cellspacing='0' style="margin-bottom:0;padding-bottom:0;")
+    tr
+      td
+        h1
+          | Reporte de Billing
+      td.text-right
+        img(src="http://localhost:3030/static/images/circle_andes.png", height="100px")
+  h2
+    | Resumen
+  table(cellpadding='0', cellspacing='0' style="margin-bottom:0;padding-bottom:0;width:50%")
+    tbody
+      tr
+        td
+          strong
+            | Empresa
+        td
+          | #{invoice.company.name}
+      tr
+        td
+          strong
+            | Periodo
+        td
+          | #{moment(invoice.createdAt).subtract(1, 'month').format("MMMM YYYY")}
+      tr
+        td
+          strong
+            | Valor UF
+        td
+          | #{new Intl.NumberFormat("de-DE").format(invoice.valueUF)} CLP
+      tr
+        td
+          strong
+            | Total
+        td
+          | #{new Intl.NumberFormat("de-DE").format(((invoice.checklistPrice * invoice.checklistCars) + (invoice.inventoryPrice * invoice.inventoryCars)).toFixed(2))} UF (#{new Intl.NumberFormat("de-DE").format((invoice.totalPeso).toFixed(2))} CLP)
+
+  h2
+    | Detalle
+  table(cellpadding='0', cellspacing='0' style="margin-bottom:0;padding-bottom:0", class="border")
+    thead
+      tr.heading
+        th
+          strong
+            | Item
+        th.text-right
+          strong
+            | Cantidad
+        th.text-right
+          strong
+            | Precio
+        th.text-right
+          strong
+            | Total
+    tbody
+      tr.item
+        td(width="30%")
+          | Vehículos en Inventario
+        td(width="20%").text-right=invoice.inventoryCars
+        td(width="20%").text-right
+          | #{invoice.inventoryPrice} UF
+        td(width="20%").text-right
+          | #{(invoice.inventoryPrice * invoice.inventoryCars).toFixed(2)} UF
+      tr.item
+        td(width="30%")
+          | Vehículos en Checklist
+        td(width="20%").text-right=invoice.checklistCars
+        td(width="20%").text-right
+          | #{invoice.checklistPrice} UF
+        td(width="20%").text-right
+          | #{(invoice.checklistPrice * invoice.checklistCars).toFixed(2)} UF
+      tr
+        td(colspan=3).text-right
+          strong
+            | Total
+        td.text-right
+          strong
+            | #{((invoice.checklistPrice * invoice.checklistCars) + (invoice.inventoryPrice * invoice.inventoryCars)).toFixed(2)} UF
+
+
+

@@ -25,8 +25,8 @@ class AdminsTeamController {
             sort: {
                 name: 1
             },
-            page: parseInt(page ? page : 1, 10),
-            limit: parseInt(pageSize ? pageSize : 20, 10)
+            page: parseInt(page ? page : "1", 10),
+            limit: parseInt(pageSize ? pageSize : "20", 10)
         };
         const teams = await this.getTeams({}, options, search);
         if (options.page && teams.pages && teams.pages < options.page) {

@@ -2,6 +2,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 const server_1 = require("../../server");
 const inventoryLabel_model_1 = require("../models/inventoryLabel.model");
+const teamSetting_model_1 = require("../../app/models/teamSetting.model");
 class LabelController {
     constructor() {
         this.index = this.index.bind(this);
@@ -19,8 +20,8 @@ class LabelController {
             sort: {
                 createdAt: -1
             },
-            page: parseInt(page ? page : 1, 10),
-            limit: parseInt(pageSize ? pageSize : 20, 10)
+            page: parseInt(page ? page : "1", 10),
+            limit: parseInt(pageSize ? pageSize : "20", 10)
         };
         try {
             const labels = await this.getLabels({
@@ -34,7 +35,9 @@ class LabelController {
                 });
             }
             else {
+                const teamSettings = await teamSetting_model_1.default.findOne({ team });
                 res.json({
+                    inventorySettings: teamSettings.inventory,
                     count: labels.total,
                     pages: labels.pages,
                     hasPrevious: options.page && options.page > 1 && labels.pages && labels.pages >= options.page,
@@ -57,6 +60,7 @@ class LabelController {
                 name: body.name,
                 affected: body.affected,
                 sendTo: body.sendTo,
+                description: body.description,
                 isExhibition: body.isExhibition,
                 color: body.color,
                 requireCustomText: body.requireCustomText,
@@ -94,6 +98,7 @@ class LabelController {
                 active: body.active,
                 affected: body.affected,
                 sendTo: body.sendTo,
+                description: body.description,
                 isExhibition: body.isExhibition,
                 color: body.color,
                 requireCustomText: body.requireCustomText,

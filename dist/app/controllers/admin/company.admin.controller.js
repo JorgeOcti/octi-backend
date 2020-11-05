@@ -29,17 +29,17 @@ class AdminCompaniesController {
         const { page, pageSize, search } = req.query;
         // paginate options
         const options = {
-            select: {
-                name: true,
-                image: true,
-                updatedAt: true,
-                createdAt: true
-            },
+            // select: {
+            //   name: true,
+            //   image: true,
+            //   updatedAt: true,
+            //   createdAt: true
+            // },
             sort: {
                 name: 1
             },
-            page: parseInt(page ? page : 1, 10),
-            limit: parseInt(pageSize ? pageSize : 20, 10)
+            page: parseInt(page ? page : "1", 10),
+            limit: parseInt(pageSize ? pageSize : "20", 10)
         };
         const companies = await this.getCompanies({
             deleted: false,
@@ -69,9 +69,10 @@ class AdminCompaniesController {
                 message: 'No tienes permisos para esta operación'
             });
         }
-        const { name } = req.body;
+        const { name, billing, notifications } = req.body;
         const { team } = req.user;
-        const file = general_utils_1.default.getFileFromRequest(req.files, 'file');
+        const image = general_utils_1.default.getFileFromRequest(req.files, 'image');
+        const marker = general_utils_1.default.getFileFromRequest(req.files, 'marker');
         if (!name || !name.trim().length) {
             res.status(400).json({
                 message: 'El nombre es requerido.',
@@ -93,14 +94,23 @@ class AdminCompaniesController {
             else {
                 const newCompany = new company_model_1.default({
                     name,
+                    billing: JSON.parse(billing),
+                    notifications: JSON.parse(notifications),
                     team
                 });
-                if (file) {
-                    file.headers = {
-                        'Content-Type': file.mimetype
+                if (image) {
+                    image.headers = {
+                        'Content-Type': image.mimetype
                     };
-                    file.team = team._id;
-                    await newCompany.attach('image', file);
+                    image.team = team._id;
+                    await newCompany.attach('image', image);
+                }
+                if (marker) {
+                    marker.headers = {
+                        'Content-Type': marker.mimetype
+                    };
+                    marker.team = team._id;
+                    await newCompany.attach('marker', marker);
                 }
                 await newCompany.save();
                 res.status(201).json({
@@ -124,8 +134,9 @@ class AdminCompaniesController {
         }
         const { id } = req.params;
         const { team } = req.user;
-        const { name } = req.body;
-        const file = general_utils_1.default.getFileFromRequest(req.files, 'file');
+        const { name, billing, notifications } = req.body;
+        const image = general_utils_1.default.getFileFromRequest(req.files, 'image');
+        const marker = general_utils_1.default.getFileFromRequest(req.files, 'marker');
         if (!name || !name.length) {
             res.status(400).json({
                 message: 'The name is are required',
@@ -139,12 +150,23 @@ class AdminCompaniesController {
             });
             if (company) {
                 company.name = name;
-                if (file) {
-                    file.headers = {
-                        'Content-Type': file.mimetype
+                company.billing = JSON.parse(billing);
+                company.notifications = JSON.parse(notifications);
+                if (image) {
+                    image.headers = {
+                        'Content-Type': image.mimetype
                     };
-                    file.team = team._id;
-                    await company.attach('image', file);
+                    image.team = team._id;
+                    await company.attach('image', image);
+                    await company.update({ image: company.image });
+                }
+                if (marker) {
+                    marker.headers = {
+                        'Content-Type': marker.mimetype
+                    };
+                    marker.team = team._id;
+                    await company.attach('marker', marker);
+                    await company.update({ marker: company.marker });
                 }
                 await company.save();
                 const response = {

@@ -12,8 +12,8 @@ import * as QRCode from 'qrcode';
 import * as Raven from 'raven';
 import {queue} from '../../app';
 import Alert from '../../app/models/alert.model';
-import CarModel from '../../app/models/car.model';
-import Team from '../../app/models/team.model';
+import CarModel, {ICarModel} from '../../app/models/car.model';
+import Team, {ITeamModel} from '../../app/models/team.model';
 import User from '../../app/models/user.model';
 import UserModel, {IUserModel} from '../../app/models/user.model';
 import Venue, {IVenueModel} from '../../app/models/venue.model';
@@ -28,8 +28,13 @@ import ParticipantModel from '../models/participant.model';
 import ParticipantFile from '../models/participantFile.model';
 import ScaleModel, {IScaleModel} from '../models/scale.model';
 import * as bluebird from 'bluebird';
+import {IParticipant} from "../../interfaces/participant.interface";
+import {IVenueDay} from "../../interfaces/venueDay.interface";
+import ActivityHistory, {ChoicesTypeActivity} from "../../billing/models/activityHistory.model";
+
 
 // import * as puppeteer from 'puppeteer';
+const DERCO_TEAM = '5bf2de34caf8ef7096105cda';
 
 class FormController {
 
@@ -42,10 +47,11 @@ class FormController {
     this.uploadFile = this.uploadFile.bind(this);
     this.damagesDashboardPerDay = this.damagesDashboardPerDay.bind(this);
     this.participantWithDamages = this.participantWithDamages.bind(this);
+    this.timingDashboard = this.timingDashboard.bind(this);
   }
 
   public async pdf(req: IRequest, res: Response): Promise<any> {
-    const {debug, timezone} = req.query;
+    const {debug, timezone} = req.query as { debug: string, timezone: string };
     const {id} = req.params;
     const {team} = req.user;
     try {
@@ -881,6 +887,17 @@ class FormController {
               }])
             );
 
+            await ActivityHistory.create({
+              team,
+              company,
+              user: req.user._id,
+              type: ChoicesTypeActivity.checklist,
+              car: {
+                _id: car._id,
+                vin: car.vin
+              }
+            });
+
             return res.json({
               data: {
                 id,
@@ -1370,274 +1387,265 @@ class FormController {
     }
   }
 
-  public async timingDashboard(req: IRequest, res: Response): Promise<any> {
+  private static async getDercoDeliveryParticipants(team: ITeamModel, from: moment.Moment, to: moment.Moment): Promise<IParticipant[]> {
 
-    try {
-      const {team} = req.user;
-      let userObject = await User.findOne({_id: req.user._id});
-      // Derco
-      if (userObject && userObject.team.toString() === '5bf2de34caf8ef7096105cda') {
-        const total = 6;
-        // el lead time supuesto es de 48 horas
-        const threshold = 60 * 24 * 7;
-
-        let reception = await FormModel.findOne({_id: "5b1ae5799ebea419025b3e41"});
-        let cars = await CarModel.find({
-          team,
-          lastForm: {$ne: null},
+    let receptionForm = await FormModel.findOne({_id: "5b1ae5799ebea419025b3e41"});
+    return ParticipantModel.aggregate([
+      {
+        $match: {
+          team: team,
+          form: receptionForm!._id,
           createdAt: {
-            $gte: moment().subtract(total, 'months').startOf('month').toDate()
-          }
-        });
-
-        let carsCreatedAt: any = {};
-        for (const car of cars){
-          carsCreatedAt[car._id.toString()] = car.createdAt;
+            $gte: from,
+            $lte: to
+          },
         }
-
-        const months: string[] = [];
-        const receivedPerMonth: any = {};
-        for (let i = 0; i <= total; i++) {
-          const month = moment()
-            .subtract(total - i, 'months')
-            .startOf('month')
-            .format('YYYY-MM');
-          months.push(month);
-          receivedPerMonth[month] = {
-            overdue: 0,
-            ontime: 0
-          };
+      },
+      {
+        $project: {
+          car: 1,
+          venue: 1,
+          receiveFrom: 1,
+          form: 1,
+          createdAt: 1,
         }
-
-
-        const receptions = await ParticipantModel.find({
-          team,
-          form: reception!._id,
-          createdAt: {
-            $gte: moment().subtract(total, 'months').startOf('month').toDate()
-          }
-        }, ['car', 'venue', 'createdAt'], {
-          sort: {
-            createdAt: -1
-          }
-        });
-
-        for (const reception of receptions) {
-          let car = reception.car.toString();
-          if (car in carsCreatedAt) {
-            const carCreatedAt = carsCreatedAt[car];
-
-            const t0 = moment(carCreatedAt);
-            const t1 = moment(reception.createdAt);
-            const dm = t1.diff(t0, 'minutes');
-
-            const month = t0.format('YYYY-MM');
-
-            if (dm > 10) {
-              if (dm < threshold)
-                receivedPerMonth[month].ontime += 1;
-              else
-                receivedPerMonth[month].overdue += 1;
-            }
-
+      },
+      {
+        $lookup: {
+          from: "cars",
+          localField: "car",
+          foreignField: "_id",
+          as: "related_car",
+        }
+      },
+      {$unwind: '$related_car'},
+      {
+        $match: {
+          'related_car.team': team,
+          'related_car.lastForm': {$ne: null},
+          'related_car.createdAt': {
+            $gte: from,
+            $lte: to
           }
         }
-
-        const data: any = {months, overdue: [], ontime: []};
-
-        data.overdue = Array(months.length).fill(0);
-        data.ontime = Array(months.length).fill(0);
-
-        // tslint:disable-next-line:forin
-        for (const index in months) {
-          const month = months[index];
-          data.overdue[index] = receivedPerMonth[month].overdue;
-          data.ontime[index] = receivedPerMonth[month].ontime;
+      },
+      {
+        $lookup: {
+          from: "venues",
+          localField: "venue",
+          foreignField: "_id",
+          as: "to",
         }
-
-        res.json(data);
-
-      }
-      else {
-        const distributor = await Venue.findOne({team, type: 'distributor'});
-        const receivers = await Venue.find({team, type: 'receiver'});
-
-        const total = 6;
-        // autos que han llegado al distribuidor
-        const threshold = 60 * 24 * 5;
-        const participants = await ParticipantModel.find({
-          venue: distributor,
-          createdAt: {
-            $gte: moment().subtract(total, 'months').startOf('month').toDate()
-          }
-        }, ['car', 'createdAt']);
-
-        const months: string[] = [];
-        const receivedPerMonth: any = {};
-        for (let i = 0; i <= total; i++) {
-          const month = moment()
-            .subtract(total - i, 'months')
-            .startOf('month')
-            .format('YYYY-MM');
-          months.push(month);
-          receivedPerMonth[month] = {
-            overdue: 0,
-            ontime: 0
-          };
-        }
-
-        const receiverVenues: any[] = [];
-        const receptions = await ParticipantModel.find({
-          team,
-          venue: {$in: receivers.map((v) => v._id)},
-          receiveFrom: (distributor as IVenueModel)._id,
-          createdAt: {
-            $gte: moment().subtract(total, 'months').startOf('month').toDate()
-          }
-        }, ['car', 'venue', 'createdAt'], {
-          sort: {
-            createdAt: 1
-          }
-        });
-
-        const firstReceptions: any = {};
-        for (const reception of receptions) {
-          const car = reception.car.toString();
-          if (car in firstReceptions) {
-          } else {
-            firstReceptions[car] = reception;
-          }
-        }
-
-        for (const participant of participants) {
-
-          const received = firstReceptions[participant.car.toString()];
-
-          if (received) {
-            if (!receiverVenues.includes(received.venue.toString())) {
-              receiverVenues.push(received.venue);
-            }
-
-            const t0 = moment(participant.createdAt);
-            const month = t0.format('YYYY-MM');
-            const t1 = moment(received.createdAt);
-            const dm = t1.diff(t0, 'minutes');
-            if (dm < threshold) {
-              receivedPerMonth[month].ontime += 1;
-            } else {
-              receivedPerMonth[month].overdue += 1;
-            }
-          }
-        }
-
-        const data: any = {months, overdue: [], ontime: []};
-
-        data.overdue = Array(months.length).fill(0);
-        data.ontime = Array(months.length).fill(0);
-
-        // tslint:disable-next-line:forin
-        for (const index in months) {
-          const month = months[index];
-          data.overdue[index] = receivedPerMonth[month].overdue;
-          data.ontime[index] = receivedPerMonth[month].ontime;
-        }
-
-        res.json(data);
-      }
-
-    } catch (e) {
-      Raven.captureException(e, {req});
-      /* istanbul ignore next */
-      logger.error(`dashboard timing: Async Error.`);
-      /* istanbul ignore next */
-      logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
-      /* istanbul ignore next */
-      logger.error(e);
-      res.status(400).json({
-        message: 'Ha ocurrido un error',
-        status: 400
-      });
-    }
+      },
+      {$unwind: '$to'},
+    ]);
 
   }
 
-  public async timingDashboardPerVenue(req: IRequest, res: Response): Promise<any> {
+  private async getDeliveryParticipants(team: ITeamModel, from: moment.Moment, to: moment.Moment) : Promise<IParticipant[]>{
+    const distributors = await Venue.find({team, type: 'distributor'});
+    const receivers = await Venue.find({team, type: 'receiver'});
 
-    try {
-      const {team} = req.user;
-      const {period} = req.query;
-      // TODO: how to setup this?
-      const distributor = await Venue.findOne({team, type: 'distributor'});
-      if (distributor) {
-        const receivers = await Venue.find({team, type: 'receiver'});
-
-        const receiversDict: any = {};
-        receivers.forEach((r) => receiversDict[r._id.toString()] = r);
-
-        // autos que han llegado al distribuidor
-        const t0 = moment(period).startOf('month');
-        const t1 = moment(period).endOf('month');
-
-        const threshold = 60 * 24 * 5;
-        const participants = await ParticipantModel.find({
-          venue: distributor._id,
-          createdAt: {$gt: t0.toDate(), $lt: t1.toDate()}
-        }, ['car', 'createdAt']);
-
-        const receptions = await ParticipantModel.find({
-          team,
+    let receptions = await ParticipantModel.aggregate([
+      {
+        $lookup: {
+          from: "participants",
+          localField: "car",
+          foreignField: "car",
+          as: "recived_participants",
+        }
+      },
+      {
+        $unwind: '$recived_participants'
+      },
+      {
+        $match: {
+          team: team,
           venue: {$in: receivers.map((v) => v._id)},
-          receiveFrom: distributor._id,
-          createdAt: {$gt: t0.toDate()}
-        }, ['car', 'venue', 'createdAt'], {
-          sort: {
-            createdAt: 1
-          }
-        });
-
-        const firstReceptions: any = {};
-        for (const reception of receptions) {
-          const car = reception.car.toString();
-          if (car in firstReceptions) {
-          } else {
-            firstReceptions[car] = reception;
+          receiveFrom: {$in: distributors.map((v) => v._id)},
+          reception: true,
+          createdAt: {
+            $gte: from,
+            $lte: to
+          },
+          'recived_participants.venue': {$in: distributors.map((v) => v._id)},
+          'recived_participants.reception': false,
+          'recived_participants.createdAt': {
+            $gte: from,
+            $lte: to
           }
         }
-
-        const receivedPerVenue: any = {};
-        const venues: string[] = [];
-        for (const participant of participants) {
-
-          const received = firstReceptions[participant.car.toString()];
-
-          if (received) {
-            if (received.createdAt < participant.createdAt) {
-              continue;
-            }
-            const venue = received.venue.toString();
-            if (!venues.includes(venue)) {
-              venues.push(venue);
-              receivedPerVenue[venue] = 0;
-            }
-
-            const t0 = moment(participant.createdAt);
-            const t1 = moment(received.createdAt);
-            const dm = t1.diff(t0, 'minutes');
-
-            receivedPerVenue[venue] += 1;
-            if (dm < threshold) {
-              // receivedPerMonth[month].ontime += 1;
-            } else {
-              // receivedPerMonth[month].overdue += 1;
-            }
-          }
+      },
+      {
+        $project: {
+          car: 1,
+          venue: 1,
+          createdAt: 1,
+          'recived_participants.createdAt': 1,
+          'recived_participants.car': 1,
+          'recived_participants.team': 1,
+          'recived_participants.venue': 1,
+          'recived_participants._id': 1,
         }
-
-        const perVenue: number[] = venues.map((v) => receivedPerVenue[v]);
-        const data: any = {venues, perVenue};
-
-        res.json(data);
+      },
+      {
+        $sort: {'recived_participants.createdAt': -1}
+      },
+      {
+        $lookup: {
+          from: "venues",
+          localField: "venue",
+          foreignField: "_id",
+          as: "venue",
+        }
+      },
+      {$unwind: "$venue"},
+      {
+        $lookup: {
+          from: "venues",
+          localField: "recived_participants.venue",
+          foreignField: "_id",
+          as: "recived_participants.venue",
+        }
+      },
+      {$unwind: "$recived_participants.venue"},
+      {
+        $group: {
+          _id: "$_id",
+          car: {$first: '$car'},
+          venue: {$first: '$venue'},
+          createdAt: {$first: '$createdAt'},
+          recived_participants: {$push: "$recived_participants"}
+        }
+      },
+      {
+        $project: {
+          car: 1,
+          venue: 1,
+          createdAt: 1,
+          "recived_participants": {"$arrayElemAt": ["$recived_participants", 0]}
+        }
       }
+    ]);
+
+    return receptions.filter((reception, index) => {
+      return index === receptions.findIndex(obj => {
+        return obj.recived_participants._id.toString() === reception.recived_participants._id.toString();
+      });
+    });
+  }
+
+  private static isDercoUser(user: IUserModel) : boolean{
+    return user && user.team.toString() === DERCO_TEAM;
+  }
+
+  private static parseReception(reception : IParticipant, distributorTable : any) : any {
+
+    const recivedparticipant : IParticipant = (reception as any).recived_participants as IParticipant;
+    const sendingVenue : IVenueModel = recivedparticipant.venue;
+
+    let daysLimit = distributorTable[sendingVenue._id.toString()] &&
+    distributorTable[sendingVenue._id.toString()][reception.venue._id.toString()] ?
+      distributorTable[sendingVenue._id.toString()][reception.venue._id.toString()] :
+      5;
+    const threshold = daysLimit * 60 * 24;
+    const t0 = moment(recivedparticipant.createdAt);
+    const t1 = moment(reception.createdAt);
+    const dm = t1.diff(t0, 'minutes');
+
+    return {
+      date_send: t0,
+      date_recived: t1,
+      reception_id: reception._id,
+      send_id: recivedparticipant._id,
+      from: sendingVenue.abbreviation || sendingVenue.name,
+      to: reception.venue.abbreviation || reception.venue.name,
+      atTime: dm <= threshold,
+      daysLimit: daysLimit
+    }
+  }
+
+  private static parseDercoReception(reception: IParticipant, distributorTable : any, dercoDistributionVenue: IVenueModel) : any {
+    const car: ICarModel = (reception as any).related_car as ICarModel;
+    // TODO: Get The real origin Venue
+    const sendingVenue = dercoDistributionVenue;
+    const venue = (reception as any).to as IVenueModel;
+
+    let daysLimit = distributorTable[sendingVenue._id.toString()] &&
+      distributorTable[sendingVenue._id.toString()][venue._id.toString()] ?
+      distributorTable[sendingVenue._id.toString()][venue._id.toString()] :
+      5;
+    const threshold = daysLimit * 60 * 24;
+    const t0 = moment(car.createdAt);
+    const t1 = moment(reception.createdAt);
+    const dm = t1.diff(t0, 'minutes');
+
+    return {
+      date_send: t0,
+      date_recived: t1,
+      reception_id: reception._id,
+      from: sendingVenue!.abbreviation || sendingVenue!.name,
+      to: venue.abbreviation || venue.name,
+      atTime: dm <= threshold,
+      daysLimit: daysLimit
+    }
+  }
+
+  public async timingDashboard(req: IRequest, res: Response): Promise<any> {
+    try {
+      const {team} = req.user as {team: ITeamModel};
+      let userObject = await User.findOne({_id: req.user._id});
+      let distributors = await Venue.find({team: team, type: 'distributor'}, {}).populate({
+        path: 'sendToDays.venue',
+        select: ['_id']
+      });
+
+      let start: any = req.query.start;
+      let to: any = req.query.end;
+
+      let startDate: any = start && start !== "" ? moment(start, 'YYYY-MM-DD') :
+        moment().subtract(3, "months").startOf('month').startOf('day');
+
+      let toDate: any = to && to !== "" ? moment(to, 'YYYY-MM-DD') :
+        moment().endOf('month').endOf('day');
+
+
+
+      let distributorTable : any = {};
+      distributors.map((distributor: IVenueModel) => {
+        let distributorId = distributor._id.toString();
+        if (!(distributorId in distributors))
+          distributorTable[distributorId] = {};
+
+        distributor.sendToDays.map((venueDay : IVenueDay) => {
+          let venueId = venueDay.venue._id.toString();
+          distributorTable[distributorId][venueId] = venueDay.shippingMaxDays;
+        });
+      });
+
+      let data : any = {};
+
+      for (let i : moment.Moment = startDate; i <= toDate; i=i.add(1, "month") ) {
+        const month = i.format('MM-YYYY');
+        data[month] = [];
+      }
+
+      startDate = start && start !== "" ? moment(start, 'YYYY-MM-DD') :
+        moment().subtract(3, "months").startOf('month').startOf('day');
+
+      const isDercoUser : boolean = FormController.isDercoUser(userObject!);
+      const receptions : IParticipant[] = isDercoUser ?
+        await FormController.getDercoDeliveryParticipants(team, startDate.toDate(), toDate.toDate()) :
+        await this.getDeliveryParticipants(team, startDate.toDate(), toDate.toDate());
+
+      for (const reception of receptions) {
+        const value : any  = isDercoUser ? FormController.parseDercoReception(reception, distributorTable, distributors[0]) :
+          FormController.parseReception(reception, distributorTable);
+        const month = value.date_send.format('MM-YYYY');
+        data[month].push(value);
+      }
+
+      return res.json(data);
 
     } catch (e) {
       Raven.captureException(e, {req});
@@ -1709,7 +1717,7 @@ class FormController {
       const {team} = req.user;
 
       let periods = 6;
-      for (let i = 0; i < periods; i++) {
+      for(let i = 0; i < periods; i++) {
 
         const t0 = moment().subtract(i + 1, 'months');
         const t1 = moment().subtract(i, 'months');
@@ -1740,10 +1748,10 @@ class FormController {
 
           if (car.participants!.length > 0) {
 
-            let participants = car.participants!.sort((p0, p1) => p0.createdAt >= p1.createdAt ? 1 : 0);
+            let participants = car.participants!.sort((p0: any, p1: any) => p0.createdAt >= p1.createdAt ? 1 : 0);
 
-            let p0 = null;
-            let p1 = null;
+            let p0:any = null;
+            let p1:any = null;
 
             // only one form
             if (participants.length < 2) {
@@ -1763,44 +1771,44 @@ class FormController {
             let choice0Gas = null;
             let choice1Gas = null;
             if (p0) {
-              const answer0Gas = p0.sections.map((s) => s.answers).reduce((x, y) => [...x, ...y], []).find((a) => a._id.toString() == gasQuestion);
+              const answer0Gas = p0.sections.map((s: any) => s.answers).reduce((x: any[], y: any[]) => [...x, ...y], []).find((a: any) => a._id.toString() == gasQuestion);
               if (answer0Gas)
-                choice0Gas = answer0Gas.scale.choices.find((c) => c._id.toString() == answer0Gas.answer.toString())
+                choice0Gas = answer0Gas.scale.choices.find((c: any) => c._id.toString() == answer0Gas.answer.toString())
             }
 
             if (p1) {
-              const answer1Gas = p1.sections.map((s) => s.answers).reduce((x, y) => [...x, ...y], []).find((a) => a._id.toString() == gasQuestion);
+              const answer1Gas = p1.sections.map((s: any) => s.answers).reduce((x: any[], y: any[]) => [...x, ...y], []).find((a: any) => a._id.toString() == gasQuestion);
               if (answer1Gas)
-                choice1Gas = answer1Gas.scale.choices.find((c) => c._id.toString() == answer1Gas.answer.toString())
+                choice1Gas = answer1Gas.scale.choices.find((c: any) => c._id.toString() == answer1Gas.answer.toString())
             }
 
             let choice0Paint = null;
             let choice1Paint = null;
             if (p0) {
-              const answer0Paint = p0.sections.map((s) => s.answers).reduce((x, y) => [...x, ...y], []).find((a) => a._id.toString() == paintQuestion);
+              const answer0Paint = p0.sections.map((s: any) => s.answers).reduce((x: any[], y: any[]) => [...x, ...y], []).find((a: any) => a._id.toString() == paintQuestion);
               if (answer0Paint)
-                choice0Paint = answer0Paint.scale.choices.find((c) => c._id.toString() == answer0Paint.answer.toString())
+                choice0Paint = answer0Paint.scale.choices.find((c: any) => c._id.toString() == answer0Paint.answer.toString())
             }
 
             if (p1) {
-              const answer1Paint = p1.sections.map((s) => s.answers).reduce((x, y) => [...x, ...y], []).find((a) => a._id.toString() == paintQuestion);
+              const answer1Paint = p1.sections.map((s: any) => s.answers).reduce((x: any[], y: any[]) => [...x, ...y], []).find((a: any) => a._id.toString() == paintQuestion);
               if (answer1Paint)
-                choice1Paint = answer1Paint.scale.choices.find((c) => c._id.toString() == answer1Paint.answer.toString())
+                choice1Paint = answer1Paint.scale.choices.find((c: any) => c._id.toString() == answer1Paint.answer.toString())
             }
 
             // lata
             let choice0SheetMetal = null;
             let choice1SheetMetal = null;
             if (p0) {
-              const answer0SheetMetal = p0.sections.map((s) => s.answers).reduce((x, y) => [...x, ...y], []).find((a) => a._id.toString() == sheetMetalQuestion);
+              const answer0SheetMetal = p0.sections.map((s: any) => s.answers).reduce((x: any[], y: any[]) => [...x, ...y], []).find((a:any) => a._id.toString() == sheetMetalQuestion);
               if (answer0SheetMetal)
-                choice0SheetMetal = answer0SheetMetal.scale.choices.find((c) => c._id.toString() == answer0SheetMetal.answer.toString())
+                choice0SheetMetal = answer0SheetMetal.scale.choices.find((c: any) => c._id.toString() == answer0SheetMetal.answer.toString())
             }
 
             if (p1) {
-              const answer1SheetMetal = p1.sections.map((s) => s.answers).reduce((x, y) => [...x, ...y], []).find((a) => a._id.toString() == sheetMetalQuestion);
+              const answer1SheetMetal = p1.sections.map((s: any) => s.answers).reduce((x: any[], y: any[]) => [...x, ...y], []).find((a:any) => a._id.toString() == sheetMetalQuestion);
               if (answer1SheetMetal)
-                choice1SheetMetal = answer1SheetMetal.scale.choices.find((c) => c._id.toString() == answer1SheetMetal.answer.toString())
+                choice1SheetMetal = answer1SheetMetal.scale.choices.find((c: any) => c._id.toString() == answer1SheetMetal.answer.toString())
             }
 
             const row = {
@@ -2062,14 +2070,14 @@ class FormController {
   }
 
   private async processAccesoryItems(accesories: any[]) {
-    const accesorySchema: Joi.ObjectSchema = Joi.object({
+    const accesorySchema = Joi.object({
       item: Joi.string(),
       amount: Joi.number()
     });
     const newAccesories: any[] = [];
     accesories.map(async (accesory: any) => {
       try {
-        const newAccesory = await accesorySchema.validate(accesory);
+        const newAccesory = await accesorySchema.validateAsync(accesory);
         newAccesories.push({
           item: newAccesory.item,
           amount: newAccesory.amount

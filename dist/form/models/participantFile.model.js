@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.participantFileSchema = void 0;
 const mongoose = require("mongoose");
 const mongooseCrate = require("mongoose-crate");
 const MongooseCrateS3 = require("mongoose-crate-s3");

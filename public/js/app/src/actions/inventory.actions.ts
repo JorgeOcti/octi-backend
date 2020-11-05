@@ -2,11 +2,11 @@ import {AxiosError, AxiosResponse, CancelTokenSource, default as Axios} from 'ax
 import {Dispatch} from 'redux';
 import * as swal from 'sweetalert';
 import {IInventoryCar} from '../../../../../src/interfaces/inventory.interface';
+import {IInventorySettting} from '../../../../../src/interfaces/teamSetting.interface';
 import {IInventoryComment} from '../../../../../src/interfaces/inventoryComment.interface';
 import {IInventoryLabel} from '../../../../../src/interfaces/inventoryLabel.interface';
 import {IFilterCar} from '../reducers/inventory.reducer';
 import ApiService from '../utils/axios';
-import {ICarsState} from "./cars.actions";
 
 export interface IInventorySummaryResult {
   pending: number;
@@ -55,6 +55,7 @@ export interface IDetailByBrand {
 
 export interface IInventoryState {
   inventories: any[];
+  inventorySettings: IInventorySettting;
   loading: boolean;
   inventoryCar: IInventoryCar | null;
   source: CancelTokenSource | null;
@@ -146,17 +147,19 @@ interface ILoadInventories {
   type: '/INVENTORIES/LOAD_DATA';
   payload: {
     inventories: any[];
+    inventorySettings: any;
     count: number;
     pages: number
     page: number
   };
 }
 
-export function loadInventoriesAction(inventories: any[], count: number, pages: number, page: number): ILoadInventories {
+export function loadInventoriesAction(inventories: any[], inventorySettings: any, count: number, pages: number, page: number): ILoadInventories {
   return {
     type: '/INVENTORIES/LOAD_DATA',
     payload: {
       inventories,
+      inventorySettings,
       count,
       pages,
       page
@@ -177,7 +180,7 @@ export function getInventoriesAction(loading: boolean, nextPage: number,) {
     api.getInventories(page)
       .then((response: AxiosResponse) => {
         const data = response.data;
-        dispatch(loadInventoriesAction(data.inventories, data.count, data.pages, page));
+        dispatch(loadInventoriesAction(data.inventories, data.inventorySettings, data.count, data.pages, page));
         if (loading) {
           dispatch(isLoadingAction(false));
         }
@@ -319,6 +322,7 @@ interface ILoadInventory {
   type: '/INVENTORIES/LOAD_INVENTORY_DATA';
   payload: {
     summary: IInventorySummary;
+    inventorySettings: any;
     detailByVenue: IDetailByVenue[];
     detailByBrand: IDetailByBrand[];
     labels: IInventoryLabel[],
@@ -329,6 +333,7 @@ interface ILoadInventory {
 
 export function loadInventoryAction(
   summary: IInventorySummary,
+  inventorySettings: any,
   detailByVenue: IDetailByVenue[],
   detailByBrand: IDetailByBrand[],
   labels: IInventoryLabel[],
@@ -340,6 +345,7 @@ export function loadInventoryAction(
     payload: {
       resetFilter: !resetFilter,
       summary,
+      inventorySettings,
       detailByVenue,
       detailByBrand,
       labels,
@@ -367,6 +373,7 @@ export function getInventoryDetailAction(id: string, update: boolean) {
           const {data} = response;
           dispatch(loadInventoryAction(
             data.summary,
+            data.inventorySettings,
             data.detailByVenue,
             data.detailByBrand,
             data.labels,
@@ -415,7 +422,7 @@ export function actionSetLabel(inventory: string, car: string, carID: string, la
   return (dispatch: Dispatch<InventoryReduxAction>) => {
     const api: ApiService = new ApiService();
     if (label.requireCustomText) {
-      (swal as any)('Ingrese la etiqueta personaliza:', {
+      (swal as any)('Agregar datos adicionales:', {
         content: 'input'
       }).then((custom: string) => {
         if (custom && custom.trim().length) {

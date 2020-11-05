@@ -6,6 +6,24 @@ import {IInventoryState, InventoryReduxAction} from '../actions/inventory.action
 
 const initialState: IInventoryState = {
   inventories: [],
+  inventorySettings: {
+    leftoverDifferentVenue: false,
+    pending: "",
+    pendingClass: "aqua",
+    pendingColor: "",
+    found: "",
+    foundClass: "green",
+    foundColor: "",
+    missing: "",
+    missingClass: "red",
+    missingColor: "",
+    leftover: "",
+    leftoverClass: "yellow",
+    leftoverColor: "",
+    reported: "",
+    reportedClass: "gray-dark",
+    reportedColor: ""
+  },
   loading: true,
   inventoryCar: null,
   source: null,
@@ -67,6 +85,7 @@ export function inventoriesReducer(state = initialState, action: InventoryReduxA
       return {
         ...state,
         inventories: action.payload.inventories,
+        inventorySettings: action.payload.inventorySettings,
         pagination: {
           ...state.pagination,
           pages: action.payload.pages,
@@ -113,6 +132,7 @@ export function inventoriesReducer(state = initialState, action: InventoryReduxA
         filter,
         labels: action.payload.labels,
         summary: action.payload.summary,
+        inventorySettings: action.payload.inventorySettings,
         detailByVenue: action.payload.detailByVenue,
         detail: action.payload.detail,
         detailByBrand: action.payload.detailByBrand
@@ -189,7 +209,7 @@ function processCars(cars: IInventoryCar[], selectedItems: { [key: string]: any 
     }
     if (add && filter && filter.text && filter.text.length) {
       const result: boolean[] = filter.text.toLowerCase().split(' ').map((text) => (
-        unorm.nfd(`${car.car.vin}${car.car.brand}${car.car.denomination}${car.car.patent}`)
+        unorm.nfd(`${car.car.vin}${car.car.brand}${car.car.denomination}${car.car.patent}${car.car.internalNumber}`)
           .replace(/[\u0300-\u036f]/g, '')
           .toLowerCase()
           .includes(text.toLowerCase())
@@ -215,9 +235,11 @@ function processCars(cars: IInventoryCar[], selectedItems: { [key: string]: any 
         vin: car.car.vin,
         brand: car.car.brand,
         denomination: car.car.denomination,
+        internalNumber: car.car.internalNumber,
         label: car.label,
         labelName: car.label && car.label.hasOwnProperty('name') ? car.label.name : 'z',
         labelBy: car.labelBy,
+        color: car.car.color,
         labelText: car.labelText,
         venue: car.venue ? car.venue.name : '-',
         images: car.images && car.images.length ? car.images : [],

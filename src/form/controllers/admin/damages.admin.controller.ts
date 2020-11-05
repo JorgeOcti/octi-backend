@@ -39,7 +39,7 @@ class AdminDamagesController {
   }
 
   public async apiListDamages(req: IRequest, res: Response): Promise<any> {
-    const {page, pageSize} = req.query;
+    const {page, pageSize} = req.query as { page: string, pageSize: string };
     const {team} = req.user;
     // paginate options
     const options: PaginateOptions = {
@@ -72,8 +72,8 @@ class AdminDamagesController {
           }
         }
       }],
-      page: parseInt(page ? page : 1, 10),
-      limit: parseInt(pageSize ? pageSize : 20, 10)
+      page: parseInt(page ? page : "1", 10),
+      limit: parseInt(pageSize ? pageSize : "20", 10)
     };
     try {
       const forms = await this.getForms({

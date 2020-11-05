@@ -2,10 +2,12 @@ import { AxiosError, default as Axios } from 'axios';
 import {Dispatch} from 'redux';
 import {IFilterCar} from '../reducers/inventory.reducer';
 import ApiService from '../utils/axios';
+import {IInventorySettting} from '../../../../../src/interfaces/teamSetting.interface';
 
 export interface IInventoryDashboardState {
   venues: any[];
   monthlyReport: any[];
+  inventorySettings: IInventorySettting;
   filter: IFilterCar;
   loading: boolean;
 }
@@ -15,15 +17,17 @@ interface ILoadInventoryDashboard {
   payload: {
     venues: any[];
     monthlyReport: any[];
+    inventorySettings: any;
   };
 }
 
-export function loadInventoriesDashboardAction(venues: any[], monthlyReport: any[]): ILoadInventoryDashboard {
+export function loadInventoriesDashboardAction(venues: any[], monthlyReport: any[], inventorySettings: any): ILoadInventoryDashboard {
   return {
     type: '/INVENTORY_DASHBOARD/LOAD_DATA',
     payload: {
       venues,
-      monthlyReport
+      monthlyReport,
+      inventorySettings
     }
   };
 }
@@ -48,15 +52,17 @@ interface ILoadInventoryDashboardFiltered {
   payload: {
     filter: IFilterCar;
     monthlyReport: any[];
+    inventorySettings: any;
   };
 }
 
-export function loadInventoriesDashboardFilteredAction(filter: IFilterCar, monthlyReport: any[]): ILoadInventoryDashboardFiltered {
+export function loadInventoriesDashboardFilteredAction(filter: IFilterCar, monthlyReport: any[], inventorySettings: any): ILoadInventoryDashboardFiltered {
   return {
     type: '/INVENTORY_DASHBOARD/LOAD_DATA_FILTERED',
     payload: {
       filter,
-      monthlyReport
+      monthlyReport,
+      inventorySettings
     }
   };
 }
@@ -69,7 +75,7 @@ export function getInventoryDashboard() {
       api.getVenues(1, 200),
       api.getInventoryDashboard()
     ]).then(Axios.spread((venues, dashboard) => {
-      dispatch(loadInventoriesDashboardAction(venues.data.results, dashboard.data));
+      dispatch(loadInventoriesDashboardAction(venues.data.results, dashboard.data.data, dashboard.data.inventorySettings));
     })).catch((err: AxiosError): void => {
       api.errorHandler(err);
     });
@@ -81,7 +87,7 @@ export function getInventoryDashboardFiltered(filter: IFilterCar) {
     const api: ApiService = new ApiService();
     api.getInventoryDashboard(filter)
       .then((dashboard) => {
-        dispatch(loadInventoriesDashboardFilteredAction(filter, dashboard.data));
+        dispatch(loadInventoriesDashboardFilteredAction(filter, dashboard.data.data, dashboard.data.inventorySettings));
     }).catch((err: AxiosError): void => {
       api.errorHandler(err);
     });

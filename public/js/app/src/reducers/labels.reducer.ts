@@ -2,9 +2,28 @@ import {ILabelsState, LabelsReduxAction} from '../actions/labels.actions';
 
 const initialState: ILabelsState = {
   labels: [],
+  inventorySettings: {
+    leftoverDifferentVenue: false,
+    pending: "",
+    pendingClass: "aqua",
+    pendingColor: "",
+    found: "",
+    foundClass: "green",
+    foundColor: "",
+    missing: "",
+    missingClass: "red",
+    missingColor: "",
+    leftover: "",
+    leftoverClass: "yellow",
+    leftoverColor: "",
+    reported: "",
+    reportedClass: "gray-dark",
+    reportedColor: ""
+  },
   loading: true,
   tempLabel: {
     _id: '',
+    description: '',
     name: '',
     color: '',
     affected: [],
@@ -78,6 +97,7 @@ export function labelsReducer(state = initialState, action: LabelsReduxAction): 
       return {
         ...state,
         labels: action.payload.labels,
+        inventorySettings: action.payload.inventorySettings,
         pagination: {
           ...state.pagination,
           pages: action.payload.pages,

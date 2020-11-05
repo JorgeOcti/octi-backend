@@ -9,11 +9,13 @@ import * as Raven from 'raven-js';
 import * as swal from 'sweetalert';
 import {
   IBaseCarrier,
-  ICarrier
 } from '../../../../../src/interfaces/carrier.interface';
 import {
   IBaseCompany
 } from '../../../../../src/interfaces/company.interface';
+import {
+  IBaseRegion,
+} from '../../../../../src/interfaces/region.interface';
 import {
   IBaseVenue
 } from '../../../../../src/interfaces/venue.interface';
@@ -90,9 +92,9 @@ export default class ApiService {
     );
   }
 
-  public getParticipantsPerDate() {
+  public getParticipantsPerDate(companies?:string) {
     return this.instance.get(
-      `/api/participants-per-date/`
+      `/api/participants-per-date/${companies?`?companies=${companies}`:""}`
     );
   }
   public getParticipant(id: string) {
@@ -109,8 +111,13 @@ export default class ApiService {
   public createCompany(company: IBaseCompany): AxiosPromise {
     const formData = new FormData();
     formData.append('name', company.name);
+    formData.append('billing', JSON.stringify(company.billing));
+    formData.append('notifications', JSON.stringify(company.notifications));
     if (company.image) {
-      formData.append('file', company.image);
+      formData.append('image', company.image);
+    }
+    if (company.marker) {
+      formData.append('marker', company.marker);
     }
     this.instance.defaults.headers.common['Content-Type'] = 'multipart/form-data';
     return this.instance.post(
@@ -121,8 +128,13 @@ export default class ApiService {
   public updateCompany(company: IBaseCompany): AxiosPromise {
     const formData = new FormData();
     formData.append('name', company.name);
+    formData.append('billing', JSON.stringify(company.billing));
+    formData.append('notifications', JSON.stringify(company.notifications));
     if (company.image) {
-      formData.append('file', company.image);
+      formData.append('image', company.image);
+    }
+    if (company.marker) {
+      formData.append('marker', company.marker);
     }
     this.instance.defaults.headers.common['Content-Type'] = 'multipart/form-data';
     return this.instance.patch(
@@ -190,6 +202,24 @@ export default class ApiService {
     );
   }
 
+  public createRegion(region: IBaseRegion): AxiosPromise {
+    return this.instance.post(
+      `/api/admin/regions/`, region
+    );
+  }
+
+  public updateRegion(region: IBaseRegion): AxiosPromise {
+    return this.instance.patch(
+      `/api/admin/regions/${region._id}`, region
+    );
+  }
+
+  public deleteRegion(id: string): AxiosPromise {
+    return this.instance.delete(
+      `/api/admin/regions/${id}`
+    );
+  }
+
   public getRegions(page: number, pageSize?: number): AxiosPromise {
     return this.instance.get(
       `/api/admin/regions/?page=${page}${pageSize ? `&pageSize=${pageSize}` : ''}`
@@ -217,7 +247,7 @@ export default class ApiService {
   }
 
   public getRevisions(page: number, search?: string, from?: string, to?: string): AxiosPromise {
-    var query = `?page=${page}`;
+    let query = `?page=${page}`;
     if(search)
       query += `&search=${search}`;
 
@@ -287,13 +317,13 @@ export default class ApiService {
   public createInventory({
     carsByVenue, name, notification, file, backupFile, manualPhoto, reportPhoto
   }: {
-    carsByVenue: any, name: string, notification: boolean, file: File, backupFile: File | null, manualPhoto: number, reportPhoto: number
+    carsByVenue: any, name: string, notification: boolean, file: File | null, backupFile: File | null, manualPhoto: number, reportPhoto: number
   }): AxiosPromise {
     const formData = new FormData();
     formData.append('carsByVenue', JSON.stringify(carsByVenue));
     formData.append('name', name);
     formData.append('notification', notification.toString());
-    formData.append('file', file);
+    formData.append('file', file!);
     formData.append('manualPhoto', manualPhoto.toString());
     formData.append('reportPhoto', reportPhoto.toString());
     if (backupFile) {
@@ -302,6 +332,14 @@ export default class ApiService {
     this.instance.defaults.headers.common['Content-Type'] = 'multipart/form-data';
     return this.instance.post(
       `/api/inventory/`, formData, {
+        cancelToken: this.source.token
+      }
+    );
+  }
+
+  public importPlanning(data: any): AxiosPromise{
+    return this.instance.post(
+      `/api/admin/planning/`, data, {
         cancelToken: this.source.token
       }
     );
@@ -396,14 +434,10 @@ export default class ApiService {
     )
   }
 
-  public getDashboardTiming(): AxiosPromise {
+  public getDashboardTiming(from: string, to: string): AxiosPromise {
     return this.instance.get(
-      '/api/dashboard/timing/'
+      `/api/dashboard/timing/?start=${from}&end=${to}`
     )
-  }
-
-  public getTimingPerVenue(period: string): AxiosPromise {
-    return this.instance.get(`/api/dashboard/timing/per-venue/?period=${period}`)
   }
 
   public getDashboardCleaning(): AxiosPromise {
@@ -420,6 +454,35 @@ export default class ApiService {
     );
   }
 
+  public loadStock({carsByVenue}: { carsByVenue: any }): AxiosPromise {
+    return this.instance.post(
+      `/api/load-stock/`, {
+        carsByVenue
+      }, {
+        cancelToken: this.source.token
+      }
+    );
+  }
+
+  public getStock(): AxiosPromise {
+    return this.instance.get(
+      `/api/current-stock/`, {
+        cancelToken: this.source.token
+      }
+    );
+  }
+
+  public getPlanning(page: number, pageSize?: number): AxiosPromise {
+    return this.instance.get(
+      `/api/admin/planning/?page=${page}${pageSize ? `&pageSize=${pageSize}` : ''}`
+    );
+  }
+
+  public getBilling(page: number, pageSize?: number): AxiosPromise {
+    return this.instance.get(
+      `/api/admin/billing/?page=${page}${pageSize ? `&pageSize=${pageSize}` : ''}`
+    );
+  }
 
   public createVersion(version: any): AxiosPromise {
     return this.instance.post(
