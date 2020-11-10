@@ -75,7 +75,7 @@ class RequestController {
     logger.info(`RequestController.apiList`);
     logger.info(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
     const {team} = req.user;
-    const {page, pageSize, search} = req.query;
+    const {page, pageSize, search} = req.query as {page: string; pageSize: string; search: string};
     // paginate options
     const options: PaginateOptions = {
       sort: {
@@ -111,8 +111,8 @@ class RequestController {
         }],
       }],
       // select: {_id: true},
-      page: parseInt(page ? page : 1, 10),
-      limit: parseInt(pageSize ? pageSize : 20, 10)
+      page: parseInt(page ? page : "1", 10),
+      limit: parseInt(pageSize ? pageSize : "20", 10)
     };
     let filter: any = {
       team

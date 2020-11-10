@@ -90,7 +90,7 @@ class RequestDetailView extends React.Component<IPropsType, IStateType> {
                       </td>
                       <td>
                         <div className="progress progress-xs">
-                          <div className="progress-bar progress-bar-aqua" style={{width: "75%"}}/>
+                          <div className="progress-bar progress-bar-aqua" style={{width: "75%"}} />
                         </div>
                       </td>
                       <td>En centro logistica</td>

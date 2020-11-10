@@ -105,8 +105,8 @@ class RequestController {
                         }],
                 }],
             // select: {_id: true},
-            page: parseInt(page ? page : 1, 10),
-            limit: parseInt(pageSize ? pageSize : 20, 10)
+            page: parseInt(page ? page : "1", 10),
+            limit: parseInt(pageSize ? pageSize : "20", 10)
         };
         let filter = {
             team

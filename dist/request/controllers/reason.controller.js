@@ -21,8 +21,8 @@ class ReasonController {
                 updatedAt: true,
                 createdAt: true,
             },
-            page: parseInt(page ? page : 1, 10),
-            limit: parseInt(pageSize ? pageSize : 20, 10)
+            page: parseInt(page ? page : "1", 10),
+            limit: parseInt(pageSize ? pageSize : "20", 10)
         };
         try {
             const reasons = await this.getReasons({ team }, options);

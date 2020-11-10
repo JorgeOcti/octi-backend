@@ -116,9 +116,6 @@ carSchema.index({
 carSchema.index({
     team: 1, lastForm: -1
 });
-carSchema.index({
-    team: 1, vin2: 1
-});
 carSchema.virtual('participants', {
     ref: 'Participant',
     localField: '_id',

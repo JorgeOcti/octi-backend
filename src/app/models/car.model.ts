@@ -102,6 +102,7 @@ const carSchema = new mongoose.Schema({
 }, {
   timestamps: true
 });
+
 // text search
 carSchema.index({
   team: 1, denomination: "text", material: "text", brand: "text",
@@ -118,9 +119,6 @@ carSchema.index({
 });
 carSchema.index({
   team: 1, lastForm: -1
-});
-carSchema.index({
-  team: 1, vin2: 1
 });
 
 carSchema.virtual('participants', {

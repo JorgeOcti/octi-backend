@@ -14,7 +14,7 @@ class ReasonController {
     logger.info(`ReasonController.apiList`);
     logger.info(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
     const {team} = req.user;
-    const {page, pageSize} = req.query;
+    const {page, pageSize} = req.query as { page: string; pageSize: string };
     // paginate options
     const options: PaginateOptions = {
       sort: {
@@ -25,8 +25,8 @@ class ReasonController {
         updatedAt: true,
         createdAt: true,
       },
-      page: parseInt(page ? page : 1, 10),
-      limit: parseInt(pageSize ? pageSize : 20, 10)
+      page: parseInt(page ? page : "1", 10),
+      limit: parseInt(pageSize ? pageSize : "20", 10)
     };
     try {
       const reasons = await this.getReasons({team}, options);
