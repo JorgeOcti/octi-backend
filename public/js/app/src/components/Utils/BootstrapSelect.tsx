@@ -1,6 +1,6 @@
 import * as React from 'react';
 import * as unorm from 'unorm';
-import {RefObject} from "react";
+import {RefObject} from 'react';
 
 interface IOption {
   value: string;

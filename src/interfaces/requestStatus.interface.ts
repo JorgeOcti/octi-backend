@@ -4,4 +4,5 @@ export interface IRequestStatus {
   _id: any;
   name: string;
   team: ITeam;
+  default: boolean;
 }

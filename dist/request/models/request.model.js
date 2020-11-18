@@ -8,7 +8,7 @@ const requestSchema = new mongoose.Schema({
         ref: 'Team'
     },
     number: {
-        type: Number,
+        type: Number
     },
     origin: {
         type: mongoose.Schema.Types.ObjectId,
@@ -36,7 +36,7 @@ const requestSchema = new mongoose.Schema({
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User',
         default: null
-    },
+    }
 }, {
     timestamps: true
 });

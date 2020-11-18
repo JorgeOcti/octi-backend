@@ -35,6 +35,7 @@ import BillingListView from "./components/Billing/BillingListView";
 import RegionsListView from "./components/Region/RegionsListFiew";
 import StockView from "./components/Stock/StockListView";
 import StockImportView from "./components/Stock/StockImportView";
+import RequestDetailView from "./components/Request/RequestDetailView";
 
 
 declare let window: IWindow;
@@ -79,6 +80,7 @@ const App = () => (
         <Route exact path="/settings/versions/" component={VersionListView}/>
         <Route exact path="/requests/create/" component={RequestCreateView}/>
         <Route exact path="/requests/" component={RequestListView}/>
+        <Route exact path="/requests/:id/" component={RequestDetailView}/>
         <Route component={NoMatch}/>
       </Switch>
     </ConnectedRouter>

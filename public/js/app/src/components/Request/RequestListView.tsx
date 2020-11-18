@@ -1,14 +1,16 @@
+import * as Raven from 'raven-js';
 import * as React from 'react';
-import {Dispatch, ErrorInfo} from 'react';
-import {RouteComponentProps} from "react-router";
-import {connect} from "react-redux";
-import AppContainer from "../../container/AppContainer";
-import {IWindow} from "../../interfaces/window";
-import RequestDetailView from "./RequestDetailView";
-import {getRequestsAction, IRequestsState} from "../../actions/requests.actions";
-import * as io from "socket.io-client";
-import Paginator from "../Utils/Paginator";
-import * as Raven from "raven-js";
+import { Dispatch, ErrorInfo } from 'react';
+import { connect } from 'react-redux';
+import { RouteComponentProps } from 'react-router';
+import * as io from 'socket.io-client';
+import { getRequestsAction, IRequestsState } from '../../actions/requests.actions';
+import AppContainer from '../../container/AppContainer';
+import { IWindow } from '../../interfaces/window';
+import BootstrapSwitch from '../Utils/BootstrapSwitch';
+import Checkbox from '../Utils/CheckBox';
+import Paginator from '../Utils/Paginator';
+import RequestListDetail from './RequestListDetail';
 
 interface IPropsType extends RouteComponentProps<{ ticket: string }> {
   requests: IRequestsState;
@@ -75,7 +77,10 @@ class RequestListView extends React.Component<IPropsType, IStateType> {
   }
 
   public render(): React.ReactElement<IPropsType> {
-    const {pagination, loading, requests} = this.props.requests;
+    const {
+      pagination, loading, requests, reasons, requestItemStatus,
+      carriers
+    } = this.props.requests;
     return (
       <AppContainer title="" cMenu="3" cSubMenu="3.1">
         <section className="content">
@@ -83,39 +88,80 @@ class RequestListView extends React.Component<IPropsType, IStateType> {
             <div className="box-header with-border">
               <h3 className="box-title">Solicitudes <small>{pagination.count}</small></h3>
               <div className="pull-right box-tools">
-                <button className="btn btn-sm btn-success" onClick={this.create}>Crear solicitud</button>
-                {
-                  /*hasPermission(window.user, 'createInventory') ?
-                    : null*/
-                }
+                <button className="btn btn-sm btn-success" onClick={this.create}>
+                  <i className="fa fa-fw fa-plus" /> Crear solicitud
+                </button>
               </div>
             </div>
             <div className="box-body table-responsive request-list">
-              <div className="row" style={{margin: 0}}>
-                <div className="col-md-4 col-md-offset-8" style={{paddingRight: "0"}}>
-                  <div className="input-group input-group-sm" style={{padding: "10px 0px 10px 5px"}}>
-                    <input type="text" className="form-control pull-right" placeholder="Buscar" value="" onChange={()=>{}}/>
+              <div className="row" style={{ margin: 0 }}>
+                <div className="col-md-4 col-md-offset-4 text-right">
+                  {/* <div className="form-group-switch" style={{padding:'18px 5px 4px 5px'}}>
+                    <BootstrapSwitch
+                      checked={true}
+                      color="blue"
+                      onChange={() => { }} />
+                    <label className="switch-label">ver completados</label>
+                  </div> */}
+                  <div className="checkbox" style={{paddingTop: '10px'}}>
+                    <label style={{paddingLeft: '0', fontWeight: 600}} onClick={()=>console.log}>
+                      <Checkbox
+                        active={true}
+                        action={()=>console.log}
+                        classes="icheck-in-checkbox"
+                        style={{marginTop: '-4px', marginRight: '5px'}}
+                      />
+                      Ver completados
+                    </label>
+                  </div>
+                </div>
+                <div className="col-md-4" style={{ paddingRight: '0' }}>
+                  <div className="input-group input-group-sm" style={{ padding: '10px 0px 10px 5px' }}>
+                    <input type="text" className="form-control pull-right" placeholder="Buscar" />
                     <div className="input-group-btn">
                       <button className="btn btn-default"><i className="fa fa-search" /></button>
                     </div>
                   </div>
                 </div>
               </div>
-              <div className="row request">
-                <div className="col-sm-1 col-xs-1 col-md-1 col-lg-1 center"><strong>ID</strong></div>
-                <div className="col-sm-1 col-xs-1 col-md-1 col-lg-1"><strong>Flota</strong></div>
-                <div className="col-sm-2 col-xs-2 col-md-2 col-lg-2"><strong>Estado</strong></div>
-                <div className="col-sm-1 col-xs-1 col-md-1 col-lg-1"><strong>Destino</strong></div>
-                <div className="col-sm-1 col-xs-1 col-md-1 col-lg-1 center"><strong>Nº Vehículos</strong></div>
-                <div className="col-sm-2 col-xs-2 col-md-2 col-lg-2 center"><strong>Fecha Creación</strong></div>
-                <div className="col-sm-2 col-xs-2 col-md-2 col-lg-2 center"><strong>Última Actualización</strong></div>
+              <div className="row request bg-primary">
                 <div className="col-sm-1 col-xs-1 col-md-1 col-lg-1 center">
-                  <strong><i className="fa fa-comment"/></strong>
+                  <strong>ID</strong>
+                </div>
+                <div className="col-sm-1 col-xs-1 col-md-1 col-lg-1">
+                  <strong>Flota</strong>
+                </div>
+                <div className="col-sm-2 col-xs-2 col-md-2 col-lg-2">
+                  <strong>Estado</strong>
+                </div>
+                <div className="col-sm-1 col-xs-1 col-md-1 col-lg-1">
+                  <strong>Destino</strong>
+                </div>
+                <div className="col-sm-1 col-xs-1 col-md-1 col-lg-1 center">
+                  <strong>Nº Vehículos</strong>
+                </div>
+                <div className="col-sm-2 col-xs-2 col-md-2 col-lg-2 center">
+                  <strong>Fecha Creación</strong>
+                </div>
+                <div className="col-sm-2 col-xs-2 col-md-2 col-lg-2 center">
+                  <strong>Última Actualización</strong>
+                </div>
+                <div className="col-sm-1 col-xs-1 col-md-1 col-lg-1 center">
+                  <strong><i className="fa fa-comment" /></strong>
                 </div>
                 <div className="col-sm-1 col-xs-1 col-md-1 col-lg-1" />
               </div>
               {
-                requests.map((request: any) => <RequestDetailView request={request} key={request._id}/>)
+                requests.map((request: any) => (
+                  <RequestListDetail
+                    request={request}
+                    requestItemStatus={requestItemStatus}
+                    reasons={reasons}
+                    carriers={carriers}
+                    key={request._id}
+                    {...this.props}
+                  />
+                ))
               }
             </div>
             {
@@ -123,7 +169,7 @@ class RequestListView extends React.Component<IPropsType, IStateType> {
               <div className="box-footer">
                 <div className="row">
                   <div className="col-md-12 text-right">
-                    <Paginator changePage={this.changePage} page={pagination.page} pages={pagination.pages}/>
+                    <Paginator changePage={this.changePage} page={pagination.page} pages={pagination.pages} />
                   </div>
                 </div>
               </div>
@@ -131,13 +177,13 @@ class RequestListView extends React.Component<IPropsType, IStateType> {
             {
               loading &&
               <div className="overlay">
-                <i className="fa fa-spinner fa-spin text-purple"/>
+                <i className="fa fa-spinner fa-spin text-purple" />
               </div>
             }
           </div>
         </section>
       </AppContainer>
-    )
+    );
   }
 
   private create(): void {

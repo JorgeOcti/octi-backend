@@ -83,7 +83,7 @@ class CompaniesListView extends React.Component<IPropsType, IStateType> {
               {
                 hasPermission(window.user, 'addCompany') ?
                   <div className="box-tools pull-right">
-                    <button className="btn btn-sm btn-success" onClick={this.addCompany}>Agregar</button>
+                    <button className="btn btn-sm btn-success" onClick={this.addCompany}><i className="fa fa-plus" /> Agregar</button>
                   </div>
                   : null
               }

@@ -1,36 +1,41 @@
-import {IRequest} from "../../interfaces/global.interface";
-import {Response} from "express";
-import Request, {IRequestModel} from "../models/request.model";
-import RequestItem from "../models/requestItem.model";
-import {PaginateOptions, PaginateResult} from "mongoose";
-import logger from "../../services/logger.service";
-import Car, {ChoicesStatusCar} from "../../app/models/car.model";
-import Team from "../../app/models/team.model";
+import { IRequest } from '../../interfaces/global.interface';
+import { Response } from 'express';
+import Request, { IRequestModel } from '../models/request.model';
+import RequestItem from '../models/requestItem.model';
+import { PaginateOptions, PaginateResult } from 'mongoose';
+import logger from '../../services/logger.service';
+import Car, { ChoicesStatusCar } from '../../app/models/car.model';
+import Team from '../../app/models/team.model';
+import RequestItemStatus from '../models/requestItemStatus.model';
 
 class RequestController {
 
   constructor() {
     this.index = this.index.bind(this);
     this.apiList = this.apiList.bind(this);
+    this.apiDetail = this.apiDetail.bind(this);
     this.apiCreate = this.apiCreate.bind(this);
     this.getRequets = this.getRequets.bind(this);
+    this.apiPatchItem = this.apiPatchItem.bind(this);
   }
 
   public async index(req: IRequest, res: Response) {
-    res.render('app/index', {token: await req.user.generateToken()});
+    res.render('app/index', { token: await req.user.generateToken() });
   }
 
   public async apiCreate(req: IRequest, res: Response) {
-    const {team, company} = req.user;
-    const {cars, venue, fleet} = req.body;
+    const { team, company } = req.user;
+    const { cars, venue, fleet } = req.body;
 
     try {
-      const updateTeam = await Team.findOneAndUpdate({_id: team._id}, {$inc: {requestNumber: 1}}, {new: true});
+      const defaultItemStatus = await RequestItemStatus.findOneOrCreate({ team, default: true }, { name: 'En proceso', default: true, team });
+      const updateTeam = await Team.findOne({ _id: team._id });
       const request = await new Request({
         team,
-        number: updateTeam!.requestNumber,
+        number: updateTeam!.requestNumber +1,
         origin: venue,
         destination: venue,
+        // status,
         fleet,
         createdBy: req.user
       }).save();
@@ -55,9 +60,11 @@ class RequestController {
           priority: car.priority,
           origin: venue,
           destination: venue,
+          status: defaultItemStatus,
           createdBy: req.user
         }).save();
       }
+      await Team.findOneAndUpdate({ _id: team._id }, { $inc: { requestNumber: 1 } }, { new: true });
       res.json({
         status: 200
       });
@@ -74,8 +81,8 @@ class RequestController {
   public async apiList(req: IRequest, res: Response) {
     logger.info(`RequestController.apiList`);
     logger.info(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
-    const {team} = req.user;
-    const {page, pageSize, search} = req.query as {page: string; pageSize: string; search: string};
+    const { team } = req.user;
+    const { page, pageSize, search } = req.query as { page: string; pageSize: string; search: string };
     // paginate options
     const options: PaginateOptions = {
       sort: {
@@ -83,13 +90,16 @@ class RequestController {
       },
       populate: [{
         path: 'origin',
-        select: ['name'],
+        select: ['name']
       }, {
         path: 'destination',
-        select: ['name'],
+        select: ['name']
+      }, {
+        path: 'status',
+        select: ['name']
       }, {
         path: 'createdBy',
-        select: ['firstName', 'lastName'],
+        select: ['firstName', 'lastName']
       }, {
         path: 'items',
         options: {
@@ -100,21 +110,27 @@ class RequestController {
         populate: [{
           path: 'car'
         }, {
+          path: 'carrier',
+          select: ['name']
+        }, {
+          path: 'status',
+          select: ['name']
+        }, {
           path: 'reason',
-          select: ['name'],
+          select: ['name']
         }, {
           path: 'origin',
-          select: ['name'],
+          select: ['name']
         }, {
           path: 'destination',
-          select: ['name'],
-        }],
+          select: ['name']
+        }]
       }],
       // select: {_id: true},
-      page: parseInt(page ? page : "1", 10),
-      limit: parseInt(pageSize ? pageSize : "20", 10)
+      page: parseInt(page ? page : '1', 10),
+      limit: parseInt(pageSize ? pageSize : '20', 10)
     };
-    let filter: any = {
+    const filter: any = {
       team
     };
     if (search) {
@@ -147,9 +163,76 @@ class RequestController {
     }
   }
 
+  public async apiDetail(req: IRequest, res: Response) {
+    logger.info(`RequestController.apiDetail`);
+    logger.info(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
+    const { team } = req.user;
+    const { id } = req.params;
+    try {
+      const request = await Request
+        .findOne({
+           _id: id,
+           team
+        })
+        .populate([{
+          path: 'origin',
+          select: ['name']
+        }, {
+          path: 'destination',
+          select: ['name']
+        }, {
+          path: 'createdBy',
+          select: ['firstName', 'lastName']
+        }, {
+          path: 'items',
+          options: {
+            sort: {
+              priority: -1
+            }
+          },
+          populate: [{
+            path: 'car'
+          }, {
+            path: 'reason',
+            select: ['name']
+          }, {
+            path: 'status',
+            select: ['name']
+          }, {
+            path: 'carrier',
+            select: ['name']
+          }, {
+            path: 'origin',
+            select: ['name']
+          }, {
+            path: 'destination',
+            select: ['name']
+          }, {
+            path: 'status',
+            select: ['name']
+          }]
+        }]);
+      if (request) {
+        res.json(request);
+      } else {
+        res.status(404).json({
+          message: `No se ha encontrado la solicitud ${id}`,
+          status: 404
+        });
+      }
+    } catch (e) {
+      /* istanbul ignore next */
+      logger.error(`RequestController.apiDetail: Async Error.`);
+      /* istanbul ignore next */
+      logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}, body: ${JSON.stringify(req.body)}, params: ${JSON.stringify(req.params)}`);
+      logger.error(e);
+      res.status(500).json(e);
+    }
+  }
+
   public async searhCar(req: IRequest, res: Response) {
-    const {team} = req.user;
-    const {search} = req.query;
+    const { team } = req.user;
+    const { search } = req.query;
     try {
       /*const searchText = new RegExp(search, 'i');
       const cars = await Car.aggregate([{
@@ -199,7 +282,7 @@ class RequestController {
           denomination: 1,
           material: 1,
           score: {
-            $meta: "textScore"
+            $meta: 'textScore'
           }
         }
       }, {
@@ -219,16 +302,16 @@ class RequestController {
         }
       }, {
         $sort: {
-          "_id.score": -1
+          '_id.score': -1
         }
       }, {
         $limit: 100
       }, {
         $project: {
-          brand: "$_id.brand",
-          denomination: "$_id.denomination",
-          material: "$_id.material",
-          score: "$_id.score",
+          brand: '$_id.brand',
+          denomination: '$_id.denomination',
+          material: '$_id.material',
+          score: '$_id.score',
           _id: false
         }
       }]);
@@ -243,7 +326,7 @@ class RequestController {
       }, {_id:1, brand: 1, denomination: 1}).limit(100);*/
       res.json({
         cars
-      })
+      });
     } catch (e) {
       /* istanbul ignore next */
       logger.error(`RequestController.searhCar: Async Error.`);
@@ -254,14 +337,30 @@ class RequestController {
     }
   }
 
-  private getRequets(filter: any, options: PaginateOptions): Promise<PaginateResult<IRequestModel>>{
+  public async apiPatchItem(req: IRequest, res: Response) {
+    const { team } = req.user;
+    const updateObject = req.body;
+    const {id} = req.params;
+    try {
+      await RequestItem.update({_id: id, team}, {$set: updateObject});
+      // todo: send update object to socket team
+    } catch (e) {
+      /* istanbul ignore next */
+      logger.error(`RequestController.apiPatchItem: Async Error.`);
+      /* istanbul ignore next */
+      logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
+      res.status(500).json(e);
+    }
+  }
+
+  private getRequets(filter: any, options: PaginateOptions): Promise<PaginateResult<IRequestModel>> {
     return new Promise((resolve, reject) => {
-      Request.paginate(filter, options, (err, result)=>{
+      Request.paginate(filter, options, (err, result) => {
         if (err) {
           return reject(err);
         }
         return resolve(result);
-      })
+      });
     });
   }
 }

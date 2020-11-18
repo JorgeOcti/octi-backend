@@ -1,6 +1,6 @@
-import Middlewares from "../middlewares/middlewares";
-import BillingController from "../billing/controllers/billing.controller";
-import * as express from "express";
+import Middlewares from '../middlewares/middlewares';
+import BillingController from '../billing/controllers/billing.controller';
+import * as express from 'express';
 
 const billingRouter = express.Router();
 
@@ -8,6 +8,7 @@ billingRouter.get('/settings/billing/pdf/:id', Middlewares.isLoggedIn, BillingCo
 billingRouter.get('/settings/billing/', Middlewares.isLoggedIn, BillingController.index);
 billingRouter.get('/settings/billing/run/', Middlewares.isLoggedIn, BillingController.run);
 billingRouter.get('/api/admin/billing/', Middlewares.isLoggedIn, BillingController.apiList);
+billingRouter.get('/api/admin/billing/detail/', Middlewares.isLoggedIn, BillingController.apiDetail);
 
 
 export {

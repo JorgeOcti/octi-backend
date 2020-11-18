@@ -1,7 +1,7 @@
-import * as mongoose from "mongoose";
-import {PaginateModel} from "mongoose";
-import {IRequest} from "../../interfaces/request.interface";
-import * as mongoosePaginate from "mongoose-paginate";
+import * as mongoose from 'mongoose';
+import {PaginateModel} from 'mongoose';
+import {IRequest} from '../../interfaces/request.interface';
+import * as mongoosePaginate from 'mongoose-paginate';
 
 export interface IRequestModel extends IRequest, mongoose.Document {}
 
@@ -11,7 +11,7 @@ const requestSchema = new mongoose.Schema({
     ref: 'Team'
   },
   number: {
-    type: Number,
+    type: Number
   },
   origin: {
     type: mongoose.Schema.Types.ObjectId,
@@ -39,7 +39,7 @@ const requestSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
     default: null
-  },
+  }
 }, {
   timestamps: true
 });

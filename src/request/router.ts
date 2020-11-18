@@ -2,17 +2,26 @@ import * as express from 'express';
 import Middlewares from '../middlewares/middlewares';
 import RequestController from './controllers/request.controller';
 import ReasonController from './controllers/reason.controller';
+import RequestItemStatusController from './controllers/requestItemStatus.controller';
 
 const requestRouter = express.Router();
 
-
+// web pages
 requestRouter.get('/requests/', Middlewares.isLoggedIn, RequestController.index);
+requestRouter.get('/requests/:id/', Middlewares.isLoggedIn, RequestController.index);
 requestRouter.get('/requests/create/', Middlewares.isLoggedIn, RequestController.index);
+
+// apis
 requestRouter.get('/api/v1/requests/search-car/', Middlewares.isLoggedIn, RequestController.searhCar);
 requestRouter.get('/api/v1/requests/', Middlewares.isLoggedIn, RequestController.apiList);
+requestRouter.get('/api/v1/requests/:id/', Middlewares.isLoggedIn, RequestController.apiDetail);
 requestRouter.post('/api/v1/requests/', Middlewares.isLoggedIn, RequestController.apiCreate);
 
+requestRouter.patch('/api/v1/requests-item/:id/', Middlewares.isLoggedIn, RequestController.apiPatchItem);
+
 requestRouter.get('/api/v1/reasons/', Middlewares.isLoggedIn, ReasonController.apiList);
+
+requestRouter.get('/api/v1/request-item-status/', Middlewares.isLoggedIn, RequestItemStatusController.apiList);
 
 export {
   requestRouter

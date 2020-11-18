@@ -160,7 +160,7 @@ class VenuesListView extends React.Component<IPropsType, IStateType> {
           properties: {
             title: 'Sucursal',
             name: venue.name,
-            logo: venue.company.marker && venue.company.marker.hasOwnProperty("url") ? `url("${venue.company.marker.url}")` : 'url("/static/images/files/pin_osa.svg")'
+            logo: venue.company.marker && venue.company.marker.hasOwnProperty('url') ? `url("${venue.company.marker.url}")` : 'url("/static/images/files/pin_osa.svg")'
           }
         }
       })
@@ -168,7 +168,7 @@ class VenuesListView extends React.Component<IPropsType, IStateType> {
 
     const $map = this.map;
     $('#map').css('width', $('#tab_2').width() as any);
-    let bounds = new mapboxgl.LngLatBounds();
+    const bounds = new mapboxgl.LngLatBounds();
     geojson.features.forEach((marker) => {
 
       // create a HTML element for each feature
@@ -206,11 +206,11 @@ class VenuesListView extends React.Component<IPropsType, IStateType> {
       style: 'mapbox://styles/mapbox/streets-v11',
       center: [-70.593536, -33.509243],
       zoom: 10,
-      trackResize: true,
+      trackResize: true
     });
     this.map.addControl(new mapboxgl.NavigationControl(), 'bottom-right');
 
-    $("a[href='#tab_2']").on('shown.bs.tab', (e) => {
+    $('a[href=\'#tab_2\']').on('shown.bs.tab', (e) => {
       this.onChangeTab();
     });
   }
@@ -249,7 +249,7 @@ class VenuesListView extends React.Component<IPropsType, IStateType> {
               <div className="box-tools pull-right">
                 {
                   hasPermission(window.user, 'addVenue') ?
-                    <button className="btn btn-sm btn-success" onClick={this.createVenue}>Agregar</button>
+                    <button className="btn btn-sm btn-success" onClick={this.createVenue}><i className="fa fa-plus" />  Agregar</button>
                     : null
                 }
                 <button
@@ -362,8 +362,8 @@ class VenuesListView extends React.Component<IPropsType, IStateType> {
                     <div
                       id="map"
                       style={{
-                        position: "relative",
-                        width: "100%",
+                        position: 'relative',
+                        width: '100%',
                         height: '60vh'
                       }}
                     />

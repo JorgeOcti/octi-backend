@@ -13,8 +13,8 @@ import {io} from '../../../server';
 import User, {
   IUserModel
 } from '../../models/user.model';
-import Venue from "../../models/venue.model";
-import {Alignment} from "exceljs";
+import Venue from '../../models/venue.model';
+import {Alignment} from 'exceljs';
 
 class AdminUsersController {
 
@@ -70,8 +70,8 @@ class AdminUsersController {
         activeCell: 'A1'
       }];
       const accessColumns: any[] = [{
-        header: "Usuario",
-        key: "usuario",
+        header: 'Usuario',
+        key: 'usuario',
         width: 30,
         alignment: {
           wrapText: true
@@ -105,7 +105,7 @@ class AdminUsersController {
           wrapText: true
         };
         cell.font = {
-          bold: true,
+          bold: true
         };
       });
       worksheetAccess.getRow(1).eachCell((cell) => {
@@ -116,11 +116,11 @@ class AdminUsersController {
           wrapText: true
         };
         if (parseInt(cell.col, 10) !== 1) {
-          alignment.textRotation = 90
+          alignment.textRotation = 90;
         }
         cell.alignment = alignment;
         cell.font = {
-          bold: true,
+          bold: true
         };
       });
 
@@ -174,7 +174,7 @@ class AdminUsersController {
         });
         const dataVenues: any = {};
         user.venuesPermissions(true).forEach((venue: string) => {
-          dataVenues[venue] = "X";
+          dataVenues[venue] = 'X';
           // worksheet.addRow({
           //   ...detailUser,
           //   venue: venue.name,
@@ -184,7 +184,7 @@ class AdminUsersController {
         accessRow.push({
           usuario: user.fullName(),
           ...dataVenues
-        })
+        });
       });
       worksheetAccess.addRows(accessRow);
       /* formats */
@@ -257,8 +257,8 @@ class AdminUsersController {
         firstName: 1,
         lastName: 1
       },
-      page: parseInt(page ? page : "1", 10),
-      limit: parseInt(pageSize ? pageSize : "20", 10)
+      page: parseInt(page ? page : '1', 10),
+      limit: parseInt(pageSize ? pageSize : '20', 10)
     };
     try {
       const users = await this.getUsers({
@@ -407,7 +407,7 @@ class AdminUsersController {
           status: 400
         });
       } else {
-        let updateItems: any = {
+        const updateItems: any = {
           firstName,
           lastName,
           company,

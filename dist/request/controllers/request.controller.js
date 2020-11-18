@@ -5,12 +5,15 @@ const requestItem_model_1 = require("../models/requestItem.model");
 const logger_service_1 = require("../../services/logger.service");
 const car_model_1 = require("../../app/models/car.model");
 const team_model_1 = require("../../app/models/team.model");
+const requestItemStatus_model_1 = require("../models/requestItemStatus.model");
 class RequestController {
     constructor() {
         this.index = this.index.bind(this);
         this.apiList = this.apiList.bind(this);
+        this.apiDetail = this.apiDetail.bind(this);
         this.apiCreate = this.apiCreate.bind(this);
         this.getRequets = this.getRequets.bind(this);
+        this.apiPatchItem = this.apiPatchItem.bind(this);
     }
     async index(req, res) {
         res.render('app/index', { token: await req.user.generateToken() });
@@ -19,12 +22,14 @@ class RequestController {
         const { team, company } = req.user;
         const { cars, venue, fleet } = req.body;
         try {
-            const updateTeam = await team_model_1.default.findOneAndUpdate({ _id: team._id }, { $inc: { requestNumber: 1 } }, { new: true });
+            const defaultItemStatus = await requestItemStatus_model_1.default.findOneOrCreate({ team, default: true }, { name: 'En proceso', default: true, team });
+            const updateTeam = await team_model_1.default.findOne({ _id: team._id });
             const request = await new request_model_1.default({
                 team,
-                number: updateTeam.requestNumber,
+                number: updateTeam.requestNumber + 1,
                 origin: venue,
                 destination: venue,
+                // status,
                 fleet,
                 createdBy: req.user
             }).save();
@@ -49,9 +54,11 @@ class RequestController {
                     priority: car.priority,
                     origin: venue,
                     destination: venue,
+                    status: defaultItemStatus,
                     createdBy: req.user
                 }).save();
             }
+            await team_model_1.default.findOneAndUpdate({ _id: team._id }, { $inc: { requestNumber: 1 } }, { new: true });
             res.json({
                 status: 200
             });
@@ -77,13 +84,16 @@ class RequestController {
             },
             populate: [{
                     path: 'origin',
-                    select: ['name'],
+                    select: ['name']
                 }, {
                     path: 'destination',
-                    select: ['name'],
+                    select: ['name']
+                }, {
+                    path: 'status',
+                    select: ['name']
                 }, {
                     path: 'createdBy',
-                    select: ['firstName', 'lastName'],
+                    select: ['firstName', 'lastName']
                 }, {
                     path: 'items',
                     options: {
@@ -94,21 +104,27 @@ class RequestController {
                     populate: [{
                             path: 'car'
                         }, {
+                            path: 'carrier',
+                            select: ['name']
+                        }, {
+                            path: 'status',
+                            select: ['name']
+                        }, {
                             path: 'reason',
-                            select: ['name'],
+                            select: ['name']
                         }, {
                             path: 'origin',
-                            select: ['name'],
+                            select: ['name']
                         }, {
                             path: 'destination',
-                            select: ['name'],
-                        }],
+                            select: ['name']
+                        }]
                 }],
             // select: {_id: true},
-            page: parseInt(page ? page : "1", 10),
-            limit: parseInt(pageSize ? pageSize : "20", 10)
+            page: parseInt(page ? page : '1', 10),
+            limit: parseInt(pageSize ? pageSize : '20', 10)
         };
-        let filter = {
+        const filter = {
             team
         };
         if (search) {
@@ -139,6 +155,74 @@ class RequestController {
             logger_service_1.default.error(`RequestController.apiList: Async Error.`);
             /* istanbul ignore next */
             logger_service_1.default.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
+            res.status(500).json(e);
+        }
+    }
+    async apiDetail(req, res) {
+        logger_service_1.default.info(`RequestController.apiDetail`);
+        logger_service_1.default.info(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
+        const { team } = req.user;
+        const { id } = req.params;
+        try {
+            const request = await request_model_1.default
+                .findOne({
+                _id: id,
+                team
+            })
+                .populate([{
+                    path: 'origin',
+                    select: ['name']
+                }, {
+                    path: 'destination',
+                    select: ['name']
+                }, {
+                    path: 'createdBy',
+                    select: ['firstName', 'lastName']
+                }, {
+                    path: 'items',
+                    options: {
+                        sort: {
+                            priority: -1
+                        }
+                    },
+                    populate: [{
+                            path: 'car'
+                        }, {
+                            path: 'reason',
+                            select: ['name']
+                        }, {
+                            path: 'status',
+                            select: ['name']
+                        }, {
+                            path: 'carrier',
+                            select: ['name']
+                        }, {
+                            path: 'origin',
+                            select: ['name']
+                        }, {
+                            path: 'destination',
+                            select: ['name']
+                        }, {
+                            path: 'status',
+                            select: ['name']
+                        }]
+                }]);
+            if (request) {
+                res.json(request);
+            }
+            else {
+                res.status(404).json({
+                    message: `No se ha encontrado la solicitud ${id}`,
+                    status: 404
+                });
+            }
+        }
+        catch (e) {
+            /* istanbul ignore next */
+            logger_service_1.default.error(`RequestController.apiDetail: Async Error.`);
+            /* istanbul ignore next */
+            logger_service_1.default.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}, body: ${JSON.stringify(req.body)}, params: ${JSON.stringify(req.params)}`);
+            logger_service_1.default.error(e);
             res.status(500).json(e);
         }
     }
@@ -194,7 +278,7 @@ class RequestController {
                         denomination: 1,
                         material: 1,
                         score: {
-                            $meta: "textScore"
+                            $meta: 'textScore'
                         }
                     }
                 }, {
@@ -214,16 +298,16 @@ class RequestController {
                     }
                 }, {
                     $sort: {
-                        "_id.score": -1
+                        '_id.score': -1
                     }
                 }, {
                     $limit: 100
                 }, {
                     $project: {
-                        brand: "$_id.brand",
-                        denomination: "$_id.denomination",
-                        material: "$_id.material",
-                        score: "$_id.score",
+                        brand: '$_id.brand',
+                        denomination: '$_id.denomination',
+                        material: '$_id.material',
+                        score: '$_id.score',
                         _id: false
                     }
                 }]);
@@ -245,6 +329,22 @@ class RequestController {
             /* istanbul ignore next */
             logger_service_1.default.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
             logger_service_1.default.error(e);
+            res.status(500).json(e);
+        }
+    }
+    async apiPatchItem(req, res) {
+        const { team } = req.user;
+        const updateObject = req.body;
+        const { id } = req.params;
+        try {
+            await requestItem_model_1.default.update({ _id: id, team }, { $set: updateObject });
+            // todo: send update object to socket team
+        }
+        catch (e) {
+            /* istanbul ignore next */
+            logger_service_1.default.error(`RequestController.apiPatchItem: Async Error.`);
+            /* istanbul ignore next */
+            logger_service_1.default.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
             res.status(500).json(e);
         }
     }

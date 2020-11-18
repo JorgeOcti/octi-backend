@@ -1,7 +1,21 @@
-import {IRequestsState, RequestsReduxActions} from "../actions/requests.actions";
+import {
+  IRequestsState,
+  RequestsReduxActions,
+  REQUEST_CANCEL_REQUEST,
+  REQUEST_IS_LOADING,
+  REQUEST_LOAD_CARRIERS,
+  REQUEST_LOAD_REASONS,
+  REQUEST_LOAD_REQUEST,
+  REQUEST_LOAD_REQUESTS,
+  REQUEST_LOAD_REQUEST_ITEM_STATUS
+} from '../actions/requests.types';
 
 const initialState: IRequestsState = {
   requests: [],
+  reasons: [],
+  carriers: [],
+  requestItemStatus: [],
+  request: null,
   loading: true,
   source: null,
   pagination: {
@@ -13,17 +27,32 @@ const initialState: IRequestsState = {
 
 export function requestsReducers(state = initialState, action: RequestsReduxActions): IRequestsState {
   switch (action.type) {
-    case '/REQUESTS/CANCEL_REQUEST':
+    case REQUEST_CANCEL_REQUEST:
       return {
         ...state,
         source: action.payload.source
       };
-    case '/REQUESTS/IS_LOADING':
+    case REQUEST_IS_LOADING:
       return {
         ...state,
         loading: action.payload.loading
       };
-    case '/REQUESTS/LOAD_REQUEST':
+    case REQUEST_LOAD_REASONS:
+      return {
+        ...state,
+        reasons: action.payload.reasons
+      };
+    case REQUEST_LOAD_CARRIERS:
+      return {
+        ...state,
+        carriers: action.payload.carriers
+      };
+    case REQUEST_LOAD_REQUEST_ITEM_STATUS:
+      return {
+        ...state,
+        requestItemStatus: action.payload.requestItemStatus
+      };
+    case REQUEST_LOAD_REQUESTS:
       return {
         ...state,
         requests: action.payload.requests,
@@ -33,6 +62,11 @@ export function requestsReducers(state = initialState, action: RequestsReduxActi
           page: action.payload.page,
           count: action.payload.count
         }
+      };
+    case REQUEST_LOAD_REQUEST:
+      return {
+        ...state,
+        request: action.payload.request
       };
     default:
       return state;

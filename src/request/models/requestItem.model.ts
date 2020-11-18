@@ -1,7 +1,7 @@
-import * as mongoose from "mongoose";
-import {PaginateModel} from "mongoose";
-import {IRequestItem} from "../../interfaces/requestItem.interface";
-import * as mongoosePaginate from "mongoose-paginate";
+import * as mongoose from 'mongoose';
+import {PaginateModel} from 'mongoose';
+import {IRequestItem} from '../../interfaces/requestItem.interface';
+import * as mongoosePaginate from 'mongoose-paginate';
 
 export interface IRequestItemModel extends IRequestItem, mongoose.Document {}
 
@@ -34,13 +34,17 @@ const requestItemSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Reason'
   },
+  carrier: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Carrier'
+  },
   priority: {
     type: Boolean,
     default: false
   },
   observation: {
     type: String,
-    default: ""
+    default: ''
   },
   equipment: {
     type: Boolean,
@@ -57,6 +61,10 @@ const requestItemSchema = new mongoose.Schema({
   body: {
     type: Boolean,
     default: false
+  },
+  status: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'RequestItemStatus'
   },
   createdBy: {
     type: mongoose.Schema.Types.ObjectId,

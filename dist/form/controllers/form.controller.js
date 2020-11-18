@@ -1232,7 +1232,7 @@ class FormController {
     async timingDerco(req, res) {
         try {
             const { team } = req.user;
-            let userObject = await user_model_1.default.findOne({ _id: req.user._id });
+            const userObject = await user_model_1.default.findOne({ _id: req.user._id });
             // Derco
             if (userObject && userObject.team.toString() === '5bf2de34caf8ef7096105cda') {
                 const total = 2;
@@ -1240,12 +1240,12 @@ class FormController {
                 const threshold = 60 * 24 * 3;
                 // despacho:  5b0487db835536612bab1b61
                 // recepcion: 5b1ae5799ebea419025b3e41
-                let reception = await form_model_1.default.findOne({ _id: "5b0487db835536612bab1b61" });
-                let cars = await car_model_1.default.find({
+                const reception = await form_model_1.default.findOne({ _id: '5b0487db835536612bab1b61' });
+                const cars = await car_model_1.default.find({
                     team,
-                    lastForm: { $ne: null },
+                    lastForm: { $ne: null }
                 });
-                let carsDict = {};
+                const carsDict = {};
                 for (const car of cars) {
                     carsDict[car._id.toString()] = car;
                 }
@@ -1292,12 +1292,12 @@ class FormController {
                     }
                 ];
                 for (const reception of receptions) {
-                    let carID = reception.car.toString();
+                    const carID = reception.car.toString();
                     if (carID in carsDict) {
                         const car = carsDict[carID];
                         const t0 = moment(car.createdAt).subtract(4, 'hours');
                         const t1 = moment(reception.createdAt).subtract(4, 'hours');
-                        const hour = parseInt(t0.format('HH'));
+                        const hour = parseInt(t0.format('HH'), 10);
                         if (hour >= 20 || hour <= 2)
                             continue;
                         const dm = t1.diff(t0, 'minutes');
@@ -1311,7 +1311,7 @@ class FormController {
                                 checkedAt: t1.format('YYYY-MM-DD HH:mm:ss'),
                                 checkedAtMonth: t1.format('MM'),
                                 leadtime: dm,
-                                ontime: ontime
+                                ontime
                             });
                         }
                     }
@@ -1338,16 +1338,16 @@ class FormController {
         }
     }
     static async getDercoDeliveryParticipants(team, from, to) {
-        let receptionForm = await form_model_1.default.findOne({ _id: "5b1ae5799ebea419025b3e41" });
+        const receptionForm = await form_model_1.default.findOne({ _id: '5b1ae5799ebea419025b3e41' });
         return participant_model_1.default.aggregate([
             {
                 $match: {
-                    team: team,
+                    team,
                     form: receptionForm._id,
                     createdAt: {
                         $gte: from,
                         $lte: to
-                    },
+                    }
                 }
             },
             {
@@ -1356,15 +1356,15 @@ class FormController {
                     venue: 1,
                     receiveFrom: 1,
                     form: 1,
-                    createdAt: 1,
+                    createdAt: 1
                 }
             },
             {
                 $lookup: {
-                    from: "cars",
-                    localField: "car",
-                    foreignField: "_id",
-                    as: "related_car",
+                    from: 'cars',
+                    localField: 'car',
+                    foreignField: '_id',
+                    as: 'related_car'
                 }
             },
             { $unwind: '$related_car' },
@@ -1380,25 +1380,25 @@ class FormController {
             },
             {
                 $lookup: {
-                    from: "venues",
-                    localField: "venue",
-                    foreignField: "_id",
-                    as: "to",
+                    from: 'venues',
+                    localField: 'venue',
+                    foreignField: '_id',
+                    as: 'to'
                 }
             },
-            { $unwind: '$to' },
+            { $unwind: '$to' }
         ]);
     }
     async getDeliveryParticipants(team, from, to) {
         const distributors = await venue_model_1.default.find({ team, type: 'distributor' });
         const receivers = await venue_model_1.default.find({ team, type: 'receiver' });
-        let receptions = await participant_model_1.default.aggregate([
+        const receptions = await participant_model_1.default.aggregate([
             {
                 $lookup: {
-                    from: "participants",
-                    localField: "car",
-                    foreignField: "car",
-                    as: "recived_participants",
+                    from: 'participants',
+                    localField: 'car',
+                    foreignField: 'car',
+                    as: 'recived_participants'
                 }
             },
             {
@@ -1406,7 +1406,7 @@ class FormController {
             },
             {
                 $match: {
-                    team: team,
+                    team,
                     venue: { $in: receivers.map((v) => v._id) },
                     receiveFrom: { $in: distributors.map((v) => v._id) },
                     reception: true,
@@ -1431,7 +1431,7 @@ class FormController {
                     'recived_participants.car': 1,
                     'recived_participants.team': 1,
                     'recived_participants.venue': 1,
-                    'recived_participants._id': 1,
+                    'recived_participants._id': 1
                 }
             },
             {
@@ -1439,29 +1439,29 @@ class FormController {
             },
             {
                 $lookup: {
-                    from: "venues",
-                    localField: "venue",
-                    foreignField: "_id",
-                    as: "venue",
+                    from: 'venues',
+                    localField: 'venue',
+                    foreignField: '_id',
+                    as: 'venue'
                 }
             },
-            { $unwind: "$venue" },
+            { $unwind: '$venue' },
             {
                 $lookup: {
-                    from: "venues",
-                    localField: "recived_participants.venue",
-                    foreignField: "_id",
-                    as: "recived_participants.venue",
+                    from: 'venues',
+                    localField: 'recived_participants.venue',
+                    foreignField: '_id',
+                    as: 'recived_participants.venue'
                 }
             },
-            { $unwind: "$recived_participants.venue" },
+            { $unwind: '$recived_participants.venue' },
             {
                 $group: {
-                    _id: "$_id",
+                    _id: '$_id',
                     car: { $first: '$car' },
                     venue: { $first: '$venue' },
                     createdAt: { $first: '$createdAt' },
-                    recived_participants: { $push: "$recived_participants" }
+                    recived_participants: { $push: '$recived_participants' }
                 }
             },
             {
@@ -1469,7 +1469,7 @@ class FormController {
                     car: 1,
                     venue: 1,
                     createdAt: 1,
-                    "recived_participants": { "$arrayElemAt": ["$recived_participants", 0] }
+                    'recived_participants': { '$arrayElemAt': ['$recived_participants', 0] }
                 }
             }
         ]);
@@ -1485,7 +1485,7 @@ class FormController {
     static parseReception(reception, distributorTable) {
         const recivedparticipant = reception.recived_participants;
         const sendingVenue = recivedparticipant.venue;
-        let daysLimit = distributorTable[sendingVenue._id.toString()] &&
+        const daysLimit = distributorTable[sendingVenue._id.toString()] &&
             distributorTable[sendingVenue._id.toString()][reception.venue._id.toString()] ?
             distributorTable[sendingVenue._id.toString()][reception.venue._id.toString()] :
             5;
@@ -1501,7 +1501,7 @@ class FormController {
             from: sendingVenue.abbreviation || sendingVenue.name,
             to: reception.venue.abbreviation || reception.venue.name,
             atTime: dm <= threshold,
-            daysLimit: daysLimit
+            daysLimit
         };
     }
     static parseDercoReception(reception, distributorTable, dercoDistributionVenue) {
@@ -1509,7 +1509,7 @@ class FormController {
         // TODO: Get The real origin Venue
         const sendingVenue = dercoDistributionVenue;
         const venue = reception.to;
-        let daysLimit = distributorTable[sendingVenue._id.toString()] &&
+        const daysLimit = distributorTable[sendingVenue._id.toString()] &&
             distributorTable[sendingVenue._id.toString()][venue._id.toString()] ?
             distributorTable[sendingVenue._id.toString()][venue._id.toString()] :
             5;
@@ -1524,40 +1524,40 @@ class FormController {
             from: sendingVenue.abbreviation || sendingVenue.name,
             to: venue.abbreviation || venue.name,
             atTime: dm <= threshold,
-            daysLimit: daysLimit
+            daysLimit
         };
     }
     async timingDashboard(req, res) {
         try {
             const { team } = req.user;
-            let userObject = await user_model_1.default.findOne({ _id: req.user._id });
-            let distributors = await venue_model_1.default.find({ team: team, type: 'distributor' }, {}).populate({
+            const userObject = await user_model_1.default.findOne({ _id: req.user._id });
+            const distributors = await venue_model_1.default.find({ team, type: 'distributor' }, {}).populate({
                 path: 'sendToDays.venue',
                 select: ['_id']
             });
-            let start = req.query.start;
-            let to = req.query.end;
-            let startDate = start && start !== "" ? moment(start, 'YYYY-MM-DD') :
-                moment().subtract(3, "months").startOf('month').startOf('day');
-            let toDate = to && to !== "" ? moment(to, 'YYYY-MM-DD') :
+            const start = req.query.start;
+            const to = req.query.end;
+            let startDate = start && start !== '' ? moment(start, 'YYYY-MM-DD') :
+                moment().subtract(3, 'months').startOf('month').startOf('day');
+            const toDate = to && to !== '' ? moment(to, 'YYYY-MM-DD') :
                 moment().endOf('month').endOf('day');
-            let distributorTable = {};
+            const distributorTable = {};
             distributors.map((distributor) => {
-                let distributorId = distributor._id.toString();
+                const distributorId = distributor._id.toString();
                 if (!(distributorId in distributors))
                     distributorTable[distributorId] = {};
                 distributor.sendToDays.map((venueDay) => {
-                    let venueId = venueDay.venue._id.toString();
+                    const venueId = venueDay.venue._id.toString();
                     distributorTable[distributorId][venueId] = venueDay.shippingMaxDays;
                 });
             });
-            let data = {};
-            for (let i = startDate; i <= toDate; i = i.add(1, "month")) {
+            const data = {};
+            for (let i = startDate; i <= toDate; i = i.add(1, 'month')) {
                 const month = i.format('MM-YYYY');
                 data[month] = [];
             }
-            startDate = start && start !== "" ? moment(start, 'YYYY-MM-DD') :
-                moment().subtract(3, "months").startOf('month').startOf('day');
+            startDate = start && start !== '' ? moment(start, 'YYYY-MM-DD') :
+                moment().subtract(3, 'months').startOf('month').startOf('day');
             const isDercoUser = FormController.isDercoUser(userObject);
             const receptions = isDercoUser ?
                 await FormController.getDercoDeliveryParticipants(team, startDate.toDate(), toDate.toDate()) :
@@ -1632,16 +1632,16 @@ class FormController {
                     header: 'Lata recepción', key: 'p1SheetMetal', width: 30
                 }];
             const { team } = req.user;
-            let periods = 6;
+            const periods = 6;
             for (let i = 0; i < periods; i++) {
                 const t0 = moment().subtract(i + 1, 'months');
                 const t1 = moment().subtract(i, 'months');
-                let cars = await car_model_1.default.find({
+                const cars = await car_model_1.default.find({
                     team,
                     lastForm: { $exists: true },
                     createdAt: {
                         $gte: t0,
-                        $lte: t1,
+                        $lte: t1
                     }
                 }).populate({
                     path: 'participants',
@@ -1650,14 +1650,14 @@ class FormController {
                         model: 'Venue'
                     }
                 });
-                let f0 = '5b0487db835536612bab1b61';
-                let f1 = '5b1ae5799ebea419025b3e41';
-                let gasQuestion = '5b64b543cee543c2afda41bd';
-                let paintQuestion = '5b64b1f6cc5e14f59724f8d1';
-                let sheetMetalQuestion = '5b64b22245f69e40fc5713fb';
+                const f0 = '5b0487db835536612bab1b61';
+                const f1 = '5b1ae5799ebea419025b3e41';
+                const gasQuestion = '5b64b543cee543c2afda41bd';
+                const paintQuestion = '5b64b1f6cc5e14f59724f8d1';
+                const sheetMetalQuestion = '5b64b22245f69e40fc5713fb';
                 for (const car of cars) {
                     if (car.participants.length > 0) {
-                        let participants = car.participants.sort((p0, p1) => p0.createdAt >= p1.createdAt ? 1 : 0);
+                        const participants = car.participants.sort((p0, p1) => p0.createdAt >= p1.createdAt ? 1 : 0);
                         let p0 = null;
                         let p1 = null;
                         // only one form
@@ -1723,7 +1723,7 @@ class FormController {
                             p1Qualification: p1 ? p1.qualification : '-',
                             p1Gas: choice1Gas ? choice1Gas.choice : '-',
                             p1Paint: choice1Paint ? choice1Paint.choice : '-',
-                            p1SheetMetal: choice1SheetMetal ? choice1SheetMetal.choice : '-',
+                            p1SheetMetal: choice1SheetMetal ? choice1SheetMetal.choice : '-'
                         };
                         worksheet.addRow(row);
                     }
@@ -1762,10 +1762,10 @@ class FormController {
     async cleaningDashboard(req, res) {
         try {
             const { team } = req.user;
-            let form = await form_model_1.default.findById("5b0487db835536612bab1b61");
-            let answer = new bson_1.ObjectID("5b64b2e8de5557c85fa14fa0");
-            let days = [];
-            let daysDict = {};
+            const form = await form_model_1.default.findById('5b0487db835536612bab1b61');
+            const answer = new bson_1.ObjectID('5b64b2e8de5557c85fa14fa0');
+            const days = [];
+            const daysDict = {};
             if (form) {
                 const total = 30 * 6;
                 const t0 = moment().subtract(total, 'days');
@@ -1782,7 +1782,7 @@ class FormController {
                         $match: {
                             team,
                             form: form._id,
-                            "sections.answers.answer": answer,
+                            'sections.answers.answer': answer,
                             createdAt: { $gt: t0.toDate() }
                         }
                     },
@@ -1795,7 +1795,7 @@ class FormController {
                         }
                     }
                 ]);
-                for (let datum of cleanDispatch) {
+                for (const datum of cleanDispatch) {
                     const day = datum._id;
                     const sum = datum.count;
                     console.log(datum);
@@ -1806,7 +1806,7 @@ class FormController {
                         $match: {
                             team,
                             form: form._id,
-                            "sections.answers.answer": { $ne: answer },
+                            'sections.answers.answer': { $ne: answer },
                             createdAt: { $gt: t0.toDate() }
                         }
                     },
@@ -1819,7 +1819,7 @@ class FormController {
                         }
                     }
                 ]);
-                for (let datum of notCleanDispatch) {
+                for (const datum of notCleanDispatch) {
                     const day = datum._id;
                     const sum = datum.count;
                     console.log(day);
@@ -1827,9 +1827,9 @@ class FormController {
                 }
             }
             res.json({
-                days: days,
+                days,
                 clean: days.map((d) => daysDict[d].clean),
-                notClean: days.map((d) => daysDict[d].notClean),
+                notClean: days.map((d) => daysDict[d].notClean)
             });
         }
         catch (e) {
@@ -1940,7 +1940,7 @@ class FormController {
                             return reject(err);
                         }
                         if (form) {
-                            redis_service_1.default.set(keyCache, JSON.stringify(form), "ex", 60);
+                            redis_service_1.default.set(keyCache, JSON.stringify(form), 'ex', 60);
                             return resolve(form);
                         }
                         return reject('No se encontro formularío');
@@ -2030,7 +2030,7 @@ class FormController {
                             /* istanbul ignore next */
                             return reject(err);
                         }
-                        redis_service_1.default.set(keyCache, JSON.stringify(scales), "ex", 30);
+                        redis_service_1.default.set(keyCache, JSON.stringify(scales), 'ex', 30);
                         return resolve(scales);
                     });
                 }
@@ -2041,8 +2041,8 @@ class FormController {
         try {
             const { team, company, venue } = req.user;
             const { lat, lng, accuracy, provider } = req.body;
-            let os = "user-agent" in req.headers ? req.headers["user-agent"] : "";
-            let gpsPosition = new gpsPosition_model_1.default({
+            const os = 'user-agent' in req.headers ? req.headers['user-agent'] : '';
+            const gpsPosition = new gpsPosition_model_1.default({
                 lat,
                 lng,
                 user: req.user,

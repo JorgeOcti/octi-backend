@@ -10,4 +10,5 @@ billingRouter.get('/settings/billing/pdf/:id', middlewares_1.default.isLoggedIn,
 billingRouter.get('/settings/billing/', middlewares_1.default.isLoggedIn, billing_controller_1.default.index);
 billingRouter.get('/settings/billing/run/', middlewares_1.default.isLoggedIn, billing_controller_1.default.run);
 billingRouter.get('/api/admin/billing/', middlewares_1.default.isLoggedIn, billing_controller_1.default.apiList);
+billingRouter.get('/api/admin/billing/detail/', middlewares_1.default.isLoggedIn, billing_controller_1.default.apiDetail);
 //# sourceMappingURL=router.js.map

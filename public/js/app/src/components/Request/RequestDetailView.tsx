@@ -1,254 +1,219 @@
-import * as React from "react";
-import * as moment from "moment-timezone";
+import * as moment from 'moment-timezone';
+import * as Raven from 'raven-js';
+import * as React from 'react';
+import { ErrorInfo } from 'react';
+import { connect } from 'react-redux';
+import { RouteComponentProps } from 'react-router-dom';
+import * as io from 'socket.io-client';
+import * as swal from 'sweetalert';
+import { getRequestAction, IRequestsState } from '../../actions/requests.actions';
+import AppContainer from '../../container/AppContainer';
+import { IWindow } from '../../interfaces/window';
 
-interface IPropsType {
-  request: any;
+interface IPropsType extends RouteComponentProps<{ id: string }> {
+  requests: IRequestsState;
+  getRequestAction(id: string): void;
 }
 
 interface IStateType {
   error: Error | null;
-  open: boolean;
 }
+
+declare let window: IWindow;
 
 class RequestDetailView extends React.Component<IPropsType, IStateType> {
 
   readonly state = {
-    error: null,
-    open: false
+    error: null
   };
 
-  constructor(props:IPropsType) {
+  private socket: SocketIOClient.Socket;
+
+  constructor(props: IPropsType) {
     super(props);
-    this.handleChangeOpen = this.handleChangeOpen.bind(this);
+    this.deleteRequest = this.deleteRequest.bind(this);
+  }
+
+  public componentWillMount(): void {
+    const { id } = this.props.match.params;
+    document.title = 'OSA Andes | Detalle Solicitud';
+
+    this.props.getRequestAction(id);
+    this.socket = io.connect(`${location.protocol}//${location.host}`, {
+      secure: location.protocol === 'https:',
+      transports: ['websocket'],
+      reconnection: true,
+      query: {
+        token: window.user.token
+      }
+    });
+    window.scrollTo(0, 0);
+  }
+
+  public componentDidCatch(error: Error, errorInfo: ErrorInfo): void {
+    this.setState({error});
+    Raven.captureException(error, {
+      extra: errorInfo
+    });
+  }
+
+  public componentWillUnmount(): void {
+    // cancel request if component is inmounted
+    // if (this.props.requests.source) {
+    //   this.props.requests.source.cancel('Operation canceled by the user.');
+    // }
+    this.socket.disconnect();
   }
 
   public render(): React.ReactElement<IPropsType> {
-    const {request} = this.props;
-    const {open} = this.state;
+    const {request, loading} = this.props.requests;
     return (
-      <React.Fragment>
-        <div className="row request pointer" onClick={this.handleChangeOpen}>
-          <div className="col-sm-1 col-xs-1 col-md-1 col-lg-1">
-            <i className="fa fa-circle status-circle-red"/> <strong>#{this.padNumber(request.number)}</strong>
-          </div>
-          <div className="col-sm-1 col-xs-1 col-md-1 col-lg-1">
-            {
-              request.fleet ?
-                <i className="fa fa-check-circle-o"/>
-                : null
-
-            }
-          </div>
-          <div className="col-sm-2 col-xs-2 col-md-2 col-lg-2">
-            <span className="label label-primary">En proceso</span>
-          </div>
-          <div className="col-sm-1 col-xs-1 col-md-1 col-lg-1">ANT</div>
-          <div className="col-sm-1 col-xs-1 col-md-1 col-lg-1 center">{request.items.length}</div>
-          <div className="col-sm-2 col-xs-2 col-md-2 col-lg-2 center">{moment(request.createdAt).format("DD-MM-YY")}</div>
-          <div className="col-sm-2 col-xs-2 col-md-2 col-lg-2 center">{moment(request.updatedAt).format("DD-MM-YY")}</div>
-          <div className="col-sm-1 col-xs-1 col-md-1 col-lg-1 center">
-            10
-          </div>
-          <div className="col-sm-1 col-xs-1 col-md-1 col-lg-1 chevron">
-            {
-              open ? <i className="fa fa-chevron-up"/> : <i className="fa fa-chevron-down"/>
-            }
-          </div>
-        </div>
-        {
-          open ?
-            <table className="table table-request">
-              <thead>
-              <tr>
-                <th/>
-                <th>Progreso</th>
-                <th>Estado</th>
-                <th>Modelo</th>
-                <th>Color</th>
-                <th className="text-center">VIN</th>
-                <th className="text-center">CDO</th>
-                <th className="text-center">Equip. / Carroc. / Preentrega</th>
-                <th>Motivo</th>
-                <th>Transporte</th>
-                <th>Fecha carga</th>
-                <th>Hora carga</th>
-                <th>LLegada est</th>
-                <th>Observación despacho</th>
-              </tr>
-              </thead>
-              <tbody>
+      <AppContainer title="" cMenu="3" cSubMenu="3.1" cAction={'Detalle solicitud'}>
+        <section className="content">
+          <div className="box">
+            <div className="box-header with-border">
+              <h3 className="box-title">Detalle solicitud #{this.padNumber(request?.number)}</h3>
+              <div className="pull-right box-tools">
+                <button
+                  className="btn btn-sm btn-danger"
+                  onClick={this.deleteRequest}
+                >
+                  <i className="fa fa-fw fa-trash" /> Eliminar solicitud
+                </button>
+              </div>
+            </div>
+            <div className="box-body request-detail no-padding table-responsive">
               {
-                request.items.map((item:any)=>{
-                  return (
-                    <tr key={item._id}>
-                      <td className="text-center">
+                request ?
+                  <React.Fragment>
+                    <div className="row summary bg-blue">
+                      <div className="col-md-2">
+                        <i className="fa fa-user" /> {request.createdBy.firstName} {request.createdBy.lastName}
+                      </div>
+                      <div className="col-md-2"><i className="fa fa-building" /> {request.destination.name}</div>
+                      <div className="col-md-2 col-md-offset-6 text-right"><i className="fa fa-calendar-o" /> {moment(request.createdAt).format('DD-MM-YY')}</div>
+                      {/* <div className="col-md-2 col-md-offset-4 text-right">
+                        <span className="label label-primary">
+                          { request.status?.name}
+                        </span>
+                      </div> */}
+                    </div>
+                    <table className="table table-xs table-striped table-hover">
+                      <thead>
+                        <tr>
+                          <th className="middle" style={{width: '25px'}}/>
+                          <th className="middle" style={{width: '28px'}}/>
+                          <th className="middle">Marca</th>
+                          <th className="middle">Modelo</th>
+                          <th className="middle">Material</th>
+                          <th className="middle">Color</th>
+                          <th className="middle">Estado</th>
+                          <th className="middle">VIN</th>
+                          <th className="middle">CDO</th>
+                          <th className="middle">Motivo</th>
+                          <th className="middle">Carrocería</th>
+                          <th className="middle">Pre-Entrega</th>
+                          <th className="middle">Transporte</th>
+                          <th className="middle">Fecha carga</th>
+                          <th className="middle">Fecha est. Entr.</th>
+                        </tr>
+                      </thead>
+                      <tbody>
                         {
-                          item.priority ?
-                            <i className="fa fa-star text-yellow"/>
-                            : null
+                          request.items.map((item, index) => (
+                            <tr key={index}>
+                              <td className="middle-center">{index + 1}</td>
+                              <td className="middle-center">
+                                {item.priority ? <i className="fa fa-star text-yellow" /> : null}
+                              </td>
+                              <td className="middle">{item.car.brand}</td>
+                              <td className="middle">{item.car.denomination}</td>
+                              <td className="middle">{item.car.material}ASFG58644</td>
+                              <td className="middle">{item.car.color}</td>
+                              <td className="middle">En centro logística</td>
+                              <td className="middle">{item.car.vin}12345678901234567</td>
+                              <td className="middle"></td>
+                              <td className="middle">{item.reason.name}</td>
+                              <td className="middle"></td>
+                              <td className="middle"></td>
+                              <td className="middle"></td>
+                              <td className="middle"></td>
+                              <td className="middle"></td>
+                            </tr>
+                          ))
                         }
-                      </td>
-                      <td>
-                        <div className="progress progress-xs">
-                          <div className="progress-bar progress-bar-aqua" style={{width: "75%"}} />
+                      </tbody>
+                    </table>
+                    <div className="row">
+                      <div className="col-md-12">
+                        <div className="activity-comments">
+                          <h4>Actividad y comentarios</h4>
+                          <div className="comment">
+                            <textarea className="form-control" placeholder="Comentar" />
+                          </div>
+                          <div className="comments">
+                            <p className="text-center text-muted">No hay comentarios en esta solicitud</p>
+                          </div>
                         </div>
-                      </td>
-                      <td>En centro logistica</td>
-                      <td>{`${item.car.brand} ${item.car.denomination} ${item.car.material}`}</td>
-                      <td>{item.car.color}</td>
-                      <td className="text-center">
-                        {
-                          item.car.vin && item.car.vin.length ?
-                            <i className="fa fa-check-circle text-olive"/>
-                            : null
-                        }
-                      </td>
-                      <td className="text-center">
-                        {
-                          item.car.internalNumber && item.car.internalNumber.length ?
-                            <i className="fa fa-check-circle text-olive"/>
-                            : null
-                        }
-                      </td>
-                      <td>
-                        <div className="flex-wrap">
-                          <div className={`flex-wrap-item-center ${item.equipment ? '' : 'text-gray'}`}>
-                            <i className="material-icons">library_add</i>
-                          </div>
-                          <div className={`flex-wrap-item-center ${item.body ? '' : 'text-gray'}`}>
-                            <i className="material-icons">rv_hookup</i>
-                          </div>
-                          <div className={`flex-wrap-item-center ${item.washed ? '' : 'text-gray'}`}>
-                            <i className="material-icons">local_car_wash</i>
-                          </div>
-                          <div className={`flex-wrap-item-center ${item.review ? '' : 'text-gray'}`}>
-                            <i className="material-icons">build</i>
-                          </div>
-                        </div>
-                      </td>
-                      <td>{item.reason.name}</td>
-                      <td>Schiappacasse</td>
-                      <td>06-11-19</td>
-                      <td>15:31</td>
-                      <td>8-11-19</td>
-                      <td></td>
-                    </tr>
-                  )
-                })
+                      </div>
+                    </div>
+                  </React.Fragment>
+                  : null
               }
-              {/*<tr>*/}
-              {/*  <td className="text-center"><i className="fa fa-star text-yellow"/></td>*/}
-              {/*  <td>*/}
-              {/*    <div className="progress progress-xs">*/}
-              {/*      <div className="progress-bar progress-bar-aqua" style={{width: "75%"}}/>*/}
-              {/*    </div>*/}
-              {/*  </td>*/}
-              {/*  <td>En centro logistica</td>*/}
-              {/*  <td>Toyota 4 Runner ASD14</td>*/}
-              {/*  <td>Calypso</td>*/}
-              {/*  <td className="text-center"><i className="fa fa-check-circle text-olive"/></td>*/}
-              {/*  <td className="text-center"><i className="fa fa-check-circle text-olive"/></td>*/}
-              {/*  <td>*/}
-              {/*    <div className="flex-wrap">*/}
-              {/*      <div className="flex-wrap-item-center">-</div>*/}
-              {/*      <div className="flex-wrap-item-center">-</div>*/}
-              {/*      <div className="flex-wrap-item-center">*/}
-              {/*        <i className="material-icons">local_car_wash</i>*/}
-              {/*      </div>*/}
-              {/*      <div className="flex-wrap-item-center">*/}
-              {/*        <i className="material-icons">build</i>*/}
-              {/*      </div>*/}
-              {/*    </div>*/}
-              {/*  </td>*/}
-              {/*  <td>Venta</td>*/}
-              {/*  <td>Schiappacasse</td>*/}
-              {/*  <td>06-11-19</td>*/}
-              {/*  <td>15:31</td>*/}
-              {/*  <td>8-11-19</td>*/}
-              {/*  <td></td>*/}
-              {/*</tr>*/}
-              {/*<tr>*/}
-              {/*  <td></td>*/}
-              {/*  <td>*/}
-              {/*    <div className="progress progress-xs">*/}
-              {/*      <div className="progress-bar progress-bar-aqua" style={{width: "10%"}}/>*/}
-              {/*    </div>*/}
-              {/*  </td>*/}
-              {/*  <td>Pendiente</td>*/}
-              {/*  <td>Toyota 4 Runner ASD14</td>*/}
-              {/*  <td>Gris</td>*/}
-              {/*  <td></td>*/}
-              {/*  <td className="text-center"><i className="fa fa-check-circle text-olive"/></td>*/}
-              {/*  <td>*/}
-              {/*    <div className="flex-wrap">*/}
-              {/*      <div className="flex-wrap-item-center">-</div>*/}
-              {/*      <div className="flex-wrap-item-center">-</div>*/}
-              {/*      <div className="flex-wrap-item-center">*/}
-              {/*        <i className="material-icons text-gray">local_car_wash</i>*/}
-              {/*      </div>*/}
-              {/*      <div className="flex-wrap-item-center">*/}
-              {/*        <i className="material-icons text-gray">build</i>*/}
-              {/*      </div>*/}
-              {/*    </div>*/}
-              {/*  </td>*/}
-              {/*  <td>Stock</td>*/}
-              {/*  <td>Schiappacasse</td>*/}
-              {/*  <td>06-11-19</td>*/}
-              {/*  <td>15:31</td>*/}
-              {/*  <td>8-11-19</td>*/}
-              {/*  <td></td>*/}
-              {/*</tr>*/}
-              {/*<tr>*/}
-              {/*  <td></td>*/}
-              {/*  <td>*/}
-              {/*    <div className="progress progress-xs">*/}
-              {/*      <div className="progress-bar progress-bar-aqua" style={{width: "55%"}}/>*/}
-              {/*    </div>*/}
-              {/*  </td>*/}
-              {/*  <td>Gestión marca</td>*/}
-              {/*  <td>Toyota 4 Runner ASD14</td>*/}
-              {/*  <td>Gris</td>*/}
-              {/*  <td></td>*/}
-              {/*  <td className="text-center"><i className="fa fa-check-circle text-olive"/></td>*/}
-              {/*  <td>*/}
-              {/*    <div className="flex-wrap">*/}
-              {/*      <div className="flex-wrap-item-center">-</div>*/}
-              {/*      <div className="flex-wrap-item-center">-</div>*/}
-              {/*      <div className="flex-wrap-item-center">*/}
-              {/*        <i className="material-icons text-gray">local_car_wash</i>*/}
-              {/*      </div>*/}
-              {/*      <div className="flex-wrap-item-center">*/}
-              {/*        <i className="material-icons">build</i>*/}
-              {/*      </div>*/}
-              {/*    </div>*/}
-              {/*  </td>*/}
-              {/*  <td>Stock</td>*/}
-              {/*  <td>Schiappacasse</td>*/}
-              {/*  <td>06-11-19</td>*/}
-              {/*  <td>15:31</td>*/}
-              {/*  <td>8-11-19</td>*/}
-              {/*  <td></td>*/}
-              {/*</tr>*/}
-              </tbody>
-            </table>
-            : null
-        }
-      </React.Fragment>
+            </div>
+            {
+              loading &&
+              <div className="overlay">
+                <i className="fa fa-spinner fa-spin text-purple"/>
+              </div>
+            }
+          </div>
+        </section>
+      </AppContainer>
     );
   }
 
-  private padNumber(n: number): string {
-    const s = "000" + n;
-    return s.substr(s.length-4);
+  private deleteRequest() {
+    swal({
+      title: '¿Estás seguro?',
+      text: `Vas a eliminar esta solicitud.`,
+      icon: 'warning',
+      dangerMode: true,
+      buttons: {
+        cancel: 'Cancelar' as any,
+        confirm: {
+          text: 'Sí'
+        }
+      }
+    }).then((willDelete) => {
+      if (willDelete) {
+        this.props.history.push('/requests/');
+      }
+    });
   }
 
-  private handleChangeOpen(){
-    const {open} = this.state;
-    this.setState({
-      open: !open
-    })
-
+  private padNumber(n: number| undefined): string {
+    if(n){
+      const s = '000' + n;
+      return s.substr(s.length-4);
+    }
+    return '0000';
   }
 }
 
-export default RequestDetailView;
+
+const mapStateToProps = (state: { requests: IRequestsState }) => {
+  return {
+    requests: state.requests
+  };
+};
+
+const mapDispatchToProps = (dispatch: any) => {
+  return {
+    dispatch,
+    getRequestAction: (id: string) => dispatch(getRequestAction(id))
+  };
+};
+
+
+export default connect<{}, {}, IPropsType>(mapStateToProps, mapDispatchToProps)(RequestDetailView);

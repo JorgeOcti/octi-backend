@@ -23,12 +23,12 @@ export interface IActivityHistorygModel extends IActivityHistoryInterface, mongo
 
 export enum ChoicesTypeActivity {
   inventory = 'inventory',
-  checklist = 'checklist',
+  checklist = 'checklist'
 }
 
 export const choicesTypeActivity = [
   ChoicesTypeActivity.inventory,
-  ChoicesTypeActivity.checklist,
+  ChoicesTypeActivity.checklist
 ];
 
 const activityHistorySchema = new mongoose.Schema({

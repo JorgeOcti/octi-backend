@@ -1,21 +1,20 @@
+import { AxiosError, AxiosResponse } from 'axios';
 import * as moment from 'moment';
 import * as Raven from 'raven-js';
-import {ErrorInfo} from 'react';
 import * as React from 'react';
-import {RefObject} from 'react';
-import {connect} from 'react-redux';
-import {RouteComponentProps} from 'react-router';
-import {Dispatch} from 'redux';
+import { ErrorInfo, RefObject } from 'react';
+import { connect } from 'react-redux';
+import { RouteComponentProps } from 'react-router';
+import { Dispatch } from 'redux';
 import * as swal from 'sweetalert';
 import * as XLSX from 'xlsx';
-import {AlertReduxAction, IAlertsState} from '../../actions/alerts.actions';
-import {loadDataAction, ModalReduxAction} from '../../actions/modal.actions';
+import { AlertReduxAction, IAlertsState } from '../../actions/alerts.actions';
+import { loadDataAction, ModalReduxAction } from '../../actions/modal.actions';
 import AppContainer from '../../container/AppContainer';
 import ApiService from '../../utils/axios';
-import {getExtension, getIconFromExtension} from '../../utils/common';
+import { getExtension, getIconFromExtension } from '../../utils/common';
 import Checkbox from '../Utils/CheckBox';
 import VenueDetail from './VenueDetail';
-import {AxiosError, AxiosResponse} from "axios";
 
 interface IPropsType extends RouteComponentProps<{ ticket: string }> {
   alerts: IAlertsState;
@@ -522,7 +521,7 @@ class InventoryCreateView extends React.Component<IPropsType, IStateType> {
             for (const cv in carsByVenue) {
               if (carsByVenue.hasOwnProperty(cv)) {
                 const existVenue = venues.some((venue: any) => {
-                  return venue.name.trim().toLowerCase() === cv.trim().toLowerCase()
+                  return venue.name.trim().toLowerCase() === cv.trim().toLowerCase();
                 });
                 carsByVenueArray.push({
                   name: cv.trim(),
