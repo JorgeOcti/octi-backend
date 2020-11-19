@@ -16,6 +16,7 @@ import {
 import {
   IBaseRegion
 } from '../../../../../src/interfaces/region.interface';
+import { IRequestItem } from '../../../../../src/interfaces/requestItem.interface';
 import {
   IBaseVenue
 } from '../../../../../src/interfaces/venue.interface';
@@ -514,6 +515,13 @@ export default class ApiService {
   public getRequestItemsStatus(page: number, pageSize?: number): AxiosPromise {
     return this.instance.get(
       `/api/v1/request-item-status/?page=${page}${pageSize ? `&pageSize=${pageSize}` : ''}`
+    );
+  }
+
+  public updateRequestItem(id: string, item: IRequestItem){
+    return this.instance.patch(
+      `/api/v1/requests-item/${id}/`,
+      item
     );
   }
 

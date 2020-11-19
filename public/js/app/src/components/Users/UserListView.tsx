@@ -290,7 +290,7 @@ class UserListView extends React.Component<IPropsType, IStateType> {
                               {index > 0 ?
                                 <br/> : null}
                               <span>{form.name}</span>
-                            </React.Fragment>
+                            </React.Fragment>;
                           })}
                         </td>
                         <td className="middle hidden-xs text-muted">{moment(user.updatedAt).format('LLL')}</td>

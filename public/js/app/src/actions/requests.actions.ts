@@ -1,8 +1,10 @@
 import Axios, { AxiosError, AxiosResponse, CancelTokenSource } from 'axios';
+import { response } from 'express';
 import { Dispatch } from 'redux';
 import { ICarrier } from '../../../../../src/interfaces/carrier.interface';
 import { IReason } from '../../../../../src/interfaces/reason.interface';
 import { IRequest } from '../../../../../src/interfaces/request.interface';
+import { IRequestItem } from '../../../../../src/interfaces/requestItem.interface';
 import { IRequestItemStatus } from '../../../../../src/interfaces/requestItemStatus.interface';
 import ApiService from '../utils/axios';
 import {
@@ -14,6 +16,8 @@ import {
   ILoadRequestItemStatus,
   ILoadRequests,
   IRequestsState,
+  IUpdateRequestItemInDetail,
+  IUpdateRequestItemInList,
   RequestsReduxActions,
   REQUEST_CANCEL_REQUEST,
   REQUEST_IS_LOADING,
@@ -21,7 +25,9 @@ import {
   REQUEST_LOAD_REASONS,
   REQUEST_LOAD_REQUEST,
   REQUEST_LOAD_REQUESTS,
-  REQUEST_LOAD_REQUEST_ITEM_STATUS
+  REQUEST_LOAD_REQUEST_ITEM_STATUS,
+  REQUEST_UDPATE_REQUEST_ITEM_IN_DETAIL,
+  REQUEST_UDPATE_REQUEST_ITEM_IN_LIST
 } from './requests.types';
 
 export function cancelRequestAction(source: CancelTokenSource): ICancelRequest {
@@ -81,6 +87,34 @@ export function loadRequestsAction(requests: any[], count: number, pages: number
   };
 }
 
+export function loadRequestAction(request: IRequest): ILoadRequest {
+  return {
+    type: REQUEST_LOAD_REQUEST,
+    payload: {
+      request
+    }
+  };
+}
+
+export function updateRequestItemActionInList(idRequest: string, item: IRequestItem): IUpdateRequestItemInList {
+  return {
+    type: REQUEST_UDPATE_REQUEST_ITEM_IN_LIST,
+    payload: {
+      idRequest,
+      item
+    }
+  };
+}
+
+export function updateRequestItemActionInDetail(item: IRequestItem): IUpdateRequestItemInDetail {
+  return {
+    type: REQUEST_UDPATE_REQUEST_ITEM_IN_DETAIL,
+    payload: {
+      item
+    }
+  };
+}
+
 export function getRequestsAction(nextPage: number) {
   return (dispatch: Dispatch<RequestsReduxActions>, getState: () => { requests: IRequestsState }) => {
     const api: ApiService = new ApiService();
@@ -96,7 +130,7 @@ export function getRequestsAction(nextPage: number) {
         api.getCarriers(1, 200)
       ])
       .then(Axios.spread((requests, reasons, requestItemStatus, carriers) => {
-        const data = requests.data;
+        const {data} = requests;
         dispatch(loadRequestsAction(data.results, data.count, data.pages, page));
         dispatch(loadReasonsAction(reasons.data.results));
         dispatch(loadRequestItemsAction(requestItemStatus.data.results));
@@ -110,30 +144,49 @@ export function getRequestsAction(nextPage: number) {
   };
 }
 
-export function loadRequestAction(request: IRequest): ILoadRequest {
-  return {
-    type: REQUEST_LOAD_REQUEST,
-    payload: {
-      request
-    }
-  };
-}
-
 export function getRequestAction(id: string) {
   return (dispatch: Dispatch<RequestsReduxActions>) => {
     const api: ApiService = new ApiService();
     dispatch(isLoadingAction(true));
     dispatch(cancelRequestAction(api.getSource()));
-    api.getRequest(id)
-      .then((response: AxiosResponse) => {
-        const { data } = response;
-        document.title = `OSA Andes | Detalle Solicitud ${data.number}`;
+    Axios
+      .all([
+        api.getRequest(id),
+        api.getReasons(1, 200),
+        api.getRequestItemsStatus(1, 200),
+        api.getCarriers(1, 200)
+      ])
+      .then(Axios.spread((request, reasons, requestItemStatus, carriers) => {
+        const { data } = request;
         dispatch(loadRequestAction(data));
+        dispatch(loadReasonsAction(reasons.data.results));
+        dispatch(loadRequestItemsAction(requestItemStatus.data.results));
+        dispatch(loadCarriersAction(carriers.data.results));
         dispatch(isLoadingAction(false));
-      })
+      }))
       .catch((err: AxiosError) => {
         dispatch(isLoadingAction(false));
         api.errorHandler(err);
+      });
+  };
+}
+
+export function updateRequestItemReduxAction(idRequest: string, item: IRequestItem) {
+  return (dispatch: Dispatch<RequestsReduxActions>) => {
+    const api: ApiService = new ApiService();
+    api.updateRequestItem(item._id, item)
+      .then((response: AxiosResponse) => {
+        const { data } = response;
+        // console.log(`#request-item-${data._id}`);
+        // const $item = $(`#request-item-${data._id}`);
+        // if($item){
+        //   console.log($item);
+        //   $item.addClass('editing-item');
+        //   setTimeout(() => {
+        //     $item.removeClass('editing-item');
+        //   }, 500);
+        // }
+        // dispatch(updateRequestItemActionInList(idRequest, data));
       });
   };
 }

@@ -1,10 +1,10 @@
-import { IRequestItemModel } from 'request/models/requestItem.model';
 import { ICarModel } from '../app/models/car.model';
 import { ITeamModel } from '../app/models/team.model';
 import { IUserModel } from '../app/models/user.model';
 import { IVenueModel } from '../app/models/venue.model';
 import { IRequestStatusModel } from '../request/models/requestStatus.model';
 import { ICar } from './car.interface';
+import { IRequestItem } from './requestItem.interface';
 import { IRequestStatus } from './requestStatus.interface';
 import { ITeam } from './team.interface';
 import { IUser } from './user.interface';
@@ -18,7 +18,7 @@ export interface IRequest {
   createdBy: IUser | IUserModel;
   origin: IVenue | IVenueModel;
   destination: IVenue | IVenueModel;
-  items: IRequestItemModel[];
+  items: IRequestItem[];
   loadingDate: Date;
   arrivalDate: Date;
   fleet: boolean;

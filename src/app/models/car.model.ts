@@ -105,7 +105,7 @@ const carSchema = new mongoose.Schema({
 
 // text search
 carSchema.index({
-  team: 1, denomination: "text", material: "text", brand: "text",
+  team: 1, denomination: 'text', material: 'text', brand: 'text'
 }, {
   weights: {
     denomination: 5,

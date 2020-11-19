@@ -62,6 +62,12 @@ const requestItemSchema = new mongoose.Schema({
     type: Boolean,
     default: false
   },
+  uploadDate: {
+    type: Date
+  },
+  estimatedArrival: {
+    type: Date
+  },
   status: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'RequestItemStatus'

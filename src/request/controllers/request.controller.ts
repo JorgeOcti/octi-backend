@@ -7,6 +7,7 @@ import logger from '../../services/logger.service';
 import Car, { ChoicesStatusCar } from '../../app/models/car.model';
 import Team from '../../app/models/team.model';
 import RequestItemStatus from '../models/requestItemStatus.model';
+import {io} from '../../server';
 
 class RequestController {
 
@@ -342,7 +343,40 @@ class RequestController {
     const updateObject = req.body;
     const {id} = req.params;
     try {
-      await RequestItem.update({_id: id, team}, {$set: updateObject});
+      await RequestItem.update({ _id: id, team }, { $set: updateObject });
+      const item = await RequestItem
+        .findOne({ _id: id, team })
+        .populate([{
+          path: 'car'
+        }, {
+          path: 'request'
+        }, {
+          path: 'reason',
+          select: ['name']
+        }, {
+          path: 'status',
+          select: ['name']
+        }, {
+          path: 'carrier',
+          select: ['name']
+        }, {
+          path: 'origin',
+          select: ['name']
+        }, {
+          path: 'destination',
+          select: ['name']
+        }, {
+          path: 'status',
+          select: ['name']
+        }])
+        .lean();
+      io.to(`request-list-${team}`).emit('UPDATE_ITEM', {
+        idRequest: item.request._id,
+        item
+      });
+      res.status(200).json({
+        ...item
+      });
       // todo: send update object to socket team
     } catch (e) {
       /* istanbul ignore next */

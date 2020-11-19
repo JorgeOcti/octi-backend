@@ -4,10 +4,11 @@ import { Dispatch, ErrorInfo } from 'react';
 import { connect } from 'react-redux';
 import { RouteComponentProps } from 'react-router';
 import * as io from 'socket.io-client';
-import { getRequestsAction, IRequestsState } from '../../actions/requests.actions';
+import { IRequestItem } from '../../../../../../src/interfaces/requestItem.interface';
+import { getRequestsAction, updateRequestItemActionInList } from '../../actions/requests.actions';
+import { IRequestsState } from '../../actions/requests.types';
 import AppContainer from '../../container/AppContainer';
 import { IWindow } from '../../interfaces/window';
-import BootstrapSwitch from '../Utils/BootstrapSwitch';
 import Checkbox from '../Utils/CheckBox';
 import Paginator from '../Utils/Paginator';
 import RequestListDetail from './RequestListDetail';
@@ -15,7 +16,7 @@ import RequestListDetail from './RequestListDetail';
 interface IPropsType extends RouteComponentProps<{ ticket: string }> {
   requests: IRequestsState;
   dispatch: Dispatch<IRequestsState>;
-
+  updateRequestItemActionInList: (idRequest: string, item: IRequestItem) => void;
   getRequestsAction(page: number): void;
 }
 
@@ -54,6 +55,19 @@ class RequestListView extends React.Component<IPropsType, IStateType> {
         token: window.user.token
       }
     });
+    this.socket.on('connect', () => {
+      this.socket.emit('join', {room: `request-list-${window.user.team}`});
+    });
+    this.socket.on('UPDATE_ITEM', (data: any): void => {
+      this.props.updateRequestItemActionInList(data.idRequest, data.item);
+      const $item = $(`#request-item-${data.item._id}`);
+      if ($item) {
+        $item.addClass('bg-aqua-active');
+        setTimeout(() => {
+          $item.removeClass('bg-aqua-active');
+        }, 300);
+      }
+    });
   }
 
   public componentDidMount(): void {
@@ -65,7 +79,7 @@ class RequestListView extends React.Component<IPropsType, IStateType> {
     if (this.props.requests.source) {
       this.props.requests.source.cancel('Operation canceled by the user.');
     }
-    // this.socket.emit('leave', {room: `inventory-list-${window.user.team}`});
+    this.socket.emit('leave', {room: `request-list-${window.user.team}`});
     this.socket.disconnect();
   }
 
@@ -204,7 +218,8 @@ const mapStateToProps = (state: { requests: IRequestsState }) => {
 const mapDispatchToProps = (dispatch: any) => {
   return {
     dispatch,
-    getRequestsAction: (page: number) => dispatch(getRequestsAction(page))
+    getRequestsAction: (page: number) => dispatch(getRequestsAction(page)),
+    updateRequestItemActionInList: (idRequest: string, item: IRequestItem) => dispatch(updateRequestItemActionInList(idRequest, item))
   };
 };
 

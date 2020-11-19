@@ -6,6 +6,7 @@ const logger_service_1 = require("../../services/logger.service");
 const car_model_1 = require("../../app/models/car.model");
 const team_model_1 = require("../../app/models/team.model");
 const requestItemStatus_model_1 = require("../models/requestItemStatus.model");
+const server_1 = require("../../server");
 class RequestController {
     constructor() {
         this.index = this.index.bind(this);
@@ -338,6 +339,39 @@ class RequestController {
         const { id } = req.params;
         try {
             await requestItem_model_1.default.update({ _id: id, team }, { $set: updateObject });
+            const item = await requestItem_model_1.default
+                .findOne({ _id: id, team })
+                .populate([{
+                    path: 'car'
+                }, {
+                    path: 'request'
+                }, {
+                    path: 'reason',
+                    select: ['name']
+                }, {
+                    path: 'status',
+                    select: ['name']
+                }, {
+                    path: 'carrier',
+                    select: ['name']
+                }, {
+                    path: 'origin',
+                    select: ['name']
+                }, {
+                    path: 'destination',
+                    select: ['name']
+                }, {
+                    path: 'status',
+                    select: ['name']
+                }])
+                .lean();
+            server_1.io.to(`request-list-${team}`).emit('UPDATE_ITEM', {
+                idRequest: item.request._id,
+                item
+            });
+            res.status(200).json({
+                ...item
+            });
             // todo: send update object to socket team
         }
         catch (e) {

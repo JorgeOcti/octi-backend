@@ -6,9 +6,11 @@ import { connect } from 'react-redux';
 import { RouteComponentProps } from 'react-router-dom';
 import * as io from 'socket.io-client';
 import * as swal from 'sweetalert';
-import { getRequestAction, IRequestsState } from '../../actions/requests.actions';
+import { getRequestAction } from '../../actions/requests.actions';
+import { IRequestsState } from '../../actions/requests.types';
 import AppContainer from '../../container/AppContainer';
 import { IWindow } from '../../interfaces/window';
+import DateRangePicker from '../Utils/DateRangePicker';
 
 interface IPropsType extends RouteComponentProps<{ id: string }> {
   requests: IRequestsState;
@@ -66,7 +68,7 @@ class RequestDetailView extends React.Component<IPropsType, IStateType> {
   }
 
   public render(): React.ReactElement<IPropsType> {
-    const {request, loading} = this.props.requests;
+    const {request, loading, requestItemStatus, carriers, reasons} = this.props.requests;
     return (
       <AppContainer title="" cMenu="3" cSubMenu="3.1" cAction={'Detalle solicitud'}>
         <section className="content">
@@ -84,19 +86,18 @@ class RequestDetailView extends React.Component<IPropsType, IStateType> {
             </div>
             <div className="box-body request-detail no-padding table-responsive">
               {
-                request ?
+                Object.keys(request).length ?
                   <React.Fragment>
                     <div className="row summary bg-blue">
                       <div className="col-md-2">
-                        <i className="fa fa-user" /> {request.createdBy.firstName} {request.createdBy.lastName}
+                        <i className="fa fa-fw fa-user" /> {request?.createdBy?.firstName} {request?.createdBy?.lastName}
                       </div>
-                      <div className="col-md-2"><i className="fa fa-building" /> {request.destination.name}</div>
-                      <div className="col-md-2 col-md-offset-6 text-right"><i className="fa fa-calendar-o" /> {moment(request.createdAt).format('DD-MM-YY')}</div>
-                      {/* <div className="col-md-2 col-md-offset-4 text-right">
-                        <span className="label label-primary">
-                          { request.status?.name}
-                        </span>
-                      </div> */}
+                      <div className="col-md-2">
+                        <i className="fa fa-fw fa-building" /> {request?.destination?.name}
+                      </div>
+                      <div className="col-md-2 col-md-offset-6 text-right">
+                        <i className="fa fa-fw fa-calendar-o" /> {moment(request.createdAt).format('DD-MM-YY')}
+                      </div>
                     </div>
                     <table className="table table-xs table-striped table-hover">
                       <thead>
@@ -120,7 +121,7 @@ class RequestDetailView extends React.Component<IPropsType, IStateType> {
                       </thead>
                       <tbody>
                         {
-                          request.items.map((item, index) => (
+                          request!.items!.map((item, index) => (
                             <tr key={index}>
                               <td className="middle-center">{index + 1}</td>
                               <td className="middle-center">
@@ -129,16 +130,100 @@ class RequestDetailView extends React.Component<IPropsType, IStateType> {
                               <td className="middle">{item.car.brand}</td>
                               <td className="middle">{item.car.denomination}</td>
                               <td className="middle">{item.car.material}ASFG58644</td>
-                              <td className="middle">{item.car.color}</td>
-                              <td className="middle">En centro logística</td>
-                              <td className="middle">{item.car.vin}12345678901234567</td>
+                              {/* <td className="middle">{item.car.color}</td> */}
+                              <td className="middle">
+                                <input type="text" className="form-control input-sm" defaultValue={item.car.color}/>
+                              </td>
+                              {/* <td className="middle">{item.status.name}</td> */}
+                              <td className="middle">
+                                <select className="form-control select-sm font-12" value={item.status?._id ?? ''}
+                                  onChange={(e: React.ChangeEvent<HTMLSelectElement>) => {
+                                    // this.props.updateRequestItemReduxAction!(request._id, {
+                                    //   ...item,
+                                    //   status: e.target.value
+                                    // });
+                                  }}
+                                >
+                                  <option value="" disabled={true}>-</option>
+                                  {
+                                    requestItemStatus.map((req) => (
+                                      <option key={req._id} value={req._id}>{req.name}</option>
+                                    ))
+                                  }
+
+                                </select>
+                              </td>
+                              {/* <td className="middle">{item.car.vin}12345678901234567</td> */}
+                              <td className="middle">
+                                <input type="text" className="form-control input-sm" defaultValue="12345678901234567"/>
+                              </td>
+                              <td className="middle">
+                                <input type="text" className="form-control input-sm" defaultValue={item.car.internalNumber}/>
+                              </td>
+                              {/* <td className="middle">{item.reason?.name}</td> */}
+                              <td className="middle">
+                                <select className="form-control select-sm font-12" value={item.reason?._id ?? ''}
+                                  onChange={(e: React.ChangeEvent<HTMLSelectElement>) => {
+                                    // this.props.updateRequestItemReduxAction!(request._id, {
+                                    //   ...item,
+                                    //   reason: e.target.value
+                                    // });
+                                  }}
+                                >
+                                  <option value="" disabled={true}>-</option>
+                                  {
+                                    reasons.map((reason) => (
+                                      <option key={reason._id} value={reason._id}>{reason.name}</option>
+                                    ))
+                                  }
+                                </select>
+                              </td>
                               <td className="middle"></td>
-                              <td className="middle">{item.reason.name}</td>
                               <td className="middle"></td>
-                              <td className="middle"></td>
-                              <td className="middle"></td>
-                              <td className="middle"></td>
-                              <td className="middle"></td>
+                              {/* <td className="middle">{item.carrier?.name}</td> */}
+                              <td className="middle">
+                                <select className="form-control select-sm font-12" value={item.carrier?._id ?? ''}
+                                  onChange={(e: React.ChangeEvent<HTMLSelectElement>) => {
+                                    // this.props.updateRequestItemReduxAction!(request._id, {
+                                    //   ...item,
+                                    //   carrier: !e.target.value.length ? null : e.target.value
+                                    // });
+                                  }}
+                                >
+                                  <option value="">-</option>
+                                  {
+                                    carriers.map((carrier) => (
+                                      <option key={carrier._id} value={carrier._id}>{carrier.name}</option>
+                                    ))
+                                  }
+                                </select>
+                              </td>
+                              <td className="middle">
+                                <DateRangePicker
+                                  style={{ width: '60px' }}
+                                  className={'input-xs'}
+                                  value={item.uploadDate}
+                                  onChange={(e) => {
+                                    // this.props.updateRequestItemReduxAction!(request._id, {
+                                    //   ...item,
+                                    //   uploadDate: e
+                                    // });
+                                  }}
+                                />
+                              </td>
+                              <td className="middle">
+                                <DateRangePicker
+                                  style={{ width: '60px' }}
+                                  className={'input-xs'}
+                                  value={item.estimatedArrival}
+                                  onChange={(e) => {
+                                    // this.props.updateRequestItemReduxAction!(request._id, {
+                                    //   ...item,
+                                    //   estimatedArrival: e
+                                    // });
+                                  }}
+                                />
+                              </td>
                             </tr>
                           ))
                         }

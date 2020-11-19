@@ -108,6 +108,7 @@ exports.io.on('connection', async (socket) => {
             socket.join(room);
             exports.io.to(room).emit('USERS_IN_CHANNEL', data);
         });
+        return socket.id;
     });
     socket.on('leave', (data) => {
         const { room } = data;

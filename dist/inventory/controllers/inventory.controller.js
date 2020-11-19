@@ -284,13 +284,13 @@ class InventoryController {
             // paginate options
             const options = {
                 select: {
-                    _id: true,
+                    _id: true
                 },
                 sort: {
                     createdAt: -1
                 },
-                page: parseInt(page ? page : "1", 10),
-                limit: parseInt(pageSize ? pageSize : "10", 10)
+                page: parseInt(page ? page : '1', 10),
+                limit: parseInt(pageSize ? pageSize : '10', 10)
             };
             const paginatedInventories = await inventory_model_1.default.paginate({
                 team,
@@ -310,7 +310,7 @@ class InventoryController {
                         $match: {
                             _id: {
                                 $in: paginatedInventories.docs.map(v => v._id)
-                            },
+                            }
                         }
                     }, {
                         $lookup: {
@@ -1356,7 +1356,7 @@ class InventoryController {
                             }, {
                                 'cars.venueFound': {
                                     $in: venuesPermissions
-                                },
+                                }
                             }
                         ],
                         'cars.status': {
@@ -1461,7 +1461,7 @@ class InventoryController {
                             }, {
                                 'cars.venueFound': {
                                     $in: venuesPermissions
-                                },
+                                }
                             }
                         ],
                         'cars.status': {
@@ -1544,7 +1544,7 @@ class InventoryController {
                             }, {
                                 'cars.venueFound': {
                                     $in: venuesPermissions
-                                },
+                                }
                             }
                         ],
                         'cars.status': {
@@ -1658,11 +1658,11 @@ class InventoryController {
                                 {
                                     venue: {
                                         $in: venuesPermissions
-                                    },
+                                    }
                                 }, {
                                     venueFound: {
                                         $in: venuesPermissions
-                                    },
+                                    }
                                 }
                             ],
                             status: {
@@ -1771,7 +1771,7 @@ class InventoryController {
                         },
                         venue: {
                             $in: venuesPermissions
-                        },
+                        }
                     }
                 }, {
                     $group: {
@@ -1793,7 +1793,7 @@ class InventoryController {
                                 status: '$_id.status',
                                 total: '$total'
                             }
-                        },
+                        }
                     }
                 }]);
             const data = {};
@@ -1821,7 +1821,7 @@ class InventoryController {
             const teamSettings = await teamSetting_model_1.default.findOne({ team });
             res.json({
                 data,
-                inventorySettings: teamSettings.inventory,
+                inventorySettings: teamSettings.inventory
             });
         }
         catch (e) {
@@ -1859,22 +1859,22 @@ class InventoryController {
                     activeCell: 'D2'
                 }];
             const columns = [{
-                    header: "VIN",
-                    key: "vin",
+                    header: 'VIN',
+                    key: 'vin',
                     width: 30,
                     alignment: {
                         wrapText: true
                     }
                 }, {
-                    header: "MARCA",
-                    key: "marca",
+                    header: 'MARCA',
+                    key: 'marca',
                     width: 30,
                     alignment: {
                         wrapText: true
                     }
                 }, {
-                    header: "MODELO",
-                    key: "modelo",
+                    header: 'MODELO',
+                    key: 'modelo',
                     width: 40,
                     alignment: {
                         wrapText: true
@@ -1907,7 +1907,7 @@ class InventoryController {
                     wrapText: true
                 };
                 cell.font = {
-                    bold: true,
+                    bold: true
                 };
             });
             worksheet.getRow(1).eachCell((cell) => {
@@ -1922,20 +1922,21 @@ class InventoryController {
                 }
                 cell.alignment = alignment;
                 cell.font = {
-                    bold: true,
+                    bold: true
                 };
             });
             const cars = await car_model_2.default.find({
                 team,
                 isExhibition: false,
                 createdAt: {
-                    $gte: moment().subtract(6, 'months'),
+                    $gte: moment().subtract(6, 'months')
+                    //   $lte: tf,
                 }
             }, {
                 vin: true,
                 denomination: true,
                 color: true,
-                brand: true,
+                brand: true
             }).populate({
                 path: 'inventories',
                 select: ['name', 'createdAt', 'venueFound', 'status'],
@@ -1953,10 +1954,10 @@ class InventoryController {
             for (const car of cars) {
                 const inventories = car.inventories;
                 if (inventories.length) {
-                    let carData = {
+                    const carData = {
                         vin: car.vin,
                         marca: car.brand,
-                        modelo: car.denomination,
+                        modelo: car.denomination
                     };
                     for (const inventory of inventories) {
                         carData[inventory.venueFound] = carData.hasOwnProperty(inventory.venueFound) ? carData[inventory.venueFound] + 1 : 1;
@@ -1979,7 +1980,7 @@ class InventoryController {
     }
     async loadStock(req, res) {
         const { company, team } = req.user;
-        let { carsByVenue } = req.body;
+        const { carsByVenue } = req.body;
         try {
             const stockCars = [];
             for (const venue of carsByVenue) {
@@ -2022,7 +2023,7 @@ class InventoryController {
                     if (currentVenue && currentCar) {
                         stockCars.push({
                             venue: currentVenue._id,
-                            car: currentCar._id,
+                            car: currentCar._id
                         });
                         app_1.queue
                             .create('updateCar', {
@@ -2080,7 +2081,7 @@ class InventoryController {
                 name: true,
                 status: true,
                 cars: true,
-                createdAt: true,
+                createdAt: true
             }, {
                 sort: { 'createdAt': -1 }
             });
@@ -2094,11 +2095,11 @@ class InventoryController {
             let showStock = false;
             if (lastInventory && !lastStock) {
                 showInventory = true;
-                console.log("showInventory");
+                console.log('showInventory');
             }
             else if (!lastInventory && lastStock) {
                 showStock = true;
-                console.log("showStock");
+                console.log('showStock');
             }
             else if (lastInventory && lastStock) {
                 console.log('lastInventory.createdAt', lastInventory.createdAt);
@@ -2106,11 +2107,11 @@ class InventoryController {
                 console.log('moment(lastInventory.createdAt).isAfter(lastStock.createdAt)', moment(lastInventory.createdAt).isAfter(lastStock.createdAt));
                 if (moment(lastInventory.createdAt).isAfter(lastStock.createdAt)) {
                     showInventory = true;
-                    console.log("showInventory");
+                    console.log('showInventory');
                 }
                 else {
                     showStock = true;
-                    console.log("showStock");
+                    console.log('showStock');
                 }
             }
             if (showInventory) {
@@ -2120,7 +2121,7 @@ class InventoryController {
                 }, {
                     name: true,
                     status: true,
-                    cars: true,
+                    cars: true
                 }, {
                     sort: { 'createdAt': -1 }
                 })
@@ -2133,7 +2134,7 @@ class InventoryController {
                                     inventoryCar_model_1.ChoicesStatusCarInventory.found,
                                     inventoryCar_model_1.ChoicesStatusCarInventory.leftover
                                 ]
-                            },
+                            }
                         },
                         populate: [{
                                 path: 'car',
@@ -2142,15 +2143,15 @@ class InventoryController {
                                 path: 'venue',
                                 select: ['name'],
                                 populate: [{
-                                        path: "region",
-                                        select: ["code", "name"]
+                                        path: 'region',
+                                        select: ['code', 'name']
                                     }]
                             }, {
                                 path: 'venueFound',
                                 select: ['name'],
                                 populate: [{
-                                        path: "region",
-                                        select: ["code", "name"]
+                                        path: 'region',
+                                        select: ['code', 'name']
                                     }]
                             }]
                     }]).lean();
@@ -2158,7 +2159,7 @@ class InventoryController {
                     res
                         .status(200)
                         .json({
-                        message: "No se han realizado inventarios para ver el stock.",
+                        message: 'No se han realizado inventarios para ver el stock.',
                         cars: []
                     });
                 }
@@ -2166,7 +2167,7 @@ class InventoryController {
                     res
                         .status(200)
                         .json({
-                        message: "Se esta procesando la toma de inventario.",
+                        message: 'Se esta procesando la toma de inventario.',
                         cars: []
                     });
                 }
@@ -2174,7 +2175,7 @@ class InventoryController {
                     res
                         .status(200)
                         .json({
-                        message: "Tú sucursal no ha terminado el inventario.",
+                        message: 'Tú sucursal no ha terminado el inventario.',
                         cars: []
                     });
                 }
@@ -2182,7 +2183,7 @@ class InventoryController {
                     res
                         .status(200)
                         .json({
-                        message: "",
+                        message: '',
                         cars: inventory.cars
                     });
                 }
@@ -2194,7 +2195,7 @@ class InventoryController {
                 }, {
                     name: true,
                     status: true,
-                    cars: true,
+                    cars: true
                 }, {
                     sort: { 'createdAt': -1 }
                 })
@@ -2208,15 +2209,15 @@ class InventoryController {
                                 path: 'venue',
                                 select: ['name'],
                                 populate: [{
-                                        path: "region",
-                                        select: ["code", "name"]
+                                        path: 'region',
+                                        select: ['code', 'name']
                                     }]
                             }]
                     }]).lean();
                 res
                     .status(200)
                     .json({
-                    message: "",
+                    message: '',
                     cars: stock.cars
                 });
             }

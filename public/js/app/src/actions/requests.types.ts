@@ -2,8 +2,8 @@ import { CancelTokenSource } from 'axios';
 import { ICarrier } from '../../../../../src/interfaces/carrier.interface';
 import { IReason } from '../../../../../src/interfaces/reason.interface';
 import { IRequest } from '../../../../../src/interfaces/request.interface';
+import { IRequestItem } from '../../../../../src/interfaces/requestItem.interface';
 import { IRequestItemStatus } from '../../../../../src/interfaces/requestItemStatus.interface';
-
 
 export const REQUEST_CANCEL_REQUEST = '/REQUESTS/CANCEL_REQUEST';
 export const REQUEST_IS_LOADING = '/REQUESTS/IS_LOADING';
@@ -12,13 +12,15 @@ export const REQUEST_LOAD_REQUEST_ITEM_STATUS = '/REQUESTS/LOAD_REQUEST_ITEM_STA
 export const REQUEST_LOAD_CARRIERS = '/REQUESTS/LOAD_CARRIERS';
 export const REQUEST_LOAD_REQUESTS = '/REQUESTS/LOAD_REQUESTS';
 export const REQUEST_LOAD_REQUEST = '/REQUESTS/LOAD_REQUEST';
+export const REQUEST_UDPATE_REQUEST_ITEM_IN_LIST = '/REQUESTS/UDPATE_REQUEST_ITEM_IN_LIST';
+export const REQUEST_UDPATE_REQUEST_ITEM_IN_DETAIL = '/REQUESTS/UDPATE_REQUEST_ITEM_IN_DETAIL';
 
 export interface IRequestsState {
   requests: IRequest[];
   reasons: IReason[];
   carriers: ICarrier[];
   requestItemStatus: IRequestItemStatus[];
-  request: IRequest | null;
+  request: Partial<IRequest>;
   loading: boolean;
   source: CancelTokenSource | null;
   pagination: {
@@ -73,6 +75,21 @@ export interface ILoadRequests {
   };
 }
 
+export interface IUpdateRequestItemInList {
+  type: typeof REQUEST_UDPATE_REQUEST_ITEM_IN_LIST;
+  payload: {
+    idRequest: string;
+    item: IRequestItem
+  };
+}
+
+export interface IUpdateRequestItemInDetail {
+  type: typeof REQUEST_UDPATE_REQUEST_ITEM_IN_DETAIL;
+  payload: {
+    item: IRequestItem
+  };
+}
+
 export interface ILoadRequest {
   type: typeof REQUEST_LOAD_REQUEST;
   payload: {
@@ -84,6 +101,8 @@ export type RequestsReduxActions =
   ICancelRequest |
   IIsLoading |
   ILoadRequest |
+  IUpdateRequestItemInList |
+  IUpdateRequestItemInDetail |
   ILoadRequestItemStatus |
   ILoadReasons |
   ILoadCarriers |

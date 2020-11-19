@@ -5,15 +5,19 @@ import { RouteComponentProps } from 'react-router';
 import { ICarrier } from '../../../../../../src/interfaces/carrier.interface';
 import { IReason } from '../../../../../../src/interfaces/reason.interface';
 import { IRequest } from '../../../../../../src/interfaces/request.interface';
+import { IRequestItem } from '../../../../../../src/interfaces/requestItem.interface';
 import { IRequestItemStatus } from '../../../../../../src/interfaces/requestItemStatus.interface';
-import { IRequestsState } from '../../actions/requests.actions';
+import { updateRequestItemReduxAction } from '../../actions/requests.actions';
+import { IRequestsState } from '../../actions/requests.types';
 import DateRangePicker from '../Utils/DateRangePicker';
 
 interface IPropsType extends RouteComponentProps<{ ticket: string }> {
+  key: any;
   request: IRequest;
   reasons: IReason[];
   carriers: ICarrier[];
   requestItemStatus: IRequestItemStatus[];
+  updateRequestItemReduxAction: (idRequest: string, item: IRequestItem) => void;
 }
 
 interface IStateType {
@@ -39,7 +43,7 @@ class RequestListDetail extends React.Component<IPropsType, IStateType> {
     const {open} = this.state;
     return (
       <React.Fragment>
-        <div className="row request bg-request-title pointer" onClick={this.handleChangeOpen}>
+        <div id={`request-${request._id}`} className="row request bg-request-title pointer" onClick={this.handleChangeOpen}>
           <div
             className="col-sm-1 col-xs-1 col-md-1 col-lg-1"
             onClick={() => this.goToDetail(request._id)}
@@ -106,7 +110,7 @@ class RequestListDetail extends React.Component<IPropsType, IStateType> {
             <tbody>
               {
                 request.items.map((item: any) => (
-                  <tr key={item._id}>
+                  <tr key={item._id} id={`request-item-${item._id}`} className={'background-transition'}>
                     <td className="middle-center">
                       {item.priority ?
                         <i className="fa fa-star text-yellow" />
@@ -119,15 +123,21 @@ class RequestListDetail extends React.Component<IPropsType, IStateType> {
                     </td>
                     {/* <td className="middle">En centro logística</td> */}
                     <td className="middle">
-                      <select className="form-control select-sm font-12" value={item.status?._id ?? ''} onChange={console.log}>
+                      <select className="form-control select-sm font-12" value={item.status?._id ?? ''}
+                        onChange={(e: React.ChangeEvent<HTMLSelectElement>)=>{
+                          this.props.updateRequestItemReduxAction!(request._id, {
+                            ...item,
+                            status: e.target.value
+                          });
+                        }}
+                      >
                         <option value="" disabled={true}>-</option>
                         {
                           requestItemStatus.map((req) => (
                             <option key={req._id} value={req._id}>{req.name}</option>
                           ))
                         }
-                        <option value="1">Pendiente</option>
-                        <option value="2">En centro logística</option>
+
                       </select>
                     </td>
                     <td className="middle">{`${item.car.brand} ${item.car.denomination} ${item.car.material}`}</td>
@@ -160,7 +170,14 @@ class RequestListDetail extends React.Component<IPropsType, IStateType> {
                     </td>
                     {/* <td className="middle">{item.reason.name}</td> */}
                     <td className="middle">
-                      <select className="form-control select-sm font-12" value={item.reason?._id ?? ''} onChange={console.log}>
+                      <select className="form-control select-sm font-12" value={item.reason?._id ?? ''}
+                        onChange={(e: React.ChangeEvent<HTMLSelectElement>) => {
+                          this.props.updateRequestItemReduxAction!(request._id, {
+                            ...item,
+                            reason: e.target.value
+                          });
+                        }}
+                      >
                         <option value="" disabled={true}>-</option>
                         {
                           reasons.map((reason)=>(
@@ -171,7 +188,14 @@ class RequestListDetail extends React.Component<IPropsType, IStateType> {
                     </td>
                     {/* <td className="middle">Schiappacasse</td> */}
                     <td className="middle">
-                      <select className="form-control select-sm font-12" value={item.carrier?._id ?? ''} onChange={console.log}>
+                      <select className="form-control select-sm font-12" value={item.carrier?._id ?? ''}
+                        onChange={(e: React.ChangeEvent<HTMLSelectElement>)=>{
+                          this.props.updateRequestItemReduxAction!(request._id, {
+                            ...item,
+                            carrier: !e.target.value.length ? null : e.target.value
+                          });
+                        }}
+                      >
                         <option value="">-</option>
                         {
                           carriers.map((carrier) => (
@@ -185,7 +209,13 @@ class RequestListDetail extends React.Component<IPropsType, IStateType> {
                       <DateRangePicker
                         style={{ width: '60px' }}
                         className={'input-xs'}
-                        onChange={(e) => console.info(e)}
+                        value={item.uploadDate}
+                        onChange={(e) => {
+                          this.props.updateRequestItemReduxAction!(request._id, {
+                            ...item,
+                            uploadDate: e
+                          });
+                        }}
                       />
                     </td>
                     {/* <td className="middle">8-11-19</td> */}
@@ -193,10 +223,16 @@ class RequestListDetail extends React.Component<IPropsType, IStateType> {
                       <DateRangePicker
                         style={{ width: '60px' }}
                         className={'input-xs'}
-                        onChange={(e) => console.info(e)}
+                        value={item.estimatedArrival}
+                        onChange={(e) => {
+                          this.props.updateRequestItemReduxAction!(request._id, {
+                            ...item,
+                            estimatedArrival: e
+                          });
+                        }}
                       />
                     </td>
-                    <td />
+                    <td>{item.observation}</td>
                   </tr>
                 ))
               }
@@ -232,11 +268,11 @@ const mapStateToProps = (state: { requests: IRequestsState }) => {
 
 const mapDispatchToProps = (dispatch: any) => {
   return {
-    dispatch
-    // getRequestsAction: (page: number) => dispatch(getRequestsAction(page))
+    dispatch,
+    updateRequestItemReduxAction: (idRequest: string, item: IRequestItem) => dispatch(updateRequestItemReduxAction(idRequest, item))
   };
 };
 
 
-export default connect<{}, {}, IPropsType>(mapStateToProps, mapDispatchToProps)(RequestListDetail);
+export default connect<{}, {}, IPropsType | any>(mapStateToProps, mapDispatchToProps)(RequestListDetail);
 // export default RequestListDetail;

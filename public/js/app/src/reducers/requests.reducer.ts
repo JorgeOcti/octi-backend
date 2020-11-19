@@ -7,7 +7,9 @@ import {
   REQUEST_LOAD_REASONS,
   REQUEST_LOAD_REQUEST,
   REQUEST_LOAD_REQUESTS,
-  REQUEST_LOAD_REQUEST_ITEM_STATUS
+  REQUEST_LOAD_REQUEST_ITEM_STATUS,
+  REQUEST_UDPATE_REQUEST_ITEM_IN_DETAIL,
+  REQUEST_UDPATE_REQUEST_ITEM_IN_LIST
 } from '../actions/requests.types';
 
 const initialState: IRequestsState = {
@@ -15,7 +17,7 @@ const initialState: IRequestsState = {
   reasons: [],
   carriers: [],
   requestItemStatus: [],
-  request: null,
+  request: {},
   loading: true,
   source: null,
   pagination: {
@@ -61,6 +63,40 @@ export function requestsReducers(state = initialState, action: RequestsReduxActi
           pages: action.payload.pages,
           page: action.payload.page,
           count: action.payload.count
+        }
+      };
+    case REQUEST_UDPATE_REQUEST_ITEM_IN_LIST:
+      return {
+        ...state,
+        requests: [...state.requests].map((request) => {
+          if (request._id === action.payload.idRequest) {
+            request.items = request.items.map((item) => {
+              if (item._id === action.payload.item._id) {
+                return {
+                  item,
+                  ...action.payload.item
+                };
+              }
+              return item;
+            });
+          }
+          return request;
+        })
+      };
+    case REQUEST_UDPATE_REQUEST_ITEM_IN_DETAIL:
+      return {
+        ...state,
+        request: {
+          ...state.request,
+          items: [...state.request!.items!.map((item) => {
+            if (item._id === action.payload.item._id) {
+              return {
+                item,
+                ...action.payload.item
+              };
+            }
+            return item;
+          })]
         }
       };
     case REQUEST_LOAD_REQUEST:

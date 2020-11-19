@@ -8,8 +8,8 @@ import {IPermission} from '../../../../../../src/interfaces/permision.interface'
 import {IUser} from '../../../../../../src/interfaces/user.interface';
 import {IVenue} from '../../../../../../src/interfaces/venue.interface';
 import {IUsersState} from '../../actions/users.actions';
-import {IWindow} from "../../interfaces/window";
-import Checkbox from "../Utils/CheckBox";
+import {IWindow} from '../../interfaces/window';
+import Checkbox from '../Utils/CheckBox';
 
 interface IPropsType {
   users: IUsersState;
@@ -449,7 +449,7 @@ class UserFormView extends React.Component<IPropsType, IStateType> {
 
   private changeIsAdmin() {
     const {isAdmin} = this.props.users.tempUser;
-    this.props.changeTempUser({isAdmin: !isAdmin})
+    this.props.changeTempUser({isAdmin: !isAdmin});
   }
 
   private addVenueAccess(id: string) {
