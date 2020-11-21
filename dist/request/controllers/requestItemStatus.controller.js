@@ -8,12 +8,13 @@ class RequestItemStatusController {
     }
     async apiList(req, res) {
         const { page, pageSize } = req.query;
+        const { team } = req.user;
         const options = {
             sort: {
                 _id: -1
             },
             page: parseInt(page ? page : '1', 10),
-            limit: parseInt(pageSize ? pageSize : '20', 10)
+            limit: parseInt(pageSize ? pageSize : '200', 10)
         };
         try {
             const requestItemStatus = await this.getRequetsItemStatus(options);
@@ -25,9 +26,13 @@ class RequestItemStatusController {
                 });
             }
             else {
+                const min = await requestItemStatus_model_1.default.findOne({ team }).sort('weigth');
+                const max = await requestItemStatus_model_1.default.findOne({ team }).sort('-weigth');
                 res.json({
                     count: requestItemStatus.total,
                     pages: requestItemStatus.pages,
+                    min: min.weigth,
+                    max: max.weigth,
                     hasPrevious: options.page && options.page > 1 && requestItemStatus.pages && requestItemStatus.pages >= options.page,
                     hasNext: options.page && requestItemStatus.pages && requestItemStatus.pages > options.page,
                     results: requestItemStatus.docs,

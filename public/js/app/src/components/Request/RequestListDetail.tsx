@@ -7,23 +7,34 @@ import { IReason } from '../../../../../../src/interfaces/reason.interface';
 import { IRequest } from '../../../../../../src/interfaces/request.interface';
 import { IRequestItem } from '../../../../../../src/interfaces/requestItem.interface';
 import { IRequestItemStatus } from '../../../../../../src/interfaces/requestItemStatus.interface';
-import { updateRequestItemReduxAction } from '../../actions/requests.actions';
+import { updateRequestItemInListReduxAction } from '../../actions/requests.actions';
 import { IRequestsState } from '../../actions/requests.types';
 import DateRangePicker from '../Utils/DateRangePicker';
 
 interface IPropsType extends RouteComponentProps<{ ticket: string }> {
+  requests: IRequestsState;
   key: any;
   request: IRequest;
   reasons: IReason[];
   carriers: ICarrier[];
   requestItemStatus: IRequestItemStatus[];
-  updateRequestItemReduxAction: (idRequest: string, item: IRequestItem) => void;
+  updateRequestItemInListReduxAction: (idRequest: string, item: IRequestItem) => void;
 }
 
 interface IStateType {
   error: Error | null;
   open: boolean;
 }
+
+const getColorForPercentage = (value: number): string => {
+  if(value < 40){
+    return '#00c0ef';
+  } else if (value <60){
+    return '#f39c12';
+  } else {
+    return '#00a65a';
+  }
+};
 
 class RequestListDetail extends React.Component<IPropsType, IStateType> {
 
@@ -39,7 +50,7 @@ class RequestListDetail extends React.Component<IPropsType, IStateType> {
   }
 
   public render(): React.ReactElement<IPropsType> {
-    const {request, reasons, requestItemStatus, carriers} = this.props;
+    const {requests, request, reasons, requestItemStatus, carriers} = this.props;
     const {open} = this.state;
     return (
       <React.Fragment>
@@ -62,14 +73,14 @@ class RequestListDetail extends React.Component<IPropsType, IStateType> {
 
             }
           </div>
-          <div className="col-sm-2 col-xs-2 col-md-2 col-lg-2">
+          {/* <div className="col-sm-2 col-xs-2 col-md-2 col-lg-2">
             <span className="label label-primary">
               {
                 request.status?.name
               }
             </span>
-          </div>
-          <div className="col-sm-1 col-xs-1 col-md-1 col-lg-1">{request.destination.name}</div>
+          </div> */}
+          <div className="col-sm-3 col-xs-3 col-md-3 col-lg-3">{request.destination.name}</div>
           <div className="col-sm-1 col-xs-1 col-md-1 col-lg-1 center">
             {request.items.length}
           </div>
@@ -89,7 +100,7 @@ class RequestListDetail extends React.Component<IPropsType, IStateType> {
           </div>
         </div>
         <div className="table-request" style={{display: open ? 'block' : 'none'}}>
-          <table className="table">
+          <table className="table table-hover">
             <thead>
               <tr style={{ backgroundColor: '#f9f9f9' }}>
                 <th style={{ width: '28px' }} />
@@ -100,11 +111,11 @@ class RequestListDetail extends React.Component<IPropsType, IStateType> {
                 <th className="text-center">VIN</th>
                 <th className="text-center">CDO</th>
                 <th className="text-center">Equip. / Carroc. / Preentrega</th>
-                <th>Motivo</th>
+                <th style={{ width: '100px' }}>Motivo</th>
                 <th>Transporte</th>
-                <th>Fecha carga</th>
-                <th>LLegada est</th>
-                <th>Observación despacho</th>
+                <th style={{ width: '70px' }}>Fecha carga</th>
+                <th style={{ width: '70px' }}>Fecha llegada</th>
+                {/* <th>Observación despacho</th> */}
               </tr>
             </thead>
             <tbody>
@@ -118,14 +129,14 @@ class RequestListDetail extends React.Component<IPropsType, IStateType> {
                     </td>
                     <td className="middle">
                       <div className="progress progress-xs">
-                        <div className="progress-bar progress-bar-aqua" style={{ width: '75%' }} />
+                        <div className={`progress-bar progress-bar-aqua`} style={{ width: `${(item.status?.weigth ?? 0)}%`, backgroundColor: getColorForPercentage(100 / requests.requestItemStatusMax * (item.status?.weigth ?? 0)) }} />
                       </div>
                     </td>
                     {/* <td className="middle">En centro logística</td> */}
                     <td className="middle">
                       <select className="form-control select-sm font-12" value={item.status?._id ?? ''}
                         onChange={(e: React.ChangeEvent<HTMLSelectElement>)=>{
-                          this.props.updateRequestItemReduxAction!(request._id, {
+                          this.props.updateRequestItemInListReduxAction!(request._id, {
                             ...item,
                             status: e.target.value
                           });
@@ -140,17 +151,25 @@ class RequestListDetail extends React.Component<IPropsType, IStateType> {
 
                       </select>
                     </td>
-                    <td className="middle">{`${item.car.brand} ${item.car.denomination} ${item.car.material}`}</td>
-                    <td className="middle">{item.car.color}</td>
-                    <td className="text-center">
-                      {item.car.vin && item.car.vin.length ?
-                        <i className="fa fa-check-circle text-olive" />
-                        : null}
+                    <td className="middle">
+                      {`${item.car.brand} ${item.car.denomination} ${item.car.material}`}
                     </td>
-                    <td className="text-center">
-                      {item.car.internalNumber && item.car.internalNumber.length ?
-                        <i className="fa fa-check-circle text-olive" />
-                        : null}
+                    <td className="middle">
+                      {item.car.color}
+                    </td>
+                    <td className="middle-center">
+                      {
+                        item.car.vin && item.car.vin.length ?
+                          <i className="fa fa-check-circle text-olive" />
+                          : null
+                      }
+                    </td>
+                    <td className="middle-center">
+                      {
+                        item.car.internalNumber && item.car.internalNumber.length ?
+                          <i className="fa fa-check-circle text-olive" />
+                          : null
+                      }
                     </td>
                     <td className="middle">
                       <div className="flex-wrap">
@@ -170,9 +189,10 @@ class RequestListDetail extends React.Component<IPropsType, IStateType> {
                     </td>
                     {/* <td className="middle">{item.reason.name}</td> */}
                     <td className="middle">
-                      <select className="form-control select-sm font-12" value={item.reason?._id ?? ''}
+                      <select
+                        className="form-control select-sm font-12" value={item.reason?._id ?? ''}
                         onChange={(e: React.ChangeEvent<HTMLSelectElement>) => {
-                          this.props.updateRequestItemReduxAction!(request._id, {
+                          this.props.updateRequestItemInListReduxAction!(request._id, {
                             ...item,
                             reason: e.target.value
                           });
@@ -190,7 +210,7 @@ class RequestListDetail extends React.Component<IPropsType, IStateType> {
                     <td className="middle">
                       <select className="form-control select-sm font-12" value={item.carrier?._id ?? ''}
                         onChange={(e: React.ChangeEvent<HTMLSelectElement>)=>{
-                          this.props.updateRequestItemReduxAction!(request._id, {
+                          this.props.updateRequestItemInListReduxAction!(request._id, {
                             ...item,
                             carrier: !e.target.value.length ? null : e.target.value
                           });
@@ -207,11 +227,10 @@ class RequestListDetail extends React.Component<IPropsType, IStateType> {
                     {/* <td className="middle">06-11-19</td> */}
                     <td className="middle">
                       <DateRangePicker
-                        style={{ width: '60px' }}
                         className={'input-xs'}
                         value={item.uploadDate}
                         onChange={(e) => {
-                          this.props.updateRequestItemReduxAction!(request._id, {
+                          this.props.updateRequestItemInListReduxAction!(request._id, {
                             ...item,
                             uploadDate: e
                           });
@@ -221,18 +240,17 @@ class RequestListDetail extends React.Component<IPropsType, IStateType> {
                     {/* <td className="middle">8-11-19</td> */}
                     <td className="middle">
                       <DateRangePicker
-                        style={{ width: '60px' }}
                         className={'input-xs'}
                         value={item.estimatedArrival}
                         onChange={(e) => {
-                          this.props.updateRequestItemReduxAction!(request._id, {
+                          this.props.updateRequestItemInListReduxAction!(request._id, {
                             ...item,
                             estimatedArrival: e
                           });
                         }}
                       />
                     </td>
-                    <td>{item.observation}</td>
+                    {/* <td>{item.observation}</td> */}
                   </tr>
                 ))
               }
@@ -269,7 +287,7 @@ const mapStateToProps = (state: { requests: IRequestsState }) => {
 const mapDispatchToProps = (dispatch: any) => {
   return {
     dispatch,
-    updateRequestItemReduxAction: (idRequest: string, item: IRequestItem) => dispatch(updateRequestItemReduxAction(idRequest, item))
+    updateRequestItemInListReduxAction: (idRequest: string, item: IRequestItem) => dispatch(updateRequestItemInListReduxAction(idRequest, item))
   };
 };
 

@@ -1,5 +1,6 @@
 import Axios, { AxiosError, AxiosResponse, CancelTokenSource } from 'axios';
 import { response } from 'express';
+import { number } from 'prop-types';
 import { Dispatch } from 'redux';
 import { ICarrier } from '../../../../../src/interfaces/carrier.interface';
 import { IReason } from '../../../../../src/interfaces/reason.interface';
@@ -57,11 +58,13 @@ export function loadReasonsAction(reasons: IReason[]): ILoadReasons {
   };
 }
 
-export function loadRequestItemsAction(requestItemStatus: IRequestItemStatus[]): ILoadRequestItemStatus {
+export function loadRequestItemsStatusAction(requestItemStatus: IRequestItemStatus[], min: number, max: number): ILoadRequestItemStatus {
   return {
     type: REQUEST_LOAD_REQUEST_ITEM_STATUS,
     payload: {
-      requestItemStatus
+      requestItemStatus,
+      min,
+      max
     }
   };
 }
@@ -133,7 +136,7 @@ export function getRequestsAction(nextPage: number) {
         const {data} = requests;
         dispatch(loadRequestsAction(data.results, data.count, data.pages, page));
         dispatch(loadReasonsAction(reasons.data.results));
-        dispatch(loadRequestItemsAction(requestItemStatus.data.results));
+        dispatch(loadRequestItemsStatusAction(requestItemStatus.data.results, requestItemStatus.data.min, requestItemStatus.data.max));
         dispatch(loadCarriersAction(carriers.data.results));
         dispatch(isLoadingAction(false));
       }))
@@ -160,7 +163,7 @@ export function getRequestAction(id: string) {
         const { data } = request;
         dispatch(loadRequestAction(data));
         dispatch(loadReasonsAction(reasons.data.results));
-        dispatch(loadRequestItemsAction(requestItemStatus.data.results));
+        dispatch(loadRequestItemsStatusAction(requestItemStatus.data.results, requestItemStatus.data.min, requestItemStatus.data.max));
         dispatch(loadCarriersAction(carriers.data.results));
         dispatch(isLoadingAction(false));
       }))
@@ -171,21 +174,22 @@ export function getRequestAction(id: string) {
   };
 }
 
-export function updateRequestItemReduxAction(idRequest: string, item: IRequestItem) {
+export function updateRequestItemInListReduxAction(idRequest: string, item: IRequestItem) {
+  return (dispatch: Dispatch<RequestsReduxActions>) => {
+    const api: ApiService = new ApiService();
+    api.updateRequestItem(item._id, item)
+      .then((response: AxiosResponse) => {
+        // dispatch(updateRequestItemActionInList(idRequest, data));
+      });
+  };
+}
+
+export function updateRequestItemInDetailReduxAction(idRequest: string, item: IRequestItem) {
   return (dispatch: Dispatch<RequestsReduxActions>) => {
     const api: ApiService = new ApiService();
     api.updateRequestItem(item._id, item)
       .then((response: AxiosResponse) => {
         const { data } = response;
-        // console.log(`#request-item-${data._id}`);
-        // const $item = $(`#request-item-${data._id}`);
-        // if($item){
-        //   console.log($item);
-        //   $item.addClass('editing-item');
-        //   setTimeout(() => {
-        //     $item.removeClass('editing-item');
-        //   }, 500);
-        // }
         // dispatch(updateRequestItemActionInList(idRequest, data));
       });
   };

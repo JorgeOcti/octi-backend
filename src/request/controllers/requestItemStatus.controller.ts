@@ -12,13 +12,13 @@ class RequestItemStatusController {
 
   public async apiList(req: IRequest, res: Response) {
     const { page, pageSize } = req.query as { page: string; pageSize: string };
-
+    const { team } = req.user;
     const options: PaginateOptions = {
       sort: {
         _id: -1
       },
       page: parseInt(page ? page : '1', 10),
-      limit: parseInt(pageSize ? pageSize : '20', 10)
+      limit: parseInt(pageSize ? pageSize : '200', 10)
     };
     try {
       const requestItemStatus = await this.getRequetsItemStatus(options);
@@ -29,9 +29,13 @@ class RequestItemStatusController {
           status: 400
         });
       } else {
+        const min = await RequestItemStatus.findOne({ team }).sort('weigth');
+        const max = await RequestItemStatus.findOne({ team }).sort('-weigth');
         res.json({
           count: requestItemStatus.total,
           pages: requestItemStatus.pages,
+          min: min!.weigth,
+          max: max!.weigth,
           hasPrevious: options.page && options.page > 1 && requestItemStatus.pages && requestItemStatus.pages >= options.page,
           hasNext: options.page && requestItemStatus.pages && requestItemStatus.pages > options.page,
           results: requestItemStatus.docs,

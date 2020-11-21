@@ -1,14 +1,52 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-const request_model_1 = require("../models/request.model");
-const requestItem_model_1 = require("../models/requestItem.model");
-const logger_service_1 = require("../../services/logger.service");
 const car_model_1 = require("../../app/models/car.model");
 const team_model_1 = require("../../app/models/team.model");
-const requestItemStatus_model_1 = require("../models/requestItemStatus.model");
 const server_1 = require("../../server");
+const logger_service_1 = require("../../services/logger.service");
+const request_model_1 = require("../models/request.model");
+const requestItem_model_1 = require("../models/requestItem.model");
+const requestItemStatus_model_1 = require("../models/requestItemStatus.model");
 class RequestController {
     constructor() {
+        this.itemPopulate = [{
+                path: 'car'
+            }, {
+                path: 'request'
+            }, {
+                path: 'reason',
+                select: ['name']
+            }, {
+                path: 'status',
+                select: ['name', 'weigth']
+            }, {
+                path: 'carrier',
+                select: ['name']
+            }, {
+                path: 'origin',
+                select: ['name']
+            }, {
+                path: 'destination',
+                select: ['name']
+            }];
+        this.requestPopulate = [{
+                path: 'origin',
+                select: ['name']
+            }, {
+                path: 'destination',
+                select: ['name']
+            }, {
+                path: 'createdBy',
+                select: ['firstName', 'lastName']
+            }, {
+                path: 'items',
+                options: {
+                    sort: {
+                        priority: -1
+                    }
+                },
+                populate: this.itemPopulate
+            }];
         this.index = this.index.bind(this);
         this.apiList = this.apiList.bind(this);
         this.apiDetail = this.apiDetail.bind(this);
@@ -83,44 +121,7 @@ class RequestController {
             sort: {
                 _id: -1
             },
-            populate: [{
-                    path: 'origin',
-                    select: ['name']
-                }, {
-                    path: 'destination',
-                    select: ['name']
-                }, {
-                    path: 'status',
-                    select: ['name']
-                }, {
-                    path: 'createdBy',
-                    select: ['firstName', 'lastName']
-                }, {
-                    path: 'items',
-                    options: {
-                        sort: {
-                            priority: -1
-                        }
-                    },
-                    populate: [{
-                            path: 'car'
-                        }, {
-                            path: 'carrier',
-                            select: ['name']
-                        }, {
-                            path: 'status',
-                            select: ['name']
-                        }, {
-                            path: 'reason',
-                            select: ['name']
-                        }, {
-                            path: 'origin',
-                            select: ['name']
-                        }, {
-                            path: 'destination',
-                            select: ['name']
-                        }]
-                }],
+            populate: this.requestPopulate,
             // select: {_id: true},
             page: parseInt(page ? page : '1', 10),
             limit: parseInt(pageSize ? pageSize : '20', 10)
@@ -170,44 +171,7 @@ class RequestController {
                 _id: id,
                 team
             })
-                .populate([{
-                    path: 'origin',
-                    select: ['name']
-                }, {
-                    path: 'destination',
-                    select: ['name']
-                }, {
-                    path: 'createdBy',
-                    select: ['firstName', 'lastName']
-                }, {
-                    path: 'items',
-                    options: {
-                        sort: {
-                            priority: -1
-                        }
-                    },
-                    populate: [{
-                            path: 'car'
-                        }, {
-                            path: 'reason',
-                            select: ['name']
-                        }, {
-                            path: 'status',
-                            select: ['name']
-                        }, {
-                            path: 'carrier',
-                            select: ['name']
-                        }, {
-                            path: 'origin',
-                            select: ['name']
-                        }, {
-                            path: 'destination',
-                            select: ['name']
-                        }, {
-                            path: 'status',
-                            select: ['name']
-                        }]
-                }]);
+                .populate(this.requestPopulate);
             if (request) {
                 res.json(request);
             }
@@ -339,33 +303,16 @@ class RequestController {
         const { id } = req.params;
         try {
             await requestItem_model_1.default.update({ _id: id, team }, { $set: updateObject });
+            await car_model_1.default.update({ _id: updateObject.car._id, team }, { $set: updateObject.car });
             const item = await requestItem_model_1.default
                 .findOne({ _id: id, team })
-                .populate([{
-                    path: 'car'
-                }, {
-                    path: 'request'
-                }, {
-                    path: 'reason',
-                    select: ['name']
-                }, {
-                    path: 'status',
-                    select: ['name']
-                }, {
-                    path: 'carrier',
-                    select: ['name']
-                }, {
-                    path: 'origin',
-                    select: ['name']
-                }, {
-                    path: 'destination',
-                    select: ['name']
-                }, {
-                    path: 'status',
-                    select: ['name']
-                }])
+                .populate(this.itemPopulate)
                 .lean();
             server_1.io.to(`request-list-${team}`).emit('UPDATE_ITEM', {
+                idRequest: item.request._id,
+                item
+            });
+            server_1.io.to(`request-detail-${team}`).emit('UPDATE_ITEM', {
                 idRequest: item.request._id,
                 item
             });

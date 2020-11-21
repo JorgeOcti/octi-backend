@@ -6,7 +6,8 @@ import { connect } from 'react-redux';
 import { RouteComponentProps } from 'react-router-dom';
 import * as io from 'socket.io-client';
 import * as swal from 'sweetalert';
-import { getRequestAction } from '../../actions/requests.actions';
+import { IRequestItem } from '../../../../../../src/interfaces/requestItem.interface';
+import { getRequestAction, updateRequestItemActionInDetail, updateRequestItemInDetailReduxAction } from '../../actions/requests.actions';
 import { IRequestsState } from '../../actions/requests.types';
 import AppContainer from '../../container/AppContainer';
 import { IWindow } from '../../interfaces/window';
@@ -15,6 +16,8 @@ import DateRangePicker from '../Utils/DateRangePicker';
 interface IPropsType extends RouteComponentProps<{ id: string }> {
   requests: IRequestsState;
   getRequestAction(id: string): void;
+  updateRequestItemActionInDetail: (item: IRequestItem) => void;
+  updateRequestItemInDetailReduxAction: (idRequest: string, item: IRequestItem) => void;
 }
 
 interface IStateType {
@@ -39,6 +42,7 @@ class RequestDetailView extends React.Component<IPropsType, IStateType> {
   public componentWillMount(): void {
     const { id } = this.props.match.params;
     document.title = 'OSA Andes | Detalle Solicitud';
+    window.scrollTo(0, 0);
 
     this.props.getRequestAction(id);
     this.socket = io.connect(`${location.protocol}//${location.host}`, {
@@ -49,7 +53,21 @@ class RequestDetailView extends React.Component<IPropsType, IStateType> {
         token: window.user.token
       }
     });
-    window.scrollTo(0, 0);
+    this.socket.on('connect', () => {
+      this.socket.emit('join', {room: `request-detail-${window.user.team}`});
+    });
+    this.socket.on('UPDATE_ITEM', (data: any): void => {
+      if (data.idRequest === id) {
+        this.props.updateRequestItemActionInDetail(data.item);
+        const $item = $(`#request-item-${data.item._id}`);
+        if ($item) {
+          $item.addClass('bg-aqua-active');
+          setTimeout(() => {
+            $item.removeClass('bg-aqua-active');
+          }, 300);
+        }
+      }
+    });
   }
 
   public componentDidCatch(error: Error, errorInfo: ErrorInfo): void {
@@ -99,10 +117,10 @@ class RequestDetailView extends React.Component<IPropsType, IStateType> {
                         <i className="fa fa-fw fa-calendar-o" /> {moment(request.createdAt).format('DD-MM-YY')}
                       </div>
                     </div>
-                    <table className="table table-xs table-striped table-hover">
+                    <table className="table table-xs table-hover">
                       <thead>
                         <tr>
-                          <th className="middle" style={{width: '25px'}}/>
+                          <th className="middle-center" style={{width: '25px'}}>#</th>
                           <th className="middle" style={{width: '28px'}}/>
                           <th className="middle">Marca</th>
                           <th className="middle">Modelo</th>
@@ -111,37 +129,59 @@ class RequestDetailView extends React.Component<IPropsType, IStateType> {
                           <th className="middle">Estado</th>
                           <th className="middle">VIN</th>
                           <th className="middle">CDO</th>
-                          <th className="middle">Motivo</th>
+                          <th className="middle" style={{ width: '100px' }}>Motivo</th>
                           <th className="middle">Carrocería</th>
                           <th className="middle">Pre-Entrega</th>
                           <th className="middle">Transporte</th>
-                          <th className="middle">Fecha carga</th>
-                          <th className="middle">Fecha est. Entr.</th>
+                          <th style={{ width: '70px' }}>Fecha carga</th>
+                          <th style={{ width: '70px' }}>LLegada llegada</th>
+                          <th className="middle" style={{width: '30px'}}/>
                         </tr>
                       </thead>
                       <tbody>
                         {
                           request!.items!.map((item, index) => (
-                            <tr key={index}>
+                            <tr key={item._id} id={`request-item-${item._id}`} className={'background-transition'}>
                               <td className="middle-center">{index + 1}</td>
-                              <td className="middle-center">
-                                {item.priority ? <i className="fa fa-star text-yellow" /> : null}
+                              <td
+                                className="middle-center pointer"
+                                onClick={() => {
+                                  this.props.updateRequestItemInDetailReduxAction(request._id, {
+                                    ...item,
+                                    priority: !item.priority
+                                  });
+                                }}
+                              >
+                                {item.priority ? <i className="fa fa-star text-yellow" /> : <i className="fa fa-star text-muted" />}
                               </td>
                               <td className="middle">{item.car.brand}</td>
                               <td className="middle">{item.car.denomination}</td>
                               <td className="middle">{item.car.material}ASFG58644</td>
                               {/* <td className="middle">{item.car.color}</td> */}
                               <td className="middle">
-                                <input type="text" className="form-control input-sm" defaultValue={item.car.color}/>
+                                <input type="text"
+                                  className="form-control input-sm"
+                                  defaultValue={item.car.color}
+                                  style={{width: '80px'}}
+                                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                                    this.props.updateRequestItemInDetailReduxAction(request._id, {
+                                      ...item,
+                                      car: {
+                                        ...item.car,
+                                        color: e.target.value
+                                      }
+                                    });
+                                  }}
+                                />
                               </td>
                               {/* <td className="middle">{item.status.name}</td> */}
                               <td className="middle">
                                 <select className="form-control select-sm font-12" value={item.status?._id ?? ''}
                                   onChange={(e: React.ChangeEvent<HTMLSelectElement>) => {
-                                    // this.props.updateRequestItemReduxAction!(request._id, {
-                                    //   ...item,
-                                    //   status: e.target.value
-                                    // });
+                                    this.props.updateRequestItemInDetailReduxAction(request._id, {
+                                      ...item,
+                                      status: e.target.value
+                                    });
                                   }}
                                 >
                                   <option value="" disabled={true}>-</option>
@@ -155,19 +195,38 @@ class RequestDetailView extends React.Component<IPropsType, IStateType> {
                               </td>
                               {/* <td className="middle">{item.car.vin}12345678901234567</td> */}
                               <td className="middle">
-                                <input type="text" className="form-control input-sm" defaultValue="12345678901234567"/>
+                                <input
+                                  type="text"
+                                  style={{width: '125px'}}
+                                  className="form-control input-sm"
+                                  defaultValue="12345678901234567"
+                                />
                               </td>
                               <td className="middle">
-                                <input type="text" className="form-control input-sm" defaultValue={item.car.internalNumber}/>
+                                <input type="text"
+                                  className="form-control input-sm"
+                                  style={{width: '80px'}}
+                                  defaultValue={item.car.internalNumber}
+                                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                                    this.props.updateRequestItemInDetailReduxAction(request._id, {
+                                      ...item,
+                                      car: {
+                                        ...item.car,
+                                        internalNumber: e.target.value
+                                      }
+                                    });
+                                  }}
+                                />
                               </td>
                               {/* <td className="middle">{item.reason?.name}</td> */}
                               <td className="middle">
-                                <select className="form-control select-sm font-12" value={item.reason?._id ?? ''}
+                                <select
+                                  className="form-control select-sm font-12" value={item.reason?._id ?? ''}
                                   onChange={(e: React.ChangeEvent<HTMLSelectElement>) => {
-                                    // this.props.updateRequestItemReduxAction!(request._id, {
-                                    //   ...item,
-                                    //   reason: e.target.value
-                                    // });
+                                    this.props.updateRequestItemInDetailReduxAction(request._id, {
+                                      ...item,
+                                      reason: e.target.value as any
+                                    });
                                   }}
                                 >
                                   <option value="" disabled={true}>-</option>
@@ -178,16 +237,66 @@ class RequestDetailView extends React.Component<IPropsType, IStateType> {
                                   }
                                 </select>
                               </td>
-                              <td className="middle"></td>
-                              <td className="middle"></td>
+                              <td className="middle">
+                                <div className="flex-wrap">
+                                  <div
+                                    className={`flex-wrap-item-center ${ undefined ?? 'pointer'} ${item.equipment ? '' : 'text-gray'}`}
+                                    onClick={() => {
+                                      this.props.updateRequestItemInDetailReduxAction(request._id, {
+                                        ...item,
+                                        equipment: !item.equipment
+                                      });
+                                    }}
+                                  >
+                                    <i className="material-icons font-14">library_add</i>
+                                  </div>
+                                  <div
+                                    className={`flex-wrap-item-center ${ undefined ?? 'pointer'} ${item.body ? '' : 'text-gray'}`}
+                                    onClick={() => {
+                                      this.props.updateRequestItemInDetailReduxAction(request._id, {
+                                        ...item,
+                                        body: !item.body
+                                      });
+                                    }}
+                                  >
+                                    <i className="material-icons font-14">rv_hookup</i>
+                                  </div>
+                                </div>
+                              </td>
+                              <td className="middle">
+                                <div className="flex-wrap">
+                                  <div
+                                    className={`flex-wrap-item-center ${ undefined ?? 'pointer'} ${item.washed ? '' : 'text-gray'}`}
+                                    onClick={() => {
+                                      this.props.updateRequestItemInDetailReduxAction(request._id, {
+                                        ...item,
+                                        washed: !item.washed
+                                      });
+                                    }}
+                                  >
+                                    <i className="material-icons font-14">local_car_wash</i>
+                                  </div>
+                                  <div
+                                    className={`flex-wrap-item-center ${ undefined ?? 'pointer'} ${item.review ? '' : 'text-gray'}`}
+                                    onClick={() => {
+                                      this.props.updateRequestItemInDetailReduxAction(request._id, {
+                                        ...item,
+                                        review: !item.review
+                                      });
+                                    }}
+                                  >
+                                    <i className="material-icons font-14">build</i>
+                                  </div>
+                                </div>
+                              </td>
                               {/* <td className="middle">{item.carrier?.name}</td> */}
                               <td className="middle">
                                 <select className="form-control select-sm font-12" value={item.carrier?._id ?? ''}
                                   onChange={(e: React.ChangeEvent<HTMLSelectElement>) => {
-                                    // this.props.updateRequestItemReduxAction!(request._id, {
-                                    //   ...item,
-                                    //   carrier: !e.target.value.length ? null : e.target.value
-                                    // });
+                                    this.props.updateRequestItemInDetailReduxAction(request._id, {
+                                      ...item,
+                                      carrier: !e.target.value.length ? null : e.target.value
+                                    });
                                   }}
                                 >
                                   <option value="">-</option>
@@ -200,35 +309,41 @@ class RequestDetailView extends React.Component<IPropsType, IStateType> {
                               </td>
                               <td className="middle">
                                 <DateRangePicker
-                                  style={{ width: '60px' }}
                                   className={'input-xs'}
                                   value={item.uploadDate}
                                   onChange={(e) => {
-                                    // this.props.updateRequestItemReduxAction!(request._id, {
-                                    //   ...item,
-                                    //   uploadDate: e
-                                    // });
+                                    this.props.updateRequestItemInDetailReduxAction(request._id, {
+                                      ...item,
+                                      uploadDate: e as any
+                                    });
                                   }}
                                 />
                               </td>
                               <td className="middle">
                                 <DateRangePicker
-                                  style={{ width: '60px' }}
                                   className={'input-xs'}
                                   value={item.estimatedArrival}
                                   onChange={(e) => {
-                                    // this.props.updateRequestItemReduxAction!(request._id, {
-                                    //   ...item,
-                                    //   estimatedArrival: e
-                                    // });
+                                    this.props.updateRequestItemInDetailReduxAction(request._id, {
+                                      ...item,
+                                      estimatedArrival: e as any
+                                    });
                                   }}
                                 />
+                              </td>
+                              <td className="middle-center text-red pointer">
+                                <i className="fa fa-minus-circle" />
                               </td>
                             </tr>
                           ))
                         }
                       </tbody>
                     </table>
+                    <div className="row">
+                      <div className="col-md-12 text-right">
+                        <button className="btn btn-sm btn-success"><i className="fa fa-fw fa-plus" />Agregar vehículo</button>
+                      </div>
+                    </div>
                     <div className="row">
                       <div className="col-md-12">
                         <div className="activity-comments">
@@ -296,6 +411,8 @@ const mapStateToProps = (state: { requests: IRequestsState }) => {
 const mapDispatchToProps = (dispatch: any) => {
   return {
     dispatch,
+    updateRequestItemActionInDetail: (item: IRequestItem) => dispatch(updateRequestItemActionInDetail(item)),
+    updateRequestItemInDetailReduxAction: (idRequest: string, item: IRequestItem) => dispatch(updateRequestItemInDetailReduxAction(idRequest, item)),
     getRequestAction: (id: string) => dispatch(getRequestAction(id))
   };
 };

@@ -20,6 +20,8 @@ export interface IRequestsState {
   reasons: IReason[];
   carriers: ICarrier[];
   requestItemStatus: IRequestItemStatus[];
+  requestItemStatusMin: number;
+  requestItemStatusMax: number;
   request: Partial<IRequest>;
   loading: boolean;
   source: CancelTokenSource | null;
@@ -55,6 +57,8 @@ export interface ILoadRequestItemStatus {
   type: typeof REQUEST_LOAD_REQUEST_ITEM_STATUS;
   payload: {
     requestItemStatus: IRequestItemStatus[];
+    min: number;
+    max: number;
   };
 }
 

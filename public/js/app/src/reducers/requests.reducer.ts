@@ -17,6 +17,8 @@ const initialState: IRequestsState = {
   reasons: [],
   carriers: [],
   requestItemStatus: [],
+  requestItemStatusMin: 0,
+  requestItemStatusMax: 100,
   request: {},
   loading: true,
   source: null,
@@ -52,7 +54,9 @@ export function requestsReducers(state = initialState, action: RequestsReduxActi
     case REQUEST_LOAD_REQUEST_ITEM_STATUS:
       return {
         ...state,
-        requestItemStatus: action.payload.requestItemStatus
+        requestItemStatus: action.payload.requestItemStatus,
+        requestItemStatusMin: action.payload.min,
+        requestItemStatusMax: action.payload.max
       };
     case REQUEST_LOAD_REQUESTS:
       return {

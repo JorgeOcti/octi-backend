@@ -10,6 +10,10 @@ const requestItemStatusSchema = new mongoose.Schema({
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Team'
     },
+    weigth: {
+        type: Number,
+        required: true
+    },
     default: {
         type: Boolean,
         default: false

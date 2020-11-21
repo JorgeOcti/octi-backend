@@ -1,15 +1,55 @@
-import { IRequest } from '../../interfaces/global.interface';
 import { Response } from 'express';
-import Request, { IRequestModel } from '../models/request.model';
-import RequestItem from '../models/requestItem.model';
-import { PaginateOptions, PaginateResult } from 'mongoose';
-import logger from '../../services/logger.service';
+import { PaginateOptions, PaginateResult, QueryPopulateOptions } from 'mongoose';
 import Car, { ChoicesStatusCar } from '../../app/models/car.model';
 import Team from '../../app/models/team.model';
+import { IRequest } from '../../interfaces/global.interface';
+import { io } from '../../server';
+import logger from '../../services/logger.service';
+import Request, { IRequestModel } from '../models/request.model';
+import RequestItem from '../models/requestItem.model';
 import RequestItemStatus from '../models/requestItemStatus.model';
-import {io} from '../../server';
 
 class RequestController {
+
+  private itemPopulate: QueryPopulateOptions[] = [{
+    path: 'car'
+  }, {
+    path: 'request'
+  }, {
+    path: 'reason',
+    select: ['name']
+  }, {
+    path: 'status',
+    select: ['name', 'weigth']
+  }, {
+    path: 'carrier',
+    select: ['name']
+  }, {
+    path: 'origin',
+    select: ['name']
+  }, {
+    path: 'destination',
+    select: ['name']
+  }];
+
+  private requestPopulate: QueryPopulateOptions[] = [{
+    path: 'origin',
+    select: ['name']
+  }, {
+    path: 'destination',
+    select: ['name']
+  }, {
+    path: 'createdBy',
+    select: ['firstName', 'lastName']
+  }, {
+    path: 'items',
+    options: {
+      sort: {
+        priority: -1
+      }
+    },
+    populate: this.itemPopulate
+  }];
 
   constructor() {
     this.index = this.index.bind(this);
@@ -33,7 +73,7 @@ class RequestController {
       const updateTeam = await Team.findOne({ _id: team._id });
       const request = await new Request({
         team,
-        number: updateTeam!.requestNumber +1,
+        number: updateTeam!.requestNumber + 1,
         origin: venue,
         destination: venue,
         // status,
@@ -89,44 +129,7 @@ class RequestController {
       sort: {
         _id: -1
       },
-      populate: [{
-        path: 'origin',
-        select: ['name']
-      }, {
-        path: 'destination',
-        select: ['name']
-      }, {
-        path: 'status',
-        select: ['name']
-      }, {
-        path: 'createdBy',
-        select: ['firstName', 'lastName']
-      }, {
-        path: 'items',
-        options: {
-          sort: {
-            priority: -1
-          }
-        },
-        populate: [{
-          path: 'car'
-        }, {
-          path: 'carrier',
-          select: ['name']
-        }, {
-          path: 'status',
-          select: ['name']
-        }, {
-          path: 'reason',
-          select: ['name']
-        }, {
-          path: 'origin',
-          select: ['name']
-        }, {
-          path: 'destination',
-          select: ['name']
-        }]
-      }],
+      populate: this.requestPopulate,
       // select: {_id: true},
       page: parseInt(page ? page : '1', 10),
       limit: parseInt(pageSize ? pageSize : '20', 10)
@@ -172,47 +175,10 @@ class RequestController {
     try {
       const request = await Request
         .findOne({
-           _id: id,
-           team
+          _id: id,
+          team
         })
-        .populate([{
-          path: 'origin',
-          select: ['name']
-        }, {
-          path: 'destination',
-          select: ['name']
-        }, {
-          path: 'createdBy',
-          select: ['firstName', 'lastName']
-        }, {
-          path: 'items',
-          options: {
-            sort: {
-              priority: -1
-            }
-          },
-          populate: [{
-            path: 'car'
-          }, {
-            path: 'reason',
-            select: ['name']
-          }, {
-            path: 'status',
-            select: ['name']
-          }, {
-            path: 'carrier',
-            select: ['name']
-          }, {
-            path: 'origin',
-            select: ['name']
-          }, {
-            path: 'destination',
-            select: ['name']
-          }, {
-            path: 'status',
-            select: ['name']
-          }]
-        }]);
+        .populate(this.requestPopulate);
       if (request) {
         res.json(request);
       } else {
@@ -341,36 +307,19 @@ class RequestController {
   public async apiPatchItem(req: IRequest, res: Response) {
     const { team } = req.user;
     const updateObject = req.body;
-    const {id} = req.params;
+    const { id } = req.params;
     try {
       await RequestItem.update({ _id: id, team }, { $set: updateObject });
+      await Car.update({ _id: updateObject.car._id, team }, { $set: updateObject.car });
       const item = await RequestItem
         .findOne({ _id: id, team })
-        .populate([{
-          path: 'car'
-        }, {
-          path: 'request'
-        }, {
-          path: 'reason',
-          select: ['name']
-        }, {
-          path: 'status',
-          select: ['name']
-        }, {
-          path: 'carrier',
-          select: ['name']
-        }, {
-          path: 'origin',
-          select: ['name']
-        }, {
-          path: 'destination',
-          select: ['name']
-        }, {
-          path: 'status',
-          select: ['name']
-        }])
+        .populate(this.itemPopulate)
         .lean();
       io.to(`request-list-${team}`).emit('UPDATE_ITEM', {
+        idRequest: item.request._id,
+        item
+      });
+      io.to(`request-detail-${team}`).emit('UPDATE_ITEM', {
         idRequest: item.request._id,
         item
       });
