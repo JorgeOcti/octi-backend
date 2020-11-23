@@ -17,6 +17,7 @@ import {
   ILoadRequestItemStatus,
   ILoadRequests,
   IRequestsState,
+  ITabStatusRequest,
   IUpdateRequestItemInDetail,
   IUpdateRequestItemInList,
   RequestsReduxActions,
@@ -27,6 +28,7 @@ import {
   REQUEST_LOAD_REQUEST,
   REQUEST_LOAD_REQUESTS,
   REQUEST_LOAD_REQUEST_ITEM_STATUS,
+  REQUEST_TAB_STATUS,
   REQUEST_UDPATE_REQUEST_ITEM_IN_DETAIL,
   REQUEST_UDPATE_REQUEST_ITEM_IN_LIST
 } from './requests.types';
@@ -114,6 +116,15 @@ export function updateRequestItemActionInDetail(item: IRequestItem): IUpdateRequ
     type: REQUEST_UDPATE_REQUEST_ITEM_IN_DETAIL,
     payload: {
       item
+    }
+  };
+}
+
+export function tabStatusAction(request: string): ITabStatusRequest {
+  return {
+    type: REQUEST_TAB_STATUS,
+    payload: {
+      request
     }
   };
 }

@@ -2,14 +2,14 @@ import * as moment from 'moment-timezone';
 import * as React from 'react';
 import { connect } from 'react-redux';
 import { RouteComponentProps } from 'react-router';
-import { ICarrier } from '../../../../../../src/interfaces/carrier.interface';
-import { IReason } from '../../../../../../src/interfaces/reason.interface';
-import { IRequest } from '../../../../../../src/interfaces/request.interface';
-import { IRequestItem } from '../../../../../../src/interfaces/requestItem.interface';
-import { IRequestItemStatus } from '../../../../../../src/interfaces/requestItemStatus.interface';
-import { updateRequestItemInListReduxAction } from '../../actions/requests.actions';
-import { IRequestsState } from '../../actions/requests.types';
-import DateRangePicker from '../Utils/DateRangePicker';
+import { ICarrier } from '../../../../../../../src/interfaces/carrier.interface';
+import { IReason } from '../../../../../../../src/interfaces/reason.interface';
+import { IRequest } from '../../../../../../../src/interfaces/request.interface';
+import { IRequestItem } from '../../../../../../../src/interfaces/requestItem.interface';
+import { IRequestItemStatus } from '../../../../../../../src/interfaces/requestItemStatus.interface';
+import { tabStatusAction, updateRequestItemInListReduxAction } from '../../../actions/requests.actions';
+import { IRequestsState } from '../../../actions/requests.types';
+import DateRangePicker from '../../Utils/DateRangePicker';
 
 interface IPropsType extends RouteComponentProps<{ ticket: string }> {
   requests: IRequestsState;
@@ -19,11 +19,11 @@ interface IPropsType extends RouteComponentProps<{ ticket: string }> {
   carriers: ICarrier[];
   requestItemStatus: IRequestItemStatus[];
   updateRequestItemInListReduxAction: (idRequest: string, item: IRequestItem) => void;
+  tabStatusAction: (request: string) => void;
 }
 
 interface IStateType {
   error: Error | null;
-  open: boolean;
 }
 
 const getColorForPercentage = (value: number): string => {
@@ -45,18 +45,17 @@ class RequestListDetail extends React.Component<IPropsType, IStateType> {
 
   constructor(props: IPropsType) {
     super(props);
-    this.handleChangeOpen = this.handleChangeOpen.bind(this);
     this.goToDetail = this.goToDetail.bind(this);
   }
 
   public render(): React.ReactElement<IPropsType> {
     const {requests, request, reasons, requestItemStatus, carriers} = this.props;
-    const {open} = this.state;
+    const open = this.props.requests.requestOpen.includes(request._id);
     return (
       <React.Fragment>
-        <div id={`request-${request._id}`} className="row request bg-request-title pointer" onClick={this.handleChangeOpen}>
+        <div id={`request-${request._id}`} className="row request bg-request-title">
           <div
-            className="col-sm-1 col-xs-1 col-md-1 col-lg-1"
+            className="col-sm-1 col-xs-1 col-md-1 col-lg-1 pointer"
             onClick={() => this.goToDetail(request._id)}
           >
             <i className="fa fa-circle status-circle-red" />
@@ -93,7 +92,7 @@ class RequestListDetail extends React.Component<IPropsType, IStateType> {
           <div className="col-sm-1 col-xs-1 col-md-1 col-lg-1 center">
             10
           </div>
-          <div className="col-sm-1 col-xs-1 col-md-1 col-lg-1 chevron">
+          <div className="col-sm-1 col-xs-1 col-md-1 col-lg-1 chevron pointer"  onClick={()=>this.props.tabStatusAction(request._id)}>
             {
               open ? <i className="fa fa-chevron-up"/> : <i className="fa fa-chevron-down"/>
             }
@@ -267,14 +266,7 @@ class RequestListDetail extends React.Component<IPropsType, IStateType> {
 
   private padNumber(n: number): string {
     const s = '000' + n;
-    return s.substr(s.length-4);
-  }
-
-  private handleChangeOpen(){
-    const {open} = this.state;
-    this.setState({
-      open: !open
-    });
+    return s.substr(s.length - 4);
   }
 }
 
@@ -287,7 +279,8 @@ const mapStateToProps = (state: { requests: IRequestsState }) => {
 const mapDispatchToProps = (dispatch: any) => {
   return {
     dispatch,
-    updateRequestItemInListReduxAction: (idRequest: string, item: IRequestItem) => dispatch(updateRequestItemInListReduxAction(idRequest, item))
+    updateRequestItemInListReduxAction: (idRequest: string, item: IRequestItem) => dispatch(updateRequestItemInListReduxAction(idRequest, item)),
+    tabStatusAction: (request: string) => dispatch(tabStatusAction(request))
   };
 };
 

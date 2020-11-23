@@ -4,14 +4,14 @@ import { Dispatch, ErrorInfo } from 'react';
 import { connect } from 'react-redux';
 import { RouteComponentProps } from 'react-router';
 import * as io from 'socket.io-client';
-import { IRequestItem } from '../../../../../../src/interfaces/requestItem.interface';
-import { getRequestsAction, updateRequestItemActionInList } from '../../actions/requests.actions';
-import { IRequestsState } from '../../actions/requests.types';
-import AppContainer from '../../container/AppContainer';
-import { IWindow } from '../../interfaces/window';
-import Checkbox from '../Utils/CheckBox';
-import Paginator from '../Utils/Paginator';
-import RequestListDetail from './RequestListDetail';
+import { IRequestItem } from '../../../../../../../src/interfaces/requestItem.interface';
+import { getRequestsAction, updateRequestItemActionInList } from '../../../actions/requests.actions';
+import { IRequestsState } from '../../../actions/requests.types';
+import AppContainer from '../../../container/AppContainer';
+import { IWindow } from '../../../interfaces/window';
+import Checkbox from '../../Utils/CheckBox';
+import Paginator from '../../Utils/Paginator';
+import RequestListDetail from './RequestDetail';
 
 interface IPropsType extends RouteComponentProps<{ ticket: string }> {
   requests: IRequestsState;

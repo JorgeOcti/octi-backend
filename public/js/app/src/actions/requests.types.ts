@@ -14,15 +14,17 @@ export const REQUEST_LOAD_REQUESTS = '/REQUESTS/LOAD_REQUESTS';
 export const REQUEST_LOAD_REQUEST = '/REQUESTS/LOAD_REQUEST';
 export const REQUEST_UDPATE_REQUEST_ITEM_IN_LIST = '/REQUESTS/UDPATE_REQUEST_ITEM_IN_LIST';
 export const REQUEST_UDPATE_REQUEST_ITEM_IN_DETAIL = '/REQUESTS/UDPATE_REQUEST_ITEM_IN_DETAIL';
+export const REQUEST_TAB_STATUS = '/REQUESTS/TAB_STATUS';
 
 export interface IRequestsState {
   requests: IRequest[];
   reasons: IReason[];
   carriers: ICarrier[];
+  requestOpen: string[];
   requestItemStatus: IRequestItemStatus[];
   requestItemStatusMin: number;
   requestItemStatusMax: number;
-  request: Partial<IRequest>;
+  request: Partial<IRequest> | IRequest;
   loading: boolean;
   source: CancelTokenSource | null;
   pagination: {
@@ -101,6 +103,13 @@ export interface ILoadRequest {
   };
 }
 
+export interface ITabStatusRequest {
+  type: typeof REQUEST_TAB_STATUS;
+  payload: {
+    request: string;
+  };
+}
+
 export type RequestsReduxActions =
   ICancelRequest |
   IIsLoading |
@@ -110,4 +119,5 @@ export type RequestsReduxActions =
   ILoadRequestItemStatus |
   ILoadReasons |
   ILoadCarriers |
+  ITabStatusRequest |
   ILoadRequests;

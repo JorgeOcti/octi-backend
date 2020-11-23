@@ -8,6 +8,7 @@ import {
   REQUEST_LOAD_REQUEST,
   REQUEST_LOAD_REQUESTS,
   REQUEST_LOAD_REQUEST_ITEM_STATUS,
+  REQUEST_TAB_STATUS,
   REQUEST_UDPATE_REQUEST_ITEM_IN_DETAIL,
   REQUEST_UDPATE_REQUEST_ITEM_IN_LIST
 } from '../actions/requests.types';
@@ -16,6 +17,7 @@ const initialState: IRequestsState = {
   requests: [],
   reasons: [],
   carriers: [],
+  requestOpen: [],
   requestItemStatus: [],
   requestItemStatusMin: 0,
   requestItemStatusMax: 100,
@@ -50,6 +52,13 @@ export function requestsReducers(state = initialState, action: RequestsReduxActi
       return {
         ...state,
         carriers: action.payload.carriers
+      };
+    case REQUEST_TAB_STATUS:
+      return {
+        ...state,
+        requestOpen: state.requestOpen.includes(action.payload.request)
+          ? [...state.requestOpen.filter(request => request !== action.payload.request)]
+          : [...state.requestOpen, action.payload.request]
       };
     case REQUEST_LOAD_REQUEST_ITEM_STATUS:
       return {

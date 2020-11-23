@@ -1,18 +1,18 @@
 import * as React from 'react';
-import {RouteComponentProps} from 'react-router';
-import {IInventoryState} from '../../actions/inventory.actions';
-import {connect} from 'react-redux';
+import { RouteComponentProps } from 'react-router';
+import { IInventoryState } from '../../actions/inventory.actions';
+import { connect } from 'react-redux';
 import AppContainer from '../../container/AppContainer';
 import BootstrapSwitch from '../Utils/BootstrapSwitch';
 import AutocompleteInput from '../Utils/AutocompleteInput';
 import ApiService from '../../utils/axios';
-import {debounce} from 'throttle-debounce';
+import { debounce } from 'throttle-debounce';
 import * as uuid from 'uuid';
 import * as swal from 'sweetalert';
 import BootstrapSelect from '../Utils/BootstrapSelect';
-import {AxiosError, AxiosResponse, default as Axios} from 'axios';
+import { AxiosError, AxiosResponse, default as Axios } from 'axios';
 
-interface IPropsType extends RouteComponentProps<{}> {}
+interface IPropsType extends RouteComponentProps<{}> { }
 
 interface IStateType {
   newCar: {
@@ -55,7 +55,7 @@ const initialNewCar = {
   washed: false
 };
 
-class RequestCreateView extends  React.Component<IPropsType, IStateType> {
+class RequestCreateView extends React.Component<IPropsType, IStateType> {
 
   readonly api: ApiService;
 
@@ -70,7 +70,7 @@ class RequestCreateView extends  React.Component<IPropsType, IStateType> {
     error: null
   };
 
-  constructor(props:IPropsType){
+  constructor(props: IPropsType) {
     super(props);
     this.cancel = this.cancel.bind(this);
     this.addCar = this.addCar.bind(this);
@@ -106,9 +106,9 @@ class RequestCreateView extends  React.Component<IPropsType, IStateType> {
   }
 
   public render(): React.ReactElement<IPropsType> {
-    const {newCar, cars, fleet, loading, venues, reasons} = this.state;
+    const { newCar, cars, fleet, loading, venues, reasons } = this.state;
     return (
-      <AppContainer title="" cMenu="3" cSubMenu="3.1"  cAction="Crear solicitud">
+      <AppContainer title="" cMenu="3" cSubMenu="3.1" cAction="Crear solicitud">
         <section className="content">
           <div className="box">
             <div className="box-header with-border">
@@ -128,12 +128,12 @@ class RequestCreateView extends  React.Component<IPropsType, IStateType> {
                           items={newCar.brands}
                           renderItem={(item, index) => (
                             <div key={index} className="item">
-                              {item.denomination} <br/>
+                              {item.denomination} <br />
                               <strong>{item.brand}</strong>
                             </div>
                           )}
                           onChange={(e) => {
-                            const {value} = e.target;
+                            const { value } = e.target;
                             this.changeNewCar('brand', value);
                             this.search(value, 'brands');
                           }}
@@ -162,12 +162,12 @@ class RequestCreateView extends  React.Component<IPropsType, IStateType> {
                           items={newCar.denominations}
                           renderItem={(item, index) => (
                             <div key={index} className="item">
-                              {item.denomination} <br/>
+                              {item.denomination} <br />
                               <strong>{item.brand}</strong>
                             </div>
                           )}
                           onChange={(e) => {
-                            const {value} = e.target;
+                            const { value } = e.target;
                             this.changeNewCar('denomination', value);
                             this.search(value, 'denominations');
                           }}
@@ -196,12 +196,12 @@ class RequestCreateView extends  React.Component<IPropsType, IStateType> {
                           items={newCar.materials}
                           renderItem={(item, index) => (
                             <div key={index} className="item">
-                              {item.denomination} <br/>
+                              {item.denomination} <br />
                               <strong>{item.brand}</strong>
                             </div>
                           )}
                           onChange={(e) => {
-                            const {value} = e.target;
+                            const { value } = e.target;
                             this.changeNewCar('material', value);
                             this.search(value, 'materials');
                           }}
@@ -235,7 +235,7 @@ class RequestCreateView extends  React.Component<IPropsType, IStateType> {
                       </div>
                     </div>
                     <div className="form-group">
-                      <label  className="col-sm-3 control-label label-left">Motivo *</label>
+                      <label className="col-sm-3 control-label label-left">Motivo *</label>
                       <div className="col-sm-9">
                         <BootstrapSelect
                           noneSelectedText="Seleccione"
@@ -257,14 +257,14 @@ class RequestCreateView extends  React.Component<IPropsType, IStateType> {
                       </div>
                     </div>
                     <div className="form-group">
-                      <label  className="col-sm-3 control-label label-left">Pre-entrega</label>
+                      <label className="col-sm-3 control-label label-left">Pre-entrega</label>
                       <div className="col-sm-9">
                         <div className="checkbox">
                           <label>
                             <input
                               type="checkbox"
                               checked={newCar.washed}
-                              onChange={()=>{
+                              onChange={() => {
                                 this.changeBooleanNewCar('washed', !newCar.washed);
                               }}
                             /> <i className="material-icons">local_car_wash</i> Lavado
@@ -275,7 +275,7 @@ class RequestCreateView extends  React.Component<IPropsType, IStateType> {
                             <input
                               type="checkbox"
                               checked={newCar.equipment}
-                              onChange={()=>{
+                              onChange={() => {
                                 this.changeBooleanNewCar('equipment', !newCar.equipment);
                               }}
                             /> <i className="material-icons">build</i> Pre-entrega mecánica
@@ -284,41 +284,41 @@ class RequestCreateView extends  React.Component<IPropsType, IStateType> {
                       </div>
                     </div>
                     <div className="form-group">
-                      <label  className="col-sm-3 control-label label-left">Cantidad</label>
+                      <label className="col-sm-3 control-label label-left">Cantidad</label>
                       <div className="col-sm-4">
                         <input id="amount" type="text" className="form-control" />
                       </div>
                     </div>
                     <div className="form-group">
-                      <label  className="col-sm-3 control-label label-left">Prioridad</label>
+                      <label className="col-sm-3 control-label label-left">Prioridad</label>
                       <div className="col-sm-6">
                         {
                           newCar.priority ?
                             <i
                               className="fa fa-2x fa-star text-yellow pointer"
-                              style={{marginTop: '5px', fontSize: '1.7em'}}
-                              onClick={()=>this.changeBooleanNewCar('priority', false)}
+                              style={{ marginTop: '5px', fontSize: '1.7em' }}
+                              onClick={() => this.changeBooleanNewCar('priority', false)}
                             />
                             :
                             <i
                               className="fa fa-2x fa-star-o text-yellow pointer"
-                              style={{marginTop: '5px', fontSize: '1.7em'}}
-                              onClick={()=>this.changeBooleanNewCar('priority', true)}
+                              style={{ marginTop: '5px', fontSize: '1.7em' }}
+                              onClick={() => this.changeBooleanNewCar('priority', true)}
                             />
                         }
                       </div>
                     </div>
                     <div className="form-group">
-                      <label  className="col-sm-3 control-label label-left">Observación despacho</label>
+                      <label className="col-sm-3 control-label label-left">Observación despacho</label>
                       <div className="col-sm-9">
                         <textarea
                           className="form-control input-sm"
-                          onChange={(e)=>{
-                            const {value} = e.target;
+                          onChange={(e) => {
+                            const { value } = e.target;
                             this.changeNewCar('observation', value);
                           }}
                           value={newCar.observation}
-                          style={{resize: 'none'}}
+                          style={{ resize: 'none' }}
                           rows={4}
                         />
                       </div>
@@ -334,7 +334,7 @@ class RequestCreateView extends  React.Component<IPropsType, IStateType> {
                     </div>
                   </div>
                 </div>
-                <div className="col-md-7 col-lg-7" style={{paddingLeft: '10px'}}>
+                <div className="col-md-7 col-lg-7" style={{ paddingLeft: '10px' }}>
                   <div className="add-cars">
                     <div className="arrow">
                       <i className="fa fa-3x fa-caret-right" />
@@ -370,14 +370,14 @@ class RequestCreateView extends  React.Component<IPropsType, IStateType> {
                         <BootstrapSwitch
                           checked={fleet}
                           color="blue"
-                          onChange={this.changeFleet}/>
-                          {/*<label className="switch-label switch-label-right">Flota</label>*/}
+                          onChange={this.changeFleet} />
+                        {/*<label className="switch-label switch-label-right">Flota</label>*/}
                       </div>
                       <div className="create-detail">
                         <table className="table">
                           <tbody>
                             {
-                              cars.map((car:any)=>(
+                              cars.map((car: any) => (
                                 <tr key={car.tid}>
                                   <td className="middle">{`${car.denomination} ${car.material} ${car.brand}`}</td>
                                   <td className="middle">{car.color}</td>
@@ -388,7 +388,7 @@ class RequestCreateView extends  React.Component<IPropsType, IStateType> {
                                   <td className="middle">
                                     <i className={`material-icons ${!car.equipment ? 'text-gray' : ''}`}>build</i>
                                   </td>
-                                  <td className="middle text-muted" style={{width: '140px'}}>
+                                  <td className="middle text-muted" style={{ width: '140px' }}>
                                     {
                                       car.observation && car.observation.length ?
                                         car.observation
@@ -397,7 +397,7 @@ class RequestCreateView extends  React.Component<IPropsType, IStateType> {
                                   </td>
                                   <td
                                     className="middle"
-                                    onClick={()=>this.deleteCar(car)}
+                                    onClick={() => this.deleteCar(car)}
                                   >
                                     <i className="fa fa-trash text-red pointer" />
                                   </td>
@@ -407,7 +407,7 @@ class RequestCreateView extends  React.Component<IPropsType, IStateType> {
                           </tbody>
                         </table>
                       </div>
-                      <div className="text-right text-muted" style={{padding: '2px'}}>
+                      <div className="text-right text-muted" style={{ padding: '2px' }}>
                         {cars.length} vehículos
                       </div>
                     </div>
@@ -419,7 +419,7 @@ class RequestCreateView extends  React.Component<IPropsType, IStateType> {
               <button className="btn btn-sm btn-default" onClick={this.cancel}>Cancelar</button>
               <button
                 className="btn btn-sm btn-primary"
-                style={{marginLeft: '5px'}}
+                style={{ marginLeft: '5px' }}
                 onClick={this.createRequest}
               >
                 Crear
@@ -428,7 +428,7 @@ class RequestCreateView extends  React.Component<IPropsType, IStateType> {
             {
               loading ?
                 <div className="overlay">
-                  <i className="fa fa-spinner fa-spin text-purple"/>
+                  <i className="fa fa-spinner fa-spin text-purple" />
                 </div> : null
             }
           </div>
@@ -438,7 +438,7 @@ class RequestCreateView extends  React.Component<IPropsType, IStateType> {
   }
 
   private addCar(): void {
-    const {newCar} = this.state;
+    const { newCar } = this.state;
     const $amount: any = $('#amount');
     const cars = Array(newCar.amount).fill({
       brand: newCar.brand,
@@ -465,16 +465,16 @@ class RequestCreateView extends  React.Component<IPropsType, IStateType> {
     });
   }
 
-  private searchReason(id: string){
-    const {reasons} = this.state;
-    const reason: any = reasons.find((r:any)=>r._id===id);
-    if(reason){
+  private searchReason(id: string) {
+    const { reasons } = this.state;
+    const reason: any = reasons.find((r: any) => r._id === id);
+    if (reason) {
       return reason.name;
     }
     return '';
   }
 
-  private deleteCar(dcar: any): void{
+  private deleteCar(dcar: any): void {
     swal({
       title: '¿Estás seguro?',
       text: `Vas a eliminar ${dcar.denomination} ${dcar.material} ${dcar.brand} (${dcar.color})`,
@@ -495,7 +495,7 @@ class RequestCreateView extends  React.Component<IPropsType, IStateType> {
     });
   }
 
-  private changeNewCar(field: 'color' | 'brand' | 'denomination' | 'material' | 'observation' |  'reason', value: string) {
+  private changeNewCar(field: 'color' | 'brand' | 'denomination' | 'material' | 'observation' | 'reason', value: string) {
     this.setState({
       newCar: {
         ...this.state.newCar,
@@ -512,7 +512,7 @@ class RequestCreateView extends  React.Component<IPropsType, IStateType> {
       }
     });
   }
-  private changeBooleanNewCar(field: 'priority' | 'equipment' | 'washed' , value: boolean) {
+  private changeBooleanNewCar(field: 'priority' | 'equipment' | 'washed', value: boolean) {
     this.setState({
       newCar: {
         ...this.state.newCar,
@@ -521,21 +521,21 @@ class RequestCreateView extends  React.Component<IPropsType, IStateType> {
     });
   }
 
-  private changeVenue(venue: string){
+  private changeVenue(venue: string) {
     this.setState({
       venue
     });
   }
 
   private changeFleet() {
-    const {fleet} = this.state;
+    const { fleet } = this.state;
     this.setState({
       fleet: !fleet
     });
   }
 
   private loadBaseData() {
-    this.setState({loading: true});
+    this.setState({ loading: true });
     Axios
       .all([
         this.api.getVenues(1, 200, true),
@@ -570,7 +570,7 @@ class RequestCreateView extends  React.Component<IPropsType, IStateType> {
   }
 
   private createRequest() {
-    const {cars, fleet, venue} = this.state;
+    const { cars, fleet, venue } = this.state;
     if (!cars.length) {
       swal('Solicitud', 'No se han agregado vehículos para crear la solicitud.', 'error');
     } else {
@@ -602,7 +602,7 @@ const mapStateToProps = (state: { inventories: IInventoryState }) => {
   };
 };
 
-const mapDispatchToProps = (dispatch: any ) => {
+const mapDispatchToProps = (dispatch: any) => {
   return {
     dispatch
   };
