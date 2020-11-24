@@ -1,13 +1,18 @@
 
+import { AxiosError, AxiosResponse } from 'axios';
 import * as Raven from 'raven-js';
 import * as React from 'react';
 import { ErrorInfo } from 'react';
 import { connect } from 'react-redux';
 import { RouteComponentProps } from 'react-router-dom';
+// import { debounce } from 'throttle-debounce';
 import { IRequest } from '../../../../../../../src/interfaces/request.interface';
 import { IRequestItem } from '../../../../../../../src/interfaces/requestItem.interface';
+import { updateRequestItemInDetailThunkAction } from '../../../actions/requests.actions';
 import { IRequestsState } from '../../../actions/requests.types';
 import { IWindow } from '../../../interfaces/window';
+import ApiService from '../../../utils/axios';
+import AutocompleteInput from '../../Utils/AutocompleteInput';
 import DateRangePicker from '../../Utils/DateRangePicker';
 
 interface IPropsType extends RouteComponentProps<{ id: string }> {
@@ -15,18 +20,30 @@ interface IPropsType extends RouteComponentProps<{ id: string }> {
   request: IRequest;
   item: IRequestItem;
   index: any;
-  getRequestAction(id: string): void;
-  updateRequestItemActionInDetail: (item: IRequestItem) => void;
-  updateRequestItemInDetailReduxAction: (idRequest: string, item: IRequestItem) => void;
+  updateRequestItemInDetailThunkAction: ({ item, debounce }:{ item: IRequestItem, debounce?: boolean}) => void;
 }
 
 interface IStateType {
   error: Error | null;
+  recommends: any[];
 }
 
 declare let window: IWindow;
 
 class RequestItem extends React.Component<IPropsType, IStateType> {
+  readonly api: ApiService;
+
+  readonly state = {
+    error: null,
+    recommends: []
+  };
+
+  constructor(props:IPropsType){
+    super(props);
+    // this.search = debounce(500, this.search.bind(this));
+    this.search = this.search.bind(this);
+    this.api = new ApiService();
+  }
 
   public componentDidCatch(error: Error, errorInfo: ErrorInfo): void {
     this.setState({ error });
@@ -38,23 +55,150 @@ class RequestItem extends React.Component<IPropsType, IStateType> {
   public render(): React.ReactElement<IPropsType> {
     const { request, item, index } = this.props;
     const { requestItemStatus, reasons, carriers } = this.props.requests;
+    const { recommends } = this.state;
     return (
       <tr id={`request-item-${item._id}`} className={'background-transition'}>
         <td className="middle-center">{index + 1}</td>
         <td
           className="middle-center pointer"
           onClick={() => {
-            this.props.updateRequestItemInDetailReduxAction(request._id, {
-              ...item,
-              priority: !item.priority
+            this.props.updateRequestItemInDetailThunkAction({
+              item: {
+                ...item,
+                priority: !item.priority
+              },
+              debounce: false
             });
           }}
         >
           {item.priority ? <i className="fa fa-star text-yellow" /> : <i className="fa fa-star text-muted" />}
         </td>
-        <td className="middle">{item.car.brand}</td>
-        <td className="middle">{item.car.denomination}</td>
-        <td className="middle">{item.car.material}ASFG58644</td>
+        {/* <td className="middle">{item.car.brand}</td> */}
+        <td className="middle">
+          <AutocompleteInput
+            value={item.car.brand}
+            inputClass={'input-sm'}
+            items={recommends}
+            renderItem={(car, index) => (
+              <div key={index} className="item">
+                {car.denomination} <br />
+                <strong>{car.brand}</strong>
+              </div>
+            )}
+            onChange={(e) => {
+              const { value } = e.target;
+              this.props.updateRequestItemInDetailThunkAction({
+                item: {
+                  ...item,
+                  car: {
+                    ...item.car,
+                    brand: value
+                  }
+                },
+                debounce: true
+              });
+              this.search(value, 'recommends');
+            }}
+            onSelect={(car: any) => {
+              this.props.updateRequestItemInDetailThunkAction({
+                item: {
+                  ...item,
+                  car: {
+                    ...item.car,
+                    brand: car.brand,
+                    denomination: car.denomination,
+                    material: car.material
+                  }
+                },
+                debounce: true
+              });
+            }}
+          />
+        </td>
+        {/* <td className="middle">{item.car.denomination}</td> */}
+        <td className="middle">
+          <AutocompleteInput
+            value={item.car.denomination}
+            inputClass={'input-sm'}
+            items={recommends}
+            renderItem={(car, index) => (
+              <div key={index} className="item">
+                {car.denomination} <br />
+                <strong>{car.brand}</strong>
+              </div>
+            )}
+            onChange={(e) => {
+              const { value } = e.target;
+              this.props.updateRequestItemInDetailThunkAction({
+                item: {
+                  ...item,
+                  car: {
+                    ...item.car,
+                    denomination: value
+                  }
+                },
+                debounce: true
+              });
+              this.search(value, 'recommends');
+            }}
+            onSelect={(car: any) => {
+              this.props.updateRequestItemInDetailThunkAction({
+                item: {
+                  ...item,
+                  car: {
+                    ...item.car,
+                    brand: car.brand,
+                    denomination: car.denomination,
+                    material: car.material
+                  }
+                },
+                debounce: true
+              });
+            }}
+          />
+        </td>
+        {/* <td className="middle">{item.car.material}ASFG58644</td> */}
+        <td className="middle">
+          <AutocompleteInput
+            value={item.car.material}
+            inputClass={'input-sm'}
+            items={recommends}
+            renderItem={(car, index) => (
+              <div key={index} className="item">
+                {car.denomination} <br />
+                <strong>{car.brand}</strong>
+              </div>
+            )}
+            onChange={(e) => {
+              const { value } = e.target;
+              this.props.updateRequestItemInDetailThunkAction({
+                item: {
+                  ...item,
+                  car: {
+                    ...item.car,
+                    material: value
+                  }
+                },
+                debounce: true
+              });
+              this.search(value, 'recommends');
+            }}
+            onSelect={(car: any) => {
+              this.props.updateRequestItemInDetailThunkAction({
+                item: {
+                  ...item,
+                  car: {
+                    ...item.car,
+                    brand: car.brand,
+                    denomination: car.denomination,
+                    material: car.material
+                  }
+                },
+                debounce: true
+              });
+            }}
+          />
+        </td>
         {/* <td className="middle">{item.car.color}</td> */}
         <td className="middle">
           <input type="text"
@@ -62,12 +206,15 @@ class RequestItem extends React.Component<IPropsType, IStateType> {
             defaultValue={item.car.color}
             style={{ width: '80px' }}
             onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
-              this.props.updateRequestItemInDetailReduxAction(request._id, {
-                ...item,
-                car: {
-                  ...item.car,
-                  color: e.target.value
-                }
+              this.props.updateRequestItemInDetailThunkAction({
+                item: {
+                  ...item,
+                  car: {
+                    ...item.car,
+                    color: e.target.value
+                  }
+                },
+                debounce: false
               });
             }}
           />
@@ -76,9 +223,15 @@ class RequestItem extends React.Component<IPropsType, IStateType> {
         <td className="middle">
           <select className="form-control select-sm font-12" value={item.status?._id ?? ''}
             onChange={(e: React.ChangeEvent<HTMLSelectElement>) => {
-              this.props.updateRequestItemInDetailReduxAction(request._id, {
-                ...item,
-                status: e.target.value
+              this.props.updateRequestItemInDetailThunkAction({
+                item: {
+                  ...item,
+                  status: {
+                    ...item.status,
+                    _id: e.target.value
+                  }
+                },
+                debounce: true
               });
             }}
           >
@@ -106,12 +259,15 @@ class RequestItem extends React.Component<IPropsType, IStateType> {
             style={{ width: '80px' }}
             defaultValue={item.car.internalNumber}
             onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
-              this.props.updateRequestItemInDetailReduxAction(request._id, {
-                ...item,
-                car: {
-                  ...item.car,
-                  internalNumber: e.target.value
-                }
+              this.props.updateRequestItemInDetailThunkAction({
+                item: {
+                  ...item,
+                  car: {
+                    ...item.car,
+                    internalNumber: e.target.value
+                  }
+                },
+                debounce: false
               });
             }}
           />
@@ -121,9 +277,15 @@ class RequestItem extends React.Component<IPropsType, IStateType> {
           <select
             className="form-control select-sm font-12" value={item.reason?._id ?? ''}
             onChange={(e: React.ChangeEvent<HTMLSelectElement>) => {
-              this.props.updateRequestItemInDetailReduxAction(request._id, {
-                ...item,
-                reason: e.target.value as any
+              this.props.updateRequestItemInDetailThunkAction({
+                item: {
+                  ...item,
+                  reason: {
+                    ...item.reason,
+                    _id: e.target.value
+                  }
+                },
+                debounce: false
               });
             }}
           >
@@ -140,9 +302,12 @@ class RequestItem extends React.Component<IPropsType, IStateType> {
             <div
               className={`flex-wrap-item-center ${undefined ?? 'pointer'} ${item.equipment ? '' : 'text-gray'}`}
               onClick={() => {
-                this.props.updateRequestItemInDetailReduxAction(request._id, {
-                  ...item,
-                  equipment: !item.equipment
+                this.props.updateRequestItemInDetailThunkAction({
+                  item: {
+                    ...item,
+                    equipment: !item.equipment
+                  },
+                  debounce: false
                 });
               }}
             >
@@ -151,9 +316,12 @@ class RequestItem extends React.Component<IPropsType, IStateType> {
             <div
               className={`flex-wrap-item-center ${undefined ?? 'pointer'} ${item.body ? '' : 'text-gray'}`}
               onClick={() => {
-                this.props.updateRequestItemInDetailReduxAction(request._id, {
-                  ...item,
-                  body: !item.body
+                this.props.updateRequestItemInDetailThunkAction({
+                  item: {
+                    ...item,
+                    body: !item.body
+                  },
+                  debounce: false
                 });
               }}
             >
@@ -166,9 +334,12 @@ class RequestItem extends React.Component<IPropsType, IStateType> {
             <div
               className={`flex-wrap-item-center ${undefined ?? 'pointer'} ${item.washed ? '' : 'text-gray'}`}
               onClick={() => {
-                this.props.updateRequestItemInDetailReduxAction(request._id, {
-                  ...item,
-                  washed: !item.washed
+                this.props.updateRequestItemInDetailThunkAction({
+                  item: {
+                    ...item,
+                    washed: !item.washed
+                  },
+                  debounce: false
                 });
               }}
             >
@@ -177,9 +348,12 @@ class RequestItem extends React.Component<IPropsType, IStateType> {
             <div
               className={`flex-wrap-item-center ${undefined ?? 'pointer'} ${item.review ? '' : 'text-gray'}`}
               onClick={() => {
-                this.props.updateRequestItemInDetailReduxAction(request._id, {
-                  ...item,
-                  review: !item.review
+                this.props.updateRequestItemInDetailThunkAction({
+                  item: {
+                    ...item,
+                    review: !item.review
+                  },
+                  debounce: false
                 });
               }}
             >
@@ -191,9 +365,15 @@ class RequestItem extends React.Component<IPropsType, IStateType> {
         <td className="middle">
           <select className="form-control select-sm font-12" value={item.carrier?._id ?? ''}
             onChange={(e: React.ChangeEvent<HTMLSelectElement>) => {
-              this.props.updateRequestItemInDetailReduxAction(request._id, {
-                ...item,
-                carrier: !e.target.value.length ? null : e.target.value
+              this.props.updateRequestItemInDetailThunkAction({
+                item: {
+                  ...item,
+                  carrier: !e.target.value.length ? null : {
+                    ...item.reason,
+                    _id: e.target.value
+                  }
+                },
+                debounce: false
               });
             }}
           >
@@ -210,9 +390,12 @@ class RequestItem extends React.Component<IPropsType, IStateType> {
             className={'input-xs'}
             value={item.uploadDate}
             onChange={(e) => {
-              this.props.updateRequestItemInDetailReduxAction(request._id, {
-                ...item,
-                uploadDate: e as any
+              this.props.updateRequestItemInDetailThunkAction({
+                item: {
+                  ...item,
+                  uploadDate: e as any
+                },
+                debounce: false
               });
             }}
           />
@@ -222,9 +405,12 @@ class RequestItem extends React.Component<IPropsType, IStateType> {
             className={'input-xs'}
             value={item.estimatedArrival}
             onChange={(e) => {
-              this.props.updateRequestItemInDetailReduxAction(request._id, {
-                ...item,
-                estimatedArrival: e as any
+              this.props.updateRequestItemInDetailThunkAction({
+                item: {
+                  ...item,
+                  estimatedArrival: e as any
+                },
+                debounce: false
               });
             }}
           />
@@ -234,6 +420,19 @@ class RequestItem extends React.Component<IPropsType, IStateType> {
         </td>
       </tr>
     );
+  }
+
+  private search(text: string, base: 'recommends'): void {
+    this.api
+      .searchCar(text)
+      .then((response: AxiosResponse): void => {
+        this.setState({
+          recommends: response.data.cars
+        });
+      })
+      .catch((err: AxiosError): void => {
+        this.api.errorHandler(err);
+      });
   }
 }
 
@@ -245,10 +444,8 @@ const mapStateToProps = (state: { requests: IRequestsState }) => {
 
 const mapDispatchToProps = (dispatch: any) => {
   return {
-    dispatch
-    // updateRequestItemActionInDetail: (item: IRequestItem) => dispatch(updateRequestItemActionInDetail(item)),
-    // updateRequestItemInDetailReduxAction: (idRequest: string, item: IRequestItem) => dispatch(updateRequestItemInDetailReduxAction(idRequest, item)),
-    // getRequestAction: (id: string) => dispatch(getRequestAction(id))
+    dispatch,
+    updateRequestItemInDetailThunkAction: ({ item, debounce }:{ item: IRequestItem, debounce?: boolean}) => dispatch(updateRequestItemInDetailThunkAction({item, debounce}))
   };
 };
 

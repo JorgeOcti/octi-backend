@@ -2,6 +2,7 @@ import Axios, { AxiosError, AxiosResponse, CancelTokenSource } from 'axios';
 import { response } from 'express';
 import { number } from 'prop-types';
 import { Dispatch } from 'redux';
+import { debounce } from 'throttle-debounce';
 import { ICarrier } from '../../../../../src/interfaces/carrier.interface';
 import { IReason } from '../../../../../src/interfaces/reason.interface';
 import { IRequest } from '../../../../../src/interfaces/request.interface';
@@ -129,7 +130,7 @@ export function tabStatusAction(request: string): ITabStatusRequest {
   };
 }
 
-export function getRequestsAction(nextPage: number) {
+export function getRequestsThunkAction(nextPage: number, orderBy: string, orderType: string) {
   return (dispatch: Dispatch<RequestsReduxActions>, getState: () => { requests: IRequestsState }) => {
     const api: ApiService = new ApiService();
     const state = getState();
@@ -138,7 +139,7 @@ export function getRequestsAction(nextPage: number) {
     dispatch(cancelRequestAction(api.getSource()));
     Axios
       .all([
-        api.getRequests(page),
+        api.getRequests({page, orderBy, orderType}),
         api.getReasons(1, 200),
         api.getRequestItemsStatus(1, 200),
         api.getCarriers(1, 200)
@@ -158,7 +159,7 @@ export function getRequestsAction(nextPage: number) {
   };
 }
 
-export function getRequestAction(id: string) {
+export function getRequestThunkAction(id: string) {
   return (dispatch: Dispatch<RequestsReduxActions>) => {
     const api: ApiService = new ApiService();
     dispatch(isLoadingAction(true));
@@ -185,7 +186,7 @@ export function getRequestAction(id: string) {
   };
 }
 
-export function updateRequestItemInListReduxAction(idRequest: string, item: IRequestItem) {
+export function updateRequestItemInListThunkAction(idRequest: string, item: IRequestItem) {
   return (dispatch: Dispatch<RequestsReduxActions>) => {
     const api: ApiService = new ApiService();
     api.updateRequestItem(item._id, item)
@@ -195,13 +196,20 @@ export function updateRequestItemInListReduxAction(idRequest: string, item: IReq
   };
 }
 
-export function updateRequestItemInDetailReduxAction(idRequest: string, item: IRequestItem) {
+const debounceUpdateRequestItem = debounce(500, (item) => {
+  const api: ApiService = new ApiService();
+  api.updateRequestItem(item._id, item)
+    .then((response: AxiosResponse) => { });
+});
+export function updateRequestItemInDetailThunkAction({ item, debounce }: { item: IRequestItem, debounce?: boolean}) {
   return (dispatch: Dispatch<RequestsReduxActions>) => {
-    const api: ApiService = new ApiService();
-    api.updateRequestItem(item._id, item)
-      .then((response: AxiosResponse) => {
-        const { data } = response;
-        // dispatch(updateRequestItemActionInList(idRequest, data));
-      });
+    dispatch(updateRequestItemActionInDetail(item));
+    if (debounce) {
+      debounceUpdateRequestItem(item);
+    } else {
+      const api: ApiService = new ApiService();
+      api.updateRequestItem(item._id, item)
+        .then((response: AxiosResponse) => { });
+    }
   };
 }

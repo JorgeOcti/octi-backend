@@ -200,8 +200,9 @@ class BillingController {
         }
     }
     async run(req, res) {
+        const { team } = req.user;
         try {
-            await new billing_task_1.default().processBilling();
+            await new billing_task_1.default().processBilling(team);
             res.json({
                 status: 'ok'
             });

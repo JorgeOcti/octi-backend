@@ -499,9 +499,13 @@ export default class ApiService {
     );
   }
 
-  public getRequests(page: number, pageSize?: number): AxiosPromise {
+  public getRequests({page, pageSize, orderBy, orderType}:{page: number, orderBy: string, orderType: string, pageSize?: number}): AxiosPromise {
+    let params = `?page=${page}`;
+    params = pageSize ? `${params}&pageSize=${pageSize}`: params;
+    params = orderBy ? `${params}&orderBy=${orderBy}`: params;
+    params = orderType ? `${params}&orderType=${orderType}`: params;
     return this.instance.get(
-      `/api/v1/requests/?page=${page}${pageSize ? `&pageSize=${pageSize}` : ''}`
+      `/api/v1/requests/${params}`
     );
   }
 

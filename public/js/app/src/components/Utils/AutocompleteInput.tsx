@@ -1,5 +1,5 @@
-import * as React from "react";
-import {RefObject} from "react";
+import * as React from 'react';
+import {RefObject} from 'react';
 
 interface IPropsType {
   value: string;
@@ -38,7 +38,7 @@ class AutocompleteInput extends React.Component<IPropsType, IStateType>{
 
   public componentDidMount(): void {
     document.addEventListener('keydown', this.close, true);
-    document.addEventListener('click', this.outsideClick, true)
+    document.addEventListener('click', this.outsideClick, true);
   }
 
   public render(): React.ReactElement<IPropsType> {
@@ -59,7 +59,7 @@ class AutocompleteInput extends React.Component<IPropsType, IStateType>{
           }}
           value={value}
           onClick={this.changeOpen}
-          autoComplete={"off"}
+          autoComplete={'off'}
         />
         {
           this.state.open ?
@@ -83,12 +83,12 @@ class AutocompleteInput extends React.Component<IPropsType, IStateType>{
         this.props.onSelect(item);
         this.changeOpen();
       }
-    })
+    });
   }
 
   public componentWillUnmount(): void {
     document.removeEventListener('keydown', this.close, true);
-    document.removeEventListener('click', this.outsideClick, true)
+    document.removeEventListener('click', this.outsideClick, true);
   }
 
   private close(e: any): void {
@@ -113,7 +113,7 @@ class AutocompleteInput extends React.Component<IPropsType, IStateType>{
     const {open} = this.state;
     this.setState({
       open: !open
-    })
+    });
   }
 }
 

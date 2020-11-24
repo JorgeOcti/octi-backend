@@ -215,13 +215,19 @@ class BillingQueue {
     }
   }
 
-  public async processBilling(): Promise<void> {
+  public async processBilling(team?:any): Promise<void> {
     try {
       console.log('start billing');
       // const valueUF = 28662.81; /*await this.getUFPrice();*/
       // const valueDolar = 767.98; /*await this.getDolarPrice();*/
       const valueUF = await this.getUFPrice();
-      const companies = await Company.find({ 'billing.active': true });
+      const filter: any = {
+        'billing.active': true
+      }
+      if(team){
+        filter.team = team;
+      }
+      const companies = await Company.find(filter);
       for (const company of companies) {
         console.log(`calculating billing ${company.name}`);
         const inventoryCars = await this.calculateCarsInInventory(company);

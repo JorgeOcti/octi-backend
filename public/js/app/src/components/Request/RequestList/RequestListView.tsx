@@ -5,7 +5,7 @@ import { connect } from 'react-redux';
 import { RouteComponentProps } from 'react-router';
 import * as io from 'socket.io-client';
 import { IRequestItem } from '../../../../../../../src/interfaces/requestItem.interface';
-import { getRequestsAction, updateRequestItemActionInList } from '../../../actions/requests.actions';
+import { getRequestsThunkAction, updateRequestItemActionInList } from '../../../actions/requests.actions';
 import { IRequestsState } from '../../../actions/requests.types';
 import AppContainer from '../../../container/AppContainer';
 import { IWindow } from '../../../interfaces/window';
@@ -17,11 +17,13 @@ interface IPropsType extends RouteComponentProps<{ ticket: string }> {
   requests: IRequestsState;
   dispatch: Dispatch<IRequestsState>;
   updateRequestItemActionInList: (idRequest: string, item: IRequestItem) => void;
-  getRequestsAction(page: number): void;
+  getRequestsThunkAction(page: number, orderBy: string, orderType: string): void;
 }
 
 interface IStateType {
   error: Error | null;
+  orderBy: string;
+  orderType: string;
 }
 
 declare let window: IWindow;
@@ -29,7 +31,9 @@ declare let window: IWindow;
 class RequestListView extends React.Component<IPropsType, IStateType> {
 
   readonly state = {
-    error: null
+    error: null,
+    orderBy: '_id',
+    orderType: 'descending'
   };
 
   private socket: SocketIOClient.Socket;
@@ -37,14 +41,16 @@ class RequestListView extends React.Component<IPropsType, IStateType> {
   constructor(props: IPropsType) {
     super(props);
     this.create = this.create.bind(this);
+    this.changeOrder = this.changeOrder.bind(this);
     this.changePage = this.changePage.bind(this);
   }
 
   public componentWillMount(): void {
+    const { orderBy, orderType } = this.state;
     document.title = 'OSA Andes | Solicitudes';
     window.scrollTo(0, 0);
 
-    this.props.getRequestsAction(1);
+    this.props.getRequestsThunkAction(1, orderBy, orderType);
 
     // socket
     this.socket = io.connect(`${location.protocol}//${location.host}`, {
@@ -95,6 +101,7 @@ class RequestListView extends React.Component<IPropsType, IStateType> {
       pagination, loading, requests, reasons, requestItemStatus,
       carriers
     } = this.props.requests;
+    const { orderType, orderBy } = this.state;
     return (
       <AppContainer title="" cMenu="3" cSubMenu="3.1">
         <section className="content">
@@ -110,13 +117,6 @@ class RequestListView extends React.Component<IPropsType, IStateType> {
             <div className="box-body table-responsive request-list">
               <div className="row" style={{ margin: 0 }}>
                 <div className="col-md-4 col-md-offset-4 text-right">
-                  {/* <div className="form-group-switch" style={{padding:'18px 5px 4px 5px'}}>
-                    <BootstrapSwitch
-                      checked={true}
-                      color="blue"
-                      onChange={() => { }} />
-                    <label className="switch-label">ver completados</label>
-                  </div> */}
                   <div className="checkbox" style={{paddingTop: '10px'}}>
                     <label style={{paddingLeft: '0', fontWeight: 600}} onClick={()=>console.log}>
                       <Checkbox
@@ -139,8 +139,8 @@ class RequestListView extends React.Component<IPropsType, IStateType> {
                 </div>
               </div>
               <div className="row request bg-primary">
-                <div className="col-sm-1 col-xs-1 col-md-1 col-lg-1 center">
-                  <strong>ID</strong>
+                <div className="col-sm-1 col-xs-1 col-md-1 col-lg-1 center pointer head-sorted" onClick={() => this.changeOrder('_id')}>
+                  <strong>ID</strong> <i className={`fa ${orderBy === '_id' ? `${orderType === 'descending' ? 'fa-sort-down' : 'fa-sort-up'}` : 'fa-sort'}`} />
                 </div>
                 <div className="col-sm-1 col-xs-1 col-md-1 col-lg-1">
                   <strong>Flota</strong>
@@ -154,11 +154,11 @@ class RequestListView extends React.Component<IPropsType, IStateType> {
                 <div className="col-sm-1 col-xs-1 col-md-1 col-lg-1 center">
                   <strong>Nº Vehículos</strong>
                 </div>
-                <div className="col-sm-2 col-xs-2 col-md-2 col-lg-2 center">
-                  <strong>Fecha Creación</strong>
+                <div className="col-sm-2 col-xs-2 col-md-2 col-lg-2 center  pointer head-sorted" onClick={() => this.changeOrder('createdAt')}>
+                  <strong>Fecha Creación</strong> <i className={`fa ${orderBy === 'createdAt' ? `${orderType === 'descending' ? 'fa-sort-down' : 'fa-sort-up'}` : 'fa-sort'}`} />
                 </div>
-                <div className="col-sm-2 col-xs-2 col-md-2 col-lg-2 center">
-                  <strong>Última Actualización</strong>
+                <div className="col-sm-2 col-xs-2 col-md-2 col-lg-2 center  pointer head-sorted" onClick={() => this.changeOrder('updatedAt')}>
+                  <strong>Última Actualización</strong> <i className={`fa ${orderBy === 'updatedAt' ? `${orderType === 'descending' ? 'fa-sort-down' : 'fa-sort-up'}` : 'fa-sort'}`} />
                 </div>
                 <div className="col-sm-1 col-xs-1 col-md-1 col-lg-1 center">
                   <strong><i className="fa fa-comment" /></strong>
@@ -200,12 +200,32 @@ class RequestListView extends React.Component<IPropsType, IStateType> {
     );
   }
 
+  private changeOrder(key: string){
+    const {page} = this.props.requests.pagination;
+    const {orderBy, orderType} = this.state;
+    let newOrderType = orderType;
+    let newOrderBy = orderBy;
+    if (key === orderBy) {
+      newOrderType = orderType === 'descending' ? 'ascending' : 'descending';
+    } else {
+      newOrderBy = key;
+    }
+    this.setState({
+      orderBy: newOrderBy,
+      orderType: newOrderType
+    });
+    this.props.getRequestsThunkAction(page, newOrderBy, newOrderType);
+  }
+
   private create(): void {
     this.props.history.push('/requests/create/');
   }
 
   private changePage(page: number): void {
-    this.props.getRequestsAction(page);
+    const {orderBy, orderType} = this.state;
+
+    this.props.getRequestsThunkAction(1, orderBy, orderType);
+    this.props.getRequestsThunkAction(page, orderBy, orderType);
   }
 }
 
@@ -218,7 +238,7 @@ const mapStateToProps = (state: { requests: IRequestsState }) => {
 const mapDispatchToProps = (dispatch: any) => {
   return {
     dispatch,
-    getRequestsAction: (page: number) => dispatch(getRequestsAction(page)),
+    getRequestsThunkAction: (page: number, orderBy: string, orderType: string) => dispatch(getRequestsThunkAction(page, orderBy, orderType)),
     updateRequestItemActionInList: (idRequest: string, item: IRequestItem) => dispatch(updateRequestItemActionInList(idRequest, item))
   };
 };

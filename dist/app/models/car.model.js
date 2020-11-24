@@ -40,8 +40,7 @@ const carSchema = new mongoose.Schema({
         trim: true
     },
     destination: {
-        type: String,
-        trim: true
+        type: String
     },
     property: {
         type: String,
@@ -53,21 +52,17 @@ const carSchema = new mongoose.Schema({
         trim: true
     },
     brand: {
-        type: String,
-        trim: true
+        type: String
     },
     denomination: {
-        type: String,
-        trim: true
+        type: String
     },
     material: {
-        type: String,
-        trim: true
+        type: String
     },
     color: {
         type: String,
-        default: '',
-        trim: true
+        default: ''
     },
     isExhibition: {
         type: Boolean,
@@ -105,9 +100,9 @@ carSchema.index({
     team: 1, denomination: 'text', material: 'text', brand: 'text'
 }, {
     weights: {
-        denomination: 5,
         material: 3,
-        brand: 2
+        denomination: 2,
+        brand: 1
     }
 });
 carSchema.index({

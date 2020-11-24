@@ -204,8 +204,9 @@ class BillingController {
   }
 
   public async run(req: IRequest, res: Response) {
+    const { team } = req.user;
     try {
-      await new BillingQueue().processBilling();
+      await new BillingQueue().processBilling(team);
       res.json({
         status: 'ok'
       });

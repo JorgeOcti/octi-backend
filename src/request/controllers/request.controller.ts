@@ -45,7 +45,7 @@ class RequestController {
     path: 'items',
     options: {
       sort: {
-        priority: -1
+        _id: -1
       }
     },
     populate: this.itemPopulate
@@ -123,11 +123,11 @@ class RequestController {
     logger.info(`RequestController.apiList`);
     logger.info(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
     const { team } = req.user;
-    const { page, pageSize, search } = req.query as { page: string; pageSize: string; search: string };
+    const { page, pageSize, search, orderBy, orderType } = req.query as { page: string; pageSize: string; search: string; orderBy: string; orderType: string };
     // paginate options
     const options: PaginateOptions = {
       sort: {
-        _id: -1
+        [orderBy]: orderType === 'ascending' ? 1 : -1
       },
       populate: this.requestPopulate,
       // select: {_id: true},
@@ -239,7 +239,7 @@ class RequestController {
           team,
           $text: {
             $search: search,
-            $diacriticSensitive: true
+            $diacriticSensitive: false
           }
         }
       }, {
@@ -255,7 +255,7 @@ class RequestController {
       }, {
         $match: {
           score: {
-            $gt: 1.0
+            $gt: 0.5
           }
         }
       }, {

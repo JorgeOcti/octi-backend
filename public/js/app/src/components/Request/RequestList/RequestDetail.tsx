@@ -7,7 +7,7 @@ import { IReason } from '../../../../../../../src/interfaces/reason.interface';
 import { IRequest } from '../../../../../../../src/interfaces/request.interface';
 import { IRequestItem } from '../../../../../../../src/interfaces/requestItem.interface';
 import { IRequestItemStatus } from '../../../../../../../src/interfaces/requestItemStatus.interface';
-import { tabStatusAction, updateRequestItemInListReduxAction } from '../../../actions/requests.actions';
+import { tabStatusAction, updateRequestItemInListThunkAction } from '../../../actions/requests.actions';
 import { IRequestsState } from '../../../actions/requests.types';
 import DateRangePicker from '../../Utils/DateRangePicker';
 
@@ -279,7 +279,7 @@ const mapStateToProps = (state: { requests: IRequestsState }) => {
 const mapDispatchToProps = (dispatch: any) => {
   return {
     dispatch,
-    updateRequestItemInListReduxAction: (idRequest: string, item: IRequestItem) => dispatch(updateRequestItemInListReduxAction(idRequest, item)),
+    updateRequestItemInListReduxAction: (idRequest: string, item: IRequestItem) => dispatch(updateRequestItemInListThunkAction(idRequest, item)),
     tabStatusAction: (request: string) => dispatch(tabStatusAction(request))
   };
 };

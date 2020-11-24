@@ -7,7 +7,7 @@ import { RouteComponentProps } from 'react-router-dom';
 import * as io from 'socket.io-client';
 import * as swal from 'sweetalert';
 import { IRequestItem } from '../../../../../../../src/interfaces/requestItem.interface';
-import { getRequestAction, updateRequestItemActionInDetail, updateRequestItemInDetailReduxAction } from '../../../actions/requests.actions';
+import { getRequestThunkAction, updateRequestItemActionInDetail } from '../../../actions/requests.actions';
 import { IRequestsState } from '../../../actions/requests.types';
 import AppContainer from '../../../container/AppContainer';
 import { IWindow } from '../../../interfaces/window';
@@ -17,7 +17,6 @@ interface IPropsType extends RouteComponentProps<{ id: string }> {
   requests: IRequestsState;
   getRequestAction(id: string): void;
   updateRequestItemActionInDetail: (item: IRequestItem) => void;
-  updateRequestItemInDetailReduxAction: (idRequest: string, item: IRequestItem) => void;
 }
 
 interface IStateType {
@@ -224,8 +223,7 @@ const mapDispatchToProps = (dispatch: any) => {
   return {
     dispatch,
     updateRequestItemActionInDetail: (item: IRequestItem) => dispatch(updateRequestItemActionInDetail(item)),
-    updateRequestItemInDetailReduxAction: (idRequest: string, item: IRequestItem) => dispatch(updateRequestItemInDetailReduxAction(idRequest, item)),
-    getRequestAction: (id: string) => dispatch(getRequestAction(id))
+    getRequestAction: (id: string) => dispatch(getRequestThunkAction(id))
   };
 };
 
