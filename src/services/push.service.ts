@@ -17,6 +17,10 @@ class PushService {
     });
   }
 
+  public createAuthToken(userId: String){
+    return this.pushNotifications.generateToken(userId);
+  }
+
   public send(title: string, subtitle: string, body: string, interests: string[]) {
     logger.info('-----------------------PUSH---------------------------');
     logger.info(`title, ${title}`);

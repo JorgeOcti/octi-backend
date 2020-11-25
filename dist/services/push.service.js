@@ -15,6 +15,9 @@ class PushService {
             secretKey: general_utils_1.default.getFromEnviroment('PUHSER_SECRET_KEY', '')
         });
     }
+    createAuthToken(userId) {
+        return this.pushNotifications.generateToken(userId);
+    }
     send(title, subtitle, body, interests) {
         logger_service_1.default.info('-----------------------PUSH---------------------------');
         logger_service_1.default.info(`title, ${title}`);
