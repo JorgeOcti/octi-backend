@@ -1,4 +1,5 @@
 import { Response } from 'express';
+import moment = require('moment');
 import { PaginateOptions, PaginateResult, QueryPopulateOptions } from 'mongoose';
 import Car, { ChoicesStatusCar } from '../../app/models/car.model';
 import Team from '../../app/models/team.model';
@@ -309,12 +310,13 @@ class RequestController {
     const updateObject = req.body;
     const { id } = req.params;
     try {
-      await RequestItem.update({ _id: id, team }, { $set: updateObject });
+      await RequestItem.update({ _id: id, team }, { $set: {...updateObject} });
       await Car.update({ _id: updateObject.car._id, team }, { $set: updateObject.car });
       const item = await RequestItem
         .findOne({ _id: id, team })
         .populate(this.itemPopulate)
         .lean();
+      await Request.update({ _id: item.request._id }, { $set: { updatedAt: moment() } });
       io.to(`request-list-${team}`).emit('UPDATE_ITEM', {
         idRequest: item.request._id,
         item

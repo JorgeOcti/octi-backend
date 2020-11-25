@@ -72,21 +72,14 @@ class RequestListDetail extends React.Component<IPropsType, IStateType> {
 
             }
           </div>
-          {/* <div className="col-sm-2 col-xs-2 col-md-2 col-lg-2">
-            <span className="label label-primary">
-              {
-                request.status?.name
-              }
-            </span>
-          </div> */}
           <div className="col-sm-3 col-xs-3 col-md-3 col-lg-3">{request.destination.name}</div>
-          <div className="col-sm-1 col-xs-1 col-md-1 col-lg-1 center">
+          <div className="col-sm-1 col-xs-1 col-md-1 col-lg-1">
             {request.items.length}
           </div>
-          <div className="col-sm-2 col-xs-2 col-md-2 col-lg-2 center">
+          <div className="col-sm-2 col-xs-2 col-md-2 col-lg-2">
             {moment(request.createdAt).format('DD-MM-YY')}
           </div>
-          <div className="col-sm-2 col-xs-2 col-md-2 col-lg-2 center">
+          <div className="col-sm-2 col-xs-2 col-md-2 col-lg-2">
             {moment(request.updatedAt).format('DD-MM-YY')}
           </div>
           <div className="col-sm-1 col-xs-1 col-md-1 col-lg-1 center">
@@ -102,19 +95,18 @@ class RequestListDetail extends React.Component<IPropsType, IStateType> {
           <table className="table table-hover">
             <thead>
               <tr style={{ backgroundColor: '#f9f9f9' }}>
-                <th style={{ width: '28px' }} />
-                <th>Progreso</th>
-                <th>Estado</th>
-                <th style={{ width: '250px' }}>Modelo</th>
-                <th>Color</th>
-                <th className="text-center">VIN</th>
-                <th className="text-center">CDO</th>
-                <th className="text-center">Equip. / Carroc. / Preentrega</th>
-                <th style={{ width: '100px' }}>Motivo</th>
-                <th>Transporte</th>
-                <th style={{ width: '70px' }}>Fecha carga</th>
-                <th style={{ width: '70px' }}>Fecha llegada</th>
-                {/* <th>Observación despacho</th> */}
+                <th className="middle" style={{ width: '28px' }} />
+                <th className="middle" >Progreso</th>
+                <th className="middle" >Estado</th>
+                <th className="middle"  style={{ width: '250px' }}>Modelo</th>
+                <th className="middle" >Color</th>
+                <th className="middle-center">VIN</th>
+                <th className="middle-center">CDO</th>
+                <th className="middle-center">Equip. / Carroc. / Preentrega</th>
+                <th className="middle"  style={{ width: '100px' }}>Motivo</th>
+                <th className="middle" >Transporte</th>
+                <th  className="middle" style={{ width: '70px' }}>Fecha carga</th>
+                <th className="middle"  style={{ width: '70px' }}>Fecha llegada</th>
               </tr>
             </thead>
             <tbody>

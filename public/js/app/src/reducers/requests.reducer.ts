@@ -1,3 +1,4 @@
+import * as moment from 'moment-timezone';
 import {
   IRequestsState,
   RequestsReduxActions,
@@ -83,6 +84,7 @@ export function requestsReducers(state = initialState, action: RequestsReduxActi
         ...state,
         requests: [...state.requests].map((request) => {
           if (request._id === action.payload.idRequest) {
+            request.updatedAt = moment().toDate();
             request.items = request.items.map((item) => {
               if (item._id === action.payload.item._id) {
                 return {

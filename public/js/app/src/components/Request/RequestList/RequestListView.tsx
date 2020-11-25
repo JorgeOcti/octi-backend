@@ -98,8 +98,7 @@ class RequestListView extends React.Component<IPropsType, IStateType> {
 
   public render(): React.ReactElement<IPropsType> {
     const {
-      pagination, loading, requests, reasons, requestItemStatus,
-      carriers
+      pagination, loading, requests, reasons, requestItemStatus, carriers
     } = this.props.requests;
     const { orderType, orderBy } = this.state;
     return (
@@ -115,7 +114,7 @@ class RequestListView extends React.Component<IPropsType, IStateType> {
               </div>
             </div>
             <div className="box-body table-responsive request-list">
-              <div className="row" style={{ margin: 0 }}>
+              {/* <div className="row" style={{ margin: 0 }}>
                 <div className="col-md-4 col-md-offset-4 text-right">
                   <div className="checkbox" style={{paddingTop: '10px'}}>
                     <label style={{paddingLeft: '0', fontWeight: 600}} onClick={()=>console.log}>
@@ -137,7 +136,7 @@ class RequestListView extends React.Component<IPropsType, IStateType> {
                     </div>
                   </div>
                 </div>
-              </div>
+              </div> */}
               <div className="row request bg-primary">
                 <div className="col-sm-1 col-xs-1 col-md-1 col-lg-1 center pointer head-sorted" onClick={() => this.changeOrder('_id')}>
                   <strong>ID</strong> <i className={`fa ${orderBy === '_id' ? `${orderType === 'descending' ? 'fa-sort-down' : 'fa-sort-up'}` : 'fa-sort'}`} />
@@ -145,19 +144,16 @@ class RequestListView extends React.Component<IPropsType, IStateType> {
                 <div className="col-sm-1 col-xs-1 col-md-1 col-lg-1">
                   <strong>Flota</strong>
                 </div>
-                {/* <div className="col-sm-2 col-xs-2 col-md-2 col-lg-2">
-                  <strong>Estado</strong>
-                </div> */}
                 <div className="col-sm-3 col-xs-3 col-md-3 col-lg-3">
                   <strong>Destino</strong>
                 </div>
-                <div className="col-sm-1 col-xs-1 col-md-1 col-lg-1 center">
+                <div className="col-sm-1 col-xs-1 col-md-1 col-lg-1">
                   <strong>Nº Vehículos</strong>
                 </div>
-                <div className="col-sm-2 col-xs-2 col-md-2 col-lg-2 center  pointer head-sorted" onClick={() => this.changeOrder('createdAt')}>
+                <div className="col-sm-2 col-xs-2 col-md-2 col-lg-2  pointer head-sorted" onClick={() => this.changeOrder('createdAt')}>
                   <strong>Fecha Creación</strong> <i className={`fa ${orderBy === 'createdAt' ? `${orderType === 'descending' ? 'fa-sort-down' : 'fa-sort-up'}` : 'fa-sort'}`} />
                 </div>
-                <div className="col-sm-2 col-xs-2 col-md-2 col-lg-2 center  pointer head-sorted" onClick={() => this.changeOrder('updatedAt')}>
+                <div className="col-sm-2 col-xs-2 col-md-2 col-lg-2  pointer head-sorted" onClick={() => this.changeOrder('updatedAt')}>
                   <strong>Última Actualización</strong> <i className={`fa ${orderBy === 'updatedAt' ? `${orderType === 'descending' ? 'fa-sort-down' : 'fa-sort-up'}` : 'fa-sort'}`} />
                 </div>
                 <div className="col-sm-1 col-xs-1 col-md-1 col-lg-1 center">

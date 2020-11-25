@@ -1,6 +1,4 @@
 import Axios, { AxiosError, AxiosResponse, CancelTokenSource } from 'axios';
-import { response } from 'express';
-import { number } from 'prop-types';
 import { Dispatch } from 'redux';
 import { debounce } from 'throttle-debounce';
 import { ICarrier } from '../../../../../src/interfaces/carrier.interface';

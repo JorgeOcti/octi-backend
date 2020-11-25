@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+const moment = require("moment");
 const car_model_1 = require("../../app/models/car.model");
 const team_model_1 = require("../../app/models/team.model");
 const server_1 = require("../../server");
@@ -302,12 +303,13 @@ class RequestController {
         const updateObject = req.body;
         const { id } = req.params;
         try {
-            await requestItem_model_1.default.update({ _id: id, team }, { $set: updateObject });
+            await requestItem_model_1.default.update({ _id: id, team }, { $set: { ...updateObject } });
             await car_model_1.default.update({ _id: updateObject.car._id, team }, { $set: updateObject.car });
             const item = await requestItem_model_1.default
                 .findOne({ _id: id, team })
                 .populate(this.itemPopulate)
                 .lean();
+            await request_model_1.default.update({ _id: item.request._id }, { $set: { updatedAt: moment() } });
             server_1.io.to(`request-list-${team}`).emit('UPDATE_ITEM', {
                 idRequest: item.request._id,
                 item

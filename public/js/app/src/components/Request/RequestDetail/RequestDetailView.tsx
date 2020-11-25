@@ -121,9 +121,9 @@ class RequestDetailView extends React.Component<IPropsType, IStateType> {
                         <tr>
                           <th className="middle-center" style={{ width: '25px' }}>#</th>
                           <th className="middle" style={{ width: '28px' }} />
-                          <th className="middle">Marca</th>
-                          <th className="middle">Modelo</th>
-                          <th className="middle">Material</th>
+                          <th className="middle" style={{ width: '100px' }}>Marca</th>
+                          <th className="middle" style={{ width: '180px' }}>Modelo</th>
+                          <th className="middle" style={{ width: '100px' }}>Material</th>
                           <th className="middle">Color</th>
                           <th className="middle">Estado</th>
                           <th className="middle">VIN</th>
