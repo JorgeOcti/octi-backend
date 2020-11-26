@@ -217,7 +217,7 @@ class RequestListDetail extends React.Component<IPropsType, IStateType> {
                     {/* <td className="middle">06-11-19</td> */}
                     <td className="middle">
                       <DateRangePicker
-                        className={'input-xs'}
+                        className={'input-sm'}
                         value={item.uploadDate}
                         onChange={(e) => {
                           this.props.updateRequestItemInListReduxAction!(request._id, {
@@ -230,7 +230,7 @@ class RequestListDetail extends React.Component<IPropsType, IStateType> {
                     {/* <td className="middle">8-11-19</td> */}
                     <td className="middle">
                       <DateRangePicker
-                        className={'input-xs'}
+                        className={'input-sm'}
                         value={item.estimatedArrival}
                         onChange={(e) => {
                           this.props.updateRequestItemInListReduxAction!(request._id, {

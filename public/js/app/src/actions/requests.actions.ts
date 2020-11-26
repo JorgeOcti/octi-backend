@@ -10,6 +10,8 @@ import ApiService from '../utils/axios';
 import {
   ICancelRequest,
   IChangeOrderRequest,
+  ICreateRequestItemInDetail,
+  ICreateRequestItemInList,
   IDeleteRequestInList,
   IDeleteRequestItemInDetail,
   IDeleteRequestItemInList,
@@ -26,6 +28,8 @@ import {
   RequestsReduxActions,
   REQUEST_CANCEL_REQUEST,
   REQUEST_CHANGE_ORDER,
+  REQUEST_CREATE_REQUEST_ITEM_IN_DETAIL,
+  REQUEST_CREATE_REQUEST_ITEM_IN_LIST,
   REQUEST_DELETE_REQUEST_IN_LIST,
   REQUEST_DELETE_REQUEST_ITEM_IN_DETAIL,
   REQUEST_DELETE_REQUEST_ITEM_IN_LIST,
@@ -108,6 +112,16 @@ export function loadRequestAction(request: IRequest): ILoadRequest {
   };
 }
 
+export function createRequestItemActionInList(idRequest: string, item: IRequestItem): ICreateRequestItemInList {
+  return {
+    type: REQUEST_CREATE_REQUEST_ITEM_IN_LIST,
+    payload: {
+      idRequest,
+      item
+    }
+  };
+}
+
 export function updateRequestItemActionInList(idRequest: string, item: IRequestItem): IUpdateRequestItemInList {
   return {
     type: REQUEST_UDPATE_REQUEST_ITEM_IN_LIST,
@@ -123,6 +137,15 @@ export function deleteRequestItemActionInList(idRequest: string, item: IRequestI
     type: REQUEST_DELETE_REQUEST_ITEM_IN_LIST,
     payload: {
       idRequest,
+      item
+    }
+  };
+}
+
+export function createRequestItemActionInDetail(item: IRequestItem): ICreateRequestItemInDetail {
+  return {
+    type: REQUEST_CREATE_REQUEST_ITEM_IN_DETAIL,
+    payload: {
       item
     }
   };

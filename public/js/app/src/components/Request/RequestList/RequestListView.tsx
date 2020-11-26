@@ -6,6 +6,7 @@ import { RouteComponentProps } from 'react-router';
 import * as io from 'socket.io-client';
 import { IRequestItem } from '../../../../../../../src/interfaces/requestItem.interface';
 import {
+  createRequestItemActionInList,
   deleteRequestActionInList,
   deleteRequestItemActionInList,
   getRequestsThunkAction,
@@ -24,6 +25,7 @@ interface IPropsType extends RouteComponentProps<{ ticket: string }> {
   getRequestsThunkAction: (page: number, orderBy: string, orderType: string) => void;
   deleteRequestItemActionInList: (idRequest: string, item: IRequestItem) => void;
   deleteRequestActionInList: (id: string) => void;
+  createRequestItemActionInList: (idRequest: string, item: IRequestItem) => void;
 }
 
 interface IStateType {
@@ -97,6 +99,17 @@ class RequestListView extends React.Component<IPropsType, IStateType> {
       setTimeout(() => {
         this.props.deleteRequestActionInList(data.idRequest);
       }, 300);
+    });
+
+    this.socket.on('CREATE_REQUEST_ITEM', (data: any): void => {
+      this.props.createRequestItemActionInList(data.idRequest, data.item);
+        const $item = $(`#request-item-${data.item._id}`);
+        if ($item) {
+          $item.addClass('bg-green-active');
+        }
+        setTimeout(() => {
+          $item.removeClass('bg-green-active');
+        }, 300);
     });
   }
 
@@ -254,6 +267,7 @@ const mapDispatchToProps = (dispatch: any) => {
   return {
     dispatch,
     getRequestsThunkAction: (page: number, orderBy: string, orderType: string) => dispatch(getRequestsThunkAction(page, orderBy, orderType)),
+    createRequestItemActionInList: (idRequest: string, item: IRequestItem) => dispatch(createRequestItemActionInList(idRequest, item)),
     updateRequestItemActionInList: (idRequest: string, item: IRequestItem) => dispatch(updateRequestItemActionInList(idRequest, item)),
     deleteRequestItemActionInList: (idRequest: string, item: IRequestItem) => dispatch(deleteRequestItemActionInList(idRequest, item)),
     deleteRequestActionInList: (id: string) => dispatch(deleteRequestActionInList(id))

@@ -11,6 +11,7 @@ import { debounce } from 'throttle-debounce';
 import { ICar } from '../../../../../../../src/interfaces/car.interface';
 import { IRequestItem } from '../../../../../../../src/interfaces/requestItem.interface';
 import {
+  createRequestItemActionInDetail,
   deleteRequestItemActionInDetail,
   deleteRequestThunkAction,
   getRequestThunkAction,
@@ -26,6 +27,7 @@ import RequestItem from './RequestItem';
 interface IPropsType extends RouteComponentProps<{ id: string }> {
   requests: IRequestsState;
   getRequestAction: (id: string) => void;
+  createRequestItemActionInDetail: (item: IRequestItem) => void;
   updateRequestItemActionInDetail: (item: IRequestItem) => void;
   deleteRequestItemActionInDetail: (item: IRequestItem) => void;
   deleteRequestThunkAction: (id: string) => void;
@@ -34,7 +36,7 @@ interface IPropsType extends RouteComponentProps<{ id: string }> {
 interface IStateType {
   error: Error | null;
   recommends: ICar[];
-  car: Partial<ICar>;
+  car: Partial<ICar & {reason: string}>;
 }
 
 declare let window: IWindow;
@@ -49,7 +51,8 @@ class RequestDetailView extends React.Component<IPropsType, IStateType> {
       brand: '',
       denomination: '',
       material: '',
-      color: ''
+      color: '',
+      reason: ''
     }
   };
 
@@ -116,6 +119,7 @@ class RequestDetailView extends React.Component<IPropsType, IStateType> {
 
     this.socket.on('CREATE_REQUEST_ITEM', (data: any): void => {
       if (data.idRequest === id) {
+        this.props.createRequestItemActionInDetail(data.item);
         const $item = $(`#request-item-${data.item._id}`);
         if ($item) {
           $item.addClass('bg-green-active');
@@ -143,7 +147,7 @@ class RequestDetailView extends React.Component<IPropsType, IStateType> {
   }
 
   public render(): React.ReactElement<IPropsType> {
-    const { request, loading } = this.props.requests;
+    const { request, loading, reasons} = this.props.requests;
     const { recommends, car } = this.state;
     return (
       <AppContainer title="" cMenu="3" cSubMenu="3.1" cAction={'Detalle solicitud'}>
@@ -219,6 +223,7 @@ class RequestDetailView extends React.Component<IPropsType, IStateType> {
                                 <th>Modelo</th>
                                 <th>Material</th>
                                 <th>Color</th>
+                                <th>Motivo</th>
                                 <th></th>
                               </tr>
                             </thead>
@@ -326,7 +331,7 @@ class RequestDetailView extends React.Component<IPropsType, IStateType> {
                                 <td>
                                   <input type="text"
                                     className="form-control input-sm"
-                                    defaultValue={''}
+                                    value={this.state.car.color}
                                     onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
                                       const { value } = e.target;
                                       this.setState({
@@ -337,6 +342,27 @@ class RequestDetailView extends React.Component<IPropsType, IStateType> {
                                       });
                                     }}
                                   />
+                                </td>
+                                <td>
+                                  <select
+                                    className="form-control select-sm font-12" value={this.state.car.reason}
+                                    onChange={(e: React.ChangeEvent<HTMLSelectElement>) => {
+                                      const { value } = e.target;
+                                      this.setState({
+                                        car: {
+                                          ...this.state.car,
+                                          reason: value
+                                        }
+                                      });
+                                    }}
+                                  >
+                                    <option value="" disabled={true}>-</option>
+                                    {
+                                      reasons.map((reason) => (
+                                        <option key={reason._id} value={reason._id}>{reason.name}</option>
+                                      ))
+                                    }
+                                  </select>
                                 </td>
                                 <td className="text-right">
                                   <button className="btn btn-sm btn-block btn-success" onClick={this.createItem}>
@@ -402,8 +428,9 @@ class RequestDetailView extends React.Component<IPropsType, IStateType> {
             brand: '',
             denomination: '',
             material: '',
-            color: ''
-          }
+            color: '',
+            reason: ''
+          },
         });
       })
       .catch((err: AxiosError): void => {
@@ -450,6 +477,7 @@ const mapStateToProps = (state: { requests: IRequestsState }) => {
 const mapDispatchToProps = (dispatch: any) => {
   return {
     dispatch,
+    createRequestItemActionInDetail: (item: IRequestItem) => dispatch(createRequestItemActionInDetail(item)),
     updateRequestItemActionInDetail: (item: IRequestItem) => dispatch(updateRequestItemActionInDetail(item)),
     deleteRequestItemActionInDetail: (item: IRequestItem) => dispatch(deleteRequestItemActionInDetail(item)),
     deleteRequestThunkAction: (id: string) => dispatch(deleteRequestThunkAction(id)),

@@ -56,6 +56,7 @@ class RequestController {
         this.apiPatchItem = this.apiPatchItem.bind(this);
         this.apiDeleteRequest = this.apiDeleteRequest.bind(this);
         this.apiDeleteRequestItem = this.apiDeleteRequestItem.bind(this);
+        this.apiCreateItem = this.apiCreateItem.bind(this);
     }
     async index(req, res) {
         res.render('app/index', { token: await req.user.generateToken() });
@@ -362,7 +363,7 @@ class RequestController {
                     status: car_model_1.ChoicesStatusCar.pending,
                     createdBy: req.user
                 }).save();
-                const item = await new requestItem_model_1.default({
+                const newItem = await new requestItem_model_1.default({
                     team,
                     request,
                     car: newCar,
@@ -375,6 +376,7 @@ class RequestController {
                     status: defaultItemStatus,
                     createdBy: req.user
                 }).save();
+                const item = await requestItem_model_1.default.findOne({ _id: newItem._id }).populate(this.itemPopulate);
                 request.update({ $set: { updatedAt: moment() } });
                 server_1.io.to(`request-list-${team}`).emit('CREATE_REQUEST_ITEM', {
                     idRequest: request._id,
@@ -397,6 +399,7 @@ class RequestController {
         }
         catch (e) {
             /* istanbul ignore next */
+            console.log(e);
             logger_service_1.default.error(`RequestController.apiCreateItem: Async Error.`);
             /* istanbul ignore next */
             logger_service_1.default.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);

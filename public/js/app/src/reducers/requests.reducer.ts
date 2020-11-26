@@ -4,6 +4,8 @@ import {
   RequestsReduxActions,
   REQUEST_CANCEL_REQUEST,
   REQUEST_CHANGE_ORDER,
+  REQUEST_CREATE_REQUEST_ITEM_IN_DETAIL,
+  REQUEST_CREATE_REQUEST_ITEM_IN_LIST,
   REQUEST_DELETE_REQUEST_IN_LIST,
   REQUEST_DELETE_REQUEST_ITEM_IN_DETAIL,
   REQUEST_DELETE_REQUEST_ITEM_IN_LIST,
@@ -91,6 +93,17 @@ export function requestsReducers(state = initialState, action: RequestsReduxActi
           count: action.payload.count
         }
       };
+    case REQUEST_CREATE_REQUEST_ITEM_IN_LIST:
+      return {
+        ...state,
+        requests: [...state.requests].map((request) => {
+          if (request._id === action.payload.idRequest) {
+            request.updatedAt = moment().toDate();
+            request.items = [...request.items, action.payload.item];
+          }
+          return request;
+        })
+      };
     case REQUEST_UDPATE_REQUEST_ITEM_IN_LIST:
       return {
         ...state,
@@ -122,6 +135,14 @@ export function requestsReducers(state = initialState, action: RequestsReduxActi
           }
           return request;
         })
+      };
+    case REQUEST_CREATE_REQUEST_ITEM_IN_DETAIL:
+      return {
+        ...state,
+        request: {
+          ...state.request,
+          items: [...state.request.items!, action.payload.item]
+        }
       };
     case REQUEST_UDPATE_REQUEST_ITEM_IN_DETAIL:
       return {

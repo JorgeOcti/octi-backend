@@ -394,7 +394,7 @@ class RequestItem extends React.Component<IPropsType, IStateType> {
         </td>
         <td className="middle">
           <DateRangePicker
-            className={'input-xs'}
+            className={'input-sm'}
             value={item.uploadDate}
             onChange={(e) => {
               this.props.updateRequestItemInDetailThunkAction({
@@ -409,7 +409,7 @@ class RequestItem extends React.Component<IPropsType, IStateType> {
         </td>
         <td className="middle">
           <DateRangePicker
-            className={'input-xs'}
+            className={'input-sm'}
             value={item.estimatedArrival}
             onChange={(e) => {
               this.props.updateRequestItemInDetailThunkAction({
