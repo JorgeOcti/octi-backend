@@ -126,7 +126,10 @@ class UserController {
   }
 
   public async getPusherToken(req: IRequest, res: Response){
-    res.status(200).json(PushService.createAuthToken(req.user._id.toString()))
+    if (req.user._id === req.query['user_id'])
+      res.status(200).json(PushService.createAuthToken(user_id, ))
+    else
+      res.status(401).json({message: 'Authentication failed. User provided does not match with user_id.'});
   }
 }
 

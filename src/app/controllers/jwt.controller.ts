@@ -134,14 +134,12 @@ class JWTController {
                     data: {
                       token: jwt.sign(userInfo, req.app.locals.secretKey, {
                         expiresIn: '7 days',
-                        issuer: "OSA"
                       }),
                       // token: jwt.sign(userInfo, req.app.locals.secretKey, {
                       //   expiresIn: '60 seconds'
                       // }),
                       refreshToken: jwt.sign(userInfo, req.app.locals.secretKey, {
                         expiresIn: '30 days',
-                        issuer: "OSA"
                       }),
                       iosVersion: version!.ios,
                       androidVersion: version!.android,
@@ -267,11 +265,9 @@ class JWTController {
                         data: {
                           token: jwt.sign(userInfo, req.app.locals.secretKey, {
                             expiresIn: '7 days',
-                            issuer: "OSA"
                           }),
                           refreshToken: jwt.sign(userInfo, req.app.locals.secretKey, {
                             expiresIn: '30 days',
-                            issuer: "OSA"
                           }),
                           iosVersion: this.iosVersion,
                           androidVersion: this.androidVersion,

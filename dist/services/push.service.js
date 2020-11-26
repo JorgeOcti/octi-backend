@@ -24,7 +24,7 @@ class PushService {
         logger_service_1.default.info(`subtitle, ${subtitle}`);
         logger_service_1.default.info(`body, ${body}`);
         logger_service_1.default.info(`interests, ${interests}`);
-        this.pushNotifications.publishToInterests(interests, {
+        this.pushNotifications.publishToUsers(interests, {
             apns: {
                 aps: {
                     alert: {

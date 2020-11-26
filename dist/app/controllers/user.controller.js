@@ -127,7 +127,10 @@ class UserController {
         }
     }
     async getPusherToken(req, res) {
-        res.status(200).json(push_service_1.default.createAuthToken(req.user._id.toString()));
+        if (req.user._id === req.query['user_id'])
+            res.status(200).json(push_service_1.default.createAuthToken(user_id));
+        else
+            res.status(401).json({ message: 'Authentication failed. User provided does not match with user_id.' });
     }
 }
 exports.default = new UserController();
