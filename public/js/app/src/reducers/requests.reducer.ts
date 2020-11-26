@@ -3,6 +3,7 @@ import {
   IRequestsState,
   RequestsReduxActions,
   REQUEST_CANCEL_REQUEST,
+  REQUEST_DELETE_REQUEST_IN_LIST,
   REQUEST_DELETE_REQUEST_ITEM_IN_DETAIL,
   REQUEST_DELETE_REQUEST_ITEM_IN_LIST,
   REQUEST_IS_LOADING,
@@ -138,6 +139,13 @@ export function requestsReducers(state = initialState, action: RequestsReduxActi
             return item._id !== action.payload.item._id;
           })]
         }
+      };
+    case REQUEST_DELETE_REQUEST_IN_LIST:
+      return {
+        ...state,
+        requests: [...state.requests].filter((request) => {
+          return request._id !== action.payload.idRequest;
+        })
       };
     case REQUEST_LOAD_REQUEST:
       return {

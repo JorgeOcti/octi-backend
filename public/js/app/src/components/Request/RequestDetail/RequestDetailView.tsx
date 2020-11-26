@@ -7,7 +7,7 @@ import { RouteComponentProps } from 'react-router-dom';
 import * as io from 'socket.io-client';
 import * as swal from 'sweetalert';
 import { IRequestItem } from '../../../../../../../src/interfaces/requestItem.interface';
-import { deleteRequestItemActionInDetail, getRequestThunkAction, updateRequestItemActionInDetail } from '../../../actions/requests.actions';
+import { deleteRequestItemActionInDetail, deleteRequestThunkAction, getRequestThunkAction, updateRequestItemActionInDetail } from '../../../actions/requests.actions';
 import { IRequestsState } from '../../../actions/requests.types';
 import AppContainer from '../../../container/AppContainer';
 import { IWindow } from '../../../interfaces/window';
@@ -18,6 +18,7 @@ interface IPropsType extends RouteComponentProps<{ id: string }> {
   getRequestAction(id: string): void;
   updateRequestItemActionInDetail: (item: IRequestItem) => void;
   deleteRequestItemActionInDetail: (item: IRequestItem) => void;
+  deleteRequestThunkAction: (idRequest: string) => void;
 }
 
 interface IStateType {
@@ -215,7 +216,8 @@ class RequestDetailView extends React.Component<IPropsType, IStateType> {
       }
     }).then((willDelete) => {
       if (willDelete) {
-        this.props.history.push('/requests/');
+        const { id } = this.props.match.params;
+        this.props.deleteRequestThunkAction(id);
       }
     });
   }
@@ -241,6 +243,7 @@ const mapDispatchToProps = (dispatch: any) => {
     dispatch,
     updateRequestItemActionInDetail: (item: IRequestItem) => dispatch(updateRequestItemActionInDetail(item)),
     deleteRequestItemActionInDetail: (item: IRequestItem) => dispatch(deleteRequestItemActionInDetail(item)),
+    deleteRequestThunkAction: (idRequest: string) => dispatch(deleteRequestThunkAction(idRequest)),
     getRequestAction: (id: string) => dispatch(getRequestThunkAction(id))
   };
 };

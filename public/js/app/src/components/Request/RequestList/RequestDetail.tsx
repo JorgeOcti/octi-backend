@@ -53,7 +53,7 @@ class RequestListDetail extends React.Component<IPropsType, IStateType> {
     const open = this.props.requests.requestOpen.includes(request._id);
     return (
       <React.Fragment>
-        <div id={`request-${request._id}`} className="row request bg-request-title">
+        <div id={`request-${request._id}`} className="row request bg-request-title background-transition">
           <div
             className="col-sm-1 col-xs-1 col-md-1 col-lg-1 pointer"
             onClick={() => this.goToDetail(request._id)}
@@ -69,7 +69,6 @@ class RequestListDetail extends React.Component<IPropsType, IStateType> {
               request.fleet ?
                 <i className="fa fa-check-circle-o text-green"/>
                 : null
-
             }
           </div>
           <div className="col-sm-3 col-xs-3 col-md-3 col-lg-3">{request.destination.name}</div>
@@ -97,9 +96,9 @@ class RequestListDetail extends React.Component<IPropsType, IStateType> {
               <tr style={{ backgroundColor: '#f9f9f9' }}>
                 <th className="middle" style={{ width: '28px' }} />
                 <th className="middle" >Progreso</th>
-                <th className="middle" >Estado</th>
-                <th className="middle"  style={{ width: '250px' }}>Modelo</th>
-                <th className="middle" >Color</th>
+                <th className="middle" style={{ width: '150px' }}>Estado</th>
+                <th className="middle" style={{ width: '250px' }}>Modelo</th>
+                <th className="middle" style={{ width: '100px' }}>Color</th>
                 <th className="middle-center">VIN</th>
                 <th className="middle-center">CDO</th>
                 <th className="middle-center">Equip. / Carroc. / Preentrega</th>

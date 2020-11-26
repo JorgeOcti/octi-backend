@@ -5,7 +5,7 @@ import { connect } from 'react-redux';
 import { RouteComponentProps } from 'react-router';
 import * as io from 'socket.io-client';
 import { IRequestItem } from '../../../../../../../src/interfaces/requestItem.interface';
-import { deleteRequestItemActionInList, getRequestsThunkAction, updateRequestItemActionInList } from '../../../actions/requests.actions';
+import { deleteRequestActionInList, deleteRequestItemActionInList, getRequestsThunkAction, updateRequestItemActionInList } from '../../../actions/requests.actions';
 import { IRequestsState } from '../../../actions/requests.types';
 import AppContainer from '../../../container/AppContainer';
 import { IWindow } from '../../../interfaces/window';
@@ -18,6 +18,7 @@ interface IPropsType extends RouteComponentProps<{ ticket: string }> {
   updateRequestItemActionInList: (idRequest: string, item: IRequestItem) => void;
   getRequestsThunkAction: (page: number, orderBy: string, orderType: string) => void;
   deleteRequestItemActionInList: (idRequest: string, item: IRequestItem) => void;
+  deleteRequestActionInList: (idRequest: string) => void;
 }
 
 interface IStateType {
@@ -85,6 +86,17 @@ class RequestListView extends React.Component<IPropsType, IStateType> {
       }
       setTimeout(() => {
         this.props.deleteRequestItemActionInList(data.idRequest, data.item);
+      }, 300);
+    });
+
+    this.socket.on('DELETE_REQUEST', (data: any): void => {
+      console.log('DELETE_REQUEST', data);
+      const $item = $(`#request-${data.idRequest}`);
+      if ($item) {
+        $item.addClass('bg-red-active');
+      }
+      setTimeout(() => {
+        this.props.deleteRequestActionInList(data.idRequest);
       }, 300);
     });
   }
@@ -249,7 +261,8 @@ const mapDispatchToProps = (dispatch: any) => {
     dispatch,
     getRequestsThunkAction: (page: number, orderBy: string, orderType: string) => dispatch(getRequestsThunkAction(page, orderBy, orderType)),
     updateRequestItemActionInList: (idRequest: string, item: IRequestItem) => dispatch(updateRequestItemActionInList(idRequest, item)),
-    deleteRequestItemActionInList: (idRequest: string, item: IRequestItem) => dispatch(deleteRequestItemActionInList(idRequest, item))
+    deleteRequestItemActionInList: (idRequest: string, item: IRequestItem) => dispatch(deleteRequestItemActionInList(idRequest, item)),
+    deleteRequestActionInList: (idRequest: string) => dispatch(deleteRequestActionInList(idRequest))
   };
 };
 

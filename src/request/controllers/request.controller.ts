@@ -211,6 +211,7 @@ class RequestController {
           team
         });
       if (request) {
+        await RequestItem.find({_id: id,team}).remove();
         await request.remove();
         io.to(`request-list-${team}`).emit('DELETE_REQUEST', {
           idRequest: request._id
@@ -251,6 +252,7 @@ class RequestController {
         .populate(this.itemPopulate);
       if (item) {
         await item.remove();
+        await Request.update({ _id: item.request._id }, { $set: { updatedAt: moment() } });
         io.to(`request-list-${team}`).emit('DELETE_REQUEST_ITEM', {
           idRequest: item.request._id,
           item

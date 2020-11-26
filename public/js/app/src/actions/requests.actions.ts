@@ -9,6 +9,7 @@ import { IRequestItemStatus } from '../../../../../src/interfaces/requestItemSta
 import ApiService from '../utils/axios';
 import {
   ICancelRequest,
+  IDeleteRequestInList,
   IDeleteRequestItemInDetail,
   IDeleteRequestItemInList,
   IIsLoading,
@@ -23,6 +24,7 @@ import {
   IUpdateRequestItemInList,
   RequestsReduxActions,
   REQUEST_CANCEL_REQUEST,
+  REQUEST_DELETE_REQUEST_IN_LIST,
   REQUEST_DELETE_REQUEST_ITEM_IN_DETAIL,
   REQUEST_DELETE_REQUEST_ITEM_IN_LIST,
   REQUEST_IS_LOADING,
@@ -151,6 +153,15 @@ export function tabStatusAction(request: string): ITabStatusRequest {
   };
 }
 
+export function deleteRequestActionInList(idRequest: string): IDeleteRequestInList {
+  return {
+    type: REQUEST_DELETE_REQUEST_IN_LIST,
+    payload: {
+      idRequest
+    }
+  };
+}
+
 export function getRequestsThunkAction(nextPage: number, orderBy: string, orderType: string) {
   return (dispatch: Dispatch<RequestsReduxActions>, getState: () => { requests: IRequestsState }) => {
     const api: ApiService = new ApiService();
@@ -227,11 +238,10 @@ export function deleteRequestItemThunkAction(item: IRequestItem) {
   };
 }
 
-
-
 const debounceUpdateRequestItem = debounce(500, (item) => {
   const api: ApiService = new ApiService();
   api.updateRequestItem(item._id, item)
+    // tslint:disable-next-line: no-empty
     .then((response: AxiosResponse) => { });
 });
 export function updateRequestItemInDetailThunkAction({ item, debounce }: { item: IRequestItem, debounce?: boolean}) {
@@ -242,7 +252,18 @@ export function updateRequestItemInDetailThunkAction({ item, debounce }: { item:
     } else {
       const api: ApiService = new ApiService();
       api.updateRequestItem(item._id, item)
+        // tslint:disable-next-line: no-empty
         .then((response: AxiosResponse) => { });
     }
+  };
+}
+
+export function deleteRequestThunkAction(idRequest: string) {
+  return (dispatch: Dispatch<RequestsReduxActions>) => {
+    const api: ApiService = new ApiService();
+    api.deleteRequest(idRequest)
+      .then((response: AxiosResponse) => {
+        // dispatch(updateRequestItemActionInList(idRequest, data));
+      });
   };
 }
