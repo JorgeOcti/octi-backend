@@ -56,6 +56,10 @@ class PushService {
   public massiveSend(title: string, subtitle: string, body: string, interests: string[]) {
     const total = interests.length;
     /* istanbul ignore if */
+    if (total === 0){
+      logger.info(`PUSH NOT published: No users to send`);
+      return;
+    }
     if (total > 100) {
       while (interests.length) {
         this.send(title, subtitle, body, interests.splice(0, 100));
