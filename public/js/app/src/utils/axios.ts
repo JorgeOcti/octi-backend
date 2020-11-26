@@ -522,6 +522,14 @@ export default class ApiService {
     );
   }
 
+  public createRequestItem(idRequest: string, car: any) {
+    return this.instance.post(
+      `/api/v1/requests-item/`, {
+      idRequest,
+      car
+    });
+  }
+
   public getRequestItemsStatus(page: number, pageSize?: number): AxiosPromise {
     return this.instance.get(
       `/api/v1/request-item-status/?page=${page}${pageSize ? `&pageSize=${pageSize}` : ''}`

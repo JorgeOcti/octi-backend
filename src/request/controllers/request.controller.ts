@@ -46,7 +46,7 @@ class RequestController {
     path: 'items',
     options: {
       sort: {
-        _id: -1
+        _id: 1
       }
     },
     populate: this.itemPopulate
@@ -286,39 +286,6 @@ class RequestController {
     const { team } = req.user;
     const { search } = req.query;
     try {
-      /*const searchText = new RegExp(search, 'i');
-      const cars = await Car.aggregate([{
-        $match: {
-          team,
-          $or:[{
-            brand: {$regex: searchText}
-          }, {
-            denomination: {$regex: searchText}
-          }]
-        }
-      }, {
-        $project: {
-          vin: 1,
-          brand: 1,
-          denomination: 1,
-        }
-      }, {
-        $group: {
-          _id: {
-            brand: '$brand',
-            denomination: '$denomination'
-          }
-        }
-      }, {
-        $limit: 100
-      }, {
-        $project: {
-          brand: "$_id.brand",
-          denomination: "$_id.denomination",
-          score: "$_id.score",
-          _id: false
-        }
-      }]);*/
       const cars = await Car.aggregate([{
         $match: {
           team,
@@ -367,15 +334,6 @@ class RequestController {
           _id: false
         }
       }]);
-
-      /*const cars = await Car.find({
-        team,
-        $or:[{
-            brand: {$regex: searchText}
-          }, {
-            denomination: {$regex: searchText}
-          }]
-      }, {_id:1, brand: 1, denomination: 1}).limit(100);*/
       res.json({
         cars
       });
@@ -389,12 +347,73 @@ class RequestController {
     }
   }
 
+  public async apiCreateItem(req: IRequest, res: Response) {
+    logger.info(`RequestController.apiCreateItem`);
+    logger.info(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
+    const { team, company } = req.user;
+    const { car, idRequest } = req.body;
+    try {
+      const request = await Request.findOne({ _id: idRequest, team });
+      if(request){
+        const defaultItemStatus = await RequestItemStatus.findOneOrCreate({ team, default: true }, { name: 'En proceso', default: true, team });
+        const newCar = await new Car({
+          team,
+          company,
+          brand: car.brand,
+          denomination: car.denomination,
+          material: car.material,
+          color: car.color,
+          status: ChoicesStatusCar.pending,
+          createdBy: req.user
+        }).save();
+        const item = await new RequestItem({
+          team,
+          request,
+          car: newCar,
+          reason: car.reason,
+          washed: car.washed,
+          equipment: car.equipment,
+          priority: car.priority,
+          origin: request.origin,
+          destination: request.destination,
+          status: defaultItemStatus,
+          createdBy: req.user
+        }).save();
+        request.update({ $set: { updatedAt: moment() } });
+        io.to(`request-list-${team}`).emit('CREATE_REQUEST_ITEM', {
+          idRequest: request._id,
+          item
+        });
+        io.to(`request-detail-${team}`).emit('CREATE_REQUEST_ITEM', {
+          idRequest: request._id,
+          item
+        });
+        res.status(200).json({
+          ...item
+        });
+      } else {
+        res.status(404).json({
+          message: 'No se ha encontrado la solicitud.',
+          status: 404
+        });
+      }
+    } catch (e) {
+      /* istanbul ignore next */
+      logger.error(`RequestController.apiCreateItem: Async Error.`);
+      /* istanbul ignore next */
+      logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
+      res.status(500).json(e);
+    }
+  }
+
   public async apiPatchItem(req: IRequest, res: Response) {
+    logger.info(`RequestController.apiPatchItem`);
+    logger.info(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
     const { team } = req.user;
     const updateObject = req.body;
     const { id } = req.params;
     try {
-      await RequestItem.update({ _id: id, team }, { $set: {...updateObject} });
+      await RequestItem.update({ _id: id, team }, { $set: { ...updateObject } });
       await Car.update({ _id: updateObject.car._id, team }, { $set: updateObject.car });
       const item = await RequestItem
         .findOne({ _id: id, team })

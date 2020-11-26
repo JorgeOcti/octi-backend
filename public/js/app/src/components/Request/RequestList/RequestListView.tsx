@@ -5,7 +5,12 @@ import { connect } from 'react-redux';
 import { RouteComponentProps } from 'react-router';
 import * as io from 'socket.io-client';
 import { IRequestItem } from '../../../../../../../src/interfaces/requestItem.interface';
-import { deleteRequestActionInList, deleteRequestItemActionInList, getRequestsThunkAction, updateRequestItemActionInList } from '../../../actions/requests.actions';
+import {
+  deleteRequestActionInList,
+  deleteRequestItemActionInList,
+  getRequestsThunkAction,
+  updateRequestItemActionInList
+} from '../../../actions/requests.actions';
 import { IRequestsState } from '../../../actions/requests.types';
 import AppContainer from '../../../container/AppContainer';
 import { IWindow } from '../../../interfaces/window';
@@ -18,13 +23,11 @@ interface IPropsType extends RouteComponentProps<{ ticket: string }> {
   updateRequestItemActionInList: (idRequest: string, item: IRequestItem) => void;
   getRequestsThunkAction: (page: number, orderBy: string, orderType: string) => void;
   deleteRequestItemActionInList: (idRequest: string, item: IRequestItem) => void;
-  deleteRequestActionInList: (idRequest: string) => void;
+  deleteRequestActionInList: (id: string) => void;
 }
 
 interface IStateType {
   error: Error | null;
-  orderBy: string;
-  orderType: string;
 }
 
 declare let window: IWindow;
@@ -32,9 +35,7 @@ declare let window: IWindow;
 class RequestListView extends React.Component<IPropsType, IStateType> {
 
   readonly state = {
-    error: null,
-    orderBy: '_id',
-    orderType: 'descending'
+    error: null
   };
 
   private socket: SocketIOClient.Socket;
@@ -47,7 +48,7 @@ class RequestListView extends React.Component<IPropsType, IStateType> {
   }
 
   public componentWillMount(): void {
-    const { orderBy, orderType } = this.state;
+    const { orderBy, orderType } = this.props.requests;
     document.title = 'OSA Andes | Solicitudes';
     window.scrollTo(0, 0);
 
@@ -79,7 +80,6 @@ class RequestListView extends React.Component<IPropsType, IStateType> {
     });
 
     this.socket.on('DELETE_REQUEST_ITEM', (data: any): void => {
-      console.log('DELETE_REQUEST_ITEM', data);
       const $item = $(`#request-item-${data.item._id}`);
       if ($item) {
         $item.addClass('bg-red-active');
@@ -90,7 +90,6 @@ class RequestListView extends React.Component<IPropsType, IStateType> {
     });
 
     this.socket.on('DELETE_REQUEST', (data: any): void => {
-      console.log('DELETE_REQUEST', data);
       const $item = $(`#request-${data.idRequest}`);
       if ($item) {
         $item.addClass('bg-red-active');
@@ -123,9 +122,9 @@ class RequestListView extends React.Component<IPropsType, IStateType> {
 
   public render(): React.ReactElement<IPropsType> {
     const {
-      pagination, loading, requests, reasons, requestItemStatus, carriers
+      pagination, loading, requests, reasons, requestItemStatus, carriers,
+      orderBy, orderType
     } = this.props.requests;
-    const { orderType, orderBy } = this.state;
     return (
       <AppContainer title="" cMenu="3" cSubMenu="3.1">
         <section className="content">
@@ -223,7 +222,7 @@ class RequestListView extends React.Component<IPropsType, IStateType> {
 
   private changeOrder(key: string){
     const {page} = this.props.requests.pagination;
-    const {orderBy, orderType} = this.state;
+    const {orderBy, orderType} = this.props.requests;
     let newOrderType = orderType;
     let newOrderBy = orderBy;
     if (key === orderBy) {
@@ -231,10 +230,6 @@ class RequestListView extends React.Component<IPropsType, IStateType> {
     } else {
       newOrderBy = key;
     }
-    this.setState({
-      orderBy: newOrderBy,
-      orderType: newOrderType
-    });
     this.props.getRequestsThunkAction(page, newOrderBy, newOrderType);
   }
 
@@ -243,9 +238,8 @@ class RequestListView extends React.Component<IPropsType, IStateType> {
   }
 
   private changePage(page: number): void {
-    const {orderBy, orderType} = this.state;
+    const {orderBy, orderType} = this.props.requests;
 
-    this.props.getRequestsThunkAction(1, orderBy, orderType);
     this.props.getRequestsThunkAction(page, orderBy, orderType);
   }
 }
@@ -262,7 +256,7 @@ const mapDispatchToProps = (dispatch: any) => {
     getRequestsThunkAction: (page: number, orderBy: string, orderType: string) => dispatch(getRequestsThunkAction(page, orderBy, orderType)),
     updateRequestItemActionInList: (idRequest: string, item: IRequestItem) => dispatch(updateRequestItemActionInList(idRequest, item)),
     deleteRequestItemActionInList: (idRequest: string, item: IRequestItem) => dispatch(deleteRequestItemActionInList(idRequest, item)),
-    deleteRequestActionInList: (idRequest: string) => dispatch(deleteRequestActionInList(idRequest))
+    deleteRequestActionInList: (id: string) => dispatch(deleteRequestActionInList(id))
   };
 };
 

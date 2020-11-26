@@ -1,3 +1,4 @@
+import { AxiosError, AxiosResponse } from 'axios';
 import * as moment from 'moment-timezone';
 import * as Raven from 'raven-js';
 import * as React from 'react';
@@ -6,38 +7,60 @@ import { connect } from 'react-redux';
 import { RouteComponentProps } from 'react-router-dom';
 import * as io from 'socket.io-client';
 import * as swal from 'sweetalert';
+import { debounce } from 'throttle-debounce';
+import { ICar } from '../../../../../../../src/interfaces/car.interface';
 import { IRequestItem } from '../../../../../../../src/interfaces/requestItem.interface';
-import { deleteRequestItemActionInDetail, deleteRequestThunkAction, getRequestThunkAction, updateRequestItemActionInDetail } from '../../../actions/requests.actions';
+import {
+  deleteRequestItemActionInDetail,
+  deleteRequestThunkAction,
+  getRequestThunkAction,
+  updateRequestItemActionInDetail
+} from '../../../actions/requests.actions';
 import { IRequestsState } from '../../../actions/requests.types';
 import AppContainer from '../../../container/AppContainer';
 import { IWindow } from '../../../interfaces/window';
+import ApiService from '../../../utils/axios';
+import AutocompleteInput from '../../Utils/AutocompleteInput';
 import RequestItem from './RequestItem';
 
 interface IPropsType extends RouteComponentProps<{ id: string }> {
   requests: IRequestsState;
-  getRequestAction(id: string): void;
+  getRequestAction: (id: string) => void;
   updateRequestItemActionInDetail: (item: IRequestItem) => void;
   deleteRequestItemActionInDetail: (item: IRequestItem) => void;
-  deleteRequestThunkAction: (idRequest: string) => void;
+  deleteRequestThunkAction: (id: string) => void;
 }
 
 interface IStateType {
   error: Error | null;
+  recommends: ICar[];
+  car: Partial<ICar>;
 }
 
 declare let window: IWindow;
 
 class RequestDetailView extends React.Component<IPropsType, IStateType> {
 
+  readonly api: ApiService;
   readonly state = {
-    error: null
+    error: null,
+    recommends: [],
+    car: {
+      brand: '',
+      denomination: '',
+      material: '',
+      color: ''
+    }
   };
 
   private socket: SocketIOClient.Socket;
 
   constructor(props: IPropsType) {
     super(props);
+    this.search = debounce(500, this.search.bind(this));
+    this.api = new ApiService();
     this.deleteRequest = this.deleteRequest.bind(this);
+    this.createItem = this.createItem.bind(this);
   }
 
   public componentWillMount(): void {
@@ -57,7 +80,7 @@ class RequestDetailView extends React.Component<IPropsType, IStateType> {
     });
 
     this.socket.on('connect', () => {
-      this.socket.emit('join', {room: `request-detail-${window.user.team}`});
+      this.socket.emit('join', { room: `request-detail-${window.user.team}` });
     });
 
     this.socket.on('UPDATE_REQUEST_ITEM', (data: any): void => {
@@ -74,7 +97,6 @@ class RequestDetailView extends React.Component<IPropsType, IStateType> {
     });
 
     this.socket.on('DELETE_REQUEST_ITEM', (data: any): void => {
-      console.log('DELETE_REQUEST_ITEM', data);
       if (data.idRequest === id) {
         const $item = $(`#request-item-${data.item._id}`);
         if ($item) {
@@ -85,10 +107,28 @@ class RequestDetailView extends React.Component<IPropsType, IStateType> {
         }, 300);
       }
     });
+
+    this.socket.on('DELETE_REQUEST', (data: any): void => {
+      if (data.idRequest === id) {
+        this.props.history.push('/requests/');
+      }
+    });
+
+    this.socket.on('CREATE_REQUEST_ITEM', (data: any): void => {
+      if (data.idRequest === id) {
+        const $item = $(`#request-item-${data.item._id}`);
+        if ($item) {
+          $item.addClass('bg-green-active');
+        }
+        setTimeout(() => {
+          $item.removeClass('bg-green-active');
+        }, 300);
+      }
+    });
   }
 
   public componentDidCatch(error: Error, errorInfo: ErrorInfo): void {
-    this.setState({error});
+    this.setState({ error });
     Raven.captureException(error, {
       extra: errorInfo
     });
@@ -96,14 +136,15 @@ class RequestDetailView extends React.Component<IPropsType, IStateType> {
 
   public componentWillUnmount(): void {
     // cancel request if component is inmounted
-    // if (this.props.requests.source) {
-    //   this.props.requests.source.cancel('Operation canceled by the user.');
-    // }
+    if (this.props.requests.source) {
+      this.props.requests.source.cancel('Operation canceled by the user.');
+    }
     this.socket.disconnect();
   }
 
   public render(): React.ReactElement<IPropsType> {
-    const {request, loading} = this.props.requests;
+    const { request, loading } = this.props.requests;
+    const { recommends, car } = this.state;
     return (
       <AppContainer title="" cMenu="3" cSubMenu="3.1" cAction={'Detalle solicitud'}>
         <section className="content">
@@ -124,13 +165,13 @@ class RequestDetailView extends React.Component<IPropsType, IStateType> {
                 Object.keys(request).length ?
                   <React.Fragment>
                     <div className="row summary bg-blue">
-                      <div className="col-md-2">
+                      <div className="col-md-3">
                         <i className="fa fa-fw fa-user" /> {request.createdBy?.firstName} {request.createdBy?.lastName}
                       </div>
-                      <div className="col-md-2">
+                      <div className="col-md-3">
                         <i className="fa fa-fw fa-building" /> {request.destination?.name}
                       </div>
-                      <div className="col-md-2 col-md-offset-6 text-right">
+                      <div className="col-md-2 col-md-offset-4 text-right">
                         <i className="fa fa-fw fa-calendar-o" /> {moment(request.createdAt).format('DD-MM-YY')}
                       </div>
                     </div>
@@ -140,7 +181,7 @@ class RequestDetailView extends React.Component<IPropsType, IStateType> {
                           <th className="middle-center" style={{ width: '25px' }}>#</th>
                           <th className="middle" style={{ width: '28px' }} />
                           <th className="middle" style={{ width: '100px' }}>Marca</th>
-                          <th className="middle" style={{ width: '180px' }}>Modelo</th>
+                          <th className="middle" style={{ width: '150px' }}>Modelo</th>
                           <th className="middle" style={{ width: '100px' }}>Material</th>
                           <th className="middle">Color</th>
                           <th className="middle">Estado</th>
@@ -169,8 +210,143 @@ class RequestDetailView extends React.Component<IPropsType, IStateType> {
                       </tbody>
                     </table>
                     <div className="row">
-                      <div className="col-md-12 text-right">
-                        <button className="btn btn-sm btn-success"><i className="fa fa-fw fa-plus" />Agregar vehículo</button>
+                      <div className="col-md-8 col-md-offset-4">
+                        <div className="container-table-add-car">
+                          <table className="table table-xs">
+                            <thead>
+                              <tr>
+                                <th>Marca</th>
+                                <th>Modelo</th>
+                                <th>Material</th>
+                                <th>Color</th>
+                                <th></th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              <tr>
+                                <td>
+                                  <AutocompleteInput
+                                    value={car.brand}
+                                    inputClass={'input-sm'}
+                                    items={recommends}
+                                    renderItem={(car, index) => (
+                                      <div key={index} className="item">
+                                        {car.denomination} <br />
+                                        <strong>{car.brand}</strong>
+                                      </div>
+                                    )}
+                                    onChange={(e) => {
+                                      const { value } = e.target;
+                                      this.setState({
+                                        car: {
+                                          ...this.state.car,
+                                          brand: value
+                                        }
+                                      });
+                                      this.search(value);
+                                    }}
+                                    onSelect={(car: any) => {
+                                      this.setState({
+                                        car: {
+                                          ...this.state.car,
+                                          brand: car.brand,
+                                          denomination: car.denomination,
+                                          material: car.material ?? ''
+                                        }
+                                      });
+                                    }}
+                                  />
+                                </td>
+                                <td>
+                                  <AutocompleteInput
+                                    value={car.denomination}
+                                    inputClass={'input-sm'}
+                                    items={recommends}
+                                    renderItem={(car, index) => (
+                                      <div key={index} className="item">
+                                        {car.denomination} <br />
+                                        <strong>{car.denomination}</strong>
+                                      </div>
+                                    )}
+                                    onChange={(e) => {
+                                      const { value } = e.target;
+                                      this.setState({
+                                        car: {
+                                          ...this.state.car,
+                                          denomination: value
+                                        }
+                                      });
+                                      this.search(value);
+                                    }}
+                                    onSelect={(car: any) => {
+                                      this.setState({
+                                        car: {
+                                          ...this.state.car,
+                                          brand: car.brand,
+                                          denomination: car.denomination,
+                                          material: car.material ?? ''
+                                        }
+                                      });
+                                    }}
+                                  />
+                                </td>
+                                <td>
+                                  <AutocompleteInput
+                                    value={car.material}
+                                    inputClass={'input-sm'}
+                                    items={recommends}
+                                    renderItem={(car, index) => (
+                                      <div key={index} className="item">
+                                        {car.denomination} <br />
+                                        <strong>{car.brand}</strong>
+                                      </div>
+                                    )}
+                                    onChange={(e) => {
+                                      const { value } = e.target;
+                                      this.setState({
+                                        car: {
+                                          ...this.state.car,
+                                          material: value
+                                        }
+                                      });
+                                      this.search(value);
+                                    }}
+                                    onSelect={(car: any) => {
+                                      this.setState({
+                                        car: {
+                                          ...this.state.car,
+                                          brand: car.brand,
+                                          denomination: car.denomination,
+                                          material: car.material ?? ''
+                                        }
+                                      });
+                                    }}
+                                  />
+                                </td>
+                                <td>
+                                  <input type="text"
+                                    className="form-control input-sm"
+                                    defaultValue={''}
+                                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                                      const { value } = e.target;
+                                      this.setState({
+                                        car: {
+                                          ...this.state.car,
+                                          color: value
+                                        }
+                                      });
+                                    }}
+                                  />
+                                </td>
+                                <td className="text-right">
+                                  <button className="btn btn-sm btn-block btn-success" onClick={this.createItem}>
+                                    <i className="fa fa-fw fa-plus" />Agregar vehículo
+                                  </button>
+                                </td>
+                              </tr>
+                            </tbody>
+                          </table>
+                        </div>
                       </div>
                     </div>
                     <div className="row">
@@ -193,13 +369,46 @@ class RequestDetailView extends React.Component<IPropsType, IStateType> {
             {
               loading &&
               <div className="overlay">
-                <i className="fa fa-spinner fa-spin text-purple"/>
+                <i className="fa fa-spinner fa-spin text-purple" />
               </div>
             }
           </div>
         </section>
       </AppContainer>
     );
+  }
+
+  private search(text: string): void {
+    this.api
+      .searchCar(text)
+      .then((response: AxiosResponse): void => {
+        this.setState({
+          recommends: response.data.cars
+        });
+      })
+      .catch((err: AxiosError): void => {
+        this.api.errorHandler(err);
+      });
+  }
+
+  private createItem() {
+    const { id } = this.props.match.params;
+    const { car } = this.state;
+    this.api
+      .createRequestItem(id, car)
+      .then((response: AxiosResponse): void => {
+        this.setState({
+          car: {
+            brand: '',
+            denomination: '',
+            material: '',
+            color: ''
+          }
+        });
+      })
+      .catch((err: AxiosError): void => {
+        this.api.errorHandler(err);
+      });
   }
 
   private deleteRequest() {
@@ -222,10 +431,10 @@ class RequestDetailView extends React.Component<IPropsType, IStateType> {
     });
   }
 
-  private padNumber(n: number| undefined): string {
-    if(n){
+  private padNumber(n: number | undefined): string {
+    if (n) {
       const s = '000' + n;
-      return s.substr(s.length-4);
+      return s.substr(s.length - 4);
     }
     return '0000';
   }
@@ -243,7 +452,7 @@ const mapDispatchToProps = (dispatch: any) => {
     dispatch,
     updateRequestItemActionInDetail: (item: IRequestItem) => dispatch(updateRequestItemActionInDetail(item)),
     deleteRequestItemActionInDetail: (item: IRequestItem) => dispatch(deleteRequestItemActionInDetail(item)),
-    deleteRequestThunkAction: (idRequest: string) => dispatch(deleteRequestThunkAction(idRequest)),
+    deleteRequestThunkAction: (id: string) => dispatch(deleteRequestThunkAction(id)),
     getRequestAction: (id: string) => dispatch(getRequestThunkAction(id))
   };
 };

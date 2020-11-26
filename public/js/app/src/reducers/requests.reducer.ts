@@ -3,6 +3,7 @@ import {
   IRequestsState,
   RequestsReduxActions,
   REQUEST_CANCEL_REQUEST,
+  REQUEST_CHANGE_ORDER,
   REQUEST_DELETE_REQUEST_IN_LIST,
   REQUEST_DELETE_REQUEST_ITEM_IN_DETAIL,
   REQUEST_DELETE_REQUEST_ITEM_IN_LIST,
@@ -28,6 +29,8 @@ const initialState: IRequestsState = {
   request: {},
   loading: true,
   source: null,
+  orderBy: '_id',
+  orderType: 'descending',
   pagination: {
     count: 0,
     page: 1,
@@ -63,6 +66,12 @@ export function requestsReducers(state = initialState, action: RequestsReduxActi
         requestOpen: state.requestOpen.includes(action.payload.request)
           ? [...state.requestOpen.filter(request => request !== action.payload.request)]
           : [...state.requestOpen, action.payload.request]
+      };
+    case REQUEST_CHANGE_ORDER:
+      return {
+        ...state,
+        orderBy: action.payload.orderBy,
+        orderType: action.payload.orderType
       };
     case REQUEST_LOAD_REQUEST_ITEM_STATUS:
       return {
@@ -144,7 +153,7 @@ export function requestsReducers(state = initialState, action: RequestsReduxActi
       return {
         ...state,
         requests: [...state.requests].filter((request) => {
-          return request._id !== action.payload.idRequest;
+          return request._id !== action.payload.id;
         })
       };
     case REQUEST_LOAD_REQUEST:

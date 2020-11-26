@@ -20,6 +20,7 @@ requestRouter.get('/api/v1/requests/:id/', Middlewares.isLoggedIn, RequestContro
 requestRouter.delete('/api/v1/requests/:id/', Middlewares.isLoggedIn, RequestController.apiDeleteRequest);
 
 
+requestRouter.post('/api/v1/requests-item/', Middlewares.isLoggedIn, RequestController.apiCreateItem);
 requestRouter.patch('/api/v1/requests-item/:id/', Middlewares.isLoggedIn, RequestController.apiPatchItem);
 requestRouter.delete('/api/v1/requests-item/:id/', Middlewares.isLoggedIn, RequestController.apiDeleteRequestItem);
 

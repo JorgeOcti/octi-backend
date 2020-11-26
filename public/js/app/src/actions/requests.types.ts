@@ -18,6 +18,7 @@ export const REQUEST_UDPATE_REQUEST_ITEM_IN_DETAIL = '/REQUESTS/UDPATE_REQUEST_I
 export const REQUEST_DELETE_REQUEST_ITEM_IN_DETAIL = '/REQUESTS/DELETE_REQUEST_ITEM_IN_DETAIL';
 export const REQUEST_DELETE_REQUEST_IN_LIST = '/REQUESTS/DELETE_REQUEST_IN_LIST';
 export const REQUEST_TAB_STATUS = '/REQUESTS/TAB_STATUS';
+export const REQUEST_CHANGE_ORDER = '/REQUESTS/CHANGE_ORDER';
 
 export interface IRequestsState {
   requests: IRequest[];
@@ -30,6 +31,8 @@ export interface IRequestsState {
   request: Partial<IRequest> | IRequest;
   loading: boolean;
   source: CancelTokenSource | null;
+  orderBy: string;
+  orderType: string;
   pagination: {
     count: number;
     page: number;
@@ -117,7 +120,7 @@ export interface IDeleteRequestItemInDetail {
 export interface IDeleteRequestInList {
   type: typeof REQUEST_DELETE_REQUEST_IN_LIST;
   payload: {
-    idRequest: string;
+    id: string;
   };
 }
 
@@ -135,6 +138,14 @@ export interface ITabStatusRequest {
   };
 }
 
+export interface IChangeOrderRequest {
+  type: typeof REQUEST_CHANGE_ORDER;
+  payload: {
+    orderBy: string;
+    orderType: string;
+  };
+}
+
 export type RequestsReduxActions =
   ICancelRequest |
   IIsLoading |
@@ -145,6 +156,7 @@ export type RequestsReduxActions =
   IUpdateRequestItemInDetail |
   IDeleteRequestItemInDetail |
   ILoadRequestItemStatus |
+  IChangeOrderRequest |
   ILoadReasons |
   ILoadCarriers |
   ITabStatusRequest |

@@ -5,11 +5,16 @@ import * as React from 'react';
 import { ErrorInfo } from 'react';
 import { connect } from 'react-redux';
 import { RouteComponentProps } from 'react-router-dom';
-// import { debounce } from 'throttle-debounce';
 import * as swal from 'sweetalert';
+import { debounce } from 'throttle-debounce';
+import { ICar } from '../../../../../../../src/interfaces/car.interface';
 import { IRequest } from '../../../../../../../src/interfaces/request.interface';
 import { IRequestItem } from '../../../../../../../src/interfaces/requestItem.interface';
-import { deleteRequestItemThunkAction, updateRequestItemInDetailThunkAction } from '../../../actions/requests.actions';
+import {
+  deleteRequestItemThunkAction,
+  deleteRequestThunkAction,
+  updateRequestItemInDetailThunkAction
+} from '../../../actions/requests.actions';
 import { IRequestsState } from '../../../actions/requests.types';
 import { IWindow } from '../../../interfaces/window';
 import ApiService from '../../../utils/axios';
@@ -23,11 +28,12 @@ interface IPropsType extends RouteComponentProps<{ id: string }> {
   index: any;
   updateRequestItemInDetailThunkAction: ({ item, debounce }: { item: IRequestItem, debounce?: boolean }) => void;
   deleteRequestItemThunkAction: (item: IRequestItem) => void;
+  deleteRequestThunkAction: (idRequest: string) => void;
 }
 
 interface IStateType {
   error: Error | null;
-  recommends: any[];
+  recommends: ICar[];
 }
 
 declare let window: IWindow;
@@ -42,8 +48,7 @@ class RequestItem extends React.Component<IPropsType, IStateType> {
 
   constructor(props: IPropsType) {
     super(props);
-    // this.search = debounce(500, this.search.bind(this));
-    this.search = this.search.bind(this);
+    this.search = debounce(500, this.search.bind(this));
     this.api = new ApiService();
   }
 
@@ -55,7 +60,7 @@ class RequestItem extends React.Component<IPropsType, IStateType> {
   }
 
   public render(): React.ReactElement<IPropsType> {
-    const { request, item, index } = this.props;
+    const { item, index } = this.props;
     const { requestItemStatus, reasons, carriers } = this.props.requests;
     const { recommends } = this.state;
     return (
@@ -438,22 +443,42 @@ class RequestItem extends React.Component<IPropsType, IStateType> {
   }
 
   private deleteRequestItem(item: IRequestItem) {
-    swal({
-      title: '¿Estás seguro?',
-      text: `Vas a eliminar este item ${item}.`,
-      icon: 'warning',
-      dangerMode: true,
-      buttons: {
-        cancel: 'Cancelar' as any,
-        confirm: {
-          text: 'Sí'
+    const {request} = this.props;
+    if (request.items.length > 1) {
+      swal({
+        title: '¿Estás seguro?',
+        text: `Vas a eliminar este vehículo ${item.car.brand} ${item.car.denomination} ${item.car.material}.`,
+        icon: 'warning',
+        dangerMode: true,
+        buttons: {
+          cancel: 'Cancelar' as any,
+          confirm: {
+            text: 'Sí'
+          }
         }
-      }
-    }).then((willDelete) => {
-      if (willDelete) {
-        this.props.deleteRequestItemThunkAction(item);
-      }
-    });
+      }).then((willDelete) => {
+        if (willDelete) {
+          this.props.deleteRequestItemThunkAction(item);
+        }
+      });
+    } else {
+      swal({
+        title: '¿Estás seguro?',
+        text: `Si eliminas este último vehículo, vas a eliminar esta solicitud.`,
+        icon: 'warning',
+        dangerMode: true,
+        buttons: {
+          cancel: 'Cancelar' as any,
+          confirm: {
+            text: 'Sí'
+          }
+        }
+      }).then((willDelete) => {
+        if (willDelete) {
+          this.props.deleteRequestThunkAction(request._id);
+        }
+      });
+    }
   }
 }
 
@@ -467,7 +492,8 @@ const mapDispatchToProps = (dispatch: any) => {
   return {
     dispatch,
     updateRequestItemInDetailThunkAction: ({ item, debounce }: { item: IRequestItem, debounce?: boolean }) => dispatch(updateRequestItemInDetailThunkAction({ item, debounce })),
-    deleteRequestItemThunkAction: (item: IRequestItem) => dispatch(deleteRequestItemThunkAction(item))
+    deleteRequestItemThunkAction: (item: IRequestItem) => dispatch(deleteRequestItemThunkAction(item)),
+    deleteRequestThunkAction: (idRequest: string) => dispatch(deleteRequestThunkAction(idRequest))
   };
 };
 

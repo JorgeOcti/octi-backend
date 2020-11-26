@@ -9,6 +9,7 @@ import { IRequestItemStatus } from '../../../../../src/interfaces/requestItemSta
 import ApiService from '../utils/axios';
 import {
   ICancelRequest,
+  IChangeOrderRequest,
   IDeleteRequestInList,
   IDeleteRequestItemInDetail,
   IDeleteRequestItemInList,
@@ -24,6 +25,7 @@ import {
   IUpdateRequestItemInList,
   RequestsReduxActions,
   REQUEST_CANCEL_REQUEST,
+  REQUEST_CHANGE_ORDER,
   REQUEST_DELETE_REQUEST_IN_LIST,
   REQUEST_DELETE_REQUEST_ITEM_IN_DETAIL,
   REQUEST_DELETE_REQUEST_ITEM_IN_LIST,
@@ -153,11 +155,21 @@ export function tabStatusAction(request: string): ITabStatusRequest {
   };
 }
 
-export function deleteRequestActionInList(idRequest: string): IDeleteRequestInList {
+export function deleteRequestActionInList(id: string): IDeleteRequestInList {
   return {
     type: REQUEST_DELETE_REQUEST_IN_LIST,
     payload: {
-      idRequest
+      id
+    }
+  };
+}
+
+export function chnageOrderAction(orderBy: string, orderType: string): IChangeOrderRequest {
+  return {
+    type: REQUEST_CHANGE_ORDER,
+    payload: {
+      orderBy,
+      orderType
     }
   };
 }
@@ -168,6 +180,7 @@ export function getRequestsThunkAction(nextPage: number, orderBy: string, orderT
     const state = getState();
     dispatch(isLoadingAction(true));
     const page = nextPage ? nextPage : state.requests.pagination.page;
+    dispatch(chnageOrderAction(orderBy, orderType));
     dispatch(cancelRequestAction(api.getSource()));
     Axios
       .all([
@@ -258,10 +271,10 @@ export function updateRequestItemInDetailThunkAction({ item, debounce }: { item:
   };
 }
 
-export function deleteRequestThunkAction(idRequest: string) {
+export function deleteRequestThunkAction(id: string) {
   return (dispatch: Dispatch<RequestsReduxActions>) => {
     const api: ApiService = new ApiService();
-    api.deleteRequest(idRequest)
+    api.deleteRequest(id)
       .then((response: AxiosResponse) => {
         // dispatch(updateRequestItemActionInList(idRequest, data));
       });
