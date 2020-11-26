@@ -3,6 +3,8 @@ import {
   IRequestsState,
   RequestsReduxActions,
   REQUEST_CANCEL_REQUEST,
+  REQUEST_DELETE_REQUEST_ITEM_IN_DETAIL,
+  REQUEST_DELETE_REQUEST_ITEM_IN_LIST,
   REQUEST_IS_LOADING,
   REQUEST_LOAD_CARRIERS,
   REQUEST_LOAD_REASONS,
@@ -98,6 +100,19 @@ export function requestsReducers(state = initialState, action: RequestsReduxActi
           return request;
         })
       };
+    case REQUEST_DELETE_REQUEST_ITEM_IN_LIST:
+      return {
+        ...state,
+        requests: [...state.requests].map((request) => {
+          if (request._id === action.payload.idRequest) {
+            request.updatedAt = moment().toDate();
+            request.items = request.items.filter((item) => {
+              return item._id !== action.payload.item._id;
+            });
+          }
+          return request;
+        })
+      };
     case REQUEST_UDPATE_REQUEST_ITEM_IN_DETAIL:
       return {
         ...state,
@@ -111,6 +126,16 @@ export function requestsReducers(state = initialState, action: RequestsReduxActi
               };
             }
             return item;
+          })]
+        }
+      };
+    case REQUEST_DELETE_REQUEST_ITEM_IN_DETAIL:
+      return {
+        ...state,
+        request: {
+          ...state.request,
+          items: [...state.request!.items!.filter((item) => {
+            return item._id !== action.payload.item._id;
           })]
         }
       };

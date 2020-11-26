@@ -59,6 +59,8 @@ class RequestController {
     this.apiCreate = this.apiCreate.bind(this);
     this.getRequets = this.getRequets.bind(this);
     this.apiPatchItem = this.apiPatchItem.bind(this);
+    this.apiDeleteRequest = this.apiDeleteRequest.bind(this);
+    this.apiDeleteRequestItem = this.apiDeleteRequestItem.bind(this);
   }
 
   public async index(req: IRequest, res: Response) {
@@ -198,7 +200,87 @@ class RequestController {
     }
   }
 
+  public async apiDeleteRequest(req: IRequest, res: Response) {
+    logger.info(`RequestController.apiDeleteRequest`);
+    const { team } = req.user;
+    const { id } = req.params;
+    try {
+      const request = await Request
+        .findOne({
+          _id: id,
+          team
+        });
+      if (request) {
+        await request.remove();
+        io.to(`request-list-${team}`).emit('DELETE_REQUEST', {
+          idRequest: request._id
+        });
+        io.to(`request-detail-${team}`).emit('DELETE_REQUEST', {
+          idRequest: request._id
+        });
+        res.status(200).json({
+          message: `ok`,
+          status: 200
+        });
+      } else {
+        res.status(404).json({
+          message: `No se ha encontrado la solicitud ${id}`,
+          status: 404
+        });
+      }
+    } catch (e) {
+      /* istanbul ignore next */
+      logger.error(`RequestController.apiDeleteRequest: Async Error.`);
+      /* istanbul ignore next */
+      logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}, body: ${JSON.stringify(req.body)}, params: ${JSON.stringify(req.params)}`);
+      logger.error(e);
+      res.status(500).json(e);
+    }
+  }
+
+  public async apiDeleteRequestItem(req: IRequest, res: Response) {
+    logger.info(`RequestController.apiDeleteRequestItem`);
+    const { team } = req.user;
+    const { id } = req.params;
+    try {
+      const item = await RequestItem
+        .findOne({
+          _id: id,
+          team
+        })
+        .populate(this.itemPopulate);
+      if (item) {
+        await item.remove();
+        io.to(`request-list-${team}`).emit('DELETE_REQUEST_ITEM', {
+          idRequest: item.request._id,
+          item
+        });
+        io.to(`request-detail-${team}`).emit('DELETE_REQUEST_ITEM', {
+          idRequest: item.request._id,
+          item
+        });
+        res.status(200).json({
+          message: `ok`,
+          status: 200
+        });
+      } else {
+        res.status(404).json({
+          message: `No se ha encontrado la solicitud ${id}`,
+          status: 404
+        });
+      }
+    } catch (e) {
+      /* istanbul ignore next */
+      logger.error(`RequestController.apiDeleteRequestItem: Async Error.`);
+      /* istanbul ignore next */
+      logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}, body: ${JSON.stringify(req.body)}, params: ${JSON.stringify(req.params)}`);
+      logger.error(e);
+      res.status(500).json(e);
+    }
+  }
+
   public async searhCar(req: IRequest, res: Response) {
+    logger.info(`RequestController.searhCar`);
     const { team } = req.user;
     const { search } = req.query;
     try {
@@ -317,11 +399,11 @@ class RequestController {
         .populate(this.itemPopulate)
         .lean();
       await Request.update({ _id: item.request._id }, { $set: { updatedAt: moment() } });
-      io.to(`request-list-${team}`).emit('UPDATE_ITEM', {
+      io.to(`request-list-${team}`).emit('UPDATE_REQUEST_ITEM', {
         idRequest: item.request._id,
         item
       });
-      io.to(`request-detail-${team}`).emit('UPDATE_ITEM', {
+      io.to(`request-detail-${team}`).emit('UPDATE_REQUEST_ITEM', {
         idRequest: item.request._id,
         item
       });

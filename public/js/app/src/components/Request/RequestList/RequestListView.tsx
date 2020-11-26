@@ -5,11 +5,10 @@ import { connect } from 'react-redux';
 import { RouteComponentProps } from 'react-router';
 import * as io from 'socket.io-client';
 import { IRequestItem } from '../../../../../../../src/interfaces/requestItem.interface';
-import { getRequestsThunkAction, updateRequestItemActionInList } from '../../../actions/requests.actions';
+import { deleteRequestItemActionInList, getRequestsThunkAction, updateRequestItemActionInList } from '../../../actions/requests.actions';
 import { IRequestsState } from '../../../actions/requests.types';
 import AppContainer from '../../../container/AppContainer';
 import { IWindow } from '../../../interfaces/window';
-import Checkbox from '../../Utils/CheckBox';
 import Paginator from '../../Utils/Paginator';
 import RequestListDetail from './RequestDetail';
 
@@ -17,7 +16,8 @@ interface IPropsType extends RouteComponentProps<{ ticket: string }> {
   requests: IRequestsState;
   dispatch: Dispatch<IRequestsState>;
   updateRequestItemActionInList: (idRequest: string, item: IRequestItem) => void;
-  getRequestsThunkAction(page: number, orderBy: string, orderType: string): void;
+  getRequestsThunkAction: (page: number, orderBy: string, orderType: string) => void;
+  deleteRequestItemActionInList: (idRequest: string, item: IRequestItem) => void;
 }
 
 interface IStateType {
@@ -61,10 +61,12 @@ class RequestListView extends React.Component<IPropsType, IStateType> {
         token: window.user.token
       }
     });
+
     this.socket.on('connect', () => {
       this.socket.emit('join', {room: `request-list-${window.user.team}`});
     });
-    this.socket.on('UPDATE_ITEM', (data: any): void => {
+
+    this.socket.on('UPDATE_REQUEST_ITEM', (data: any): void => {
       this.props.updateRequestItemActionInList(data.idRequest, data.item);
       const $item = $(`#request-item-${data.item._id}`);
       if ($item) {
@@ -73,6 +75,17 @@ class RequestListView extends React.Component<IPropsType, IStateType> {
           $item.removeClass('bg-aqua-active');
         }, 300);
       }
+    });
+
+    this.socket.on('DELETE_REQUEST_ITEM', (data: any): void => {
+      console.log('DELETE_REQUEST_ITEM', data);
+      const $item = $(`#request-item-${data.item._id}`);
+      if ($item) {
+        $item.addClass('bg-red-active');
+      }
+      setTimeout(() => {
+        this.props.deleteRequestItemActionInList(data.idRequest, data.item);
+      }, 300);
     });
   }
 
@@ -235,7 +248,8 @@ const mapDispatchToProps = (dispatch: any) => {
   return {
     dispatch,
     getRequestsThunkAction: (page: number, orderBy: string, orderType: string) => dispatch(getRequestsThunkAction(page, orderBy, orderType)),
-    updateRequestItemActionInList: (idRequest: string, item: IRequestItem) => dispatch(updateRequestItemActionInList(idRequest, item))
+    updateRequestItemActionInList: (idRequest: string, item: IRequestItem) => dispatch(updateRequestItemActionInList(idRequest, item)),
+    deleteRequestItemActionInList: (idRequest: string, item: IRequestItem) => dispatch(deleteRequestItemActionInList(idRequest, item))
   };
 };
 

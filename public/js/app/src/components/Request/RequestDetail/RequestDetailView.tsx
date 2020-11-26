@@ -7,7 +7,7 @@ import { RouteComponentProps } from 'react-router-dom';
 import * as io from 'socket.io-client';
 import * as swal from 'sweetalert';
 import { IRequestItem } from '../../../../../../../src/interfaces/requestItem.interface';
-import { getRequestThunkAction, updateRequestItemActionInDetail } from '../../../actions/requests.actions';
+import { deleteRequestItemActionInDetail, getRequestThunkAction, updateRequestItemActionInDetail } from '../../../actions/requests.actions';
 import { IRequestsState } from '../../../actions/requests.types';
 import AppContainer from '../../../container/AppContainer';
 import { IWindow } from '../../../interfaces/window';
@@ -17,6 +17,7 @@ interface IPropsType extends RouteComponentProps<{ id: string }> {
   requests: IRequestsState;
   getRequestAction(id: string): void;
   updateRequestItemActionInDetail: (item: IRequestItem) => void;
+  deleteRequestItemActionInDetail: (item: IRequestItem) => void;
 }
 
 interface IStateType {
@@ -44,6 +45,7 @@ class RequestDetailView extends React.Component<IPropsType, IStateType> {
     window.scrollTo(0, 0);
 
     this.props.getRequestAction(id);
+
     this.socket = io.connect(`${location.protocol}//${location.host}`, {
       secure: location.protocol === 'https:',
       transports: ['websocket'],
@@ -52,19 +54,34 @@ class RequestDetailView extends React.Component<IPropsType, IStateType> {
         token: window.user.token
       }
     });
+
     this.socket.on('connect', () => {
       this.socket.emit('join', {room: `request-detail-${window.user.team}`});
     });
-    this.socket.on('UPDATE_ITEM', (data: any): void => {
+
+    this.socket.on('UPDATE_REQUEST_ITEM', (data: any): void => {
       if (data.idRequest === id) {
         this.props.updateRequestItemActionInDetail(data.item);
         const $item = $(`#request-item-${data.item._id}`);
         if ($item) {
           $item.addClass('bg-aqua-active');
-          setTimeout(() => {
-            $item.removeClass('bg-aqua-active');
-          }, 300);
         }
+        setTimeout(() => {
+          $item.removeClass('bg-aqua-active');
+        }, 300);
+      }
+    });
+
+    this.socket.on('DELETE_REQUEST_ITEM', (data: any): void => {
+      console.log('DELETE_REQUEST_ITEM', data);
+      if (data.idRequest === id) {
+        const $item = $(`#request-item-${data.item._id}`);
+        if ($item) {
+          $item.addClass('bg-red-active');
+        }
+        setTimeout(() => {
+          this.props.deleteRequestItemActionInDetail(data.item);
+        }, 300);
       }
     });
   }
@@ -223,6 +240,7 @@ const mapDispatchToProps = (dispatch: any) => {
   return {
     dispatch,
     updateRequestItemActionInDetail: (item: IRequestItem) => dispatch(updateRequestItemActionInDetail(item)),
+    deleteRequestItemActionInDetail: (item: IRequestItem) => dispatch(deleteRequestItemActionInDetail(item)),
     getRequestAction: (id: string) => dispatch(getRequestThunkAction(id))
   };
 };

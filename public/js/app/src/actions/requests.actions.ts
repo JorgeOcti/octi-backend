@@ -9,6 +9,8 @@ import { IRequestItemStatus } from '../../../../../src/interfaces/requestItemSta
 import ApiService from '../utils/axios';
 import {
   ICancelRequest,
+  IDeleteRequestItemInDetail,
+  IDeleteRequestItemInList,
   IIsLoading,
   ILoadCarriers,
   ILoadReasons,
@@ -21,6 +23,8 @@ import {
   IUpdateRequestItemInList,
   RequestsReduxActions,
   REQUEST_CANCEL_REQUEST,
+  REQUEST_DELETE_REQUEST_ITEM_IN_DETAIL,
+  REQUEST_DELETE_REQUEST_ITEM_IN_LIST,
   REQUEST_IS_LOADING,
   REQUEST_LOAD_CARRIERS,
   REQUEST_LOAD_REASONS,
@@ -110,9 +114,28 @@ export function updateRequestItemActionInList(idRequest: string, item: IRequestI
   };
 }
 
+export function deleteRequestItemActionInList(idRequest: string, item: IRequestItem): IDeleteRequestItemInList {
+  return {
+    type: REQUEST_DELETE_REQUEST_ITEM_IN_LIST,
+    payload: {
+      idRequest,
+      item
+    }
+  };
+}
+
 export function updateRequestItemActionInDetail(item: IRequestItem): IUpdateRequestItemInDetail {
   return {
     type: REQUEST_UDPATE_REQUEST_ITEM_IN_DETAIL,
+    payload: {
+      item
+    }
+  };
+}
+
+export function deleteRequestItemActionInDetail(item: IRequestItem): IDeleteRequestItemInDetail {
+  return {
+    type: REQUEST_DELETE_REQUEST_ITEM_IN_DETAIL,
     payload: {
       item
     }
@@ -193,6 +216,18 @@ export function updateRequestItemInListThunkAction(idRequest: string, item: IReq
       });
   };
 }
+
+export function deleteRequestItemThunkAction(item: IRequestItem) {
+  return (dispatch: Dispatch<RequestsReduxActions>) => {
+    const api: ApiService = new ApiService();
+    api.deleteRequestItem(item._id)
+      .then((response: AxiosResponse) => {
+        // dispatch(updateRequestItemActionInList(idRequest, data));
+      });
+  };
+}
+
+
 
 const debounceUpdateRequestItem = debounce(500, (item) => {
   const api: ApiService = new ApiService();

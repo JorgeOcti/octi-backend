@@ -54,6 +54,8 @@ class RequestController {
         this.apiCreate = this.apiCreate.bind(this);
         this.getRequets = this.getRequets.bind(this);
         this.apiPatchItem = this.apiPatchItem.bind(this);
+        this.apiDeleteRequest = this.apiDeleteRequest.bind(this);
+        this.apiDeleteRequestItem = this.apiDeleteRequestItem.bind(this);
     }
     async index(req, res) {
         res.render('app/index', { token: await req.user.generateToken() });
@@ -192,7 +194,89 @@ class RequestController {
             res.status(500).json(e);
         }
     }
+    async apiDeleteRequest(req, res) {
+        logger_service_1.default.info(`RequestController.apiDeleteRequest`);
+        const { team } = req.user;
+        const { id } = req.params;
+        try {
+            const request = await request_model_1.default
+                .findOne({
+                _id: id,
+                team
+            });
+            if (request) {
+                await request.remove();
+                server_1.io.to(`request-list-${team}`).emit('DELETE_REQUEST', {
+                    idRequest: request._id
+                });
+                server_1.io.to(`request-detail-${team}`).emit('DELETE_REQUEST', {
+                    idRequest: request._id
+                });
+                res.status(200).json({
+                    message: `ok`,
+                    status: 200
+                });
+            }
+            else {
+                res.status(404).json({
+                    message: `No se ha encontrado la solicitud ${id}`,
+                    status: 404
+                });
+            }
+        }
+        catch (e) {
+            /* istanbul ignore next */
+            logger_service_1.default.error(`RequestController.apiDeleteRequest: Async Error.`);
+            /* istanbul ignore next */
+            logger_service_1.default.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}, body: ${JSON.stringify(req.body)}, params: ${JSON.stringify(req.params)}`);
+            logger_service_1.default.error(e);
+            res.status(500).json(e);
+        }
+    }
+    async apiDeleteRequestItem(req, res) {
+        logger_service_1.default.info(`RequestController.apiDeleteRequestItem`);
+        const { team } = req.user;
+        const { id } = req.params;
+        try {
+            const item = await requestItem_model_1.default
+                .findOne({
+                _id: id,
+                team
+            })
+                .populate(this.itemPopulate);
+            if (item) {
+                await item.remove();
+                server_1.io.to(`request-list-${team}`).emit('DELETE_REQUEST_ITEM', {
+                    idRequest: item.request._id,
+                    item
+                });
+                server_1.io.to(`request-detail-${team}`).emit('DELETE_REQUEST_ITEM', {
+                    idRequest: item.request._id,
+                    item
+                });
+                res.status(200).json({
+                    message: `ok`,
+                    status: 200
+                });
+            }
+            else {
+                res.status(404).json({
+                    message: `No se ha encontrado la solicitud ${id}`,
+                    status: 404
+                });
+            }
+        }
+        catch (e) {
+            /* istanbul ignore next */
+            logger_service_1.default.error(`RequestController.apiDeleteRequestItem: Async Error.`);
+            /* istanbul ignore next */
+            logger_service_1.default.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}, body: ${JSON.stringify(req.body)}, params: ${JSON.stringify(req.params)}`);
+            logger_service_1.default.error(e);
+            res.status(500).json(e);
+        }
+    }
     async searhCar(req, res) {
+        logger_service_1.default.info(`RequestController.searhCar`);
         const { team } = req.user;
         const { search } = req.query;
         try {
@@ -310,11 +394,11 @@ class RequestController {
                 .populate(this.itemPopulate)
                 .lean();
             await request_model_1.default.update({ _id: item.request._id }, { $set: { updatedAt: moment() } });
-            server_1.io.to(`request-list-${team}`).emit('UPDATE_ITEM', {
+            server_1.io.to(`request-list-${team}`).emit('UPDATE_REQUEST_ITEM', {
                 idRequest: item.request._id,
                 item
             });
-            server_1.io.to(`request-detail-${team}`).emit('UPDATE_ITEM', {
+            server_1.io.to(`request-detail-${team}`).emit('UPDATE_REQUEST_ITEM', {
                 idRequest: item.request._id,
                 item
             });

@@ -32,10 +32,10 @@ class DateRangePicker extends React.Component<IPropsType, IStateType> {
       clearBtn: true,
       format: {
         toDisplay: (date) => {
-          return moment(date).format(format ?? 'DD-MM-YY');
+          return moment(date).utc().format(format ?? 'DD-MM-YY');
         },
         toValue: (date) => {
-          return moment(date, format ?? 'DD-MM-YY').toDate();
+          return moment(date, format ?? 'DD-MM-YY').utc().toDate();
         }
       }
     });

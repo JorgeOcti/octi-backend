@@ -6,9 +6,10 @@ import { ErrorInfo } from 'react';
 import { connect } from 'react-redux';
 import { RouteComponentProps } from 'react-router-dom';
 // import { debounce } from 'throttle-debounce';
+import * as swal from 'sweetalert';
 import { IRequest } from '../../../../../../../src/interfaces/request.interface';
 import { IRequestItem } from '../../../../../../../src/interfaces/requestItem.interface';
-import { updateRequestItemInDetailThunkAction } from '../../../actions/requests.actions';
+import { deleteRequestItemThunkAction, updateRequestItemInDetailThunkAction } from '../../../actions/requests.actions';
 import { IRequestsState } from '../../../actions/requests.types';
 import { IWindow } from '../../../interfaces/window';
 import ApiService from '../../../utils/axios';
@@ -20,7 +21,8 @@ interface IPropsType extends RouteComponentProps<{ id: string }> {
   request: IRequest;
   item: IRequestItem;
   index: any;
-  updateRequestItemInDetailThunkAction: ({ item, debounce }:{ item: IRequestItem, debounce?: boolean}) => void;
+  updateRequestItemInDetailThunkAction: ({ item, debounce }: { item: IRequestItem, debounce?: boolean }) => void;
+  deleteRequestItemThunkAction: (item: IRequestItem) => void;
 }
 
 interface IStateType {
@@ -38,7 +40,7 @@ class RequestItem extends React.Component<IPropsType, IStateType> {
     recommends: []
   };
 
-  constructor(props:IPropsType){
+  constructor(props: IPropsType) {
     super(props);
     // this.search = debounce(500, this.search.bind(this));
     this.search = this.search.bind(this);
@@ -107,10 +109,10 @@ class RequestItem extends React.Component<IPropsType, IStateType> {
                     ...item.car,
                     brand: car.brand,
                     denomination: car.denomination,
-                    material: car.material
+                    material: car.material ?? ''
                   }
                 },
-                debounce: true
+                debounce: false
               });
             }}
           />
@@ -149,10 +151,10 @@ class RequestItem extends React.Component<IPropsType, IStateType> {
                     ...item.car,
                     brand: car.brand,
                     denomination: car.denomination,
-                    material: car.material
+                    material: car.material ?? ''
                   }
                 },
-                debounce: true
+                debounce: false
               });
             }}
           />
@@ -191,10 +193,10 @@ class RequestItem extends React.Component<IPropsType, IStateType> {
                     ...item.car,
                     brand: car.brand,
                     denomination: car.denomination,
-                    material: car.material
+                    material: car.material ?? ''
                   }
                 },
-                debounce: true
+                debounce: false
               });
             }}
           />
@@ -415,7 +417,7 @@ class RequestItem extends React.Component<IPropsType, IStateType> {
             }}
           />
         </td>
-        <td className="middle-center text-red pointer">
+        <td className="middle-center text-red pointer" onClick={() => this.deleteRequestItem(item)}>
           <i className="fa fa-minus-circle" />
         </td>
       </tr>
@@ -434,6 +436,25 @@ class RequestItem extends React.Component<IPropsType, IStateType> {
         this.api.errorHandler(err);
       });
   }
+
+  private deleteRequestItem(item: IRequestItem) {
+    swal({
+      title: '¿Estás seguro?',
+      text: `Vas a eliminar este item ${item}.`,
+      icon: 'warning',
+      dangerMode: true,
+      buttons: {
+        cancel: 'Cancelar' as any,
+        confirm: {
+          text: 'Sí'
+        }
+      }
+    }).then((willDelete) => {
+      if (willDelete) {
+        this.props.deleteRequestItemThunkAction(item);
+      }
+    });
+  }
 }
 
 const mapStateToProps = (state: { requests: IRequestsState }) => {
@@ -445,9 +466,10 @@ const mapStateToProps = (state: { requests: IRequestsState }) => {
 const mapDispatchToProps = (dispatch: any) => {
   return {
     dispatch,
-    updateRequestItemInDetailThunkAction: ({ item, debounce }:{ item: IRequestItem, debounce?: boolean}) => dispatch(updateRequestItemInDetailThunkAction({item, debounce}))
+    updateRequestItemInDetailThunkAction: ({ item, debounce }: { item: IRequestItem, debounce?: boolean }) => dispatch(updateRequestItemInDetailThunkAction({ item, debounce })),
+    deleteRequestItemThunkAction: (item: IRequestItem) => dispatch(deleteRequestItemThunkAction(item))
   };
 };
 
 
-export default connect<{ }, { }, IPropsType | any > (mapStateToProps, mapDispatchToProps)(RequestItem);
+export default connect<{}, {}, IPropsType | any>(mapStateToProps, mapDispatchToProps)(RequestItem);

@@ -15,9 +15,11 @@ requestRouter.get('/requests/create/', middlewares_1.default.isLoggedIn, request
 // apis
 requestRouter.get('/api/v1/requests/search-car/', middlewares_1.default.isLoggedIn, request_controller_1.default.searhCar);
 requestRouter.get('/api/v1/requests/', middlewares_1.default.isLoggedIn, request_controller_1.default.apiList);
-requestRouter.get('/api/v1/requests/:id/', middlewares_1.default.isLoggedIn, request_controller_1.default.apiDetail);
 requestRouter.post('/api/v1/requests/', middlewares_1.default.isLoggedIn, request_controller_1.default.apiCreate);
+requestRouter.get('/api/v1/requests/:id/', middlewares_1.default.isLoggedIn, request_controller_1.default.apiDetail);
+requestRouter.delete('/api/v1/requests/:id/', middlewares_1.default.isLoggedIn, request_controller_1.default.apiDeleteRequest);
 requestRouter.patch('/api/v1/requests-item/:id/', middlewares_1.default.isLoggedIn, request_controller_1.default.apiPatchItem);
+requestRouter.delete('/api/v1/requests-item/:id/', middlewares_1.default.isLoggedIn, request_controller_1.default.apiDeleteRequestItem);
 requestRouter.get('/api/v1/reasons/', middlewares_1.default.isLoggedIn, reason_controller_1.default.apiList);
 requestRouter.get('/api/v1/request-item-status/', middlewares_1.default.isLoggedIn, requestItemStatus_controller_1.default.apiList);
 //# sourceMappingURL=router.js.map

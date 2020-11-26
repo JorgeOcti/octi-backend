@@ -13,7 +13,9 @@ export const REQUEST_LOAD_CARRIERS = '/REQUESTS/LOAD_CARRIERS';
 export const REQUEST_LOAD_REQUESTS = '/REQUESTS/LOAD_REQUESTS';
 export const REQUEST_LOAD_REQUEST = '/REQUESTS/LOAD_REQUEST';
 export const REQUEST_UDPATE_REQUEST_ITEM_IN_LIST = '/REQUESTS/UDPATE_REQUEST_ITEM_IN_LIST';
+export const REQUEST_DELETE_REQUEST_ITEM_IN_LIST = '/REQUESTS/DELETE_REQUEST_ITEM_IN_LIST';
 export const REQUEST_UDPATE_REQUEST_ITEM_IN_DETAIL = '/REQUESTS/UDPATE_REQUEST_ITEM_IN_DETAIL';
+export const REQUEST_DELETE_REQUEST_ITEM_IN_DETAIL = '/REQUESTS/DELETE_REQUEST_ITEM_IN_DETAIL';
 export const REQUEST_TAB_STATUS = '/REQUESTS/TAB_STATUS';
 
 export interface IRequestsState {
@@ -89,12 +91,28 @@ export interface IUpdateRequestItemInList {
   };
 }
 
+export interface IDeleteRequestItemInList {
+  type: typeof REQUEST_DELETE_REQUEST_ITEM_IN_LIST;
+  payload: {
+    idRequest: string;
+    item: IRequestItem
+  };
+}
+
 export interface IUpdateRequestItemInDetail {
   type: typeof REQUEST_UDPATE_REQUEST_ITEM_IN_DETAIL;
   payload: {
     item: IRequestItem
   };
 }
+
+export interface IDeleteRequestItemInDetail {
+  type: typeof REQUEST_DELETE_REQUEST_ITEM_IN_DETAIL;
+  payload: {
+    item: IRequestItem
+  };
+}
+
 
 export interface ILoadRequest {
   type: typeof REQUEST_LOAD_REQUEST;
@@ -115,7 +133,9 @@ export type RequestsReduxActions =
   IIsLoading |
   ILoadRequest |
   IUpdateRequestItemInList |
+  IDeleteRequestItemInList |
   IUpdateRequestItemInDetail |
+  IDeleteRequestItemInDetail |
   ILoadRequestItemStatus |
   ILoadReasons |
   ILoadCarriers |

@@ -13,11 +13,15 @@ requestRouter.get('/requests/create/', Middlewares.isLoggedIn, RequestController
 
 // apis
 requestRouter.get('/api/v1/requests/search-car/', Middlewares.isLoggedIn, RequestController.searhCar);
+
 requestRouter.get('/api/v1/requests/', Middlewares.isLoggedIn, RequestController.apiList);
-requestRouter.get('/api/v1/requests/:id/', Middlewares.isLoggedIn, RequestController.apiDetail);
 requestRouter.post('/api/v1/requests/', Middlewares.isLoggedIn, RequestController.apiCreate);
+requestRouter.get('/api/v1/requests/:id/', Middlewares.isLoggedIn, RequestController.apiDetail);
+requestRouter.delete('/api/v1/requests/:id/', Middlewares.isLoggedIn, RequestController.apiDeleteRequest);
+
 
 requestRouter.patch('/api/v1/requests-item/:id/', Middlewares.isLoggedIn, RequestController.apiPatchItem);
+requestRouter.delete('/api/v1/requests-item/:id/', Middlewares.isLoggedIn, RequestController.apiDeleteRequestItem);
 
 requestRouter.get('/api/v1/reasons/', Middlewares.isLoggedIn, ReasonController.apiList);
 

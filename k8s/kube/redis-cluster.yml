@@ -2,7 +2,7 @@
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  namespace: andes-prod
+  namespace: andes-stage
   name: redis-conf
 data:
   update-node.sh: |
@@ -22,7 +22,7 @@ data:
 apiVersion: apps/v1
 kind: StatefulSet
 metadata:
-  namespace: andes-prod
+  namespace: andes-stage
   name: redis
 spec:
   serviceName: redis
@@ -89,7 +89,7 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  namespace: andes-prod
+  namespace: andes-stage
   name: redis-service
 spec:
   type: ClusterIP

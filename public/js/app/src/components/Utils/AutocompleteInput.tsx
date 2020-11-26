@@ -42,13 +42,13 @@ class AutocompleteInput extends React.Component<IPropsType, IStateType>{
   }
 
   public render(): React.ReactElement<IPropsType> {
-    const {onChange, value, items, inputClass} = this.props;
+    const { onChange, value, items, inputClass } = this.props;
     return (
       <div className="autocomplete" ref={this.autocompleteElement} >
         <input
           type="text"
-          className={`form-control ${inputClass?inputClass:''}`}
-          onChange={(e)=>{
+          className={`form-control ${inputClass ? inputClass : ''}`}
+          onChange={(e) => {
             if (this.items.current) {
               this.items.current.scrollTop = 0;
             }

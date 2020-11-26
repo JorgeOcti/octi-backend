@@ -516,16 +516,28 @@ export default class ApiService {
     );
   }
 
+  public deleteRequest(id: string) {
+    return this.instance.delete(
+      `/api/v1/requests/${id}/`
+    );
+  }
+
   public getRequestItemsStatus(page: number, pageSize?: number): AxiosPromise {
     return this.instance.get(
       `/api/v1/request-item-status/?page=${page}${pageSize ? `&pageSize=${pageSize}` : ''}`
     );
   }
 
-  public updateRequestItem(id: string, item: IRequestItem){
+  public updateRequestItem(id: string, item: IRequestItem) {
     return this.instance.patch(
       `/api/v1/requests-item/${id}/`,
       item
+    );
+  }
+
+  public deleteRequestItem(id: string) {
+    return this.instance.delete(
+      `/api/v1/requests-item/${id}/`
     );
   }
 
