@@ -10,7 +10,6 @@ const general_utils_1 = require("../../utils/general.utils");
 const user_model_1 = require("../models/user.model");
 const user_model_2 = require("../models/user.model");
 const version_model_1 = require("../models/version.model");
-const push_service_1 = require("../../services/push.service");
 class JWTController {
     constructor() {
         this.androidVersion = '2.4.2';
@@ -138,7 +137,6 @@ class JWTController {
                                         refreshToken: jwt.sign(userInfo, req.app.locals.secretKey, {
                                             expiresIn: '30 days'
                                         }),
-                                        beamToken: push_service_1.default.createAuthToken(userInfo._id.toString()).token,
                                         iosVersion: version.ios,
                                         androidVersion: version.android,
                                         user: userInfo

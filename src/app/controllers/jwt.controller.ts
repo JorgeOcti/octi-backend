@@ -10,7 +10,6 @@ import GeneralUtils from '../../utils/general.utils';
 import User from '../models/user.model';
 import UserModel, {IUserModel} from '../models/user.model';
 import Version from "../models/version.model";
-import PushService from "../../services/push.service";
 
 class JWTController {
 
@@ -142,7 +141,6 @@ class JWTController {
                       refreshToken: jwt.sign(userInfo, req.app.locals.secretKey, {
                         expiresIn: '30 days'
                       }),
-                      beamToken: PushService.createAuthToken(userInfo._id.toString()).token,
                       iosVersion: version!.ios,
                       androidVersion: version!.android,
                       user: userInfo

@@ -4,6 +4,7 @@ import {IRequest} from '../../interfaces/global.interface';
 import logger from '../../services/logger.service';
 import UserModel from '../models/user.model';
 import Venue from '../models/venue.model';
+import PushService from '../../services/push.service';
 
 class UserController {
 
@@ -122,6 +123,10 @@ class UserController {
         status: 500
       });
     }
+  }
+
+  public async getPusherToken(req: IRequest, res: Response){
+    res.status(200).json(PushService.createAuthToken(req.user._id.toString()))
   }
 }
 
