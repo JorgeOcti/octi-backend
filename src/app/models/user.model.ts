@@ -1,11 +1,12 @@
 import * as bcrypt from 'bcrypt';
-import {ObjectID} from 'bson';
+import { ObjectID } from 'bson';
 import * as jwt from 'jsonwebtoken';
 import * as mongoose from 'mongoose';
+import { PaginateModel } from 'mongoose';
 import * as mongoosePaginate from 'mongoose-paginate';
 import * as passportLocalMongoose from 'passport-local-mongoose';
-import {IUser} from '../../interfaces/user.interface';
-import {IPermissionModel} from './permision.model';
+import { IUser } from '../../interfaces/user.interface';
+import { IPermissionModel } from './permision.model';
 
 export interface IUserModel extends IUser, mongoose.Document {
   comparePassword: (candidatePassword: string, cb: (err: any, isMatch: any) => {}) => boolean;
@@ -188,6 +189,8 @@ userSchema.methods.comparePasswordSync = function(candidatePassword: string) {
   return bcrypt.compareSync(candidatePassword, this.password);
 };
 
-const User = mongoose.model<IUserModel>('User', userSchema);
+export type UserSchema = mongoose.Model<IUserModel> & PaginateModel<IUserModel>;
+
+const User = mongoose.model<IUserModel, UserSchema>('User', userSchema);
 
 export default User;

@@ -2,6 +2,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 const mongoose = require("mongoose");
 const mongoosePaginate = require("mongoose-paginate");
+const mongooseAggregatePaginate = require("mongoose-aggregate-paginate-v2");
 const requestItemSchema = new mongoose.Schema({
     request: {
         type: mongoose.Schema.Types.ObjectId,
@@ -78,6 +79,7 @@ const requestItemSchema = new mongoose.Schema({
     timestamps: true
 });
 requestItemSchema.plugin(mongoosePaginate);
+requestItemSchema.plugin(mongooseAggregatePaginate);
 const RequestItem = mongoose.model('RequestItem', requestItemSchema);
 exports.default = RequestItem;
 //# sourceMappingURL=requestItem.model.js.map

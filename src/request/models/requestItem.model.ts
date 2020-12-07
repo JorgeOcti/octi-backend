@@ -1,7 +1,8 @@
 import * as mongoose from 'mongoose';
-import {PaginateModel} from 'mongoose';
+import {AggregatePaginateModel, PaginateModel} from 'mongoose';
 import {IRequestItem} from '../../interfaces/requestItem.interface';
 import * as mongoosePaginate from 'mongoose-paginate';
+import mongooseAggregatePaginate = require('mongoose-aggregate-paginate-v2');
 
 export interface IRequestItemModel extends IRequestItem, mongoose.Document {}
 
@@ -82,8 +83,9 @@ const requestItemSchema = new mongoose.Schema({
 });
 
 requestItemSchema.plugin(mongoosePaginate);
+requestItemSchema.plugin(mongooseAggregatePaginate);
 
-export type RequestItemSchema = mongoose.Model<IRequestItemModel> & PaginateModel<IRequestItemModel>;
+export type RequestItemSchema = mongoose.Model<IRequestItemModel> & PaginateModel<IRequestItemModel> & AggregatePaginateModel<IRequestItemModel>;
 
 const RequestItem = mongoose.model<IRequestItemModel, RequestItemSchema>('RequestItem', requestItemSchema);
 

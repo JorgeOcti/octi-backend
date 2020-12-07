@@ -165,7 +165,7 @@ export function requestsReducers(state = initialState, action: RequestsReduxActi
         ...state,
         request: {
           ...state.request,
-          items: [...state.request!.items!.filter((item) => {
+          items: [...state.request.items!.filter((item) => {
             return item._id !== action.payload.item._id;
           })]
         }

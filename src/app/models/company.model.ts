@@ -1,4 +1,5 @@
 import * as mongoose from 'mongoose';
+import { PaginateModel } from 'mongoose';
 import * as mongooseCrate from 'mongoose-crate';
 import * as MongooseCrateS3 from 'mongoose-crate-s3';
 import * as mongoosePaginate from 'mongoose-paginate';
@@ -143,6 +144,8 @@ companySchema.virtual('users', {
   justOne: false
 });
 
-const Company = mongoose.model<ICompanyModel>('Company', companySchema);
+export type CompanySchema = mongoose.Model<ICompanyModel> & PaginateModel<ICompanyModel>;
+
+const Company = mongoose.model<ICompanyModel, CompanySchema>('Company', companySchema);
 
 export default Company;

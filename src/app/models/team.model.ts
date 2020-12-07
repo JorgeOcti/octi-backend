@@ -1,4 +1,5 @@
 import * as mongoose from 'mongoose';
+import { PaginateModel } from 'mongoose';
 import * as mongoosePaginate from 'mongoose-paginate';
 import {ITeam} from '../../interfaces/team.interface';
 
@@ -50,6 +51,8 @@ teamSchema.virtual('histories', {
 
 teamSchema.plugin(mongoosePaginate);
 
-const Team = mongoose.model<ITeamModel>('Team', teamSchema);
+export type TeamSchema = mongoose.Model<ITeamModel> & PaginateModel<ITeamModel>;
+
+const Team = mongoose.model<ITeamModel, TeamSchema>('Team', teamSchema);
 
 export default Team;

@@ -44,6 +44,7 @@ class RequestListView extends React.Component<IPropsType, IStateType> {
 
   constructor(props: IPropsType) {
     super(props);
+    // this.create = this.create.bind(this);
     this.create = this.create.bind(this);
     this.changeOrder = this.changeOrder.bind(this);
     this.changePage = this.changePage.bind(this);
@@ -151,29 +152,6 @@ class RequestListView extends React.Component<IPropsType, IStateType> {
               </div>
             </div>
             <div className="box-body table-responsive request-list">
-              {/* <div className="row" style={{ margin: 0 }}>
-                <div className="col-md-4 col-md-offset-4 text-right">
-                  <div className="checkbox" style={{paddingTop: '10px'}}>
-                    <label style={{paddingLeft: '0', fontWeight: 600}} onClick={()=>console.log}>
-                      <Checkbox
-                        active={true}
-                        action={()=>console.log}
-                        classes="icheck-in-checkbox"
-                        style={{marginTop: '-4px', marginRight: '5px'}}
-                      />
-                      Ver completados
-                    </label>
-                  </div>
-                </div>
-                <div className="col-md-4" style={{ paddingRight: '0' }}>
-                  <div className="input-group input-group-sm" style={{ padding: '10px 0px 10px 5px' }}>
-                    <input type="text" className="form-control pull-right" placeholder="Buscar" />
-                    <div className="input-group-btn">
-                      <button className="btn btn-default"><i className="fa fa-search" /></button>
-                    </div>
-                  </div>
-                </div>
-              </div> */}
               <div className="row request bg-primary">
                 <div className="col-sm-1 col-xs-1 col-md-1 col-lg-1 center pointer head-sorted" onClick={() => this.changeOrder('_id')}>
                   <strong>ID</strong> <i className={`fa ${orderBy === '_id' ? `${orderType === 'descending' ? 'fa-sort-down' : 'fa-sort-up'}` : 'fa-sort'}`} />

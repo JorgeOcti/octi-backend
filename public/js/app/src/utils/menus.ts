@@ -69,7 +69,7 @@ const distributionItems = [{
   id: '3.2',
   icon: 'fa-circle-o',
   text: 'Vehículos',
-  url: '/requests/'
+  url: '/requests/vehicles/'
 }, {
   id: '3.3',
   icon: 'fa-circle-o',

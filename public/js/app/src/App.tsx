@@ -28,6 +28,7 @@ import RegionsListView from './components/Region/RegionsListFiew';
 import RequestCreateView from './components/Request/RequestCreateView';
 import RequestDetailView from './components/Request/RequestDetail/RequestDetailView';
 import RequestListView from './components/Request/RequestList/RequestListView';
+import RequestVehicleListView from './components/Request/RequestVehicleList/RequestVehicleListView';
 import StockImportView from './components/Stock/StockImportView';
 import StockView from './components/Stock/StockListView';
 import UsersListView from './components/Users/UserListView';
@@ -80,6 +81,7 @@ const App = () => (
         <Route exact path="/settings/versions/" component={VersionListView}/>
         <Route exact path="/requests/create/" component={RequestCreateView}/>
         <Route exact path="/requests/" component={RequestListView}/>
+        <Route exact path="/requests/vehicles/" component={RequestVehicleListView}/>
         <Route exact path="/requests/:id/" component={RequestDetailView}/>
         <Route component={NoMatch}/>
       </Switch>

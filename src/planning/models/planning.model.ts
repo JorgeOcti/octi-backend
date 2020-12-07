@@ -1,6 +1,7 @@
 import * as mongoose from 'mongoose';
 import {IPlanning} from '../../interfaces/planning.interface';
 import * as mongoosePaginate from 'mongoose-paginate';
+import { PaginateModel } from 'mongoose';
 
 export interface IPlanningModel extends IPlanning, mongoose.Document {}
 
@@ -31,6 +32,8 @@ const planningSchema = new mongoose.Schema({
 
 planningSchema.plugin(mongoosePaginate);
 
-const Planning = mongoose.model<IPlanningModel>('Planning', planningSchema);
+export type PlanningSchema = mongoose.Model<IPlanningModel> & PaginateModel<IPlanningModel>;
+
+const Planning = mongoose.model<IPlanningModel, PlanningSchema>('Planning', planningSchema);
 
 export default Planning;

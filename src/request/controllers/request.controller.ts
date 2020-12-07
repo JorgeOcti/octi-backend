@@ -1,6 +1,6 @@
 import { Response } from 'express';
-import moment = require('moment');
-import { PaginateOptions, PaginateResult, QueryPopulateOptions } from 'mongoose';
+import * as moment from 'moment';
+import { CustomLabels, PaginateOptions, PaginateResult, QueryPopulateOptions } from 'mongoose';
 import Car, { ChoicesStatusCar } from '../../app/models/car.model';
 import Team from '../../app/models/team.model';
 import { IRequest } from '../../interfaces/global.interface';
@@ -52,9 +52,23 @@ class RequestController {
     populate: this.itemPopulate
   }];
 
+  private aggregateCustomLabels: CustomLabels = {
+    totalDocs: 'total',
+    docs: 'docs',
+    limit: 'perPage',
+    page: 'currentPage',
+    nextPage: 'next',
+    prevPage: 'prev',
+    totalPages: 'pages',
+    hasPrevPage: 'hasPrevious',
+    hasNextPage: 'hasNext',
+    pagingCounter: 'pageCounter'
+  };
+
   constructor() {
     this.index = this.index.bind(this);
     this.apiList = this.apiList.bind(this);
+    this.apiListItems = this.apiListItems.bind(this);
     this.apiDetail = this.apiDetail.bind(this);
     this.apiCreate = this.apiCreate.bind(this);
     this.getRequets = this.getRequets.bind(this);
@@ -118,6 +132,107 @@ class RequestController {
       logger.error(`RequestController.apiCreate: Async Error.`);
       /* istanbul ignore next */
       logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}, body: ${JSON.stringify(req.body)}`);
+      logger.error(e);
+      res.status(500).json(e);
+    }
+  }
+
+  public async apiListItems(req: IRequest, res: Response) {
+    const { team } = req.user;
+    const { page, pageSize } = req.query as { page: string; pageSize: string; search: string; orderBy: string; orderType: string };
+    try {
+      const requestsAggregate = RequestItem.aggregate([{
+        $match: {
+          team,
+          'destination': {
+            $in: req.user.venuesPermissions()
+          }
+        }
+      }, {
+        $lookup: { from: 'cars', localField: 'car', foreignField: '_id', as: 'car' }
+      }, {
+        $unwind: '$car'
+      }, {
+        $lookup: { from: 'users', localField: 'createdBy', foreignField: '_id', as: 'createdBy' }
+      }, {
+        $unwind: '$createdBy'
+      }, {
+        $lookup: { from: 'venues', localField: 'origin', foreignField: '_id', as: 'origin' }
+      }, {
+        $unwind: '$origin'
+      }, {
+        $lookup: { from: 'venues', localField: 'destination', foreignField: '_id', as: 'destination' }
+      }, {
+        $unwind: '$destination'
+      }, {
+        $lookup: { from: 'requests', localField: 'request', foreignField: '_id', as: 'request' }
+      }, {
+        $unwind: '$request'
+      }, {
+        $lookup: { from: 'requestitemstatuses', localField: 'status', foreignField: '_id', as: 'status' }
+      }, {
+        $unwind: '$status'
+      }, {
+        $lookup: { from: 'reasons', localField: 'reason', foreignField: '_id', as: 'reason' }
+      }, {
+        $unwind: '$reason'
+      }, {
+        $project: {
+          '_id': 1,
+          'request': 1,
+          'priority': 1,
+          'observation': 1,
+          'equipment': 1,
+          'washed': 1,
+          'review': 1,
+          'body': 1,
+          'status._id': 1,
+          'status.name': 1,
+          'status.weigth': 1,
+          'createdBy._id': 1,
+          'createdBy.firstName': 1,
+          'createdBy.lastName': 1,
+          'car': 1,
+          'origin._id': 1,
+          'origin.name': 1,
+          'destination._id': 1,
+          'destination.name': 1,
+          'reason._id': 1,
+          'reason.name': 1,
+          'createdAt': 1,
+          'updatedAt': 1
+        }
+      }, {
+        // $sort: { 'origin.name': 1 }
+        $sort: { 'car.updateAt': -1 }
+      }]);
+      const options = {
+        page: parseInt(page ? page : '1', 10),
+        limit: parseInt(pageSize ? pageSize : '10', 10),
+        customLabels: this.aggregateCustomLabels
+      };
+      const requests = await RequestItem.aggregatePaginate(requestsAggregate, options);
+
+      if (options.page && requests.pages && requests.pages < options.page) {
+        res.status(400).json({
+          message: 'La página solicitada no existe.',
+          status: 400
+        });
+      } else {
+        res.json({
+          count: requests.total,
+          pages: requests.pages,
+          hasPrevious: requests.hasPrevious,               
+          hasNext: requests.hasNext,
+          results: requests.docs,
+          status: 200
+        });
+      }
+    } catch (e) {
+      /* istanbul ignore next */
+      logger.error(`RequestController.apiListItems: Async Error.`);
+      /* istanbul ignore next */
+      logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}, body: ${JSON.stringify(req.body)}, params: ${JSON.stringify(req.params)}`);
       logger.error(e);
       res.status(500).json(e);
     }

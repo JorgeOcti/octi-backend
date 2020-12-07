@@ -1,4 +1,5 @@
 import * as mongoose from 'mongoose';
+import { PaginateModel } from 'mongoose';
 import * as mongoosePaginate from 'mongoose-paginate';
 import {IInventoryLabel} from '../../interfaces/inventoryLabel.interface';
 import {choicesStatusCarInventory} from './inventoryCar.model';
@@ -55,6 +56,8 @@ mongoose.plugin(mongoosePaginate);
 
 inventoryLabelSchema.index({active: 1, team: 1});
 
-const InventoryLabel = mongoose.model<IInventoryLabelModel>('InventoryLabel', inventoryLabelSchema);
+export type InventoryLabelSchema = mongoose.Model<IInventoryLabelModel> & PaginateModel<IInventoryLabelModel>;
+
+const InventoryLabel = mongoose.model<IInventoryLabelModel, InventoryLabelSchema>('InventoryLabel', inventoryLabelSchema);
 
 export default InventoryLabel;

@@ -8,6 +8,7 @@ const requestRouter = express.Router();
 
 // web pages
 requestRouter.get('/requests/', Middlewares.isLoggedIn, RequestController.index);
+requestRouter.get('/requests/vehicles/', Middlewares.isLoggedIn, RequestController.index);
 requestRouter.get('/requests/:id/', Middlewares.isLoggedIn, RequestController.index);
 requestRouter.get('/requests/create/', Middlewares.isLoggedIn, RequestController.index);
 
@@ -20,6 +21,7 @@ requestRouter.get('/api/v1/requests/:id/', Middlewares.isLoggedIn, RequestContro
 requestRouter.delete('/api/v1/requests/:id/', Middlewares.isLoggedIn, RequestController.apiDeleteRequest);
 
 
+requestRouter.get('/api/v1/requests-item/', Middlewares.isLoggedIn, RequestController.apiListItems);
 requestRouter.post('/api/v1/requests-item/', Middlewares.isLoggedIn, RequestController.apiCreateItem);
 requestRouter.patch('/api/v1/requests-item/:id/', Middlewares.isLoggedIn, RequestController.apiPatchItem);
 requestRouter.delete('/api/v1/requests-item/:id/', Middlewares.isLoggedIn, RequestController.apiDeleteRequestItem);
