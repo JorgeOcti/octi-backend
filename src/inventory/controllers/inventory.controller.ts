@@ -1,47 +1,39 @@
 import * as archiver from 'archiver';
 import * as bluebird from 'bluebird';
-import {ObjectID} from 'bson';
-import {Response} from 'express';
+import { ObjectID } from 'bson';
+import * as excel from 'exceljs';
+import { Alignment } from 'exceljs';
+import { Response } from 'express';
 import * as fs from 'fs';
 import * as GraphicsMagick from 'gm';
 import * as https from 'https';
 import * as moment from 'moment';
 import * as mongoose from 'mongoose';
+import { PaginateOptions } from 'mongoose';
 import * as Raven from 'raven';
-import {queue} from '../../app';
-import Car, {
-  ICarModel
-} from '../../app/models/car.model';
-import CarModel, {ChoicesStatusCar} from '../../app/models/car.model';
-import User from '../../app/models/user.model';
-import UserModel from '../../app/models/user.model';
-import VenueModel, {
-  IVenueModel
-} from '../../app/models/venue.model';
-import {IRequest} from '../../interfaces/global.interface';
-import {IInventoryCar} from '../../interfaces/inventory.interface';
-import {io} from '../../server';
+import * as tempfile from 'tempfile';
+import { queue } from '../../app';
+import { ChoicesStatusCar, default as Car, default as CarModel, ICarModel } from '../../app/models/car.model';
+import Team from '../../app/models/team.model';
+import TeamSetting from '../../app/models/teamSetting.model';
+import { default as User, default as UserModel } from '../../app/models/user.model';
+import { default as Venue, default as VenueModel, IVenueModel } from '../../app/models/venue.model';
+import ActivityHistory, { ChoicesTypeActivity } from '../../billing/models/activityHistory.model';
+import { IActivityHistoryInterface } from '../../interfaces/activityHistory.interface';
+import { IRequest } from '../../interfaces/global.interface';
+import { IInventoryCar } from '../../interfaces/inventory.interface';
+import { IStockCar } from '../../interfaces/stock.interface';
+import { io } from '../../server';
 import logger from '../../services/logger.service';
 import PushService from '../../services/push.service';
 import GeneralUtils from '../../utils/general.utils';
-import InventoryModel, {
-  ChoicesStatusInventory
+import {
+  ChoicesStatusInventory, default as Inventory, default as InventoryModel
 } from '../models/inventory.model';
-import Inventory from '../models/inventory.model';
-import Stock from '../models/stock.model';
-import InventoryCar, {ChoicesStatusCarInventory} from '../models/inventoryCar.model';
+import InventoryCar, { ChoicesStatusCarInventory } from '../models/inventoryCar.model';
 import InventoryFileModel from '../models/inventoryFile.model';
 import InventoryLabel from '../models/inventoryLabel.model';
-import {PaginateOptions} from 'mongoose';
-import Team from '../../app/models/team.model';
-import * as excel from 'exceljs';
-import Venue from '../../app/models/venue.model';
-import * as tempfile from 'tempfile';
-import {Alignment} from 'exceljs';
-import TeamSetting from '../../app/models/teamSetting.model';
-import ActivityHistory, {ChoicesTypeActivity} from '../../billing/models/activityHistory.model';
-import {IActivityHistoryInterface} from '../../interfaces/activityHistory.interface';
-import {IStockCar} from '../../interfaces/stock.interface';
+import Stock from '../models/stock.model';
 import StockCar from '../models/stockCar.model';
 
 class InventoryController {
@@ -2240,7 +2232,7 @@ class InventoryController {
     }
   }
 
-  private autoRotate(path: string) {
+  private autoRotate(path: string): Promise<any> {
     // doc http://aheckmann.github.io/gm/docs.html
     /**** REQUIRE *****
      brew install imagemagick
@@ -2254,7 +2246,7 @@ class InventoryController {
             /* istanbul ignore next */
             reject(err);
           } else {
-            resolve();
+            resolve({});
           }
         });
     });

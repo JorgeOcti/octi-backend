@@ -142,31 +142,35 @@ class RequestController {
                 }, {
                     $lookup: { from: 'cars', localField: 'car', foreignField: '_id', as: 'car' }
                 }, {
-                    $unwind: '$car'
+                    $unwind: { path: '$car', preserveNullAndEmptyArrays: true }
                 }, {
                     $lookup: { from: 'users', localField: 'createdBy', foreignField: '_id', as: 'createdBy' }
                 }, {
-                    $unwind: '$createdBy'
+                    $unwind: { path: '$createdBy', preserveNullAndEmptyArrays: true }
                 }, {
                     $lookup: { from: 'venues', localField: 'origin', foreignField: '_id', as: 'origin' }
                 }, {
-                    $unwind: '$origin'
+                    $unwind: { path: '$origin', preserveNullAndEmptyArrays: true }
                 }, {
                     $lookup: { from: 'venues', localField: 'destination', foreignField: '_id', as: 'destination' }
                 }, {
-                    $unwind: '$destination'
+                    $unwind: { path: '$destination', preserveNullAndEmptyArrays: true }
                 }, {
                     $lookup: { from: 'requests', localField: 'request', foreignField: '_id', as: 'request' }
                 }, {
-                    $unwind: '$request'
+                    $unwind: { path: '$request', preserveNullAndEmptyArrays: false }
                 }, {
                     $lookup: { from: 'requestitemstatuses', localField: 'status', foreignField: '_id', as: 'status' }
                 }, {
-                    $unwind: '$status'
+                    $unwind: { path: '$status', preserveNullAndEmptyArrays: true }
+                }, {
+                    $lookup: { from: 'carriers', localField: 'carrier', foreignField: '_id', as: 'carrier' }
+                }, {
+                    $unwind: { path: '$carrier', preserveNullAndEmptyArrays: true }
                 }, {
                     $lookup: { from: 'reasons', localField: 'reason', foreignField: '_id', as: 'reason' }
                 }, {
-                    $unwind: '$reason'
+                    $unwind: { path: '$reason', preserveNullAndEmptyArrays: true }
                 }, {
                     $project: {
                         '_id': 1,
@@ -179,6 +183,8 @@ class RequestController {
                         'body': 1,
                         'status._id': 1,
                         'status.name': 1,
+                        'carrier._id': 1,
+                        'carrier.name': 1,
                         'status.weigth': 1,
                         'createdBy._id': 1,
                         'createdBy.firstName': 1,
@@ -190,6 +196,8 @@ class RequestController {
                         'destination.name': 1,
                         'reason._id': 1,
                         'reason.name': 1,
+                        'uploadDate': 1,
+                        'estimatedArrival': 1,
                         'createdAt': 1,
                         'updatedAt': 1
                     }

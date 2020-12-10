@@ -3,34 +3,30 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const archiver = require("archiver");
 const bluebird = require("bluebird");
 const bson_1 = require("bson");
+const excel = require("exceljs");
 const fs = require("fs");
 const GraphicsMagick = require("gm");
 const https = require("https");
 const moment = require("moment");
 const mongoose = require("mongoose");
 const Raven = require("raven");
+const tempfile = require("tempfile");
 const app_1 = require("../../app");
 const car_model_1 = require("../../app/models/car.model");
-const car_model_2 = require("../../app/models/car.model");
+const team_model_1 = require("../../app/models/team.model");
+const teamSetting_model_1 = require("../../app/models/teamSetting.model");
 const user_model_1 = require("../../app/models/user.model");
-const user_model_2 = require("../../app/models/user.model");
 const venue_model_1 = require("../../app/models/venue.model");
+const activityHistory_model_1 = require("../../billing/models/activityHistory.model");
 const server_1 = require("../../server");
 const logger_service_1 = require("../../services/logger.service");
 const push_service_1 = require("../../services/push.service");
 const general_utils_1 = require("../../utils/general.utils");
 const inventory_model_1 = require("../models/inventory.model");
-const inventory_model_2 = require("../models/inventory.model");
-const stock_model_1 = require("../models/stock.model");
 const inventoryCar_model_1 = require("../models/inventoryCar.model");
 const inventoryFile_model_1 = require("../models/inventoryFile.model");
 const inventoryLabel_model_1 = require("../models/inventoryLabel.model");
-const team_model_1 = require("../../app/models/team.model");
-const excel = require("exceljs");
-const venue_model_2 = require("../../app/models/venue.model");
-const tempfile = require("tempfile");
-const teamSetting_model_1 = require("../../app/models/teamSetting.model");
-const activityHistory_model_1 = require("../../billing/models/activityHistory.model");
+const stock_model_1 = require("../models/stock.model");
 const stockCar_model_1 = require("../models/stockCar.model");
 class InventoryController {
     constructor() {
@@ -126,12 +122,12 @@ class InventoryController {
                     venuesIDs.push(currentVenue._id.toString());
                     if (venue.cars && venue.cars.length) {
                         for (const car of venue.cars) {
-                            let currentCar = await car_model_2.default.findOne({
+                            let currentCar = await car_model_1.default.findOne({
                                 team,
                                 vin: car.vin.trim()
                             });
                             if (currentCar === null && car.vin && car.vin.trim().length) {
-                                currentCar = new car_model_2.default({
+                                currentCar = new car_model_1.default({
                                     team,
                                     company,
                                     vin: car.vin,
@@ -143,7 +139,7 @@ class InventoryController {
                                     brand: car.brand,
                                     patent: car.patent,
                                     createdBy: req.user,
-                                    status: car_model_2.ChoicesStatusCar.active
+                                    status: car_model_1.ChoicesStatusCar.active
                                 });
                                 await currentCar.save();
                             }
@@ -218,7 +214,7 @@ class InventoryController {
             await activityHistory_model_1.default.insertMany(activityHistories);
             await inventoryCar_model_1.default.insertMany(inventoryCars);
             if (notification) {
-                const usersIDs = await user_model_2.default.find({
+                const usersIDs = await user_model_1.default.find({
                     venue: {
                         $in: venuesIDs
                     },
@@ -493,7 +489,7 @@ class InventoryController {
             }
             else {
                 // const venuesPermissions = req.user.venuesPermissions();
-                const inventory = await inventory_model_2.default
+                const inventory = await inventory_model_1.default
                     .findOne({
                     _id: id,
                     venues: updatedUser.venue,
@@ -1125,7 +1121,7 @@ class InventoryController {
                 team
             });
             if (inventory) {
-                const car = await car_model_2.default.findOneOrCreate({
+                const car = await car_model_1.default.findOneOrCreate({
                     vin,
                     team
                 }, {
@@ -1137,7 +1133,7 @@ class InventoryController {
                     team,
                     company,
                     createdBy: req.user,
-                    status: car_model_2.ChoicesStatusCar.inventory
+                    status: car_model_1.ChoicesStatusCar.inventory
                 });
                 const inventoryCar = new inventoryCar_model_1.default({
                     car,
@@ -1242,7 +1238,7 @@ class InventoryController {
                             upsert: true
                         });
                         if (newLabel.isExhibition) {
-                            await car_model_2.default.findOneAndUpdate({
+                            await car_model_1.default.findOneAndUpdate({
                                 _id: carID,
                                 team
                             }, {
@@ -1880,7 +1876,7 @@ class InventoryController {
                         wrapText: true
                     }
                 }];
-            const venues = await venue_model_2.default.find({ team, deleted: false }).sort('name');
+            const venues = await venue_model_1.default.find({ team, deleted: false }).sort('name');
             for (const venue of venues) {
                 columns.push({
                     header: venue.name, key: venue._id.toString(), width: 5,
@@ -1925,7 +1921,7 @@ class InventoryController {
                     bold: true
                 };
             });
-            const cars = await car_model_2.default.find({
+            const cars = await car_model_1.default.find({
                 team,
                 isExhibition: false,
                 createdAt: {
@@ -1999,12 +1995,12 @@ class InventoryController {
                     await currentVenue.save();
                 }
                 for (const car of venue.cars) {
-                    let currentCar = await car_model_2.default.findOne({
+                    let currentCar = await car_model_1.default.findOne({
                         team,
                         vin: car.vin.trim()
                     });
                     if (currentCar === null && car.vin && car.vin.trim().length) {
-                        currentCar = new car_model_2.default({
+                        currentCar = new car_model_1.default({
                             team,
                             company,
                             vin: car.vin,
@@ -2016,7 +2012,7 @@ class InventoryController {
                             brand: car.brand,
                             patent: car.patent,
                             createdBy: req.user,
-                            status: car_model_2.ChoicesStatusCar.active
+                            status: car_model_1.ChoicesStatusCar.active
                         });
                         await currentCar.save();
                     }
@@ -2074,7 +2070,7 @@ class InventoryController {
     async currentStock(req, res) {
         try {
             const { company, venue } = req.user;
-            const lastInventory = await inventory_model_2.default
+            const lastInventory = await inventory_model_1.default
                 .findOne({
                 company
             }, {
@@ -2115,7 +2111,7 @@ class InventoryController {
                 }
             }
             if (showInventory) {
-                const inventory = await inventory_model_2.default
+                const inventory = await inventory_model_1.default
                     .findOne({
                     company
                 }, {
@@ -2252,7 +2248,7 @@ class InventoryController {
                     reject(err);
                 }
                 else {
-                    resolve();
+                    resolve({});
                 }
             });
         });

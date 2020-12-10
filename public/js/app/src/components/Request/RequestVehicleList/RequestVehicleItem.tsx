@@ -10,6 +10,7 @@ import { debounce } from 'throttle-debounce';
 import { ICar } from '../../../../../../../src/interfaces/car.interface';
 import { IRequest } from '../../../../../../../src/interfaces/request.interface';
 import { IRequestItem } from '../../../../../../../src/interfaces/requestItem.interface';
+import { IRequestItemsState } from '../../../actions/requestItems.types';
 import {
   deleteRequestItemThunkAction,
   deleteRequestThunkAction,
@@ -22,13 +23,11 @@ import AutocompleteInput from '../../Utils/AutocompleteInput';
 import DateRangePicker from '../../Utils/DateRangePicker';
 
 interface IPropsType extends RouteComponentProps<{ id: string }> {
-  requests: IRequestsState;
-  request: IRequest;
+  requestItems: IRequestItemsState;
   item: IRequestItem;
-  index: any;
-  updateRequestItemInDetailThunkAction: ({ item, debounce }: { item: IRequestItem, debounce?: boolean }) => void;
-  deleteRequestItemThunkAction: (item: IRequestItem) => void;
-  deleteRequestThunkAction: (idRequest: string) => void;
+  // updateRequestItemInDetailThunkAction: ({ item, debounce }: { item: IRequestItem, debounce?: boolean }) => void;
+  // deleteRequestItemThunkAction: (item: IRequestItem) => void;
+  // deleteRequestThunkAction: (idRequest: string) => void;
 }
 
 interface IStateType {
@@ -38,7 +37,7 @@ interface IStateType {
 
 declare let window: IWindow;
 
-class RequestItem extends React.Component<IPropsType, IStateType> {
+class RequestVehicleItem extends React.Component<IPropsType, IStateType> {
   readonly api: ApiService;
 
   readonly state = {
@@ -60,26 +59,26 @@ class RequestItem extends React.Component<IPropsType, IStateType> {
   }
 
   public render(): React.ReactElement<IPropsType> {
-    const { item, index } = this.props;
-    const { requestItemStatus, reasons, carriers } = this.props.requests;
+    const { item } = this.props;
+    const { requestItemStatus, reasons, carriers } = this.props.requestItems;
     const { recommends } = this.state;
     return (
       <tr id={`request-item-${item._id}`} className={'background-transition'}>
-        <td className="middle-center">{index + 1}</td>
         <td
           className="middle-center pointer"
           onClick={() => {
-            this.props.updateRequestItemInDetailThunkAction({
-              item: {
-                ...item,
-                priority: !item.priority
-              },
-              debounce: false
-            });
+            // this.props.updateRequestItemInDetailThunkAction({
+            //   item: {
+            //     ...item,
+            //     priority: !item.priority
+            //   },
+            //   debounce: false
+            // });
           }}
         >
           {item.priority ? <i className="fa fa-star text-yellow" /> : <i className="fa fa-star text-muted" />}
         </td>
+        <td className="middle">{item.request?.number}</td>
         {/* <td className="middle">{item.car.brand}</td> */}
         <td className="middle">
           <AutocompleteInput
@@ -94,31 +93,31 @@ class RequestItem extends React.Component<IPropsType, IStateType> {
             )}
             onChange={(e) => {
               const { value } = e.target;
-              this.props.updateRequestItemInDetailThunkAction({
-                item: {
-                  ...item,
-                  car: {
-                    ...item.car,
-                    brand: value
-                  }
-                },
-                debounce: true
-              });
+              // this.props.updateRequestItemInDetailThunkAction({
+              //   item: {
+              //     ...item,
+              //     car: {
+              //       ...item.car,
+              //       brand: value
+              //     }
+              //   },
+              //   debounce: true
+              // });
               this.search(value, 'recommends');
             }}
             onSelect={(car: any) => {
-              this.props.updateRequestItemInDetailThunkAction({
-                item: {
-                  ...item,
-                  car: {
-                    ...item.car,
-                    brand: car.brand,
-                    denomination: car.denomination,
-                    material: car.material ?? ''
-                  }
-                },
-                debounce: false
-              });
+              // this.props.updateRequestItemInDetailThunkAction({
+              //   item: {
+              //     ...item,
+              //     car: {
+              //       ...item.car,
+              //       brand: car.brand,
+              //       denomination: car.denomination,
+              //       material: car.material ?? ''
+              //     }
+              //   },
+              //   debounce: false
+              // });
             }}
           />
         </td>
@@ -136,76 +135,34 @@ class RequestItem extends React.Component<IPropsType, IStateType> {
             )}
             onChange={(e) => {
               const { value } = e.target;
-              this.props.updateRequestItemInDetailThunkAction({
-                item: {
-                  ...item,
-                  car: {
-                    ...item.car,
-                    denomination: value
-                  }
-                },
-                debounce: true
-              });
+              // this.props.updateRequestItemInDetailThunkAction({
+              //   item: {
+              //     ...item,
+              //     car: {
+              //       ...item.car,
+              //       denomination: value
+              //     }
+              //   },
+              //   debounce: true
+              // });
               this.search(value, 'recommends');
             }}
             onSelect={(car: any) => {
-              this.props.updateRequestItemInDetailThunkAction({
-                item: {
-                  ...item,
-                  car: {
-                    ...item.car,
-                    brand: car.brand,
-                    denomination: car.denomination,
-                    material: car.material ?? ''
-                  }
-                },
-                debounce: false
-              });
+              // this.props.updateRequestItemInDetailThunkAction({
+              //   item: {
+              //     ...item,
+              //     car: {
+              //       ...item.car,
+              //       brand: car.brand,
+              //       denomination: car.denomination,
+              //       material: car.material ?? ''
+              //     }
+              //   },
+              //   debounce: false
+              // });
             }}
           />
         </td>
-        {/* <td className="middle">{item.car.material}ASFG58644</td> */}
-        {/* <td className="middle">
-          <AutocompleteInput
-            value={item.car.material}
-            inputClass={'input-sm'}
-            items={recommends}
-            renderItem={(car, index) => (
-              <div key={index} className="item">
-                {car.denomination} <br />
-                <strong>{car.brand}</strong>
-              </div>
-            )}
-            onChange={(e) => {
-              const { value } = e.target;
-              this.props.updateRequestItemInDetailThunkAction({
-                item: {
-                  ...item,
-                  car: {
-                    ...item.car,
-                    material: value
-                  }
-                },
-                debounce: true
-              });
-              this.search(value, 'recommends');
-            }}
-            onSelect={(car: any) => {
-              this.props.updateRequestItemInDetailThunkAction({
-                item: {
-                  ...item,
-                  car: {
-                    ...item.car,
-                    brand: car.brand,
-                    denomination: car.denomination,
-                    material: car.material ?? ''
-                  }
-                },
-                debounce: false
-              });
-            }}
-          />
-        </td> */}
         {/* <td className="middle">{item.car.color}</td> */}
         <td className="middle">
           <input type="text"
@@ -213,16 +170,16 @@ class RequestItem extends React.Component<IPropsType, IStateType> {
             defaultValue={item.car.color}
             style={{ width: '80px' }}
             onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
-              this.props.updateRequestItemInDetailThunkAction({
-                item: {
-                  ...item,
-                  car: {
-                    ...item.car,
-                    color: e.target.value
-                  }
-                },
-                debounce: false
-              });
+              // this.props.updateRequestItemInDetailThunkAction({
+              //   item: {
+              //     ...item,
+              //     car: {
+              //       ...item.car,
+              //       color: e.target.value
+              //     }
+              //   },
+              //   debounce: false
+              // });
             }}
           />
         </td>
@@ -230,16 +187,16 @@ class RequestItem extends React.Component<IPropsType, IStateType> {
         <td className="middle">
           <select className="form-control select-sm font-12" value={item.status?._id ?? ''}
             onChange={(e: React.ChangeEvent<HTMLSelectElement>) => {
-              this.props.updateRequestItemInDetailThunkAction({
-                item: {
-                  ...item,
-                  status: {
-                    ...item.status,
-                    _id: e.target.value
-                  }
-                },
-                debounce: true
-              });
+              // this.props.updateRequestItemInDetailThunkAction({
+              //   item: {
+              //     ...item,
+              //     status: {
+              //       ...item.status,
+              //       _id: e.target.value
+              //     }
+              //   },
+              //   debounce: true
+              // });
             }}
           >
             <option value="" disabled={true}>-</option>
@@ -266,16 +223,16 @@ class RequestItem extends React.Component<IPropsType, IStateType> {
             style={{ width: '80px' }}
             defaultValue={item.car.internalNumber}
             onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
-              this.props.updateRequestItemInDetailThunkAction({
-                item: {
-                  ...item,
-                  car: {
-                    ...item.car,
-                    internalNumber: e.target.value
-                  }
-                },
-                debounce: false
-              });
+              // this.props.updateRequestItemInDetailThunkAction({
+              //   item: {
+              //     ...item,
+              //     car: {
+              //       ...item.car,
+              //       internalNumber: e.target.value
+              //     }
+              //   },
+              //   debounce: false
+              // });
             }}
           />
         </td>
@@ -284,16 +241,16 @@ class RequestItem extends React.Component<IPropsType, IStateType> {
           <select
             className="form-control select-sm font-12" value={item.reason?._id ?? ''}
             onChange={(e: React.ChangeEvent<HTMLSelectElement>) => {
-              this.props.updateRequestItemInDetailThunkAction({
-                item: {
-                  ...item,
-                  reason: {
-                    ...item.reason,
-                    _id: e.target.value
-                  }
-                },
-                debounce: false
-              });
+              // this.props.updateRequestItemInDetailThunkAction({
+              //   item: {
+              //     ...item,
+              //     reason: {
+              //       ...item.reason,
+              //       _id: e.target.value
+              //     }
+              //   },
+              //   debounce: false
+              // });
             }}
           >
             <option value="" disabled={true}>-</option>
@@ -309,13 +266,13 @@ class RequestItem extends React.Component<IPropsType, IStateType> {
             <div
               className={`flex-wrap-item-center ${undefined ?? 'pointer'} ${item.equipment ? '' : 'text-gray'}`}
               onClick={() => {
-                this.props.updateRequestItemInDetailThunkAction({
-                  item: {
-                    ...item,
-                    equipment: !item.equipment
-                  },
-                  debounce: false
-                });
+                // this.props.updateRequestItemInDetailThunkAction({
+                //   item: {
+                //     ...item,
+                //     equipment: !item.equipment
+                //   },
+                //   debounce: false
+                // });
               }}
             >
               <i className="material-icons font-14">library_add</i>
@@ -323,13 +280,13 @@ class RequestItem extends React.Component<IPropsType, IStateType> {
             <div
               className={`flex-wrap-item-center ${undefined ?? 'pointer'} ${item.body ? '' : 'text-gray'}`}
               onClick={() => {
-                this.props.updateRequestItemInDetailThunkAction({
-                  item: {
-                    ...item,
-                    body: !item.body
-                  },
-                  debounce: false
-                });
+                // this.props.updateRequestItemInDetailThunkAction({
+                //   item: {
+                //     ...item,
+                //     body: !item.body
+                //   },
+                //   debounce: false
+                // });
               }}
             >
               <i className="material-icons font-14">rv_hookup</i>
@@ -341,13 +298,13 @@ class RequestItem extends React.Component<IPropsType, IStateType> {
             <div
               className={`flex-wrap-item-center ${undefined ?? 'pointer'} ${item.washed ? '' : 'text-gray'}`}
               onClick={() => {
-                this.props.updateRequestItemInDetailThunkAction({
-                  item: {
-                    ...item,
-                    washed: !item.washed
-                  },
-                  debounce: false
-                });
+                // this.props.updateRequestItemInDetailThunkAction({
+                //   item: {
+                //     ...item,
+                //     washed: !item.washed
+                //   },
+                //   debounce: false
+                // });
               }}
             >
               <i className="material-icons font-14">local_car_wash</i>
@@ -355,13 +312,13 @@ class RequestItem extends React.Component<IPropsType, IStateType> {
             <div
               className={`flex-wrap-item-center ${undefined ?? 'pointer'} ${item.review ? '' : 'text-gray'}`}
               onClick={() => {
-                this.props.updateRequestItemInDetailThunkAction({
-                  item: {
-                    ...item,
-                    review: !item.review
-                  },
-                  debounce: false
-                });
+                // this.props.updateRequestItemInDetailThunkAction({
+                //   item: {
+                //     ...item,
+                //     review: !item.review
+                //   },
+                //   debounce: false
+                // });
               }}
             >
               <i className="material-icons font-14">build</i>
@@ -372,16 +329,16 @@ class RequestItem extends React.Component<IPropsType, IStateType> {
         <td className="middle">
           <select className="form-control select-sm font-12" value={item.carrier?._id ?? ''}
             onChange={(e: React.ChangeEvent<HTMLSelectElement>) => {
-              this.props.updateRequestItemInDetailThunkAction({
-                item: {
-                  ...item,
-                  carrier: !e.target.value.length ? null : {
-                    ...item.reason,
-                    _id: e.target.value
-                  }
-                },
-                debounce: false
-              });
+              // this.props.updateRequestItemInDetailThunkAction({
+              //   item: {
+              //     ...item,
+              //     carrier: !e.target.value.length ? null : {
+              //       ...item.reason,
+              //       _id: e.target.value
+              //     }
+              //   },
+              //   debounce: false
+              // });
             }}
           >
             <option value="">-</option>
@@ -397,13 +354,13 @@ class RequestItem extends React.Component<IPropsType, IStateType> {
             className={'input-sm'}
             value={item.uploadDate}
             onChange={(e) => {
-              this.props.updateRequestItemInDetailThunkAction({
-                item: {
-                  ...item,
-                  uploadDate: e as any
-                },
-                debounce: false
-              });
+              // this.props.updateRequestItemInDetailThunkAction({
+              //   item: {
+              //     ...item,
+              //     uploadDate: e as any
+              //   },
+              //   debounce: false
+              // });
             }}
           />
         </td>
@@ -412,13 +369,13 @@ class RequestItem extends React.Component<IPropsType, IStateType> {
             className={'input-sm'}
             value={item.estimatedArrival}
             onChange={(e) => {
-              this.props.updateRequestItemInDetailThunkAction({
-                item: {
-                  ...item,
-                  estimatedArrival: e as any
-                },
-                debounce: false
-              });
+              // this.props.updateRequestItemInDetailThunkAction({
+              //   item: {
+              //     ...item,
+              //     estimatedArrival: e as any
+              //   },
+              //   debounce: false
+              // });
             }}
           />
         </td>
@@ -443,59 +400,59 @@ class RequestItem extends React.Component<IPropsType, IStateType> {
   }
 
   private deleteRequestItem(item: IRequestItem) {
-    const {request} = this.props;
-    if (request.items.length > 1) {
-      swal({
-        title: '¿Estás seguro?',
-        text: `Vas a eliminar este vehículo ${item.car.brand} ${item.car.denomination} ${item.car.material}.`,
-        icon: 'warning',
-        dangerMode: true,
-        buttons: {
-          cancel: 'Cancelar' as any,
-          confirm: {
-            text: 'Sí'
-          }
-        }
-      }).then((willDelete) => {
-        if (willDelete) {
-          this.props.deleteRequestItemThunkAction(item);
-        }
-      });
-    } else {
-      swal({
-        title: '¿Estás seguro?',
-        text: `Si eliminas este último vehículo, vas a eliminar esta solicitud.`,
-        icon: 'warning',
-        dangerMode: true,
-        buttons: {
-          cancel: 'Cancelar' as any,
-          confirm: {
-            text: 'Sí'
-          }
-        }
-      }).then((willDelete) => {
-        if (willDelete) {
-          this.props.deleteRequestThunkAction(request._id);
-        }
-      });
-    }
+    const {requestItems} = this.props;
+    // if (request.items.length > 1) {
+    //   swal({
+    //     title: '¿Estás seguro?',
+    //     text: `Vas a eliminar este vehículo ${item.car.brand} ${item.car.denomination} ${item.car.material}.`,
+    //     icon: 'warning',
+    //     dangerMode: true,
+    //     buttons: {
+    //       cancel: 'Cancelar' as any,
+    //       confirm: {
+    //         text: 'Sí'
+    //       }
+    //     }
+    //   }).then((willDelete) => {
+    //     if (willDelete) {
+    //       // this.props.deleteRequestItemThunkAction(item);
+    //     }
+    //   });
+    // } else {
+    //   swal({
+    //     title: '¿Estás seguro?',
+    //     text: `Si eliminas este último vehículo, vas a eliminar esta solicitud.`,
+    //     icon: 'warning',
+    //     dangerMode: true,
+    //     buttons: {
+    //       cancel: 'Cancelar' as any,
+    //       confirm: {
+    //         text: 'Sí'
+    //       }
+    //     }
+    //   }).then((willDelete) => {
+    //     if (willDelete) {
+    //       this.props.deleteRequestThunkAction(request._id);
+    //     }
+    //   });
+    // }
   }
 }
 
-const mapStateToProps = (state: { requests: IRequestsState }) => {
+const mapStateToProps = (state: { requestItems: IRequestItemsState }) => {
   return {
-    requests: state.requests
+    requestItems: state.requestItems
   };
 };
 
 const mapDispatchToProps = (dispatch: any) => {
   return {
     dispatch,
-    updateRequestItemInDetailThunkAction: ({ item, debounce }: { item: IRequestItem, debounce?: boolean }) => dispatch(updateRequestItemInDetailThunkAction({ item, debounce })),
-    deleteRequestItemThunkAction: (item: IRequestItem) => dispatch(deleteRequestItemThunkAction(item)),
-    deleteRequestThunkAction: (idRequest: string) => dispatch(deleteRequestThunkAction(idRequest))
+    // updateRequestItemInDetailThunkAction: ({ item, debounce }: { item: IRequestItem, debounce?: boolean }) => dispatch(updateRequestItemInDetailThunkAction({ item, debounce })),
+    // deleteRequestItemThunkAction: (item: IRequestItem) => dispatch(deleteRequestItemThunkAction(item)),
+    // deleteRequestThunkAction: (idRequest: string) => dispatch(deleteRequestThunkAction(idRequest))
   };
 };
 
 
-export default connect<{}, {}, IPropsType | any>(mapStateToProps, mapDispatchToProps)(RequestItem);
+export default connect<{}, {}, IPropsType | any>(mapStateToProps, mapDispatchToProps)(RequestVehicleItem);

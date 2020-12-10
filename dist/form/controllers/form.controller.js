@@ -1861,7 +1861,7 @@ class FormController {
                     reject(err);
                 }
                 else {
-                    resolve();
+                    resolve({});
                 }
             });
         });

@@ -15,9 +15,9 @@ import {
   IDeleteRequestInList,
   IDeleteRequestItemInDetail,
   IDeleteRequestItemInList,
-  IIsLoading,
-  ILoadCarriers,
-  ILoadReasons,
+  IIsLoadingRequest,
+  ILoadCarriersRequest,
+  ILoadReasonsRequest,
   ILoadRequest,
   ILoadRequestItemStatus,
   ILoadRequests,
@@ -53,7 +53,7 @@ export function cancelRequestAction(source: CancelTokenSource): ICancelRequest {
   };
 }
 
-export function isLoadingAction(loading: boolean): IIsLoading {
+export function isLoadingRequestAction(loading: boolean): IIsLoadingRequest {
   return {
     type: REQUEST_IS_LOADING,
     payload: {
@@ -62,7 +62,7 @@ export function isLoadingAction(loading: boolean): IIsLoading {
   };
 }
 
-export function loadReasonsAction(reasons: IReason[]): ILoadReasons {
+export function loadReasonsRequestAction(reasons: IReason[]): ILoadReasonsRequest {
   return {
     type: REQUEST_LOAD_REASONS,
     payload: {
@@ -71,22 +71,22 @@ export function loadReasonsAction(reasons: IReason[]): ILoadReasons {
   };
 }
 
-export function loadRequestItemsStatusAction(requestItemStatus: IRequestItemStatus[], min: number, max: number): ILoadRequestItemStatus {
+export function loadCarriersRequestAction(carriers: ICarrier[]): ILoadCarriersRequest {
+  return {
+    type: REQUEST_LOAD_CARRIERS,
+    payload: {
+      carriers
+    }
+  };
+}
+
+export function loadRequestItemsStatusRequestAction(requestItemStatus: IRequestItemStatus[], min: number, max: number): ILoadRequestItemStatus {
   return {
     type: REQUEST_LOAD_REQUEST_ITEM_STATUS,
     payload: {
       requestItemStatus,
       min,
       max
-    }
-  };
-}
-
-export function loadCarriersAction(carriers: ICarrier[]): ILoadCarriers {
-  return {
-    type: REQUEST_LOAD_CARRIERS,
-    payload: {
-      carriers
     }
   };
 }
@@ -187,7 +187,7 @@ export function deleteRequestActionInList(id: string): IDeleteRequestInList {
   };
 }
 
-export function chnageOrderAction(orderBy: string, orderType: string): IChangeOrderRequest {
+export function changeOrderRequestAction(orderBy: string, orderType: string): IChangeOrderRequest {
   return {
     type: REQUEST_CHANGE_ORDER,
     payload: {
@@ -201,9 +201,9 @@ export function getRequestsThunkAction(nextPage: number, orderBy: string, orderT
   return (dispatch: Dispatch<RequestsReduxActions>, getState: () => { requests: IRequestsState }) => {
     const api: ApiService = new ApiService();
     const state = getState();
-    dispatch(isLoadingAction(true));
+    dispatch(isLoadingRequestAction(true));
     const page = nextPage ? nextPage : state.requests.pagination.page;
-    dispatch(chnageOrderAction(orderBy, orderType));
+    dispatch(changeOrderRequestAction(orderBy, orderType));
     dispatch(cancelRequestAction(api.getSource()));
     Axios
       .all([
@@ -215,13 +215,13 @@ export function getRequestsThunkAction(nextPage: number, orderBy: string, orderT
       .then(Axios.spread((requests, reasons, requestItemStatus, carriers) => {
         const {data} = requests;
         dispatch(loadRequestsAction(data.results, data.count, data.pages, page));
-        dispatch(loadReasonsAction(reasons.data.results));
-        dispatch(loadRequestItemsStatusAction(requestItemStatus.data.results, requestItemStatus.data.min, requestItemStatus.data.max));
-        dispatch(loadCarriersAction(carriers.data.results));
-        dispatch(isLoadingAction(false));
+        dispatch(loadReasonsRequestAction(reasons.data.results));
+        dispatch(loadRequestItemsStatusRequestAction(requestItemStatus.data.results, requestItemStatus.data.min, requestItemStatus.data.max));
+        dispatch(loadCarriersRequestAction(carriers.data.results));
+        dispatch(isLoadingRequestAction(false));
       }))
       .catch((err: AxiosError) => {
-        dispatch(isLoadingAction(false));
+        dispatch(isLoadingRequestAction(false));
         api.errorHandler(err);
       });
   };
@@ -230,7 +230,7 @@ export function getRequestsThunkAction(nextPage: number, orderBy: string, orderT
 export function getRequestThunkAction(id: string) {
   return (dispatch: Dispatch<RequestsReduxActions>) => {
     const api: ApiService = new ApiService();
-    dispatch(isLoadingAction(true));
+    dispatch(isLoadingRequestAction(true));
     dispatch(cancelRequestAction(api.getSource()));
     Axios
       .all([
@@ -242,13 +242,13 @@ export function getRequestThunkAction(id: string) {
       .then(Axios.spread((request, reasons, requestItemStatus, carriers) => {
         const { data } = request;
         dispatch(loadRequestAction(data));
-        dispatch(loadReasonsAction(reasons.data.results));
-        dispatch(loadRequestItemsStatusAction(requestItemStatus.data.results, requestItemStatus.data.min, requestItemStatus.data.max));
-        dispatch(loadCarriersAction(carriers.data.results));
-        dispatch(isLoadingAction(false));
+        dispatch(loadReasonsRequestAction(reasons.data.results));
+        dispatch(loadRequestItemsStatusRequestAction(requestItemStatus.data.results, requestItemStatus.data.min, requestItemStatus.data.max));
+        dispatch(loadCarriersRequestAction(carriers.data.results));
+        dispatch(isLoadingRequestAction(false));
       }))
       .catch((err: AxiosError) => {
-        dispatch(isLoadingAction(false));
+        dispatch(isLoadingRequestAction(false));
         api.errorHandler(err);
       });
   };

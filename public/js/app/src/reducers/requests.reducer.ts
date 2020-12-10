@@ -22,6 +22,7 @@ import {
 
 const initialState: IRequestsState = {
   requests: [],
+  requestItems: [],
   reasons: [],
   carriers: [],
   requestOpen: [],
@@ -31,8 +32,10 @@ const initialState: IRequestsState = {
   request: {},
   loading: true,
   source: null,
-  orderBy: '_id',
-  orderType: 'descending',
+  options:{
+    orderBy: '_id',
+    orderType: 'descending'
+  },
   pagination: {
     count: 0,
     page: 1,
@@ -72,8 +75,10 @@ export function requestsReducers(state = initialState, action: RequestsReduxActi
     case REQUEST_CHANGE_ORDER:
       return {
         ...state,
-        orderBy: action.payload.orderBy,
-        orderType: action.payload.orderType
+        options: {
+          orderBy: action.payload.orderBy,
+          orderType: action.payload.orderType
+        }
       };
     case REQUEST_LOAD_REQUEST_ITEM_STATUS:
       return {

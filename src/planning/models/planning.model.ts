@@ -1,7 +1,7 @@
 import * as mongoose from 'mongoose';
-import {IPlanning} from '../../interfaces/planning.interface';
-import * as mongoosePaginate from 'mongoose-paginate';
 import { PaginateModel } from 'mongoose';
+import * as mongoosePaginate from 'mongoose-paginate';
+import { IPlanning } from '../../interfaces/planning.interface';
 
 export interface IPlanningModel extends IPlanning, mongoose.Document {}
 

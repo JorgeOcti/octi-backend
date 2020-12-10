@@ -186,7 +186,7 @@ class RequestDetailView extends React.Component<IPropsType, IStateType> {
                           <th className="middle" style={{ width: '28px' }} />
                           <th className="middle" style={{ width: '100px' }}>Marca</th>
                           <th className="middle" style={{ width: '150px' }}>Modelo</th>
-                          <th className="middle" style={{ width: '100px' }}>Material</th>
+                          {/* <th className="middle" style={{ width: '100px' }}>Material</th> */}
                           <th className="middle">Color</th>
                           <th className="middle">Estado</th>
                           <th className="middle">VIN</th>
@@ -221,7 +221,7 @@ class RequestDetailView extends React.Component<IPropsType, IStateType> {
                               <tr>
                                 <th>Marca</th>
                                 <th>Modelo</th>
-                                <th>Material</th>
+                                {/* <th>Material</th> */}
                                 <th>Color</th>
                                 <th>Motivo</th>
                                 <th></th>
@@ -295,7 +295,7 @@ class RequestDetailView extends React.Component<IPropsType, IStateType> {
                                     }}
                                   />
                                 </td>
-                                <td>
+                                {/* <td>
                                   <AutocompleteInput
                                     value={car.material}
                                     inputClass={'input-sm'}
@@ -327,7 +327,7 @@ class RequestDetailView extends React.Component<IPropsType, IStateType> {
                                       });
                                     }}
                                   />
-                                </td>
+                                </td> */}
                                 <td>
                                   <input type="text"
                                     className="form-control input-sm"

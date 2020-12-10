@@ -24,6 +24,7 @@ export const REQUEST_CHANGE_ORDER = '/REQUESTS/CHANGE_ORDER';
 
 export interface IRequestsState {
   requests: IRequest[];
+  requestItems: IRequestItem[];
   reasons: IReason[];
   carriers: ICarrier[];
   requestOpen: string[];
@@ -33,8 +34,10 @@ export interface IRequestsState {
   request: Partial<IRequest> | IRequest;
   loading: boolean;
   source: CancelTokenSource | null;
-  orderBy: string;
-  orderType: string;
+  options: {
+    orderBy: string;
+    orderType: string;
+  };
   pagination: {
     count: number;
     page: number;
@@ -49,14 +52,14 @@ export interface ICancelRequest {
   };
 }
 
-export interface IIsLoading {
+export interface IIsLoadingRequest {
   type: typeof REQUEST_IS_LOADING;
   payload: {
     loading: boolean;
   };
 }
 
-export interface ILoadReasons {
+export interface ILoadReasonsRequest {
   type: typeof REQUEST_LOAD_REASONS;
   payload: {
     reasons: IReason[];
@@ -72,7 +75,7 @@ export interface ILoadRequestItemStatus {
   };
 }
 
-export interface ILoadCarriers {
+export interface ILoadCarriersRequest {
   type: typeof REQUEST_LOAD_CARRIERS;
   payload: {
     carriers: ICarrier[];
@@ -165,7 +168,7 @@ export interface IChangeOrderRequest {
 
 export type RequestsReduxActions =
   ICancelRequest |
-  IIsLoading |
+  IIsLoadingRequest |
   ILoadRequest |
   ICreateRequestItemInList |
   IUpdateRequestItemInList |
@@ -176,7 +179,7 @@ export type RequestsReduxActions =
   IDeleteRequestItemInDetail |
   ILoadRequestItemStatus |
   IChangeOrderRequest |
-  ILoadReasons |
-  ILoadCarriers |
+  ILoadReasonsRequest |
+  ILoadCarriersRequest |
   ITabStatusRequest |
   ILoadRequests;

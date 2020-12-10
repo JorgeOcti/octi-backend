@@ -499,13 +499,23 @@ export default class ApiService {
     );
   }
 
-  public getRequests({page, pageSize, orderBy, orderType}:{page: number, orderBy: string, orderType: string, pageSize?: number}): AxiosPromise {
+  public getRequests({ page, pageSize, orderBy, orderType }: { page: number, orderBy: string, orderType: string, pageSize?: number }): AxiosPromise {
     let params = `?page=${page}`;
-    params = pageSize ? `${params}&pageSize=${pageSize}`: params;
-    params = orderBy ? `${params}&orderBy=${orderBy}`: params;
-    params = orderType ? `${params}&orderType=${orderType}`: params;
+    params = pageSize ? `${params}&pageSize=${pageSize}` : params;
+    params = orderBy ? `${params}&orderBy=${orderBy}` : params;
+    params = orderType ? `${params}&orderType=${orderType}` : params;
     return this.instance.get(
       `/api/v1/requests/${params}`
+    );
+  }
+
+  public getRequestItems({ page, pageSize, orderBy, orderType }: { page: number, orderBy: string, orderType: string, pageSize?: number }): AxiosPromise {
+    let params = `?page=${page}`;
+    params = pageSize ? `${params}&pageSize=${pageSize}` : params;
+    params = orderBy ? `${params}&orderBy=${orderBy}` : params;
+    params = orderType ? `${params}&orderType=${orderType}` : params;
+    return this.instance.get(
+      `/api/v1/requests-item/${params}`
     );
   }
 

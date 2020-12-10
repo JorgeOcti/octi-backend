@@ -44,14 +44,13 @@ class RequestListView extends React.Component<IPropsType, IStateType> {
 
   constructor(props: IPropsType) {
     super(props);
-    // this.create = this.create.bind(this);
     this.create = this.create.bind(this);
     this.changeOrder = this.changeOrder.bind(this);
     this.changePage = this.changePage.bind(this);
   }
 
   public componentWillMount(): void {
-    const { orderBy, orderType } = this.props.requests;
+    const {orderBy, orderType} = this.props.requests.options;
     document.title = 'OSA Andes | Solicitudes';
     window.scrollTo(0, 0);
 
@@ -136,9 +135,9 @@ class RequestListView extends React.Component<IPropsType, IStateType> {
 
   public render(): React.ReactElement<IPropsType> {
     const {
-      pagination, loading, requests, reasons, requestItemStatus, carriers,
-      orderBy, orderType
+      pagination, loading, requests, reasons, requestItemStatus, carriers
     } = this.props.requests;
+    const {orderBy, orderType} = this.props.requests.options;
     return (
       <AppContainer title="" cMenu="3" cSubMenu="3.1">
         <section className="content">
@@ -213,7 +212,7 @@ class RequestListView extends React.Component<IPropsType, IStateType> {
 
   private changeOrder(key: string){
     const {page} = this.props.requests.pagination;
-    const {orderBy, orderType} = this.props.requests;
+    const {orderBy, orderType} = this.props.requests.options;
     let newOrderType = orderType;
     let newOrderBy = orderBy;
     if (key === orderBy) {
@@ -229,8 +228,7 @@ class RequestListView extends React.Component<IPropsType, IStateType> {
   }
 
   private changePage(page: number): void {
-    const {orderBy, orderType} = this.props.requests;
-
+    const {orderBy, orderType} = this.props.requests.options;
     this.props.getRequestsThunkAction(page, orderBy, orderType);
   }
 }
