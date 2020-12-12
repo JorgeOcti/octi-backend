@@ -300,17 +300,6 @@ class InventoryController {
     const {page, pageSize} = req.query as { page: string, pageSize: string };
     const venuesPermissions = req.user.venuesPermissions();
     try {
-      // fix Manuel Aravena DERCO
-      const specialFilter = req.user._id.toString() === '5b636fd9a50daf3030c00e2e' ? {
-        $or: [{
-          'cars.car': {
-            $in: (await Car.find({team, type: 'USC'}, {_id: true}).lean() as Array<{ _id: string }>).map((car) => car._id)
-          }
-        }, {
-          'cars.inventoriedBy': mongoose.Types.ObjectId('5b636fd9a50daf3030c00e2e')
-        }]
-      } : {};
-
       // paginate options
       const options: PaginateOptions = {
         select: {
@@ -365,8 +354,7 @@ class InventoryController {
                  ChoicesStatusCarInventory.leftover,
                  ChoicesStatusCarInventory.reported
                ]
-             },
-             ...specialFilter
+             }
            }
          }, {
            $group: {
@@ -1350,25 +1338,6 @@ class InventoryController {
     const {team} = req.user;
     const venuesPermissions = req.user.venuesPermissions();
     try {
-      // fix Manuel Aravena DERCO
-      const specialFilter = req.user._id.toString() === '5b636fd9a50daf3030c00e2e' ? {
-        $or: [{
-          'cars.car': {
-            $in: (await Car.find({team, type: 'USC'}, {_id: true}).lean() as Array<{ _id: string }>).map((car) => car._id)
-          }
-        }, {
-          'cars.inventoriedBy': mongoose.Types.ObjectId('5b636fd9a50daf3030c00e2e')
-        }]
-      } : {};
-      const specialFilterDetail = req.user._id.toString() === '5b636fd9a50daf3030c00e2e' ? {
-        $or: [{
-          car: {
-            $in: (await Car.find({team, type: 'USC'}, {_id: true}).lean() as Array<{ _id: string }>).map((car) => car._id)
-          }
-        }, {
-          inventoriedBy: mongoose.Types.ObjectId('5b636fd9a50daf3030c00e2e')
-        }]
-      } : {};
       // summary
       const inventory = await InventoryModel.aggregate([
         {
@@ -1406,8 +1375,7 @@ class InventoryController {
                 ChoicesStatusCarInventory.leftover,
                 ChoicesStatusCarInventory.reported
               ]
-            },
-            ...specialFilter
+            }
           }
         }, {
           $group: {
@@ -1512,8 +1480,7 @@ class InventoryController {
                 ChoicesStatusCarInventory.leftover,
                 ChoicesStatusCarInventory.reported
               ]
-            },
-            ...specialFilter
+            }
           }
         }, {
           $group: {
@@ -1595,8 +1562,7 @@ class InventoryController {
                 ChoicesStatusCarInventory.leftover,
                 ChoicesStatusCarInventory.reported
               ]
-            },
-            ...specialFilter
+            }
           }
         }, {
           $lookup: {
@@ -1717,8 +1683,7 @@ class InventoryController {
                 ChoicesStatusCarInventory.leftover,
                 ChoicesStatusCarInventory.reported
               ]
-            },
-            ...specialFilterDetail
+            }
           },
           populate: [{
             path: 'car',
