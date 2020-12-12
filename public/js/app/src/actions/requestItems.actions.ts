@@ -1,5 +1,6 @@
-import Axios, { AxiosError, CancelTokenSource } from 'axios';
+import Axios, { AxiosError, AxiosResponse, CancelTokenSource } from 'axios';
 import { Dispatch } from 'redux';
+import { debounce } from 'throttle-debounce';
 import { ICarrier } from '../../../../../src/interfaces/carrier.interface';
 import { IReason } from '../../../../../src/interfaces/reason.interface';
 import { IRequestItem } from '../../../../../src/interfaces/requestItem.interface';
@@ -120,5 +121,26 @@ export function getRequestItemsThunkAction(nextPage: number, orderBy: string, or
         dispatch(isLoadingRequestItemsAction(false));
         api.errorHandler(err);
       });
+  };
+}
+
+
+const debounceUpdateRequestItem = debounce(500, (item) => {
+  const api: ApiService = new ApiService();
+  api.updateRequestItem(item._id, item)
+    // tslint:disable-next-line: no-empty
+    .then((response: AxiosResponse) => { });
+});
+export function updateRequestItemsThunkAction({ item, debounce }: { item: IRequestItem, debounce?: boolean}) {
+  return (dispatch: Dispatch<RequestItemsReduxActions>) => {
+    // dispatch(updateRequestItemActionInDetail(item));
+    if (debounce) {
+      debounceUpdateRequestItem(item);
+    } else {
+      const api: ApiService = new ApiService();
+      api.updateRequestItem(item._id, item)
+        // tslint:disable-next-line: no-empty
+        .then((response: AxiosResponse) => { });
+    }
   };
 }

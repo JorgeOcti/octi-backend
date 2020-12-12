@@ -5,18 +5,10 @@ import * as React from 'react';
 import { ErrorInfo } from 'react';
 import { connect } from 'react-redux';
 import { RouteComponentProps } from 'react-router-dom';
-import * as swal from 'sweetalert';
 import { debounce } from 'throttle-debounce';
 import { ICar } from '../../../../../../../src/interfaces/car.interface';
-import { IRequest } from '../../../../../../../src/interfaces/request.interface';
 import { IRequestItem } from '../../../../../../../src/interfaces/requestItem.interface';
 import { IRequestItemsState } from '../../../actions/requestItems.types';
-import {
-  deleteRequestItemThunkAction,
-  deleteRequestThunkAction,
-  updateRequestItemInDetailThunkAction
-} from '../../../actions/requests.actions';
-import { IRequestsState } from '../../../actions/requests.types';
 import { IWindow } from '../../../interfaces/window';
 import ApiService from '../../../utils/axios';
 import AutocompleteInput from '../../Utils/AutocompleteInput';
@@ -76,9 +68,9 @@ class RequestVehicleItem extends React.Component<IPropsType, IStateType> {
             // });
           }}
         >
-          {item.priority ? <i className="fa fa-star text-yellow" /> : <i className="fa fa-star text-muted" />}
+          {item.priority ? <i className="fa fa-star text-yellow" /> : <i className="fa fa-star text-gray" />}
         </td>
-        <td className="middle">{item.request?.number}</td>
+        <td className="middle"><strong className="text-underline">#{this.padNumber(item.request?.number)}</strong></td>
         {/* <td className="middle">{item.car.brand}</td> */}
         <td className="middle">
           <AutocompleteInput
@@ -103,7 +95,7 @@ class RequestVehicleItem extends React.Component<IPropsType, IStateType> {
               //   },
               //   debounce: true
               // });
-              this.search(value, 'recommends');
+              this.search(value);
             }}
             onSelect={(car: any) => {
               // this.props.updateRequestItemInDetailThunkAction({
@@ -145,7 +137,7 @@ class RequestVehicleItem extends React.Component<IPropsType, IStateType> {
               //   },
               //   debounce: true
               // });
-              this.search(value, 'recommends');
+              this.search(value);
             }}
             onSelect={(car: any) => {
               // this.props.updateRequestItemInDetailThunkAction({
@@ -386,7 +378,7 @@ class RequestVehicleItem extends React.Component<IPropsType, IStateType> {
     );
   }
 
-  private search(text: string, base: 'recommends'): void {
+  private search(text: string): void {
     this.api
       .searchCar(text)
       .then((response: AxiosResponse): void => {
@@ -400,7 +392,7 @@ class RequestVehicleItem extends React.Component<IPropsType, IStateType> {
   }
 
   private deleteRequestItem(item: IRequestItem) {
-    const {requestItems} = this.props;
+    const { requestItems } = this.props;
     // if (request.items.length > 1) {
     //   swal({
     //     title: '¿Estás seguro?',
@@ -437,7 +429,13 @@ class RequestVehicleItem extends React.Component<IPropsType, IStateType> {
     //   });
     // }
   }
+
+  private padNumber(n: number): string {
+    const s = '000' + n;
+    return s.substr(s.length - 4);
+  }
 }
+
 
 const mapStateToProps = (state: { requestItems: IRequestItemsState }) => {
   return {
@@ -447,7 +445,7 @@ const mapStateToProps = (state: { requestItems: IRequestItemsState }) => {
 
 const mapDispatchToProps = (dispatch: any) => {
   return {
-    dispatch,
+    dispatch
     // updateRequestItemInDetailThunkAction: ({ item, debounce }: { item: IRequestItem, debounce?: boolean }) => dispatch(updateRequestItemInDetailThunkAction({ item, debounce })),
     // deleteRequestItemThunkAction: (item: IRequestItem) => dispatch(deleteRequestItemThunkAction(item)),
     // deleteRequestThunkAction: (idRequest: string) => dispatch(deleteRequestThunkAction(idRequest))

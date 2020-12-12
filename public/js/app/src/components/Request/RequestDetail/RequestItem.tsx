@@ -104,7 +104,7 @@ class RequestItem extends React.Component<IPropsType, IStateType> {
                 },
                 debounce: true
               });
-              this.search(value, 'recommends');
+              this.search(value);
             }}
             onSelect={(car: any) => {
               this.props.updateRequestItemInDetailThunkAction({
@@ -146,7 +146,7 @@ class RequestItem extends React.Component<IPropsType, IStateType> {
                 },
                 debounce: true
               });
-              this.search(value, 'recommends');
+              this.search(value);
             }}
             onSelect={(car: any) => {
               this.props.updateRequestItemInDetailThunkAction({
@@ -429,7 +429,7 @@ class RequestItem extends React.Component<IPropsType, IStateType> {
     );
   }
 
-  private search(text: string, base: 'recommends'): void {
+  private search(text: string): void {
     this.api
       .searchCar(text)
       .then((response: AxiosResponse): void => {

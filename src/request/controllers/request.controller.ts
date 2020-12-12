@@ -230,7 +230,7 @@ class RequestController {
         res.json({
           count: requests.total,
           pages: requests.pages,
-          hasPrevious: requests.hasPrevious,               
+          hasPrevious: requests.hasPrevious,
           hasNext: requests.hasNext,
           results: requests.docs,
           status: 200

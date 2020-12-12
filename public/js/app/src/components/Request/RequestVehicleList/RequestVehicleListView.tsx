@@ -115,41 +115,44 @@ class RequestVehicleListView extends React.Component<IPropsType, IStateType> {
               </div>
             </div>
             <div className="box-body no-padding table-responsive">
-              <table className="table table-xs table-hover" style={{marginTop: '15px'}}>
+              <table className="table table-xs table-hover" style={{marginTop: '15px', minWidth: '1000px'}}>
                 <thead>
-                  <tr className="bg-primary">
+                  <tr className="bg-primary" style={{ height: '45px' }}>
                     <th className="middle" style={{ width: '28px' }} />
                     <th
-                      className="middle"
+                      className="middle pointer"
                       style={{ width: '80px' }}
                     >
                       Solicitud
                       <span style={{float: 'right'}}><i className={`fa fa-fw ${orderBy === 'request' ? `${orderType === 'descending' ? 'fa-sort-down' : 'fa-sort-up'}` : 'fa-sort'}`} /></span>
                     </th>
-                    <th className="middle" style={{ width: '100px' }}>
+                    <th className="middle pointer" style={{ width: '100px' }}>
                       Marca
                       <span style={{float: 'right'}}><i className={`fa fa-fw ${orderBy === 'request' ? `${orderType === 'descending' ? 'fa-sort-down' : 'fa-sort-up'}` : 'fa-sort'}`} /></span>
                     </th>
-                    <th className="middle" style={{ width: '150px' }}>
+                    <th className="middle pointer" style={{ width: '150px' }}>
                       Modelo
                       <span style={{float: 'right'}}><i className={`fa fa-fw ${orderBy === 'request' ? `${orderType === 'descending' ? 'fa-sort-down' : 'fa-sort-up'}` : 'fa-sort'}`} /></span>
                     </th>
                     <th className="middle">Color</th>
-                    <th className="middle">Estado</th>
+                    <th className="middle pointer">
+                      Estado
+                      <span style={{float: 'right'}}><i className={`fa fa-fw ${orderBy === 'request' ? `${orderType === 'descending' ? 'fa-sort-down' : 'fa-sort-up'}` : 'fa-sort'}`} /></span>
+                    </th>
                     <th className="middle">VIN</th>
                     <th className="middle">CDO</th>
-                    <th className="middle" style={{ width: '100px' }}>
+                    <th className="middle pointer" style={{ width: '100px' }}>
                       Motivo
                       <span style={{float: 'right'}}><i className={`fa fa-fw ${orderBy === 'request' ? `${orderType === 'descending' ? 'fa-sort-down' : 'fa-sort-up'}` : 'fa-sort'}`} /></span>
                     </th>
                     <th className="middle">Carrocería</th>
                     <th className="middle">Pre-Entrega</th>
                     <th className="middle">Transporte</th>
-                    <th style={{ width: '80px' }}>
+                    <th className="middle pointer" style={{ width: '80px' }}>
                       F. carga
                       <span style={{float: 'right'}}><i className={`fa fa-fw ${orderBy === 'request' ? `${orderType === 'descending' ? 'fa-sort-down' : 'fa-sort-up'}` : 'fa-sort'}`} /></span>
                     </th>
-                    <th style={{ width: '80px' }}>
+                    <th className="middle pointer" style={{ width: '80px' }}>
                       F. llegada
                       <span style={{float: 'right'}}><i className={`fa fa-fw ${orderBy === 'request' ? `${orderType === 'descending' ? 'fa-sort-down' : 'fa-sort-up'}` : 'fa-sort'}`} /></span>
                     </th>
