@@ -139,7 +139,7 @@ class RequestController {
 
   public async apiListItems(req: IRequest, res: Response) {
     const { team } = req.user;
-    const { page, pageSize } = req.query as { page: string; pageSize: string; search: string; orderBy: string; orderType: string };
+    const { page, pageSize, orderBy, orderType } = req.query as { page: string; pageSize: string; search: string; orderBy: string; orderType: string };
     try {
       const requestsAggregate = RequestItem.aggregate([{
         $match: {
@@ -211,8 +211,7 @@ class RequestController {
           'updatedAt': 1
         }
       }, {
-        // $sort: { 'origin.name': 1 }
-        $sort: { 'car.updateAt': -1 }
+        $sort: { [orderBy]: orderType === 'ascending' ? 1 : -1 }
       }]);
       const options = {
         page: parseInt(page ? page : '1', 10),

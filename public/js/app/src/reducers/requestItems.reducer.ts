@@ -3,11 +3,13 @@ import {
   RequestItemsReduxActions,
   REQUEST_ITEMS_CANCEL_REQUEST,
   REQUEST_ITEMS_CHANGE_ORDER,
+  REQUEST_ITEMS_DELETE_ITEM,
   REQUEST_ITEMS_IS_LOADING,
   REQUEST_ITEMS_LOAD_CARRIERS,
   REQUEST_ITEMS_LOAD_ITEM_STATUS,
   REQUEST_ITEMS_LOAD_REASONS,
-  REQUEST_ITEMS_LOAD_REQUESTS_ITEMS
+  REQUEST_ITEMS_LOAD_REQUESTS_ITEMS,
+  REQUEST_ITEMS_UPDATE_ITEM
 } from '../actions/requestItems.types';
 
 const initialState: IRequestItemsState = {
@@ -20,7 +22,7 @@ const initialState: IRequestItemsState = {
   loading: true,
   source: null,
   options: {
-    orderBy: '_id',
+    orderBy: 'request.number',
     orderType: 'descending'
   },
   pagination: {
@@ -77,6 +79,26 @@ export function requestItemsReducers(state = initialState, action: RequestItemsR
           page: action.payload.page,
           count: action.payload.count
         }
+      };
+    case REQUEST_ITEMS_UPDATE_ITEM:
+      return {
+        ...state,
+        requestItems: [...state.requestItems.map((item) => {
+          if (item._id === action.payload.item._id) {
+            return {
+              item,
+              ...action.payload.item
+            };
+          }
+          return item;
+        })]
+      };
+    case REQUEST_ITEMS_DELETE_ITEM:
+      return {
+        ...state,
+        requestItems: [...state.requestItems.filter((item) => {
+          return item._id !== action.payload.item._id;
+        })]
       };
     default:
       return state;

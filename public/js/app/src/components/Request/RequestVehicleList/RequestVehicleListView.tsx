@@ -1,7 +1,9 @@
 import * as React from 'react';
+import { Dispatch } from 'react';
 import { connect } from 'react-redux';
 import { RouteComponentProps } from 'react-router';
-import { getRequestItemsThunkAction } from '../../../actions/requestItems.actions';
+import { IRequestItem } from '../../../../../../../src/interfaces/requestItem.interface';
+import { deleteRequestItemAction, getRequestItemsThunkAction, updateRequestItemAction } from '../../../actions/requestItems.actions';
 import { IRequestItemsState } from '../../../actions/requestItems.types';
 import AppContainer from '../../../container/AppContainer';
 import { IWindow } from '../../../interfaces/window';
@@ -11,10 +13,10 @@ import RequestVehicleItem from './RequestVehicleItem';
 
 interface IPropsType extends RouteComponentProps<{ ticket: string }> {
   requestItems: IRequestItemsState;
-  // dispatch: Dispatch<IRequestsState>;
-  // updateRequestItemActionInList: (idRequest: string, item: IRequestItem) => void;
+  dispatch: Dispatch<IRequestItemsState>;
+  updateRequestItemAction: (item: IRequestItem) => void;
   getRequestItemsThunkAction: (page: number, orderBy: string, orderType: string) => void;
-  // deleteRequestItemActionInList: (idRequest: string, item: IRequestItem) => void;
+  deleteRequestItemAction: (item: IRequestItem) => void;
   // deleteRequestActionInList: (id: string) => void;
   // createRequestItemActionInList: (idRequest: string, item: IRequestItem) => void;
 }
@@ -31,6 +33,7 @@ class RequestVehicleListView extends React.Component<IPropsType, IStateType> {
   constructor(props: IPropsType) {
     super(props);
     this.changePage = this.changePage.bind(this);
+    this.changeOrder = this.changeOrder.bind(this);
   }
 
   public componentWillMount(): void {
@@ -55,24 +58,26 @@ class RequestVehicleListView extends React.Component<IPropsType, IStateType> {
     });
 
     this.socket.on('UPDATE_REQUEST_ITEM', (data: any): void => {
-      // this.props.updateRequestItemActionInList(data.idRequest, data.item);
-      // const $item = $(`#request-item-${data.item._id}`);
-      // if ($item) {
-      //   $item.addClass('bg-aqua-active');
-      //   setTimeout(() => {
-      //     $item.removeClass('bg-aqua-active');
-      //   }, 300);
-      // }
+      this.props.updateRequestItemAction(data.item);
+      const $item = $(`#request-item-${data.item._id}`);
+      if ($item) {
+        $item.addClass('bg-aqua-active');
+        setTimeout(() => {
+          $item.removeClass('bg-aqua-active');
+        }, 300);
+      }
     });
 
     this.socket.on('DELETE_REQUEST_ITEM', (data: any): void => {
-      // const $item = $(`#request-item-${data.item._id}`);
-      // if ($item) {
-      //   $item.addClass('bg-red-active');
-      // }
-      // setTimeout(() => {
-      //   this.props.deleteRequestItemActionInList(data.idRequest, data.item);
-      // }, 300);
+      console.log(`#request-item-${data.item._id}`);
+      const $item = $(`#request-item-${data.item._id}`);
+      if ($item) {
+        $item.addClass('bg-red-active');
+      }
+      setTimeout(() => {
+        this.props.deleteRequestItemAction(data.item);
+        // $item.removeClass('bg-red-active');
+      }, 300);
     });
 
     this.socket.on('DELETE_REQUEST', (data: any): void => {
@@ -122,39 +127,77 @@ class RequestVehicleListView extends React.Component<IPropsType, IStateType> {
                     <th
                       className="middle pointer"
                       style={{ width: '80px' }}
+                      onClick={() => this.changeOrder('request.number')}
                     >
                       Solicitud
-                      <span style={{float: 'right'}}><i className={`fa fa-fw ${orderBy === 'request' ? `${orderType === 'descending' ? 'fa-sort-down' : 'fa-sort-up'}` : 'fa-sort'}`} /></span>
+                      <span style={{float: 'right'}}><i className={`fa fa-fw ${orderBy === 'request.number' ? `${orderType === 'descending' ? 'fa-sort-down' : 'fa-sort-up'}` : 'fa-sort'}`} /></span>
                     </th>
-                    <th className="middle pointer" style={{ width: '100px' }}>
+                    <th
+                      className="middle pointer"
+                      style={{ width: '80px' }}
+                      onClick={() => this.changeOrder('destination.name')}
+                    >
+                      Destino
+                      <span style={{float: 'right'}}><i className={`fa fa-fw ${orderBy === 'destination.name' ? `${orderType === 'descending' ? 'fa-sort-down' : 'fa-sort-up'}` : 'fa-sort'}`} /></span>
+                    </th>
+                    <th
+                      className="middle pointer"
+                      style={{ width: '100px' }}
+                      onClick={() => this.changeOrder('car.brand')}
+                    >
                       Marca
-                      <span style={{float: 'right'}}><i className={`fa fa-fw ${orderBy === 'request' ? `${orderType === 'descending' ? 'fa-sort-down' : 'fa-sort-up'}` : 'fa-sort'}`} /></span>
+                      <span style={{float: 'right'}}><i className={`fa fa-fw ${orderBy === 'car.brand' ? `${orderType === 'descending' ? 'fa-sort-down' : 'fa-sort-up'}` : 'fa-sort'}`} /></span>
                     </th>
-                    <th className="middle pointer" style={{ width: '150px' }}>
+                    <th
+                      className="middle pointer"
+                      style={{ width: '150px' }}
+                      onClick={() => this.changeOrder('car.description')}
+                    >
                       Modelo
-                      <span style={{float: 'right'}}><i className={`fa fa-fw ${orderBy === 'request' ? `${orderType === 'descending' ? 'fa-sort-down' : 'fa-sort-up'}` : 'fa-sort'}`} /></span>
+                      <span style={{float: 'right'}}><i className={`fa fa-fw ${orderBy === 'car.description' ? `${orderType === 'descending' ? 'fa-sort-down' : 'fa-sort-up'}` : 'fa-sort'}`} /></span>
                     </th>
                     <th className="middle">Color</th>
-                    <th className="middle pointer">
+                    <th
+                      className="middle pointer"
+                      onClick={() => this.changeOrder('status.name')}
+                    >
                       Estado
-                      <span style={{float: 'right'}}><i className={`fa fa-fw ${orderBy === 'request' ? `${orderType === 'descending' ? 'fa-sort-down' : 'fa-sort-up'}` : 'fa-sort'}`} /></span>
+                      <span style={{float: 'right'}}><i className={`fa fa-fw ${orderBy === 'status.name' ? `${orderType === 'descending' ? 'fa-sort-down' : 'fa-sort-up'}` : 'fa-sort'}`} /></span>
                     </th>
                     <th className="middle">VIN</th>
                     <th className="middle">CDO</th>
-                    <th className="middle pointer" style={{ width: '100px' }}>
+                    <th
+                      className="middle pointer"
+                      style={{ width: '100px' }}
+                      onClick={() => this.changeOrder('reason.name')}
+                    >
                       Motivo
-                      <span style={{float: 'right'}}><i className={`fa fa-fw ${orderBy === 'request' ? `${orderType === 'descending' ? 'fa-sort-down' : 'fa-sort-up'}` : 'fa-sort'}`} /></span>
+                      <span style={{float: 'right'}}><i className={`fa fa-fw ${orderBy === 'reason.name' ? `${orderType === 'descending' ? 'fa-sort-down' : 'fa-sort-up'}` : 'fa-sort'}`} /></span>
                     </th>
                     <th className="middle">Carrocería</th>
                     <th className="middle">Pre-Entrega</th>
-                    <th className="middle">Transporte</th>
-                    <th className="middle pointer" style={{ width: '80px' }}>
-                      F. carga
-                      <span style={{float: 'right'}}><i className={`fa fa-fw ${orderBy === 'request' ? `${orderType === 'descending' ? 'fa-sort-down' : 'fa-sort-up'}` : 'fa-sort'}`} /></span>
+                    <th
+                      className="middle pointer"
+                      onClick={() => this.changeOrder('carrier.name')}
+                    >
+                      Transporte
+                      <span style={{float: 'right'}}><i className={`fa fa-fw ${orderBy === 'carrier.name' ? `${orderType === 'descending' ? 'fa-sort-down' : 'fa-sort-up'}` : 'fa-sort'}`} /></span>
                     </th>
-                    <th className="middle pointer" style={{ width: '80px' }}>
+                    <th
+                      className="middle pointer"
+                      style={{ width: '80px' }}
+                      onClick={() => this.changeOrder('uploadDate')}
+                    >
+                      F. carga
+                      <span style={{float: 'right'}}><i className={`fa fa-fw ${orderBy === 'uploadDate' ? `${orderType === 'descending' ? 'fa-sort-down' : 'fa-sort-up'}` : 'fa-sort'}`} /></span>
+                    </th>
+                    <th
+                      className="middle pointer"
+                      style={{ width: '80px' }}
+                      onClick={() => this.changeOrder('estimatedArrival')}
+                    >
                       F. llegada
-                      <span style={{float: 'right'}}><i className={`fa fa-fw ${orderBy === 'request' ? `${orderType === 'descending' ? 'fa-sort-down' : 'fa-sort-up'}` : 'fa-sort'}`} /></span>
+                      <span style={{float: 'right'}}><i className={`fa fa-fw ${orderBy === 'estimatedArrival' ? `${orderType === 'descending' ? 'fa-sort-down' : 'fa-sort-up'}` : 'fa-sort'}`} /></span>
                     </th>
                     <th className="middle" style={{ width: '30px' }} />
                   </tr>
@@ -193,6 +236,19 @@ class RequestVehicleListView extends React.Component<IPropsType, IStateType> {
     );
   }
 
+  private changeOrder(key: string){
+    const {page} = this.props.requestItems.pagination;
+    const {orderBy, orderType} = this.props.requestItems.options;
+    let newOrderType = orderType;
+    let newOrderBy = orderBy;
+    if (key === orderBy) {
+      newOrderType = orderType === 'descending' ? 'ascending' : 'descending';
+    } else {
+      newOrderBy = key;
+    }
+    this.props.getRequestItemsThunkAction(page, newOrderBy, newOrderType);
+  }
+
   private changePage(page: number): void {
     const {orderBy, orderType} = this.props.requestItems.options;
     this.props.getRequestItemsThunkAction(page, orderBy, orderType);
@@ -210,8 +266,8 @@ const mapDispatchToProps = (dispatch: any) => {
     dispatch,
     getRequestItemsThunkAction: (page: number, orderBy: string, orderType: string) => dispatch(getRequestItemsThunkAction(page, orderBy, orderType)),
     // createRequestItemActionInList: (idRequest: string, item: IRequestItem) => dispatch(createRequestItemActionInList(idRequest, item)),
-    // updateRequestItemActionInList: (idRequest: string, item: IRequestItem) => dispatch(updateRequestItemActionInList(idRequest, item)),
-    // deleteRequestItemActionInList: (idRequest: string, item: IRequestItem) => dispatch(deleteRequestItemActionInList(idRequest, item)),
+    updateRequestItemAction: (item: IRequestItem) => dispatch(updateRequestItemAction(item)),
+    deleteRequestItemAction: (item: IRequestItem) => dispatch(deleteRequestItemAction(item)),
     // deleteRequestActionInList: (id: string) => dispatch(deleteRequestActionInList(id))
   };
 };

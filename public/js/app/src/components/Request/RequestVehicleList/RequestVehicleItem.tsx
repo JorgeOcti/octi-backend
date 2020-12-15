@@ -1,4 +1,3 @@
-
 import { AxiosError, AxiosResponse } from 'axios';
 import * as Raven from 'raven-js';
 import * as React from 'react';
@@ -8,6 +7,7 @@ import { RouteComponentProps } from 'react-router-dom';
 import { debounce } from 'throttle-debounce';
 import { ICar } from '../../../../../../../src/interfaces/car.interface';
 import { IRequestItem } from '../../../../../../../src/interfaces/requestItem.interface';
+import { updateRequestItemsThunkAction } from '../../../actions/requestItems.actions';
 import { IRequestItemsState } from '../../../actions/requestItems.types';
 import { IWindow } from '../../../interfaces/window';
 import ApiService from '../../../utils/axios';
@@ -17,7 +17,7 @@ import DateRangePicker from '../../Utils/DateRangePicker';
 interface IPropsType extends RouteComponentProps<{ id: string }> {
   requestItems: IRequestItemsState;
   item: IRequestItem;
-  // updateRequestItemInDetailThunkAction: ({ item, debounce }: { item: IRequestItem, debounce?: boolean }) => void;
+  updateRequestItemsThunkAction: ({ item, debounce }: { item: IRequestItem, debounce?: boolean }) => void;
   // deleteRequestItemThunkAction: (item: IRequestItem) => void;
   // deleteRequestThunkAction: (idRequest: string) => void;
 }
@@ -59,18 +59,19 @@ class RequestVehicleItem extends React.Component<IPropsType, IStateType> {
         <td
           className="middle-center pointer"
           onClick={() => {
-            // this.props.updateRequestItemInDetailThunkAction({
-            //   item: {
-            //     ...item,
-            //     priority: !item.priority
-            //   },
-            //   debounce: false
-            // });
+            this.props.updateRequestItemsThunkAction({
+              item: {
+                ...item,
+                priority: !item.priority
+              },
+              debounce: false
+            });
           }}
         >
           {item.priority ? <i className="fa fa-star text-yellow" /> : <i className="fa fa-star text-gray" />}
         </td>
         <td className="middle"><strong className="text-underline">#{this.padNumber(item.request?.number)}</strong></td>
+        <td className="middle">{item.destination.name}</td>
         {/* <td className="middle">{item.car.brand}</td> */}
         <td className="middle">
           <AutocompleteInput
@@ -85,31 +86,31 @@ class RequestVehicleItem extends React.Component<IPropsType, IStateType> {
             )}
             onChange={(e) => {
               const { value } = e.target;
-              // this.props.updateRequestItemInDetailThunkAction({
-              //   item: {
-              //     ...item,
-              //     car: {
-              //       ...item.car,
-              //       brand: value
-              //     }
-              //   },
-              //   debounce: true
-              // });
+              this.props.updateRequestItemsThunkAction({
+                item: {
+                  ...item,
+                  car: {
+                    ...item.car,
+                    brand: value
+                  }
+                },
+                debounce: true
+              });
               this.search(value);
             }}
             onSelect={(car: any) => {
-              // this.props.updateRequestItemInDetailThunkAction({
-              //   item: {
-              //     ...item,
-              //     car: {
-              //       ...item.car,
-              //       brand: car.brand,
-              //       denomination: car.denomination,
-              //       material: car.material ?? ''
-              //     }
-              //   },
-              //   debounce: false
-              // });
+              this.props.updateRequestItemsThunkAction({
+                item: {
+                  ...item,
+                  car: {
+                    ...item.car,
+                    brand: car.brand,
+                    denomination: car.denomination,
+                    material: car.material ?? ''
+                  }
+                },
+                debounce: false
+              });
             }}
           />
         </td>
@@ -127,31 +128,31 @@ class RequestVehicleItem extends React.Component<IPropsType, IStateType> {
             )}
             onChange={(e) => {
               const { value } = e.target;
-              // this.props.updateRequestItemInDetailThunkAction({
-              //   item: {
-              //     ...item,
-              //     car: {
-              //       ...item.car,
-              //       denomination: value
-              //     }
-              //   },
-              //   debounce: true
-              // });
+              this.props.updateRequestItemsThunkAction({
+                item: {
+                  ...item,
+                  car: {
+                    ...item.car,
+                    denomination: value
+                  }
+                },
+                debounce: true
+              });
               this.search(value);
             }}
             onSelect={(car: any) => {
-              // this.props.updateRequestItemInDetailThunkAction({
-              //   item: {
-              //     ...item,
-              //     car: {
-              //       ...item.car,
-              //       brand: car.brand,
-              //       denomination: car.denomination,
-              //       material: car.material ?? ''
-              //     }
-              //   },
-              //   debounce: false
-              // });
+              this.props.updateRequestItemsThunkAction({
+                item: {
+                  ...item,
+                  car: {
+                    ...item.car,
+                    brand: car.brand,
+                    denomination: car.denomination,
+                    material: car.material ?? ''
+                  }
+                },
+                debounce: false
+              });
             }}
           />
         </td>
@@ -162,16 +163,16 @@ class RequestVehicleItem extends React.Component<IPropsType, IStateType> {
             defaultValue={item.car.color}
             style={{ width: '80px' }}
             onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
-              // this.props.updateRequestItemInDetailThunkAction({
-              //   item: {
-              //     ...item,
-              //     car: {
-              //       ...item.car,
-              //       color: e.target.value
-              //     }
-              //   },
-              //   debounce: false
-              // });
+              this.props.updateRequestItemsThunkAction({
+                item: {
+                  ...item,
+                  car: {
+                    ...item.car,
+                    color: e.target.value
+                  }
+                },
+                debounce: false
+              });
             }}
           />
         </td>
@@ -179,16 +180,16 @@ class RequestVehicleItem extends React.Component<IPropsType, IStateType> {
         <td className="middle">
           <select className="form-control select-sm font-12" value={item.status?._id ?? ''}
             onChange={(e: React.ChangeEvent<HTMLSelectElement>) => {
-              // this.props.updateRequestItemInDetailThunkAction({
-              //   item: {
-              //     ...item,
-              //     status: {
-              //       ...item.status,
-              //       _id: e.target.value
-              //     }
-              //   },
-              //   debounce: true
-              // });
+              this.props.updateRequestItemsThunkAction({
+                item: {
+                  ...item,
+                  status: {
+                    ...item.status,
+                    _id: e.target.value
+                  }
+                },
+                debounce: false
+              });
             }}
           >
             <option value="" disabled={true}>-</option>
@@ -206,7 +207,6 @@ class RequestVehicleItem extends React.Component<IPropsType, IStateType> {
             type="text"
             style={{ width: '125px' }}
             className="form-control input-sm"
-            defaultValue="12345678901234567"
           />
         </td>
         <td className="middle">
@@ -215,16 +215,16 @@ class RequestVehicleItem extends React.Component<IPropsType, IStateType> {
             style={{ width: '80px' }}
             defaultValue={item.car.internalNumber}
             onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
-              // this.props.updateRequestItemInDetailThunkAction({
-              //   item: {
-              //     ...item,
-              //     car: {
-              //       ...item.car,
-              //       internalNumber: e.target.value
-              //     }
-              //   },
-              //   debounce: false
-              // });
+              this.props.updateRequestItemsThunkAction({
+                item: {
+                  ...item,
+                  car: {
+                    ...item.car,
+                    internalNumber: e.target.value
+                  }
+                },
+                debounce: false
+              });
             }}
           />
         </td>
@@ -233,16 +233,16 @@ class RequestVehicleItem extends React.Component<IPropsType, IStateType> {
           <select
             className="form-control select-sm font-12" value={item.reason?._id ?? ''}
             onChange={(e: React.ChangeEvent<HTMLSelectElement>) => {
-              // this.props.updateRequestItemInDetailThunkAction({
-              //   item: {
-              //     ...item,
-              //     reason: {
-              //       ...item.reason,
-              //       _id: e.target.value
-              //     }
-              //   },
-              //   debounce: false
-              // });
+              this.props.updateRequestItemsThunkAction({
+                item: {
+                  ...item,
+                  reason: {
+                    ...item.reason,
+                    _id: e.target.value
+                  }
+                },
+                debounce: false
+              });
             }}
           >
             <option value="" disabled={true}>-</option>
@@ -258,13 +258,13 @@ class RequestVehicleItem extends React.Component<IPropsType, IStateType> {
             <div
               className={`flex-wrap-item-center ${undefined ?? 'pointer'} ${item.equipment ? '' : 'text-gray'}`}
               onClick={() => {
-                // this.props.updateRequestItemInDetailThunkAction({
-                //   item: {
-                //     ...item,
-                //     equipment: !item.equipment
-                //   },
-                //   debounce: false
-                // });
+                this.props.updateRequestItemsThunkAction({
+                  item: {
+                    ...item,
+                    equipment: !item.equipment
+                  },
+                  debounce: false
+                });
               }}
             >
               <i className="material-icons font-14">library_add</i>
@@ -272,13 +272,13 @@ class RequestVehicleItem extends React.Component<IPropsType, IStateType> {
             <div
               className={`flex-wrap-item-center ${undefined ?? 'pointer'} ${item.body ? '' : 'text-gray'}`}
               onClick={() => {
-                // this.props.updateRequestItemInDetailThunkAction({
-                //   item: {
-                //     ...item,
-                //     body: !item.body
-                //   },
-                //   debounce: false
-                // });
+                this.props.updateRequestItemsThunkAction({
+                  item: {
+                    ...item,
+                    body: !item.body
+                  },
+                  debounce: false
+                });
               }}
             >
               <i className="material-icons font-14">rv_hookup</i>
@@ -290,13 +290,13 @@ class RequestVehicleItem extends React.Component<IPropsType, IStateType> {
             <div
               className={`flex-wrap-item-center ${undefined ?? 'pointer'} ${item.washed ? '' : 'text-gray'}`}
               onClick={() => {
-                // this.props.updateRequestItemInDetailThunkAction({
-                //   item: {
-                //     ...item,
-                //     washed: !item.washed
-                //   },
-                //   debounce: false
-                // });
+                this.props.updateRequestItemsThunkAction({
+                  item: {
+                    ...item,
+                    washed: !item.washed
+                  },
+                  debounce: false
+                });
               }}
             >
               <i className="material-icons font-14">local_car_wash</i>
@@ -304,13 +304,13 @@ class RequestVehicleItem extends React.Component<IPropsType, IStateType> {
             <div
               className={`flex-wrap-item-center ${undefined ?? 'pointer'} ${item.review ? '' : 'text-gray'}`}
               onClick={() => {
-                // this.props.updateRequestItemInDetailThunkAction({
-                //   item: {
-                //     ...item,
-                //     review: !item.review
-                //   },
-                //   debounce: false
-                // });
+                this.props.updateRequestItemsThunkAction({
+                  item: {
+                    ...item,
+                    review: !item.review
+                  },
+                  debounce: false
+                });
               }}
             >
               <i className="material-icons font-14">build</i>
@@ -321,16 +321,16 @@ class RequestVehicleItem extends React.Component<IPropsType, IStateType> {
         <td className="middle">
           <select className="form-control select-sm font-12" value={item.carrier?._id ?? ''}
             onChange={(e: React.ChangeEvent<HTMLSelectElement>) => {
-              // this.props.updateRequestItemInDetailThunkAction({
-              //   item: {
-              //     ...item,
-              //     carrier: !e.target.value.length ? null : {
-              //       ...item.reason,
-              //       _id: e.target.value
-              //     }
-              //   },
-              //   debounce: false
-              // });
+              this.props.updateRequestItemsThunkAction({
+                item: {
+                  ...item,
+                  carrier: !e.target.value.length ? null : {
+                    ...item.reason,
+                    _id: e.target.value
+                  }
+                },
+                debounce: false
+              });
             }}
           >
             <option value="">-</option>
@@ -346,13 +346,13 @@ class RequestVehicleItem extends React.Component<IPropsType, IStateType> {
             className={'input-sm'}
             value={item.uploadDate}
             onChange={(e) => {
-              // this.props.updateRequestItemInDetailThunkAction({
-              //   item: {
-              //     ...item,
-              //     uploadDate: e as any
-              //   },
-              //   debounce: false
-              // });
+              this.props.updateRequestItemsThunkAction({
+                item: {
+                  ...item,
+                  uploadDate: e as any
+                },
+                debounce: false
+              });
             }}
           />
         </td>
@@ -361,13 +361,13 @@ class RequestVehicleItem extends React.Component<IPropsType, IStateType> {
             className={'input-sm'}
             value={item.estimatedArrival}
             onChange={(e) => {
-              // this.props.updateRequestItemInDetailThunkAction({
-              //   item: {
-              //     ...item,
-              //     estimatedArrival: e as any
-              //   },
-              //   debounce: false
-              // });
+              this.props.updateRequestItemsThunkAction({
+                item: {
+                  ...item,
+                  estimatedArrival: e as any
+                },
+                debounce: false
+              });
             }}
           />
         </td>
@@ -445,8 +445,8 @@ const mapStateToProps = (state: { requestItems: IRequestItemsState }) => {
 
 const mapDispatchToProps = (dispatch: any) => {
   return {
-    dispatch
-    // updateRequestItemInDetailThunkAction: ({ item, debounce }: { item: IRequestItem, debounce?: boolean }) => dispatch(updateRequestItemInDetailThunkAction({ item, debounce })),
+    dispatch,
+    updateRequestItemsThunkAction: ({ item, debounce }: { item: IRequestItem, debounce?: boolean }) => dispatch(updateRequestItemsThunkAction({ item, debounce })),
     // deleteRequestItemThunkAction: (item: IRequestItem) => dispatch(deleteRequestItemThunkAction(item)),
     // deleteRequestThunkAction: (idRequest: string) => dispatch(deleteRequestThunkAction(idRequest))
   };

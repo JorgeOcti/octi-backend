@@ -238,7 +238,7 @@ class RequestItem extends React.Component<IPropsType, IStateType> {
                     _id: e.target.value
                   }
                 },
-                debounce: true
+                debounce: false
               });
             }}
           >
@@ -257,7 +257,6 @@ class RequestItem extends React.Component<IPropsType, IStateType> {
             type="text"
             style={{ width: '125px' }}
             className="form-control input-sm"
-            defaultValue="12345678901234567"
           />
         </td>
         <td className="middle">

@@ -11,6 +11,8 @@ export const REQUEST_ITEMS_LOAD_CARRIERS = '/REQUESTS_ITEMS/LOAD_CARRIERS';
 export const REQUEST_ITEMS_LOAD_REQUESTS_ITEMS = '/REQUESTS_ITEMS/LOAD_REQUESTS_ITEMS';
 export const REQUEST_ITEMS_LOAD_ITEM_STATUS = '/REQUESTS_ITEMS/LOAD_ITEM_STATUS';
 export const REQUEST_ITEMS_CHANGE_ORDER = '/REQUESTS_ITEMS/CHANGE_ORDER';
+export const REQUEST_ITEMS_UPDATE_ITEM = '/REQUESTS_ITEMS/UPDATE_ITEM';
+export const REQUEST_ITEMS_DELETE_ITEM = '/REQUESTS_ITEMS/DELETE_ITEM';
 
 export interface IRequestItemsState {
   requestItems: IRequestItem[];
@@ -87,6 +89,20 @@ export interface IChangeOrderRequestItems {
   };
 }
 
+export interface IUpdateRequestItems {
+  type: typeof REQUEST_ITEMS_UPDATE_ITEM;
+  payload: {
+    item: IRequestItem;
+  };
+}
+
+export interface IDeleteRequestItems {
+  type: typeof REQUEST_ITEMS_DELETE_ITEM;
+  payload: {
+    item: IRequestItem;
+  };
+}
+
 export type RequestItemsReduxActions =
   ICancelRequestItems |
   ILoadReasonsRequestItems |
@@ -94,4 +110,6 @@ export type RequestItemsReduxActions =
   ILoadRequestItems |
   ILoadCarriersRequestItems |
   IChangeOrderRequestItems |
+  IUpdateRequestItems |
+  IDeleteRequestItems |
   IIsLoadingRequestItems;
