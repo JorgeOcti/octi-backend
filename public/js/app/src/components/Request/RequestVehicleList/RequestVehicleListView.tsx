@@ -1,12 +1,16 @@
+import Axios from 'axios';
+import * as moment from 'moment';
 import * as React from 'react';
 import { Dispatch } from 'react';
 import { connect } from 'react-redux';
 import { RouteComponentProps } from 'react-router';
+import * as swal from 'sweetalert';
 import { IRequestItem } from '../../../../../../../src/interfaces/requestItem.interface';
-import { deleteRequestItemAction, getRequestItemsThunkAction, updateRequestItemAction } from '../../../actions/requestItems.actions';
+import { createRequestItemAction, deleteRequestItemAction, getRequestItemsThunkAction, updateRequestItemAction } from '../../../actions/requestItems.actions';
 import { IRequestItemsState } from '../../../actions/requestItems.types';
 import AppContainer from '../../../container/AppContainer';
 import { IWindow } from '../../../interfaces/window';
+import ApiService from '../../../utils/axios';
 import Paginator from '../../Utils/Paginator';
 import RequestVehicleItem from './RequestVehicleItem';
 
@@ -18,22 +22,30 @@ interface IPropsType extends RouteComponentProps<{ ticket: string }> {
   getRequestItemsThunkAction: (page: number, orderBy: string, orderType: string) => void;
   deleteRequestItemAction: (item: IRequestItem) => void;
   // deleteRequestActionInList: (id: string) => void;
-  // createRequestItemActionInList: (idRequest: string, item: IRequestItem) => void;
+  createRequestItemAction: (item: IRequestItem) => void;
 }
 
 interface IStateType {
   error: Error | null;
+  exporing: boolean;
 }
 
 declare let window: IWindow;
 
 class RequestVehicleListView extends React.Component<IPropsType, IStateType> {
+
   private socket: SocketIOClient.Socket;
+
+  readonly state = {
+    error: null,
+    exporing: false
+  };
 
   constructor(props: IPropsType) {
     super(props);
     this.changePage = this.changePage.bind(this);
     this.changeOrder = this.changeOrder.bind(this);
+    this.exportExcel = this.exportExcel.bind(this);
   }
 
   public componentWillMount(): void {
@@ -69,14 +81,12 @@ class RequestVehicleListView extends React.Component<IPropsType, IStateType> {
     });
 
     this.socket.on('DELETE_REQUEST_ITEM', (data: any): void => {
-      console.log(`#request-item-${data.item._id}`);
       const $item = $(`#request-item-${data.item._id}`);
       if ($item) {
         $item.addClass('bg-red-active');
       }
       setTimeout(() => {
         this.props.deleteRequestItemAction(data.item);
-        // $item.removeClass('bg-red-active');
       }, 300);
     });
 
@@ -91,15 +101,19 @@ class RequestVehicleListView extends React.Component<IPropsType, IStateType> {
     });
 
     this.socket.on('CREATE_REQUEST_ITEM', (data: any): void => {
-      // this.props.createRequestItemActionInList(data.idRequest, data.item);
-      // const $item = $(`#request-item-${data.item._id}`);
-      // if ($item) {
-      //   $item.addClass('bg-green-active');
-      // }
-      // setTimeout(() => {
-      //   $item.removeClass('bg-green-active');
-      // }, 300);
+      this.props.createRequestItemAction(data.item);
+      const $item = $(`#request-item-${data.item._id}`);
+      if ($item) {
+        $item.addClass('bg-green-active');
+      }
+      setTimeout(() => {
+        $item.removeClass('bg-green-active');
+      }, 300);
     });
+  }
+
+  public componentDidUpdate(prevProps: IPropsType): void {
+    $('[data-toggle="tooltip"]').tooltip();
   }
 
   public render(): React.ReactElement<IPropsType> {
@@ -107,6 +121,7 @@ class RequestVehicleListView extends React.Component<IPropsType, IStateType> {
       pagination, loading, requestItems, reasons, requestItemStatus, carriers
     } = this.props.requestItems;
     const { orderBy, orderType} = this.props.requestItems.options;
+    const {exporing} = this.state;
     return (
       <AppContainer title="" cMenu="3" cSubMenu="3.2">
         <section className="content">
@@ -116,6 +131,22 @@ class RequestVehicleListView extends React.Component<IPropsType, IStateType> {
               <div className="pull-right box-tools">
                 <button className="btn btn-sm btn-success" onClick={undefined}>
                   <i className="fa fa-fw fa-plus" /> Crear solicitud
+                </button>
+                <button
+                  className="btn btn-sm btn-primary hidden-xs"
+                  onClick={this.exportExcel}
+                  disabled={exporing}
+                  style={{marginLeft: '5px'}}
+                >
+                  {
+                    exporing ?
+                      <React.Fragment>
+                        <i className="fa fa-spin fa-spinner"/> Exportando
+                      </React.Fragment>
+                      : <React.Fragment>
+                        <i className="fa fa-fw fa-download"/> Exportar
+                      </React.Fragment>
+                  }
                 </button>
               </div>
             </div>
@@ -150,11 +181,19 @@ class RequestVehicleListView extends React.Component<IPropsType, IStateType> {
                     </th>
                     <th
                       className="middle pointer"
-                      style={{ width: '150px' }}
+                      style={{ width: '120px' }}
                       onClick={() => this.changeOrder('car.description')}
                     >
                       Modelo
                       <span style={{float: 'right'}}><i className={`fa fa-fw ${orderBy === 'car.description' ? `${orderType === 'descending' ? 'fa-sort-down' : 'fa-sort-up'}` : 'fa-sort'}`} /></span>
+                    </th>
+                    <th
+                      className="middle pointer"
+                      style={{ width: '120px' }}
+                      onClick={() => this.changeOrder('car.material')}
+                    >
+                      Material
+                      <span style={{float: 'right'}}><i className={`fa fa-fw ${orderBy === 'car.material' ? `${orderType === 'descending' ? 'fa-sort-down' : 'fa-sort-up'}` : 'fa-sort'}`} /></span>
                     </th>
                     <th className="middle">Color</th>
                     <th
@@ -206,7 +245,7 @@ class RequestVehicleListView extends React.Component<IPropsType, IStateType> {
                   {
                     requestItems.map((item, index) => (
                       <RequestVehicleItem
-                        key={index}
+                        key={item._id}
                         item={item}
                       />
                     ))
@@ -253,6 +292,58 @@ class RequestVehicleListView extends React.Component<IPropsType, IStateType> {
     const {orderBy, orderType} = this.props.requestItems.options;
     this.props.getRequestItemsThunkAction(page, orderBy, orderType);
   }
+
+  public exportExcel() {
+    this.setState({
+      exporing: true
+    });
+    const api: ApiService = new ApiService();
+    const instance = api.getInstance();
+    instance.defaults.responseType = 'blob';
+    instance
+      .get(`/requests/export/`)
+      .then((response) => {
+        const blob = new Blob([response.data], {
+          type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+        });
+        const fileName = `${moment().format('YYYYMMDD')}-solicitudes.xlsx`;
+        if (typeof window.navigator.msSaveBlob !== 'undefined') {
+          // IE workaround for "HTML7007: One or more blob URLs were
+          // revoked by closing the blob for which they were created.
+          // These URLs will no longer resolve as the data backing
+          // the URL has been freed."
+          window.navigator.msSaveBlob(blob, fileName);
+        } else {
+          const blobURL = URL.createObjectURL(blob);
+          const tempLink = document.createElement('a');
+          tempLink.style.display = 'none';
+          tempLink.href = blobURL;
+          tempLink.setAttribute('download', fileName);
+          // Safari thinks _blank anchor are pop ups. We only want to set _blank
+          // target if the browser does not support the HTML5 download attribute.
+          // This allows you to download files in desktop safari if pop up blocking
+          // is enabled.
+          if (typeof tempLink.download === 'undefined') {
+            tempLink.setAttribute('target', '_blank');
+          }
+          this.setState({
+            exporing: false
+          });
+          document.body.appendChild(tempLink);
+          tempLink.click();
+          document.body.removeChild(tempLink);
+          URL.revokeObjectURL(blobURL);
+        }
+      })
+      .catch((err) => {
+        this.setState({
+          exporing: false
+        });
+        if (!Axios.isCancel(err)) {
+          swal('Exportar usuarios', 'Ha ocurrido un error al general el excel.', 'error');
+        }
+      });
+  }
 }
 
 const mapStateToProps = (state: { requestItems: IRequestItemsState }) => {
@@ -265,7 +356,7 @@ const mapDispatchToProps = (dispatch: any) => {
   return {
     dispatch,
     getRequestItemsThunkAction: (page: number, orderBy: string, orderType: string) => dispatch(getRequestItemsThunkAction(page, orderBy, orderType)),
-    // createRequestItemActionInList: (idRequest: string, item: IRequestItem) => dispatch(createRequestItemActionInList(idRequest, item)),
+    createRequestItemAction: (item: IRequestItem) => dispatch(createRequestItemAction(item)),
     updateRequestItemAction: (item: IRequestItem) => dispatch(updateRequestItemAction(item)),
     deleteRequestItemAction: (item: IRequestItem) => dispatch(deleteRequestItemAction(item)),
     // deleteRequestActionInList: (id: string) => dispatch(deleteRequestActionInList(id))

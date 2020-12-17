@@ -1,13 +1,14 @@
 import * as express from 'express';
 import Middlewares from '../middlewares/middlewares';
-import RequestController from './controllers/request.controller';
 import ReasonController from './controllers/reason.controller';
+import RequestController from './controllers/request.controller';
 import RequestItemStatusController from './controllers/requestItemStatus.controller';
 
 const requestRouter = express.Router();
 
 // web pages
 requestRouter.get('/requests/', Middlewares.isLoggedIn, RequestController.index);
+requestRouter.get('/requests/export/', Middlewares.isLoggedIn, RequestController.exportExcel);
 requestRouter.get('/requests/vehicles/', Middlewares.isLoggedIn, RequestController.index);
 requestRouter.get('/requests/:id/', Middlewares.isLoggedIn, RequestController.index);
 requestRouter.get('/requests/create/', Middlewares.isLoggedIn, RequestController.index);

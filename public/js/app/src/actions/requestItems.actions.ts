@@ -9,6 +9,7 @@ import ApiService from '../utils/axios';
 import {
   ICancelRequestItems,
   IChangeOrderRequestItems,
+  ICreateRequestItems,
   IDeleteRequestItems,
   IIsLoadingRequestItems,
   ILoadCarriersRequestItems,
@@ -20,6 +21,7 @@ import {
   RequestItemsReduxActions,
   REQUEST_ITEMS_CANCEL_REQUEST,
   REQUEST_ITEMS_CHANGE_ORDER,
+  REQUEST_ITEMS_CREATE_ITEM,
   REQUEST_ITEMS_DELETE_ITEM,
   REQUEST_ITEMS_IS_LOADING,
   REQUEST_ITEMS_LOAD_CARRIERS,
@@ -98,6 +100,15 @@ export function changeOrderRequestAction(orderBy: string, orderType: string): IC
   };
 }
 
+export function createRequestItemAction(item: IRequestItem): ICreateRequestItems {
+  return {
+    type: REQUEST_ITEMS_CREATE_ITEM,
+    payload: {
+      item
+    }
+  };
+}
+
 export function updateRequestItemAction(item: IRequestItem): IUpdateRequestItems {
   return {
     type: REQUEST_ITEMS_UPDATE_ITEM,
@@ -155,7 +166,7 @@ const debounceUpdateRequestItem = debounce(500, (item) => {
 });
 export function updateRequestItemsThunkAction({ item, debounce }: { item: IRequestItem, debounce?: boolean}) {
   return (dispatch: Dispatch<RequestItemsReduxActions>) => {
-    // dispatch(updateRequestItemActionInDetail(item));
+    dispatch(updateRequestItemAction(item));
     if (debounce) {
       debounceUpdateRequestItem(item);
     } else {

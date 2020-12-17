@@ -327,7 +327,7 @@ class RequestCreateView extends React.Component<IPropsType, IStateType> {
                       <button
                         className="btn btn-sm btn-primary"
                         onClick={this.addCar}
-                        disabled={!newCar.brand.length || !newCar.denomination.length || !newCar.color.length}
+                        disabled={!newCar.brand.length || !newCar.denomination.length || !newCar.color.length ||  !newCar.reason}
                       >
                         Agregar
                       </button>
@@ -573,6 +573,8 @@ class RequestCreateView extends React.Component<IPropsType, IStateType> {
     const { cars, fleet, venue } = this.state;
     if (!cars.length) {
       swal('Solicitud', 'No se han agregado vehículos para crear la solicitud.', 'error');
+    } else if (!venue.length) {
+      swal('Solicitud', 'No se ha seleccionado destino para crear la solicitud.', 'error');
     } else {
       this.api
         .createRequest({

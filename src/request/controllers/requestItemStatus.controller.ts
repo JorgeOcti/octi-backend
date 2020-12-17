@@ -15,13 +15,14 @@ class RequestItemStatusController {
     const { team } = req.user;
     const options: PaginateOptions = {
       sort: {
-        _id: -1
+        weigth: 1
       },
       page: parseInt(page ? page : '1', 10),
       limit: parseInt(pageSize ? pageSize : '200', 10)
     };
     try {
-      const requestItemStatus = await this.getRequetsItemStatus(options);
+      const filter = {team};
+      const requestItemStatus = await this.getRequetsItemStatus(filter, options);
       /* istanbul ignore if  */
       if (options.page && requestItemStatus.pages && requestItemStatus.pages < options.page) {
         res.status(400).json({
@@ -51,9 +52,9 @@ class RequestItemStatusController {
     }
   }
 
-  private getRequetsItemStatus(options: PaginateOptions): Promise<PaginateResult<IRequestItemStatusModel>> {
+  private getRequetsItemStatus(filter: any, options: PaginateOptions): Promise<PaginateResult<IRequestItemStatusModel>> {
     return new Promise((resolve, reject) => {
-      RequestItemStatus.paginate({}, options, (err, result) => {
+      RequestItemStatus.paginate(filter, options, (err, result) => {
         if (err) {
           return reject(err);
         }

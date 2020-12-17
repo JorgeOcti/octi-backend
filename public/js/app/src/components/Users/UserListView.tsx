@@ -203,7 +203,7 @@ class UserListView extends React.Component<IPropsType, IStateType> {
                     : null
                 }
                 <button
-                  className="btn btn-sm btn-primary  hidden-xs"
+                  className="btn btn-sm btn-primary hidden-xs"
                   onClick={this.exportExcel}
                   disabled={exporing}
                   style={{marginLeft: '5px'}}

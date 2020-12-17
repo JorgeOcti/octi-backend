@@ -1,8 +1,12 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+const excel = require("exceljs");
 const moment = require("moment");
+const tempfile = require("tempfile");
 const car_model_1 = require("../../app/models/car.model");
 const team_model_1 = require("../../app/models/team.model");
+const participant_model_1 = require("../../form/models/participant.model");
+const inventoryCar_model_1 = require("../../inventory/models/inventoryCar.model");
 const server_1 = require("../../server");
 const logger_service_1 = require("../../services/logger.service");
 const request_model_1 = require("../models/request.model");
@@ -70,6 +74,7 @@ class RequestController {
         this.apiDeleteRequest = this.apiDeleteRequest.bind(this);
         this.apiDeleteRequestItem = this.apiDeleteRequestItem.bind(this);
         this.apiCreateItem = this.apiCreateItem.bind(this);
+        this.exportExcel = this.exportExcel.bind(this);
     }
     async index(req, res) {
         res.render('app/index', { token: await req.user.generateToken() });
@@ -78,7 +83,7 @@ class RequestController {
         const { team, company } = req.user;
         const { cars, venue, fleet } = req.body;
         try {
-            const defaultItemStatus = await requestItemStatus_model_1.default.findOneOrCreate({ team, default: true }, { name: 'En proceso', default: true, team });
+            const defaultItemStatus = await requestItemStatus_model_1.default.findOneOrCreate({ team, default: true }, { name: 'En proceso', default: true, team, weigth: 20 });
             const updateTeam = await team_model_1.default.findOne({ _id: team._id });
             const request = await new request_model_1.default({
                 team,
@@ -230,6 +235,169 @@ class RequestController {
         catch (e) {
             /* istanbul ignore next */
             logger_service_1.default.error(`RequestController.apiListItems: Async Error.`);
+            /* istanbul ignore next */
+            logger_service_1.default.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}, body: ${JSON.stringify(req.body)}, params: ${JSON.stringify(req.params)}`);
+            logger_service_1.default.error(e);
+            res.status(500).json(e);
+        }
+    }
+    async exportExcel(req, res) {
+        const { team } = req.user;
+        try {
+            const requestItems = await requestItem_model_1.default.aggregate([{
+                    $match: {
+                        team,
+                        'destination': {
+                            $in: req.user.venuesPermissions()
+                        }
+                    }
+                }, {
+                    $lookup: { from: 'cars', localField: 'car', foreignField: '_id', as: 'car' }
+                }, {
+                    $unwind: { path: '$car', preserveNullAndEmptyArrays: true }
+                }, {
+                    $lookup: { from: 'users', localField: 'createdBy', foreignField: '_id', as: 'createdBy' }
+                }, {
+                    $unwind: { path: '$createdBy', preserveNullAndEmptyArrays: true }
+                }, {
+                    $lookup: { from: 'venues', localField: 'origin', foreignField: '_id', as: 'origin' }
+                }, {
+                    $unwind: { path: '$origin', preserveNullAndEmptyArrays: true }
+                }, {
+                    $lookup: { from: 'venues', localField: 'destination', foreignField: '_id', as: 'destination' }
+                }, {
+                    $unwind: { path: '$destination', preserveNullAndEmptyArrays: true }
+                }, {
+                    $lookup: { from: 'requests', localField: 'request', foreignField: '_id', as: 'request' }
+                }, {
+                    $unwind: { path: '$request', preserveNullAndEmptyArrays: false }
+                }, {
+                    $lookup: { from: 'requestitemstatuses', localField: 'status', foreignField: '_id', as: 'status' }
+                }, {
+                    $unwind: { path: '$status', preserveNullAndEmptyArrays: true }
+                }, {
+                    $lookup: { from: 'carriers', localField: 'carrier', foreignField: '_id', as: 'carrier' }
+                }, {
+                    $unwind: { path: '$carrier', preserveNullAndEmptyArrays: true }
+                }, {
+                    $lookup: { from: 'reasons', localField: 'reason', foreignField: '_id', as: 'reason' }
+                }, {
+                    $unwind: { path: '$reason', preserveNullAndEmptyArrays: true }
+                }, {
+                    $project: {
+                        '_id': 1,
+                        'request': 1,
+                        'priority': 1,
+                        'observation': 1,
+                        'equipment': 1,
+                        'washed': 1,
+                        'review': 1,
+                        'body': 1,
+                        'status._id': 1,
+                        'status.name': 1,
+                        'carrier._id': 1,
+                        'carrier.name': 1,
+                        'status.weigth': 1,
+                        'createdBy._id': 1,
+                        'createdBy.firstName': 1,
+                        'createdBy.lastName': 1,
+                        'car': 1,
+                        'origin._id': 1,
+                        'origin.name': 1,
+                        'destination._id': 1,
+                        'destination.name': 1,
+                        'reason._id': 1,
+                        'reason.name': 1,
+                        'uploadDate': 1,
+                        'estimatedArrival': 1,
+                        'createdAt': 1,
+                        'updatedAt': 1
+                    }
+                }, {
+                    $sort: { _id: 1 }
+                }]);
+            const workbook = new excel.Workbook();
+            const worksheet = workbook.addWorksheet('Usuarios', {
+                properties: {
+                    defaultRowHeight: 30
+                }, pageSetup: {
+                    fitToPage: true, fitToHeight: 100, fitToWidth: 1
+                }
+            });
+            /* headers */
+            worksheet.columns = [{
+                    header: 'Solicitud', key: 'request', width: 10
+                }, {
+                    header: 'Destino', key: 'destination', width: 20
+                }, {
+                    header: 'Marca', key: 'brand', width: 20
+                }, {
+                    header: 'Modelo', key: 'denomination', width: 20
+                }, {
+                    header: 'Material', key: 'material', width: 20
+                }, {
+                    header: 'Color', key: 'color', width: 20
+                }, {
+                    header: 'VIN', key: 'vin', width: 20
+                }, {
+                    header: 'CDO', key: 'cdo', width: 20
+                }, {
+                    header: 'Estado', key: 'status', width: 20
+                }, {
+                    header: 'Motivo', key: 'reason', width: 20
+                }, {
+                    header: 'Accesorización', key: 'equipment', width: 10
+                }, {
+                    header: 'Carrocero', key: 'body', width: 10
+                }, {
+                    header: 'Pre-Lavado', key: 'washed', width: 10
+                }, {
+                    header: 'Inspección Pre-entrega', key: 'review', width: 10
+                }, {
+                    header: 'Solicitante', key: 'createdBy', width: 20
+                }, {
+                    header: 'Transportista', key: 'carrier', width: 20
+                }, {
+                    header: 'Fecha Carga', key: 'uploadDate', width: 21, style: { numFmt: 'dd/mm/yyyy hh:mm' }
+                }, {
+                    header: 'Fecha LLegada', key: 'estimatedArrival', width: 21, style: { numFmt: 'dd/mm/yyyy hh:mm' }
+                }, {
+                    header: 'Creado', key: 'created', width: 21, style: { numFmt: 'dd/mm/yyyy hh:mm' }
+                }];
+            for (const item of requestItems) {
+                worksheet.addRow({
+                    request: item.request.number,
+                    destination: item.destination.name,
+                    brand: item.car.brand,
+                    denomination: item.car.denomination,
+                    material: item.car.material,
+                    vin: item.car.vin,
+                    cdo: item.car.internalNumber,
+                    color: item.car.color,
+                    status: item.status.name,
+                    reason: item.reason.name,
+                    equipment: item.equipment ? 'Si' : 'No',
+                    body: item.body ? 'Si' : 'No',
+                    washed: item.washed ? 'Si' : 'No',
+                    review: item.review ? 'Si' : 'No',
+                    createdBy: `${item.createdBy.firstName} ${item.createdBy.lastName}`,
+                    carrier: item.carrier ? item.carrier.name : '',
+                    uploadDate: item.uploadDate,
+                    estimatedArrival: item.estimatedArrival,
+                    created: item.createdAt
+                });
+            }
+            const tempFilePath = tempfile('.xlsx');
+            await workbook.xlsx.writeFile(tempFilePath);
+            res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+            res.setHeader('Content-Disposition', 'attachment; filename=requests.xlsx');
+            return res.sendFile(tempFilePath);
+        }
+        catch (e) {
+            /* istanbul ignore next */
+            logger_service_1.default.error(e);
+            /* istanbul ignore next */
+            logger_service_1.default.error(`RequestController.exportExcel: Async Error.`);
             /* istanbul ignore next */
             logger_service_1.default.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}, body: ${JSON.stringify(req.body)}, params: ${JSON.stringify(req.params)}`);
             logger_service_1.default.error(e);
@@ -534,8 +702,32 @@ class RequestController {
         const updateObject = req.body;
         const { id } = req.params;
         try {
-            await requestItem_model_1.default.update({ _id: id, team }, { $set: { ...updateObject } });
-            await car_model_1.default.update({ _id: updateObject.car._id, team }, { $set: updateObject.car });
+            const requestItem = await requestItem_model_1.default.findOneAndUpdate({ _id: id, team }, { $set: { ...updateObject } }).populate([{ path: 'car' }]);
+            if (Object.keys(updateObject.car).length) {
+                const existCar = await car_model_1.default.findOne({ team, vin: updateObject.car.vin });
+                if (existCar && requestItem && existCar.vin !== requestItem.car.vin) {
+                    // validate exist car and change vin
+                    await requestItem_model_1.default.update({ _id: id, team }, { $set: { car: existCar } });
+                }
+                else if (requestItem && requestItem.car.vin !== updateObject.car.vin) {
+                    // validate chamge vin
+                    const inventories = await inventoryCar_model_1.default.find({ car: requestItem.car }).count();
+                    const participants = await participant_model_1.default.find({ team, car: requestItem.car }).count();
+                    const requests = await requestItem_model_1.default.find({ team, car: requestItem.car, _id: { $ne: requestItem._id } }).count();
+                    if (inventories || participants || requests) {
+                        // validate car has actions in the system
+                        delete updateObject.car._id;
+                        const newCar = await new car_model_1.default(updateObject.car).save();
+                        await requestItem_model_1.default.update({ _id: id, team }, { $set: { car: newCar } });
+                    }
+                    else {
+                        await car_model_1.default.update({ _id: updateObject.car._id, team }, { $set: updateObject.car });
+                    }
+                }
+                else {
+                    await car_model_1.default.update({ _id: updateObject.car._id, team }, { $set: updateObject.car });
+                }
+            }
             const item = await requestItem_model_1.default
                 .findOne({ _id: id, team })
                 .populate(this.itemPopulate)
@@ -555,6 +747,8 @@ class RequestController {
             // todo: send update object to socket team
         }
         catch (e) {
+            /* istanbul ignore next */
+            logger_service_1.default.error(e);
             /* istanbul ignore next */
             logger_service_1.default.error(`RequestController.apiPatchItem: Async Error.`);
             /* istanbul ignore next */

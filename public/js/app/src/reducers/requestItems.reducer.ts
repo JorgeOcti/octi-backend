@@ -3,6 +3,7 @@ import {
   RequestItemsReduxActions,
   REQUEST_ITEMS_CANCEL_REQUEST,
   REQUEST_ITEMS_CHANGE_ORDER,
+  REQUEST_ITEMS_CREATE_ITEM,
   REQUEST_ITEMS_DELETE_ITEM,
   REQUEST_ITEMS_IS_LOADING,
   REQUEST_ITEMS_LOAD_CARRIERS,
@@ -79,6 +80,11 @@ export function requestItemsReducers(state = initialState, action: RequestItemsR
           page: action.payload.page,
           count: action.payload.count
         }
+      };
+    case REQUEST_ITEMS_CREATE_ITEM:
+      return {
+        ...state,
+        requestItems: [action.payload.item, ...state.requestItems]
       };
     case REQUEST_ITEMS_UPDATE_ITEM:
       return {

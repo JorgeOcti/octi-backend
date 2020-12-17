@@ -4,7 +4,9 @@ import {IRequestItem} from '../../interfaces/requestItem.interface';
 import * as mongoosePaginate from 'mongoose-paginate';
 import mongooseAggregatePaginate = require('mongoose-aggregate-paginate-v2');
 
-export interface IRequestItemModel extends IRequestItem, mongoose.Document {}
+export interface IRequestItemModel extends IRequestItem, mongoose.Document {
+  createdAt: Date;
+}
 
 const requestItemSchema = new mongoose.Schema({
   request: {

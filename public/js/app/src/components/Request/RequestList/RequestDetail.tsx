@@ -55,10 +55,10 @@ class RequestListDetail extends React.Component<IPropsType, IStateType> {
       <React.Fragment>
         <div id={`request-${request._id}`} className="row request bg-request-title background-transition">
           <div
-            className="col-sm-1 col-xs-1 col-md-1 col-lg-1 pointer"
+            className="col-sm-1 col-xs-1 col-md-1 col-lg-1 pointer center"
             onClick={() => this.goToDetail(request._id)}
           >
-            <i className="fa fa-circle status-circle-red" />
+            {/* <i className="fa fa-circle status-circle-red" /> */}
             <strong className="text-underline">
               #{this.padNumber(request.number)}
             </strong>&nbsp;
@@ -82,7 +82,7 @@ class RequestListDetail extends React.Component<IPropsType, IStateType> {
             {moment(request.updatedAt).format('DD-MM-YY')}
           </div>
           <div className="col-sm-1 col-xs-1 col-md-1 col-lg-1 center">
-            10
+            {/* 10 */}
           </div>
           <div className="col-sm-1 col-xs-1 col-md-1 col-lg-1 chevron pointer"  onClick={()=>this.props.tabStatusAction(request._id)}>
             {
@@ -163,16 +163,36 @@ class RequestListDetail extends React.Component<IPropsType, IStateType> {
                     </td>
                     <td className="middle">
                       <div className="flex-wrap">
-                        <div className={`flex-wrap-item-center ${item.equipment ? '' : 'text-gray'}`}>
+                        <div
+                          className={`flex-wrap-item-center ${item.equipment ? '' : 'text-gray'}`}
+                          data-toggle="tooltip"
+                          data-placement="top"
+                          title="Accesorización"
+                        >
                           <i className="material-icons">library_add</i>
                         </div>
-                        <div className={`flex-wrap-item-center ${item.body ? '' : 'text-gray'}`}>
+                        <div
+                          className={`flex-wrap-item-center ${item.body ? '' : 'text-gray'}`}
+                          data-toggle="tooltip"
+                          data-placement="top"
+                          title="Carrocero"
+                        >
                           <i className="material-icons">rv_hookup</i>
                         </div>
-                        <div className={`flex-wrap-item-center ${item.washed ? '' : 'text-gray'}`}>
+                        <div
+                          className={`flex-wrap-item-center ${item.washed ? '' : 'text-gray'}`}
+                          data-toggle="tooltip"
+                          data-placement="top"
+                          title="Pre-Lavado"
+                        >
                           <i className="material-icons">local_car_wash</i>
                         </div>
-                        <div className={`flex-wrap-item-center ${item.review ? '' : 'text-gray'}`}>
+                        <div
+                          className={`flex-wrap-item-center ${item.review ? '' : 'text-gray'}`}
+                          data-toggle="tooltip"
+                          data-placement="top"
+                          title="Inspección Pre-entrega"
+                        >
                           <i className="material-icons">build</i>
                         </div>
                       </div>

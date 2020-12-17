@@ -51,6 +51,7 @@ class RequestItem extends React.Component<IPropsType, IStateType> {
     this.search = debounce(500, this.search.bind(this));
     this.api = new ApiService();
   }
+  
 
   public componentDidCatch(error: Error, errorInfo: ErrorInfo): void {
     this.setState({ error });
@@ -165,7 +166,7 @@ class RequestItem extends React.Component<IPropsType, IStateType> {
           />
         </td>
         {/* <td className="middle">{item.car.material}ASFG58644</td> */}
-        {/* <td className="middle">
+        <td className="middle">
           <AutocompleteInput
             value={item.car.material}
             inputClass={'input-sm'}
@@ -188,7 +189,7 @@ class RequestItem extends React.Component<IPropsType, IStateType> {
                 },
                 debounce: true
               });
-              this.search(value, 'recommends');
+              this.search(value);
             }}
             onSelect={(car: any) => {
               this.props.updateRequestItemInDetailThunkAction({
@@ -205,7 +206,7 @@ class RequestItem extends React.Component<IPropsType, IStateType> {
               });
             }}
           />
-        </td> */}
+        </td>
         {/* <td className="middle">{item.car.color}</td> */}
         <td className="middle">
           <input type="text"
@@ -257,6 +258,19 @@ class RequestItem extends React.Component<IPropsType, IStateType> {
             type="text"
             style={{ width: '125px' }}
             className="form-control input-sm"
+            defaultValue={item.car.vin}
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+              this.props.updateRequestItemInDetailThunkAction({
+                item: {
+                  ...item,
+                  car: {
+                    ...item.car,
+                    vin: e.target.value
+                  }
+                },
+                debounce: false
+              });
+            }}
           />
         </td>
         <td className="middle">
@@ -307,6 +321,9 @@ class RequestItem extends React.Component<IPropsType, IStateType> {
           <div className="flex-wrap">
             <div
               className={`flex-wrap-item-center ${undefined ?? 'pointer'} ${item.equipment ? '' : 'text-gray'}`}
+              data-toggle="tooltip"
+              data-placement="top"
+              title="Accesorización"
               onClick={() => {
                 this.props.updateRequestItemInDetailThunkAction({
                   item: {
@@ -321,6 +338,9 @@ class RequestItem extends React.Component<IPropsType, IStateType> {
             </div>
             <div
               className={`flex-wrap-item-center ${undefined ?? 'pointer'} ${item.body ? '' : 'text-gray'}`}
+              data-toggle="tooltip"
+              data-placement="top"
+              title="Carrocero"
               onClick={() => {
                 this.props.updateRequestItemInDetailThunkAction({
                   item: {
@@ -339,6 +359,9 @@ class RequestItem extends React.Component<IPropsType, IStateType> {
           <div className="flex-wrap">
             <div
               className={`flex-wrap-item-center ${undefined ?? 'pointer'} ${item.washed ? '' : 'text-gray'}`}
+              data-toggle="tooltip"
+              data-placement="top"
+              title="Pre-Lavado"
               onClick={() => {
                 this.props.updateRequestItemInDetailThunkAction({
                   item: {
@@ -353,6 +376,9 @@ class RequestItem extends React.Component<IPropsType, IStateType> {
             </div>
             <div
               className={`flex-wrap-item-center ${undefined ?? 'pointer'} ${item.review ? '' : 'text-gray'}`}
+              data-toggle="tooltip"
+              data-placement="top"
+              title="Inspección Pre-entrega"
               onClick={() => {
                 this.props.updateRequestItemInDetailThunkAction({
                   item: {

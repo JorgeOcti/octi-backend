@@ -11,13 +11,14 @@ class RequestItemStatusController {
         const { team } = req.user;
         const options = {
             sort: {
-                _id: -1
+                weigth: 1
             },
             page: parseInt(page ? page : '1', 10),
             limit: parseInt(pageSize ? pageSize : '200', 10)
         };
         try {
-            const requestItemStatus = await this.getRequetsItemStatus(options);
+            const filter = { team };
+            const requestItemStatus = await this.getRequetsItemStatus(filter, options);
             /* istanbul ignore if  */
             if (options.page && requestItemStatus.pages && requestItemStatus.pages < options.page) {
                 res.status(400).json({
@@ -48,9 +49,9 @@ class RequestItemStatusController {
             res.status(500).json(e);
         }
     }
-    getRequetsItemStatus(options) {
+    getRequetsItemStatus(filter, options) {
         return new Promise((resolve, reject) => {
-            requestItemStatus_model_1.default.paginate({}, options, (err, result) => {
+            requestItemStatus_model_1.default.paginate(filter, options, (err, result) => {
                 if (err) {
                     return reject(err);
                 }

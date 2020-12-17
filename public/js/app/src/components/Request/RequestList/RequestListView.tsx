@@ -1,9 +1,12 @@
+import Axios from 'axios';
+import * as moment from 'moment';
 import * as Raven from 'raven-js';
 import * as React from 'react';
 import { Dispatch, ErrorInfo } from 'react';
 import { connect } from 'react-redux';
 import { RouteComponentProps } from 'react-router';
 import * as io from 'socket.io-client';
+import * as swal from 'sweetalert';
 import { IRequestItem } from '../../../../../../../src/interfaces/requestItem.interface';
 import {
   createRequestItemActionInList,
@@ -15,6 +18,7 @@ import {
 import { IRequestsState } from '../../../actions/requests.types';
 import AppContainer from '../../../container/AppContainer';
 import { IWindow } from '../../../interfaces/window';
+import ApiService from '../../../utils/axios';
 import Paginator from '../../Utils/Paginator';
 import RequestListDetail from './RequestDetail';
 
@@ -30,6 +34,7 @@ interface IPropsType extends RouteComponentProps<{ ticket: string }> {
 
 interface IStateType {
   error: Error | null;
+  exporing: boolean;
 }
 
 declare let window: IWindow;
@@ -37,7 +42,8 @@ declare let window: IWindow;
 class RequestListView extends React.Component<IPropsType, IStateType> {
 
   readonly state = {
-    error: null
+    error: null,
+    exporing: false
   };
 
   private socket: SocketIOClient.Socket;
@@ -47,6 +53,7 @@ class RequestListView extends React.Component<IPropsType, IStateType> {
     this.create = this.create.bind(this);
     this.changeOrder = this.changeOrder.bind(this);
     this.changePage = this.changePage.bind(this);
+    this.exportExcel = this.exportExcel.bind(this);
   }
 
   public componentWillMount(): void {
@@ -117,6 +124,10 @@ class RequestListView extends React.Component<IPropsType, IStateType> {
     window.scrollTo(0, 0);
   }
 
+  public componentDidUpdate(prevProps: IPropsType): void {
+    $('[data-toggle="tooltip"]').tooltip();
+  }
+
   public componentWillUnmount(): void {
     // cancel request if component is inmounted
     if (this.props.requests.source) {
@@ -138,6 +149,7 @@ class RequestListView extends React.Component<IPropsType, IStateType> {
       pagination, loading, requests, reasons, requestItemStatus, carriers
     } = this.props.requests;
     const {orderBy, orderType} = this.props.requests.options;
+    const {exporing} = this.state;
     return (
       <AppContainer title="" cMenu="3" cSubMenu="3.1">
         <section className="content">
@@ -147,6 +159,22 @@ class RequestListView extends React.Component<IPropsType, IStateType> {
               <div className="pull-right box-tools">
                 <button className="btn btn-sm btn-success" onClick={this.create}>
                   <i className="fa fa-fw fa-plus" /> Crear solicitud
+                </button>
+                <button
+                  className="btn btn-sm btn-primary hidden-xs"
+                  onClick={this.exportExcel}
+                  disabled={exporing}
+                  style={{marginLeft: '5px'}}
+                >
+                  {
+                    exporing ?
+                      <React.Fragment>
+                        <i className="fa fa-spin fa-spinner"/> Exportando
+                      </React.Fragment>
+                      : <React.Fragment>
+                        <i className="fa fa-fw fa-download"/> Exportar
+                      </React.Fragment>
+                  }
                 </button>
               </div>
             </div>
@@ -171,7 +199,7 @@ class RequestListView extends React.Component<IPropsType, IStateType> {
                   <strong>Última Actualización</strong> <i className={`fa ${orderBy === 'updatedAt' ? `${orderType === 'descending' ? 'fa-sort-down' : 'fa-sort-up'}` : 'fa-sort'}`} />
                 </div>
                 <div className="col-sm-1 col-xs-1 col-md-1 col-lg-1 center">
-                  <strong><i className="fa fa-comment" /></strong>
+                  {/* <strong><i className="fa fa-comment" /></strong> */}
                 </div>
                 <div className="col-sm-1 col-xs-1 col-md-1 col-lg-1" />
               </div>
@@ -231,6 +259,59 @@ class RequestListView extends React.Component<IPropsType, IStateType> {
     const {orderBy, orderType} = this.props.requests.options;
     this.props.getRequestsThunkAction(page, orderBy, orderType);
   }
+
+  public exportExcel() {
+    this.setState({
+      exporing: true
+    });
+    const api: ApiService = new ApiService();
+    const instance = api.getInstance();
+    instance.defaults.responseType = 'blob';
+    instance
+      .get(`/requests/export/`)
+      .then((response) => {
+        const blob = new Blob([response.data], {
+          type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+        });
+        const fileName = `${moment().format('YYYYMMDD')}-solicitudes.xlsx`;
+        if (typeof window.navigator.msSaveBlob !== 'undefined') {
+          // IE workaround for "HTML7007: One or more blob URLs were
+          // revoked by closing the blob for which they were created.
+          // These URLs will no longer resolve as the data backing
+          // the URL has been freed."
+          window.navigator.msSaveBlob(blob, fileName);
+        } else {
+          const blobURL = URL.createObjectURL(blob);
+          const tempLink = document.createElement('a');
+          tempLink.style.display = 'none';
+          tempLink.href = blobURL;
+          tempLink.setAttribute('download', fileName);
+          // Safari thinks _blank anchor are pop ups. We only want to set _blank
+          // target if the browser does not support the HTML5 download attribute.
+          // This allows you to download files in desktop safari if pop up blocking
+          // is enabled.
+          if (typeof tempLink.download === 'undefined') {
+            tempLink.setAttribute('target', '_blank');
+          }
+          this.setState({
+            exporing: false
+          });
+          document.body.appendChild(tempLink);
+          tempLink.click();
+          document.body.removeChild(tempLink);
+          URL.revokeObjectURL(blobURL);
+        }
+      })
+      .catch((err) => {
+        this.setState({
+          exporing: false
+        });
+        if (!Axios.isCancel(err)) {
+          swal('Exportar usuarios', 'Ha ocurrido un error al general el excel.', 'error');
+        }
+      });
+  }
+
 }
 
 const mapStateToProps = (state: { requests: IRequestsState }) => {

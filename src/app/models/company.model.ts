@@ -48,11 +48,11 @@ const billingSchema = new mongoose.Schema({
 const billingNotificationsSchema = new mongoose.Schema({
   name: {
     type: String,
-    default: ""
+    default: ''
   },
   email: {
     type: String,
-    default: ""
+    default: ''
   },
   active: {
     type: Boolean,
@@ -133,7 +133,7 @@ companySchema.plugin(mongooseCrate, {
   }),
   fields: {
     image: {},
-    marker: {},
+    marker: {}
   }
 });
 
