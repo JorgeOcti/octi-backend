@@ -19,6 +19,7 @@ import { IRequestsState } from '../../../actions/requests.types';
 import AppContainer from '../../../container/AppContainer';
 import { IWindow } from '../../../interfaces/window';
 import ApiService from '../../../utils/axios';
+import { hasPermission } from '../../../utils/common';
 import Paginator from '../../Utils/Paginator';
 import RequestListDetail from './RequestDetail';
 
@@ -157,9 +158,13 @@ class RequestListView extends React.Component<IPropsType, IStateType> {
             <div className="box-header with-border">
               <h3 className="box-title">Solicitudes <small>{pagination.count}</small></h3>
               <div className="pull-right box-tools">
-                <button className="btn btn-sm btn-success" onClick={this.create}>
-                  <i className="fa fa-fw fa-plus" /> Crear solicitud
-                </button>
+                {
+                  hasPermission(window.user, 'createRequest') ?
+                    <button className="btn btn-sm btn-success" onClick={this.create}>
+                      <i className="fa fa-fw fa-plus" /> Crear solicitud
+                    </button>
+                    : null
+                }
                 <button
                   className="btn btn-sm btn-primary hidden-xs"
                   onClick={this.exportExcel}

@@ -21,6 +21,7 @@ import { IRequestsState } from '../../../actions/requests.types';
 import AppContainer from '../../../container/AppContainer';
 import { IWindow } from '../../../interfaces/window';
 import ApiService from '../../../utils/axios';
+import { hasPermission } from '../../../utils/common';
 import AutocompleteInput from '../../Utils/AutocompleteInput';
 import RequestItem from './RequestItem';
 
@@ -153,20 +154,25 @@ class RequestDetailView extends React.Component<IPropsType, IStateType> {
   public render(): React.ReactElement<IPropsType> {
     const { request, loading, reasons} = this.props.requests;
     const { recommends, car } = this.state;
+    const canChangeRequest = hasPermission(window.user, 'changeRequest');
     return (
       <AppContainer title="" cMenu="3" cSubMenu="3.1" cAction={'Detalle solicitud'}>
         <section className="content">
           <div className="box">
             <div className="box-header with-border">
               <h3 className="box-title">Detalle solicitud #{this.padNumber(request?.number)}</h3>
-              <div className="pull-right box-tools">
-                <button
-                  className="btn btn-sm btn-danger"
-                  onClick={this.deleteRequest}
-                >
-                  <i className="fa fa-fw fa-trash" /> Eliminar solicitud
+              {
+                hasPermission(window.user, 'deleteRequest') ?
+                  <div className="pull-right box-tools">
+                    <button
+                      className="btn btn-sm btn-danger"
+                      onClick={this.deleteRequest}
+                    >
+                      <i className="fa fa-fw fa-trash" /> Eliminar solicitud
                 </button>
-              </div>
+                  </div>
+                  : null
+              }
             </div>
             <div className="box-body request-detail no-padding table-responsive">
               {
@@ -201,7 +207,11 @@ class RequestDetailView extends React.Component<IPropsType, IStateType> {
                           <th className="middle">Transporte</th>
                           <th style={{ width: '70px' }}>Fecha carga</th>
                           <th style={{ width: '70px' }}>LLegada llegada</th>
-                          <th className="middle" style={{ width: '30px' }} />
+                          {
+                            hasPermission(window.user, 'deleteRequest') ?
+                              <th className="middle" style={{ width: '30px' }} />
+                              : null
+                          }
                         </tr>
                       </thead>
                       <tbody>
@@ -217,169 +227,173 @@ class RequestDetailView extends React.Component<IPropsType, IStateType> {
                         }
                       </tbody>
                     </table>
-                    <div className="row">
-                      <div className="col-md-8 col-md-offset-4">
-                        <div className="container-table-add-car">
-                          <table className="table table-xs">
-                            <thead>
-                              <tr>
-                                <th>Marca</th>
-                                <th>Modelo</th>
-                                <th>Material</th>
-                                <th>Color</th>
-                                <th>Motivo</th>
-                                <th></th>
-                              </tr>
-                            </thead>
-                            <tbody>
-                              <tr>
-                                <td>
-                                  <AutocompleteInput
-                                    value={car.brand}
-                                    inputClass={'input-sm'}
-                                    items={recommends}
-                                    renderItem={(car, index) => (
-                                      <div key={index} className="item">
-                                        {car.denomination} <br />
-                                        <strong>{car.brand}</strong>
-                                      </div>
-                                    )}
-                                    onChange={(e) => {
-                                      const { value } = e.target;
-                                      this.setState({
-                                        car: {
-                                          ...this.state.car,
-                                          brand: value
+                    {
+                      canChangeRequest ?
+                        <div className="row">
+                          <div className="col-md-8 col-md-offset-4">
+                            <div className="container-table-add-car">
+                              <table className="table table-xs">
+                                <thead>
+                                  <tr>
+                                    <th>Marca</th>
+                                    <th>Modelo</th>
+                                    <th>Material</th>
+                                    <th>Color</th>
+                                    <th>Motivo</th>
+                                    <th></th>
+                                  </tr>
+                                </thead>
+                                <tbody>
+                                  <tr>
+                                    <td>
+                                      <AutocompleteInput
+                                        value={car.brand}
+                                        inputClass={'input-sm'}
+                                        items={recommends}
+                                        renderItem={(car, index) => (
+                                          <div key={index} className="item">
+                                            {car.denomination} <br />
+                                            <strong>{car.brand}</strong>
+                                          </div>
+                                        )}
+                                        onChange={(e) => {
+                                          const { value } = e.target;
+                                          this.setState({
+                                            car: {
+                                              ...this.state.car,
+                                              brand: value
+                                            }
+                                          });
+                                          this.search(value);
+                                        }}
+                                        onSelect={(car: any) => {
+                                          this.setState({
+                                            car: {
+                                              ...this.state.car,
+                                              brand: car.brand,
+                                              denomination: car.denomination,
+                                              material: car.material ?? ''
+                                            }
+                                          });
+                                        }}
+                                      />
+                                    </td>
+                                    <td>
+                                      <AutocompleteInput
+                                        value={car.denomination}
+                                        inputClass={'input-sm'}
+                                        items={recommends}
+                                        renderItem={(car, index) => (
+                                          <div key={index} className="item">
+                                            {car.denomination} <br />
+                                            <strong>{car.denomination}</strong>
+                                          </div>
+                                        )}
+                                        onChange={(e) => {
+                                          const { value } = e.target;
+                                          this.setState({
+                                            car: {
+                                              ...this.state.car,
+                                              denomination: value
+                                            }
+                                          });
+                                          this.search(value);
+                                        }}
+                                        onSelect={(car: any) => {
+                                          this.setState({
+                                            car: {
+                                              ...this.state.car,
+                                              brand: car.brand,
+                                              denomination: car.denomination,
+                                              material: car.material ?? ''
+                                            }
+                                          });
+                                        }}
+                                      />
+                                    </td>
+                                    <td>
+                                      <AutocompleteInput
+                                        value={car.material}
+                                        inputClass={'input-sm'}
+                                        items={recommends}
+                                        renderItem={(car, index) => (
+                                          <div key={index} className="item">
+                                            {car.denomination} <br />
+                                            <strong>{car.brand}</strong>
+                                          </div>
+                                        )}
+                                        onChange={(e) => {
+                                          const { value } = e.target;
+                                          this.setState({
+                                            car: {
+                                              ...this.state.car,
+                                              material: value
+                                            }
+                                          });
+                                          this.search(value);
+                                        }}
+                                        onSelect={(car: any) => {
+                                          this.setState({
+                                            car: {
+                                              ...this.state.car,
+                                              brand: car.brand,
+                                              denomination: car.denomination,
+                                              material: car.material ?? ''
+                                            }
+                                          });
+                                        }}
+                                      />
+                                    </td>
+                                    <td>
+                                      <input type="text"
+                                        className="form-control input-sm"
+                                        value={this.state.car.color}
+                                        onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                                          const { value } = e.target;
+                                          this.setState({
+                                            car: {
+                                              ...this.state.car,
+                                              color: value
+                                            }
+                                          });
+                                        }}
+                                      />
+                                    </td>
+                                    <td>
+                                      <select
+                                        className="form-control select-sm font-12" value={this.state.car.reason}
+                                        onChange={(e: React.ChangeEvent<HTMLSelectElement>) => {
+                                          const { value } = e.target;
+                                          this.setState({
+                                            car: {
+                                              ...this.state.car,
+                                              reason: value
+                                            }
+                                          });
+                                        }}
+                                      >
+                                        <option value="" disabled={true}>-</option>
+                                        {
+                                          reasons.map((reason) => (
+                                            <option key={reason._id} value={reason._id}>{reason.name}</option>
+                                          ))
                                         }
-                                      });
-                                      this.search(value);
-                                    }}
-                                    onSelect={(car: any) => {
-                                      this.setState({
-                                        car: {
-                                          ...this.state.car,
-                                          brand: car.brand,
-                                          denomination: car.denomination,
-                                          material: car.material ?? ''
-                                        }
-                                      });
-                                    }}
-                                  />
-                                </td>
-                                <td>
-                                  <AutocompleteInput
-                                    value={car.denomination}
-                                    inputClass={'input-sm'}
-                                    items={recommends}
-                                    renderItem={(car, index) => (
-                                      <div key={index} className="item">
-                                        {car.denomination} <br />
-                                        <strong>{car.denomination}</strong>
-                                      </div>
-                                    )}
-                                    onChange={(e) => {
-                                      const { value } = e.target;
-                                      this.setState({
-                                        car: {
-                                          ...this.state.car,
-                                          denomination: value
-                                        }
-                                      });
-                                      this.search(value);
-                                    }}
-                                    onSelect={(car: any) => {
-                                      this.setState({
-                                        car: {
-                                          ...this.state.car,
-                                          brand: car.brand,
-                                          denomination: car.denomination,
-                                          material: car.material ?? ''
-                                        }
-                                      });
-                                    }}
-                                  />
-                                </td>
-                                <td>
-                                  <AutocompleteInput
-                                    value={car.material}
-                                    inputClass={'input-sm'}
-                                    items={recommends}
-                                    renderItem={(car, index) => (
-                                      <div key={index} className="item">
-                                        {car.denomination} <br />
-                                        <strong>{car.brand}</strong>
-                                      </div>
-                                    )}
-                                    onChange={(e) => {
-                                      const { value } = e.target;
-                                      this.setState({
-                                        car: {
-                                          ...this.state.car,
-                                          material: value
-                                        }
-                                      });
-                                      this.search(value);
-                                    }}
-                                    onSelect={(car: any) => {
-                                      this.setState({
-                                        car: {
-                                          ...this.state.car,
-                                          brand: car.brand,
-                                          denomination: car.denomination,
-                                          material: car.material ?? ''
-                                        }
-                                      });
-                                    }}
-                                  />
-                                </td>
-                                <td>
-                                  <input type="text"
-                                    className="form-control input-sm"
-                                    value={this.state.car.color}
-                                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
-                                      const { value } = e.target;
-                                      this.setState({
-                                        car: {
-                                          ...this.state.car,
-                                          color: value
-                                        }
-                                      });
-                                    }}
-                                  />
-                                </td>
-                                <td>
-                                  <select
-                                    className="form-control select-sm font-12" value={this.state.car.reason}
-                                    onChange={(e: React.ChangeEvent<HTMLSelectElement>) => {
-                                      const { value } = e.target;
-                                      this.setState({
-                                        car: {
-                                          ...this.state.car,
-                                          reason: value
-                                        }
-                                      });
-                                    }}
-                                  >
-                                    <option value="" disabled={true}>-</option>
-                                    {
-                                      reasons.map((reason) => (
-                                        <option key={reason._id} value={reason._id}>{reason.name}</option>
-                                      ))
-                                    }
-                                  </select>
-                                </td>
-                                <td className="text-right">
-                                  <button className="btn btn-sm btn-block btn-success" onClick={this.createItem}>
-                                    <i className="fa fa-fw fa-plus" />Agregar vehículo
+                                      </select>
+                                    </td>
+                                    <td className="text-right">
+                                      <button className="btn btn-sm btn-block btn-success" onClick={this.createItem}>
+                                        <i className="fa fa-fw fa-plus" />Agregar vehículo
                                   </button>
-                                </td>
-                              </tr>
-                            </tbody>
-                          </table>
+                                    </td>
+                                  </tr>
+                                </tbody>
+                              </table>
+                            </div>
+                          </div>
                         </div>
-                      </div>
-                    </div>
-                    <div className="row">
+                        : null
+                    }
+                    {/* <div className="row">
                       <div className="col-md-12">
                         <div className="activity-comments">
                           <h4>Actividad y comentarios</h4>
@@ -391,7 +405,7 @@ class RequestDetailView extends React.Component<IPropsType, IStateType> {
                           </div>
                         </div>
                       </div>
-                    </div>
+                    </div> */}
                   </React.Fragment>
                   : null
               }
@@ -434,7 +448,7 @@ class RequestDetailView extends React.Component<IPropsType, IStateType> {
             material: '',
             color: '',
             reason: ''
-          },
+          }
         });
       })
       .catch((err: AxiosError): void => {

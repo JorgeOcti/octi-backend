@@ -11,7 +11,9 @@ import { IRequestItemsState } from '../../../actions/requestItems.types';
 import AppContainer from '../../../container/AppContainer';
 import { IWindow } from '../../../interfaces/window';
 import ApiService from '../../../utils/axios';
+import { hasPermission } from '../../../utils/common';
 import Paginator from '../../Utils/Paginator';
+import ShowIf from '../../Utils/ShowIf';
 import RequestVehicleItem from './RequestVehicleItem';
 
 
@@ -129,9 +131,11 @@ class RequestVehicleListView extends React.Component<IPropsType, IStateType> {
             <div className="box-header with-border">
               <h3 className="box-title">Vehículos <small>{pagination.count}</small></h3>
               <div className="pull-right box-tools">
-                <button className="btn btn-sm btn-success" onClick={undefined}>
-                  <i className="fa fa-fw fa-plus" /> Crear solicitud
-                </button>
+                <ShowIf condition={hasPermission(window.user, 'createRequest')}>
+                  <button className="btn btn-sm btn-success" onClick={undefined}>
+                    <i className="fa fa-fw fa-plus" /> Crear solicitud
+                  </button>
+                </ShowIf>
                 <button
                   className="btn btn-sm btn-primary hidden-xs"
                   onClick={this.exportExcel}
@@ -238,7 +242,9 @@ class RequestVehicleListView extends React.Component<IPropsType, IStateType> {
                       F. llegada
                       <span style={{float: 'right'}}><i className={`fa fa-fw ${orderBy === 'estimatedArrival' ? `${orderType === 'descending' ? 'fa-sort-down' : 'fa-sort-up'}` : 'fa-sort'}`} /></span>
                     </th>
-                    <th className="middle" style={{ width: '30px' }} />
+                    <ShowIf condition={hasPermission(window.user, 'deleteRequest')}>
+                      <th className="middle" style={{ width: '30px' }} />
+                    </ShowIf>
                   </tr>
                 </thead>
                 <tbody>

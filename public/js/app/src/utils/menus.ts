@@ -148,7 +148,7 @@ if (hasPermission(window.user, 'viewPlanning')) {
     icon: 'fa-circle-o',
     text: 'Detalle',
     url: '/planning/'
-  })
+  });
 }
 if (hasPermission(window.user, 'viewPlanning')) {
   planningItems.push({
@@ -156,7 +156,7 @@ if (hasPermission(window.user, 'viewPlanning')) {
     icon: 'fa-circle-o',
     text: 'Importar',
     url: '/planning/import/'
-  })
+  });
 }
 
 if (planningItems.length) {

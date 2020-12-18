@@ -1,3 +1,4 @@
+import * as moment from 'moment-timezone';
 import { AxiosError, AxiosResponse } from 'axios';
 import * as Raven from 'raven-js';
 import * as React from 'react';
@@ -11,8 +12,10 @@ import { updateRequestItemsThunkAction } from '../../../actions/requestItems.act
 import { IRequestItemsState } from '../../../actions/requestItems.types';
 import { IWindow } from '../../../interfaces/window';
 import ApiService from '../../../utils/axios';
+import { hasPermission } from '../../../utils/common';
 import AutocompleteInput from '../../Utils/AutocompleteInput';
 import DateRangePicker from '../../Utils/DateRangePicker';
+import ShowIf from '../../Utils/ShowIf';
 
 interface IPropsType extends RouteComponentProps<{ id: string }> {
   requestItems: IRequestItemsState;
@@ -54,11 +57,12 @@ class RequestVehicleItem extends React.Component<IPropsType, IStateType> {
     const { item } = this.props;
     const { requestItemStatus, reasons, carriers } = this.props.requestItems;
     const { recommends } = this.state;
+    const canChangeRequest = hasPermission(window.user, 'changeRequest');
     return (
       <tr id={`request-item-${item._id}`} className={'background-transition'}>
         <td
-          className="middle-center pointer"
-          onClick={() => {
+          className={`middle-center ${canChangeRequest ? 'pointer' : ''}`}
+          onClick={canChangeRequest ? () => {
             this.props.updateRequestItemsThunkAction({
               item: {
                 ...item,
@@ -66,255 +70,281 @@ class RequestVehicleItem extends React.Component<IPropsType, IStateType> {
               },
               debounce: false
             });
-          }}
+          } : undefined}
         >
           {item.priority ? <i className="fa fa-star text-yellow" /> : <i className="fa fa-star text-gray" />}
         </td>
         <td className="middle"><strong className="text-underline">#{this.padNumber(item.request?.number)}</strong></td>
         <td className="middle">{item.destination.name}</td>
-        {/* <td className="middle">{item.car.brand}</td> */}
-        <td className="middle">
-          <AutocompleteInput
-            value={item.car.brand}
-            inputClass={'input-sm'}
-            items={recommends}
-            renderItem={(car, index) => (
-              <div key={index} className="item">
-                {car.denomination} <br />
-                <strong>{car.brand}</strong>
-              </div>
-            )}
-            onChange={(e) => {
-              const { value } = e.target;
-              this.props.updateRequestItemsThunkAction({
-                item: {
-                  ...item,
-                  car: {
-                    ...item.car,
-                    brand: value
-                  }
-                },
-                debounce: true
-              });
-              this.search(value);
-            }}
-            onSelect={(car: any) => {
-              this.props.updateRequestItemsThunkAction({
-                item: {
-                  ...item,
-                  car: {
-                    ...item.car,
-                    brand: car.brand,
-                    denomination: car.denomination,
-                    material: car.material ?? ''
-                  }
-                },
-                debounce: false
-              });
-            }}
-          />
-        </td>
-        {/* <td className="middle">{item.car.denomination}</td> */}
-        <td className="middle">
-          <AutocompleteInput
-            value={item.car.denomination}
-            inputClass={'input-sm'}
-            items={recommends}
-            renderItem={(car, index) => (
-              <div key={index} className="item">
-                {car.denomination} <br />
-                <strong>{car.brand}</strong>
-              </div>
-            )}
-            onChange={(e) => {
-              const { value } = e.target;
-              this.props.updateRequestItemsThunkAction({
-                item: {
-                  ...item,
-                  car: {
-                    ...item.car,
-                    denomination: value
-                  }
-                },
-                debounce: true
-              });
-              this.search(value);
-            }}
-            onSelect={(car: any) => {
-              this.props.updateRequestItemsThunkAction({
-                item: {
-                  ...item,
-                  car: {
-                    ...item.car,
-                    brand: car.brand,
-                    denomination: car.denomination,
-                    material: car.material ?? ''
-                  }
-                },
-                debounce: false
-              });
-            }}
-          />
-        </td>
-        <td className="middle">
-          <AutocompleteInput
-            value={item.car.material}
-            inputClass={'input-sm'}
-            items={recommends}
-            renderItem={(car, index) => (
-              <div key={index} className="item">
-                {car.denomination} <br />
-                <strong>{car.brand}</strong>
-              </div>
-            )}
-            onChange={(e) => {
-              const { value } = e.target;
-              this.props.updateRequestItemsThunkAction({
-                item: {
-                  ...item,
-                  car: {
-                    ...item.car,
-                    material: value
-                  }
-                },
-                debounce: true
-              });
-              this.search(value);
-            }}
-            onSelect={(car: any) => {
-              this.props.updateRequestItemsThunkAction({
-                item: {
-                  ...item,
-                  car: {
-                    ...item.car,
-                    brand: car.brand,
-                    denomination: car.denomination,
-                    material: car.material ?? ''
-                  }
-                },
-                debounce: false
-              });
-            }}
-          />
-        </td>
-        {/* <td className="middle">{item.car.color}</td> */}
-        <td className="middle">
-          <input type="text"
-            className="form-control input-sm"
-            defaultValue={item.car.color}
-            style={{ width: '80px' }}
-            onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
-              this.props.updateRequestItemsThunkAction({
-                item: {
-                  ...item,
-                  car: {
-                    ...item.car,
-                    color: e.target.value
-                  }
-                },
-                debounce: false
-              });
-            }}
-          />
-        </td>
-        {/* <td className="middle">{item.status.name}</td> */}
-        <td className="middle">
-          <select className="form-control select-sm font-12" value={item.status?._id ?? ''}
-            onChange={(e: React.ChangeEvent<HTMLSelectElement>) => {
-              this.props.updateRequestItemsThunkAction({
-                item: {
-                  ...item,
-                  status: {
-                    ...item.status,
-                    _id: e.target.value
-                  }
-                },
-                debounce: false
-              });
-            }}
-          >
-            <option value="" disabled={true}>-</option>
-            {
-              requestItemStatus.map((req) => (
-                <option key={req._id} value={req._id}>{req.name}</option>
-              ))
-            }
+        {
+          canChangeRequest ?
+            <td className="middle">
+              <AutocompleteInput
+                value={item.car.brand}
+                inputClass={'input-sm'}
+                items={recommends}
+                renderItem={(car, index) => (
+                  <div key={index} className="item">
+                    {car.denomination} <br />
+                    <strong>{car.brand}</strong>
+                  </div>
+                )}
+                onChange={(e) => {
+                  const { value } = e.target;
+                  this.props.updateRequestItemsThunkAction({
+                    item: {
+                      ...item,
+                      car: {
+                        ...item.car,
+                        brand: value
+                      }
+                    },
+                    debounce: true
+                  });
+                  this.search(value);
+                }}
+                onSelect={(car: any) => {
+                  this.props.updateRequestItemsThunkAction({
+                    item: {
+                      ...item,
+                      car: {
+                        ...item.car,
+                        brand: car.brand,
+                        denomination: car.denomination,
+                        material: car.material ?? ''
+                      }
+                    },
+                    debounce: false
+                  });
+                }}
+              />
+            </td>
+            : <td className="middle">{item.car.brand}</td>
+        }
+        {
+          canChangeRequest ?
+            <td className="middle">
+              <AutocompleteInput
+                value={item.car.denomination}
+                inputClass={'input-sm'}
+                items={recommends}
+                renderItem={(car, index) => (
+                  <div key={index} className="item">
+                    {car.denomination} <br />
+                    <strong>{car.brand}</strong>
+                  </div>
+                )}
+                onChange={(e) => {
+                  const { value } = e.target;
+                  this.props.updateRequestItemsThunkAction({
+                    item: {
+                      ...item,
+                      car: {
+                        ...item.car,
+                        denomination: value
+                      }
+                    },
+                    debounce: true
+                  });
+                  this.search(value);
+                }}
+                onSelect={(car: any) => {
+                  this.props.updateRequestItemsThunkAction({
+                    item: {
+                      ...item,
+                      car: {
+                        ...item.car,
+                        brand: car.brand,
+                        denomination: car.denomination,
+                        material: car.material ?? ''
+                      }
+                    },
+                    debounce: false
+                  });
+                }}
+              />
+            </td>
+            : <td className="middle">{item.car.denomination}</td>
+        }
+        {
+          canChangeRequest ?
+            <td className="middle">
+              <AutocompleteInput
+                value={item.car.material}
+                inputClass={'input-sm'}
+                items={recommends}
+                renderItem={(car, index) => (
+                  <div key={index} className="item">
+                    {car.denomination} <br />
+                    <strong>{car.brand}</strong>
+                  </div>
+                )}
+                onChange={(e) => {
+                  const { value } = e.target;
+                  this.props.updateRequestItemsThunkAction({
+                    item: {
+                      ...item,
+                      car: {
+                        ...item.car,
+                        material: value
+                      }
+                    },
+                    debounce: true
+                  });
+                  this.search(value);
+                }}
+                onSelect={(car: any) => {
+                  this.props.updateRequestItemsThunkAction({
+                    item: {
+                      ...item,
+                      car: {
+                        ...item.car,
+                        brand: car.brand,
+                        denomination: car.denomination,
+                        material: car.material ?? ''
+                      }
+                    },
+                    debounce: false
+                  });
+                }}
+              />
+            </td>
+            : <td className="middle">{item.car.material}</td>
+        }
+        {
+          canChangeRequest ?
+            <td className="middle">
+              <input type="text"
+                className="form-control input-sm"
+                defaultValue={item.car.color}
+                style={{ width: '80px' }}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                  this.props.updateRequestItemsThunkAction({
+                    item: {
+                      ...item,
+                      car: {
+                        ...item.car,
+                        color: e.target.value
+                      }
+                    },
+                    debounce: false
+                  });
+                }}
+              />
+            </td>
+            : <td className="middle">{item.car.color}</td>
+        }
+        {
+          canChangeRequest ?
+            <td className="middle">
+              <select className="form-control select-sm font-12" value={item.status?._id ?? ''}
+                onChange={(e: React.ChangeEvent<HTMLSelectElement>) => {
+                  this.props.updateRequestItemsThunkAction({
+                    item: {
+                      ...item,
+                      status: {
+                        ...item.status,
+                        _id: e.target.value
+                      }
+                    },
+                    debounce: false
+                  });
+                }}
+              >
+                <option value="" disabled={true}>-</option>
+                {
+                  requestItemStatus.map((req) => (
+                    <option key={req._id} value={req._id}>{req.name}</option>
+                  ))
+                }
 
-          </select>
-        </td>
-        {/* <td className="middle">{item.car.vin}12345678901234567</td> */}
-        <td className="middle">
-          <input
-            type="text"
-            style={{ width: '125px' }}
-            className="form-control input-sm"
-            defaultValue={item.car.vin}
-            onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
-              this.props.updateRequestItemsThunkAction({
-                item: {
-                  ...item,
-                  car: {
-                    ...item.car,
-                    vin: e.target.value
-                  }
-                },
-                debounce: false
-              });
-            }}
-          />
-        </td>
-        <td className="middle">
-          <input type="text"
-            className="form-control input-sm"
-            style={{ width: '80px' }}
-            defaultValue={item.car.internalNumber}
-            onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
-              this.props.updateRequestItemsThunkAction({
-                item: {
-                  ...item,
-                  car: {
-                    ...item.car,
-                    internalNumber: e.target.value
-                  }
-                },
-                debounce: false
-              });
-            }}
-          />
-        </td>
-        {/* <td className="middle">{item.reason?.name}</td> */}
-        <td className="middle">
-          <select
-            className="form-control select-sm font-12" value={item.reason?._id ?? ''}
-            onChange={(e: React.ChangeEvent<HTMLSelectElement>) => {
-              this.props.updateRequestItemsThunkAction({
-                item: {
-                  ...item,
-                  reason: {
-                    ...item.reason,
-                    _id: e.target.value
-                  }
-                },
-                debounce: false
-              });
-            }}
-          >
-            <option value="" disabled={true}>-</option>
-            {
-              reasons.map((reason) => (
-                <option key={reason._id} value={reason._id}>{reason.name}</option>
-              ))
-            }
-          </select>
-        </td>
+              </select>
+            </td>
+            : <td className="middle">{item.status?.name}</td>
+        }
+        {
+          canChangeRequest ?
+            <td className="middle">
+              <input
+                type="text"
+                style={{ width: '125px' }}
+                className="form-control input-sm"
+                defaultValue={item.car.vin}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                  this.props.updateRequestItemsThunkAction({
+                    item: {
+                      ...item,
+                      car: {
+                        ...item.car,
+                        vin: e.target.value
+                      }
+                    },
+                    debounce: false
+                  });
+                }}
+              />
+            </td>
+            : <td className="middle">{item.car.vin}</td>
+        }
+        {
+          canChangeRequest ?
+            <td className="middle">
+              <input type="text"
+                className="form-control input-sm"
+                style={{ width: '80px' }}
+                defaultValue={item.car.internalNumber}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                  this.props.updateRequestItemsThunkAction({
+                    item: {
+                      ...item,
+                      car: {
+                        ...item.car,
+                        internalNumber: e.target.value
+                      }
+                    },
+                    debounce: false
+                  });
+                }}
+              />
+            </td>
+            : <td className="middle">{item.car.internalNumber}</td>
+        }
+        {
+          canChangeRequest ?
+            <td className="middle">
+              <select
+                className="form-control select-sm font-12" value={item.reason?._id ?? ''}
+                onChange={(e: React.ChangeEvent<HTMLSelectElement>) => {
+                  this.props.updateRequestItemsThunkAction({
+                    item: {
+                      ...item,
+                      reason: {
+                        ...item.reason,
+                        _id: e.target.value
+                      }
+                    },
+                    debounce: false
+                  });
+                }}
+              >
+                <option value="" disabled={true}>-</option>
+                {
+                  reasons.map((reason) => (
+                    <option key={reason._id} value={reason._id}>{reason.name}</option>
+                  ))
+                }
+              </select>
+            </td>
+            : <td className="middle">{item.reason?.name}</td>
+        }
         <td className="middle">
           <div className="flex-wrap">
             <div
-              className={`flex-wrap-item-center ${undefined ?? 'pointer'} ${item.equipment ? '' : 'text-gray'}`}
+              className={`flex-wrap-item-center ${canChangeRequest ? 'pointer' : ''} ${item.equipment ? '' : 'text-gray'}`}
               data-toggle="tooltip"
               data-placement="top"
               title="Accesorización"
-              onClick={() => {
+              onClick={canChangeRequest ? () => {
                 this.props.updateRequestItemsThunkAction({
                   item: {
                     ...item,
@@ -322,16 +352,16 @@ class RequestVehicleItem extends React.Component<IPropsType, IStateType> {
                   },
                   debounce: false
                 });
-              }}
+              } : undefined}
             >
               <i className="material-icons font-14">library_add</i>
             </div>
             <div
-              className={`flex-wrap-item-center ${undefined ?? 'pointer'} ${item.body ? '' : 'text-gray'}`}
+              className={`flex-wrap-item-center ${canChangeRequest ? 'pointer' : ''} ${item.body ? '' : 'text-gray'}`}
               data-toggle="tooltip"
               data-placement="top"
               title="Carrocero"
-              onClick={() => {
+              onClick={canChangeRequest ? () => {
                 this.props.updateRequestItemsThunkAction({
                   item: {
                     ...item,
@@ -339,7 +369,7 @@ class RequestVehicleItem extends React.Component<IPropsType, IStateType> {
                   },
                   debounce: false
                 });
-              }}
+              }: undefined}
             >
               <i className="material-icons font-14">rv_hookup</i>
             </div>
@@ -348,11 +378,11 @@ class RequestVehicleItem extends React.Component<IPropsType, IStateType> {
         <td className="middle">
           <div className="flex-wrap">
             <div
-              className={`flex-wrap-item-center ${undefined ?? 'pointer'} ${item.washed ? '' : 'text-gray'}`}
+              className={`flex-wrap-item-center ${canChangeRequest ? 'pointer' : ''} ${item.washed ? '' : 'text-gray'}`}
               data-toggle="tooltip"
               data-placement="top"
               title="Pre-Lavado"
-              onClick={() => {
+              onClick={canChangeRequest ? () => {
                 this.props.updateRequestItemsThunkAction({
                   item: {
                     ...item,
@@ -360,16 +390,16 @@ class RequestVehicleItem extends React.Component<IPropsType, IStateType> {
                   },
                   debounce: false
                 });
-              }}
+              } : undefined}
             >
               <i className="material-icons font-14">local_car_wash</i>
             </div>
             <div
-              className={`flex-wrap-item-center ${undefined ?? 'pointer'} ${item.review ? '' : 'text-gray'}`}
+              className={`flex-wrap-item-center ${canChangeRequest ? 'pointer' : ''} ${item.review ? '' : 'text-gray'}`}
               data-toggle="tooltip"
               data-placement="top"
               title="Inspección Pre-entrega"
-              onClick={() => {
+              onClick={canChangeRequest ? () => {
                 this.props.updateRequestItemsThunkAction({
                   item: {
                     ...item,
@@ -377,69 +407,82 @@ class RequestVehicleItem extends React.Component<IPropsType, IStateType> {
                   },
                   debounce: false
                 });
-              }}
+              } : undefined}
             >
               <i className="material-icons font-14">build</i>
             </div>
           </div>
         </td>
-        {/* <td className="middle">{item.carrier?.name}</td> */}
-        <td className="middle">
-          <select className="form-control select-sm font-12" value={item.carrier?._id ?? ''}
-            onChange={(e: React.ChangeEvent<HTMLSelectElement>) => {
-              this.props.updateRequestItemsThunkAction({
-                item: {
-                  ...item,
-                  carrier: !e.target.value.length ? null : {
-                    ...item.reason,
-                    _id: e.target.value
-                  }
-                },
-                debounce: false
-              });
-            }}
-          >
-            <option value="">-</option>
-            {
-              carriers.map((carrier) => (
-                <option key={carrier._id} value={carrier._id}>{carrier.name}</option>
-              ))
-            }
-          </select>
-        </td>
-        <td className="middle">
-          <DateRangePicker
-            className={'input-sm'}
-            value={item.uploadDate}
-            onChange={(e) => {
-              this.props.updateRequestItemsThunkAction({
-                item: {
-                  ...item,
-                  uploadDate: e as any
-                },
-                debounce: false
-              });
-            }}
-          />
-        </td>
-        <td className="middle">
-          <DateRangePicker
-            className={'input-sm'}
-            value={item.estimatedArrival}
-            onChange={(e) => {
-              this.props.updateRequestItemsThunkAction({
-                item: {
-                  ...item,
-                  estimatedArrival: e as any
-                },
-                debounce: false
-              });
-            }}
-          />
-        </td>
-        <td className="middle-center text-red pointer" onClick={() => this.deleteRequestItem(item)}>
-          <i className="fa fa-minus-circle" />
-        </td>
+        {
+          canChangeRequest ?
+            <td className="middle">
+              <select className="form-control select-sm font-12" value={item.carrier?._id ?? ''}
+                onChange={(e: React.ChangeEvent<HTMLSelectElement>) => {
+                  this.props.updateRequestItemsThunkAction({
+                    item: {
+                      ...item,
+                      carrier: !e.target.value.length ? null : {
+                        ...item.reason,
+                        _id: e.target.value
+                      }
+                    },
+                    debounce: false
+                  });
+                }}
+              >
+                <option value="">-</option>
+                {
+                  carriers.map((carrier) => (
+                    <option key={carrier._id} value={carrier._id}>{carrier.name}</option>
+                  ))
+                }
+              </select>
+            </td>
+            : <td className="middle">{item.carrier?.name}</td>
+        }
+        {
+          canChangeRequest ?
+            <td className="middle">
+              <DateRangePicker
+                className={'input-sm'}
+                value={item.uploadDate}
+                onChange={(e) => {
+                  this.props.updateRequestItemsThunkAction({
+                    item: {
+                      ...item,
+                      uploadDate: e as any
+                    },
+                    debounce: false
+                  });
+                }}
+              />
+            </td>
+            : <td className="middle">{item.uploadDate ? moment(item.uploadDate).format('DD-MM-YY') : '-'}</td>
+        }
+        {
+          canChangeRequest ?
+            <td className="middle">
+              <DateRangePicker
+                className={'input-sm'}
+                value={item.estimatedArrival}
+                onChange={(e) => {
+                  this.props.updateRequestItemsThunkAction({
+                    item: {
+                      ...item,
+                      estimatedArrival: e as any
+                    },
+                    debounce: false
+                  });
+                }}
+              />
+            </td>
+            : <td className="middle">{item.estimatedArrival ? moment(item.estimatedArrival).format('DD-MM-YY') : '-'}</td>
+        }
+        <ShowIf condition={hasPermission(window.user, 'deleteRequest')}>
+          <td className="middle-center text-red pointer" onClick={() => this.deleteRequestItem(item)}>
+            <i className="fa fa-minus-circle" />
+          </td>
+        </ShowIf>
       </tr>
     );
   }
