@@ -20,7 +20,9 @@ import AppContainer from '../../../container/AppContainer';
 import { IWindow } from '../../../interfaces/window';
 import ApiService from '../../../utils/axios';
 import { hasPermission } from '../../../utils/common';
+import ImageLazyLoad from '../../Utils/ImageLazyLoad';
 import Paginator from '../../Utils/Paginator';
+import ShowIf from '../../Utils/ShowIf';
 import RequestListDetail from './RequestDetail';
 
 interface IPropsType extends RouteComponentProps<{ ticket: string }> {
@@ -184,42 +186,64 @@ class RequestListView extends React.Component<IPropsType, IStateType> {
               </div>
             </div>
             <div className="box-body table-responsive request-list">
-              <div className="row request bg-primary">
-                <div className="col-sm-1 col-xs-1 col-md-1 col-lg-1 center pointer head-sorted" onClick={() => this.changeOrder('_id')}>
-                  <strong>ID</strong> <i className={`fa ${orderBy === '_id' ? `${orderType === 'descending' ? 'fa-sort-down' : 'fa-sort-up'}` : 'fa-sort'}`} />
+              <ShowIf condition={requests.length > 0}>
+                <div className="row request bg-primary">
+                  <div className="col-sm-1 col-xs-1 col-md-1 col-lg-1 center pointer head-sorted" onClick={() => this.changeOrder('_id')}>
+                    <strong>ID</strong> <i className={`fa ${orderBy === '_id' ? `${orderType === 'descending' ? 'fa-sort-down' : 'fa-sort-up'}` : 'fa-sort'}`} />
+                  </div>
+                  <div className="col-sm-1 col-xs-1 col-md-1 col-lg-1">
+                    <strong>Flota</strong>
+                  </div>
+                  <div className="col-sm-3 col-xs-3 col-md-3 col-lg-3">
+                    <strong>Destino</strong>
+                  </div>
+                  <div className="col-sm-1 col-xs-1 col-md-1 col-lg-1">
+                    <strong>Nº Vehículos</strong>
+                  </div>
+                  <div className="col-sm-2 col-xs-2 col-md-2 col-lg-2  pointer head-sorted" onClick={() => this.changeOrder('createdAt')}>
+                    <strong>Fecha Creación</strong> <i className={`fa ${orderBy === 'createdAt' ? `${orderType === 'descending' ? 'fa-sort-down' : 'fa-sort-up'}` : 'fa-sort'}`} />
+                  </div>
+                  <div className="col-sm-2 col-xs-2 col-md-2 col-lg-2  pointer head-sorted" onClick={() => this.changeOrder('updatedAt')}>
+                    <strong>Última Actualización</strong> <i className={`fa ${orderBy === 'updatedAt' ? `${orderType === 'descending' ? 'fa-sort-down' : 'fa-sort-up'}` : 'fa-sort'}`} />
+                  </div>
+                  <div className="col-sm-1 col-xs-1 col-md-1 col-lg-1 center">
+                    {/* <strong><i className="fa fa-comment" /></strong> */}
+                  </div>
+                  <div className="col-sm-1 col-xs-1 col-md-1 col-lg-1" />
                 </div>
-                <div className="col-sm-1 col-xs-1 col-md-1 col-lg-1">
-                  <strong>Flota</strong>
+                {
+                  requests.map((request: any) => (
+                    <RequestListDetail
+                      request={request}
+                      requestItemStatus={requestItemStatus}
+                      reasons={reasons}
+                      carriers={carriers}
+                      key={request._id}
+                      {...this.props}
+                    />
+                  ))
+                }
+              </ShowIf>
+              <ShowIf condition={!loading && requests.length === 0}>
+                <div className="row">
+                  <div className="col-md-12 text-center" style={{paddingTop: '10px', paddingBottom: '10px'}}>
+                      <ImageLazyLoad
+                        url="/images/not_found.png"
+                        height={'200px'}
+                        style={{
+                          opacity: 0.5,
+                          maxHeight: '200px',
+                          marginBottom: '10px'
+                        }}
+                        replaceLoading={<i
+                          className={'fa fa-2x fa-circle-o-notch text-primary fa-spin'}
+                          style={{ padding: '30px' }}
+                        />}
+                      /><br />
+                      <strong>No hay información para mostrar</strong>
+                  </div>
                 </div>
-                <div className="col-sm-3 col-xs-3 col-md-3 col-lg-3">
-                  <strong>Destino</strong>
-                </div>
-                <div className="col-sm-1 col-xs-1 col-md-1 col-lg-1">
-                  <strong>Nº Vehículos</strong>
-                </div>
-                <div className="col-sm-2 col-xs-2 col-md-2 col-lg-2  pointer head-sorted" onClick={() => this.changeOrder('createdAt')}>
-                  <strong>Fecha Creación</strong> <i className={`fa ${orderBy === 'createdAt' ? `${orderType === 'descending' ? 'fa-sort-down' : 'fa-sort-up'}` : 'fa-sort'}`} />
-                </div>
-                <div className="col-sm-2 col-xs-2 col-md-2 col-lg-2  pointer head-sorted" onClick={() => this.changeOrder('updatedAt')}>
-                  <strong>Última Actualización</strong> <i className={`fa ${orderBy === 'updatedAt' ? `${orderType === 'descending' ? 'fa-sort-down' : 'fa-sort-up'}` : 'fa-sort'}`} />
-                </div>
-                <div className="col-sm-1 col-xs-1 col-md-1 col-lg-1 center">
-                  {/* <strong><i className="fa fa-comment" /></strong> */}
-                </div>
-                <div className="col-sm-1 col-xs-1 col-md-1 col-lg-1" />
-              </div>
-              {
-                requests.map((request: any) => (
-                  <RequestListDetail
-                    request={request}
-                    requestItemStatus={requestItemStatus}
-                    reasons={reasons}
-                    carriers={carriers}
-                    key={request._id}
-                    {...this.props}
-                  />
-                ))
-              }
+              </ShowIf>
             </div>
             {
               pagination.pages > 1 &&

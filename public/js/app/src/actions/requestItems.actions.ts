@@ -179,3 +179,11 @@ export function updateRequestItemsThunkAction({ item, debounce }: { item: IReque
     }
   };
 }
+
+export function deleteRequestItemsThunkAction(id: string) {
+  return (dispatch: Dispatch<RequestItemsReduxActions>) => {
+    const api: ApiService = new ApiService();
+    api.deleteRequestItem(id)
+      .then((response: AxiosResponse) => {});
+  };
+}

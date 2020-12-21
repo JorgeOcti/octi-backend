@@ -392,8 +392,7 @@ export default class ApiService {
       label,
       carID,
       custom
-    }
-    );
+    });
   }
 
   public getInstance(): AxiosInstance {
@@ -451,9 +450,8 @@ export default class ApiService {
   public getVersions(): AxiosPromise {
     return this.instance.get(
       `/api/admin/versions/`, {
-      cancelToken: this.source.token
-    }
-    );
+        cancelToken: this.source.token
+      });
   }
 
   public loadStock({ carsByVenue }: { carsByVenue: any }): AxiosPromise {
@@ -462,16 +460,14 @@ export default class ApiService {
       carsByVenue
     }, {
       cancelToken: this.source.token
-    }
-    );
+    });
   }
 
   public getStock(): AxiosPromise {
     return this.instance.get(
       `/api/current-stock/`, {
       cancelToken: this.source.token
-    }
-    );
+    });
   }
 
   public getPlanning(page: number, pageSize?: number): AxiosPromise {

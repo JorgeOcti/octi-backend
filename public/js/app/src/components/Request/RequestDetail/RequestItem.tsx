@@ -350,7 +350,7 @@ class RequestItem extends React.Component<IPropsType, IStateType> {
               data-toggle="tooltip"
               data-placement="top"
               title="Accesorización"
-              onClick={canChangeRequest ? () => { 
+              onClick={canChangeRequest ? () => {
                 this.props.updateRequestItemInDetailThunkAction({
                   item: {
                     ...item,

@@ -11,6 +11,7 @@ exports.requestRouter = requestRouter;
 // web pages
 requestRouter.get('/requests/', middlewares_1.default.isLoggedIn, request_controller_1.default.index);
 requestRouter.get('/requests/export/', middlewares_1.default.isLoggedIn, request_controller_1.default.exportExcel);
+requestRouter.get('/requests/vehicles/:id/', middlewares_1.default.isLoggedIn, request_controller_1.default.index);
 requestRouter.get('/requests/vehicles/', middlewares_1.default.isLoggedIn, request_controller_1.default.index);
 requestRouter.get('/requests/:id/', middlewares_1.default.isLoggedIn, request_controller_1.default.index);
 requestRouter.get('/requests/create/', middlewares_1.default.isLoggedIn, request_controller_1.default.index);

@@ -35,8 +35,8 @@ class RequestItemStatusController {
         res.json({
           count: requestItemStatus.total,
           pages: requestItemStatus.pages,
-          min: min!.weigth,
-          max: max!.weigth,
+          min: min?min.weigth:0,
+          max: max?max.weigth:1,
           hasPrevious: options.page && options.page > 1 && requestItemStatus.pages && requestItemStatus.pages >= options.page,
           hasNext: options.page && requestItemStatus.pages && requestItemStatus.pages > options.page,
           results: requestItemStatus.docs,
@@ -44,6 +44,7 @@ class RequestItemStatusController {
         });
       }
     } catch (e) {
+      logger.error(e);
       /* istanbul ignore next */
       logger.error(`RequestItemStatusController.apiList: Async Error.`);
       /* istanbul ignore next */

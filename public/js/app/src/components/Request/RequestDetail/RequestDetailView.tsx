@@ -114,7 +114,8 @@ class RequestDetailView extends React.Component<IPropsType, IStateType> {
 
     this.socket.on('DELETE_REQUEST', (data: any): void => {
       if (data.idRequest === id) {
-        this.props.history.push('/requests/');
+        const vehiclesView = this.props.location.pathname.includes('requests/vehicles');
+        this.props.history.push(vehiclesView ? '/requests/vehicles/' : '/requests/');
       }
     });
 
@@ -155,8 +156,9 @@ class RequestDetailView extends React.Component<IPropsType, IStateType> {
     const { request, loading, reasons} = this.props.requests;
     const { recommends, car } = this.state;
     const canChangeRequest = hasPermission(window.user, 'changeRequest');
+    const vehiclesView = this.props.location.pathname.includes('requests/vehicles');
     return (
-      <AppContainer title="" cMenu="3" cSubMenu="3.1" cAction={'Detalle solicitud'}>
+      <AppContainer title="" cMenu="3" cSubMenu={vehiclesView ? '3.2' : '3.1'} cAction={'Detalle solicitud'}>
         <section className="content">
           <div className="box">
             <div className="box-header with-border">
@@ -229,7 +231,7 @@ class RequestDetailView extends React.Component<IPropsType, IStateType> {
                     </table>
                     {
                       canChangeRequest ?
-                        <div className="row">
+                        <div className="row" style={{marginBottom: '50px'}}>
                           <div className="col-md-8 col-md-offset-4">
                             <div className="container-table-add-car">
                               <table className="table table-xs">
@@ -381,7 +383,11 @@ class RequestDetailView extends React.Component<IPropsType, IStateType> {
                                       </select>
                                     </td>
                                     <td className="text-right">
-                                      <button className="btn btn-sm btn-block btn-success" onClick={this.createItem}>
+                                      <button
+                                        className="btn btn-sm btn-block btn-success"
+                                        onClick={this.createItem}
+                                        disabled={!this.state.car.brand || !this.state.car.color || !this.state.car.denomination || !this.state.car.reason}
+                                      >
                                         <i className="fa fa-fw fa-plus" />Agregar vehículo
                                   </button>
                                     </td>

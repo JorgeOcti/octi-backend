@@ -60,22 +60,29 @@ if (dashboardItems.length) {
 /* *****************
 * 3. Request and Distribution
 *****************/
-const distributionItems = [{
-  id: '3.1',
-  icon: 'fa-circle-o',
-  text: 'Solicitudes',
-  url: '/requests/'
-}, {
-  id: '3.2',
-  icon: 'fa-circle-o',
-  text: 'Vehículos',
-  url: '/requests/vehicles/'
-}, {
-  id: '3.3',
-  icon: 'fa-circle-o',
-  text: 'Transporte',
-  url: '/requests/'
-}];
+const distributionItems = [];
+
+if (hasPermission(window.user, 'viewRequest')) {
+  distributionItems.push({
+    id: '3.1',
+    icon: 'fa-circle-o',
+    text: 'Solicitudes',
+    url: '/requests/'
+  });
+  distributionItems.push({
+    id: '3.2',
+    icon: 'fa-circle-o',
+    text: 'Vehículos',
+    url: '/requests/vehicles/'
+  });
+}
+
+//  {
+//   id: '3.3',
+//   icon: 'fa-circle-o',
+//   text: 'Transporte',
+//   url: '/requests/'
+// }
 
 if (distributionItems.length) {
   menus.push({

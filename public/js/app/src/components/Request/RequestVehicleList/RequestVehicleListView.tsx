@@ -12,6 +12,7 @@ import AppContainer from '../../../container/AppContainer';
 import { IWindow } from '../../../interfaces/window';
 import ApiService from '../../../utils/axios';
 import { hasPermission } from '../../../utils/common';
+import ImageLazyLoad from '../../Utils/ImageLazyLoad';
 import Paginator from '../../Utils/Paginator';
 import ShowIf from '../../Utils/ShowIf';
 import RequestVehicleItem from './RequestVehicleItem';
@@ -48,6 +49,7 @@ class RequestVehicleListView extends React.Component<IPropsType, IStateType> {
     this.changePage = this.changePage.bind(this);
     this.changeOrder = this.changeOrder.bind(this);
     this.exportExcel = this.exportExcel.bind(this);
+    this.create = this.create.bind(this);
   }
 
   public componentWillMount(): void {
@@ -120,7 +122,7 @@ class RequestVehicleListView extends React.Component<IPropsType, IStateType> {
 
   public render(): React.ReactElement<IPropsType> {
     const {
-      pagination, loading, requestItems, reasons, requestItemStatus, carriers
+      pagination, loading, requestItems
     } = this.props.requestItems;
     const { orderBy, orderType} = this.props.requestItems.options;
     const {exporing} = this.state;
@@ -132,7 +134,10 @@ class RequestVehicleListView extends React.Component<IPropsType, IStateType> {
               <h3 className="box-title">Vehículos <small>{pagination.count}</small></h3>
               <div className="pull-right box-tools">
                 <ShowIf condition={hasPermission(window.user, 'createRequest')}>
-                  <button className="btn btn-sm btn-success" onClick={undefined}>
+                  <button
+                    className="btn btn-sm btn-success"
+                    onClick={this.create}
+                  >
                     <i className="fa fa-fw fa-plus" /> Crear solicitud
                   </button>
                 </ShowIf>
@@ -155,109 +160,132 @@ class RequestVehicleListView extends React.Component<IPropsType, IStateType> {
               </div>
             </div>
             <div className="box-body no-padding table-responsive">
-              <table className="table table-xs table-hover" style={{marginTop: '15px', minWidth: '1000px'}}>
-                <thead>
-                  <tr className="bg-primary" style={{ height: '45px' }}>
-                    <th className="middle" style={{ width: '28px' }} />
-                    <th
-                      className="middle pointer"
-                      style={{ width: '80px' }}
-                      onClick={() => this.changeOrder('request.number')}
-                    >
-                      Solicitud
-                      <span style={{float: 'right'}}><i className={`fa fa-fw ${orderBy === 'request.number' ? `${orderType === 'descending' ? 'fa-sort-down' : 'fa-sort-up'}` : 'fa-sort'}`} /></span>
-                    </th>
-                    <th
-                      className="middle pointer"
-                      style={{ width: '80px' }}
-                      onClick={() => this.changeOrder('destination.name')}
-                    >
-                      Destino
-                      <span style={{float: 'right'}}><i className={`fa fa-fw ${orderBy === 'destination.name' ? `${orderType === 'descending' ? 'fa-sort-down' : 'fa-sort-up'}` : 'fa-sort'}`} /></span>
-                    </th>
-                    <th
-                      className="middle pointer"
-                      style={{ width: '100px' }}
-                      onClick={() => this.changeOrder('car.brand')}
-                    >
-                      Marca
-                      <span style={{float: 'right'}}><i className={`fa fa-fw ${orderBy === 'car.brand' ? `${orderType === 'descending' ? 'fa-sort-down' : 'fa-sort-up'}` : 'fa-sort'}`} /></span>
-                    </th>
-                    <th
-                      className="middle pointer"
-                      style={{ width: '120px' }}
-                      onClick={() => this.changeOrder('car.description')}
-                    >
-                      Modelo
-                      <span style={{float: 'right'}}><i className={`fa fa-fw ${orderBy === 'car.description' ? `${orderType === 'descending' ? 'fa-sort-down' : 'fa-sort-up'}` : 'fa-sort'}`} /></span>
-                    </th>
-                    <th
-                      className="middle pointer"
-                      style={{ width: '120px' }}
-                      onClick={() => this.changeOrder('car.material')}
-                    >
-                      Material
-                      <span style={{float: 'right'}}><i className={`fa fa-fw ${orderBy === 'car.material' ? `${orderType === 'descending' ? 'fa-sort-down' : 'fa-sort-up'}` : 'fa-sort'}`} /></span>
-                    </th>
-                    <th className="middle">Color</th>
-                    <th
-                      className="middle pointer"
-                      onClick={() => this.changeOrder('status.name')}
-                    >
-                      Estado
-                      <span style={{float: 'right'}}><i className={`fa fa-fw ${orderBy === 'status.name' ? `${orderType === 'descending' ? 'fa-sort-down' : 'fa-sort-up'}` : 'fa-sort'}`} /></span>
-                    </th>
-                    <th className="middle">VIN</th>
-                    <th className="middle">CDO</th>
-                    <th
-                      className="middle pointer"
-                      style={{ width: '100px' }}
-                      onClick={() => this.changeOrder('reason.name')}
-                    >
-                      Motivo
-                      <span style={{float: 'right'}}><i className={`fa fa-fw ${orderBy === 'reason.name' ? `${orderType === 'descending' ? 'fa-sort-down' : 'fa-sort-up'}` : 'fa-sort'}`} /></span>
-                    </th>
-                    <th className="middle">Carrocería</th>
-                    <th className="middle">Pre-Entrega</th>
-                    <th
-                      className="middle pointer"
-                      onClick={() => this.changeOrder('carrier.name')}
-                    >
-                      Transporte
-                      <span style={{float: 'right'}}><i className={`fa fa-fw ${orderBy === 'carrier.name' ? `${orderType === 'descending' ? 'fa-sort-down' : 'fa-sort-up'}` : 'fa-sort'}`} /></span>
-                    </th>
-                    <th
-                      className="middle pointer"
-                      style={{ width: '80px' }}
-                      onClick={() => this.changeOrder('uploadDate')}
-                    >
-                      F. carga
-                      <span style={{float: 'right'}}><i className={`fa fa-fw ${orderBy === 'uploadDate' ? `${orderType === 'descending' ? 'fa-sort-down' : 'fa-sort-up'}` : 'fa-sort'}`} /></span>
-                    </th>
-                    <th
-                      className="middle pointer"
-                      style={{ width: '80px' }}
-                      onClick={() => this.changeOrder('estimatedArrival')}
-                    >
-                      F. llegada
-                      <span style={{float: 'right'}}><i className={`fa fa-fw ${orderBy === 'estimatedArrival' ? `${orderType === 'descending' ? 'fa-sort-down' : 'fa-sort-up'}` : 'fa-sort'}`} /></span>
-                    </th>
-                    <ShowIf condition={hasPermission(window.user, 'deleteRequest')}>
-                      <th className="middle" style={{ width: '30px' }} />
-                    </ShowIf>
-                  </tr>
-                </thead>
-                <tbody>
-                  {
-                    requestItems.map((item, index) => (
-                      <RequestVehicleItem
-                        key={item._id}
-                        item={item}
-                      />
-                    ))
-                  }
-                </tbody>
-              </table>
+              <ShowIf condition={requestItems.length > 0}>
+                <table className="table table-xs table-hover" style={{ marginTop: '15px', minWidth: '1000px' }}>
+                  <thead>
+                    <tr className="bg-primary" style={{ height: '45px' }}>
+                      <th className="middle" style={{ width: '28px' }} />
+                      <th
+                        className="middle pointer"
+                        style={{ width: '80px' }}
+                        onClick={() => this.changeOrder('request.number')}
+                      >
+                        Solicitud
+                      <span style={{ float: 'right' }}><i className={`fa fa-fw ${orderBy === 'request.number' ? `${orderType === 'descending' ? 'fa-sort-down' : 'fa-sort-up'}` : 'fa-sort'}`} /></span>
+                      </th>
+                      <th
+                        className="middle pointer"
+                        style={{ width: '80px' }}
+                        onClick={() => this.changeOrder('destination.name')}
+                      >
+                        Destino
+                      <span style={{ float: 'right' }}><i className={`fa fa-fw ${orderBy === 'destination.name' ? `${orderType === 'descending' ? 'fa-sort-down' : 'fa-sort-up'}` : 'fa-sort'}`} /></span>
+                      </th>
+                      <th
+                        className="middle pointer"
+                        style={{ width: '100px' }}
+                        onClick={() => this.changeOrder('car.brand')}
+                      >
+                        Marca
+                      <span style={{ float: 'right' }}><i className={`fa fa-fw ${orderBy === 'car.brand' ? `${orderType === 'descending' ? 'fa-sort-down' : 'fa-sort-up'}` : 'fa-sort'}`} /></span>
+                      </th>
+                      <th
+                        className="middle pointer"
+                        style={{ width: '120px' }}
+                        onClick={() => this.changeOrder('car.description')}
+                      >
+                        Modelo
+                      <span style={{ float: 'right' }}><i className={`fa fa-fw ${orderBy === 'car.description' ? `${orderType === 'descending' ? 'fa-sort-down' : 'fa-sort-up'}` : 'fa-sort'}`} /></span>
+                      </th>
+                      <th
+                        className="middle pointer"
+                        style={{ width: '120px' }}
+                        onClick={() => this.changeOrder('car.material')}
+                      >
+                        Material
+                      <span style={{ float: 'right' }}><i className={`fa fa-fw ${orderBy === 'car.material' ? `${orderType === 'descending' ? 'fa-sort-down' : 'fa-sort-up'}` : 'fa-sort'}`} /></span>
+                      </th>
+                      <th className="middle">Color</th>
+                      <th
+                        className="middle pointer"
+                        onClick={() => this.changeOrder('status.name')}
+                      >
+                        Estado
+                      <span style={{ float: 'right' }}><i className={`fa fa-fw ${orderBy === 'status.name' ? `${orderType === 'descending' ? 'fa-sort-down' : 'fa-sort-up'}` : 'fa-sort'}`} /></span>
+                      </th>
+                      <th className="middle">VIN</th>
+                      <th className="middle">CDO</th>
+                      <th
+                        className="middle pointer"
+                        style={{ width: '100px' }}
+                        onClick={() => this.changeOrder('reason.name')}
+                      >
+                        Motivo
+                      <span style={{ float: 'right' }}><i className={`fa fa-fw ${orderBy === 'reason.name' ? `${orderType === 'descending' ? 'fa-sort-down' : 'fa-sort-up'}` : 'fa-sort'}`} /></span>
+                      </th>
+                      <th className="middle">Carrocería</th>
+                      <th className="middle">Pre-Entrega</th>
+                      <th
+                        className="middle pointer"
+                        onClick={() => this.changeOrder('carrier.name')}
+                      >
+                        Transporte
+                      <span style={{ float: 'right' }}><i className={`fa fa-fw ${orderBy === 'carrier.name' ? `${orderType === 'descending' ? 'fa-sort-down' : 'fa-sort-up'}` : 'fa-sort'}`} /></span>
+                      </th>
+                      <th
+                        className="middle pointer"
+                        style={{ width: '80px' }}
+                        onClick={() => this.changeOrder('uploadDate')}
+                      >
+                        F. carga
+                      <span style={{ float: 'right' }}><i className={`fa fa-fw ${orderBy === 'uploadDate' ? `${orderType === 'descending' ? 'fa-sort-down' : 'fa-sort-up'}` : 'fa-sort'}`} /></span>
+                      </th>
+                      <th
+                        className="middle pointer"
+                        style={{ width: '80px' }}
+                        onClick={() => this.changeOrder('estimatedArrival')}
+                      >
+                        F. llegada
+                      <span style={{ float: 'right' }}><i className={`fa fa-fw ${orderBy === 'estimatedArrival' ? `${orderType === 'descending' ? 'fa-sort-down' : 'fa-sort-up'}` : 'fa-sort'}`} /></span>
+                      </th>
+                      <ShowIf condition={hasPermission(window.user, 'deleteRequest')}>
+                        <th className="middle" style={{ width: '30px' }} />
+                      </ShowIf>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {
+                      requestItems.map((item, index) => (
+                        <RequestVehicleItem
+                          key={item._id}
+                          item={item}
+                          {...this.props}
+                        />
+                      ))
+                    }
+                  </tbody>
+                </table>
+              </ShowIf>
+              <ShowIf condition={!loading && requestItems.length === 0}>
+                <div className="row">
+                  <div className="col-md-12 text-center" style={{paddingTop: '10px', paddingBottom: '10px'}}>
+                      <ImageLazyLoad
+                        url="/images/not_found.png"
+                        height={'200px'}
+                        style={{
+                          opacity: 0.5,
+                          maxHeight: '200px',
+                          marginBottom: '10px'
+                        }}
+                        replaceLoading={<i
+                          className={'fa fa-2x fa-circle-o-notch text-primary fa-spin'}
+                          style={{ padding: '30px' }}
+                        />}
+                      /><br />
+                      <strong>No hay información para mostrar</strong>
+                  </div>
+                </div>
+              </ShowIf>
             </div>
             {
               pagination.pages > 1 &&
@@ -279,6 +307,10 @@ class RequestVehicleListView extends React.Component<IPropsType, IStateType> {
         </section>
       </AppContainer>
     );
+  }
+
+  private create(): void {
+    this.props.history.push('/requests/vehicles/create/');
   }
 
   private changeOrder(key: string){
@@ -364,7 +396,7 @@ const mapDispatchToProps = (dispatch: any) => {
     getRequestItemsThunkAction: (page: number, orderBy: string, orderType: string) => dispatch(getRequestItemsThunkAction(page, orderBy, orderType)),
     createRequestItemAction: (item: IRequestItem) => dispatch(createRequestItemAction(item)),
     updateRequestItemAction: (item: IRequestItem) => dispatch(updateRequestItemAction(item)),
-    deleteRequestItemAction: (item: IRequestItem) => dispatch(deleteRequestItemAction(item)),
+    deleteRequestItemAction: (item: IRequestItem) => dispatch(deleteRequestItemAction(item))
     // deleteRequestActionInList: (id: string) => dispatch(deleteRequestActionInList(id))
   };
 };

@@ -107,8 +107,9 @@ class RequestCreateView extends React.Component<IPropsType, IStateType> {
 
   public render(): React.ReactElement<IPropsType> {
     const { newCar, cars, fleet, loading, venues, reasons } = this.state;
+    const vehiclesView = this.props.location.pathname === '/requests/vehicles/create/';
     return (
-      <AppContainer title="" cMenu="3" cSubMenu="3.1" cAction="Crear solicitud">
+      <AppContainer title="" cMenu="3" cSubMenu={vehiclesView ? '3.2' : '3.1'} cAction="Crear solicitud">
         <section className="content">
           <div className="box">
             <div className="box-header with-border">
@@ -570,6 +571,7 @@ class RequestCreateView extends React.Component<IPropsType, IStateType> {
   }
 
   private createRequest() {
+    const vehiclesView = this.props.location.pathname === '/requests/vehicles/create/';
     const { cars, fleet, venue } = this.state;
     if (!cars.length) {
       swal('Solicitud', 'No se han agregado vehículos para crear la solicitud.', 'error');
@@ -584,7 +586,7 @@ class RequestCreateView extends React.Component<IPropsType, IStateType> {
         })
         .then((response: AxiosResponse): void => {
           swal('Solicitud', 'Se ha creado satisfactoriamente.', 'success').then(() => {
-            this.props.history.push('/requests/');
+            this.props.history.push(vehiclesView ? '/requests/vehicles/' : '/requests/');
           });
         })
         .catch((err: AxiosError): void => {
@@ -594,7 +596,8 @@ class RequestCreateView extends React.Component<IPropsType, IStateType> {
   }
 
   private cancel(): void {
-    this.props.history.push('/requests/');
+    const vehiclesView = this.props.location.pathname === '/requests/vehicles/create/';
+    this.props.history.push(vehiclesView ? '/requests/vehicles/' : '/requests/');
   }
 }
 

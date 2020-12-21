@@ -9,6 +9,7 @@ const requestRouter = express.Router();
 // web pages
 requestRouter.get('/requests/', Middlewares.isLoggedIn, RequestController.index);
 requestRouter.get('/requests/export/', Middlewares.isLoggedIn, RequestController.exportExcel);
+requestRouter.get('/requests/vehicles/:id/', Middlewares.isLoggedIn, RequestController.index);
 requestRouter.get('/requests/vehicles/', Middlewares.isLoggedIn, RequestController.index);
 requestRouter.get('/requests/:id/', Middlewares.isLoggedIn, RequestController.index);
 requestRouter.get('/requests/create/', Middlewares.isLoggedIn, RequestController.index);

@@ -8,21 +8,21 @@ import { RouteComponentProps } from 'react-router-dom';
 import { debounce } from 'throttle-debounce';
 import { ICar } from '../../../../../../../src/interfaces/car.interface';
 import { IRequestItem } from '../../../../../../../src/interfaces/requestItem.interface';
-import { updateRequestItemsThunkAction } from '../../../actions/requestItems.actions';
+import { deleteRequestItemsThunkAction, updateRequestItemsThunkAction } from '../../../actions/requestItems.actions';
 import { IRequestItemsState } from '../../../actions/requestItems.types';
 import { IWindow } from '../../../interfaces/window';
 import ApiService from '../../../utils/axios';
 import { hasPermission } from '../../../utils/common';
 import AutocompleteInput from '../../Utils/AutocompleteInput';
 import DateRangePicker from '../../Utils/DateRangePicker';
+import * as swal from 'sweetalert';
 import ShowIf from '../../Utils/ShowIf';
 
 interface IPropsType extends RouteComponentProps<{ id: string }> {
   requestItems: IRequestItemsState;
   item: IRequestItem;
   updateRequestItemsThunkAction: ({ item, debounce }: { item: IRequestItem, debounce?: boolean }) => void;
-  // deleteRequestItemThunkAction: (item: IRequestItem) => void;
-  // deleteRequestThunkAction: (idRequest: string) => void;
+  deleteRequestItemsThunkAction: (id: string) => void;
 }
 
 interface IStateType {
@@ -43,6 +43,7 @@ class RequestVehicleItem extends React.Component<IPropsType, IStateType> {
   constructor(props: IPropsType) {
     super(props);
     this.search = debounce(500, this.search.bind(this));
+    this.goToDetail = this.goToDetail.bind(this);
     this.api = new ApiService();
   }
 
@@ -74,7 +75,12 @@ class RequestVehicleItem extends React.Component<IPropsType, IStateType> {
         >
           {item.priority ? <i className="fa fa-star text-yellow" /> : <i className="fa fa-star text-gray" />}
         </td>
-        <td className="middle"><strong className="text-underline">#{this.padNumber(item.request?.number)}</strong></td>
+        <td
+          className="middle pointer"
+          onClick={() => this.goToDetail(item.request._id)}
+        >
+            <strong className="text-underline">#{this.padNumber(item.request?.number)}</strong>
+        </td>
         <td className="middle">{item.destination.name}</td>
         {
           canChangeRequest ?
@@ -487,6 +493,10 @@ class RequestVehicleItem extends React.Component<IPropsType, IStateType> {
     );
   }
 
+  private goToDetail(id: string): void {
+    this.props.history.push(`/requests/vehicles/${id}/`);
+  }
+
   private search(text: string): void {
     this.api
       .searchCar(text)
@@ -503,22 +513,22 @@ class RequestVehicleItem extends React.Component<IPropsType, IStateType> {
   private deleteRequestItem(item: IRequestItem) {
     const { requestItems } = this.props;
     // if (request.items.length > 1) {
-    //   swal({
-    //     title: '¿Estás seguro?',
-    //     text: `Vas a eliminar este vehículo ${item.car.brand} ${item.car.denomination} ${item.car.material}.`,
-    //     icon: 'warning',
-    //     dangerMode: true,
-    //     buttons: {
-    //       cancel: 'Cancelar' as any,
-    //       confirm: {
-    //         text: 'Sí'
-    //       }
-    //     }
-    //   }).then((willDelete) => {
-    //     if (willDelete) {
-    //       // this.props.deleteRequestItemThunkAction(item);
-    //     }
-    //   });
+      swal({
+        title: '¿Estás seguro?',
+        text: `Vas a eliminar este vehículo ${item.car.brand} ${item.car.denomination} ${item.car.material}.`,
+        icon: 'warning',
+        dangerMode: true,
+        buttons: {
+          cancel: 'Cancelar' as any,
+          confirm: {
+            text: 'Sí'
+          }
+        }
+      }).then((willDelete) => {
+        if (willDelete) {
+          this.props.deleteRequestItemsThunkAction(item._id);
+        }
+      });
     // } else {
     //   swal({
     //     title: '¿Estás seguro?',
@@ -556,7 +566,7 @@ const mapDispatchToProps = (dispatch: any) => {
   return {
     dispatch,
     updateRequestItemsThunkAction: ({ item, debounce }: { item: IRequestItem, debounce?: boolean }) => dispatch(updateRequestItemsThunkAction({ item, debounce })),
-    // deleteRequestItemThunkAction: (item: IRequestItem) => dispatch(deleteRequestItemThunkAction(item)),
+    deleteRequestItemsThunkAction: (id: string) => dispatch(deleteRequestItemsThunkAction(id))
     // deleteRequestThunkAction: (idRequest: string) => dispatch(deleteRequestThunkAction(idRequest))
   };
 };
