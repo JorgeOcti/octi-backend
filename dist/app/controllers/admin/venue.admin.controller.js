@@ -88,7 +88,7 @@ class AdminVenueController {
                 wrapText: true
             };
             cell.font = {
-                bold: true,
+                bold: true
             };
         });
         worksheetSend.getRow(1).eachCell((cell) => {
@@ -103,7 +103,7 @@ class AdminVenueController {
             }
             cell.alignment = alignment;
             cell.font = {
-                bold: true,
+                bold: true
             };
         });
         const tempFilePath = tempfile('.xlsx');

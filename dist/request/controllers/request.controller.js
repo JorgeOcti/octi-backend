@@ -83,7 +83,7 @@ class RequestController {
         const { team, company } = req.user;
         const { cars, venue, fleet } = req.body;
         try {
-            const defaultItemStatus = await requestItemStatus_model_1.default.findOneOrCreate({ team, default: true }, { name: 'En proceso', default: true, team, weigth: 20 });
+            const defaultItemStatus = await requestItemStatus_model_1.default.findOneOrCreate({ team, default: true }, { name: 'Pendiente', default: true, team, weigth: 10 });
             const updateTeam = await team_model_1.default.findOne({ _id: team._id });
             const request = await new request_model_1.default({
                 team,
@@ -120,6 +120,13 @@ class RequestController {
                 }).save();
             }
             await team_model_1.default.findOneAndUpdate({ _id: team._id }, { $inc: { requestNumber: 1 } }, { new: true });
+            const newRequest = await request_model_1.default.findById(request._id).populate(this.requestPopulate);
+            server_1.io.to(`request-list-${team}`).emit('CREATE_REQUEST', {
+                request: newRequest
+            });
+            server_1.io.to(`request-detail-${team}`).emit('CREATE_REQUEST', {
+                request: newRequest
+            });
             res.json({
                 status: 200
             });

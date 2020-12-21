@@ -104,6 +104,21 @@ class RequestVehicleListView extends React.Component<IPropsType, IStateType> {
       // }, 300);
     });
 
+    this.socket.on('CREATE_REQUEST', (data: any): void => {
+      for (const item of data.request.items) {
+        if (window.user.venuesAccess.includes(item.destination._id)) {
+          this.props.createRequestItemAction(item);
+          const $item = $(`#request-item-${item._id}`);
+          if ($item) {
+            $item.addClass('bg-green-active');
+          }
+          setTimeout(() => {
+            $item.removeClass('bg-green-active');
+          }, 300);
+        }
+      }
+    });
+
     this.socket.on('CREATE_REQUEST_ITEM', (data: any): void => {
       this.props.createRequestItemAction(data.item);
       const $item = $(`#request-item-${data.item._id}`);

@@ -96,7 +96,7 @@ class AdminVenueController {
         wrapText: true
       };
       cell.font = {
-        bold: true,
+        bold: true
       };
     });
     worksheetSend.getRow(1).eachCell((cell) => {
@@ -107,11 +107,11 @@ class AdminVenueController {
         wrapText: true
       };
       if(parseInt(cell.col, 10) !== 1){
-        alignment.textRotation=  90
+        alignment.textRotation=  90;
       }
       cell.alignment = alignment;
       cell.font = {
-        bold: true,
+        bold: true
       };
     });
 
