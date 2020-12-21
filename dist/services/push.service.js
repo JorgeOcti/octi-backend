@@ -15,13 +15,16 @@ class PushService {
             secretKey: general_utils_1.default.getFromEnviroment('PUHSER_SECRET_KEY', '')
         });
     }
+    createAuthToken(userId) {
+        return this.pushNotifications.generateToken(userId);
+    }
     send(title, subtitle, body, interests) {
         logger_service_1.default.info('-----------------------PUSH---------------------------');
         logger_service_1.default.info(`title, ${title}`);
         logger_service_1.default.info(`subtitle, ${subtitle}`);
         logger_service_1.default.info(`body, ${body}`);
         logger_service_1.default.info(`interests, ${interests}`);
-        this.pushNotifications.publishToInterests(interests, {
+        this.pushNotifications.publishToUsers(interests, {
             apns: {
                 aps: {
                     alert: {
@@ -49,6 +52,10 @@ class PushService {
     massiveSend(title, subtitle, body, interests) {
         const total = interests.length;
         /* istanbul ignore if */
+        if (total === 0) {
+            logger_service_1.default.info(`PUSH NOT published: No users to send`);
+            return;
+        }
         if (total > 100) {
             while (interests.length) {
                 this.send(title, subtitle, body, interests.splice(0, 100));

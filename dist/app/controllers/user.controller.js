@@ -4,6 +4,7 @@ const bcrypt = require("bcrypt");
 const logger_service_1 = require("../../services/logger.service");
 const user_model_1 = require("../models/user.model");
 const venue_model_1 = require("../models/venue.model");
+const push_service_1 = require("../../services/push.service");
 class UserController {
     constructor() {
         this.apiChangePassword = this.apiChangePassword.bind(this);
@@ -124,6 +125,12 @@ class UserController {
                 status: 500
             });
         }
+    }
+    async getPusherToken(req, res) {
+        if (req.user._id === req.query['user_id'])
+            res.status(200).json(push_service_1.default.createAuthToken(user_id));
+        else
+            res.status(401).json({ message: 'Authentication failed. User provided does not match with user_id.' });
     }
 }
 exports.default = new UserController();
