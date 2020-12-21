@@ -55,7 +55,7 @@ class RequestListDetail extends React.Component<IPropsType, IStateType> {
   public render(): React.ReactElement<IPropsType> {
     const {requests, request, reasons, requestItemStatus, carriers} = this.props;
     const open = this.props.requests.requestOpen.includes(request._id);
-    const canChangeRequest = hasPermission(window.user, 'createRequest');
+    const canChangeRequest = hasPermission(window.user, 'changeRequest');
     return (
       <React.Fragment>
         <div id={`request-${request._id}`} className="row request bg-request-title background-transition">

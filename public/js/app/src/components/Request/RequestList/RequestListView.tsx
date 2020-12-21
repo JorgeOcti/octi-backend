@@ -167,22 +167,24 @@ class RequestListView extends React.Component<IPropsType, IStateType> {
                     </button>
                     : null
                 }
-                <button
-                  className="btn btn-sm btn-primary hidden-xs"
-                  onClick={this.exportExcel}
-                  disabled={exporing}
-                  style={{marginLeft: '5px'}}
-                >
-                  {
-                    exporing ?
-                      <React.Fragment>
-                        <i className="fa fa-spin fa-spinner"/> Exportando
+                <ShowIf condition={requests.length > 0}>
+                  <button
+                    className="btn btn-sm btn-primary hidden-xs"
+                    onClick={this.exportExcel}
+                    disabled={exporing}
+                    style={{ marginLeft: '5px' }}
+                  >
+                    {
+                      exporing ?
+                        <React.Fragment>
+                          <i className="fa fa-spin fa-spinner" /> Exportando
                       </React.Fragment>
-                      : <React.Fragment>
-                        <i className="fa fa-fw fa-download"/> Exportar
+                        : <React.Fragment>
+                          <i className="fa fa-fw fa-download" /> Exportar
                       </React.Fragment>
-                  }
-                </button>
+                    }
+                  </button>
+                </ShowIf>
               </div>
             </div>
             <div className="box-body table-responsive request-list">
