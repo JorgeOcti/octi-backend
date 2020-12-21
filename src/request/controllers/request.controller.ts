@@ -429,7 +429,10 @@ class RequestController {
       limit: parseInt(pageSize ? pageSize : '20', 10)
     };
     const filter: any = {
-      team
+      team,
+      destination: {
+        $in: req.user.venuesPermissions()
+      }
     };
     if (search) {
       // add here conditions tu search

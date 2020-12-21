@@ -168,9 +168,9 @@ export default class ApiService {
     );
   }
 
-  public getVenues(page: number, pageSize?: number, noPopulate?: boolean): AxiosPromise {
+  public getVenues(page: number, pageSize?: number, noPopulate?: boolean, filted?: boolean): AxiosPromise {
     return this.instance.get(
-      `/api/admin/venues/?page=${page}${pageSize ? `&pageSize=${pageSize}` : ''}${noPopulate ? `&noPopulate=${noPopulate}` : ''}`
+      `/api/admin/venues/?page=${page}${pageSize ? `&pageSize=${pageSize}` : ''}${noPopulate ? `&noPopulate=${noPopulate}` : ''}${filted ? `&filted=${filted}` : ''}`
     );
   }
 

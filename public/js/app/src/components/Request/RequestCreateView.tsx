@@ -539,7 +539,7 @@ class RequestCreateView extends React.Component<IPropsType, IStateType> {
     this.setState({ loading: true });
     Axios
       .all([
-        this.api.getVenues(1, 200, true),
+        this.api.getVenues(1, 200, true, true),
         this.api.getReasons(1, 200)
       ])
       .then(Axios.spread((venues, reasons) => {

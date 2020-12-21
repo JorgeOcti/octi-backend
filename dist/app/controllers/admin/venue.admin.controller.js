@@ -44,8 +44,8 @@ class AdminVenueController {
                 activeCell: 'A1'
             }];
         const sendColumns = [{
-                header: "Sucursal\r\n(FILAS ENVIAN / COLUMNAS RECIBEN)",
-                key: "sucursal",
+                header: 'Sucursal\r\n(FILAS ENVIAN / COLUMNAS RECIBEN)',
+                key: 'sucursal',
                 width: 30,
                 alignment: {
                     wrapText: true
@@ -65,7 +65,7 @@ class AdminVenueController {
             });
             let dataSend = {};
             for (const to of venue.sendTo) {
-                dataSend[to] = "X";
+                dataSend[to] = 'X';
             }
             sendRows.push({
                 sucursal: venue.name,
@@ -114,9 +114,9 @@ class AdminVenueController {
     }
     async apiListVenues(req, res) {
         const { team } = req.user;
-        const { page, pageSize, noPopulate } = req.query;
+        const { page, pageSize, noPopulate, filted } = req.query;
         // paginate options
-        let options = {
+        const options = {
             select: {
                 _id: true,
                 name: true,
@@ -159,23 +159,29 @@ class AdminVenueController {
                     select: ['name']
                 }, {
                     path: 'company',
-                    select: ['name', "marker"]
+                    select: ['name', 'marker']
                 }],
             lean: true,
             sort: {
                 name: 1
             },
-            page: parseInt(page ? page : "1", 10),
-            limit: parseInt(pageSize ? pageSize : "20", 10)
+            page: parseInt(page ? page : '1', 10),
+            limit: parseInt(pageSize ? pageSize : '20', 10)
+        };
+        const filter = {
+            deleted: false,
+            team
         };
         if (noPopulate) {
             delete options.populate;
         }
+        if (filted) {
+            filter._id = {
+                $in: req.user.venuesPermissions()
+            };
+        }
         try {
-            const venues = await this.getVenues({
-                deleted: false,
-                team
-            }, options);
+            const venues = await this.getVenues(filter, options);
             /* istanbul ignore if  */
             if (options.page && venues.pages && venues.pages < options.page) {
                 res.status(400).json({
