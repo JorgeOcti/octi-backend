@@ -6,7 +6,12 @@ import { connect } from 'react-redux';
 import { RouteComponentProps } from 'react-router';
 import * as swal from 'sweetalert';
 import { IRequestItem } from '../../../../../../../src/interfaces/requestItem.interface';
-import { createRequestItemAction, deleteRequestItemAction, getRequestItemsThunkAction, updateRequestItemAction } from '../../../actions/requestItems.actions';
+import {
+  createRequestItemAction,
+  deleteRequestItemAction,
+  getRequestItemsThunkAction,
+  updateRequestItemAction
+} from '../../../actions/requestItems.actions';
 import { IRequestItemsState } from '../../../actions/requestItems.types';
 import AppContainer from '../../../container/AppContainer';
 import { IWindow } from '../../../interfaces/window';
@@ -22,7 +27,7 @@ interface IPropsType extends RouteComponentProps<{ ticket: string }> {
   requestItems: IRequestItemsState;
   dispatch: Dispatch<IRequestItemsState>;
   updateRequestItemAction: (item: IRequestItem) => void;
-  getRequestItemsThunkAction: (page: number, orderBy: string, orderType: string) => void;
+  getRequestItemsThunkAction: (page: number, orderBy: string, orderType: string, hideLoading?: boolean) => void;
   deleteRequestItemAction: (item: IRequestItem) => void;
   // deleteRequestActionInList: (id: string) => void;
   createRequestItemAction: (item: IRequestItem) => void;
@@ -105,17 +110,23 @@ class RequestVehicleListView extends React.Component<IPropsType, IStateType> {
     });
 
     this.socket.on('CREATE_REQUEST', (data: any): void => {
-      for (const item of data.request.items) {
-        if (window.user.venuesAccess.includes(item.destination._id)) {
-          this.props.createRequestItemAction(item);
-          const $item = $(`#request-item-${item._id}`);
-          if ($item) {
-            $item.addClass('bg-green-active');
+      const { page } = this.props.requestItems.pagination;
+      const { orderBy, orderType } = this.props.requestItems.options;
+      if (page === 1) {
+        for (const item of data.request.items) {
+          if (window.user.venuesAccess.includes(item.destination._id)) {
+            this.props.createRequestItemAction(item);
+            const $item = $(`#request-item-${item._id}`);
+            if ($item) {
+              $item.addClass('bg-green-active');
+            }
+            setTimeout(() => {
+              $item.removeClass('bg-green-active');
+            }, 300);
           }
-          setTimeout(() => {
-            $item.removeClass('bg-green-active');
-          }, 300);
         }
+      } else {
+        this.props.getRequestItemsThunkAction(page, orderBy, orderType, true);
       }
     });
 
@@ -410,7 +421,7 @@ const mapStateToProps = (state: { requestItems: IRequestItemsState }) => {
 const mapDispatchToProps = (dispatch: any) => {
   return {
     dispatch,
-    getRequestItemsThunkAction: (page: number, orderBy: string, orderType: string) => dispatch(getRequestItemsThunkAction(page, orderBy, orderType)),
+    getRequestItemsThunkAction: (page: number, orderBy: string, orderType: string, hideLoading?: boolean) => dispatch(getRequestItemsThunkAction(page, orderBy, orderType, hideLoading)),
     createRequestItemAction: (item: IRequestItem) => dispatch(createRequestItemAction(item)),
     updateRequestItemAction: (item: IRequestItem) => dispatch(updateRequestItemAction(item)),
     deleteRequestItemAction: (item: IRequestItem) => dispatch(deleteRequestItemAction(item))

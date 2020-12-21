@@ -197,11 +197,11 @@ export function changeOrderRequestAction(orderBy: string, orderType: string): IC
   };
 }
 
-export function getRequestsThunkAction(nextPage: number, orderBy: string, orderType: string) {
+export function getRequestsThunkAction(nextPage: number, orderBy: string, orderType: string, hideLoading?: boolean) {
   return (dispatch: Dispatch<RequestsReduxActions>, getState: () => { requests: IRequestsState }) => {
     const api: ApiService = new ApiService();
     const state = getState();
-    dispatch(isLoadingRequestAction(true));
+    dispatch(isLoadingRequestAction(hideLoading ? false : true));
     const page = nextPage ? nextPage : state.requests.pagination.page;
     dispatch(changeOrderRequestAction(orderBy, orderType));
     dispatch(cancelRequestAction(api.getSource()));

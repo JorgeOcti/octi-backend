@@ -127,11 +127,11 @@ export function deleteRequestItemAction(item: IRequestItem): IDeleteRequestItems
   };
 }
 
-export function getRequestItemsThunkAction(nextPage: number, orderBy: string, orderType: string) {
+export function getRequestItemsThunkAction(nextPage: number, orderBy: string, orderType: string, hideLoading?: boolean) {
   return (dispatch: Dispatch<RequestItemsReduxActions>, getState: () => { requestItems: IRequestItemsState }) => {
     const api: ApiService = new ApiService();
     const state = getState();
-    dispatch(isLoadingRequestItemsAction(true));
+    dispatch(isLoadingRequestItemsAction(hideLoading ? false : true));
     const page = nextPage ? nextPage : state.requestItems.pagination.page;
     dispatch(changeOrderRequestAction(orderBy, orderType));
     dispatch(cancelRequestItemsAction(api.getSource()));

@@ -29,7 +29,7 @@ interface IPropsType extends RouteComponentProps<{ ticket: string }> {
   requests: IRequestsState;
   dispatch: Dispatch<IRequestsState>;
   updateRequestItemActionInList: (idRequest: string, item: IRequestItem) => void;
-  getRequestsThunkAction: (page: number, orderBy: string, orderType: string) => void;
+  getRequestsThunkAction: (page: number, orderBy: string, orderType: string, hideLoading?: boolean) => void;
   deleteRequestItemActionInList: (idRequest: string, item: IRequestItem) => void;
   deleteRequestActionInList: (id: string) => void;
   createRequestItemActionInList: (idRequest: string, item: IRequestItem) => void;
@@ -109,6 +109,12 @@ class RequestListView extends React.Component<IPropsType, IStateType> {
       setTimeout(() => {
         this.props.deleteRequestActionInList(data.idRequest);
       }, 300);
+    });
+
+    this.socket.on('CREATE_REQUEST', (data: any): void => {
+      const { page } = this.props.requests.pagination;
+      const { orderBy, orderType } = this.props.requests.options;
+      this.props.getRequestsThunkAction(page, orderBy, orderType, true);
     });
 
     this.socket.on('CREATE_REQUEST_ITEM', (data: any): void => {
@@ -354,7 +360,7 @@ const mapStateToProps = (state: { requests: IRequestsState }) => {
 const mapDispatchToProps = (dispatch: any) => {
   return {
     dispatch,
-    getRequestsThunkAction: (page: number, orderBy: string, orderType: string) => dispatch(getRequestsThunkAction(page, orderBy, orderType)),
+    getRequestsThunkAction: (page: number, orderBy: string, orderType: string, hideLoading?: boolean) => dispatch(getRequestsThunkAction(page, orderBy, orderType, hideLoading)),
     createRequestItemActionInList: (idRequest: string, item: IRequestItem) => dispatch(createRequestItemActionInList(idRequest, item)),
     updateRequestItemActionInList: (idRequest: string, item: IRequestItem) => dispatch(updateRequestItemActionInList(idRequest, item)),
     deleteRequestItemActionInList: (idRequest: string, item: IRequestItem) => dispatch(deleteRequestItemActionInList(idRequest, item)),
