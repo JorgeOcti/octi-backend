@@ -1,11 +1,13 @@
 import Axios from 'axios';
 import * as moment from 'moment';
 import * as React from 'react';
-import { Dispatch } from 'react';
+import { Dispatch, Fragment } from 'react';
 import { connect } from 'react-redux';
 import { RouteComponentProps } from 'react-router';
 import * as swal from 'sweetalert';
-import { IRequestItem } from '../../../../../../../src/interfaces/requestItem.interface';
+import {
+  IRequestItem
+} from '../../../../../../../src/interfaces/requestItem.interface';
 import {
   createRequestItemAction,
   deleteRequestItemAction,
@@ -21,7 +23,6 @@ import ImageLazyLoad from '../../Utils/ImageLazyLoad';
 import Paginator from '../../Utils/Paginator';
 import ShowIf from '../../Utils/ShowIf';
 import RequestVehicleItem from './RequestVehicleItem';
-
 
 interface IPropsType extends RouteComponentProps<{ ticket: string }> {
   requestItems: IRequestItemsState;
@@ -146,6 +147,15 @@ class RequestVehicleListView extends React.Component<IPropsType, IStateType> {
     $('[data-toggle="tooltip"]').tooltip();
   }
 
+  public componentWillUnmount(): void {
+    // cancel request if component is inmounted
+    if (this.props.requestItems.source) {
+      this.props.requestItems.source.cancel('Operation canceled by the user.');
+    }
+    this.socket.emit('leave', {room: `request-list-${window.user.team}`});
+    this.socket.disconnect();
+  }
+
   public render(): React.ReactElement<IPropsType> {
     const {
       pagination, loading, requestItems
@@ -175,13 +185,8 @@ class RequestVehicleListView extends React.Component<IPropsType, IStateType> {
                     style={{ marginLeft: '5px' }}
                   >
                     {
-                      exporing ?
-                        <React.Fragment>
-                          <i className="fa fa-spin fa-spinner" /> Exportando
-                      </React.Fragment>
-                        : <React.Fragment>
-                          <i className="fa fa-fw fa-download" /> Exportar
-                      </React.Fragment>
+                      exporing ? <Fragment><i className="fa fa-spin fa-spinner" /> Exportando</Fragment>
+                        : <Fragment><i className="fa fa-fw fa-download" /> Exportar</Fragment>
                     }
                   </button>
                 </ShowIf>

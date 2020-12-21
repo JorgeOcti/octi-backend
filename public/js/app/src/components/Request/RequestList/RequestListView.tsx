@@ -2,12 +2,14 @@ import Axios from 'axios';
 import * as moment from 'moment';
 import * as Raven from 'raven-js';
 import * as React from 'react';
-import { Dispatch, ErrorInfo } from 'react';
+import { Dispatch, ErrorInfo, Fragment } from 'react';
 import { connect } from 'react-redux';
 import { RouteComponentProps } from 'react-router';
 import * as io from 'socket.io-client';
 import * as swal from 'sweetalert';
-import { IRequestItem } from '../../../../../../../src/interfaces/requestItem.interface';
+import {
+  IRequestItem
+} from '../../../../../../../src/interfaces/requestItem.interface';
 import {
   createRequestItemActionInList,
   deleteRequestActionInList,
@@ -181,13 +183,8 @@ class RequestListView extends React.Component<IPropsType, IStateType> {
                     style={{ marginLeft: '5px' }}
                   >
                     {
-                      exporing ?
-                        <React.Fragment>
-                          <i className="fa fa-spin fa-spinner" /> Exportando
-                      </React.Fragment>
-                        : <React.Fragment>
-                          <i className="fa fa-fw fa-download" /> Exportar
-                      </React.Fragment>
+                      exporing ? <Fragment><i className="fa fa-spin fa-spinner" /> Exportando</Fragment>
+                        : <Fragment><i className="fa fa-fw fa-download" /> Exportar</Fragment>
                     }
                   </button>
                 </ShowIf>
