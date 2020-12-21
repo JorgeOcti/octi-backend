@@ -1,16 +1,15 @@
-import Company from "../../app/models/company.model";
-import Invoice, {IInvoiceModel} from "../models/invoice.model";
-import * as request from "request";
+import Company from '../../app/models/company.model';
+import Invoice, {IInvoiceModel} from '../models/invoice.model';
+import * as request from 'request';
 import * as moment from 'moment-timezone';
-import ActivityHistory, {ChoicesTypeActivity} from "../models/activityHistory.model";
-import {ICompany} from "../../interfaces/company.interface";
+import ActivityHistory, {ChoicesTypeActivity} from '../models/activityHistory.model';
+import {ICompany} from '../../interfaces/company.interface';
 import * as HtmlPdf from 'html-pdf';
-import GeneralUtils from "../../utils/general.utils";
+import GeneralUtils from '../../utils/general.utils';
 import * as path from 'path';
-import * as Raven from "raven";
-import * as fs from "fs";
-import {queue} from "../../app";
-
+import * as Raven from 'raven';
+import * as fs from 'fs';
+import {queue} from '../../app';
 
 class BillingQueue {
 
@@ -44,10 +43,10 @@ class BillingQueue {
   private getUFPrice(): Promise<number> {
     return new Promise((resolve, reject) => {
       try {
-        const now = moment().subtract(1, "day"),
-          [year, month, day] = [now.format('YYYY'), now.format('MM'), now.format('DD')];
+        const now = moment().subtract(1, 'day');
+        const [year, month, day] = [now.format('YYYY'), now.format('MM'), now.format('DD')];
         // request.get(`https://api.sbif.cl/api-sbifv3/recursos_api/uf/${year}/${month}/dias/${day}?apikey=${this.apiKey}&formato=json`, function (err, resp, body) {
-        request.get(`https://mindicador.cl/api/uf/${day}-${month}-${year}`, function (err, resp, body) {
+        request.get(`https://mindicador.cl/api/uf/${day}-${month}-${year}`, (err, resp, body) => {
           if (err) {
             reject(err);
           } else {
@@ -61,26 +60,27 @@ class BillingQueue {
       } catch (error) {
         console.log(error);
       }
-    })
+    });
   }
 
   private getDolarPrice(): Promise<number> {
     return new Promise((resolve, reject) => {
-      const now = moment().subtract(1, "day"),
-        [year, month, day] = [now.format('YYYY'), now.format('MM'), now.format('DD')];
-      request.get(`https://api.sbif.cl/api-sbifv3/recursos_api/dolar/${year}/${month}/dias/${day}?apikey=${this.apiKey}&formato=json`, function (err, resp, body) {
+      const now = moment().subtract(1, 'day');
+      const [year, month, day] = [now.format('YYYY'), now.format('MM'), now.format('DD')];
+      request.get(`https://api.sbif.cl/api-sbifv3/recursos_api/dolar/${year}/${month}/dias/${day}?apikey=${this.apiKey}&formato=json`, (err, resp, body) => {
         if (err) {
           reject(err);
         } else {
           console.log(body);
-          resolve(parseFloat(JSON.parse(body).Dolares[0].Valor.replace(".", "").replace(",", ".")));
+          resolve(parseFloat(JSON.parse(body).Dolares[0].Valor.replace('.', '').replace(',', '.')));
         }
       });
-    })
+    });
   }
 
   private async calculateCarsInChecklist(company: ICompany): Promise<number> {
-    const vinInChecklist = await ActivityHistory.aggregate([{
+    const vinInChecklist = await ActivityHistory
+      .aggregate([{
         $match: {
           company: company._id,
           type: ChoicesTypeActivity.checklist,
@@ -92,7 +92,7 @@ class BillingQueue {
             $lte: moment()
               .subtract(1, 'day')
               .endOf('month')
-              .toDate(),
+              .toDate()
           }
         }
       }, {
@@ -107,12 +107,13 @@ class BillingQueue {
           }
         }
       }]
-    );
+      );
     return vinInChecklist.length ? vinInChecklist[0].count : 0;
   }
 
   private async calculateCarsInInventory(company: ICompany): Promise<number> {
-    const vinInInventories = await ActivityHistory.aggregate([{
+    const vinInInventories = await ActivityHistory
+      .aggregate([{
         $match: {
           company: company._id,
           type: ChoicesTypeActivity.inventory,
@@ -124,7 +125,7 @@ class BillingQueue {
             $lte: moment()
               .subtract(1, 'day')
               .endOf('month')
-              .toDate(),
+              .toDate()
           }
         }
       }, {
@@ -139,7 +140,7 @@ class BillingQueue {
           }
         }
       }]
-    );
+      );
     return vinInInventories.length ? vinInInventories[0].count : 0;
   }
 
@@ -177,9 +178,9 @@ class BillingQueue {
             }, async (error: any) => {
               if (error) {
                 /* istanbul ignore next */
-                console.log(error)
+                console.log(error);
               } else {
-                await invoice.update({file: invoice.file});
+                await invoice.update({ file: invoice.file });
                 this.sendEmail(invoice, company);
               }
             });
@@ -192,7 +193,7 @@ class BillingQueue {
   }
 
   private sendEmail(invoice: IInvoiceModel, company: ICompany): void {
-    const period = moment(invoice.createdAt).subtract(1, 'month').format("MMMM YYYY");
+    const period = moment(invoice.createdAt).subtract(1, 'month').format('MMMM YYYY');
     for (const notification of company.notifications) {
       queue.create('email', {
         from: '',
@@ -214,13 +215,19 @@ class BillingQueue {
     }
   }
 
-  public async processBilling(): Promise<void> {
+  public async processBilling(team?:any): Promise<void> {
     try {
       console.log('start billing');
       // const valueUF = 28662.81; /*await this.getUFPrice();*/
       // const valueDolar = 767.98; /*await this.getDolarPrice();*/
-      const valueUF =  await this.getUFPrice();
-      const companies = await Company.find({"billing.active": true});
+      const valueUF = await this.getUFPrice();
+      const filter: any = {
+        'billing.active': true
+      }
+      if(team){
+        filter.team = team;
+      }
+      const companies = await Company.find(filter);
       for (const company of companies) {
         console.log(`calculating billing ${company.name}`);
         const inventoryCars = await this.calculateCarsInInventory(company);

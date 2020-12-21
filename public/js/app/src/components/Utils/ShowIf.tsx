@@ -11,7 +11,7 @@ const ShowIf: React.FunctionComponent<IPropsType> = (props: IPropsType) => {
       <React.Fragment>
         {props.children}
       </React.Fragment>
-    )
+    );
   }
   return null;
 };

@@ -69,7 +69,9 @@ class InventoryListView extends React.Component<IPropsType, IStateType> {
       secure: location.protocol === 'https:',
       transports: ['websocket'],
       reconnection: true,
-      query: {token: (window.user as any).token}
+      query: {
+        token: window.user.token
+      }
     });
     this.socket.on('connect', () => {
       this.socket.emit('join', {room: `inventory-list-${window.user.team}`});

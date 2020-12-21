@@ -127,9 +127,9 @@ class AdminVenueController {
 
   public async apiListVenues(req: IRequest, res: Response): Promise<any> {
     const {team} = req.user;
-    const {page, pageSize} = req.query as {page: string, pageSize: string};
+    const {page, pageSize, noPopulate} = req.query as {page: string, pageSize: string, noPopulate: any};
     // paginate options
-    const options: PaginateOptions = {
+    let options: PaginateOptions = {
       select: {
         _id: true,
         name: true,
@@ -181,6 +181,9 @@ class AdminVenueController {
       page: parseInt(page ? page : "1", 10),
       limit: parseInt(pageSize ? pageSize : "20", 10)
     };
+    if(noPopulate){
+      delete options.populate;
+    }
     try {
       const venues = await this.getVenues({
         deleted: false,

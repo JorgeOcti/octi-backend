@@ -86,7 +86,7 @@ class CarriersListView extends React.Component<IPropsType, IStateType> {
               {
                 hasPermission(window.user, 'addCarrier') ?
                   <div className="box-tools pull-right">
-                    <button className="btn btn-sm btn-success" onClick={this.createCarrier}>Agregar</button>
+                    <button className="btn btn-sm btn-success" onClick={this.createCarrier}><i className="fa fa-plus" /> Agregar</button>
                   </div>
                   : null
               }

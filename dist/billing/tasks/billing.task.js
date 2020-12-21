@@ -39,9 +39,10 @@ class BillingQueue {
     getUFPrice() {
         return new Promise((resolve, reject) => {
             try {
-                const now = moment().subtract(1, "day"), [year, month, day] = [now.format('YYYY'), now.format('MM'), now.format('DD')];
+                const now = moment().subtract(1, 'day');
+                const [year, month, day] = [now.format('YYYY'), now.format('MM'), now.format('DD')];
                 // request.get(`https://api.sbif.cl/api-sbifv3/recursos_api/uf/${year}/${month}/dias/${day}?apikey=${this.apiKey}&formato=json`, function (err, resp, body) {
-                request.get(`https://mindicador.cl/api/uf/${day}-${month}-${year}`, function (err, resp, body) {
+                request.get(`https://mindicador.cl/api/uf/${day}-${month}-${year}`, (err, resp, body) => {
                     if (err) {
                         reject(err);
                     }
@@ -61,20 +62,22 @@ class BillingQueue {
     }
     getDolarPrice() {
         return new Promise((resolve, reject) => {
-            const now = moment().subtract(1, "day"), [year, month, day] = [now.format('YYYY'), now.format('MM'), now.format('DD')];
-            request.get(`https://api.sbif.cl/api-sbifv3/recursos_api/dolar/${year}/${month}/dias/${day}?apikey=${this.apiKey}&formato=json`, function (err, resp, body) {
+            const now = moment().subtract(1, 'day');
+            const [year, month, day] = [now.format('YYYY'), now.format('MM'), now.format('DD')];
+            request.get(`https://api.sbif.cl/api-sbifv3/recursos_api/dolar/${year}/${month}/dias/${day}?apikey=${this.apiKey}&formato=json`, (err, resp, body) => {
                 if (err) {
                     reject(err);
                 }
                 else {
                     console.log(body);
-                    resolve(parseFloat(JSON.parse(body).Dolares[0].Valor.replace(".", "").replace(",", ".")));
+                    resolve(parseFloat(JSON.parse(body).Dolares[0].Valor.replace('.', '').replace(',', '.')));
                 }
             });
         });
     }
     async calculateCarsInChecklist(company) {
-        const vinInChecklist = await activityHistory_model_1.default.aggregate([{
+        const vinInChecklist = await activityHistory_model_1.default
+            .aggregate([{
                 $match: {
                     company: company._id,
                     type: activityHistory_model_1.ChoicesTypeActivity.checklist,
@@ -86,7 +89,7 @@ class BillingQueue {
                         $lte: moment()
                             .subtract(1, 'day')
                             .endOf('month')
-                            .toDate(),
+                            .toDate()
                     }
                 }
             }, {
@@ -104,7 +107,8 @@ class BillingQueue {
         return vinInChecklist.length ? vinInChecklist[0].count : 0;
     }
     async calculateCarsInInventory(company) {
-        const vinInInventories = await activityHistory_model_1.default.aggregate([{
+        const vinInInventories = await activityHistory_model_1.default
+            .aggregate([{
                 $match: {
                     company: company._id,
                     type: activityHistory_model_1.ChoicesTypeActivity.inventory,
@@ -116,7 +120,7 @@ class BillingQueue {
                         $lte: moment()
                             .subtract(1, 'day')
                             .endOf('month')
-                            .toDate(),
+                            .toDate()
                     }
                 }
             }, {
@@ -183,7 +187,7 @@ class BillingQueue {
         }
     }
     sendEmail(invoice, company) {
-        const period = moment(invoice.createdAt).subtract(1, 'month').format("MMMM YYYY");
+        const period = moment(invoice.createdAt).subtract(1, 'month').format('MMMM YYYY');
         for (const notification of company.notifications) {
             app_1.queue.create('email', {
                 from: '',
@@ -204,13 +208,19 @@ class BillingQueue {
             }).priority('high').attempts(5).save();
         }
     }
-    async processBilling() {
+    async processBilling(team) {
         try {
             console.log('start billing');
             // const valueUF = 28662.81; /*await this.getUFPrice();*/
             // const valueDolar = 767.98; /*await this.getDolarPrice();*/
             const valueUF = await this.getUFPrice();
-            const companies = await company_model_1.default.find({ "billing.active": true });
+            const filter = {
+                'billing.active': true
+            };
+            if (team) {
+                filter.team = team;
+            }
+            const companies = await company_model_1.default.find(filter);
             for (const company of companies) {
                 console.log(`calculating billing ${company.name}`);
                 const inventoryCars = await this.calculateCarsInInventory(company);

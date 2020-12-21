@@ -14,15 +14,15 @@ const initialState: IAlertsState = {
 
 export function alertsReducer(state = initialState, action: AlertReduxAction): IAlertsState {
   switch (action.type) {
-    case '/ALERTS/IS_LOADING':
-      return {
-        ...state,
-        loading: action.payload.loading
-      };
     case '/ALERTS/CANCEL_REQUEST':
       return {
         ...state,
         source: action.payload.source
+      };
+    case '/ALERTS/IS_LOADING':
+      return {
+        ...state,
+        loading: action.payload.loading
       };
     case '/ALERTS/DELETE':
       return {

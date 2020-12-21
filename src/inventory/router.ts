@@ -26,7 +26,7 @@ inventoryRouter.get('/api/inventory/:id/', Middlewares.isLoggedIn, InventoryCont
 inventoryRouter.delete('/api/inventory/:id/', Middlewares.isLoggedIn, InventoryController.deleteInventory);
 
 // Labels API Web
-inventoryRouter.get('/api/admin/labels/', Middlewares.isLoggedIn, LabelController.apilist);
+inventoryRouter.get('/api/admin/labels/', Middlewares.isLoggedIn, LabelController.apiList);
 inventoryRouter.post('/api/admin/labels/', Middlewares.isLoggedIn, LabelController.apiCreateLabel);
 inventoryRouter.put('/api/admin/labels/:id', Middlewares.isLoggedIn, LabelController.apiUpdateLabel);
 inventoryRouter.delete('/api/admin/labels/:id', Middlewares.isLoggedIn, LabelController.apiDeleteLabel);

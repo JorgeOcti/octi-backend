@@ -25,13 +25,13 @@ class Checkbox extends React.Component<IPropsType, IStateType> {
     this.mouseOut = this.mouseOut.bind(this);
   }
 
-  mouseOver() {
+  private mouseOver(): void {
     this.setState({
       hover: true
     });
   }
 
-  mouseOut() {
+  private mouseOut(): void {
     this.setState({
       hover: false
     });

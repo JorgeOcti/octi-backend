@@ -16,8 +16,7 @@ import AppController from './controllers/app.controller';
 import CarController from './controllers/car.controller';
 import JWTController from './controllers/jwt.controller';
 import UserController from './controllers/user.controller';
-import router from "../form/router";
-
+import router from '../form/router';
 
 // setup route middlewares
 const appRouter = express.Router();

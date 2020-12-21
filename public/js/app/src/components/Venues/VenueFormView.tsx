@@ -7,7 +7,7 @@ import {changeTempVenueAction, IVenuesState, VenueReduxAction} from '../../actio
 import {updateTooltip} from '../../utils/common';
 import BootstrapSelect from '../Utils/BootstrapSelect';
 import Checkbox from '../Utils/CheckBox';
-import {IVenueDay} from "../../../../../../src/interfaces/venueDay.interface";
+import {IVenueDay} from '../../../../../../src/interfaces/venueDay.interface';
 
 interface IPropsType {
   venues?: IVenuesState;
@@ -299,7 +299,7 @@ class VenueFormView extends React.Component<IPropsType, IStateType> {
                           position: 'relative'
                         }}
                       >
-                  Distribuidor <i
+                        Distribuidor <i
                         className="fa fa-info-circle"
                         data-toggle="tooltip"
                         data-placement="top"
@@ -313,7 +313,7 @@ class VenueFormView extends React.Component<IPropsType, IStateType> {
             </div>
             { tempVenue.sendToDays.length > 0 ? <div id="diasSucursales" className="tab-pane fade">
               { tempVenue.sendToDays.map( (venueDay: IVenueDay) => {
-                let venueIndex = tempVenue.sendToDays.findIndex(v => v.venue._id === venueDay.venue._id);
+                const venueIndex = tempVenue.sendToDays.findIndex(v => v.venue._id === venueDay.venue._id);
                   return <div className="row" key={venueDay.venue._id}>
                     <div className="col-md-12">
                       <div className="form-group">
@@ -327,14 +327,14 @@ class VenueFormView extends React.Component<IPropsType, IStateType> {
                           value={venueDay.shippingMaxDays || ''}
                           onChange={
                             (e: React.ChangeEvent<HTMLInputElement>) => {
-                              tempVenue.sendToDays[venueIndex].shippingMaxDays = parseInt(e.target.value)
-                              changeTempVenueAction(tempVenue, true)
+                              tempVenue.sendToDays[venueIndex].shippingMaxDays = parseInt(e.target.value);
+                              changeTempVenueAction(tempVenue, true);
                             }
                           }
                         />
                       </div>
                     </div>
-                  </div>
+                  </div>;
                 }
               )}
             </div> : null}
@@ -352,7 +352,7 @@ class VenueFormView extends React.Component<IPropsType, IStateType> {
       let values : IVenueDay[]= [];
       if (all) {
         values = value ? allVenues.map((venue: IVenue) => {
-          return {_id: null, shippingMaxDays : undefined, venue: venue}}) :
+          return {_id: null, shippingMaxDays : undefined, venue};}) :
           [];
       } else {
         const add = tempVenue.sendToDays.find((venueDay : IVenueDay) => venueDay.venue._id === value) === undefined;
