@@ -24,6 +24,9 @@ const requestSchema = new mongoose.Schema({
     arrivalDate: {
         type: Date
     },
+    sellerText: {
+        type: String
+    },
     fleet: {
         type: Boolean,
         default: false

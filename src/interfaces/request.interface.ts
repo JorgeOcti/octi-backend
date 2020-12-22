@@ -19,6 +19,7 @@ export interface IRequest {
   origin: IVenue | IVenueModel;
   destination: IVenue | IVenueModel;
   items: IRequestItem[];
+  sellerText: string;
   loadingDate: Date;
   arrivalDate: Date;
   fleet: boolean;

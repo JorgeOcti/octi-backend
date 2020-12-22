@@ -181,10 +181,13 @@ class RequestDetailView extends React.Component<IPropsType, IStateType> {
                 Object.keys(request).length ?
                   <React.Fragment>
                     <div className="row summary bg-blue">
-                      <div className="col-md-3">
+                      <div className="col-md-2">
                         <i className="fa fa-fw fa-user" /> {request.createdBy?.firstName} {request.createdBy?.lastName}
                       </div>
-                      <div className="col-md-3">
+                      <div className="col-md-2">
+                        <i className="fa fa-fw fa-handshake-o" /> {request.sellerText?.length ? request.sellerText : '-'}
+                      </div>
+                      <div className="col-md-2">
                         <i className="fa fa-fw fa-building" /> {request.destination?.name}
                       </div>
                       <div className="col-md-2 col-md-offset-4 text-right">

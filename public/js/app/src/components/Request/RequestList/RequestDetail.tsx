@@ -76,7 +76,8 @@ class RequestListDetail extends React.Component<IPropsType, IStateType> {
                 : null
             }
           </div>
-          <div className="col-sm-3 col-xs-3 col-md-3 col-lg-3">{request.destination.name}</div>
+          <div className="col-sm-2 col-xs-2 col-md-2 col-lg-2">{request.sellerText?.length ? request.sellerText : '-'}</div>
+          <div className="col-sm-2 col-xs-2 col-md-2 col-lg-2">{request.destination.name}</div>
           <div className="col-sm-1 col-xs-1 col-md-1 col-lg-1">
             {request.items.length}
           </div>
@@ -86,9 +87,9 @@ class RequestListDetail extends React.Component<IPropsType, IStateType> {
           <div className="col-sm-2 col-xs-2 col-md-2 col-lg-2">
             {moment(request.updatedAt).format('DD-MM-YY')}
           </div>
-          <div className="col-sm-1 col-xs-1 col-md-1 col-lg-1 center">
+          {/* <div className="col-sm-1 col-xs-1 col-md-1 col-lg-1 center"> */}
             {/* 10 */}
-          </div>
+          {/* </div> */}
           <div className="col-sm-1 col-xs-1 col-md-1 col-lg-1 chevron pointer" onClick={() => this.props.tabStatusAction(request._id)}>
             {
               open ? <i className="fa fa-chevron-up" /> : <i className="fa fa-chevron-down" />

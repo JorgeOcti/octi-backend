@@ -17,7 +17,7 @@ import {
   getRequestsThunkAction,
   updateRequestItemActionInList
 } from '../../../actions/requests.actions';
-import { IRequestsState } from '../../../actions/requests.types';
+import {IRequestsState } from '../../../actions/requests.types';
 import AppContainer from '../../../container/AppContainer';
 import { IWindow } from '../../../interfaces/window';
 import ApiService from '../../../utils/axios';
@@ -199,7 +199,10 @@ class RequestListView extends React.Component<IPropsType, IStateType> {
                   <div className="col-sm-1 col-xs-1 col-md-1 col-lg-1">
                     <strong>Flota</strong>
                   </div>
-                  <div className="col-sm-3 col-xs-3 col-md-3 col-lg-3">
+                  <div className="col-sm-2 col-xs-2 col-md-2 col-lg-2">
+                    <strong>Vendedor</strong>
+                  </div>
+                  <div className="col-sm-2 col-xs-2 col-md-2 col-lg-2">
                     <strong>Destino</strong>
                   </div>
                   <div className="col-sm-1 col-xs-1 col-md-1 col-lg-1">
@@ -211,9 +214,9 @@ class RequestListView extends React.Component<IPropsType, IStateType> {
                   <div className="col-sm-2 col-xs-2 col-md-2 col-lg-2  pointer head-sorted" onClick={() => this.changeOrder('updatedAt')}>
                     <strong>Última Actualización</strong> <i className={`fa ${orderBy === 'updatedAt' ? `${orderType === 'descending' ? 'fa-sort-down' : 'fa-sort-up'}` : 'fa-sort'}`} />
                   </div>
-                  <div className="col-sm-1 col-xs-1 col-md-1 col-lg-1 center">
+                  {/* <div className="col-sm-1 col-xs-1 col-md-1 col-lg-1 center"> */}
                     {/* <strong><i className="fa fa-comment" /></strong> */}
-                  </div>
+                  {/* </div> */}
                   <div className="col-sm-1 col-xs-1 col-md-1 col-lg-1" />
                 </div>
                 {

@@ -32,6 +32,7 @@ interface IStateType {
   };
   fleet: boolean;
   cars: any[];
+  sellerText: string;
   venue: string;
   venues: any[];
   reasons: any[];
@@ -63,6 +64,7 @@ class RequestCreateView extends React.Component<IPropsType, IStateType> {
     newCar: initialNewCar,
     cars: [],
     venue: '',
+    sellerText: '',
     venues: [],
     reasons: [],
     loading: false,
@@ -365,6 +367,16 @@ class RequestCreateView extends React.Component<IPropsType, IStateType> {
                             />
                           </div>
                         </div>
+                        <div className="form-group">
+                          <label className="col-sm-2 control-label label-left">Vendedor</label>
+                          <div className="col-sm-10">
+                            <input type="text" className="form-control" onChange={(e) => {
+                              this.setState({
+                                sellerText: e.target.value
+                              });
+                            }} />
+                          </div>
+                        </div>
                       </div>
                       <div className="form-group-switch">
                         <label className="switch-label switch-label-left">Estás solicitando flota</label>
@@ -572,7 +584,7 @@ class RequestCreateView extends React.Component<IPropsType, IStateType> {
 
   private createRequest() {
     const vehiclesView = this.props.location.pathname === '/requests/vehicles/create/';
-    const { cars, fleet, venue } = this.state;
+    const { cars, fleet, venue, sellerText } = this.state;
     if (!cars.length) {
       swal('Solicitud', 'No se han agregado vehículos para crear la solicitud.', 'error');
     } else if (!venue.length) {
@@ -582,7 +594,8 @@ class RequestCreateView extends React.Component<IPropsType, IStateType> {
         .createRequest({
           cars,
           fleet,
-          venue
+          venue,
+          sellerText
         })
         .then((response: AxiosResponse): void => {
           swal('Solicitud', 'Se ha creado satisfactoriamente.', 'success').then(() => {

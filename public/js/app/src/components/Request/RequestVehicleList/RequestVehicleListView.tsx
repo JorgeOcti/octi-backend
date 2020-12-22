@@ -241,10 +241,10 @@ class RequestVehicleListView extends React.Component<IPropsType, IStateType> {
                       <th className="middle">Color</th>
                       <th
                         className="middle pointer"
-                        onClick={() => this.changeOrder('status.name')}
+                        onClick={() => this.changeOrder('status.weight')}
                       >
                         Estado
-                      <span style={{ float: 'right' }}><i className={`fa fa-fw ${orderBy === 'status.name' ? `${orderType === 'descending' ? 'fa-sort-down' : 'fa-sort-up'}` : 'fa-sort'}`} /></span>
+                      <span style={{ float: 'right' }}><i className={`fa fa-fw ${orderBy === 'status.weight' ? `${orderType === 'descending' ? 'fa-sort-down' : 'fa-sort-up'}` : 'fa-sort'}`} /></span>
                       </th>
                       <th className="middle">VIN</th>
                       <th className="middle">CDO</th>

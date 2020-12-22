@@ -81,12 +81,13 @@ class RequestController {
     }
     async apiCreate(req, res) {
         const { team, company } = req.user;
-        const { cars, venue, fleet } = req.body;
+        const { cars, venue, fleet, sellerText } = req.body;
         try {
             const defaultItemStatus = await requestItemStatus_model_1.default.findOneOrCreate({ team, default: true }, { name: 'Pendiente', default: true, team, weigth: 10 });
             const updateTeam = await team_model_1.default.findOne({ _id: team._id });
             const request = await new request_model_1.default({
                 team,
+                sellerText,
                 number: updateTeam.requestNumber + 1,
                 origin: venue,
                 destination: venue,
