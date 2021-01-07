@@ -419,6 +419,17 @@ class RequestVehicleItem extends React.Component<IPropsType, IStateType> {
             </div>
           </div>
         </td>
+        <td className="middle">
+          {
+            item.observation && item.observation.length ?
+              <i
+                className="fa fa-comment"
+                data-toggle="tooltip"
+                data-placement="top"
+                title={item.observation}
+              /> : null
+          }
+        </td>
         {
           canChangeRequest ?
             <td className="middle">
