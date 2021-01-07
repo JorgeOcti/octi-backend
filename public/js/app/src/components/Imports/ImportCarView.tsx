@@ -311,7 +311,7 @@ class ImportCarsView extends React.Component<IPropsType, IStateType> {
       denominacion: '',
       color: '',
       propiedad: '',
-      tipo: '',
+      tipo: ''
       // motor: '',
       // destino: ''
     }];

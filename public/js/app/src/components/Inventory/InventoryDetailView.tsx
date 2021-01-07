@@ -131,7 +131,7 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
     leftover: 'fa-arrow-up',
     missing: 'fa-arrow-down',
     reported: 'fa-exclamation',
-    deleted: 'fa-close',
+    deleted: 'fa-close'
   };
 
   private paginationOption: any = {
@@ -1496,18 +1496,18 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
         axisLabel: {
           rotate: 60,
           fontSize: 10,
-          formatter: function (value: string) {
-              let text = '';
-              const array = value.split(' ');
-              for (let i = 0; i < array.length; i++) {
-                text += `${array[i]}`;
-                if (i > 0 && i % 2 !== 0){
-                  text += ' \n';
-                } else{
-                  text += ' ';
-                }
+          formatter: (value: string) => {
+            let text = '';
+            const array = value.split(' ');
+            for (let i = 0; i < array.length; i++) {
+              text += `${array[i]}`;
+              if (i > 0 && i % 2 !== 0) {
+                text += ' \n';
+              } else {
+                text += ' ';
               }
-              return text;
+            }
+            return text;
           }
         }
       },

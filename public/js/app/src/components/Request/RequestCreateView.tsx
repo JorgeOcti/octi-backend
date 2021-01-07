@@ -11,13 +11,12 @@ import * as uuid from 'uuid';
 import * as swal from 'sweetalert';
 import BootstrapSelect from '../Utils/BootstrapSelect';
 import { AxiosError, AxiosResponse, default as Axios } from 'axios';
+import MultiUploadFiles from '../Utils/MultiUploadFiles';
 
 interface IPropsType extends RouteComponentProps<{}> { }
-
-interface IStateType {
-  newCar: {
-    brand: string
-    brands: any[],
+interface INewCar {
+    brand: string;
+    brands: any[];
     denomination: string;
     denominations: any[];
     material: string;
@@ -26,10 +25,13 @@ interface IStateType {
     amount: number;
     observation: string;
     priority: boolean;
+    files: any[];
     equipment: boolean;
     washed: boolean;
     reason: string;
-  };
+}
+interface IStateType {
+  newCar: INewCar;
   fleet: boolean;
   cars: any[];
   sellerText: string;
@@ -47,6 +49,7 @@ const initialNewCar = {
   denominations: [],
   material: '',
   materials: [],
+  files: [],
   color: '',
   amount: 1,
   observation: '',
@@ -326,6 +329,16 @@ class RequestCreateView extends React.Component<IPropsType, IStateType> {
                         />
                       </div>
                     </div>
+                    <div className="row">
+                      <div className="col-md-12">
+                        <MultiUploadFiles
+                          onChange={(files) => {
+                            this.changeNewCar('files', files);
+                          }}
+                          files={newCar.files}
+                        />
+                      </div>
+                    </div>
                     <div className="text-right">
                       <button
                         className="btn btn-sm btn-primary"
@@ -508,7 +521,9 @@ class RequestCreateView extends React.Component<IPropsType, IStateType> {
     });
   }
 
-  private changeNewCar(field: 'color' | 'brand' | 'denomination' | 'material' | 'observation' | 'reason', value: string) {
+  private changeNewCar(field: keyof INewCar, value: any) {
+    console.log('changeNewCar', field);
+    console.log(value);
     this.setState({
       newCar: {
         ...this.state.newCar,

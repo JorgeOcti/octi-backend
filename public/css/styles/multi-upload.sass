@@ -1,0 +1,65 @@
+.multi-upload
+  display: flex
+  flex-wrap: wrap
+  .add-item
+    text-align: center
+    font-size: 11px
+    margin: 10px
+    padding-top: 12px
+    border: 1px dashed #CCC
+    width: 60px
+    height: 60px
+    color: #6d6d6d
+    background-color: #f1f1f1
+  .item-container
+    margin: 10px
+    border: 1px solid #f1f1f1
+    width: 60px
+    height: 60px
+    position: relative
+    .item
+      display: flex
+      justify-content: center
+      align-items: center
+      height: 100%
+      flex-direction: column
+    .image-item
+      image-orientation: from-image
+      height: 60px
+      width: 60px
+      object-fit: contain
+      padding: 0
+    .delete-button
+      height: 0
+      position: absolute
+      top: -10px
+      left: 50px
+      z-index: 10
+      .fa
+        background-color: #ffffff
+        font-size: 18px
+    .text-description
+      font-size: 10px
+      text-overflow: ellipsis
+      overflow: hidden
+      white-space: nowrap
+      color: #4a4a4a
+      width: 100%
+      height: auto
+      padding: 5px
+      margin: 0
+
+.icon-file
+  background-size: contain
+  background-position: top
+  background-repeat: no-repeat
+  width: 60% !important
+  height: 60% !important
+  &.word
+    background-image: url('/images/icon-doc.svg') !important
+  &.excel
+    background-image: url('/images/icon-xls.svg') !important
+  &.pdf
+    background-image: url('/images/icon-pdf.svg') !important
+  &.file 
+    background-image: url('/images/icon-file.svg') !important
