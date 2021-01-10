@@ -258,6 +258,7 @@ class RequestVehicleListView extends React.Component<IPropsType, IStateType> {
                       </th>
                       <th className="middle">Carrocería</th>
                       <th className="middle">Pre-Entrega</th>
+                      <th className="middle">Obs</th>
                       <th
                         className="middle pointer"
                         onClick={() => this.changeOrder('carrier.name')}

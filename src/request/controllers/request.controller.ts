@@ -122,6 +122,7 @@ class RequestController {
           reason: car.reason,
           washed: car.washed,
           equipment: car.equipment,
+          observation: car.observation,
           priority: car.priority,
           origin: venue,
           destination: venue,
