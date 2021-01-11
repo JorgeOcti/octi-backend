@@ -87,16 +87,13 @@ class MultiUploadFiles extends React.Component<IPropsType, IStateType> {
                       data-placement="top"
                       title={file.name}
                     >{file.name}</p>
-                    {
-                      file.status === imageStatus.inProgress ?
-                        <p
-                          className="text-description"
-                          data-toggle="tooltip"
-                          data-placement="top"
-                          title={file.name}
-                        >{file.progress}</p> : null
-                    }
                   </div>
+              }
+              {
+                file.status === imageStatus.inProgress ?
+                  <div className="multi-upload-progress-bar">
+                    <div className="multi-progress" style={{ width: `${file.progress}%` }} />
+                  </div> : null
               }
             </div>
           ))
