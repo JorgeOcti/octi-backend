@@ -343,7 +343,7 @@ class RequestVehicleItem extends React.Component<IPropsType, IStateType> {
             </td>
             : <td className="middle">{item.reason?.name}</td>
         }
-        <td className="middle">
+        {/* <td className="middle">
           <div className="flex-wrap">
             <div
               className={`flex-wrap-item-center ${canChangeRequest ? 'pointer' : ''} ${item.equipment ? '' : 'text-gray'}`}
@@ -418,6 +418,17 @@ class RequestVehicleItem extends React.Component<IPropsType, IStateType> {
               <i className="material-icons font-14">build</i>
             </div>
           </div>
+        </td> */}
+        <td className="middle">
+          {
+            item.files && item.files.length ?
+              <i
+                className="fa fa-paperclip"
+                data-toggle="tooltip"
+                data-placement="top"
+                title={`${item.files.length} archivos adjuntos.`}
+              /> : null
+          }
         </td>
         <td className="middle">
           {

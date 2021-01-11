@@ -16,6 +16,7 @@ requestRouter.get('/requests/create/', Middlewares.isLoggedIn, RequestController
 
 // apis
 requestRouter.get('/api/v1/requests/search-car/', Middlewares.isLoggedIn, RequestController.searhCar);
+requestRouter.post('/api/v1/requests/upload-file/', Middlewares.isLoggedIn, RequestController.uploadFile);
 
 requestRouter.get('/api/v1/requests/', Middlewares.isLoggedIn, RequestController.apiList);
 requestRouter.post('/api/v1/requests/', Middlewares.isLoggedIn, RequestController.apiCreate);

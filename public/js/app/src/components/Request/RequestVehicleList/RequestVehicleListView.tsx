@@ -256,8 +256,9 @@ class RequestVehicleListView extends React.Component<IPropsType, IStateType> {
                         Motivo
                       <span style={{ float: 'right' }}><i className={`fa fa-fw ${orderBy === 'reason.name' ? `${orderType === 'descending' ? 'fa-sort-down' : 'fa-sort-up'}` : 'fa-sort'}`} /></span>
                       </th>
-                      <th className="middle">Carrocería</th>
-                      <th className="middle">Pre-Entrega</th>
+                      {/* <th className="middle">Carrocería</th>
+                      <th className="middle">Pre-Entrega</th> */}
+                      <th className="middle">Adj</th>
                       <th className="middle">Obs</th>
                       <th
                         className="middle pointer"

@@ -32,6 +32,10 @@ const requestItemSchema = new mongoose.Schema({
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Reason'
     },
+    files: [{
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'RequestFile'
+        }],
     carrier: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Carrier'

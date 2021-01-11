@@ -1,10 +1,10 @@
 import axios from 'axios';
-import Raven = require('raven-js');
 import * as React from 'react';
-import { ChangeEvent, RefObject, DragEvent, ErrorInfo } from 'react';
-
+import { ChangeEvent, DragEvent, ErrorInfo, RefObject } from 'react';
 import * as uuid from 'uuid';
 import { getExtension, getIconFromExtension } from '../../utils/common';
+import Raven = require('raven-js');
+
 
 interface IPropsType {
   onChange: (e: any) => void;
@@ -17,7 +17,7 @@ interface IStateType {
   canDrop: boolean;
 }
 
-enum imageStatus {
+export enum imageStatus {
   pending = 'pending',
   inProgress = 'inProgress',
   complete = 'complete'
@@ -71,15 +71,31 @@ class MultiUploadFiles extends React.Component<IPropsType, IStateType> {
               </div>
               {
                 file.isImage ?
-                  <img src={file.url} className="image-item" />:
+                  <img
+                    src={file.url}
+                    className="image-item"
+                    style={file.status !== imageStatus.complete ? { opacity: 0.5 } : undefined}
+                  />:
                   <div className="item">
-                    <div className={`icon-file ${getIconFromExtension(getExtension(file.name))}`} />
+                    <div
+                      className={`icon-file ${getIconFromExtension(getExtension(file.name))}`}
+                      style={file.status !== imageStatus.complete ? { opacity: 0.5 } : undefined}
+                    />
                     <p
                       className="text-description"
                       data-toggle="tooltip"
                       data-placement="top"
                       title={file.name}
                     >{file.name}</p>
+                    {
+                      file.status === imageStatus.inProgress ?
+                        <p
+                          className="text-description"
+                          data-toggle="tooltip"
+                          data-placement="top"
+                          title={file.name}
+                        >{file.progress}</p> : null
+                    }
                   </div>
               }
             </div>
@@ -112,9 +128,11 @@ class MultiUploadFiles extends React.Component<IPropsType, IStateType> {
     const { onChange, files } = this.props;
     return new Promise((resolve) => {
       file.tmpID = uuid.v4();
+      file.progress = 0;
       file.isImage = this.isImage(file.type);
       file.status = imageStatus.pending;
       onChange([...files, file]);
+      this.uploadImages();
       resolve({});
     });
   }
@@ -141,6 +159,12 @@ class MultiUploadFiles extends React.Component<IPropsType, IStateType> {
     if (!inProcessImages.length && pendingImages.length) {
       const imageToUpload = pendingImages[0];
       let lastPercentage = 0;
+      onChange([...this.props.files].map((file) => {
+        if (file.tmpID === imageToUpload.tmpID) {
+          file.status = imageStatus.inProgress;
+        }
+        return file;
+      }));
       const instance = axios.create({
         timeout: 360000,
         headers: {
@@ -150,6 +174,14 @@ class MultiUploadFiles extends React.Component<IPropsType, IStateType> {
           const percentage = (100 / progressEvent.total) * progressEvent.loaded;
           if (lastPercentage < percentage) {
             lastPercentage = percentage + 5;
+            //TODO Fix this
+            onChange([...this.props.files].map((file) => {
+              if (file.tmpID === imageToUpload.tmpID) {
+                file.status = imageStatus.inProgress;
+                file.progress = percentage;
+              }
+              return file;
+            }));
             // dispatch(updateImage(imageToUpload.tempID, percentage, statusImages.inProcess, null, attempt, source));
           }
         }
@@ -159,10 +191,19 @@ class MultiUploadFiles extends React.Component<IPropsType, IStateType> {
       const data = new FormData();
       data.append('file', imageToUpload);
       instance
-        .post('', data)
+        .post('/api/v1/requests/upload-file/', data)
         .then(response => {
+          onChange([...this.props.files].map((file) => {
+            if (file.tmpID === imageToUpload.tmpID) {
+              file._id = response.data.data._id;
+              file.progress = 100;
+              file.status = imageStatus.complete;
+            }
+            return file;
+          }));
           // dispatch(updateImage(imageToUpload.tempID, 100, statusImages.completed, response.data.id, 1));
           // dispatch(uploadImages());
+          this.uploadImages();
         })
         .catch(err => {
           Raven.captureMessage(JSON.stringify(err.response), {
@@ -174,6 +215,12 @@ class MultiUploadFiles extends React.Component<IPropsType, IStateType> {
             if (waitTime < 16000) attempt = attempt + 1;
             else attempt = 1;
             // dispatch(updateImage(imageToUpload.tempID, 0, statusImages.pending, null, attempt));
+            onChange([...this.props.files].map((file) => {
+              if (file.tmpID === imageToUpload.tmpID) {
+                file.status = imageStatus.pending;
+              }
+              return file;
+            }));
             setTimeout(() => {
               this.uploadImages();
             }, waitTime);

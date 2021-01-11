@@ -21,10 +21,6 @@ const fileSchema = new mongoose.Schema({
     }
 });
 exports.requestFileSchema = new mongoose.Schema({
-    request: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'Request'
-    },
     company: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Company'

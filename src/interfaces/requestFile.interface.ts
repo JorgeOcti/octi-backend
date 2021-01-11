@@ -5,7 +5,6 @@ import { IIFile } from './file.interface';
 
 export interface IRequestFile {
   _id: any;
-  request: IRequestModel | string;
   company: ICompanyModel;
   user: IUserModel;
   file: IIFile;

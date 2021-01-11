@@ -2,6 +2,7 @@ import * as excel from 'exceljs';
 import { Response } from 'express';
 import * as moment from 'moment';
 import { CustomLabels, PaginateOptions, PaginateResult, QueryPopulateOptions } from 'mongoose';
+import RequestFile from '../models/requestFile.model';
 import * as tempfile from 'tempfile';
 import Car, { ChoicesStatusCar } from '../../app/models/car.model';
 import Team from '../../app/models/team.model';
@@ -13,6 +14,8 @@ import logger from '../../services/logger.service';
 import Request, { IRequestModel } from '../models/request.model';
 import RequestItem, { IRequestItemModel } from '../models/requestItem.model';
 import RequestItemStatus from '../models/requestItemStatus.model';
+import GeneralUtils from '../../utils/general.utils';
+import * as GraphicsMagick from 'gm';
 
 class RequestController {
 
@@ -20,6 +23,8 @@ class RequestController {
     path: 'car'
   }, {
     path: 'request'
+  }, {
+    path: 'files'
   }, {
     path: 'reason',
     select: ['name']
@@ -81,6 +86,9 @@ class RequestController {
     this.apiDeleteRequestItem = this.apiDeleteRequestItem.bind(this);
     this.apiCreateItem = this.apiCreateItem.bind(this);
     this.exportExcel = this.exportExcel.bind(this);
+    this.uploadFile = this.uploadFile.bind(this);
+    this.autoRotate = this.autoRotate.bind(this);
+    this.resizeImage = this.resizeImage.bind(this);
   }
 
   public async index(req: IRequest, res: Response) {
@@ -120,6 +128,7 @@ class RequestController {
           request,
           car: newCar,
           reason: car.reason,
+          files: car.files,
           washed: car.washed,
           equipment: car.equipment,
           observation: car.observation,
@@ -191,6 +200,8 @@ class RequestController {
       }, {
         $unwind: { path: '$carrier', preserveNullAndEmptyArrays: true }
       }, {
+        $lookup: { from: 'requestfiles', localField: 'files', foreignField: '_id', as: 'files' }
+      }, {
         $lookup: { from: 'reasons', localField: 'reason', foreignField: '_id', as: 'reason' }
       }, {
         $unwind: { path: '$reason', preserveNullAndEmptyArrays: true }
@@ -204,6 +215,7 @@ class RequestController {
           'washed': 1,
           'review': 1,
           'body': 1,
+          'files': 1,
           'status._id': 1,
           'status.name': 1,
           'carrier._id': 1,
@@ -777,6 +789,120 @@ class RequestController {
         }
         return resolve(result);
       });
+    });
+  }
+
+  public async uploadFile(req: IRequest, res: Response) {
+    const {team, company} = req.user;
+    logger.info(`RequestController.uploadFile`);
+    logger.info(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
+    const file: any = GeneralUtils.getFileFromRequest(req.files, 'file');
+    if (file) {
+      try {
+        const requestFile = new RequestFile();
+        /*
+          {
+            fieldname: 'file',
+            originalname: 'Captura de pantalla 2018-06-28 a la(s) 11.59.58.png',
+            encoding: '7bit',
+            mimetype: 'image/png',
+            destination: '/tmp/',
+            filename: 'Captura de pantalla 2018-06-28 a la(s) 11.59.58.png',
+            path: '/tmp/Captura de pantalla 2018-06-28 a la(s) 11.59.58.png',
+            size: 794429
+          }
+        */
+        file.headers = {
+          'Content-Type': file.mimetype
+        };
+        file.team = team._id;
+        requestFile.user = req.user._id;
+        requestFile.company = company._id;
+        // fix exif
+        if (new RegExp('\\bimage\\b').test(file.mimetype)) {
+          try {
+            await this.autoRotate(file.path);
+          } catch (e) {
+            logger.error('RequestController.uploadFile: Error making autoRotate');
+          }
+        }
+        await requestFile.attach('file', file);
+
+        if (new RegExp('\\bimage\\b').test(file.mimetype)) {
+          try {
+            await this.resizeImage(file.path);
+            await requestFile.attach('thumbnail', file);
+          } catch (e) {
+            logger.error('RequestController.uploadFile: Error making thumbnail');
+          }
+        }
+
+        await requestFile.save();
+        res.status(201).json({
+          data: {
+            _id: requestFile._id,
+            file: requestFile.file
+          },
+          status: 201
+        });
+      } catch (e) {
+        /* istanbul ignore next */
+        logger.error(`RequestController.uploadFile: Async Error.`);
+        /* istanbul ignore next */
+        logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
+        /* istanbul ignore next */
+        logger.error(e);
+        /* istanbul ignore next */
+        res.status(400).json(e);
+      }
+    } else {
+      logger.error(`RequestController.uploadFile: The file are required.`);
+      logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
+      /* istanbul ignore next */
+      res.status(400).json({
+        message: 'La imagen es obligatoria.',
+        status: 400
+      });
+    }
+  }
+
+  private autoRotate(path: string): Promise<any> {
+    // doc http://aheckmann.github.io/gm/docs.html
+    /**** REQUIRE *****
+     brew install imagemagick
+     brew install graphicsmagick
+     * */
+    return new Promise((resolve, reject) => {
+      GraphicsMagick(path)
+        .autoOrient()
+        .write(path, (err) => {
+          if (err) {
+            /* istanbul ignore next */
+            reject(err);
+          } else {
+            resolve({});
+          }
+        });
+    });
+  }
+
+  private resizeImage(path: string): Promise<boolean> {
+    // doc http://aheckmann.github.io/gm/docs.html
+    /**** REQUIRE *****
+     brew install imagemagick
+     brew install graphicsmagick
+     * */
+    return new Promise((resolve, reject) => {
+      GraphicsMagick(path)
+        .resize(100, 100)
+        .write(path, (err) => {
+          if (err) {
+            /* istanbul ignore next */
+            reject(err);
+          } else {
+            resolve(true);
+          }
+        });
     });
   }
 }

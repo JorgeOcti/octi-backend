@@ -2,6 +2,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 const excel = require("exceljs");
 const moment = require("moment");
+const requestFile_model_1 = require("../models/requestFile.model");
 const tempfile = require("tempfile");
 const car_model_1 = require("../../app/models/car.model");
 const team_model_1 = require("../../app/models/team.model");
@@ -12,12 +13,16 @@ const logger_service_1 = require("../../services/logger.service");
 const request_model_1 = require("../models/request.model");
 const requestItem_model_1 = require("../models/requestItem.model");
 const requestItemStatus_model_1 = require("../models/requestItemStatus.model");
+const general_utils_1 = require("../../utils/general.utils");
+const GraphicsMagick = require("gm");
 class RequestController {
     constructor() {
         this.itemPopulate = [{
                 path: 'car'
             }, {
                 path: 'request'
+            }, {
+                path: 'files'
             }, {
                 path: 'reason',
                 select: ['name']
@@ -75,6 +80,9 @@ class RequestController {
         this.apiDeleteRequestItem = this.apiDeleteRequestItem.bind(this);
         this.apiCreateItem = this.apiCreateItem.bind(this);
         this.exportExcel = this.exportExcel.bind(this);
+        this.uploadFile = this.uploadFile.bind(this);
+        this.autoRotate = this.autoRotate.bind(this);
+        this.resizeImage = this.resizeImage.bind(this);
     }
     async index(req, res) {
         res.render('app/index', { token: await req.user.generateToken() });
@@ -111,6 +119,7 @@ class RequestController {
                     request,
                     car: newCar,
                     reason: car.reason,
+                    files: car.files,
                     washed: car.washed,
                     equipment: car.equipment,
                     observation: car.observation,
@@ -182,6 +191,8 @@ class RequestController {
                 }, {
                     $unwind: { path: '$carrier', preserveNullAndEmptyArrays: true }
                 }, {
+                    $lookup: { from: 'requestfiles', localField: 'files', foreignField: '_id', as: 'files' }
+                }, {
                     $lookup: { from: 'reasons', localField: 'reason', foreignField: '_id', as: 'reason' }
                 }, {
                     $unwind: { path: '$reason', preserveNullAndEmptyArrays: true }
@@ -195,6 +206,7 @@ class RequestController {
                         'washed': 1,
                         'review': 1,
                         'body': 1,
+                        'files': 1,
                         'status._id': 1,
                         'status.name': 1,
                         'carrier._id': 1,
@@ -775,6 +787,121 @@ class RequestController {
                     return reject(err);
                 }
                 return resolve(result);
+            });
+        });
+    }
+    async uploadFile(req, res) {
+        const { team, company } = req.user;
+        logger_service_1.default.info(`RequestController.uploadFile`);
+        logger_service_1.default.info(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
+        const file = general_utils_1.default.getFileFromRequest(req.files, 'file');
+        if (file) {
+            try {
+                const requestFile = new requestFile_model_1.default();
+                /*
+                  {
+                    fieldname: 'file',
+                    originalname: 'Captura de pantalla 2018-06-28 a la(s) 11.59.58.png',
+                    encoding: '7bit',
+                    mimetype: 'image/png',
+                    destination: '/tmp/',
+                    filename: 'Captura de pantalla 2018-06-28 a la(s) 11.59.58.png',
+                    path: '/tmp/Captura de pantalla 2018-06-28 a la(s) 11.59.58.png',
+                    size: 794429
+                  }
+                */
+                file.headers = {
+                    'Content-Type': file.mimetype
+                };
+                file.team = team._id;
+                requestFile.user = req.user._id;
+                requestFile.company = company._id;
+                // fix exif
+                if (new RegExp('\\bimage\\b').test(file.mimetype)) {
+                    try {
+                        await this.autoRotate(file.path);
+                    }
+                    catch (e) {
+                        logger_service_1.default.error('RequestController.uploadFile: Error making autoRotate');
+                    }
+                }
+                await requestFile.attach('file', file);
+                if (new RegExp('\\bimage\\b').test(file.mimetype)) {
+                    try {
+                        await this.resizeImage(file.path);
+                        await requestFile.attach('thumbnail', file);
+                    }
+                    catch (e) {
+                        logger_service_1.default.error('RequestController.uploadFile: Error making thumbnail');
+                    }
+                }
+                await requestFile.save();
+                res.status(201).json({
+                    data: {
+                        _id: requestFile._id,
+                        file: requestFile.file
+                    },
+                    status: 201
+                });
+            }
+            catch (e) {
+                /* istanbul ignore next */
+                logger_service_1.default.error(`RequestController.uploadFile: Async Error.`);
+                /* istanbul ignore next */
+                logger_service_1.default.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
+                /* istanbul ignore next */
+                logger_service_1.default.error(e);
+                /* istanbul ignore next */
+                res.status(400).json(e);
+            }
+        }
+        else {
+            logger_service_1.default.error(`RequestController.uploadFile: The file are required.`);
+            logger_service_1.default.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
+            /* istanbul ignore next */
+            res.status(400).json({
+                message: 'La imagen es obligatoria.',
+                status: 400
+            });
+        }
+    }
+    autoRotate(path) {
+        // doc http://aheckmann.github.io/gm/docs.html
+        /**** REQUIRE *****
+         brew install imagemagick
+         brew install graphicsmagick
+         * */
+        return new Promise((resolve, reject) => {
+            GraphicsMagick(path)
+                .autoOrient()
+                .write(path, (err) => {
+                if (err) {
+                    /* istanbul ignore next */
+                    reject(err);
+                }
+                else {
+                    resolve({});
+                }
+            });
+        });
+    }
+    resizeImage(path) {
+        // doc http://aheckmann.github.io/gm/docs.html
+        /**** REQUIRE *****
+         brew install imagemagick
+         brew install graphicsmagick
+         * */
+        return new Promise((resolve, reject) => {
+            GraphicsMagick(path)
+                .resize(100, 100)
+                .write(path, (err) => {
+                if (err) {
+                    /* istanbul ignore next */
+                    reject(err);
+                }
+                else {
+                    resolve(true);
+                }
             });
         });
     }

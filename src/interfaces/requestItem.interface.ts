@@ -14,6 +14,7 @@ import { IRequestItemStatus } from './requestItemStatus.interface';
 import { ITeam } from './team.interface';
 import { IUser } from './user.interface';
 import { IVenue } from './venue.interface';
+import { IRequestFile } from './requestFile.interface';
 
 export interface IRequestItem {
   _id: any;
@@ -23,6 +24,7 @@ export interface IRequestItem {
   position: IVenue | IVenueModel;
   destination: IVenue | IVenueModel;
   car: ICar | ICarModel;
+  files: IRequestFile[];
   carrier: ICarrier | ICarrierModel | any;
   reason: IReason | IReasonModel;
   status: IRequestItemStatus | IRequestItemStatusModel;

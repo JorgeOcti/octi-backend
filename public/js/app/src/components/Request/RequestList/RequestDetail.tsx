@@ -107,7 +107,9 @@ class RequestListDetail extends React.Component<IPropsType, IStateType> {
                 <th className="middle" style={{ width: '100px' }}>Color</th>
                 <th className="middle-center">VIN</th>
                 <th className="middle-center">CDO</th>
-                <th className="middle-center">Equip. / Carroc. / Preentrega</th>
+                <th className="middle">Adj</th>
+                <th className="middle">Obs</th>
+                {/* <th className="middle-center">Equip. / Carroc. / Preentrega</th> */}
                 <th className="middle"  style={{ width: '100px' }}>Motivo</th>
                 <th className="middle" >Transporte</th>
                 <th  className="middle" style={{ width: '70px' }}>Fecha carga</th>
@@ -173,7 +175,29 @@ class RequestListDetail extends React.Component<IPropsType, IStateType> {
                           : null
                       }
                     </td>
-                    <td className="middle">
+                    <td className="middle-center">
+                      {
+                        item.files && item.files.length ?
+                          <i
+                            className="fa fa-paperclip"
+                            data-toggle="tooltip"
+                            data-placement="top"
+                            title={`${item.files.length} archivos adjuntos.`}
+                          /> : null
+                      }
+                    </td>
+                    <td className="middle-center">
+                      {
+                        item.observation && item.observation.length ?
+                          <i
+                            className="fa fa-comment"
+                            data-toggle="tooltip"
+                            data-placement="top"
+                            title={item.observation}
+                          /> : null
+                      }
+                    </td>
+                    {/* <td className="middle">
                       <div className="flex-wrap">
                         <div
                           className={`flex-wrap-item-center ${item.equipment ? '' : 'text-gray'}`}
@@ -208,7 +232,7 @@ class RequestListDetail extends React.Component<IPropsType, IStateType> {
                           <i className="material-icons">build</i>
                         </div>
                       </div>
-                    </td>
+                    </td> */}
                     {
                       canChangeRequest ?
                         <td className="middle">

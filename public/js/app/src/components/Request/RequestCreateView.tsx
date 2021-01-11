@@ -1,17 +1,19 @@
+import { AxiosError, AxiosResponse, default as Axios } from 'axios';
 import * as React from 'react';
-import { RouteComponentProps } from 'react-router';
-import { IInventoryState } from '../../actions/inventory.actions';
 import { connect } from 'react-redux';
-import AppContainer from '../../container/AppContainer';
-import BootstrapSwitch from '../Utils/BootstrapSwitch';
-import AutocompleteInput from '../Utils/AutocompleteInput';
-import ApiService from '../../utils/axios';
+import { RouteComponentProps } from 'react-router';
+import * as swal from 'sweetalert';
 import { debounce } from 'throttle-debounce';
 import * as uuid from 'uuid';
-import * as swal from 'sweetalert';
+import { IReason } from '../../../../../../src/interfaces/reason.interface';
+import { IInventoryState } from '../../actions/inventory.actions';
+import AppContainer from '../../container/AppContainer';
+import ApiService from '../../utils/axios';
+import AutocompleteInput from '../Utils/AutocompleteInput';
 import BootstrapSelect from '../Utils/BootstrapSelect';
-import { AxiosError, AxiosResponse, default as Axios } from 'axios';
-import MultiUploadFiles from '../Utils/MultiUploadFiles';
+import BootstrapSwitch from '../Utils/BootstrapSwitch';
+import MultiUploadFiles, { imageStatus } from '../Utils/MultiUploadFiles';
+import ShowIf from '../Utils/ShowIf';
 
 interface IPropsType extends RouteComponentProps<{}> { }
 interface INewCar {
@@ -37,7 +39,7 @@ interface IStateType {
   sellerText: string;
   venue: string;
   venues: any[];
-  reasons: any[];
+  reasons: IReason[];
   loading: boolean;
   error: Error | null;
 }
@@ -113,6 +115,9 @@ class RequestCreateView extends React.Component<IPropsType, IStateType> {
   public render(): React.ReactElement<IPropsType> {
     const { newCar, cars, fleet, loading, venues, reasons } = this.state;
     const vehiclesView = this.props.location.pathname === '/requests/vehicles/create/';
+    const filesCompleted = newCar.files.filter((file: any) => file.status === imageStatus.complete);
+    const isUploadingFiles = newCar.files.length > 0 && filesCompleted.length < newCar.files.length;
+    const reasonSelected: IReason | undefined = (reasons as IReason[]).find((reason: IReason) => reason._id === newCar.reason);
     return (
       <AppContainer title="" cMenu="3" cSubMenu={vehiclesView ? '3.2' : '3.1'} cAction="Crear solicitud">
         <section className="content">
@@ -262,6 +267,25 @@ class RequestCreateView extends React.Component<IPropsType, IStateType> {
                         />
                       </div>
                     </div>
+                    {
+                      reasonSelected && reasonSelected.file.active ?
+                        <div className="form-group">
+                          <label className="col-sm-3 control-label label-left">Archivos *</label>
+                          <div className="col-sm-9">
+                            <MultiUploadFiles
+                              onChange={(files) => {
+                                this.changeNewCar('files', files);
+                              }}
+                              files={newCar.files}
+                            />
+                            <ShowIf condition={isUploadingFiles}>
+                              <p>
+                                Se están cargando sus archivos, llevamos {filesCompleted.length} de {newCar.files.length} <i className="fa fa-spinner fa-spin" />.
+                            </p>
+                            </ShowIf>
+                          </div>
+                        </div> : null
+                    }
                     <div className="form-group">
                       <label className="col-sm-3 control-label label-left">Pre-entrega</label>
                       <div className="col-sm-9">
@@ -329,21 +353,11 @@ class RequestCreateView extends React.Component<IPropsType, IStateType> {
                         />
                       </div>
                     </div>
-                    <div className="row">
-                      <div className="col-md-12">
-                        <MultiUploadFiles
-                          onChange={(files) => {
-                            this.changeNewCar('files', files);
-                          }}
-                          files={newCar.files}
-                        />
-                      </div>
-                    </div>
                     <div className="text-right">
                       <button
                         className="btn btn-sm btn-primary"
                         onClick={this.addCar}
-                        disabled={!newCar.brand.length || !newCar.denomination.length || !newCar.color.length ||  !newCar.reason}
+                        disabled={!newCar.brand.length || !newCar.denomination.length || !newCar.color.length ||  !newCar.reason || isUploadingFiles}
                       >
                         Agregar
                       </button>
@@ -414,6 +428,9 @@ class RequestCreateView extends React.Component<IPropsType, IStateType> {
                                   <td className="middle">
                                     <i className={`material-icons ${!car.equipment ? 'text-gray' : ''}`}>build</i>
                                   </td>
+                                  <td className="middle">
+                                    {car.files.length ? <i className={`fa fa-paperclip`} /> : null}
+                                  </td>
                                   <td className="middle text-muted" style={{ width: '140px' }}>
                                     {
                                       car.observation && car.observation.length ?
@@ -469,6 +486,7 @@ class RequestCreateView extends React.Component<IPropsType, IStateType> {
     const cars = Array(newCar.amount).fill({
       brand: newCar.brand,
       denomination: newCar.denomination,
+      files: newCar.files,
       material: newCar.material,
       color: newCar.color,
       observation: newCar.observation,
@@ -522,8 +540,6 @@ class RequestCreateView extends React.Component<IPropsType, IStateType> {
   }
 
   private changeNewCar(field: keyof INewCar, value: any) {
-    console.log('changeNewCar', field);
-    console.log(value);
     this.setState({
       newCar: {
         ...this.state.newCar,

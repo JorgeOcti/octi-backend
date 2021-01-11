@@ -1,4 +1,4 @@
-import { IRequestFile } from 'interfaces/requestFile.interface';
+import { IRequestFile } from '../../interfaces/requestFile.interface';
 import * as mongoose from 'mongoose';
 import * as mongooseCrate from 'mongoose-crate';
 import * as MongooseCrateS3 from 'mongoose-crate-s3';
@@ -25,10 +25,6 @@ export interface IRequestFileModel extends IRequestFile, mongoose.Document {
 }
 
 export const requestFileSchema = new mongoose.Schema({
-  request: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'Request'
-  },
   company: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Company'

@@ -207,8 +207,10 @@ class RequestDetailView extends React.Component<IPropsType, IStateType> {
                           <th className="middle">VIN</th>
                           <th className="middle">CDO</th>
                           <th className="middle" style={{ width: '100px' }}>Motivo</th>
-                          <th className="middle">Carrocería</th>
-                          <th className="middle">Pre-Entrega</th>
+                          {/* <th className="middle">Carrocería</th>
+                          <th className="middle">Pre-Entrega</th> */}
+                          <th className="middle">Adj</th>
+                          <th className="middle">Obs</th>
                           <th className="middle">Transporte</th>
                           <th style={{ width: '70px' }}>Fecha carga</th>
                           <th style={{ width: '70px' }}>LLegada llegada</th>
