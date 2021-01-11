@@ -42,6 +42,7 @@ class MultiUploadFiles extends React.Component<IPropsType, IStateType> {
     this.dragLeaveHandler = this.dragLeaveHandler.bind(this);
     this.uploadImages = this.uploadImages.bind(this);
     this.deleteFile = this.deleteFile.bind(this);
+    this.getSizeText = this.getSizeText.bind(this);
     this.inputFile = React.createRef();
   }
 
@@ -86,7 +87,19 @@ class MultiUploadFiles extends React.Component<IPropsType, IStateType> {
                       data-toggle="tooltip"
                       data-placement="top"
                       title={file.name}
-                    >{file.name}</p>
+                      style={{
+                        paddingBottom: 0
+                      }}
+                    >
+                      {file.name}
+                    </p>
+                    <p
+                      className="text-description"
+                      style={{
+                        color: '#9e9e9e',
+                        paddingTop: 0
+                      }}
+                    >{this.getSizeText(file.size)}</p>
                   </div>
               }
               {
@@ -134,6 +147,16 @@ class MultiUploadFiles extends React.Component<IPropsType, IStateType> {
     });
   }
 
+  private getSizeText(bytes: number): string {
+    let text = '';
+    if (bytes < 1000000) {
+      text = Math.floor(bytes / 1000) + 'KB';
+    } else {
+      text = Math.floor(bytes / 1000000) + 'MB';
+    }
+    return text;
+  }
+
   private deleteFile(id: string) {
     const { onChange, files } = this.props;
     onChange([...files].filter(file => file.tmpID !== id));
@@ -171,7 +194,7 @@ class MultiUploadFiles extends React.Component<IPropsType, IStateType> {
           const percentage = (100 / progressEvent.total) * progressEvent.loaded;
           if (lastPercentage < percentage) {
             lastPercentage = percentage + 5;
-            //TODO Fix this
+            // TODO Fix this
             onChange([...this.props.files].map((file) => {
               if (file.tmpID === imageToUpload.tmpID) {
                 file.status = imageStatus.inProgress;
