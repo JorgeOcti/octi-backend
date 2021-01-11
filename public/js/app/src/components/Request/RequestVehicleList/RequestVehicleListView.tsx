@@ -232,7 +232,7 @@ class RequestVehicleListView extends React.Component<IPropsType, IStateType> {
                       </th>
                       <th
                         className="middle pointer"
-                        style={{ width: '120px' }}
+                        style={{ width: '80px' }}
                         onClick={() => this.changeOrder('car.material')}
                       >
                         Material
@@ -241,6 +241,7 @@ class RequestVehicleListView extends React.Component<IPropsType, IStateType> {
                       <th className="middle">Color</th>
                       <th
                         className="middle pointer"
+                        style={{ width: '120px' }}
                         onClick={() => this.changeOrder('status.weigth')}
                       >
                         Estado
@@ -262,6 +263,7 @@ class RequestVehicleListView extends React.Component<IPropsType, IStateType> {
                       <th className="middle">Obs</th>
                       <th
                         className="middle pointer"
+                        style={{ width: '100px' }}
                         onClick={() => this.changeOrder('carrier.name')}
                       >
                         Transporte

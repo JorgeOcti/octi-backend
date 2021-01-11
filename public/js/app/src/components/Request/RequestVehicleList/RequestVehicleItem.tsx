@@ -297,7 +297,7 @@ class RequestVehicleItem extends React.Component<IPropsType, IStateType> {
             <td className="middle">
               <input type="text"
                 className="form-control input-sm"
-                style={{ width: '80px' }}
+                style={{ width: '60px' }}
                 defaultValue={item.car.internalNumber}
                 onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
                   this.props.updateRequestItemsThunkAction({
