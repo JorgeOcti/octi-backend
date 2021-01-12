@@ -823,7 +823,7 @@ class RequestController {
                 const filesToCompress = [];
                 for (const file of requestItems.files) {
                     const destDirectory = `/tmp/${file._id}_${file.file.name}`;
-                    filesToDownload.push(() => this.downloadFile(file.file.url, destDirectory));
+                    filesToDownload.push(() => this.downloadFile(decodeURI(file.file.url), destDirectory));
                     filesToCompress.push({
                         destDirectory,
                         name: file.file.name
