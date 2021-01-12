@@ -481,32 +481,37 @@ class RequestCreateView extends React.Component<IPropsType, IStateType> {
   }
 
   private addCar(): void {
-    const { newCar } = this.state;
-    const $amount: any = $('#amount');
-    const cars = Array(newCar.amount).fill({
-      brand: newCar.brand,
-      denomination: newCar.denomination,
-      files: newCar.files,
-      material: newCar.material,
-      color: newCar.color,
-      observation: newCar.observation,
-      priority: newCar.priority,
-      equipment: newCar.equipment,
-      reason: newCar.reason,
-      washed: newCar.washed
-    });
-    this.setState({
-      cars: [...this.state.cars, ...cars.map((car) => {
-        const tid = uuid.v4();
-        return {
-          ...car,
-          tid
-        };
-      })],
-      newCar: initialNewCar
-    }, () => {
-      $amount.val(1);
-    });
+    const { newCar, reasons } = this.state;
+    const reasonSelected: IReason | undefined = (reasons as IReason[]).find((reason: IReason) => reason._id === newCar.reason);
+    if (reasonSelected?.file.required && !newCar.files.length) {
+      swal('Solicitud', `Se requiere que subas un archivo para este vehículo.`, 'error');
+    } else {
+      const $amount: any = $('#amount');
+      const cars = Array(newCar.amount).fill({
+        brand: newCar.brand,
+        denomination: newCar.denomination,
+        files: newCar.files,
+        material: newCar.material,
+        color: newCar.color,
+        observation: newCar.observation,
+        priority: newCar.priority,
+        equipment: newCar.equipment,
+        reason: newCar.reason,
+        washed: newCar.washed
+      });
+      this.setState({
+        cars: [...this.state.cars, ...cars.map((car) => {
+          const tid = uuid.v4();
+          return {
+            ...car,
+            tid
+          };
+        })],
+        newCar: initialNewCar
+      }, () => {
+        $amount.val(1);
+      });
+    }
   }
 
   private searchReason(id: string) {
