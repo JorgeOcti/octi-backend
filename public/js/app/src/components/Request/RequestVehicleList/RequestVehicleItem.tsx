@@ -44,6 +44,7 @@ class RequestVehicleItem extends React.Component<IPropsType, IStateType> {
     super(props);
     this.search = debounce(500, this.search.bind(this));
     this.goToDetail = this.goToDetail.bind(this);
+    this.downloadFiles = this.downloadFiles.bind(this);
     this.api = new ApiService();
   }
 
@@ -419,7 +420,10 @@ class RequestVehicleItem extends React.Component<IPropsType, IStateType> {
             </div>
           </div>
         </td> */}
-        <td className="middle">
+        <td
+          className={`middle ${item.files && item.files.length ? 'pointer' : ''}`}
+          onClick={() => this.downloadFiles(item)}
+        >
           {
             item.files && item.files.length ?
               <i
@@ -517,6 +521,10 @@ class RequestVehicleItem extends React.Component<IPropsType, IStateType> {
 
   private goToDetail(id: string): void {
     this.props.history.push(`/requests/vehicles/${id}/`);
+  }
+
+  private downloadFiles(item: IRequestItem) {
+    window.open(`/requests-item/${item._id}/download-files/`, '_blank');
   }
 
   private search(text: string): void {

@@ -29,6 +29,8 @@ requestRouter.post('/api/v1/requests-item/', Middlewares.isLoggedIn, RequestCont
 requestRouter.patch('/api/v1/requests-item/:id/', Middlewares.isLoggedIn, RequestController.apiPatchItem);
 requestRouter.delete('/api/v1/requests-item/:id/', Middlewares.isLoggedIn, RequestController.apiDeleteRequestItem);
 
+requestRouter.get('/requests-item/:id/download-files/', Middlewares.isJWTAuthenticated, RequestController.downloadItemFiles);
+
 requestRouter.get('/api/v1/reasons/', Middlewares.isLoggedIn, ReasonController.apiList);
 
 requestRouter.get('/api/v1/request-item-status/', Middlewares.isLoggedIn, RequestItemStatusController.apiList);

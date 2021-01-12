@@ -26,6 +26,7 @@ requestRouter.get('/api/v1/requests-item/', middlewares_1.default.isLoggedIn, re
 requestRouter.post('/api/v1/requests-item/', middlewares_1.default.isLoggedIn, request_controller_1.default.apiCreateItem);
 requestRouter.patch('/api/v1/requests-item/:id/', middlewares_1.default.isLoggedIn, request_controller_1.default.apiPatchItem);
 requestRouter.delete('/api/v1/requests-item/:id/', middlewares_1.default.isLoggedIn, request_controller_1.default.apiDeleteRequestItem);
+requestRouter.get('/requests-item/:id/download-files/', middlewares_1.default.isJWTAuthenticated, request_controller_1.default.downloadItemFiles);
 requestRouter.get('/api/v1/reasons/', middlewares_1.default.isLoggedIn, reason_controller_1.default.apiList);
 requestRouter.get('/api/v1/request-item-status/', middlewares_1.default.isLoggedIn, requestItemStatus_controller_1.default.apiList);
 //# sourceMappingURL=router.js.map

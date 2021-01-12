@@ -1,8 +1,12 @@
+import * as archiver from 'archiver';
+import * as bluebird from 'bluebird';
 import * as excel from 'exceljs';
 import { Response } from 'express';
+import * as fs from 'fs';
+import * as https from 'https';
+import * as GraphicsMagick from 'gm';
 import * as moment from 'moment';
 import { CustomLabels, PaginateOptions, PaginateResult, QueryPopulateOptions } from 'mongoose';
-import RequestFile from '../models/requestFile.model';
 import * as tempfile from 'tempfile';
 import Car, { ChoicesStatusCar } from '../../app/models/car.model';
 import Team from '../../app/models/team.model';
@@ -11,11 +15,11 @@ import { IRequest } from '../../interfaces/global.interface';
 import InventoryCar from '../../inventory/models/inventoryCar.model';
 import { io } from '../../server';
 import logger from '../../services/logger.service';
+import GeneralUtils from '../../utils/general.utils';
 import Request, { IRequestModel } from '../models/request.model';
+import RequestFile from '../models/requestFile.model';
 import RequestItem, { IRequestItemModel } from '../models/requestItem.model';
 import RequestItemStatus from '../models/requestItemStatus.model';
-import GeneralUtils from '../../utils/general.utils';
-import * as GraphicsMagick from 'gm';
 
 class RequestController {
 
@@ -89,6 +93,8 @@ class RequestController {
     this.uploadFile = this.uploadFile.bind(this);
     this.autoRotate = this.autoRotate.bind(this);
     this.resizeImage = this.resizeImage.bind(this);
+    this.downloadItemFiles = this.downloadItemFiles.bind(this);
+    this.downloadFile = this.downloadFile.bind(this);
   }
 
   public async index(req: IRequest, res: Response) {
@@ -789,6 +795,120 @@ class RequestController {
         }
         return resolve(result);
       });
+    });
+  }
+
+  public async downloadItemFiles(req: IRequest, res: Response) {
+    const { id } = req.params;
+    const { team } = req.user;
+    try {
+      const requestItems = await RequestItem
+        .findOne({ _id: id, team })
+        .populate(this.itemPopulate);
+      if (requestItems) {
+        const archive = archiver('zip', {
+          zlib: {
+            level: 0
+          }
+        });
+        archive.on('error', (err) => {
+          res.status(500).send({
+            error: err.message
+          });
+        });
+        const filename = `attachments_${requestItems._id}.zip`;
+        archive.on('end', () => {
+          console.log(`${filename}: Archive wrote ${(archive.pointer() / (1024 * 1024)).toFixed(2)}MB`);
+        });
+        res.attachment(filename);
+        const filesToDownload: any = [];
+        const filesToCompress: any = [];
+        for (const file of requestItems.files) {
+          const destDirectory = `/tmp/${file._id}_${file.file.name}`;
+          filesToDownload.push(() => this.downloadFile(file.file.url, destDirectory));
+          filesToCompress.push({
+            destDirectory,
+            name: file.file.name
+          });
+        }
+        // download files
+        console.log('EXECUTE PROMISES');
+        let results: any[] = [];
+        let numb = 1;
+        while (filesToDownload.length) {
+          console.log('promise', numb);
+          results = [...results, ...await bluebird.all(filesToDownload.splice(0, 20).map((promise: any) => promise()))];
+          numb++;
+        }
+        // compress files
+        console.log('EXECUTE COMPRESS');
+        filesToCompress.map((file: any) => {
+          archive.file(file.destDirectory, {
+            name: file.name
+          });
+          setTimeout(() => {
+            if (fs.existsSync(file.destDirectory)) {
+              console.log(`clear ${file.destDirectory}`);
+              fs.unlink(file.destDirectory, (err) => {
+                if (err) {
+                  console.log(err);
+                }
+              });
+            }
+          }, 7200000);
+        });
+        console.log('results', results);
+        res.setHeader('size', results.reduce((a: number, b: number) => a + b));
+        archive.pipe(res);
+        archive.finalize();
+      } else{
+        res.status(404).json({message: 'Not found'});
+      }
+    } catch (e) {
+      /* istanbul ignore next */
+      logger.error(e);
+      /* istanbul ignore next */
+      logger.error(`RequestController.downloadItemFiles: Async Error.`);
+      /* istanbul ignore next */
+      logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
+      res.status(500).json(e);
+    }
+  }
+
+  private async downloadFile(url: string, dest: string): Promise<number> {
+    return new Promise(async (resolve, reject) => {
+      try {
+        // generate directory name from dest var
+        const directories: string[] = dest.split('/');
+        directories.pop();
+
+        // validate that the directory exist and create recursive if it does not exist
+        const directoyName = directories.join('/');
+        if (!fs.existsSync(directoyName)) {
+          fs.mkdirSync(directoyName, {recursive: true});
+        }
+        const file = fs.createWriteStream(dest);
+        // download file
+        https.get(url, (response) => {
+          response.pipe(file);
+          file.on('finish', () => {
+            file.close();
+            resolve(response.headers['content-length'] ? parseInt(response.headers['content-length'], 10) : 0);
+          });
+        });
+      } catch (e) {
+        // Validate that the file exists and delete it if it exists.
+        if (fs.existsSync(dest)) {
+          fs.unlink(dest, (err) => {
+            if (err) {
+              reject(err);
+            }
+          });
+        } else {
+          console.log(url);
+          reject(e);
+        }
+      }
     });
   }
 

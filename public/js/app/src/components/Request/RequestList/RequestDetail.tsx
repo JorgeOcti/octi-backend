@@ -50,6 +50,7 @@ class RequestListDetail extends React.Component<IPropsType, IStateType> {
   constructor(props: IPropsType) {
     super(props);
     this.goToDetail = this.goToDetail.bind(this);
+    this.downloadFiles = this.downloadFiles.bind(this);
   }
 
   public render(): React.ReactElement<IPropsType> {
@@ -175,7 +176,10 @@ class RequestListDetail extends React.Component<IPropsType, IStateType> {
                           : null
                       }
                     </td>
-                    <td className="middle-center">
+                    <td
+                      className={`middle-center ${item.files && item.files.length ? 'pointer' : ''}`}
+                      onClick={() => this.downloadFiles(item)}
+                    >
                       {
                         item.files && item.files.length ?
                           <i
@@ -316,6 +320,10 @@ class RequestListDetail extends React.Component<IPropsType, IStateType> {
         </div>
       </React.Fragment>
     );
+  }
+
+  private downloadFiles(item: IRequestItem) {
+    window.open(`/requests-item/${item._id}/download-files/`, '_blank');
   }
 
   private goToDetail(id: string): void {

@@ -75,12 +75,12 @@ class MultiUploadFiles extends React.Component<IPropsType, IStateType> {
                   <img
                     src={file.url}
                     className="image-item"
-                    style={file.status !== imageStatus.complete ? { opacity: 0.5 } : undefined}
+                    style={file.status !== imageStatus.complete ? { opacity: 0.5, filter: 'grayscale(100%)'  } : undefined}
                   />:
                   <div className="item">
                     <div
                       className={`icon-file ${getIconFromExtension(getExtension(file.name))}`}
-                      style={file.status !== imageStatus.complete ? { opacity: 0.5 } : undefined}
+                      style={file.status !== imageStatus.complete ? { opacity: 0.5, filter: 'grayscale(100%)' } : undefined}
                     />
                     <p
                       className="text-description"
