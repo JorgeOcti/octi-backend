@@ -407,7 +407,7 @@ class RequestController {
                     body: item.body ? 'Si' : 'No',
                     washed: item.washed ? 'Si' : 'No',
                     review: item.review ? 'Si' : 'No',
-                    createdBy: `${item.createdBy.firstName} ${item.createdBy.lastName}`,
+                    createdBy: item.createdBy ? `${item.createdBy.firstName} ${item.createdBy.lastName}` : '-',
                     carrier: item.carrier ? item.carrier.name : '',
                     uploadDate: item.uploadDate,
                     estimatedArrival: item.estimatedArrival,
