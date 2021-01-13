@@ -1,48 +1,40 @@
 import * as archiver from 'archiver';
 import * as bluebird from 'bluebird';
-import {ObjectID} from 'bson';
-import {Response} from 'express';
+import { ObjectID } from 'bson';
+import * as excel from 'exceljs';
+import { Alignment } from 'exceljs';
+import { Response } from 'express';
 import * as fs from 'fs';
 import * as GraphicsMagick from 'gm';
 import * as https from 'https';
 import * as moment from 'moment';
 import * as mongoose from 'mongoose';
+import { PaginateOptions } from 'mongoose';
 import * as Raven from 'raven';
-import {queue} from '../../app';
-import Car, {
-  ICarModel
-} from '../../app/models/car.model';
-import CarModel, {ChoicesStatusCar} from '../../app/models/car.model';
-import User from '../../app/models/user.model';
-import UserModel from '../../app/models/user.model';
-import VenueModel, {
-  IVenueModel
-} from '../../app/models/venue.model';
-import {IRequest} from '../../interfaces/global.interface';
-import {IInventoryCar} from '../../interfaces/inventory.interface';
-import {io} from '../../server';
+import * as tempfile from 'tempfile';
+import { queue } from '../../app';
+import { ChoicesStatusCar, default as Car, default as CarModel, ICarModel } from '../../app/models/car.model';
+import Team from '../../app/models/team.model';
+import TeamSetting from '../../app/models/teamSetting.model';
+import { default as User, default as UserModel } from '../../app/models/user.model';
+import { default as Venue, default as VenueModel, IVenueModel } from '../../app/models/venue.model';
+import ActivityHistory, { ChoicesTypeActivity } from '../../billing/models/activityHistory.model';
+import { IActivityHistoryInterface } from '../../interfaces/activityHistory.interface';
+import { IRequest } from '../../interfaces/global.interface';
+import { IInventoryCar } from '../../interfaces/inventory.interface';
+import { IStockCar } from '../../interfaces/stock.interface';
+import { io } from '../../server';
 import logger from '../../services/logger.service';
 import PushService from '../../services/push.service';
 import GeneralUtils from '../../utils/general.utils';
-import InventoryModel, {
-  ChoicesStatusInventory
+import {
+  ChoicesStatusInventory, default as Inventory, default as InventoryModel
 } from '../models/inventory.model';
-import Inventory from '../models/inventory.model';
-import Stock from '../models/stock.model';
-import InventoryCar, {ChoicesStatusCarInventory} from '../models/inventoryCar.model';
+import InventoryCar, { ChoicesStatusCarInventory } from '../models/inventoryCar.model';
 import InventoryFileModel from '../models/inventoryFile.model';
 import InventoryLabel from '../models/inventoryLabel.model';
-import {PaginateOptions} from "mongoose";
-import Team from "../../app/models/team.model";
-import * as excel from "exceljs";
-import Venue from "../../app/models/venue.model";
-import * as tempfile from "tempfile";
-import {Alignment} from "exceljs";
-import TeamSetting from "../../app/models/teamSetting.model";
-import ActivityHistory, {ChoicesTypeActivity} from "../../billing/models/activityHistory.model";
-import {IActivityHistoryInterface} from "../../interfaces/activityHistory.interface";
-import {IStockCar} from "../../interfaces/stock.interface";
-import StockCar from "../models/stockCar.model";
+import Stock from '../models/stock.model';
+import StockCar from '../models/stockCar.model';
 
 class InventoryController {
 
@@ -300,27 +292,16 @@ class InventoryController {
     const {page, pageSize} = req.query as { page: string, pageSize: string };
     const venuesPermissions = req.user.venuesPermissions();
     try {
-      // fix Manuel Aravena DERCO
-      const specialFilter = req.user._id.toString() === '5b636fd9a50daf3030c00e2e' ? {
-        $or: [{
-          'cars.car': {
-            $in: (await Car.find({team, type: 'USC'}, {_id: true}).lean() as Array<{ _id: string }>).map((car) => car._id)
-          }
-        }, {
-          'cars.inventoriedBy': mongoose.Types.ObjectId('5b636fd9a50daf3030c00e2e')
-        }]
-      } : {};
-
       // paginate options
       const options: PaginateOptions = {
         select: {
-          _id: true,
+          _id: true
         },
         sort: {
           createdAt: -1
         },
-        page: parseInt(page ? page : "1", 10),
-        limit: parseInt(pageSize ? pageSize : "10", 10)
+        page: parseInt(page ? page : '1', 10),
+        limit: parseInt(pageSize ? pageSize : '10', 10)
       };
 
       const paginatedInventories = await InventoryModel.paginate({
@@ -341,7 +322,7 @@ class InventoryController {
            $match: {
              _id:{
                $in: paginatedInventories.docs.map(v => v._id)
-             },
+             }
            }
          }, {
            $lookup: {
@@ -365,8 +346,7 @@ class InventoryController {
                  ChoicesStatusCarInventory.leftover,
                  ChoicesStatusCarInventory.reported
                ]
-             },
-             ...specialFilter
+             }
            }
          }, {
            $group: {
@@ -1350,25 +1330,6 @@ class InventoryController {
     const {team} = req.user;
     const venuesPermissions = req.user.venuesPermissions();
     try {
-      // fix Manuel Aravena DERCO
-      const specialFilter = req.user._id.toString() === '5b636fd9a50daf3030c00e2e' ? {
-        $or: [{
-          'cars.car': {
-            $in: (await Car.find({team, type: 'USC'}, {_id: true}).lean() as Array<{ _id: string }>).map((car) => car._id)
-          }
-        }, {
-          'cars.inventoriedBy': mongoose.Types.ObjectId('5b636fd9a50daf3030c00e2e')
-        }]
-      } : {};
-      const specialFilterDetail = req.user._id.toString() === '5b636fd9a50daf3030c00e2e' ? {
-        $or: [{
-          car: {
-            $in: (await Car.find({team, type: 'USC'}, {_id: true}).lean() as Array<{ _id: string }>).map((car) => car._id)
-          }
-        }, {
-          inventoriedBy: mongoose.Types.ObjectId('5b636fd9a50daf3030c00e2e')
-        }]
-      } : {};
       // summary
       const inventory = await InventoryModel.aggregate([
         {
@@ -1395,7 +1356,7 @@ class InventoryController {
               }, {
                 'cars.venueFound': {
                   $in: venuesPermissions
-                },
+                }
               }
             ],
             'cars.status':{
@@ -1406,8 +1367,7 @@ class InventoryController {
                 ChoicesStatusCarInventory.leftover,
                 ChoicesStatusCarInventory.reported
               ]
-            },
-            ...specialFilter
+            }
           }
         }, {
           $group: {
@@ -1501,7 +1461,7 @@ class InventoryController {
               }, {
                 'cars.venueFound': {
                   $in: venuesPermissions
-                },
+                }
               }
             ],
             'cars.status':{
@@ -1512,8 +1472,7 @@ class InventoryController {
                 ChoicesStatusCarInventory.leftover,
                 ChoicesStatusCarInventory.reported
               ]
-            },
-            ...specialFilter
+            }
           }
         }, {
           $group: {
@@ -1584,7 +1543,7 @@ class InventoryController {
               }, {
                 'cars.venueFound': {
                   $in: venuesPermissions
-                },
+                }
               }
             ],
             'cars.status':{
@@ -1595,8 +1554,7 @@ class InventoryController {
                 ChoicesStatusCarInventory.leftover,
                 ChoicesStatusCarInventory.reported
               ]
-            },
-            ...specialFilter
+            }
           }
         }, {
           $lookup: {
@@ -1702,11 +1660,11 @@ class InventoryController {
               {
                 venue: {
                   $in: venuesPermissions
-                },
+                }
               }, {
                 venueFound: {
                   $in: venuesPermissions
-                },
+                }
               }
             ],
             status:{
@@ -1717,8 +1675,7 @@ class InventoryController {
                 ChoicesStatusCarInventory.leftover,
                 ChoicesStatusCarInventory.reported
               ]
-            },
-            ...specialFilterDetail
+            }
           },
           populate: [{
             path: 'car',
@@ -1815,7 +1772,7 @@ class InventoryController {
           },
           venue: {
             $in: venuesPermissions
-          },
+          }
         }
       }, {
         $group: {
@@ -1837,7 +1794,7 @@ class InventoryController {
               status: '$_id.status',
               total: '$total'
             }
-          },
+          }
         }
       }]);
       const data: any = {};
@@ -1865,7 +1822,7 @@ class InventoryController {
       const teamSettings = await TeamSetting.findOne({team});
       res.json({
         data,
-        inventorySettings: teamSettings!.inventory,
+        inventorySettings: teamSettings!.inventory
       });
     } catch (e) {
       /* istanbul ignore next */
@@ -1903,22 +1860,22 @@ class InventoryController {
         activeCell: 'D2'
       }];
       const columns: any[] = [{
-        header: "VIN",
-        key: "vin",
+        header: 'VIN',
+        key: 'vin',
         width: 30,
         alignment: {
           wrapText: true
         }
       }, {
-        header: "MARCA",
-        key: "marca",
+        header: 'MARCA',
+        key: 'marca',
         width: 30,
         alignment: {
           wrapText: true
         }
       }, {
-        header: "MODELO",
-        key: "modelo",
+        header: 'MODELO',
+        key: 'modelo',
         width: 40,
         alignment: {
           wrapText: true
@@ -1951,7 +1908,7 @@ class InventoryController {
           wrapText: true
         };
         cell.font = {
-          bold: true,
+          bold: true
         };
       });
       worksheet.getRow(1).eachCell((cell) => {
@@ -1962,25 +1919,25 @@ class InventoryController {
           wrapText: true
         };
         if (parseInt(cell.col, 10) > 3) {
-          alignment.textRotation = 90
+          alignment.textRotation = 90;
         }
         cell.alignment = alignment;
         cell.font = {
-          bold: true,
+          bold: true
         };
       });
       const cars = await CarModel.find({
           team,
           isExhibition: false,
           createdAt: {
-            $gte:  moment().subtract(6, 'months'),
+            $gte:  moment().subtract(6, 'months')
           //   $lte: tf,
           }
         }, {
           vin: true,
           denomination: true,
           color: true,
-          brand: true,
+          brand: true
         }).populate({
           path: 'inventories',
           select: ['name', 'createdAt', 'venueFound', 'status'],
@@ -1998,10 +1955,10 @@ class InventoryController {
       for (const car of cars) {
         const inventories: any[] = car.inventories!;
         if(inventories.length){
-          let carData:any = {
+          const carData:any = {
             vin: car.vin,
             marca: car.brand,
-            modelo: car.denomination,
+            modelo: car.denomination
           };
           for (const inventory of inventories) {
             carData[inventory.venueFound] = carData.hasOwnProperty(inventory.venueFound) ? carData[inventory.venueFound] + 1 : 1;
@@ -2024,7 +1981,7 @@ class InventoryController {
 
   public async loadStock(req: IRequest, res: Response): Promise<any> {
     const {company, team} = req.user;
-    let {carsByVenue} = req.body;
+    const {carsByVenue} = req.body;
     try {
       const stockCars: IStockCar[] = [];
       for (const venue of carsByVenue) {
@@ -2067,7 +2024,7 @@ class InventoryController {
           if (currentVenue && currentCar) {
             stockCars.push({
               venue: currentVenue._id,
-              car: currentCar._id,
+              car: currentCar._id
             });
             queue
               .create('updateCar', {
@@ -2125,7 +2082,7 @@ class InventoryController {
           name: true,
           status: true,
           cars: true,
-          createdAt: true,
+          createdAt: true
         }, {
           sort: {'createdAt': -1}
         });
@@ -2139,20 +2096,20 @@ class InventoryController {
       let showStock = false;
       if(lastInventory && !lastStock){
         showInventory = true;
-        console.log("showInventory")
+        console.log('showInventory');
       } else if(!lastInventory && lastStock){
         showStock = true;
-        console.log("showStock")
+        console.log('showStock');
       } else if(lastInventory && lastStock){
         console.log('lastInventory.createdAt', lastInventory.createdAt);
         console.log('lastStock.createdAt', lastStock.createdAt);
         console.log('moment(lastInventory.createdAt).isAfter(lastStock.createdAt)', moment(lastInventory.createdAt).isAfter(lastStock.createdAt));
         if(moment(lastInventory.createdAt).isAfter(lastStock.createdAt)){
           showInventory = true;
-          console.log("showInventory")
+          console.log('showInventory');
         } else {
           showStock = true;
-          console.log("showStock")
+          console.log('showStock');
         }
       }
       if(showInventory) {
@@ -2162,7 +2119,7 @@ class InventoryController {
           }, {
             name: true,
             status: true,
-            cars: true,
+            cars: true
           }, {
             sort: {'createdAt': -1}
           })
@@ -2175,7 +2132,7 @@ class InventoryController {
                   ChoicesStatusCarInventory.found,
                   ChoicesStatusCarInventory.leftover
                 ]
-              },
+              }
             },
             populate: [{
               path: 'car',
@@ -2184,15 +2141,15 @@ class InventoryController {
               path: 'venue',
               select: ['name'],
               populate: [{
-                path: "region",
-                select: ["code", "name"]
+                path: 'region',
+                select: ['code', 'name']
               }]
             }, {
               path: 'venueFound',
               select: ['name'],
               populate: [{
-                path: "region",
-                select: ["code", "name"]
+                path: 'region',
+                select: ['code', 'name']
               }]
             }]
           }]).lean();
@@ -2200,30 +2157,30 @@ class InventoryController {
           res
             .status(200)
             .json({
-              message: "No se han realizado inventarios para ver el stock.",
+              message: 'No se han realizado inventarios para ver el stock.',
               cars: []
-            })
+            });
         } else if (inventory.status !== ChoicesStatusInventory.finalized) {
           res
             .status(200)
             .json({
-              message: "Se esta procesando la toma de inventario.",
+              message: 'Se esta procesando la toma de inventario.',
               cars: []
-            })
+            });
         } else if (await InventoryCar.find({inventory, venue, status: ChoicesStatusCarInventory.pending}).count()) {
           res
             .status(200)
             .json({
-              message: "Tú sucursal no ha terminado el inventario.",
+              message: 'Tú sucursal no ha terminado el inventario.',
               cars: []
-            })
+            });
         } else {
           res
             .status(200)
             .json({
-              message: "",
+              message: '',
               cars: inventory.cars
-            })
+            });
         }
       } else if (showStock) {
         const stock = await Stock
@@ -2232,7 +2189,7 @@ class InventoryController {
           }, {
             name: true,
             status: true,
-            cars: true,
+            cars: true
           }, {
             sort: {'createdAt': -1}
           })
@@ -2246,17 +2203,17 @@ class InventoryController {
               path: 'venue',
               select: ['name'],
               populate: [{
-                path: "region",
-                select: ["code", "name"]
+                path: 'region',
+                select: ['code', 'name']
               }]
             }]
           }]).lean();
         res
           .status(200)
           .json({
-            message: "",
+            message: '',
             cars: stock!.cars
-          })
+          });
 
       }
     } catch (e) {
@@ -2275,7 +2232,7 @@ class InventoryController {
     }
   }
 
-  private autoRotate(path: string) {
+  private autoRotate(path: string): Promise<any> {
     // doc http://aheckmann.github.io/gm/docs.html
     /**** REQUIRE *****
      brew install imagemagick
@@ -2289,7 +2246,7 @@ class InventoryController {
             /* istanbul ignore next */
             reject(err);
           } else {
-            resolve();
+            resolve({});
           }
         });
     });

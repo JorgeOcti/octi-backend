@@ -1,6 +1,6 @@
-import {ITeam} from "./team.interface";
-import {IUser} from "./user.interface";
-import {ICompany} from "./company.interface";
+import {ITeam} from './team.interface';
+import {IUser} from './user.interface';
+import {ICompany} from './company.interface';
 
 export interface IInventoryDetail {
   _id: any;

@@ -23,6 +23,7 @@ export interface IUser {
   passwordResetExpires: Date | undefined;
   lastLogin: Date;
   active: boolean;
+  token?: string;
   updatedAt: Date;
   createdAt: Date;
   group: IGroup;

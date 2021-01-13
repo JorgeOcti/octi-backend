@@ -24,7 +24,7 @@ var ChoicesTypeActivity;
 })(ChoicesTypeActivity = exports.ChoicesTypeActivity || (exports.ChoicesTypeActivity = {}));
 exports.choicesTypeActivity = [
     ChoicesTypeActivity.inventory,
-    ChoicesTypeActivity.checklist,
+    ChoicesTypeActivity.checklist
 ];
 const activityHistorySchema = new mongoose.Schema({
     team: {

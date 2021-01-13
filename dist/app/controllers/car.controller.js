@@ -1,24 +1,24 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-const excel = require("exceljs");
 const bluebird = require("bluebird");
-const tempfile = require("tempfile");
+const excel = require("exceljs");
 const moment = require("moment-timezone");
 const mongoose = require("mongoose");
+const tempfile = require("tempfile");
 const app_1 = require("../../app");
+const form_model_1 = require("../../form/models/form.model");
+const kind_model_1 = require("../../form/models/kind.model");
+const part_model_1 = require("../../form/models/part.model");
 const participant_model_1 = require("../../form/models/participant.model");
+const position_model_1 = require("../../form/models/position.model");
 const inventory_model_1 = require("../../inventory/models/inventory.model");
 const inventoryCar_model_1 = require("../../inventory/models/inventoryCar.model");
+const planning_model_1 = require("../../planning/models/planning.model");
 const logger_service_1 = require("../../services/logger.service");
 const vin_service_1 = require("../../services/vin.service");
 const car_model_1 = require("../models/car.model");
 const user_model_1 = require("../models/user.model");
 const venue_model_1 = require("../models/venue.model");
-const kind_model_1 = require("../../form/models/kind.model");
-const part_model_1 = require("../../form/models/part.model");
-const position_model_1 = require("../../form/models/position.model");
-const form_model_1 = require("../../form/models/form.model");
-const planning_model_1 = require("../../planning/models/planning.model");
 moment.tz.setDefault('America/Santiago');
 class CarController {
     constructor() {
@@ -373,7 +373,7 @@ class CarController {
                 _id: { $in: venuesPermissions }
             };
             if (companies) {
-                query["company"] = {
+                query['company'] = {
                     $in: [companies]
                 };
             }
@@ -578,7 +578,7 @@ class CarController {
                 }, {
                     $project: {
                         _id: 1,
-                        date: 1,
+                        date: 1
                     }
                 }, {
                     $group: {
@@ -1026,7 +1026,7 @@ class CarController {
                 venue: true,
                 user: true,
                 sections: true,
-                qualification: true,
+                qualification: true
             },
             populate: [{
                     path: 'car',
@@ -1045,8 +1045,8 @@ class CarController {
             sort: {
                 _id: -1
             },
-            page: parseInt(page ? page : "1", 10),
-            limit: parseInt(pageSize ? pageSize : "20", 10)
+            page: parseInt(page ? page : '1', 10),
+            limit: parseInt(pageSize ? pageSize : '20', 10)
         };
         try {
             const participantFilter = {
@@ -1203,7 +1203,7 @@ class CarController {
                         damages: `${damages.length}`,
                         has_damages: damages.length > 0 ? 'Sí' : 'No',
                         damage: idx,
-                        position: damages[d].position ? damages[d].position.name : "-",
+                        position: damages[d].position ? damages[d].position.name : '-',
                         kind: damages[d].kind.name,
                         part: damages[d].part.name,
                         ...extraRow
@@ -1222,10 +1222,10 @@ class CarController {
                     user: `${participant.user.firstName} ${participant.user.lastName}`,
                     damages: `${damages.length}`,
                     has_damages: damages.length > 0 ? 'Sí' : 'No',
-                    damage: "-",
-                    position: "-",
-                    kind: "-",
-                    part: "-",
+                    damage: '-',
+                    position: '-',
+                    kind: '-',
+                    part: '-',
                     ...extraRow
                 };
                 rows.push(row);
@@ -1244,11 +1244,11 @@ class CarController {
                             {
                                 venue: {
                                     $in: user.venuesPermissions()
-                                },
+                                }
                             }, {
                                 createdAt: {
                                     $gte: t0.toDate(),
-                                    $lte: t1.toDate(),
+                                    $lte: t1.toDate()
                                 }
                             } /*,{
                               'sections.answers.kind': 'damage'
@@ -1372,7 +1372,7 @@ class CarController {
                 positions: positions.reduce((acc, cur) => {
                     acc[cur._id.toString()] = cur;
                     return acc;
-                }, {}),
+                }, {})
             };
             const periodToProcess = [];
             for (let i = periods; i >= 0; i--) {
@@ -1452,8 +1452,8 @@ class CarController {
             while (--i > 0) {
                 const ti = moment().subtract(i * 15, 'day');
                 const tf = moment().subtract((i - 1) * 15, 'day');
-                console.log(ti.format("YYYY-MM-DD"), tf.format("YYYY-MM-DD"));
-                let cars = await car_model_1.default.find({
+                console.log(ti.format('YYYY-MM-DD'), tf.format('YYYY-MM-DD'));
+                const cars = await car_model_1.default.find({
                     team,
                     isExhibition: false,
                     lastForm: {
@@ -1461,13 +1461,13 @@ class CarController {
                     },
                     createdAt: {
                         $gte: ti,
-                        $lte: tf,
+                        $lte: tf
                     }
                 }, {
                     vin: true,
                     denomination: true,
                     color: true,
-                    brand: true,
+                    brand: true
                 }).populate({
                     path: 'inventories',
                     select: ['name', 'createdAt', 'venueFound', 'status'],
@@ -1502,9 +1502,9 @@ class CarController {
                         color: car.color,
                         brand: car.brand,
                         v0: inv0.venueFound ? inv0.venueFound.name : inv0.venue.name,
-                        t0: t0,
+                        t0,
                         v1: inv1.venueFound ? inv1.venueFound.name : inv1.venue.name,
-                        t1: t1,
+                        t1,
                         inventories: n,
                         rotation: moment(t1).diff(moment(t0), 'days', true)
                     };
@@ -1549,8 +1549,8 @@ class CarController {
             sort: {
                 updatedAt: -1
             },
-            page: parseInt(page ? page : "1", 10),
-            limit: parseInt(pageSize ? pageSize : "20", 10)
+            page: parseInt(page ? page : '1', 10),
+            limit: parseInt(pageSize ? pageSize : '20', 10)
         };
         try {
             const cars = await this.getCars({
@@ -1591,7 +1591,7 @@ class CarController {
     }
     getRevisions(filters, options) {
         return new Promise((resolve, reject) => {
-            !participant_model_1.default.paginate(filters, options, (err, result) => {
+            participant_model_1.default.paginate(filters, options, (err, result) => {
                 if (err) {
                     /* istanbul ignore next */
                     reject(err);
@@ -1620,7 +1620,7 @@ class CarController {
             };
         }
         return new Promise((resolve, reject) => {
-            !car_model_1.default.paginate(filter, options, (err, result) => {
+            car_model_1.default.paginate(filter, options, (err, result) => {
                 if (err) {
                     /* istanbul ignore next */
                     return reject(err);

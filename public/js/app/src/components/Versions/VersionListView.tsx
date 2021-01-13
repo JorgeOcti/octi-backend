@@ -6,15 +6,13 @@ import {connect} from 'react-redux';
 import {RouteComponentProps} from 'react-router';
 import {Dispatch} from 'redux';
 import * as swal from 'sweetalert';
-import {IVersion} from '../../../../../../src/interfaces/version.interface';
 import {createVersionAction, IVersionsState, getVersionsAction} from '../../actions/versions.actions';
 import {loadDataAction, ModalReduxAction} from '../../actions/modal.actions';
 import AppContainer from '../../container/AppContainer';
 import {statusFooterButttonsModal} from '../../utils/common';
 import ModalView from '../Modal/ModalView';
 import VersionFormView from './VersionFormView';
-import {DragEventHandler} from "react";
-import Row from "../Utils/Row";
+import Row from '../Utils/Row';
 
 interface IPropsType extends RouteComponentProps<{ ticket: string }> {
   versions: IVersionsState;
@@ -51,10 +49,10 @@ class VersionListView extends React.Component<IPropsType, IStateType> {
     dragging: '',
     draggingLocation: -1,
     completed: [],
-    users: ["One", "Two", "Three", "Four", "Five"],
+    users: ['One', 'Two', 'Three', 'Four', 'Five'],
     tempVersion: {
       ios: '',
-      android: '',
+      android: ''
     }
   };
 
@@ -134,7 +132,7 @@ class VersionListView extends React.Component<IPropsType, IStateType> {
                           <td className="middle text-center">{version.android}</td>
                           <td className="middle">
                             {
-                              version.createdBy ? version.createdBy.firstName + " " + version.createdBy.lastName : '-'
+                              version.createdBy ? version.createdBy.firstName + ' ' + version.createdBy.lastName : '-'
                             }
                           </td>
                           <td className="middle">{moment(version.createdAt).format('LLL')}</td>
@@ -163,7 +161,7 @@ class VersionListView extends React.Component<IPropsType, IStateType> {
                               key={index}
                               className={`pointer ${this.state.draggingLocation === index ? 'bg-aqua-active' : ''}`}
                               style={{
-                                opacity: this.state.dragging === user || this.state.draggingLocation === index ? 0.5 : 1,
+                                opacity: this.state.dragging === user || this.state.draggingLocation === index ? 0.5 : 1
                               }}
                               onDragStart = {(e) => this.onDragStart(e, user, index)}
                               onDragEnter={this.onDragEnter}
@@ -177,18 +175,18 @@ class VersionListView extends React.Component<IPropsType, IStateType> {
                               }</td>
                             </tr>
 
-                          )
+                          );
                         })
                       }
                     </tbody>
                   </table>
                 </div>
-                <div className="col-md-6" style={{height: '150px', overflowY: "auto"}}>
+                <div className="col-md-6" style={{height: '150px', overflowY: 'auto'}}>
                   <div
                     onDragOver={this.onDragOver}
-                    onDrop={(e) =>this.onDrop(e, "completed")}
+                    onDrop={(e) =>this.onDrop(e, 'completed')}
                     onDragEnter={this.onDragEnter}
-                    style={{width: 200, minHeight: 100, border: "1px solid #CCC"}}
+                    style={{width: 200, minHeight: 100, border: '1px solid #CCC'}}
                   >
                     completed
                     {this.state.completed.map((item, index)=><div key={index}>{item}</div>)}
@@ -196,8 +194,8 @@ class VersionListView extends React.Component<IPropsType, IStateType> {
                   <div
                     onDragOver={this.onDragOver}
                     onDragEnter={this.onDragEnter}
-                    onDrop={(e) =>this.onDrop(e, "incompleted")}
-                    style={{width: 200,  minHeight: 100, border: "1px solid #CCC"}}
+                    onDrop={(e) =>this.onDrop(e, 'incompleted')}
+                    style={{width: 200,  minHeight: 100, border: '1px solid #CCC'}}
                   >
                     incompleted
                   </div>
@@ -219,9 +217,9 @@ class VersionListView extends React.Component<IPropsType, IStateType> {
 
   private onDragStart(ev: React.DragEvent<HTMLTableRowElement>, id:string, index: number) {
     console.log(`onDragStart: ${id}`);
-    ev.dataTransfer.setData("id", id);
-    ev.dataTransfer.setData('type', "type");
-    ev.dataTransfer.setData("index", index.toString());
+    ev.dataTransfer.setData('id', id);
+    ev.dataTransfer.setData('type', 'type');
+    ev.dataTransfer.setData('index', index.toString());
 
     ev.dataTransfer.dropEffect = 'move';
 
@@ -232,14 +230,14 @@ class VersionListView extends React.Component<IPropsType, IStateType> {
 
     this.setState({
       dragging: id
-    })
+    });
   }
 
   private onDragEnd(ev: React.DragEvent<HTMLTableRowElement>) {
     console.log(`onDragEnd`);
     this.setState({
-      dragging: ""
-    })
+      dragging: ''
+    });
   }
 
   private onDragEnter(ev: React.DragEvent<HTMLElement>) {
@@ -256,53 +254,53 @@ class VersionListView extends React.Component<IPropsType, IStateType> {
 
   private onDragOverChange(ev: React.DragEvent<HTMLElement>, index: number) {
     console.log(`onDragOverChange`);
-    ev.dataTransfer.dropEffect = "move";
+    ev.dataTransfer.dropEffect = 'move';
     ev.preventDefault();
     ev.stopPropagation();
     this.setState({
       draggingLocation: index
-    })
+    });
   }
 
   private onDragEndChange(ev: React.DragEvent<HTMLElement>){
     console.log(`onDragEndChange`);
     this.setState({
       draggingLocation: -1,
-      dragging: ""
-    })
+      dragging: ''
+    });
   }
 
   private onDrop(ev: React.DragEvent<HTMLElement>, cat: string){
-    const id = ev.dataTransfer.getData("id");
+    const id = ev.dataTransfer.getData('id');
     const type = ev.dataTransfer.getData('type');
     console.log(`onDrop: id: ${id} cat: ${cat}`);
     console.log(id);
-    if (cat === "completed") {
+    if (cat === 'completed') {
       this.setState({
         completed: [id, ...this.state.completed]
-      })
+      });
     } else {
-      alert(`${id} se a soltado en ${cat}`)
+      alert(`${id} se a soltado en ${cat}`);
 
     }
   }
 
   private onDropChangeIndex(ev: React.DragEvent<HTMLElement>, newIndex: number) {
     let {users} = this.state;
-    let index = parseInt(ev.dataTransfer.getData("index"));
+    let index = parseInt(ev.dataTransfer.getData('index'));
     console.log(`onDropChangeIndex newIndex:${newIndex} index:${index}`);
     const data = users[index];
     if (newIndex > index) {
       for (let i = 0; i < users.length; i++) {
         if (i >= index && i < newIndex) {
-          users[i] = users[i + 1]
+          users[i] = users[i + 1];
         }
       }
     } else {
       for (let i = users.length - 1; i >= 0; i--) {
         if (i > newIndex && i <= index) {
           console.log(`2 ${users[i]} -> ${users[i - 1]}`);
-          users[i] = users[i - 1]
+          users[i] = users[i - 1];
         }
       }
     }

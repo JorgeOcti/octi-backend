@@ -1,4 +1,5 @@
 import * as mongoose from 'mongoose';
+import { PaginateModel } from 'mongoose';
 import * as mongoosePaginate from 'mongoose-paginate';
 import {IVenue} from '../../interfaces/venue.interface';
 import {venueDaySchema} from "./venueDay.model";
@@ -111,6 +112,8 @@ venueSchema.virtual('participants', {
   justOne: false
 });
 
-const Venue = mongoose.model<IVenueModel>('Venue', venueSchema);
+export type VenueSchema = mongoose.Model<IVenueModel> & PaginateModel<IVenueModel>;
+
+const Venue = mongoose.model<IVenueModel, VenueSchema>('Venue', venueSchema);
 
 export default Venue;

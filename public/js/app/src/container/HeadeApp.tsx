@@ -106,7 +106,15 @@ class HeaderApp extends React.Component<{}, {}> {
                   {/*</li>*/}
                   <li className="user-footer">
                     {/*<div className="pull-left"><a className="btn btn-default btn-flat" href="#">Profile</a></div>*/}
-                    <div className="pull-right"><a className="btn btn-default btn-flat" href="/account/logout/" onClick={this.closeSesion}>Cerrar sesión</a></div>
+                    <div className="pull-right">
+                      <a
+                        className="btn btn-sm btn-default btn-flat"
+                        href="/account/logout/"
+                        onClick={this.closeSesion}
+                      >
+                        Cerrar sesión
+                      </a>
+                    </div>
                   </li>
                 </ul>
               </li>

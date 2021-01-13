@@ -108,7 +108,7 @@ appRouter.post('/api/v1/change-password/', middlewares_1.default.isJWTAuthentica
 // User Change venue
 appRouter.get('/api/v1/venues/', middlewares_1.default.isJWTAuthenticated, user_controller_1.default.apiListVenues);
 appRouter.put('/api/v1/venues/change/', middlewares_1.default.isJWTAuthenticated, user_controller_1.default.apiChangeVenue);
-//Get User Pusher Token
+// Get User Pusher Token
 appRouter.get('/api/v1/pusher/auth/', middlewares_1.default.isJWTAuthenticated, user_controller_1.default.getPusherToken);
 // web login
 appRouter.get('/account/login/', csrfProtection, app_controller_1.default.login);

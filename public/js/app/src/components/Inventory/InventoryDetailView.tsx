@@ -131,7 +131,7 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
     leftover: 'fa-arrow-up',
     missing: 'fa-arrow-down',
     reported: 'fa-exclamation',
-    deleted: 'fa-close',
+    deleted: 'fa-close'
   };
 
   private paginationOption: any = {
@@ -613,15 +613,15 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
               <React.Fragment>
                 <p
                   style={{
-                    paddingTop: "5px",
+                    paddingTop: '5px',
                     marginBottom: 0
                   }}
-                  className={"text-sm"}
+                  className={'text-sm'}
                 >
                   <strong>Datos adicionales:</strong>
                 </p>
                 <p
-                  className={"text-sm text-muted"}
+                  className={'text-sm text-muted'}
                 >
                   {row.labelText}
                 </p>
@@ -1496,18 +1496,18 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
         axisLabel: {
           rotate: 60,
           fontSize: 10,
-          formatter: function (value: string) {
-              let text = '';
-              const array = value.split(" ");
-              for (let i = 0; i < array.length; i++) {
-                text += `${array[i]}`;
-                if (i > 0 && i % 2 !== 0){
-                  text += ' \n';
-                } else{
-                  text += ' ';
-                }
+          formatter: (value: string) => {
+            let text = '';
+            const array = value.split(' ');
+            for (let i = 0; i < array.length; i++) {
+              text += `${array[i]}`;
+              if (i > 0 && i % 2 !== 0) {
+                text += ' \n';
+              } else {
+                text += ' ';
               }
-              return text;
+            }
+            return text;
           }
         }
       },
@@ -1548,7 +1548,7 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
             ...this.labelOption.normal
           }
         },
-        barGap: "0"
+        barGap: '0'
       }, {
         data: venuesLeftover,
         name: inventorySettings.leftover,
@@ -1561,7 +1561,7 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
 
           }
         },
-        barGap: "0"
+        barGap: '0'
       }, {
         data: venuesMissing,
         name: inventorySettings.missing,
@@ -1573,7 +1573,7 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
             ...this.labelOption.normal
           }
         },
-        barGap: "0"
+        barGap: '0'
       }, {
         data: venuesPending,
         name: inventorySettings.pending,
@@ -1586,7 +1586,7 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
             ...this.labelOption.normal
           }
         },
-        barGap: "0"
+        barGap: '0'
       }, {
         data: venuesReported,
         name: inventorySettings.reported,
@@ -1598,7 +1598,7 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
             ...this.labelOption.normal
           }
         },
-        barGap: "0"
+        barGap: '0'
       }]
     };
     if (!update) {
@@ -1722,35 +1722,35 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
         type: 'bar',
         stack: 'cars',
         barMaxWidth: 100,
-        barGap: "0"
+        barGap: '0'
       }, {
         data: brandLeftover,
         name: inventorySettings.leftover,
         type: 'bar',
         stack: 'cars',
         barMaxWidth: 100,
-        barGap: "0"
+        barGap: '0'
       }, {
         data: brandMissing,
         name: inventorySettings.missing,
         type: 'bar',
         stack: 'cars',
         barMaxWidth: 100,
-        barGap: "0"
+        barGap: '0'
       }, {
         data: brandPending,
         name: inventorySettings.pending,
         type: 'bar',
         stack: 'cars',
         barMaxWidth: 100,
-        barGap: "0"
+        barGap: '0'
       }, {
         data: brandReported,
         name: inventorySettings.reported,
         type: 'bar',
         stack: 'cars',
         barMaxWidth: 100,
-        barGap: "0"
+        barGap: '0'
       }]
     };
     if (!update) {

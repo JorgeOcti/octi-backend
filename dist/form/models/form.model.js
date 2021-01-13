@@ -233,13 +233,6 @@ formSchema.virtual('participants', {
     foreignField: 'form',
     justOne: false
 });
-// formSchema.set('toJSON', {
-//   transform: (doc: any, ret: any, options: any) => {
-//     ret.id = ret._id;
-//     delete ret._id;
-//     delete ret.__v;
-//   }
-// });
 const Form = mongoose.model('Form', formSchema);
 exports.default = Form;
 //# sourceMappingURL=form.model.js.map

@@ -545,10 +545,7 @@ class FormController {
         conciliation: false,
         kind: '',
         weight: 0,
-        order: 0,
-        optional: false,
-        hint: '',
-        keyboardType: '',
+        order: 0
       };
       // get scales from db
       res.json({
@@ -779,9 +776,7 @@ class FormController {
                 na,
                 weight: question.weight,
                 kind: question.kind,
-                order: question.order,
-                optional: question.optional,
-                hint: question.hint
+                order: question.order
               });
             }
             // calculate section qualification
@@ -814,8 +809,6 @@ class FormController {
             if (allImages.length) {
               await ParticipantFile.update({_id: {$in: allImages}}, {participant: newParticipant}, {multi: true});
             }
-
-            logger.debug("new: " + newParticipant.toString());
 
             car.lastForm = newParticipant;
             await car.save();
@@ -2082,23 +2075,20 @@ class FormController {
       amount: Joi.number()
     });
     const newAccesories: any[] = [];
-    await accesories.map(async (accesory: any) => {
+    accesories.map((accesory: any) => {
       try {
-        const newAccesory = await accesorySchema.validate(accesory);
+        const newAccesory: any = accesorySchema.validate(accesory);
         newAccesories.push({
           item: newAccesory.item,
           amount: newAccesory.amount
         });
-        logger.debug("pusheado");
       } catch (e) {
-        logger.error(e);
         newAccesories.push({
           item: accesory,
           amount: 1
         });
       }
     });
-    logger.debug(JSON.stringify(newAccesories))
     return newAccesories;
   }
 

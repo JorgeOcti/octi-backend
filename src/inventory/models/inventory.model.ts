@@ -4,8 +4,8 @@ import * as MongooseCrateS3 from 'mongoose-crate-s3';
 import * as uuid from 'uuid';
 import * as s3Config from '../../../s3-config.json';
 import {IInventory} from '../../interfaces/inventory.interface';
-import * as mongoosePaginate from "mongoose-paginate";
-import {PaginateModel} from "mongoose";
+import * as mongoosePaginate from 'mongoose-paginate';
+import {PaginateModel} from 'mongoose';
 
 const fileSchema = new mongoose.Schema({
   url: {
@@ -46,11 +46,13 @@ const settingSchema = new mongoose.Schema({
 export interface IInventoryModel extends IInventory, mongoose.Document {
   attach(fieldName: string, file: any, error?: (err: any) => void): void;
 }
+
 export enum ChoicesStatusInventory {
   pending = 'pending',
   inProcess = 'inProcess',
   finalized = 'finalized'
 }
+
 export const choicesStatusInventory = [
   ChoicesStatusInventory.pending,
   ChoicesStatusInventory.inProcess,

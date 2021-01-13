@@ -1,14 +1,14 @@
-import {AxiosError, default as Axios} from 'axios';
+import { AxiosError, default as Axios } from 'axios';
 import * as moment from 'moment';
 import * as Raven from 'raven-js';
 import * as React from 'react';
-import {ErrorInfo} from 'react';
-import {connect} from 'react-redux';
-import {RouteComponentProps} from 'react-router';
-import {Dispatch} from 'redux';
+import { ErrorInfo } from 'react';
+import { connect } from 'react-redux';
+import { RouteComponentProps } from 'react-router';
+import { Dispatch } from 'redux';
 import * as swal from 'sweetalert';
-import {debounce} from 'throttle-debounce';
-import {IUser} from '../../../../../../src/interfaces/user.interface';
+import { debounce } from 'throttle-debounce';
+import { IUser } from '../../../../../../src/interfaces/user.interface';
 import {
   loadDataAction,
   ModalReduxAction
@@ -25,7 +25,7 @@ import {
   UserReduxAction
 } from '../../actions/users.actions';
 import AppContainer from '../../container/AppContainer';
-import {IWindow} from '../../interfaces/window';
+import { IWindow } from '../../interfaces/window';
 import ApiService from '../../utils/axios';
 import {
   hasPermission,
@@ -42,17 +42,11 @@ interface IPropsType extends RouteComponentProps<{ ticket: string }> {
   users: IUsersState;
 
   getUsersAction(page: number, search?: string): UserReduxAction;
-
   createUserAction(): UserReduxAction;
-
   updateUserAction(): UserReduxAction;
-
   deleteUserAction(id?: string): UserReduxAction;
-
   changeTempUserAction(user: ITempUser): UserReduxAction;
-
   loadDataAction(title: string, body: JSX.Element, footer: JSX.Element): ModalReduxAction;
-
   changeSearchUserAction(searchText: string): UserReduxAction;
 }
 
@@ -205,11 +199,11 @@ class UserListView extends React.Component<IPropsType, IStateType> {
               <div className="box-tools pull-right">
                 {
                   hasPermission(window.user, 'addUser') ?
-                    <button className="btn btn-sm btn-success" onClick={this.createUser}>Agregar</button>
+                    <button className="btn btn-sm btn-success" onClick={this.createUser}><i className="fa fa-plus" /> Agregar</button>
                     : null
                 }
                 <button
-                  className="btn btn-sm btn-primary  hidden-xs"
+                  className="btn btn-sm btn-primary hidden-xs"
                   onClick={this.exportExcel}
                   disabled={exporing}
                   style={{marginLeft: '5px'}}
@@ -296,7 +290,7 @@ class UserListView extends React.Component<IPropsType, IStateType> {
                               {index > 0 ?
                                 <br/> : null}
                               <span>{form.name}</span>
-                            </React.Fragment>
+                            </React.Fragment>;
                           })}
                         </td>
                         <td className="middle hidden-xs text-muted">{moment(user.updatedAt).format('LLL')}</td>
@@ -478,7 +472,7 @@ class UserListView extends React.Component<IPropsType, IStateType> {
       _id: _id ? _id : this.props.users.tempUser._id,
       firstName: firstName ? firstName : this.props.users.tempUser.firstName,
       lastName: lastName ? lastName : this.props.users.tempUser.lastName,
-      isAdmin: typeof isAdmin === "boolean" ? isAdmin : this.props.users.tempUser.isAdmin,
+      isAdmin: typeof isAdmin === 'boolean' ? isAdmin : this.props.users.tempUser.isAdmin,
       password: password ? password : '',
       email: email ? email : this.props.users.tempUser.email,
       userPermissions: userPermissions ? userPermissions : this.props.users.tempUser.userPermissions,

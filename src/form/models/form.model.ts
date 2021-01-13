@@ -1,4 +1,5 @@
 import * as mongoose from 'mongoose';
+import { PaginateModel } from 'mongoose';
 import * as mongoosePaginate from 'mongoose-paginate';
 import {IForm, IFormAccesory, IFormItems, IFormQuestion, IFormSection} from '../../interfaces/form.interface';
 
@@ -274,6 +275,8 @@ formSchema.virtual('participants', {
 //   }
 // });
 
-const Form = mongoose.model<IFormModel>('Form', formSchema);
+export type FormSchema = mongoose.Model<IFormModel> & PaginateModel<IFormModel>;
+
+const Form = mongoose.model<IFormModel, FormSchema>('Form', formSchema);
 
 export default Form;

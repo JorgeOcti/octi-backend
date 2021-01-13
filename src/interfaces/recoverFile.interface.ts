@@ -1,6 +1,6 @@
 import {ICompanyModel} from '../app/models/company.model';
 import {IUserModel} from '../app/models/user.model';
-import {ITeamModel} from "../app/models/team.model";
+import {ITeamModel} from '../app/models/team.model';
 
 interface IIFile {
   url: string;

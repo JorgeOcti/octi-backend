@@ -6,10 +6,10 @@ import {io} from '../../../server';
 import * as moment from 'moment';
 import User from '../../models/user.model';
 import Venue, {IVenueModel} from '../../models/venue.model';
-import * as excel from "exceljs";
-import * as tempfile from "tempfile";
-import {Alignment} from "exceljs";
-import {IVenueDay} from "../../../interfaces/venueDay.interface";
+import * as excel from 'exceljs';
+import * as tempfile from 'tempfile';
+import {Alignment} from 'exceljs';
+import {IVenueDay} from '../../../interfaces/venueDay.interface';
 
 class AdminVenueController {
 
@@ -50,8 +50,8 @@ class AdminVenueController {
       activeCell: 'A1'
     }];
     const sendColumns: any[] = [{
-      header: "Sucursal\r\n(FILAS ENVIAN / COLUMNAS RECIBEN)",
-      key: "sucursal",
+      header: 'Sucursal\r\n(FILAS ENVIAN / COLUMNAS RECIBEN)',
+      key: 'sucursal',
       width: 30,
       alignment: {
         wrapText: true
@@ -72,7 +72,7 @@ class AdminVenueController {
       });
       let dataSend:any = {};
       for(const to of venue.sendTo){
-        dataSend[to as any] = "X";
+        dataSend[to as any] = 'X';
       }
       sendRows.push({
         sucursal: venue.name,
@@ -96,7 +96,7 @@ class AdminVenueController {
         wrapText: true
       };
       cell.font = {
-        bold: true,
+        bold: true
       };
     });
     worksheetSend.getRow(1).eachCell((cell) => {
@@ -107,11 +107,11 @@ class AdminVenueController {
         wrapText: true
       };
       if(parseInt(cell.col, 10) !== 1){
-        alignment.textRotation=  90
+        alignment.textRotation=  90;
       }
       cell.alignment = alignment;
       cell.font = {
-        bold: true,
+        bold: true
       };
     });
 
@@ -127,7 +127,7 @@ class AdminVenueController {
 
   public async apiListVenues(req: IRequest, res: Response): Promise<any> {
     const {team} = req.user;
-    const {page, pageSize} = req.query as {page: string, pageSize: string};
+    const {page, pageSize, noPopulate, filted} = req.query as {page: string, pageSize: string, noPopulate: any, filted: any};
     // paginate options
     const options: PaginateOptions = {
       select: {
@@ -172,20 +172,29 @@ class AdminVenueController {
         select: ['name']
       }, {
         path: 'company',
-        select: ['name', "marker"]
+        select: ['name', 'marker']
       }],
       lean: true,
       sort: {
         name: 1
       },
-      page: parseInt(page ? page : "1", 10),
-      limit: parseInt(pageSize ? pageSize : "20", 10)
+      page: parseInt(page ? page : '1', 10),
+      limit: parseInt(pageSize ? pageSize : '20', 10)
     };
+    const filter: any = {
+      deleted: false,
+      team
+    };
+    if(noPopulate){
+      delete options.populate;
+    }
+    if (filted) {
+      filter._id = {
+        $in: req.user.venuesPermissions()
+      };
+    }
     try {
-      const venues = await this.getVenues({
-        deleted: false,
-        team
-      }, options);
+      const venues = await this.getVenues(filter, options);
       /* istanbul ignore if  */
       if (options.page && venues.pages && venues.pages < options.page) {
         res.status(400).json({

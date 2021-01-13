@@ -83,7 +83,7 @@ class PlanningImportView extends React.Component<IPropsType, IStateType> {
       loadingSettings, carsByDate, sending
     } = this.state;
     return (
-      <AppContainer title="" cMenu="3" cSubMenu="3.2">
+      <AppContainer title="" cMenu="4" cSubMenu="4.2">
         <section className="content">
           <div className="box">
             <div className="box-header with-border">

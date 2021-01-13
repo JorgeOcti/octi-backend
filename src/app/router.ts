@@ -16,8 +16,7 @@ import AppController from './controllers/app.controller';
 import CarController from './controllers/car.controller';
 import JWTController from './controllers/jwt.controller';
 import UserController from './controllers/user.controller';
-import router from "../form/router";
-
+import router from '../form/router';
 
 // setup route middlewares
 const appRouter = express.Router();
@@ -130,7 +129,7 @@ appRouter.post('/api/v1/change-password/', Middlewares.isJWTAuthenticated, UserC
 appRouter.get('/api/v1/venues/', Middlewares.isJWTAuthenticated, UserController.apiListVenues);
 appRouter.put('/api/v1/venues/change/', Middlewares.isJWTAuthenticated, UserController.apiChangeVenue);
 
-//Get User Pusher Token
+// Get User Pusher Token
 appRouter.get('/api/v1/pusher/auth/', Middlewares.isJWTAuthenticated, UserController.getPusherToken);
 
 // web login

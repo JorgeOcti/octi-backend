@@ -1,4 +1,5 @@
 import * as mongoose from 'mongoose';
+import { PaginateModel } from 'mongoose';
 import * as mongoosePaginate from 'mongoose-paginate';
 import {IDamages} from '../../interfaces/damage.interface';
 
@@ -31,5 +32,7 @@ export const damagesSchema = new mongoose.Schema({
 
 damagesSchema.plugin(mongoosePaginate);
 
-const Damages = mongoose.model<IDamagesModel>('Damages', damagesSchema);
+export type DamagesSchema = mongoose.Model<IDamagesModel> & PaginateModel<IDamagesModel>;
+
+const Damages = mongoose.model<IDamagesModel, DamagesSchema>('Damages', damagesSchema);
 export default Damages;

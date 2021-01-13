@@ -83,7 +83,7 @@ class PlanningListView extends React.Component<IPropsType, IStateType> {
   public render(): React.ReactElement<IPropsType> {
     const {loading, plannings, pagination} = this.props.planning;
     return (
-      <AppContainer title="" cMenu="3" cSubMenu="3.1">
+      <AppContainer title="" cMenu="4" cSubMenu="4.1">
         <section className="content">
           <div className="box">
             <div className="box-header with-border">

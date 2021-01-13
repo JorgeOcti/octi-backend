@@ -1,17 +1,17 @@
-import {NextFunction, Request, Response} from 'express';
+import { NextFunction, Request, Response } from 'express';
+import * as GraphicsMagick from 'gm';
 import * as isuuid from 'is-uuid';
 import * as moment from 'moment';
 import * as passport from 'passport';
-import * as uuid from 'uuid';
 import * as Raven from 'raven';
-import * as GraphicsMagick from 'gm';
-import {queue} from '../../app';
+import * as uuid from 'uuid';
+import { queue } from '../../app';
+import { IRequest } from '../../interfaces/global.interface';
+import logger from '../../services/logger.service';
 import redisClient from '../../services/redis.service';
+import GeneralUtils from '../../utils/general.utils';
+import RecoverFile from '../models/recoverFile.model';
 import UserModel from '../models/user.model';
-import GeneralUtils from "../../utils/general.utils";
-import {IRequest} from "../../interfaces/global.interface";
-import RecoverFile from "../models/recoverFile.model";
-import logger from "../../services/logger.service";
 
 class AppController {
 
@@ -122,7 +122,7 @@ class AppController {
       if (csrfUsed) {
         return res.redirect('/account/forgot-password/');
       }
-      redisClient.set(_csrf, 'forgot-password', "ex", 60*10);
+      redisClient.set(_csrf, 'forgot-password', 'ex', 60*10);
 
       const user = await UserModel.findOne({email: username});
       if (user) {
@@ -305,7 +305,7 @@ class AppController {
     }
   }
 
-  private autoRotate(path: string) {
+  private autoRotate(path: string): Promise<any> {
     // doc http://aheckmann.github.io/gm/docs.html
     /**** REQUIRE: imagemagick and graphicsmagick *****
      brew install imagemagick
@@ -319,7 +319,7 @@ class AppController {
             /* istanbul ignore next */
             reject(err);
           } else {
-            resolve();
+            resolve({});
           }
         });
     });

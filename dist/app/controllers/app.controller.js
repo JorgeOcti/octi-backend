@@ -1,17 +1,17 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+const GraphicsMagick = require("gm");
 const isuuid = require("is-uuid");
 const moment = require("moment");
 const passport = require("passport");
-const uuid = require("uuid");
 const Raven = require("raven");
-const GraphicsMagick = require("gm");
+const uuid = require("uuid");
 const app_1 = require("../../app");
+const logger_service_1 = require("../../services/logger.service");
 const redis_service_1 = require("../../services/redis.service");
-const user_model_1 = require("../models/user.model");
 const general_utils_1 = require("../../utils/general.utils");
 const recoverFile_model_1 = require("../models/recoverFile.model");
-const logger_service_1 = require("../../services/logger.service");
+const user_model_1 = require("../models/user.model");
 class AppController {
     constructor() {
         this.index = this.index.bind(this);
@@ -115,7 +115,7 @@ class AppController {
             if (csrfUsed) {
                 return res.redirect('/account/forgot-password/');
             }
-            redis_service_1.default.set(_csrf, 'forgot-password', "ex", 60 * 10);
+            redis_service_1.default.set(_csrf, 'forgot-password', 'ex', 60 * 10);
             const user = await user_model_1.default.findOne({ email: username });
             if (user) {
                 const token = uuid.v4();
@@ -314,7 +314,7 @@ class AppController {
                     reject(err);
                 }
                 else {
-                    resolve();
+                    resolve({});
                 }
             });
         });

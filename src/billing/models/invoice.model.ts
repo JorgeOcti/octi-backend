@@ -1,10 +1,11 @@
 import * as mongoose from 'mongoose';
 import * as mongoosePaginate from 'mongoose-paginate';
-import {IInvoice} from "../../interfaces/invoice.interface";
+import {IInvoice} from '../../interfaces/invoice.interface';
 import * as mongooseCrate from 'mongoose-crate';
 import * as MongooseCrateS3 from 'mongoose-crate-s3';
-import * as s3Config from "../../../s3-config.json";
-import * as uuid from "uuid";
+import * as s3Config from '../../../s3-config.json';
+import * as uuid from 'uuid';
+import { PaginateModel } from 'mongoose';
 
 export interface IInvoiceModel extends IInvoice, mongoose.Document {
   attach(condition: string, file: any, error: (err: any) => void): void;
@@ -111,6 +112,8 @@ invoiceSchema.plugin(mongooseCrate, {
 
 invoiceSchema.plugin(mongoosePaginate);
 
-const Invoice = mongoose.model<IInvoiceModel>('Invoice', invoiceSchema);
+export type InvoiceSchema = mongoose.Model<IInvoiceModel> & PaginateModel<IInvoiceModel>;
+
+const Invoice = mongoose.model<IInvoiceModel, InvoiceSchema>('Invoice', invoiceSchema);
 
 export default Invoice;

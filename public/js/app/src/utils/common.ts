@@ -6,7 +6,7 @@ declare let window: IWindow;
 export function getExtension(name: string): string {
   const descomposition = name.split('.');
   if (descomposition.length) {
-    return descomposition[descomposition.length - 1];
+    return descomposition[descomposition.length - 1].toLowerCase();
   }
   return '';
 }

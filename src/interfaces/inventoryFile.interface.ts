@@ -1,13 +1,7 @@
-import {ICompanyModel} from '../app/models/company.model';
-import {IUserModel} from '../app/models/user.model';
-import {IInventoryModel} from '../inventory/models/inventory.model';
-
-export interface IIFile {
-  url: string;
-  type: string;
-  name: string;
-  size: number;
-}
+import { ICompanyModel } from '../app/models/company.model';
+import { IUserModel } from '../app/models/user.model';
+import { IInventoryModel } from '../inventory/models/inventory.model';
+import { IIFile } from './file.interface';
 
 export interface IInventoryFile {
   _id: any;

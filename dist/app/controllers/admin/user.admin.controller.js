@@ -58,8 +58,8 @@ class AdminUsersController {
                     activeCell: 'A1'
                 }];
             const accessColumns = [{
-                    header: "Usuario",
-                    key: "usuario",
+                    header: 'Usuario',
+                    key: 'usuario',
                     width: 30,
                     alignment: {
                         wrapText: true
@@ -93,7 +93,7 @@ class AdminUsersController {
                     wrapText: true
                 };
                 cell.font = {
-                    bold: true,
+                    bold: true
                 };
             });
             worksheetAccess.getRow(1).eachCell((cell) => {
@@ -108,7 +108,7 @@ class AdminUsersController {
                 }
                 cell.alignment = alignment;
                 cell.font = {
-                    bold: true,
+                    bold: true
                 };
             });
             /* headers */
@@ -160,7 +160,7 @@ class AdminUsersController {
                 });
                 const dataVenues = {};
                 user.venuesPermissions(true).forEach((venue) => {
-                    dataVenues[venue] = "X";
+                    dataVenues[venue] = 'X';
                     // worksheet.addRow({
                     //   ...detailUser,
                     //   venue: venue.name,
@@ -243,8 +243,8 @@ class AdminUsersController {
                 firstName: 1,
                 lastName: 1
             },
-            page: parseInt(page ? page : "1", 10),
-            limit: parseInt(pageSize ? pageSize : "20", 10)
+            page: parseInt(page ? page : '1', 10),
+            limit: parseInt(pageSize ? pageSize : '20', 10)
         };
         try {
             const users = await this.getUsers({
@@ -393,7 +393,7 @@ class AdminUsersController {
                 });
             }
             else {
-                let updateItems = {
+                const updateItems = {
                     firstName,
                     lastName,
                     company,

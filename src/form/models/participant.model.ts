@@ -1,4 +1,6 @@
 import * as mongoose from 'mongoose';
+import { PaginateModel } from 'mongoose';
+import * as mongoosePaginate from 'mongoose-paginate';
 import {
   IParticipant,
   IparticipantAccesory,
@@ -8,8 +10,8 @@ import {
   IParticipantScale,
   IParticipantSection
 } from '../../interfaces/participant.interface';
-import {KindQuestion, kindQuestion} from './form.model';
-import {choiceBackgroundColors} from './scale.model';
+import { KindQuestion, kindQuestion } from './form.model';
+import { choiceBackgroundColors } from './scale.model';
 
 export interface IParticipantChoicesModel extends IParticipantChoices, mongoose.Types.Subdocument {}
 const participantChoiceSchema = new mongoose.Schema({
@@ -398,6 +400,10 @@ participantSchema.index({form: 1, user: 1 });
 participantSchema.index({company: 1, venue: 1, createdAt: 1 });
 participantSchema.index({_id: 1, company: 1, venue: 1, createdAt: 1 });
 
-const Participant = mongoose.model<IParticipantModel>('Participant', participantSchema);
+participantSchema.plugin(mongoosePaginate);
+
+export type ParticipantSchema = mongoose.Model<IParticipantModel> & PaginateModel<IParticipantModel>;
+
+const Participant = mongoose.model<IParticipantModel, ParticipantSchema>('Participant', participantSchema);
 
 export default Participant;

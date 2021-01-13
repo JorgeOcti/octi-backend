@@ -1,26 +1,26 @@
-import * as excel from 'exceljs';
 import * as bluebird from 'bluebird';
-import * as tempfile from 'tempfile';
-import {Response} from 'express';
+import * as excel from 'exceljs';
+import { Response } from 'express';
 import * as moment from 'moment-timezone';
 import * as mongoose from 'mongoose';
-import {PaginateOptions, PaginateResult} from 'mongoose';
+import { PaginateOptions, PaginateResult } from 'mongoose';
+import * as tempfile from 'tempfile';
 import app from '../../app';
+import { KindQuestion } from '../../form/models/form.model';
+import Kind from '../../form/models/kind.model';
+import Part from '../../form/models/part.model';
 import ParticipantModel from '../../form/models/participant.model';
-import {IAnyObject, IRequest} from '../../interfaces/global.interface';
-import InventoryModel, {ChoicesStatusInventory} from '../../inventory/models/inventory.model';
-import {ChoicesStatusCarInventory} from '../../inventory/models/inventoryCar.model';
+import Position from '../../form/models/position.model';
+import { IAnyObject, IRequest } from '../../interfaces/global.interface';
+import { IParticipant } from '../../interfaces/participant.interface';
+import InventoryModel, { ChoicesStatusInventory } from '../../inventory/models/inventory.model';
+import { ChoicesStatusCarInventory } from '../../inventory/models/inventoryCar.model';
+import Planning from '../../planning/models/planning.model';
 import logger from '../../services/logger.service';
 import VINService from '../../services/vin.service';
-import CarModel, {ChoicesStatusCar, ICarModel} from '../models/car.model';
+import CarModel, { ChoicesStatusCar, ICarModel } from '../models/car.model';
 import User from '../models/user.model';
 import Venue from '../models/venue.model';
-import {IParticipant} from "../../interfaces/participant.interface";
-import Kind from "../../form/models/kind.model";
-import Part from "../../form/models/part.model";
-import Position from "../../form/models/position.model";
-import {KindQuestion} from "../../form/models/form.model";
-import Planning from "../../planning/models/planning.model";
 
 moment.tz.setDefault('America/Santiago');
 class CarController {
@@ -369,9 +369,9 @@ class CarController {
         _id: {$in: venuesPermissions}
       };
       if(companies){
-        query["company"] = {
+        query['company'] = {
           $in: [companies]
-        }
+        };
       }
       const venuesByCompanies = await Venue.find(query);
       const venuesPermissionsFilterByCompanies = venuesByCompanies.map(venue => venue._id);
@@ -574,7 +574,7 @@ class CarController {
           }, {
             $project: {
               _id: 1,
-              date: 1,
+              date: 1
             }
           }, {
             $group: {
@@ -612,7 +612,7 @@ class CarController {
         if(!planningByProcessingByKey.hasOwnProperty(key)){
           planningByProcessingByKey[key] = {
             total: 0
-          }
+          };
         }
         const isChecked = process.car.participants.filter((participant: any) => moment(participant.createdAt).format('YYYY-MM-DD') === key).length;
         planningByProcessingByKey[key].total = isChecked ? planningByProcessingByKey[key].total + 1 : planningByProcessingByKey[key].total;
@@ -634,7 +634,7 @@ class CarController {
           planningProcess.push({
             _id: key,
             total: 0
-          })
+          });
         } else{
           planningProcess.push({
             id: key,
@@ -1018,7 +1018,7 @@ class CarController {
         venue: true,
         user: true,
         sections: true,
-        qualification: true,
+        qualification: true
       },
       populate: [{
         path: 'car',
@@ -1037,8 +1037,8 @@ class CarController {
       sort: {
         _id: -1
       },
-      page: parseInt(page ? page : "1", 10),
-      limit: parseInt(pageSize ? pageSize : "20", 10)
+      page: parseInt(page ? page : '1', 10),
+      limit: parseInt(pageSize ? pageSize : '20', 10)
     };
 
     try {
@@ -1100,7 +1100,7 @@ class CarController {
             car: {
               $in: searchCar
             }
-          })
+          });
         }
       }
 
@@ -1159,12 +1159,12 @@ class CarController {
               extraColums.keys.push(answerID);
               extraColums.data.push({
                 header: answer.question, key: answerID, width: 50
-              })
+              });
             }
             extraRow = {
               ...extraRow,
               [answerID]: answer.comment
-            }
+            };
           }
           for (const damage of answer.damagesSelected) {
             const kind = damage.kind && cache.kinds.hasOwnProperty(damage.kind.toString())
@@ -1205,7 +1205,7 @@ class CarController {
             damages: `${damages.length}`,
             has_damages: damages.length > 0 ? 'Sí' : 'No',
             damage: idx,
-            position: damages[d].position ? damages[d].position.name : "-",
+            position: damages[d].position ? damages[d].position.name : '-',
             kind: damages[d].kind.name,
             part: damages[d].part.name,
             ...extraRow
@@ -1223,10 +1223,10 @@ class CarController {
           user: `${participant.user.firstName} ${participant.user.lastName}`,
           damages: `${damages.length}`,
           has_damages: damages.length > 0 ? 'Sí' : 'No',
-          damage: "-",
-          position: "-",
-          kind: "-",
-          part: "-",
+          damage: '-',
+          position: '-',
+          kind: '-',
+          part: '-',
           ...extraRow
         };
         rows.push(row);
@@ -1246,11 +1246,11 @@ class CarController {
             {
               venue: {
                 $in: user.venuesPermissions()
-              },
+              }
             }, {
               createdAt: {
                 $gte: t0.toDate(),
-                $lte: t1.toDate(),
+                $lte: t1.toDate()
               }
             }/*,{
               'sections.answers.kind': 'damage'
@@ -1309,7 +1309,7 @@ class CarController {
         ];
       }
       resolve(results);
-    })
+    });
   }
 
   public async apiDamagesExport(req: IRequest, res: Response) {
@@ -1377,7 +1377,7 @@ class CarController {
         positions: positions.reduce((acc: any, cur: any) => {
           acc[cur._id.toString()] = cur;
           return acc;
-        }, {}),
+        }, {})
       };
 
       const periodToProcess = [];
@@ -1471,8 +1471,8 @@ class CarController {
       while (--i > 0) {
         const ti = moment().subtract(i * 15, 'day');
         const tf = moment().subtract((i - 1) * 15, 'day');
-        console.log(ti.format("YYYY-MM-DD"), tf.format("YYYY-MM-DD"));
-        let cars = await CarModel.find({
+        console.log(ti.format('YYYY-MM-DD'), tf.format('YYYY-MM-DD'));
+        const cars = await CarModel.find({
           team,
           isExhibition: false,
           lastForm: {
@@ -1480,13 +1480,13 @@ class CarController {
           },
           createdAt: {
             $gte: ti,
-            $lte: tf,
+            $lte: tf
           }
         }, {
           vin: true,
           denomination: true,
           color: true,
-          brand: true,
+          brand: true
         }).populate({
           path: 'inventories',
           select: ['name', 'createdAt', 'venueFound', 'status'],
@@ -1525,9 +1525,9 @@ class CarController {
             color: car.color,
             brand: car.brand,
             v0: inv0.venueFound ? inv0.venueFound.name : inv0.venue.name,
-            t0: t0,
+            t0,
             v1: inv1.venueFound ? inv1.venueFound.name : inv1.venue.name,
-            t1: t1,
+            t1,
             inventories: n,
             rotation: moment(t1).diff(moment(t0), 'days', true)
           };
@@ -1576,8 +1576,8 @@ class CarController {
       sort: {
         updatedAt: -1
       },
-      page: parseInt(page ? page : "1", 10),
-      limit: parseInt(pageSize ? pageSize : "20", 10)
+      page: parseInt(page ? page : '1', 10),
+      limit: parseInt(pageSize ? pageSize : '20', 10)
     };
     try {
       const cars = await this.getCars({
@@ -1619,7 +1619,7 @@ class CarController {
 
   private getRevisions(filters: any, options: PaginateOptions): Promise<PaginateResult<IParticipant>> {
     return new Promise((resolve, reject) => {
-      !ParticipantModel.paginate(filters, options, (err, result) => {
+      ParticipantModel.paginate(filters, options, (err, result) => {
         if (err) {
           /* istanbul ignore next */
           reject(err);
@@ -1651,7 +1651,7 @@ class CarController {
     }
 
     return new Promise((resolve, reject) => {
-      !CarModel.paginate(filter, options, (err, result) => {
+      CarModel.paginate(filter, options, (err, result) => {
         if (err) {
           /* istanbul ignore next */
           return reject(err);

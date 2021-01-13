@@ -18,6 +18,7 @@ enum carStatus {
   Pending,
   Finish
 }
+
 interface IImportCar {
   id?: string;
   NInterno: string;
@@ -310,7 +311,7 @@ class ImportCarsView extends React.Component<IPropsType, IStateType> {
       denominacion: '',
       color: '',
       propiedad: '',
-      tipo: '',
+      tipo: ''
       // motor: '',
       // destino: ''
     }];

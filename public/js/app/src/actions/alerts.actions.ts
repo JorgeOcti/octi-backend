@@ -7,8 +7,8 @@ import ApiService from '../utils/axios';
 import {showModal, statusFooterButttonsModal} from '../utils/common';
 
 export interface IAlertsState {
-  alerts: IAlert[];
-  users: IUser[];
+  alerts: Array<IAlert>;
+  users: Array<IUser>;
   loading: boolean;
   source: CancelTokenSource | null;
   pagination: {
