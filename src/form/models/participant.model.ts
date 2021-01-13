@@ -50,7 +50,15 @@ const participantChoiceSchema = new mongoose.Schema({
   order: {
     type: Number,
     required: true
-  }
+  },
+  optional: {
+    type: Boolean,
+    default: true
+  },
+  hint: {
+    type: String,
+    trim: true
+  },
 });
 
 export interface IScaleParticipantModel extends IParticipantScale, mongoose.Document {}
