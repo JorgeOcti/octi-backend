@@ -411,10 +411,11 @@ export function getParticipant(id: string) {
                           const items = answer.accessories ? answer.accessories.items.filter((item:any) => accesorySeletedIds.includes(item._id)) : [];
                           return (
                             <div className="question" key={answer._id}>
-                              <p><strong>{answer.order} {answer.question}</strong></p>
+                              <p><strong>{answer.order} {answer.question} {answer.optional !== true ? <span>(<span className="red text-bold">*</span>)</span> : null }</strong></p>
+                              {answer.hint && answer.hint !== "" ? <small>{answer.hint}</small> : null}
                               {
                                 answer.scale ?
-                                  <div className="btn-group btn-group-justified" role="group" aria-label="...">
+                                  <div className="flex" role="group" aria-label="...">
                                     {
                                       answer.scale.choices.map((choice: any) => {
                                         const btnDefault = 'btn-default';
@@ -426,13 +427,11 @@ export function getParticipant(id: string) {
                                         };
                                         const btnClass = optionsClass.hasOwnProperty(choice.backgroundColor) ? optionsClass[choice.backgroundColor] : btnDefault;
                                         return (
-                                          <div className="btn-group" role="group" key={choice._id}>
-                                            <button
-                                              type="button"
-                                              className={`btn ${choice._id === answer.answer ? btnClass : btnDefault}`}
-                                              disabled={true}
-                                            >{choice.choice}</button>
-                                          </div>
+                                          <button
+                                            type="button"
+                                            className={`btn flex-row-item text-wrap ${choice._id === answer.answer ? btnClass : btnDefault}`}
+                                            disabled={true}
+                                          >{choice.choice}</button>
                                         );
                                       })
                                     }
@@ -564,6 +563,7 @@ export function getParticipant(id: string) {
                 );
               })
             }
+            <small>Las preguntas marcadas con (<span className="red text-bold">*</span>) son obligatorias.</small>
           </div>
           ) as any);
         dispatch(loadingParticipantAction(null));
