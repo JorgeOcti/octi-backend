@@ -533,7 +533,10 @@ class FormController {
                 conciliation: false,
                 kind: '',
                 weight: 0,
-                order: 0
+                order: 0,
+                optional: false,
+                hint: '',
+                keyboardType: '',
             };
             // get scales from db
             res.json({
@@ -757,7 +760,9 @@ class FormController {
                                 na,
                                 weight: question.weight,
                                 kind: question.kind,
-                                order: question.order
+                                order: question.order,
+                                optional: question.optional,
+                                hint: question.hint
                             });
                         }
                         // calculate section qualification
@@ -789,6 +794,7 @@ class FormController {
                         if (allImages.length) {
                             await participantFile_model_1.default.update({ _id: { $in: allImages } }, { participant: newParticipant }, { multi: true });
                         }
+                        logger_service_1.default.debug("new: " + newParticipant.toString());
                         car.lastForm = newParticipant;
                         await car.save();
                         const today = moment().startOf('day');
@@ -1955,21 +1961,24 @@ class FormController {
             amount: Joi.number()
         });
         const newAccesories = [];
-        accesories.map(async (accesory) => {
+        await accesories.map(async (accesory) => {
             try {
-                const newAccesory = await accesorySchema.validateAsync(accesory);
+                const newAccesory = await accesorySchema.validate(accesory);
                 newAccesories.push({
                     item: newAccesory.item,
                     amount: newAccesory.amount
                 });
+                logger_service_1.default.debug("pusheado");
             }
             catch (e) {
+                logger_service_1.default.error(e);
                 newAccesories.push({
                     item: accesory,
                     amount: 1
                 });
             }
         });
+        logger_service_1.default.debug(JSON.stringify(newAccesories));
         return newAccesories;
     }
     getFormWithScale(filter) {

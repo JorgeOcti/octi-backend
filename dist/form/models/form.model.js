@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.kindQuestion = exports.KindQuestion = void 0;
+exports.kindQuestionKeyboard = exports.KindQuestionKeyboard = exports.kindQuestion = exports.KindQuestion = void 0;
 const mongoose = require("mongoose");
 const mongoosePaginate = require("mongoose-paginate");
 const itemSchema = new mongoose.Schema({
@@ -38,6 +38,17 @@ exports.kindQuestion = [
     KindQuestion.damage,
     KindQuestion.venue,
     KindQuestion.carrier
+];
+var KindQuestionKeyboard;
+(function (KindQuestionKeyboard) {
+    KindQuestionKeyboard["text"] = "text";
+    KindQuestionKeyboard["numeric"] = "numeric";
+    KindQuestionKeyboard["email"] = "email";
+})(KindQuestionKeyboard = exports.KindQuestionKeyboard || (exports.KindQuestionKeyboard = {}));
+exports.kindQuestionKeyboard = [
+    KindQuestionKeyboard.text,
+    KindQuestionKeyboard.numeric,
+    KindQuestionKeyboard.email,
 ];
 const formQuestionsSchema = new mongoose.Schema({
     question: {
@@ -85,6 +96,19 @@ const formQuestionsSchema = new mongoose.Schema({
     order: {
         type: Number,
         required: true
+    },
+    optional: {
+        type: Boolean,
+        default: true
+    },
+    hint: {
+        type: String,
+        trim: true
+    },
+    keyboardType: {
+        type: String,
+        enum: exports.kindQuestionKeyboard,
+        default: KindQuestionKeyboard.text
     }
 });
 const formSectionsSchema = new mongoose.Schema({
