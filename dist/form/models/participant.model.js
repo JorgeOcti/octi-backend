@@ -42,7 +42,15 @@ const participantChoiceSchema = new mongoose.Schema({
     order: {
         type: Number,
         required: true
-    }
+    },
+    optional: {
+        type: Boolean,
+        default: true
+    },
+    hint: {
+        type: String,
+        trim: true
+    },
 });
 exports.scaleSchema = new mongoose.Schema({
     name: String,
