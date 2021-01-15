@@ -411,11 +411,11 @@ export function getParticipant(id: string) {
                           const items = answer.accessories ? answer.accessories.items.filter((item:any) => accesorySeletedIds.includes(item._id)) : [];
                           return (
                             <div className="question" key={answer._id}>
-                              <p><strong>{answer.order} {answer.question} {answer.optional !== true ? <span>(<span className="red text-bold">*</span>)</span> : null }</strong></p>
-                              {answer.hint && answer.hint !== "" ? <small>{answer.hint}</small> : null}
+                              <p><strong>{answer.order} {answer.question} {!answer.optional ? <span className="red text-bold">*</span> : null }</strong>
+                              {answer.hint && answer.hint !== "" ? <small><br/>{answer.hint}</small> : null}</p>
                               {
                                 answer.scale ?
-                                  <div className="flex" role="group" aria-label="...">
+                                  <div className="flex" role="group" aria-label="..." key={answer._id}>
                                     {
                                       answer.scale.choices.map((choice: any) => {
                                         const btnDefault = 'btn-default';
@@ -428,6 +428,7 @@ export function getParticipant(id: string) {
                                         const btnClass = optionsClass.hasOwnProperty(choice.backgroundColor) ? optionsClass[choice.backgroundColor] : btnDefault;
                                         return (
                                           <button
+                                            key={choice._id}
                                             type="button"
                                             className={`btn flex-row-item text-wrap ${choice._id === answer.answer ? btnClass : btnDefault}`}
                                             disabled={true}
@@ -563,7 +564,7 @@ export function getParticipant(id: string) {
                 );
               })
             }
-            <small>Las preguntas marcadas con (<span className="red text-bold">*</span>) son obligatorias.</small>
+            <small>Las preguntas marcadas con <span className="red text-bold">*</span> son obligatorias.</small>
           </div>
           ) as any);
         dispatch(loadingParticipantAction(null));
