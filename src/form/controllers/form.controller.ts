@@ -1577,7 +1577,7 @@ class FormController {
     const venue = (reception as any).to as IVenueModel;
 
     const daysLimit = distributorTable[sendingVenue._id.toString()] &&
-    distributorTable[sendingVenue._id.toString()][venue._id.toString()] ?
+      distributorTable[sendingVenue._id.toString()][venue._id.toString()] ?
       distributorTable[sendingVenue._id.toString()][venue._id.toString()] :
       5;
     const threshold = daysLimit * 60 * 24;
