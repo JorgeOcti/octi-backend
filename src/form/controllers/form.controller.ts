@@ -2030,7 +2030,7 @@ class FormController {
             })
             .populate([{
               path: 'sections.questions.damages',
-              select: ['name', 'positions', 'kinds', 'parts'],
+              select: ['name', 'positions', 'kinds', 'parts', 'partFallback', 'kindFallback'],
               populate: [{
                 path: 'positions',
                 select: ['name'],
@@ -2049,6 +2049,22 @@ class FormController {
                 }
               }, {
                 path: 'parts',
+                select: ['name'],
+                options: {
+                  sort: {
+                    name: 1
+                  }
+                }
+              }, {
+                path: 'kindFallback',
+                select: ['name'],
+                options: {
+                  sort: {
+                    name: 1
+                  }
+                }
+              }, {
+                path: 'partFallback',
                 select: ['name'],
                 options: {
                   sort: {
