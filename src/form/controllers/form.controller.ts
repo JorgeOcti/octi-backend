@@ -1281,10 +1281,10 @@ class FormController {
 
         // despacho:  5b0487db835536612bab1b61
         // recepcion: 5b1ae5799ebea419025b3e41
-        const reception = await FormModel.findOne({_id: "5b0487db835536612bab1b61"});
+        const reception = await FormModel.findOne({_id: '5b0487db835536612bab1b61'});
         const cars = await CarModel.find({
           team,
-          lastForm: {$ne: null},
+          lastForm: {$ne: null}
         });
 
         const carsDict: any = {};
@@ -1394,7 +1394,7 @@ class FormController {
 
   private static async getDercoDeliveryParticipants(team: ITeamModel, from: moment.Moment, to: moment.Moment): Promise<IParticipant[]> {
 
-    const receptionForm = await FormModel.findOne({_id: "5b1ae5799ebea419025b3e41"});
+    const receptionForm = await FormModel.findOne({_id: '5b1ae5799ebea419025b3e41'});
     return ParticipantModel.aggregate([
       {
         $match: {
@@ -1412,15 +1412,15 @@ class FormController {
           venue: 1,
           receiveFrom: 1,
           form: 1,
-          createdAt: 1,
+          createdAt: 1
         }
       },
       {
         $lookup: {
-          from: 'ars',
+          from: 'cars',
           localField: 'car',
           foreignField: '_id',
-          as: 'related_car',
+          as: 'related_car'
         }
       },
       {$unwind: '$related_car'},
@@ -1439,10 +1439,10 @@ class FormController {
           from: 'venues',
           localField: 'venue',
           foreignField: '_id',
-          as: 'to',
+          as: 'to'
         }
       },
-      {$unwind: '$to'},
+      {$unwind: '$to'}
     ]);
 
   }
@@ -1457,7 +1457,7 @@ class FormController {
           from: 'participants',
           localField: 'car',
           foreignField: 'car',
-          as: 'recived_participants',
+          as: 'recived_participants'
         }
       },
       {
@@ -1490,7 +1490,7 @@ class FormController {
           'recived_participants.car': 1,
           'recived_participants.team': 1,
           'recived_participants.venue': 1,
-          'recived_participants._id': 1,
+          'recived_participants._id': 1
         }
       },
       {
@@ -1501,7 +1501,7 @@ class FormController {
           from: 'venues',
           localField: 'venue',
           foreignField: '_id',
-          as: 'venue',
+          as: 'venue'
         }
       },
       {$unwind: '$venue'},
@@ -1510,7 +1510,7 @@ class FormController {
           from: 'venues',
           localField: 'recived_participants.venue',
           foreignField: '_id',
-          as: 'recived_participants.venue',
+          as: 'recived_participants.venue'
         }
       },
       {$unwind: '$recived_participants.venue'},
@@ -1567,7 +1567,7 @@ class FormController {
       to: reception.venue.abbreviation || reception.venue.name,
       atTime: dm <= threshold,
       daysLimit
-    }
+    };
   }
 
   private static parseDercoReception(reception: IParticipant, distributorTable : any, dercoDistributionVenue: IVenueModel) : any {
@@ -1576,8 +1576,8 @@ class FormController {
     const sendingVenue = dercoDistributionVenue;
     const venue = (reception as any).to as IVenueModel;
 
-    let daysLimit = distributorTable[sendingVenue._id.toString()] &&
-      distributorTable[sendingVenue._id.toString()][venue._id.toString()] ?
+    const daysLimit = distributorTable[sendingVenue._id.toString()] &&
+    distributorTable[sendingVenue._id.toString()][venue._id.toString()] ?
       distributorTable[sendingVenue._id.toString()][venue._id.toString()] :
       5;
     const threshold = daysLimit * 60 * 24;
@@ -1592,15 +1592,15 @@ class FormController {
       from: sendingVenue!.abbreviation || sendingVenue!.name,
       to: venue.abbreviation || venue.name,
       atTime: dm <= threshold,
-      daysLimit: daysLimit
-    }
+      daysLimit
+    };
   }
 
   public async timingDashboard(req: IRequest, res: Response): Promise<any> {
     try {
       const {team} = req.user as {team: ITeamModel};
       const userObject = await User.findOne({_id: req.user._id});
-      const distributors = await Venue.find({team: team, type: 'distributor'}, {}).populate({
+      const distributors = await Venue.find({team, type: 'distributor'}, {}).populate({
         path: 'sendToDays.venue',
         select: ['_id']
       });
@@ -1722,7 +1722,7 @@ class FormController {
       const {team} = req.user;
 
       const periods = 6;
-      for (let i = 0; i < periods; i++) {
+      for(let i = 0; i < periods; i++) {
 
         const t0 = moment().subtract(i + 1, 'months');
         const t1 = moment().subtract(i, 'months');
@@ -1732,7 +1732,7 @@ class FormController {
           lastForm: {$exists: true},
           createdAt: {
             $gte: t0,
-            $lte: t1,
+            $lte: t1
           }
         }).populate({
           path: 'participants',
@@ -1778,7 +1778,7 @@ class FormController {
             if (p0) {
               const answer0Gas = p0.sections.map((s: any) => s.answers).reduce((x: any[], y: any[]) => [...x, ...y], []).find((a: any) => a._id.toString() == gasQuestion);
               if (answer0Gas)
-                choice0Gas = answer0Gas.scale.choices.find((c: any) => c._id.toString() == answer0Gas.answer.toString())
+                choice0Gas = answer0Gas.scale.choices.find((c: any) => c._id.toString() == answer0Gas.answer.toString());
             }
 
             if (p1) {
@@ -1878,8 +1878,8 @@ class FormController {
     try {
       const {team} = req.user;
 
-      const form = await FormModel.findById("5b0487db835536612bab1b61");
-      const answer = new ObjectID("5b64b2e8de5557c85fa14fa0");
+      const form = await FormModel.findById('5b0487db835536612bab1b61');
+      const answer = new ObjectID('5b64b2e8de5557c85fa14fa0');
 
       const days: string[] = [];
       const daysDict: any = {};
@@ -1950,7 +1950,7 @@ class FormController {
         }
       }
       res.json({
-        days: days,
+        days,
         clean: days.map((d) => daysDict[d].clean),
         notClean: days.map((d) => daysDict[d].notClean)
       });
@@ -1970,7 +1970,7 @@ class FormController {
 
   }
 
-  private autoRotate(path: string): Promise<any> { {
+  private autoRotate(path: string): Promise<any> {
     // doc http://aheckmann.github.io/gm/docs.html
     /**** REQUIRE: imagemagick and graphicsmagick *****
      brew install imagemagick
@@ -1984,7 +1984,7 @@ class FormController {
             /* istanbul ignore next */
             reject(err);
           } else {
-            resolve([]);
+            resolve({});
           }
         });
     });
@@ -2030,7 +2030,7 @@ class FormController {
             })
             .populate([{
               path: 'sections.questions.damages',
-              select: ['name', 'positions', 'kinds', 'parts', 'partFallback', 'kindFallback'],
+              select: ['name', 'positions', 'kinds', 'parts'],
               populate: [{
                 path: 'positions',
                 select: ['name'],
@@ -2049,22 +2049,6 @@ class FormController {
                 }
               }, {
                 path: 'parts',
-                select: ['name'],
-                options: {
-                  sort: {
-                    name: 1
-                  }
-                }
-              }, {
-                path: 'kindFallback',
-                select: ['name'],
-                options: {
-                  sort: {
-                    name: 1
-                  }
-                }
-              }, {
-                path: 'partFallback',
                 select: ['name'],
                 options: {
                   sort: {
@@ -2098,16 +2082,12 @@ class FormController {
     const newAccesories: any[] = [];
     accesories.map((accesory: any) => {
       try {
-        const newAccesory: ValidationResult<any> = accesorySchema.validate(accesory);
-        if (newAccesory.error){
-          throw newAccesory.error;
-        }
+        const newAccesory: any = accesorySchema.validate(accesory);
         newAccesories.push({
           item: newAccesory.value.item,
           amount: newAccesory.value.amount
         });
       } catch (e) {
-        logger.error(e);
         newAccesories.push({
           item: accesory,
           amount: 1
@@ -2175,7 +2155,7 @@ class FormController {
                 /* istanbul ignore next */
                 return reject(err);
               }
-              redisClient.set(keyCache, JSON.stringify(scales), "ex", 30);
+              redisClient.set(keyCache, JSON.stringify(scales), 'ex', 30);
               return resolve(scales);
             });
         }
