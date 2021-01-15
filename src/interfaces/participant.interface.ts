@@ -75,6 +75,9 @@ export interface IParticipantAnswer {
   weight: number;
   kind: string;
   order: number;
+
+  hint: string;
+  optional: boolean,
 }
 
 export interface IParticipantSection {

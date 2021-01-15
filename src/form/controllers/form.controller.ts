@@ -31,6 +31,7 @@ import * as bluebird from 'bluebird';
 import {IParticipant} from "../../interfaces/participant.interface";
 import {IVenueDay} from "../../interfaces/venueDay.interface";
 import ActivityHistory, {ChoicesTypeActivity} from "../../billing/models/activityHistory.model";
+import {ValidationResult} from "joi";
 
 
 // import * as puppeteer from 'puppeteer';
@@ -545,7 +546,9 @@ class FormController {
         conciliation: false,
         kind: '',
         weight: 0,
-        order: 0
+        order: 0,
+        optional: false,
+        hint: '',
       };
       // get scales from db
       res.json({
@@ -776,7 +779,9 @@ class FormController {
                 na,
                 weight: question.weight,
                 kind: question.kind,
-                order: question.order
+                order: question.order,
+                hint: question.hint,
+                optional: question.optional
               });
             }
             // calculate section qualification
@@ -2025,7 +2030,7 @@ class FormController {
             })
             .populate([{
               path: 'sections.questions.damages',
-              select: ['name', 'positions', 'kinds', 'parts'],
+              select: ['name', 'positions', 'kinds', 'parts', 'partFallback', 'kindFallback'],
               populate: [{
                 path: 'positions',
                 select: ['name'],
@@ -2044,6 +2049,22 @@ class FormController {
                 }
               }, {
                 path: 'parts',
+                select: ['name'],
+                options: {
+                  sort: {
+                    name: 1
+                  }
+                }
+              }, {
+                path: 'kindFallback',
+                select: ['name'],
+                options: {
+                  sort: {
+                    name: 1
+                  }
+                }
+              }, {
+                path: 'partFallback',
                 select: ['name'],
                 options: {
                   sort: {
@@ -2077,12 +2098,16 @@ class FormController {
     const newAccesories: any[] = [];
     accesories.map((accesory: any) => {
       try {
-        const newAccesory: any = accesorySchema.validate(accesory);
+        const newAccesory: ValidationResult<any> = accesorySchema.validate(accesory);
+        if (newAccesory.error){
+          throw newAccesory.error;
+        }
         newAccesories.push({
-          item: newAccesory.item,
-          amount: newAccesory.amount
+          item: newAccesory.value.item,
+          amount: newAccesory.value.amount
         });
       } catch (e) {
+        logger.error(e);
         newAccesories.push({
           item: accesory,
           amount: 1
