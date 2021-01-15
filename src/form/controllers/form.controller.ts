@@ -1170,7 +1170,7 @@ class FormController {
           return answer.damagesSelected.length > 0;
         });
       });
-      resolve(participant)
+      resolve(participant);
     });
   }
 
@@ -1220,7 +1220,7 @@ class FormController {
         participantsWithDamages = [
           ...participantsWithDamages,
           ...await bluebird.all(promises.splice(0, 500))
-        ]
+        ];
       }
       for (const participant of participantsWithDamages) {
         const venueId = participant.venue._id.toString();
@@ -1271,7 +1271,7 @@ class FormController {
     try {
 
       const {team} = req.user;
-      let userObject = await User.findOne({_id: req.user._id});
+      const userObject = await User.findOne({_id: req.user._id});
 
       // Derco
       if (userObject && userObject.team.toString() === '5bf2de34caf8ef7096105cda') {
@@ -1281,13 +1281,13 @@ class FormController {
 
         // despacho:  5b0487db835536612bab1b61
         // recepcion: 5b1ae5799ebea419025b3e41
-        let reception = await FormModel.findOne({_id: "5b0487db835536612bab1b61"});
-        let cars = await CarModel.find({
+        const reception = await FormModel.findOne({_id: "5b0487db835536612bab1b61"});
+        const cars = await CarModel.find({
           team,
           lastForm: {$ne: null},
         });
 
-        let carsDict: any = {};
+        const carsDict: any = {};
         for (const car of cars){
           carsDict[car._id.toString()] = car;
         }
@@ -1338,7 +1338,7 @@ class FormController {
         ];
 
         for (const reception of receptions) {
-          let carID = reception.car.toString();
+          const carID = reception.car.toString();
 
           if (carID in carsDict) {
             const car = carsDict[carID];
@@ -1346,7 +1346,7 @@ class FormController {
             const t0 = moment(car.createdAt).subtract(4, 'hours');
             const t1 = moment(reception.createdAt).subtract(4, 'hours');
 
-            const hour = parseInt(t0.format('HH'));
+            const hour = parseInt(t0.format('HH'), 10);
             if (hour >= 20 || hour <= 2)
               continue;
 
@@ -1363,7 +1363,7 @@ class FormController {
                 checkedAt: t1.format('YYYY-MM-DD HH:mm:ss'),
                 checkedAtMonth: t1.format('MM'),
                 leadtime: dm,
-                ontime: ontime
+                ontime
               });
             }
 
@@ -1394,16 +1394,16 @@ class FormController {
 
   private static async getDercoDeliveryParticipants(team: ITeamModel, from: moment.Moment, to: moment.Moment): Promise<IParticipant[]> {
 
-    let receptionForm = await FormModel.findOne({_id: "5b1ae5799ebea419025b3e41"});
+    const receptionForm = await FormModel.findOne({_id: "5b1ae5799ebea419025b3e41"});
     return ParticipantModel.aggregate([
       {
         $match: {
-          team: team,
+          team,
           form: receptionForm!._id,
           createdAt: {
             $gte: from,
             $lte: to
-          },
+          }
         }
       },
       {
@@ -1417,10 +1417,10 @@ class FormController {
       },
       {
         $lookup: {
-          from: "cars",
-          localField: "car",
-          foreignField: "_id",
-          as: "related_car",
+          from: 'ars',
+          localField: 'car',
+          foreignField: '_id',
+          as: 'related_car',
         }
       },
       {$unwind: '$related_car'},
@@ -1436,10 +1436,10 @@ class FormController {
       },
       {
         $lookup: {
-          from: "venues",
-          localField: "venue",
-          foreignField: "_id",
-          as: "to",
+          from: 'venues',
+          localField: 'venue',
+          foreignField: '_id',
+          as: 'to',
         }
       },
       {$unwind: '$to'},
@@ -1451,13 +1451,13 @@ class FormController {
     const distributors = await Venue.find({team, type: 'distributor'});
     const receivers = await Venue.find({team, type: 'receiver'});
 
-    let receptions = await ParticipantModel.aggregate([
+    const receptions = await ParticipantModel.aggregate([
       {
         $lookup: {
-          from: "participants",
-          localField: "car",
-          foreignField: "car",
-          as: "recived_participants",
+          from: 'participants',
+          localField: 'car',
+          foreignField: 'car',
+          as: 'recived_participants',
         }
       },
       {
@@ -1465,7 +1465,7 @@ class FormController {
       },
       {
         $match: {
-          team: team,
+          team,
           venue: {$in: receivers.map((v) => v._id)},
           receiveFrom: {$in: distributors.map((v) => v._id)},
           reception: true,
@@ -1498,29 +1498,29 @@ class FormController {
       },
       {
         $lookup: {
-          from: "venues",
-          localField: "venue",
-          foreignField: "_id",
-          as: "venue",
+          from: 'venues',
+          localField: 'venue',
+          foreignField: '_id',
+          as: 'venue',
         }
       },
-      {$unwind: "$venue"},
+      {$unwind: '$venue'},
       {
         $lookup: {
-          from: "venues",
-          localField: "recived_participants.venue",
-          foreignField: "_id",
-          as: "recived_participants.venue",
+          from: 'venues',
+          localField: 'recived_participants.venue',
+          foreignField: '_id',
+          as: 'recived_participants.venue',
         }
       },
-      {$unwind: "$recived_participants.venue"},
+      {$unwind: '$recived_participants.venue'},
       {
         $group: {
-          _id: "$_id",
+          _id: '$_id',
           car: {$first: '$car'},
           venue: {$first: '$venue'},
           createdAt: {$first: '$createdAt'},
-          recived_participants: {$push: "$recived_participants"}
+          recived_participants: {$push: '$recived_participants'}
         }
       },
       {
@@ -1528,7 +1528,7 @@ class FormController {
           car: 1,
           venue: 1,
           createdAt: 1,
-          "recived_participants": {"$arrayElemAt": ["$recived_participants", 0]}
+          'recived_participants': {'$arrayElemAt': ['$recived_participants', 0]}
         }
       }
     ]);
@@ -1549,7 +1549,7 @@ class FormController {
     const recivedparticipant : IParticipant = (reception as any).recived_participants as IParticipant;
     const sendingVenue : IVenueModel = recivedparticipant.venue;
 
-    let daysLimit = distributorTable[sendingVenue._id.toString()] &&
+    const daysLimit = distributorTable[sendingVenue._id.toString()] &&
     distributorTable[sendingVenue._id.toString()][reception.venue._id.toString()] ?
       distributorTable[sendingVenue._id.toString()][reception.venue._id.toString()] :
       5;
@@ -1566,7 +1566,7 @@ class FormController {
       from: sendingVenue.abbreviation || sendingVenue.name,
       to: reception.venue.abbreviation || reception.venue.name,
       atTime: dm <= threshold,
-      daysLimit: daysLimit
+      daysLimit
     }
   }
 
@@ -1599,44 +1599,44 @@ class FormController {
   public async timingDashboard(req: IRequest, res: Response): Promise<any> {
     try {
       const {team} = req.user as {team: ITeamModel};
-      let userObject = await User.findOne({_id: req.user._id});
-      let distributors = await Venue.find({team: team, type: 'distributor'}, {}).populate({
+      const userObject = await User.findOne({_id: req.user._id});
+      const distributors = await Venue.find({team: team, type: 'distributor'}, {}).populate({
         path: 'sendToDays.venue',
         select: ['_id']
       });
 
-      let start: any = req.query.start;
-      let to: any = req.query.end;
+      const start: any = req.query.start;
+      const to: any = req.query.end;
 
-      let startDate: any = start && start !== "" ? moment(start, 'YYYY-MM-DD') :
-        moment().subtract(3, "months").startOf('month').startOf('day');
+      let startDate: any = start && start !== '' ? moment(start, 'YYYY-MM-DD') :
+        moment().subtract(3, 'months').startOf('month').startOf('day');
 
-      let toDate: any = to && to !== "" ? moment(to, 'YYYY-MM-DD') :
+      const toDate: any = to && to !== '' ? moment(to, 'YYYY-MM-DD') :
         moment().endOf('month').endOf('day');
 
 
 
-      let distributorTable : any = {};
+      const distributorTable : any = {};
       distributors.map((distributor: IVenueModel) => {
-        let distributorId = distributor._id.toString();
+        const distributorId = distributor._id.toString();
         if (!(distributorId in distributors))
           distributorTable[distributorId] = {};
 
         distributor.sendToDays.map((venueDay : IVenueDay) => {
-          let venueId = venueDay.venue._id.toString();
+          const venueId = venueDay.venue._id.toString();
           distributorTable[distributorId][venueId] = venueDay.shippingMaxDays;
         });
       });
 
-      let data : any = {};
+      const data : any = {};
 
-      for (let i : moment.Moment = startDate; i <= toDate; i=i.add(1, "month") ) {
+      for (let i : moment.Moment = startDate; i <= toDate; i=i.add(1, 'month') ) {
         const month = i.format('MM-YYYY');
         data[month] = [];
       }
 
-      startDate = start && start !== "" ? moment(start, 'YYYY-MM-DD') :
-        moment().subtract(3, "months").startOf('month').startOf('day');
+      startDate = start && start !== '' ? moment(start, 'YYYY-MM-DD') :
+        moment().subtract(3, 'months').startOf('month').startOf('day');
 
       const isDercoUser : boolean = FormController.isDercoUser(userObject!);
       const receptions : IParticipant[] = isDercoUser ?
@@ -1721,13 +1721,13 @@ class FormController {
 
       const {team} = req.user;
 
-      let periods = 6;
-      for(let i = 0; i < periods; i++) {
+      const periods = 6;
+      for (let i = 0; i < periods; i++) {
 
         const t0 = moment().subtract(i + 1, 'months');
         const t1 = moment().subtract(i, 'months');
 
-        let cars = await CarModel.find({
+        const cars = await CarModel.find({
           team,
           lastForm: {$exists: true},
           createdAt: {
@@ -1742,18 +1742,18 @@ class FormController {
           }
         });
 
-        let f0 = '5b0487db835536612bab1b61';
-        let f1 = '5b1ae5799ebea419025b3e41';
+        const f0 = '5b0487db835536612bab1b61';
+        const f1 = '5b1ae5799ebea419025b3e41';
 
-        let gasQuestion = '5b64b543cee543c2afda41bd';
-        let paintQuestion = '5b64b1f6cc5e14f59724f8d1';
-        let sheetMetalQuestion = '5b64b22245f69e40fc5713fb';
+        const gasQuestion = '5b64b543cee543c2afda41bd';
+        const paintQuestion = '5b64b1f6cc5e14f59724f8d1';
+        const sheetMetalQuestion = '5b64b22245f69e40fc5713fb';
 
         for (const car of cars) {
 
           if (car.participants!.length > 0) {
 
-            let participants = car.participants!.sort((p0: any, p1: any) => p0.createdAt >= p1.createdAt ? 1 : 0);
+            const participants = car.participants!.sort((p0: any, p1: any) => p0.createdAt >= p1.createdAt ? 1 : 0);
 
             let p0:any = null;
             let p1:any = null;
@@ -1784,7 +1784,7 @@ class FormController {
             if (p1) {
               const answer1Gas = p1.sections.map((s: any) => s.answers).reduce((x: any[], y: any[]) => [...x, ...y], []).find((a: any) => a._id.toString() == gasQuestion);
               if (answer1Gas)
-                choice1Gas = answer1Gas.scale.choices.find((c: any) => c._id.toString() == answer1Gas.answer.toString())
+                choice1Gas = answer1Gas.scale.choices.find((c: any) => c._id.toString() == answer1Gas.answer.toString());
             }
 
             let choice0Paint = null;
@@ -1792,13 +1792,13 @@ class FormController {
             if (p0) {
               const answer0Paint = p0.sections.map((s: any) => s.answers).reduce((x: any[], y: any[]) => [...x, ...y], []).find((a: any) => a._id.toString() == paintQuestion);
               if (answer0Paint)
-                choice0Paint = answer0Paint.scale.choices.find((c: any) => c._id.toString() == answer0Paint.answer.toString())
+                choice0Paint = answer0Paint.scale.choices.find((c: any) => c._id.toString() == answer0Paint.answer.toString());
             }
 
             if (p1) {
               const answer1Paint = p1.sections.map((s: any) => s.answers).reduce((x: any[], y: any[]) => [...x, ...y], []).find((a: any) => a._id.toString() == paintQuestion);
               if (answer1Paint)
-                choice1Paint = answer1Paint.scale.choices.find((c: any) => c._id.toString() == answer1Paint.answer.toString())
+                choice1Paint = answer1Paint.scale.choices.find((c: any) => c._id.toString() == answer1Paint.answer.toString());
             }
 
             // lata
@@ -1807,13 +1807,13 @@ class FormController {
             if (p0) {
               const answer0SheetMetal = p0.sections.map((s: any) => s.answers).reduce((x: any[], y: any[]) => [...x, ...y], []).find((a:any) => a._id.toString() == sheetMetalQuestion);
               if (answer0SheetMetal)
-                choice0SheetMetal = answer0SheetMetal.scale.choices.find((c: any) => c._id.toString() == answer0SheetMetal.answer.toString())
+                choice0SheetMetal = answer0SheetMetal.scale.choices.find((c: any) => c._id.toString() == answer0SheetMetal.answer.toString());
             }
 
             if (p1) {
               const answer1SheetMetal = p1.sections.map((s: any) => s.answers).reduce((x: any[], y: any[]) => [...x, ...y], []).find((a:any) => a._id.toString() == sheetMetalQuestion);
               if (answer1SheetMetal)
-                choice1SheetMetal = answer1SheetMetal.scale.choices.find((c: any) => c._id.toString() == answer1SheetMetal.answer.toString())
+                choice1SheetMetal = answer1SheetMetal.scale.choices.find((c: any) => c._id.toString() == answer1SheetMetal.answer.toString());
             }
 
             const row = {
@@ -1832,7 +1832,7 @@ class FormController {
               p1Qualification: p1 ? p1.qualification : '-',
               p1Gas: choice1Gas ? choice1Gas.choice : '-',
               p1Paint: choice1Paint ? choice1Paint.choice : '-',
-              p1SheetMetal: choice1SheetMetal ? choice1SheetMetal.choice : '-',
+              p1SheetMetal: choice1SheetMetal ? choice1SheetMetal.choice : '-'
             };
 
             worksheet.addRow(row);
@@ -1878,11 +1878,11 @@ class FormController {
     try {
       const {team} = req.user;
 
-      let form = await FormModel.findById("5b0487db835536612bab1b61");
-      let answer = new ObjectID("5b64b2e8de5557c85fa14fa0");
+      const form = await FormModel.findById("5b0487db835536612bab1b61");
+      const answer = new ObjectID("5b64b2e8de5557c85fa14fa0");
 
-      let days: string[] = [];
-      let daysDict: any = {};
+      const days: string[] = [];
+      const daysDict: any = {};
       if (form) {
 
         const total = 30 * 6;
@@ -1893,7 +1893,7 @@ class FormController {
             'clean': 0,
             'notClean': 0
           };
-          days.push(day)
+          days.push(day);
         }
 
 
@@ -1902,7 +1902,7 @@ class FormController {
             $match: {
               team,
               form: form._id,
-              "sections.answers.answer": answer,
+              'sections.answers.answer': answer,
               createdAt: {$gt: t0.toDate()}
             }
           },
@@ -1916,11 +1916,11 @@ class FormController {
           }
         ]);
 
-        for (let datum of cleanDispatch) {
+        for (const datum of cleanDispatch) {
           const day = datum._id;
           const sum = datum.count;
           console.log(datum);
-          daysDict[day].clean = sum
+          daysDict[day].clean = sum;
         }
 
         const notCleanDispatch = await ParticipantModel.aggregate([
@@ -1928,7 +1928,7 @@ class FormController {
             $match: {
               team,
               form: form._id,
-              "sections.answers.answer": {$ne: answer},
+              'sections.answers.answer': {$ne: answer},
               createdAt: {$gt: t0.toDate()}
             }
           },
@@ -1942,17 +1942,17 @@ class FormController {
           }
         ]);
 
-        for (let datum of notCleanDispatch) {
+        for (const datum of notCleanDispatch) {
           const day = datum._id;
           const sum = datum.count;
           console.log(day);
-          daysDict[day].notClean = sum
+          daysDict[day].notClean = sum;
         }
       }
       res.json({
         days: days,
         clean: days.map((d) => daysDict[d].clean),
-        notClean: days.map((d) => daysDict[d].notClean),
+        notClean: days.map((d) => daysDict[d].notClean)
       });
     } catch (e) {
       Raven.captureException(e, {req});
@@ -1970,7 +1970,7 @@ class FormController {
 
   }
 
-  private autoRotate(path: string) {
+  private autoRotate(path: string): Promise<any> { {
     // doc http://aheckmann.github.io/gm/docs.html
     /**** REQUIRE: imagemagick and graphicsmagick *****
      brew install imagemagick
@@ -1984,7 +1984,7 @@ class FormController {
             /* istanbul ignore next */
             reject(err);
           } else {
-            resolve();
+            resolve([]);
           }
         });
     });
@@ -2080,7 +2080,7 @@ class FormController {
                 return reject(err);
               }
               if (form) {
-                redisClient.set(keyCache, JSON.stringify(form), "ex", 60);
+                redisClient.set(keyCache, JSON.stringify(form), 'ex', 60);
                 return resolve(form);
               }
               return reject('No se encontro formularío');
@@ -2189,9 +2189,9 @@ class FormController {
       const {team, company, venue} = req.user;
       const {lat, lng, accuracy, provider} = req.body;
 
-      let os = "user-agent" in req.headers ? req.headers["user-agent"] : "";
+      const os = 'user-agent' in req.headers ? req.headers['user-agent'] : '';
 
-      let gpsPosition = new GPSPosition({
+      const gpsPosition = new GPSPosition({
         lat,
         lng,
         user: req.user,
