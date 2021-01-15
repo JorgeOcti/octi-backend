@@ -194,7 +194,15 @@ const participantAnswersSchema = new mongoose.Schema({
     order: {
         type: Number,
         required: true
-    }
+    },
+    optional: {
+        type: Boolean,
+        default: false
+    },
+    hint: {
+        type: String,
+        trim: true
+    },
 });
 const participantSectionsSchema = new mongoose.Schema({
     section_id: {

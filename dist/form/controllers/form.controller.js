@@ -533,7 +533,9 @@ class FormController {
                 conciliation: false,
                 kind: '',
                 weight: 0,
-                order: 0
+                order: 0,
+                optional: false,
+                hint: '',
             };
             // get scales from db
             res.json({
@@ -757,7 +759,9 @@ class FormController {
                                 na,
                                 weight: question.weight,
                                 kind: question.kind,
-                                order: question.order
+                                order: question.order,
+                                hint: question.hint,
+                                optional: question.optional
                             });
                         }
                         // calculate section qualification
@@ -1906,7 +1910,7 @@ class FormController {
                     })
                         .populate([{
                             path: 'sections.questions.damages',
-                            select: ['name', 'positions', 'kinds', 'parts'],
+                            select: ['name', 'positions', 'kinds', 'parts', 'partFallback', 'kindFallback'],
                             populate: [{
                                     path: 'positions',
                                     select: ['name'],
@@ -1925,6 +1929,22 @@ class FormController {
                                     }
                                 }, {
                                     path: 'parts',
+                                    select: ['name'],
+                                    options: {
+                                        sort: {
+                                            name: 1
+                                        }
+                                    }
+                                }, {
+                                    path: 'kindFallback',
+                                    select: ['name'],
+                                    options: {
+                                        sort: {
+                                            name: 1
+                                        }
+                                    }
+                                }, {
+                                    path: 'partFallback',
                                     select: ['name'],
                                     options: {
                                         sort: {
@@ -1958,12 +1978,16 @@ class FormController {
         accesories.map((accesory) => {
             try {
                 const newAccesory = accesorySchema.validate(accesory);
+                if (newAccesory.error) {
+                    throw newAccesory.error;
+                }
                 newAccesories.push({
-                    item: newAccesory.item,
-                    amount: newAccesory.amount
+                    item: newAccesory.value.item,
+                    amount: newAccesory.value.amount
                 });
             }
             catch (e) {
+                logger_service_1.default.error(e);
                 newAccesories.push({
                     item: accesory,
                     amount: 1
