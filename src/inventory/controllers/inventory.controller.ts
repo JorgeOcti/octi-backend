@@ -1067,15 +1067,15 @@ class InventoryController {
             name: image.name
           });
           setTimeout(() => {
-              if (fs.existsSync(image.destDirectory)) {
-                console.log(`clear ${image.destDirectory}`);
-                fs.unlink(image.destDirectory, (err) => {
-                  if (err) {
-                    console.log(err);
-                  }
-                });
-              }
-            }, 7200000);
+            if (fs.existsSync(image.destDirectory)) {
+              console.log(`clear ${image.destDirectory}`);
+              fs.unlink(image.destDirectory, (err) => {
+                if (err) {
+                  console.log(err);
+                }
+              });
+            }
+          }, 7200000);
         });
         console.log('results', results);
         res.setHeader('size', results.reduce((a: number, b: number) => a + b));
