@@ -19,12 +19,20 @@ exports.damagesSchema = new mongoose.Schema({
         }],
     kinds: [{
             type: mongoose.Schema.Types.ObjectId,
-            ref: 'Kind'
+            ref: 'Kind',
         }],
     positions: [{
             type: mongoose.Schema.Types.ObjectId,
             ref: 'Position'
-        }]
+        }],
+    partFallback: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Part'
+    },
+    kindFallback: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Kind'
+    }
 }, {
     timestamps: true
 });

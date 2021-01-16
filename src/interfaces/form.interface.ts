@@ -4,7 +4,7 @@ import {
   IFormAccesoryModel,
   IFormItemModel,
   IFormQuestionModel,
-  IFormSectionModel
+  IFormSectionModel, KindQuestionKeyboard, kindQuestionKeyboard
 } from '../form/models/form.model';
 import {IScaleModel} from '../form/models/scale.model';
 import {ICompany} from './company.interface';
@@ -14,6 +14,7 @@ export interface IFormItems {
   _id: any;
   item: string;
   amount: boolean;
+  fallback: boolean;
 }
 
 export interface IFormAccesory {
@@ -39,6 +40,10 @@ export interface IFormQuestion {
   weight: number;
   kind: string;
   order: number;
+
+  optional: boolean;
+  hint: string;
+  keyboardType: string;
 }
 
 export interface IFormSection {

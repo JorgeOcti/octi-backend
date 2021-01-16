@@ -45,6 +45,18 @@ export const kindQuestion = [
   KindQuestion.carrier
 ];
 
+export enum KindQuestionKeyboard {
+  text = 'text',
+  numeric = 'numeric',
+  email = 'email',
+}
+
+export const kindQuestionKeyboard = [
+  KindQuestionKeyboard.text,
+  KindQuestionKeyboard.numeric,
+  KindQuestionKeyboard.email,
+];
+
 export interface IFormQuestionModel extends IFormQuestion, mongoose.Types.Subdocument {}
 const formQuestionsSchema = new mongoose.Schema({
   question: {
@@ -98,8 +110,26 @@ const formQuestionsSchema = new mongoose.Schema({
   order: {
     type: Number,
     required: true
+  },
+
+  optional: {
+    type: Boolean,
+    default: false
+  },
+
+  hint: {
+    type: String,
+    trim: true
+  },
+
+  keyboardType: {
+    type: String,
+    enum: kindQuestionKeyboard,
+    default: KindQuestionKeyboard.text
   }
 });
+
+
 
 export interface IFormSectionModel extends IFormSection, mongoose.Types.Subdocument {}
 const formSectionsSchema = new mongoose.Schema({
