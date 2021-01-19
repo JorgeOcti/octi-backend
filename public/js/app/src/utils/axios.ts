@@ -505,13 +505,17 @@ export default class ApiService {
     );
   }
 
-  public getRequestItems({ page, pageSize, orderBy, orderType }: { page: number, orderBy: string, orderType: string, pageSize?: number }): AxiosPromise {
-    let params = `?page=${page}`;
-    params = pageSize ? `${params}&pageSize=${pageSize}` : params;
-    params = orderBy ? `${params}&orderBy=${orderBy}` : params;
-    params = orderType ? `${params}&orderType=${orderType}` : params;
-    return this.instance.get(
-      `/api/v1/requests-item/${params}`
+  public getRequestItems({ page, pageSize, orderBy, orderType, filters }: { page: number, orderBy: string, orderType: string, pageSize: number, filters:any }): AxiosPromise {
+    let body: any = {
+      page,
+      filters
+    };
+    body = pageSize ? { ...body, pageSize } : body;
+    body = orderBy ? { ...body, orderBy } : body;
+    body = orderType ? { ...body, orderType } : body;
+    return this.instance.post(
+      `/api/v1/requests-item/`,
+      body
     );
   }
 

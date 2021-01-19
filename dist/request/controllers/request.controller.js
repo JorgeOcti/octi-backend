@@ -8,6 +8,7 @@ const https = require("https");
 const GraphicsMagick = require("gm");
 const moment = require("moment");
 const tempfile = require("tempfile");
+const bson_1 = require("bson");
 const car_model_1 = require("../../app/models/car.model");
 const team_model_1 = require("../../app/models/team.model");
 const participant_model_1 = require("../../form/models/participant.model");
@@ -94,6 +95,8 @@ class RequestController {
         res.render('app/index', { token: await req.user.generateToken() });
     }
     async apiCreate(req, res) {
+        logger_service_1.default.info(`RequestController.apiCreate`);
+        logger_service_1.default.info(`{user: {_id: ${req.user._id}, email: ${req.user.email}}, body: ${JSON.stringify(req.body)} }`);
         const { team, company } = req.user;
         const { cars, venue, fleet, sellerText } = req.body;
         try {
@@ -158,15 +161,65 @@ class RequestController {
         }
     }
     async apiListItems(req, res) {
+        logger_service_1.default.info(`RequestController.apiListItems`);
+        logger_service_1.default.info(`{user: {_id: ${req.user._id}, email: ${req.user.email}}, body: ${JSON.stringify(req.body)} }`);
         const { team } = req.user;
-        const { page, pageSize, orderBy, orderType } = req.query;
+        const { page, pageSize, orderBy, orderType, filters } = req.body;
+        console.log('**************************************');
+        console.log(filters);
+        let venuesIds = [];
+        const extraQuery = {};
+        const extraMatch = {};
+        if (filters.venues && filters.venues.length) {
+            venuesIds = req.user.venuesPermissions().filter(i => (filters.venues.includes(i.toString())));
+        }
+        else {
+            venuesIds = req.user.venuesPermissions();
+        }
+        if (filters.status && filters.status.length) {
+            extraQuery.status = { $in: filters.status.map((s) => new bson_1.ObjectID(s)) };
+        }
+        if (filters.from) {
+            if (!extraQuery.hasOwnProperty('createdAt')) {
+                extraQuery.createdAt = {};
+            }
+            extraQuery.createdAt.$gte = moment(filters.from).startOf('day').toDate();
+        }
+        if (filters.to) {
+            if (!extraQuery.hasOwnProperty('createdAt')) {
+                extraQuery.createdAt = {};
+            }
+            extraQuery.createdAt.$lte = moment(filters.to).endOf('day').toDate();
+        }
+        if (filters.text) {
+            extraMatch.$or = [];
+            extraMatch.$or.push({
+                'car.vin': { '$regex': filters.text, '$options': 'i' }
+            });
+            extraMatch.$or.push({
+                'car.brand': { '$regex': filters.text, '$options': 'i' }
+            });
+            extraMatch.$or.push({
+                'car.color': { '$regex': filters.text, '$options': 'i' }
+            });
+            extraMatch.$or.push({
+                'car.denomination': { '$regex': filters.text, '$options': 'i' }
+            });
+            extraMatch.$or.push({
+                'car.material': { '$regex': filters.text, '$options': 'i' }
+            });
+            extraMatch.$or.push({
+                'requestNumber': { '$regex': filters.text, '$options': 'i' }
+            });
+        }
         try {
             const requestsAggregate = requestItem_model_1.default.aggregate([{
                     $match: {
                         team,
                         'destination': {
-                            $in: req.user.venuesPermissions()
-                        }
+                            $in: venuesIds
+                        },
+                        ...extraQuery
                     }
                 }, {
                     $lookup: { from: 'cars', localField: 'car', foreignField: '_id', as: 'car' }
@@ -203,6 +256,8 @@ class RequestController {
                 }, {
                     $unwind: { path: '$reason', preserveNullAndEmptyArrays: true }
                 }, {
+                    $addFields: { requestNumber: { $toString: '$request.number' } }
+                }, {
                     $project: {
                         '_id': 1,
                         'request': 1,
@@ -213,6 +268,7 @@ class RequestController {
                         'review': 1,
                         'body': 1,
                         'files': 1,
+                        'requestNumber': 1,
                         'status._id': 1,
                         'status.name': 1,
                         'carrier._id': 1,
@@ -232,6 +288,13 @@ class RequestController {
                         'estimatedArrival': 1,
                         'createdAt': 1,
                         'updatedAt': 1
+                    }
+                }, {
+                    $match: {
+                        'destination._id': {
+                            $in: req.user.venuesPermissions()
+                        },
+                        ...extraMatch
                     }
                 }, {
                     $sort: { [orderBy]: orderType === 'ascending' ? 1 : -1 }
@@ -665,7 +728,7 @@ class RequestController {
     }
     async apiCreateItem(req, res) {
         logger_service_1.default.info(`RequestController.apiCreateItem`);
-        logger_service_1.default.info(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
+        logger_service_1.default.info(`{user: {_id: ${req.user._id}, email: ${req.user.email}}, body: ${JSON.stringify(req.body)} }`);
         const { team, company } = req.user;
         const { car, idRequest } = req.body;
         try {
@@ -727,10 +790,10 @@ class RequestController {
     }
     async apiPatchItem(req, res) {
         logger_service_1.default.info(`RequestController.apiPatchItem`);
-        logger_service_1.default.info(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
         const { team } = req.user;
         const updateObject = req.body;
         const { id } = req.params;
+        logger_service_1.default.info(`{user: {_id: ${req.user._id}, email: ${req.user.email}}, body: ${JSON.stringify(updateObject)} }`);
         try {
             const requestItem = await requestItem_model_1.default.findOneAndUpdate({ _id: id, team }, { $set: { ...updateObject } }).populate([{ path: 'car' }]);
             if (Object.keys(updateObject.car).length) {
