@@ -28,10 +28,10 @@ import ParticipantModel from '../models/participant.model';
 import ParticipantFile from '../models/participantFile.model';
 import ScaleModel, {IScaleModel} from '../models/scale.model';
 import * as bluebird from 'bluebird';
-import {IParticipant} from "../../interfaces/participant.interface";
-import {IVenueDay} from "../../interfaces/venueDay.interface";
-import ActivityHistory, {ChoicesTypeActivity} from "../../billing/models/activityHistory.model";
-import {ValidationResult} from "joi";
+import {IParticipant} from '../../interfaces/participant.interface';
+import {IVenueDay} from '../../interfaces/venueDay.interface';
+import ActivityHistory, {ChoicesTypeActivity} from '../../billing/models/activityHistory.model';
+// import {ValidationResult} from 'joi';
 
 
 // import * as puppeteer from 'puppeteer';
@@ -548,7 +548,7 @@ class FormController {
         weight: 0,
         order: 0,
         optional: false,
-        hint: '',
+        hint: ''
       };
       // get scales from db
       res.json({
