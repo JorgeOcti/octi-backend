@@ -797,6 +797,8 @@ class RequestController {
         try {
             const requestItem = await requestItem_model_1.default.findOneAndUpdate({ _id: id, team }, { $set: { ...updateObject } }).populate([{ path: 'car' }]);
             if (Object.keys(updateObject.car).length) {
+                // add vin2 to car
+                updateObject.car.vin2 = updateObject.car.vin.substr(updateObject.car.vin.length - 6);
                 const existCar = await car_model_1.default.findOne({ team, vin: updateObject.car.vin });
                 if (existCar && requestItem && existCar.vin !== requestItem.car.vin) {
                     // validate exist car and change vin
