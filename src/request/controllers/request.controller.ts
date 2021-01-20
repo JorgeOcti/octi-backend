@@ -424,65 +424,85 @@ class RequestController {
       });
       /* headers */
       worksheet.columns = [{
-        header: 'Solicitud', key: 'request', width: 10
+        header: 'Nª SOLICITUD', key: 'request', width: 10
       }, {
-        header: 'Destino', key: 'destination', width: 20
+        header: 'FECHA SOLICITUD', key: 'created', width: 21, style: { numFmt: 'dd/mm/yyyy hh:mm' }
       }, {
-        header: 'Marca', key: 'brand', width: 20
+        header: 'FLOTA', key: 'fleet', width: 20
       }, {
-        header: 'Modelo', key: 'denomination', width: 20
+        header: 'PRIORIDAD', key: 'priority', width: 20
       }, {
-        header: 'Material', key: 'material', width: 20
+        header: 'SOLICITANTE', key: 'createdBy', width: 20
       }, {
-        header: 'Color', key: 'color', width: 20
+        header: 'VENDEDOR', key: 'seller', width: 20
       }, {
-        header: 'VIN', key: 'vin', width: 20
+        header: 'MOTIVO', key: 'reason', width: 20
+      }, {
+        header: 'GRUPO, MOTIVO', key: 'group', width: 20
+      }, {
+        header: 'MARCA', key: 'brand', width: 20
+      }, {
+        header: 'MODELO', key: 'denomination', width: 20
+      }, {
+        header: 'MATERIAL', key: 'material', width: 20
+      }, {
+        header: 'COLOR', key: 'color', width: 20
+      }, {
+        header: 'ESTADO', key: 'status', width: 20
+      }, {
+        header: 'VIN/ID', key: 'vin', width: 20
       }, {
         header: 'CDO', key: 'cdo', width: 20
       }, {
-        header: 'Estado', key: 'status', width: 20
+        header: 'ACCESORIZACIÓN', key: 'equipment', width: 10
       }, {
-        header: 'Motivo', key: 'reason', width: 20
+        header: 'PRE-LAVADO', key: 'washed', width: 10
       }, {
-        header: 'Accesorización', key: 'equipment', width: 10
+        header: 'INSPECCIÓN Pre-entrega', key: 'review', width: 10
       }, {
-        header: 'Carrocero', key: 'body', width: 10
+        header: 'CARROCERO', key: 'body', width: 10
       }, {
-        header: 'Pre-Lavado', key: 'washed', width: 10
+        header: 'EQUIPAMIENTO', key: 'equipment_2', width: 10
       }, {
-        header: 'Inspección Pre-entrega', key: 'review', width: 10
+        header: 'DESTINO', key: 'destination', width: 20
       }, {
-        header: 'Solicitante', key: 'createdBy', width: 20
+        header: 'TRANSPORTISTA', key: 'carrier', width: 20
       }, {
-        header: 'Transportista', key: 'carrier', width: 20
+        header: 'FECHA CARGA', key: 'uploadDate', width: 21, style: { numFmt: 'dd/mm/yyyy hh:mm' }
       }, {
-        header: 'Fecha Carga', key: 'uploadDate', width: 21, style: { numFmt: 'dd/mm/yyyy hh:mm' }
+        header: 'FECHA LLEGADA', key: 'estimatedArrival', width: 21, style: { numFmt: 'dd/mm/yyyy hh:mm' }
       }, {
-        header: 'Fecha LLegada', key: 'estimatedArrival', width: 21, style: { numFmt: 'dd/mm/yyyy hh:mm' }
+        header: 'FECHA ACTUALIZACION', key: 'updted', width: 21, style: { numFmt: 'dd/mm/yyyy hh:mm' }
       }, {
-        header: 'Creado', key: 'created', width: 21, style: { numFmt: 'dd/mm/yyyy hh:mm' }
+        header: 'OBSERVACIÓN', key: 'observation', width: 21
       }];
       for (const item of requestItems) {
         worksheet.addRow({
           request: item.request.number,
-          destination: item.destination.name,
+          created: item.createdAt,
+          updated: item.updatedAt,
+          observation: item.observation,
+          fleet: item.request.fleet ? 'Si' : 'No',
+          priority: item.priority ? 'Si' : 'No',
+          createdBy: item.createdBy ? `${item.createdBy.firstName} ${item.createdBy.lastName}` : '-',
+          seller: item.request.sellerText,
+          reason: item.reason.name,
+          group: '',
           brand: item.car.brand,
           denomination: item.car.denomination,
           material: item.car.material,
           vin: item.car.vin,
           cdo: item.car.internalNumber,
           color: item.car.color,
+          destination: item.destination.name,
           status: item.status.name,
-          reason: item.reason.name,
           equipment: item.equipment ? 'Si' : 'No',
           body: item.body ? 'Si' : 'No',
           washed: item.washed ? 'Si' : 'No',
           review: item.review ? 'Si' : 'No',
-          createdBy: item.createdBy ? `${item.createdBy.firstName} ${item.createdBy.lastName}` : '-',
           carrier: item.carrier ? item.carrier.name : '',
           uploadDate: item.uploadDate,
-          estimatedArrival: item.estimatedArrival,
-          created: item.createdAt
+          estimatedArrival: item.estimatedArrival
         });
       }
       const tempFilePath = tempfile('.xlsx');
@@ -801,7 +821,7 @@ class RequestController {
       const requestItem = await RequestItem.findOneAndUpdate({ _id: id, team }, { $set: { ...updateObject } }).populate([{ path: 'car' }]);
       if (Object.keys(updateObject.car).length) {
         // add vin2 to car
-        updateObject.car.vin2 = updateObject.car.vin.substr(updateObject.car.vin.length - 6);
+        updateObject.car.vin2 = updateObject.car && updateObject.car.vin ? updateObject.car.vin.substr(updateObject.car.vin.length - 6) : '';
         const existCar = await Car.findOne({ team, vin: updateObject.car.vin });
         if (existCar && requestItem && existCar.vin !== requestItem.car.vin) {
           // validate exist car and change vin

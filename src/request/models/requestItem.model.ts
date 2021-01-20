@@ -6,6 +6,7 @@ import mongooseAggregatePaginate = require('mongoose-aggregate-paginate-v2');
 
 export interface IRequestItemModel extends IRequestItem, mongoose.Document {
   createdAt: Date;
+  updatedAt: Date;
 }
 
 const requestItemSchema = new mongoose.Schema({
