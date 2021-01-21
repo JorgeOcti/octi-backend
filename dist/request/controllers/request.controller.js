@@ -133,7 +133,7 @@ class RequestController {
                     equipment: car.equipment,
                     observation: car.observation,
                     priority: car.priority,
-                    origin: venue,
+                    origin: req.user.venue,
                     destination: venue,
                     status: defaultItemStatus,
                     createdBy: req.user
@@ -216,9 +216,15 @@ class RequestController {
             const requestsAggregate = requestItem_model_1.default.aggregate([{
                     $match: {
                         team,
-                        'destination': {
-                            $in: venuesIds
-                        },
+                        $or: [{
+                                destination: {
+                                    $in: venuesIds
+                                }
+                            }, {
+                                origin: {
+                                    $in: venuesIds
+                                }
+                            }],
                         ...extraQuery
                     }
                 }, {
@@ -291,9 +297,15 @@ class RequestController {
                     }
                 }, {
                     $match: {
-                        'destination._id': {
-                            $in: req.user.venuesPermissions()
-                        },
+                        $or: [{
+                                'destination._id': {
+                                    $in: venuesIds
+                                }
+                            }, {
+                                'origin._id': {
+                                    $in: venuesIds
+                                }
+                            }],
                         ...extraMatch
                     }
                 }, {
@@ -424,6 +436,8 @@ class RequestController {
                 }, {
                     header: 'PRIORIDAD', key: 'priority', width: 20
                 }, {
+                    header: 'SUCURSAL (CREACION)', key: 'origin', width: 20
+                }, {
                     header: 'SOLICITANTE', key: 'createdBy', width: 20
                 }, {
                     header: 'VENDEDOR', key: 'seller', width: 20
@@ -487,6 +501,7 @@ class RequestController {
                     cdo: item.car.internalNumber,
                     color: item.car.color,
                     destination: item.destination.name,
+                    origin: item.origin.name,
                     status: item.status.name,
                     equipment: item.equipment ? 'Si' : 'No',
                     body: item.body ? 'Si' : 'No',

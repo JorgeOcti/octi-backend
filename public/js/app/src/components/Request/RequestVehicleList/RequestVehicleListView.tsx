@@ -343,6 +343,14 @@ class RequestVehicleListView extends React.Component<IPropsType, IStateType> {
                         <th
                           className="middle pointer"
                           style={{ width: '80px' }}
+                          onClick={() => this.changeOrder('origin.name')}
+                        >
+                          Creada
+                      <span style={{ float: 'right' }}><i className={`fa fa-fw ${orderBy === 'origin.name' ? `${orderType === 'descending' ? 'fa-sort-down' : 'fa-sort-up'}` : 'fa-sort'}`} /></span>
+                        </th>
+                        <th
+                          className="middle pointer"
+                          style={{ width: '80px' }}
                           onClick={() => this.changeOrder('destination.name')}
                         >
                           Destino
