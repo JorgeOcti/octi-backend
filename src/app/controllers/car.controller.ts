@@ -361,15 +361,17 @@ class CarController {
   }
 
   public async apiParticipantsPerDate(req: IRequest, res: Response) {
-    const {team} = req.user;
+    const { team } = req.user;
     try {
-      const {companies} = req.query;
+      const { companies } = req.query;
       const venuesPermissions = req.user.venuesPermissions();
       const query: any = {
-        _id: {$in: venuesPermissions}
+        _id: {
+          $in: venuesPermissions
+        }
       };
-      if(companies){
-        query['company'] = {
+      if (companies) {
+        query.company = {
           $in: [companies]
         };
       }

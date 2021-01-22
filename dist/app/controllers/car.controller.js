@@ -370,10 +370,12 @@ class CarController {
             const { companies } = req.query;
             const venuesPermissions = req.user.venuesPermissions();
             const query = {
-                _id: { $in: venuesPermissions }
+                _id: {
+                    $in: venuesPermissions
+                }
             };
             if (companies) {
-                query['company'] = {
+                query.company = {
                     $in: [companies]
                 };
             }

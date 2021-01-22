@@ -246,11 +246,11 @@ class DashboardVinView extends React.Component<IPropsType, IStateType> {
                                 this.hasDamages(participant) ?
                                   <React.Fragment>
                                     {' '}<i
-                                    className="fa fa-warning text-red"
-                                    data-toggle="tooltip"
-                                    data-placement="top"
-                                    title="Daños encontrados en esta revisión."
-                                  />
+                                      className="fa fa-warning text-red"
+                                      data-toggle="tooltip"
+                                      data-placement="top"
+                                      title="Daños encontrados en esta revisión."
+                                    />
                                   </React.Fragment>
                                   : null
                               }
@@ -343,7 +343,7 @@ const mapStateToProps = (state: { dashboard: IDashboardState }) => {
   };
 };
 
-const mapDispatchToProps = (dispatch: any ) => {
+const mapDispatchToProps = (dispatch: any) => {
   return {
     dispatch,
     changeSearchDashboardAction: (searchText: string) => dispatch(changeSearchDashboardAction(searchText)),

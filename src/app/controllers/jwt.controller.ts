@@ -308,7 +308,7 @@ class JWTController {
             ¿No solicitaste este cambio?
             Puedes contactarte con nosotros a través de soporte@osacontrol.com.
 
-            © 2020 OSA SpA. Todos los derechos reservados.`,
+            © 2021 OSA SpA. Todos los derechos reservados.`,
           view: 'account/forgotPassword',
           context: {
             fullname,
