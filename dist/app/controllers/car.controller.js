@@ -1030,7 +1030,7 @@ class CarController {
             },
             populate: [{
                     path: 'car',
-                    select: ['vin', 'brand', 'denomination', 'color', 'lastForm'],
+                    select: ['vin', 'brand', 'patent', 'denomination', 'color', 'lastForm'],
                     populate: {
                         path: 'lastForm',
                         select: ['createdAt']
@@ -1095,6 +1095,10 @@ class CarController {
                     const searchCar = await car_model_1.default.find({
                         $or: [{
                                 vin: {
+                                    $regex: searchText
+                                }
+                            }, {
+                                patent: {
                                     $regex: searchText
                                 }
                             }, {
