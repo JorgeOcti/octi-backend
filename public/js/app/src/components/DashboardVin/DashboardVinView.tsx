@@ -180,61 +180,59 @@ class DashboardVinView extends React.Component<IPropsType, IStateType> {
   }
 
   public downloadReport(){
-    this.setState({
-      downloading: true
-    });
 
     const {from, to} = this.state;
+    window.open(`/api/participant/export/?from=${from}&to=${to}`, '_blank');
 
-    const api: ApiService = new ApiService();
-    const instance = api.getInstance();
-    const source = api.getSource();
-    instance.defaults.timeout = 7200000;
-    instance.get(`/api/participant/export/?from=${from}&to=${to}`, {
-        responseType: 'arraybuffer',
-      })
-      .then((response) => {
-        const blob = new Blob([response.data], {
-          type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
-        });
-        const fileName = `${moment().format('YYYYMMDD')}-revisiones.xlsx`;
-        if (typeof window.navigator.msSaveBlob !== 'undefined') {
-          // IE workaround for "HTML7007: One or more blob URLs were
-          // revoked by closing the blob for which they were created.
-          // These URLs will no longer resolve as the data backing
-          // the URL has been freed."
-          window.navigator.msSaveBlob(blob, fileName);
-        } else {
-          const blobURL = URL.createObjectURL(blob);
-          const tempLink = document.createElement('a');
-          tempLink.style.display = 'none';
-          tempLink.href = blobURL;
-          tempLink.setAttribute('download', fileName);
-          // Safari thinks _blank anchor are pop ups. We only want to set _blank
-          // target if the browser does not support the HTML5 download attribute.
-          // This allows you to download files in desktop safari if pop up blocking
-          // is enabled.
-          if (typeof tempLink.download === 'undefined') {
-            tempLink.setAttribute('target', '_blank');
-          }
-          document.body.appendChild(tempLink);
-          tempLink.click();
-          document.body.removeChild(tempLink);
-          URL.revokeObjectURL(blobURL);
+    // const api: ApiService = new ApiService();
+    // const instance = api.getInstance();
+    // const source = api.getSource();
+    // instance.defaults.timeout = 7200000;
+    // instance.get(`/api/participant/export/?from=${from}&to=${to}`, {
+    //     responseType: 'arraybuffer',
+    //   })
+    //   .then((response) => {
+    //     const blob = new Blob([response.data], {
+    //       type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+    //     });
+    //     const fileName = `${moment().format('YYYYMMDD')}-revisiones.xlsx`;
+    //     if (typeof window.navigator.msSaveBlob !== 'undefined') {
+    //       // IE workaround for "HTML7007: One or more blob URLs were
+    //       // revoked by closing the blob for which they were created.
+    //       // These URLs will no longer resolve as the data backing
+    //       // the URL has been freed."
+    //       window.navigator.msSaveBlob(blob, fileName);
+    //     } else {
+    //       const blobURL = URL.createObjectURL(blob);
+    //       const tempLink = document.createElement('a');
+    //       tempLink.style.display = 'none';
+    //       tempLink.href = blobURL;
+    //       tempLink.setAttribute('download', fileName);
+    //       // Safari thinks _blank anchor are pop ups. We only want to set _blank
+    //       // target if the browser does not support the HTML5 download attribute.
+    //       // This allows you to download files in desktop safari if pop up blocking
+    //       // is enabled.
+    //       if (typeof tempLink.download === 'undefined') {
+    //         tempLink.setAttribute('target', '_blank');
+    //       }
+    //       document.body.appendChild(tempLink);
+    //       tempLink.click();
+    //       document.body.removeChild(tempLink);
+    //       URL.revokeObjectURL(blobURL);
 
-          this.setState({
-            downloading: false
-          });
-        }
-      })
-      .catch((err) => {
-        this.setState({
-          downloading: false
-        });
-        if (!Axios.isCancel(err)) {
-          swal('Exportar revisiones', 'Ha ocurrido un error al general el excel.', 'error');
-        }
-      });
+    //       this.setState({
+    //         downloading: false
+    //       });
+    //     }
+    //   })
+    //   .catch((err) => {
+    //     this.setState({
+    //       downloading: false
+    //     });
+    //     if (!Axios.isCancel(err)) {
+    //       swal('Exportar revisiones', 'Ha ocurrido un error al general el excel.', 'error');
+    //     }
+    //   });
   }
 
   public render(): React.ReactElement<IPropsType> {
@@ -246,12 +244,19 @@ class DashboardVinView extends React.Component<IPropsType, IStateType> {
           <div className="box">
             <div className="box-header with-border"><h3 className="box-title">Revisiones <small>{pagination.count}</small></h3>
               <div className="box-tools pull-right">
+                <button
+                  className="btn btn-sm btn-primary hidden-xs hidden-sm"
+                  onClick={this.downloadReport}
+                  disabled={downloading}
+                >
+                  <i className="fa fa-fw fa-download" /> Exportar Excel
+                </button>
               </div>
             </div>
             <div className={`box-body no-padding`}>
               <div className="row">
-                <div className="col-md-offset-3 col-md-4">
-                  <div className="input-group input-group-sm" style={{padding: '10px 5px'}}>
+                <div className="col-md-offset-4 col-md-4">
+                  <div className="input-group input-group-sm" style={{padding: '10px'}}>
                     <input type="text" className="form-control input-sm" name="daterange" />
                     <div className="input-group-btn">
                       <button className="btn btn-default"><i className="fa fa-calendar"/></button>
@@ -260,7 +265,7 @@ class DashboardVinView extends React.Component<IPropsType, IStateType> {
                 </div>
                 <div className="col-md-4">
                   <div className="input-group input-group-sm"
-                       style={{padding: '10px 5px'}}
+                       style={{padding: '10px'}}
                   >
                     <input
                       type="text"
@@ -273,14 +278,6 @@ class DashboardVinView extends React.Component<IPropsType, IStateType> {
                     </div>
                   </div>
                 </div>
-                <button
-                  className="btn btn-sm btn-primary hidden-xs hidden-sm"
-                  onClick={this.downloadReport}
-                  disabled={downloading}
-                  style={{margin: "10px 5px"}}
-                >
-                  <i className="fa fa-fw fa-download"/> Exportar Excel
-                </button>
               </div>
               {
                 participants.length ?
