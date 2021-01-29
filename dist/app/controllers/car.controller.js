@@ -765,6 +765,15 @@ class CarController {
             }
         }
     }
+    getHeadersFromForm(form) {
+        let columns = [];
+        for (const section of form.sections)
+            for (const question of section.questions)
+                if (["scale", "accessory", "damages"].includes(question.kind))
+                    columns.push({
+                        header: `${form.name} - ${question.question}`, key: question._id.toString(), width: 30
+                    });
+        return columns;
     /* istanbul ignore next */
     async apiParticipantCSV(req, res) {
         try {
