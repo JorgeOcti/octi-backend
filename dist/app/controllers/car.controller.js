@@ -834,6 +834,50 @@ class CarController {
                     $gte: moment.unix(Number(from)).hour(0).minute(0).toDate(),
                     $lt: moment.unix(Number(to)).hour(23).minute(59).toDate()
                 };
+            //Get the forms to create columns/header of excel
+            let forms = await participant_model_1.default.find(queryFilter).distinct('form');
+            forms = await form_model_1.default.find({ _id: { $in: forms } });
+            // Create columns/headers for excel
+            let columns = [
+                {
+                    header: '#', key: 'number', width: 30
+                }, {
+                    header: 'Fecha', key: 'created_at', width: 30, style: {
+                        numFmt: 'dd/mm/yyyy hh:mm'
+                    }
+                }, {
+                    header: 'Modelo', key: 'model', width: 30
+                }, {
+                    header: 'Team', key: 'team', width: 30
+                }, {
+                    header: 'Usuario', key: 'user', width: 30
+                }, {
+                    header: 'Compañía', key: 'company', width: 30
+                }, {
+                    header: 'Sucursal', key: 'venue', width: 30
+                }, {
+                    header: 'VIN', key: 'vin', width: 30
+                }, {
+                    header: 'Formulario', key: 'name', width: 30
+                }, {
+                    header: 'Tiene conciliación', key: 'conciliation', width: 30
+                }, {
+                    header: 'Calificación', key: 'qualification', width: 30, style: {
+                        numFmt: '0.000'
+                    }
+                }, {
+                    header: 'Tipo Recepción', key: 'isReception', width: 30
+                }, {
+                    header: 'Recepcionado', key: 'reception', width: 30
+                }, {
+                    header: 'Tipo Envío', key: 'isShipping', width: 30
+                }, {
+                    header: 'Enviado', key: 'shipping', width: 30
+                }
+            ];
+            //create additional columns/headers based of form questions
+            for (const form of forms)
+                columns.concat(this.getHeadersFromForm(form));
                 }, {
                     path: 'user',
                     populate: [{
