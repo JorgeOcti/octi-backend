@@ -41,7 +41,7 @@ appRouter.get('/api/damages/export/', Middlewares.isLoggedIn, CarController.apiD
 appRouter.get('/api/rotation/export/', Middlewares.isLoggedIn, CarController.apiRotationExport);
 
 // form detail
-appRouter.get('/api/participant/csv/', Middlewares.isLoggedIn, CarController.apiParticipantCSV);
+appRouter.get('/api/participant/export/', Middlewares.isLoggedIn, CarController.exportParticipants);
 appRouter.get('/api/participant/:id/', Middlewares.isLoggedIn, CarController.apiParticipantDetail);
 appRouter.get('/api/participants-per-date/', Middlewares.isLoggedIn, CarController.apiParticipantsPerDate);
 
