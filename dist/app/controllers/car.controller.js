@@ -823,6 +823,17 @@ class CarController {
         try {
             const participants = await participant_model_1.default.find({}).populate([{
                     path: 'car'
+            const { team } = req.user;
+            const { from, to } = req.query;
+            //Get filters for Mongo Query
+            const queryFilter = {
+                team
+            };
+            if (from && to)
+                queryFilter['createdAt'] = {
+                    $gte: moment.unix(Number(from)).hour(0).minute(0).toDate(),
+                    $lt: moment.unix(Number(to)).hour(23).minute(59).toDate()
+                };
                 }, {
                     path: 'user',
                     populate: [{
