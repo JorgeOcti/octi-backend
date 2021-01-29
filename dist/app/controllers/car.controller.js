@@ -825,9 +825,13 @@ class CarController {
         try {
             const { team } = req.user;
             const { from, to } = req.query;
+            const venuesPermissions = req.user.venuesPermissions();
             //Get filters for Mongo Query
             const queryFilter = {
-                team
+                team,
+                venue: {
+                    $in: venuesPermissions
+                },
             };
             if (from && to)
                 queryFilter['createdAt'] = {
