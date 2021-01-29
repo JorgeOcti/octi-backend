@@ -29,6 +29,7 @@ class DateRangePicker extends React.Component<IPropsType, IStateType> {
       autoclose: true,
       language: 'es',
       todayHighlight: true,
+      orientation: 'bottom auto',
       clearBtn: true,
       format: {
         toDisplay: (date) => {
@@ -54,7 +55,7 @@ class DateRangePicker extends React.Component<IPropsType, IStateType> {
         ref={this.input}
         type="text"
         value={this.props.value?.toString().length ? moment(this.props.value).format(format ?? 'DD-MM-YY') : ''}
-        className={`form-control ${this.props.className}`}
+        className={`form-control ${this.props.className ?? ''}`}
         onChange={(e) => {
           if (typeof (this.props.onChange) === 'function') {
             if (e.target.value !== value) {

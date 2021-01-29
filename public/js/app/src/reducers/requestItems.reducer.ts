@@ -2,6 +2,7 @@ import {
   IRequestItemsState,
   RequestItemsReduxActions,
   REQUEST_ITEMS_CANCEL_REQUEST,
+  REQUEST_ITEMS_CHANGE_FILTER,
   REQUEST_ITEMS_CHANGE_ORDER,
   REQUEST_ITEMS_CREATE_ITEM,
   REQUEST_ITEMS_DELETE_ITEM,
@@ -10,6 +11,7 @@ import {
   REQUEST_ITEMS_LOAD_ITEM_STATUS,
   REQUEST_ITEMS_LOAD_REASONS,
   REQUEST_ITEMS_LOAD_REQUESTS_ITEMS,
+  REQUEST_ITEMS_LOAD_VENUES,
   REQUEST_ITEMS_UPDATE_ITEM
 } from '../actions/requestItems.types';
 
@@ -17,11 +19,19 @@ const initialState: IRequestItemsState = {
   requestItems: [],
   reasons: [],
   carriers: [],
+  venues: [],
   requestItemStatus: [],
   requestItemStatusMin: 0,
   requestItemStatusMax: 100,
   loading: true,
   source: null,
+  filters: {
+    text: '',
+    venues: [],
+    status: [],
+    from: null,
+    to: null
+  },
   options: {
     orderBy: 'request.number',
     orderType: 'descending'
@@ -55,6 +65,11 @@ export function requestItemsReducers(state = initialState, action: RequestItemsR
         ...state,
         carriers: action.payload.carriers
       };
+    case REQUEST_ITEMS_LOAD_VENUES:
+      return {
+        ...state,
+        venues: action.payload.venues
+      };
     case REQUEST_ITEMS_LOAD_ITEM_STATUS:
       return {
         ...state,
@@ -68,6 +83,14 @@ export function requestItemsReducers(state = initialState, action: RequestItemsR
         options: {
           orderBy: action.payload.orderBy,
           orderType: action.payload.orderType
+        }
+      };
+    case REQUEST_ITEMS_CHANGE_FILTER:
+      return {
+        ...state,
+        filters: {
+          ...state.filters,
+          [action.payload.key]: action.payload.value
         }
       };
     case REQUEST_ITEMS_LOAD_REQUESTS_ITEMS:

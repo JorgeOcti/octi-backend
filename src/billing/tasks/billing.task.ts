@@ -1,15 +1,15 @@
-import Company from '../../app/models/company.model';
-import Invoice, {IInvoiceModel} from '../models/invoice.model';
-import * as request from 'request';
-import * as moment from 'moment-timezone';
-import ActivityHistory, {ChoicesTypeActivity} from '../models/activityHistory.model';
-import {ICompany} from '../../interfaces/company.interface';
+import * as fs from 'fs';
 import * as HtmlPdf from 'html-pdf';
-import GeneralUtils from '../../utils/general.utils';
+import * as moment from 'moment-timezone';
 import * as path from 'path';
 import * as Raven from 'raven';
-import * as fs from 'fs';
-import {queue} from '../../app';
+import * as request from 'request';
+import { queue } from '../../app';
+import Company from '../../app/models/company.model';
+import { ICompany } from '../../interfaces/company.interface';
+import GeneralUtils from '../../utils/general.utils';
+import ActivityHistory, { ChoicesTypeActivity } from '../models/activityHistory.model';
+import Invoice, { IInvoiceModel } from '../models/invoice.model';
 
 class BillingQueue {
 
@@ -45,14 +45,11 @@ class BillingQueue {
       try {
         const now = moment().subtract(1, 'day');
         const [year, month, day] = [now.format('YYYY'), now.format('MM'), now.format('DD')];
-        // request.get(`https://api.sbif.cl/api-sbifv3/recursos_api/uf/${year}/${month}/dias/${day}?apikey=${this.apiKey}&formato=json`, function (err, resp, body) {
         request.get(`https://mindicador.cl/api/uf/${day}-${month}-${year}`, (err, resp, body) => {
           if (err) {
             reject(err);
           } else {
-            // console.log('body', body);
             const dailyIndicators = JSON.parse(body);
-            // console.log('dailyIndicators', dailyIndicators);
             const value = parseFloat(dailyIndicators.serie[0].valor);
             resolve(value);
           }
@@ -223,7 +220,7 @@ class BillingQueue {
       const valueUF = await this.getUFPrice();
       const filter: any = {
         'billing.active': true
-      }
+      };
       if(team){
         filter.team = team;
       }

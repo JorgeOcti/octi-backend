@@ -51,6 +51,7 @@ class RequestItem extends React.Component<IPropsType, IStateType> {
   constructor(props: IPropsType) {
     super(props);
     this.search = debounce(500, this.search.bind(this));
+    this.downloadFiles = this.downloadFiles.bind(this);
     this.api = new ApiService();
   }
 
@@ -343,7 +344,10 @@ class RequestItem extends React.Component<IPropsType, IStateType> {
             </td> :
             <td className="middle">{item.reason?.name}</td>
         }
-        <td className="middle">
+        <td
+          className={`middle ${item.files && item.files.length ? 'pointer' : ''}`}
+          onClick={() => this.downloadFiles(item)}
+        >
           {
             item.files && item.files.length ?
               <i
@@ -513,6 +517,12 @@ class RequestItem extends React.Component<IPropsType, IStateType> {
         </ShowIf>
       </tr>
     );
+  }
+
+  private downloadFiles(item: IRequestItem) {
+    if (item.files && item.files.length) {
+      window.open(`/requests-item/${item._id}/download-files/`, '_blank');
+    }
   }
 
   private search(text: string): void {

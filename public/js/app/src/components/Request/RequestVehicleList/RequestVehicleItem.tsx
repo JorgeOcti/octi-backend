@@ -82,6 +82,7 @@ class RequestVehicleItem extends React.Component<IPropsType, IStateType> {
         >
             <strong className="text-underline">#{this.padNumber(item.request?.number)}</strong>
         </td>
+        <td className="middle">{item.origin.name}</td>
         <td className="middle">{item.destination.name}</td>
         {
           canChangeRequest ?

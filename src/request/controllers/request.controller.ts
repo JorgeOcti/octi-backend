@@ -8,6 +8,7 @@ import * as GraphicsMagick from 'gm';
 import * as moment from 'moment';
 import { CustomLabels, PaginateOptions, PaginateResult, QueryPopulateOptions } from 'mongoose';
 import * as tempfile from 'tempfile';
+import { ObjectID } from 'bson';
 import Car, { ChoicesStatusCar } from '../../app/models/car.model';
 import Team from '../../app/models/team.model';
 import Participant from '../../form/models/participant.model';
@@ -102,6 +103,8 @@ class RequestController {
   }
 
   public async apiCreate(req: IRequest, res: Response) {
+    logger.info(`RequestController.apiCreate`);
+    logger.info(`{user: {_id: ${req.user._id}, email: ${req.user.email}}, body: ${JSON.stringify(req.body)} }`);
     const { team, company } = req.user;
     const { cars, venue, fleet, sellerText } = req.body;
 
@@ -139,7 +142,7 @@ class RequestController {
           equipment: car.equipment,
           observation: car.observation,
           priority: car.priority,
-          origin: venue,
+          origin: req.user.venue,
           destination: venue,
           status: defaultItemStatus,
           createdBy: req.user
@@ -167,84 +170,155 @@ class RequestController {
   }
 
   public async apiListItems(req: IRequest, res: Response) {
+    logger.info(`RequestController.apiListItems`);
+    logger.info(`{user: {_id: ${req.user._id}, email: ${req.user.email}}, body: ${JSON.stringify(req.body)} }`);
     const { team } = req.user;
-    const { page, pageSize, orderBy, orderType } = req.query as { page: string; pageSize: string; search: string; orderBy: string; orderType: string };
+    const { page, pageSize, orderBy, orderType, filters } = req.body as { page: string; pageSize: string; search: string; orderBy: string; orderType: string, filters: any };
+    console.log('**************************************');
+    console.log(filters);
+    let venuesIds: any[] = [];
+    const extraQuery: any = {};
+    const extraMatch: any = {};
+    if (filters.venues && filters.venues.length) {
+      venuesIds = req.user.venuesPermissions().filter(i => (filters.venues.includes(i.toString())));
+    } else {
+      venuesIds = req.user.venuesPermissions();
+    }
+    if (filters.status && filters.status.length) {
+      extraQuery.status = { $in: filters.status.map((s:any)=> new ObjectID(s)) };
+    }
+    if (filters.from){
+      if(!extraQuery.hasOwnProperty('createdAt')){
+        extraQuery.createdAt = {};
+      }
+      extraQuery.createdAt.$gte = moment(filters.from).startOf('day').toDate();
+    }
+    if (filters.to){
+      if(!extraQuery.hasOwnProperty('createdAt')){
+        extraQuery.createdAt = {};
+      }
+      extraQuery.createdAt.$lte = moment(filters.to).endOf('day').toDate();
+    }
+    if (filters.text) {
+      extraMatch.$or = [];
+      extraMatch.$or.push({
+        'car.vin': { '$regex': filters.text, '$options': 'i' }
+      });
+      extraMatch.$or.push({
+        'car.brand': { '$regex': filters.text, '$options': 'i' }
+      });
+      extraMatch.$or.push({
+        'car.color': { '$regex': filters.text, '$options': 'i' }
+      });
+      extraMatch.$or.push({
+        'car.denomination': { '$regex': filters.text, '$options': 'i' }
+      });
+      extraMatch.$or.push({
+        'car.material': { '$regex': filters.text, '$options': 'i' }
+      });
+      extraMatch.$or.push({
+        'requestNumber': { '$regex': filters.text, '$options': 'i' }
+      });
+    }
     try {
       const requestsAggregate = RequestItem.aggregate([{
         $match: {
           team,
-          'destination': {
-            $in: req.user.venuesPermissions()
+          $or: [{
+            destination: {
+              $in: venuesIds
+            }
+          }, {
+            origin: {
+              $in: venuesIds
+            }
+          }],
+          ...extraQuery
+        }
+        }, {
+          $lookup: { from: 'cars', localField: 'car', foreignField: '_id', as: 'car' }
+        }, {
+          $unwind: { path: '$car', preserveNullAndEmptyArrays: true }
+        }, {
+          $lookup: { from: 'users', localField: 'createdBy', foreignField: '_id', as: 'createdBy' }
+        }, {
+          $unwind: { path: '$createdBy', preserveNullAndEmptyArrays: true }
+        }, {
+          $lookup: { from: 'venues', localField: 'origin', foreignField: '_id', as: 'origin' }
+        }, {
+          $unwind: { path: '$origin', preserveNullAndEmptyArrays: true }
+        }, {
+          $lookup: { from: 'venues', localField: 'destination', foreignField: '_id', as: 'destination' }
+        }, {
+          $unwind: { path: '$destination', preserveNullAndEmptyArrays: true }
+        }, {
+          $lookup: { from: 'requests', localField: 'request', foreignField: '_id', as: 'request' }
+        }, {
+          $unwind: { path: '$request', preserveNullAndEmptyArrays: false }
+        }, {
+          $lookup: { from: 'requestitemstatuses', localField: 'status', foreignField: '_id', as: 'status' }
+        }, {
+          $unwind: { path: '$status', preserveNullAndEmptyArrays: true }
+        }, {
+          $lookup: { from: 'carriers', localField: 'carrier', foreignField: '_id', as: 'carrier' }
+        }, {
+          $unwind: { path: '$carrier', preserveNullAndEmptyArrays: true }
+        }, {
+          $lookup: { from: 'requestfiles', localField: 'files', foreignField: '_id', as: 'files' }
+        }, {
+          $lookup: { from: 'reasons', localField: 'reason', foreignField: '_id', as: 'reason' }
+        }, {
+          $unwind: { path: '$reason', preserveNullAndEmptyArrays: true }
+        }, {
+          $addFields: { requestNumber: { $toString: '$request.number' } }
+        }, {
+          $project: {
+            '_id': 1,
+            'request': 1,
+            'priority': 1,
+            'observation': 1,
+            'equipment': 1,
+            'washed': 1,
+            'review': 1,
+            'body': 1,
+            'files': 1,
+            'requestNumber': 1,
+            'status._id': 1,
+            'status.name': 1,
+            'carrier._id': 1,
+            'carrier.name': 1,
+            'status.weigth': 1,
+            'createdBy._id': 1,
+            'createdBy.firstName': 1,
+            'createdBy.lastName': 1,
+            'car': 1,
+            'origin._id': 1,
+            'origin.name': 1,
+            'destination._id': 1,
+            'destination.name': 1,
+            'reason._id': 1,
+            'reason.name': 1,
+            'uploadDate': 1,
+            'estimatedArrival': 1,
+            'createdAt': 1,
+            'updatedAt': 1
           }
-        }
-      }, {
-        $lookup: { from: 'cars', localField: 'car', foreignField: '_id', as: 'car' }
-      }, {
-        $unwind: { path: '$car', preserveNullAndEmptyArrays: true }
-      }, {
-        $lookup: { from: 'users', localField: 'createdBy', foreignField: '_id', as: 'createdBy' }
-      }, {
-        $unwind: { path: '$createdBy', preserveNullAndEmptyArrays: true }
-      }, {
-        $lookup: { from: 'venues', localField: 'origin', foreignField: '_id', as: 'origin' }
-      }, {
-        $unwind: { path: '$origin', preserveNullAndEmptyArrays: true }
-      }, {
-        $lookup: { from: 'venues', localField: 'destination', foreignField: '_id', as: 'destination' }
-      }, {
-        $unwind: { path: '$destination', preserveNullAndEmptyArrays: true }
-      }, {
-        $lookup: { from: 'requests', localField: 'request', foreignField: '_id', as: 'request' }
-      }, {
-        $unwind: { path: '$request', preserveNullAndEmptyArrays: false }
-      }, {
-        $lookup: { from: 'requestitemstatuses', localField: 'status', foreignField: '_id', as: 'status' }
-      }, {
-        $unwind: { path: '$status', preserveNullAndEmptyArrays: true }
-      }, {
-        $lookup: { from: 'carriers', localField: 'carrier', foreignField: '_id', as: 'carrier' }
-      }, {
-        $unwind: { path: '$carrier', preserveNullAndEmptyArrays: true }
-      }, {
-        $lookup: { from: 'requestfiles', localField: 'files', foreignField: '_id', as: 'files' }
-      }, {
-        $lookup: { from: 'reasons', localField: 'reason', foreignField: '_id', as: 'reason' }
-      }, {
-        $unwind: { path: '$reason', preserveNullAndEmptyArrays: true }
-      }, {
-        $project: {
-          '_id': 1,
-          'request': 1,
-          'priority': 1,
-          'observation': 1,
-          'equipment': 1,
-          'washed': 1,
-          'review': 1,
-          'body': 1,
-          'files': 1,
-          'status._id': 1,
-          'status.name': 1,
-          'carrier._id': 1,
-          'carrier.name': 1,
-          'status.weigth': 1,
-          'createdBy._id': 1,
-          'createdBy.firstName': 1,
-          'createdBy.lastName': 1,
-          'car': 1,
-          'origin._id': 1,
-          'origin.name': 1,
-          'destination._id': 1,
-          'destination.name': 1,
-          'reason._id': 1,
-          'reason.name': 1,
-          'uploadDate': 1,
-          'estimatedArrival': 1,
-          'createdAt': 1,
-          'updatedAt': 1
-        }
-      }, {
-        $sort: { [orderBy]: orderType === 'ascending' ? 1 : -1 }
-      }]);
+        }, {
+          $match: {
+            $or: [{
+              'destination._id': {
+                $in: venuesIds
+              }
+            }, {
+              'origin._id': {
+                $in: venuesIds
+              }
+            }],
+            ...extraMatch
+          }
+        }, {
+          $sort: { [orderBy]: orderType === 'ascending' ? 1 : -1 }
+        }]);
       const options = {
         page: parseInt(page ? page : '1', 10),
         limit: parseInt(pageSize ? pageSize : '10', 10),
@@ -362,65 +436,88 @@ class RequestController {
       });
       /* headers */
       worksheet.columns = [{
-        header: 'Solicitud', key: 'request', width: 10
+        header: 'Nª SOLICITUD', key: 'request', width: 10
       }, {
-        header: 'Destino', key: 'destination', width: 20
+        header: 'FECHA SOLICITUD', key: 'created', width: 21, style: { numFmt: 'dd/mm/yyyy hh:mm' }
       }, {
-        header: 'Marca', key: 'brand', width: 20
+        header: 'FLOTA', key: 'fleet', width: 20
       }, {
-        header: 'Modelo', key: 'denomination', width: 20
+        header: 'PRIORIDAD', key: 'priority', width: 20
       }, {
-        header: 'Material', key: 'material', width: 20
+        header: 'SUCURSAL (CREACION)', key: 'origin', width: 20
       }, {
-        header: 'Color', key: 'color', width: 20
+        header: 'SOLICITANTE', key: 'createdBy', width: 20
       }, {
-        header: 'VIN', key: 'vin', width: 20
+        header: 'VENDEDOR', key: 'seller', width: 20
+      }, {
+        header: 'MOTIVO', key: 'reason', width: 20
+      }, {
+        header: 'GRUPO, MOTIVO', key: 'group', width: 20
+      }, {
+        header: 'MARCA', key: 'brand', width: 20
+      }, {
+        header: 'MODELO', key: 'denomination', width: 20
+      }, {
+        header: 'MATERIAL', key: 'material', width: 20
+      }, {
+        header: 'COLOR', key: 'color', width: 20
+      }, {
+        header: 'ESTADO', key: 'status', width: 20
+      }, {
+        header: 'VIN/ID', key: 'vin', width: 20
       }, {
         header: 'CDO', key: 'cdo', width: 20
       }, {
-        header: 'Estado', key: 'status', width: 20
+        header: 'ACCESORIZACIÓN', key: 'equipment', width: 10
       }, {
-        header: 'Motivo', key: 'reason', width: 20
+        header: 'PRE-LAVADO', key: 'washed', width: 10
       }, {
-        header: 'Accesorización', key: 'equipment', width: 10
+        header: 'INSPECCIÓN Pre-entrega', key: 'review', width: 10
       }, {
-        header: 'Carrocero', key: 'body', width: 10
+        header: 'CARROCERO', key: 'body', width: 10
       }, {
-        header: 'Pre-Lavado', key: 'washed', width: 10
+        header: 'EQUIPAMIENTO', key: 'equipment_2', width: 10
       }, {
-        header: 'Inspección Pre-entrega', key: 'review', width: 10
+        header: 'DESTINO', key: 'destination', width: 20
       }, {
-        header: 'Solicitante', key: 'createdBy', width: 20
+        header: 'TRANSPORTISTA', key: 'carrier', width: 20
       }, {
-        header: 'Transportista', key: 'carrier', width: 20
+        header: 'FECHA CARGA', key: 'uploadDate', width: 21, style: { numFmt: 'dd/mm/yyyy hh:mm' }
       }, {
-        header: 'Fecha Carga', key: 'uploadDate', width: 21, style: { numFmt: 'dd/mm/yyyy hh:mm' }
+        header: 'FECHA LLEGADA', key: 'estimatedArrival', width: 21, style: { numFmt: 'dd/mm/yyyy hh:mm' }
       }, {
-        header: 'Fecha LLegada', key: 'estimatedArrival', width: 21, style: { numFmt: 'dd/mm/yyyy hh:mm' }
+        header: 'FECHA ACTUALIZACION', key: 'updted', width: 21, style: { numFmt: 'dd/mm/yyyy hh:mm' }
       }, {
-        header: 'Creado', key: 'created', width: 21, style: { numFmt: 'dd/mm/yyyy hh:mm' }
+        header: 'OBSERVACIÓN', key: 'observation', width: 21
       }];
       for (const item of requestItems) {
         worksheet.addRow({
           request: item.request.number,
-          destination: item.destination.name,
+          created: item.createdAt,
+          updated: item.updatedAt,
+          observation: item.observation,
+          fleet: item.request.fleet ? 'Si' : 'No',
+          priority: item.priority ? 'Si' : 'No',
+          createdBy: item.createdBy ? `${item.createdBy.firstName} ${item.createdBy.lastName}` : '-',
+          seller: item.request.sellerText,
+          reason: item.reason.name,
+          group: '',
           brand: item.car.brand,
           denomination: item.car.denomination,
           material: item.car.material,
           vin: item.car.vin,
           cdo: item.car.internalNumber,
           color: item.car.color,
+          destination: item.destination.name,
+          origin: item.origin.name,
           status: item.status.name,
-          reason: item.reason.name,
           equipment: item.equipment ? 'Si' : 'No',
           body: item.body ? 'Si' : 'No',
           washed: item.washed ? 'Si' : 'No',
           review: item.review ? 'Si' : 'No',
-          createdBy: item.createdBy ? `${item.createdBy.firstName} ${item.createdBy.lastName}` : '-',
           carrier: item.carrier ? item.carrier.name : '',
           uploadDate: item.uploadDate,
-          estimatedArrival: item.estimatedArrival,
-          created: item.createdAt
+          estimatedArrival: item.estimatedArrival
         });
       }
       const tempFilePath = tempfile('.xlsx');
@@ -670,7 +767,7 @@ class RequestController {
 
   public async apiCreateItem(req: IRequest, res: Response) {
     logger.info(`RequestController.apiCreateItem`);
-    logger.info(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
+    logger.info(`{user: {_id: ${req.user._id}, email: ${req.user.email}}, body: ${JSON.stringify(req.body)} }`);
     const { team, company } = req.user;
     const { car, idRequest } = req.body;
     try {
@@ -731,13 +828,15 @@ class RequestController {
 
   public async apiPatchItem(req: IRequest, res: Response) {
     logger.info(`RequestController.apiPatchItem`);
-    logger.info(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
     const { team } = req.user;
     const updateObject = req.body;
     const { id } = req.params;
+    logger.info(`{user: {_id: ${req.user._id}, email: ${req.user.email}}, body: ${JSON.stringify(updateObject)} }`);
     try {
       const requestItem = await RequestItem.findOneAndUpdate({ _id: id, team }, { $set: { ...updateObject } }).populate([{ path: 'car' }]);
       if (Object.keys(updateObject.car).length) {
+        // add vin2 to car
+        updateObject.car.vin2 = updateObject.car && updateObject.car.vin ? updateObject.car.vin.substr(updateObject.car.vin.length - 6) : '';
         const existCar = await Car.findOne({ team, vin: updateObject.car.vin });
         if (existCar && requestItem && existCar.vin !== requestItem.car.vin) {
           // validate exist car and change vin

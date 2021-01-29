@@ -8,6 +8,7 @@ const https = require("https");
 const GraphicsMagick = require("gm");
 const moment = require("moment");
 const tempfile = require("tempfile");
+const bson_1 = require("bson");
 const car_model_1 = require("../../app/models/car.model");
 const team_model_1 = require("../../app/models/team.model");
 const participant_model_1 = require("../../form/models/participant.model");
@@ -94,6 +95,8 @@ class RequestController {
         res.render('app/index', { token: await req.user.generateToken() });
     }
     async apiCreate(req, res) {
+        logger_service_1.default.info(`RequestController.apiCreate`);
+        logger_service_1.default.info(`{user: {_id: ${req.user._id}, email: ${req.user.email}}, body: ${JSON.stringify(req.body)} }`);
         const { team, company } = req.user;
         const { cars, venue, fleet, sellerText } = req.body;
         try {
@@ -130,7 +133,7 @@ class RequestController {
                     equipment: car.equipment,
                     observation: car.observation,
                     priority: car.priority,
-                    origin: venue,
+                    origin: req.user.venue,
                     destination: venue,
                     status: defaultItemStatus,
                     createdBy: req.user
@@ -158,15 +161,71 @@ class RequestController {
         }
     }
     async apiListItems(req, res) {
+        logger_service_1.default.info(`RequestController.apiListItems`);
+        logger_service_1.default.info(`{user: {_id: ${req.user._id}, email: ${req.user.email}}, body: ${JSON.stringify(req.body)} }`);
         const { team } = req.user;
-        const { page, pageSize, orderBy, orderType } = req.query;
+        const { page, pageSize, orderBy, orderType, filters } = req.body;
+        console.log('**************************************');
+        console.log(filters);
+        let venuesIds = [];
+        const extraQuery = {};
+        const extraMatch = {};
+        if (filters.venues && filters.venues.length) {
+            venuesIds = req.user.venuesPermissions().filter(i => (filters.venues.includes(i.toString())));
+        }
+        else {
+            venuesIds = req.user.venuesPermissions();
+        }
+        if (filters.status && filters.status.length) {
+            extraQuery.status = { $in: filters.status.map((s) => new bson_1.ObjectID(s)) };
+        }
+        if (filters.from) {
+            if (!extraQuery.hasOwnProperty('createdAt')) {
+                extraQuery.createdAt = {};
+            }
+            extraQuery.createdAt.$gte = moment(filters.from).startOf('day').toDate();
+        }
+        if (filters.to) {
+            if (!extraQuery.hasOwnProperty('createdAt')) {
+                extraQuery.createdAt = {};
+            }
+            extraQuery.createdAt.$lte = moment(filters.to).endOf('day').toDate();
+        }
+        if (filters.text) {
+            extraMatch.$or = [];
+            extraMatch.$or.push({
+                'car.vin': { '$regex': filters.text, '$options': 'i' }
+            });
+            extraMatch.$or.push({
+                'car.brand': { '$regex': filters.text, '$options': 'i' }
+            });
+            extraMatch.$or.push({
+                'car.color': { '$regex': filters.text, '$options': 'i' }
+            });
+            extraMatch.$or.push({
+                'car.denomination': { '$regex': filters.text, '$options': 'i' }
+            });
+            extraMatch.$or.push({
+                'car.material': { '$regex': filters.text, '$options': 'i' }
+            });
+            extraMatch.$or.push({
+                'requestNumber': { '$regex': filters.text, '$options': 'i' }
+            });
+        }
         try {
             const requestsAggregate = requestItem_model_1.default.aggregate([{
                     $match: {
                         team,
-                        'destination': {
-                            $in: req.user.venuesPermissions()
-                        }
+                        $or: [{
+                                destination: {
+                                    $in: venuesIds
+                                }
+                            }, {
+                                origin: {
+                                    $in: venuesIds
+                                }
+                            }],
+                        ...extraQuery
                     }
                 }, {
                     $lookup: { from: 'cars', localField: 'car', foreignField: '_id', as: 'car' }
@@ -203,6 +262,8 @@ class RequestController {
                 }, {
                     $unwind: { path: '$reason', preserveNullAndEmptyArrays: true }
                 }, {
+                    $addFields: { requestNumber: { $toString: '$request.number' } }
+                }, {
                     $project: {
                         '_id': 1,
                         'request': 1,
@@ -213,6 +274,7 @@ class RequestController {
                         'review': 1,
                         'body': 1,
                         'files': 1,
+                        'requestNumber': 1,
                         'status._id': 1,
                         'status.name': 1,
                         'carrier._id': 1,
@@ -232,6 +294,19 @@ class RequestController {
                         'estimatedArrival': 1,
                         'createdAt': 1,
                         'updatedAt': 1
+                    }
+                }, {
+                    $match: {
+                        $or: [{
+                                'destination._id': {
+                                    $in: venuesIds
+                                }
+                            }, {
+                                'origin._id': {
+                                    $in: venuesIds
+                                }
+                            }],
+                        ...extraMatch
                     }
                 }, {
                     $sort: { [orderBy]: orderType === 'ascending' ? 1 : -1 }
@@ -353,65 +428,88 @@ class RequestController {
             });
             /* headers */
             worksheet.columns = [{
-                    header: 'Solicitud', key: 'request', width: 10
+                    header: 'Nª SOLICITUD', key: 'request', width: 10
                 }, {
-                    header: 'Destino', key: 'destination', width: 20
+                    header: 'FECHA SOLICITUD', key: 'created', width: 21, style: { numFmt: 'dd/mm/yyyy hh:mm' }
                 }, {
-                    header: 'Marca', key: 'brand', width: 20
+                    header: 'FLOTA', key: 'fleet', width: 20
                 }, {
-                    header: 'Modelo', key: 'denomination', width: 20
+                    header: 'PRIORIDAD', key: 'priority', width: 20
                 }, {
-                    header: 'Material', key: 'material', width: 20
+                    header: 'SUCURSAL (CREACION)', key: 'origin', width: 20
                 }, {
-                    header: 'Color', key: 'color', width: 20
+                    header: 'SOLICITANTE', key: 'createdBy', width: 20
                 }, {
-                    header: 'VIN', key: 'vin', width: 20
+                    header: 'VENDEDOR', key: 'seller', width: 20
+                }, {
+                    header: 'MOTIVO', key: 'reason', width: 20
+                }, {
+                    header: 'GRUPO, MOTIVO', key: 'group', width: 20
+                }, {
+                    header: 'MARCA', key: 'brand', width: 20
+                }, {
+                    header: 'MODELO', key: 'denomination', width: 20
+                }, {
+                    header: 'MATERIAL', key: 'material', width: 20
+                }, {
+                    header: 'COLOR', key: 'color', width: 20
+                }, {
+                    header: 'ESTADO', key: 'status', width: 20
+                }, {
+                    header: 'VIN/ID', key: 'vin', width: 20
                 }, {
                     header: 'CDO', key: 'cdo', width: 20
                 }, {
-                    header: 'Estado', key: 'status', width: 20
+                    header: 'ACCESORIZACIÓN', key: 'equipment', width: 10
                 }, {
-                    header: 'Motivo', key: 'reason', width: 20
+                    header: 'PRE-LAVADO', key: 'washed', width: 10
                 }, {
-                    header: 'Accesorización', key: 'equipment', width: 10
+                    header: 'INSPECCIÓN Pre-entrega', key: 'review', width: 10
                 }, {
-                    header: 'Carrocero', key: 'body', width: 10
+                    header: 'CARROCERO', key: 'body', width: 10
                 }, {
-                    header: 'Pre-Lavado', key: 'washed', width: 10
+                    header: 'EQUIPAMIENTO', key: 'equipment_2', width: 10
                 }, {
-                    header: 'Inspección Pre-entrega', key: 'review', width: 10
+                    header: 'DESTINO', key: 'destination', width: 20
                 }, {
-                    header: 'Solicitante', key: 'createdBy', width: 20
+                    header: 'TRANSPORTISTA', key: 'carrier', width: 20
                 }, {
-                    header: 'Transportista', key: 'carrier', width: 20
+                    header: 'FECHA CARGA', key: 'uploadDate', width: 21, style: { numFmt: 'dd/mm/yyyy hh:mm' }
                 }, {
-                    header: 'Fecha Carga', key: 'uploadDate', width: 21, style: { numFmt: 'dd/mm/yyyy hh:mm' }
+                    header: 'FECHA LLEGADA', key: 'estimatedArrival', width: 21, style: { numFmt: 'dd/mm/yyyy hh:mm' }
                 }, {
-                    header: 'Fecha LLegada', key: 'estimatedArrival', width: 21, style: { numFmt: 'dd/mm/yyyy hh:mm' }
+                    header: 'FECHA ACTUALIZACION', key: 'updted', width: 21, style: { numFmt: 'dd/mm/yyyy hh:mm' }
                 }, {
-                    header: 'Creado', key: 'created', width: 21, style: { numFmt: 'dd/mm/yyyy hh:mm' }
+                    header: 'OBSERVACIÓN', key: 'observation', width: 21
                 }];
             for (const item of requestItems) {
                 worksheet.addRow({
                     request: item.request.number,
-                    destination: item.destination.name,
+                    created: item.createdAt,
+                    updated: item.updatedAt,
+                    observation: item.observation,
+                    fleet: item.request.fleet ? 'Si' : 'No',
+                    priority: item.priority ? 'Si' : 'No',
+                    createdBy: item.createdBy ? `${item.createdBy.firstName} ${item.createdBy.lastName}` : '-',
+                    seller: item.request.sellerText,
+                    reason: item.reason.name,
+                    group: '',
                     brand: item.car.brand,
                     denomination: item.car.denomination,
                     material: item.car.material,
                     vin: item.car.vin,
                     cdo: item.car.internalNumber,
                     color: item.car.color,
+                    destination: item.destination.name,
+                    origin: item.origin.name,
                     status: item.status.name,
-                    reason: item.reason.name,
                     equipment: item.equipment ? 'Si' : 'No',
                     body: item.body ? 'Si' : 'No',
                     washed: item.washed ? 'Si' : 'No',
                     review: item.review ? 'Si' : 'No',
-                    createdBy: item.createdBy ? `${item.createdBy.firstName} ${item.createdBy.lastName}` : '-',
                     carrier: item.carrier ? item.carrier.name : '',
                     uploadDate: item.uploadDate,
-                    estimatedArrival: item.estimatedArrival,
-                    created: item.createdAt
+                    estimatedArrival: item.estimatedArrival
                 });
             }
             const tempFilePath = tempfile('.xlsx');
@@ -665,7 +763,7 @@ class RequestController {
     }
     async apiCreateItem(req, res) {
         logger_service_1.default.info(`RequestController.apiCreateItem`);
-        logger_service_1.default.info(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
+        logger_service_1.default.info(`{user: {_id: ${req.user._id}, email: ${req.user.email}}, body: ${JSON.stringify(req.body)} }`);
         const { team, company } = req.user;
         const { car, idRequest } = req.body;
         try {
@@ -727,13 +825,15 @@ class RequestController {
     }
     async apiPatchItem(req, res) {
         logger_service_1.default.info(`RequestController.apiPatchItem`);
-        logger_service_1.default.info(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
         const { team } = req.user;
         const updateObject = req.body;
         const { id } = req.params;
+        logger_service_1.default.info(`{user: {_id: ${req.user._id}, email: ${req.user.email}}, body: ${JSON.stringify(updateObject)} }`);
         try {
             const requestItem = await requestItem_model_1.default.findOneAndUpdate({ _id: id, team }, { $set: { ...updateObject } }).populate([{ path: 'car' }]);
             if (Object.keys(updateObject.car).length) {
+                // add vin2 to car
+                updateObject.car.vin2 = updateObject.car && updateObject.car.vin ? updateObject.car.vin.substr(updateObject.car.vin.length - 6) : '';
                 const existCar = await car_model_1.default.findOne({ team, vin: updateObject.car.vin });
                 if (existCar && requestItem && existCar.vin !== requestItem.car.vin) {
                     // validate exist car and change vin

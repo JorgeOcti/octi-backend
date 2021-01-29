@@ -5,9 +5,11 @@ import { ICarrier } from '../../../../../src/interfaces/carrier.interface';
 import { IReason } from '../../../../../src/interfaces/reason.interface';
 import { IRequestItem } from '../../../../../src/interfaces/requestItem.interface';
 import { IRequestItemStatus } from '../../../../../src/interfaces/requestItemStatus.interface';
+import { IVenue } from '../../../../../src/interfaces/venue.interface';
 import ApiService from '../utils/axios';
 import {
   ICancelRequestItems,
+  IChangeFilterRequestItems,
   IChangeOrderRequestItems,
   ICreateRequestItems,
   IDeleteRequestItems,
@@ -16,10 +18,13 @@ import {
   ILoadReasonsRequestItems,
   ILoadRequestItems,
   ILoadRequestItemStatus,
+  ILoadVenuesRequestItems,
+  IRequestItemsFilters,
   IRequestItemsState,
   IUpdateRequestItems,
   RequestItemsReduxActions,
   REQUEST_ITEMS_CANCEL_REQUEST,
+  REQUEST_ITEMS_CHANGE_FILTER,
   REQUEST_ITEMS_CHANGE_ORDER,
   REQUEST_ITEMS_CREATE_ITEM,
   REQUEST_ITEMS_DELETE_ITEM,
@@ -28,6 +33,7 @@ import {
   REQUEST_ITEMS_LOAD_ITEM_STATUS,
   REQUEST_ITEMS_LOAD_REASONS,
   REQUEST_ITEMS_LOAD_REQUESTS_ITEMS,
+  REQUEST_ITEMS_LOAD_VENUES,
   REQUEST_ITEMS_UPDATE_ITEM
 } from './requestItems.types';
 
@@ -67,6 +73,15 @@ export function loadCarriersRequestItemsAction(carriers: ICarrier[]): ILoadCarri
   };
 }
 
+export function loadVenuesRequestItemsAction(venues: IVenue[]): ILoadVenuesRequestItems {
+  return {
+    type: REQUEST_ITEMS_LOAD_VENUES,
+    payload: {
+      venues
+    }
+  };
+}
+
 export function loadRequestItemsStatusRequestAction(requestItemStatus: IRequestItemStatus[], min: number, max: number): ILoadRequestItemStatus {
   return {
     type: REQUEST_ITEMS_LOAD_ITEM_STATUS,
@@ -96,6 +111,16 @@ export function changeOrderRequestAction(orderBy: string, orderType: string): IC
     payload: {
       orderBy,
       orderType
+    }
+  };
+}
+
+export function changeFilterRequestAction(key: keyof IRequestItemsFilters, value: any | any[]): IChangeFilterRequestItems {
+  return {
+    type: REQUEST_ITEMS_CHANGE_FILTER,
+    payload: {
+      key,
+      value
     }
   };
 }
@@ -137,17 +162,19 @@ export function getRequestItemsThunkAction(nextPage: number, orderBy: string, or
     dispatch(cancelRequestItemsAction(api.getSource()));
     Axios
       .all([
-        api.getRequestItems({ page, orderBy, orderType, pageSize: 15 }),
+        api.getRequestItems({ page, orderBy, orderType, pageSize: 20, filters: state.requestItems.filters }),
         api.getReasons(1, 200),
         api.getRequestItemsStatus(1, 200),
-        api.getCarriers(1, 200)
+        api.getCarriers(1, 200),
+        api.getVenues(1, 200, true, true)
       ])
-      .then(Axios.spread((requests, reasons, requestItemStatus, carriers) => {
+      .then(Axios.spread((requests, reasons, requestItemStatus, carriers, venues) => {
         const { data } = requests;
         dispatch(loadRequestsItemsAction(data.results, data.count, data.pages, page));
         dispatch(loadReasonsRequestItemsAction(reasons.data.results));
         dispatch(loadRequestItemsStatusRequestAction(requestItemStatus.data.results, requestItemStatus.data.min, requestItemStatus.data.max));
         dispatch(loadCarriersRequestItemsAction(carriers.data.results));
+        dispatch(loadVenuesRequestItemsAction(venues.data.results));
         dispatch(isLoadingRequestItemsAction(false));
       }))
       .catch((err: AxiosError) => {

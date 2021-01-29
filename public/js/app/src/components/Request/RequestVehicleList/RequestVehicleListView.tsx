@@ -9,17 +9,21 @@ import {
   IRequestItem
 } from '../../../../../../../src/interfaces/requestItem.interface';
 import {
+  changeFilterRequestAction,
   createRequestItemAction,
   deleteRequestItemAction,
   getRequestItemsThunkAction,
   updateRequestItemAction
 } from '../../../actions/requestItems.actions';
-import { IRequestItemsState } from '../../../actions/requestItems.types';
+import { IRequestItemsFilters, IRequestItemsState } from '../../../actions/requestItems.types';
 import AppContainer from '../../../container/AppContainer';
 import { IWindow } from '../../../interfaces/window';
 import ApiService from '../../../utils/axios';
 import { hasPermission } from '../../../utils/common';
+import BootstrapSelect from '../../Utils/BootstrapSelect';
+import DateRangePicker from '../../Utils/DateRangePicker';
 import ImageLazyLoad from '../../Utils/ImageLazyLoad';
+import { debounce } from 'throttle-debounce';
 import Paginator from '../../Utils/Paginator';
 import ShowIf from '../../Utils/ShowIf';
 import RequestVehicleItem from './RequestVehicleItem';
@@ -30,8 +34,8 @@ interface IPropsType extends RouteComponentProps<{ ticket: string }> {
   updateRequestItemAction: (item: IRequestItem) => void;
   getRequestItemsThunkAction: (page: number, orderBy: string, orderType: string, hideLoading?: boolean) => void;
   deleteRequestItemAction: (item: IRequestItem) => void;
-  // deleteRequestActionInList: (id: string) => void;
   createRequestItemAction: (item: IRequestItem) => void;
+  changeFilterRequestAction: (key: keyof IRequestItemsFilters, value: any | any[]) => void;
 }
 
 interface IStateType {
@@ -54,16 +58,19 @@ class RequestVehicleListView extends React.Component<IPropsType, IStateType> {
     super(props);
     this.changePage = this.changePage.bind(this);
     this.changeOrder = this.changeOrder.bind(this);
+    this.changeFilterDebounced = debounce(200, this.changeFilterDebounced.bind(this));
+    this.changeFilter = this.changeFilter.bind(this);
     this.exportExcel = this.exportExcel.bind(this);
     this.create = this.create.bind(this);
   }
 
   public componentWillMount(): void {
-    const {orderBy, orderType} = this.props.requestItems.options;
+    const { orderBy, orderType } = this.props.requestItems.options;
+    const { page } = this.props.requestItems.pagination;
     document.title = 'OSA Andes | Solicitudes';
     window.scrollTo(0, 0);
 
-    this.props.getRequestItemsThunkAction(1, orderBy, orderType);
+    this.props.getRequestItemsThunkAction(page, orderBy, orderType);
 
     // socket
     this.socket = io.connect(`${location.protocol}//${location.host}`, {
@@ -76,7 +83,7 @@ class RequestVehicleListView extends React.Component<IPropsType, IStateType> {
     });
 
     this.socket.on('connect', () => {
-      this.socket.emit('join', {room: `request-list-${window.user.team}`});
+      this.socket.emit('join', { room: `request-list-${window.user.team}` });
     });
 
     this.socket.on('UPDATE_REQUEST_ITEM', (data: any): void => {
@@ -152,16 +159,16 @@ class RequestVehicleListView extends React.Component<IPropsType, IStateType> {
     if (this.props.requestItems.source) {
       this.props.requestItems.source.cancel('Operation canceled by the user.');
     }
-    this.socket.emit('leave', {room: `request-list-${window.user.team}`});
+    this.socket.emit('leave', { room: `request-list-${window.user.team}` });
     this.socket.disconnect();
   }
 
   public render(): React.ReactElement<IPropsType> {
     const {
-      pagination, loading, requestItems
+      pagination, loading, requestItems, requestItemStatus, venues, filters
     } = this.props.requestItems;
-    const { orderBy, orderType} = this.props.requestItems.options;
-    const {exporing} = this.state;
+    const { orderBy, orderType } = this.props.requestItems.options;
+    const { exporing } = this.state;
     return (
       <AppContainer title="" cMenu="3" cSubMenu="3.2">
         <section className="content">
@@ -192,116 +199,253 @@ class RequestVehicleListView extends React.Component<IPropsType, IStateType> {
                 </ShowIf>
               </div>
             </div>
-            <div className="box-body no-padding table-responsive">
+            <div className="box-body no-padding">
+              <div style={{ padding: '10px 0' }}>
+                <div className="row" style={{ margin: 0 }}>
+                  <div className="col-md-12">
+                    <div className="form-group">
+                      <label className="control-label">
+                        Vehículo
+                    </label>
+                      <input
+                        type="text"
+                        className="form-control"
+                        placeholder="Busca por VIN, marca, modelo, material o nº de solicitud."
+                        defaultValue={filters.text}
+                        onChange={(e) => {
+                          this.changeFilterDebounced('text', e.target.value);
+                        }}
+                      />
+                    </div>
+                  </div>
+                  <div className="col-md-4">
+                    <div className="form-group">
+                      <label htmlFor="venues" className="control-label">Sucursales</label>
+                      <BootstrapSelect
+                        noneSelectedText="Todas"
+                        search={true}
+                        displayItems={2}
+                        selectedText="sucursales seleccionadas."
+                        selected={filters.venues}
+                        allOption={true}
+                        selectAll={
+                          (all: boolean) => {
+                            if (all) {
+                              this.changeFilter('venues', venues.map((venue) => venue._id));
+                            } else {
+                              this.changeFilter('venues', []);
+                            }
+                          }
+                        }
+                        options={venues.map((venue) => ({
+                          value: venue._id,
+                          text: venue.name
+                        }))}
+                        onClick={(selected: any) => {
+                          if (filters.venues.includes(selected)) {
+                            this.changeFilter('venues', [...filters.venues.filter((venue) => venue !== selected)]);
+                          } else {
+                            this.changeFilter('venues', [...filters.venues, selected]);
+                          }
+                        }}
+                      />
+                    </div>
+                  </div>
+                  <div className="col-md-4">
+                    <div className="form-group">
+                      <label htmlFor="venues" className="control-label">Estados</label>
+                      <BootstrapSelect
+                        noneSelectedText="Todos"
+                        displayItems={2}
+                        selectedText="estados seleccionados."
+                        selected={filters.status}
+                        allOption={true}
+                        selectAll={
+                          (all: boolean) => {
+                            if (all) {
+                              this.changeFilter('status', requestItemStatus.map((status) => status._id));
+                            } else {
+                              this.changeFilter('status', []);
+                            }
+                          }
+                        }
+                        options={requestItemStatus.map((status) => ({
+                          value: status._id,
+                          text: status.name
+                        }))}
+                        onClick={(selected: any) => {
+                          if (filters.status.includes(selected)) {
+                            this.changeFilter('status', [...filters.status.filter((status) => status !== selected)]);
+                          } else {
+                            this.changeFilter('status', [...filters.status, selected]);
+                          }
+                        }}
+                      />
+                    </div>
+                  </div>
+                  {/* <div className="col-md-3">
+                    <div className="form-group">
+                      <label htmlFor="venues" className="control-label">Marcas</label>
+                      <BootstrapSelect
+                        noneSelectedText="Todas"
+                        search={true}
+                        displayItems={2}
+                        selectedText="marcas seleccionadas."
+                        selected={[]}
+                        allOption={true}
+                        selectAll={[]}
+                        options={[]}
+                        onClick={() => { }}
+                      />
+                    </div>
+                  </div> */}
+                  <div className="col-md-4">
+                    <div className="row">
+                      <div className="col-md-6">
+                        <div className="form-group">
+                          <label htmlFor="venues" className="control-label">Desde</label>
+                          <DateRangePicker
+                            value={filters.from}
+                            onChange={(e) => {
+                              this.changeFilter('from', e);
+                            }}
+                          />
+                        </div>
+                      </div>
+                      <div className="col-md-6">
+                        <div className="form-group">
+                          <label htmlFor="venues" className="control-label">Hasta</label>
+                          <DateRangePicker
+                            value={filters.to}
+                            onChange={(e) => {
+                              this.changeFilter('to', e);
+                            }}
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
               <ShowIf condition={requestItems.length > 0}>
-                <table className="table table-xs table-hover" style={{ marginTop: '15px', minWidth: '1000px' }}>
-                  <thead>
-                    <tr className="bg-primary" style={{ height: '45px' }}>
-                      <th className="middle" style={{ width: '28px' }} />
-                      <th
-                        className="middle pointer"
-                        style={{ width: '80px' }}
-                        onClick={() => this.changeOrder('request.number')}
-                      >
-                        Solicitud
+                <div className="table-responsive">
+                  <table className="table table-xs table-hover" style={{ minWidth: '1000px' }}>
+                    <thead>
+                      <tr className="bg-primary" style={{ height: '45px' }}>
+                        <th className="middle" style={{ width: '28px' }} />
+                        <th
+                          className="middle pointer"
+                          style={{ width: '80px' }}
+                          onClick={() => this.changeOrder('request.number')}
+                        >
+                          Solicitud
                       <span style={{ float: 'right' }}><i className={`fa fa-fw ${orderBy === 'request.number' ? `${orderType === 'descending' ? 'fa-sort-down' : 'fa-sort-up'}` : 'fa-sort'}`} /></span>
-                      </th>
-                      <th
-                        className="middle pointer"
-                        style={{ width: '80px' }}
-                        onClick={() => this.changeOrder('destination.name')}
-                      >
-                        Destino
+                        </th>
+                        <th
+                          className="middle pointer"
+                          style={{ width: '80px' }}
+                          onClick={() => this.changeOrder('origin.name')}
+                        >
+                          Creada
+                      <span style={{ float: 'right' }}><i className={`fa fa-fw ${orderBy === 'origin.name' ? `${orderType === 'descending' ? 'fa-sort-down' : 'fa-sort-up'}` : 'fa-sort'}`} /></span>
+                        </th>
+                        <th
+                          className="middle pointer"
+                          style={{ width: '80px' }}
+                          onClick={() => this.changeOrder('destination.name')}
+                        >
+                          Destino
                       <span style={{ float: 'right' }}><i className={`fa fa-fw ${orderBy === 'destination.name' ? `${orderType === 'descending' ? 'fa-sort-down' : 'fa-sort-up'}` : 'fa-sort'}`} /></span>
-                      </th>
-                      <th
-                        className="middle pointer"
-                        style={{ width: '100px' }}
-                        onClick={() => this.changeOrder('car.brand')}
-                      >
-                        Marca
+                        </th>
+                        <th
+                          className="middle pointer"
+                          style={{ width: '100px' }}
+                          onClick={() => this.changeOrder('car.brand')}
+                        >
+                          Marca
                       <span style={{ float: 'right' }}><i className={`fa fa-fw ${orderBy === 'car.brand' ? `${orderType === 'descending' ? 'fa-sort-down' : 'fa-sort-up'}` : 'fa-sort'}`} /></span>
-                      </th>
-                      <th
-                        className="middle pointer"
-                        style={{ width: '120px' }}
-                        onClick={() => this.changeOrder('car.description')}
-                      >
-                        Modelo
+                        </th>
+                        <th
+                          className="middle pointer"
+                          style={{ width: '120px' }}
+                          onClick={() => this.changeOrder('car.description')}
+                        >
+                          Modelo
                       <span style={{ float: 'right' }}><i className={`fa fa-fw ${orderBy === 'car.description' ? `${orderType === 'descending' ? 'fa-sort-down' : 'fa-sort-up'}` : 'fa-sort'}`} /></span>
-                      </th>
-                      <th
-                        className="middle pointer"
-                        style={{ width: '80px' }}
-                        onClick={() => this.changeOrder('car.material')}
-                      >
-                        Material
+                        </th>
+                        <th
+                          className="middle pointer"
+                          style={{ width: '80px' }}
+                          onClick={() => this.changeOrder('car.material')}
+                        >
+                          Material
                       <span style={{ float: 'right' }}><i className={`fa fa-fw ${orderBy === 'car.material' ? `${orderType === 'descending' ? 'fa-sort-down' : 'fa-sort-up'}` : 'fa-sort'}`} /></span>
-                      </th>
-                      <th className="middle">Color</th>
-                      <th
-                        className="middle pointer"
-                        style={{ width: '120px' }}
-                        onClick={() => this.changeOrder('status.weigth')}
-                      >
-                        Estado
+                        </th>
+                        <th className="middle">Color</th>
+                        <th
+                          className="middle pointer"
+                          style={{ width: '120px' }}
+                          onClick={() => this.changeOrder('status.weigth')}
+                        >
+                          Estado
                       <span style={{ float: 'right' }}><i className={`fa fa-fw ${orderBy === 'status.weigth' ? `${orderType === 'descending' ? 'fa-sort-down' : 'fa-sort-up'}` : 'fa-sort'}`} /></span>
-                      </th>
-                      <th className="middle">VIN</th>
-                      <th className="middle">CDO</th>
-                      <th
-                        className="middle pointer"
-                        style={{ width: '100px' }}
-                        onClick={() => this.changeOrder('reason.name')}
-                      >
-                        Motivo
+                        </th>
+                        <th className="middle">VIN</th>
+                        <th className="middle">CDO</th>
+                        <th
+                          className="middle pointer"
+                          style={{ width: '100px' }}
+                          onClick={() => this.changeOrder('reason.name')}
+                        >
+                          Motivo
                       <span style={{ float: 'right' }}><i className={`fa fa-fw ${orderBy === 'reason.name' ? `${orderType === 'descending' ? 'fa-sort-down' : 'fa-sort-up'}` : 'fa-sort'}`} /></span>
-                      </th>
-                      {/* <th className="middle">Carrocería</th>
+                        </th>
+                        {/* <th className="middle">Carrocería</th>
                       <th className="middle">Pre-Entrega</th> */}
-                      <th className="middle">Adj</th>
-                      <th className="middle">Obs</th>
-                      <th
-                        className="middle pointer"
-                        style={{ width: '100px' }}
-                        onClick={() => this.changeOrder('carrier.name')}
-                      >
-                        Transporte
+                        <th className="middle">Adj</th>
+                        <th className="middle">Obs</th>
+                        <th
+                          className="middle pointer"
+                          style={{ width: '100px' }}
+                          onClick={() => this.changeOrder('carrier.name')}
+                        >
+                          Transporte
                       <span style={{ float: 'right' }}><i className={`fa fa-fw ${orderBy === 'carrier.name' ? `${orderType === 'descending' ? 'fa-sort-down' : 'fa-sort-up'}` : 'fa-sort'}`} /></span>
-                      </th>
-                      <th
-                        className="middle pointer"
-                        style={{ width: '80px' }}
-                        onClick={() => this.changeOrder('uploadDate')}
-                      >
-                        F. carga
+                        </th>
+                        <th
+                          className="middle pointer"
+                          style={{ width: '80px' }}
+                          onClick={() => this.changeOrder('uploadDate')}
+                        >
+                          F. carga
                       <span style={{ float: 'right' }}><i className={`fa fa-fw ${orderBy === 'uploadDate' ? `${orderType === 'descending' ? 'fa-sort-down' : 'fa-sort-up'}` : 'fa-sort'}`} /></span>
-                      </th>
-                      <th
-                        className="middle pointer"
-                        style={{ width: '80px' }}
-                        onClick={() => this.changeOrder('estimatedArrival')}
-                      >
-                        F. llegada
+                        </th>
+                        <th
+                          className="middle pointer"
+                          style={{ width: '80px' }}
+                          onClick={() => this.changeOrder('estimatedArrival')}
+                        >
+                          F. llegada
                       <span style={{ float: 'right' }}><i className={`fa fa-fw ${orderBy === 'estimatedArrival' ? `${orderType === 'descending' ? 'fa-sort-down' : 'fa-sort-up'}` : 'fa-sort'}`} /></span>
-                      </th>
-                      <ShowIf condition={hasPermission(window.user, 'deleteRequest')}>
-                        <th className="middle" style={{ width: '30px' }} />
-                      </ShowIf>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {
-                      requestItems.map((item, index) => (
-                        <RequestVehicleItem
-                          key={item._id}
-                          item={item}
-                          {...this.props}
-                        />
-                      ))
-                    }
-                  </tbody>
-                </table>
+                        </th>
+                        <ShowIf condition={hasPermission(window.user, 'deleteRequest')}>
+                          <th className="middle" style={{ width: '30px' }} />
+                        </ShowIf>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {
+                        requestItems.map((item, index) => (
+                          <RequestVehicleItem
+                            key={item._id}
+                            item={item}
+                            {...this.props}
+                          />
+                        ))
+                      }
+                    </tbody>
+                  </table>
+                </div>
               </ShowIf>
               <ShowIf condition={!loading && requestItems.length === 0}>
                 <div className="row">
@@ -324,16 +468,16 @@ class RequestVehicleListView extends React.Component<IPropsType, IStateType> {
                 </div>
               </ShowIf>
             </div>
-            {
-              pagination.pages > 1 &&
-              <div className="box-footer">
-                <div className="row">
-                  <div className="col-md-12 text-right">
+            <div className="box-footer">
+              <div className="row">
+                <div className="col-md-12 text-right">
+                  {
+                    pagination.pages > 1 &&
                     <Paginator changePage={this.changePage} page={pagination.page} pages={pagination.pages} />
-                  </div>
+                  }
                 </div>
               </div>
-            }
+            </div>
             {
               loading &&
               <div className="overlay">
@@ -350,9 +494,19 @@ class RequestVehicleListView extends React.Component<IPropsType, IStateType> {
     this.props.history.push('/requests/vehicles/create/');
   }
 
-  private changeOrder(key: string){
-    const {page} = this.props.requestItems.pagination;
-    const {orderBy, orderType} = this.props.requestItems.options;
+  private changeFilterDebounced(key: keyof IRequestItemsFilters, value: any | any[]): void {
+    this.changeFilter(key, value);
+  }
+
+  private changeFilter(key: keyof IRequestItemsFilters, value: any | any[]): void {
+    const { orderBy, orderType } = this.props.requestItems.options;
+    this.props.changeFilterRequestAction(key, value);
+    this.props.getRequestItemsThunkAction(1, orderBy, orderType, true);
+  }
+
+  private changeOrder(key: string) {
+    const { page } = this.props.requestItems.pagination;
+    const { orderBy, orderType } = this.props.requestItems.options;
     let newOrderType = orderType;
     let newOrderBy = orderBy;
     if (key === orderBy) {
@@ -360,15 +514,16 @@ class RequestVehicleListView extends React.Component<IPropsType, IStateType> {
     } else {
       newOrderBy = key;
     }
-    this.props.getRequestItemsThunkAction(page, newOrderBy, newOrderType);
+    this.props.getRequestItemsThunkAction(page, newOrderBy, newOrderType, true);
   }
 
   private changePage(page: number): void {
-    const {orderBy, orderType} = this.props.requestItems.options;
+    window.scrollTo(0, 0);
+    const { orderBy, orderType } = this.props.requestItems.options;
     this.props.getRequestItemsThunkAction(page, orderBy, orderType);
   }
 
-  public exportExcel() {
+  public exportExcel(): void {
     this.setState({
       exporing: true
     });
@@ -433,8 +588,8 @@ const mapDispatchToProps = (dispatch: any) => {
     getRequestItemsThunkAction: (page: number, orderBy: string, orderType: string, hideLoading?: boolean) => dispatch(getRequestItemsThunkAction(page, orderBy, orderType, hideLoading)),
     createRequestItemAction: (item: IRequestItem) => dispatch(createRequestItemAction(item)),
     updateRequestItemAction: (item: IRequestItem) => dispatch(updateRequestItemAction(item)),
-    deleteRequestItemAction: (item: IRequestItem) => dispatch(deleteRequestItemAction(item))
-    // deleteRequestActionInList: (id: string) => dispatch(deleteRequestActionInList(id))
+    deleteRequestItemAction: (item: IRequestItem) => dispatch(deleteRequestItemAction(item)),
+    changeFilterRequestAction: (key: keyof IRequestItemsFilters, value: any | any[]) => dispatch(changeFilterRequestAction(key, value))
   };
 };
 

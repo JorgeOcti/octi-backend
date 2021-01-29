@@ -16,22 +16,24 @@ import MultiUploadFiles, { imageStatus } from '../Utils/MultiUploadFiles';
 import ShowIf from '../Utils/ShowIf';
 
 interface IPropsType extends RouteComponentProps<{}> { }
+
 interface INewCar {
-    brand: string;
-    brands: any[];
-    denomination: string;
-    denominations: any[];
-    material: string;
-    materials: any[];
-    color: string;
-    amount: number;
-    observation: string;
-    priority: boolean;
-    files: any[];
-    equipment: boolean;
-    washed: boolean;
-    reason: string;
+  brand: string;
+  brands: any[];
+  denomination: string;
+  denominations: any[];
+  material: string;
+  materials: any[];
+  color: string;
+  amount: number;
+  observation: string;
+  priority: boolean;
+  files: any[];
+  equipment: boolean;
+  washed: boolean;
+  reason: string;
 }
+
 interface IStateType {
   newCar: INewCar;
   fleet: boolean;

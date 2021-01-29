@@ -34,6 +34,7 @@ interface IImportCar {
 interface ICarObject {
   [key: string]: IImportCar;
 }
+
 interface IPropsType extends RouteComponentProps<{ ticket: string }> {
   dispatch: Dispatch<UserReduxAction>;
 }
@@ -78,7 +79,6 @@ class ImportCarsView extends React.Component<IPropsType, IStateType> {
   }
 
   public componentWillMount() {
-    // set the title of the page
     // set the title of the page
     document.title = 'OSA Andes | Importar autos';
   }

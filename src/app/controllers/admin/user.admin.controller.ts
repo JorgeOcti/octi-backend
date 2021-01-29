@@ -216,8 +216,8 @@ class AdminUsersController {
         message: 'No tienes permisos para esta operación'
       });
     }
-    const {page, pageSize, search} = req.query as { page: string, pageSize: string, search: string};
-    const {team} = req.user;
+    const { page, pageSize, search } = req.query as { page: string, pageSize: string, search: string };
+    const { team } = req.user;
     // paginate options
     const options: PaginateOptions = {
       select: {
@@ -354,7 +354,7 @@ class AdminUsersController {
           Contraseña ${password}
           En caso de dudas o consultas puedes contactarte asoporte@osacontrol.com o a nuestro twitter @TaskforceOSA.
 
-          © 2020 OSA SpA. All rights reserved.`,
+          © 2021 OSA SpA. All rights reserved.`,
           view: 'account/welcome',
           context: {
             fullname,

@@ -119,7 +119,7 @@ class MultiUploadFiles extends React.Component<IPropsType, IStateType> {
           onDragEnd={this.dragEndHandler}
           onDragLeave={this.dragLeaveHandler}
         >
-          <i className="fa fa-plus" /><br />
+          <i className="fa fa-2x fa-cloud-upload" /><br />
           AÑADIR ARCHIVOS
         </div>
         <input

@@ -95,7 +95,7 @@ io.on( 'connection', async ( socket ) => {
               lastName: (socket as any).user.lastName
             }
           };
-          redisClient.set(room, JSON.stringify(data), "ex", 60 * 60 * 24);
+          redisClient.set(room, JSON.stringify(data), 'ex', 60 * 60 * 24);
         }
       } else {
         data = {
@@ -104,7 +104,7 @@ io.on( 'connection', async ( socket ) => {
             lastName: (socket as any).user.lastName
           }
         };
-        redisClient.set(room, JSON.stringify(data), "ex", 60 * 60 * 24);
+        redisClient.set(room, JSON.stringify(data), 'ex', 60 * 60 * 24);
       }
       // logger.info(`socket.join.${room}: {user: ${JSON.stringify((socket as any).user)}}`);
       socket.join(room);
@@ -122,7 +122,7 @@ io.on( 'connection', async ( socket ) => {
         const key = (socket as any).user._id;
         if (data.hasOwnProperty(key)) {
           delete data[key];
-          redisClient.set(room, JSON.stringify(data), "ex", 60 * 60 * 24);
+          redisClient.set(room, JSON.stringify(data), 'ex', 60 * 60 * 24);
         }
       }
       io.to(room).emit('USERS_IN_CHANNEL', data);

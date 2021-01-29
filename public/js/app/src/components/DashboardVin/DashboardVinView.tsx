@@ -22,6 +22,7 @@ import Paginator from '../Utils/Paginator';
 import ApiService from "../../utils/axios";
 import * as swal from 'sweetalert';
 import Axios from "axios";
+import { constants } from 'os';
 
 declare let window: IWindow;
 
@@ -138,7 +139,7 @@ class DashboardVinView extends React.Component<IPropsType, IStateType> {
   }
 
   public componentDidMount(): void {
-    let $this = this;
+    const $this = this;
     ($('input[name="daterange"]') as any).daterangepicker({
       startDate: moment().subtract(30, 'days'),
       endDate: moment(),
@@ -288,9 +289,10 @@ class DashboardVinView extends React.Component<IPropsType, IStateType> {
                     <tr>
                       <th style={{width: '5%'}} className="middle hidden-xs">Nº</th>
                       <th style={{width: '12%'}} className="middle">VIN</th>
-                      <th style={{width: '10%'}} className="middle hidden-xs">Marca</th>
-                      <th style={{width: '15%'}} className="middle hidden-xs">Supervisor</th>
-                      <th style={{width: '20%'}} className="middle">Sucursal</th>
+                      <th style={{width: '8%'}} className="middle">Patente</th>
+                      <th style={{width: '9%'}} className="middle hidden-xs">Marca</th>
+                      <th style={{width: '13%'}} className="middle hidden-xs">Supervisor</th>
+                      <th style={{width: '13%'}} className="middle">Sucursal</th>
                       <th style={{width: '10%'}} className="hidden-xs">Calificación</th>
                       <th style={{width: '15%'}} className="hidden-xs">Fecha calificación</th>
                       <th style={{width: '15%'}} className="hidden-xs">Último checkeo</th>
@@ -308,6 +310,7 @@ class DashboardVinView extends React.Component<IPropsType, IStateType> {
                           >
                             <td className="middle hidden-xs">{participant.number}</td>
                             <td className="middle">{participant.car.vin}</td>
+                            <td className="middle">{participant.car.patent && participant.car.patent.length ? participant.car.patent : '-'}</td>
                             <td className="middle hidden-xs">{participant.car.brand}</td>
                             <td className="middle hidden-xs">
                               {`${participant.user ? `${participant.user.firstName} ${participant.user.lastName}` : ''}`}
@@ -324,11 +327,11 @@ class DashboardVinView extends React.Component<IPropsType, IStateType> {
                                 this.hasDamages(participant) ?
                                   <React.Fragment>
                                     {' '}<i
-                                    className="fa fa-warning text-red"
-                                    data-toggle="tooltip"
-                                    data-placement="top"
-                                    title="Daños encontrados en esta revisión."
-                                  />
+                                      className="fa fa-warning text-red"
+                                      data-toggle="tooltip"
+                                      data-placement="top"
+                                      title="Daños encontrados en esta revisión."
+                                    />
                                   </React.Fragment>
                                   : null
                               }
@@ -421,7 +424,7 @@ const mapStateToProps = (state: { dashboard: IDashboardState }) => {
   };
 };
 
-const mapDispatchToProps = (dispatch: any ) => {
+const mapDispatchToProps = (dispatch: any) => {
   return {
     dispatch,
     changeSearchDashboardAction: (searchText: string) => dispatch(changeSearchDashboardAction(searchText)),

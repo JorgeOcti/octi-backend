@@ -1,16 +1,16 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-const company_model_1 = require("../../app/models/company.model");
-const invoice_model_1 = require("../models/invoice.model");
-const request = require("request");
-const moment = require("moment-timezone");
-const activityHistory_model_1 = require("../models/activityHistory.model");
+const fs = require("fs");
 const HtmlPdf = require("html-pdf");
-const general_utils_1 = require("../../utils/general.utils");
+const moment = require("moment-timezone");
 const path = require("path");
 const Raven = require("raven");
-const fs = require("fs");
+const request = require("request");
 const app_1 = require("../../app");
+const company_model_1 = require("../../app/models/company.model");
+const general_utils_1 = require("../../utils/general.utils");
+const activityHistory_model_1 = require("../models/activityHistory.model");
+const invoice_model_1 = require("../models/invoice.model");
 class BillingQueue {
     constructor() {
         this.apiKey = '6d9b28d228cd00669f37484223d876daad754636';
@@ -41,15 +41,12 @@ class BillingQueue {
             try {
                 const now = moment().subtract(1, 'day');
                 const [year, month, day] = [now.format('YYYY'), now.format('MM'), now.format('DD')];
-                // request.get(`https://api.sbif.cl/api-sbifv3/recursos_api/uf/${year}/${month}/dias/${day}?apikey=${this.apiKey}&formato=json`, function (err, resp, body) {
                 request.get(`https://mindicador.cl/api/uf/${day}-${month}-${year}`, (err, resp, body) => {
                     if (err) {
                         reject(err);
                     }
                     else {
-                        // console.log('body', body);
                         const dailyIndicators = JSON.parse(body);
-                        // console.log('dailyIndicators', dailyIndicators);
                         const value = parseFloat(dailyIndicators.serie[0].valor);
                         resolve(value);
                     }

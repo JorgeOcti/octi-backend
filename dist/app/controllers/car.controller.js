@@ -372,10 +372,12 @@ class CarController {
             const { companies } = req.query;
             const venuesPermissions = req.user.venuesPermissions();
             const query = {
-                _id: { $in: venuesPermissions }
+                _id: {
+                    $in: venuesPermissions
+                }
             };
             if (companies) {
-                query['company'] = {
+                query.company = {
                     $in: [companies]
                 };
             }
@@ -1185,7 +1187,7 @@ class CarController {
             },
             populate: [{
                     path: 'car',
-                    select: ['vin', 'brand', 'denomination', 'color', 'lastForm'],
+                    select: ['vin', 'brand', 'patent', 'denomination', 'color', 'lastForm'],
                     populate: {
                         path: 'lastForm',
                         select: ['createdAt']
@@ -1250,6 +1252,10 @@ class CarController {
                     const searchCar = await car_model_1.default.find({
                         $or: [{
                                 vin: {
+                                    $regex: searchText
+                                }
+                            }, {
+                                patent: {
                                     $regex: searchText
                                 }
                             }, {

@@ -92,7 +92,7 @@ exports.io.on('connection', async (socket) => {
                             lastName: socket.user.lastName
                         }
                     };
-                    redis_service_1.default.set(room, JSON.stringify(data), "ex", 60 * 60 * 24);
+                    redis_service_1.default.set(room, JSON.stringify(data), 'ex', 60 * 60 * 24);
                 }
             }
             else {
@@ -102,7 +102,7 @@ exports.io.on('connection', async (socket) => {
                         lastName: socket.user.lastName
                     }
                 };
-                redis_service_1.default.set(room, JSON.stringify(data), "ex", 60 * 60 * 24);
+                redis_service_1.default.set(room, JSON.stringify(data), 'ex', 60 * 60 * 24);
             }
             // logger.info(`socket.join.${room}: {user: ${JSON.stringify((socket as any).user)}}`);
             socket.join(room);
@@ -119,7 +119,7 @@ exports.io.on('connection', async (socket) => {
                 const key = socket.user._id;
                 if (data.hasOwnProperty(key)) {
                     delete data[key];
-                    redis_service_1.default.set(room, JSON.stringify(data), "ex", 60 * 60 * 24);
+                    redis_service_1.default.set(room, JSON.stringify(data), 'ex', 60 * 60 * 24);
                 }
             }
             exports.io.to(room).emit('USERS_IN_CHANNEL', data);

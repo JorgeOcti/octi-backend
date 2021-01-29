@@ -29,6 +29,7 @@ const participantFile_model_1 = require("../models/participantFile.model");
 const scale_model_1 = require("../models/scale.model");
 const bluebird = require("bluebird");
 const activityHistory_model_1 = require("../../billing/models/activityHistory.model");
+// import {ValidationResult} from 'joi';
 // import * as puppeteer from 'puppeteer';
 const DERCO_TEAM = '5bf2de34caf8ef7096105cda';
 class FormController {
@@ -535,7 +536,7 @@ class FormController {
                 weight: 0,
                 order: 0,
                 optional: false,
-                hint: '',
+                hint: ''
             };
             // get scales from db
             res.json({
@@ -837,7 +838,7 @@ class FormController {
                         Para ver el detalle has click aquí
                         ${process.env.SITE_URL}cars/${car._id}
 
-                        © 2020 OSA SpA. Todos los derechos reservados.`,
+                        © 2021 OSA SpA. Todos los derechos reservados.`,
                                             view: 'alerts/lowQualification',
                                             context: {
                                                 userName,

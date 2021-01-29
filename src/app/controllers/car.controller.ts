@@ -363,15 +363,17 @@ class CarController {
   }
 
   public async apiParticipantsPerDate(req: IRequest, res: Response) {
-    const {team} = req.user;
+    const { team } = req.user;
     try {
-      const {companies} = req.query;
+      const { companies } = req.query;
       const venuesPermissions = req.user.venuesPermissions();
       const query: any = {
-        _id: {$in: venuesPermissions}
+        _id: {
+          $in: venuesPermissions
+        }
       };
-      if(companies){
-        query['company'] = {
+      if (companies) {
+        query.company = {
           $in: [companies]
         };
       }
@@ -1194,7 +1196,7 @@ class CarController {
       },
       populate: [{
         path: 'car',
-        select: ['vin', 'brand', 'denomination', 'color', 'lastForm'],
+        select: ['vin', 'brand', 'patent', 'denomination', 'color', 'lastForm'],
         populate: {
           path: 'lastForm',
           select: ['createdAt']
@@ -1228,12 +1230,12 @@ class CarController {
         const searchUser = await User.find({
           $and: [{
             $or: [{
-              firstName: {$regex: searchText}
+              firstName: { $regex: searchText }
             }, {
-              lastName: {$regex: searchText}
+              lastName: { $regex: searchText }
             }]
-          }, {team}]
-        }, {_id: true});
+          }, { team }]
+        }, { _id: true });
         const searchVenue = await Venue.find({
           _id: {
             $in: req.user.venuesPermissions()
@@ -1242,7 +1244,7 @@ class CarController {
             $regex: searchText
           },
           team
-        }, {_id: true});
+        }, { _id: true });
         if (searchUser.length) {
           participantFilter.$and.push({
             user: {
@@ -1262,12 +1264,16 @@ class CarController {
                 $regex: searchText
               }
             }, {
+              patent: {
+                $regex: searchText
+              }
+            }, {
               brand: {
                 $regex: searchText
               }
             }],
             team
-          }, {_id: true});
+          }, { _id: true });
           participantFilter.$and.push({
             car: {
               $in: searchCar
