@@ -878,6 +878,19 @@ class CarController {
             //create additional columns/headers based of form questions
             for (const form of forms)
                 columns.concat(this.getHeadersFromForm(form));
+            //Create Excel Stream with pipe to response object
+            const options = {
+                stream: res,
+                useStyles: true,
+                useSharedStrings: true
+            };
+            const workbook = new excel.stream.xlsx.WorkbookWriter(options);
+            const worksheet = workbook.addWorksheet('Rotación de unidades', {
+                pageSetup: {
+                    fitToPage: true, fitToHeight: 100, fitToWidth: 1
+                }
+            });
+            worksheet.columns = columns;
                 }, {
                     path: 'user',
                     populate: [{
