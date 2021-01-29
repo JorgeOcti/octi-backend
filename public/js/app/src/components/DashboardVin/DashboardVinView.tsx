@@ -21,6 +21,7 @@ import {IWindow} from '../../interfaces/window';
 import Paginator from '../Utils/Paginator';
 import ApiService from "../../utils/axios";
 import * as swal from 'sweetalert';
+import Axios from "axios";
 
 declare let window: IWindow;
 
@@ -49,7 +50,6 @@ class DashboardVinView extends React.Component<IPropsType, IStateType> {
     error: null,
     highlight: [],
     searchText: '',
-    carLoading: ''
     carLoading: '',
     from: moment().subtract(30, 'days').unix(),
     to: moment().unix(),
@@ -145,8 +145,13 @@ class DashboardVinView extends React.Component<IPropsType, IStateType> {
       maxDate: moment(),
       opens: 'left'
     }, function (from: any, to: any, label: any) {
-        $this.props.changeRangeDashboardAction(from.format('YYYY-MM-DD'), to.format('YYYY-MM-DD'));
-        $this.debounceOnChangeSearch();
+        $this.setState({
+          from: moment(from).unix(),
+          to: moment(to).unix(),
+        }, () => {
+          $this.props.changeRangeDashboardAction(from.format('YYYY-MM-DD'), to.format('YYYY-MM-DD'));
+          $this.debounceOnChangeSearch();
+        })
     });
   }
 
@@ -233,7 +238,7 @@ class DashboardVinView extends React.Component<IPropsType, IStateType> {
 
   public render(): React.ReactElement<IPropsType> {
     const {loading, participants, pagination, searchText} = this.props.dashboard;
-    const {highlight, carLoading} = this.state;
+    const {highlight, carLoading, downloading} = this.state;
     return (
       <AppContainer title="" cMenu="1" cSubMenu="1.2">
         <section className="content">
@@ -244,7 +249,7 @@ class DashboardVinView extends React.Component<IPropsType, IStateType> {
             </div>
             <div className={`box-body no-padding`}>
               <div className="row">
-                <div className="col-md-offset-4 col-md-4">
+                <div className="col-md-offset-3 col-md-4">
                   <div className="input-group input-group-sm" style={{padding: '10px 5px'}}>
                     <input type="text" className="form-control input-sm" name="daterange" />
                     <div className="input-group-btn">
@@ -267,6 +272,14 @@ class DashboardVinView extends React.Component<IPropsType, IStateType> {
                     </div>
                   </div>
                 </div>
+                <button
+                  className="btn btn-sm btn-primary hidden-xs hidden-sm"
+                  onClick={this.downloadReport}
+                  disabled={downloading}
+                  style={{margin: "10px 5px"}}
+                >
+                  <i className="fa fa-fw fa-download"/> Exportar Excel
+                </button>
               </div>
               {
                 participants.length ?
