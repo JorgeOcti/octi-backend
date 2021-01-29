@@ -69,6 +69,8 @@ class CarController {
         this.getCars = this.getCars.bind(this);
         this.apiParticipantDetail = this.apiParticipantDetail.bind(this);
         this.apiParticipantsPerDate = this.apiParticipantsPerDate.bind(this);
+        this.processParticipant = this.processParticipant.bind(this);
+        this.exportParticipants = this.exportParticipants.bind(this);
     }
     async generalDashboard(req, res) {
         res.render('app/index', { token: await req.user.generateToken() });
@@ -819,10 +821,8 @@ class CarController {
         return { ...datum, ...sectionAnswers };
     }
     /* istanbul ignore next */
-    async apiParticipantCSV(req, res) {
+    async exportParticipants(req, res) {
         try {
-            const participants = await participant_model_1.default.find({}).populate([{
-                    path: 'car'
             const { team } = req.user;
             const { from, to } = req.query;
             //Get filters for Mongo Query
@@ -891,31 +891,61 @@ class CarController {
                 }
             });
             worksheet.columns = columns;
+            //Create Mongo Query in Cursor/Stream Mode for all the participants/answers
+            let cursor = participant_model_1.default.find(queryFilter, {
+                number: 1,
+                createdAt: 1,
+                car: 1,
+                team: 1,
+                user: 1,
+                company: 1,
+                venue: 1,
+                name: 1,
+                conciliation: 1,
+                qualification: 1,
+                reception: 1,
+                shipping: 1,
+                receptionText: 1,
+                shippingText: 1,
+                sections: 1
+            }).populate([{
+                    path: 'car',
+                    select: 'brand denomination color vin patent'
                 }, {
                     path: 'user',
+                    select: 'firstName lastName venue',
                     populate: [{
-                            path: 'venue'
+                            path: 'venue',
+                            select: 'name',
                         }]
                 }, {
-                    path: 'form'
+                    path: 'venue',
+                    select: 'name',
                 }, {
-                    path: 'company'
-                }]);
-            // const cars = await CarModel.find({}).populate([{
-            //   path: 'company'
-            // }]);
-            const data = [];
-            data.push(`Company|VIN|Marca|Denominacion|Usuario|formulario|venue|calificacion|fecha|Cargado`);
-            for (const participant of participants) {
-                data.push(`${participant.company.name}|${participant.car.vin}|${participant.car.brand}|${participant.car.denomination}|${participant.user ? participant.user.fullName() : '-'}|${participant.form.name}|${participant.user ? participant.user.venue.name : '-'}|${participant.qualification.toString().replace('.', ',')}|${moment(participant.createdAt).format('DD/MM/YY HH:MM:SS')}`);
-            }
-            // for (const car of cars) {
-            //   data.push(`${car.company.name}|${car.vin}|${car.brand}|${car.denomination}||||||${moment(car.createdAt).format('DD/MM/YY HH:MM:SS')}`);
-            // }
-            res.send(data.join('\n'));
+                    path: 'company',
+                    select: 'name',
+                }, {
+                    path: 'team',
+                    select: 'name',
+                }]).batchSize(100).cursor();
+            cursor.on('data', async (participant) => {
+                const row = await this.processParticipant(participant);
+                await worksheet.addRow(row).commit();
+            });
+            // code to handle connection abort or finish query read process
+            cursor.on('end', async () => {
+                await workbook.commit();
+                res.status(200);
+            });
+            cursor.on("error", (error) => logger_service_1.default.error(error.message));
+            // code to handle connection abort or finish of data send
+            req.connection.on('close', async function () {
+                await cursor.close();
+                res.status(200);
+            });
         }
         catch (e) {
-            console.log(e);
+            logger_service_1.default.error(e);
         }
     }
     async apiParticipantDetail(req, res) {
