@@ -452,7 +452,7 @@ class RequestController {
       }, {
         header: 'MOTIVO', key: 'reason', width: 20
       }, {
-        header: 'GRUPO, MOTIVO', key: 'group', width: 20
+        header: 'GRUPO, PROPIEDAD', key: 'group', width: 20
       }, {
         header: 'MARCA', key: 'brand', width: 20
       }, {

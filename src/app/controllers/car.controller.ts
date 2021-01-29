@@ -6,10 +6,10 @@ import * as mongoose from 'mongoose';
 import { PaginateOptions, PaginateResult } from 'mongoose';
 import * as tempfile from 'tempfile';
 import app from '../../app';
-import FormModel, { KindQuestion } from '../../form/models/form.model';
+import FormModel, { IFormModel, KindQuestion } from '../../form/models/form.model';
 import Kind from '../../form/models/kind.model';
 import Part from '../../form/models/part.model';
-import ParticipantModel from '../../form/models/participant.model';
+import ParticipantModel, { IParticipantAnswerModel } from '../../form/models/participant.model';
 import Position from '../../form/models/position.model';
 import { IAnyObject, IRequest } from '../../interfaces/global.interface';
 import { IParticipant } from '../../interfaces/participant.interface';
@@ -760,21 +760,24 @@ class CarController {
     }
   }
 
-  public getHeadersFromForm(form: FormModel){
-    let columns = [];
-    for (const section of form.sections)
-      for (const question of section.questions)
-        if (["scale", "accessory", "damages"].includes(question.kind))
+  public getHeadersFromForm(form: IFormModel) {
+    const columns = [];
+    for (const section of form.sections) {
+      for (const question of section.questions) {
+        if (['scale', 'accessory', 'damages'].includes(question.kind)) {
           columns.push({
             header: `${form.name} - ${question.question}`, key: question._id.toString(), width: 30
           });
+        }
+      }
+    }
     return columns;
   }
 
-  public processAnswer(answer) {
-    let datum = {}
+  public processAnswer(answer: IParticipantAnswerModel) {
+    let datum = {};
 
-    if (answer.kind === "scale" || answer.kind === "accessory"){
+    if (answer.kind === 'scale' || answer.kind === 'accessory'){
       if (!answer.answer) {
         return {};
       }
@@ -782,69 +785,72 @@ class CarController {
       if (selectedChoice) {
         datum = {[answer._id.toString()]: selectedChoice.choice};
       }
-    } else if (answer.kind === "damage"){
-      datum = {[answer._id.toString()]: answer.damagesSelected.length > 0 ? "SI" : "NO"};
+    } else if (answer.kind === 'damage'){
+      datum = {[answer._id.toString()]: answer.damagesSelected.length > 0 ? 'SI' : 'NO'};
     }
     return datum;
   }
 
-  public processParticipant(participant) {
+  public processParticipant(participant: IParticipant) {
     const datum = {
       number: participant.number,
       created_at: moment(participant.createdAt).toDate(),
-      model: participant.car ? `${participant.car.brand} - ${participant.car.denomination ? participant.car.denomination : ""} - ${participant.car.color}` : "",
+      model: participant.car ? `${participant.car.brand} - ${participant.car.denomination ? participant.car.denomination : ''} - ${participant.car.color}` : '',
       team: participant.team.name,
-      user: participant.user ? `${participant.user.firstName} ${participant.user.lastName}` : "",
+      user: participant.user ? `${participant.user.firstName} ${participant.user.lastName}` : '',
       company: participant.company.name,
-      venue: participant.venue ? participant.venue.name : participant.user ? participant.user.venue.name : "",
-      vin: participant.car ? participant.car.vin : "",
-      plate: participant.car ? participant.car.patent : "",
+      venue: participant.venue ? participant.venue.name : participant.user ? participant.user.venue.name : '',
+      vin: participant.car ? participant.car.vin : '',
+      plate: participant.car ? participant.car.patent : '',
       name: participant.name,
-      conciliation: participant.conciliation ? "SI" : "NO",
+      conciliation: participant.conciliation ? 'SI' : 'NO',
       qualification: participant.qualification,
-      reception: participant.reception ? "SI" : "NO",
-      shipping: participant.shipping ? "SI" : "NO",
-      isReception: participant.receptionText.length > 0 ? "SI" : "NO",
-      isShipping: participant.shippingText.length > 0 ? "SI" : "NO",
-    }
+      reception: participant.reception ? 'SI' : 'NO',
+      shipping: participant.shipping ? 'SI' : 'NO',
+      isReception: participant.receptionText.length > 0 ? 'SI' : 'NO',
+      isShipping: participant.shippingText.length > 0 ? 'SI' : 'NO'
+    };
 
-    let sectionAnswers = {}
+    let sectionAnswers = {};
     for (const section of participant.sections) {
       for (const answer of section.answers) {
-        sectionAnswers = {...sectionAnswers, ...this.processAnswer(answer)}
+        sectionAnswers = { ...sectionAnswers, ...this.processAnswer(answer) };
       }
     }
-    return {...datum, ...sectionAnswers};
+    return {
+      ...datum,
+      ...sectionAnswers
+    };
   }
 
 
   /* istanbul ignore next */
   public async exportParticipants(req: IRequest, res: Response) {
     try {
-      const {team} = req.user;
-      const {from, to } = req.query;
+      const { team } = req.user;
+      const { from, to } = req.query;
       const venuesPermissions = req.user.venuesPermissions();
 
-      //Get filters for Mongo Query
-      const queryFilter = {
+      // Get filters for Mongo Query
+      const queryFilter: any = {
         team,
         venue: {
           $in: venuesPermissions
-        },
+        }
       };
-      if ( from && to)
-        queryFilter['createdAt'] = {
+      if (from && to){
+        queryFilter.createdAt = {
           $gte: moment.unix(Number(from)).hour(0).minute(0).toDate(),
           $lt: moment.unix(Number(to)).hour(23).minute(59).toDate()
+        };
       }
 
-      //Get the forms to create columns/header of excel
+      // Get the forms to create columns/header of excel
       let forms = await ParticipantModel.find(queryFilter).distinct('form');
-      forms = await FormModel.find({_id: {$in: forms}})
+      forms = await FormModel.find({ _id: { $in: forms } });
 
       // Create columns/headers for excel
-      let columns = [
-        {
+      let columns = [{
         header: '#', key: 'number', width: 30
       }, {
         header: 'Fecha', key: 'created_at', width: 30, style: {
@@ -854,7 +860,7 @@ class CarController {
         header: 'Modelo', key: 'model', width: 30
       }, {
         header: 'Team', key: 'team', width: 30
-      },  {
+      }, {
         header: 'Usuario', key: 'user', width: 30
       }, {
         header: 'Compañía', key: 'company', width: 30
@@ -880,12 +886,12 @@ class CarController {
         header: 'Enviado', key: 'shipping', width: 30
       }];
 
-      //create additional columns/headers based of form questions
-      for (const form of forms)
+      // create additional columns/headers based of form questions
+      for (const form of forms) {
         columns = columns.concat(this.getHeadersFromForm(form));
+      }
 
-
-      //Create Excel Stream with pipe to response object
+      // Create Excel Stream with pipe to response object
       const options = {
         stream: res,
         useStyles: true,
@@ -899,8 +905,8 @@ class CarController {
       });
       worksheet.columns = columns;
 
-      //Create Mongo Query in Cursor/Stream Mode for all the participants/answers
-      let cursor = ParticipantModel.find(queryFilter, {
+      // Create Mongo Query in Cursor/Stream Mode for all the participants/answers
+      const cursor = ParticipantModel.find(queryFilter, {
         number: 1,
         createdAt: 1,
         car: 1,
@@ -924,18 +930,18 @@ class CarController {
         select: 'firstName lastName venue',
         populate: [{
           path: 'venue',
-          select: 'name',
+          select: 'name'
         }]
       }, {
         path: 'venue',
-        select: 'name',
-      },{
+        select: 'name'
+      }, {
         path: 'company',
-        select: 'name',
+        select: 'name'
       }, {
         path: 'team',
-        select: 'name',
-      }]).batchSize(100).cursor()
+        select: 'name'
+      }]).batchSize(100).cursor();
 
 
       cursor.on('data', async (participant) => {
@@ -949,11 +955,11 @@ class CarController {
         res.status(200);
       });
 
-      cursor.on("error", (error) => logger.error(error.message))
+      cursor.on('error', (error) => logger.error(error.message));
 
       // code to handle connection abort or finish of data send
-      req.connection.on('close', async function(){
-        await cursor.close()
+      req.connection.on('close', async () => {
+        await cursor.close();
         res.status(200);
       });
 
@@ -963,8 +969,8 @@ class CarController {
   }
 
   public async apiParticipantDetail(req: IRequest, res: Response) {
-    const {id} = req.params;
-    const {team} = req.user;
+    const { id } = req.params;
+    const { team } = req.user;
     try {
       const venuesPermissions = req.user.venuesPermissions();
       const participant = await ParticipantModel

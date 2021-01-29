@@ -770,18 +770,21 @@ class CarController {
         }
     }
     getHeadersFromForm(form) {
-        let columns = [];
-        for (const section of form.sections)
-            for (const question of section.questions)
-                if (["scale", "accessory", "damages"].includes(question.kind))
+        const columns = [];
+        for (const section of form.sections) {
+            for (const question of section.questions) {
+                if (['scale', 'accessory', 'damages'].includes(question.kind)) {
                     columns.push({
                         header: `${form.name} - ${question.question}`, key: question._id.toString(), width: 30
                     });
+                }
+            }
+        }
         return columns;
     }
     processAnswer(answer) {
         let datum = {};
-        if (answer.kind === "scale" || answer.kind === "accessory") {
+        if (answer.kind === 'scale' || answer.kind === 'accessory') {
             if (!answer.answer) {
                 return {};
             }
@@ -790,8 +793,8 @@ class CarController {
                 datum = { [answer._id.toString()]: selectedChoice.choice };
             }
         }
-        else if (answer.kind === "damage") {
-            datum = { [answer._id.toString()]: answer.damagesSelected.length > 0 ? "SI" : "NO" };
+        else if (answer.kind === 'damage') {
+            datum = { [answer._id.toString()]: answer.damagesSelected.length > 0 ? 'SI' : 'NO' };
         }
         return datum;
     }
@@ -799,20 +802,20 @@ class CarController {
         const datum = {
             number: participant.number,
             created_at: moment(participant.createdAt).toDate(),
-            model: participant.car ? `${participant.car.brand} - ${participant.car.denomination ? participant.car.denomination : ""} - ${participant.car.color}` : "",
+            model: participant.car ? `${participant.car.brand} - ${participant.car.denomination ? participant.car.denomination : ''} - ${participant.car.color}` : '',
             team: participant.team.name,
-            user: participant.user ? `${participant.user.firstName} ${participant.user.lastName}` : "",
+            user: participant.user ? `${participant.user.firstName} ${participant.user.lastName}` : '',
             company: participant.company.name,
-            venue: participant.venue ? participant.venue.name : participant.user ? participant.user.venue.name : "",
-            vin: participant.car ? participant.car.vin : "",
-            plate: participant.car ? participant.car.patent : "",
+            venue: participant.venue ? participant.venue.name : participant.user ? participant.user.venue.name : '',
+            vin: participant.car ? participant.car.vin : '',
+            plate: participant.car ? participant.car.patent : '',
             name: participant.name,
-            conciliation: participant.conciliation ? "SI" : "NO",
+            conciliation: participant.conciliation ? 'SI' : 'NO',
             qualification: participant.qualification,
-            reception: participant.reception ? "SI" : "NO",
-            shipping: participant.shipping ? "SI" : "NO",
-            isReception: participant.receptionText.length > 0 ? "SI" : "NO",
-            isShipping: participant.shippingText.length > 0 ? "SI" : "NO",
+            reception: participant.reception ? 'SI' : 'NO',
+            shipping: participant.shipping ? 'SI' : 'NO',
+            isReception: participant.receptionText.length > 0 ? 'SI' : 'NO',
+            isShipping: participant.shippingText.length > 0 ? 'SI' : 'NO'
         };
         let sectionAnswers = {};
         for (const section of participant.sections) {
@@ -820,7 +823,10 @@ class CarController {
                 sectionAnswers = { ...sectionAnswers, ...this.processAnswer(answer) };
             }
         }
-        return { ...datum, ...sectionAnswers };
+        return {
+            ...datum,
+            ...sectionAnswers
+        };
     }
     /* istanbul ignore next */
     async exportParticipants(req, res) {
@@ -828,24 +834,24 @@ class CarController {
             const { team } = req.user;
             const { from, to } = req.query;
             const venuesPermissions = req.user.venuesPermissions();
-            //Get filters for Mongo Query
+            // Get filters for Mongo Query
             const queryFilter = {
                 team,
                 venue: {
                     $in: venuesPermissions
-                },
+                }
             };
-            if (from && to)
-                queryFilter['createdAt'] = {
+            if (from && to) {
+                queryFilter.createdAt = {
                     $gte: moment.unix(Number(from)).hour(0).minute(0).toDate(),
                     $lt: moment.unix(Number(to)).hour(23).minute(59).toDate()
                 };
-            //Get the forms to create columns/header of excel
+            }
+            // Get the forms to create columns/header of excel
             let forms = await participant_model_1.default.find(queryFilter).distinct('form');
             forms = await form_model_1.default.find({ _id: { $in: forms } });
             // Create columns/headers for excel
-            let columns = [
-                {
+            let columns = [{
                     header: '#', key: 'number', width: 30
                 }, {
                     header: 'Fecha', key: 'created_at', width: 30, style: {
@@ -879,12 +885,12 @@ class CarController {
                     header: 'Tipo Envío', key: 'isShipping', width: 30
                 }, {
                     header: 'Enviado', key: 'shipping', width: 30
-                }
-            ];
-            //create additional columns/headers based of form questions
-            for (const form of forms)
+                }];
+            // create additional columns/headers based of form questions
+            for (const form of forms) {
                 columns = columns.concat(this.getHeadersFromForm(form));
-            //Create Excel Stream with pipe to response object
+            }
+            // Create Excel Stream with pipe to response object
             const options = {
                 stream: res,
                 useStyles: true,
@@ -897,8 +903,8 @@ class CarController {
                 }
             });
             worksheet.columns = columns;
-            //Create Mongo Query in Cursor/Stream Mode for all the participants/answers
-            let cursor = participant_model_1.default.find(queryFilter, {
+            // Create Mongo Query in Cursor/Stream Mode for all the participants/answers
+            const cursor = participant_model_1.default.find(queryFilter, {
                 number: 1,
                 createdAt: 1,
                 car: 1,
@@ -922,17 +928,17 @@ class CarController {
                     select: 'firstName lastName venue',
                     populate: [{
                             path: 'venue',
-                            select: 'name',
+                            select: 'name'
                         }]
                 }, {
                     path: 'venue',
-                    select: 'name',
+                    select: 'name'
                 }, {
                     path: 'company',
-                    select: 'name',
+                    select: 'name'
                 }, {
                     path: 'team',
-                    select: 'name',
+                    select: 'name'
                 }]).batchSize(100).cursor();
             cursor.on('data', async (participant) => {
                 const row = await this.processParticipant(participant);
@@ -943,9 +949,9 @@ class CarController {
                 await workbook.commit();
                 res.status(200);
             });
-            cursor.on("error", (error) => logger_service_1.default.error(error.message));
+            cursor.on('error', (error) => logger_service_1.default.error(error.message));
             // code to handle connection abort or finish of data send
-            req.connection.on('close', async function () {
+            req.connection.on('close', async () => {
                 await cursor.close();
                 res.status(200);
             });
