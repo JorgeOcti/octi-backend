@@ -774,6 +774,50 @@ class CarController {
                         header: `${form.name} - ${question.question}`, key: question._id.toString(), width: 30
                     });
         return columns;
+    }
+    processAnswer(answer) {
+        let datum = {};
+        if (answer.kind === "scale" || answer.kind === "accessory") {
+            if (!answer.answer) {
+                return {};
+            }
+            const selectedChoice = answer.scale.choices.find(choice => choice._id.toString() === answer.answer.toString());
+            if (selectedChoice) {
+                datum = { [answer._id.toString()]: selectedChoice.choice };
+            }
+        }
+        else if (answer.kind === "damage") {
+            datum = { [answer._id.toString()]: answer.damagesSelected.length > 0 ? "SI" : "NO" };
+        }
+        return datum;
+    }
+    processParticipant(participant) {
+        const datum = {
+            number: participant.number,
+            created_at: moment(participant.createdAt).toDate(),
+            model: participant.car ? `${participant.car.brand} - ${participant.car.denomination ? participant.car.denomination : ""} - ${participant.car.color}` : "",
+            team: participant.team.name,
+            user: participant.user ? `${participant.user.firstName} ${participant.user.lastName}` : "",
+            company: participant.company.name,
+            venue: participant.venue ? participant.venue.name : participant.user ? participant.user.venue.name : "",
+            vin: participant.car ? participant.car.vin : "",
+            plate: participant.car ? participant.car.patent : "",
+            name: participant.name,
+            conciliation: participant.conciliation ? "SI" : "NO",
+            qualification: participant.qualification,
+            reception: participant.reception ? "SI" : "NO",
+            shipping: participant.shipping ? "SI" : "NO",
+            isReception: participant.receptionText.length > 0 ? "SI" : "NO",
+            isShipping: participant.shippingText.length > 0 ? "SI" : "NO",
+        };
+        let sectionAnswers = {};
+        for (const section of participant.sections) {
+            for (const answer of section.answers) {
+                sectionAnswers = { ...sectionAnswers, ...this.processAnswer(answer) };
+            }
+        }
+        return { ...datum, ...sectionAnswers };
+    }
     /* istanbul ignore next */
     async apiParticipantCSV(req, res) {
         try {
