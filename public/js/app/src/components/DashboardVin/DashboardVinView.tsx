@@ -19,6 +19,8 @@ import {
 import AppContainer from '../../container/AppContainer';
 import {IWindow} from '../../interfaces/window';
 import Paginator from '../Utils/Paginator';
+import ApiService from "../../utils/axios";
+import * as swal from 'sweetalert';
 
 declare let window: IWindow;
 
@@ -36,6 +38,9 @@ interface IStateType {
   highlight: string[];
   searchText: string;
   carLoading: string;
+  from: number;
+  to: number;
+  downloading: boolean;
 }
 
 class DashboardVinView extends React.Component<IPropsType, IStateType> {
@@ -45,6 +50,10 @@ class DashboardVinView extends React.Component<IPropsType, IStateType> {
     highlight: [],
     searchText: '',
     carLoading: ''
+    carLoading: '',
+    from: moment().subtract(30, 'days').unix(),
+    to: moment().unix(),
+    downloading: false,
   };
   protected printIframe: any;
 
@@ -58,6 +67,7 @@ class DashboardVinView extends React.Component<IPropsType, IStateType> {
     this.printPdf = this.printPdf.bind(this);
     this.hasDamages = this.hasDamages.bind(this);
     this.debounceOnChangeSearch = debounce(300, this.debounceOnChangeSearch);
+    this.downloadReport = this.downloadReport.bind(this);
   }
 
   public printPdf(url: string, carLoading: string) {
@@ -161,6 +171,64 @@ class DashboardVinView extends React.Component<IPropsType, IStateType> {
       window.scrollTo(0, 0);
     }
     $('[data-toggle="tooltip"]').tooltip();
+  }
+
+  public downloadReport(){
+    this.setState({
+      downloading: true
+    });
+
+    const {from, to} = this.state;
+
+    const api: ApiService = new ApiService();
+    const instance = api.getInstance();
+    const source = api.getSource();
+    instance.defaults.timeout = 7200000;
+    instance.get(`/api/participant/export/?from=${from}&to=${to}`, {
+        responseType: 'arraybuffer',
+      })
+      .then((response) => {
+        const blob = new Blob([response.data], {
+          type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+        });
+        const fileName = `${moment().format('YYYYMMDD')}-revisiones.xlsx`;
+        if (typeof window.navigator.msSaveBlob !== 'undefined') {
+          // IE workaround for "HTML7007: One or more blob URLs were
+          // revoked by closing the blob for which they were created.
+          // These URLs will no longer resolve as the data backing
+          // the URL has been freed."
+          window.navigator.msSaveBlob(blob, fileName);
+        } else {
+          const blobURL = URL.createObjectURL(blob);
+          const tempLink = document.createElement('a');
+          tempLink.style.display = 'none';
+          tempLink.href = blobURL;
+          tempLink.setAttribute('download', fileName);
+          // Safari thinks _blank anchor are pop ups. We only want to set _blank
+          // target if the browser does not support the HTML5 download attribute.
+          // This allows you to download files in desktop safari if pop up blocking
+          // is enabled.
+          if (typeof tempLink.download === 'undefined') {
+            tempLink.setAttribute('target', '_blank');
+          }
+          document.body.appendChild(tempLink);
+          tempLink.click();
+          document.body.removeChild(tempLink);
+          URL.revokeObjectURL(blobURL);
+
+          this.setState({
+            downloading: false
+          });
+        }
+      })
+      .catch((err) => {
+        this.setState({
+          downloading: false
+        });
+        if (!Axios.isCancel(err)) {
+          swal('Exportar revisiones', 'Ha ocurrido un error al general el excel.', 'error');
+        }
+      });
   }
 
   public render(): React.ReactElement<IPropsType> {
