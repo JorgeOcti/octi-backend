@@ -66,10 +66,11 @@ class RequestVehicleListView extends React.Component<IPropsType, IStateType> {
 
   public componentWillMount(): void {
     const { orderBy, orderType } = this.props.requestItems.options;
+    const { page } = this.props.requestItems.pagination;
     document.title = 'OSA Andes | Solicitudes';
     window.scrollTo(0, 0);
 
-    this.props.getRequestItemsThunkAction(1, orderBy, orderType);
+    this.props.getRequestItemsThunkAction(page, orderBy, orderType);
 
     // socket
     this.socket = io.connect(`${location.protocol}//${location.host}`, {
@@ -517,6 +518,7 @@ class RequestVehicleListView extends React.Component<IPropsType, IStateType> {
   }
 
   private changePage(page: number): void {
+    window.scrollTo(0, 0);
     const { orderBy, orderType } = this.props.requestItems.options;
     this.props.getRequestItemsThunkAction(page, orderBy, orderType);
   }

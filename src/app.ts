@@ -1,4 +1,6 @@
 import * as bodyParser from 'body-parser';
+import * as Bull from 'bull';
+import { DoneCallback, Job } from 'bull';
 import * as compression from 'compression';
 import * as connectRedis from 'connect-redis';
 import * as cookieParser from 'cookie-parser';
@@ -9,7 +11,6 @@ import * as fileStreamRotator from 'file-stream-rotator';
 import * as kue from 'kue';
 import * as morgan from 'morgan';
 import * as multer from 'multer';
-import * as Bull from 'bull';
 import * as passport from 'passport';
 import * as passportLocal from 'passport-local';
 import * as path from 'path';
@@ -18,17 +19,17 @@ import * as responseTime from 'response-time';
 import * as Staticify from 'staticify';
 import AppController from './app/controllers/app.controller';
 import User from './app/models/user.model';
-import {appRouter, jwtRouter} from './app/router';
+import { appRouter, jwtRouter } from './app/router';
 import EmailQueue from './app/tasks/email.task';
+import { billingRouter } from './billing/router';
+import BillingQueue from './billing/tasks/billing.task';
 import formRouter from './form/router';
-import {inventoryRouter} from './inventory/router';
-import {requestRouter} from './request/router';
+import { inventoryRouter } from './inventory/router';
 import InventoryQueue from './inventory/taks/inventory.task';
 import Middlewares from './middlewares/middlewares';
-import redisClient, {createRedisClient} from './services/redis.service';
-import {planningRouter} from "./planning/router";
-import BillingQueue from "./billing/tasks/billing.task";
-import { billingRouter } from './billing/router';
+import { planningRouter } from './planning/router';
+import { requestRouter } from './request/router';
+import redisClient, { createRedisClient } from './services/redis.service';
 
 // Create Express server
 const app = express();
@@ -258,69 +259,49 @@ app.use('/api/v1', jwtRouter);
 /* queues */
 export const queue = kue.createQueue({
   redis: {
-    createClientFactory: function () {
+    createClientFactory: () => {
       return createRedisClient();
     }
   }
 });
 
 const billingQueue = new Bull('billing', {
-  createClient: function () {
+  createClient: () => {
     return createRedisClient();
   },
   prefix: '{andes}'
 });
 
-billingQueue.process(async () => {
-  await new BillingQueue().processBilling()
-});
-
 const addCronTask = async () => {
   try {
     // let job = await billingQueue.removeRepeatable('task', {cron: '0 47 6 * * 4'});
-    let jobs = await billingQueue.getRepeatableJobs();
+    const jobs = await billingQueue.getRepeatableJobs();
     if (jobs && jobs.length){
       for(const job of jobs){
         await billingQueue.removeRepeatableByKey(job.key);
-        console.log(`${jobs[0].key} Removida`)
+        console.log(`${jobs[0].key} Removida`);
       }
     }
+    await billingQueue.clean(0, 'delayed');
+    console.log('Se ejecuto la limpieza de tareas');
   } catch (error) {
     console.log(error);
-    console.log("NO existen tareas")
+    console.log('NO existen tareas');
   }
   if (process.env.ENV === 'development') {
     // billingQueue.add({}, {repeat: {cron: '0 */1 * * *'}, jobId: 'billing'});
     // billingQueue.add({}, {repeat: {cron: '*/10 * * * *'}, jobId: 'billing'});
   } else if (process.env.ENV === 'production') {
-    billingQueue.add({}, {repeat: {cron: '0 1 1 * *'}, jobId: 'billing'});
+    billingQueue.process(async (job: Job, done: DoneCallback) => {
+      await new BillingQueue().processBilling();
+      done();
+    });
+    await billingQueue.add({}, {repeat: {cron: '0 1 1 * *'}, jobId: 'billing'});
   }
 };
+
 addCronTask();
-//
-/*
-export const queueScheduler = kueScheduler.createQueue({
-  redis: {
-    createClientFactory: function () {
-      return createRedisClient();
-    }
-  }
-});
 
-const job = queueScheduler
-  .createJob('billing', {})
-  .attempts(3)
-  .priority('normal')
-  .unique('billing');
-
-//schedule it to run every 2 seconds
-queueScheduler.every('30 seconds', job);
-// queueScheduler.every('30 minutes', job);
-
-//somewhere process your scheduled jobs
-queueScheduler.process('billing', new BillingQueue().processBilling);
-
-*/
 
 new EmailQueue(queue).run();
 new InventoryQueue(queue).run();

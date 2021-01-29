@@ -216,8 +216,8 @@ class AdminUsersController {
         message: 'No tienes permisos para esta operación'
       });
     }
-    const {page, pageSize, search} = req.query as { page: string, pageSize: string, search: string};
-    const {team} = req.user;
+    const { page, pageSize, search } = req.query as { page: string, pageSize: string, search: string };
+    const { team } = req.user;
     // paginate options
     const options: PaginateOptions = {
       select: {

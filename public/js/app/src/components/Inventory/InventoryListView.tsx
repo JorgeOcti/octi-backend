@@ -18,7 +18,7 @@ import AppContainer from '../../container/AppContainer';
 import {IWindow} from '../../interfaces/window';
 import {hasPermission} from '../../utils/common';
 import Row from '../Utils/Row';
-import Paginator from "../Utils/Paginator";
+import Paginator from '../Utils/Paginator';
 
 declare let window: IWindow;
 
@@ -151,7 +151,9 @@ class InventoryListView extends React.Component<IPropsType, IStateType> {
                                   inventory.finalizedAt ?
                                     <React.Fragment>
                                       <i className="fa fa-fw fa-clock-o text-danger"/>Finalizado el {moment(inventory.finalizedAt).format('LLL')}<br/>
-                                      {inventory.finalizedBy ? <React.Fragment><i className="fa fa-fw fa-user"/>Por {inventory.finalizedBy.fullName}</React.Fragment> : null}
+                                      {
+                                        inventory.finalizedBy ? <React.Fragment><i className="fa fa-fw fa-user"/>Por {inventory.finalizedBy.fullName}</React.Fragment> : null
+                                      }
                                     </React.Fragment>
                                     : null
                                 }
