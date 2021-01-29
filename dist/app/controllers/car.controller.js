@@ -883,7 +883,7 @@ class CarController {
             ];
             //create additional columns/headers based of form questions
             for (const form of forms)
-                columns.concat(this.getHeadersFromForm(form));
+                columns = columns.concat(this.getHeadersFromForm(form));
             //Create Excel Stream with pipe to response object
             const options = {
                 stream: res,
