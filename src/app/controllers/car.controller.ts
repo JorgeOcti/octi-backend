@@ -6,7 +6,7 @@ import * as mongoose from 'mongoose';
 import { PaginateOptions, PaginateResult } from 'mongoose';
 import * as tempfile from 'tempfile';
 import app from '../../app';
-import { KindQuestion } from '../../form/models/form.model';
+import FormModel, { KindQuestion } from '../../form/models/form.model';
 import Kind from '../../form/models/kind.model';
 import Part from '../../form/models/part.model';
 import ParticipantModel from '../../form/models/participant.model';
@@ -73,6 +73,8 @@ class CarController {
     this.getCars = this.getCars.bind(this);
     this.apiParticipantDetail = this.apiParticipantDetail.bind(this);
     this.apiParticipantsPerDate = this.apiParticipantsPerDate.bind(this);
+    this.processParticipant = this.processParticipant.bind(this);
+    this.exportParticipants = this.exportParticipants.bind(this);
   }
 
   public async generalDashboard(req: IRequest, res: Response) {
@@ -756,35 +758,201 @@ class CarController {
     }
   }
 
+  public getHeadersFromForm(form: FormModel){
+    let columns = [];
+    for (const section of form.sections)
+      for (const question of section.questions)
+        if (["scale", "accessory", "damages"].includes(question.kind))
+          columns.push({
+            header: `${form.name} - ${question.question}`, key: question._id.toString(), width: 30
+          });
+    return columns;
+  }
+
+  public processAnswer(answer) {
+    let datum = {}
+
+    if (answer.kind === "scale" || answer.kind === "accessory"){
+      if (!answer.answer) {
+        return {};
+      }
+      const selectedChoice = answer.scale.choices.find(choice => choice._id.toString() === answer.answer.toString());
+      if (selectedChoice) {
+        datum = {[answer._id.toString()]: selectedChoice.choice};
+      }
+    } else if (answer.kind === "damage"){
+      datum = {[answer._id.toString()]: answer.damagesSelected.length > 0 ? "SI" : "NO"};
+    }
+    return datum;
+  }
+
+  public processParticipant(participant) {
+    const datum = {
+      number: participant.number,
+      created_at: moment(participant.createdAt).toDate(),
+      model: participant.car ? `${participant.car.brand} - ${participant.car.denomination ? participant.car.denomination : ""} - ${participant.car.color}` : "",
+      team: participant.team.name,
+      user: participant.user ? `${participant.user.firstName} ${participant.user.lastName}` : "",
+      company: participant.company.name,
+      venue: participant.venue ? participant.venue.name : participant.user ? participant.user.venue.name : "",
+      vin: participant.car ? participant.car.vin : "",
+      plate: participant.car ? participant.car.patent : "",
+      name: participant.name,
+      conciliation: participant.conciliation ? "SI" : "NO",
+      qualification: participant.qualification,
+      reception: participant.reception ? "SI" : "NO",
+      shipping: participant.shipping ? "SI" : "NO",
+      isReception: participant.receptionText.length > 0 ? "SI" : "NO",
+      isShipping: participant.shippingText.length > 0 ? "SI" : "NO",
+    }
+
+    let sectionAnswers = {}
+    for (const section of participant.sections) {
+      for (const answer of section.answers) {
+        sectionAnswers = {...sectionAnswers, ...this.processAnswer(answer)}
+      }
+    }
+    return {...datum, ...sectionAnswers};
+  }
+
+
   /* istanbul ignore next */
-  public async apiParticipantCSV(req: IRequest, res: Response) {
+  public async exportParticipants(req: IRequest, res: Response) {
     try {
-      const participants = await ParticipantModel.find({}).populate([{
-        path: 'car'
+      const {team} = req.user;
+      const {from, to } = req.query;
+
+      //Get filters for Mongo Query
+      const queryFilter = {
+        team
+      };
+      if ( from && to)
+        queryFilter['createdAt'] = {
+          $gte: moment.unix(Number(from)).hour(0).minute(0).toDate(),
+          $lt: moment.unix(Number(to)).hour(23).minute(59).toDate()
+      }
+
+      //Get the forms to create columns/header of excel
+      let forms = await ParticipantModel.find(queryFilter).distinct('form');
+      forms = await FormModel.find({_id: {$in: forms}})
+
+      // Create columns/headers for excel
+      let columns = [
+        {
+        header: '#', key: 'number', width: 30
+      }, {
+        header: 'Fecha', key: 'created_at', width: 30, style: {
+          numFmt: 'dd/mm/yyyy hh:mm'
+        }
+      }, {
+        header: 'Modelo', key: 'model', width: 30
+      }, {
+        header: 'Team', key: 'team', width: 30
+      },  {
+        header: 'Usuario', key: 'user', width: 30
+      }, {
+        header: 'Compañía', key: 'company', width: 30
+      }, {
+        header: 'Sucursal', key: 'venue', width: 30
+      }, {
+        header: 'VIN', key: 'vin', width: 30
+      }, {
+        header: 'Formulario', key: 'name', width: 30
+      }, {
+        header: 'Tiene conciliación', key: 'conciliation', width: 30
+      }, {
+        header: 'Calificación', key: 'qualification', width: 30, style: {
+          numFmt: '0.000'
+        }
+      }, {
+        header: 'Tipo Recepción', key: 'isReception', width: 30
+      }, {
+        header: 'Recepcionado', key: 'reception', width: 30
+      }, {
+        header: 'Tipo Envío', key: 'isShipping', width: 30
+      }, {
+        header: 'Enviado', key: 'shipping', width: 30
+      }];
+
+      //create additional columns/headers based of form questions
+      for (const form of forms)
+        columns.concat(this.getHeadersFromForm(form));
+
+
+      //Create Excel Stream with pipe to response object
+      const options = {
+        stream: res,
+        useStyles: true,
+        useSharedStrings: true
+      };
+      const workbook = new excel.stream.xlsx.WorkbookWriter(options);
+      const worksheet = workbook.addWorksheet('Rotación de unidades', {
+        pageSetup: {
+          fitToPage: true, fitToHeight: 100, fitToWidth: 1
+        }
+      });
+      worksheet.columns = columns;
+
+      //Create Mongo Query in Cursor/Stream Mode for all the participants/answers
+      let cursor = ParticipantModel.find(queryFilter, {
+        number: 1,
+        createdAt: 1,
+        car: 1,
+        team: 1,
+        user: 1,
+        company: 1,
+        venue: 1,
+        name: 1,
+        conciliation: 1,
+        qualification: 1,
+        reception: 1,
+        shipping: 1,
+        receptionText: 1,
+        shippingText: 1,
+        sections: 1
+      }).populate([{
+        path: 'car',
+        select: 'brand denomination color vin patent'
       }, {
         path: 'user',
+        select: 'firstName lastName venue',
         populate: [{
-          path: 'venue'
+          path: 'venue',
+          select: 'name',
         }]
       }, {
-        path: 'form'
+        path: 'venue',
+        select: 'name',
+      },{
+        path: 'company',
+        select: 'name',
       }, {
-        path: 'company'
-      }]);
-      // const cars = await CarModel.find({}).populate([{
-      //   path: 'company'
-      // }]);
-      const data = [];
-      data.push(`Company|VIN|Marca|Denominacion|Usuario|formulario|venue|calificacion|fecha|Cargado`);
-      for (const participant of participants) {
-        data.push(`${participant.company.name}|${participant.car.vin}|${participant.car.brand}|${participant.car.denomination}|${participant.user ? participant.user.fullName() : '-'}|${participant.form.name}|${participant.user ? participant.user.venue.name : '-'}|${participant.qualification.toString().replace('.', ',')}|${moment(participant.createdAt).format('DD/MM/YY HH:MM:SS')}`);
-      }
-      // for (const car of cars) {
-      //   data.push(`${car.company.name}|${car.vin}|${car.brand}|${car.denomination}||||||${moment(car.createdAt).format('DD/MM/YY HH:MM:SS')}`);
-      // }
-      res.send(data.join('\n'));
+        path: 'team',
+        select: 'name',
+      }]).batchSize(100).cursor()
+
+
+      cursor.on('data', async (participant) => {
+        const row = await this.processParticipant(participant);
+        await worksheet.addRow(row).commit();
+      });
+
+      // code to handle connection abort or finish query read process
+      cursor.on('end', async ()  => {
+        await workbook.commit();
+        res.status(200);
+      });
+
+      cursor.on("error", (error) => logger.error(error.message))
+
+      // code to handle connection abort or finish of data send
+      req.connection.on('close', async function(){
+        await cursor.close()
+        res.status(200);
+      });
+
     } catch (e) {
-      console.log(e);
+      logger.error(e);
     }
   }
 
