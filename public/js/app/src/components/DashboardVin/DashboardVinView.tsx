@@ -367,11 +367,13 @@ class DashboardVinView extends React.Component<IPropsType, IStateType> {
             </div>
             {
               pagination.pages > 1 &&
-                <div className="flex" style={{justifyContent: "space-between", alignItems: "center", marginLeft: "8px"}}>
-                    <span className="react-bootstrap-table-pagination-total text-ellipsis" style={{fontSize: '75%'}}>
+                <div className="flex justify-content-between align-items-center" style={{marginLeft: "8px"}}>
+                  <span className="react-bootstrap-table-pagination-total text-ellipsis" style={{fontSize: '75%'}}>
                     &nbsp;&nbsp;Mostrando registros del {(pagination.page-1)*20+1} al {(pagination.page)*20} de {pagination.count} registros.
                   </span>
-                  <Paginator changePage={this.changePage} page={pagination.page} pages={pagination.pages} />
+                  <div className="text-right" style={{marginRight: "15px"}}>
+                    <Paginator changePage={this.changePage} page={pagination.page} pages={pagination.pages} />
+                  </div>
                 </div>
 
             }
