@@ -847,6 +847,8 @@ class CarController {
                     $lt: moment.unix(Number(to)).hour(23).minute(59).toDate()
                 };
             }
+            res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+            res.setHeader('Content-Disposition', `attachment; filename=revisiones-${moment().format('YYYY-MM-DD')}.xlsx`);
             // Get the forms to create columns/header of excel
             let forms = await participant_model_1.default.find(queryFilter).distinct('form');
             forms = await form_model_1.default.find({ _id: { $in: forms } });

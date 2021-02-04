@@ -1069,7 +1069,6 @@ class InventoryController {
                         }
                     }, 7200000);
                 });
-                console.log('results', results);
                 res.setHeader('size', results.reduce((a, b) => a + b));
                 archive.pipe(res);
                 archive.finalize();
