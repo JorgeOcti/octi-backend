@@ -201,7 +201,7 @@ class RequestCreateView extends React.Component<IPropsType, IStateType> {
                       </div>
                     </div>
                     <div className="form-group">
-                      <label htmlFor="material" className="col-sm-3 control-label label-left">Material*</label>
+                      <label htmlFor="material" className="col-sm-3 control-label label-left">Material *</label>
                       <div className="col-sm-9">
                         <AutocompleteInput
                           value={newCar.material}
