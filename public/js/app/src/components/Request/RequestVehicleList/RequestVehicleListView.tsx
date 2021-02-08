@@ -470,10 +470,21 @@ class RequestVehicleListView extends React.Component<IPropsType, IStateType> {
             </div>
             <div className="box-footer">
               <div className="row">
-                <div className="col-md-12 text-right">
+                <div className="col-md-12">
                   {
                     pagination.pages > 1 &&
-                    <Paginator changePage={this.changePage} page={pagination.page} pages={pagination.pages} />
+                      <div className="row">
+                        <div className="col-md-6" style={{ padding: '20px 15px' }}>
+                          <span className="react-bootstrap-table-pagination-total text-ellipsis">
+                            &nbsp;&nbsp;Mostrando registros del {(pagination.page - 1) * 20 + 1} al {(pagination.page) * 20} de {pagination.count} registros.
+                          </span>
+                        </div>
+                        <div className="col-md-6">
+                          <div className="text-right" style={{ marginRight: '15px' }}>
+                            <Paginator changePage={this.changePage} page={pagination.page} pages={pagination.pages} />
+                          </div>
+                        </div>
+                      </div>
                   }
                 </div>
               </div>
