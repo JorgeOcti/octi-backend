@@ -191,6 +191,10 @@ class RequestController {
             }
             extraQuery.createdAt.$lte = moment(filters.to).endOf('day').toDate();
         }
+        const requestNumbers = filters.request.replace(/[^0-9\,]/g, '').split(',').filter((requestNumber) => (requestNumber.length));
+        if (requestNumbers.length) {
+            extraMatch.requestNumber = { $in: requestNumbers };
+        }
         if (filters.text) {
             extraMatch.$or = [];
             extraMatch.$or.push({

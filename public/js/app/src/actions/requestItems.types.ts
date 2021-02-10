@@ -20,6 +20,7 @@ export const REQUEST_ITEMS_DELETE_ITEM = '/REQUESTS_ITEMS/DELETE_ITEM';
 
 export interface IRequestItemsFilters {
   text: string;
+  request: string;
   venues: any[];
   status: any[];
   from: any;

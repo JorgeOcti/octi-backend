@@ -26,6 +26,7 @@ const initialState: IRequestItemsState = {
   loading: true,
   source: null,
   filters: {
+    request: '',
     text: '',
     venues: [],
     status: [],
