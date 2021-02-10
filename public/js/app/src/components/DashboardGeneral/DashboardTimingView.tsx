@@ -108,7 +108,7 @@ class DashboardTimingView extends React.Component<IPropsType, IStateType> {
       this.capitalizeFirstLetter(moment(selectedDate, 'MM-YYYY').format('MMMM YYYY'))  : "";
 
     return (
-      <AppContainer title="" cMenu="1" cSubMenu="1.4">
+      <AppContainer title="" cMenu="1" cSubMenu="1.5">
         <section className="content">
           <Row>
             <div className="col-md-12">

@@ -67,7 +67,7 @@ class DashboardDercoView extends React.Component<IPropsType, IStateType> {
   public render(): React.ReactElement<IPropsType> {
     const { cleaning } = this.props.dashboard;
     return (
-      <AppContainer title="" cMenu="1" cSubMenu="1.3">
+      <AppContainer title="" cMenu="1" cSubMenu="1.4">
         <section className="content">
           <Row>
             <div className="col-md-12">

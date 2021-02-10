@@ -158,7 +158,7 @@ class DashboardDamagesView extends React.Component<IPropsType, IStateType> {
     const {loading} = this.props.dashboard;
     const {detail, detailName, exporting} = this.state;
     return (
-      <AppContainer title="" cMenu="1" cSubMenu="1.3">
+      <AppContainer title="" cMenu="1" cSubMenu="1.4">
         <section className="content">
           <Row>
             <div className="col-md-12">

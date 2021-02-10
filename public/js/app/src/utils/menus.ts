@@ -18,11 +18,16 @@ const dashboardItems = [{
   icon: 'fa-circle-o',
   text: 'Revisiones',
   url: '/cars/'
+}, {
+  id: '1.3',
+  icon: 'fa-circle-o',
+  text: 'Reporte revisiones',
+  url: '/revision-report/'
 }];
 
 if (hasPermission(window.user, 'viewDashboardDamages')) {
   dashboardItems.push({
-    id: '1.3',
+    id: '1.4',
     icon: 'fa-circle-o',
     text: 'Daños',
     url: '/dashboard/damages/'
@@ -31,7 +36,7 @@ if (hasPermission(window.user, 'viewDashboardDamages')) {
 
 if (hasPermission(window.user, 'viewDashboardTiming')) {
   dashboardItems.push({
-    id: '1.4',
+    id: '1.5',
     icon: 'fa-circle-o',
     text: 'Tiempos de traslado',
     url: '/dashboard/timing/'
@@ -40,7 +45,7 @@ if (hasPermission(window.user, 'viewDashboardTiming')) {
 
 if (hasPermission(window.user, 'viewDashboardDerco')) {
   dashboardItems.push({
-    id: '1.5',
+    id: '1.6',
     icon: 'fa-circle-o',
     text: 'Derco',
     url: '/dashboard/derco/'
