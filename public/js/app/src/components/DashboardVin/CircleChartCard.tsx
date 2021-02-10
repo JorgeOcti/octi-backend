@@ -1,8 +1,8 @@
 import * as React from 'react';
-import {RouteComponentProps} from "react-router";
-import {Dispatch} from "redux";
-import {DashboardReduxAction, IDashboardState} from "../../actions/dashboard.actions";
-import {HTMLProps} from "react";
+import {RouteComponentProps} from 'react-router';
+import {Dispatch} from 'redux';
+import {DashboardReduxAction, IDashboardState} from '../../actions/dashboard.actions';
+import {HTMLProps} from 'react';
 
 interface IPropsType extends HTMLProps<HTMLDivElement>{
   value: number;
@@ -31,7 +31,6 @@ class CircleChartCard extends React.Component<IPropsType, IStateType>{
   }
 
   componentDidMount() {
-    console.log(this.chartRef.current!)
     this.circleChart = echarts.init(this.chartRef.current!);
     setTimeout(()=> this.drawChart(), 1000);
   }
@@ -51,30 +50,37 @@ class CircleChartCard extends React.Component<IPropsType, IStateType>{
 
   private drawChart(){
     const {value, showLoading} = this.props;
-    console.log(showLoading);
     if (showLoading){
       return
     }
     const option: echarts.EChartOption = {
       color: ['#00aa51', '#f1392c'],
+      grid: {
+        // top: 30,
+        // bottom: 100,
+        // left
+        left: 0,
+        // right
+        right: 0,
+        containLabel: true
+      },
       series: [
         {
           type: 'pie',
           radius: ['40%', '70%'],
           avoidLabelOverlap: true,
           label: {
-            show: false,
+            show: false
           },
           data: [
             value,
-            100-value,
+            100-value
           ]
         }
       ]
     };
 
     this.circleChart.setOption(option, true);
-    console.log("Dibujando")
   }
 
   private resizeCharts() {
@@ -88,13 +94,13 @@ class CircleChartCard extends React.Component<IPropsType, IStateType>{
   public render(): React.ReactElement<IPropsType> {
     const {title, value, onClickMethod, showLoading, bordered} = this.props;
     return (
-      <div className={`${this.props.className}  ${onClickMethod ? "pointer" : ""}`} onClick={() => {if (onClickMethod) onClickMethod();}}>
-        <div className={`info-box ${bordered ? "bordered" : ""}`}>
+      <div className={`${this.props.className}  ${onClickMethod ? 'pointer' : ''}`} onClick={() => {if (onClickMethod) onClickMethod();}}>
+        <div className={`${bordered ? 'bordered' : ''}`} style={{border: '1px solid #f4f4f4'}}>
           <div className="row">
             <div className="col-sm-4">
-              <div ref={this.chartRef} style={{minHeight: '150px', maxWidth: '100%'}}/>
+              <div ref={this.chartRef} style={{minHeight: '160px', maxWidth: '100%'}}/>
             </div>
-            <div className="col-sm-8">
+            <div className="col-sm-8" style={{padding: '15px'}}>
               <span className="info-box-text">{title}</span>
               <span className="info-box-number count font-32">{value}%</span>
               {this.props.children}
