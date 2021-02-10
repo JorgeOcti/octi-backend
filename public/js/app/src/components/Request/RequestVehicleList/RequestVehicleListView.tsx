@@ -192,8 +192,9 @@ class RequestVehicleListView extends React.Component<IPropsType, IStateType> {
                     style={{ marginLeft: '5px' }}
                   >
                     {
-                      exporing ? <Fragment><i className="fa fa-spin fa-spinner" /> Exportando</Fragment>
-                        : <Fragment><i className="fa fa-fw fa-download" /> Exportar</Fragment>
+                      exporing ?
+                        <Fragment><i className="fa fa-spin fa-spinner" /> Exportando</Fragment> :
+                        <Fragment><i className="fa fa-fw fa-download" /> Exportar</Fragment>
                     }
                   </button>
                 </ShowIf>
@@ -202,7 +203,7 @@ class RequestVehicleListView extends React.Component<IPropsType, IStateType> {
             <div className="box-body no-padding">
               <div style={{ padding: '10px 0' }}>
                 <div className="row" style={{ margin: 0 }}>
-                  <div className="col-md-12">
+                  <div className="col-md-8">
                     <div className="form-group">
                       <label className="control-label">
                         Vehículo
@@ -214,6 +215,22 @@ class RequestVehicleListView extends React.Component<IPropsType, IStateType> {
                         defaultValue={filters.text}
                         onChange={(e) => {
                           this.changeFilterDebounced('text', e.target.value);
+                        }}
+                      />
+                    </div>
+                  </div>
+                  <div className="col-md-4">
+                    <div className="form-group">
+                      <label className="control-label">
+                        Nº Solicitudes
+                    </label>
+                      <input
+                        type="text"
+                        className="form-control"
+                        placeholder="Nº de solicitudes ejemplo: 2, 8, 10"
+                        defaultValue={filters.text}
+                        onChange={(e) => {
+                          this.changeFilterDebounced('request', e.target.value);
                         }}
                       />
                     </div>
@@ -470,10 +487,21 @@ class RequestVehicleListView extends React.Component<IPropsType, IStateType> {
             </div>
             <div className="box-footer">
               <div className="row">
-                <div className="col-md-12 text-right">
+                <div className="col-md-12">
                   {
                     pagination.pages > 1 &&
-                    <Paginator changePage={this.changePage} page={pagination.page} pages={pagination.pages} />
+                      <div className="row">
+                        <div className="col-md-6" style={{ padding: '20px 15px' }}>
+                          <span className="react-bootstrap-table-pagination-total text-ellipsis">
+                            &nbsp;&nbsp;Mostrando registros del {(pagination.page - 1) * 20 + 1} al {(pagination.page) * 20} de {pagination.count} registros.
+                          </span>
+                        </div>
+                        <div className="col-md-6">
+                          <div className="text-right" style={{ marginRight: '15px' }}>
+                            <Paginator changePage={this.changePage} page={pagination.page} pages={pagination.pages} />
+                          </div>
+                        </div>
+                      </div>
                   }
                 </div>
               </div>

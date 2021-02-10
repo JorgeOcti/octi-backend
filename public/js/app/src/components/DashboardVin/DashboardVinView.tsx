@@ -1,14 +1,13 @@
 import * as moment from 'moment-timezone';
 import * as Raven from 'raven-js';
-import {ErrorInfo} from 'react';
 import * as React from 'react';
-import {connect} from 'react-redux';
-import {RouteComponentProps} from 'react-router';
-import {Dispatch} from 'redux';
+import { ErrorInfo } from 'react';
+import { connect } from 'react-redux';
+import { RouteComponentProps } from 'react-router';
+import { Dispatch } from 'redux';
 import * as io from 'socket.io-client';
-import {debounce} from 'throttle-debounce';
-import {ICar} from '../../../../../../src/interfaces/car.interface';
-import {IParticipant} from '../../../../../../src/interfaces/participant.interface';
+import { debounce } from 'throttle-debounce';
+import { IParticipant } from '../../../../../../src/interfaces/participant.interface';
 import {
   changeRangeDashboardAction,
   changeSearchDashboardAction,
@@ -17,12 +16,8 @@ import {
   IDashboardState
 } from '../../actions/dashboard.actions';
 import AppContainer from '../../container/AppContainer';
-import {IWindow} from '../../interfaces/window';
+import { IWindow } from '../../interfaces/window';
 import Paginator from '../Utils/Paginator';
-import ApiService from "../../utils/axios";
-import * as swal from 'sweetalert';
-import Axios from "axios";
-import { constants } from 'os';
 
 declare let window: IWindow;
 
@@ -54,7 +49,7 @@ class DashboardVinView extends React.Component<IPropsType, IStateType> {
     carLoading: '',
     from: moment().subtract(30, 'days').unix(),
     to: moment().unix(),
-    downloading: false,
+    downloading: false
   };
   protected printIframe: any;
 
@@ -145,14 +140,14 @@ class DashboardVinView extends React.Component<IPropsType, IStateType> {
       endDate: moment(),
       maxDate: moment(),
       opens: 'left'
-    }, function (from: any, to: any, label: any) {
+    }, (from: any, to: any, label: any) => {
         $this.setState({
           from: moment(from).unix(),
-          to: moment(to).unix(),
+          to: moment(to).unix()
         }, () => {
           $this.props.changeRangeDashboardAction(from.format('YYYY-MM-DD'), to.format('YYYY-MM-DD'));
           $this.debounceOnChangeSearch();
-        })
+        });
     });
   }
 
@@ -367,15 +362,20 @@ class DashboardVinView extends React.Component<IPropsType, IStateType> {
             </div>
             {
               pagination.pages > 1 &&
-                <div className="flex justify-content-between align-items-center" style={{marginLeft: "8px"}}>
-                  <span className="react-bootstrap-table-pagination-total text-ellipsis" style={{fontSize: '75%'}}>
-                    &nbsp;&nbsp;Mostrando registros del {(pagination.page-1)*20+1} al {(pagination.page)*20} de {pagination.count} registros.
-                  </span>
-                  <div className="text-right" style={{marginRight: "15px"}}>
-                    <Paginator changePage={this.changePage} page={pagination.page} pages={pagination.pages} />
+              <div className="box-footer">
+                <div className="row">
+                  <div className="col-md-6" style={{ padding: '20px 15px' }}>
+                    <span className="react-bootstrap-table-pagination-total text-ellipsis">
+                      &nbsp;&nbsp;Mostrando registros del {(pagination.page - 1) * 20 + 1} al {(pagination.page) * 20} de {pagination.count} registros.
+                      </span>
+                  </div>
+                  <div className="col-md-6">
+                    <div className="text-right" style={{ marginRight: '15px' }}>
+                      <Paginator changePage={this.changePage} page={pagination.page} pages={pagination.pages} />
+                    </div>
                   </div>
                 </div>
-
+              </div>
             }
             {
               loading &&

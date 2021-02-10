@@ -201,7 +201,7 @@ class RequestCreateView extends React.Component<IPropsType, IStateType> {
                       </div>
                     </div>
                     <div className="form-group">
-                      <label htmlFor="material" className="col-sm-3 control-label label-left">Material</label>
+                      <label htmlFor="material" className="col-sm-3 control-label label-left">Material *</label>
                       <div className="col-sm-9">
                         <AutocompleteInput
                           value={newCar.material}
@@ -288,7 +288,7 @@ class RequestCreateView extends React.Component<IPropsType, IStateType> {
                           </div>
                         </div> : null
                     }
-                    <div className="form-group">
+                    {/* <div className="form-group">
                       <label className="col-sm-3 control-label label-left">Pre-entrega</label>
                       <div className="col-sm-9">
                         <div className="checkbox">
@@ -314,7 +314,7 @@ class RequestCreateView extends React.Component<IPropsType, IStateType> {
                           </label>
                         </div>
                       </div>
-                    </div>
+                    </div> */}
                     <div className="form-group">
                       <label className="col-sm-3 control-label label-left">Cantidad</label>
                       <div className="col-sm-4">
@@ -359,7 +359,7 @@ class RequestCreateView extends React.Component<IPropsType, IStateType> {
                       <button
                         className="btn btn-sm btn-primary"
                         onClick={this.addCar}
-                        disabled={!newCar.brand.length || !newCar.denomination.length || !newCar.color.length ||  !newCar.reason || isUploadingFiles}
+                        disabled={!newCar.brand.length || !newCar.denomination.length || !newCar.material.length || !newCar.color.length ||  !newCar.reason || isUploadingFiles}
                       >
                         Agregar
                       </button>

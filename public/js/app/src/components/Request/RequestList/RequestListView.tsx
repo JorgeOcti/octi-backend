@@ -63,10 +63,11 @@ class RequestListView extends React.Component<IPropsType, IStateType> {
 
   public componentWillMount(): void {
     const {orderBy, orderType} = this.props.requests.options;
+    const {page} = this.props.requests.pagination;
     document.title = 'OSA Andes | Solicitudes';
     window.scrollTo(0, 0);
 
-    this.props.getRequestsThunkAction(1, orderBy, orderType);
+    this.props.getRequestsThunkAction(page, orderBy, orderType);
 
     // socket
     this.socket = io.connect(`${location.protocol}//${location.host}`, {
@@ -257,8 +258,15 @@ class RequestListView extends React.Component<IPropsType, IStateType> {
               pagination.pages > 1 &&
               <div className="box-footer">
                 <div className="row">
-                  <div className="col-md-12 text-right">
-                    <Paginator changePage={this.changePage} page={pagination.page} pages={pagination.pages} />
+                  <div className="col-md-6" style={{ padding: '20px 15px' }}>
+                    <span className="react-bootstrap-table-pagination-total text-ellipsis">
+                      &nbsp;&nbsp;Mostrando registros del {(pagination.page - 1) * 20 + 1} al {(pagination.page) * 20} de {pagination.count} registros.
+                      </span>
+                  </div>
+                  <div className="col-md-6">
+                    <div className="text-right" style={{ marginRight: '15px' }}>
+                      <Paginator changePage={this.changePage} page={pagination.page} pages={pagination.pages} />
+                    </div>
                   </div>
                 </div>
               </div>
@@ -275,9 +283,9 @@ class RequestListView extends React.Component<IPropsType, IStateType> {
     );
   }
 
-  private changeOrder(key: string){
-    const {page} = this.props.requests.pagination;
-    const {orderBy, orderType} = this.props.requests.options;
+  private changeOrder(key: string) {
+    const { page } = this.props.requests.pagination;
+    const { orderBy, orderType } = this.props.requests.options;
     let newOrderType = orderType;
     let newOrderBy = orderBy;
     if (key === orderBy) {

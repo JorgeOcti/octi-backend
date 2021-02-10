@@ -19,6 +19,7 @@ import {IWindow} from '../../interfaces/window';
 import {hasPermission} from '../../utils/common';
 import Row from '../Utils/Row';
 import Paginator from '../Utils/Paginator';
+import { Link } from 'react-router-dom';
 
 declare let window: IWindow;
 
@@ -57,12 +58,13 @@ class InventoryListView extends React.Component<IPropsType, IStateType> {
   }
 
   public componentWillMount(): void {
+    const {page} = this.props.inventories.pagination;
     // set the title of the page
     document.title = 'OSA Andes | Inventarios';
     window.scrollTo(0, 0);
 
     // get data
-    this.props.getInventoriesAction(true, 1);
+    this.props.getInventoriesAction(true, page);
 
     // socket
     this.socket = io.connect(`${location.protocol}//${location.host}`, {
@@ -201,9 +203,11 @@ class InventoryListView extends React.Component<IPropsType, IStateType> {
                                 </button>
                                 <ul className="dropdown-menu pull-right" role="menu">
                                   <li>
-                                    <a href="javascript:void(0);" onClick={() => this.goToDetail(inventory._id, true)}>
+                                    <Link to={`/inventory/${inventory._id}/detail/`}>
+                                    {/* <a href="javascript:void(0);" onClick={() => this.goToDetail(inventory._id, true)}> */}
                                       <i className="fa fa-fw fa-table" />Ver Detalle
-                                    </a>
+                                    {/* </a> */}
+                                    </Link>
                                   </li>
                                   {
                                     hasPermission(window.user, 'viewFilesInventory') && inventory.file && inventory.file.hasOwnProperty('url') ?

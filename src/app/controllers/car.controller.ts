@@ -24,6 +24,7 @@ import Venue from '../models/venue.model';
 
 moment.tz.setDefault('America/Santiago');
 class CarController {
+
   protected carBrands: any = {
     'VF1': 'RENAULT',
     'VF2': 'RENAULT',
@@ -822,7 +823,6 @@ class CarController {
       ...sectionAnswers
     };
   }
-
 
   /* istanbul ignore next */
   public async exportParticipants(req: IRequest, res: Response) {
