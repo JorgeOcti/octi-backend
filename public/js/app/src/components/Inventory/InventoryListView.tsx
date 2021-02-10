@@ -260,8 +260,15 @@ class InventoryListView extends React.Component<IPropsType, IStateType> {
               pagination.pages > 1 &&
                 <div className="box-footer">
                   <div className="row">
-                    <div className="col-md-12 text-right">
-                      <Paginator changePage={this.changePage} page={pagination.page} pages={pagination.pages} />
+                    <div className="col-md-6" style={{ padding: '20px 15px' }}>
+                      <span className="react-bootstrap-table-pagination-total text-ellipsis">
+                        &nbsp;&nbsp;Mostrando registros del {(pagination.page - 1) * 10 + 1} al {(pagination.page) * 10} de {pagination.count} registros.
+                            </span>
+                    </div>
+                    <div className="col-md-6">
+                      <div className="text-right" style={{ marginRight: '15px' }}>
+                        <Paginator changePage={this.changePage} page={pagination.page} pages={pagination.pages} />
+                      </div>
                     </div>
                   </div>
                 </div>
