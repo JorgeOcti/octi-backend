@@ -32,6 +32,7 @@ appRouter.get('/dashboard/derco/', Middlewares.isLoggedIn, CarController.general
 // DashBoard Cars
 appRouter.get('/cars/', Middlewares.isLoggedIn, CarController.vinDashboard);
 appRouter.get('/cars/:id', Middlewares.isLoggedIn, CarController.vinDashboardDetail);
+appRouter.get('/revision-report/', Middlewares.isLoggedIn, CarController.vinDashboard);
 
 // api cars
 appRouter.get('/api/cars/:id', Middlewares.isLoggedIn, CarController.apiCarDetail);
