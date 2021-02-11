@@ -30,6 +30,8 @@ export interface IDashboardState {
   participantPerRange: any[];
   loadingParticipant: string | null;
   totalCars: number;
+  venueStats: any[] | null;
+  revisionStats: any;
   pagination: {
     count: number;
     page: number;
@@ -658,6 +660,78 @@ export function getCarAction(id: string) {
   };
 }
 
+interface ILoadingVenuesStats {
+  type: '/DASHBOARD/LOAD_VENUES_STATS';
+  payload: {
+    venuesStats: any[];
+  };
+}
+
+export function loadVenuesStats(venuesStats: any[]): ILoadingVenuesStats {
+  return {
+    type: '/DASHBOARD/LOAD_VENUES_STATS',
+    payload: {
+      venuesStats
+    }
+  };
+}
+
+export function getVenuesStats(from: number, to: number){
+  return (dispatch: Dispatch<DashboardReduxAction>) => {
+    const api: ApiService = new ApiService();
+    dispatch(cancelRequestAction(api.getSource()));
+    api.getVenuesStats(from, to)
+      .then((response: AxiosResponse) => {
+        dispatch(loadVenuesStats(response.data as any[]));
+      })
+      .catch((err: AxiosError) => {
+        // if the request is canceled
+        if (Axios.isCancel(err)) {
+        } else {
+          api.errorHandler(err);
+        }
+      });
+  };
+}
+
+interface ILoadingRevisionsStats {
+  type: '/DASHBOARD/LOAD_REVISION_STATS';
+  payload: {
+    revisionStats: any;
+  };
+}
+
+export function loadRevisionsStats(revisionStats: any[]): ILoadingRevisionsStats {
+  return {
+    type: '/DASHBOARD/LOAD_REVISION_STATS',
+    payload: {
+      revisionStats
+    }
+  };
+}
+
+export function getRevisionStats(){
+  return (dispatch: Dispatch<DashboardReduxAction>) => {
+    const api: ApiService = new ApiService();
+    dispatch(cancelRequestAction(api.getSource()));
+    dispatch(isLoadingAction(true));
+    api.getRevisionsStats()
+      .then((response: AxiosResponse) => {
+        dispatch(loadRevisionsStats(response.data));
+        dispatch(isLoadingAction(false));
+      })
+      .catch((err: AxiosError) => {
+        // if the request is canceled
+        if (Axios.isCancel(err)) {
+          dispatch(isLoadingAction(true));
+        } else {
+          dispatch(isLoadingAction(true));
+          api.errorHandler(err);
+        }
+      });
+  };
+}
+
 export type DashboardReduxAction =
   IIsLoading |
   ICancelRequest |
@@ -668,4 +742,6 @@ export type DashboardReduxAction =
   ILoadParticipantsPerDate |
   ILoadingParticipant |
   IChangePage |
-  ILoadParticipantInCar;
+  ILoadParticipantInCar |
+  ILoadingVenuesStats |
+  ILoadingRevisionsStats;
