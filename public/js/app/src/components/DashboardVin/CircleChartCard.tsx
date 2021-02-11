@@ -30,14 +30,12 @@ class CircleChartCard extends React.Component<IPropsType, IStateType>{
     this.drawChart = this.drawChart.bind(this);
   }
 
-  componentDidMount() {
-    console.log(this.chartRef.current!)
-    this.circleChart = echarts.init(this.chartRef.current!);
-    setTimeout(()=> this.drawChart(), 1000);
-  }
 
   componentDidUpdate(prevProps: IPropsType, prevState: IStateType): void {
-    this.drawChart();
+    if (!this.props.showLoading) {
+      this.circleChart = echarts.init(this.chartRef.current!);
+      this.drawChart();
+    }
   }
 
 
@@ -51,7 +49,6 @@ class CircleChartCard extends React.Component<IPropsType, IStateType>{
 
   private drawChart(){
     const {value, showLoading} = this.props;
-    console.log(showLoading);
     if (showLoading){
       return
     }
@@ -74,7 +71,6 @@ class CircleChartCard extends React.Component<IPropsType, IStateType>{
     };
 
     this.circleChart.setOption(option, true);
-    console.log("Dibujando")
   }
 
   private resizeCharts() {
@@ -89,6 +85,7 @@ class CircleChartCard extends React.Component<IPropsType, IStateType>{
     const {title, value, onClickMethod, showLoading, bordered} = this.props;
     return (
       <div className={`${this.props.className}  ${onClickMethod ? "pointer" : ""}`} onClick={() => {if (onClickMethod) onClickMethod();}}>
+        {showLoading ? <i className="fa fa-spinner fa-spin"/> :
         <div className={`info-box ${bordered ? "bordered" : ""}`}>
           <div className="row">
             <div className="col-sm-4">
@@ -96,11 +93,12 @@ class CircleChartCard extends React.Component<IPropsType, IStateType>{
             </div>
             <div className="col-sm-8">
               <span className="info-box-text">{title}</span>
-              <span className="info-box-number count font-32">{value}%</span>
+              <span className="info-box-number count font-32">{value.toFixed(0)}%</span>
               {this.props.children}
             </div>
           </div>
         </div>
+        }
       </div>);
   }
 }
