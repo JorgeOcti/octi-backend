@@ -1847,6 +1847,7 @@ class CarController {
       });
     });
   }
+
   public async apiVenueRevisionStats(req: IRequest, res: Response){
     try {
       const { team } = req.user;
@@ -1902,6 +1903,110 @@ class CarController {
       res.status(500).json(e);
     }
   }
+
+  public async apiRevisionStats(req: IRequest, res: Response){
+    try {
+      const { team } = req.user;
+      const venuesPermissions = req.user.venuesPermissions();
+
+      // Get filters for Mongo Query
+      const queryFilter: any = {
+        team,
+        venue: {
+          $in: venuesPermissions
+        }
+      };
+
+      const todayParticipants: number = await ParticipantModel.count({...queryFilter,
+        createdAt: {
+          $gte: moment().hour(0).minute(0).toDate(),
+          $lt: moment().hour(23).minute(59).toDate()
+        }});
+      const yesterdayParticipants: number = await ParticipantModel.count({...queryFilter,
+        createdAt: {
+          $gte: moment().subtract(1, "day").endOf("day").toDate(),
+          $lt: moment().subtract(1, "day").startOf("day").toDate()
+        }});
+
+      const lastMonthParticipants: number  = await ParticipantModel.count({...queryFilter,
+        createdAt: {
+          $gte: moment().subtract(1,"month").startOf("month").toDate(),
+          $lt: moment().subtract(1,"month").endOf("month").toDate(),
+        }});
+      const currentMonthParticipants: number = await ParticipantModel.count({...queryFilter,
+        createdAt: {
+          $gte: moment().startOf("month").toDate(),
+          $lt: moment().endOf("month").toDate(),
+        }});
+
+      const totalParticipants: number = await ParticipantModel.count(queryFilter);
+      const sentStats: any[] = await ParticipantModel.aggregate([
+        {
+          $match: {...queryFilter, shipping: true}
+        }, {
+          $group :
+            {
+              _id : 1,
+              accepted: {$sum: {$cond: [{$eq:["$shippingConfirmation", true]}, 1, 0]}},
+              rejected: {$sum: {$cond: [{$eq:["$shippingConfirmation", false]}, 1, 0]}},
+            }
+        }
+      ]);
+      const receivedStats: any[] = await ParticipantModel.aggregate([
+        {
+          $match: {...queryFilter, reception: true}
+        }, {
+          $group :
+            {
+              _id : 1,
+              accepted: {$sum: {$cond: [{$eq:["$receptionConfirmation", true]}, 1, 0]}},
+              rejected: {$sum: {$cond: [{$eq:["$receptionConfirmation", false]}, 1, 0]}},
+            }
+        }
+      ]);
+
+      const activeVenues : any[] = await ParticipantModel.aggregate([
+        {
+          $match: {...queryFilter, createdAt: {
+              $gte: moment().startOf("month").toDate(),
+              $lt: moment().endOf("month").toDate()
+            }}
+        }, {
+          $group :
+            {
+              _id : "$venue",
+              total: { $sum: 1 }
+            }
+        }]);
+      const inactiveVenues : any[] = await Venue.find({
+        team,
+        _id: {
+          $in: venuesPermissions.filter( vp => !activeVenues.some(v => v._id.toString() === vp.toString()))
+        }
+      }, {name: 1, _id: 1});
+
+
+      res.status(200).json({
+        revisions: {
+          today: todayParticipants,
+          yesterday: yesterdayParticipants,
+          lastMonthTotal: lastMonthParticipants,
+          currentMonthTotal: currentMonthParticipants,
+          totalRevisions: totalParticipants,
+          sentStats: sentStats[0],
+          receivedStats: receivedStats[0]
+          },
+        venues: {
+          activeVenues: activeVenues.length,
+          inactiveVenues: inactiveVenues.length
+        }
+      });
+    } catch (e) {
+      logger.error(e);
+      res.status(500).json(e);
+    }
+  }
+
 }
 
 export default new CarController();
