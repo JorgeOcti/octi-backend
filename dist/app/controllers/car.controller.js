@@ -1359,8 +1359,9 @@ class CarController {
                 }
             }
             if (damages.length) {
+                // tslint:disable-next-line: forin
                 for (const d in damages) {
-                    const idx = parseInt(d) + 1;
+                    const idx = parseInt(d, 10) + 1;
                     const row = {
                         vin: participant.car.vin,
                         denomination: participant.car.denomination,
@@ -1525,7 +1526,7 @@ class CarController {
             columns.push({ header: 'Tipo', key: 'kind', width: 30 });
             columns.push({ header: 'Posición', key: 'position', width: 30 });
             /* headers */
-            const periods = 6;
+            const periods = 4 * 24;
             const kinds = await kind_model_1.default.find({ team }, { name: true });
             const parts = await part_model_1.default.find({ team }, { name: true });
             const positions = await position_model_1.default.find({ team }, { name: true });

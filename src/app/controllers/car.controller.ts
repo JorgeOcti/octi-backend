@@ -1379,8 +1379,9 @@ class CarController {
         }
       }
       if(damages.length){
+        // tslint:disable-next-line: forin
         for (const d in damages) {
-          const idx = parseInt(d) + 1;
+          const idx = parseInt(d, 10) + 1;
           const row = {
             vin: participant.car.vin,
             denomination: participant.car.denomination,
@@ -1507,7 +1508,8 @@ class CarController {
     }
 
     try {
-      const {team} = req.user;
+      const { team } = req.user;
+      const { changeperiods } = req.query as { changeperiods: string };
       const workbook = new excel.Workbook();
       const worksheet = workbook.addWorksheet('Daños', {
         properties: {
@@ -1548,9 +1550,9 @@ class CarController {
       columns.push({header: 'Posición', key: 'position', width: 30});
 
       /* headers */
-      const periods = 6;
-      const kinds = await Kind.find({team}, {name: true});
-      const parts = await Part.find({team}, {name: true});
+      const periods: number = changeperiods ? parseInt(changeperiods, 10) : 6;
+      const kinds = await Kind.find({ team }, { name: true });
+      const parts = await Part.find({ team }, { name: true });
       const positions = await Position.find({team}, {name: true});
       const damagesCache = {
         kinds: kinds.reduce((acc: any, cur: any) => {
