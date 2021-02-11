@@ -1847,6 +1847,61 @@ class CarController {
       });
     });
   }
+  public async apiVenueRevisionStats(req: IRequest, res: Response){
+    try {
+      const { team } = req.user;
+      const { from, to } = req.query;
+      const venuesPermissions = req.user.venuesPermissions();
+
+      // Get filters for Mongo Query
+      const queryFilter: any = {
+        team,
+        venue: {
+          $in: venuesPermissions
+        }
+      };
+
+      if (from && to){
+        queryFilter.createdAt = {
+          $gte: moment.unix(Number(from)).hour(0).minute(0).toDate(),
+          $lt: moment.unix(Number(to)).hour(23).minute(59).toDate()
+        };
+      }
+
+      const activeVenues : any[] = await ParticipantModel.aggregate([
+        {
+          $match: queryFilter
+        }, {
+          $lookup: {
+            from: 'venues',
+            localField: 'venue',
+            foreignField: '_id',
+            as: '_venue',
+          }
+        }, {
+          $unwind: "$_venue"
+        }, {
+          $group :
+            {
+              _id : "$_venue._id",
+              name: { $first: "$_venue.name" },
+              total: { $sum: 1 }
+            }
+        }]);
+      const inactiveVenues : any[] = await Venue.find({
+        team,
+        _id: {
+          $in: venuesPermissions.filter( vp => !activeVenues.some(v => v._id.toString() === vp.toString()))
+        }
+      }, {name: 1, _id: 1});
+      const allVenues : any[] = activeVenues.concat(inactiveVenues);
+
+      res.status(200).json(allVenues);
+    } catch (e) {
+      logger.error(e);
+      res.status(500).json(e);
+    }
+  }
 }
 
 export default new CarController();
