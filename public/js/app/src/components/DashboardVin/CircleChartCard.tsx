@@ -87,7 +87,6 @@ class CircleChartCard extends React.Component<IPropsType, IStateType>{
 
   private resizeCharts() {
     if (this.circleChart) {
-      console.log("resoiz");
       this.circleChart.resize();
       setTimeout(() => {
         this.circleChart.resize();

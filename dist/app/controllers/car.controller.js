@@ -1488,6 +1488,7 @@ class CarController {
         }
         try {
             const { team } = req.user;
+            const { changeperiods } = req.query;
             const workbook = new excel.Workbook();
             const worksheet = workbook.addWorksheet('Daños', {
                 properties: {
@@ -1526,7 +1527,7 @@ class CarController {
             columns.push({ header: 'Tipo', key: 'kind', width: 30 });
             columns.push({ header: 'Posición', key: 'position', width: 30 });
             /* headers */
-            const periods = 4 * 24;
+            const periods = changeperiods ? parseInt(changeperiods, 10) : 6;
             const kinds = await kind_model_1.default.find({ team }, { name: true });
             const parts = await part_model_1.default.find({ team }, { name: true });
             const positions = await position_model_1.default.find({ team }, { name: true });
