@@ -1924,8 +1924,8 @@ class CarController {
         }});
       const yesterdayParticipants: number = await ParticipantModel.count({...queryFilter,
         createdAt: {
-          $gte: moment().subtract(1, "day").endOf("day").toDate(),
-          $lt: moment().subtract(1, "day").startOf("day").toDate()
+          $gte: moment().subtract(1, "day").startOf("day").toDate(),
+          $lt: moment().subtract(1, "day").endOf("day").toDate()
         }});
 
       const lastMonthParticipants: number  = await ParticipantModel.count({...queryFilter,
