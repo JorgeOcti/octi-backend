@@ -41,36 +41,35 @@ class InfoCard extends React.Component<IPropsType, IStateType>{
   public render(): React.ReactElement<IPropsType> {
     const {title, value, color, icon, onClickMethod, percentageValue, showLoading, showProgressBar, iconBackgroundColor, bordered} = this.props;
     return (
-      <div className={`${this.props.className}  ${onClickMethod ? "pointer" : ""}`} onClick={() => {if (onClickMethod) onClickMethod();}}>
-        {showLoading ? <i className="fa fa-spinner fa-spin"/> :
-          <div className={`info-box ${color ? color.toString() : ""} ${bordered ? "bordered" : ""}`}>
-          <span className={`info-box-icon ${iconBackgroundColor}`}>
-            <i className={`fa ${icon}`}/>
+      <div className={`${this.props.className}  ${onClickMethod ? 'pointer' : ''}`} onClick={() => { if (onClickMethod) onClickMethod(); }}>
+        {showLoading ? <i className='fa fa-spinner fa-spin'/> :
+        <div className={`info-box ${color ? color.toString() : ''} ${bordered ? 'bordered' : ''}`}>
+          <span className={`info-box-icon ${iconBackgroundColor}`} >
+            <i className={`fa ${icon}`} />
           </span>
-            <div className="info-box-content">
-              <span className="info-box-text">{title}</span>
-              <span className="info-box-number count">
+          <div className="info-box-content">
+            <span className="info-box-text">{title}</span>
+            <span className="info-box-number count">
               {!showLoading ? value :
-                <i className="fa fa-spinner fa-spin"/>}
-                {this.props.children}
+                <i className="fa fa-spinner fa-spin" />}
+              {this.props.children}
             </span>
 
-              {!showLoading && showProgressBar ?
-                <>
-                  <div className="progress">
-                    <div className="progress-bar" style={{
-                      width: `${percentageValue}%`,
-                      transition: 'width .6s ease'
-                    }}/>
-                  </div>
-                  <span className="progress-description">
-                    {`${percentageValue?.toFixed(1)}% ${title.toLowerCase()}.`}
-              </span>
-                </>
-                : null}
-            </div>
+            {!showLoading && showProgressBar ?
+              <>
+                <div className="progress">
+                  <div className="progress-bar" style={{
+                    width: `${percentageValue}%`,
+                    transition: 'width .6s ease'
+                  }} />
+                </div>
+                <span className="progress-description">
+                  {`${percentageValue?.toFixed(1)}% ${title.toLowerCase()}.`}
+                </span>
+              </>
+              : null}
           </div>
-        }
+        </div> }
       </div>
     );
   }

@@ -18,6 +18,7 @@ interface IPropsType extends RouteComponentProps<{ }>, HTMLProps<HTMLDivElement>
   dispatch: Dispatch<DashboardReduxAction>;
   dashboard: IDashboardState;
   getVenuesStats(from: number, to: number): void;
+  bordered? :boolean;
 }
 
 export enum TimePeriods {
@@ -88,58 +89,60 @@ class FilterableVenueTable extends React.Component<IPropsType, IStateType> {
       venuesInfo = venuesInfo.filter(v => (v.total ?? 0) < minValue);
     }
     return (
-      <div className={`${this.props.className}`}>
-        <div className="row">
-          <div className="col-sm-6">
-            <span className="font-14">
-              SUCURSALES BAJO:
-            </span>
-            <input
-              className="font-12"
-              style={{width: "60px", marginLeft: "5px"}}
-              name="minValue"
-              min={1}
-              value={this.state.minValue ?? ""}
-              onChange={this.onValueChange}
-              type="number"
-            />
-          </div>
-          <div className="col-sm-6">
-            <div>
-              <span className="font-14" >REVISIONES ESTE:</span>
-              <select
+      <div className={`${this.props.className}`} >
+        <div className={`col ${this.props.bordered ? 'bordered' : ''}`} style={{padding: "5px"}} >
+          <div className='row' >
+            <div className="col-xs-6">
+              <span className="font-14">
+                SUCURSALES BAJO:
+              </span>
+              <input
                 className="font-12"
-                style={{width:"90px", marginLeft: "5px"}}
-                name="timeControl"
-                value={this.state.timeControl.toString()}
-                onChange={this.onTimePeriodChange}>
-                {Object.keys(TimePeriods).map( p =>
-                  <option key={p} value={p}>{TimePeriods[p].toString()}</option>
-                )}
-              </select>
+                style={{width: "60px", marginLeft: "5px"}}
+                name="minValue"
+                min={1}
+                value={this.state.minValue ?? ""}
+                onChange={this.onValueChange}
+                type="number"
+              />
+            </div>
+            <div className="col-xs-6">
+              <div>
+                <span className="font-14" >REVISIONES ESTE:</span>
+                <select
+                  className="font-12"
+                  style={{width:"90px", marginLeft: "5px"}}
+                  name="timeControl"
+                  value={this.state.timeControl.toString()}
+                  onChange={this.onTimePeriodChange}>
+                  {Object.keys(TimePeriods).map( p =>
+                    <option key={p} value={p}>{TimePeriods[p].toString()}</option>
+                  )}
+                </select>
+              </div>
             </div>
           </div>
-        </div>
-        <div className="row" style={{overflowY: "scroll", maxHeight: "110px"}}>
-          <table className="table table-striped">
-            <thead>
-            <tr>
-              <th className="">Sucursal</th>
-              <th style={{width: "100px"}}># Revisiones</th>
-            </tr>
-            </thead>
-            <tbody>
-            {venuesInfo
-              .sort((a,b) => b.total-a.total)
-              .map(venueStats =>
-              <tr key={venueStats._id}>
-                <td>{venueStats.name}</td>
-                <td>{venueStats.total ?? 0}</td>
+          <div className="row" style={{overflowY: "scroll", maxHeight: "110px", margin: "0px"}}>
+            <table className="table table-striped">
+              <thead>
+              <tr>
+                <th className="">Sucursal</th>
+                <th style={{width: "100px"}}># Revisiones</th>
               </tr>
-            )}
-            </tbody>
-          </table>
-        </div>
+              </thead>
+              <tbody>
+              {venuesInfo
+                .sort((a,b) => b.total-a.total)
+                .map(venueStats =>
+                <tr key={venueStats._id}>
+                  <td>{venueStats.name}</td>
+                  <td>{venueStats.total ?? 0}</td>
+                </tr>
+              )}
+              </tbody>
+            </table>
+          </div>
+       </div>
       </div>
     )
   }
