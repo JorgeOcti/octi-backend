@@ -40,8 +40,8 @@ appRouter.get('/api/cars/', Middlewares.isLoggedIn, CarController.apiCars);
 appRouter.get('/api/revisions/', Middlewares.isLoggedIn, CarController.apiRevisions);
 appRouter.get('/api/damages/export/', Middlewares.isLoggedIn, CarController.apiDamagesExport);
 appRouter.get('/api/rotation/export/', Middlewares.isLoggedIn, CarController.apiRotationExport);
-appRouter.get('/api/revisions/venue/stats/', Middlewares.isLoggedIn, CarController.apiVenueRevisionStats);
 appRouter.get('/api/revisions/stats/', Middlewares.isLoggedIn, CarController.apiRevisionStats);
+appRouter.get('/api/revisions/venue/stats/', Middlewares.isLoggedIn, CarController.apiVenueRevisionStats);
 
 // form detail
 appRouter.get('/api/participant/export/', Middlewares.isLoggedIn, CarController.exportParticipants);

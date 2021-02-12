@@ -39,8 +39,8 @@ appRouter.get('/api/cars/', middlewares_1.default.isLoggedIn, car_controller_1.d
 appRouter.get('/api/revisions/', middlewares_1.default.isLoggedIn, car_controller_1.default.apiRevisions);
 appRouter.get('/api/damages/export/', middlewares_1.default.isLoggedIn, car_controller_1.default.apiDamagesExport);
 appRouter.get('/api/rotation/export/', middlewares_1.default.isLoggedIn, car_controller_1.default.apiRotationExport);
-appRouter.get('/api/revisions/venue/stats/', middlewares_1.default.isLoggedIn, car_controller_1.default.apiVenueRevisionStats);
 appRouter.get('/api/revisions/stats/', middlewares_1.default.isLoggedIn, car_controller_1.default.apiRevisionStats);
+appRouter.get('/api/revisions/venue/stats/', middlewares_1.default.isLoggedIn, car_controller_1.default.apiVenueRevisionStats);
 // form detail
 appRouter.get('/api/participant/export/', middlewares_1.default.isLoggedIn, car_controller_1.default.exportParticipants);
 appRouter.get('/api/participant/:id/', middlewares_1.default.isLoggedIn, car_controller_1.default.apiParticipantDetail);
