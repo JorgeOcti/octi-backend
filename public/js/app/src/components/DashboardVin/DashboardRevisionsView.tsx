@@ -7,6 +7,8 @@ import InfoCard, {CardColors} from './InfoCard';
 import CircleChartCard from './CircleChartCard';
 import FilterableVenueTable from './FilterableVenueTable';
 import {connect} from 'react-redux';
+import * as moment from 'moment';
+import NumberFormat from "react-number-format";
 
 interface IPropsType extends RouteComponentProps<{}> {
   dispatch: Dispatch<DashboardReduxAction>;
@@ -21,7 +23,6 @@ interface IStateType {
 class DashboardRevisionsView extends React.Component<IPropsType, IStateType> {
   readonly state: IStateType = {
     error: null,
-    loading: false
   };
 
   constructor(props: IPropsType) {
@@ -33,18 +34,18 @@ class DashboardRevisionsView extends React.Component<IPropsType, IStateType> {
   }
 
   public render() {
-    const {loading, revisionStats} = this.props.dashboard;
-    let today: number,
-      yesterday: number,
-      dayVariation: number,
-      currentMonthMean: number,
-      lastMonthMean: number,
-      monthMeanVariation: number,
-      totalRevisions: number,
-      participantAcceptance: number,
-      shipAcceptance: number,
-      receiveAcceptance: number,
-      venueActivity: number;
+    const {revisionStats, loading} = this.props.dashboard;
+    let today: number = 0,
+      yesterday: number = 0,
+      dayVariation: number = 0,
+      currentMonthMean: number = 0,
+      lastMonthMean: number = 0,
+      monthMeanVariation: number = 0,
+      totalRevisions: number = 0,
+      participantAcceptance: number = 0,
+      shipAcceptance: number = 0,
+      receiveAcceptance: number = 0,
+      venueActivity: number = 0;
 
     if (revisionStats){
       today = revisionStats.revisions.today
@@ -137,10 +138,24 @@ class DashboardRevisionsView extends React.Component<IPropsType, IStateType> {
               <CircleChartCard className="col-md-6 col-lg-4 lg-tm-10" title="% ACEPTA REVISIÓN (pórtico)" value={participantAcceptance} bordered showLoading={loading}>
                 <div>
                 { !receiveAcceptance || receiveAcceptance === Infinity || receiveAcceptance === 0 ? null :
-                  <span className="info-box-text xs-center-text">ACEPTA RECEPCIÓN {receiveAcceptance.toFixed(0)}%</span>
+                  <span className="info-box-text xs-center-text">ACEPTA RECEPCIÓN <NumberFormat
+                    value={receiveAcceptance}
+                    displayType={'text'}
+                    thousandSeparator={'.'}
+                    decimalScale={0}
+                    decimalSeparator={false}
+                    suffix="%"/>
+                  </span>
                 }
                 { !shipAcceptance || shipAcceptance === Infinity || shipAcceptance === 0 ? null :
-                  <span className="info-box-text xs-center-text">ACEPTA DESPACHO {shipAcceptance.toFixed(0)}%</span>
+                  <span className="info-box-text xs-center-text">ACEPTA DESPACHO <NumberFormat
+                    value={shipAcceptance}
+                    displayType={'text'}
+                    thousandSeparator={'.'}
+                    decimalScale={0}
+                    decimalSeparator={false}
+                    suffix="%"/>
+                  </span>
                 }
               </div>
                 </CircleChartCard>

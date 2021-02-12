@@ -5,34 +5,28 @@ import {connect} from 'react-redux';
 import {
   DashboardReduxAction, getVenuesStats, IDashboardState,
 } from "../../actions/dashboard.actions";
-import AppContainer from "../../container/AppContainer";
-import InfoCard, {CardColors} from "./InfoCard";
-import CircleChartCard from "./CircleChartCard";
-import {ChangeEvent, HTMLProps} from "react";
 import * as moment from "moment";
-import {IParticipant} from "../../../../../../src/interfaces/participant.interface";
-import {connect} from "react-redux";
-import {disableConsoleAlerts} from "raven";
 
-interface IPropsType extends RouteComponentProps<{ }>, HTMLProps<HTMLDivElement>  {
-  dispatch: Dispatch<DashboardReduxAction>;
-  dashboard: IDashboardState;
+interface IPropsType {
+  className?: string;
+  dispatch?: Dispatch<DashboardReduxAction>;
+  dashboard?: IDashboardState;
   getVenuesStats(from: number, to: number): void;
-  bordered? :boolean;
+  bordered? : boolean;
 }
 
 export enum TimePeriods {
   MONTH = "MES",
   WEEK = "SEMANA",
   YEAR = "AÑO",
-  DAY = "DIA",
+  DAY = "DÍA",
 }
 
 interface IStateType {
   error: Error | null;
   from: number;
   to: number;
-  timeControl: TimePeriods
+  timeControl: string;
   minValue: number | null;
 }
 
@@ -50,15 +44,17 @@ class FilterableVenueTable extends React.Component<IPropsType, IStateType> {
     this.props.getVenuesStats(from, to);
   }
 
-  onValueChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    this.setState({[e.currentTarget.name]: e.currentTarget.value});
+  onValueChange = (e: any) => {
+    this.setState({
+      minValue: e.currentTarget.value
+    });
   }
 
   onTimePeriodChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     let from : number, to : number;
-    this.onValueChange(e as React.ChangeEvent<HTMLInputElement>);
+    let value : string = e.target.value;
 
-    switch (TimePeriods[e.target.value]){
+    switch (value) {
       case TimePeriods.MONTH:
         from = moment().startOf("month").unix();
         to = moment().endOf("month").unix();
@@ -77,14 +73,14 @@ class FilterableVenueTable extends React.Component<IPropsType, IStateType> {
         break;
     }
 
-    this.setState({from, to}, () => {
+    this.setState({from, to, timeControl: value}, () => {
       this.props.getVenuesStats(from, to)
     });
   }
 
   public render() {
-    const {minValue} = this.state;
-    let venuesInfo = this.props.dashboard.venueStats ?? [];
+    const minValue = this.state.minValue ?? null;
+    let venuesInfo = this.props.dashboard ? this.props.dashboard.venueStats ?? [] : [];
     if (minValue){
       venuesInfo = venuesInfo.filter(v => (v.total ?? 0) < minValue);
     }
@@ -113,16 +109,16 @@ class FilterableVenueTable extends React.Component<IPropsType, IStateType> {
                   className="font-12"
                   style={{width:"90px", marginLeft: "5px"}}
                   name="timeControl"
-                  value={this.state.timeControl.toString()}
+                  value={this.state.timeControl}
                   onChange={this.onTimePeriodChange}>
-                  {Object.keys(TimePeriods).map( p =>
-                    <option key={p} value={p}>{TimePeriods[p].toString()}</option>
+                  {Object.keys(TimePeriods).map( (p : string) =>
+                    <option key={p} value={(TimePeriods as any)[p].toString()}>{(TimePeriods as any)[p].toString()}</option>
                   )}
                 </select>
               </div>
             </div>
           </div>
-          <div className="row" style={{overflowY: "scroll", maxHeight: "110px", margin: "0px"}}>
+          <div className="row" style={{overflowY: "scroll", maxHeight: "122px", margin: "0px"}}>
             <table className="table table-striped">
               <thead>
               <tr>
@@ -162,4 +158,4 @@ const mapDispatchToProps = (dispatch: any ) => {
 };
 
 
-export default connect<{}, {}, IPropsType>(mapStateToProps, mapDispatchToProps)(FilterableVenueTable);
+export default connect<{}, {}, IPropsType | any>(mapStateToProps, mapDispatchToProps)(FilterableVenueTable);

@@ -3,6 +3,7 @@ import {RouteComponentProps} from 'react-router';
 import {Dispatch} from 'redux';
 import {DashboardReduxAction, IDashboardState} from '../../actions/dashboard.actions';
 import {HTMLProps} from 'react';
+import NumberFormat from "react-number-format";
 
 interface IPropsType extends HTMLProps<HTMLDivElement>{
   value: number;
@@ -106,7 +107,15 @@ class CircleChartCard extends React.Component<IPropsType, IStateType>{
             </div>
             <div className="col-sm-8 col-xs-12" style={{padding: '15px'}}>
               <span className="info-box-text xs-center-text">{title}</span>
-              <span className="info-box-number count font-32 xs-center-text">{value.toFixed(0)}%</span>
+              <span className="info-box-number count font-32 xs-center-text">
+                <NumberFormat
+                  value={value}
+                  displayType={'text'}
+                  thousandSeparator={'.'}
+                  decimalScale={0}
+                  decimalSeparator={false}
+                  suffix="%"/>
+              </span>
               {this.props.children}
             </div>
           </div>
