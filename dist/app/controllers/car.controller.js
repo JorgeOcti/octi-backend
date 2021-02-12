@@ -1868,8 +1868,8 @@ class CarController {
                 } });
             const yesterdayParticipants = await participant_model_1.default.count({ ...queryFilter,
                 createdAt: {
-                    $gte: moment().subtract(1, "day").endOf("day").toDate(),
-                    $lt: moment().subtract(1, "day").startOf("day").toDate()
+                    $gte: moment().subtract(1, "day").startOf("day").toDate(),
+                    $lt: moment().subtract(1, "day").endOf("day").toDate()
                 } });
             const lastMonthParticipants = await participant_model_1.default.count({ ...queryFilter,
                 createdAt: {
