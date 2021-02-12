@@ -50,7 +50,7 @@ class InfoCard extends React.Component<IPropsType, IStateType>{
           <div className="info-box-content">
             <span className="info-box-text">{title}</span>
             <span className="info-box-number count">
-              {!showLoading ? value :
+              {!showLoading ? value.toFixed(0) :
                 <i className="fa fa-spinner fa-spin" />}
               {this.props.children}
             </span>

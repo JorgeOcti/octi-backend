@@ -93,7 +93,9 @@ class DashboardRevisionsView extends React.Component<IPropsType, IStateType> {
               value={yesterday}
               showLoading={loading}>
               { !dayVariation || dayVariation === Infinity || dayVariation === 0 ? null :
-                <span className="green font-normal font-14" style={{marginLeft: "5px"}}>
+                <span className={`${ !dayVariation || dayVariation === Infinity || dayVariation === 0 ? "fa-search" :
+                  dayVariation > 0 ? "green" : "red"
+                } font-normal font-14`} style={{marginLeft: "5px"}}>
                       ({dayVariation.toFixed(0)}% vs día anterior)
                     </span>
               }
@@ -110,7 +112,9 @@ class DashboardRevisionsView extends React.Component<IPropsType, IStateType> {
               value={currentMonthMean}
               showLoading={loading}>
               { !monthMeanVariation || monthMeanVariation === Infinity || monthMeanVariation === 0 ? null :
-                <span className="red font-normal font-14" style={{marginLeft: "5px"}}>
+                <span className={`${ !monthMeanVariation || monthMeanVariation === Infinity || monthMeanVariation === 0 ? "fa-search" :
+                monthMeanVariation > 0 ? "green" : "red"
+              } font-normal font-14`} style={{marginLeft: "5px"}}>
                       ({monthMeanVariation.toFixed(0)}% vs mes anterior)
                     </span>
               }
