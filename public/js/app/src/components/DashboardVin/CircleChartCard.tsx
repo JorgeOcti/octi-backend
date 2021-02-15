@@ -105,7 +105,7 @@ class CircleChartCard extends React.Component<IPropsType, IStateType>{
               <div ref={this.chartRef} style={{minHeight: '160px', maxWidth: '100%'}}/>
             </div>
             <div className="col-sm-8 col-xs-12" style={{padding: '15px'}}>
-              <span className="info-box-text xs-center-text">{title}</span>
+              <span className="info-box-text xs-center-text text-wrap">{title}</span>
               <span className="info-box-number count font-32 xs-center-text">
                 <NumberFormat
                   value={value}
