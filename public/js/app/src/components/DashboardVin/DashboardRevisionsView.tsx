@@ -9,6 +9,10 @@ import FilterableVenueTable from './FilterableVenueTable';
 import {connect} from 'react-redux';
 import * as moment from 'moment';
 import NumberFormat from "react-number-format";
+import {IWindow} from "../../interfaces/window";
+import {IUser} from "../../../../../../src/interfaces/user.interface";
+
+declare let window: IWindow;
 
 interface IPropsType extends RouteComponentProps<{}> {
   dispatch: Dispatch<DashboardReduxAction>;
@@ -31,6 +35,11 @@ class DashboardRevisionsView extends React.Component<IPropsType, IStateType> {
 
   componentDidMount() {
     this.props.getRevisionStats();
+  }
+
+  private isSALFARAC(){
+    let user : IUser = window.user;
+    return user.company === "5ef1271dd569c10013d17e8b"
   }
 
   public render() {
@@ -135,20 +144,34 @@ class DashboardRevisionsView extends React.Component<IPropsType, IStateType> {
             </div>
             <div className="box-body">
               <div className="row">
-              <CircleChartCard className="col-md-6 col-lg-4 lg-tm-10" title="% ACEPTA REVISIÓN (pórtico)" value={participantAcceptance} bordered showLoading={loading}>
+              <CircleChartCard className="col-md-6 col-lg-4 lg-tm-10"
+                               title={this.isSALFARAC() ?
+                                 "% DE ENTREGAS/RECEPCIONES POR USUARIO HABITUAL" :
+                                 "% ACEPTA REVISIÓN (pórtico)"}
+                               value={participantAcceptance}
+                               bordered
+                               showLoading={loading}>
                 <div>
                 { !receiveAcceptance || receiveAcceptance === Infinity || receiveAcceptance === 0 ? null :
-                  <span className="info-box-text xs-center-text">ACEPTA RECEPCIÓN <NumberFormat
-                    value={receiveAcceptance}
-                    displayType={'text'}
-                    thousandSeparator={'.'}
-                    decimalScale={0}
-                    decimalSeparator={false}
-                    suffix="%"/>
+                  <span className="info-box-text xs-center-text text-wrap">
+                    {this.isSALFARAC() ?
+                      "ENTREGA USUARIO HABITUAL" :
+                      "ACEPTA RECEPCIÓN" }
+                    <NumberFormat
+                      value={receiveAcceptance}
+                      displayType={'text'}
+                      thousandSeparator={'.'}
+                      decimalScale={0}
+                      decimalSeparator={false}
+                      suffix="%"/>
                   </span>
                 }
                 { !shipAcceptance || shipAcceptance === Infinity || shipAcceptance === 0 ? null :
-                  <span className="info-box-text xs-center-text">ACEPTA DESPACHO <NumberFormat
+                  <span className="info-box-text xs-center-text text-wrap">
+                    {this.isSALFARAC() ?
+                      "RECIBE USUARIO HABITUAL" :
+                      "ACEPTA DESPACHO" }
+                    <NumberFormat
                     value={shipAcceptance}
                     displayType={'text'}
                     thousandSeparator={'.'}
