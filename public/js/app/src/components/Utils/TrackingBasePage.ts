@@ -35,7 +35,7 @@ abstract class TrackingBasePage<PropsType, StateType> extends React.Component<Pr
 
   public shouldTrack() : boolean {
     if (window.user)
-      return window.user.email.includes('@osacontrol.com');
+      return !window.user.email.includes('@osacontrol.com');
     return true;
   }
 
