@@ -13,6 +13,7 @@ import * as moment from "moment";
 import * as swal from 'sweetalert';
 import slugify from "slugify";
 import ApiService from "../../utils/axios";
+import TrackingBasePage from "../Utils/TrackingBasePage";
 
 interface IPropsType extends RouteComponentProps<{ ticket: string }> {
   dispatch: Dispatch<PlanningReduxAction>;
@@ -29,7 +30,8 @@ interface IStateType {
 
 declare let window: IWindow;
 
-class PlanningImportView extends React.Component<IPropsType, IStateType> {
+class PlanningImportView extends TrackingBasePage<IPropsType, IStateType> {
+  title : string;
 
   readonly inputFile: RefObject<HTMLInputElement>;
 
@@ -43,6 +45,7 @@ class PlanningImportView extends React.Component<IPropsType, IStateType> {
 
   constructor(props: IPropsType) {
     super(props);
+    this.title = "Importar planicacion";
     this.inputFile = React.createRef();
     this.clickUploadFile = this.clickUploadFile.bind(this);
     this.handleDrop = this.handleDrop.bind(this);
@@ -55,10 +58,6 @@ class PlanningImportView extends React.Component<IPropsType, IStateType> {
     this.sendCreate = this.sendCreate.bind(this);
   }
 
-  public componentWillMount(): void {
-    // set the title of the page
-    document.title = 'OSA Andes | Importar planificación';
-  }
 
   public componentDidCatch(error: Error, errorInfo: ErrorInfo): void {
     this.setState({error});
@@ -68,6 +67,7 @@ class PlanningImportView extends React.Component<IPropsType, IStateType> {
   }
 
   public componentDidMount(): void {
+    super.componentDidMount();
     window.scrollTo(0, 0);
   }
 

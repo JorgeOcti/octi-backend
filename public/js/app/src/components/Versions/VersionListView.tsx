@@ -13,6 +13,7 @@ import {statusFooterButttonsModal} from '../../utils/common';
 import ModalView from '../Modal/ModalView';
 import VersionFormView from './VersionFormView';
 import Row from '../Utils/Row';
+import TrackingBasePage from "../Utils/TrackingBasePage";
 
 interface IPropsType extends RouteComponentProps<{ ticket: string }> {
   versions: IVersionsState;
@@ -37,7 +38,8 @@ interface IStateType {
   tempVersion: ITempVersion;
 }
 
-class VersionListView extends React.Component<IPropsType, IStateType> {
+class VersionListView extends TrackingBasePage<IPropsType, IStateType> {
+  title : string;
 
   // static propTypes = {
   //   alerts: PropTypes.object.isRequired,
@@ -58,6 +60,7 @@ class VersionListView extends React.Component<IPropsType, IStateType> {
 
   constructor(props: IPropsType) {
     super(props);
+    this.title = 'Listado de versiones';
     this.changeTempVersion = this.changeTempVersion.bind(this);
     this.onDragStart = this.onDragStart.bind(this);
     this.onDragEnd = this.onDragEnd.bind(this);
@@ -72,10 +75,12 @@ class VersionListView extends React.Component<IPropsType, IStateType> {
 
   }
 
+  componentDidMount() {
+    super.componentDidMount();
+  }
+
   public componentWillMount() {
     this.props.getVersionsAction();
-    // set the title of the page
-    document.title = 'OSA Andes | Listado de versiones';
   }
 
   public componentWillUnmount() {

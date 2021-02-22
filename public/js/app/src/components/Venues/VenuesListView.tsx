@@ -27,6 +27,7 @@ import {hasPermission} from '../../utils/common';
 import ModalView from '../Modal/ModalView';
 import Paginator from '../Utils/Paginator';
 import VenueFormView from './VenueFormView';
+import TrackingBasePage from "../Utils/TrackingBasePage";
 
 interface IPropsType extends RouteComponentProps<{ ticket: string }> {
   dispatch: Dispatch<VenueReduxAction>;
@@ -47,7 +48,8 @@ interface IStateType {
 
 declare let window: IWindow;
 
-class VenuesListView extends React.Component<IPropsType, IStateType> {
+class VenuesListView extends TrackingBasePage<IPropsType, IStateType> {
+  title : string;
 
   private socket: SocketIOClient.Socket;
   private map: any;
@@ -58,6 +60,7 @@ class VenuesListView extends React.Component<IPropsType, IStateType> {
 
   constructor(props: IPropsType) {
     super(props);
+    this.title = 'Listado de sucursales';
     this.changePage = this.changePage.bind(this);
     this.createVenue = this.createVenue.bind(this);
     this.processCreateVenue = this.processCreateVenue.bind(this);
@@ -70,8 +73,6 @@ class VenuesListView extends React.Component<IPropsType, IStateType> {
 
   public componentWillMount(): void {
     const {pagination} = this.props.venues;
-    // set the title of the page
-    document.title = 'OSA Andes | Listado de sucursales';
     this.props.getVenuesAction(pagination.page);
 
     // socket
@@ -96,6 +97,7 @@ class VenuesListView extends React.Component<IPropsType, IStateType> {
     this.setState({
       exporing: true
     });
+    this.trackClick("Exportar");
     const api: ApiService = new ApiService();
     const instance = api.getInstance();
     instance.defaults.responseType = 'blob';

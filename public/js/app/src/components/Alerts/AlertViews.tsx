@@ -12,6 +12,7 @@ import AppContainer from '../../container/AppContainer';
 import {statusFooterButttonsModal} from '../../utils/common';
 import ModalView from '../Modal/ModalView';
 import AlertFormView from './AlertFormView';
+import TrackingBasePage from "../Utils/TrackingBasePage";
 
 interface IPropsType extends RouteComponentProps<{ ticket: string }> {
   alerts: IAlertsState;
@@ -36,7 +37,8 @@ interface IStateType {
   tempAlert: ITempAlert;
 }
 
-class AlertViews extends React.Component<IPropsType, IStateType> {
+class AlertViews extends TrackingBasePage<IPropsType, IStateType> {
+  title : string;
 
   // static propTypes = {
   //   alerts: PropTypes.object.isRequired,
@@ -56,6 +58,7 @@ class AlertViews extends React.Component<IPropsType, IStateType> {
 
   constructor(props: IPropsType) {
     super(props);
+    this.title = ' Listado de alertas';
     this.changeTempAlert = this.changeTempAlert.bind(this);
 
     this.addAlert = this.addAlert.bind(this);
@@ -63,11 +66,12 @@ class AlertViews extends React.Component<IPropsType, IStateType> {
 
     this.deleteAlert = this.deleteAlert.bind(this);
   }
+  componentDidMount() {
+    super.componentDidMount();
+  }
 
   public componentWillMount() {
     this.props.getAlertsAction();
-    // set the title of the page
-    document.title = 'OSA Andes | Listado de alertas';
   }
 
   public componentWillUnmount() {

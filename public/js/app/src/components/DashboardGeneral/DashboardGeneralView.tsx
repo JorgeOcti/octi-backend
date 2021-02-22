@@ -9,6 +9,7 @@ import {DashboardReduxAction, getParticipantsPerDateAction, IDashboardState} fro
 import AppContainer from '../../container/AppContainer';
 import Row from '../Utils/Row';
 import BootstrapSelect from "../Utils/BootstrapSelect";
+import TrackingBasePage from "../Utils/TrackingBasePage";
 
 interface IPropsType extends RouteComponentProps<{ ticket: string }> {
   dispatch: Dispatch<DashboardReduxAction>;
@@ -22,7 +23,8 @@ interface IStateType {
   error: Error | null;
 }
 
-class DashboardGeneralView extends React.Component<IPropsType, IStateType> {
+class DashboardGeneralView extends TrackingBasePage<IPropsType, IStateType> {
+  title : string;
 
   // static propTypes = {
   //   dashboard: PropTypes.object.isRequired,
@@ -42,6 +44,7 @@ class DashboardGeneralView extends React.Component<IPropsType, IStateType> {
 
   constructor(props: IPropsType) {
     super(props);
+    this.title = "Reportes generales";
     this.resizeCharts = this.resizeCharts.bind(this);
     this.updateParticipantsChart = this.updateParticipantsChart.bind(this);
     this.updateCarsChart = this.updateCarsChart.bind(this);
@@ -50,8 +53,6 @@ class DashboardGeneralView extends React.Component<IPropsType, IStateType> {
   }
 
   public componentWillMount(): void {
-    // set the title of the page
-    document.title = 'OSA Andes | Reportes generales';
     // get data
     this.props.getParticipantsPerDateAction();
     // add listeners
@@ -59,6 +60,7 @@ class DashboardGeneralView extends React.Component<IPropsType, IStateType> {
   }
 
   public componentDidMount(): void {
+    super.componentDidMount();
     const $participantPerDate = document.getElementById('participant-per-date') as HTMLDivElement;
     const $participantRange = document.getElementById('participant-range') as HTMLDivElement;
     const $carsByVenue = document.getElementById('cars-by-venue') as HTMLDivElement;

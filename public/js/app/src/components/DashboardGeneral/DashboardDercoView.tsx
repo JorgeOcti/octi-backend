@@ -9,6 +9,7 @@ import {DashboardReduxAction} from '../../actions/dashboard.actions';
 import AppContainer from '../../container/AppContainer';
 import Row from '../Utils/Row';
 import {getDashboardCleaning, IDashboardDercoState} from "../../actions/dashboardDerco.actions";
+import TrackingBasePage from "../Utils/TrackingBasePage";
 
 interface IPropsType extends RouteComponentProps<{ ticket: string }> {
   dispatch: Dispatch<DashboardReduxAction>;
@@ -21,18 +22,19 @@ interface IStateType {
   error: Error | null;
 }
 
-class DashboardDercoView extends React.Component<IPropsType, IStateType> {
+class DashboardDercoView extends TrackingBasePage<IPropsType, IStateType> {
+  title : string;
+
   cleaningPerDayChart: echarts.ECharts;
 
   constructor(props: IPropsType) {
     super(props);
+    this.title = 'Reportería de daños';
     this.resizeCharts = this.resizeCharts.bind(this);
     this.updateCleaningPerDayChart = this.updateCleaningPerDayChart.bind(this);
   }
 
   public componentWillMount(): void {
-    // set the title of the page
-    document.title = 'OSA Andes | Reportería de daños';
     // get data
     this.props.getDashboardCleaning();
     // add listeners
@@ -40,6 +42,7 @@ class DashboardDercoView extends React.Component<IPropsType, IStateType> {
   }
 
   public componentDidMount(): void {
+    super.componentDidMount();
     const $cleaningPerDayChart = document.getElementById('cleaning-per-day') as HTMLDivElement;
     this.cleaningPerDayChart = echarts.init($cleaningPerDayChart);
   }

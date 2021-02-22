@@ -10,6 +10,7 @@ import {ErrorInfo} from "react";
 import * as Raven from "raven-js";
 import * as moment from "moment";
 import Paginator from "../Utils/Paginator";
+import TrackingBasePage from "../Utils/TrackingBasePage";
 
 interface IPropsType extends RouteComponentProps<{ ticket: string }> {
   dispatch: Dispatch<PlanningReduxAction>;
@@ -24,12 +25,14 @@ interface IStateType {
 
 declare let window: IWindow;
 
-class PlanningListView extends React.Component<IPropsType, IStateType> {
+class PlanningListView extends TrackingBasePage<IPropsType, IStateType> {
+  title : string;
 
   private socket: SocketIOClient.Socket;
 
   constructor(props: IPropsType) {
     super(props);
+    this.title = 'Listado de planificación';
     this.changePage = this.changePage.bind(this);
     this.import = this.import.bind(this);
   }
@@ -37,7 +40,6 @@ class PlanningListView extends React.Component<IPropsType, IStateType> {
   public componentWillMount(): void {
     const {pagination} = this.props.planning;
     // set the title of the page
-    document.title = 'OSA Andes | Listado de planificación';
     this.props.getPlanningAction(pagination.page);
 
     // socket
@@ -69,6 +71,7 @@ class PlanningListView extends React.Component<IPropsType, IStateType> {
   }
 
   public componentDidMount(): void {
+    super.componentDidMount();
     window.scrollTo(0, 0);
   }
 

@@ -18,6 +18,7 @@ import {
 import AppContainer from '../../container/AppContainer';
 import { IWindow } from '../../interfaces/window';
 import Paginator from '../Utils/Paginator';
+import TrackingBasePage from "../Utils/TrackingBasePage";
 
 declare let window: IWindow;
 
@@ -40,7 +41,8 @@ interface IStateType {
   downloading: boolean;
 }
 
-class DashboardVinView extends React.Component<IPropsType, IStateType> {
+class DashboardVinView extends TrackingBasePage<IPropsType, IStateType> {
+  title: string;
 
   readonly state: IStateType = {
     error: null,
@@ -58,6 +60,7 @@ class DashboardVinView extends React.Component<IPropsType, IStateType> {
 
   constructor(props: IPropsType) {
     super(props);
+    this.title = "Revisiones";
     this.changePage = this.changePage.bind(this);
     this.onChangeSearch = this.onChangeSearch.bind(this);
     this.printPdf = this.printPdf.bind(this);
@@ -89,7 +92,6 @@ class DashboardVinView extends React.Component<IPropsType, IStateType> {
   public componentWillMount(): void {
     // set the title of the page
     const {page} = this.props.dashboard.pagination;
-    document.title = 'OSA Andes | Revisiones';
     this.props.getRevisionsAction(page, true);
 
     // socket
@@ -134,6 +136,7 @@ class DashboardVinView extends React.Component<IPropsType, IStateType> {
   }
 
   public componentDidMount(): void {
+    super.componentDidMount();
     const $this = this;
     ($('input[name="daterange"]') as any).daterangepicker({
       startDate: moment().subtract(30, 'days'),
@@ -175,8 +178,12 @@ class DashboardVinView extends React.Component<IPropsType, IStateType> {
   }
 
   public downloadReport(){
-
     const {from, to} = this.state;
+    this.trackClick("Descargar reporte", {
+      from,
+      to
+    });
+
     window.open(`/api/participant/export/?from=${from}&to=${to}`, '_blank');
 
     // const api: ApiService = new ApiService();

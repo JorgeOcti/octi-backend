@@ -11,6 +11,7 @@ import * as moment from 'moment';
 import NumberFormat from "react-number-format";
 import {IWindow} from "../../interfaces/window";
 import {IUser} from "../../../../../../src/interfaces/user.interface";
+import TrackingBasePage from "../Utils/TrackingBasePage";
 
 declare let window: IWindow;
 
@@ -24,22 +25,26 @@ interface IStateType {
   error: Error | null;
 }
 
-class DashboardRevisionsView extends React.Component<IPropsType, IStateType> {
+
+class DashboardRevisionsView extends TrackingBasePage<IPropsType, IStateType> {
+  title : string;
   readonly state: IStateType = {
     error: null,
   };
 
   constructor(props: IPropsType) {
     super(props);
+    this.title = 'Dashboard Revisiones';
   }
 
   componentDidMount() {
+    super.componentDidMount();
     this.props.getRevisionStats();
   }
 
   private isSALFARAC(){
     let user : IUser = window.user;
-    return user.company === "5ef1271dd569c10013d17e8b"
+    return user.company._id === "5ef1271dd569c10013d17e8b"
   }
 
   public render() {
@@ -155,8 +160,8 @@ class DashboardRevisionsView extends React.Component<IPropsType, IStateType> {
                 { !receiveAcceptance || receiveAcceptance === Infinity || receiveAcceptance === 0 ? null :
                   <span className="info-box-text xs-center-text text-wrap">
                     {this.isSALFARAC() ?
-                      "ENTREGA USUARIO HABITUAL" :
-                      "ACEPTA RECEPCIÓN" }
+                      "ENTREGA USUARIO HABITUAL " :
+                      "ACEPTA RECEPCIÓN " }
                     <NumberFormat
                       value={receiveAcceptance}
                       displayType={'text'}
@@ -169,8 +174,8 @@ class DashboardRevisionsView extends React.Component<IPropsType, IStateType> {
                 { !shipAcceptance || shipAcceptance === Infinity || shipAcceptance === 0 ? null :
                   <span className="info-box-text xs-center-text text-wrap">
                     {this.isSALFARAC() ?
-                      "RECIBE USUARIO HABITUAL" :
-                      "ACEPTA DESPACHO" }
+                      "RECIBE USUARIO HABITUAL " :
+                      "ACEPTA DESPACHO " }
                     <NumberFormat
                     value={shipAcceptance}
                     displayType={'text'}

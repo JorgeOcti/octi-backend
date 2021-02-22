@@ -15,6 +15,7 @@ import ApiService from '../../utils/axios';
 import { getExtension, getIconFromExtension } from '../../utils/common';
 import Checkbox from '../Utils/CheckBox';
 import VenueDetail from './VenueDetail';
+import TrackingBasePage from "../Utils/TrackingBasePage";
 
 interface IPropsType extends RouteComponentProps<{ ticket: string }> {
   alerts: IAlertsState;
@@ -39,7 +40,8 @@ interface IStateType {
   reportPhoto: number;
 }
 
-class InventoryCreateView extends React.Component<IPropsType, IStateType> {
+class InventoryCreateView extends TrackingBasePage<IPropsType, IStateType> {
+  title : string;
 
   // static propTypes = {
   //   dispatch: PropTypes.func.isRequired
@@ -67,6 +69,7 @@ class InventoryCreateView extends React.Component<IPropsType, IStateType> {
 
   constructor(props: IPropsType) {
     super(props);
+    this.title = 'Creando Inventario';
     this.clickUploadFile = this.clickUploadFile.bind(this);
     this.clickUploadBackup = this.clickUploadBackup.bind(this);
     this.getVenues = this.getVenues.bind(this);
@@ -88,8 +91,6 @@ class InventoryCreateView extends React.Component<IPropsType, IStateType> {
   }
 
   public componentWillMount() {
-    // set the title of the page
-    document.title = 'OSA Andes | Creando Inventario';
     this.getVenues();
   }
 
@@ -105,6 +106,7 @@ class InventoryCreateView extends React.Component<IPropsType, IStateType> {
   }
 
   public componentDidMount(): void {
+    super.componentDidMount();
     const $reportPhoto: any = $('#report-photo');
     $reportPhoto.TouchSpin({
       initval: 1,

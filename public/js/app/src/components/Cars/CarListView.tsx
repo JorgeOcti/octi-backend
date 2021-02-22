@@ -13,6 +13,7 @@ import {IWindow} from '../../interfaces/window';
 import {hasPermission} from '../../utils/common';
 import ModalView from '../Modal/ModalView';
 import Paginator from '../Utils/Paginator';
+import TrackingBasePage from "../Utils/TrackingBasePage";
 
 declare let window: IWindow;
 
@@ -28,7 +29,8 @@ interface IStateType {
   searchText: string;
 }
 
-class CarListView extends React.Component<IPropsType, IStateType> {
+class CarListView extends TrackingBasePage<IPropsType, IStateType> {
+  title : string;
 
   // static propTypes = {
   //   dispatch: PropTypes.func.isRequired
@@ -41,15 +43,18 @@ class CarListView extends React.Component<IPropsType, IStateType> {
 
   constructor(props: IPropsType) {
     super(props);
+    this.title = 'Listado de autos';
     this.changePage = this.changePage.bind(this);
     this.onChangeSearch = this.onChangeSearch.bind(this);
     this.debounceOnChangeSearch = debounce(300, this.debounceOnChangeSearch);
   }
 
+  componentDidMount() {
+    super.componentDidMount();
+  }
+
   public componentWillMount() {
     const {pagination} = this.props.cars;
-    // set the title of the page
-    document.title = 'OSA Andes | Listado de autos';
     this.props.getCarsAction(pagination.page);
   }
 

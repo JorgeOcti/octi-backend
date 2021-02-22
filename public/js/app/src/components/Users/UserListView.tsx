@@ -36,6 +36,7 @@ import ModalView from '../Modal/ModalView';
 import Paginator from '../Utils/Paginator';
 import UserFormChangePasswordView from './UserFormChangePasswordView';
 import UserFormView from './UserFormView';
+import TrackingBasePage from "../Utils/TrackingBasePage";
 
 interface IPropsType extends RouteComponentProps<{ ticket: string }> {
   dispatch: Dispatch<UserReduxAction>;
@@ -58,7 +59,8 @@ interface IStateType {
 
 declare let window: IWindow;
 
-class UserListView extends React.Component<IPropsType, IStateType> {
+class UserListView extends TrackingBasePage<IPropsType, IStateType> {
+  title : string;
 
   // static propTypes = {
   //   users: PropTypes.object.isRequired,
@@ -75,6 +77,7 @@ class UserListView extends React.Component<IPropsType, IStateType> {
 
   constructor(props: IPropsType) {
     super(props);
+    this.title = 'Listado de usuarios';
     this.createUser = this.createUser.bind(this);
     this.processCreateUser = this.processCreateUser.bind(this);
     this.updateUser = this.updateUser.bind(this);
@@ -88,10 +91,12 @@ class UserListView extends React.Component<IPropsType, IStateType> {
     this.debounceOnChangeSearch = debounce(300, this.debounceOnChangeSearch);
   }
 
+  componentDidMount() {
+    super.componentDidMount();
+  }
+
   public componentWillMount(): void {
     const {pagination} = this.props.users;
-    // set the title of the page
-    document.title = 'OSA Andes | Listado de usuarios';
     this.props.getUsersAction(pagination.page);
 
     // socket
@@ -134,6 +139,7 @@ class UserListView extends React.Component<IPropsType, IStateType> {
   }
 
   public exportExcel() {
+    this.trackClick("Exportar");
     this.setState({
       exporing: true
     });

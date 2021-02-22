@@ -14,6 +14,7 @@ import BootstrapSelect from '../Utils/BootstrapSelect';
 import BootstrapSwitch from '../Utils/BootstrapSwitch';
 import MultiUploadFiles, { imageStatus } from '../Utils/MultiUploadFiles';
 import ShowIf from '../Utils/ShowIf';
+import TrackingBasePage from "../Utils/TrackingBasePage";
 
 interface IPropsType extends RouteComponentProps<{}> { }
 
@@ -63,7 +64,8 @@ const initialNewCar = {
   washed: false
 };
 
-class RequestCreateView extends React.Component<IPropsType, IStateType> {
+class RequestCreateView extends TrackingBasePage<IPropsType, IStateType> {
+  title : string;
 
   readonly api: ApiService;
 
@@ -81,6 +83,7 @@ class RequestCreateView extends React.Component<IPropsType, IStateType> {
 
   constructor(props: IPropsType) {
     super(props);
+    this.title = 'Crear solicitud';
     this.cancel = this.cancel.bind(this);
     this.addCar = this.addCar.bind(this);
     this.deleteCar = this.deleteCar.bind(this);
@@ -97,12 +100,12 @@ class RequestCreateView extends React.Component<IPropsType, IStateType> {
   }
 
   public componentWillMount(): void {
-    document.title = 'OSA Andes | Crear solicitud';
     window.scrollTo(0, 0);
     this.loadBaseData();
   }
 
   public componentDidMount(): void {
+    super.componentDidMount();
     const $amount: any = $('#amount');
     $amount.TouchSpin({
       initval: 1,

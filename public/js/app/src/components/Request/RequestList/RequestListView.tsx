@@ -26,6 +26,7 @@ import ImageLazyLoad from '../../Utils/ImageLazyLoad';
 import Paginator from '../../Utils/Paginator';
 import ShowIf from '../../Utils/ShowIf';
 import RequestListDetail from './RequestDetail';
+import TrackingBasePage from "../../Utils/TrackingBasePage";
 
 interface IPropsType extends RouteComponentProps<{ ticket: string }> {
   requests: IRequestsState;
@@ -44,7 +45,8 @@ interface IStateType {
 
 declare let window: IWindow;
 
-class RequestListView extends React.Component<IPropsType, IStateType> {
+class RequestListView extends TrackingBasePage<IPropsType, IStateType> {
+  title : string;
 
   readonly state = {
     error: null,
@@ -55,6 +57,7 @@ class RequestListView extends React.Component<IPropsType, IStateType> {
 
   constructor(props: IPropsType) {
     super(props);
+    this.title = 'Solicitudes';
     this.create = this.create.bind(this);
     this.changeOrder = this.changeOrder.bind(this);
     this.changePage = this.changePage.bind(this);
@@ -64,7 +67,6 @@ class RequestListView extends React.Component<IPropsType, IStateType> {
   public componentWillMount(): void {
     const {orderBy, orderType} = this.props.requests.options;
     const {page} = this.props.requests.pagination;
-    document.title = 'OSA Andes | Solicitudes';
     window.scrollTo(0, 0);
 
     this.props.getRequestsThunkAction(page, orderBy, orderType);
@@ -133,6 +135,7 @@ class RequestListView extends React.Component<IPropsType, IStateType> {
   }
 
   public componentDidMount(): void {
+    super.componentDidMount();
     window.scrollTo(0, 0);
   }
 
@@ -306,6 +309,7 @@ class RequestListView extends React.Component<IPropsType, IStateType> {
   }
 
   public exportExcel() {
+    this.trackClick("Exportar");
     this.setState({
       exporing: true
     });

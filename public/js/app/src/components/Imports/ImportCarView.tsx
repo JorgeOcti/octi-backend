@@ -12,6 +12,7 @@ import {IUsersState, UserReduxAction} from '../../actions/users.actions';
 import AppContainer from '../../container/AppContainer';
 import ApiService from '../../utils/axios';
 import ModalView from '../Modal/ModalView';
+import TrackingBasePage from "../Utils/TrackingBasePage";
 
 enum carStatus {
   Error,
@@ -47,7 +48,8 @@ interface IStateType {
   canDrop: boolean;
 }
 
-class ImportCarsView extends React.Component<IPropsType, IStateType> {
+class ImportCarsView extends TrackingBasePage<IPropsType, IStateType> {
+  title : string;
 
   // static propTypes = {
   //   users: PropTypes.object.isRequired,
@@ -67,6 +69,7 @@ class ImportCarsView extends React.Component<IPropsType, IStateType> {
 
   constructor(props: IPropsType) {
     super(props);
+    this.title = 'Importar autos';
     this.clickUploadFile = this.clickUploadFile.bind(this);
     this.handleChangeInputFile = this.handleChangeInputFile.bind(this);
     this.startLoad = this.startLoad.bind(this);
@@ -78,10 +81,9 @@ class ImportCarsView extends React.Component<IPropsType, IStateType> {
     this.inputFile = React.createRef();
   }
 
-  public componentWillMount() {
-    // set the title of the page
-    document.title = 'OSA Andes | Importar autos';
-  }
+ componentDidMount() {
+   super.componentDidMount();
+ }
 
   public componentWillUnmount() {
     // this.socket.disconnect();
