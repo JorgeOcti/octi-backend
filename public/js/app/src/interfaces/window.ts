@@ -24,5 +24,6 @@ export interface IWindow extends Window {
     tooltip(): void;
     tooltipRemnove(): void;
   };
+  isTracked: boolean;
   getCookie(namecsrftoken: string): string;
 }
