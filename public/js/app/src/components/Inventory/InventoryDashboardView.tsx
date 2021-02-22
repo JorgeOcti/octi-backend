@@ -15,6 +15,7 @@ import {IWindow} from '../../interfaces/window';
 import {IFilterCar} from '../../reducers/inventory.reducer';
 import BootstrapSelect from '../Utils/BootstrapSelect';
 import Row from '../Utils/Row';
+import TrackingBasePage from "../Utils/TrackingBasePage";
 
 declare let window: IWindow;
 
@@ -29,7 +30,8 @@ interface IStateType {
   error: Error | null;
 }
 
-class InventoryDashboardView extends React.Component<IPropsType, IStateType> {
+class InventoryDashboardView extends TrackingBasePage<IPropsType, IStateType> {
+  title : string;
 
   monthlyReport: echarts.ECharts;
 
@@ -39,6 +41,7 @@ class InventoryDashboardView extends React.Component<IPropsType, IStateType> {
 
   constructor(props: IPropsType) {
     super(props);
+    this.title = 'Dashboard de inventarios';
     this.resizeCharts = this.resizeCharts.bind(this);
 
     this.filterVenues = this.filterVenues.bind(this);
@@ -46,8 +49,7 @@ class InventoryDashboardView extends React.Component<IPropsType, IStateType> {
   }
 
   public componentWillMount(): void {
-    // set the title of the page
-    document.title = 'OSA Andes | Dashboard de inventarios';
+
     window.scrollTo(0, 0);
 
     // add listeners
@@ -60,6 +62,7 @@ class InventoryDashboardView extends React.Component<IPropsType, IStateType> {
   }
 
   public componentDidMount(): void {
+    super.componentDidMount();
     const $monthlyReport = document.getElementById('inventory-monthly-report') as HTMLDivElement;
     this.monthlyReport = echarts.init($monthlyReport);
 

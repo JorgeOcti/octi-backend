@@ -15,6 +15,7 @@ import ModalView from '../Modal/ModalView';
 import Row from '../Utils/Row';
 import TimeLineForm from './TimeLineForm';
 import TimeLineInventory from './TimeLineInventory';
+import TrackingBasePage from "../Utils/TrackingBasePage";
 
 declare let window: IWindow;
 
@@ -32,18 +33,26 @@ interface IStateType {
   error: Error | null;
 }
 
-class CarDetailView extends React.Component<IPropsType, IStateType> {
+class CarDetailView extends TrackingBasePage<IPropsType, IStateType> {
+  title : string;
 
   state = {
     error: null,
     highlight: []
   };
 
+  constructor(props : IPropsType) {
+    super(props);
+    this.title = 'Detalle VIN';
+  }
+
   componentWillMount() {
-    // set the title of the page
     const {id} = this.props.match.params;
-    document.title = 'OSA Andes | Detalle VIN';
     this.props.getCarAction(id);
+  }
+
+  componentDidMount() {
+    super.componentDidMount();
   }
 
   public componentDidCatch(error: Error, errorInfo: ErrorInfo) {

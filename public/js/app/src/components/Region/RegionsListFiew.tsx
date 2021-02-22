@@ -24,6 +24,7 @@ import {
   RegionReduxAction,
   updateRegionAction
 } from "../../actions/regions.actions";
+import TrackingBasePage from "../Utils/TrackingBasePage";
 
 interface IPropsType extends RouteComponentProps<{ region: string }> {
   dispatch: Dispatch<RegionReduxAction>;
@@ -44,10 +45,13 @@ interface IStateType {
 
 declare let window: IWindow;
 
-class RegionsListView extends React.Component<IPropsType, IStateType> {
+class RegionsListView extends TrackingBasePage<IPropsType, IStateType> {
+  title : string;
+
 
   constructor(props: IPropsType) {
     super(props);
+    this.title = 'Listado de regiones';
     this.createRegion = this.createRegion.bind(this);
     this.processCreateRegion = this.processCreateRegion.bind(this);
     this.updateRegion = this.updateRegion.bind(this);
@@ -57,9 +61,11 @@ class RegionsListView extends React.Component<IPropsType, IStateType> {
 
   public componentWillMount(): void {
     const {pagination} = this.props.regions;
-    // set the title of the page
-    document.title = 'OSA Andes | Listado de regiones';
     this.props.getRegionsAction(pagination.page);
+  }
+
+  componentDidMount() {
+    super.componentDidMount();
   }
 
   public componentWillUnmount(): void {

@@ -50,6 +50,7 @@ import CopyText from '../Utils/CopyText';
 import ImageLazyLoad from '../Utils/ImageLazyLoad';
 import Row from '../Utils/Row';
 import InventoryCarComments from './InventoryCarComments';
+import TrackingBasePage from "../Utils/TrackingBasePage";
 
 declare let window: IWindow;
 
@@ -82,7 +83,8 @@ interface IStateType {
   };
 }
 
-class InventoryDetailView extends React.Component<IPropsType, IStateType> {
+class InventoryDetailView extends TrackingBasePage<IPropsType, IStateType> {
+  title : string;
 
   readonly state = {
     error: null,
@@ -164,6 +166,7 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
 
   constructor(props: IPropsType) {
     super(props);
+    this.title = 'Detalle Inventario';
     this.resizeCharts = this.resizeCharts.bind(this);
     this.xlsExport = this.xlsExport.bind(this);
     this.carComments = this.carComments.bind(this);
@@ -324,8 +327,6 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
     // get data
     const {id} = this.props.match.params;
     this.props.getInventoryDetailAction(id, false);
-    // set the title of the page
-    document.title = 'OSA Andes | Detalle Inventario';
     // add listeners
     window.addEventListener('resize', this.resizeCharts, false);
     // socket
@@ -384,6 +385,7 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
   }
 
   public componentDidMount(): void {
+    super.componentDidMount();
     const $venuesDetail = document.getElementById('chart-venues-detail') as HTMLDivElement;
     const $brandDetail = document.getElementById('chart-brand-detail') as HTMLDivElement;
     this.venuesDetailChart = echarts.init($venuesDetail);
@@ -1386,6 +1388,7 @@ class InventoryDetailView extends React.Component<IPropsType, IStateType> {
   }
 
   private xlsExport(status: string[]) {
+    this.trackClick("Exportar");
     const {detail} = this.props.inventories;
     const data: any = [];
     const {inventorySettings} = this.props.inventories;

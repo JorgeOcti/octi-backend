@@ -24,6 +24,7 @@ import ApiService from '../../../utils/axios';
 import { hasPermission } from '../../../utils/common';
 import AutocompleteInput from '../../Utils/AutocompleteInput';
 import RequestItem from './RequestItem';
+import TrackingBasePage from "../../Utils/TrackingBasePage";
 
 interface IPropsType extends RouteComponentProps<{ id: string }> {
   requests: IRequestsState;
@@ -42,7 +43,8 @@ interface IStateType {
 
 declare let window: IWindow;
 
-class RequestDetailView extends React.Component<IPropsType, IStateType> {
+class RequestDetailView extends TrackingBasePage<IPropsType, IStateType> {
+  title : string;
 
   readonly api: ApiService;
   readonly state = {
@@ -61,15 +63,19 @@ class RequestDetailView extends React.Component<IPropsType, IStateType> {
 
   constructor(props: IPropsType) {
     super(props);
+    this.title = 'Detalle Solicitud';
     this.search = debounce(500, this.search.bind(this));
     this.api = new ApiService();
     this.deleteRequest = this.deleteRequest.bind(this);
     this.createItem = this.createItem.bind(this);
   }
 
+  componentDidMount() {
+    super.componentDidMount();
+  }
+
   public componentWillMount(): void {
     const { id } = this.props.match.params;
-    document.title = 'OSA Andes | Detalle Solicitud';
     window.scrollTo(0, 0);
 
     this.props.getRequestAction(id);

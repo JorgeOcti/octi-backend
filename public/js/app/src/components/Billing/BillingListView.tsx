@@ -13,6 +13,7 @@ import Paginator from "../Utils/Paginator";
 import {ErrorInfo} from "react";
 import * as Raven from "raven-js";
 import * as moment from "moment";
+import TrackingBasePage from "../Utils/TrackingBasePage";
 
 interface IPropsType extends RouteComponentProps<{ }> {
   dispatch: Dispatch<BillingReduxAction>;
@@ -25,7 +26,8 @@ interface IStateType {
   error: Error | null;
 }
 
-class BillingListView extends React.Component<IPropsType, IStateType> {
+class BillingListView extends TrackingBasePage<IPropsType, IStateType> {
+  title : string;
 
   readonly state = {
     error: null,
@@ -33,13 +35,12 @@ class BillingListView extends React.Component<IPropsType, IStateType> {
 
   constructor(props: IPropsType) {
     super(props);
+    this.title = 'Billing';
     this.changePage = this.changePage.bind(this);
   }
 
   public componentWillMount(): void {
     const {pagination} = this.props.billing;
-    // set the title of the page
-    document.title = 'OSA Andes | Billing';
     this.props.getBillingAction(pagination.page);
   }
 
@@ -57,6 +58,7 @@ class BillingListView extends React.Component<IPropsType, IStateType> {
   }
 
   public componentDidMount(): void {
+    super.componentDidMount();
     window.scrollTo(0, 0);
   }
 

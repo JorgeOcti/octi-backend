@@ -16,6 +16,7 @@ import * as swal from "sweetalert";
 import {default as Axios} from "axios";
 import ApiService from "../../utils/axios";
 import {hasPermission} from "../../utils/common";
+import TrackingBasePage from "../Utils/TrackingBasePage";
 
 declare let window: IWindow;
 
@@ -33,7 +34,8 @@ interface IStateType {
   exporting: boolean
 }
 
-class DashboardDamagesView extends React.Component<IPropsType, IStateType> {
+class DashboardDamagesView extends TrackingBasePage<IPropsType, IStateType> {
+  title : string;
 
   readonly state: IStateType = {
     error: null,
@@ -46,6 +48,7 @@ class DashboardDamagesView extends React.Component<IPropsType, IStateType> {
 
   constructor(props: IPropsType) {
     super(props);
+    this.title = 'Reportería de daños';
     this.resizeCharts = this.resizeCharts.bind(this);
     this.showdetail = this.showdetail.bind(this);
     this.back = this.back.bind(this);
@@ -54,8 +57,6 @@ class DashboardDamagesView extends React.Component<IPropsType, IStateType> {
   }
 
   public componentWillMount(): void {
-    // set the title of the page
-    document.title = 'OSA Andes | Reportería de daños';
     // get data
     this.props.getDashboardDamagesPerVenue(true);
     // add listeners
@@ -81,6 +82,7 @@ class DashboardDamagesView extends React.Component<IPropsType, IStateType> {
   }
 
   public componentDidMount(): void {
+    super.componentDidMount();
     const $damagesPerVenue = document.getElementById('damages-per-venue') as HTMLDivElement;
     this.damagesPerVenueChart = echarts.init($damagesPerVenue);
   }
@@ -106,6 +108,7 @@ class DashboardDamagesView extends React.Component<IPropsType, IStateType> {
     this.setState({
       exporting: true
     });
+    this.trackClick("Exportar");
     const api: ApiService = new ApiService();
     const instance = api.getInstance();
     instance.defaults.responseType = 'blob';
@@ -158,7 +161,7 @@ class DashboardDamagesView extends React.Component<IPropsType, IStateType> {
     const {loading} = this.props.dashboard;
     const {detail, detailName, exporting} = this.state;
     return (
-      <AppContainer title="" cMenu="1" cSubMenu="1.3">
+      <AppContainer title="" cMenu="1" cSubMenu="1.4">
         <section className="content">
           <Row>
             <div className="col-md-12">

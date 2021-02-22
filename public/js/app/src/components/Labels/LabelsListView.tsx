@@ -24,6 +24,7 @@ import BootstrapSwitch from '../Utils/BootstrapSwitch';
 import Paginator from '../Utils/Paginator';
 import LabelFormView from './LabelFormView';
 import {CarStatusType} from "../Inventory/InventoryDetailView";
+import TrackingBasePage from "../Utils/TrackingBasePage";
 
 interface IPropsType extends RouteComponentProps<{ ticket: string }> {
   dispatch: Dispatch<LabelsReduxAction>;
@@ -43,12 +44,14 @@ interface IStateType {
 
 declare let window: IWindow;
 
-class LabelsListView extends React.Component<IPropsType, IStateType> {
+class LabelsListView extends TrackingBasePage<IPropsType, IStateType> {
+  title : string;
 
   private socket: SocketIOClient.Socket;
 
   constructor(props: IPropsType) {
     super(props);
+    this.title = 'Listado de etiquetas';
     this.addLabel = this.addLabel.bind(this);
     this.processAddLabel = this.processAddLabel.bind(this);
     this.editLabel = this.editLabel.bind(this);
@@ -59,8 +62,6 @@ class LabelsListView extends React.Component<IPropsType, IStateType> {
 
   public componentWillMount(): void {
     const {pagination} = this.props.labels;
-    // set the title of the page
-    document.title = 'OSA Andes | Listado de etiquetas';
     this.props.getLabelsAction(pagination.page);
 
     // socket
@@ -95,6 +96,7 @@ class LabelsListView extends React.Component<IPropsType, IStateType> {
   }
 
   public componentDidMount(): void {
+    super.componentDidMount();
     window.scrollTo(0, 0);
   }
 

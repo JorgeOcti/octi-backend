@@ -26,6 +26,7 @@ import ShowIf from "../Utils/ShowIf";
 import ImageLazyLoad from "../Utils/ImageLazyLoad";
 import {IWindow} from "../../interfaces/window";
 import {hasPermission} from "../../utils/common";
+import TrackingBasePage from "../Utils/TrackingBasePage";
 
 declare let window: IWindow;
 
@@ -45,7 +46,8 @@ interface IStateType {
 }
 
 
-class StockView extends React.Component<IPropsType, IStateType> {
+class StockView extends TrackingBasePage<IPropsType, IStateType> {
+  title : string;
 
   private paginationOption: any = {
     paginationSize: 4,
@@ -77,6 +79,7 @@ class StockView extends React.Component<IPropsType, IStateType> {
 
   constructor(props: IPropsType) {
     super(props);
+    this.title = 'Stock Actual';
     this.xlsExport = this.xlsExport.bind(this);
     this.filterAllVenues = this.filterAllVenues.bind(this);
     this.filterVenues = this.filterVenues.bind(this);
@@ -134,8 +137,6 @@ class StockView extends React.Component<IPropsType, IStateType> {
   }
 
   public componentWillMount(): void {
-    // set the title of the page
-    document.title = 'OSA Andes | Stock Actual';
     this.props.getStockAction();
     // socket
     this.socket = io.connect(`${location.protocol}//${location.host}`, {
@@ -545,6 +546,7 @@ class StockView extends React.Component<IPropsType, IStateType> {
   }
 
   private xlsExport(): void {
+    this.trackClick("Exportar");
     const {cars} = this.props.stock;
     const data: any = [];
     // order data

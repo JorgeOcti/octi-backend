@@ -1796,6 +1796,152 @@ class CarController {
             });
         });
     }
+    async apiVenueRevisionStats(req, res) {
+        try {
+            const { team } = req.user;
+            const { from, to } = req.query;
+            const venuesPermissions = req.user.venuesPermissions();
+            // Get filters for Mongo Query
+            const queryFilter = {
+                team,
+                venue: {
+                    $in: venuesPermissions
+                }
+            };
+            if (from && to) {
+                queryFilter.createdAt = {
+                    $gte: moment.unix(Number(from)).hour(0).minute(0).toDate(),
+                    $lt: moment.unix(Number(to)).hour(23).minute(59).toDate()
+                };
+            }
+            const activeVenues = await participant_model_1.default.aggregate([
+                {
+                    $match: queryFilter
+                }, {
+                    $lookup: {
+                        from: 'venues',
+                        localField: 'venue',
+                        foreignField: '_id',
+                        as: '_venue',
+                    }
+                }, {
+                    $unwind: "$_venue"
+                }, {
+                    $group: {
+                        _id: "$_venue._id",
+                        name: { $first: "$_venue.name" },
+                        total: { $sum: 1 }
+                    }
+                }
+            ]);
+            const inactiveVenues = await venue_model_1.default.find({
+                team,
+                _id: {
+                    $in: venuesPermissions.filter(vp => !activeVenues.some(v => v._id.toString() === vp.toString()))
+                }
+            }, { name: 1, _id: 1 });
+            const allVenues = activeVenues.concat(inactiveVenues);
+            res.status(200).json(allVenues);
+        }
+        catch (e) {
+            logger_service_1.default.error(e);
+            res.status(500).json(e);
+        }
+    }
+    async apiRevisionStats(req, res) {
+        try {
+            const { team } = req.user;
+            const venuesPermissions = req.user.venuesPermissions();
+            // Get filters for Mongo Query
+            const queryFilter = {
+                team,
+                venue: {
+                    $in: venuesPermissions
+                }
+            };
+            const todayParticipants = await participant_model_1.default.count({ ...queryFilter,
+                createdAt: {
+                    $gte: moment().hour(0).minute(0).toDate(),
+                    $lt: moment().hour(23).minute(59).toDate()
+                } });
+            const yesterdayParticipants = await participant_model_1.default.count({ ...queryFilter,
+                createdAt: {
+                    $gte: moment().subtract(1, "day").startOf("day").toDate(),
+                    $lt: moment().subtract(1, "day").endOf("day").toDate()
+                } });
+            const lastMonthParticipants = await participant_model_1.default.count({ ...queryFilter,
+                createdAt: {
+                    $gte: moment().subtract(1, "month").startOf("month").toDate(),
+                    $lt: moment().subtract(1, "month").endOf("month").toDate(),
+                } });
+            const currentMonthParticipants = await participant_model_1.default.count({ ...queryFilter,
+                createdAt: {
+                    $gte: moment().startOf("month").toDate(),
+                    $lt: moment().endOf("month").toDate(),
+                } });
+            const totalParticipants = await participant_model_1.default.count(queryFilter);
+            const sentStats = await participant_model_1.default.aggregate([
+                {
+                    $match: { ...queryFilter, shipping: true }
+                }, {
+                    $group: {
+                        _id: 1,
+                        accepted: { $sum: { $cond: [{ $eq: ["$shippingConfirmation", true] }, 1, 0] } },
+                        rejected: { $sum: { $cond: [{ $eq: ["$shippingConfirmation", false] }, 1, 0] } },
+                    }
+                }
+            ]);
+            const receivedStats = await participant_model_1.default.aggregate([
+                {
+                    $match: { ...queryFilter, reception: true }
+                }, {
+                    $group: {
+                        _id: 1,
+                        accepted: { $sum: { $cond: [{ $eq: ["$receptionConfirmation", true] }, 1, 0] } },
+                        rejected: { $sum: { $cond: [{ $eq: ["$receptionConfirmation", false] }, 1, 0] } },
+                    }
+                }
+            ]);
+            const activeVenues = await participant_model_1.default.aggregate([
+                {
+                    $match: { ...queryFilter, createdAt: {
+                            $gte: moment().startOf("month").toDate(),
+                            $lt: moment().endOf("month").toDate()
+                        } }
+                }, {
+                    $group: {
+                        _id: "$venue",
+                        total: { $sum: 1 }
+                    }
+                }
+            ]);
+            const inactiveVenues = await venue_model_1.default.find({
+                team,
+                _id: {
+                    $in: venuesPermissions.filter(vp => !activeVenues.some(v => v._id.toString() === vp.toString()))
+                }
+            }, { name: 1, _id: 1 });
+            res.status(200).json({
+                revisions: {
+                    today: todayParticipants,
+                    yesterday: yesterdayParticipants,
+                    lastMonthTotal: lastMonthParticipants,
+                    currentMonthTotal: currentMonthParticipants,
+                    totalRevisions: totalParticipants,
+                    sentStats: sentStats[0],
+                    receivedStats: receivedStats[0]
+                },
+                venues: {
+                    activeVenues: activeVenues.length,
+                    inactiveVenues: inactiveVenues.length
+                }
+            });
+        }
+        catch (e) {
+            logger_service_1.default.error(e);
+            res.status(500).json(e);
+        }
+    }
 }
 exports.default = new CarController();
 //# sourceMappingURL=car.controller.js.map

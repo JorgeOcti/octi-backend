@@ -34,6 +34,7 @@ import StockView from './components/Stock/StockListView';
 import UsersListView from './components/Users/UserListView';
 import VenuesListView from './components/Venues/VenuesListView';
 import VersionListView from './components/Versions/VersionListView';
+import DashboardRevisionsView from "./components/DashboardVin/DashboardRevisionsView";
 import { IWindow } from './interfaces/window';
 import configureStore, { history } from './store/configureStore';
 import { isIntenertExplorer } from './utils/common';
@@ -53,6 +54,7 @@ const App = () => (
     <ConnectedRouter history={history}>
       <Switch>
         <Route exact path="/" component={DashboardGeneralView}/>
+        <Route exact path="/revision-report/" component={DashboardRevisionsView}/>
         <Route exact path="/cars/" component={DashboardVinView}/>
         <Route exact path="/planning/import/" component={PlanningImportView}/>
         <Route exact path="/planning/" component={PlanningListView}/>

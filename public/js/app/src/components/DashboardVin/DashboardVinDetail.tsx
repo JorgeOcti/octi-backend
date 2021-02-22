@@ -18,6 +18,7 @@ import {
 import AppContainer from '../../container/AppContainer';
 import {IWindow} from '../../interfaces/window';
 import ModalView from '../Modal/ModalView';
+import TrackingBasePage from "../Utils/TrackingBasePage";
 
 declare let window: IWindow;
 
@@ -36,7 +37,8 @@ interface IStateType {
   carLoading: string;
 }
 
-class DashboardVinDetail extends React.Component<IPropsType, IStateType> {
+class DashboardVinDetail extends TrackingBasePage<IPropsType, IStateType> {
+  title: string;
 
   // static propTypes = {
   //   dashboard: PropTypes.object.isRequired,
@@ -44,6 +46,11 @@ class DashboardVinDetail extends React.Component<IPropsType, IStateType> {
   //   getCarAction: PropTypes.func.isRequired,
   //   getParticipant: PropTypes.func.isRequired
   // };
+
+  constructor(props : IPropsType) {
+    super(props);
+    this.title = 'Detalle VIN';
+  }
 
   readonly state = {
     error: null,
@@ -57,7 +64,6 @@ class DashboardVinDetail extends React.Component<IPropsType, IStateType> {
   componentWillMount() {
     // set the title of the page
     const {id} = this.props.match.params;
-    document.title = 'OSA Andes | Detalle VIN';
     this.props.getCarAction(id);
 
     // socket
@@ -77,6 +83,10 @@ class DashboardVinDetail extends React.Component<IPropsType, IStateType> {
       this.props.loadParticipantInCarAction(data);
     });
 
+  }
+
+  componentDidMount() {
+    super.componentDidMount();
   }
 
   public printPdf(url: string, carLoading: string) {

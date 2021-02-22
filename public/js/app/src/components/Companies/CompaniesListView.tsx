@@ -22,6 +22,7 @@ import {hasPermission} from '../../utils/common';
 import ModalView from '../Modal/ModalView';
 import Paginator from '../Utils/Paginator';
 import CompaniesFormView from './CompaniesFormView';
+import TrackingBasePage from "../Utils/TrackingBasePage";
 
 interface IPropsType extends RouteComponentProps<{ company: string }> {
   dispatch: Dispatch<CompaniesReduxAction>;
@@ -41,10 +42,12 @@ interface IStateType {
 
 declare let window: IWindow;
 
-class CompaniesListView extends React.Component<IPropsType, IStateType> {
+class CompaniesListView extends TrackingBasePage<IPropsType, IStateType> {
+  title : string;
 
   constructor(props: IPropsType) {
     super(props);
+    this.title = 'Listado de empresas';
     this.addCompany = this.addCompany.bind(this);
     this.processAddCompany = this.processAddCompany.bind(this);
     this.udpateCompany = this.udpateCompany.bind(this);
@@ -52,10 +55,12 @@ class CompaniesListView extends React.Component<IPropsType, IStateType> {
     this.deleteCompany = this.deleteCompany.bind(this);
   }
 
+  componentDidMount() {
+    super.componentDidMount();
+  }
+
   public componentWillMount(): void {
     const {pagination} = this.props.companies;
-    // set the title of the page
-    document.title = 'OSA Andes | Listado de empresas';
     this.props.getCompaniesAction(pagination.page);
   }
 

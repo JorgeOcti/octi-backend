@@ -10,6 +10,7 @@ import {DashboardReduxAction} from '../../actions/dashboard.actions';
 import { getDashboardTiming, IDashboardTimingState} from '../../actions/dashboardTiming.actions';
 import AppContainer from '../../container/AppContainer';
 import Row from '../Utils/Row';
+import TrackingBasePage from "../Utils/TrackingBasePage";
 
 interface IPropsType extends RouteComponentProps<{ ticket: string }> {
   dispatch: Dispatch<DashboardReduxAction>;
@@ -23,8 +24,8 @@ interface IStateType {
   selectedDate: string | null,
 }
 
-class DashboardTimingView extends React.Component<IPropsType, IStateType> {
-
+class DashboardTimingView extends TrackingBasePage<IPropsType, IStateType> {
+  title : string;
   timingPerMonthChart: echarts.ECharts;
   timingPerVenueChart: echarts.ECharts;
 
@@ -36,6 +37,7 @@ class DashboardTimingView extends React.Component<IPropsType, IStateType> {
 
   constructor(props: IPropsType) {
     super(props);
+    this.title = 'Reportería de tiempos de traslado';
     this.resizeCharts = this.resizeCharts.bind(this);
     this.updateTimingPerMonthChart = this.updateTimingPerMonthChart.bind(this);
     this.showVenueChart = this.showVenueChart.bind(this);
@@ -43,8 +45,6 @@ class DashboardTimingView extends React.Component<IPropsType, IStateType> {
   }
 
   public componentWillMount(): void {
-    // set the title of the page
-    document.title = 'OSA Andes | Reportería de tiempos de traslado';
     // get data
     let from = moment().subtract(2, 'months').startOf('month');
     let to = moment().endOf('month');
@@ -54,6 +54,7 @@ class DashboardTimingView extends React.Component<IPropsType, IStateType> {
   }
 
   public componentDidMount(): void {
+    super.componentDidMount();
     let $this = this;
     const $timingPerMonth = document.getElementById('damages-per-month') as HTMLDivElement;
     this.timingPerMonthChart = echarts.init($timingPerMonth);
@@ -108,7 +109,7 @@ class DashboardTimingView extends React.Component<IPropsType, IStateType> {
       this.capitalizeFirstLetter(moment(selectedDate, 'MM-YYYY').format('MMMM YYYY'))  : "";
 
     return (
-      <AppContainer title="" cMenu="1" cSubMenu="1.4">
+      <AppContainer title="" cMenu="1" cSubMenu="1.5">
         <section className="content">
           <Row>
             <div className="col-md-12">

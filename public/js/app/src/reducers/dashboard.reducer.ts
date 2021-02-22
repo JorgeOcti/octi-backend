@@ -19,6 +19,8 @@ const initialState: IDashboardState = {
   carsByVenue: [],
   totalCars: 0,
   loadingParticipant: null,
+  revisionStats: null,
+  venueStats: null,
   pagination: {
     count: 0,
     page: 1,
@@ -102,6 +104,16 @@ export function dashboardReducer(state = initialState, action: DashboardReduxAct
           page: action.payload.page
         }
       };
+    case '/DASHBOARD/LOAD_VENUES_STATS':
+      return {
+        ...state,
+        venueStats: action.payload.venuesStats
+      }
+    case '/DASHBOARD/LOAD_REVISION_STATS':
+      return {
+        ...state,
+        revisionStats: action.payload.revisionStats
+      }
     default:
       return state;
   }

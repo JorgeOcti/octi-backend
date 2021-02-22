@@ -20,6 +20,7 @@ import {hasPermission} from '../../utils/common';
 import Row from '../Utils/Row';
 import Paginator from '../Utils/Paginator';
 import { Link } from 'react-router-dom';
+import TrackingBasePage from "../Utils/TrackingBasePage";
 
 declare let window: IWindow;
 
@@ -36,7 +37,8 @@ interface IStateType {
   error: Error | null;
 }
 
-class InventoryListView extends React.Component<IPropsType, IStateType> {
+class InventoryListView extends TrackingBasePage<IPropsType, IStateType> {
+  title : string;
 
   // static propTypes = {
   //   dispatch: PropTypes.func.isRequired
@@ -49,6 +51,7 @@ class InventoryListView extends React.Component<IPropsType, IStateType> {
 
   constructor(props: IPropsType) {
     super(props);
+    this.title = 'Inventarios';
     this.create = this.create.bind(this);
     this.changePage = this.changePage.bind(this);
     this.labelStatus = this.labelStatus.bind(this);
@@ -60,7 +63,6 @@ class InventoryListView extends React.Component<IPropsType, IStateType> {
   public componentWillMount(): void {
     const {page} = this.props.inventories.pagination;
     // set the title of the page
-    document.title = 'OSA Andes | Inventarios';
     window.scrollTo(0, 0);
 
     // get data
@@ -87,6 +89,7 @@ class InventoryListView extends React.Component<IPropsType, IStateType> {
   }
 
   public componentDidMount(): void {
+    super.componentDidMount();
     window.scrollTo(0, 0);
   }
 

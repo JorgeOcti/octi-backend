@@ -27,6 +27,7 @@ import { debounce } from 'throttle-debounce';
 import Paginator from '../../Utils/Paginator';
 import ShowIf from '../../Utils/ShowIf';
 import RequestVehicleItem from './RequestVehicleItem';
+import TrackingBasePage from "../../Utils/TrackingBasePage";
 
 interface IPropsType extends RouteComponentProps<{ ticket: string }> {
   requestItems: IRequestItemsState;
@@ -45,7 +46,8 @@ interface IStateType {
 
 declare let window: IWindow;
 
-class RequestVehicleListView extends React.Component<IPropsType, IStateType> {
+class RequestVehicleListView extends TrackingBasePage<IPropsType, IStateType> {
+  title : string;
 
   private socket: SocketIOClient.Socket;
 
@@ -56,6 +58,7 @@ class RequestVehicleListView extends React.Component<IPropsType, IStateType> {
 
   constructor(props: IPropsType) {
     super(props);
+    this.title = 'Solicitudes';
     this.changePage = this.changePage.bind(this);
     this.changeOrder = this.changeOrder.bind(this);
     this.changeFilterDebounced = debounce(200, this.changeFilterDebounced.bind(this));
@@ -64,10 +67,13 @@ class RequestVehicleListView extends React.Component<IPropsType, IStateType> {
     this.create = this.create.bind(this);
   }
 
+  componentDidMount() {
+    super.componentDidMount();
+  }
+
   public componentWillMount(): void {
     const { orderBy, orderType } = this.props.requestItems.options;
     const { page } = this.props.requestItems.pagination;
-    document.title = 'OSA Andes | Solicitudes';
     window.scrollTo(0, 0);
 
     this.props.getRequestItemsThunkAction(page, orderBy, orderType);
@@ -552,6 +558,7 @@ class RequestVehicleListView extends React.Component<IPropsType, IStateType> {
   }
 
   public exportExcel(): void {
+    this.trackClick("Exportar");
     this.setState({
       exporing: true
     });

@@ -564,4 +564,16 @@ export default class ApiService {
       `/api/v1/requests/search-car/?search=${text}`
     );
   }
+
+  public getVenuesStats(from: number, to: number): AxiosPromise {
+    return this.instance.get(
+      `/api/revisions/venue/stats/?from=${from}&to=${to}`
+    );
+  }
+
+  public getRevisionsStats(): AxiosPromise {
+    return this.instance.get(
+      `/api/revisions/stats/`
+    );
+  }
 }
