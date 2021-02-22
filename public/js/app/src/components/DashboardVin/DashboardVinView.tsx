@@ -278,83 +278,83 @@ class DashboardVinView extends React.Component<IPropsType, IStateType> {
                 participants.length ?
                   <table className="table table-andes table-striped">
                     <thead>
-                    <tr>
-                      <th style={{width: '5%'}} className="middle hidden-xs">Nº</th>
-                      <th style={{width: '12%'}} className="middle">VIN</th>
-                      <th style={{width: '8%'}} className="middle">Patente</th>
-                      <th style={{width: '9%'}} className="middle hidden-xs">Marca</th>
-                      <th style={{width: '13%'}} className="middle hidden-xs">Supervisor</th>
-                      <th style={{width: '13%'}} className="middle">Sucursal</th>
-                      <th style={{width: '10%'}} className="hidden-xs">Calificación</th>
-                      <th style={{width: '15%'}} className="hidden-xs">Fecha calificación</th>
-                      <th style={{width: '15%'}} className="hidden-xs">Último checkeo</th>
-                      <th className="width-10 hidden-xs"/>
-                      <th className="width-10"/>
-                    </tr>
+                      <tr>
+                        <th style={{width: '5%'}} className="middle hidden-xs">Nº</th>
+                        <th style={{width: '12%'}} className="middle">VIN</th>
+                        <th style={{width: '8%'}} className="middle">Patente</th>
+                        <th style={{width: '9%'}} className="middle hidden-xs">Marca</th>
+                        <th style={{width: '13%'}} className="middle hidden-xs">Supervisor</th>
+                        <th style={{width: '13%'}} className="middle">Sucursal</th>
+                        <th style={{width: '10%'}} className="hidden-xs">Calificación</th>
+                        <th style={{width: '15%'}} className="hidden-xs">Fecha calificación</th>
+                        <th style={{width: '15%'}} className="hidden-xs">Último checkeo</th>
+                        <th className="width-10 hidden-xs"/>
+                        <th className="width-10"/>
+                      </tr>
                     </thead>
                     <tbody>
-                    {
-                      participants.map((participant: IParticipant) => {
-                        return (
-                          <tr
-                            key={participant._id} id={`car-${participant._id}`}
-                            className={highlight.length && highlight.includes(participant._id as never) ? 'highlight-info' : ''}
-                          >
-                            <td className="middle hidden-xs">{participant.number}</td>
-                            <td className="middle">{participant.car.vin}</td>
-                            <td className="middle">{participant.car.patent && participant.car.patent.length ? participant.car.patent : '-'}</td>
-                            <td className="middle hidden-xs">{participant.car.brand}</td>
-                            <td className="middle hidden-xs">
-                              {`${participant.user ? `${participant.user.firstName} ${participant.user.lastName}` : ''}`}
-                            </td>
-                            <td className="middle">
-                              {`${participant.venue ? `${participant.venue.name}` : '-'}`}
-                            </td>
-                            <td className="middle">
-                              {
-                                `${participant.hasOwnProperty('qualification') ?
-                                  `${Math.round(participant.qualification)}%` : ''}`
-                              }
-                              {
-                                this.hasDamages(participant) ?
-                                  <React.Fragment>
-                                    {' '}<i
-                                      className="fa fa-warning text-red"
-                                      data-toggle="tooltip"
-                                      data-placement="top"
-                                      title="Daños encontrados en esta revisión."
-                                    />
-                                  </React.Fragment>
-                                  : null
-                              }
-                            </td>
-                            <td className="middle hidden-xs">
-                              {moment(participant.createdAt).format('L HH:mm:ss')}
-                            </td>
-                            <td className="middle hidden-xs">
-                              {participant.car.lastForm && participant.car.lastForm.createdAt ?
-                                moment(participant.car.lastForm.createdAt).format('L HH:mm:ss')
-                                :
-                                '-'
-                              }
-                            </td>
-                            <td className="text-primary middle-center hidden-xs">
-                              <button
-                                className="btn btn-xs btn-default"
-                                disabled={carLoading === participant._id}
-                                onClick={() => this.printPdf(`/report/forms/pdf/${participant._id}.pdf`, participant._id)}
-                              ><i className={carLoading === participant._id ? 'fa fa-spinner fa-spin' : 'fa fa-print'}/></button>
-                            </td>
-                            <td className="text-primary middle-center">
-                              <button
-                                className="btn btn-xs btn-primary"
-                                onClick={() => this.props.history.push(`/cars/${participant.car._id}`)}
-                              ><i className="fa fa-bars"/></button>
-                            </td>
-                          </tr>
-                        );
-                      })
-                    }
+                      {
+                        participants.map((participant: IParticipant) => {
+                          return (
+                            <tr
+                              key={participant._id} id={`car-${participant._id}`}
+                              className={highlight.length && highlight.includes(participant._id as never) ? 'highlight-info' : ''}
+                            >
+                              <td className="middle hidden-xs">{participant.number}</td>
+                              <td className="middle">{participant.car.vin}</td>
+                              <td className="middle">{participant.car.patent && participant.car.patent.length ? participant.car.patent : '-'}</td>
+                              <td className="middle hidden-xs">{participant.car.brand}</td>
+                              <td className="middle hidden-xs">
+                                {`${participant.user ? `${participant.user.firstName} ${participant.user.lastName}` : ''}`}
+                              </td>
+                              <td className="middle">
+                                {`${participant.venue ? `${participant.venue.name}` : '-'}`}
+                              </td>
+                              <td className="middle">
+                                {
+                                  `${participant.hasOwnProperty('qualification') ?
+                                    `${Math.round(participant.qualification)}%` : ''}`
+                                }
+                                {
+                                  this.hasDamages(participant) ?
+                                    <React.Fragment>
+                                      {' '}<i
+                                        className="fa fa-warning text-red"
+                                        data-toggle="tooltip"
+                                        data-placement="top"
+                                        title="Daños encontrados en esta revisión."
+                                      />
+                                    </React.Fragment>
+                                    : null
+                                }
+                              </td>
+                              <td className="middle hidden-xs">
+                                {moment(participant.createdAt).format('L HH:mm:ss')}
+                              </td>
+                              <td className="middle hidden-xs">
+                                {participant.car.lastForm && participant.car.lastForm.createdAt ?
+                                  moment(participant.car.lastForm.createdAt).format('L HH:mm:ss')
+                                  :
+                                  '-'
+                                }
+                              </td>
+                              <td className="text-primary middle-center hidden-xs">
+                                <button
+                                  className="btn btn-xs btn-default"
+                                  disabled={carLoading === participant._id}
+                                  onClick={() => this.printPdf(`/report/forms/pdf/${participant._id}.pdf`, participant._id)}
+                                ><i className={carLoading === participant._id ? 'fa fa-spinner fa-spin' : 'fa fa-print'}/></button>
+                              </td>
+                              <td className="text-primary middle-center">
+                                <button
+                                  className="btn btn-xs btn-primary"
+                                  onClick={() => this.props.history.push(`/cars/${participant.car._id}`)}
+                                ><i className="fa fa-bars"/></button>
+                              </td>
+                            </tr>
+                          );
+                        })
+                      }
                     </tbody>
                   </table>
                   : !loading ? <p style={{padding: '10px'}}><strong>No se han encontrado revisiones.</strong></p> : null
