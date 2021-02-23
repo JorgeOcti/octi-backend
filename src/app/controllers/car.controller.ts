@@ -88,7 +88,7 @@ class CarController {
 
   public async vinDashboardDetail(req: IRequest, res: Response) {
     const {id} = req.params;
-    const {team} = req.user;
+    const team = req.user.team._id;
     // validate params
     /* istanbul ignore next */
     if (!mongoose.Types.ObjectId.isValid(id) || !await CarModel.find({_id: id, team}).count()) {
@@ -130,7 +130,8 @@ class CarController {
     let {vin, vin2} = req.body;
     const {inventory} = req.body;
     // const {multi} = req.query;
-    const {team, company} = req.user;
+    const { company } = req.user;
+    const team = req.user.team._id;
     logger.info(`checkVIN`);
     logger.info(`{user: {_id: ${req.user._id}, email: ${req.user.email}}, body: ${JSON.stringify(req.body)}}`);
     /*
@@ -364,7 +365,7 @@ class CarController {
   }
 
   public async apiParticipantsPerDate(req: IRequest, res: Response) {
-    const { team } = req.user;
+    const team = req.user.team._id;
     try {
       const { companies } = req.query;
       const venuesPermissions = req.user.venuesPermissions();
@@ -827,7 +828,7 @@ class CarController {
   /* istanbul ignore next */
   public async exportParticipants(req: IRequest, res: Response) {
     try {
-      const { team } = req.user;
+      const team = req.user.team._id;
       const { from, to } = req.query;
       const venuesPermissions = req.user.venuesPermissions();
 
@@ -973,7 +974,7 @@ class CarController {
 
   public async apiParticipantDetail(req: IRequest, res: Response) {
     const { id } = req.params;
-    const { team } = req.user;
+    const team = req.user.team._id;
     try {
       const venuesPermissions = req.user.venuesPermissions();
       const participant = await ParticipantModel
@@ -1060,7 +1061,7 @@ class CarController {
   }
 
   public async apiCarDetail(req: IRequest, res: Response) {
-    const {team} = req.user;
+    const team = req.user.team._id;
     const {id} = req.params;
     try {
       const venuesPermissions = req.user.venuesPermissions();
@@ -1191,7 +1192,7 @@ class CarController {
       page: string, pageSize: string, search: string,
       from: string, to: string
     };
-    const {team} = req.user;
+    const team = req.user.team._id;
     // paginate options
     const options: PaginateOptions = {
       select: {
@@ -1508,7 +1509,7 @@ class CarController {
     }
 
     try {
-      const { team } = req.user;
+      const team = req.user.team._id;
       const { changeperiods } = req.query as { changeperiods: string };
       const workbook = new excel.Workbook();
       const worksheet = workbook.addWorksheet('Daños', {
@@ -1620,7 +1621,7 @@ class CarController {
 
     try {
 
-      const {team} = req.user;
+      const team = req.user.team._id;
 
 
       const workbook = new excel.Workbook();
@@ -1852,7 +1853,7 @@ class CarController {
 
   public async apiVenueRevisionStats(req: IRequest, res: Response){
     try {
-      const { team } = req.user;
+      const team = req.user.team._id;
       const { from, to } = req.query;
       const venuesPermissions = req.user.venuesPermissions();
 
@@ -1908,7 +1909,7 @@ class CarController {
 
   public async apiRevisionStats(req: IRequest, res: Response){
     try {
-      const { team } = req.user;
+      const team = req.user.team._id;
       const venuesPermissions = req.user.venuesPermissions();
 
       // Get filters for Mongo Query

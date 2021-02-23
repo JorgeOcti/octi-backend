@@ -28,7 +28,7 @@ class AdminCompaniesController {
         message: 'No tienes permisos para esta operación'
       });
     }
-    const {team} = req.user;
+    const team = req.user.team._id;
     const {page, pageSize, search} = req.query as {page: string, pageSize: string, search: string};
     // paginate options
     const options: PaginateOptions = {
@@ -73,7 +73,7 @@ class AdminCompaniesController {
       });
     }
     const {name, billing, notifications} = req.body;
-    const {team} = req.user;
+    const team = req.user.team._id;
     const image: any = GeneralUtils.getFileFromRequest(req.files, 'image');
     const marker: any = GeneralUtils.getFileFromRequest(req.files, 'marker');
     if (!name || !name.trim().length) {
@@ -135,7 +135,7 @@ class AdminCompaniesController {
       });
     }
     const {id} = req.params;
-    const {team} = req.user;
+    const team = req.user.team._id;
     const {name, billing, notifications} = req.body;
     const image: any = GeneralUtils.getFileFromRequest(req.files, 'image');
     const marker: any = GeneralUtils.getFileFromRequest(req.files, 'marker');
@@ -199,7 +199,7 @@ class AdminCompaniesController {
       });
     }
     const {id} = req.params;
-    const {team} = req.user;
+    const team = req.user.team._id;
     try {
       const company = await Company.findOneAndUpdate({
         _id: id

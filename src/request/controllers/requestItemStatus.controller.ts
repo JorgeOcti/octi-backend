@@ -12,7 +12,7 @@ class RequestItemStatusController {
 
   public async apiList(req: IRequest, res: Response) {
     const { page, pageSize } = req.query as { page: string; pageSize: string };
-    const { team } = req.user;
+    const team = req.user.team._id;
     const options: PaginateOptions = {
       sort: {
         weigth: 1

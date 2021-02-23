@@ -85,7 +85,7 @@ class InventoryController {
   }
 
   public async detail(req: IRequest, res: Response) {
-    const {team} = req.user;
+    const team = req.user.team._id;
     const {id} = req.params;
     try {
       const inventory = await InventoryModel.findOne({_id: id, team});
@@ -103,7 +103,8 @@ class InventoryController {
   }
 
   public async create(req: IRequest, res: Response) {
-    const {company, team} = req.user;
+    const { company } = req.user;
+    const team = req.user.team._id;
     const {name, manualPhoto, reportPhoto} = req.body;
     let {carsByVenue, notification} = req.body;
     carsByVenue = JSON.parse(carsByVenue);
@@ -245,7 +246,7 @@ class InventoryController {
       io.to(`stock-${team}`).emit('REFRESH', {
         update: true
       });
-      const currentTeam = await Team.findById(req.user.team);
+      const currentTeam = await Team.findById(req.user.team._id);
       queue.create('email', {
         from: '',
         title: `Inventory Notification`,
@@ -288,7 +289,7 @@ class InventoryController {
   }
 
   public async list(req: IRequest, res: Response) {
-    const { team } = req.user;
+    const team = req.user.team._id;
     const { page, pageSize } = req.query as { page: string, pageSize: string };
     const venuesPermissions = req.user.venuesPermissions();
     try {
@@ -491,7 +492,7 @@ class InventoryController {
   }
 
   public async apiDetail(req: IRequest, res: Response) {
-    const {team} = req.user;
+    const team = req.user.team._id;
     const {id} = req.params;
     logger.info(`apiDetail`);
     logger.info(`{user: {_id: ${req.user._id}, email: ${req.user.email}}, inventory: ${id}}`);
@@ -607,7 +608,8 @@ class InventoryController {
 
   public async uploadFile(req: IRequest, res: Response) {
     const {id} = req.params;
-    const {team, venue, company} = req.user;
+    const { company, venue } = req.user;
+    const team = req.user.team._id;
     logger.info(`uploadFile`);
     logger.info(`{user: {_id: ${req.user._id}, email: ${req.user.email}}, inventory: ${id}}`);
     const file: any = GeneralUtils.getFileFromRequest(req.files, 'file');
@@ -672,7 +674,7 @@ class InventoryController {
   }
 
   public async apiFoundCar(req: IRequest, res: Response): Promise<any> {
-    const {team} = req.user;
+    const team = req.user.team._id;
     const {id} = req.params;
     const {vin, images} = req.body;
     logger.info(`apiFoundCar`);
@@ -796,7 +798,7 @@ class InventoryController {
   }
 
   public async finishInventory(req: IRequest, res: Response): Promise<any> {
-    const {team} = req.user;
+    const team = req.user.team._id;
     const {id} = req.params;
     if (!req.user.hasPermission('finishInventory')) {
       return res.status(403).json({
@@ -846,7 +848,7 @@ class InventoryController {
   }
 
   public async deleteInventory(req: IRequest, res: Response): Promise<any> {
-    const {team} = req.user;
+    const team = req.user.team._id;
     const {id} = req.params;
     if (!req.user.hasPermission('deleteInventory')) {
       return res.status(403).json({
@@ -947,7 +949,7 @@ class InventoryController {
   public async downloadImages(req: IRequest, res: Response) {
     const {id} = req.params;
     const {cars} = req.body;
-    const {team} = req.user;
+    const team = req.user.team._id;
     try {
       const inventory = await InventoryModel.findOne({
         _id: id,
@@ -1104,7 +1106,8 @@ class InventoryController {
   }
 
   public async reportCar(req: IRequest, res: Response): Promise<any> {
-    const {team, company} = req.user;
+    const { company } = req.user;
+    const team = req.user.team._id;
     const {id} = req.params;
     const {vin, denomination, brand, color, images} = req.body;
     logger.info(`reportCar`);
@@ -1192,7 +1195,7 @@ class InventoryController {
   }
 
   public async setLabel(req: IRequest, res: Response) {
-    const {team} = req.user;
+    const team = req.user.team._id;
     const {id} = req.params;
     const {car, label, custom, carID} = req.body;
     logger.info(`setLabel`);
@@ -1279,7 +1282,7 @@ class InventoryController {
   }
 
   public async apiList(req: IRequest, res: Response) {
-    const {team} = req.user;
+    const team = req.user.team._id;
     logger.info(`apiList`);
     logger.info(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
     try {
@@ -1326,7 +1329,7 @@ class InventoryController {
 
   public async detaill(req: IRequest, res: Response) {
     const {id} = req.params;
-    const {team} = req.user;
+    const team = req.user.team._id;
     const venuesPermissions = req.user.venuesPermissions();
     try {
       // summary
@@ -1755,7 +1758,7 @@ class InventoryController {
   public async dashboard(req: IRequest, res: Response): Promise<any> {
     let venuesPermissions: any = req.user.venuesPermissions();
     const {venues} = req.body;
-    const {team} = req.user;
+    const team = req.user.team._id;
     if (venues && venues.length) {
       venuesPermissions = venuesPermissions.filter((v: any) => venues.includes(v.toString()));
     }
@@ -1840,7 +1843,7 @@ class InventoryController {
   }
 
   public async inventoryByCars(req: IRequest, res: Response): Promise<any> {
-    const {team} = req.user;
+    const team = req.user.team._id;
     try {
       /* generate file */
       const workbook = new excel.Workbook();
@@ -1979,7 +1982,8 @@ class InventoryController {
   }
 
   public async loadStock(req: IRequest, res: Response): Promise<any> {
-    const {company, team} = req.user;
+    const { company } = req.user;
+    const team = req.user.team._id;
     const {carsByVenue} = req.body;
     try {
       const stockCars: IStockCar[] = [];

@@ -15,7 +15,7 @@ class AdminRegionController extends BaseAdminController<RegionSchema> {
 
   public async apiCreate(req: IRequest, res: Response): Promise<any> {
     const {name, code} = req.body;
-    const {team} = req.user;
+    const team = req.user.team._id;
     req.context = {
       name: 'Región',
       data: {team, name, code},
@@ -26,7 +26,7 @@ class AdminRegionController extends BaseAdminController<RegionSchema> {
 
   public async apiUpdate(req: IRequest, res: Response): Promise<any> {
     const {id} = req.params;
-    const {team} = req.user;
+    const team = req.user.team._id;
     const {name, code} = req.body;
     req.context = {
       name: 'Región',
@@ -39,7 +39,7 @@ class AdminRegionController extends BaseAdminController<RegionSchema> {
 
   public async apiDelete(req: IRequest, res: Response): Promise<any> {
     const {id} = req.params;
-    const {team} = req.user;
+    const team = req.user.team._id;
     req.context = {
       name: 'Región',
       filter: {team, _id: id},

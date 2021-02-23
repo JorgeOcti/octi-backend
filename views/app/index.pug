@@ -29,12 +29,10 @@ block js
       firstName: '!{`${user.firstName}`}',
       lastName: '!{`${user.lastName}`}',
       email: '!{`${user.email}`}',
-      company: {
-        _id: '!{`${user.company._id}`}',
-        name: '!{`${user.company.name}`}',
-      },
+      venue: !{`${JSON.stringify(user.venue)}`},
+      company: !{`${JSON.stringify(user.company)}`},
       venuesAccess: !{`${JSON.stringify(user.venuesPermissions())}`},
-      team:  '!{`${user.team}`}',
+      team:  !{`${JSON.stringify(user.team)}`},
       userPermissions: !{`${JSON.stringify(user.userPermissions.toObject())}`},
       token: '!{`${token}`}'
     };
