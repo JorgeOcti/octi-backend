@@ -13,7 +13,7 @@ class LabelController {
         res.render('app/index', { token: await req.user.generateToken() });
     }
     async apiList(req, res) {
-        const { team } = req.user;
+        const team = req.user.team._id;
         const { page, pageSize } = req.query;
         // paginate options
         const options = {
@@ -53,7 +53,7 @@ class LabelController {
         }
     }
     async apiCreateLabel(req, res) {
-        const { team } = req.user;
+        const team = req.user.team._id;
         const { body } = req;
         try {
             const inventoryLabel = new inventoryLabel_model_1.default({
@@ -87,7 +87,7 @@ class LabelController {
     }
     async apiUpdateLabel(req, res) {
         const { id } = req.params;
-        const { team } = req.user;
+        const team = req.user.team._id;
         const { body } = req;
         try {
             const inventoryLabel = await inventoryLabel_model_1.default.findOneAndUpdate({
@@ -134,7 +134,7 @@ class LabelController {
     }
     async apiDeleteLabel(req, res) {
         const { id } = req.params;
-        const { team } = req.user;
+        const team = req.user.team._id;
         try {
             const inventoryLabel = await inventoryLabel_model_1.default.findOneAndRemove({
                 _id: id,

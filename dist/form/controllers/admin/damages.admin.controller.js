@@ -27,7 +27,7 @@ class AdminDamagesController {
     }
     async apiListDamages(req, res) {
         const { page, pageSize } = req.query;
-        const { team } = req.user;
+        const team = req.user.team._id;
         // paginate options
         const options = {
             select: ['name', 'parts', 'kinds', 'positions'],

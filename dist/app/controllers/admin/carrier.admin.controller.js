@@ -19,7 +19,7 @@ class AdminCarrierController extends base_admin_controller_1.default {
     }
     async apiCreate(req, res) {
         const { name } = req.body;
-        const { team } = req.user;
+        const team = req.user.team._id;
         req.context = {
             name: 'Transportista',
             filter: { team, name },
@@ -30,7 +30,7 @@ class AdminCarrierController extends base_admin_controller_1.default {
     }
     async apiUpdate(req, res) {
         const { id } = req.params;
-        const { team } = req.user;
+        const team = req.user.team._id;
         const { name } = req.body;
         req.context = {
             name: 'Transportista',
@@ -42,7 +42,7 @@ class AdminCarrierController extends base_admin_controller_1.default {
     }
     async apiDelete(req, res) {
         const { id } = req.params;
-        const { team } = req.user;
+        const team = req.user.team._id;
         req.context = {
             name: 'Transportista',
             filter: { team, _id: id },
@@ -51,7 +51,7 @@ class AdminCarrierController extends base_admin_controller_1.default {
         super.apiDelete(req, res);
     }
     async apiList(req, res) {
-        const { team } = req.user;
+        const team = req.user.team._id;
         this.paginateOptions = {
             select: {
                 name: true

@@ -12,7 +12,7 @@ class AdminRegionController extends base_admin_controller_1.default {
     }
     async apiCreate(req, res) {
         const { name, code } = req.body;
-        const { team } = req.user;
+        const team = req.user.team._id;
         req.context = {
             name: 'Región',
             data: { team, name, code },
@@ -22,7 +22,7 @@ class AdminRegionController extends base_admin_controller_1.default {
     }
     async apiUpdate(req, res) {
         const { id } = req.params;
-        const { team } = req.user;
+        const team = req.user.team._id;
         const { name, code } = req.body;
         req.context = {
             name: 'Región',
@@ -34,7 +34,7 @@ class AdminRegionController extends base_admin_controller_1.default {
     }
     async apiDelete(req, res) {
         const { id } = req.params;
-        const { team } = req.user;
+        const team = req.user.team._id;
         req.context = {
             name: 'Región',
             filter: { team, _id: id },

@@ -9,7 +9,7 @@ class ReasonController {
     async apiList(req, res) {
         logger_service_1.default.info(`ReasonController.apiList`);
         logger_service_1.default.info(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
-        const { team } = req.user;
+        const team = req.user.team._id;
         const { page, pageSize } = req.query;
         // paginate options
         const options = {

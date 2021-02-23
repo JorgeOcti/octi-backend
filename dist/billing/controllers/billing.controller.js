@@ -159,7 +159,8 @@ class BillingController {
         }
     }
     async apiList(req, res) {
-        const { company, team } = req.user;
+        const { company } = req.user;
+        const team = req.user.team._id;
         const { page, pageSize } = req.query;
         const options = {
             populate: [{
@@ -200,7 +201,7 @@ class BillingController {
         }
     }
     async run(req, res) {
-        const { team } = req.user;
+        const team = req.user.team._id;
         try {
             await new billing_task_1.default().processBilling(team);
             res.json({

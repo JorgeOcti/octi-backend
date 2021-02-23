@@ -26,7 +26,7 @@ class AdminVenueController {
         }
     }
     async accessByVenue(req, res) {
-        const { team } = req.user;
+        const team = req.user.team._id;
         const workbook = new excel.Workbook();
         const worksheetSend = workbook.addWorksheet('Sucursales', {
             properties: {
@@ -113,7 +113,7 @@ class AdminVenueController {
         return res.sendFile(tempFilePath);
     }
     async apiListVenues(req, res) {
-        const { team } = req.user;
+        const team = req.user.team._id;
         const { page, pageSize, noPopulate, filted } = req.query;
         // paginate options
         const options = {
@@ -215,7 +215,7 @@ class AdminVenueController {
         }
         const { name, abbreviation, lat, lng, type, company, sendToDays, receiveFrom, shippingMaxDays, receptionCarriers, shippingCarriers, region } = req.body;
         const sendTo = sendToDays.map((venueDay) => venueDay.venue._id);
-        const { team } = req.user;
+        const team = req.user.team._id;
         if (!name || !name.trim().length) {
             res.status(400).json({
                 message: 'El nombre es requerido.',
@@ -299,7 +299,7 @@ class AdminVenueController {
             });
         }
         const { id } = req.params;
-        const { team } = req.user;
+        const team = req.user.team._id;
         const { name, abbreviation, lat, lng, type, company, sendToDays, receiveFrom, receptionCarriers, shippingCarriers, region, shippingMaxDays } = req.body;
         const sendTo = sendToDays.map((venueDay) => venueDay.venue._id);
         if (!name || !name.length) {
@@ -387,7 +387,8 @@ class AdminVenueController {
             });
         }
         const { id } = req.params;
-        const { company, team } = req.user;
+        const { company } = req.user;
+        const team = req.user.team._id;
         try {
             const inventories = await inventory_model_1.default.find({
                 $or: [{

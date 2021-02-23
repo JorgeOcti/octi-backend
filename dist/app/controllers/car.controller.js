@@ -80,7 +80,7 @@ class CarController {
     }
     async vinDashboardDetail(req, res) {
         const { id } = req.params;
-        const { team } = req.user;
+        const team = req.user.team._id;
         // validate params
         /* istanbul ignore next */
         if (!mongoose.Types.ObjectId.isValid(id) || !await car_model_1.default.find({ _id: id, team }).count()) {
@@ -122,7 +122,8 @@ class CarController {
         let { vin, vin2 } = req.body;
         const { inventory } = req.body;
         // const {multi} = req.query;
-        const { team, company } = req.user;
+        const { company } = req.user;
+        const team = req.user.team._id;
         logger_service_1.default.info(`checkVIN`);
         logger_service_1.default.info(`{user: {_id: ${req.user._id}, email: ${req.user.email}}, body: ${JSON.stringify(req.body)}}`);
         /*
@@ -367,7 +368,7 @@ class CarController {
         }
     }
     async apiParticipantsPerDate(req, res) {
-        const { team } = req.user;
+        const team = req.user.team._id;
         try {
             const { companies } = req.query;
             const venuesPermissions = req.user.venuesPermissions();
@@ -831,7 +832,7 @@ class CarController {
     /* istanbul ignore next */
     async exportParticipants(req, res) {
         try {
-            const { team } = req.user;
+            const team = req.user.team._id;
             const { from, to } = req.query;
             const venuesPermissions = req.user.venuesPermissions();
             // Get filters for Mongo Query
@@ -964,7 +965,7 @@ class CarController {
     }
     async apiParticipantDetail(req, res) {
         const { id } = req.params;
-        const { team } = req.user;
+        const team = req.user.team._id;
         try {
             const venuesPermissions = req.user.venuesPermissions();
             const participant = await participant_model_1.default
@@ -1052,7 +1053,7 @@ class CarController {
         }
     }
     async apiCarDetail(req, res) {
-        const { team } = req.user;
+        const team = req.user.team._id;
         const { id } = req.params;
         try {
             const venuesPermissions = req.user.venuesPermissions();
@@ -1181,7 +1182,7 @@ class CarController {
     }
     async apiRevisions(req, res) {
         const { page, pageSize, search, from, to } = req.query;
-        const { team } = req.user;
+        const team = req.user.team._id;
         // paginate options
         const options = {
             select: {
@@ -1487,7 +1488,7 @@ class CarController {
             });
         }
         try {
-            const { team } = req.user;
+            const team = req.user.team._id;
             const { changeperiods } = req.query;
             const workbook = new excel.Workbook();
             const worksheet = workbook.addWorksheet('Daños', {
@@ -1588,7 +1589,7 @@ class CarController {
             });
         }
         try {
-            const { team } = req.user;
+            const team = req.user.team._id;
             const workbook = new excel.Workbook();
             const worksheet = workbook.addWorksheet('Rotación de unidades', {
                 properties: {
@@ -1802,7 +1803,7 @@ class CarController {
     }
     async apiVenueRevisionStats(req, res) {
         try {
-            const { team } = req.user;
+            const team = req.user.team._id;
             const { from, to } = req.query;
             const venuesPermissions = req.user.venuesPermissions();
             // Get filters for Mongo Query
@@ -1854,7 +1855,7 @@ class CarController {
     }
     async apiRevisionStats(req, res) {
         try {
-            const { team } = req.user;
+            const team = req.user.team._id;
             const venuesPermissions = req.user.venuesPermissions();
             // Get filters for Mongo Query
             const queryFilter = {

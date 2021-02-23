@@ -23,7 +23,8 @@ class PlanningController {
         }
     }
     async create(req, res) {
-        const { team, company } = req.user;
+        const { company } = req.user;
+        const team = req.user.team._id;
         let { carsByDate } = req.body;
         try {
             const planningCars = [];
@@ -81,7 +82,7 @@ class PlanningController {
         }
     }
     async list(req, res) {
-        const { team } = req.user;
+        const team = req.user.team._id;
         const { page, pageSize } = req.query;
         // paginate options
         const options = {
