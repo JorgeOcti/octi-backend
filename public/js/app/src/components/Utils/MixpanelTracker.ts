@@ -26,9 +26,9 @@ class MixpanelTracker {
       'team': user.team.name,
       'team_id': user.team._id,
       'company': user.company.name,
-      'company_id': user.company.id,
+      'company_id': user.company._id,
       'venue': user.venue.name,
-      'venue_id': user.venue.id,
+      'venue_id': user.venue._id,
     });
     Mixpanel.identify(user._id);
     Mixpanel.people.set( user._id, {
@@ -38,9 +38,9 @@ class MixpanelTracker {
       'team': user.team.name,
       'team_id': user.team._id,
       'company': user.company.name,
-      'company_id': user.company.id,
+      'company_id': user.company._id,
       'venue': user.venue.name,
-      'venue_id': user.venue.id,
+      'venue_id': user.venue._id,
     });
   }
 
