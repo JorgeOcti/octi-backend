@@ -774,9 +774,16 @@ class CarController {
         const columns = [];
         for (const section of form.sections) {
             for (const question of section.questions) {
-                if (['scale', 'accessory', 'damage'].includes(question.kind)) {
+                if (['scale', 'accessory'].includes(question.kind)) {
                     columns.push({
                         header: `${form.name} - ${question.question}`, key: question._id.toString(), width: 30
+                    });
+                }
+                else if (question.kind === 'damage') {
+                    columns.push({
+                        header: `${form.name} - ${question.question}`, key: question._id.toString(), width: 30, style: {
+                            numFmt: '0'
+                        }
                     });
                 }
             }
@@ -805,7 +812,7 @@ class CarController {
             }
         }
         else if (answer.kind === 'damage') {
-            datum = { [answer._id.toString()]: answer.damagesSelected.length > 0 ? answer.damagesSelected.length : '-' };
+            datum = { [answer._id.toString()]: answer.damagesSelected.length };
         }
         return datum;
     }
