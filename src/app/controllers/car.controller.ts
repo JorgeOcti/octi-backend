@@ -797,7 +797,7 @@ class CarController {
         datum = {[answer._id.toString()]: selectedChoice.choice};
       }
     } else if (answer.kind === 'damage'){
-      datum = {[answer._id.toString()]: answer.damagesSelected.length > 0 ? 'SI' : 'NO'};
+      datum = {[answer._id.toString()]: answer.damagesSelected.length > 0 ? answer.damagesSelected.length : '-'};
     }
     return datum;
   }
