@@ -28,7 +28,8 @@ class PlanningController {
   }
 
   public async create(req: IRequest, res: Response) {
-    const {team, company} = req.user;
+    const { company } = req.user;
+    const team = req.user.team._id;
     let {carsByDate} = req.body;
     try {
       const planningCars: Omit<IPlanning, "_id">[] = [];
@@ -86,7 +87,7 @@ class PlanningController {
   }
 
   public async list(req: IRequest, res: Response) {
-    const {team} = req.user;
+    const team = req.user.team._id;
     const {page, pageSize} = req.query as {page: string, pageSize: string};
 
     // paginate options

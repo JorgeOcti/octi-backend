@@ -54,7 +54,7 @@ class FormController {
   public async pdf(req: IRequest, res: Response): Promise<any> {
     const {debug, timezone} = req.query as { debug: string, timezone: string };
     const {id} = req.params;
-    const {team} = req.user;
+    const team = req.user.team._id;
     try {
       const config: HtmlPdf.CreateOptions = {
         directory: '/tmp',
@@ -269,7 +269,7 @@ class FormController {
   }
 
   public async list(req: IRequest, res: Response): Promise<any> {
-    const {team} = req.user;
+    const team = req.user.team._id;
     logger.info(`list forms`);
     logger.info(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
     try {
@@ -308,7 +308,7 @@ class FormController {
 
   public async detail(req: IRequest, res: Response): Promise<any> {
     const {id} = req.params;
-    const {team} = req.user;
+    const team = req.user.team._id;
     logger.info(`detail forms`);
     logger.info(`{user: {_id: ${req.user._id}, email: ${req.user.email}}, {form: ${id}}}`);
     try {
@@ -601,7 +601,8 @@ class FormController {
     const {id} = req.params;
     let {vin} = req.body;
     const {answers} = req.body;
-    const {team, venue, company} = req.user;
+    const { company, venue } = req.user;
+    const team = req.user.team._id;
     logger.info(`complete`);
     logger.info(`{user: {_id: ${req.user._id}, email: ${req.user.email}}, body: ${JSON.stringify(req.body)}}`);
     // validate answers in body
@@ -949,7 +950,7 @@ class FormController {
 
   public async uploadFile(req: IRequest, res: Response): Promise<any> {
     const {id} = req.params;
-    const company = req.user.company;
+    const { company } = req.user;
     const file: any = GeneralUtils.getFileFromRequest(req.files, 'file');
     logger.info(`uploadFile`);
     logger.info(`{user: {_id: ${req.user._id}, email: ${req.user.email}}, {form: ${id}, file: ${JSON.stringify(file)}}}`);
@@ -1016,7 +1017,7 @@ class FormController {
 
   public async changePreferred(req: IRequest, res: Response): Promise<any> {
     let {form} = req.body;
-    const {team} = req.user;
+    const team = req.user.team._id;
     logger.info(`changePreferred`);
     logger.info(`{user: {_id: ${req.user._id}, email: ${req.user.email}}, body: ${JSON.stringify(req.body)}}`);
     try {
@@ -1066,7 +1067,7 @@ class FormController {
   public async damagesDashboard(req: IRequest, res: Response): Promise<any> {
     try {
 
-      const {team} = req.user;
+      const team = req.user.team._id;
       const damaged = await ParticipantModel.aggregate([{
         $match: {
           team,
@@ -1270,7 +1271,7 @@ class FormController {
 
     try {
 
-      const {team} = req.user;
+      const team = req.user.team._id;
       const userObject = await User.findOne({_id: req.user._id});
 
       // Derco
@@ -1719,7 +1720,7 @@ class FormController {
         header: 'Lata recepción', key: 'p1SheetMetal', width: 30
       }];
 
-      const {team} = req.user;
+      const team = req.user.team._id;
 
       const periods = 6;
       for(let i = 0; i < periods; i++) {
@@ -1876,7 +1877,7 @@ class FormController {
 
   public async cleaningDashboard(req: IRequest, res: Response): Promise<any> {
     try {
-      const {team} = req.user;
+      const team = req.user.team._id;
 
       const form = await FormModel.findById('5b0487db835536612bab1b61');
       const answer = new ObjectID('5b64b2e8de5557c85fa14fa0');
@@ -2182,7 +2183,8 @@ class FormController {
   public async createPosition(req: IRequest, res: Response): Promise<any> {
 
     try {
-      const {team, company, venue} = req.user;
+      const { company, venue } = req.user;
+      const team = req.user.team._id;
       const {lat, lng, accuracy, provider} = req.body;
 
       const os = 'user-agent' in req.headers ? req.headers['user-agent'] : '';

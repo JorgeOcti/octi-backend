@@ -105,7 +105,8 @@ class RequestController {
   public async apiCreate(req: IRequest, res: Response) {
     logger.info(`RequestController.apiCreate`);
     logger.info(`{user: {_id: ${req.user._id}, email: ${req.user.email}}, body: ${JSON.stringify(req.body)} }`);
-    const { team, company } = req.user;
+    const { company } = req.user;
+    const team = req.user.team._id;
     const { cars, venue, fleet, sellerText } = req.body;
 
     try {
@@ -172,7 +173,7 @@ class RequestController {
   public async apiListItems(req: IRequest, res: Response) {
     logger.info(`RequestController.apiListItems`);
     logger.info(`{user: {_id: ${req.user._id}, email: ${req.user.email}}, body: ${JSON.stringify(req.body)} }`);
-    const { team } = req.user;
+    const team = req.user.team._id;
     const { page, pageSize, orderBy, orderType, filters } = req.body as { page: string; pageSize: string; search: string; orderBy: string; orderType: string, filters: any };
     console.log('**************************************');
     console.log(filters);
@@ -356,7 +357,7 @@ class RequestController {
   }
 
   public async exportExcel(req: IRequest, res: Response) {
-    const { team } = req.user;
+    const team = req.user.team._id;
     try {
       const requestItems = await RequestItem.aggregate<IRequestItemModel>([{
         $match: {
@@ -544,7 +545,7 @@ class RequestController {
   public async apiList(req: IRequest, res: Response) {
     logger.info(`RequestController.apiList`);
     logger.info(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
-    const { team } = req.user;
+    const team = req.user.team._id;
     const { page, pageSize, search, orderBy, orderType } = req.query as { page: string; pageSize: string; search: string; orderBy: string; orderType: string };
     // paginate options
     const options: PaginateOptions = {
@@ -595,7 +596,7 @@ class RequestController {
   public async apiDetail(req: IRequest, res: Response) {
     logger.info(`RequestController.apiDetail`);
     logger.info(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
-    const { team } = req.user;
+    const team = req.user.team._id;
     const { id } = req.params;
     try {
       const request = await Request
@@ -624,7 +625,7 @@ class RequestController {
 
   public async apiDeleteRequest(req: IRequest, res: Response) {
     logger.info(`RequestController.apiDeleteRequest`);
-    const { team } = req.user;
+    const team = req.user.team._id;
     const { id } = req.params;
     try {
       const request = await Request
@@ -663,7 +664,7 @@ class RequestController {
 
   public async apiDeleteRequestItem(req: IRequest, res: Response) {
     logger.info(`RequestController.apiDeleteRequestItem`);
-    const { team } = req.user;
+    const team = req.user.team._id;
     const { id } = req.params;
     try {
       const item = await RequestItem
@@ -705,7 +706,7 @@ class RequestController {
 
   public async searhCar(req: IRequest, res: Response) {
     logger.info(`RequestController.searhCar`);
-    const { team } = req.user;
+    const team = req.user.team._id;
     const { search } = req.query;
     try {
       const cars = await Car.aggregate([{
@@ -772,7 +773,8 @@ class RequestController {
   public async apiCreateItem(req: IRequest, res: Response) {
     logger.info(`RequestController.apiCreateItem`);
     logger.info(`{user: {_id: ${req.user._id}, email: ${req.user.email}}, body: ${JSON.stringify(req.body)} }`);
-    const { team, company } = req.user;
+    const { company } = req.user;
+    const team = req.user.team._id;
     const { car, idRequest } = req.body;
     try {
       const request = await Request.findOne({ _id: idRequest, team });
@@ -832,7 +834,7 @@ class RequestController {
 
   public async apiPatchItem(req: IRequest, res: Response) {
     logger.info(`RequestController.apiPatchItem`);
-    const { team } = req.user;
+    const team = req.user.team._id;
     const updateObject = req.body;
     const { id } = req.params;
     logger.info(`{user: {_id: ${req.user._id}, email: ${req.user.email}}, body: ${JSON.stringify(updateObject)} }`);
@@ -903,7 +905,7 @@ class RequestController {
 
   public async downloadItemFiles(req: IRequest, res: Response) {
     const { id } = req.params;
-    const { team } = req.user;
+    const team = req.user.team._id;
     try {
       const requestItems = await RequestItem
         .findOne({ _id: id, team })
@@ -1016,7 +1018,8 @@ class RequestController {
   }
 
   public async uploadFile(req: IRequest, res: Response) {
-    const {team, company} = req.user;
+    const { company } = req.user;
+    const team = req.user.team._id;
     logger.info(`RequestController.uploadFile`);
     logger.info(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
     const file: any = GeneralUtils.getFileFromRequest(req.files, 'file');

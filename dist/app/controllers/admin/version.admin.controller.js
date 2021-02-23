@@ -86,7 +86,7 @@ class AdminVersionController {
     }
     async apiDeleteAlert(req, res) {
         const { id } = req.params;
-        const { team } = req.user;
+        const team = req.user.team._id;
         try {
             const alert = await alert_model_1.default.findOneAndRemove({ _id: id, team });
             if (alert) {

@@ -78,7 +78,7 @@ class InventoryListView extends TrackingBasePage<IPropsType, IStateType> {
       }
     });
     this.socket.on('connect', () => {
-      this.socket.emit('join', {room: `inventory-list-${window.user.team}`});
+      this.socket.emit('join', {room: `inventory-list-${window.user.team._id}`});
     });
     this.socket.on('REFRESH', (data: any): void => {
       if (data.update) {
@@ -98,7 +98,7 @@ class InventoryListView extends TrackingBasePage<IPropsType, IStateType> {
     if (this.props.inventories.source) {
       this.props.inventories.source.cancel('Operation canceled by the user.');
     }
-    this.socket.emit('leave', {room: `inventory-list-${window.user.team}`});
+    this.socket.emit('leave', {room: `inventory-list-${window.user.team._id}`});
     this.socket.disconnect();
   }
 

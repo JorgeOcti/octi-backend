@@ -23,18 +23,24 @@ class MixpanelTracker {
 
   public identifyUser(user : IUser) : void {
     Mixpanel.register({
-      'team_id': user.team,
+      'team': user.team.name,
+      'team_id': user.team._id,
       'company': user.company.name,
-      'company_id': user.company.id,
+      'company_id': user.company._id,
+      'venue': user.venue.name,
+      'venue_id': user.venue._id,
     });
     Mixpanel.identify(user._id);
     Mixpanel.people.set( user._id, {
       '$first_name': user.firstName,
       '$last_name': user.lastName,
       '$email': user.email,
-      'team_id': user.team,
+      'team': user.team.name,
+      'team_id': user.team._id,
       'company': user.company.name,
-      'company_id': user.company._id
+      'company_id': user.company._id,
+      'venue': user.venue.name,
+      'venue_id': user.venue._id,
     });
   }
 

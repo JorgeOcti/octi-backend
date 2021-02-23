@@ -52,7 +52,7 @@ class UserController {
         }
     }
     async apiListVenues(req, res) {
-        const { team } = req.user;
+        const team = req.user.team._id;
         logger_service_1.default.info(`apiListVenues`);
         logger_service_1.default.info(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
         try {
@@ -91,7 +91,7 @@ class UserController {
         }
     }
     async apiChangeVenue(req, res) {
-        const { team } = req.user;
+        const team = req.user.team._id;
         const { venue } = req.body;
         logger_service_1.default.info(`apiChangeVenue`);
         logger_service_1.default.info(`{user: {_id: ${req.user._id}, email: ${req.user.email}}, body: ${JSON.stringify(req.body)}}`);

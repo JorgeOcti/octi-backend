@@ -43,7 +43,7 @@ class AdminUsersController {
         message: 'No tienes permisos para esta operación'
       });
     }
-    const {team} = req.user;
+    const team = req.user.team._id;
     try {
       /* generate file */
       const workbook = new excel.Workbook();
@@ -217,7 +217,7 @@ class AdminUsersController {
       });
     }
     const { page, pageSize, search } = req.query as { page: string, pageSize: string, search: string };
-    const { team } = req.user;
+    const team = req.user.team._id;
     // paginate options
     const options: PaginateOptions = {
       select: {
@@ -300,7 +300,7 @@ class AdminUsersController {
       });
     }
     const {firstName, lastName, email, venue, userPermissions, userForms, preferred, company, venuesAccess} = req.body;
-    const {team} = req.user;
+    const team = req.user.team._id;
     // validate fields required
     if (!firstName || !firstName.length || !lastName || !lastName.length || !email || !email.length || !venue || !venue.length) {
       res.status(400).json({
@@ -389,7 +389,7 @@ class AdminUsersController {
       });
     }
     const {id} = req.params;
-    const {team} = req.user;
+    const team = req.user.team._id;
     const {firstName, lastName, email, venue, venuesAccess, userPermissions, userForms, preferred, company, isAdmin} = req.body;
     // validate fields required
     if (!firstName || !firstName.length || !lastName || !lastName.length || !email || !email.length || !venue || !venue.length) {
@@ -489,7 +489,7 @@ class AdminUsersController {
         message: 'No tienes permisos para esta operación'
       });
     }
-    const {team} = req.user;
+    const team = req.user.team._id;
     const {id} = req.params;
     // const company = req.user.company;
     try {
@@ -519,7 +519,7 @@ class AdminUsersController {
 
   public async apiChangePasswordUser(req: IRequest, res: Response): Promise<any> {
     const {user, password} = req.body;
-    const {team} = req.user;
+    const team = req.user.team._id;
     if (!req.user.hasPermission('changeUser')) {
       return res.status(403).json({
         message: 'No tienes permisos para esta operación'

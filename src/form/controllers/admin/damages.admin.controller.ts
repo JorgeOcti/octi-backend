@@ -40,7 +40,7 @@ class AdminDamagesController {
 
   public async apiListDamages(req: IRequest, res: Response): Promise<any> {
     const {page, pageSize} = req.query as { page: string, pageSize: string };
-    const {team} = req.user;
+    const team = req.user.team._id;
     // paginate options
     const options: PaginateOptions = {
       select: ['name', 'parts', 'kinds', 'positions'],

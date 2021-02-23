@@ -164,7 +164,8 @@ class BillingController {
   }
 
   public async apiList(req: IRequest, res: Response) {
-    const { company, team } = req.user;
+    const { company } = req.user;
+    const team = req.user.team._id;
     const { page, pageSize } = req.query as { page: string, pageSize: string };
     const options: PaginateOptions = {
       populate: [{
@@ -204,7 +205,7 @@ class BillingController {
   }
 
   public async run(req: IRequest, res: Response) {
-    const { team } = req.user;
+    const team = req.user.team._id;
     try {
       await new BillingQueue().processBilling(team);
       res.json({

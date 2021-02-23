@@ -97,7 +97,8 @@ class RequestController {
     async apiCreate(req, res) {
         logger_service_1.default.info(`RequestController.apiCreate`);
         logger_service_1.default.info(`{user: {_id: ${req.user._id}, email: ${req.user.email}}, body: ${JSON.stringify(req.body)} }`);
-        const { team, company } = req.user;
+        const { company } = req.user;
+        const team = req.user.team._id;
         const { cars, venue, fleet, sellerText } = req.body;
         try {
             const defaultItemStatus = await requestItemStatus_model_1.default.findOneOrCreate({ team, default: true }, { name: 'Pendiente', default: true, team, weigth: 10 });
@@ -163,7 +164,7 @@ class RequestController {
     async apiListItems(req, res) {
         logger_service_1.default.info(`RequestController.apiListItems`);
         logger_service_1.default.info(`{user: {_id: ${req.user._id}, email: ${req.user.email}}, body: ${JSON.stringify(req.body)} }`);
-        const { team } = req.user;
+        const team = req.user.team._id;
         const { page, pageSize, orderBy, orderType, filters } = req.body;
         console.log('**************************************');
         console.log(filters);
@@ -348,7 +349,7 @@ class RequestController {
         }
     }
     async exportExcel(req, res) {
-        const { team } = req.user;
+        const team = req.user.team._id;
         try {
             const requestItems = await requestItem_model_1.default.aggregate([{
                     $match: {
@@ -536,7 +537,7 @@ class RequestController {
     async apiList(req, res) {
         logger_service_1.default.info(`RequestController.apiList`);
         logger_service_1.default.info(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
-        const { team } = req.user;
+        const team = req.user.team._id;
         const { page, pageSize, search, orderBy, orderType } = req.query;
         // paginate options
         const options = {
@@ -588,7 +589,7 @@ class RequestController {
     async apiDetail(req, res) {
         logger_service_1.default.info(`RequestController.apiDetail`);
         logger_service_1.default.info(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
-        const { team } = req.user;
+        const team = req.user.team._id;
         const { id } = req.params;
         try {
             const request = await request_model_1.default
@@ -618,7 +619,7 @@ class RequestController {
     }
     async apiDeleteRequest(req, res) {
         logger_service_1.default.info(`RequestController.apiDeleteRequest`);
-        const { team } = req.user;
+        const team = req.user.team._id;
         const { id } = req.params;
         try {
             const request = await request_model_1.default
@@ -658,7 +659,7 @@ class RequestController {
     }
     async apiDeleteRequestItem(req, res) {
         logger_service_1.default.info(`RequestController.apiDeleteRequestItem`);
-        const { team } = req.user;
+        const team = req.user.team._id;
         const { id } = req.params;
         try {
             const item = await requestItem_model_1.default
@@ -701,7 +702,7 @@ class RequestController {
     }
     async searhCar(req, res) {
         logger_service_1.default.info(`RequestController.searhCar`);
-        const { team } = req.user;
+        const team = req.user.team._id;
         const { search } = req.query;
         try {
             const cars = await car_model_1.default.aggregate([{
@@ -768,7 +769,8 @@ class RequestController {
     async apiCreateItem(req, res) {
         logger_service_1.default.info(`RequestController.apiCreateItem`);
         logger_service_1.default.info(`{user: {_id: ${req.user._id}, email: ${req.user.email}}, body: ${JSON.stringify(req.body)} }`);
-        const { team, company } = req.user;
+        const { company } = req.user;
+        const team = req.user.team._id;
         const { car, idRequest } = req.body;
         try {
             const request = await request_model_1.default.findOne({ _id: idRequest, team });
@@ -829,7 +831,7 @@ class RequestController {
     }
     async apiPatchItem(req, res) {
         logger_service_1.default.info(`RequestController.apiPatchItem`);
-        const { team } = req.user;
+        const team = req.user.team._id;
         const updateObject = req.body;
         const { id } = req.params;
         logger_service_1.default.info(`{user: {_id: ${req.user._id}, email: ${req.user.email}}, body: ${JSON.stringify(updateObject)} }`);
@@ -902,7 +904,7 @@ class RequestController {
     }
     async downloadItemFiles(req, res) {
         const { id } = req.params;
-        const { team } = req.user;
+        const team = req.user.team._id;
         try {
             const requestItems = await requestItem_model_1.default
                 .findOne({ _id: id, team })
@@ -1016,7 +1018,8 @@ class RequestController {
         });
     }
     async uploadFile(req, res) {
-        const { team, company } = req.user;
+        const { company } = req.user;
+        const team = req.user.team._id;
         logger_service_1.default.info(`RequestController.uploadFile`);
         logger_service_1.default.info(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
         const file = general_utils_1.default.getFileFromRequest(req.files, 'file');

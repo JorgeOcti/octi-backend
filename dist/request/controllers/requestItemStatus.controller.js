@@ -8,7 +8,7 @@ class RequestItemStatusController {
     }
     async apiList(req, res) {
         const { page, pageSize } = req.query;
-        const { team } = req.user;
+        const team = req.user.team._id;
         const options = {
             sort: {
                 weigth: 1

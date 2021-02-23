@@ -47,7 +47,7 @@ class FormController {
     async pdf(req, res) {
         const { debug, timezone } = req.query;
         const { id } = req.params;
-        const { team } = req.user;
+        const team = req.user.team._id;
         try {
             const config = {
                 directory: '/tmp',
@@ -263,7 +263,7 @@ class FormController {
         }
     }
     async list(req, res) {
-        const { team } = req.user;
+        const team = req.user.team._id;
         logger_service_1.default.info(`list forms`);
         logger_service_1.default.info(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
         try {
@@ -303,7 +303,7 @@ class FormController {
     }
     async detail(req, res) {
         const { id } = req.params;
-        const { team } = req.user;
+        const team = req.user.team._id;
         logger_service_1.default.info(`detail forms`);
         logger_service_1.default.info(`{user: {_id: ${req.user._id}, email: ${req.user.email}}, {form: ${id}}}`);
         try {
@@ -589,7 +589,8 @@ class FormController {
         const { id } = req.params;
         let { vin } = req.body;
         const { answers } = req.body;
-        const { team, venue, company } = req.user;
+        const { company, venue } = req.user;
+        const team = req.user.team._id;
         logger_service_1.default.info(`complete`);
         logger_service_1.default.info(`{user: {_id: ${req.user._id}, email: ${req.user.email}}, body: ${JSON.stringify(req.body)}}`);
         // validate answers in body
@@ -926,7 +927,7 @@ class FormController {
     }
     async uploadFile(req, res) {
         const { id } = req.params;
-        const company = req.user.company;
+        const { company } = req.user;
         const file = general_utils_1.default.getFileFromRequest(req.files, 'file');
         logger_service_1.default.info(`uploadFile`);
         logger_service_1.default.info(`{user: {_id: ${req.user._id}, email: ${req.user.email}}, {form: ${id}, file: ${JSON.stringify(file)}}}`);
@@ -993,7 +994,7 @@ class FormController {
     }
     async changePreferred(req, res) {
         let { form } = req.body;
-        const { team } = req.user;
+        const team = req.user.team._id;
         logger_service_1.default.info(`changePreferred`);
         logger_service_1.default.info(`{user: {_id: ${req.user._id}, email: ${req.user.email}}, body: ${JSON.stringify(req.body)}}`);
         try {
@@ -1044,7 +1045,7 @@ class FormController {
     }
     async damagesDashboard(req, res) {
         try {
-            const { team } = req.user;
+            const team = req.user.team._id;
             const damaged = await participant_model_1.default.aggregate([{
                     $match: {
                         team,
@@ -1236,7 +1237,7 @@ class FormController {
     }
     async timingDerco(req, res) {
         try {
-            const { team } = req.user;
+            const team = req.user.team._id;
             const userObject = await user_model_1.default.findOne({ _id: req.user._id });
             // Derco
             if (userObject && userObject.team.toString() === '5bf2de34caf8ef7096105cda') {
@@ -1636,7 +1637,7 @@ class FormController {
                 }, {
                     header: 'Lata recepción', key: 'p1SheetMetal', width: 30
                 }];
-            const { team } = req.user;
+            const team = req.user.team._id;
             const periods = 6;
             for (let i = 0; i < periods; i++) {
                 const t0 = moment().subtract(i + 1, 'months');
@@ -1766,7 +1767,7 @@ class FormController {
     }
     async cleaningDashboard(req, res) {
         try {
-            const { team } = req.user;
+            const team = req.user.team._id;
             const form = await form_model_1.default.findById('5b0487db835536612bab1b61');
             const answer = new bson_1.ObjectID('5b64b2e8de5557c85fa14fa0');
             const days = [];
@@ -2060,7 +2061,8 @@ class FormController {
     }
     async createPosition(req, res) {
         try {
-            const { team, company, venue } = req.user;
+            const { company, venue } = req.user;
+            const team = req.user.team._id;
             const { lat, lng, accuracy, provider } = req.body;
             const os = 'user-agent' in req.headers ? req.headers['user-agent'] : '';
             const gpsPosition = new gpsPosition_model_1.default({

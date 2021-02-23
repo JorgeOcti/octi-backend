@@ -75,7 +75,7 @@ class InventoryController {
         }
     }
     async detail(req, res) {
-        const { team } = req.user;
+        const team = req.user.team._id;
         const { id } = req.params;
         try {
             const inventory = await inventory_model_1.default.findOne({ _id: id, team });
@@ -94,7 +94,8 @@ class InventoryController {
         }
     }
     async create(req, res) {
-        const { company, team } = req.user;
+        const { company } = req.user;
+        const team = req.user.team._id;
         const { name, manualPhoto, reportPhoto } = req.body;
         let { carsByVenue, notification } = req.body;
         carsByVenue = JSON.parse(carsByVenue);
@@ -230,7 +231,7 @@ class InventoryController {
             server_1.io.to(`stock-${team}`).emit('REFRESH', {
                 update: true
             });
-            const currentTeam = await team_model_1.default.findById(req.user.team);
+            const currentTeam = await team_model_1.default.findById(req.user.team._id);
             app_1.queue.create('email', {
                 from: '',
                 title: `Inventory Notification`,
@@ -273,7 +274,7 @@ class InventoryController {
         }
     }
     async list(req, res) {
-        const { team } = req.user;
+        const team = req.user.team._id;
         const { page, pageSize } = req.query;
         const venuesPermissions = req.user.venuesPermissions();
         try {
@@ -475,7 +476,7 @@ class InventoryController {
         }
     }
     async apiDetail(req, res) {
-        const { team } = req.user;
+        const team = req.user.team._id;
         const { id } = req.params;
         logger_service_1.default.info(`apiDetail`);
         logger_service_1.default.info(`{user: {_id: ${req.user._id}, email: ${req.user.email}}, inventory: ${id}}`);
@@ -593,7 +594,8 @@ class InventoryController {
     }
     async uploadFile(req, res) {
         const { id } = req.params;
-        const { team, venue, company } = req.user;
+        const { company, venue } = req.user;
+        const team = req.user.team._id;
         logger_service_1.default.info(`uploadFile`);
         logger_service_1.default.info(`{user: {_id: ${req.user._id}, email: ${req.user.email}}, inventory: ${id}}`);
         const file = general_utils_1.default.getFileFromRequest(req.files, 'file');
@@ -659,7 +661,7 @@ class InventoryController {
         }
     }
     async apiFoundCar(req, res) {
-        const { team } = req.user;
+        const team = req.user.team._id;
         const { id } = req.params;
         const { vin, images } = req.body;
         logger_service_1.default.info(`apiFoundCar`);
@@ -787,7 +789,7 @@ class InventoryController {
         }
     }
     async finishInventory(req, res) {
-        const { team } = req.user;
+        const team = req.user.team._id;
         const { id } = req.params;
         if (!req.user.hasPermission('finishInventory')) {
             return res.status(403).json({
@@ -837,7 +839,7 @@ class InventoryController {
         }
     }
     async deleteInventory(req, res) {
-        const { team } = req.user;
+        const team = req.user.team._id;
         const { id } = req.params;
         if (!req.user.hasPermission('deleteInventory')) {
             return res.status(403).json({
@@ -938,7 +940,7 @@ class InventoryController {
     async downloadImages(req, res) {
         const { id } = req.params;
         const { cars } = req.body;
-        const { team } = req.user;
+        const team = req.user.team._id;
         try {
             const inventory = await inventory_model_1.default.findOne({
                 _id: id,
@@ -1097,7 +1099,8 @@ class InventoryController {
         }
     }
     async reportCar(req, res) {
-        const { team, company } = req.user;
+        const { company } = req.user;
+        const team = req.user.team._id;
         const { id } = req.params;
         const { vin, denomination, brand, color, images } = req.body;
         logger_service_1.default.info(`reportCar`);
@@ -1186,7 +1189,7 @@ class InventoryController {
         }
     }
     async setLabel(req, res) {
-        const { team } = req.user;
+        const team = req.user.team._id;
         const { id } = req.params;
         const { car, label, custom, carID } = req.body;
         logger_service_1.default.info(`setLabel`);
@@ -1274,7 +1277,7 @@ class InventoryController {
         }
     }
     async apiList(req, res) {
-        const { team } = req.user;
+        const team = req.user.team._id;
         logger_service_1.default.info(`apiList`);
         logger_service_1.default.info(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
         try {
@@ -1322,7 +1325,7 @@ class InventoryController {
     }
     async detaill(req, res) {
         const { id } = req.params;
-        const { team } = req.user;
+        const team = req.user.team._id;
         const venuesPermissions = req.user.venuesPermissions();
         try {
             // summary
@@ -1750,7 +1753,7 @@ class InventoryController {
     async dashboard(req, res) {
         let venuesPermissions = req.user.venuesPermissions();
         const { venues } = req.body;
-        const { team } = req.user;
+        const team = req.user.team._id;
         if (venues && venues.length) {
             venuesPermissions = venuesPermissions.filter((v) => venues.includes(v.toString()));
         }
@@ -1835,7 +1838,7 @@ class InventoryController {
         }
     }
     async inventoryByCars(req, res) {
-        const { team } = req.user;
+        const team = req.user.team._id;
         try {
             /* generate file */
             const workbook = new excel.Workbook();
@@ -1974,7 +1977,8 @@ class InventoryController {
         }
     }
     async loadStock(req, res) {
-        const { company, team } = req.user;
+        const { company } = req.user;
+        const team = req.user.team._id;
         const { carsByVenue } = req.body;
         try {
             const stockCars = [];

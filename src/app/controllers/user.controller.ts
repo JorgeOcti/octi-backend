@@ -53,7 +53,7 @@ class UserController {
   }
 
   public async apiListVenues(req: IRequest, res: Response) {
-    const {team} = req.user;
+    const team = req.user.team._id;
     logger.info(`apiListVenues`);
     logger.info(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
     try {
@@ -91,7 +91,7 @@ class UserController {
   }
 
   public async apiChangeVenue(req: IRequest, res: Response) {
-    const {team} = req.user;
+    const team = req.user.team._id;
     const {venue} = req.body;
     logger.info(`apiChangeVenue`);
     logger.info(`{user: {_id: ${req.user._id}, email: ${req.user.email}}, body: ${JSON.stringify(req.body)}}`);

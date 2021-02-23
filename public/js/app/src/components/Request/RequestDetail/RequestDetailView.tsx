@@ -90,7 +90,7 @@ class RequestDetailView extends TrackingBasePage<IPropsType, IStateType> {
     });
 
     this.socket.on('connect', () => {
-      this.socket.emit('join', { room: `request-detail-${window.user.team}` });
+      this.socket.emit('join', { room: `request-detail-${window.user.team._id}` });
     });
 
     this.socket.on('UPDATE_REQUEST_ITEM', (data: any): void => {

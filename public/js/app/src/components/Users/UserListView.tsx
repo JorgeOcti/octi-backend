@@ -107,7 +107,7 @@ class UserListView extends TrackingBasePage<IPropsType, IStateType> {
       query: {token: (window.user as any).token}
     });
     this.socket.on('connect', () => {
-      this.socket.emit('join', {room: `user-list-${window.user.team}`});
+      this.socket.emit('join', {room: `user-list-${window.user.team._id}`});
     });
     this.socket.on('REFRESH', (data: any): void => {
       if (data.update && data.updatedBy !== window.user._id) {

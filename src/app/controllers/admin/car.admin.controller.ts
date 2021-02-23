@@ -26,7 +26,7 @@ class AdminCarController {
 
   public async indexDetail(req: IRequest, res: Response) {
     const {id} = req.params;
-    const {team} = req.user;
+    const team = req.user.team._id;
     /* istanbul ignore else */
     if (req.user.hasPermission('viewCar') && Types.ObjectId.isValid(id) && await Car.find({_id: id, team}).count()) {
       res.render('app/index', {token: await req.user.generateToken()});
@@ -53,7 +53,8 @@ class AdminCarController {
         message: 'No tienes permisos para esta operación'
       });
     }
-    const {company, team} = req.user;
+    const { company } = req.user;
+    const team = req.user.team._id;
     const {cars} = req.body;
     if (cars && cars.length) {
       for (const car of cars) {
@@ -119,7 +120,7 @@ class AdminCarController {
       });
     }
     const {page, pageSize, search} = req.query as { page: string, pageSize: string, search: string };
-    const {team} = req.user;
+    const team = req.user.team._id;
     // paginate options
     const options: PaginateOptions = {
       select: {
