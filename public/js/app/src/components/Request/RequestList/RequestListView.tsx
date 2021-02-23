@@ -82,7 +82,7 @@ class RequestListView extends TrackingBasePage<IPropsType, IStateType> {
     });
 
     this.socket.on('connect', () => {
-      this.socket.emit('join', {room: `request-list-${window.user.team}`});
+      this.socket.emit('join', {room: `request-list-${window.user.team._id}`});
     });
 
     this.socket.on('UPDATE_REQUEST_ITEM', (data: any): void => {
@@ -148,7 +148,7 @@ class RequestListView extends TrackingBasePage<IPropsType, IStateType> {
     if (this.props.requests.source) {
       this.props.requests.source.cancel('Operation canceled by the user.');
     }
-    this.socket.emit('leave', {room: `request-list-${window.user.team}`});
+    this.socket.emit('leave', {room: `request-list-${window.user.team._id}`});
     this.socket.disconnect();
   }
 

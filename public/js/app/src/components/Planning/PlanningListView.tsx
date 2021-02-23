@@ -50,7 +50,7 @@ class PlanningListView extends TrackingBasePage<IPropsType, IStateType> {
       query: {token: (window.user as any).token}
     });
     this.socket.on('connect', () => {
-      this.socket.emit('join', {room: `planning-list-${window.user.team}`});
+      this.socket.emit('join', {room: `planning-list-${window.user.team._id}`});
     });
     this.socket.on('REFRESH', (): void => {
         this.props.getPlanningAction(pagination.page);

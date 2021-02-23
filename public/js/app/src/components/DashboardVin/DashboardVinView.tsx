@@ -104,7 +104,7 @@ class DashboardVinView extends TrackingBasePage<IPropsType, IStateType> {
       }
     });
     this.socket.on('connect', () => {
-      this.socket.emit('join', {room: `dashboard-vin-view-${window.user.team}`});
+      this.socket.emit('join', {room: `dashboard-vin-view-${window.user.team._id}`});
     });
     this.socket.on('REFRESH', (data: any): void => {
       const {page} = this.props.dashboard.pagination;
