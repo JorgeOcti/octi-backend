@@ -772,6 +772,16 @@ class CarController {
         }
       }
     }
+    if (form.shippingVenue){
+      columns.push({
+        header: `${form.name} - ${form.shippingVenueText}`, key: `${form._id.toString()}-shipping`, width: 30
+      });
+    }
+    if (form.receptionVenue){
+      columns.push({
+        header: `${form.name} - ${form.receptionVenueText}`, key: `${form._id.toString()}-reception`, width: 30
+      });
+    }
     return columns;
   }
 
@@ -818,6 +828,14 @@ class CarController {
         sectionAnswers = { ...sectionAnswers, ...this.processAnswer(answer) };
       }
     }
+
+    if (participant.shippingVenue){
+      sectionAnswers = { ...sectionAnswers, [`${participant.form.toString()}-shipping`]: participant.sendTo.name };
+    }
+    if (participant.receptionVenue){
+      sectionAnswers = { ...sectionAnswers, [`${participant.form.toString()}-reception`]: participant.receiveFrom.name };
+    }
+
     return {
       ...datum,
       ...sectionAnswers
@@ -924,7 +942,12 @@ class CarController {
         shipping: 1,
         receptionText: 1,
         shippingText: 1,
-        sections: 1
+        sections: 1,
+        form: 1,
+        shippingVenue: 1,
+        receptionVenue: 1,
+        sendTo: 1,
+        receiveFrom: 1
       }).populate([{
         path: 'car',
         select: 'brand denomination color vin patent'
@@ -943,6 +966,12 @@ class CarController {
         select: 'name'
       }, {
         path: 'team',
+        select: 'name'
+      }, {
+        path: 'sendTo',
+        select: 'name'
+      }, {
+        path: 'receiveFrom',
         select: 'name'
       }]).batchSize(100).cursor();
 
