@@ -17,7 +17,7 @@ class PushService {
     });
   }
 
-  public createAuthToken(userId: String){
+  public createAuthToken(userId: string){
     return this.pushNotifications.generateToken(userId);
   }
 

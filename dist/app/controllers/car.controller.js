@@ -1516,7 +1516,13 @@ class CarController {
         try {
             const { team } = req.user;
             const { changeperiods } = req.query;
-            const workbook = new excel.Workbook();
+            res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+            res.setHeader('Content-Disposition', `attachment; filename=daños-${moment().format('YYYY-MM-DD')}.xlsx`);
+            const workbook = new excel.stream.xlsx.WorkbookWriter({
+                stream: res,
+                useStyles: true,
+                useSharedStrings: true
+            });
             const worksheet = workbook.addWorksheet('Daños', {
                 properties: {
                     defaultRowHeight: 30
@@ -1554,7 +1560,7 @@ class CarController {
             columns.push({ header: 'Tipo', key: 'kind', width: 30 });
             columns.push({ header: 'Posición', key: 'position', width: 30 });
             /* headers */
-            const periods = changeperiods ? parseInt(changeperiods, 10) : 6;
+            const periods = changeperiods ? parseInt(changeperiods, 10) : 8;
             const kinds = await kind_model_1.default.find({ team }, { name: true });
             const parts = await part_model_1.default.find({ team }, { name: true });
             const positions = await position_model_1.default.find({ team }, { name: true });
@@ -1576,29 +1582,19 @@ class CarController {
             for (let i = periods; i >= 0; i--) {
                 periodToProcess.push(this.addRevisions(req.user, i, damagesCache, extraColums));
             }
-            const rows = await bluebird.all(periodToProcess);
             // create titles of the table with filters
             const newColumns = [...columns, ...extraColums.data];
             worksheet.columns = newColumns;
             worksheet.autoFilter = { from: 'A1', to: { row: 1, column: newColumns.length } };
             // add data in excel
-            const dataRow = [].concat.apply([], rows);
-            worksheet.addRows(dataRow);
-            /* formats */
-            worksheet.getRow(1).eachCell((cell) => {
-                cell.font = {
-                    bold: true
-                };
-            });
-            // const idCol = worksheet.getColumn('id');
-            // idCol.eachCell({includeEmpty: true}, (cell) => {
-            //   cell.alignment = {vertical: 'middle', horizontal: 'center'};
-            // });
-            const tempFilePath = tempfile('.xlsx');
-            await workbook.xlsx.writeFile(tempFilePath);
-            res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-            res.setHeader('Content-Disposition', 'attachment; filename=usuarios-21-03-2019.xlsx');
-            return res.sendFile(tempFilePath);
+            while (periodToProcess.length) {
+                const rows = await periodToProcess.splice(0, 1)[0];
+                for (const row of rows) {
+                    worksheet.addRow(row).commit();
+                }
+            }
+            await workbook.commit();
+            res.status(200);
         }
         catch (e) {
             /* istanbul ignore next */
