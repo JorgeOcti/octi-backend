@@ -773,7 +773,7 @@ class CarController {
         const columns = [];
         for (const section of form.sections) {
             for (const question of section.questions) {
-                if (['scale', 'accessory', 'damages'].includes(question.kind)) {
+                if (['scale', 'accessory', 'damage'].includes(question.kind)) {
                     columns.push({
                         header: `${form.name} - ${question.question}`, key: question._id.toString(), width: 30
                     });
