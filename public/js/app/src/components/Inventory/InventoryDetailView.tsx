@@ -465,14 +465,13 @@ class InventoryDetailView extends TrackingBasePage<IPropsType, IStateType> {
             </React.Fragment>
             : null
         }
-        {
-          row.patent && row.patent.length ?
             <React.Fragment>
-              <CopyText value={row.patent}><strong>{row.patent}</strong></CopyText>&nbsp;
-              <CopyText value={row.vin} className="text-muted text-sm">{row.vin}</CopyText>
-            </React.Fragment> :
-            <CopyText value={row.vin}><strong>{row.vin}</strong></CopyText>
-        }<br/>
+              {row.patent && row.patent.length ?
+              <CopyText value={row.patent}><strong>{row.patent}</strong></CopyText> : null }&nbsp;
+              {row.vin && row.vin.length ?
+                <CopyText value={row.vin} className={row.patent && row.patent.length ? "text-muted text-sm" : ""}>{row.vin}</CopyText> : null }
+            </React.Fragment>
+        <br/>
         <span className="text-muted text-sm">{cell} / {row.denomination}</span>
         {
           row.internalNumber ? <React.Fragment><br/><span className="text-muted text-sm">{row.internalNumber}</span></React.Fragment> : null
