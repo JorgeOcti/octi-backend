@@ -5,6 +5,7 @@ export interface IBillingCompany {
   active: boolean;
   checklistPrice: number;
   inventoryPrice: number;
+  requestPrice: number;
 }
 
 export interface IBillingNotifications {

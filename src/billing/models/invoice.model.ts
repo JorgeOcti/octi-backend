@@ -43,11 +43,19 @@ const invoiceSchema = new mongoose.Schema({
     type: Number,
     default: 0
   },
+  requestCars: {
+    type: Number,
+    default: 0
+  },
   inventoryPrice: {
     type: Number,
     default: 0
   },
   checklistPrice: {
+    type: Number,
+    default: 0
+  },
+  requestPrice: {
     type: Number,
     default: 0
   },

@@ -27,6 +27,13 @@ const teamSchema = new mongoose.Schema({
   timestamps: true
 });
 
+teamSchema.virtual('companies', {
+  ref: 'Company', // The model to use
+  localField: '_id', // Find field in this model
+  foreignField: 'team', // is equal to field in another model
+  justOne: false
+});
+
 teamSchema.virtual('users', {
   ref: 'User', // The model to use
   localField: '_id', // Find field in this model

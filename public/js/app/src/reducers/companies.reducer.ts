@@ -12,7 +12,8 @@ const initialState: ICompaniesState = {
     billing: {
       active: false,
       inventoryPrice: 0.0,
-      checklistPrice: 0.0
+      checklistPrice: 0.0,
+      requestPrice: 0.0
     },
     notifications:[]
   },

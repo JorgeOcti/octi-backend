@@ -31,6 +31,10 @@ const billingSchema = new mongoose.Schema({
         type: Number,
         default: 0
     },
+    requestPrice: {
+        type: Number,
+        default: 0
+    },
     active: {
         type: Boolean,
         default: false

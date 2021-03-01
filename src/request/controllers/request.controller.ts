@@ -21,6 +21,7 @@ import Request, { IRequestModel } from '../models/request.model';
 import RequestFile from '../models/requestFile.model';
 import RequestItem, { IRequestItemModel } from '../models/requestItem.model';
 import RequestItemStatus from '../models/requestItemStatus.model';
+import ActivityHistory, { ChoicesTypeActivity } from '../../billing/models/activityHistory.model';
 
 class RequestController {
 
@@ -834,16 +835,32 @@ class RequestController {
 
   public async apiPatchItem(req: IRequest, res: Response) {
     logger.info(`RequestController.apiPatchItem`);
-    const team = req.user.team._id;
+    const {team, company} = req.user;
     const updateObject = req.body;
     const { id } = req.params;
     logger.info(`{user: {_id: ${req.user._id}, email: ${req.user.email}}, body: ${JSON.stringify(updateObject)} }`);
     try {
-      const requestItem = await RequestItem.findOneAndUpdate({ _id: id, team }, { $set: { ...updateObject } }).populate([{ path: 'car' }]);
+      const requestItem = await RequestItem.findOneAndUpdate({ _id: id, team }, { $set: { ...updateObject } }).populate([{ path: 'car' }, {path:'request'}]);
       if (Object.keys(updateObject.car).length) {
         // add vin2 to car
         updateObject.car.vin2 = updateObject.car && updateObject.car.vin ? updateObject.car.vin.substr(updateObject.car.vin.length - 6) : '';
         const existCar = await Car.findOne({ team, vin: updateObject.car.vin });
+        if (requestItem && ((updateObject.car.vin && updateObject.car.vin.length) || (updateObject.car.material && updateObject.car.material.length))) {
+          const existActivity = await ActivityHistory.findOne({ team, 'request.item': requestItem._id });
+          if (!existActivity) {
+            await ActivityHistory.create({
+              team,
+              company,
+              user: req.user._id,
+              type: ChoicesTypeActivity.request,
+              request: {
+                _id: requestItem.request._id,
+                item: requestItem._id,
+                number: requestItem.request.number
+              }
+            });
+          }
+        }
         if (existCar && requestItem && existCar.vin !== requestItem.car.vin) {
           // validate exist car and change vin
           await RequestItem.update({ _id: id, team }, { $set: { car: existCar } });
@@ -869,11 +886,11 @@ class RequestController {
         .populate(this.itemPopulate)
         .lean();
       await Request.update({ _id: item.request._id }, { $set: { updatedAt: moment() } });
-      io.to(`request-list-${team}`).emit('UPDATE_REQUEST_ITEM', {
+      io.to(`request-list-${team._id}`).emit('UPDATE_REQUEST_ITEM', {
         idRequest: item.request._id,
         item
       });
-      io.to(`request-detail-${team}`).emit('UPDATE_REQUEST_ITEM', {
+      io.to(`request-detail-${team._id}`).emit('UPDATE_REQUEST_ITEM', {
         idRequest: item.request._id,
         item
       });

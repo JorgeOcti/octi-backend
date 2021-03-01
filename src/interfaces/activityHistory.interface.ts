@@ -17,6 +17,12 @@ export interface ICarDetail {
   vin: string;
 }
 
+export interface IResponseDetail {
+  _id: any;
+  item: any;
+  number: number;
+}
+
 export interface IActivityHistoryInterface {
   team: ITeam;
   company: ICompany;
@@ -25,6 +31,7 @@ export interface IActivityHistoryInterface {
   inventory?: IInventoryDetail;
   form?: IFormDetail;
   car?: ICarDetail;
+  request?: IResponseDetail;
   updatedAt?: Date;
   createdAt?: Date;
 }
