@@ -1102,7 +1102,7 @@ class InventoryController {
         const { company } = req.user;
         const team = req.user.team._id;
         const { id } = req.params;
-        const { vin, denomination, brand, color, images } = req.body;
+        const { vin, patent, denomination, brand, color, images } = req.body;
         logger_service_1.default.info(`reportCar`);
         logger_service_1.default.info(`{user: {_id: ${req.user._id}, email: ${req.user.email}}, body: ${JSON.stringify(req.body)}}`);
         try {
@@ -1122,13 +1122,17 @@ class InventoryController {
                 status: inventory_model_1.ChoicesStatusInventory.inProcess,
                 team
             });
+            let findCOnditions = {};
+            let isVinAvailable = vin && vin.length > 0;
+            if (vin)
+                findCOnditions = { vin, team };
+            if (!isVinAvailable && patent && patent.length > 0)
+                findCOnditions = { patent, team };
             if (inventory) {
-                const car = await car_model_1.default.findOneOrCreate({
-                    vin,
-                    team
-                }, {
+                const car = await car_model_1.default.findOneOrCreate(findCOnditions, {
                     vin,
                     vin2: vin.substr(vin.length - 6),
+                    patent,
                     brand,
                     denomination,
                     color,
