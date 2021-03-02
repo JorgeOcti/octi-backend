@@ -589,8 +589,7 @@ class FormController {
         const { id } = req.params;
         let { vin } = req.body;
         const { answers } = req.body;
-        const { company, venue } = req.user;
-        const team = req.user.team._id;
+        const { company, venue, team } = req.user;
         logger_service_1.default.info(`complete`);
         logger_service_1.default.info(`{user: {_id: ${req.user._id}, email: ${req.user.email}}, body: ${JSON.stringify(req.body)}}`);
         // validate answers in body

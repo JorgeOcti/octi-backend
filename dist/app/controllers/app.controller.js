@@ -233,8 +233,7 @@ class AppController {
         res.redirect('/account/login/');
     }
     async recoverFile(req, res) {
-        const { company } = req.user;
-        const team = req.user.team._id;
+        const { company, team } = req.user;
         const file = general_utils_1.default.getFileFromRequest(req.files, 'file');
         logger_service_1.default.info(`uploadFile`);
         logger_service_1.default.info(`{user: {_id: ${req.user._id}, email: ${req.user.email}}, file: ${JSON.stringify(file)}}}`);

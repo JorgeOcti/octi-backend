@@ -97,8 +97,7 @@ class RequestController {
     async apiCreate(req, res) {
         logger_service_1.default.info(`RequestController.apiCreate`);
         logger_service_1.default.info(`{user: {_id: ${req.user._id}, email: ${req.user.email}}, body: ${JSON.stringify(req.body)} }`);
-        const { company } = req.user;
-        const team = req.user.team._id;
+        const { company, team } = req.user;
         const { cars, venue, fleet, sellerText } = req.body;
         try {
             const defaultItemStatus = await requestItemStatus_model_1.default.findOneOrCreate({ team, default: true }, { name: 'Pendiente', default: true, team, weigth: 10 });
@@ -142,10 +141,10 @@ class RequestController {
             }
             await team_model_1.default.findOneAndUpdate({ _id: team._id }, { $inc: { requestNumber: 1 } }, { new: true });
             const newRequest = await request_model_1.default.findById(request._id).populate(this.requestPopulate);
-            server_1.io.to(`request-list-${team}`).emit('CREATE_REQUEST', {
+            server_1.io.to(`request-list-${team._id}`).emit('CREATE_REQUEST', {
                 request: newRequest
             });
-            server_1.io.to(`request-detail-${team}`).emit('CREATE_REQUEST', {
+            server_1.io.to(`request-detail-${team._id}`).emit('CREATE_REQUEST', {
                 request: newRequest
             });
             res.json({
