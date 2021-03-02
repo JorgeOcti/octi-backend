@@ -631,7 +631,7 @@ class InventoryController {
         file.headers = {
           'Content-Type': file.mimetype
         };
-        file.team = team;
+        file.team = team._id;
         file.venue = venue._id;
         file.inventory = id;
         inventoryFile.inventory = id;

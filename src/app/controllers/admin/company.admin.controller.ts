@@ -104,14 +104,14 @@ class AdminCompaniesController {
           image.headers = {
             'Content-Type': image.mimetype
           };
-          image.team = team;
+          image.team = team._id;
           await newCompany.attach('image', image);
         }
         if (marker) {
           marker.headers = {
             'Content-Type': marker.mimetype
           };
-          marker.team = team;
+          marker.team = team._id;
           await newCompany.attach('marker', marker);
         }
         await newCompany.save();
@@ -158,7 +158,7 @@ class AdminCompaniesController {
           image.headers = {
             'Content-Type': image.mimetype
           };
-          image.team = team;
+          image.team = team._id;
           await company.attach('image', image);
           await company.update({image: company.image})
         }
@@ -166,7 +166,7 @@ class AdminCompaniesController {
           marker.headers = {
             'Content-Type': marker.mimetype
           };
-          marker.team = team;
+          marker.team = team._id;
           await company.attach('marker', marker);
           await company.update({marker: company.marker})
         }

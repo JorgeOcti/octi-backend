@@ -269,7 +269,7 @@ class AppController {
 
         recoverFile.user = req.user._id;
         recoverFile.company = company._id;
-        recoverFile.team = team;
+        recoverFile.team = team._id;
         recoverFile.attach('file', file, async (error: any) => {
           if (error) {
             /* istanbul ignore next */
