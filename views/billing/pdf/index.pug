@@ -76,13 +76,21 @@ body
           | #{invoice.checklistPrice} UF
         td(width="20%").text-right
           | #{(invoice.checklistPrice * invoice.checklistCars).toFixed(2)} UF
+      tr.item
+        td(width="30%")
+          | Vehículos en Solicitudes
+        td(width="20%").text-right=invoice.requestCars
+        td(width="20%").text-right
+          | #{invoice.requestPrice} UF
+        td(width="20%").text-right
+          | #{(invoice.requestPrice * invoice.requestCars).toFixed(2)} UF
       tr
         td(colspan=3).text-right
           strong
             | Total
         td.text-right
           strong
-            | #{((invoice.checklistPrice * invoice.checklistCars) + (invoice.inventoryPrice * invoice.inventoryCars)).toFixed(2)} UF
+            | #{((invoice.checklistPrice * invoice.checklistCars) + (invoice.inventoryPrice * invoice.inventoryCars) + (invoice.requestPrice * invoice.requestCars)).toFixed(2)} UF
 
 
 

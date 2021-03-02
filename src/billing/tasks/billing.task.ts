@@ -33,6 +33,7 @@ class BillingQueue {
     this.processBilling = this.processBilling.bind(this);
     this.calculateCarsInChecklist = this.calculateCarsInChecklist.bind(this);
     this.calculateCarsInInventory = this.calculateCarsInInventory.bind(this);
+    this.calculateCarsInRequest = this.calculateCarsInRequest.bind(this);
     this.getUFPrice = this.getUFPrice.bind(this);
     this.getDolarPrice = this.getDolarPrice.bind(this);
     this.generateHTML = this.generateHTML.bind(this);
@@ -141,6 +142,39 @@ class BillingQueue {
     return vinInInventories.length ? vinInInventories[0].count : 0;
   }
 
+  private async calculateCarsInRequest(company: ICompany): Promise<number> {
+    const vinInInventories = await ActivityHistory
+      .aggregate([{
+        $match: {
+          company: company._id,
+          type: ChoicesTypeActivity.request,
+          createdAt: {
+            $gte: moment()
+              .subtract(1, 'day')
+              .startOf('month')
+              .toDate(),
+            $lte: moment()
+              .subtract(1, 'day')
+              .endOf('month')
+              .toDate()
+          }
+        }
+      }, {
+        $group: {
+          _id: '$_id'
+        }
+      }, {
+        $group: {
+          _id: 1,
+          count: {
+            $sum: 1
+          }
+        }
+      }]
+      );
+    return vinInInventories.length ? vinInInventories[0].count : 0;
+  }
+
   public generateHTML(invoice: IInvoiceModel): string {
     moment.locale('es');
     moment.tz.setDefault('America/Santiago');
@@ -229,16 +263,20 @@ class BillingQueue {
         console.log(`calculating billing ${company.name}`);
         const inventoryCars = await this.calculateCarsInInventory(company);
         const checklistCars = await this.calculateCarsInChecklist(company);
+        const requestCars = await this.calculateCarsInRequest(company);
         const totalInventory = inventoryCars * company.billing.inventoryPrice;
         const totalChecklist = checklistCars * company.billing.checklistPrice;
-        const totalUF = totalInventory + totalChecklist;
+        const totalRequest= requestCars * company.billing.requestPrice;
+        const totalUF = totalInventory + totalChecklist + totalRequest;
         const invoice = new Invoice({
           team: company.team,
           company,
           inventoryCars,
           checklistCars,
+          requestCars,
           inventoryPrice: company.billing.inventoryPrice,
           checklistPrice: company.billing.checklistPrice,
+          requestPrice: company.billing.requestPrice,
           totalUF,
           valueUF,
           // valueDolar,

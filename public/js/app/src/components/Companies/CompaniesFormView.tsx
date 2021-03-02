@@ -139,6 +139,25 @@ class CompaniesFormView extends React.Component<IPropsType, IStateType> {
                       }
                     />
                   </div>
+                  <div className="form-group">
+                    <label>Precio Solicitudes</label>
+                    <input
+                      type="number"
+                      name="fistName"
+                      className="form-control"
+                      maxLength={50}
+                      defaultValue={tempCompany ? tempCompany.billing.requestPrice : '0.0'}
+                      onChange={
+                        (e: React.ChangeEvent<HTMLInputElement>) => changeTempCompanyAction({
+                          ...tempCompany,
+                          billing: {
+                            ...tempCompany.billing,
+                            requestPrice: parseFloat(e.target.value.trim())
+                          }
+                        })
+                      }
+                    />
+                  </div>
                 </div>
                 <div className="col-md-12">
                   <strong style={{color: "#2372bb"}}>Notificaciones</strong>

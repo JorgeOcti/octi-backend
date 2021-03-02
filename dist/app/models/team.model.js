@@ -23,6 +23,12 @@ const teamSchema = new mongoose.Schema({
 }, {
     timestamps: true
 });
+teamSchema.virtual('companies', {
+    ref: 'Company',
+    localField: '_id',
+    foreignField: 'team',
+    justOne: false
+});
 teamSchema.virtual('users', {
     ref: 'User',
     localField: '_id',

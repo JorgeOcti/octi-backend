@@ -22,7 +22,7 @@ import {hasPermission} from '../../utils/common';
 import ModalView from '../Modal/ModalView';
 import Paginator from '../Utils/Paginator';
 import CompaniesFormView from './CompaniesFormView';
-import TrackingBasePage from "../Utils/TrackingBasePage";
+import TrackingBasePage from '../Utils/TrackingBasePage';
 
 interface IPropsType extends RouteComponentProps<{ company: string }> {
   dispatch: Dispatch<CompaniesReduxAction>;
@@ -130,8 +130,8 @@ class CompaniesListView extends TrackingBasePage<IPropsType, IStateType> {
                                 <i
                                   className={
                                     company.billing.active ?
-                                      "fa fa-check-circle text-green":
-                                      "fa fa-times-circle text-red"
+                                      'fa fa-check-circle text-green':
+                                      'fa fa-times-circle text-red'
                                   }
                                 />
                               </td> : null
@@ -183,11 +183,12 @@ class CompaniesListView extends TrackingBasePage<IPropsType, IStateType> {
       name: '',
       image: null,
       marker: null,
-      markerURI: "/static/images/files/pin_osa.svg",
+      markerURI: '/static/images/files/pin_osa.svg',
       billing: {
         active: false,
         checklistPrice: 0.0,
-        inventoryPrice: 0.0
+        inventoryPrice: 0.0,
+        requestPrice: 0.0
       },
       notifications: []
     });
@@ -213,15 +214,16 @@ class CompaniesListView extends TrackingBasePage<IPropsType, IStateType> {
   }
 
   private udpateCompany(company: ICompany): void {
+    const {_id, name, billing, marker, image, notifications} = company;
     this.props.changeTempCompanyAction({
-      _id: company._id,
-      name: company.name,
+      _id,
+      name,
       image: null,
       marker: null,
-      imageURI: company.image && company.image.hasOwnProperty('url') ? decodeURI(company.image.url) : null,
-      markerURI: company.marker && company.marker.hasOwnProperty('url') ? decodeURI(company.marker.url) : "/static/images/files/pin_osa.svg",
-      billing: company.billing,
-      notifications: company.notifications
+      imageURI: image && image.hasOwnProperty('url') ? decodeURI(image.url) : null,
+      markerURI: marker && marker.hasOwnProperty('url') ? decodeURI(marker.url) : '/static/images/files/pin_osa.svg',
+      billing,
+      notifications
     });
     setTimeout(() => {
       this.props.loadDataAction(
@@ -236,8 +238,8 @@ class CompaniesListView extends TrackingBasePage<IPropsType, IStateType> {
   }
 
   private processUpdateCompany(): void {
-    const {tempCompany} = this.props.companies;
-    if (!tempCompany.name || !tempCompany.name.trim()) {
+    const {name} = this.props.companies.tempCompany;
+    if (!name || !name.trim()) {
       swal('Editar Empresa', 'El nombres es requerido', 'error');
     } else {
       this.props.updateCompanyAction();

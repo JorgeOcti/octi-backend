@@ -1,6 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.choicesTypeActivity = exports.ChoicesTypeActivity = void 0;
+const bson_1 = require("bson");
 const mongoose = require("mongoose");
 const detailInventorySchema = new mongoose.Schema({
     name: {
@@ -17,14 +18,24 @@ const detailCarSchema = new mongoose.Schema({
         type: String
     }
 });
+const responseCarSchema = new mongoose.Schema({
+    item: {
+        type: bson_1.ObjectId
+    },
+    number: {
+        type: Number
+    }
+});
 var ChoicesTypeActivity;
 (function (ChoicesTypeActivity) {
     ChoicesTypeActivity["inventory"] = "inventory";
     ChoicesTypeActivity["checklist"] = "checklist";
+    ChoicesTypeActivity["request"] = "request";
 })(ChoicesTypeActivity = exports.ChoicesTypeActivity || (exports.ChoicesTypeActivity = {}));
 exports.choicesTypeActivity = [
     ChoicesTypeActivity.inventory,
-    ChoicesTypeActivity.checklist
+    ChoicesTypeActivity.checklist,
+    ChoicesTypeActivity.request
 ];
 const activityHistorySchema = new mongoose.Schema({
     team: {
@@ -53,6 +64,10 @@ const activityHistorySchema = new mongoose.Schema({
     },
     car: {
         type: detailCarSchema,
+        default: {}
+    },
+    request: {
+        type: responseCarSchema,
         default: {}
     }
 }, {
