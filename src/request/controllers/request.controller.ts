@@ -111,7 +111,7 @@ class RequestController {
 
     try {
       const defaultItemStatus = await RequestItemStatus.findOneOrCreate({ team, default: true }, { name: 'Pendiente', default: true, team, weigth: 10 });
-      const updateTeam = await Team.findOne({ _id: team._id });
+      const updateTeam = await Team.findOne({ _id: team });
       const request = await new Request({
         team,
         sellerText,
@@ -149,7 +149,7 @@ class RequestController {
           createdBy: req.user
         }).save();
       }
-      await Team.findOneAndUpdate({ _id: team._id }, { $inc: { requestNumber: 1 } }, { new: true });
+      await Team.findOneAndUpdate({ _id: team }, { $inc: { requestNumber: 1 } }, { new: true });
       const newRequest = await Request.findById(request._id).populate(this.requestPopulate);
       io.to(`request-list-${team}`).emit('CREATE_REQUEST', {
         request: newRequest

@@ -804,7 +804,7 @@ class FormController {
           const formQualification = sumSectionQualifications ? sumSectionQualifications / sumSectionWeigths : 0;
           newParticipant.qualification = formQualification;
           try {
-            const updateTeam = await Team.findOneAndUpdate({_id: team._id}, {$inc: {formsNumber: 1}}, {new: true});
+            const updateTeam = await Team.findOneAndUpdate({_id: team}, {$inc: {formsNumber: 1}}, {new: true});
             if (updateTeam) {
               newParticipant.number = updateTeam.formsNumber;
             }
