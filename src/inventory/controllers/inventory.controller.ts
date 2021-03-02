@@ -103,8 +103,7 @@ class InventoryController {
   }
 
   public async create(req: IRequest, res: Response) {
-    const { company } = req.user;
-    const team = req.user.team._id;
+    const { company, team } = req.user;
     const {name, manualPhoto, reportPhoto} = req.body;
     let {carsByVenue, notification} = req.body;
     carsByVenue = JSON.parse(carsByVenue);
@@ -608,8 +607,7 @@ class InventoryController {
 
   public async uploadFile(req: IRequest, res: Response) {
     const {id} = req.params;
-    const { company, venue } = req.user;
-    const team = req.user.team._id;
+    const { company, venue, team } = req.user;
     logger.info(`uploadFile`);
     logger.info(`{user: {_id: ${req.user._id}, email: ${req.user.email}}, inventory: ${id}}`);
     const file: any = GeneralUtils.getFileFromRequest(req.files, 'file');
@@ -674,7 +672,7 @@ class InventoryController {
   }
 
   public async apiFoundCar(req: IRequest, res: Response): Promise<any> {
-    const team = req.user.team._id;
+    const {team} = req.user;
     const {id} = req.params;
     const {vin, images} = req.body;
     logger.info(`apiFoundCar`);
@@ -1106,8 +1104,7 @@ class InventoryController {
   }
 
   public async reportCar(req: IRequest, res: Response): Promise<any> {
-    const { company } = req.user;
-    const team = req.user.team._id;
+    const { company, team } = req.user;
     const {id} = req.params;
     const {vin, patent, denomination, brand, color, images} = req.body;
     logger.info(`reportCar`);

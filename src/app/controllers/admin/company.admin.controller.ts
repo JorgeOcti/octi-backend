@@ -73,7 +73,7 @@ class AdminCompaniesController {
       });
     }
     const {name, billing, notifications} = req.body;
-    const team = req.user.team._id;
+    const team = req.user.team;
     const image: any = GeneralUtils.getFileFromRequest(req.files, 'image');
     const marker: any = GeneralUtils.getFileFromRequest(req.files, 'marker');
     if (!name || !name.trim().length) {
@@ -135,7 +135,7 @@ class AdminCompaniesController {
       });
     }
     const {id} = req.params;
-    const team = req.user.team._id;
+    const team = req.user.team;
     const {name, billing, notifications} = req.body;
     const image: any = GeneralUtils.getFileFromRequest(req.files, 'image');
     const marker: any = GeneralUtils.getFileFromRequest(req.files, 'marker');

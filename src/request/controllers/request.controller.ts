@@ -105,8 +105,7 @@ class RequestController {
   public async apiCreate(req: IRequest, res: Response) {
     logger.info(`RequestController.apiCreate`);
     logger.info(`{user: {_id: ${req.user._id}, email: ${req.user.email}}, body: ${JSON.stringify(req.body)} }`);
-    const { company } = req.user;
-    const team = req.user.team._id;
+    const { company, team } = req.user;
     const { cars, venue, fleet, sellerText } = req.body;
 
     try {
@@ -151,10 +150,10 @@ class RequestController {
       }
       await Team.findOneAndUpdate({ _id: team._id }, { $inc: { requestNumber: 1 } }, { new: true });
       const newRequest = await Request.findById(request._id).populate(this.requestPopulate);
-      io.to(`request-list-${team}`).emit('CREATE_REQUEST', {
+      io.to(`request-list-${team._id}`).emit('CREATE_REQUEST', {
         request: newRequest
       });
-      io.to(`request-detail-${team}`).emit('CREATE_REQUEST', {
+      io.to(`request-detail-${team._id}`).emit('CREATE_REQUEST', {
         request: newRequest
       });
       res.json({

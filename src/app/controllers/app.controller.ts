@@ -239,8 +239,7 @@ class AppController {
   }
 
   public async recoverFile(req: IRequest, res: Response): Promise<any> {
-    const { company } = req.user;
-    const team = req.user.team._id;
+    const { company, team } = req.user;
     const file: any = GeneralUtils.getFileFromRequest(req.files, 'file');
     logger.info(`uploadFile`);
     logger.info(`{user: {_id: ${req.user._id}, email: ${req.user.email}}, file: ${JSON.stringify(file)}}}`);
