@@ -35,6 +35,7 @@ appRouter.get('/cars/:id', Middlewares.isLoggedIn, CarController.vinDashboardDet
 appRouter.get('/revision-report/', Middlewares.isLoggedIn, CarController.vinDashboard);
 
 // api cars
+appRouter.get('/api/cars/properties/', Middlewares.isLoggedIn, CarController.listProperties);
 appRouter.get('/api/cars/:id', Middlewares.isLoggedIn, CarController.apiCarDetail);
 appRouter.get('/api/cars/', Middlewares.isLoggedIn, CarController.apiCars);
 appRouter.get('/api/revisions/', Middlewares.isLoggedIn, CarController.apiRevisions);
@@ -42,6 +43,7 @@ appRouter.get('/api/damages/export/', Middlewares.isLoggedIn, CarController.apiD
 appRouter.get('/api/rotation/export/', Middlewares.isLoggedIn, CarController.apiRotationExport);
 appRouter.get('/api/revisions/stats/', Middlewares.isLoggedIn, CarController.apiRevisionStats);
 appRouter.get('/api/revisions/venue/stats/', Middlewares.isLoggedIn, CarController.apiVenueRevisionStats);
+
 
 // form detail
 appRouter.get('/api/participant/export/', Middlewares.isLoggedIn, CarController.exportParticipants);

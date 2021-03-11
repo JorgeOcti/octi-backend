@@ -76,7 +76,7 @@ class PlanningController {
         .json({
           message: 'Planificación importada satisfactoriamente',
           status: 201
-        })
+        });
     } catch (e) {
       /* istanbul ignore next */
       if (e) {

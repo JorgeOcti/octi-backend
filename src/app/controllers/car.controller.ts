@@ -18,6 +18,7 @@ import { ChoicesStatusCarInventory } from '../../inventory/models/inventoryCar.m
 import Planning from '../../planning/models/planning.model';
 import logger from '../../services/logger.service';
 import VINService from '../../services/vin.service';
+import Car from '../models/car.model';
 import CarModel, { ChoicesStatusCar, ICarModel } from '../models/car.model';
 import User from '../models/user.model';
 import Venue from '../models/venue.model';
@@ -76,6 +77,7 @@ class CarController {
     this.apiParticipantsPerDate = this.apiParticipantsPerDate.bind(this);
     this.processParticipant = this.processParticipant.bind(this);
     this.exportParticipants = this.exportParticipants.bind(this);
+    this.listProperties = this.listProperties.bind(this);
   }
 
   public async generalDashboard(req: IRequest, res: Response) {
@@ -86,9 +88,50 @@ class CarController {
     res.render('app/index', {token: await req.user.generateToken()});
   }
 
+  public async listProperties(req: IRequest, res: Response) {
+    const { team } = req.user;
+    try {
+      // validate car exist
+      const cars = await CarModel.aggregate([
+        {
+          $match: {
+            team: team._id
+          }
+        },
+        {
+          $group: {
+            _id: null,
+            uniqueValues: {
+              $addToSet: '$property'
+            }
+          }
+        }
+      ]);
+      if (cars.length && cars[0].hasOwnProperty('uniqueValues')) {
+        res.json(
+          cars[0].uniqueValues
+            .filter((v: string) => (v.length > 0))
+            .map((v: string) => ({ _id: v, name: v }))
+            .sort((a: any, b: any) => {
+              const x = a.name;
+              const y = b.name;
+              return ((x < y) ? -1 : ((x > y) ? 1 : 0));
+            })
+          );
+      } else {
+        res.json([]);
+      }
+    } catch (e) {
+      /* istanbul ignore next */
+      if (e) {
+        res.status(500).send(e);
+      }
+    }
+  }
+
   public async vinDashboardDetail(req: IRequest, res: Response) {
     const {id} = req.params;
-    const team = req.user.team._id;
+    const {team} = req.user;
     // validate params
     /* istanbul ignore next */
     if (!mongoose.Types.ObjectId.isValid(id) || !await CarModel.find({_id: id, team}).count()) {
@@ -111,7 +154,7 @@ class CarController {
               _id: true
             })
         },
-        team
+        team: team._id
       });
       if (!car) {
         return res.status(404).render('404');

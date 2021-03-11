@@ -38,6 +38,7 @@ import DashboardRevisionsView from "./components/DashboardVin/DashboardRevisions
 import { IWindow } from './interfaces/window';
 import configureStore, { history } from './store/configureStore';
 import { isIntenertExplorer } from './utils/common';
+import RequestUpdaterView from './components/Request/RequestUpdaterView';
 
 
 declare let window: IWindow;
@@ -83,6 +84,7 @@ const App = () => (
         <Route exact path="/settings/versions/" component={VersionListView}/>
         <Route exact path="/requests/create/" component={RequestCreateView}/>
         <Route exact path="/requests/" component={RequestListView}/>
+        <Route exact path="/requests/update/" component={RequestUpdaterView}/>
         <Route exact path="/requests/vehicles/create" component={RequestCreateView}/>
         <Route exact path="/requests/vehicles/:id/" component={RequestDetailView}/>
         <Route exact path="/requests/vehicles/" component={RequestVehicleListView}/>

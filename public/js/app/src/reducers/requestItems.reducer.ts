@@ -9,6 +9,7 @@ import {
   REQUEST_ITEMS_IS_LOADING,
   REQUEST_ITEMS_LOAD_CARRIERS,
   REQUEST_ITEMS_LOAD_ITEM_STATUS,
+  REQUEST_ITEMS_LOAD_PROPERTIES,
   REQUEST_ITEMS_LOAD_REASONS,
   REQUEST_ITEMS_LOAD_REQUESTS_ITEMS,
   REQUEST_ITEMS_LOAD_VENUES,
@@ -20,6 +21,7 @@ const initialState: IRequestItemsState = {
   reasons: [],
   carriers: [],
   venues: [],
+  properties: [],
   requestItemStatus: [],
   requestItemStatusMin: 0,
   requestItemStatusMax: 100,
@@ -29,6 +31,7 @@ const initialState: IRequestItemsState = {
     request: '',
     text: '',
     venues: [],
+    properties: [],
     status: [],
     from: null,
     to: null
@@ -71,6 +74,11 @@ export function requestItemsReducers(state = initialState, action: RequestItemsR
         ...state,
         venues: action.payload.venues
       };
+    case REQUEST_ITEMS_LOAD_PROPERTIES:
+        return {
+          ...state,
+          properties: action.payload.properties
+        };
     case REQUEST_ITEMS_LOAD_ITEM_STATUS:
       return {
         ...state,

@@ -205,6 +205,7 @@ class RequestDetailView extends TrackingBasePage<IPropsType, IStateType> {
                         <tr>
                           <th className="middle-center" style={{ width: '25px' }}>#</th>
                           <th className="middle" style={{ width: '28px' }} />
+                          <th className="middle" style={{ width: '100px' }}>Propiedad</th>
                           <th className="middle" style={{ width: '100px' }}>Marca</th>
                           <th className="middle" style={{ width: '150px' }}>Modelo</th>
                           <th className="middle" style={{ width: '100px' }}>Material</th>

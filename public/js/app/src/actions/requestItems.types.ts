@@ -10,6 +10,7 @@ export const REQUEST_ITEMS_IS_LOADING = '/REQUESTS_ITEMS/IS_LOADING';
 export const REQUEST_ITEMS_LOAD_REASONS = '/REQUESTS_ITEMS/LOAD_REASONS';
 export const REQUEST_ITEMS_LOAD_CARRIERS = '/REQUESTS_ITEMS/LOAD_CARRIERS';
 export const REQUEST_ITEMS_LOAD_VENUES = '/REQUESTS_ITEMS/LOAD_VENUES';
+export const REQUEST_ITEMS_LOAD_PROPERTIES = '/REQUESTS_ITEMS/LOAD_PROPERTIES';
 export const REQUEST_ITEMS_LOAD_REQUESTS_ITEMS = '/REQUESTS_ITEMS/LOAD_REQUESTS_ITEMS';
 export const REQUEST_ITEMS_LOAD_ITEM_STATUS = '/REQUESTS_ITEMS/LOAD_ITEM_STATUS';
 export const REQUEST_ITEMS_CHANGE_ORDER = '/REQUESTS_ITEMS/CHANGE_ORDER';
@@ -22,6 +23,7 @@ export interface IRequestItemsFilters {
   text: string;
   request: string;
   venues: any[];
+  properties: any[];
   status: any[];
   from: any;
   to: any;
@@ -31,13 +33,14 @@ export interface IRequestItemsState {
   requestItems: IRequestItem[];
   reasons: IReason[];
   carriers: ICarrier[];
+  properties: ICarrier[];
   venues: IVenue[];
   requestItemStatus: IRequestItemStatus[];
   requestItemStatusMin: number;
   requestItemStatusMax: number;
   loading: boolean;
   source: CancelTokenSource | null;
-  filters: IRequestItemsFilters,
+  filters: IRequestItemsFilters;
   options: {
     orderBy: string;
     orderType: string;
@@ -81,6 +84,13 @@ export interface ILoadVenuesRequestItems {
   type: typeof REQUEST_ITEMS_LOAD_VENUES;
   payload: {
     venues: IVenue[];
+  };
+}
+
+export interface ILoadPropertiesRequestItems {
+  type: typeof REQUEST_ITEMS_LOAD_PROPERTIES;
+  payload: {
+    properties: ICarrier[];
   };
 }
 
@@ -147,6 +157,7 @@ export type RequestItemsReduxActions =
   ILoadRequestItems |
   ILoadCarriersRequestItems |
   ILoadVenuesRequestItems |
+  ILoadPropertiesRequestItems |
   IChangeOrderRequestItems |
   IChangeFilterRequestItems |
   ICreateRequestItems |

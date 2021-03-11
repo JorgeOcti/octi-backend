@@ -14,7 +14,8 @@ import BootstrapSelect from '../Utils/BootstrapSelect';
 import BootstrapSwitch from '../Utils/BootstrapSwitch';
 import MultiUploadFiles, { imageStatus } from '../Utils/MultiUploadFiles';
 import ShowIf from '../Utils/ShowIf';
-import TrackingBasePage from "../Utils/TrackingBasePage";
+import TrackingBasePage from '../Utils/TrackingBasePage';
+
 
 interface IPropsType extends RouteComponentProps<{}> { }
 

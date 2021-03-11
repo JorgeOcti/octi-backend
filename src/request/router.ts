@@ -18,6 +18,8 @@ requestRouter.get('/requests/create/', Middlewares.isLoggedIn, RequestController
 requestRouter.get('/api/v1/requests/search-car/', Middlewares.isLoggedIn, RequestController.searhCar);
 requestRouter.post('/api/v1/requests/upload-file/', Middlewares.isLoggedIn, RequestController.uploadFile);
 
+requestRouter.post('/api/v1/requests/update-massive/', Middlewares.isLoggedIn, RequestController.apiUpdateMassive);
+
 requestRouter.get('/api/v1/requests/', Middlewares.isLoggedIn, RequestController.apiList);
 requestRouter.post('/api/v1/requests/', Middlewares.isLoggedIn, RequestController.apiCreate);
 requestRouter.get('/api/v1/requests/:id/', Middlewares.isLoggedIn, RequestController.apiDetail);

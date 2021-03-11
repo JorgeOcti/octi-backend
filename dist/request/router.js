@@ -18,6 +18,7 @@ requestRouter.get('/requests/create/', middlewares_1.default.isLoggedIn, request
 // apis
 requestRouter.get('/api/v1/requests/search-car/', middlewares_1.default.isLoggedIn, request_controller_1.default.searhCar);
 requestRouter.post('/api/v1/requests/upload-file/', middlewares_1.default.isLoggedIn, request_controller_1.default.uploadFile);
+requestRouter.post('/api/v1/requests/update-massive/', middlewares_1.default.isLoggedIn, request_controller_1.default.apiUpdateMassive);
 requestRouter.get('/api/v1/requests/', middlewares_1.default.isLoggedIn, request_controller_1.default.apiList);
 requestRouter.post('/api/v1/requests/', middlewares_1.default.isLoggedIn, request_controller_1.default.apiCreate);
 requestRouter.get('/api/v1/requests/:id/', middlewares_1.default.isLoggedIn, request_controller_1.default.apiDetail);

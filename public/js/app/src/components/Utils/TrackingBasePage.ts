@@ -1,6 +1,6 @@
-import MixpanelTracker from "./MixpanelTracker";
 import * as React from 'react';
-import {IWindow} from "../../interfaces/window";
+import { IWindow } from '../../interfaces/window';
+import MixpanelTracker from './MixpanelTracker';
 
 declare let window: IWindow;
 
@@ -20,7 +20,7 @@ abstract class TrackingBasePage<PropsType, StateType> extends React.Component<Pr
     // set the title of the page
     document.title = `OSA Andes | ${this.title}`;
     this.registerUser();
-    this.trackPage()
+    this.trackPage();
   }
 
   trackPage() : void {
@@ -34,9 +34,7 @@ abstract class TrackingBasePage<PropsType, StateType> extends React.Component<Pr
   }
 
   public shouldTrack() : boolean {
-    if (window.user)
-      return !window.user.email.includes('@osacontrol.com');
-    return true;
+    return !window.user.email.includes('@osacontrol.com');
   }
 
   private registerUser() : void {

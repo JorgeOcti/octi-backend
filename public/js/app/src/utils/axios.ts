@@ -57,6 +57,14 @@ export default class ApiService {
     }
   }
 
+  public getProperties(): AxiosPromise {
+    return this.instance.get(
+      `/api/cars/properties/`
+      , {
+        cancelToken: this.source.token
+      });
+  }
+
   public getUsers(page: number, search?: string): AxiosPromise {
     return this.instance.get(
       `/api/admin/users/?page=${page}${search ? `&search=${search}` : ''}`
@@ -342,6 +350,14 @@ export default class ApiService {
   public importPlanning(data: any): AxiosPromise {
     return this.instance.post(
       `/api/admin/planning/`, data, {
+      cancelToken: this.source.token
+    }
+    );
+  }
+
+  public updateMassiveRequest(data: any): AxiosPromise {
+    return this.instance.post(
+      `/api/v1/requests/update-massive/`, data, {
       cancelToken: this.source.token
     }
     );

@@ -84,6 +84,7 @@ class RequestVehicleItem extends React.Component<IPropsType, IStateType> {
         </td>
         <td className="middle">{item.origin.name}</td>
         <td className="middle">{item.destination.name}</td>
+        <td className="middle">{item.car.property}</td>
         {
           canChangeRequest ?
             <td className="middle">

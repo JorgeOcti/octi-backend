@@ -84,6 +84,7 @@ class RequestItem extends React.Component<IPropsType, IStateType> {
         >
           {item.priority ? <i className="fa fa-star text-yellow" /> : <i className="fa fa-star text-muted" />}
         </td>
+        <td className="middle">{item.car.property}</td>
         {
           canChangeRequest ?
             <td className="middle">

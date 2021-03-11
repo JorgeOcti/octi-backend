@@ -5,6 +5,7 @@ import { Dispatch, Fragment } from 'react';
 import { connect } from 'react-redux';
 import { RouteComponentProps } from 'react-router';
 import * as swal from 'sweetalert';
+import { debounce } from 'throttle-debounce';
 import {
   IRequestItem
 } from '../../../../../../../src/interfaces/requestItem.interface';
@@ -15,7 +16,7 @@ import {
   getRequestItemsThunkAction,
   updateRequestItemAction
 } from '../../../actions/requestItems.actions';
-import { IRequestItemsFilters, IRequestItemsState } from '../../../actions/requestItems.types';
+import { IRequestItemsFilters, IRequestItemsState, RequestItemsReduxActions } from '../../../actions/requestItems.types';
 import AppContainer from '../../../container/AppContainer';
 import { IWindow } from '../../../interfaces/window';
 import ApiService from '../../../utils/axios';
@@ -23,15 +24,14 @@ import { hasPermission } from '../../../utils/common';
 import BootstrapSelect from '../../Utils/BootstrapSelect';
 import DateRangePicker from '../../Utils/DateRangePicker';
 import ImageLazyLoad from '../../Utils/ImageLazyLoad';
-import { debounce } from 'throttle-debounce';
 import Paginator from '../../Utils/Paginator';
 import ShowIf from '../../Utils/ShowIf';
+import TrackingBasePage from '../../Utils/TrackingBasePage';
 import RequestVehicleItem from './RequestVehicleItem';
-import TrackingBasePage from "../../Utils/TrackingBasePage";
 
 interface IPropsType extends RouteComponentProps<{ ticket: string }> {
   requestItems: IRequestItemsState;
-  dispatch: Dispatch<IRequestItemsState>;
+  dispatch: Dispatch<RequestItemsReduxActions>;
   updateRequestItemAction: (item: IRequestItem) => void;
   getRequestItemsThunkAction: (page: number, orderBy: string, orderType: string, hideLoading?: boolean) => void;
   deleteRequestItemAction: (item: IRequestItem) => void;
@@ -65,6 +65,7 @@ class RequestVehicleListView extends TrackingBasePage<IPropsType, IStateType> {
     this.changeFilter = this.changeFilter.bind(this);
     this.exportExcel = this.exportExcel.bind(this);
     this.create = this.create.bind(this);
+    this.update = this.update.bind(this);
   }
 
   componentDidMount() {
@@ -171,7 +172,7 @@ class RequestVehicleListView extends TrackingBasePage<IPropsType, IStateType> {
 
   public render(): React.ReactElement<IPropsType> {
     const {
-      pagination, loading, requestItems, requestItemStatus, venues, filters
+      pagination, loading, requestItems, requestItemStatus, venues, filters, properties
     } = this.props.requestItems;
     const { orderBy, orderType } = this.props.requestItems.options;
     const { exporing } = this.state;
@@ -182,10 +183,19 @@ class RequestVehicleListView extends TrackingBasePage<IPropsType, IStateType> {
             <div className="box-header with-border">
               <h3 className="box-title">Vehículos <small>{pagination.count}</small></h3>
               <div className="pull-right box-tools">
+                <ShowIf condition={hasPermission(window.user, 'updateMassiveRequest')}>
+                  <button
+                    className="btn btn-sm btn-success"
+                    onClick={this.update}
+                  >
+                    <i className="fa fa-fw fa-plus" /> Actualizador
+                  </button>
+                </ShowIf>
                 <ShowIf condition={hasPermission(window.user, 'createRequest')}>
                   <button
                     className="btn btn-sm btn-success"
                     onClick={this.create}
+                    style={{ marginLeft: '5px' }}
                   >
                     <i className="fa fa-fw fa-plus" /> Crear solicitud
                   </button>
@@ -241,7 +251,40 @@ class RequestVehicleListView extends TrackingBasePage<IPropsType, IStateType> {
                       />
                     </div>
                   </div>
-                  <div className="col-md-4">
+                  <div className="col-md-3">
+                    <div className="form-group">
+                      <label htmlFor="venues" className="control-label">Propiedad</label>
+                      <BootstrapSelect
+                        noneSelectedText="Todas"
+                        search={true}
+                        displayItems={2}
+                        selectedText="propiedades seleccionadas."
+                        selected={filters.properties}
+                        allOption={true}
+                        selectAll={
+                          (all: boolean) => {
+                            if (all) {
+                              this.changeFilter('properties', properties.map((property) => property._id));
+                            } else {
+                              this.changeFilter('properties', []);
+                            }
+                          }
+                        }
+                        options={properties.map((property) => ({
+                          value: property._id,
+                          text: property.name
+                        }))}
+                        onClick={(selected: any) => {
+                          if (filters.properties.includes(selected)) {
+                            this.changeFilter('properties', [...filters.properties.filter((property) => property !== selected)]);
+                          } else {
+                            this.changeFilter('properties', [...filters.properties, selected]);
+                          }
+                        }}
+                      />
+                    </div>
+                  </div>
+                  <div className="col-md-3">
                     <div className="form-group">
                       <label htmlFor="venues" className="control-label">Sucursales</label>
                       <BootstrapSelect
@@ -274,7 +317,7 @@ class RequestVehicleListView extends TrackingBasePage<IPropsType, IStateType> {
                       />
                     </div>
                   </div>
-                  <div className="col-md-4">
+                  <div className="col-md-3">
                     <div className="form-group">
                       <label htmlFor="venues" className="control-label">Estados</label>
                       <BootstrapSelect
@@ -322,7 +365,7 @@ class RequestVehicleListView extends TrackingBasePage<IPropsType, IStateType> {
                       />
                     </div>
                   </div> */}
-                  <div className="col-md-4">
+                  <div className="col-md-3">
                     <div className="row">
                       <div className="col-md-6">
                         <div className="form-group">
@@ -379,6 +422,14 @@ class RequestVehicleListView extends TrackingBasePage<IPropsType, IStateType> {
                         >
                           Destino
                       <span style={{ float: 'right' }}><i className={`fa fa-fw ${orderBy === 'destination.name' ? `${orderType === 'descending' ? 'fa-sort-down' : 'fa-sort-up'}` : 'fa-sort'}`} /></span>
+                        </th>
+                        <th
+                          className="middle pointer"
+                          // style={{ width: '100px' }}
+                          onClick={() => this.changeOrder('car.property')}
+                        >
+                          Prop.
+                      <span style={{ float: 'right' }}><i className={`fa fa-fw ${orderBy === 'car.property' ? `${orderType === 'descending' ? 'fa-sort-down' : 'fa-sort-up'}` : 'fa-sort'}`} /></span>
                         </th>
                         <th
                           className="middle pointer"
@@ -528,6 +579,10 @@ class RequestVehicleListView extends TrackingBasePage<IPropsType, IStateType> {
     this.props.history.push('/requests/vehicles/create/');
   }
 
+  private update(){
+    this.props.history.push('/requests/update/');
+  }
+
   private changeFilterDebounced(key: keyof IRequestItemsFilters, value: any | any[]): void {
     this.changeFilter(key, value);
   }
@@ -558,7 +613,7 @@ class RequestVehicleListView extends TrackingBasePage<IPropsType, IStateType> {
   }
 
   public exportExcel(): void {
-    this.trackClick("Exportar");
+    this.trackClick('Exportar');
     this.setState({
       exporing: true
     });

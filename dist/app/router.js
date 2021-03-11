@@ -34,6 +34,7 @@ appRouter.get('/cars/', middlewares_1.default.isLoggedIn, car_controller_1.defau
 appRouter.get('/cars/:id', middlewares_1.default.isLoggedIn, car_controller_1.default.vinDashboardDetail);
 appRouter.get('/revision-report/', middlewares_1.default.isLoggedIn, car_controller_1.default.vinDashboard);
 // api cars
+appRouter.get('/api/cars/properties/', middlewares_1.default.isLoggedIn, car_controller_1.default.listProperties);
 appRouter.get('/api/cars/:id', middlewares_1.default.isLoggedIn, car_controller_1.default.apiCarDetail);
 appRouter.get('/api/cars/', middlewares_1.default.isLoggedIn, car_controller_1.default.apiCars);
 appRouter.get('/api/revisions/', middlewares_1.default.isLoggedIn, car_controller_1.default.apiRevisions);

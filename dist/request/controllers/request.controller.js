@@ -91,9 +91,43 @@ class RequestController {
         this.resizeImage = this.resizeImage.bind(this);
         this.downloadItemFiles = this.downloadItemFiles.bind(this);
         this.downloadFile = this.downloadFile.bind(this);
+        this.apiUpdateMassive = this.apiUpdateMassive.bind(this);
     }
     async index(req, res) {
         res.render('app/index', { token: await req.user.generateToken() });
+    }
+    async apiUpdateMassive(req, res) {
+        const { properties } = req.body;
+        const { team } = req.user;
+        try {
+            for (const property of properties) {
+                if (property.key.length && property.brands.length) {
+                    const find = {
+                        team,
+                        $or: property.brands.map((brand) => {
+                            return {
+                                brand: {
+                                    $regex: new RegExp(brand, 'i')
+                                }
+                            };
+                        })
+                    };
+                    const update = { $set: { property: property.key } };
+                    await car_model_1.default.updateMany(find, update);
+                }
+            }
+            res.status(200).json({
+                message: 'Actualización realizada satisfactoriamente',
+                status: 200
+            });
+        }
+        catch (e) {
+            /* istanbul ignore next */
+            if (e) {
+                console.log(e);
+                res.status(500).json(e);
+            }
+        }
     }
     async apiCreate(req, res) {
         logger_service_1.default.info(`RequestController.apiCreate`);
@@ -215,6 +249,14 @@ class RequestController {
             });
             extraMatch.$or.push({
                 'requestNumber': { '$regex': filters.text, '$options': 'i' }
+            });
+        }
+        if (filters.properties && filters.properties.length) {
+            if (!extraMatch.hasOwnProperty('$or')) {
+                extraMatch.$or = [];
+            }
+            extraMatch.$or.push({
+                'car.property': { $in: filters.properties.map((s) => s) }
             });
         }
         try {
@@ -449,7 +491,9 @@ class RequestController {
                 }, {
                     header: 'MOTIVO', key: 'reason', width: 20
                 }, {
-                    header: 'GRUPO, PROPIEDAD', key: 'group', width: 20
+                    header: 'GRUPO', key: 'group', width: 20
+                }, {
+                    header: 'PROPIEDAD', key: 'property', width: 20
                 }, {
                     header: 'MARCA', key: 'brand', width: 20
                 }, {
@@ -499,6 +543,7 @@ class RequestController {
                     seller: item.request.sellerText,
                     reason: item.reason.name,
                     group: '',
+                    property: item.car.property,
                     brand: item.car.brand,
                     denomination: item.car.denomination,
                     material: item.car.material,

@@ -1,6 +1,6 @@
-import * as express from "express";
-import Middlewares from "../middlewares/middlewares";
-import PlanningController from "./controllers/planning.controller";
+import * as express from 'express';
+import Middlewares from '../middlewares/middlewares';
+import PlanningController from './controllers/planning.controller';
 
 const planningRouter = express.Router();
 

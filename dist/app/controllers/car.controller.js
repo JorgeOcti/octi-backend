@@ -71,6 +71,7 @@ class CarController {
         this.apiParticipantsPerDate = this.apiParticipantsPerDate.bind(this);
         this.processParticipant = this.processParticipant.bind(this);
         this.exportParticipants = this.exportParticipants.bind(this);
+        this.listProperties = this.listProperties.bind(this);
     }
     async generalDashboard(req, res) {
         res.render('app/index', { token: await req.user.generateToken() });
@@ -78,9 +79,49 @@ class CarController {
     async vinDashboard(req, res) {
         res.render('app/index', { token: await req.user.generateToken() });
     }
+    async listProperties(req, res) {
+        const { team } = req.user;
+        try {
+            // validate car exist
+            const cars = await car_model_1.default.aggregate([
+                {
+                    $match: {
+                        team: team._id
+                    }
+                },
+                {
+                    $group: {
+                        _id: null,
+                        uniqueValues: {
+                            $addToSet: '$property'
+                        }
+                    }
+                }
+            ]);
+            if (cars.length && cars[0].hasOwnProperty('uniqueValues')) {
+                res.json(cars[0].uniqueValues
+                    .filter((v) => (v.length > 0))
+                    .map((v) => ({ _id: v, name: v }))
+                    .sort((a, b) => {
+                    const x = a.name;
+                    const y = b.name;
+                    return ((x < y) ? -1 : ((x > y) ? 1 : 0));
+                }));
+            }
+            else {
+                res.json([]);
+            }
+        }
+        catch (e) {
+            /* istanbul ignore next */
+            if (e) {
+                res.status(500).send(e);
+            }
+        }
+    }
     async vinDashboardDetail(req, res) {
         const { id } = req.params;
-        const team = req.user.team._id;
+        const { team } = req.user;
         // validate params
         /* istanbul ignore next */
         if (!mongoose.Types.ObjectId.isValid(id) || !await car_model_1.default.find({ _id: id, team }).count()) {
@@ -102,7 +143,7 @@ class CarController {
                         _id: true
                     })
                 },
-                team
+                team: team._id
             });
             if (!car) {
                 return res.status(404).render('404');

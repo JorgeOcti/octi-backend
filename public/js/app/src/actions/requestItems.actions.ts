@@ -15,6 +15,7 @@ import {
   IDeleteRequestItems,
   IIsLoadingRequestItems,
   ILoadCarriersRequestItems,
+  ILoadPropertiesRequestItems,
   ILoadReasonsRequestItems,
   ILoadRequestItems,
   ILoadRequestItemStatus,
@@ -31,6 +32,7 @@ import {
   REQUEST_ITEMS_IS_LOADING,
   REQUEST_ITEMS_LOAD_CARRIERS,
   REQUEST_ITEMS_LOAD_ITEM_STATUS,
+  REQUEST_ITEMS_LOAD_PROPERTIES,
   REQUEST_ITEMS_LOAD_REASONS,
   REQUEST_ITEMS_LOAD_REQUESTS_ITEMS,
   REQUEST_ITEMS_LOAD_VENUES,
@@ -78,6 +80,15 @@ export function loadVenuesRequestItemsAction(venues: IVenue[]): ILoadVenuesReque
     type: REQUEST_ITEMS_LOAD_VENUES,
     payload: {
       venues
+    }
+  };
+}
+
+export function loadPropertiesRequestItemsAction(properties: ICarrier[]): ILoadPropertiesRequestItems {
+  return {
+    type: REQUEST_ITEMS_LOAD_PROPERTIES,
+    payload: {
+      properties
     }
   };
 }
@@ -166,15 +177,17 @@ export function getRequestItemsThunkAction(nextPage: number, orderBy: string, or
         api.getReasons(1, 200),
         api.getRequestItemsStatus(1, 200),
         api.getCarriers(1, 200),
-        api.getVenues(1, 200, true, true)
+        api.getVenues(1, 200, true, true),
+        api.getProperties()
       ])
-      .then(Axios.spread((requests, reasons, requestItemStatus, carriers, venues) => {
+      .then(Axios.spread((requests, reasons, requestItemStatus, carriers, venues, properties) => {
         const { data } = requests;
         dispatch(loadRequestsItemsAction(data.results, data.count, data.pages, page));
         dispatch(loadReasonsRequestItemsAction(reasons.data.results));
         dispatch(loadRequestItemsStatusRequestAction(requestItemStatus.data.results, requestItemStatus.data.min, requestItemStatus.data.max));
         dispatch(loadCarriersRequestItemsAction(carriers.data.results));
         dispatch(loadVenuesRequestItemsAction(venues.data.results));
+        dispatch(loadPropertiesRequestItemsAction(properties.data));
         dispatch(isLoadingRequestItemsAction(false));
       }))
       .catch((err: AxiosError) => {

@@ -1,28 +1,26 @@
-import * as React from 'react';
-import {RouteComponentProps} from 'react-router';
-import {Dispatch} from 'redux';
-import {connect} from 'react-redux';
-import AppContainer from '../../container/AppContainer';
-import ModalView from '../Modal/ModalView';
-import {IPlanningState, PlanningReduxAction} from '../../actions/planning.action';
-import {IWindow} from '../../interfaces/window';
-import {ErrorInfo, RefObject} from 'react';
 import * as Raven from 'raven-js';
-import * as XLSX from 'xlsx';
-import * as moment from 'moment';
+import * as React from 'react';
+import { ErrorInfo, RefObject } from 'react';
+import { connect } from 'react-redux';
+import { RouteComponentProps } from 'react-router';
+import { Dispatch } from 'redux';
 import * as swal from 'sweetalert';
-import slugify from 'slugify';
+import * as XLSX from 'xlsx';
+import { IRequestItemsState, RequestItemsReduxActions } from '../../actions/requestItems.types';
+import AppContainer from '../../container/AppContainer';
+import { IWindow } from '../../interfaces/window';
 import ApiService from '../../utils/axios';
+import ModalView from '../Modal/ModalView';
 import TrackingBasePage from '../Utils/TrackingBasePage';
 
 interface IPropsType extends RouteComponentProps<{ ticket: string }> {
-  dispatch: Dispatch<PlanningReduxAction>;
-  planning: IPlanningState;
+  requestItems: IRequestItemsState;
+  dispatch: Dispatch<RequestItemsReduxActions>;
 }
 
 interface IStateType {
   error: Error | null;
-  carsByDate: any[];
+  properties: any[];
   canDrop: boolean;
   sending: boolean;
   loadingSettings: boolean;
@@ -30,7 +28,7 @@ interface IStateType {
 
 declare let window: IWindow;
 
-class PlanningImportView extends TrackingBasePage<IPropsType, IStateType> {
+class RequestUpdaterView extends TrackingBasePage<IPropsType, IStateType> {
   title : string;
 
   readonly inputFile: RefObject<HTMLInputElement>;
@@ -39,13 +37,13 @@ class PlanningImportView extends TrackingBasePage<IPropsType, IStateType> {
     error: null,
     canDrop: false,
     sending: false,
-    carsByDate: [],
+    properties: [],
     loadingSettings: false
   };
 
   constructor(props: IPropsType) {
     super(props);
-    this.title = 'Importar planicacion';
+    this.title = 'Actualización masiva';
     this.inputFile = React.createRef();
     this.clickUploadFile = this.clickUploadFile.bind(this);
     this.handleDrop = this.handleDrop.bind(this);
@@ -73,24 +71,24 @@ class PlanningImportView extends TrackingBasePage<IPropsType, IStateType> {
 
   public componentWillUnmount(): void {
     // cancel request if component is inmounted
-    if (this.props.planning.source) {
-      this.props.planning.source.cancel('Operation canceled by the user.');
+    if (this.props.requestItems.source) {
+      this.props.requestItems.source.cancel('Operation canceled by the user.');
     }
   }
 
   public render(): React.ReactElement<IPropsType> {
     const {
-      loadingSettings, carsByDate, sending
+      loadingSettings, properties, sending
     } = this.state;
     return (
-      <AppContainer title="" cMenu="4" cSubMenu="4.2">
+      <AppContainer title="" cMenu="3" cSubMenu="3.2" cAction="Actualización masiva">
         <section className="content">
           <div className="box">
             <div className="box-header with-border">
-              <h3 className="box-title">Importar planificación</h3>
+              <h3 className="box-title">Actualización masiva</h3>
               <div className="pull-right box-tools">
                 {
-                  !carsByDate.length?
+                  !properties.length?
                     <button
                       className="btn btn-sm btn-primary"
                       onClick={this.downloadTemplate}
@@ -103,66 +101,38 @@ class PlanningImportView extends TrackingBasePage<IPropsType, IStateType> {
             </div>
             <div className="box-body margin">
               {
-                carsByDate.length?
+                properties.length?
                   <div className="row">
                     <div className="col col-md-12">
-                      <div className="form-group">
-                        <label>Días que serán importardos</label>
-                        {
-                          carsByDate.map((carByDate: any) => (
-                            <div className="panel box box-default" style={{borderTopWidth: '2px', marginBottom: '5px'}} key={carByDate.key}>
-                              <div className="box-header with-border" style={{padding: '6px'}}>
-                                <h4 className="box-title" style={{
-                                  fontSize: '15px',
-                                  display: 'block'
-                                }}>
-                                  <a data-toggle="collapse"
-                                   data-parent="#accordion"
-                                   href={`#${slugify(carByDate.key, {remove: /[*+~.()'"!:@]/g})}`}
-                                   aria-expanded="false"
-                                   className="collapsed">
-                                  {`${moment(carByDate.key, 'YYYYMMDD').format('dddd, DD MMMM YYYY')} (${carByDate.cars.length} Vehículos)`}
-                                  </a>
-                                </h4>
-                              </div>
-                              <div id={`${slugify(carByDate.key, {remove: /[*+~.()'"!:@]/g})}`} className="panel-collapse collapse"
-                                   aria-expanded="false">
-                                <div className="box-body no-padding">
-                                  <table className="table table-striped">
-                                    <thead>
-                                    <tr>
-                                      <th style={{width: '10%'}}>Nº Interno</th>
-                                      <th style={{width: '15%'}}>VIN</th>
-                                      <th style={{width: '5%'}}>PATENTE</th>
-                                      <th style={{width: '10%'}}>MARCA</th>
-                                      <th style={{width: '30%'}}>DENOMINACIÓN</th>
-                                      <th style={{width: '30%'}}>COLOR</th>
-                                    </tr>
-                                    </thead>
-                                    <tbody>
+                      <table className="table table-striped">
+                        <thead>
+                          <tr>
+                            <th>Propiedad</th>
+                            <th>Marca</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {
+                            properties.map((property: any) => {
+                              return (
+                                <tr key={property.key}>
+                                  <td>{property.key}</td>
+                                  <td>
                                     {
-                                      carByDate.cars.map((car: any) => (
-                                        <tr key={car.vin}>
-                                          <td>{car.NInterno}</td>
-                                          <td>{car.vin}</td>
-                                          <td>{car.patente}</td>
-                                          <td>{car.marca}</td>
-                                          <td>{car.denominacion}</td>
-                                          <td>{car.color}</td>
-                                        </tr>
-                                      ))
+                                      property.brands.map((brand: string) => (
+                                        <React.Fragment key={brand}>- {brand}<br /></React.Fragment>)
+                                      )
                                     }
-                                    </tbody>
-                                  </table>
-                                </div>
-                              </div>
-                            </div>
-                          ))
-                        }
-                      </div>
+                                  </td>
+                                </tr>
+                              );
+                            })
+                          }
+                        </tbody>
+                      </table>
                     </div>
                     <div className="col col-md-6">
-                      <strong>Total de vehículos:</strong> {carsByDate.reduce((total, x: any) => (total + x.cars.length), 0)}
+                      {/* <strong>Total de :</strong> {properties.reduce((total, x: any) => (total + x.cars.length), 0)} */}
                     </div>
                     <div className="col-md-6 text-right">
                       <button className="btn btn-sm btn-primary" onClick={this.downloadTemplate}>
@@ -210,17 +180,17 @@ class PlanningImportView extends TrackingBasePage<IPropsType, IStateType> {
             <div className="box-footer text-right">
               <button
                 className="btn btn-sm btn-default"
-                onClick={() => this.props.history.push('/planning/')}
+                onClick={() => this.props.history.push('/requests/vehicles/')}
               >
                 Cancelar
               </button>
-              {carsByDate.length ? <button className="btn btn-sm btn-primary" style={{marginLeft: '5px'}} onClick={this.sendCreate} disabled={sending}>
+              {properties.length ? <button className="btn btn-sm btn-primary" style={{marginLeft: '5px'}} onClick={this.sendCreate} disabled={sending}>
                 {
                   sending ?
                     <React.Fragment>
-                      <i className="fa fa-fw fa-spin fa-spinner"/> Importando...
+                      <i className="fa fa-fw fa-spin fa-spinner"/> Actualizando...
                     </React.Fragment>
-                    : 'Importar'
+                    : 'Actualizar'
                 }
               </button> : null}
             </div>
@@ -297,21 +267,14 @@ class PlanningImportView extends TrackingBasePage<IPropsType, IStateType> {
   private downloadTemplate(): void {
     /* make the worksheet */
     const ws = XLSX.utils.json_to_sheet([{
-      NInterno: '',
-      vin: '',
-      marca: '',
-      patente: '',
-      denominacion: '',
-      color: '',
       propiedad: '',
-      tipo: '',
-      fecha: ''
+      marca: ''
     }]);
     /* add to workbook */
     const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, 'Autos');
+    XLSX.utils.book_append_sheet(wb, ws, 'Propiedades');
     /* generate an XLSX file */
-    XLSX.writeFile(wb, 'template_planning_settings.xlsx');
+    XLSX.writeFile(wb, 'template_request_settings.xlsx');
   }
 
   private processSettings(file: File): void {
@@ -330,36 +293,22 @@ class PlanningImportView extends TrackingBasePage<IPropsType, IStateType> {
           type: rABS ? 'binary' : 'array',
           cellDates: true
         });
-        const excelData = workbook.Sheets.hasOwnProperty('Autos') ? XLSX.utils.sheet_to_json(workbook.Sheets.Autos) : [];
-        const carsByDate: any = {};
+        const excelData = workbook.Sheets.hasOwnProperty('Propiedades') ? XLSX.utils.sheet_to_json(workbook.Sheets.Propiedades) : [];
+        const brandByProperty: any = {};
         if (excelData.length >= 1) {
           excelData.forEach((item: any, index: number) => {
-            const date = moment(workbook.Sheets.Autos[`I${index + 2}`].v);
-            if(date.isValid()){
-              const key: string = date.format('YYYYMMDD');
-              if (!carsByDate.hasOwnProperty(key)) {
-                carsByDate[key] = {
-                  key,
-                  cars: []
-                };
-              }
-              carsByDate[key].cars.push({
-                NInterno: item.NInterno,
-                vin: item.vin,
-                marca: item.marca,
-                patente: item.patente,
-                denominacion: item.denominacion,
-                color: item.color,
-                propiedad: item.propiedad,
-                tipo: item.tipo,
-                date
-              });
+            const key =  item.propiedad;
+            if (!brandByProperty.hasOwnProperty(key)) {
+              brandByProperty[key] = {
+                brands: []
+              };
             }
+            brandByProperty[key].brands.push(item.marca);
           });
           this.setState({
             loadingSettings: false,
-            carsByDate: Object.keys(carsByDate)
-              .map((key) => ({key, ...carsByDate[key]}))
+            properties: Object.keys(brandByProperty)
+              .map((key) => ({key, ...brandByProperty[key]}))
               .sort((a, b) => {
                 if (a.key < b.key) return 1;
                 if (a.key > b.key) return -1;
@@ -390,7 +339,7 @@ class PlanningImportView extends TrackingBasePage<IPropsType, IStateType> {
   }
 
   private sendCreate(): void {
-    const {carsByDate} = this.state;
+    const { properties } = this.state;
     const { history } = this.props;
     this.setState({
       sending: true
@@ -398,34 +347,32 @@ class PlanningImportView extends TrackingBasePage<IPropsType, IStateType> {
     const api = new ApiService();
     api.getSource();
     api
-      .importPlanning({
-        carsByDate
+      .updateMassiveRequest({
+        properties
       })
       .then((response: any) => {
-        const {message} = response.data;
+        const { message } = response.data;
+        history.push('/requests/vehicles/');
         setTimeout(() => {
-          swal('Envió planificación', message, 'success');
+          swal('Actualización masiva', message, 'success');
         }, 200);
-        history.push('/planning/');
         this.setState({
           sending: false
         });
       })
       .catch((e) => {
-        console.log('e', e);
-        swal('Envió planificación', 'Se produjo un error al importar la planificación.', 'error');
+        swal('Actualización masiva', 'Se produjo un error al actualizar.', 'error');
         this.setState({
           sending: false
         });
       });
-
   }
 
 }
 
-const mapStateToProps = (state: { planning: IPlanningState }) => {
+const mapStateToProps = (state: { requestItems: IRequestItemsState }) => {
   return {
-    planning: state.planning
+    requestItems: state.requestItems
   };
 };
 
@@ -435,4 +382,4 @@ const mapDispatchToProps = (dispatch: any) => {
   };
 };
 
-export default connect<{ planning: IPlanningState }, { dispatch: any }, IPropsType>(mapStateToProps, mapDispatchToProps)(PlanningImportView);
+export default connect<{}, {}, IPropsType>(mapStateToProps, mapDispatchToProps)(RequestUpdaterView);
