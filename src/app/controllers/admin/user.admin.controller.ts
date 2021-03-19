@@ -416,7 +416,7 @@ class AdminUsersController {
           venue,
           venuesAccess
         };
-        if (req.user.isAdmin && [true, false].includes(isAdmin)) {
+        if ((req.user.isAdmin && [true, false].includes(isAdmin)) || req.user.hasPermission("changeTeamPermissions") ) {
           updateItems.userPermissions = userPermissions && userPermissions.length ? userPermissions.map((userPermission: IPermission) => userPermission._id) : [];
           updateItems.isAdmin = isAdmin;
         }
