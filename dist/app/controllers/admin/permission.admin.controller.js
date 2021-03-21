@@ -17,8 +17,13 @@ class AdminPermissionController extends base_admin_controller_1.default {
                 name: 1
             }
         };
+        let filter = {};
+        if (req.user.hasPermission("changeTeamPermissions"))
+            filter = {
+                _id: { $in: req.user.userPermissions }
+            };
         req.context = {
-            filter: {}
+            filter
         };
         super.apiList(req, res);
     }

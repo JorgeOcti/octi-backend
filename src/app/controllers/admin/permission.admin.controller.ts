@@ -20,8 +20,14 @@ class AdminPermissionController extends BaseAdminController<PermissionSchema> {
         name: 1
       }
     };
+    let filter = {};
+    if (req.user.hasPermission("changeTeamPermissions"))
+      filter = {
+        _id: {$in: req.user.userPermissions}
+      };
+
     req.context = {
-      filter: {}
+      filter
     };
     super.apiList(req, res);
   }
