@@ -19,6 +19,7 @@ import AppContainer from '../../container/AppContainer';
 import { IWindow } from '../../interfaces/window';
 import Paginator from '../Utils/Paginator';
 import TrackingBasePage from "../Utils/TrackingBasePage";
+import DateRangeInput from "../Utils/DateRangeInput";
 
 declare let window: IWindow;
 
@@ -36,8 +37,8 @@ interface IStateType {
   highlight: string[];
   searchText: string;
   carLoading: string;
-  from: number;
-  to: number;
+  from: Date;
+  to: Date;
   downloading: boolean;
 }
 
@@ -49,8 +50,8 @@ class DashboardVinView extends TrackingBasePage<IPropsType, IStateType> {
     highlight: [],
     searchText: '',
     carLoading: '',
-    from: moment().subtract(30, 'days').unix(),
-    to: moment().unix(),
+    from: moment().subtract(30, 'days').toDate(),
+    to: moment().toDate(),
     downloading: false
   };
   protected printIframe: any;
@@ -67,6 +68,7 @@ class DashboardVinView extends TrackingBasePage<IPropsType, IStateType> {
     this.hasDamages = this.hasDamages.bind(this);
     this.debounceOnChangeSearch = debounce(300, this.debounceOnChangeSearch);
     this.downloadReport = this.downloadReport.bind(this);
+    this.onDateRangeChange = this.onDateRangeChange.bind(this);
   }
 
   public printPdf(url: string, carLoading: string) {
@@ -137,21 +139,18 @@ class DashboardVinView extends TrackingBasePage<IPropsType, IStateType> {
 
   public componentDidMount(): void {
     super.componentDidMount();
-    const $this = this;
-    ($('input[name="daterange"]') as any).daterangepicker({
-      startDate: moment().subtract(30, 'days'),
-      endDate: moment(),
+  }
+
+  getDateRangeOptions(): daterangepicker.Options {
+    return {
       maxDate: moment(),
       opens: 'left'
-    }, (from: any, to: any, label: any) => {
-        $this.setState({
-          from: moment(from).unix(),
-          to: moment(to).unix()
-        }, () => {
-          $this.props.changeRangeDashboardAction(from.format('YYYY-MM-DD'), to.format('YYYY-MM-DD'));
-          $this.debounceOnChangeSearch();
-        });
-    });
+    }
+}
+
+  onDateRangeChange(from: Date, to: Date){
+    this.props.changeRangeDashboardAction(moment(from).format('YYYY-MM-DD'), moment(to).format('YYYY-MM-DD'));
+    this.debounceOnChangeSearch();
   }
 
   public componentDidCatch(error: Error, errorInfo: ErrorInfo) {
@@ -184,7 +183,7 @@ class DashboardVinView extends TrackingBasePage<IPropsType, IStateType> {
       to
     });
 
-    window.open(`/api/participant/export/?from=${from}&to=${to}`, '_blank');
+    window.open(`/api/participant/export/?from=${moment(from).unix()}&to=${moment(to).unix()}`, '_blank');
 
     // const api: ApiService = new ApiService();
     // const instance = api.getInstance();
@@ -239,7 +238,7 @@ class DashboardVinView extends TrackingBasePage<IPropsType, IStateType> {
 
   public render(): React.ReactElement<IPropsType> {
     const {loading, participants, pagination, searchText} = this.props.dashboard;
-    const {highlight, carLoading, downloading} = this.state;
+    const {highlight, carLoading, downloading, from, to} = this.state;
     return (
       <AppContainer title="" cMenu="1" cSubMenu="1.2">
         <section className="content">
@@ -258,12 +257,11 @@ class DashboardVinView extends TrackingBasePage<IPropsType, IStateType> {
             <div className={`box-body no-padding`}>
               <div className="row">
                 <div className="col-md-offset-4 col-md-4">
-                  <div className="input-group input-group-sm" style={{padding: '10px'}}>
-                    <input type="text" className="form-control input-sm" name="daterange" />
-                    <div className="input-group-btn">
-                      <button className="btn btn-default"><i className="fa fa-calendar"/></button>
-                    </div>
-                  </div>
+                  <DateRangeInput
+                    options={this.getDateRangeOptions()}
+                    onChange={this.onDateRangeChange}
+                    startDate={from}
+                    endDate={to} />
                 </div>
                 <div className="col-md-4">
                   <div className="input-group input-group-sm"

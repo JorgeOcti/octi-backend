@@ -11,6 +11,7 @@ import { getDashboardTiming, IDashboardTimingState} from '../../actions/dashboar
 import AppContainer from '../../container/AppContainer';
 import Row from '../Utils/Row';
 import TrackingBasePage from "../Utils/TrackingBasePage";
+import DateRangeInput from "../Utils/DateRangeInput";
 
 interface IPropsType extends RouteComponentProps<{ ticket: string }> {
   dispatch: Dispatch<DashboardReduxAction>;
@@ -22,6 +23,8 @@ interface IStateType {
   error: Error | null;
   showDrilldown: boolean,
   selectedDate: string | null,
+  from: Date,
+  to: Date,
 }
 
 class DashboardTimingView extends TrackingBasePage<IPropsType, IStateType> {
@@ -32,7 +35,9 @@ class DashboardTimingView extends TrackingBasePage<IPropsType, IStateType> {
   state = {
     showDrilldown: false,
     error: null,
-    selectedDate: null
+    selectedDate: null,
+    from: moment().subtract(2, 'months').startOf('month').toDate(),
+    to: moment().endOf('month').toDate(),
   }
 
   constructor(props: IPropsType) {
@@ -42,6 +47,7 @@ class DashboardTimingView extends TrackingBasePage<IPropsType, IStateType> {
     this.updateTimingPerMonthChart = this.updateTimingPerMonthChart.bind(this);
     this.showVenueChart = this.showVenueChart.bind(this);
     this.showDateChart = this.showDateChart.bind(this);
+    this.onDateRangeChange = this.onDateRangeChange.bind(this);
   }
 
   public componentWillMount(): void {
@@ -53,15 +59,8 @@ class DashboardTimingView extends TrackingBasePage<IPropsType, IStateType> {
     window.addEventListener('resize', this.resizeCharts, false);
   }
 
-  public componentDidMount(): void {
-    super.componentDidMount();
-    let $this = this;
-    const $timingPerMonth = document.getElementById('damages-per-month') as HTMLDivElement;
-    this.timingPerMonthChart = echarts.init($timingPerMonth);
-    this.timingPerMonthChart.on('click', this.showVenueChart);
-    ($('input[name="daterange"]') as any).daterangepicker({
-      startDate: moment().subtract(2, 'months').startOf('month'),
-      endDate: moment().endOf('month'),
+  getDateRangeOptions(): daterangepicker.Options {
+    return {
       maxDate: moment(),
       locale: {
         format: 'MM/YYYY',
@@ -75,9 +74,18 @@ class DashboardTimingView extends TrackingBasePage<IPropsType, IStateType> {
         'Últimos 6 meses': [moment().subtract(5, 'months').startOf('month'), moment().endOf('month')],
         'Último año': [moment().subtract(11, 'months').startOf('month'), moment().endOf('month')],
       }
-    }, function (from: any, to: any, label: any) {
-      $this.props.getDashboardTiming(from.format('YYYY-MM-DD'), to.format('YYYY-MM-DD'));
-    });
+    }
+  }
+
+  public componentDidMount(): void {
+    super.componentDidMount();
+    const $timingPerMonth = document.getElementById('damages-per-month') as HTMLDivElement;
+    this.timingPerMonthChart = echarts.init($timingPerMonth);
+    this.timingPerMonthChart.on('click', this.showVenueChart);
+  }
+
+  onDateRangeChange(from: Date, to: Date){
+    this.props.getDashboardTiming(moment(from).format('YYYY-MM-DD'), moment(to).format('YYYY-MM-DD'));
   }
 
   public componentDidCatch(error: Error, errorInfo: ErrorInfo): void {
@@ -104,7 +112,7 @@ class DashboardTimingView extends TrackingBasePage<IPropsType, IStateType> {
 
   public render(): React.ReactElement<IPropsType> {
     const {loading} = this.props.dashboard;
-    const {selectedDate} = this.state;
+    const {selectedDate, from, to} = this.state;
     let selectedMonth = selectedDate ?
       this.capitalizeFirstLetter(moment(selectedDate, 'MM-YYYY').format('MMMM YYYY'))  : "";
 
@@ -121,12 +129,11 @@ class DashboardTimingView extends TrackingBasePage<IPropsType, IStateType> {
 
                  <div className="row" style={{display: selectedDate ? 'none' : 'inherit'}}>
                   <div className="col-md-offset-8 col-md-4">
-                    <div className="input-group input-group-sm" style={{padding: '10px 5px'}}>
-                      <input type="text" className="form-control input-sm" name="daterange" />
-                      <div className="input-group-btn">
-                        <button className="btn btn-default"><i className="fa fa-calendar"/></button>
-                      </div>
-                    </div>
+                    <DateRangeInput
+                      options={this.getDateRangeOptions()}
+                      onChange={this.onDateRangeChange}
+                      startDate={from}
+                      endDate={to} />
                   </div>
                 </div>
                 <div className="box-body">
