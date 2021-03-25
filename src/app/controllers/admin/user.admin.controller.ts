@@ -383,7 +383,7 @@ class AdminUsersController {
 
   public async apiUpdateUser(req: IRequest, res: Response): Promise<any> {
     /* istanbul ignore next  */
-    if (!req.user.hasPermission('changeUser')) {
+    if (!req.user.hasPermission('changeUser') && !req.user.isAdmin) {
       return res.status(403).json({
         message: 'No tienes permisos para esta operación'
       });
