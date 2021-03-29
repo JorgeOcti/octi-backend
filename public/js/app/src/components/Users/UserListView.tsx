@@ -306,7 +306,7 @@ class UserListView extends TrackingBasePage<IPropsType, IStateType> {
                               <i className="fa fa-lock"/></td> : null
                         }
                         {
-                          hasPermission(window.user, 'changeUser') ?
+                          window.user.isAdmin || (hasPermission(window.user, 'changeUser') && !user.isAdmin) ?
                             <td className="middle-center text-blue pointer" onClick={() => this.updateUser(user)}><i
                               className="fa fa-pencil"/></td> : null
                         }
