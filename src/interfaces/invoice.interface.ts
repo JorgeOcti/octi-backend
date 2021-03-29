@@ -1,5 +1,5 @@
-import {ITeam} from "./team.interface";
-import {ICompany} from "./company.interface";
+import {ITeam} from './team.interface';
+import {ICompany} from './company.interface';
 
 interface IIFile {
   url: string;
@@ -10,8 +10,9 @@ interface IIFile {
 
 export interface IInvoice {
   _id: any;
-  team: ITeam,
-  company: ICompany,
+  team: ITeam;
+  company: ICompany;
+  period: string;
   inventoryPrice: number;
   checklistPrice: number;
   requestPrice: number;

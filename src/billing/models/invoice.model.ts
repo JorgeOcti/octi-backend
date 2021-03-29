@@ -35,6 +35,9 @@ const invoiceSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Company'
   },
+  period: {
+    type: String
+  },
   inventoryCars: {
     type: Number,
     default: 0
@@ -108,6 +111,7 @@ invoiceSchema.plugin(mongooseCrate, {
       size:966
       type:"image/svg"
       * */
+
       return `/invoices/${attachment.team}/${attachment.createdAt}/${attachment.company}/${uuid.v1()}-${attachment.originalname}`;
       // console.log('invoice-attachment', attachment);
       // return `/invoices/${uuid.v1()}-${attachment.originalname}`;

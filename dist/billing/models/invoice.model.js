@@ -29,6 +29,9 @@ const invoiceSchema = new mongoose.Schema({
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Company'
     },
+    period: {
+        type: String
+    },
     inventoryCars: {
         type: Number,
         default: 0
