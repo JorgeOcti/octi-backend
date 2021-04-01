@@ -21,6 +21,7 @@ const requestFile_model_1 = require("../models/requestFile.model");
 const requestItem_model_1 = require("../models/requestItem.model");
 const requestItemStatus_model_1 = require("../models/requestItemStatus.model");
 const activityHistory_model_1 = require("../../billing/models/activityHistory.model");
+const reason_model_1 = require("../models/reason.model");
 class RequestController {
     constructor() {
         this.itemPopulate = [{
@@ -165,6 +166,7 @@ class RequestController {
                     reason: car.reason,
                     files: car.files,
                     washed: car.washed,
+                    answers: car.answers,
                     equipment: car.equipment,
                     observation: car.observation,
                     priority: car.priority,
@@ -440,6 +442,7 @@ class RequestController {
                         'observation': 1,
                         'equipment': 1,
                         'washed': 1,
+                        'answers': 1,
                         'review': 1,
                         'body': 1,
                         'status._id': 1,
@@ -474,6 +477,14 @@ class RequestController {
                 }
             });
             /* headers */
+            const questionColumns = [];
+            for (const reason of await reason_model_1.default.find({ team })) {
+                for (const question of reason.questions) {
+                    questionColumns.push({
+                        header: question.name, key: question._id, width: 10
+                    });
+                }
+            }
             worksheet.columns = [{
                     header: 'Nª SOLICITUD', key: 'request', width: 10
                 }, {
@@ -530,9 +541,14 @@ class RequestController {
                     header: 'FECHA ACTUALIZACION', key: 'updted', width: 21, style: { numFmt: 'dd/mm/yyyy hh:mm' }
                 }, {
                     header: 'OBSERVACIÓN', key: 'observation', width: 21
-                }];
+                }, ...questionColumns];
             for (const item of requestItems) {
+                const extraAnswers = {};
+                for (const answer of item.answers ? item.answers : []) {
+                    extraAnswers[answer.questionId] = answer.answer;
+                }
                 worksheet.addRow({
+                    ...extraAnswers,
                     request: item.request.number,
                     created: item.createdAt,
                     updated: item.updatedAt,

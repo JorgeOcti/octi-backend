@@ -19,6 +19,7 @@ class ReasonController {
             select: {
                 name: true,
                 file: true,
+                questions: true,
                 updatedAt: true,
                 createdAt: true
             },

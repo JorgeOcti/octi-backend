@@ -31,6 +31,7 @@ interface INewCar {
   observation: string;
   priority: boolean;
   files: any[];
+  answers: any[];
   equipment: boolean;
   washed: boolean;
   reason: string;
@@ -56,6 +57,7 @@ const initialNewCar = {
   material: '',
   materials: [],
   files: [],
+  answers: [],
   color: '',
   amount: 1,
   observation: '',
@@ -274,6 +276,44 @@ class RequestCreateView extends TrackingBasePage<IPropsType, IStateType> {
                       </div>
                     </div>
                     {
+                      reasonSelected && reasonSelected.questions.length ?
+                        reasonSelected.questions.map((question: any) => {
+                          const currentAnswer: any = newCar.answers.find((answer: any) => (answer.questionId === question._id));
+                          return (
+                            <div className="form-group" key={(question)._id}>
+                              <label htmlFor="color" className="col-sm-3 control-label label-left">{question.name} {question.required ? '*' : ''}</label>
+                              <div className="col-sm-9">
+                                <input
+                                  type="text"
+                                  className="input-sm form-control"
+                                  value={currentAnswer ? currentAnswer.answer : ''}
+                                  onChange={(e) => {
+                                    this.changeNewCar('answers', (() => {
+                                      if (e.target.value) {
+                                        if (currentAnswer) {
+                                          return [...newCar.answers].map((answer: any) => {
+                                            if (question._id === answer.questionId) {
+                                              answer.answer = e.target.value;
+                                            }
+                                            return answer;
+                                          });
+                                        }
+                                        return [...newCar.answers, {
+                                          questionId: question._id,
+                                          question: question.name,
+                                          answer: e.target.value
+                                        }];
+                                      }
+                                      return [...newCar.answers].filter((answer: any) => (question._id !== answer.questionId));
+                                    })());
+                                  }}
+                                />
+                              </div>
+                            </div>
+                          );
+                        }) : null
+                    }
+                    {
                       reasonSelected && reasonSelected.file.active ?
                         <div className="form-group">
                           <label className="col-sm-3 control-label label-left">Archivos *</label>
@@ -292,33 +332,35 @@ class RequestCreateView extends TrackingBasePage<IPropsType, IStateType> {
                           </div>
                         </div> : null
                     }
-                    {/* <div className="form-group">
-                      <label className="col-sm-3 control-label label-left">Pre-entrega</label>
-                      <div className="col-sm-9">
-                        <div className="checkbox">
-                          <label>
-                            <input
-                              type="checkbox"
-                              checked={newCar.washed}
-                              onChange={() => {
-                                this.changeBooleanNewCar('washed', !newCar.washed);
-                              }}
-                            /> <i className="material-icons">local_car_wash</i> Lavado
-                          </label>
+                    {
+                      /* <div className="form-group">
+                        <label className="col-sm-3 control-label label-left">Pre-entrega</label>
+                        <div className="col-sm-9">
+                          <div className="checkbox">
+                            <label>
+                              <input
+                                type="checkbox"
+                                checked={newCar.washed}
+                                onChange={() => {
+                                  this.changeBooleanNewCar('washed', !newCar.washed);
+                                }}
+                              /> <i className="material-icons">local_car_wash</i> Lavado
+                            </label>
+                          </div>
+                          <div className="checkbox">
+                            <label>
+                              <input
+                                type="checkbox"
+                                checked={newCar.equipment}
+                                onChange={() => {
+                                  this.changeBooleanNewCar('equipment', !newCar.equipment);
+                                }}
+                              /> <i className="material-icons">build</i> Pre-entrega mecánica
+                            </label>
+                          </div>
                         </div>
-                        <div className="checkbox">
-                          <label>
-                            <input
-                              type="checkbox"
-                              checked={newCar.equipment}
-                              onChange={() => {
-                                this.changeBooleanNewCar('equipment', !newCar.equipment);
-                              }}
-                            /> <i className="material-icons">build</i> Pre-entrega mecánica
-                          </label>
-                        </div>
-                      </div>
-                    </div> */}
+                      </div> */
+                    }
                     <div className="form-group">
                       <label className="col-sm-3 control-label label-left">Cantidad</label>
                       <div className="col-sm-4">
@@ -363,7 +405,15 @@ class RequestCreateView extends TrackingBasePage<IPropsType, IStateType> {
                       <button
                         className="btn btn-sm btn-primary"
                         onClick={this.addCar}
-                        disabled={!newCar.brand.length || !newCar.denomination.length || !newCar.material.length || !newCar.color.length ||  !newCar.reason || isUploadingFiles}
+                        disabled={
+                          !(reasonSelected && reasonSelected.questions.length === newCar.answers.length) ||
+                          !newCar.brand.length ||
+                          !newCar.denomination.length ||
+                          !newCar.material.length ||
+                          !newCar.color.length ||
+                          !newCar.reason ||
+                          isUploadingFiles
+                        }
                       >
                         Agregar
                       </button>
@@ -416,8 +466,8 @@ class RequestCreateView extends TrackingBasePage<IPropsType, IStateType> {
                         <BootstrapSwitch
                           checked={fleet}
                           color="blue"
-                          onChange={this.changeFleet} />
-                        {/*<label className="switch-label switch-label-right">Flota</label>*/}
+                          onChange={this.changeFleet}
+                        />
                       </div>
                       <div className="create-detail">
                         <table className="table">
@@ -497,6 +547,7 @@ class RequestCreateView extends TrackingBasePage<IPropsType, IStateType> {
         brand: newCar.brand,
         denomination: newCar.denomination,
         files: newCar.files,
+        answers: newCar.answers,
         material: newCar.material,
         color: newCar.color,
         observation: newCar.observation,
@@ -551,9 +602,14 @@ class RequestCreateView extends TrackingBasePage<IPropsType, IStateType> {
   }
 
   private changeNewCar(field: keyof INewCar, value: any) {
+    const extra: any = {};
+    if (field === 'reason') {
+      extra.answers = [];
+    }
     this.setState({
       newCar: {
         ...this.state.newCar,
+        ...extra,
         [field]: value
       }
     });

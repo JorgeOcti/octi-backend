@@ -9,6 +9,18 @@ export interface IRequestItemModel extends IRequestItem, mongoose.Document {
   updatedAt: Date;
 }
 
+const requestItemAnswerSchema = new mongoose.Schema({
+  questionId: {
+    type:  mongoose.Schema.Types.ObjectId
+  },
+  question: {
+    type: String
+  },
+  answer: {
+    type: String
+  }
+});
+
 const requestItemSchema = new mongoose.Schema({
   request: {
     type: mongoose.Schema.Types.ObjectId,
@@ -37,6 +49,10 @@ const requestItemSchema = new mongoose.Schema({
   reason: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Reason'
+  },
+  answers: {
+    type: [requestItemAnswerSchema],
+    default: []
   },
   files: [{
     type: mongoose.Schema.Types.ObjectId,
@@ -97,4 +113,3 @@ export type RequestItemSchema = mongoose.Model<IRequestItemModel> & PaginateMode
 const RequestItem = mongoose.model<IRequestItemModel, RequestItemSchema>('RequestItem', requestItemSchema);
 
 export default RequestItem;
-

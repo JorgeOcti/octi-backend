@@ -22,6 +22,8 @@ import RequestFile from '../models/requestFile.model';
 import RequestItem, { IRequestItemModel } from '../models/requestItem.model';
 import RequestItemStatus from '../models/requestItemStatus.model';
 import ActivityHistory, { ChoicesTypeActivity } from '../../billing/models/activityHistory.model';
+import { Column } from 'exceljs';
+import Reason from '../models/reason.model';
 
 class RequestController {
 
@@ -174,6 +176,7 @@ class RequestController {
           reason: car.reason,
           files: car.files,
           washed: car.washed,
+          answers: car.answers,
           equipment: car.equipment,
           observation: car.observation,
           priority: car.priority,
@@ -448,6 +451,7 @@ class RequestController {
           'observation': 1,
           'equipment': 1,
           'washed': 1,
+          'answers': 1,
           'review': 1,
           'body': 1,
           'status._id': 1,
@@ -482,6 +486,15 @@ class RequestController {
         }
       });
       /* headers */
+      const questionColumns: Partial<Column>[] = [];
+
+      for (const reason of await Reason.find({ team })) {
+        for (const question of reason.questions) {
+          questionColumns.push({
+            header: question.name, key: question._id, width: 10
+          });
+        }
+      }
       worksheet.columns = [{
         header: 'Nª SOLICITUD', key: 'request', width: 10
       }, {
@@ -538,9 +551,15 @@ class RequestController {
         header: 'FECHA ACTUALIZACION', key: 'updted', width: 21, style: { numFmt: 'dd/mm/yyyy hh:mm' }
       }, {
         header: 'OBSERVACIÓN', key: 'observation', width: 21
-      }];
+      }, ...questionColumns];
+
       for (const item of requestItems) {
+        const extraAnswers: any = {};
+        for (const answer of item.answers ? item.answers : []) {
+          extraAnswers[answer.questionId] = answer.answer;
+        }
         worksheet.addRow({
+          ...extraAnswers,
           request: item.request.number,
           created: item.createdAt,
           updated: item.updatedAt,
