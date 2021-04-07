@@ -550,7 +550,7 @@ export default class ApiService {
 
   public createRequestItem(idRequest: string, car: any) {
     return this.instance.post(
-      `/api/v1/requests-item/`, {
+      `/api/v1/add-requests-item/`, {
       idRequest,
       car
     });

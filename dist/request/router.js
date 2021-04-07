@@ -23,8 +23,8 @@ requestRouter.get('/api/v1/requests/', middlewares_1.default.isLoggedIn, request
 requestRouter.post('/api/v1/requests/', middlewares_1.default.isLoggedIn, request_controller_1.default.apiCreate);
 requestRouter.get('/api/v1/requests/:id/', middlewares_1.default.isLoggedIn, request_controller_1.default.apiDetail);
 requestRouter.delete('/api/v1/requests/:id/', middlewares_1.default.isLoggedIn, request_controller_1.default.apiDeleteRequest);
-requestRouter.get('/api/v1/requests-item/', middlewares_1.default.isLoggedIn, request_controller_1.default.apiListItems);
-requestRouter.post('/api/v1/requests-item/', middlewares_1.default.isLoggedIn, request_controller_1.default.apiCreateItem);
+requestRouter.post('/api/v1/requests-item/', middlewares_1.default.isLoggedIn, request_controller_1.default.apiListItems);
+requestRouter.post('/api/v1/add-requests-item/', middlewares_1.default.isLoggedIn, request_controller_1.default.apiCreateItem);
 requestRouter.patch('/api/v1/requests-item/:id/', middlewares_1.default.isLoggedIn, request_controller_1.default.apiPatchItem);
 requestRouter.delete('/api/v1/requests-item/:id/', middlewares_1.default.isLoggedIn, request_controller_1.default.apiDeleteRequestItem);
 requestRouter.get('/requests-item/:id/download-files/', middlewares_1.default.isJWTAuthenticated, request_controller_1.default.downloadItemFiles);

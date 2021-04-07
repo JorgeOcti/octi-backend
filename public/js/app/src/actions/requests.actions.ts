@@ -236,7 +236,7 @@ export function getRequestThunkAction(id: string) {
       .all([
         api.getRequest(id),
         api.getReasons(1, 200),
-        api.getRequestItemsStatus(1, 200),
+        api.getRequestItemsStatus(1, 200)
         // api.getCarriers(1, 200)
       ])
       .then(Axios.spread((request, reasons, requestItemStatus /*, carriers*/) => {
