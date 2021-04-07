@@ -226,7 +226,6 @@ class RequestVehicleItem extends React.Component<IPropsType, IStateType> {
               <input type="text"
                 className="form-control input-sm"
                 defaultValue={item.car.color}
-                style={{ width: '80px' }}
                 onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
                   this.props.updateRequestItemsThunkAction({
                     item: {
@@ -276,7 +275,6 @@ class RequestVehicleItem extends React.Component<IPropsType, IStateType> {
             <td className="middle">
               <input
                 type="text"
-                style={{ width: '125px' }}
                 className="form-control input-sm"
                 defaultValue={item.car.vin}
                 onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
@@ -300,7 +298,6 @@ class RequestVehicleItem extends React.Component<IPropsType, IStateType> {
             <td className="middle">
               <input type="text"
                 className="form-control input-sm"
-                style={{ width: '60px' }}
                 defaultValue={item.car.internalNumber}
                 onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
                   this.props.updateRequestItemsThunkAction({
