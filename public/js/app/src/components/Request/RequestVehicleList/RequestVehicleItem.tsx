@@ -421,19 +421,21 @@ class RequestVehicleItem extends React.Component<IPropsType, IStateType> {
         </td> */}
         <td
           className={`middle-center ${item.files && item.files.length ? 'pointer' : ''}`}
+          style={{ fontSize: '80%' }}
           onClick={() => this.downloadFiles(item)}
         >
           {
             item.files && item.files.length ?
-              <i
-                className="fa fa-paperclip"
-                data-toggle="tooltip"
-                data-placement="top"
+              <span
+                data-toggle={'tooltip'}
+                data-placement={'top'}
                 title={`${item.files.length} archivos adjuntos.`}
-              /> : null
+              >
+                <i className="fa fa-paperclip" /> ({item.files.length})
+              </span> : null
           }
         </td>
-        <td className="middle-center">
+        <td className="middle-center text-gray">
           {
             item.observation && item.observation.length ?
               <i

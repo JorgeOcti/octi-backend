@@ -343,20 +343,21 @@ class RequestItem extends React.Component<IPropsType, IStateType> {
             <td className="middle">{item.reason?.name}</td>
         }
         <td
-          className={`middle ${item.files && item.files.length ? 'pointer' : ''}`}
+          className={`middle-center ${item.files && item.files.length ? 'pointer' : ''}`}
           onClick={() => this.downloadFiles(item)}
         >
           {
             item.files && item.files.length ?
-              <i
-                className="fa fa-paperclip"
-                data-toggle="tooltip"
-                data-placement="top"
+              <span
+                data-toggle={'tooltip'}
+                data-placement={'top'}
                 title={`${item.files.length} archivos adjuntos.`}
-              /> : null
+              >
+                <i className="fa fa-paperclip" /> ({item.files.length})
+              </span> : null
           }
         </td>
-        <td className="middle">
+        <td className="middle-center">
           {
             item.observation && item.observation.length ?
               <i

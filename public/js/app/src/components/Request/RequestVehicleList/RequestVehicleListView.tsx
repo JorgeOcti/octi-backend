@@ -476,7 +476,7 @@ class RequestVehicleListView extends TrackingBasePage<IPropsType, IStateType> {
                         </th>
                         {/* <th className="middle">Carrocería</th>
                       <th className="middle">Pre-Entrega</th> */}
-                        <th className="middle-center" style={{ width: '20px' }}>Adj</th>
+                        <th className="middle-center" style={{ width: '40px' }}>Adj</th>
                         <th className="middle-center" style={{ width: '20px' }}>Obs</th>
                         {/* <th
                           className="middle pointer"
