@@ -464,7 +464,7 @@ class RequestVehicleListView extends TrackingBasePage<IPropsType, IStateType> {
                           Estado
                       <span style={{ float: 'right' }}><i className={`fa fa-fw ${orderBy === 'status.weigth' ? `${orderType === 'descending' ? 'fa-sort-down' : 'fa-sort-up'}` : 'fa-sort'}`} /></span>
                         </th>
-                        <th className="middle" style={{ width: '125px' }}>VIN</th>
+                        <th className="middle" style={{ width: '130px' }}>VIN</th>
                         <th className="middle" style={{ width: '60px' }}>CDO</th>
                         <th
                           className="middle pointer"
