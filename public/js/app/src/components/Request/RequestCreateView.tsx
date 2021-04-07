@@ -135,7 +135,7 @@ class RequestCreateView extends TrackingBasePage<IPropsType, IStateType> {
             </div>
             <div className="box-body create-request">
               <div className="row">
-                <div className="col-md-5 col-lg-5">
+                <div className="col-md-6 col-lg-6">
                   <h3>Agregar Vehículos</h3>
                   <div className="form-horizontal">
                     <div className="form-group">
@@ -420,7 +420,7 @@ class RequestCreateView extends TrackingBasePage<IPropsType, IStateType> {
                     </div>
                   </div>
                 </div>
-                <div className="col-md-7 col-lg-7" style={{ paddingLeft: '10px' }}>
+                <div className="col-md-6 col-lg-6" style={{ paddingLeft: '10px' }}>
                   <div className="add-cars">
                     <div className="arrow">
                       <i className="fa fa-3x fa-caret-right" />
