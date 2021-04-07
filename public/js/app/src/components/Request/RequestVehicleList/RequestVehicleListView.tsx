@@ -449,7 +449,7 @@ class RequestVehicleListView extends TrackingBasePage<IPropsType, IStateType> {
                         </th>
                         <th
                           className="middle pointer"
-                          style={{ width: '80px' }}
+                          style={{ width: '70px' }}
                           onClick={() => this.changeOrder('car.material')}
                         >
                           Material
@@ -476,9 +476,9 @@ class RequestVehicleListView extends TrackingBasePage<IPropsType, IStateType> {
                         </th>
                         {/* <th className="middle">Carrocería</th>
                       <th className="middle">Pre-Entrega</th> */}
-                        <th className="middle">Adj</th>
-                        <th className="middle">Obs</th>
-                        <th
+                        <th className="middle-center" style={{ width: '20px' }}>Adj</th>
+                        <th className="middle-center" style={{ width: '20px' }}>Obs</th>
+                        {/* <th
                           className="middle pointer"
                           style={{ width: '100px' }}
                           onClick={() => this.changeOrder('carrier.name')}
@@ -501,7 +501,7 @@ class RequestVehicleListView extends TrackingBasePage<IPropsType, IStateType> {
                         >
                           F. llegada
                       <span style={{ float: 'right' }}><i className={`fa fa-fw ${orderBy === 'estimatedArrival' ? `${orderType === 'descending' ? 'fa-sort-down' : 'fa-sort-up'}` : 'fa-sort'}`} /></span>
-                        </th>
+                        </th> */}
                         <ShowIf condition={hasPermission(window.user, 'deleteRequest')}>
                           <th className="middle" style={{ width: '30px' }} />
                         </ShowIf>

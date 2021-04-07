@@ -82,9 +82,9 @@ class RequestVehicleItem extends React.Component<IPropsType, IStateType> {
         >
             <strong className="text-underline">#{this.padNumber(item.request?.number)}</strong>
         </td>
-        <td className="middle">{item.origin.name}</td>
-        <td className="middle">{item.destination.name}</td>
-        <td className="middle">{item.car.property}</td>
+        <td className="middle" style={{fontSize: '80%'}}>{item.origin.name}</td>
+        <td className="middle" style={{fontSize: '80%'}}>{item.destination.name}</td>
+        <td className="middle">{item.car.property ? item.car.property : '-'}</td>
         {
           canChangeRequest ?
             <td className="middle">
@@ -423,7 +423,7 @@ class RequestVehicleItem extends React.Component<IPropsType, IStateType> {
           </div>
         </td> */}
         <td
-          className={`middle ${item.files && item.files.length ? 'pointer' : ''}`}
+          className={`middle-center ${item.files && item.files.length ? 'pointer' : ''}`}
           onClick={() => this.downloadFiles(item)}
         >
           {
@@ -436,7 +436,7 @@ class RequestVehicleItem extends React.Component<IPropsType, IStateType> {
               /> : null
           }
         </td>
-        <td className="middle">
+        <td className="middle-center">
           {
             item.observation && item.observation.length ?
               <i
@@ -447,7 +447,7 @@ class RequestVehicleItem extends React.Component<IPropsType, IStateType> {
               /> : null
           }
         </td>
-        {
+        { /*
           canChangeRequest ?
             <td className="middle">
               <select className="form-control select-sm font-12" value={item.carrier?._id ?? ''}
@@ -472,9 +472,9 @@ class RequestVehicleItem extends React.Component<IPropsType, IStateType> {
                 }
               </select>
             </td>
-            : <td className="middle">{item.carrier?.name}</td>
+            : <td className="middle">{item.carrier?.name}</td>*/
         }
-        {
+        { /*
           canChangeRequest ?
             <td className="middle">
               <DateRangePicker
@@ -492,8 +492,9 @@ class RequestVehicleItem extends React.Component<IPropsType, IStateType> {
               />
             </td>
             : <td className="middle">{item.uploadDate ? moment(item.uploadDate).format('DD-MM-YY') : '-'}</td>
+            */
         }
-        {
+        { /*
           canChangeRequest ?
             <td className="middle">
               <DateRangePicker
@@ -511,6 +512,7 @@ class RequestVehicleItem extends React.Component<IPropsType, IStateType> {
               />
             </td>
             : <td className="middle">{item.estimatedArrival ? moment(item.estimatedArrival).format('DD-MM-YY') : '-'}</td>
+            */
         }
         <ShowIf condition={hasPermission(window.user, 'deleteRequest')}>
           <td className="middle-center text-red pointer" onClick={() => this.deleteRequestItem(item)}>

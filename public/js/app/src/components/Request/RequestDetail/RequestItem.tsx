@@ -84,7 +84,7 @@ class RequestItem extends React.Component<IPropsType, IStateType> {
         >
           {item.priority ? <i className="fa fa-star text-yellow" /> : <i className="fa fa-star text-muted" />}
         </td>
-        <td className="middle">{item.car.property}</td>
+        <td className="middle">{item.car.property ? item.car.property : '-'}</td>
         {
           canChangeRequest ?
             <td className="middle">
@@ -225,7 +225,6 @@ class RequestItem extends React.Component<IPropsType, IStateType> {
               <input type="text"
                 className="form-control input-sm"
                 defaultValue={item.car.color}
-                style={{ width: '80px' }}
                 onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
                   this.props.updateRequestItemInDetailThunkAction({
                     item: {
@@ -275,7 +274,6 @@ class RequestItem extends React.Component<IPropsType, IStateType> {
             <td className="middle">
               <input
                 type="text"
-                style={{ width: '125px' }}
                 className="form-control input-sm"
                 defaultValue={item.car.vin}
                 onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
@@ -299,7 +297,6 @@ class RequestItem extends React.Component<IPropsType, IStateType> {
             <td className="middle">
               <input type="text"
                 className="form-control input-sm"
-                style={{ width: '80px' }}
                 defaultValue={item.car.internalNumber}
                 onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
                   this.props.updateRequestItemInDetailThunkAction({
@@ -446,7 +443,7 @@ class RequestItem extends React.Component<IPropsType, IStateType> {
             </div>
           </div>
         </td> */}
-        {
+        {/*
           canChangeRequest ?
             <td className="middle">
               <select className="form-control select-sm font-12" value={item.carrier?._id ?? ''}
@@ -472,8 +469,9 @@ class RequestItem extends React.Component<IPropsType, IStateType> {
               </select>
             </td> :
             <td className="middle">{item.carrier?.name}</td>
+            */
         }
-        {
+        {/*
           canChangeRequest ?
             <td className="middle">
               <DateRangePicker
@@ -491,8 +489,9 @@ class RequestItem extends React.Component<IPropsType, IStateType> {
               />
             </td> :
             <td className="middle">{item.uploadDate ? moment(item.uploadDate).format('DD-MM-YY') : '-'}</td>
+            */
         }
-        {
+        { /*
           canChangeRequest ?
             <td className="middle">
               <DateRangePicker
@@ -510,6 +509,7 @@ class RequestItem extends React.Component<IPropsType, IStateType> {
               />
             </td>
             :<td className="middle">{item.estimatedArrival ? moment(item.estimatedArrival).format('DD-MM-YY') : '-'}</td>
+            */
         }
         <ShowIf condition={hasPermission(window.user, 'deleteRequest')}>
           <td className="middle-center text-red pointer" onClick={() => this.deleteRequestItem(item)}>

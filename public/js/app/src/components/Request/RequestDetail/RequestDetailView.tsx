@@ -24,7 +24,7 @@ import ApiService from '../../../utils/axios';
 import { hasPermission } from '../../../utils/common';
 import AutocompleteInput from '../../Utils/AutocompleteInput';
 import RequestItem from './RequestItem';
-import TrackingBasePage from "../../Utils/TrackingBasePage";
+import TrackingBasePage from '../../Utils/TrackingBasePage';
 
 interface IPropsType extends RouteComponentProps<{ id: string }> {
   requests: IRequestsState;
@@ -205,22 +205,22 @@ class RequestDetailView extends TrackingBasePage<IPropsType, IStateType> {
                         <tr>
                           <th className="middle-center" style={{ width: '25px' }}>#</th>
                           <th className="middle" style={{ width: '28px' }} />
-                          <th className="middle" style={{ width: '100px' }}>Propiedad</th>
+                          <th className="middle" style={{ width: '10px' }}>Propiedad</th>
                           <th className="middle" style={{ width: '100px' }}>Marca</th>
-                          <th className="middle" style={{ width: '150px' }}>Modelo</th>
+                          <th className="middle" style={{ width: '160px' }}>Modelo</th>
                           <th className="middle" style={{ width: '100px' }}>Material</th>
-                          <th className="middle">Color</th>
+                          <th className="middle" style={{ width: '100px' }}>Color</th>
                           <th className="middle">Estado</th>
-                          <th className="middle">VIN</th>
-                          <th className="middle">CDO</th>
+                          <th className="middle" style={{ width: '125px' }}>VIN</th>
+                          <th className="middle" style={{ width: '80px' }}>CDO</th>
                           <th className="middle" style={{ width: '100px' }}>Motivo</th>
                           {/* <th className="middle">Carrocería</th>
                           <th className="middle">Pre-Entrega</th> */}
                           <th className="middle">Adj</th>
                           <th className="middle">Obs</th>
-                          <th className="middle">Transporte</th>
+                          {/* <th className="middle">Transporte</th>
                           <th style={{ width: '70px' }}>Fecha carga</th>
-                          <th style={{ width: '70px' }}>LLegada llegada</th>
+                          <th style={{ width: '70px' }}>LLegada llegada</th> */}
                           {
                             hasPermission(window.user, 'deleteRequest') ?
                               <th className="middle" style={{ width: '30px' }} />
