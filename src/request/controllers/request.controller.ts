@@ -562,7 +562,7 @@ class RequestController {
       }, {
         header: 'FECHA LLEGADA', key: 'estimatedArrival', width: 21, style: { numFmt: 'dd/mm/yyyy hh:mm' }
       }, {
-        header: 'FECHA ACTUALIZACION', key: 'updted', width: 21, style: { numFmt: 'dd/mm/yyyy hh:mm' }
+        header: 'FECHA ACTUALIZACION', key: 'updated', width: 21, style: { numFmt: 'dd/mm/yyyy hh:mm' }
       }, {
         header: 'OBSERVACIÓN', key: 'observation', width: 21
       }, ...questionColumns];
