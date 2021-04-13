@@ -453,7 +453,7 @@ class RequestVehicleListView extends TrackingBasePage<IPropsType, IStateType> {
                           onClick={() => this.changeOrder('car.material')}
                         >
                           Material
-                      <span style={{ float: 'right' }}><i className={`fa fa-fw ${orderBy === 'car.material' ? `${orderType === 'descending' ? 'fa-sort-down' : 'fa-sort-up'}` : 'fa-sort'}`} /></span>
+                          <span style={{ float: 'right' }}><i className={`fa fa-fw ${orderBy === 'car.material' ? `${orderType === 'descending' ? 'fa-sort-down' : 'fa-sort-up'}` : 'fa-sort'}`} /></span>
                         </th>
                         <th className="middle"  style={{ minWidth: '80px' }}>Color</th>
                         <th

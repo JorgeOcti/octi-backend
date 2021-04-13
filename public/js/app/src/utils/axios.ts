@@ -188,6 +188,12 @@ export default class ApiService {
     );
   }
 
+  public getSalesChannel(page: number, pageSize?: number): AxiosPromise {
+    return this.instance.get(
+      `/api/v1/sales-channel/?page=${page}${pageSize ? `&pageSize=${pageSize}` : ''}`
+    );
+  }
+
   public createCarrier(carrier: IBaseCarrier): AxiosPromise {
     return this.instance.post(
       `/api/admin/carriers/`, carrier

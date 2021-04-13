@@ -57,6 +57,9 @@ class RequestController {
     path: 'destination',
     select: ['name']
   }, {
+    path: 'channel',
+    select: ['name']
+  }, {
     path: 'createdBy',
     select: ['firstName', 'lastName']
   }, {
@@ -143,7 +146,7 @@ class RequestController {
     logger.info(`RequestController.apiCreate`);
     logger.info(`{user: {_id: ${req.user._id}, email: ${req.user.email}}, body: ${JSON.stringify(req.body)} }`);
     const { company, team } = req.user;
-    const { cars, venue, fleet, sellerText } = req.body;
+    const { cars, venue, channel, sellerText } = req.body;
 
     try {
       const defaultItemStatus = await RequestItemStatus.findOneOrCreate({ team, default: true }, { name: 'Pendiente', default: true, team, weigth: 10 });
@@ -155,7 +158,7 @@ class RequestController {
         origin: venue,
         destination: venue,
         // status,
-        fleet,
+        channel,
         createdBy: req.user
       }).save();
       for (const car of cars) {
@@ -313,6 +316,10 @@ class RequestController {
         }, {
           $unwind: { path: '$status', preserveNullAndEmptyArrays: true }
         }, {
+          $lookup: { from: 'saleschannels', localField: 'request.channel', foreignField: '_id', as: 'request.channel' }
+        }, {
+          $unwind: { path: '$request.channel', preserveNullAndEmptyArrays: true }
+        }, {
           $lookup: { from: 'carriers', localField: 'carrier', foreignField: '_id', as: 'carrier' }
         }, {
           $unwind: { path: '$carrier', preserveNullAndEmptyArrays: true }
@@ -447,6 +454,10 @@ class RequestController {
       }, {
         $unwind: { path: '$reason', preserveNullAndEmptyArrays: true }
       }, {
+        $lookup: { from: 'saleschannels', localField: 'request.channel', foreignField: '_id', as: 'request.channel' }
+      }, {
+        $unwind: { path: '$request.channel', preserveNullAndEmptyArrays: true }
+      }, {
         $project: {
           '_id': 1,
           'request': 1,
@@ -503,7 +514,7 @@ class RequestController {
       }, {
         header: 'FECHA SOLICITUD', key: 'created', width: 21, style: { numFmt: 'dd/mm/yyyy hh:mm' }
       }, {
-        header: 'FLOTA', key: 'fleet', width: 20
+        header: 'CANAL', key: 'channel', width: 20
       }, {
         header: 'PRIORIDAD', key: 'priority', width: 20
       }, {
@@ -571,6 +582,7 @@ class RequestController {
           priority: item.priority ? 'Si' : 'No',
           createdBy: item.createdBy ? `${item.createdBy.firstName} ${item.createdBy.lastName}` : '-',
           seller: item.request.sellerText,
+          channel: item.request.channel ? item.request.channel.name : '',
           reason: item.reason.name,
           group: '',
           property: item.car.property,

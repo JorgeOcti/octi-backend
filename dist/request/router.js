@@ -4,6 +4,7 @@ exports.requestRouter = void 0;
 const express = require("express");
 const middlewares_1 = require("../middlewares/middlewares");
 const reason_controller_1 = require("./controllers/reason.controller");
+const salesChannel_controller_1 = require("./controllers/salesChannel.controller");
 const request_controller_1 = require("./controllers/request.controller");
 const requestItemStatus_controller_1 = require("./controllers/requestItemStatus.controller");
 const requestRouter = express.Router();
@@ -29,5 +30,8 @@ requestRouter.patch('/api/v1/requests-item/:id/', middlewares_1.default.isLogged
 requestRouter.delete('/api/v1/requests-item/:id/', middlewares_1.default.isLoggedIn, request_controller_1.default.apiDeleteRequestItem);
 requestRouter.get('/requests-item/:id/download-files/', middlewares_1.default.isJWTAuthenticated, request_controller_1.default.downloadItemFiles);
 requestRouter.get('/api/v1/reasons/', middlewares_1.default.isLoggedIn, reason_controller_1.default.apiList);
+requestRouter.get('/api/v1/sales-channel/', middlewares_1.default.isLoggedIn, salesChannel_controller_1.default.apiList);
+requestRouter.get('/api/v1/sales-channel/create-default/', middlewares_1.default.isLoggedIn, salesChannel_controller_1.default.createDefault);
+requestRouter.get('/api/v1/sales-channel/update-fleet/', middlewares_1.default.isLoggedIn, salesChannel_controller_1.default.updateFleet);
 requestRouter.get('/api/v1/request-item-status/', middlewares_1.default.isLoggedIn, requestItemStatus_controller_1.default.apiList);
 //# sourceMappingURL=router.js.map

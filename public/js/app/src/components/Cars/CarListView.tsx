@@ -13,7 +13,7 @@ import {IWindow} from '../../interfaces/window';
 import {hasPermission} from '../../utils/common';
 import ModalView from '../Modal/ModalView';
 import Paginator from '../Utils/Paginator';
-import TrackingBasePage from "../Utils/TrackingBasePage";
+import TrackingBasePage from '../Utils/TrackingBasePage';
 
 declare let window: IWindow;
 

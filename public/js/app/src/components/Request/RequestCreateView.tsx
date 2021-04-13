@@ -6,6 +6,7 @@ import * as swal from 'sweetalert';
 import { debounce } from 'throttle-debounce';
 import * as uuid from 'uuid';
 import { IReason } from '../../../../../../src/interfaces/reason.interface';
+import { ISalesChannel } from '../../../../../../src/interfaces/salesChannel.interface';
 import { IInventoryState } from '../../actions/inventory.actions';
 import AppContainer from '../../container/AppContainer';
 import ApiService from '../../utils/axios';
@@ -39,12 +40,14 @@ interface INewCar {
 
 interface IStateType {
   newCar: INewCar;
-  fleet: boolean;
   cars: any[];
   sellerText: string;
   venue: string;
   venues: any[];
   reasons: IReason[];
+  channels: ISalesChannel[];
+  channel: string;
+  fleet: boolean;
   loading: boolean;
   error: Error | null;
 }
@@ -79,8 +82,10 @@ class RequestCreateView extends TrackingBasePage<IPropsType, IStateType> {
     sellerText: '',
     venues: [],
     reasons: [],
+    channels: [],
     loading: false,
     fleet: false,
+    channel: '',
     error: null
   };
 
@@ -121,7 +126,7 @@ class RequestCreateView extends TrackingBasePage<IPropsType, IStateType> {
   }
 
   public render(): React.ReactElement<IPropsType> {
-    const { newCar, cars, fleet, loading, venues, reasons } = this.state;
+    const { newCar, cars, fleet, loading, venues, reasons, channel, channels } = this.state;
     const vehiclesView = this.props.location.pathname === '/requests/vehicles/create/';
     const filesCompleted = newCar.files.filter((file: any) => file.status === imageStatus.complete);
     const isUploadingFiles = newCar.files.length > 0 && filesCompleted.length < newCar.files.length;
@@ -147,7 +152,7 @@ class RequestCreateView extends TrackingBasePage<IPropsType, IStateType> {
                           items={newCar.brands}
                           renderItem={(item, index) => (
                             <div key={index} className="item">
-                              {item.denomination} <br />
+                              {item.material ? `${item.material} - ` : ''} {item.denomination} <br />
                               <strong>{item.brand}</strong>
                             </div>
                           )}
@@ -181,7 +186,7 @@ class RequestCreateView extends TrackingBasePage<IPropsType, IStateType> {
                           items={newCar.denominations}
                           renderItem={(item, index) => (
                             <div key={index} className="item">
-                              {item.denomination} <br />
+                              {item.material ? `${item.material} - ` : ''} {item.denomination} <br />
                               <strong>{item.brand}</strong>
                             </div>
                           )}
@@ -215,7 +220,7 @@ class RequestCreateView extends TrackingBasePage<IPropsType, IStateType> {
                           items={newCar.materials}
                           renderItem={(item, index) => (
                             <div key={index} className="item">
-                              {item.denomination} <br />
+                              {item.material ? `${item.material} - ` : ''} {item.denomination} <br />
                               <strong>{item.brand}</strong>
                             </div>
                           )}
@@ -460,15 +465,38 @@ class RequestCreateView extends TrackingBasePage<IPropsType, IStateType> {
                             }} />
                           </div>
                         </div>
+                        <div className="form-group">
+                          <label className="col-sm-2 control-label label-left">Canal *</label>
+                          <div className="col-sm-10">
+                            <BootstrapSelect
+                              noneSelectedText="Seleccione"
+                              displayItems={1}
+                              sm={true}
+                              search={true}
+                              autoClouse={true}
+                              selected={channel.length ? [channel] : []}
+                              allOption={false}
+                              options={channels.map((channel: any) => ({
+                                value: channel._id,
+                                text: channel.name
+                              }))}
+                              onClick={(value: string) => {
+                                this.setState({
+                                  channel: value
+                                });
+                              }}
+                            />
+                          </div>
+                        </div>
                       </div>
-                      <div className="form-group-switch">
+                      {/* <div className="form-group-switch">
                         <label className="switch-label switch-label-left">Estás solicitando flota</label>
                         <BootstrapSwitch
                           checked={fleet}
                           color="blue"
                           onChange={this.changeFleet}
                         />
-                      </div>
+                      </div> */}
                       <div className="create-detail">
                         <table className="table">
                           <tbody>
@@ -650,12 +678,14 @@ class RequestCreateView extends TrackingBasePage<IPropsType, IStateType> {
     Axios
       .all([
         this.api.getVenues(1, 200, true, true),
-        this.api.getReasons(1, 200)
+        this.api.getReasons(1, 200),
+        this.api.getSalesChannel(1, 200)
       ])
-      .then(Axios.spread((venues, reasons) => {
+      .then(Axios.spread((venues, reasons, channels) => {
         this.setState({
           venues: venues.data.results,
           reasons: reasons.data.results,
+          channels: channels.data.results,
           loading: false
         });
       }))
@@ -682,16 +712,18 @@ class RequestCreateView extends TrackingBasePage<IPropsType, IStateType> {
 
   private createRequest() {
     const vehiclesView = this.props.location.pathname === '/requests/vehicles/create/';
-    const { cars, fleet, venue, sellerText } = this.state;
+    const { cars, channel, venue, sellerText } = this.state;
     if (!cars.length) {
       swal('Solicitud', 'No se han agregado vehículos para crear la solicitud.', 'error');
     } else if (!venue.length) {
       swal('Solicitud', 'No se ha seleccionado destino para crear la solicitud.', 'error');
+    } else if (!channel.length) {
+      swal('Solicitud', 'No se ha seleccionado canal para crear la solicitud.', 'error');
     } else {
       this.api
         .createRequest({
           cars,
-          fleet,
+          channel,
           venue,
           sellerText
         })

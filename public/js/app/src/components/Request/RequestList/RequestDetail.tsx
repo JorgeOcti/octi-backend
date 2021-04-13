@@ -71,11 +71,12 @@ class RequestListDetail extends React.Component<IPropsType, IStateType> {
             <i className="fa fa-share-square-o" style={{fontSize: '10px'}}/>
           </div>
           <div className="col-sm-1 col-xs-1 col-md-1 col-lg-1">
-            {
+            {request.channel ? request.channel.name : ''}
+            {/* {
               request.fleet ?
                 <i className="fa fa-check-circle-o text-green" />
                 : null
-            }
+            } */}
           </div>
           <div className="col-sm-2 col-xs-2 col-md-2 col-lg-2">{request.sellerText?.length ? request.sellerText : '-'}</div>
           <div className="col-sm-2 col-xs-2 col-md-2 col-lg-2">{request.destination.name}</div>

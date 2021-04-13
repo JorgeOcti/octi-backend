@@ -30,6 +30,10 @@ const requestSchema = new mongoose.Schema({
   sellerText: {
     type: String
   },
+  channel: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'SalesChannel'
+  },
   fleet: {
     type: Boolean,
     default: false

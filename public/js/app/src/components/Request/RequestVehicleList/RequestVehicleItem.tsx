@@ -94,7 +94,7 @@ class RequestVehicleItem extends React.Component<IPropsType, IStateType> {
                 items={recommends}
                 renderItem={(car, index) => (
                   <div key={index} className="item">
-                    {car.denomination} <br />
+                    {car.material ? `${car.material} - ` : ''} {car.denomination} <br />
                     <strong>{car.brand}</strong>
                   </div>
                 )}
@@ -139,7 +139,7 @@ class RequestVehicleItem extends React.Component<IPropsType, IStateType> {
                 items={recommends}
                 renderItem={(car, index) => (
                   <div key={index} className="item">
-                    {car.denomination} <br />
+                    {car.material ? `${car.material} - ` : ''} {car.denomination} <br />
                     <strong>{car.brand}</strong>
                   </div>
                 )}
@@ -184,7 +184,7 @@ class RequestVehicleItem extends React.Component<IPropsType, IStateType> {
                 items={recommends}
                 renderItem={(car, index) => (
                   <div key={index} className="item">
-                    {car.denomination} <br />
+                    {car.material ? `${car.material} - ` : ''} {car.denomination} <br />
                     <strong>{car.brand}</strong>
                   </div>
                 )}
