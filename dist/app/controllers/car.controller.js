@@ -17,7 +17,6 @@ const planning_model_1 = require("../../planning/models/planning.model");
 const logger_service_1 = require("../../services/logger.service");
 const vin_service_1 = require("../../services/vin.service");
 const car_model_1 = require("../models/car.model");
-const car_model_2 = require("../models/car.model");
 const user_model_1 = require("../models/user.model");
 const venue_model_1 = require("../models/venue.model");
 moment.tz.setDefault('America/Santiago');
@@ -90,7 +89,7 @@ class CarController {
             }
             const car = req.body;
             const { company, team } = req.user;
-            const newCar = await car_model_1.default.findOne({
+            const newCar = await Car.findOne({
                 vin: car.vin,
                 team
             });
@@ -102,11 +101,11 @@ class CarController {
                 newCar.patent = car.patent ? car.patent : newCar.patent;
                 newCar.imported = false;
                 newCar.createdBy = req.user;
-                newCar.status = car_model_2.ChoicesStatusCar.active;
+                newCar.status = car_model_1.ChoicesStatusCar.active;
                 await newCar.save();
             }
             else {
-                await car_model_1.default.create({
+                await Car.create({
                     vin: car.vin,
                     vin2: car.vin2,
                     color: car.color ? car.color : '',
@@ -117,7 +116,7 @@ class CarController {
                     company,
                     team,
                     createdBy: req.user,
-                    status: car_model_2.ChoicesStatusCar.active
+                    status: car_model_1.ChoicesStatusCar.active
                 });
             }
             res.json({
@@ -133,7 +132,7 @@ class CarController {
         const { team } = req.user;
         try {
             // validate car exist
-            const cars = await car_model_2.default.aggregate([
+            const cars = await car_model_1.default.aggregate([
                 {
                     $match: {
                         team: team._id
@@ -174,13 +173,13 @@ class CarController {
         const { team } = req.user;
         // validate params
         /* istanbul ignore next */
-        if (!mongoose.Types.ObjectId.isValid(id) || !await car_model_2.default.find({ _id: id, team }).count()) {
+        if (!mongoose.Types.ObjectId.isValid(id) || !await car_model_1.default.find({ _id: id, team }).count()) {
             return res.redirect('/cars/');
             // return res.status(404).render('404');
         }
         try {
             // validate car exist
-            const car = await car_model_2.default.findOne({
+            const car = await car_model_1.default.findOne({
                 _id: id,
                 lastForm: {
                     $exists: true,
@@ -263,7 +262,7 @@ class CarController {
                             inventoryQuery.$or = [{ vin2 }, { patent: patentRegex }];
                         }
                     }
-                    const cars = await car_model_2.default.find(inventoryQuery, {
+                    const cars = await car_model_1.default.find(inventoryQuery, {
                         vin: true,
                         vin2: true,
                         brand: true,
@@ -370,7 +369,7 @@ class CarController {
                     const indexBrand = vin.slice(0, 3);
                     vin2 = vin.substr(vin.length - 6);
                     const brand = this.carBrands.hasOwnProperty(indexBrand) ? this.carBrands[indexBrand] : null;
-                    const car = await car_model_2.default.findOneOrCreate({
+                    const car = await car_model_1.default.findOneOrCreate({
                         vin,
                         team
                     }, {
@@ -380,7 +379,7 @@ class CarController {
                         team,
                         brand,
                         createdBy: req.user,
-                        status: car_model_2.ChoicesStatusCar.active
+                        status: car_model_1.ChoicesStatusCar.active
                     });
                     res.json({
                         data: {
@@ -409,7 +408,7 @@ class CarController {
                 try {
                     const vinRegex = new RegExp('[a-zA-Z0]' + vin2.substr(vin2.length - 5), 'i');
                     const patentRegex = new RegExp(vin2, 'i');
-                    const car = await car_model_2.default.find({
+                    const car = await car_model_1.default.find({
                         $or: [{ vin2: vin2 && vin2[0] === '0' ? { $regex: vinRegex } : vin2 }, { patent: patentRegex }],
                         team
                     }, {
@@ -631,7 +630,7 @@ class CarController {
                     }
                 }
             ]);
-            const importCarsPerDay = await car_model_2.default
+            const importCarsPerDay = await car_model_1.default
                 .aggregate([
                 {
                     $match: {
@@ -848,7 +847,7 @@ class CarController {
                 planning,
                 planningProcess,
                 cars,
-                totalCars: await car_model_2.default.count({ team }),
+                totalCars: await car_model_1.default.count({ team }),
                 status: 200
             });
         }
@@ -1182,7 +1181,7 @@ class CarController {
         const { id } = req.params;
         try {
             const venuesPermissions = req.user.venuesPermissions();
-            const car = await car_model_2.default
+            const car = await car_model_1.default
                 .findOne({
                 _id: id,
                 team
@@ -1383,7 +1382,7 @@ class CarController {
                     });
                 }
                 else {
-                    const searchCar = await car_model_2.default.find({
+                    const searchCar = await car_model_1.default.find({
                         $or: [{
                                 vin: {
                                     $regex: searchText
@@ -1746,7 +1745,7 @@ class CarController {
                 const ti = moment().subtract(i * 15, 'day');
                 const tf = moment().subtract((i - 1) * 15, 'day');
                 console.log(ti.format('YYYY-MM-DD'), tf.format('YYYY-MM-DD'));
-                const cars = await car_model_2.default.find({
+                const cars = await car_model_1.default.find({
                     team,
                     isExhibition: false,
                     lastForm: {
@@ -1913,7 +1912,7 @@ class CarController {
             };
         }
         return new Promise((resolve, reject) => {
-            car_model_2.default.paginate(filter, options, (err, result) => {
+            car_model_1.default.paginate(filter, options, (err, result) => {
                 if (err) {
                     /* istanbul ignore next */
                     return reject(err);
