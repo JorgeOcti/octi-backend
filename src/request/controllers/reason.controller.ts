@@ -20,9 +20,10 @@ class ReasonController {
       sort: {
         name: 1
       },
-      select:{
+      select: {
         name: true,
         file: true,
+        questions: true,
         updatedAt: true,
         createdAt: true
       },

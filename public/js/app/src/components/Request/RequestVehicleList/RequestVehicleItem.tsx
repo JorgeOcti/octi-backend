@@ -82,9 +82,9 @@ class RequestVehicleItem extends React.Component<IPropsType, IStateType> {
         >
             <strong className="text-underline">#{this.padNumber(item.request?.number)}</strong>
         </td>
-        <td className="middle">{item.origin.name}</td>
-        <td className="middle">{item.destination.name}</td>
-        <td className="middle">{item.car.property}</td>
+        <td className="middle" style={{fontSize: '80%'}}>{item.origin.name}</td>
+        <td className="middle" style={{fontSize: '80%'}}>{item.destination.name}</td>
+        <td className="middle">{item.car.property ? item.car.property : '-'}</td>
         {
           canChangeRequest ?
             <td className="middle">
@@ -94,7 +94,7 @@ class RequestVehicleItem extends React.Component<IPropsType, IStateType> {
                 items={recommends}
                 renderItem={(car, index) => (
                   <div key={index} className="item">
-                    {car.denomination} <br />
+                    {car.material ? `${car.material} - ` : ''} {car.denomination} <br />
                     <strong>{car.brand}</strong>
                   </div>
                 )}
@@ -139,7 +139,7 @@ class RequestVehicleItem extends React.Component<IPropsType, IStateType> {
                 items={recommends}
                 renderItem={(car, index) => (
                   <div key={index} className="item">
-                    {car.denomination} <br />
+                    {car.material ? `${car.material} - ` : ''} {car.denomination} <br />
                     <strong>{car.brand}</strong>
                   </div>
                 )}
@@ -184,7 +184,7 @@ class RequestVehicleItem extends React.Component<IPropsType, IStateType> {
                 items={recommends}
                 renderItem={(car, index) => (
                   <div key={index} className="item">
-                    {car.denomination} <br />
+                    {car.material ? `${car.material} - ` : ''} {car.denomination} <br />
                     <strong>{car.brand}</strong>
                   </div>
                 )}
@@ -226,7 +226,6 @@ class RequestVehicleItem extends React.Component<IPropsType, IStateType> {
               <input type="text"
                 className="form-control input-sm"
                 defaultValue={item.car.color}
-                style={{ width: '80px' }}
                 onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
                   this.props.updateRequestItemsThunkAction({
                     item: {
@@ -276,7 +275,6 @@ class RequestVehicleItem extends React.Component<IPropsType, IStateType> {
             <td className="middle">
               <input
                 type="text"
-                style={{ width: '125px' }}
                 className="form-control input-sm"
                 defaultValue={item.car.vin}
                 onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
@@ -300,7 +298,6 @@ class RequestVehicleItem extends React.Component<IPropsType, IStateType> {
             <td className="middle">
               <input type="text"
                 className="form-control input-sm"
-                style={{ width: '60px' }}
                 defaultValue={item.car.internalNumber}
                 onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
                   this.props.updateRequestItemsThunkAction({
@@ -423,20 +420,22 @@ class RequestVehicleItem extends React.Component<IPropsType, IStateType> {
           </div>
         </td> */}
         <td
-          className={`middle ${item.files && item.files.length ? 'pointer' : ''}`}
+          className={`middle-center ${item.files && item.files.length ? 'pointer' : ''}`}
+          style={{ fontSize: '80%' }}
           onClick={() => this.downloadFiles(item)}
         >
           {
             item.files && item.files.length ?
-              <i
-                className="fa fa-paperclip"
-                data-toggle="tooltip"
-                data-placement="top"
+              <span
+                data-toggle={'tooltip'}
+                data-placement={'top'}
                 title={`${item.files.length} archivos adjuntos.`}
-              /> : null
+              >
+                <i className="fa fa-paperclip" /> ({item.files.length})
+              </span> : null
           }
         </td>
-        <td className="middle">
+        <td className="middle-center text-gray">
           {
             item.observation && item.observation.length ?
               <i
@@ -447,7 +446,7 @@ class RequestVehicleItem extends React.Component<IPropsType, IStateType> {
               /> : null
           }
         </td>
-        {
+        { /*
           canChangeRequest ?
             <td className="middle">
               <select className="form-control select-sm font-12" value={item.carrier?._id ?? ''}
@@ -472,9 +471,9 @@ class RequestVehicleItem extends React.Component<IPropsType, IStateType> {
                 }
               </select>
             </td>
-            : <td className="middle">{item.carrier?.name}</td>
+            : <td className="middle">{item.carrier?.name}</td>*/
         }
-        {
+        { /*
           canChangeRequest ?
             <td className="middle">
               <DateRangePicker
@@ -492,8 +491,9 @@ class RequestVehicleItem extends React.Component<IPropsType, IStateType> {
               />
             </td>
             : <td className="middle">{item.uploadDate ? moment(item.uploadDate).format('DD-MM-YY') : '-'}</td>
+            */
         }
-        {
+        { /*
           canChangeRequest ?
             <td className="middle">
               <DateRangePicker
@@ -511,6 +511,7 @@ class RequestVehicleItem extends React.Component<IPropsType, IStateType> {
               />
             </td>
             : <td className="middle">{item.estimatedArrival ? moment(item.estimatedArrival).format('DD-MM-YY') : '-'}</td>
+            */
         }
         <ShowIf condition={hasPermission(window.user, 'deleteRequest')}>
           <td className="middle-center text-red pointer" onClick={() => this.deleteRequestItem(item)}>

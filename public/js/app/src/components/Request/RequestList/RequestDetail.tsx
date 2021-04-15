@@ -71,11 +71,12 @@ class RequestListDetail extends React.Component<IPropsType, IStateType> {
             <i className="fa fa-share-square-o" style={{fontSize: '10px'}}/>
           </div>
           <div className="col-sm-1 col-xs-1 col-md-1 col-lg-1">
-            {
+            {request.channel ? request.channel.name : ''}
+            {/* {
               request.fleet ?
                 <i className="fa fa-check-circle-o text-green" />
                 : null
-            }
+            } */}
           </div>
           <div className="col-sm-2 col-xs-2 col-md-2 col-lg-2">{request.sellerText?.length ? request.sellerText : '-'}</div>
           <div className="col-sm-2 col-xs-2 col-md-2 col-lg-2">{request.destination.name}</div>
@@ -102,19 +103,19 @@ class RequestListDetail extends React.Component<IPropsType, IStateType> {
             <thead>
               <tr style={{ backgroundColor: '#f9f9f9' }}>
                 <th className="middle" style={{ width: '28px' }} />
-                <th className="middle" >Progreso</th>
-                <th className="middle" style={{ width: '150px' }}>Estado</th>
+                <th className="middle" style={{ width: '100px' }} >Progreso</th>
+                <th className="middle" style={{ width: '160px' }}>Estado</th>
                 <th className="middle" style={{ width: '250px' }}>Modelo</th>
                 <th className="middle" style={{ width: '100px' }}>Color</th>
                 <th className="middle-center">VIN</th>
                 <th className="middle-center">CDO</th>
-                <th className="middle">Adj</th>
+                <th className="middle-center" style={{ width: '20px' }}>Adj</th>
                 <th className="middle">Obs</th>
                 {/* <th className="middle-center">Equip. / Carroc. / Preentrega</th> */}
-                <th className="middle"  style={{ width: '100px' }}>Motivo</th>
-                <th className="middle" >Transporte</th>
+                <th className="middle"  style={{ width: '150px' }}>Motivo</th>
+                {/* <th className="middle" >Transporte</th>
                 <th  className="middle" style={{ width: '70px' }}>Fecha carga</th>
-                <th className="middle"  style={{ width: '70px' }}>Fecha llegada</th>
+                <th className="middle"  style={{ width: '70px' }}>Fecha llegada</th> */}
               </tr>
             </thead>
             <tbody>
@@ -259,7 +260,7 @@ class RequestListDetail extends React.Component<IPropsType, IStateType> {
                         </td> :
                         <td className="middle">{item.reason?.name}</td>
                     }
-                    {
+                    { /*
                       canChangeRequest ?
                         <td className="middle">
                           <select className="form-control select-sm font-12" value={item.carrier?._id ?? ''}
@@ -279,8 +280,9 @@ class RequestListDetail extends React.Component<IPropsType, IStateType> {
                           </select>
                         </td> :
                         <td className="middle">{item.carrier?.name}</td>
+                        */
                     }
-                    {
+                    { /*
                       canChangeRequest ?
                         <td className="middle">
                           <DateRangePicker
@@ -295,8 +297,9 @@ class RequestListDetail extends React.Component<IPropsType, IStateType> {
                           />
                         </td> :
                         <td className="middle">{item.uploadDate ? moment(item.uploadDate).format('DD-MM-YY') : '-'}</td>
+                        */
                     }
-                    {
+                    { /*
                       canChangeRequest ?
                         <td className="middle">
                           <DateRangePicker
@@ -311,6 +314,7 @@ class RequestListDetail extends React.Component<IPropsType, IStateType> {
                           />
                         </td> :
                         <td className="middle">{item.estimatedArrival ? moment(item.estimatedArrival).format('DD-MM-YY') : '-'}</td>
+                        */
                     }
                   </tr>
                 ))

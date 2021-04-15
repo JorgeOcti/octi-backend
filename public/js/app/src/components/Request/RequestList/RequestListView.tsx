@@ -201,7 +201,7 @@ class RequestListView extends TrackingBasePage<IPropsType, IStateType> {
                     <strong>ID</strong> <i className={`fa ${orderBy === '_id' ? `${orderType === 'descending' ? 'fa-sort-down' : 'fa-sort-up'}` : 'fa-sort'}`} />
                   </div>
                   <div className="col-sm-1 col-xs-1 col-md-1 col-lg-1">
-                    <strong>Flota</strong>
+                    <strong>Canal</strong>
                   </div>
                   <div className="col-sm-2 col-xs-2 col-md-2 col-lg-2">
                     <strong>Vendedor</strong>

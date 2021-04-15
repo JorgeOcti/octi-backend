@@ -259,9 +259,11 @@ class BillingQueue {
                 const totalChecklist = checklistCars * company.billing.checklistPrice;
                 const totalRequest = requestCars * company.billing.requestPrice;
                 const totalUF = totalInventory + totalChecklist + totalRequest;
+                const period = moment().format('YYYYMM');
                 const invoice = new invoice_model_1.default({
                     team: company.team,
                     company,
+                    period,
                     inventoryCars,
                     checklistCars,
                     requestCars,
@@ -274,8 +276,13 @@ class BillingQueue {
                     // totalDolar: (totalUF * valueUF) / valueDolar,
                     totalPeso: totalUF * valueUF
                 });
-                await invoice.save();
-                this.createPDF(invoice, company);
+                if (!await invoice_model_1.default.find({ company, period }).count()) {
+                    await invoice.save();
+                    this.createPDF(invoice, company);
+                }
+                else {
+                    console.log(`${period} ${company.name} ya existe!!!.`);
+                }
             }
         }
         catch (e) {

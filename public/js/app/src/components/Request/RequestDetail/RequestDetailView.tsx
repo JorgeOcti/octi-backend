@@ -24,7 +24,7 @@ import ApiService from '../../../utils/axios';
 import { hasPermission } from '../../../utils/common';
 import AutocompleteInput from '../../Utils/AutocompleteInput';
 import RequestItem from './RequestItem';
-import TrackingBasePage from "../../Utils/TrackingBasePage";
+import TrackingBasePage from '../../Utils/TrackingBasePage';
 
 interface IPropsType extends RouteComponentProps<{ id: string }> {
   requests: IRequestsState;
@@ -205,22 +205,22 @@ class RequestDetailView extends TrackingBasePage<IPropsType, IStateType> {
                         <tr>
                           <th className="middle-center" style={{ width: '25px' }}>#</th>
                           <th className="middle" style={{ width: '28px' }} />
-                          <th className="middle" style={{ width: '100px' }}>Propiedad</th>
-                          <th className="middle" style={{ width: '100px' }}>Marca</th>
-                          <th className="middle" style={{ width: '150px' }}>Modelo</th>
+                          <th className="middle" style={{ width: '10px' }}>Propiedad</th>
+                          <th className="middle" style={{ minWidth: '100px' }}>Marca</th>
+                          <th className="middle" style={{ minWidth: '160px' }}>Modelo</th>
                           <th className="middle" style={{ width: '100px' }}>Material</th>
-                          <th className="middle">Color</th>
-                          <th className="middle">Estado</th>
-                          <th className="middle">VIN</th>
-                          <th className="middle">CDO</th>
-                          <th className="middle" style={{ width: '100px' }}>Motivo</th>
+                          <th className="middle" style={{ width: '100px' }}>Color</th>
+                          <th className="middle" style={{ minWidth: '120px' }}>Estado</th>
+                          <th className="middle" style={{ width: '125px' }}>VIN</th>
+                          <th className="middle" style={{ width: '80px' }}>CDO</th>
+                          <th className="middle" style={{ minWidth: '100px' }}>Motivo</th>
                           {/* <th className="middle">Carrocería</th>
                           <th className="middle">Pre-Entrega</th> */}
-                          <th className="middle">Adj</th>
-                          <th className="middle">Obs</th>
-                          <th className="middle">Transporte</th>
+                          <th className="middle" style={{ width: '40px' }}>Adj</th>
+                          <th className="middle" style={{ width: '20px' }}>Obs</th>
+                          {/* <th className="middle">Transporte</th>
                           <th style={{ width: '70px' }}>Fecha carga</th>
-                          <th style={{ width: '70px' }}>LLegada llegada</th>
+                          <th style={{ width: '70px' }}>LLegada llegada</th> */}
                           {
                             hasPermission(window.user, 'deleteRequest') ?
                               <th className="middle" style={{ width: '30px' }} />
@@ -243,9 +243,9 @@ class RequestDetailView extends TrackingBasePage<IPropsType, IStateType> {
                     </table>
                     {
                       canChangeRequest ?
-                        <div className="row" style={{marginBottom: '50px'}}>
-                          <div className="col-md-8 col-md-offset-4">
-                            <div className="container-table-add-car">
+                        <div className="row" style={{marginBottom: '20px'}}>
+                          <div className="col-md-9 col-md-offset-3">
+                            <div className="container-table-add-car" style={{padding: '30px 30px', marginTop: '40px', marginBottom: '30px'}}>
                               <table className="table table-xs">
                                 <thead>
                                   <tr>
@@ -254,7 +254,7 @@ class RequestDetailView extends TrackingBasePage<IPropsType, IStateType> {
                                     <th>Material</th>
                                     <th>Color</th>
                                     <th>Motivo</th>
-                                    <th></th>
+                                    <th style={{width: '150px'}}></th>
                                   </tr>
                                 </thead>
                                 <tbody>

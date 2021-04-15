@@ -1,6 +1,7 @@
 import * as express from 'express';
 import Middlewares from '../middlewares/middlewares';
 import ReasonController from './controllers/reason.controller';
+import SalesChannelController from './controllers/salesChannel.controller';
 import RequestController from './controllers/request.controller';
 import RequestItemStatusController from './controllers/requestItemStatus.controller';
 
@@ -27,13 +28,16 @@ requestRouter.delete('/api/v1/requests/:id/', Middlewares.isLoggedIn, RequestCon
 
 
 requestRouter.post('/api/v1/requests-item/', Middlewares.isLoggedIn, RequestController.apiListItems);
-requestRouter.post('/api/v1/requests-item/', Middlewares.isLoggedIn, RequestController.apiCreateItem);
+requestRouter.post('/api/v1/add-requests-item/', Middlewares.isLoggedIn, RequestController.apiCreateItem);
 requestRouter.patch('/api/v1/requests-item/:id/', Middlewares.isLoggedIn, RequestController.apiPatchItem);
 requestRouter.delete('/api/v1/requests-item/:id/', Middlewares.isLoggedIn, RequestController.apiDeleteRequestItem);
 
 requestRouter.get('/requests-item/:id/download-files/', Middlewares.isJWTAuthenticated, RequestController.downloadItemFiles);
 
 requestRouter.get('/api/v1/reasons/', Middlewares.isLoggedIn, ReasonController.apiList);
+requestRouter.get('/api/v1/sales-channel/', Middlewares.isLoggedIn, SalesChannelController.apiList);
+requestRouter.get('/api/v1/sales-channel/create-default/', Middlewares.isLoggedIn, SalesChannelController.createDefault);
+requestRouter.get('/api/v1/sales-channel/update-fleet/', Middlewares.isLoggedIn, SalesChannelController.updateFleet);
 
 requestRouter.get('/api/v1/request-item-status/', Middlewares.isLoggedIn, RequestItemStatusController.apiList);
 

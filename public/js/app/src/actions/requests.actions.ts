@@ -209,15 +209,15 @@ export function getRequestsThunkAction(nextPage: number, orderBy: string, orderT
       .all([
         api.getRequests({page, orderBy, orderType}),
         api.getReasons(1, 200),
-        api.getRequestItemsStatus(1, 200),
-        api.getCarriers(1, 200)
+        api.getRequestItemsStatus(1, 200)
+        // api.getCarriers(1, 200)
       ])
-      .then(Axios.spread((requests, reasons, requestItemStatus, carriers) => {
+      .then(Axios.spread((requests, reasons, requestItemStatus /*, carriers*/) => {
         const {data} = requests;
         dispatch(loadRequestsAction(data.results, data.count, data.pages, page));
         dispatch(loadReasonsRequestAction(reasons.data.results));
         dispatch(loadRequestItemsStatusRequestAction(requestItemStatus.data.results, requestItemStatus.data.min, requestItemStatus.data.max));
-        dispatch(loadCarriersRequestAction(carriers.data.results));
+        // dispatch(loadCarriersRequestAction(carriers.data.results));
         dispatch(isLoadingRequestAction(false));
       }))
       .catch((err: AxiosError) => {
@@ -236,15 +236,15 @@ export function getRequestThunkAction(id: string) {
       .all([
         api.getRequest(id),
         api.getReasons(1, 200),
-        api.getRequestItemsStatus(1, 200),
-        api.getCarriers(1, 200)
+        api.getRequestItemsStatus(1, 200)
+        // api.getCarriers(1, 200)
       ])
-      .then(Axios.spread((request, reasons, requestItemStatus, carriers) => {
+      .then(Axios.spread((request, reasons, requestItemStatus /*, carriers*/) => {
         const { data } = request;
         dispatch(loadRequestAction(data));
         dispatch(loadReasonsRequestAction(reasons.data.results));
         dispatch(loadRequestItemsStatusRequestAction(requestItemStatus.data.results, requestItemStatus.data.min, requestItemStatus.data.max));
-        dispatch(loadCarriersRequestAction(carriers.data.results));
+        // dispatch(loadCarriersRequestAction(carriers.data.results));
         dispatch(isLoadingRequestAction(false));
       }))
       .catch((err: AxiosError) => {

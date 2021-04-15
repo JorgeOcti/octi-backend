@@ -8,8 +8,8 @@ import {Dispatch} from 'redux';
 import {DashboardReduxAction, getParticipantsPerDateAction, IDashboardState} from '../../actions/dashboard.actions';
 import AppContainer from '../../container/AppContainer';
 import Row from '../Utils/Row';
-import BootstrapSelect from "../Utils/BootstrapSelect";
-import TrackingBasePage from "../Utils/TrackingBasePage";
+import BootstrapSelect from '../Utils/BootstrapSelect';
+import TrackingBasePage from '../Utils/TrackingBasePage';
 
 interface IPropsType extends RouteComponentProps<{ ticket: string }> {
   dispatch: Dispatch<DashboardReduxAction>;
@@ -33,7 +33,7 @@ class DashboardGeneralView extends TrackingBasePage<IPropsType, IStateType> {
   // };
   readonly state = {
     error: null,
-    selectedCompanies: [""]
+    selectedCompanies: ['']
   };
 
   participantsPerDayChart: echarts.ECharts;
@@ -44,7 +44,7 @@ class DashboardGeneralView extends TrackingBasePage<IPropsType, IStateType> {
 
   constructor(props: IPropsType) {
     super(props);
-    this.title = "Reportes generales";
+    this.title = 'Reportes generales';
     this.resizeCharts = this.resizeCharts.bind(this);
     this.updateParticipantsChart = this.updateParticipantsChart.bind(this);
     this.updateCarsChart = this.updateCarsChart.bind(this);
@@ -129,7 +129,7 @@ class DashboardGeneralView extends TrackingBasePage<IPropsType, IStateType> {
                 <span className="info-box-icon bg-green"><i className="fa fa-car"/></span>
                 <div className="info-box-content">
                   <span className="info-box-text">Total Cargas</span>
-                  <span className="info-box-number">{new Intl.NumberFormat("es-CL").format(totalCars)}</span>
+                  <span className="info-box-number">{new Intl.NumberFormat('es-CL').format(totalCars)}</span>
                 </div>
               </div>
             </div>
@@ -152,9 +152,8 @@ class DashboardGeneralView extends TrackingBasePage<IPropsType, IStateType> {
                         selected={selectedCompanies}
                         autoClouse={true}
                         allOption={false}
-                        selectAll={() => {
-                        }}
-                        options={[{value: "", text: "Todas las empresas"},
+                        selectAll={() => ({})}
+                        options={[{value: '', text: 'Todas las empresas'},
                           ...companies.map((company: any) => ({
                           value: company._id,
                           text: company.name
@@ -175,7 +174,7 @@ class DashboardGeneralView extends TrackingBasePage<IPropsType, IStateType> {
                 }
               </div>
             </div>
-            <div className="col-md-12">
+            <div className="col-md-12" style={{display: 'none'}}>
               <div className="box">
                 <div className="box-header with-border"><h3 className="box-title">Histograma cumplimiento de revisiones</h3>
                   <div className="box-tools pull-right">
@@ -257,8 +256,8 @@ class DashboardGeneralView extends TrackingBasePage<IPropsType, IStateType> {
     }
     if (planningProcessPerDate.length) {
       planningProcessPerDate.forEach((day) => {
-        totalsplanningProcess.push(day.total)
-      })
+        totalsplanningProcess.push(day.total);
+      });
     }
     // const option: echarts.EChartOption = {
     const option: any = {
@@ -459,7 +458,7 @@ class DashboardGeneralView extends TrackingBasePage<IPropsType, IStateType> {
           name: car,
           value: currentCar.cars.length
           // itemStyle: {
-          //   color: this.chartsColors[0]
+          //   col  or: this.chartsColors[0]
           // }
         });
       } else {

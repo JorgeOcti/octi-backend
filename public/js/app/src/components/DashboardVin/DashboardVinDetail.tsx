@@ -18,7 +18,7 @@ import {
 import AppContainer from '../../container/AppContainer';
 import {IWindow} from '../../interfaces/window';
 import ModalView from '../Modal/ModalView';
-import TrackingBasePage from "../Utils/TrackingBasePage";
+import TrackingBasePage from '../Utils/TrackingBasePage';
 
 declare let window: IWindow;
 
@@ -177,12 +177,12 @@ class DashboardVinDetail extends TrackingBasePage<IPropsType, IStateType> {
               <table className="table table-striped">
                 <thead>
                   <tr>
-                    <th>Nº</th>
-                    <th>Fecha</th>
-                    <th>Formulario</th>
-                    <th className="hidden-xs">Supervisor</th>
-                    <th className="hidden-xs">Sucursal</th>
-                    <th className="hidden-xs">Calificación</th>
+                    <th className="middle">Nº</th>
+                    <th className="middle">Fecha</th>
+                    <th className="middle">Formulario</th>
+                    <th className="middle hidden-xs">Supervisor</th>
+                    <th className="middle hidden-xs">Sucursal</th>
+                    <th className="middle-center hidden-xs">Calificación</th>
                     <th className="width-10"/>
                     <th className="width-10"/>
                   </tr>
@@ -196,7 +196,7 @@ class DashboardVinDetail extends TrackingBasePage<IPropsType, IStateType> {
                       <td className="middle">{participant.name}</td>
                       <td className="middle hidden-xs">{participant.user ? participant.user.firstName : ''} {participant.user ? participant.user.lastName : ''}</td>
                       <td className="middle hidden-xs">{participant.venue ? participant.venue.name : '-'}</td>
-                      <td className="middle hidden-xs">{Math.round(participant.qualification)}%</td>
+                      <td className="middle-center hidden-xs">{participant.qualification ? `${Math.round(participant.qualification)}%` : '-'}</td>
                       <td className="text-primary middle-center">
                         <button
                           className="btn btn-xs btn-default"

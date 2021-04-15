@@ -176,16 +176,16 @@ export function getRequestItemsThunkAction(nextPage: number, orderBy: string, or
         api.getRequestItems({ page, orderBy, orderType, pageSize: 20, filters: state.requestItems.filters }),
         api.getReasons(1, 200),
         api.getRequestItemsStatus(1, 200),
-        api.getCarriers(1, 200),
+        // api.getCarriers(1, 200),
         api.getVenues(1, 200, true, true),
         api.getProperties()
       ])
-      .then(Axios.spread((requests, reasons, requestItemStatus, carriers, venues, properties) => {
+      .then(Axios.spread((requests, reasons, requestItemStatus/*, carriers*/, venues, properties) => {
         const { data } = requests;
         dispatch(loadRequestsItemsAction(data.results, data.count, data.pages, page));
         dispatch(loadReasonsRequestItemsAction(reasons.data.results));
         dispatch(loadRequestItemsStatusRequestAction(requestItemStatus.data.results, requestItemStatus.data.min, requestItemStatus.data.max));
-        dispatch(loadCarriersRequestItemsAction(carriers.data.results));
+        // dispatch(loadCarriersRequestItemsAction(carriers.data.results));
         dispatch(loadVenuesRequestItemsAction(venues.data.results));
         dispatch(loadPropertiesRequestItemsAction(properties.data));
         dispatch(isLoadingRequestItemsAction(false));

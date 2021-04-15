@@ -290,7 +290,7 @@ class DashboardVinView extends TrackingBasePage<IPropsType, IStateType> {
                         <th style={{width: '9%'}} className="middle hidden-xs">Marca</th>
                         <th style={{width: '13%'}} className="middle hidden-xs">Supervisor</th>
                         <th style={{width: '13%'}} className="middle">Sucursal</th>
-                        <th style={{width: '10%'}} className="hidden-xs">Calificación</th>
+                        <th style={{width: '10%'}} className="middle-center hidden-xs">Calificación</th>
                         <th style={{width: '15%'}} className="hidden-xs">Fecha calificación</th>
                         <th style={{width: '15%'}} className="hidden-xs">Último checkeo</th>
                         <th className="width-10 hidden-xs"/>
@@ -315,10 +315,10 @@ class DashboardVinView extends TrackingBasePage<IPropsType, IStateType> {
                               <td className="middle">
                                 {`${participant.venue ? `${participant.venue.name}` : '-'}`}
                               </td>
-                              <td className="middle">
+                              <td className="middle-center">
                                 {
                                   `${participant.hasOwnProperty('qualification') ?
-                                    `${Math.round(participant.qualification)}%` : ''}`
+                                    participant.qualification ? `${Math.round(participant.qualification)}%` : !this.hasDamages(participant) ? '-' : '' : ''}`
                                 }
                                 {
                                   this.hasDamages(participant) ?

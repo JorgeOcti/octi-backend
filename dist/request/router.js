@@ -4,6 +4,7 @@ exports.requestRouter = void 0;
 const express = require("express");
 const middlewares_1 = require("../middlewares/middlewares");
 const reason_controller_1 = require("./controllers/reason.controller");
+const salesChannel_controller_1 = require("./controllers/salesChannel.controller");
 const request_controller_1 = require("./controllers/request.controller");
 const requestItemStatus_controller_1 = require("./controllers/requestItemStatus.controller");
 const requestRouter = express.Router();
@@ -24,10 +25,13 @@ requestRouter.post('/api/v1/requests/', middlewares_1.default.isLoggedIn, reques
 requestRouter.get('/api/v1/requests/:id/', middlewares_1.default.isLoggedIn, request_controller_1.default.apiDetail);
 requestRouter.delete('/api/v1/requests/:id/', middlewares_1.default.isLoggedIn, request_controller_1.default.apiDeleteRequest);
 requestRouter.post('/api/v1/requests-item/', middlewares_1.default.isLoggedIn, request_controller_1.default.apiListItems);
-requestRouter.post('/api/v1/requests-item/', middlewares_1.default.isLoggedIn, request_controller_1.default.apiCreateItem);
+requestRouter.post('/api/v1/add-requests-item/', middlewares_1.default.isLoggedIn, request_controller_1.default.apiCreateItem);
 requestRouter.patch('/api/v1/requests-item/:id/', middlewares_1.default.isLoggedIn, request_controller_1.default.apiPatchItem);
 requestRouter.delete('/api/v1/requests-item/:id/', middlewares_1.default.isLoggedIn, request_controller_1.default.apiDeleteRequestItem);
 requestRouter.get('/requests-item/:id/download-files/', middlewares_1.default.isJWTAuthenticated, request_controller_1.default.downloadItemFiles);
 requestRouter.get('/api/v1/reasons/', middlewares_1.default.isLoggedIn, reason_controller_1.default.apiList);
+requestRouter.get('/api/v1/sales-channel/', middlewares_1.default.isLoggedIn, salesChannel_controller_1.default.apiList);
+requestRouter.get('/api/v1/sales-channel/create-default/', middlewares_1.default.isLoggedIn, salesChannel_controller_1.default.createDefault);
+requestRouter.get('/api/v1/sales-channel/update-fleet/', middlewares_1.default.isLoggedIn, salesChannel_controller_1.default.updateFleet);
 requestRouter.get('/api/v1/request-item-status/', middlewares_1.default.isLoggedIn, requestItemStatus_controller_1.default.apiList);
 //# sourceMappingURL=router.js.map

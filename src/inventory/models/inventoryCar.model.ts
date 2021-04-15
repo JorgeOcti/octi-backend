@@ -26,8 +26,9 @@ export enum ChoicesStatusCarInventory {
   missing = 'missing',
   leftover = 'leftover',
   reported = 'reported',
-  deleted = 'deleted',
+  deleted = 'deleted'
 }
+
 export const choicesStatusCarInventory = [
   ChoicesStatusCarInventory.pending,
   ChoicesStatusCarInventory.found,

@@ -3,6 +3,17 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const mongoose = require("mongoose");
 const mongoosePaginate = require("mongoose-paginate");
 const mongooseAggregatePaginate = require("mongoose-aggregate-paginate-v2");
+const requestItemAnswerSchema = new mongoose.Schema({
+    questionId: {
+        type: mongoose.Schema.Types.ObjectId
+    },
+    question: {
+        type: String
+    },
+    answer: {
+        type: String
+    }
+});
 const requestItemSchema = new mongoose.Schema({
     request: {
         type: mongoose.Schema.Types.ObjectId,
@@ -31,6 +42,10 @@ const requestItemSchema = new mongoose.Schema({
     reason: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Reason'
+    },
+    answers: {
+        type: [requestItemAnswerSchema],
+        default: []
     },
     files: [{
             type: mongoose.Schema.Types.ObjectId,

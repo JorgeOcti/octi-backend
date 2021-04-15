@@ -266,11 +266,13 @@ class BillingQueue {
         const requestCars = await this.calculateCarsInRequest(company);
         const totalInventory = inventoryCars * company.billing.inventoryPrice;
         const totalChecklist = checklistCars * company.billing.checklistPrice;
-        const totalRequest= requestCars * company.billing.requestPrice;
+        const totalRequest = requestCars * company.billing.requestPrice;
         const totalUF = totalInventory + totalChecklist + totalRequest;
+        const period = moment().format('YYYYMM');
         const invoice = new Invoice({
           team: company.team,
           company,
+          period,
           inventoryCars,
           checklistCars,
           requestCars,
@@ -283,8 +285,12 @@ class BillingQueue {
           // totalDolar: (totalUF * valueUF) / valueDolar,
           totalPeso: totalUF * valueUF
         });
-        await invoice.save();
-        this.createPDF(invoice, company);
+        if (!await Invoice.find({ company, period }).count()) {
+          await invoice.save();
+          this.createPDF(invoice, company);
+        } else {
+          console.log(`${period} ${company.name} ya existe!!!.`);
+        }
       }
     } catch (e) {
       console.log(e);

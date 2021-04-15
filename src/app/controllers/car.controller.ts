@@ -18,7 +18,6 @@ import { ChoicesStatusCarInventory } from '../../inventory/models/inventoryCar.m
 import Planning from '../../planning/models/planning.model';
 import logger from '../../services/logger.service';
 import VINService from '../../services/vin.service';
-import Car from '../models/car.model';
 import CarModel, { ChoicesStatusCar, ICarModel } from '../models/car.model';
 import User from '../models/user.model';
 import Venue from '../models/venue.model';

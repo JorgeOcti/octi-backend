@@ -16,6 +16,12 @@ import { IUser } from './user.interface';
 import { IVenue } from './venue.interface';
 import { IRequestFile } from './requestFile.interface';
 
+export interface IRequestAnswer {
+  questionId: any;
+  question: string;
+  answer: string;
+}
+
 export interface IRequestItem {
   _id: any;
   request: IRequest | IRequestModel;
@@ -23,6 +29,7 @@ export interface IRequestItem {
   origin: IVenue | IVenueModel;
   position: IVenue | IVenueModel;
   destination: IVenue | IVenueModel;
+  answers: IRequestAnswer[];
   car: ICar | ICarModel;
   files: IRequestFile[];
   carrier: ICarrier | ICarrierModel | any;

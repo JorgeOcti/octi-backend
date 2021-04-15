@@ -433,7 +433,7 @@ class RequestVehicleListView extends TrackingBasePage<IPropsType, IStateType> {
                         </th>
                         <th
                           className="middle pointer"
-                          style={{ width: '100px' }}
+                          style={{ minWidth: '100px', maxWidth: '120px' }}
                           onClick={() => this.changeOrder('car.brand')}
                         >
                           Marca
@@ -441,7 +441,7 @@ class RequestVehicleListView extends TrackingBasePage<IPropsType, IStateType> {
                         </th>
                         <th
                           className="middle pointer"
-                          style={{ width: '120px' }}
+                          style={{ minWidth: '120px' }}
                           onClick={() => this.changeOrder('car.description')}
                         >
                           Modelo
@@ -449,26 +449,26 @@ class RequestVehicleListView extends TrackingBasePage<IPropsType, IStateType> {
                         </th>
                         <th
                           className="middle pointer"
-                          style={{ width: '80px' }}
+                          style={{ width: '70px' }}
                           onClick={() => this.changeOrder('car.material')}
                         >
                           Material
-                      <span style={{ float: 'right' }}><i className={`fa fa-fw ${orderBy === 'car.material' ? `${orderType === 'descending' ? 'fa-sort-down' : 'fa-sort-up'}` : 'fa-sort'}`} /></span>
+                          <span style={{ float: 'right' }}><i className={`fa fa-fw ${orderBy === 'car.material' ? `${orderType === 'descending' ? 'fa-sort-down' : 'fa-sort-up'}` : 'fa-sort'}`} /></span>
                         </th>
-                        <th className="middle">Color</th>
+                        <th className="middle"  style={{ minWidth: '80px' }}>Color</th>
                         <th
                           className="middle pointer"
-                          style={{ width: '120px' }}
+                          style={{ minWidth: '120px', maxWidth: '160px' }}
                           onClick={() => this.changeOrder('status.weigth')}
                         >
                           Estado
                       <span style={{ float: 'right' }}><i className={`fa fa-fw ${orderBy === 'status.weigth' ? `${orderType === 'descending' ? 'fa-sort-down' : 'fa-sort-up'}` : 'fa-sort'}`} /></span>
                         </th>
-                        <th className="middle">VIN</th>
-                        <th className="middle">CDO</th>
+                        <th className="middle" style={{ width: '130px' }}>VIN</th>
+                        <th className="middle" style={{ width: '60px' }}>CDO</th>
                         <th
                           className="middle pointer"
-                          style={{ width: '100px' }}
+                          style={{ minWidth: '100px' }}
                           onClick={() => this.changeOrder('reason.name')}
                         >
                           Motivo
@@ -476,9 +476,9 @@ class RequestVehicleListView extends TrackingBasePage<IPropsType, IStateType> {
                         </th>
                         {/* <th className="middle">Carrocería</th>
                       <th className="middle">Pre-Entrega</th> */}
-                        <th className="middle">Adj</th>
-                        <th className="middle">Obs</th>
-                        <th
+                        <th className="middle-center" style={{ width: '40px' }}>Adj</th>
+                        <th className="middle-center" style={{ width: '20px' }}>Obs</th>
+                        {/* <th
                           className="middle pointer"
                           style={{ width: '100px' }}
                           onClick={() => this.changeOrder('carrier.name')}
@@ -501,7 +501,7 @@ class RequestVehicleListView extends TrackingBasePage<IPropsType, IStateType> {
                         >
                           F. llegada
                       <span style={{ float: 'right' }}><i className={`fa fa-fw ${orderBy === 'estimatedArrival' ? `${orderType === 'descending' ? 'fa-sort-down' : 'fa-sort-up'}` : 'fa-sort'}`} /></span>
-                        </th>
+                        </th> */}
                         <ShowIf condition={hasPermission(window.user, 'deleteRequest')}>
                           <th className="middle" style={{ width: '30px' }} />
                         </ShowIf>

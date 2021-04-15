@@ -22,6 +22,8 @@ import RequestFile from '../models/requestFile.model';
 import RequestItem, { IRequestItemModel } from '../models/requestItem.model';
 import RequestItemStatus from '../models/requestItemStatus.model';
 import ActivityHistory, { ChoicesTypeActivity } from '../../billing/models/activityHistory.model';
+import { Column } from 'exceljs';
+import Reason from '../models/reason.model';
 
 class RequestController {
 
@@ -53,6 +55,9 @@ class RequestController {
     select: ['name']
   }, {
     path: 'destination',
+    select: ['name']
+  }, {
+    path: 'channel',
     select: ['name']
   }, {
     path: 'createdBy',
@@ -141,7 +146,7 @@ class RequestController {
     logger.info(`RequestController.apiCreate`);
     logger.info(`{user: {_id: ${req.user._id}, email: ${req.user.email}}, body: ${JSON.stringify(req.body)} }`);
     const { company, team } = req.user;
-    const { cars, venue, fleet, sellerText } = req.body;
+    const { cars, venue, channel, sellerText } = req.body;
 
     try {
       const defaultItemStatus = await RequestItemStatus.findOneOrCreate({ team, default: true }, { name: 'Pendiente', default: true, team, weigth: 10 });
@@ -153,7 +158,7 @@ class RequestController {
         origin: venue,
         destination: venue,
         // status,
-        fleet,
+        channel,
         createdBy: req.user
       }).save();
       for (const car of cars) {
@@ -174,6 +179,7 @@ class RequestController {
           reason: car.reason,
           files: car.files,
           washed: car.washed,
+          answers: car.answers,
           equipment: car.equipment,
           observation: car.observation,
           priority: car.priority,
@@ -234,7 +240,10 @@ class RequestController {
       }
       extraQuery.createdAt.$lte = moment(filters.to).endOf('day').toDate();
     }
-    const requestNumbers = filters.request.replace(/[^0-9\,]/g, '').split(',').filter((requestNumber: string) => (requestNumber.length));
+    const requestNumbers = filters.request
+      .replace(/[^0-9\,]/g, '')
+      .split(',')
+      .filter((requestNumber: string) => (requestNumber.length));
     if (requestNumbers.length) {
       extraMatch.requestNumber = { $in: requestNumbers };
     }
@@ -306,6 +315,10 @@ class RequestController {
           $lookup: { from: 'requestitemstatuses', localField: 'status', foreignField: '_id', as: 'status' }
         }, {
           $unwind: { path: '$status', preserveNullAndEmptyArrays: true }
+        }, {
+          $lookup: { from: 'saleschannels', localField: 'request.channel', foreignField: '_id', as: 'request.channel' }
+        }, {
+          $unwind: { path: '$request.channel', preserveNullAndEmptyArrays: true }
         }, {
           $lookup: { from: 'carriers', localField: 'carrier', foreignField: '_id', as: 'carrier' }
         }, {
@@ -441,6 +454,10 @@ class RequestController {
       }, {
         $unwind: { path: '$reason', preserveNullAndEmptyArrays: true }
       }, {
+        $lookup: { from: 'saleschannels', localField: 'request.channel', foreignField: '_id', as: 'request.channel' }
+      }, {
+        $unwind: { path: '$request.channel', preserveNullAndEmptyArrays: true }
+      }, {
         $project: {
           '_id': 1,
           'request': 1,
@@ -448,6 +465,7 @@ class RequestController {
           'observation': 1,
           'equipment': 1,
           'washed': 1,
+          'answers': 1,
           'review': 1,
           'body': 1,
           'status._id': 1,
@@ -482,12 +500,21 @@ class RequestController {
         }
       });
       /* headers */
+      const questionColumns: Partial<Column>[] = [];
+
+      for (const reason of await Reason.find({ team })) {
+        for (const question of reason.questions) {
+          questionColumns.push({
+            header: question.name, key: question._id, width: 10
+          });
+        }
+      }
       worksheet.columns = [{
         header: 'Nª SOLICITUD', key: 'request', width: 10
       }, {
         header: 'FECHA SOLICITUD', key: 'created', width: 21, style: { numFmt: 'dd/mm/yyyy hh:mm' }
       }, {
-        header: 'FLOTA', key: 'fleet', width: 20
+        header: 'CANAL', key: 'channel', width: 20
       }, {
         header: 'PRIORIDAD', key: 'priority', width: 20
       }, {
@@ -535,12 +562,18 @@ class RequestController {
       }, {
         header: 'FECHA LLEGADA', key: 'estimatedArrival', width: 21, style: { numFmt: 'dd/mm/yyyy hh:mm' }
       }, {
-        header: 'FECHA ACTUALIZACION', key: 'updted', width: 21, style: { numFmt: 'dd/mm/yyyy hh:mm' }
+        header: 'FECHA ACTUALIZACION', key: 'updated', width: 21, style: { numFmt: 'dd/mm/yyyy hh:mm' }
       }, {
         header: 'OBSERVACIÓN', key: 'observation', width: 21
-      }];
+      }, ...questionColumns];
+
       for (const item of requestItems) {
+        const extraAnswers: any = {};
+        for (const answer of item.answers ? item.answers : []) {
+          extraAnswers[answer.questionId] = answer.answer;
+        }
         worksheet.addRow({
+          ...extraAnswers,
           request: item.request.number,
           created: item.createdAt,
           updated: item.updatedAt,
@@ -549,6 +582,7 @@ class RequestController {
           priority: item.priority ? 'Si' : 'No',
           createdBy: item.createdBy ? `${item.createdBy.firstName} ${item.createdBy.lastName}` : '-',
           seller: item.request.sellerText,
+          channel: item.request.channel ? item.request.channel.name : '',
           reason: item.reason.name,
           group: '',
           property: item.car.property,

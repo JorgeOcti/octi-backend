@@ -55,7 +55,7 @@ if (hasPermission(window.user, 'viewDashboardDerco')) {
 if (dashboardItems.length) {
   menus.push({
     id: '1',
-    text: 'Dashboards',
+    text: 'Control Unidades',
     icon: 'fa-dashboard',
     url: dashboardItems[0].url,
     items: dashboardItems
@@ -267,7 +267,7 @@ if (hasPermission(window.user, 'viewBilling')) {
 if (settingItems.length) {
   menus.push({
     id: '10',
-    text: 'Settings',
+    text: 'Configuración',
     icon: 'fa-cog',
     url: settingItems[0].url,
     items: settingItems

@@ -1,10 +1,9 @@
-import { boolean } from 'joi';
 import * as mongoose from 'mongoose';
 import { PaginateModel } from 'mongoose';
 import * as mongoosePaginate from 'mongoose-paginate';
 import { IReason } from '../../interfaces/reason.interface';
 
-export interface IReasonModel extends IReason, mongoose.Document {}
+export interface IReasonModel extends IReason, mongoose.Document { }
 
 const fileSchema = new mongoose.Schema({
   active: {
@@ -12,6 +11,33 @@ const fileSchema = new mongoose.Schema({
   },
   required: {
     type: Boolean
+  }
+});
+
+export enum ChoicesTypeQuestuion {
+  text = 'text',
+  number = 'number',
+  paymentMethod = 'paymentMethod'
+}
+
+export const choicesTypeQuestuion = [
+  ChoicesTypeQuestuion.text,
+  ChoicesTypeQuestuion.number,
+  ChoicesTypeQuestuion.paymentMethod
+];
+
+const questionSchema = new mongoose.Schema({
+  name: {
+    type: String
+  },
+  type: {
+    type: String,
+    enum: choicesTypeQuestuion,
+    default: ChoicesTypeQuestuion.text
+  },
+  required: {
+    type: Boolean,
+    default: false
   }
 });
 
@@ -23,7 +49,11 @@ const reasonSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Team'
   },
-  file: fileSchema
+  file: fileSchema,
+  questions: {
+    type: [questionSchema],
+    default: []
+  }
 });
 
 reasonSchema.plugin(mongoosePaginate);
