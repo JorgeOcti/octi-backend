@@ -22,6 +22,7 @@ import Car from '../models/car.model';
 import CarModel, { ChoicesStatusCar, ICarModel } from '../models/car.model';
 import User from '../models/user.model';
 import Venue from '../models/venue.model';
+import {IPermission} from "../../interfaces/permision.interface";
 
 moment.tz.setDefault('America/Santiago');
 class CarController {
@@ -78,6 +79,7 @@ class CarController {
     this.processParticipant = this.processParticipant.bind(this);
     this.exportParticipants = this.exportParticipants.bind(this);
     this.listProperties = this.listProperties.bind(this);
+    this.createCar = this.createCar.bind(this);
   }
 
   public async generalDashboard(req: IRequest, res: Response) {
@@ -86,6 +88,56 @@ class CarController {
 
   public async vinDashboard(req: IRequest, res: Response) {
     res.render('app/index', {token: await req.user.generateToken()});
+  }
+
+  public async createCar(req: IRequest, res: Response) {
+    try {
+      if (!req.user.userPermissions.some((value : IPermission) => value.codeName === 'addCar')) {
+        return res.status(403).json({
+          message: 'No tienes permisos para esta operación'
+        });
+      }
+      const car = req.body;
+      const { company, team } = req.user;
+
+      const newCar = await Car.findOne({
+        vin: car.vin,
+        team
+      });
+
+      if (newCar) {
+        newCar.vin2 = car.vin2;
+        newCar.color = car.color ? car.color : newCar.color;
+        newCar.denomination = car.denomination ? car.denomination : newCar.denomination;
+        newCar.brand = car.brand ? car.brand : newCar.brand;
+        newCar.patent = car.patent ? car.patent : newCar.patent;
+        newCar.imported = false
+        newCar.createdBy = req.user;
+        newCar.status = ChoicesStatusCar.active;
+        await newCar.save();
+      } else {
+        await Car.create({
+          vin: car.vin,
+          vin2: car.vin2,
+          color: car.color ? car.color : '',
+          denomination: car.denomination ? car.denomination : '',
+          brand: car.brand ? car.brand : '',
+          patent: car.patent ? car.patent : '',
+          imported: false,
+          company,
+          team,
+          createdBy: req.user,
+          status: ChoicesStatusCar.active
+        });
+      }
+
+      res.json({
+        status: 200
+      });
+    } catch (e) {
+      /* istanbul ignore next */
+      console.log(e);
+    }
   }
 
   public async listProperties(req: IRequest, res: Response) {
