@@ -80,11 +80,6 @@ class CarController {
     }
     async createCar(req, res) {
         try {
-            // if (!req.user.userPermissions.some((value : IPermission) => value.codeName === 'addCar')) {
-            //   return res.status(403).json({
-            //     message: 'No tienes permisos para esta operación'
-            //   });
-            // }
             const car = req.body;
             const { company, team } = req.user;
             const newCar = await car_model_1.default.findOne({
