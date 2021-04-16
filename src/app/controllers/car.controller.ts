@@ -99,7 +99,7 @@ class CarController {
       const car = req.body;
       const { company, team } = req.user;
 
-      const newCar = await Car.findOne({
+      const newCar = await CarModel.findOne({
         vin: car.vin,
         team
       });
@@ -115,7 +115,7 @@ class CarController {
         newCar.status = ChoicesStatusCar.active;
         await newCar.save();
       } else {
-        await Car.create({
+        await CarModel.create({
           vin: car.vin,
           vin2: car.vin2,
           color: car.color ? car.color : '',
@@ -364,96 +364,56 @@ class CarController {
         }
       }
     } else {
-      if (vin) {
-        try {
-          /* istanbul ignore next */
-          if (app.get('env') !== 'testing') {
-            const testDecode = VINService.decode(vin);
-            logger.info(`vin decode ${JSON.stringify(testDecode)}`);
+      try {
+
+        const inventoryQuery: any = {
+          team
+        };
+        if (vin) {
+          inventoryQuery.vin = vin;
+        }
+        if (vin2) {
+          if (vin2[0] === '0') {
+            const vinRegex = new RegExp(vin2.substr(vin2.length - 5), 'i');
+            inventoryQuery.vin2 = {$regex: vinRegex};
+          } else {
+            const patentRegex = new RegExp(vin2, 'i');
+            inventoryQuery.$or = [{vin2}, {patent: patentRegex}];
           }
-          const indexBrand: string = vin.slice(0, 3);
-          vin2 = vin.substr(vin.length - 6);
-          const brand = this.carBrands.hasOwnProperty(indexBrand) ? this.carBrands[indexBrand] : null;
-          const car = await CarModel.findOneOrCreate({
-            vin,
-            team
-          }, {
-            vin,
-            vin2,
-            company,
-            team,
-            brand,
-            createdBy: req.user,
-            status: ChoicesStatusCar.active
-          });
+        }
+
+        const car = await CarModel.findOne(inventoryQuery, {
+          vin: true,
+          vin2: true,
+          brand: true,
+          color: true,
+          patent: true,
+          denomination: true
+        });
+        if (car) {
           res.json({
-            data: {
-              _id: car._id,
-              vin: car.vin,
-              vin2: car.vin2,
-              brand: car.brand,
-              patent: car.patent,
-              color: car.color,
-              denomination: car.denomination
-            },
+            data: car,
             status: 200
           });
-        } catch (e) {
-          /* istanbul ignore next */
-          console.log(e);
-          /* istanbul ignore next */
-          if (e) {
-            res.status(500).send(e);
-          }
-        }
-      } else if (vin2) {
-        // vin2 = vin2.replace(/[\W_]+/g, '');
-        try {
-          const vinRegex = new RegExp('[a-zA-Z0]' + vin2.substr(vin2.length - 5), 'i');
-          const patentRegex = new RegExp(vin2, 'i');
-          const car = await CarModel.find({
-            $or: [{vin2: vin2 && vin2[0] === '0' ? {$regex: vinRegex} : vin2}, {patent: patentRegex}],
-            team
-          }, {
-            vin: true,
-            vin2: true,
-            brand: true,
-            color: true,
-            patent: true,
-            denomination: true
+        } else {
+          logger.error(`checkVIN: VIN no encontrado.`);
+          logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
+          res.status(400).json({
+            message: 'VIN no encontrado.',
+            status: 400
           });
-          if (car.length) {
-            res.json({
-              data: car,
-              status: 200
-            });
-          } else {
-            logger.error(`checkVIN: VIN no encontrado.`);
-            logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
-            res.status(400).json({
-              message: 'VIN no encontrado.',
-              status: 400
-            });
-          }
-        } catch (e) {
-          /* istanbul ignore next */
-          if (e) {
-            /* istanbul ignore next */
-            logger.error(`checkVIN: Async Error.`);
-            /* istanbul ignore next */
-            logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
-            /* istanbul ignore next */
-            logger.error(e);
-            res.status(500).send(e);
-          }
         }
-      } else {
-        logger.error(`checkVIN: VIN no encontrado.`);
-        logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
-        res.status(400).json({
-          message: 'VIN no encontrado.',
-          status: 400
-        });
+      } catch (e) {
+        /* istanbul ignore next */
+        if (e) {
+          /* istanbul ignore next */
+          logger.error(`checkVIN: Async Error.`);
+          /* istanbul ignore next */
+          logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
+          /* istanbul ignore next */
+          logger.error(e);
+          res.status(500).send(e);
+        }
       }
     }
   }
