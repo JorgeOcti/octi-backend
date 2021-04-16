@@ -7,6 +7,7 @@ import { RouteComponentProps } from 'react-router';
 import { Dispatch } from 'redux';
 import * as io from 'socket.io-client';
 import { debounce } from 'throttle-debounce';
+import * as swal from 'sweetalert';
 import { IParticipant } from '../../../../../../src/interfaces/participant.interface';
 import {
   changeRangeDashboardAction,
@@ -18,8 +19,8 @@ import {
 import AppContainer from '../../container/AppContainer';
 import { IWindow } from '../../interfaces/window';
 import Paginator from '../Utils/Paginator';
-import TrackingBasePage from "../Utils/TrackingBasePage";
-import DateRangeInput from "../Utils/DateRangeInput";
+import TrackingBasePage from '../Utils/TrackingBasePage';
+import DateRangeInput from '../Utils/DateRangeInput';
 
 declare let window: IWindow;
 
@@ -29,7 +30,6 @@ interface IPropsType extends RouteComponentProps<{ ticket: string }> {
   getRevisionsAction(page: number, loading: boolean, search?: string): void;
   changeSearchDashboardAction(searchText: string): DashboardReduxAction;
   changeRangeDashboardAction(from: string, to: string): DashboardReduxAction;
-
 }
 
 interface IStateType {
@@ -61,7 +61,7 @@ class DashboardVinView extends TrackingBasePage<IPropsType, IStateType> {
 
   constructor(props: IPropsType) {
     super(props);
-    this.title = "Revisiones";
+    this.title = 'Revisiones';
     this.changePage = this.changePage.bind(this);
     this.onChangeSearch = this.onChangeSearch.bind(this);
     this.printPdf = this.printPdf.bind(this);
@@ -145,10 +145,14 @@ class DashboardVinView extends TrackingBasePage<IPropsType, IStateType> {
     return {
       maxDate: moment(),
       opens: 'left'
-    }
+    };
 }
 
   onDateRangeChange(from: Date, to: Date){
+    this.setState({
+      from,
+      to
+    });
     this.props.changeRangeDashboardAction(moment(from).format('YYYY-MM-DD'), moment(to).format('YYYY-MM-DD'));
     this.debounceOnChangeSearch();
   }
@@ -178,12 +182,16 @@ class DashboardVinView extends TrackingBasePage<IPropsType, IStateType> {
 
   public downloadReport(){
     const {from, to} = this.state;
-    this.trackClick("Descargar reporte", {
+    const monthsDiff = moment(to).diff(moment(from), 'months');
+    this.trackClick('Descargar reporte', {
       from,
       to
     });
-
-    window.open(`/api/participant/export/?from=${moment(from).unix()}&to=${moment(to).unix()}`, '_blank');
+    if(monthsDiff > 3){
+      swal('Revisiones', 'Selecciona un rango de 3 meses para dercargar la información', 'error');
+    } else {
+      window.open(`/api/participant/export/?from=${moment(from).unix()}&to=${moment(to).unix()}`, '_blank');
+    }
 
     // const api: ApiService = new ApiService();
     // const instance = api.getInstance();

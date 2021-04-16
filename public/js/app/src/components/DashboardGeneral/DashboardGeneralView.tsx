@@ -10,6 +10,8 @@ import AppContainer from '../../container/AppContainer';
 import Row from '../Utils/Row';
 import BootstrapSelect from '../Utils/BootstrapSelect';
 import TrackingBasePage from '../Utils/TrackingBasePage';
+import { hasPermission } from '../../utils/common';
+import { IWindow } from '../../interfaces/window';
 
 interface IPropsType extends RouteComponentProps<{ ticket: string }> {
   dispatch: Dispatch<DashboardReduxAction>;
@@ -22,6 +24,8 @@ interface IStateType {
   selectedCompanies: any[];
   error: Error | null;
 }
+
+declare let window: IWindow;
 
 class DashboardGeneralView extends TrackingBasePage<IPropsType, IStateType> {
   title : string;
@@ -259,6 +263,45 @@ class DashboardGeneralView extends TrackingBasePage<IPropsType, IStateType> {
         totalsplanningProcess.push(day.total);
       });
     }
+    const dataLabels = ['Recepciones', 'Envíos'];
+    const series = [{
+      data: totalsReceived,
+      name: 'Recepciones',
+      type: 'line',
+      color: '#337AB7',
+      smooth: true
+    }, {
+      data: totalsSent,
+      name: 'Envíos',
+      type: 'line',
+      color: '#2DB06B',
+      smooth: true
+    }, {
+      data: totalsCars,
+      name: 'Cargados',
+      type: 'line',
+        color: '#678099',
+        smooth: true
+      }];
+
+    if (hasPermission(window.user, 'viewPlanning')) {
+      dataLabels.push('Planificados', 'Linea de control');
+      series.push({
+        data: totalsPlanning,
+        name: 'Planificados',
+        type: 'line',
+        color: '#00b5fd',
+        smooth: true
+      });
+      series.push({
+        data: totalsplanningProcess,
+        name: 'Linea de control',
+        type: 'line',
+        color: '#7c344c',
+        smooth: true
+      });
+    }
+    dataLabels.push('Cargados');
     // const option: echarts.EChartOption = {
     const option: any = {
       // title: {
@@ -275,7 +318,7 @@ class DashboardGeneralView extends TrackingBasePage<IPropsType, IStateType> {
         x: 'center',
         bottom: 50,
         // y: 'bottom',
-        data: ['Recepciones', 'Envíos', 'Planificados', 'Linea de control', 'Cargados']
+        data: dataLabels
       },
       xAxis: {
         type: 'category',
@@ -330,37 +373,7 @@ class DashboardGeneralView extends TrackingBasePage<IPropsType, IStateType> {
         start: 0,
         end: 100
       },
-      series: [{
-        data: totalsReceived,
-        name: 'Recepciones',
-        type: 'line',
-        color: '#337AB7',
-        smooth: true
-      },{
-        data: totalsSent,
-        name: 'Envíos',
-        type: 'line',
-        color: '#2DB06B',
-        smooth: true
-      }, {
-        data: totalsPlanning,
-        name: 'Planificados',
-        type: 'line',
-        color: '#00b5fd',
-        smooth: true
-      }, {
-        data: totalsplanningProcess,
-        name: 'Linea de control',
-        type: 'line',
-        color: '#7c344c',
-        smooth: true
-      }, {
-        data: totalsCars,
-        name: 'Cargados',
-        type: 'line',
-        color: '#678099',
-        smooth: true
-      }]
+      series
     };
     this.participantsPerDayChart.setOption(option);
   }

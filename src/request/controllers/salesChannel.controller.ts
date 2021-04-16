@@ -4,6 +4,7 @@ import {Response} from 'express';
 import logger from '../../services/logger.service';
 import SalesChannel, { ISalesChannelModel } from '../models/salesChannel.model';
 import Request from '../models/request.model';
+
 class SalesChannelController {
 
   constructor() {
