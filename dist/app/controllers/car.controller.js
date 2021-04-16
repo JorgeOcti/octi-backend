@@ -374,7 +374,7 @@ class CarController {
                         inventoryQuery.$or = [{ vin2 }, { patent: patentRegex }];
                     }
                 }
-                const car = await car_model_1.default.findOne(inventoryQuery, {
+                const car = await car_model_1.default.find(inventoryQuery, {
                     vin: true,
                     vin2: true,
                     brand: true,
@@ -384,7 +384,7 @@ class CarController {
                 });
                 if (car) {
                     res.json({
-                        data: car,
+                        data: vin ? car[0] : car,
                         status: 200
                     });
                 }

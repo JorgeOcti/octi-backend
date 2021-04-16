@@ -382,7 +382,7 @@ class CarController {
           }
         }
 
-        const car = await CarModel.findOne(inventoryQuery, {
+        const car = await CarModel.find(inventoryQuery, {
           vin: true,
           vin2: true,
           brand: true,
@@ -392,7 +392,7 @@ class CarController {
         });
         if (car) {
           res.json({
-            data: car,
+            data: vin ? car[0] : car,
             status: 200
           });
         } else {
