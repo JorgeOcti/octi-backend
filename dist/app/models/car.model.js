@@ -76,6 +76,10 @@ const carSchema = new mongoose.Schema({
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Company'
     },
+    imported: {
+        type: Boolean,
+        default: true
+    },
     lastForm: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Participant',
