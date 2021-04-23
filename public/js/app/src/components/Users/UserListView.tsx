@@ -36,7 +36,7 @@ import ModalView from '../Modal/ModalView';
 import Paginator from '../Utils/Paginator';
 import UserFormChangePasswordView from './UserFormChangePasswordView';
 import UserFormView from './UserFormView';
-import TrackingBasePage from "../Utils/TrackingBasePage";
+import TrackingBasePage from '../Utils/TrackingBasePage';
 
 interface IPropsType extends RouteComponentProps<{ ticket: string }> {
   dispatch: Dispatch<UserReduxAction>;
@@ -139,7 +139,7 @@ class UserListView extends TrackingBasePage<IPropsType, IStateType> {
   }
 
   public exportExcel() {
-    this.trackClick("Exportar");
+    this.trackClick('Exportar');
     this.setState({
       exporing: true
     });

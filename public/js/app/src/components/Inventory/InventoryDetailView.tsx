@@ -657,6 +657,7 @@ class InventoryDetailView extends TrackingBasePage<IPropsType, IStateType> {
       percentageReported,
       percentageMissing
     } = this.calculateDetails(summary.results);
+    const showDownloadFile =  moment().subtract(1, 'months').isSameOrBefore(summary.createdAt);
 
     return (
       <AppContainer title={summary.name} cMenu="2" cSubMenu="2.1" cAction={tab === 'summary' ? 'Consolidado' : 'Detalle'}>
@@ -792,14 +793,17 @@ class InventoryDetailView extends TrackingBasePage<IPropsType, IStateType> {
               <div className="box box-primary">
                 <div className="box-header with-border">
                   <h3 className="box-title">Detalle de inventario por sucursal</h3>
-                  <div className="box-tools pull-right">
-                    <button
-                      className="btn btn-sm btn-primary hidden-xs hidden-sm"
-                      onClick={() => this.xlsExport(['pending', 'found', 'leftover', 'missing', 'reported'])}
-                    >
-                      <i className="fa fa-fw fa-download"/> Exportar Excel
+                  {
+                    showDownloadFile ?
+                      <div className="box-tools pull-right">
+                        <button
+                          className="btn btn-sm btn-primary hidden-xs hidden-sm"
+                          onClick={() => this.xlsExport(['pending', 'found', 'leftover', 'missing', 'reported'])}
+                        >
+                          <i className="fa fa-fw fa-download" /> Exportar Excel
                     </button>
-                  </div>
+                      </div> : null
+                  }
                 </div>
                 <div className="box-body">
                   <div id="chart-venues-detail" style={{height: '550px', maxWidth: '100%'}}/>
@@ -883,12 +887,16 @@ class InventoryDetailView extends TrackingBasePage<IPropsType, IStateType> {
                     Detalle de inventario {selected.length ? <small className="hidden-sm hidden-xs text-primary">{selected.length} {selected.length > 1 ? 'seleccionados' : 'seleccionado'}.</small> : <small>{carsTable.length}</small>}
                   </h3>
                   <div className="box-tools pull-right">
-                    <button
-                      className="btn btn-sm btn-primary hidden-xs hidden-sm"
-                      onClick={() => this.xlsExport(['pending', 'found', 'leftover', 'missing', 'reported'])}
-                    >
-                      <i className="fa fa-fw fa-download"/> Exportar Excel
+                    {
+                      showDownloadFile ?
+                        <button
+                          className="btn btn-sm btn-primary hidden-xs hidden-sm"
+                          onClick={() => this.xlsExport(['pending', 'found', 'leftover', 'missing', 'reported'])}
+                        >
+                          <i className="fa fa-fw fa-download" /> Exportar Excel
                     </button>
+                        : null
+                    }
                     <div className="btn-group btn-group-sm hidden-xs hidden-sm" style={{marginLeft: '5px'}}>
                       <button type="button" className="btn btn-success"><i className="fa fa-fw fa-cogs"/> Acciones</button>
                       <button type="button" className="btn btn-success dropdown-toggle" data-toggle="dropdown">
