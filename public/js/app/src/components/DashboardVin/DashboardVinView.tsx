@@ -111,6 +111,15 @@ class DashboardVinView extends TrackingBasePage<IPropsType, IStateType> {
     this.socket.on('REFRESH', (data: any): void => {
       const {page} = this.props.dashboard.pagination;
       if (data.update) {
+        ($ as any).toast({
+          heading: data.notification.title,
+          text: data.notification.text,
+          position: 'top-right',
+          loaderBg: '#e2e2e2',
+          icon: 'success',
+          hideAfter: 5000,
+          stack: 6
+        });
         this.props.getRevisionsAction(page, false);
         if (!this.state.highlight.includes(data.car)) {
           this.setState({

@@ -50,7 +50,7 @@ import CopyText from '../Utils/CopyText';
 import ImageLazyLoad from '../Utils/ImageLazyLoad';
 import Row from '../Utils/Row';
 import InventoryCarComments from './InventoryCarComments';
-import TrackingBasePage from "../Utils/TrackingBasePage";
+import TrackingBasePage from '../Utils/TrackingBasePage';
 
 declare let window: IWindow;
 
@@ -469,7 +469,7 @@ class InventoryDetailView extends TrackingBasePage<IPropsType, IStateType> {
               {row.patent && row.patent.length ?
               <CopyText value={row.patent}><strong>{row.patent}</strong></CopyText> : null }&nbsp;
               {row.vin && row.vin.length ?
-                <CopyText value={row.vin} className={row.patent && row.patent.length ? "text-muted text-sm" : ""}>{row.vin}</CopyText> : null }
+                <CopyText value={row.vin} className={row.patent && row.patent.length ? 'text-muted text-sm' : ''}>{row.vin}</CopyText> : null }
             </React.Fragment>
         <br/>
         <span className="text-muted text-sm">{cell} / {row.denomination}</span>
@@ -657,6 +657,7 @@ class InventoryDetailView extends TrackingBasePage<IPropsType, IStateType> {
       percentageReported,
       percentageMissing
     } = this.calculateDetails(summary.results);
+
     const showDownloadFile =  moment().subtract(1, 'months').isSameOrBefore(summary.createdAt);
 
     return (
@@ -1395,7 +1396,7 @@ class InventoryDetailView extends TrackingBasePage<IPropsType, IStateType> {
   }
 
   private xlsExport(status: string[]) {
-    this.trackClick("Exportar");
+    this.trackClick('Exportar');
     const {detail} = this.props.inventories;
     const data: any = [];
     const {inventorySettings} = this.props.inventories;

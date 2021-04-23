@@ -20,7 +20,7 @@ import {hasPermission} from '../../utils/common';
 import Row from '../Utils/Row';
 import Paginator from '../Utils/Paginator';
 import { Link } from 'react-router-dom';
-import TrackingBasePage from "../Utils/TrackingBasePage";
+import TrackingBasePage from '../Utils/TrackingBasePage';
 
 declare let window: IWindow;
 

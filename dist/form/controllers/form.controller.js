@@ -608,7 +608,7 @@ class FormController {
         }
         vin = vin.replace(/[\W_]+/g, '');
         try {
-            const updatedUser = await user_model_1.default.findById(req.user._id);
+            const updatedUser = await user_model_1.default.findById(req.user._id).populate([{ path: 'venue' }]);
             if (!updatedUser) {
                 return res.status(404).json({
                     message: 'No se ha encontrado el formulario solicitado.',
@@ -855,7 +855,11 @@ class FormController {
                         // send refresh with websocket to dashboard list
                         server_1.io.to(`dashboard-vin-view-${team._id}`).emit('REFRESH', {
                             update: true,
-                            car: car._id
+                            car: newParticipant._id,
+                            notification: {
+                                title: 'Vehículo revisado',
+                                text: `${req.user.firstName} ${req.user.lastName} reviso ${car.brand} (${car.denomination}) en ${updatedUser.venue.name}.`
+                            }
                         });
                         // send refresh with websocket to dashboard detail
                         server_1.io.to(`dashboard-vin-detail-${car._id}`).emit(`ADD_PARTICIPANT`, await participant_model_1.default
