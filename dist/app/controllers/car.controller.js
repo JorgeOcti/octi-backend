@@ -377,7 +377,7 @@ class CarController {
                     patent: true,
                     denomination: true
                 });
-                if (car) {
+                if (car && car.length) {
                     res.json({
                         data: vin ? car[0] : car,
                         status: 200
