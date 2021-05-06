@@ -72,15 +72,17 @@ class DashboardRevisionsView extends TrackingBasePage<IPropsType, IStateType> {
 
       totalRevisions = revisionStats.revisions.totalRevisions;
 
-      let acceptedRevisions = revisionStats.revisions.sentStats.accepted + revisionStats.revisions.receivedStats.accepted;
-      let rejectedRevisions = revisionStats.revisions.sentStats.rejected + revisionStats.revisions.receivedStats.rejected;
+      if (revisionStats.revisions.sentStats && revisionStats.revisions.receivedStats) {
+        let acceptedRevisions = revisionStats.revisions.sentStats.accepted + revisionStats.revisions.receivedStats.accepted;
+        let rejectedRevisions = revisionStats.revisions.sentStats.rejected + revisionStats.revisions.receivedStats.rejected;
 
-      participantAcceptance = 100*acceptedRevisions/(acceptedRevisions + rejectedRevisions);
+        participantAcceptance = 100 * acceptedRevisions / (acceptedRevisions + rejectedRevisions);
 
-      let totalSent = (revisionStats.revisions.sentStats.accepted  +  revisionStats.revisions.sentStats.rejected );
-      let totalReceive = (revisionStats.revisions.receivedStats.accepted  +  revisionStats.revisions.receivedStats.rejected );
-      shipAcceptance = totalSent ? 100 * revisionStats.revisions.sentStats.accepted/ totalSent : Infinity;
-      receiveAcceptance = totalReceive ? 100 * revisionStats.revisions.receivedStats.accepted/ totalReceive : Infinity;
+        let totalSent = (revisionStats.revisions.sentStats.accepted + revisionStats.revisions.sentStats.rejected);
+        let totalReceive = (revisionStats.revisions.receivedStats.accepted + revisionStats.revisions.receivedStats.rejected);
+        shipAcceptance = totalSent ? 100 * revisionStats.revisions.sentStats.accepted / totalSent : Infinity;
+        receiveAcceptance = totalReceive ? 100 * revisionStats.revisions.receivedStats.accepted / totalReceive : Infinity;
+      }
 
       let totalVenues = (revisionStats.venues.activeVenues + revisionStats.venues.inactiveVenues);
       venueActivity = 100 * revisionStats.venues.activeVenues/ totalVenues;
