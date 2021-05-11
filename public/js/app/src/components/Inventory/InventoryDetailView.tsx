@@ -42,7 +42,7 @@ import AppContainer from '../../container/AppContainer';
 import {IWindow} from '../../interfaces/window';
 import {IFilterCar} from '../../reducers/inventory.reducer';
 import ApiService from '../../utils/axios';
-import {goToSection, hasPermission, maxText} from '../../utils/common';
+import {goToSection, hasPermission, isDercoDercocenter, maxText} from '../../utils/common';
 import ModalView from '../Modal/ModalView';
 import BootstrapSelect from '../Utils/BootstrapSelect';
 import Checkbox from '../Utils/CheckBox';
@@ -658,7 +658,7 @@ class InventoryDetailView extends TrackingBasePage<IPropsType, IStateType> {
       percentageMissing
     } = this.calculateDetails(summary.results);
 
-    const showDownloadFile =  moment().subtract(1, 'months').isSameOrBefore(summary.createdAt);
+    const showDownloadFile = isDercoDercocenter(this.props.inventories.detail) || moment().subtract(1, 'months').isSameOrBefore(summary.createdAt);
 
     return (
       <AppContainer title={summary.name} cMenu="2" cSubMenu="2.1" cAction={tab === 'summary' ? 'Consolidado' : 'Detalle'}>
