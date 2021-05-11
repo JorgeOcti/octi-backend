@@ -2,6 +2,7 @@ import {Job, Queue} from 'kue';
 import * as Mail from 'nodemailer/lib/mailer';
 import * as path from 'path';
 import * as pug from 'pug';
+import logger from '../../services/logger.service';
 import {compileTemplate} from 'pug';
 import nodemailerTransporter from '../../services/aws-ses.service';
 
@@ -19,7 +20,10 @@ class EmailQueue {
   }
 
   private generateHTML(view: string, context: any): string {
-    const templatePath: string = path.join(__dirname, '../../../views/') + 'emails/' + view + '.pug';
+    const extension = view.includes('.pug', view.length-4) ? '': '.pug';
+    const templatePath: string = path.join(__dirname, '../../../views/') + 'emails/' + view + extension;
+    logger.debug(extension)
+    logger.debug(templatePath)
     const pugCompile: compileTemplate = pug.compileFile(templatePath);
     return pugCompile(context);
   }
