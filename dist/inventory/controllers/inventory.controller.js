@@ -1649,7 +1649,9 @@ class InventoryController {
                     name: true,
                     status: true,
                     cars: true,
-                    venues: true
+                    venues: true,
+                    company: true,
+                    team: true,
                 }).populate([{
                         path: 'cars',
                         match: {

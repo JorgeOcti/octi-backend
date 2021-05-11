@@ -136,3 +136,10 @@ export function hasPermission(user: IUser, permission: string) {
   }
   return false;
 }
+
+export function isDercoDercocenter(object? : any){
+  let user : IUser = window.user;
+  const dercocenterID = "5c1a80f84fba86565186a757";
+  return object && object.hasOwnProperty("company") ?
+    object.company === dercocenterID : user.company._id === dercocenterID;
+}
