@@ -31,6 +31,7 @@ import * as bluebird from 'bluebird';
 import {IParticipant} from '../../interfaces/participant.interface';
 import {IVenueDay} from '../../interfaces/venueDay.interface';
 import ActivityHistory, {ChoicesTypeActivity} from '../../billing/models/activityHistory.model';
+import TriggerHandler from "../commands/triggerHandler";
 // import {ValidationResult} from 'joi';
 
 
@@ -826,6 +827,11 @@ class FormController {
                 $lt: tomorrow.toDate()
               }
             });
+
+            if (form.triggers && form.triggers.length){
+              let triggersHandler = new TriggerHandler(form, newParticipant);
+              triggersHandler.execute({})
+            }
 
             /* Search alerts */
             const alerts = await Alert
