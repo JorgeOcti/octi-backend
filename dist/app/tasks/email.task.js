@@ -2,6 +2,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 const path = require("path");
 const pug = require("pug");
+const logger_service_1 = require("../../services/logger.service");
 const aws_ses_service_1 = require("../../services/aws-ses.service");
 class EmailQueue {
     constructor(queue) {
@@ -13,7 +14,10 @@ class EmailQueue {
         this.queue.process('email', this.processEmail);
     }
     generateHTML(view, context) {
-        const templatePath = path.join(__dirname, '../../../views/') + 'emails/' + view + '.pug';
+        const extension = view.includes('.pug', view.length - 4) ? '' : '.pug';
+        const templatePath = path.join(__dirname, '../../../views/') + 'emails/' + view + extension;
+        logger_service_1.default.debug(extension);
+        logger_service_1.default.debug(templatePath);
         const pugCompile = pug.compileFile(templatePath);
         return pugCompile(context);
     }
