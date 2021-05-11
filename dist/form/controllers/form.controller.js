@@ -29,6 +29,7 @@ const participantFile_model_1 = require("../models/participantFile.model");
 const scale_model_1 = require("../models/scale.model");
 const bluebird = require("bluebird");
 const activityHistory_model_1 = require("../../billing/models/activityHistory.model");
+const triggerHandler_1 = require("../commands/triggerHandler");
 // import {ValidationResult} from 'joi';
 // import * as puppeteer from 'puppeteer';
 const DERCO_TEAM = '5bf2de34caf8ef7096105cda';
@@ -805,6 +806,10 @@ class FormController {
                                 $lt: tomorrow.toDate()
                             }
                         });
+                        if (form.triggers && form.triggers.length) {
+                            let triggersHandler = new triggerHandler_1.default(form, newParticipant);
+                            triggersHandler.execute({});
+                        }
                         /* Search alerts */
                         const alerts = await alert_model_1.default
                             .find({
