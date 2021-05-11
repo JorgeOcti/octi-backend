@@ -2,6 +2,7 @@ import * as mongoose from 'mongoose';
 import { PaginateModel } from 'mongoose';
 import * as mongoosePaginate from 'mongoose-paginate';
 import {IForm, IFormAccesory, IFormItems, IFormQuestion, IFormSection} from '../../interfaces/form.interface';
+import {formTriggerSchema} from "./trigger.model";
 
 export interface IFormItemModel extends IFormItems, mongoose.Types.Subdocument {}
 const itemSchema = new mongoose.Schema({
@@ -33,7 +34,8 @@ export enum KindQuestion {
   text = 'text',
   venue = 'venue',
   damage = 'damage',
-  carrier = 'carrier'
+  carrier = 'carrier',
+  image ='image'
 }
 
 export const kindQuestion = [
@@ -42,7 +44,8 @@ export const kindQuestion = [
   KindQuestion.accessory,
   KindQuestion.damage,
   KindQuestion.venue,
-  KindQuestion.carrier
+  KindQuestion.carrier,
+  KindQuestion.image
 ];
 
 export enum KindQuestionKeyboard {
@@ -55,6 +58,18 @@ export const kindQuestionKeyboard = [
   KindQuestionKeyboard.text,
   KindQuestionKeyboard.numeric,
   KindQuestionKeyboard.email,
+];
+
+export enum KindQuestionImage {
+  photo = 'photo',
+  signature = 'signature',
+  picture = 'picture',
+}
+
+export const kindQuestionImage = [
+  KindQuestionImage.photo,
+  KindQuestionImage.signature,
+  KindQuestionImage.picture,
 ];
 
 export interface IFormQuestionModel extends IFormQuestion, mongoose.Types.Subdocument {}
@@ -126,6 +141,12 @@ const formQuestionsSchema = new mongoose.Schema({
     type: String,
     enum: kindQuestionKeyboard,
     default: KindQuestionKeyboard.text
+  },
+
+  imageType: {
+    type: String,
+    enum: kindQuestionImage,
+    default: KindQuestionImage.picture
   }
 });
 
@@ -249,6 +270,7 @@ const formSchema = new mongoose.Schema({
   },
 
   sections: [formSectionsSchema],
+  triggers: [formTriggerSchema],
 
   active: {
     type: Boolean,

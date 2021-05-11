@@ -9,6 +9,7 @@ import {
 import {IScaleModel} from '../form/models/scale.model';
 import {ICompany} from './company.interface';
 import {ITeam} from './team.interface';
+import {IFormTriggerModel} from "../form/models/trigger.model";
 
 export interface IFormItems {
   _id: any;
@@ -44,6 +45,7 @@ export interface IFormQuestion {
   optional: boolean;
   hint: string;
   keyboardType: string;
+  imageType: string;
 }
 
 export interface IFormSection {
@@ -55,6 +57,24 @@ export interface IFormSection {
 
   weight: number;
   order: number;
+}
+
+export interface ITriggerConfig {
+  fullname: any;
+  email: any;
+  signature: any;
+  subject: string;
+  filename: string;
+  template: string;
+}
+
+export interface IFormTrigger {
+  _id: any;
+  name: string;
+  description: string;
+
+  kind: string;
+  config: ITriggerConfig | any;
 }
 
 export interface IForm {
@@ -84,6 +104,7 @@ export interface IForm {
   conciliationImage: boolean;
 
   sections: mongoose.Types.Array<IFormSectionModel>;
+  triggers: mongoose.Types.Array<IFormTriggerModel>;
   url?: string;
   active: boolean;
 }

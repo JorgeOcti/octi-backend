@@ -1,8 +1,9 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.kindQuestionKeyboard = exports.KindQuestionKeyboard = exports.kindQuestion = exports.KindQuestion = void 0;
+exports.kindQuestionImage = exports.KindQuestionImage = exports.kindQuestionKeyboard = exports.KindQuestionKeyboard = exports.kindQuestion = exports.KindQuestion = void 0;
 const mongoose = require("mongoose");
 const mongoosePaginate = require("mongoose-paginate");
+const trigger_model_1 = require("./trigger.model");
 const itemSchema = new mongoose.Schema({
     item: {
         type: String,
@@ -30,6 +31,7 @@ var KindQuestion;
     KindQuestion["venue"] = "venue";
     KindQuestion["damage"] = "damage";
     KindQuestion["carrier"] = "carrier";
+    KindQuestion["image"] = "image";
 })(KindQuestion = exports.KindQuestion || (exports.KindQuestion = {}));
 exports.kindQuestion = [
     KindQuestion.scale,
@@ -37,7 +39,8 @@ exports.kindQuestion = [
     KindQuestion.accessory,
     KindQuestion.damage,
     KindQuestion.venue,
-    KindQuestion.carrier
+    KindQuestion.carrier,
+    KindQuestion.image
 ];
 var KindQuestionKeyboard;
 (function (KindQuestionKeyboard) {
@@ -49,6 +52,17 @@ exports.kindQuestionKeyboard = [
     KindQuestionKeyboard.text,
     KindQuestionKeyboard.numeric,
     KindQuestionKeyboard.email,
+];
+var KindQuestionImage;
+(function (KindQuestionImage) {
+    KindQuestionImage["photo"] = "photo";
+    KindQuestionImage["signature"] = "signature";
+    KindQuestionImage["picture"] = "picture";
+})(KindQuestionImage = exports.KindQuestionImage || (exports.KindQuestionImage = {}));
+exports.kindQuestionImage = [
+    KindQuestionImage.photo,
+    KindQuestionImage.signature,
+    KindQuestionImage.picture,
 ];
 const formQuestionsSchema = new mongoose.Schema({
     question: {
@@ -109,6 +123,11 @@ const formQuestionsSchema = new mongoose.Schema({
         type: String,
         enum: exports.kindQuestionKeyboard,
         default: KindQuestionKeyboard.text
+    },
+    imageType: {
+        type: String,
+        enum: exports.kindQuestionImage,
+        default: KindQuestionImage.picture
     }
 });
 const formSectionsSchema = new mongoose.Schema({
@@ -219,6 +238,7 @@ const formSchema = new mongoose.Schema({
         default: false
     },
     sections: [formSectionsSchema],
+    triggers: [trigger_model_1.formTriggerSchema],
     active: {
         type: Boolean,
         default: true
