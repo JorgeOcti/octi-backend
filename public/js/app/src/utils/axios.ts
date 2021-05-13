@@ -13,10 +13,13 @@ import {
 import {
   IBaseCompany
 } from '../../../../../src/interfaces/company.interface';
+import { IReason } from '../../../../../src/interfaces/reason.interface';
 import {
   IBaseRegion
 } from '../../../../../src/interfaces/region.interface';
 import { IRequestItem } from '../../../../../src/interfaces/requestItem.interface';
+import { IRequestStatus } from '../../../../../src/interfaces/requestStatus.interface';
+import { ISalesChannel } from '../../../../../src/interfaces/salesChannel.interface';
 import {
   IBaseVenue
 } from '../../../../../src/interfaces/venue.interface';
@@ -121,6 +124,8 @@ export default class ApiService {
   public createCompany(company: IBaseCompany): AxiosPromise {
     const formData = new FormData();
     formData.append('name', company.name);
+    formData.append('businessName', company.businessName);
+    formData.append('rut', company.rut);
     formData.append('billing', JSON.stringify(company.billing));
     formData.append('notifications', JSON.stringify(company.notifications));
     if (company.image) {
@@ -138,6 +143,8 @@ export default class ApiService {
   public updateCompany(company: IBaseCompany): AxiosPromise {
     const formData = new FormData();
     formData.append('name', company.name);
+    formData.append('businessName', company.businessName);
+    formData.append('rut', company.rut);
     formData.append('billing', JSON.stringify(company.billing));
     formData.append('notifications', JSON.stringify(company.notifications));
     if (company.image) {
@@ -182,15 +189,51 @@ export default class ApiService {
     );
   }
 
-  public getReasons(page: number, pageSize?: number): AxiosPromise {
-    return this.instance.get(
-      `/api/v1/reasons/?page=${page}${pageSize ? `&pageSize=${pageSize}` : ''}`
+  public createReason(reason: any): AxiosPromise {
+    return this.instance.post(
+      `/api/v1/reasons/`, reason
     );
   }
 
-  public getSalesChannel(page: number, pageSize?: number): AxiosPromise {
+  public updateReason(reason: IReason): AxiosPromise {
+    return this.instance.patch(
+      `/api/v1/reasons/${reason._id}/`, reason
+    );
+  }
+
+  public deleteReason(reason: IReason): AxiosPromise {
+    return this.instance.delete(
+      `/api/v1/reasons/${reason._id}/`
+    );
+  }
+
+  public getReasons({page, pageSize, orderBy, orderType}:{page: number, orderType?: string, orderBy?: string, pageSize?: number}): AxiosPromise {
     return this.instance.get(
-      `/api/v1/sales-channel/?page=${page}${pageSize ? `&pageSize=${pageSize}` : ''}`
+      `/api/v1/reasons/?page=${page}${pageSize ? `&pageSize=${pageSize}` : ''}${orderBy ? `&orderBy=${orderBy}` : ''}${orderType ? `&orderType=${orderType}` : ''}`
+    );
+  }
+
+  public createSalesChannel(salesChannel: any): AxiosPromise {
+    return this.instance.post(
+      `/api/v1/sales-channel/`, salesChannel
+    );
+  }
+
+  public updateSalesChannel(salesChannel: ISalesChannel): AxiosPromise {
+    return this.instance.patch(
+      `/api/v1/sales-channel/${salesChannel._id}/`, salesChannel
+    );
+  }
+
+  public deleteSalesChannel(salesChannel: ISalesChannel): AxiosPromise {
+    return this.instance.delete(
+      `/api/v1/sales-channel/${salesChannel._id}/`
+    );
+  }
+
+  public getSalesChannel({page, pageSize, orderBy, orderType}:{page: number, orderType?: string, orderBy?: string, pageSize?: number}): AxiosPromise {
+    return this.instance.get(
+      `/api/v1/sales-channel/?page=${page}${pageSize ? `&pageSize=${pageSize}` : ''}${orderBy ? `&orderBy=${orderBy}` : ''}${orderType ? `&orderType=${orderType}` : ''}`
     );
   }
 
@@ -562,9 +605,27 @@ export default class ApiService {
     });
   }
 
-  public getRequestItemsStatus(page: number, pageSize?: number): AxiosPromise {
+  public createRequestItemsStatus(requestStatus: IRequestStatus): AxiosPromise {
+    return this.instance.post(
+      `/api/v1/request-item-status/`, requestStatus
+    );
+  }
+
+  public updateRequestItemsStatus(requestStatus: IRequestStatus): AxiosPromise {
+    return this.instance.patch(
+      `/api/v1/request-item-status/${requestStatus._id}/`, requestStatus
+    );
+  }
+
+  public deleteRequestItemsStatus(requestStatus: IRequestStatus): AxiosPromise {
+    return this.instance.delete(
+      `/api/v1/request-item-status/${requestStatus._id}/`
+    );
+  }
+
+  public getRequestItemsStatus({page, pageSize, orderBy, orderType}:{page: number, orderType?: string, orderBy?: string, pageSize?: number}): AxiosPromise {
     return this.instance.get(
-      `/api/v1/request-item-status/?page=${page}${pageSize ? `&pageSize=${pageSize}` : ''}`
+      `/api/v1/request-item-status/?page=${page}${pageSize ? `&pageSize=${pageSize}` : ''}${orderBy ? `&orderBy=${orderBy}` : ''}${orderType ? `&orderType=${orderType}` : ''}`
     );
   }
 

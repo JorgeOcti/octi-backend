@@ -678,8 +678,8 @@ class RequestCreateView extends TrackingBasePage<IPropsType, IStateType> {
     Axios
       .all([
         this.api.getVenues(1, 200, true, true),
-        this.api.getReasons(1, 200),
-        this.api.getSalesChannel(1, 200)
+        this.api.getReasons({ page: 1, pageSize: 200 }),
+        this.api.getSalesChannel({ page: 1, pageSize: 200 })
       ])
       .then(Axios.spread((venues, reasons, channels) => {
         this.setState({

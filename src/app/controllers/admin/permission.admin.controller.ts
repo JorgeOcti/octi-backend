@@ -1,6 +1,6 @@
-import {Response} from 'express';
-import {IRequest} from '../../../interfaces/global.interface';
-import Permission, {PermissionSchema} from '../../models/permision.model';
+import { Response } from 'express';
+import { IRequest } from '../../../interfaces/global.interface';
+import Permission, { PermissionSchema } from '../../models/permision.model';
 import BaseAdminController from './base.admin.controller';
 
 class AdminPermissionController extends BaseAdminController<PermissionSchema> {
@@ -21,9 +21,9 @@ class AdminPermissionController extends BaseAdminController<PermissionSchema> {
       }
     };
     let filter = {};
-    if (req.user.hasPermission("changeTeamPermissions") && !req.user.isAdmin)
+    if (req.user.hasPermission('changeTeamPermissions') && !req.user.isAdmin)
       filter = {
-        _id: {$in: req.user.userPermissions}
+        _id: { $in: req.user.userPermissions }
       };
 
     req.context = {

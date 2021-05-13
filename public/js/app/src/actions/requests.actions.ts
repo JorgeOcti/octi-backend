@@ -208,8 +208,8 @@ export function getRequestsThunkAction(nextPage: number, orderBy: string, orderT
     Axios
       .all([
         api.getRequests({page, orderBy, orderType}),
-        api.getReasons(1, 200),
-        api.getRequestItemsStatus(1, 200)
+        api.getReasons({ page: 1, pageSize: 200 }),
+        api.getRequestItemsStatus({ page: 1, pageSize: 200 })
         // api.getCarriers(1, 200)
       ])
       .then(Axios.spread((requests, reasons, requestItemStatus /*, carriers*/) => {
@@ -235,8 +235,8 @@ export function getRequestThunkAction(id: string) {
     Axios
       .all([
         api.getRequest(id),
-        api.getReasons(1, 200),
-        api.getRequestItemsStatus(1, 200)
+        api.getReasons({ page: 1, pageSize: 200 }),
+        api.getRequestItemsStatus({ page: 1, pageSize: 200 })
         // api.getCarriers(1, 200)
       ])
       .then(Axios.spread((request, reasons, requestItemStatus /*, carriers*/) => {

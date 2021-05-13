@@ -44,7 +44,13 @@ const reasonSchema = new mongoose.Schema({
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Team'
     },
-    file: fileSchema,
+    file: {
+        type: fileSchema,
+        default: {
+            active: false,
+            required: false
+        }
+    },
     questions: {
         type: [questionSchema],
         default: []

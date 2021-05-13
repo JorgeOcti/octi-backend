@@ -69,7 +69,7 @@ class AdminCompaniesController {
                 message: 'No tienes permisos para esta operación'
             });
         }
-        const { name, billing, notifications } = req.body;
+        const { name, businessName, rut, billing, notifications } = req.body;
         const team = req.user.team;
         const image = general_utils_1.default.getFileFromRequest(req.files, 'image');
         const marker = general_utils_1.default.getFileFromRequest(req.files, 'marker');
@@ -82,6 +82,8 @@ class AdminCompaniesController {
         try {
             const existCompany = await company_model_1.default.find({
                 name,
+                businessName,
+                rut,
                 team,
                 deleted: false
             });
@@ -134,7 +136,7 @@ class AdminCompaniesController {
         }
         const { id } = req.params;
         const team = req.user.team;
-        const { name, billing, notifications } = req.body;
+        const { name, businessName, rut, billing, notifications } = req.body;
         const image = general_utils_1.default.getFileFromRequest(req.files, 'image');
         const marker = general_utils_1.default.getFileFromRequest(req.files, 'marker');
         if (!name || !name.length) {
@@ -149,6 +151,8 @@ class AdminCompaniesController {
                 team
             });
             if (company) {
+                company.businessName = businessName;
+                company.rut = rut;
                 company.name = name;
                 company.billing = JSON.parse(billing);
                 company.notifications = JSON.parse(notifications);

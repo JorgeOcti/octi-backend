@@ -30,7 +30,7 @@ class BillingListView extends TrackingBasePage<IPropsType, IStateType> {
   title : string;
 
   readonly state = {
-    error: null,
+    error: null
   };
 
   constructor(props: IPropsType) {
@@ -152,7 +152,7 @@ class BillingListView extends TrackingBasePage<IPropsType, IStateType> {
           <ModalView/>
         </section>
       </AppContainer>
-    )
+    );
   }
 
   private changePage(page: number): void {
@@ -170,7 +170,7 @@ const mapStateToProps = (state: { billing: IBillingState }) => {
 const mapDispatchToProps = (dispatch: any) => {
   return {
     dispatch,
-    getBillingAction: (page: number) => dispatch(getBillingAction(page)),
+    getBillingAction: (page: number) => dispatch(getBillingAction(page))
   };
 };
 

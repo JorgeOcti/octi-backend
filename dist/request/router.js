@@ -11,6 +11,9 @@ const requestRouter = express.Router();
 exports.requestRouter = requestRouter;
 // web pages
 requestRouter.get('/requests/', middlewares_1.default.isLoggedIn, request_controller_1.default.index);
+requestRouter.get('/requests/settings/reasons/', middlewares_1.default.isLoggedIn, request_controller_1.default.index);
+requestRouter.get('/requests/settings/channels/', middlewares_1.default.isLoggedIn, request_controller_1.default.index);
+requestRouter.get('/requests/settings/status/', middlewares_1.default.isLoggedIn, request_controller_1.default.index);
 requestRouter.get('/requests/export/', middlewares_1.default.isLoggedIn, request_controller_1.default.exportExcel);
 requestRouter.get('/requests/vehicles/:id/', middlewares_1.default.isLoggedIn, request_controller_1.default.index);
 requestRouter.get('/requests/vehicles/', middlewares_1.default.isLoggedIn, request_controller_1.default.index);
@@ -30,8 +33,17 @@ requestRouter.patch('/api/v1/requests-item/:id/', middlewares_1.default.isLogged
 requestRouter.delete('/api/v1/requests-item/:id/', middlewares_1.default.isLoggedIn, request_controller_1.default.apiDeleteRequestItem);
 requestRouter.get('/requests-item/:id/download-files/', middlewares_1.default.isJWTAuthenticated, request_controller_1.default.downloadItemFiles);
 requestRouter.get('/api/v1/reasons/', middlewares_1.default.isLoggedIn, reason_controller_1.default.apiList);
+requestRouter.post('/api/v1/reasons/', middlewares_1.default.isLoggedIn, reason_controller_1.default.apiCreate);
+requestRouter.patch('/api/v1/reasons/:id/', middlewares_1.default.isLoggedIn, reason_controller_1.default.apiUpdate);
+requestRouter.delete('/api/v1/reasons/:id/', middlewares_1.default.isLoggedIn, reason_controller_1.default.apiDelete);
 requestRouter.get('/api/v1/sales-channel/', middlewares_1.default.isLoggedIn, salesChannel_controller_1.default.apiList);
+requestRouter.post('/api/v1/sales-channel/', middlewares_1.default.isLoggedIn, salesChannel_controller_1.default.apiCreate);
+requestRouter.patch('/api/v1/sales-channel/:id/', middlewares_1.default.isLoggedIn, salesChannel_controller_1.default.apiUpdate);
+requestRouter.delete('/api/v1/sales-channel/:id/', middlewares_1.default.isLoggedIn, salesChannel_controller_1.default.apiDelete);
 requestRouter.get('/api/v1/sales-channel/create-default/', middlewares_1.default.isLoggedIn, salesChannel_controller_1.default.createDefault);
 requestRouter.get('/api/v1/sales-channel/update-fleet/', middlewares_1.default.isLoggedIn, salesChannel_controller_1.default.updateFleet);
 requestRouter.get('/api/v1/request-item-status/', middlewares_1.default.isLoggedIn, requestItemStatus_controller_1.default.apiList);
+requestRouter.post('/api/v1/request-item-status/', middlewares_1.default.isLoggedIn, requestItemStatus_controller_1.default.apiCreate);
+requestRouter.patch('/api/v1/request-item-status/:id/', middlewares_1.default.isLoggedIn, requestItemStatus_controller_1.default.apiUpdate);
+requestRouter.delete('/api/v1/request-item-status/:id/', middlewares_1.default.isLoggedIn, requestItemStatus_controller_1.default.apiDelete);
 //# sourceMappingURL=router.js.map

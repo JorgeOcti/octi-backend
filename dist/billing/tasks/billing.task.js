@@ -174,7 +174,8 @@ class BillingQueue {
         return general_utils_1.default.generateHtmlFromPugFile(templatePath, {
             css: css.replace(/(\r\n|\n|\r)/gm, ''),
             moment,
-            invoice
+            invoice,
+            jsUcfirst: (text) => (text.charAt(0).toUpperCase() + text.slice(1))
         });
     }
     async createPDF(invoice, company) {
