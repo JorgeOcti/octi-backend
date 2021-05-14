@@ -858,7 +858,7 @@ class FormController {
                             car: newParticipant._id,
                             notification: {
                                 title: 'Vehículo revisado',
-                                text: `${req.user.firstName} ${req.user.lastName} reviso ${car.brand} (${car.denomination}) en ${updatedUser.venue.name}.`
+                                text: `${req.user.firstName} ${req.user.lastName} revisó ${car.brand} (${car.denomination}) en ${updatedUser.venue.name}.`
                             }
                         });
                         // send refresh with websocket to dashboard detail
