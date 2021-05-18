@@ -72,7 +72,7 @@ export interface IFormTrigger {
   _id: any;
   name: string;
   description: string;
-
+  enabled: boolean;
   kind: string;
   config: ITriggerConfig | any;
 }

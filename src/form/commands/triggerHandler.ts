@@ -1,6 +1,6 @@
 import {IForm} from "../../interfaces/form.interface";
-import {IParticipant, IParticipantAnswer, IParticipantSection} from "../../interfaces/participant.interface";
-import ParticipantModel, {IParticipantAnswerModel} from "../models/participant.model";
+import {IParticipant} from "../../interfaces/participant.interface";
+import ParticipantModel from "../models/participant.model";
 import logger from '../../services/logger.service';
 import {IFormTriggerModel, KindTrigger} from "../models/trigger.model";
 import { queue } from '../../app';
@@ -9,7 +9,6 @@ import * as fs from 'fs';
 import * as path from 'path';
 import GeneralUtils from "../../utils/general.utils";
 import * as moment from 'moment-timezone';
-import * as QRCode from "qrcode";
 import {KindQuestion} from "../models/form.model";
 import ParticipantFile from "../models/participantFile.model";
 
@@ -96,6 +95,11 @@ export default class TriggerHandler {
   public async execute(payload : any = {}) {
     await this.getParticipantFullData();
     for (const trigger : IFormTriggerModel of this.form.triggers){
+      if (!trigger.enabled){
+        logger.info(`Trigger: ${trigger.name} deactivated`);
+        continue;
+      }
+
       let triggerDelegate : ITriggerDelegate = this.getTrigger(trigger);
       payload = await triggerDelegate.trigger(trigger, this.answers, {...payload, participant: this.participant});
     }
@@ -121,7 +125,6 @@ export default class TriggerHandler {
 
 interface ITriggerDelegate {
   trigger(trigger: IFormTriggerModel, answers: any, payload: any): any
-
 }
 
 class NullTriggerDelegate implements  ITriggerDelegate {

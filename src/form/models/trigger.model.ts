@@ -1,7 +1,5 @@
 import * as mongoose from 'mongoose';
-import {PaginateModel} from "mongoose";
 import {IFormTrigger, ITriggerConfig} from "../../interfaces/form.interface";
-import {string} from "joi";
 
 export enum KindTrigger {
   file = 'file',
@@ -39,6 +37,11 @@ export const formTriggerSchema = new mongoose.Schema({
   kind: {
     type: String,
     enum: kindTrigger,
+  },
+
+  enabled: {
+    type: Boolean,
+    default: true
   },
 
   config: triggerConfigSchema
