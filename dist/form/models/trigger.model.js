@@ -12,8 +12,8 @@ exports.kindTrigger = [
     KindTrigger.email,
 ];
 exports.triggerConfigSchema = new mongoose.Schema({
-    fullname: mongoose.Schema.Types.ObjectId,
-    email: mongoose.Schema.Types.ObjectId,
+    fullname: [mongoose.Schema.Types.Mixed],
+    email: [mongoose.Schema.Types.Mixed],
     signature: mongoose.Schema.Types.ObjectId,
     subject: {
         type: String,

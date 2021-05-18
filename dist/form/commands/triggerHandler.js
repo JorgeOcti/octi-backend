@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+const participant_model_1 = require("../models/participant.model");
 const logger_service_1 = require("../../services/logger.service");
 const trigger_model_1 = require("../models/trigger.model");
 const app_1 = require("../../app");
@@ -7,7 +8,7 @@ const HtmlPdf = require("html-pdf");
 const fs = require("fs");
 const path = require("path");
 const general_utils_1 = require("../../utils/general.utils");
-const moment = require("moment");
+const moment = require("moment-timezone");
 const form_model_1 = require("../models/form.model");
 const participantFile_model_1 = require("../models/participantFile.model");
 class TriggerHandler {
@@ -15,6 +16,62 @@ class TriggerHandler {
         this.form = form;
         this.participant = participant;
         this.answers = answers ? answers : this.getAnswers();
+    }
+    async getParticipantFullData() {
+        this.participant = await participant_model_1.default
+            .findOne({
+            _id: this.participant._id,
+        }, {
+            name: true,
+            number: true,
+            user: true,
+            sections: true,
+            qualification: true,
+            shipping: true,
+            shippingText: true,
+            shippingImages: true,
+            carrier: true,
+            reception: true,
+            receptionText: true,
+            receptionImages: true,
+            conciliation: true,
+            conciliationText: true,
+            conciliationImages: true,
+            createdAt: true
+        })
+            .populate([{
+                path: 'user',
+                select: ['firstName', 'lastName', 'venue'],
+                populate: [{
+                        path: 'venue',
+                        populate: [{
+                                path: 'company'
+                            }]
+                    }]
+            }, {
+                path: 'receiveFrom',
+                select: 'name'
+            }, {
+                path: 'venue',
+                select: 'name'
+            }, {
+                path: 'sendTo',
+                select: 'name'
+            }, {
+                path: 'carrierBy',
+                select: 'name'
+            }, {
+                path: 'car',
+                select: ['vin', 'internalNumber', 'engineNumber', 'brand', 'denomination', 'color', 'patent']
+            }, {
+                path: 'sections.answers.images'
+            }, {
+                path: 'shippingImages'
+            }, {
+                path: 'receptionImages'
+            }, {
+                path: 'conciliationImages'
+            }]).lean();
     }
     getAnswers() {
         let answers = {};
@@ -25,12 +82,14 @@ class TriggerHandler {
         });
         return answers;
     }
-    execute(payload = {}) {
-        this.form.triggers.reduce((payload, trigger) => {
-            return this.executeTrigger(trigger).trigger(trigger, this.answers, { ...payload, participant: this.participant });
-        }, payload);
+    async execute(payload = {}) {
+        await this.getParticipantFullData();
+        for (const trigger of this.form.triggers) {
+            let triggerDelegate = this.getTrigger(trigger);
+            payload = await triggerDelegate.trigger(trigger, this.answers, { ...payload, participant: this.participant });
+        }
     }
-    executeTrigger(trigger) {
+    getTrigger(trigger) {
         let delegate = new NullTriggerDelegate();
         switch (trigger.kind) {
             case trigger_model_1.KindTrigger.email: {
@@ -49,9 +108,6 @@ exports.default = TriggerHandler;
 class NullTriggerDelegate {
     processTrigerConfig(trigger, answers) {
         let data = {};
-        logger_service_1.default.info(JSON.stringify(answers));
-        logger_service_1.default.info(JSON.stringify(trigger.config));
-        logger_service_1.default.info(JSON.stringify(Object.keys(trigger.config.toJSON())));
         Object.keys(trigger.config.toJSON()).map((k) => {
             data[k] = answers.hasOwnProperty(trigger.config[k].toString()) ?
                 answers[trigger.config[k].toString()] : trigger.config[k].toString();
@@ -63,15 +119,20 @@ class NullTriggerDelegate {
     }
 }
 class EmailTriggerDelegate extends NullTriggerDelegate {
+    validateEmail(email) {
+        const re = /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+        return re.test(String(email).toLowerCase());
+    }
     trigger(trigger, answers, payload) {
         logger_service_1.default.info(`Kind Trigger: ${trigger.kind} performing`);
-        logger_service_1.default.info(trigger.config.template);
         let data = this.processTrigerConfig(trigger, answers);
+        if (!this.validateEmail(data.email))
+            return payload;
         app_1.queue.create('email', {
             from: '',
-            title: `Welcome email for ${data.fullname}`,
+            title: `"${data.subject} | ${data.fullname}`,
             to: `"${data.fullname}"<${data.email}>`,
-            subject: `${data.fullname} bienvenido(a) a OSA Andes`,
+            subject: `${data.subject}`,
             text: ``,
             attachments: payload.files || [],
             view: trigger.config.template,
@@ -104,9 +165,9 @@ class FileTriggerDelegate extends NullTriggerDelegate {
             type: 'pdf',
             quality: '75'
         };
-        logger_service_1.default.info("DATA:" + JSON.stringify(data));
         data.signature = (await participantFile_model_1.default.find({ _id: { $in: data.signature } })).map(f => f.file.url)[0];
-        logger_service_1.default.info("DATA:" + JSON.stringify(data));
+        moment.locale('es');
+        moment.tz.setDefault('America/Santiago');
         const css = fs.readFileSync(path.join(__dirname, '../../../views/') + 'form/carDetail/style.css', 'utf8');
         const templatePath = path.join(__dirname, '../../../views/') + data.template; // 'form/carDetail/index.pug';
         const html = general_utils_1.default.generateHtmlFromPugFile(templatePath, {
@@ -169,13 +230,22 @@ class FileTriggerDelegate extends NullTriggerDelegate {
                 }) : false;
             }
         });
-        await HtmlPdf.create(html, config).toFile(filePath);
-        // });
+        const createPDF = (html, options) => new Promise(((resolve, reject) => {
+            HtmlPdf.create(html, options).toFile(filePath, (err, buffer) => {
+                if (err !== null) {
+                    reject(err);
+                }
+                else {
+                    resolve(buffer);
+                }
+            });
+        }));
+        const PDF = await createPDF(html, config);
         if (payload.hasOwnProperty('files')) {
-            payload.file.push({ filename, path: filePath });
+            payload.file.push({ filename, path: PDF.filename });
         }
         else {
-            payload['files'] = [{ filename, path: filePath }];
+            payload['files'] = [{ filename, path: PDF.filename }];
         }
         return payload;
     }

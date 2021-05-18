@@ -808,7 +808,7 @@ class FormController {
                         });
                         if (form.triggers && form.triggers.length) {
                             let triggersHandler = new triggerHandler_1.default(form, newParticipant);
-                            triggersHandler.execute({});
+                            await triggersHandler.execute({});
                         }
                         /* Search alerts */
                         const alerts = await alert_model_1.default
