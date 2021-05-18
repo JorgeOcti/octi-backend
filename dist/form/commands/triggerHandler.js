@@ -85,6 +85,10 @@ class TriggerHandler {
     async execute(payload = {}) {
         await this.getParticipantFullData();
         for (const trigger of this.form.triggers) {
+            if (!trigger.enabled) {
+                logger_service_1.default.info(`Trigger: ${trigger.name} deactivated`);
+                continue;
+            }
             let triggerDelegate = this.getTrigger(trigger);
             payload = await triggerDelegate.trigger(trigger, this.answers, { ...payload, participant: this.participant });
         }

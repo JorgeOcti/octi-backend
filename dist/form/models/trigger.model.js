@@ -15,18 +15,9 @@ exports.triggerConfigSchema = new mongoose.Schema({
     fullname: [mongoose.Schema.Types.Mixed],
     email: [mongoose.Schema.Types.Mixed],
     signature: mongoose.Schema.Types.ObjectId,
-    subject: {
-        type: String,
-        required: false
-    },
-    filename: {
-        type: String,
-        required: false
-    },
-    template: {
-        type: String,
-        required: false
-    },
+    subject: String,
+    filename: String,
+    template: String
 });
 exports.formTriggerSchema = new mongoose.Schema({
     name: {
@@ -41,6 +32,10 @@ exports.formTriggerSchema = new mongoose.Schema({
     kind: {
         type: String,
         enum: exports.kindTrigger,
+    },
+    enabled: {
+        type: Boolean,
+        default: true
     },
     config: exports.triggerConfigSchema
 });
