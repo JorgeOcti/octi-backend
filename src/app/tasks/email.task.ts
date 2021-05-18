@@ -22,8 +22,6 @@ class EmailQueue {
   private generateHTML(view: string, context: any): string {
     const extension = view.includes('.pug', view.length-4) ? '': '.pug';
     const templatePath: string = path.join(__dirname, '../../../views/') + 'emails/' + view + extension;
-    logger.debug(extension)
-    logger.debug(templatePath)
     const pugCompile: compileTemplate = pug.compileFile(templatePath);
     return pugCompile(context);
   }
