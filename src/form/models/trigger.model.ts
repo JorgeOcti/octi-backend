@@ -1,6 +1,7 @@
 import * as mongoose from 'mongoose';
 import {PaginateModel} from "mongoose";
 import {IFormTrigger, ITriggerConfig} from "../../interfaces/form.interface";
+import {string} from "joi";
 
 export enum KindTrigger {
   file = 'file',
@@ -14,8 +15,8 @@ export const kindTrigger = [
 
 export interface ITriggerConfigModel extends ITriggerConfig, mongoose.Types.Subdocument {}
 export const triggerConfigSchema = new mongoose.Schema({
-  fullname: mongoose.Schema.Types.ObjectId,
-  email: mongoose.Schema.Types.ObjectId,
+  fullname: [mongoose.Schema.Types.Mixed],
+  email: [mongoose.Schema.Types.Mixed],
   signature: mongoose.Schema.Types.ObjectId,
   subject: {
     type: String,
