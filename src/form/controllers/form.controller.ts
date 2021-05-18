@@ -830,7 +830,7 @@ class FormController {
 
             if (form.triggers && form.triggers.length){
               let triggersHandler = new TriggerHandler(form, newParticipant);
-              triggersHandler.execute({})
+              await triggersHandler.execute({})
             }
 
             /* Search alerts */
