@@ -71,11 +71,10 @@ body
 
   table(cellpadding='0', cellspacing='0')
     tr
-      td(colspan=4, class="middle-center strong", style="font-size:10px;padding-bottom:10px")=participant.name
+      td(colspan=4, class="middle-center strong", style="font-size:10px;padding-bottom:10px")="Acta de entrega"
     +headerDetailRight('Nº TRASLADO', participant.number, 'FECHA', moment(participant.createdAt).format('LLL'))
     +headerDetail('ENCARGADO', `${participant.user.firstName} ${participant.user.lastName}`)
-    +headerDetail('ORIGEN', origin(), 'DESTINO', destination())
-    +headerDetail('E. TRANSPORTADORA', carrier(), false, false)
+    +headerDetail('ORIGEN', origin(), false, false)
 
   table(cellpadding='0', cellspacing='0', class="border")
     tr
@@ -165,7 +164,8 @@ body
 
   table(cellpadding='0', cellspacing='0' style="margin-top:40px")
     tr
-      td(width="40%", class="border-top-solid text-center strong")
+      td(width="40%", class="text-center strong")
+        img(src="https://mediaosa.s3-sa-east-1.amazonaws.com/mailing_osa/logolegal_dercocenter.png",style="max-width: 100%")
         | Firma encargado
       td(width="20%")
       if signature
