@@ -1,6 +1,6 @@
 import {IForm} from "../../interfaces/form.interface";
 import {IParticipant, IParticipantAnswer, IParticipantSection} from "../../interfaces/participant.interface";
-import {IParticipantAnswerModel} from "../models/participant.model";
+import ParticipantModel, {IParticipantAnswerModel} from "../models/participant.model";
 import logger from '../../services/logger.service';
 import {IFormTriggerModel, KindTrigger} from "../models/trigger.model";
 import { queue } from '../../app';
@@ -8,7 +8,7 @@ import * as HtmlPdf from 'html-pdf';
 import * as fs from 'fs';
 import * as path from 'path';
 import GeneralUtils from "../../utils/general.utils";
-import * as moment from 'moment';
+import * as moment from 'moment-timezone';
 import * as QRCode from "qrcode";
 import {KindQuestion} from "../models/form.model";
 import ParticipantFile from "../models/participantFile.model";
@@ -25,6 +25,63 @@ export default class TriggerHandler {
     this.answers = answers ? answers :this.getAnswers();
   }
 
+  async getParticipantFullData(){
+    this.participant = await ParticipantModel
+      .findOne({
+        _id: this.participant._id,
+      }, {
+        name: true,
+        number: true,
+        user: true,
+        sections: true,
+        qualification: true,
+        shipping: true,
+        shippingText: true,
+        shippingImages: true,
+        carrier: true,
+        reception: true,
+        receptionText: true,
+        receptionImages: true,
+        conciliation: true,
+        conciliationText: true,
+        conciliationImages: true,
+        createdAt: true
+      })
+      .populate([{
+        path: 'user',
+        select: ['firstName', 'lastName', 'venue'],
+        populate: [{
+          path: 'venue',
+          populate: [{
+            path: 'company'
+          }]
+        }]
+      }, {
+        path: 'receiveFrom',
+        select: 'name'
+      }, {
+        path: 'venue',
+        select: 'name'
+      }, {
+        path: 'sendTo',
+        select: 'name'
+      }, {
+        path: 'carrierBy',
+        select: 'name'
+      }, {
+        path: 'car',
+        select: ['vin', 'internalNumber', 'engineNumber', 'brand', 'denomination', 'color', 'patent']
+      }, {
+        path: 'sections.answers.images'
+      }, {
+        path: 'shippingImages'
+      }, {
+        path: 'receptionImages'
+      }, {
+        path: 'conciliationImages'
+      }]).lean();
+  }
+
   getAnswers() : any {
     let answers = {}
     this.participant.sections.map( (s) => {
@@ -36,13 +93,15 @@ export default class TriggerHandler {
     return answers;
   }
 
-  public execute(payload : any = {}) {
-    this.form.triggers.reduce((payload : any, trigger: IFormTriggerModel) => {
-      return this.executeTrigger(trigger).trigger(trigger, this.answers, {...payload, participant: this.participant});
-    } , payload);
+  public async execute(payload : any = {}) {
+    await this.getParticipantFullData();
+    for (const trigger : IFormTriggerModel of this.form.triggers){
+      let triggerDelegate : ITriggerDelegate = this.getTrigger(trigger);
+      payload = await triggerDelegate.trigger(trigger, this.answers, {...payload, participant: this.participant});
+    }
   }
 
-  private executeTrigger(trigger: IFormTriggerModel) : ITriggerDelegate {
+  private getTrigger(trigger: IFormTriggerModel) : ITriggerDelegate {
     let delegate = new NullTriggerDelegate();
     switch (trigger.kind) {
       case KindTrigger.email: {
@@ -68,9 +127,6 @@ interface ITriggerDelegate {
 class NullTriggerDelegate implements  ITriggerDelegate {
   processTrigerConfig(trigger: IFormTriggerModel, answers: any): any {
     let data = {};
-    logger.info(JSON.stringify(answers))
-    logger.info(JSON.stringify(trigger.config))
-    logger.info(JSON.stringify(Object.keys(trigger.config.toJSON())))
     Object.keys(trigger.config.toJSON()).map( (k: string) => {
       data[k] = answers.hasOwnProperty(trigger.config[k].toString()) ?
         answers[trigger.config[k].toString()] : trigger.config[k].toString();
@@ -85,15 +141,23 @@ class NullTriggerDelegate implements  ITriggerDelegate {
 
 class EmailTriggerDelegate extends NullTriggerDelegate{
 
+  private validateEmail(email: string) {
+    const re = /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+    return re.test(String(email).toLowerCase());
+  }
+
   trigger(trigger: IFormTriggerModel, answers: any, payload: any): any {
     logger.info(`Kind Trigger: ${trigger.kind} performing`)
-    logger.info(trigger.config.template)
     let data = this.processTrigerConfig(trigger, answers)
+
+    if (!this.validateEmail(data.email))
+      return payload;
+
     queue.create('email', {
       from: '',
-      title: `Welcome email for ${data.fullname}`,
+      title: `"${data.subject} | ${data.fullname}`,
       to: `"${data.fullname}"<${data.email}>`,
-      subject: `${data.fullname} bienvenido(a) a OSA Andes`,
+      subject: `${data.subject}`,
       text: ``,
       attachments: payload.files || [],
       view: trigger.config.template,
@@ -130,10 +194,9 @@ class FileTriggerDelegate extends NullTriggerDelegate {
       quality: '75'
     };
 
-    logger.info("DATA:" + JSON.stringify(data))
     data.signature = (await ParticipantFile.find({_id: {$in: data.signature}})).map(f => f.file.url)[0];
-
-    logger.info("DATA:" + JSON.stringify(data))
+    moment.locale('es');
+    moment.tz.setDefault('America/Santiago');
     const css = fs.readFileSync(path.join(__dirname, '../../../views/') + 'form/carDetail/style.css', 'utf8');
     const templatePath: string = path.join(__dirname, '../../../views/') + data.template // 'form/carDetail/index.pug';
     const html = GeneralUtils.generateHtmlFromPugFile(templatePath, {
@@ -196,13 +259,19 @@ class FileTriggerDelegate extends NullTriggerDelegate {
         }) : false;
       }
     });
-    await HtmlPdf.create(html, config).toFile(filePath)
-    // });
+
+    const createPDF = (html, options) => new Promise(((resolve, reject) => {
+      HtmlPdf.create(html, options).toFile(filePath,(err, buffer) => {
+        if (err !== null) {reject(err);}
+        else {resolve(buffer);}
+      });
+    }));
+    const PDF = await createPDF(html, config);
 
     if (payload.hasOwnProperty('files')){
-      payload.file.push({filename, path: filePath});
+      payload.file.push({filename, path: PDF.filename});
     } else {
-      payload['files'] = [{filename, path: filePath}];
+      payload['files'] = [{filename, path: PDF.filename}];
     }
     return payload;
   }
