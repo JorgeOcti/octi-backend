@@ -31,7 +31,7 @@ exports.formTriggerSchema = new mongoose.Schema({
     },
     kind: {
         type: String,
-        enum: exports.kindTrigger,
+        enum: exports.kindTrigger
     },
     enabled: {
         type: Boolean,
@@ -39,4 +39,6 @@ exports.formTriggerSchema = new mongoose.Schema({
     },
     config: exports.triggerConfigSchema
 });
+const FormTrigger = mongoose.model('FormTrigger', exports.formTriggerSchema);
+exports.default = FormTrigger;
 //# sourceMappingURL=trigger.model.js.map

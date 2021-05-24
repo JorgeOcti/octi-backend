@@ -1,5 +1,5 @@
 import * as mongoose from 'mongoose';
-import {IFormTrigger, ITriggerConfig} from "../../interfaces/form.interface";
+import {IFormTrigger, ITriggerConfig} from '../../interfaces/form.interface';
 
 export enum KindTrigger {
   file = 'file',
@@ -22,7 +22,7 @@ export const triggerConfigSchema = new mongoose.Schema({
 });
 
 
-export interface IFormTriggerModel extends IFormTrigger, mongoose.Types.Subdocument {}
+export interface IFormTriggerModel extends IFormTrigger, mongoose.Document {}
 export const formTriggerSchema = new mongoose.Schema({
   name: {
     type: String,
@@ -36,7 +36,7 @@ export const formTriggerSchema = new mongoose.Schema({
 
   kind: {
     type: String,
-    enum: kindTrigger,
+    enum: kindTrigger
   },
 
   enabled: {
@@ -47,4 +47,6 @@ export const formTriggerSchema = new mongoose.Schema({
   config: triggerConfigSchema
 });
 
-export type FormTriggerSchema = mongoose.Model<IFormTriggerModel>;
+const FormTrigger = mongoose.model<IFormTriggerModel>('FormTrigger', formTriggerSchema);
+
+export default FormTrigger;
