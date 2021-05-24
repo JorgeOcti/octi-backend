@@ -15,11 +15,14 @@ import { inventoriesDashboardReducer } from './inventoryDashboard.reducer';
 import { labelsReducer } from './labels.reducer';
 import { modalReducer } from './modal.reducer';
 import { planningReducer } from './planning.reducer';
+import { reasonsReducers } from './reasons.reducer';
 import { regionsReducer } from './regions.reducer';
 import { requestItemsReducers } from './requestItems.reducer';
 import { requestsReducers } from './requests.reducer';
 import { stockReducer } from './stock.reducer';
 import { usersReducer } from './users.reducer';
+import { requestStatusReducer } from './requestStatus.reducer';
+import { requestChannelReducer } from './requestChannel.reducer';
 import { venuesReducer } from './venues.reducer';
 import { versionsReducer } from './versions.reducer';
 
@@ -36,7 +39,10 @@ export default (history: any) => combineReducers({
   inventories: inventoriesReducer,
   inventoryDashboard: inventoriesDashboardReducer,
   alerts: alertsReducer,
+  reasons: reasonsReducers,
   versions: versionsReducer,
+  requestStatus: requestStatusReducer,
+  requestChannel: requestChannelReducer,
   venues: venuesReducer,
   companies: companiesReducer,
   labels: labelsReducer,

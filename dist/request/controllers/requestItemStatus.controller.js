@@ -1,10 +1,78 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-const requestItemStatus_model_1 = require("../models/requestItemStatus.model");
+const server_1 = require("../../server");
 const logger_service_1 = require("../../services/logger.service");
+const requestItemStatus_model_1 = require("../models/requestItemStatus.model");
 class RequestItemStatusController {
     constructor() {
         this.apiList = this.apiList.bind(this);
+        this.apiCreate = this.apiCreate.bind(this);
+        this.apiUpdate = this.apiUpdate.bind(this);
+        this.apiDelete = this.apiDelete.bind(this);
+    }
+    async apiCreate(req, res) {
+        const { team } = req.user;
+        const object = req.body;
+        try {
+            const reason = await new requestItemStatus_model_1.default({ ...object, team }).save();
+            server_1.io.to(`request-status-list-${team._id}`).emit('REFRESH', {
+                update: true
+            });
+            res.status(200).json({
+                ...reason
+            });
+        }
+        catch (e) {
+            /* istanbul ignore next */
+            logger_service_1.default.error(`RequestItemStatusController.apiCreate: Async Error.`);
+            /* istanbul ignore next */
+            logger_service_1.default.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
+            res.status(500).json(e);
+        }
+    }
+    async apiUpdate(req, res) {
+        const { team } = req.user;
+        const { id } = req.params;
+        const update = req.body;
+        try {
+            if (update.default) {
+                await requestItemStatus_model_1.default.updateMany({ team }, { $set: { default: false } });
+            }
+            const reason = await requestItemStatus_model_1.default.findOneAndUpdate({ _id: id, team }, { $set: { ...update } });
+            server_1.io.to(`request-status-list-${team._id}`).emit('REFRESH', {
+                update: true
+            });
+            res.status(200).json({
+                ...reason
+            });
+        }
+        catch (e) {
+            /* istanbul ignore next */
+            logger_service_1.default.error(`RequestItemStatusController.apiUpdate: Async Error.`);
+            /* istanbul ignore next */
+            logger_service_1.default.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
+            res.status(500).json(e);
+        }
+    }
+    async apiDelete(req, res) {
+        const { team } = req.user;
+        const { id } = req.params;
+        try {
+            const reason = await requestItemStatus_model_1.default.findOneAndDelete({ _id: id, team });
+            server_1.io.to(`request-status-list-${team._id}`).emit('REFRESH', {
+                update: true
+            });
+            res.status(200).json({
+                ...reason
+            });
+        }
+        catch (e) {
+            /* istanbul ignore next */
+            logger_service_1.default.error(`RequestItemStatusController.apiDelete: Async Error.`);
+            /* istanbul ignore next */
+            logger_service_1.default.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
+            res.status(500).json(e);
+        }
     }
     async apiList(req, res) {
         const { page, pageSize } = req.query;

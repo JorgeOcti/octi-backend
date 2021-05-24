@@ -7,7 +7,7 @@ import {
   ICompaniesState
 } from '../../actions/companies.actions';
 import ImageLazyLoad from '../Utils/ImageLazyLoad';
-import BootstrapSwitch from "../Utils/BootstrapSwitch";
+import BootstrapSwitch from '../Utils/BootstrapSwitch';
 import * as uuid from 'uuid';
 
 interface IPropsType {
@@ -76,6 +76,38 @@ class CompaniesFormView extends React.Component<IPropsType, IStateType> {
                         (e: React.ChangeEvent<HTMLInputElement>) => changeTempCompanyAction({
                           ...tempCompany,
                           name: e.target.value.trim()
+                        })
+                      }
+                    />
+                  </div>
+                  <div className="form-group">
+                    <label>Razón social</label>
+                    <input
+                      type="text"
+                      name="fistName"
+                      className="form-control"
+                      maxLength={50}
+                      defaultValue={tempCompany ? tempCompany.businessName : ''}
+                      onChange={
+                        (e: React.ChangeEvent<HTMLInputElement>) => changeTempCompanyAction({
+                          ...tempCompany,
+                          businessName: e.target.value.trim()
+                        })
+                      }
+                    />
+                  </div>
+                  <div className="form-group">
+                    <label>RUT</label>
+                    <input
+                      type="text"
+                      name="fistName"
+                      className="form-control"
+                      maxLength={50}
+                      defaultValue={tempCompany ? tempCompany.rut : ''}
+                      onChange={
+                        (e: React.ChangeEvent<HTMLInputElement>) => changeTempCompanyAction({
+                          ...tempCompany,
+                          rut: e.target.value.trim()
                         })
                       }
                     />
@@ -160,7 +192,7 @@ class CompaniesFormView extends React.Component<IPropsType, IStateType> {
                   </div>
                 </div>
                 <div className="col-md-12">
-                  <strong style={{color: "#2372bb"}}>Notificaciones</strong>
+                  <strong style={{color: '#2372bb'}}>Notificaciones</strong>
                   <table className="table table-striped">
                     <thead>
                     <tr>
@@ -173,7 +205,7 @@ class CompaniesFormView extends React.Component<IPropsType, IStateType> {
                     {
                       !tempCompany.notifications.length ?
                         <tr>
-                          <td colSpan={3} className={"text-center"}>
+                          <td colSpan={3} className={'text-center'}>
                             <strong>No se han agregado destinatarios</strong>
                           </td>
                         </tr> :
@@ -182,10 +214,10 @@ class CompaniesFormView extends React.Component<IPropsType, IStateType> {
                     {
                       tempCompany.notifications.map((notification) => (
                         <tr key={notification._id ? notification._id : notification.tempID}>
-                          <td width={"45%"}>{notification.name}</td>
-                          <td width={"45%"}>{notification.email}</td>
+                          <td width={'45%'}>{notification.name}</td>
+                          <td width={'45%'}>{notification.email}</td>
                           <td
-                            className={"text-center"}
+                            className={'text-center'}
                           >
                             <i
                               className="fa fa-minus-circle text-red"
@@ -261,14 +293,14 @@ class CompaniesFormView extends React.Component<IPropsType, IStateType> {
                         <div
                           className="change-image-wrapper text-center"
                           style={{display: 'table', width: '100%', color: '#2776b8'}}
-                          onClick={() => this.clickUploadFile("inputImage")}
+                          onClick={() => this.clickUploadFile('inputImage')}
                         >
                           <ImageLazyLoad
                             url={tempCompany.imageURI}
                             height={'200px'}
                             style={{
                               maxWidth: '100%',
-                              maxHeight: "200px"
+                              maxHeight: '200px'
                             }}
                           />
                           <div className="text-layer pointer">
@@ -279,8 +311,8 @@ class CompaniesFormView extends React.Component<IPropsType, IStateType> {
                         </div> :
                         <div
                           className="upload-file text-center pointer"
-                          onClick={() => this.clickUploadFile("inputImage")}
-                          onDrop={(e) => this.handleDrop(e, "image")}
+                          onClick={() => this.clickUploadFile('inputImage')}
+                          onDrop={(e) => this.handleDrop(e, 'image')}
                           onDragOver={this.dragOverHandler}
                           onDragEnd={this.dragEndHandler}
                           onDragLeave={this.dragLeaveHandler}
@@ -301,7 +333,7 @@ class CompaniesFormView extends React.Component<IPropsType, IStateType> {
                       accept="image/*"
                       ref={this.inputImage}
                       style={{display: 'none'}}
-                      onChange={(e) => this.handleChangeInputFile(e, "image")}
+                      onChange={(e) => this.handleChangeInputFile(e, 'image')}
                     />
                   </div>
                   <div className="form-group">
@@ -311,7 +343,7 @@ class CompaniesFormView extends React.Component<IPropsType, IStateType> {
                         <div
                           className="change-image-wrapper text-center"
                           style={{display: 'table', width: '100%', color: '#2776b8'}}
-                          onClick={() => this.clickUploadFile("inputMarker")}
+                          onClick={() => this.clickUploadFile('inputMarker')}
                         >
                           <ImageLazyLoad
                             url={tempCompany.markerURI}
@@ -328,8 +360,8 @@ class CompaniesFormView extends React.Component<IPropsType, IStateType> {
                         </div> :
                         <div
                           className="upload-file text-center pointer"
-                          onClick={() => this.clickUploadFile("inputMarker")}
-                          onDrop={(e) => this.handleDrop(e, "marker")}
+                          onClick={() => this.clickUploadFile('inputMarker')}
+                          onDrop={(e) => this.handleDrop(e, 'marker')}
                           onDragOver={this.dragOverHandler}
                           onDragEnd={this.dragEndHandler}
                           onDragLeave={this.dragLeaveHandler}
@@ -351,7 +383,7 @@ class CompaniesFormView extends React.Component<IPropsType, IStateType> {
                       accept="image/*"
                       ref={this.inputMarker}
                       style={{display: 'none'}}
-                      onChange={(e) => this.handleChangeInputFile(e, "marker")}
+                      onChange={(e) => this.handleChangeInputFile(e, 'marker')}
                     />
                   </div>
                 </div>
@@ -375,30 +407,28 @@ class CompaniesFormView extends React.Component<IPropsType, IStateType> {
     });
     this.setState({
       tmpReceiver: {
-        name: "",
-        email: ""
+        name: '',
+        email: ''
       }
-    })
+    });
   }
 
   private handleRemoveReceiver(id: any) {
     this.props.changeTempCompanyAction!({
       ...this.props.companies!.tempCompany,
       notifications: this.props.companies!.tempCompany.notifications!.filter((notification) => {
-        return notification._id !== id && notification.tempID !== id
+        return notification._id !== id && notification.tempID !== id;
       })
     });
   }
 
-  private clickUploadFile(input: "inputImage" | "inputMarker") {
-    console.log('input', input);;
-    console.log('this[input]', this[input]);
+  private clickUploadFile(input: 'inputImage' | 'inputMarker') {
     if (this[input].current) {
       this[input].current!.click();
     }
   }
 
-  private handleDrop(e: React.DragEvent<HTMLDivElement>, input: "marker" | "image"): void {
+  private handleDrop(e: React.DragEvent<HTMLDivElement>, input: 'marker' | 'image'): void {
     e.preventDefault();
     const dt = e.dataTransfer;
     if (dt.items) {
@@ -416,7 +446,7 @@ class CompaniesFormView extends React.Component<IPropsType, IStateType> {
     }
   }
 
-  private handleChangeInputFile(e: React.ChangeEvent<HTMLInputElement>, input: "marker" | "image" ) {
+  private handleChangeInputFile(e: React.ChangeEvent<HTMLInputElement>, input: 'marker' | 'image' ) {
     const {files} = e.target;
     if (files && files.length) {
       const file = files[0];
@@ -450,7 +480,7 @@ class CompaniesFormView extends React.Component<IPropsType, IStateType> {
     }
   }
 
-  private processFile(file: File, input: "marker" | "image"): void {
+  private processFile(file: File, input: 'marker' | 'image'): void {
     if (file && this.props.companies && this.props.changeTempCompanyAction) {
       const {tempCompany} = this.props.companies;
       const {changeTempCompanyAction} = this.props;

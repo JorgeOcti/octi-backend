@@ -59,7 +59,7 @@ class LoggerService {
   /* istanbul ignore next */
   private now(): string {
     // return moment();
-    return moment().utc().format('DD/MMM/YYYY:HH:mm:ss ZZ').replace(".", "");
+    return moment().utc().format('DD/MMM/YYYY:HH:mm:ss ZZ').replace('.', "");
   }
 
   /* istanbul ignore next */

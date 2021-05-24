@@ -9,11 +9,14 @@ import BillingListView from './components/Billing/BillingListView';
 import CarriersListView from './components/Carriers/CarriersListView';
 import CarDetailView from './components/Cars/CarDetailView';
 import CarsListView from './components/Cars/CarListView';
+import RequestChannelListView from './components/RequestSettings/RequestChannelListView';
+import RequestStatusListView from './components/RequestSettings/RequestStatusListView';
 import CompaniesListView from './components/Companies/CompaniesListView';
 import DashboardDamagesView from './components/DashboardGeneral/DashboardDamagesView';
 import DashboardDercoView from './components/DashboardGeneral/DashboardDercoView';
 import DashboardGeneralView from './components/DashboardGeneral/DashboardGeneralView';
 import DashboardTimingView from './components/DashboardGeneral/DashboardTimingView';
+import DashboardRevisionsView from './components/DashboardVin/DashboardRevisionsView';
 import DashboardVinDetail from './components/DashboardVin/DashboardVinDetail';
 import DashboardVinView from './components/DashboardVin/DashboardVinView';
 import ImportCarsView from './components/Imports/ImportCarView';
@@ -24,21 +27,21 @@ import InventoryListView from './components/Inventory/InventoryListView';
 import LabelsListView from './components/Labels/LabelsListView';
 import PlanningImportView from './components/Planning/PlanningImportView';
 import PlanningListView from './components/Planning/PlanningListView';
+import RequestReasonListView from './components/RequestSettings/RequestReasonListView';
 import RegionsListView from './components/Region/RegionsListFiew';
 import RequestCreateView from './components/Request/RequestCreateView';
 import RequestDetailView from './components/Request/RequestDetail/RequestDetailView';
 import RequestListView from './components/Request/RequestList/RequestListView';
+import RequestUpdaterView from './components/Request/RequestUpdaterView';
 import RequestVehicleListView from './components/Request/RequestVehicleList/RequestVehicleListView';
 import StockImportView from './components/Stock/StockImportView';
 import StockView from './components/Stock/StockListView';
 import UsersListView from './components/Users/UserListView';
 import VenuesListView from './components/Venues/VenuesListView';
 import VersionListView from './components/Versions/VersionListView';
-import DashboardRevisionsView from "./components/DashboardVin/DashboardRevisionsView";
 import { IWindow } from './interfaces/window';
 import configureStore, { history } from './store/configureStore';
 import { isIntenertExplorer } from './utils/common';
-import RequestUpdaterView from './components/Request/RequestUpdaterView';
 
 
 declare let window: IWindow;
@@ -84,6 +87,9 @@ const App = () => (
         <Route exact path="/settings/versions/" component={VersionListView}/>
         <Route exact path="/requests/create/" component={RequestCreateView}/>
         <Route exact path="/requests/" component={RequestListView}/>
+        <Route exact path="/requests/settings/reasons/" component={RequestReasonListView}/>
+        <Route exact path="/requests/settings/channels/" component={RequestChannelListView}/>
+        <Route exact path="/requests/settings/status/" component={RequestStatusListView}/>
         <Route exact path="/requests/update/" component={RequestUpdaterView}/>
         <Route exact path="/requests/vehicles/create" component={RequestCreateView}/>
         <Route exact path="/requests/vehicles/:id/" component={RequestDetailView}/>

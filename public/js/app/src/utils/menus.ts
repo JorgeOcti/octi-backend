@@ -82,6 +82,15 @@ if (hasPermission(window.user, 'viewRequest')) {
   });
 }
 
+if (hasPermission(window.user, 'adminRequest')) {
+  distributionItems.push({
+    id: '3.3',
+    icon: 'fa-circle-o',
+    text: 'Ajustes',
+    url: '/requests/settings/reasons/'
+  });
+}
+
 //  {
 //   id: '3.3',
 //   icon: 'fa-circle-o',
@@ -162,6 +171,7 @@ if (hasPermission(window.user, 'viewPlanning')) {
     url: '/planning/'
   });
 }
+
 if (hasPermission(window.user, 'viewPlanning')) {
   planningItems.push({
     id: '4.2',
@@ -184,12 +194,12 @@ if (planningItems.length) {
 /* *****************
 * 10. Settings
 *****************/
-const settingItems = [{
+const settingItems = [/*{
   id: '10.1',
   icon: 'fa-circle-o',
   text: 'Alertas',
   url: '/settings/alerts/'
-}];
+}*/];
 
 if (hasPermission(window.user, 'viewCar')) {
   settingItems.push({

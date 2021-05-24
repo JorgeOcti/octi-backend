@@ -1,14 +1,79 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+const server_1 = require("../../server");
 const logger_service_1 = require("../../services/logger.service");
-const salesChannel_model_1 = require("../models/salesChannel.model");
 const request_model_1 = require("../models/request.model");
+const salesChannel_model_1 = require("../models/salesChannel.model");
 class SalesChannelController {
     constructor() {
         this.apiList = this.apiList.bind(this);
+        this.apiCreate = this.apiCreate.bind(this);
+        this.apiUpdate = this.apiUpdate.bind(this);
+        this.apiDelete = this.apiDelete.bind(this);
         this.getChannels = this.getChannels.bind(this);
         this.createDefault = this.createDefault.bind(this);
         this.updateFleet = this.updateFleet.bind(this);
+    }
+    async apiCreate(req, res) {
+        const { team } = req.user;
+        const object = req.body;
+        try {
+            const reason = await new salesChannel_model_1.default({ ...object, team }).save();
+            server_1.io.to(`request-status-list-${team._id}`).emit('REFRESH', {
+                update: true
+            });
+            res.status(200).json({
+                ...reason
+            });
+        }
+        catch (e) {
+            /* istanbul ignore next */
+            logger_service_1.default.error(`SalesChannelController.apiCreate: Async Error.`);
+            /* istanbul ignore next */
+            logger_service_1.default.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
+            res.status(500).json(e);
+        }
+    }
+    async apiUpdate(req, res) {
+        const { team } = req.user;
+        const { id } = req.params;
+        const update = req.body;
+        try {
+            const reason = await salesChannel_model_1.default.findOneAndUpdate({ _id: id }, { $set: { ...update } });
+            server_1.io.to(`request-status-list-${team._id}`).emit('REFRESH', {
+                update: true
+            });
+            res.status(200).json({
+                ...reason
+            });
+        }
+        catch (e) {
+            /* istanbul ignore next */
+            logger_service_1.default.error(`SalesChannelController.apiUpdate: Async Error.`);
+            /* istanbul ignore next */
+            logger_service_1.default.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
+            res.status(500).json(e);
+        }
+    }
+    async apiDelete(req, res) {
+        const { team } = req.user;
+        const { id } = req.params;
+        try {
+            const reason = await salesChannel_model_1.default.findOneAndDelete({ _id: id, team });
+            server_1.io.to(`request-status-list-${team._id}`).emit('REFRESH', {
+                update: true
+            });
+            res.status(200).json({
+                ...reason
+            });
+        }
+        catch (e) {
+            /* istanbul ignore next */
+            logger_service_1.default.error(`SalesChannelController.apiDelete: Async Error.`);
+            /* istanbul ignore next */
+            logger_service_1.default.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
+            res.status(500).json(e);
+        }
     }
     async apiList(req, res) {
         logger_service_1.default.info(`SalesChannelController.apiList`);

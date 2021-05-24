@@ -181,6 +181,8 @@ class CompaniesListView extends TrackingBasePage<IPropsType, IStateType> {
     this.props.changeTempCompanyAction({
       _id: '',
       name: '',
+      businessName: '',
+      rut: '',
       image: null,
       marker: null,
       markerURI: '/static/images/files/pin_osa.svg',
@@ -214,10 +216,12 @@ class CompaniesListView extends TrackingBasePage<IPropsType, IStateType> {
   }
 
   private udpateCompany(company: ICompany): void {
-    const {_id, name, billing, marker, image, notifications} = company;
+    const {_id, name, businessName, rut, billing, marker, image, notifications} = company;
     this.props.changeTempCompanyAction({
       _id,
       name,
+      businessName,
+      rut,
       image: null,
       marker: null,
       imageURI: image && image.hasOwnProperty('url') ? decodeURI(image.url) : null,

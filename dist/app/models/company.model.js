@@ -64,6 +64,14 @@ const companySchema = new mongoose.Schema({
         trim: true,
         required: true
     },
+    businessName: {
+        type: String,
+        trim: true,
+    },
+    rut: {
+        type: String,
+        trim: true,
+    },
     team: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Team'

@@ -27,5 +27,5 @@ regionSchema.plugin(mongoosePaginate);
 
 export type RegionSchema = mongoose.Model<IRegionModel> & PaginateModel<IRegionModel> & {};
 
-const Region = mongoose.model<IRegionModel>('Region', regionSchema);
+const Region = mongoose.model<IRegionModel, RegionSchema>('Region', regionSchema);
 export  default Region;

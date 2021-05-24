@@ -1,6 +1,6 @@
 import {Response} from 'express';
 import {IRequest} from '../../../interfaces/global.interface';
-import Region, {RegionSchema} from '../../models/region.model';
+import Region, { RegionSchema} from '../../models/region.model';
 import BaseAdminController from './base.admin.controller';
 
 class AdminRegionController extends BaseAdminController<RegionSchema> {

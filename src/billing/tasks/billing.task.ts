@@ -183,7 +183,8 @@ class BillingQueue {
     return GeneralUtils.generateHtmlFromPugFile(templatePath, {
       css: css.replace(/(\r\n|\n|\r)/gm, ''),
       moment,
-      invoice
+      invoice,
+      jsUcfirst: (text: string) => (text.charAt(0).toUpperCase() + text.slice(1))
     });
   }
 

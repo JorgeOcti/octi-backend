@@ -95,6 +95,13 @@ class PlanningController {
             populate: [{
                     path: 'car',
                     select: ['vin', 'brand', 'denomination', 'color'],
+                    // populate: [{
+                    //   path: 'user',
+                    //   select: ['firstName', 'lastName']
+                    // }, {
+                    //   path: 'venue',
+                    //   select: ['name']
+                    // }]
                 }, {
                     path: 'createdBy',
                     select: ['vin', 'brand', 'denomination', 'color']

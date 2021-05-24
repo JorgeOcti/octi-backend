@@ -18,6 +18,8 @@ export interface IBillingNotifications {
 export interface IBaseCompany {
   _id?: any;
   name: string;
+  businessName: string;
+  rut: string;
   image: any;
   imageURI?: string | null;
   marker: any;

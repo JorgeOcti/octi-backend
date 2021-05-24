@@ -174,8 +174,8 @@ export function getRequestItemsThunkAction(nextPage: number, orderBy: string, or
     Axios
       .all([
         api.getRequestItems({ page, orderBy, orderType, pageSize: 20, filters: state.requestItems.filters }),
-        api.getReasons(1, 200),
-        api.getRequestItemsStatus(1, 200),
+        api.getReasons({ page: 1, pageSize: 200 }),
+        api.getRequestItemsStatus({ page: 1, pageSize: 200 }),
         // api.getCarriers(1, 200),
         api.getVenues(1, 200, true, true),
         api.getProperties()

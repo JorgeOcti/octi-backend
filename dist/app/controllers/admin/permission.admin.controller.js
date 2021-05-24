@@ -18,7 +18,7 @@ class AdminPermissionController extends base_admin_controller_1.default {
             }
         };
         let filter = {};
-        if (req.user.hasPermission("changeTeamPermissions") && !req.user.isAdmin)
+        if (req.user.hasPermission('changeTeamPermissions') && !req.user.isAdmin)
             filter = {
                 _id: { $in: req.user.userPermissions }
             };
