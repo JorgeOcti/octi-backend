@@ -156,7 +156,6 @@ class FileTriggerDelegate extends NullTriggerDelegate {
         let participant = payload.participant;
         const participantCompany = participant.user.venue && participant.user.venue.company || {};
         const config = {
-            directory: '/tmp',
             format: 'Letter',
             orientation: 'portrait',
             border: {
@@ -245,10 +244,10 @@ class FileTriggerDelegate extends NullTriggerDelegate {
         }));
         const PDF = await createPDF(html, config);
         if (payload.hasOwnProperty('files')) {
-            payload.file.push({ filename, content: PDF });
+            payload.file.push({ content: PDF });
         }
         else {
-            payload['files'] = [{ filename, content: PDF }];
+            payload['files'] = [{ content: PDF }];
         }
         return payload;
     }
