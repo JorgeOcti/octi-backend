@@ -3,7 +3,7 @@ import {IParticipant} from "../../interfaces/participant.interface";
 import ParticipantModel from "../models/participant.model";
 import logger from '../../services/logger.service';
 import {IFormTriggerModel, KindTrigger} from "../models/trigger.model";
-import { queue } from '../../app';
+import {queue} from '../../app';
 import * as HtmlPdf from 'html-pdf';
 import * as fs from 'fs';
 import * as path from 'path';
@@ -11,6 +11,8 @@ import GeneralUtils from "../../utils/general.utils";
 import * as moment from 'moment-timezone';
 import {KindQuestion} from "../models/form.model";
 import ParticipantFile from "../models/participantFile.model";
+import * as AWS from "aws-sdk";
+import * as s3Config from "../../../s3-config.json";
 
 
 export default class TriggerHandler {
@@ -174,6 +176,46 @@ class EmailTriggerDelegate extends NullTriggerDelegate{
 
 class FileTriggerDelegate extends NullTriggerDelegate {
 
+  async uploadFile(filePath: string, filename: string) : any {
+    try {
+
+      AWS.config.update({
+        accessKeyId: process.env.S3_KEY || s3Config.accessKeyId,
+        secretAccessKey: process.env.S3_SECRET || s3Config.secretAccessKey,
+        region: process.env.S3_REGION || s3Config.region, // defaults to us-standard
+      });
+
+      let s3 = new AWS.S3({
+        bucket: process.env.S3_BUCKET || s3Config.bucket,
+        acl: 'public-read', // defaults to public-read
+        region: process.env.S3_REGION || s3Config.region, // defaults to us-standard
+      });
+
+      let data: Buffer = await fs.readFileSync(filePath);
+      let s3FileOptions: AWS.S3.Types.PutObjectRequest = {
+        Key: `/tmp/${filename}`,
+        Bucket: process.env.S3_BUCKET || s3Config.bucket,
+        ACL: "public-read",
+        Body: data
+      };
+
+      const upload = () => new Promise(((resolve, reject) => {
+        s3.upload(s3FileOptions, (err, data) => {
+          if (err) {
+            reject(err);
+          } else {
+            resolve(data.Location);
+          }
+        });
+      }));
+
+      return await upload();
+    } catch (e) {
+      logger.error(e.stack)
+      return "";
+    }
+  }
+
   async trigger(trigger: IFormTriggerModel, answers: any, payload: any): any {
     logger.info(`Kind Trigger: ${trigger.kind} performing`);
     let data = this.processTrigerConfig(trigger, answers);
@@ -260,18 +302,19 @@ class FileTriggerDelegate extends NullTriggerDelegate {
       }
     });
 
-    const createPDF = (html, options) => new Promise(((resolve, reject) => {
-      HtmlPdf.create(html, options).toStream((err : Error, stream ) => {
+    const createPDF = (html, options) => new Promise<string>(((resolve, reject) => {
+      HtmlPdf.create(html, options).toFile(`/tmp/${filename}`, (err : Error, file ) => {
         if (err !== null) {reject(err);}
-        else {resolve(stream);}
+        else {resolve(file.filename);}
       });
     }));
     const PDF = await createPDF(html, config);
+    const URL = await this.uploadFile(PDF, filename);
 
     if (payload.hasOwnProperty('files')){
-      payload.file.push({content: PDF});
+      payload.file.push({filename, path: URL});
     } else {
-      payload['files'] = [{content: PDF}];
+      payload['files'] = [{filename, path: URL}];
     }
     return payload;
   }

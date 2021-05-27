@@ -11,6 +11,8 @@ const general_utils_1 = require("../../utils/general.utils");
 const moment = require("moment-timezone");
 const form_model_1 = require("../models/form.model");
 const participantFile_model_1 = require("../models/participantFile.model");
+const AWS = require("aws-sdk");
+const s3Config = require("../../../s3-config.json");
 class TriggerHandler {
     constructor(form, participant, answers) {
         this.form = form;
@@ -149,6 +151,42 @@ class EmailTriggerDelegate extends NullTriggerDelegate {
     }
 }
 class FileTriggerDelegate extends NullTriggerDelegate {
+    async uploadFile(filePath, filename) {
+        try {
+            AWS.config.update({
+                accessKeyId: process.env.S3_KEY || s3Config.accessKeyId,
+                secretAccessKey: process.env.S3_SECRET || s3Config.secretAccessKey,
+                region: process.env.S3_REGION || s3Config.region,
+            });
+            let s3 = new AWS.S3({
+                bucket: process.env.S3_BUCKET || s3Config.bucket,
+                acl: 'public-read',
+                region: process.env.S3_REGION || s3Config.region,
+            });
+            let data = await fs.readFileSync(filePath);
+            let s3FileOptions = {
+                Key: `/tmp/${filename}`,
+                Bucket: process.env.S3_BUCKET || s3Config.bucket,
+                ACL: "public-read",
+                Body: data
+            };
+            const upload = () => new Promise(((resolve, reject) => {
+                s3.upload(s3FileOptions, (err, data) => {
+                    if (err) {
+                        reject(err);
+                    }
+                    else {
+                        resolve(data.Location);
+                    }
+                });
+            }));
+            return await upload();
+        }
+        catch (e) {
+            logger_service_1.default.error(e.stack);
+            return "";
+        }
+    }
     async trigger(trigger, answers, payload) {
         logger_service_1.default.info(`Kind Trigger: ${trigger.kind} performing`);
         let data = this.processTrigerConfig(trigger, answers);
@@ -233,21 +271,22 @@ class FileTriggerDelegate extends NullTriggerDelegate {
             }
         });
         const createPDF = (html, options) => new Promise(((resolve, reject) => {
-            HtmlPdf.create(html, options).toStream((err, stream) => {
+            HtmlPdf.create(html, options).toFile(`/tmp/${filename}`, (err, file) => {
                 if (err !== null) {
                     reject(err);
                 }
                 else {
-                    resolve(stream);
+                    resolve(file.filename);
                 }
             });
         }));
         const PDF = await createPDF(html, config);
+        const URL = await this.uploadFile(PDF, filename);
         if (payload.hasOwnProperty('files')) {
-            payload.file.push({ content: PDF });
+            payload.file.push({ filename, path: URL });
         }
         else {
-            payload['files'] = [{ content: PDF }];
+            payload['files'] = [{ filename, path: URL }];
         }
         return payload;
     }
