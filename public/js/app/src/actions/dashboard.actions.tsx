@@ -517,7 +517,7 @@ export function getParticipant(id: string) {
                                   : null
                               }
                               {
-                                selectChoice && selectChoice.requireImage && answer.images && answer.images.length ?
+                                ((selectChoice && selectChoice.requireImage) || answer.kind === 'image') && answer.images && answer.images.length ?
                                   <div className="row images">
                                     {
                                       answer.images.map((image: any) => {
