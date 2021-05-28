@@ -34,7 +34,7 @@ const renderQuestion: React.FunctionComponent<WrappedFieldArrayProps<{}>> = ({
               }}
                 key={index} className="row"
               >
-                <div className="col-md-11">
+                <div className="col-md-11 col-sm-11 col-xs-10">
                   <Field
                     name={`${question}.name`}
                     label={`Pregunta ${index + 1} *`}
@@ -49,7 +49,7 @@ const renderQuestion: React.FunctionComponent<WrappedFieldArrayProps<{}>> = ({
                     validate={[]}
                   />
                 </div>
-                <div className="col-md-1 text-left" style={{ paddingLeft: '0' }}>
+                <div className="col-md-1 col-sm-1 col-xs-2 text-left" style={{ paddingLeft: '0' }}>
                   <button
                     type="button"
                     style={{ marginTop: '25px' }}
@@ -59,14 +59,14 @@ const renderQuestion: React.FunctionComponent<WrappedFieldArrayProps<{}>> = ({
                     <i className="fa fa-trash" />
                   </button>
                 </div>
-                <div className="col-md-2" />
+                {/* <div className="col-md-2 col-sm-2 col-xs-2" /> */}
               </div>
             );
           })
       }
       {
         fields.length >= 1 ?
-          <div className="col-md-12 text-right">
+          <div className="col-md-12 col-sm-12 col-xs-12 text-right">
             <button
               type="button"
               className="btn btn-sm btn-success"
