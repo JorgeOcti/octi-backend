@@ -16,7 +16,7 @@ import ParticipantFile from "../models/participantFile.model";
 export default class TriggerHandler {
   private form: IForm
   private participant: IParticipant
-  private answers: any
+  private readonly answers: any
 
   constructor(form: IForm, participant: IParticipant, answers?: any) {
     this.form = form;
@@ -48,7 +48,7 @@ export default class TriggerHandler {
       })
       .populate([{
         path: 'user',
-        select: ['firstName', 'lastName', 'venue'],
+        select: ['firstName', 'lastName', 'venue', 'email'],
         populate: [{
           path: 'venue',
           populate: [{
@@ -101,7 +101,7 @@ export default class TriggerHandler {
       }
 
       let triggerDelegate : ITriggerDelegate = this.getTrigger(trigger);
-      payload = await triggerDelegate.trigger(trigger, this.answers, {...payload, participant: this.participant});
+      payload = await triggerDelegate.trigger(trigger, this.answers, {...payload, participant: this.participant, user: this.participant.user});
     }
   }
 
@@ -151,8 +151,7 @@ class EmailTriggerDelegate extends NullTriggerDelegate{
 
   trigger(trigger: IFormTriggerModel, answers: any, payload: any): any {
     logger.info(`Kind Trigger: ${trigger.kind} performing`)
-    let data = this.processTrigerConfig(trigger, answers)
-
+    let data = this.processTrigerConfig(trigger, {...answers, ...payload.user})
     if (!this.validateEmail(data.email))
       return payload;
 
@@ -179,7 +178,6 @@ class FileTriggerDelegate extends NullTriggerDelegate {
     logger.info(`Kind Trigger: ${trigger.kind} performing`);
     let data = this.processTrigerConfig(trigger, answers);
     let filename = `${moment().unix()}_${data.filename}`;
-    let filePath = `/tmp/${filename}`;
     let participant = payload.participant;
     const participantCompany = participant.user.venue && participant.user.venue.company || {};
 
@@ -264,17 +262,17 @@ class FileTriggerDelegate extends NullTriggerDelegate {
     });
 
     const createPDF = (html, options) => new Promise(((resolve, reject) => {
-      HtmlPdf.create(html, options).toFile(filePath,(err, buffer) => {
+      HtmlPdf.create(html, options).toStream((err : Error, stream ) => {
         if (err !== null) {reject(err);}
-        else {resolve(buffer);}
+        else {resolve(stream);}
       });
     }));
     const PDF = await createPDF(html, config);
 
     if (payload.hasOwnProperty('files')){
-      payload.file.push({filename, path: PDF.filename});
+      payload.file.push({filename, content: PDF});
     } else {
-      payload['files'] = [{filename, path: PDF.filename}];
+      payload['files'] = [{filename, content: PDF}];
     }
     return payload;
   }
