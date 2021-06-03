@@ -84,6 +84,8 @@ export interface IForm {
   company: ICompany | any;
   description: string;
 
+  kind: string;
+
   shipping: boolean;
   shippingText: string;
   shippingImage: boolean;

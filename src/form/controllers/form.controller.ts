@@ -648,7 +648,8 @@ class FormController {
             description: form.description,
             user: req.user._id,
             venue: updatedUser.venue,
-            active: form.active
+            active: form.active,
+            kind: form.kind
           };
 
           if (form.reception) {

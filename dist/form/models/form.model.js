@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.kindQuestionImage = exports.KindQuestionImage = exports.kindQuestionKeyboard = exports.KindQuestionKeyboard = exports.kindQuestion = exports.KindQuestion = void 0;
+exports.kindForm = exports.KindForm = exports.kindQuestionImage = exports.KindQuestionImage = exports.kindQuestionKeyboard = exports.KindQuestionKeyboard = exports.kindQuestion = exports.KindQuestion = void 0;
 const mongoose = require("mongoose");
 const mongoosePaginate = require("mongoose-paginate");
 const trigger_model_1 = require("./trigger.model");
@@ -150,6 +150,17 @@ const formSectionsSchema = new mongoose.Schema({
         required: true
     }
 });
+var KindForm;
+(function (KindForm) {
+    KindForm["init"] = "init";
+    KindForm["control"] = "control";
+    KindForm["final"] = "final";
+})(KindForm = exports.KindForm || (exports.KindForm = {}));
+exports.kindForm = [
+    KindForm.init,
+    KindForm.final,
+    KindForm.control,
+];
 const formSchema = new mongoose.Schema({
     name: {
         type: String,
@@ -236,6 +247,11 @@ const formSchema = new mongoose.Schema({
     conciliationImage: {
         type: Boolean,
         default: false
+    },
+    kind: {
+        type: String,
+        enum: exports.kindForm,
+        default: KindForm.control
     },
     sections: [formSectionsSchema],
     triggers: [trigger_model_1.formTriggerSchema],

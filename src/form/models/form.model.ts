@@ -176,6 +176,19 @@ const formSectionsSchema = new mongoose.Schema({
   }
 });
 
+
+export enum KindForm {
+  init = 'init',
+  control = 'control',
+  final = 'final',
+}
+
+export const kindForm = [
+  KindForm.init,
+  KindForm.final,
+  KindForm.control,
+];
+
 export interface IFormModel extends IForm, mongoose.Document {}
 const formSchema = new mongoose.Schema({
   name: {
@@ -267,6 +280,12 @@ const formSchema = new mongoose.Schema({
   conciliationImage: {
     type: Boolean,
     default: false
+  },
+
+  kind: {
+    type: String,
+    enum: kindForm,
+    default: KindForm.control
   },
 
   sections: [formSectionsSchema],

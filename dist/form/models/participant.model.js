@@ -327,6 +327,11 @@ const participantSchema = new mongoose.Schema({
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Venue'
     },
+    kind: {
+        type: String,
+        enum: form_model_1.kindForm,
+        default: form_model_1.KindForm.control
+    },
     carrier: {
         type: Boolean,
         default: false
