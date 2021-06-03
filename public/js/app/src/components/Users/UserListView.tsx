@@ -97,7 +97,7 @@ class UserListView extends TrackingBasePage<IPropsType, IStateType> {
   }
 
   public componentWillMount(): void {
-    const {pagination} = this.props.users;
+    const { pagination } = this.props.users;
     this.props.getUsersAction(pagination.page);
 
     // socket
@@ -348,8 +348,8 @@ class UserListView extends TrackingBasePage<IPropsType, IStateType> {
   }
 
   private cloneUser(user: IUser): void {
-    const {changeTempUser} = this;
-    const {venues, permissions, forms, companies} = this.props.users;
+    const { changeTempUser } = this;
+    const { venues, permissions, forms, companies } = this.props.users;
     const tmpUser = {
       ...user,
       _id: '',
@@ -361,7 +361,7 @@ class UserListView extends TrackingBasePage<IPropsType, IStateType> {
     this.props.changeTempUserAction(tmpUser);
     setTimeout(() => {
       this.props.loadDataAction(
-        `Clonando usuario.`,
+        `Clonando usuario`,
         <UserFormView
           create={true}
           changeTempUser={changeTempUser}
@@ -392,8 +392,8 @@ class UserListView extends TrackingBasePage<IPropsType, IStateType> {
   }
 
   private createUser(): void {
-    const {changeTempUser} = this;
-    const {venues, permissions, forms, companies} = this.props.users;
+    const { changeTempUser } = this;
+    const { venues, permissions, forms, companies } = this.props.users;
     this.props.changeTempUserAction({
       _id: '',
       firstName: '',
@@ -409,8 +409,15 @@ class UserListView extends TrackingBasePage<IPropsType, IStateType> {
     setTimeout(() => {
       this.props.loadDataAction(
         'Agregar Usuario',
-        <UserFormView create={true} changeTempUser={changeTempUser} venues={venues} companies={companies}
-                      users={this.props.users} forms={forms} permissions={permissions}/>,
+        <UserFormView
+          create={true}
+          changeTempUser={changeTempUser}
+          venues={venues}
+          companies={companies}
+          users={this.props.users}
+          forms={forms}
+          permissions={permissions}
+        />,
         <React.Fragment>
           <button type="button" className="btn btn-sm btn-default" data-dismiss="modal">Cancelar</button>
           <button type="button" className="btn btn-sm btn-primary" onClick={this.processCreateUser}>Crear</button>
