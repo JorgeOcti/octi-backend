@@ -10,7 +10,7 @@ import {
   IParticipantScale,
   IParticipantSection
 } from '../../interfaces/participant.interface';
-import {KindQuestion, kindQuestion, KindQuestionKeyboard, kindQuestionKeyboard} from './form.model';
+import {KindForm, kindForm, KindQuestion, kindQuestion, KindQuestionKeyboard, kindQuestionKeyboard} from './form.model';
 import { choiceBackgroundColors } from './scale.model';
 
 export interface IParticipantChoicesModel extends IParticipantChoices, mongoose.Types.Subdocument {}
@@ -365,6 +365,12 @@ const participantSchema = new mongoose.Schema({
   receiveFrom: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Venue'
+  },
+
+  kind: {
+    type: String,
+    enum: kindForm,
+    default: KindForm.control
   },
 
   carrier: {

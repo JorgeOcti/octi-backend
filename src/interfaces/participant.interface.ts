@@ -110,6 +110,8 @@ export interface IParticipant {
 
   qualification: number;
 
+  kind: string;
+
   shipping: boolean;
   shippingText: string;
   shippingImages: IParticipantFile[];
