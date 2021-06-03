@@ -51,7 +51,7 @@ var KindQuestionKeyboard;
 exports.kindQuestionKeyboard = [
     KindQuestionKeyboard.text,
     KindQuestionKeyboard.numeric,
-    KindQuestionKeyboard.email,
+    KindQuestionKeyboard.email
 ];
 var KindQuestionImage;
 (function (KindQuestionImage) {
@@ -62,7 +62,7 @@ var KindQuestionImage;
 exports.kindQuestionImage = [
     KindQuestionImage.photo,
     KindQuestionImage.signature,
-    KindQuestionImage.picture,
+    KindQuestionImage.picture
 ];
 const formQuestionsSchema = new mongoose.Schema({
     question: {

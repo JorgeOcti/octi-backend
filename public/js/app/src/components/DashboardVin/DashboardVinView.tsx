@@ -308,7 +308,7 @@ class DashboardVinView extends TrackingBasePage<IPropsType, IStateType> {
                         <th style={{width: '13%'}} className="middle hidden-xs">Supervisor</th>
                         <th style={{width: '13%'}} className="middle">Sucursal</th>
                         <th style={{width: '10%'}} className="middle-center hidden-xs">Calificación</th>
-                        <th style={{width: '15%'}} className="hidden-xs">Fecha calificación</th>
+                        <th style={{width: '15%'}} className="hidden-xs">Fecha</th>
                         <th style={{width: '15%'}} className="hidden-xs">Último checkeo</th>
                         <th className="width-10 hidden-xs"/>
                         <th className="width-10"/>
@@ -354,11 +354,12 @@ class DashboardVinView extends TrackingBasePage<IPropsType, IStateType> {
                                 {moment(participant.createdAt).format('L HH:mm:ss')}
                               </td>
                               <td className="middle hidden-xs">
-                                {participant.car.lastForm && participant.car.lastForm.createdAt ?
+                                {participant.name}
+                                {/* {participant.car.lastForm && participant.car.lastForm.createdAt ?
                                   moment(participant.car.lastForm.createdAt).format('L HH:mm:ss')
                                   :
                                   '-'
-                                }
+                                } */}
                               </td>
                               <td className="text-primary middle-center hidden-xs">
                                 <button

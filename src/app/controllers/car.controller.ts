@@ -1272,7 +1272,7 @@ class CarController {
   }
 
   public async apiRevisions(req: IRequest, res: Response) {
-    const {page, pageSize, search, from, to} = req.query as {
+    const { page, pageSize, search, from, to } = req.query as {
       page: string, pageSize: string, search: string,
       from: string, to: string
     };
@@ -1286,7 +1286,8 @@ class CarController {
         venue: true,
         user: true,
         sections: true,
-        qualification: true
+        qualification: true,
+        name: true
       },
       populate: [{
         path: 'car',

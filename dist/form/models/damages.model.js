@@ -19,7 +19,7 @@ exports.damagesSchema = new mongoose.Schema({
         }],
     kinds: [{
             type: mongoose.Schema.Types.ObjectId,
-            ref: 'Kind',
+            ref: 'Kind'
         }],
     positions: [{
             type: mongoose.Schema.Types.ObjectId,

@@ -1,8 +1,8 @@
 import * as mongoose from 'mongoose';
 import { PaginateModel } from 'mongoose';
 import * as mongoosePaginate from 'mongoose-paginate';
-import {IForm, IFormAccesory, IFormItems, IFormQuestion, IFormSection} from '../../interfaces/form.interface';
-import {formTriggerSchema} from "./trigger.model";
+import { IForm, IFormAccesory, IFormItems, IFormQuestion, IFormSection } from '../../interfaces/form.interface';
+import { formTriggerSchema } from './trigger.model';
 
 export interface IFormItemModel extends IFormItems, mongoose.Types.Subdocument {}
 const itemSchema = new mongoose.Schema({
@@ -51,25 +51,25 @@ export const kindQuestion = [
 export enum KindQuestionKeyboard {
   text = 'text',
   numeric = 'numeric',
-  email = 'email',
+  email = 'email'
 }
 
 export const kindQuestionKeyboard = [
   KindQuestionKeyboard.text,
   KindQuestionKeyboard.numeric,
-  KindQuestionKeyboard.email,
+  KindQuestionKeyboard.email
 ];
 
 export enum KindQuestionImage {
   photo = 'photo',
   signature = 'signature',
-  picture = 'picture',
+  picture = 'picture'
 }
 
 export const kindQuestionImage = [
   KindQuestionImage.photo,
   KindQuestionImage.signature,
-  KindQuestionImage.picture,
+  KindQuestionImage.picture
 ];
 
 export interface IFormQuestionModel extends IFormQuestion, mongoose.Types.Subdocument {}

@@ -10,7 +10,7 @@ import {
   IParticipantScale,
   IParticipantSection
 } from '../../interfaces/participant.interface';
-import {KindQuestion, kindQuestion, KindQuestionKeyboard, kindQuestionKeyboard} from './form.model';
+import { KindQuestion, kindQuestion } from './form.model';
 import { choiceBackgroundColors } from './scale.model';
 
 export interface IParticipantChoicesModel extends IParticipantChoices, mongoose.Types.Subdocument {}

@@ -1265,7 +1265,8 @@ class CarController {
                 venue: true,
                 user: true,
                 sections: true,
-                qualification: true
+                qualification: true,
+                name: true
             },
             populate: [{
                     path: 'car',

@@ -10,7 +10,7 @@ import {IVenue} from '../../../../../../src/interfaces/venue.interface';
 import {IUsersState} from '../../actions/users.actions';
 import {IWindow} from '../../interfaces/window';
 import Checkbox from '../Utils/CheckBox';
-import {hasPermission} from "../../utils/common";
+import {hasPermission} from '../../utils/common';
 
 interface IPropsType {
   users: IUsersState;
@@ -131,7 +131,7 @@ class UserFormView extends React.Component<IPropsType, IStateType> {
         <ul className="nav nav-tabs" style={{marginBottom: '15px'}}>
           <li className="active"><a data-toggle="tab" href="#general">General</a></li>
           {
-            window.user.isAdmin || (hasPermission(window.user, "changeTeamPermissions") && !this.props.user?.isAdmin)  ?
+            window.user.isAdmin || (hasPermission(window.user, 'changeTeamPermissions') && !this.props.user?.isAdmin)  ?
               <li><a data-toggle="tab" href="#permissions">Permisos</a></li>
               : null
           }
@@ -315,7 +315,7 @@ class UserFormView extends React.Component<IPropsType, IStateType> {
             </div>
           </div>
           {
-            window.user.isAdmin || (hasPermission(window.user, "changeTeamPermissions") && !this.props.user?.isAdmin) ?
+            window.user.isAdmin || (hasPermission(window.user, 'changeTeamPermissions') && !this.props.user?.isAdmin) ?
               <div id="permissions" className="tab-pane fade">
                 <div className="row">
                   <div className="col-md-12">

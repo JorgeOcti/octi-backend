@@ -156,12 +156,12 @@ class FileTriggerDelegate extends NullTriggerDelegate {
             AWS.config.update({
                 accessKeyId: process.env.S3_KEY || s3Config.accessKeyId,
                 secretAccessKey: process.env.S3_SECRET || s3Config.secretAccessKey,
-                region: process.env.S3_REGION || s3Config.region,
+                region: process.env.S3_REGION || s3Config.region, // defaults to us-standard
             });
             let s3 = new AWS.S3({
                 bucket: process.env.S3_BUCKET || s3Config.bucket,
                 acl: 'public-read',
-                region: process.env.S3_REGION || s3Config.region,
+                region: process.env.S3_REGION || s3Config.region, // defaults to us-standard
             });
             let data = await fs.readFileSync(filePath);
             let s3FileOptions = {
