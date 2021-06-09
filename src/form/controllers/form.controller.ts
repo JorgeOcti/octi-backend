@@ -620,6 +620,7 @@ class FormController {
       });
     }
     vin = vin.replace(/[\W_]+/g, '');
+    let hasDamages = false;
     try {
       const updatedUser = await User.findById(req.user._id).populate([{path: 'venue'}]);
       if (!updatedUser) {
@@ -804,6 +805,11 @@ class FormController {
           // calculate participant qualification
           const formQualification = sumSectionQualifications ? sumSectionQualifications / sumSectionWeigths : 0;
           newParticipant.qualification = formQualification;
+          newParticipant.hasDamages = newParticipant.sections.some((section: any) => {
+            return section.answers.some((answer: any) => {
+              return answer.damagesSelected.length > 0;
+            });
+          });
           try {
             const updateTeam = await Team.findOneAndUpdate({_id: team._id}, {$inc: {formsNumber: 1}}, {new: true});
             if (updateTeam) {

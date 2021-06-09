@@ -3,10 +3,10 @@ import { PaginateModel } from 'mongoose';
 import * as mongoosePaginate from 'mongoose-paginate';
 import {
   IParticipant,
-  IparticipantAccesory,
+  IParticipantAccesory,
   IParticipantAnswer,
   IParticipantChoices,
-  IparticipantItems,
+  IParticipantItems,
   IParticipantScale,
   IParticipantSection
 } from '../../interfaces/participant.interface';
@@ -81,7 +81,7 @@ export const scaleSchema = new mongoose.Schema({
   }
 });
 
-export interface IParticipantItemModel extends IparticipantItems, mongoose.Types.Subdocument {}
+export interface IParticipantItemModel extends IParticipantItems, mongoose.Types.Subdocument {}
 const itemSchema = new mongoose.Schema({
   item: {
     type: String,
@@ -108,7 +108,7 @@ const accesorySchema = new mongoose.Schema({
   _id: false
 });
 
-export interface IParticipantAccesoryModel extends IparticipantAccesory, mongoose.Types.Subdocument {}
+export interface IParticipantAccesoryModel extends IParticipantAccesory, mongoose.Types.Subdocument {}
 const accessorySchema = new mongoose.Schema({
   question: {
     type: String,
@@ -309,6 +309,11 @@ const participantSchema = new mongoose.Schema({
     trim: true
   },
   sections: [participantSectionsSchema],
+
+  hasDamages: {
+    type: Boolean,
+    default: true
+  },
 
   qualification: {
     type: Number,

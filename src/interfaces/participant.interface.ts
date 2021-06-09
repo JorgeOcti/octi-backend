@@ -15,7 +15,7 @@ import {
 } from '../form/models/participant.model';
 import {IDamages, IDamageSelected} from './damage.interface';
 import {IParticipantFile} from './participantFile.interface';
-import {ICarrierModel} from "../app/models/carrier.model";
+import {ICarrierModel} from '../app/models/carrier.model';
 
 export interface IParticipantChoices {
   choice: string;
@@ -37,13 +37,13 @@ export interface IParticipantScale {
   active: boolean;
 }
 
-export interface IparticipantItems {
+export interface IParticipantItems {
   _id: any;
   item: string;
   amount: boolean;
 }
 
-export interface IparticipantAccesory {
+export interface IParticipantAccesory {
   _id: any;
   question: string;
   items: IParticipantItemModel[];
@@ -77,7 +77,7 @@ export interface IParticipantAnswer {
   order: number;
 
   hint: string;
-  optional: boolean,
+  optional: boolean;
 }
 
 export interface IParticipantSection {
@@ -107,6 +107,7 @@ export interface IParticipant {
   description: string;
 
   sections: mongoose.Types.Array<IParticipantSectionModel>;
+  hasDamages: boolean;
 
   qualification: number;
 

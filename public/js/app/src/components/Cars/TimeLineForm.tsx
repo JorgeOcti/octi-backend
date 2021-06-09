@@ -16,6 +16,7 @@ class TimeLineForm extends React.Component<IPropsType, IStateType> {
 
   constructor(props: IPropsType) {
     super(props);
+    this.getColorByDamage = this.getColorByDamage.bind(this);
   }
 
   public componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
@@ -29,7 +30,7 @@ class TimeLineForm extends React.Component<IPropsType, IStateType> {
     const {form, loadingParticipant} = this.props;
     return (
       <li style={{marginRight: '0'}}>
-        <i className={`fa fa-check-square-o ${this.getColor(form.qualification)}`}/>
+        <i className={`fa fa-check-square-o ${this.getColorByDamage(form)}`}/>
         <div className="timeline-item">
           <span className="time" style={{
             color: '#888',
@@ -45,14 +46,15 @@ class TimeLineForm extends React.Component<IPropsType, IStateType> {
               form.form.reception ?
                 <React.Fragment>
                   El vehículo fue recepcionado{form.venue ?
-                  <React.Fragment> en <span className="text-blue">{form.venue.name}</span></React.Fragment> : ''}. Con una calificación
-                  de <strong>{form.qualification.toFixed(0)}%</strong>.
+                  <React.Fragment> en <span className="text-blue">{form.venue.name}</span></React.Fragment> : ''}.
+                  {/* Con una calificación de <strong>{form.qualification.toFixed(0)}%</strong>. */}
                 </React.Fragment> : null
             }
             {
               form.form.shipping ?
                 <React.Fragment>
-                  El vehículo fue Despachado. Con una calificación de <strong>{form.qualification.toFixed(0)}%</strong>.
+                  El vehículo fue Despachado.
+                  {/* Con una calificación de <strong>{form.qualification.toFixed(0)}%</strong>. */}
                 </React.Fragment>
                 : ''
             }
@@ -95,7 +97,16 @@ class TimeLineForm extends React.Component<IPropsType, IStateType> {
     );
   }
 
-  private getColor(qualification: number): string {
+  private getColorByDamage(form: any): string {
+    if (form.hasDamages) {
+      return 'bg-red';
+    } else {
+      return 'bg-green';
+    }
+  }
+
+  private getColor(form: any): string {
+    const {qualification} = form;
     if (qualification <= 25) {
       return 'bg-red';
     } else if (qualification <= 50) {
