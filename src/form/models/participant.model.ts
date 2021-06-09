@@ -312,7 +312,7 @@ const participantSchema = new mongoose.Schema({
 
   hasDamages: {
     type: Boolean,
-    default: true
+    default: false
   },
 
   qualification: {

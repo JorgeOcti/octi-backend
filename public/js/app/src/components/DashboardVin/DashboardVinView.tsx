@@ -65,7 +65,6 @@ class DashboardVinView extends TrackingBasePage<IPropsType, IStateType> {
     this.changePage = this.changePage.bind(this);
     this.onChangeSearch = this.onChangeSearch.bind(this);
     this.printPdf = this.printPdf.bind(this);
-    this.hasDamages = this.hasDamages.bind(this);
     this.debounceOnChangeSearch = debounce(300, this.debounceOnChangeSearch);
     this.downloadReport = this.downloadReport.bind(this);
     this.onDateRangeChange = this.onDateRangeChange.bind(this);
@@ -335,10 +334,10 @@ class DashboardVinView extends TrackingBasePage<IPropsType, IStateType> {
                               <td className="middle-center">
                                 {
                                   `${participant.hasOwnProperty('qualification') ?
-                                    participant.qualification ? `${Math.round(participant.qualification)}%` : !this.hasDamages(participant) ? '-' : '' : ''}`
+                                    participant.qualification ? `${Math.round(participant.qualification)}%` : !participant.hasDamages ? '-' : '' : ''}`
                                 }
                                 {
-                                  this.hasDamages(participant) ?
+                                  participant.hasDamages ?
                                     <React.Fragment>
                                       {' '}<i
                                         className="fa fa-warning text-red"
@@ -410,16 +409,6 @@ class DashboardVinView extends TrackingBasePage<IPropsType, IStateType> {
         </section>
       </AppContainer>
     );
-  }
-
-  private hasDamages(participant: IParticipant): boolean {
-    let damages: number = 0;
-    for (const section of participant.sections) {
-      for (const answer of section.answers) {
-        damages += answer.damagesSelected ? answer.damagesSelected.length : 0;
-      }
-    }
-    return damages > 0;
   }
 
   private onChangeSearch(e: React.ChangeEvent<HTMLInputElement>): void {

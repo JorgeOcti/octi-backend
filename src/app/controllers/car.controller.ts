@@ -1283,7 +1283,7 @@ class CarController {
         car: true,
         venue: true,
         user: true,
-        sections: true,
+        hasDamages: true,
         qualification: true,
         name: true
       },
@@ -1390,6 +1390,7 @@ class CarController {
         });
       }
 
+      console.log(participantFilter);
       const revisions = await this.getRevisions(participantFilter, options);
 
       // validate exist page

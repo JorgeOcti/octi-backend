@@ -12,7 +12,7 @@ async function updateVin2() {
     const MONGODB_URI = process.env.MONGODB_URI || '';
     mongoose.Promise = bluebird;
     await mongoose.connect(MONGODB_URI, { useNewUrlParser: true, useUnifiedTopology: true });
-    const cursor = await participant_model_1.default.find({}).batchSize(100).cursor();
+    const cursor = await participant_model_1.default.find({}).batchSize(50).cursor();
     cursor.on('data', async (participant) => {
         console.log(participant.number);
         // let hasDamages = false;

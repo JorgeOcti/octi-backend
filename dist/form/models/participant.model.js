@@ -275,7 +275,7 @@ const participantSchema = new mongoose.Schema({
     sections: [participantSectionsSchema],
     hasDamages: {
         type: Boolean,
-        default: true
+        default: false
     },
     qualification: {
         type: Number,

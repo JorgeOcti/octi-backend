@@ -1265,7 +1265,7 @@ class CarController {
                 car: true,
                 venue: true,
                 user: true,
-                sections: true,
+                hasDamages: true,
                 qualification: true,
                 name: true
             },
@@ -1368,6 +1368,7 @@ class CarController {
                     createdAt: createdAtFilter
                 });
             }
+            console.log(participantFilter);
             const revisions = await this.getRevisions(participantFilter, options);
             // validate exist page
             if (options.page && revisions.pages && revisions.pages < options.page) {

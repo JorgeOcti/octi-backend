@@ -11,7 +11,7 @@ async function updateVin2() {
   const MONGODB_URI: string = process.env.MONGODB_URI || '';
   (mongoose as any).Promise = bluebird;
   await mongoose.connect(MONGODB_URI,  {useNewUrlParser: true,  useUnifiedTopology: true});
-  const cursor = await Participant.find({}).batchSize(100).cursor();
+  const cursor = await Participant.find({}).batchSize(50).cursor();
 
   cursor.on('data', async (participant) => {
     console.log(participant.number);
