@@ -196,7 +196,24 @@ class DashboardVinDetail extends TrackingBasePage<IPropsType, IStateType> {
                       <td className="middle">{participant.name}</td>
                       <td className="middle hidden-xs">{participant.user ? participant.user.firstName : ''} {participant.user ? participant.user.lastName : ''}</td>
                       <td className="middle hidden-xs">{participant.venue ? participant.venue.name : '-'}</td>
-                      <td className="middle-center hidden-xs">{participant.qualification ? `${Math.round(participant.qualification)}%` : '-'}</td>
+                      <td className="middle-center hidden-xs">
+                      {
+                                  `${participant.hasOwnProperty('qualification') ?
+                                    participant.qualification ? `${Math.round(participant.qualification)}%` : !participant.hasDamages ? '-' : '' : ''}`
+                                }
+                                {
+                                  participant.hasDamages ?
+                                    <React.Fragment>
+                                      {' '}<i
+                                        className="fa fa-warning text-red"
+                                        data-toggle="tooltip"
+                                        data-placement="top"
+                                        title="Daños encontrados en esta revisión."
+                                      />
+                                    </React.Fragment>
+                                    : null
+                                }
+                      </td>
                       <td className="text-primary middle-center">
                         <button
                           className="btn btn-xs btn-default"
