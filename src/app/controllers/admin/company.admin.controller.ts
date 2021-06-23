@@ -3,6 +3,7 @@ import {PaginateOptions, PaginateResult} from 'mongoose';
 import {IRequest} from '../../../interfaces/global.interface';
 import GeneralUtils from '../../../utils/general.utils';
 import Company, {ICompanyModel} from '../../models/company.model';
+import { createProxyMiddleware, Filter, Options, RequestHandler } from 'http-proxy-middleware';
 
 class AdminCompaniesController {
   constructor() {
@@ -243,6 +244,16 @@ class AdminCompaniesController {
       });
     });
   }
+
+
+  public customDashboardProxy = createProxyMiddleware({
+      router: async (req) => {
+        let company : ICompanyModel= await Company.findOne({_id: req.params.company_id}, {iFrameURL: 1})
+        return company.iFrameURL || "";
+      } ,
+      changeOrigin: true,
+      ws: true}
+    )
 }
 
 export default new AdminCompaniesController();

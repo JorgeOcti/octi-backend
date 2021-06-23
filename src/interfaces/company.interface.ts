@@ -36,4 +36,5 @@ export interface ICompany extends IBaseCompany {
   deleted: boolean;
   updatedAt: Date;
   createdAt: Date;
+  iFrameURL: string;
 }
