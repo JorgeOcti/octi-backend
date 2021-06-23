@@ -28,6 +28,8 @@ appRouter.get('/', Middlewares.isLoggedIn, CarController.generalDashboard);
 appRouter.get('/dashboard/damages/', Middlewares.isLoggedIn, CarController.generalDashboard);
 appRouter.get('/dashboard/timing/', Middlewares.isLoggedIn, CarController.generalDashboard);
 appRouter.get('/dashboard/derco/', Middlewares.isLoggedIn, CarController.generalDashboard);
+appRouter.get('/dashboard/custom-dashboard/', Middlewares.isLoggedIn, CarController.generalDashboard);
+appRouter.get('/custom-dashboard/:company_id',  Middlewares.isLoggedIn, AdminCompaniesController.customDashboardProxy );
 
 // DashBoard Cars
 appRouter.get('/cars/', Middlewares.isLoggedIn, CarController.vinDashboard);
