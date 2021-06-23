@@ -15,7 +15,7 @@ import ModalView from '../Modal/ModalView';
 import Row from '../Utils/Row';
 import TimeLineForm from './TimeLineForm';
 import TimeLineInventory from './TimeLineInventory';
-import TrackingBasePage from "../Utils/TrackingBasePage";
+import TrackingBasePage from '../Utils/TrackingBasePage';
 
 declare let window: IWindow;
 

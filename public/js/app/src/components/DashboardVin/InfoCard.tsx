@@ -1,18 +1,18 @@
 import * as React from 'react';
-import {HTMLProps} from "react";
+import { HTMLProps } from 'react';
 import NumberFormat from 'react-number-format';
 
 export enum CardColors {
-  AQUA = "bg-aqua",
-  GREEN = "bg-green",
-  YELLOW = "bg-yellow",
-  RED = "bg-red",
-  GRAY = "bg-gray-dark",
+  AQUA = 'bg-aqua',
+  GREEN = 'bg-green',
+  YELLOW = 'bg-yellow',
+  RED = 'bg-red',
+  GRAY = 'bg-gray-dark'
 }
 
-interface IPropsType extends HTMLProps<HTMLDivElement>{
-  title: string
-  value: number,
+interface IPropsType extends HTMLProps<HTMLDivElement> {
+  title: string;
+  value: number;
   percentageValue?: number;
   cardColor?: CardColors | null;
   iconBackgroundColor?: CardColors | null;
@@ -20,7 +20,7 @@ interface IPropsType extends HTMLProps<HTMLDivElement>{
   onClickMethod?: () => void;
   showLoading?: boolean;
   showProgressBar?: boolean;
-  bordered? :boolean;
+  bordered?: boolean;
 }
 
 interface IStateType {
@@ -28,19 +28,19 @@ interface IStateType {
 }
 
 class InfoCard extends React.Component<IPropsType, IStateType> {
+
   readonly state: IStateType = {
     error: null
-  }
+  };
 
   constructor(props: IPropsType) {
     super(props);
   }
 
   public render(): React.ReactElement<IPropsType> {
-    const {title, value, cardColor, icon, onClickMethod, percentageValue, showLoading, showProgressBar, iconBackgroundColor, bordered} = this.props;
+    const { title, value, cardColor, icon, onClickMethod, percentageValue, showLoading, showProgressBar, iconBackgroundColor, bordered } = this.props;
     return (
       <div className={`${this.props.className}  ${onClickMethod ? 'pointer' : ''}`} onClick={() => { if (onClickMethod) onClickMethod(); }}>
-        {showLoading ? <i className='fa fa-spinner fa-spin'/> :
         <div className={`info-box ${cardColor ? cardColor.toString() : ''} ${bordered ? 'bordered' : ''}`}>
           <span className={`info-box-icon ${iconBackgroundColor}`} >
             <i className={`fa ${icon}`} />
@@ -72,7 +72,7 @@ class InfoCard extends React.Component<IPropsType, IStateType> {
               </>
               : null}
           </div>
-        </div> }
+        </div>
       </div>
     );
   }

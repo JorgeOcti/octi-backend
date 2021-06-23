@@ -14,6 +14,7 @@ const inventory_model_1 = require("../../inventory/models/inventory.model");
 const inventoryCar_model_1 = require("../../inventory/models/inventoryCar.model");
 const planning_model_1 = require("../../planning/models/planning.model");
 const logger_service_1 = require("../../services/logger.service");
+// import VINService from '../../services/vin.service';
 const car_model_1 = require("../models/car.model");
 const user_model_1 = require("../models/user.model");
 const venue_model_1 = require("../models/venue.model");
@@ -1202,7 +1203,7 @@ class CarController {
                 }, {
                     // reverse populate
                     path: 'participants',
-                    select: ['number', 'name', 'user', 'createdAt', 'updatedAt', 'qualification', 'venue', 'shipping', 'reception'],
+                    select: ['number', 'name', 'user', 'createdAt', 'updatedAt', 'qualification', 'venue', 'shipping', 'reception', 'hasDamages'],
                     match: {
                         $or: [{
                                 venue: {
@@ -1264,8 +1265,9 @@ class CarController {
                 car: true,
                 venue: true,
                 user: true,
-                sections: true,
-                qualification: true
+                hasDamages: true,
+                qualification: true,
+                name: true
             },
             populate: [{
                     path: 'car',
@@ -1366,6 +1368,7 @@ class CarController {
                     createdAt: createdAtFilter
                 });
             }
+            console.log(participantFilter);
             const revisions = await this.getRevisions(participantFilter, options);
             // validate exist page
             if (options.page && revisions.pages && revisions.pages < options.page) {

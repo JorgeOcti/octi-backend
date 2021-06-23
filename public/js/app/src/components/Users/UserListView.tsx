@@ -88,6 +88,7 @@ class UserListView extends TrackingBasePage<IPropsType, IStateType> {
     this.processChangePassword = this.processChangePassword.bind(this);
     this.onChangeSearch = this.onChangeSearch.bind(this);
     this.exportExcel = this.exportExcel.bind(this);
+    this.cloneUser = this.cloneUser.bind(this);
     this.debounceOnChangeSearch = debounce(300, this.debounceOnChangeSearch);
   }
 
@@ -96,7 +97,7 @@ class UserListView extends TrackingBasePage<IPropsType, IStateType> {
   }
 
   public componentWillMount(): void {
-    const {pagination} = this.props.users;
+    const { pagination } = this.props.users;
     this.props.getUsersAction(pagination.page);
 
     // socket
@@ -306,6 +307,11 @@ class UserListView extends TrackingBasePage<IPropsType, IStateType> {
                               <i className="fa fa-lock"/></td> : null
                         }
                         {
+                          hasPermission(window.user, 'addUser') ?
+                            <td className="middle-center text-blue pointer" onClick={() => this.cloneUser(user)}>
+                              <i className="fa fa-clone"/></td> : null
+                        }
+                        {
                           window.user.isAdmin || (hasPermission(window.user, 'changeUser') && !user.isAdmin) ?
                             <td className="middle-center text-blue pointer" onClick={() => this.updateUser(user)}><i
                               className="fa fa-pencil"/></td> : null
@@ -341,6 +347,39 @@ class UserListView extends TrackingBasePage<IPropsType, IStateType> {
     );
   }
 
+  private cloneUser(user: IUser): void {
+    const { changeTempUser } = this;
+    const { venues, permissions, forms, companies } = this.props.users;
+    const tmpUser = {
+      ...user,
+      _id: '',
+      firstName: '',
+      lastName: '',
+      email: ''
+    };
+    tmpUser.venue = tmpUser.venue ? tmpUser.venue._id : '';
+    this.props.changeTempUserAction(tmpUser);
+    setTimeout(() => {
+      this.props.loadDataAction(
+        `Clonando usuario`,
+        <UserFormView
+          create={true}
+          changeTempUser={changeTempUser}
+          companies={companies}
+          venues={venues}
+          users={this.props.users}
+          forms={forms}
+          permissions={permissions}
+          user={tmpUser}
+        />,
+        <React.Fragment>
+          <button type="button" className="btn btn-sm btn-default" data-dismiss="modal">Cancelar</button>
+          <button type="button" className="btn btn-sm btn-primary" onClick={this.processCreateUser}>Crear</button>
+        </React.Fragment>
+      );
+    }, 400);
+  }
+
   private onChangeSearch(e: React.ChangeEvent<HTMLInputElement>): void {
     e.preventDefault();
     const value = e.target.value.trim();
@@ -353,8 +392,8 @@ class UserListView extends TrackingBasePage<IPropsType, IStateType> {
   }
 
   private createUser(): void {
-    const {changeTempUser} = this;
-    const {venues, permissions, forms, companies} = this.props.users;
+    const { changeTempUser } = this;
+    const { venues, permissions, forms, companies } = this.props.users;
     this.props.changeTempUserAction({
       _id: '',
       firstName: '',
@@ -370,11 +409,18 @@ class UserListView extends TrackingBasePage<IPropsType, IStateType> {
     setTimeout(() => {
       this.props.loadDataAction(
         'Agregar Usuario',
-        <UserFormView create={true} changeTempUser={changeTempUser} venues={venues} companies={companies}
-                      users={this.props.users} forms={forms} permissions={permissions}/>,
+        <UserFormView
+          create={true}
+          changeTempUser={changeTempUser}
+          venues={venues}
+          companies={companies}
+          users={this.props.users}
+          forms={forms}
+          permissions={permissions}
+        />,
         <React.Fragment>
           <button type="button" className="btn btn-sm btn-default" data-dismiss="modal">Cancelar</button>
-          <button type="button" className="btn btn-sm btn-primary" onClick={this.processCreateUser}>Grabar</button>
+          <button type="button" className="btn btn-sm btn-primary" onClick={this.processCreateUser}>Crear</button>
         </React.Fragment>
       );
     }, 400);

@@ -5,7 +5,6 @@ import * as moment from 'moment-timezone';
 import * as mongoose from 'mongoose';
 import { PaginateOptions, PaginateResult } from 'mongoose';
 import * as tempfile from 'tempfile';
-import app from '../../app';
 import FormModel, { IFormModel, KindQuestion } from '../../form/models/form.model';
 import Kind from '../../form/models/kind.model';
 import Part from '../../form/models/part.model';
@@ -17,11 +16,10 @@ import InventoryModel, { ChoicesStatusInventory } from '../../inventory/models/i
 import { ChoicesStatusCarInventory } from '../../inventory/models/inventoryCar.model';
 import Planning from '../../planning/models/planning.model';
 import logger from '../../services/logger.service';
-import VINService from '../../services/vin.service';
+// import VINService from '../../services/vin.service';
 import CarModel, { ChoicesStatusCar, ICarModel } from '../models/car.model';
 import User from '../models/user.model';
 import Venue from '../models/venue.model';
-import {IPermission} from "../../interfaces/permision.interface";
 
 moment.tz.setDefault('America/Santiago');
 class CarController {
@@ -1221,7 +1219,7 @@ class CarController {
         }, {
           // reverse populate
           path: 'participants',
-          select: ['number', 'name', 'user', 'createdAt', 'updatedAt', 'qualification', 'venue', 'shipping', 'reception'],
+          select: ['number', 'name', 'user', 'createdAt', 'updatedAt', 'qualification', 'venue', 'shipping', 'reception', 'hasDamages'],
           match: {
             $or: [{
               venue: {
@@ -1272,7 +1270,7 @@ class CarController {
   }
 
   public async apiRevisions(req: IRequest, res: Response) {
-    const {page, pageSize, search, from, to} = req.query as {
+    const { page, pageSize, search, from, to } = req.query as {
       page: string, pageSize: string, search: string,
       from: string, to: string
     };
@@ -1285,8 +1283,9 @@ class CarController {
         car: true,
         venue: true,
         user: true,
-        sections: true,
-        qualification: true
+        hasDamages: true,
+        qualification: true,
+        name: true
       },
       populate: [{
         path: 'car',
@@ -1391,6 +1390,7 @@ class CarController {
         });
       }
 
+      console.log(participantFilter);
       const revisions = await this.getRevisions(participantFilter, options);
 
       // validate exist page

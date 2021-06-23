@@ -98,7 +98,6 @@ class CircleChartCard extends React.Component<IPropsType, IStateType>{
     const {title, value, onClickMethod, showLoading, bordered} = this.props;
     return (
       <div className={`${this.props.className}  ${onClickMethod ? 'pointer' : ''}`} onClick={() => {if (onClickMethod) onClickMethod();}}>
-        {showLoading ? <i className="fa fa-spinner fa-spin"/> :
         <div className={`${bordered ? 'bordered' : ''}`}>
           <div className="row justify-content-center">
             <div className="col-sm-4 col-xs-12">
@@ -119,7 +118,6 @@ class CircleChartCard extends React.Component<IPropsType, IStateType>{
             </div>
           </div>
         </div>
-        }
       </div>);
   }
 }

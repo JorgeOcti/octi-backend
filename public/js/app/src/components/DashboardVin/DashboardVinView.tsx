@@ -65,7 +65,6 @@ class DashboardVinView extends TrackingBasePage<IPropsType, IStateType> {
     this.changePage = this.changePage.bind(this);
     this.onChangeSearch = this.onChangeSearch.bind(this);
     this.printPdf = this.printPdf.bind(this);
-    this.hasDamages = this.hasDamages.bind(this);
     this.debounceOnChangeSearch = debounce(300, this.debounceOnChangeSearch);
     this.downloadReport = this.downloadReport.bind(this);
     this.onDateRangeChange = this.onDateRangeChange.bind(this);
@@ -308,7 +307,7 @@ class DashboardVinView extends TrackingBasePage<IPropsType, IStateType> {
                         <th style={{width: '13%'}} className="middle hidden-xs">Supervisor</th>
                         <th style={{width: '13%'}} className="middle">Sucursal</th>
                         <th style={{width: '10%'}} className="middle-center hidden-xs">Calificación</th>
-                        <th style={{width: '15%'}} className="hidden-xs">Fecha calificación</th>
+                        <th style={{width: '15%'}} className="hidden-xs">Fecha</th>
                         <th style={{width: '15%'}} className="hidden-xs">Último checkeo</th>
                         <th className="width-10 hidden-xs"/>
                         <th className="width-10"/>
@@ -335,10 +334,10 @@ class DashboardVinView extends TrackingBasePage<IPropsType, IStateType> {
                               <td className="middle-center">
                                 {
                                   `${participant.hasOwnProperty('qualification') ?
-                                    participant.qualification ? `${Math.round(participant.qualification)}%` : !this.hasDamages(participant) ? '-' : '' : ''}`
+                                    participant.qualification ? `${Math.round(participant.qualification)}%` : !participant.hasDamages ? '-' : '' : ''}`
                                 }
                                 {
-                                  this.hasDamages(participant) ?
+                                  participant.hasDamages ?
                                     <React.Fragment>
                                       {' '}<i
                                         className="fa fa-warning text-red"
@@ -354,11 +353,12 @@ class DashboardVinView extends TrackingBasePage<IPropsType, IStateType> {
                                 {moment(participant.createdAt).format('L HH:mm:ss')}
                               </td>
                               <td className="middle hidden-xs">
-                                {participant.car.lastForm && participant.car.lastForm.createdAt ?
+                                {participant.name}
+                                {/* {participant.car.lastForm && participant.car.lastForm.createdAt ?
                                   moment(participant.car.lastForm.createdAt).format('L HH:mm:ss')
                                   :
                                   '-'
-                                }
+                                } */}
                               </td>
                               <td className="text-primary middle-center hidden-xs">
                                 <button
@@ -409,16 +409,6 @@ class DashboardVinView extends TrackingBasePage<IPropsType, IStateType> {
         </section>
       </AppContainer>
     );
-  }
-
-  private hasDamages(participant: IParticipant): boolean {
-    let damages: number = 0;
-    for (const section of participant.sections) {
-      for (const answer of section.answers) {
-        damages += answer.damagesSelected ? answer.damagesSelected.length : 0;
-      }
-    }
-    return damages > 0;
   }
 
   private onChangeSearch(e: React.ChangeEvent<HTMLInputElement>): void {

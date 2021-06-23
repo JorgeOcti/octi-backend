@@ -247,10 +247,10 @@ export function getParticipant(id: string) {
                 <td style={{width: '40%'}}><strong>Fecha</strong></td>
                 <td>{moment(data.createdAt).format('LLL')}</td>
               </tr>
-              <tr>
+              {/* <tr>
                 <td style={{width: '40%'}}><strong>Calificación</strong></td>
                 <td>{Math.round(data.qualification)}%</td>
-              </tr>
+              </tr> */}
               {
                 data.receptionText && data.receptionText.length ?
                   <tr>
