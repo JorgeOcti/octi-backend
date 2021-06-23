@@ -2,6 +2,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 const general_utils_1 = require("../../../utils/general.utils");
 const company_model_1 = require("../../models/company.model");
+const http_proxy_middleware_1 = require("http-proxy-middleware");
 class AdminCompaniesController {
     constructor() {
         this.index = this.index.bind(this);
@@ -242,6 +243,14 @@ class AdminCompaniesController {
             });
         });
     }
+    customDashboardProxy = http_proxy_middleware_1.createProxyMiddleware({
+        router: async (req) => {
+            let company = await company_model_1.default.findOne({ _id: req.params.company_id }, { iFrameURL: 1 });
+            return company.iFrameURL || "";
+        },
+        changeOrigin: true,
+        ws: true
+    });
 }
 exports.default = new AdminCompaniesController();
 //# sourceMappingURL=company.admin.controller.js.map

@@ -12,21 +12,21 @@ const general_utils_1 = require("../../utils/general.utils");
 const activityHistory_model_1 = require("../models/activityHistory.model");
 const invoice_model_1 = require("../models/invoice.model");
 class BillingQueue {
+    apiKey = '6d9b28d228cd00669f37484223d876daad754636';
+    PDFconfig = {
+        directory: 'tmp',
+        format: 'Letter',
+        orientation: 'portrait',
+        border: {
+            top: '0.3in',
+            right: '0.5in',
+            bottom: '0.3in',
+            left: '0.5in'
+        },
+        type: 'pdf',
+        quality: '75'
+    };
     constructor() {
-        this.apiKey = '6d9b28d228cd00669f37484223d876daad754636';
-        this.PDFconfig = {
-            directory: 'tmp',
-            format: 'Letter',
-            orientation: 'portrait',
-            border: {
-                top: '0.3in',
-                right: '0.5in',
-                bottom: '0.3in',
-                left: '0.5in'
-            },
-            type: 'pdf',
-            quality: '75'
-        };
         this.processBilling = this.processBilling.bind(this);
         this.calculateCarsInChecklist = this.calculateCarsInChecklist.bind(this);
         this.calculateCarsInInventory = this.calculateCarsInInventory.bind(this);

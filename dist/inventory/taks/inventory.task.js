@@ -3,6 +3,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const car_model_1 = require("../../app/models/car.model");
 const logger_service_1 = require("../../services/logger.service");
 class InventoryQueue {
+    queue;
     constructor(queue) {
         this.queue = queue;
         this.updateCar = this.updateCar.bind(this);

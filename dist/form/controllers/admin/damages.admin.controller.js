@@ -5,6 +5,10 @@ const kind_model_1 = require("../../models/kind.model");
 const part_model_1 = require("../../models/part.model");
 const position_model_1 = require("../../models/position.model");
 class AdminDamagesController {
+    kind;
+    position;
+    part;
+    damage;
     constructor() {
         this.index = this.index.bind(this);
         this.apiListDamages = this.apiListDamages.bind(this);

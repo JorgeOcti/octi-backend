@@ -969,8 +969,7 @@ class InventoryController {
                                         $and: [
                                             {
                                                 $in: ['$$cars._id', cars.map((car) => mongoose.Types.ObjectId(car))]
-                                            },
-                                            {
+                                            }, {
                                                 $ne: ['$$cars.images', []]
                                             }
                                         ]

@@ -6,6 +6,8 @@ exports.WebError = exports.APIError = void 0;
  * @extends Error
  */
 class ExtendableError extends Error {
+    message;
+    status;
     constructor(message, status) {
         super(message);
         this.name = this.constructor.name;

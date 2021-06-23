@@ -29,6 +29,8 @@ appRouter.get('/', middlewares_1.default.isLoggedIn, car_controller_1.default.ge
 appRouter.get('/dashboard/damages/', middlewares_1.default.isLoggedIn, car_controller_1.default.generalDashboard);
 appRouter.get('/dashboard/timing/', middlewares_1.default.isLoggedIn, car_controller_1.default.generalDashboard);
 appRouter.get('/dashboard/derco/', middlewares_1.default.isLoggedIn, car_controller_1.default.generalDashboard);
+appRouter.get('/dashboard/custom-dashboard/', middlewares_1.default.isLoggedIn, car_controller_1.default.generalDashboard);
+appRouter.get('/custom-dashboard/:company_id', middlewares_1.default.isLoggedIn, company_admin_controller_1.default.customDashboardProxy);
 // DashBoard Cars
 appRouter.get('/cars/', middlewares_1.default.isLoggedIn, car_controller_1.default.vinDashboard);
 appRouter.get('/cars/:id', middlewares_1.default.isLoggedIn, car_controller_1.default.vinDashboardDetail);

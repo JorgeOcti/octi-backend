@@ -23,62 +23,62 @@ const requestItemStatus_model_1 = require("../models/requestItemStatus.model");
 const activityHistory_model_1 = require("../../billing/models/activityHistory.model");
 const reason_model_1 = require("../models/reason.model");
 class RequestController {
+    itemPopulate = [{
+            path: 'car'
+        }, {
+            path: 'request'
+        }, {
+            path: 'files'
+        }, {
+            path: 'reason',
+            select: ['name']
+        }, {
+            path: 'status',
+            select: ['name', 'weigth']
+        }, {
+            path: 'carrier',
+            select: ['name']
+        }, {
+            path: 'origin',
+            select: ['name']
+        }, {
+            path: 'destination',
+            select: ['name']
+        }];
+    requestPopulate = [{
+            path: 'origin',
+            select: ['name']
+        }, {
+            path: 'destination',
+            select: ['name']
+        }, {
+            path: 'channel',
+            select: ['name']
+        }, {
+            path: 'createdBy',
+            select: ['firstName', 'lastName']
+        }, {
+            path: 'items',
+            options: {
+                sort: {
+                    _id: 1
+                }
+            },
+            populate: this.itemPopulate
+        }];
+    aggregateCustomLabels = {
+        totalDocs: 'total',
+        docs: 'docs',
+        limit: 'perPage',
+        page: 'currentPage',
+        nextPage: 'next',
+        prevPage: 'prev',
+        totalPages: 'pages',
+        hasPrevPage: 'hasPrevious',
+        hasNextPage: 'hasNext',
+        pagingCounter: 'pageCounter'
+    };
     constructor() {
-        this.itemPopulate = [{
-                path: 'car'
-            }, {
-                path: 'request'
-            }, {
-                path: 'files'
-            }, {
-                path: 'reason',
-                select: ['name']
-            }, {
-                path: 'status',
-                select: ['name', 'weigth']
-            }, {
-                path: 'carrier',
-                select: ['name']
-            }, {
-                path: 'origin',
-                select: ['name']
-            }, {
-                path: 'destination',
-                select: ['name']
-            }];
-        this.requestPopulate = [{
-                path: 'origin',
-                select: ['name']
-            }, {
-                path: 'destination',
-                select: ['name']
-            }, {
-                path: 'channel',
-                select: ['name']
-            }, {
-                path: 'createdBy',
-                select: ['firstName', 'lastName']
-            }, {
-                path: 'items',
-                options: {
-                    sort: {
-                        _id: 1
-                    }
-                },
-                populate: this.itemPopulate
-            }];
-        this.aggregateCustomLabels = {
-            totalDocs: 'total',
-            docs: 'docs',
-            limit: 'perPage',
-            page: 'currentPage',
-            nextPage: 'next',
-            prevPage: 'prev',
-            totalPages: 'pages',
-            hasPrevPage: 'hasPrevious',
-            hasNextPage: 'hasNext',
-            pagingCounter: 'pageCounter'
-        };
         this.index = this.index.bind(this);
         this.apiList = this.apiList.bind(this);
         this.apiListItems = this.apiListItems.bind(this);

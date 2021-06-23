@@ -2,6 +2,8 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 const Raven = require("raven");
 class BaseAdminController {
+    paginateOptions;
+    instanceModel;
     constructor(instanceModel) {
         this.instanceModel = instanceModel;
         this.apiList = this.apiList.bind(this);

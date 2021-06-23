@@ -3,6 +3,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const axios_1 = require("axios");
 const logger_service_1 = require("./logger.service");
 class ApiService {
+    instance;
     constructor() {
         const headers = {};
         headers['Content-Type'] = 'application/json';

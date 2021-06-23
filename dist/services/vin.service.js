@@ -5,19 +5,22 @@ const countries_1 = require("./data/countries");
 const manufacters_1 = require("./data/manufacters");
 const years_1 = require("./data/years");
 class VINService {
+    INDEXES = {
+        MADE_IN_START: 0,
+        MADE_IN_END: 2,
+        MANUFACTURER_START: 0,
+        MANUFACTURER_END: 3,
+        DETAILS_START: 3,
+        DETAILS_END: 8,
+        SECURITY_CODE: 8,
+        YEAR: 9,
+        ASSEMBLY_PLANT: 10,
+        SERIAL_NUMBER_START: 11
+    };
+    manufacturers;
+    years;
+    countries;
     constructor() {
-        this.INDEXES = {
-            MADE_IN_START: 0,
-            MADE_IN_END: 2,
-            MANUFACTURER_START: 0,
-            MANUFACTURER_END: 3,
-            DETAILS_START: 3,
-            DETAILS_END: 8,
-            SECURITY_CODE: 8,
-            YEAR: 9,
-            ASSEMBLY_PLANT: 10,
-            SERIAL_NUMBER_START: 11
-        };
         this.manufacturers = manufacters_1.default;
         this.years = years_1.default;
         this.countries = countries_1.default;

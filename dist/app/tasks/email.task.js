@@ -4,6 +4,7 @@ const path = require("path");
 const pug = require("pug");
 const aws_ses_service_1 = require("../../services/aws-ses.service");
 class EmailQueue {
+    queue;
     constructor(queue) {
         this.queue = queue;
         this.generateHTML = this.generateHTML.bind(this);

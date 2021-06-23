@@ -5,6 +5,9 @@ const Raven = require("raven");
 const app_1 = require("../app");
 const general_utils_1 = require("../utils/general.utils");
 class LoggerService {
+    colors;
+    message;
+    env;
     constructor() {
         this.message = '';
         this.env = general_utils_1.default.getFromEnviroment('ENV', 'development');

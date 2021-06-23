@@ -6,6 +6,7 @@ const path = require("path");
 const general_utils_1 = require("../utils/general.utils");
 const logger_service_1 = require("./logger.service");
 class PushService {
+    pushNotifications;
     constructor() {
         dotenv.config({
             path: path.join(__dirname, '../../.env')
