@@ -52,6 +52,15 @@ if (hasPermission(window.user, 'viewDashboardDerco')) {
   });
 }
 
+if (hasPermission(window.user, 'viewCustomDashboard')) {
+  dashboardItems.push({
+    id: '1.7',
+    icon: 'fa-circle-o',
+    text: 'Análisis',
+    url: '/dashboard/custom-dashboard/'
+  });
+}
+
 if (dashboardItems.length) {
   menus.push({
     id: '1',

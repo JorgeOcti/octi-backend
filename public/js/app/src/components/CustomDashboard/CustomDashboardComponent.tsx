@@ -1,0 +1,76 @@
+import * as Raven from 'raven-js';
+import * as React from 'react';
+import {ErrorInfo} from 'react';
+import {RouteComponentProps} from 'react-router';
+import {Dispatch} from 'redux';
+import AppContainer from '../../container/AppContainer';
+import Row from '../Utils/Row';
+import TrackingBasePage from "../Utils/TrackingBasePage";
+import FrameComponent from "../Utils/iFrameComponent";
+import {CompaniesReduxAction, ICompaniesState} from "../../actions/companies.actions";
+import {connect} from "react-redux";
+import {IWindow} from "../../interfaces/window";
+
+declare let window: IWindow;
+
+interface IPropsType extends RouteComponentProps<{ ticket: string }> {
+  dispatch: Dispatch<CompaniesReduxAction>;
+  dashboard: ICompaniesState;
+}
+
+interface IStateType {
+  error: Error | null;
+  showDrilldown: boolean,
+  selectedDate: string | null,
+  from: Date,
+  to: Date,
+}
+
+class DashboardTimingView extends TrackingBasePage<IPropsType, IStateType> {
+  title: string;
+
+  constructor(props: IPropsType) {
+    super(props);
+    this.title = 'Reporte personalizado';
+  }
+
+  public componentDidCatch(error: Error, errorInfo: ErrorInfo): void {
+    this.setState({error});
+    Raven.captureException(error, {
+      extra: errorInfo
+    });
+  }
+
+  public render(): React.ReactElement<IPropsType> {
+    return (
+      <AppContainer title="" cMenu="1" cSubMenu="1.7">
+        <section className="content">
+          <Row>
+            <div className="col-md-12">
+              <div className="box">
+                <div className="box-header with-border"><h1 className="box-title">Dashboard de análisis de datos</h1>
+                </div>
+                <FrameComponent
+                  iframe={`<iframe style="width: 100%; min-height: 500px; height: 100vh" src="/custom-dashboard/${window.user.company._id}" frameBorder="0" style="border:0" allowFullScreen></iframe>`} />
+              </div>
+            </div>
+          </Row>
+        </section>
+      </AppContainer>
+    );
+  }
+}
+
+const mapStateToProps = (state: { dashboardTiming: ICompaniesState }) => {
+  return {
+    dashboard: state.dashboardTiming
+  };
+};
+
+const mapDispatchToProps = (dispatch: any) => {
+  return {
+    dispatch,
+  };
+};
+
+export default connect<{}, {}, IPropsType>(mapStateToProps, mapDispatchToProps)(DashboardTimingView);
