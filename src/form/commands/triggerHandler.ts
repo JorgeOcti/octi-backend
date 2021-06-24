@@ -166,6 +166,7 @@ class EmailTriggerDelegate extends NullTriggerDelegate{
       attachments: payload.files || [],
       view: trigger.config.template,
       context: {
+        ...payload,
         ...data,
         ...answers,
       }
