@@ -249,7 +249,7 @@ class AdminCompaniesController {
             return company.iFrameURL || "";
         },
         changeOrigin: true,
-        ws: true
+        ignorePath: true
     });
 }
 exports.default = new AdminCompaniesController();

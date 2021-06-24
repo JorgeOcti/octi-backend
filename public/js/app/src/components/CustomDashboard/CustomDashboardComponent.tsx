@@ -6,7 +6,6 @@ import {Dispatch} from 'redux';
 import AppContainer from '../../container/AppContainer';
 import Row from '../Utils/Row';
 import TrackingBasePage from "../Utils/TrackingBasePage";
-import FrameComponent from "../Utils/iFrameComponent";
 import {CompaniesReduxAction, ICompaniesState} from "../../actions/companies.actions";
 import {connect} from "react-redux";
 import {IWindow} from "../../interfaces/window";
@@ -50,8 +49,9 @@ class DashboardTimingView extends TrackingBasePage<IPropsType, IStateType> {
               <div className="box">
                 <div className="box-header with-border"><h1 className="box-title">Dashboard de análisis de datos</h1>
                 </div>
-                <FrameComponent
-                  iframe={`<iframe style="width: 100%; min-height: 500px; height: 100vh" src="/custom-dashboard/${window.user.company._id}" frameBorder="0" style="border:0" allowFullScreen></iframe>`} />
+                <div className="box-body">
+                  <iframe src={`${window.user.company.iFrameURL}`} style={{width: "100%", minWidth: "1000px" ,minHeight: "500px", height: "100vh"}} allowFullScreen={true}  frameBorder={0} security={""}/>
+                </div>
               </div>
             </div>
           </Row>

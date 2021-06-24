@@ -176,7 +176,7 @@ passport.deserializeUser(async (email, done) => {
                 select: ['name']
             }, {
                 path: 'company',
-                select: ['name']
+                select: ['name', "iFrameURL"]
             }, {
                 path: 'team',
                 select: ['name']

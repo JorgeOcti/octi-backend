@@ -250,10 +250,10 @@ class AdminCompaniesController {
       router: async (req) => {
         let company : ICompanyModel= await Company.findOne({_id: req.params.company_id}, {iFrameURL: 1})
         return company.iFrameURL || "";
-      } ,
-      changeOrigin: true,
-      ws: true}
-    )
+      },
+    changeOrigin: true,
+    ignorePath: true
+  })
 }
 
 export default new AdminCompaniesController();
