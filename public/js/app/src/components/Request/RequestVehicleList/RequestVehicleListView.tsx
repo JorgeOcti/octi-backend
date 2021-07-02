@@ -475,7 +475,7 @@ class RequestVehicleListView extends TrackingBasePage<IPropsType, IStateType> {
                       <span style={{ float: 'right' }}><i className={`fa fa-fw ${orderBy === 'reason.name' ? `${orderType === 'descending' ? 'fa-sort-down' : 'fa-sort-up'}` : 'fa-sort'}`} /></span>
                         </th>
                         {/* <th className="middle">Carrocería</th>
-                      <th className="middle">Pre-Entrega</th> */}
+                        <th className="middle">Pre-Entrega</th> */}
                         <th className="middle-center" style={{ width: '40px' }}>Adj</th>
                         <th className="middle-center" style={{ width: '20px' }}>Obs</th>
                         {/* <th

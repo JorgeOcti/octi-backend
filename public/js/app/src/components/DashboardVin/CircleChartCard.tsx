@@ -1,7 +1,4 @@
 import * as React from 'react';
-import {RouteComponentProps} from 'react-router';
-import {Dispatch} from 'redux';
-import {DashboardReduxAction, IDashboardState} from '../../actions/dashboard.actions';
 import {HTMLProps} from 'react';
 import NumberFormat from "react-number-format";
 
@@ -95,7 +92,7 @@ class CircleChartCard extends React.Component<IPropsType, IStateType>{
   }
 
   public render(): React.ReactElement<IPropsType> {
-    const {title, value, onClickMethod, showLoading, bordered} = this.props;
+    const {title, value, onClickMethod, bordered} = this.props;
     return (
       <div className={`${this.props.className}  ${onClickMethod ? 'pointer' : ''}`} onClick={() => {if (onClickMethod) onClickMethod();}}>
         <div className={`${bordered ? 'bordered' : ''}`}>
@@ -111,7 +108,7 @@ class CircleChartCard extends React.Component<IPropsType, IStateType>{
                   displayType={'text'}
                   thousandSeparator={'.'}
                   decimalScale={0}
-                  decimalSeparator={false}
+                  decimalSeparator={undefined}
                   suffix="%"/>
               </span>
               {this.props.children}

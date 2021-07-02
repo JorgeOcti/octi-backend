@@ -232,7 +232,7 @@ class RequestController {
             extraQuery.createdAt.$lte = moment(filters.to).endOf('day').toDate();
         }
         const requestNumbers = filters.request
-            .replace(/[^0-9\,]/g, '')
+            .replace(/[^0-9,]/g, '')
             .split(',')
             .filter((requestNumber) => (requestNumber.length));
         if (requestNumbers.length) {

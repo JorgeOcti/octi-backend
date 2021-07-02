@@ -17,6 +17,7 @@ class TimeLineForm extends React.Component<IPropsType, IStateType> {
   constructor(props: IPropsType) {
     super(props);
     this.getColorByDamage = this.getColorByDamage.bind(this);
+    this.getIconDamage = this.getIconDamage.bind(this);
   }
 
   public componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
@@ -29,8 +30,9 @@ class TimeLineForm extends React.Component<IPropsType, IStateType> {
   render(): React.ReactElement<IPropsType> {
     const {form, loadingParticipant} = this.props;
     return (
+      
       <li style={{marginRight: '0'}}>
-        <i className={`fa fa-check-square-o ${this.getColorByDamage(form)}`}/>
+        <i className={`fa ${this.getIconDamage(form.hasDamages)} $ ${this.getColorByDamage(form.hasDamages)}`}/>
         <div className="timeline-item">
           <span className="time" style={{
             color: '#888',
@@ -97,11 +99,19 @@ class TimeLineForm extends React.Component<IPropsType, IStateType> {
     );
   }
 
-  private getColorByDamage(form: any): string {
-    if (form.hasDamages) {
+  private getColorByDamage(hasDamages: boolean): string {
+    if (hasDamages) {
       return 'bg-red';
     } else {
       return 'bg-green';
+    }
+  }
+
+  private getIconDamage(hasDamages: boolean): string {
+    if (hasDamages) {
+      return 'fa-warning';
+    } else {
+      return 'fa-check-square-o';
     }
   }
 

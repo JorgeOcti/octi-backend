@@ -241,7 +241,7 @@ class RequestController {
       extraQuery.createdAt.$lte = moment(filters.to).endOf('day').toDate();
     }
     const requestNumbers = filters.request
-      .replace(/[^0-9\,]/g, '')
+      .replace(/[^0-9,]/g, '')
       .split(',')
       .filter((requestNumber: string) => (requestNumber.length));
     if (requestNumbers.length) {
@@ -379,7 +379,7 @@ class RequestController {
         }, {
           $sort: { [orderBy]: orderType === 'ascending' ? 1 : -1 }
         }]);
-      const options = {
+      const options: PaginateOptions = {
         page: parseInt(page ? page : '1', 10),
         limit: parseInt(pageSize ? pageSize : '10', 10),
         customLabels: this.aggregateCustomLabels
