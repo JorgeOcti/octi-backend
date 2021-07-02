@@ -16,20 +16,20 @@ import * as s3Config from "../../../s3-config.json";
 
 
 export default class TriggerHandler {
-  private form: IForm
-  private participant: IParticipant
-  private readonly answers: any
+  private form: IForm;
+  private participant: IParticipant | null;
+  private readonly answers: any;
 
   constructor(form: IForm, participant: IParticipant, answers?: any) {
     this.form = form;
     this.participant = participant;
-    this.answers = answers ? answers :this.getAnswers();
+    this.answers = answers ? answers : this.getAnswers();
   }
 
-  async getParticipantFullData(){
+  async getParticipantFullData() {
     this.participant = await ParticipantModel
       .findOne({
-        _id: this.participant._id,
+        _id: this.participant!._id,
       }, {
         name: true,
         number: true,
@@ -83,31 +83,31 @@ export default class TriggerHandler {
       }]).lean();
   }
 
-  getAnswers() : any {
-    let answers = {}
-    this.participant.sections.map( (s) => {
-      s.answers.map( a => {
+  getAnswers(): any {
+    let answers: any = {};
+    this.participant!.sections.map((s) => {
+      s.answers.map(a => {
         answers[a._id.toString()] = a.kind === KindQuestion.image ? a.images : a.comment
       })
-    })
+    });
 
     return answers;
   }
 
-  public async execute(payload : any = {}) {
+  public async execute(payload: any = {}) {
     await this.getParticipantFullData();
-    for (const trigger : IFormTriggerModel of this.form.triggers){
-      if (!trigger.enabled){
+    for (const trigger of this.form.triggers) {
+      if (!trigger.enabled) {
         logger.info(`Trigger: ${trigger.name} deactivated`);
         continue;
       }
 
-      let triggerDelegate : ITriggerDelegate = this.getTrigger(trigger);
-      payload = await triggerDelegate.trigger(trigger, this.answers, {...payload, participant: this.participant, user: this.participant.user});
+      let triggerDelegate: ITriggerDelegate = this.getTrigger(trigger);
+      payload = await triggerDelegate.trigger(trigger, this.answers, {...payload, participant: this.participant, user: this.participant!.user});
     }
   }
 
-  private getTrigger(trigger: IFormTriggerModel) : ITriggerDelegate {
+  private getTrigger(trigger: IFormTriggerModel): ITriggerDelegate {
     let delegate = new NullTriggerDelegate();
     switch (trigger.kind) {
       case KindTrigger.email: {
@@ -129,13 +129,13 @@ interface ITriggerDelegate {
   trigger(trigger: IFormTriggerModel, answers: any, payload: any): any
 }
 
-class NullTriggerDelegate implements  ITriggerDelegate {
+class NullTriggerDelegate implements ITriggerDelegate {
   processTrigerConfig(trigger: IFormTriggerModel, answers: any): any {
-    let data = {};
-    Object.keys(trigger.config.toJSON()).map( (k: string) => {
+    let data: any = {};
+    Object.keys(trigger.config.toJSON()).map((k: string) => {
       data[k] = answers.hasOwnProperty(trigger.config[k].toString()) ?
         answers[trigger.config[k].toString()] : trigger.config[k].toString();
-    })
+    });
     return data;
   }
 
@@ -144,7 +144,7 @@ class NullTriggerDelegate implements  ITriggerDelegate {
   }
 }
 
-class EmailTriggerDelegate extends NullTriggerDelegate{
+class EmailTriggerDelegate extends NullTriggerDelegate {
 
   private validateEmail(email: string) {
     const re = /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
@@ -177,7 +177,7 @@ class EmailTriggerDelegate extends NullTriggerDelegate{
 
 class FileTriggerDelegate extends NullTriggerDelegate {
 
-  async uploadFile(filePath: string, filename: string) : any {
+  async uploadFile(filePath: string, filename: string): Promise<any> {
     try {
 
       AWS.config.update({
@@ -217,7 +217,7 @@ class FileTriggerDelegate extends NullTriggerDelegate {
     }
   }
 
-  async trigger(trigger: IFormTriggerModel, answers: any, payload: any): any {
+  async trigger(trigger: IFormTriggerModel, answers: any, payload: any): Promise<any> {
     logger.info(`Kind Trigger: ${trigger.kind} performing`);
     let data = this.processTrigerConfig(trigger, answers);
     let filename = `${moment().unix()}_${data.filename}`;
@@ -241,7 +241,7 @@ class FileTriggerDelegate extends NullTriggerDelegate {
     moment.locale('es');
     moment.tz.setDefault('America/Santiago');
     const css = fs.readFileSync(path.join(__dirname, '../../../views/') + 'form/carDetail/style.css', 'utf8');
-    const templatePath: string = path.join(__dirname, '../../../views/') + data.template // 'form/carDetail/index.pug';
+    const templatePath: string = path.join(__dirname, '../../../views/') + data.template; // 'form/carDetail/index.pug';
     const html = GeneralUtils.generateHtmlFromPugFile(templatePath, {
       ...payload,
       ...answers,
@@ -303,16 +303,19 @@ class FileTriggerDelegate extends NullTriggerDelegate {
       }
     });
 
-    const createPDF = (html, options) => new Promise<string>(((resolve, reject) => {
-      HtmlPdf.create(html, options).toFile(`/tmp/${filename}`, (err : Error, file ) => {
-        if (err !== null) {reject(err);}
-        else {resolve(file.filename);}
+    const createPDF = (html: any, options: any) => new Promise<string>(((resolve, reject) => {
+      HtmlPdf.create(html, options).toFile(`/tmp/${filename}`, (err: Error, file) => {
+        if (err !== null) {
+          reject(err);
+        } else {
+          resolve(file.filename);
+        }
       });
     }));
     const PDF = await createPDF(html, config);
     const URL = await this.uploadFile(PDF, filename);
 
-    if (payload.hasOwnProperty('files')){
+    if (payload.hasOwnProperty('files')) {
       payload.file.push({filename, path: URL});
     } else {
       payload['files'] = [{filename, path: URL}];
