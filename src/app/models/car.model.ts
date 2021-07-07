@@ -66,6 +66,14 @@ const carSchema = new mongoose.Schema({
     type: String,
     default: ''
   },
+  invoice: {
+    type: String,
+    default: ''
+  },
+  entry: {
+    type: String,
+    default: ''
+  },
   isExhibition: {
     type: Boolean,
     default: false

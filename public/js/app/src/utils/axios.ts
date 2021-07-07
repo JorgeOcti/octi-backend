@@ -659,4 +659,10 @@ export default class ApiService {
       `/api/revisions/stats/`
     );
   }
+
+   public getTransmittals({page, pageSize, orderBy, orderType}:{page: number, orderType?: string, orderBy?: string, pageSize?: number}): AxiosPromise {
+    return this.instance.get(
+      `/api/v1/transmittals/?page=${page}${pageSize ? `&pageSize=${pageSize}` : ''}${orderBy ? `&orderBy=${orderBy}` : ''}${orderType ? `&orderType=${orderType}` : ''}`
+    );
+  }
 }

@@ -2,7 +2,7 @@ import {Job, Queue} from 'kue';
 import * as Mail from 'nodemailer/lib/mailer';
 import * as path from 'path';
 import * as pug from 'pug';
-import logger from '../../services/logger.service';
+// import logger from '../../services/logger.service';
 import {compileTemplate} from 'pug';
 import nodemailerTransporter from '../../services/aws-ses.service';
 

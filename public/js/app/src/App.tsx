@@ -43,6 +43,8 @@ import { IWindow } from './interfaces/window';
 import configureStore, { history } from './store/configureStore';
 import { isIntenertExplorer } from './utils/common';
 import CustomDashboardComponent from "./components/CustomDashboard/CustomDashboardComponent";
+import TransmittalListView from "./components/Transmittal/TransmittalList/TransmittalListView";
+import TransmittalCreateView from "./components/Transmittal/TransmittalCreateView";
 
 
 declare let window: IWindow;
@@ -88,6 +90,8 @@ const App = () => (
         <Route exact path="/settings/billing/" component={BillingListView}/>
         <Route exact path="/settings/versions/" component={VersionListView}/>
         <Route exact path="/requests/create/" component={RequestCreateView}/>
+        <Route exact path="/transmittals/" component={TransmittalListView}/>
+        <Route exact path="/transmittals/create/" component={TransmittalCreateView}/>
         <Route exact path="/requests/" component={RequestListView}/>
         <Route exact path="/requests/settings/reasons/" component={RequestReasonListView}/>
         <Route exact path="/requests/settings/channels/" component={RequestChannelListView}/>

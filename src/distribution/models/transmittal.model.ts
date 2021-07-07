@@ -1,26 +1,28 @@
 import * as mongoose from 'mongoose';
-import { PaginateModel } from 'mongoose';
+import {AggregatePaginateModel, PaginateModel} from 'mongoose';
 import * as mongoosePaginate from 'mongoose-paginate';
 import {ITransmittal} from '../../interfaces/transmittal.interface';
+import mongooseAggregatePaginate = require('mongoose-aggregate-paginate-v2');
+
 
 export interface ITransmittalModel extends ITransmittal, mongoose.Document { }
+
 
 const transmittalSchema = new mongoose.Schema<ITransmittal>({
   name: {
     type: String
   },
+  number: {
+    type: Number
+  },
   team: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Team'
   },
-  carrier: {
+  files: [{
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'Carrier'
-  },
-  driver: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'User'
-  },
+    ref: 'TransmittalFile'
+  }],
   createdBy: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User'
@@ -29,9 +31,28 @@ const transmittalSchema = new mongoose.Schema<ITransmittal>({
   timestamps: true
 });
 
-transmittalSchema.plugin(mongoosePaginate);
+transmittalSchema.virtual('transporter', {
+  ref: 'TransmittalTransporter', // The model to use
+  localField: '_id', // Find field in this model
+  foreignField: 'transmittal', // is equal to field in another model
+  justOne: true
+});
 
-export type TransmittalSchema = mongoose.Model<ITransmittalModel> & PaginateModel<ITransmittalModel>;
+transmittalSchema.virtual('items', {
+  ref: 'TransmittalItem', // The model to use
+  localField: '_id', // Find field in this model
+  foreignField: 'transmittal', // is equal to field in another model
+  justOne: false
+});
+
+transmittalSchema.set('toObject', { virtuals: true });
+transmittalSchema.set('toJSON', { virtuals: true });
+
+transmittalSchema.plugin(mongoosePaginate);
+transmittalSchema.plugin(mongooseAggregatePaginate);
+
+
+export type TransmittalSchema = mongoose.Model<ITransmittalModel> & PaginateModel<ITransmittalModel>& AggregatePaginateModel<ITransmittalModel>;
 
 const Transmittal = mongoose.model<ITransmittalModel, TransmittalSchema>('Transmittal', transmittalSchema);
 

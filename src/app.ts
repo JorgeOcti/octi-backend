@@ -30,6 +30,7 @@ import Middlewares from './middlewares/middlewares';
 import { planningRouter } from './planning/router';
 import { requestRouter } from './request/router';
 import redisClient, { createRedisClient } from './services/redis.service';
+import {distributionRouter} from "./distribution/router";
 
 // Create Express server
 const app = express();
@@ -257,6 +258,7 @@ app.use('/', formRouter);
 app.use('/', planningRouter);
 app.use('/', inventoryRouter);
 app.use('/', requestRouter);
+app.use('/', distributionRouter);
 app.use('/', billingRouter);
 app.use('/api/v1', jwtRouter);
 

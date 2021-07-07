@@ -4,12 +4,14 @@ import { ChangeEvent, DragEvent, ErrorInfo, RefObject } from 'react';
 import * as uuid from 'uuid';
 import { getExtension, getIconFromExtension } from '../../utils/common';
 import Raven = require('raven-js');
+import {arrayPush} from "redux-form";
 
 
 interface IPropsType {
   onChange: (e: any) => void;
   className?: string;
   files: any[];
+  url: string;
 }
 
 interface IStateType {
@@ -163,7 +165,7 @@ class MultiUploadFiles extends React.Component<IPropsType, IStateType> {
   }
 
   private uploadImages() {
-    const { onChange, files } = this.props;
+    const { onChange, files, url } = this.props;
     const pendingImages: any[] = [];
     const inProcessImages: any[] = [];
     if (files.length) {
@@ -211,7 +213,7 @@ class MultiUploadFiles extends React.Component<IPropsType, IStateType> {
       const data = new FormData();
       data.append('file', imageToUpload);
       instance
-        .post('/api/v1/requests/upload-file/', data)
+        .post(url, data)
         .then(response => {
           onChange([...this.props.files].map((file) => {
             if (file.tmpID === imageToUpload.tmpID) {

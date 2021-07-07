@@ -32,6 +32,7 @@ const middlewares_1 = require("./middlewares/middlewares");
 const router_5 = require("./planning/router");
 const router_6 = require("./request/router");
 const redis_service_1 = require("./services/redis.service");
+const router_7 = require("./distribution/router");
 // Create Express server
 const app = express();
 // Configure sentry
@@ -236,6 +237,7 @@ app.use('/', router_3.default);
 app.use('/', router_5.planningRouter);
 app.use('/', router_4.inventoryRouter);
 app.use('/', router_6.requestRouter);
+app.use('/', router_7.distributionRouter);
 app.use('/', router_2.billingRouter);
 app.use('/api/v1', router_1.jwtRouter);
 /* queues */

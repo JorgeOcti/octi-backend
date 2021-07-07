@@ -8,6 +8,7 @@ export interface ITeam {
   name: string;
   formsNumber: number;
   requestNumber: number;
+  transmittalNumber: number;
   companies?: ICompany[];
   settings: ITeamSetting | ITeamSettingModel;
   active: boolean;

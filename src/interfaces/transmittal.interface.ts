@@ -1,14 +1,19 @@
 import {ITeamModel} from "../app/models/team.model";
 import {ITeam} from "./team.interface";
-import {IVenueModel} from "../app/models/venue.model";
 import {IUser} from "./user.interface";
-import {ICarrier} from "./carrier.interface";
-import {ICarrierModel} from "../app/models/carrier.model";
+import {ITransmittalTransporter} from "./transmittalTransporter.interface";
+import {ITransmittalItem} from "./transmittalItem.interface";
+import {IUserModel} from "../app/models/user.model";
+import {ITransmittalFile} from "./transmittalFile.interface";
+
 
 export interface ITransmittal {
   name: string;
+  number: number;
   team: ITeamModel | ITeam;
-  carrier: ICarrier | ICarrierModel;
-  driver : IUser | IVenueModel;
-  createdBy : IUser | IVenueModel;
+  items: ITransmittalItem[];
+  files: ITransmittalFile[];
+  transporter: ITransmittalTransporter;
+  createdBy: IUser | IUserModel;
 }
+

@@ -1,19 +1,18 @@
-import { AxiosError, AxiosResponse, default as Axios } from 'axios';
+import {AxiosError, AxiosResponse, default as Axios} from 'axios';
 import * as React from 'react';
-import { connect } from 'react-redux';
-import { RouteComponentProps } from 'react-router';
+import {connect} from 'react-redux';
+import {RouteComponentProps} from 'react-router';
 import * as swal from 'sweetalert';
-import { debounce } from 'throttle-debounce';
+import {debounce} from 'throttle-debounce';
 import * as uuid from 'uuid';
-import { IReason } from '../../../../../../src/interfaces/reason.interface';
-import { ISalesChannel } from '../../../../../../src/interfaces/salesChannel.interface';
-import { IInventoryState } from '../../actions/inventory.actions';
+import {IReason} from '../../../../../../src/interfaces/reason.interface';
+import {ISalesChannel} from '../../../../../../src/interfaces/salesChannel.interface';
+import {IInventoryState} from '../../actions/inventory.actions';
 import AppContainer from '../../container/AppContainer';
 import ApiService from '../../utils/axios';
 import AutocompleteInput from '../Utils/AutocompleteInput';
 import BootstrapSelect from '../Utils/BootstrapSelect';
-import BootstrapSwitch from '../Utils/BootstrapSwitch';
-import MultiUploadFiles, { imageStatus } from '../Utils/MultiUploadFiles';
+import MultiUploadFiles, {imageStatus} from '../Utils/MultiUploadFiles';
 import ShowIf from '../Utils/ShowIf';
 import TrackingBasePage from '../Utils/TrackingBasePage';
 
@@ -324,6 +323,7 @@ class RequestCreateView extends TrackingBasePage<IPropsType, IStateType> {
                           <label className="col-sm-3 control-label label-left">Archivos *</label>
                           <div className="col-sm-9">
                             <MultiUploadFiles
+                              url={'/api/v1/requests/upload-file/'}
                               onChange={(files) => {
                                 this.changeNewCar('files', files);
                               }}

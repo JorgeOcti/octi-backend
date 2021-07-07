@@ -2,7 +2,7 @@ import * as bcrypt from 'bcrypt';
 import { ObjectID } from 'bson';
 import * as jwt from 'jsonwebtoken';
 import * as mongoose from 'mongoose';
-import { PaginateModel } from 'mongoose';
+import {HookNextFunction, PaginateModel} from 'mongoose';
 import * as mongoosePaginate from 'mongoose-paginate';
 import * as passportLocalMongoose from 'passport-local-mongoose';
 import { IUser } from '../../interfaces/user.interface';
@@ -164,7 +164,7 @@ userSchema.methods.venuesPermissions = function(inString?: boolean) {
 /**
  * Password hash middleware.
  */
-userSchema.pre('save', function(this: IUserModel, next) {
+userSchema.pre('save', function (this: IUserModel, next: HookNextFunction) {
   const user = this;
   if (!user.isModified('password')) { return next(); }
   bcrypt.genSalt(10, (err, salt) => {

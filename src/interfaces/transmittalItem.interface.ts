@@ -9,10 +9,10 @@ import {IRequestItem} from "./requestItem.interface";
 
 export interface ITransmittalItem {
   transmittal: ITransmittal | ITransmittalModel;
-  invoice: string;
-  entry: string;
   requestItem: IRequestItem | IRequestItemModel;
+  car: ICar | ICarModel;
   destination: IVenue | IVenueModel;
   origin: IVenue | IVenueModel;
-  car: ICar | ICarModel;
+  loadingDate: Date;
+  arrivalDate: Date;
 }

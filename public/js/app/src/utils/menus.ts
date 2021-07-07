@@ -93,19 +93,21 @@ if (hasPermission(window.user, 'viewRequest')) {
 
 if (hasPermission(window.user, 'adminRequest')) {
   distributionItems.push({
+    id: '3.4',
+    icon: 'fa-circle-o',
+    text: 'Transporte',
+    url: '/transmittals/'
+  });
+}
+
+if (hasPermission(window.user, 'adminRequest')) {
+  distributionItems.push({
     id: '3.3',
     icon: 'fa-circle-o',
     text: 'Ajustes',
     url: '/requests/settings/reasons/'
   });
 }
-
-//  {
-//   id: '3.3',
-//   icon: 'fa-circle-o',
-//   text: 'Transporte',
-//   url: '/requests/'
-// }
 
 if (distributionItems.length) {
   menus.push({

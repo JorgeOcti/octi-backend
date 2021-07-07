@@ -101,7 +101,7 @@ export function getReasonsThunkAction(nextPage: number, orderBy: string, orderTy
   return (dispatch: Dispatch<ReasonsReduxActions>, getState: () => { requests: IReasonsState }) => {
     const api: ApiService = new ApiService();
     const state = getState();
-    dispatch(isLoadingReasonAction(hideLoading ? false : true));
+    dispatch(isLoadingReasonAction(!hideLoading));
     const page = nextPage ? nextPage : state.requests.pagination.page;
     dispatch(changeOrderReasonAction(orderBy, orderType));
     dispatch(cancelReasonAction(api.getSource()));
@@ -110,7 +110,6 @@ export function getReasonsThunkAction(nextPage: number, orderBy: string, orderTy
         api.getReasons({ page, orderBy, orderType })
       ])
       .then(Axios.spread((reasons) => {
-        console.log('reasons', reasons);
         const { data } = reasons;
         dispatch(loadReasonsAction(data.results, data.count, data.pages, page));
         // dispatch(loadCarriersReasonAction(carriers.data.results));

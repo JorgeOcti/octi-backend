@@ -6,16 +6,13 @@ import {ITransmittalItem} from '../../interfaces/transmittalItem.interface';
 export interface ITransmittalItemModel extends ITransmittalItem, mongoose.Document { }
 
 const transmittalItemSchema = new mongoose.Schema({
-  name: {
-    type: String
-  },
-  team: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'Team'
-  },
   transmittal: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Transmittal'
+  },
+  requestItem: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'RequestItem'
   },
   origin: {
     type: mongoose.Schema.Types.ObjectId,
@@ -29,11 +26,11 @@ const transmittalItemSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Car'
   },
-  invoice: {
-    type: String
+  loadingDate: {
+    type: Date
   },
-  entry: {
-    type: String
+  arrivalDate: {
+    type: Date
   },
 }, {
   timestamps: true

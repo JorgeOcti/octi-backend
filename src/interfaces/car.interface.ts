@@ -18,6 +18,8 @@ export interface ICar {
   property: string;
   type: string;
   isExhibition: boolean;
+  invoice: string;
+  entry: string;
   color: string;
   team: ITeam | any;
   company: ICompany | any;

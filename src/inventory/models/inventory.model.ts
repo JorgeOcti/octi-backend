@@ -150,6 +150,10 @@ inventorySchema.virtual('cars', {
   justOne: false
 });
 
+
+inventorySchema.set('toObject', {virtuals: true});
+inventorySchema.set('toJSON', {virtuals: true});
+
 inventorySchema.index({team: 1});
 inventorySchema.index({team: 1, status: 1, venues: 1});
 

@@ -17,12 +17,13 @@ const SelectField: React.FunctionComponent<IPropsType> = ({
   children,
   disabled,
   meta: { touched, error, warning }
-}:IPropsType) => (
-  <div className="form-group">
+}: IPropsType) => (
+
+  <div className={`form-group ${touched && error ? "has-error" : ""} ${touched && warning ? "has-warning" : ""}`}>
     <label>{label}</label>
     <select
       {...input}
-      className={`custom-select ${touched && error ? 'is-invalid' : warning ? 'is-warning' : ''}`}
+      className={`form-control input-sm ${touched && error ? 'is-invalid' : warning ? 'is-warning' : ''}`}
       disabled={disabled}
       placeholder={label}
     >
@@ -30,8 +31,8 @@ const SelectField: React.FunctionComponent<IPropsType> = ({
     </select>
     {
       touched &&
-      ((error && <span className="error invalid-feedback">{error}</span>) ||
-        (warning && <span className="warning warning-feedback">{warning}</span>))
+      ((error && <span className="help-block">{error}</span>) ||
+        (warning && <span className="help-block">{warning}</span>))
     }
   </div>
 );

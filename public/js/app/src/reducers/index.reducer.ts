@@ -25,10 +25,12 @@ import { requestStatusReducer } from './requestStatus.reducer';
 import { requestChannelReducer } from './requestChannel.reducer';
 import { venuesReducer } from './venues.reducer';
 import { versionsReducer } from './versions.reducer';
+import transmittalReducer from "./transmittal.reducer";
 
 export default (history: any) => combineReducers({
   users: usersReducer,
   cars: carsReducer,
+  transmittal: transmittalReducer,
   modal: modalReducer,
   carriers: carriersReducer,
   dashboard: dashboardReducer,
