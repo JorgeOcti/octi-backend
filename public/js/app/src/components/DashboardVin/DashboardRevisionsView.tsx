@@ -171,7 +171,6 @@ class DashboardRevisionsView extends TrackingBasePage<IPropsType, IStateType> {
                           displayType={'text'}
                           thousandSeparator={'.'}
                           decimalScale={0}
-                          decimalSeparator={false}
                           suffix="%" />
                       </span>
                     }
@@ -185,7 +184,6 @@ class DashboardRevisionsView extends TrackingBasePage<IPropsType, IStateType> {
                           displayType={'text'}
                           thousandSeparator={'.'}
                           decimalScale={0}
-                          decimalSeparator={false}
                           suffix="%" />
                       </span>
                     }
