@@ -103,7 +103,7 @@ class CarController {
         newCar.denomination = car.denomination ? car.denomination : newCar.denomination;
         newCar.brand = car.brand ? car.brand : newCar.brand;
         newCar.patent = car.patent ? car.patent : newCar.patent;
-        newCar.imported = false
+        newCar.imported = false;
         newCar.createdBy = req.user;
         newCar.status = ChoicesStatusCar.active;
         await newCar.save();
@@ -216,23 +216,9 @@ class CarController {
   public async checkVIN(req: IRequest, res: Response) {
     let {vin, vin2} = req.body;
     const {inventory} = req.body;
-    // const {multi} = req.query;
-    const { company } = req.user;
     const team = req.user.team._id;
     logger.info(`checkVIN`);
     logger.info(`{user: {_id: ${req.user._id}, email: ${req.user.email}}, body: ${JSON.stringify(req.body)}}`);
-    /*
-      {
-        $group: {
-          _id: {
-            vin: {
-              $substr: ["$vin", 0, 3]
-            },
-            brand: "$brand"
-          }
-        }
-      }
-    */
     if (vin) {
       vin = vin.replace(/[\W_]+/g, '');
       logger.info(`VIN fixed: ${vin}`);
@@ -1443,19 +1429,19 @@ class CarController {
               ? cache.kinds[damage.kind.toString()]
               : answer.damages.kinds
                 .find((d) =>
-                  Boolean(d._id && damage.kind && d._id.toString() == damage.kind.toString())
+                  Boolean(d._id && damage.kind && d._id.toString() === damage.kind.toString())
                 );
             const part = damage.part && cache.parts.hasOwnProperty(damage.part.toString())
               ? cache.parts[damage.part.toString()]
               : answer.damages.parts
                 .find((d) =>
-                  Boolean(d._id && damage.part && d._id.toString() == damage.part.toString())
+                  Boolean(d._id && damage.part && d._id.toString() === damage.part.toString())
                 );
             const position = damage.position && cache.positions.hasOwnProperty(damage.position.toString())
               ? cache.positions[damage.position.toString()]
               : answer.damages.positions
                 .find((d) =>
-                  Boolean(d._id && damage.position && d._id.toString() == damage.position.toString())
+                  Boolean(d._id && damage.position && d._id.toString() === damage.position.toString())
                 );
             if (kind && part){
             damages.push({kind, part, position});
@@ -1585,7 +1571,7 @@ class CarController {
     });
   }
 
-  public async apiDamagesExport(req: IRequest, res: Response) {
+  public async apiDamagesExport(req: IRequest, res: Response): Promise<any> {
     if (!req.user.hasPermission('exportDamages')) {
       return res.status(403).json({
         message: 'No tienes permisos para esta operación'

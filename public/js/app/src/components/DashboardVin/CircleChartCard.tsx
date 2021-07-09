@@ -111,7 +111,6 @@ class CircleChartCard extends React.Component<IPropsType, IStateType>{
                   displayType={'text'}
                   thousandSeparator={'.'}
                   decimalScale={0}
-                  decimalSeparator={false}
                   suffix="%"/>
               </span>
               {this.props.children}
