@@ -10,7 +10,6 @@ import TrackingBasePage from "../Utils/TrackingBasePage";
 import TransmittalActions from "../../actions/transmittal.actions";
 import {ITransmittalActionTypes, ITransmittalState} from "../../actions/transmittal.types";
 import TransmittalForm from './TransmittalForms/TransmittalForm'
-import {submit} from "redux-form";
 
 interface IPropsType extends RouteComponentProps<{ ticket: string }> {
   dispatch: Dispatch<ITransmittalActionTypes>;
@@ -43,7 +42,6 @@ class TransmittalCreateView extends TrackingBasePage<IPropsType, IStateType> {
   }
 
   public componentWillMount(): void {
-    // socket
     this.socket = io.connect(`${location.protocol}//${location.host}`, {
       secure: location.protocol === 'https:',
       transports: ['websocket'],
@@ -131,7 +129,6 @@ class TransmittalCreateView extends TrackingBasePage<IPropsType, IStateType> {
   private processForm(data: any) {
     console.log(data);
   }
-
 }
 
 const mapStateToProps = (state: { transmittal: ITransmittalState }) => {

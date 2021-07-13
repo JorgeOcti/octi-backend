@@ -24,7 +24,7 @@ class DateRangePicker extends React.Component<IPropsType, IStateType> {
   }
 
   public componentDidMount() {
-    const { format } = this.props;
+    const {format} = this.props;
     $(this.input.current!).datepicker({
       autoclose: true,
       language: 'es',
@@ -41,9 +41,13 @@ class DateRangePicker extends React.Component<IPropsType, IStateType> {
       }
     });
     $(this.input.current!).on('changeDate', () => {
-      const date = $(this.input.current!).datepicker('getDate');
       if (typeof (this.props.onChange) === 'function') {
-        this.props.onChange(date);
+        const date = moment(this.input.current!.value, format ?? 'DD-MM-YY', true);
+        if (date.isValid()) {
+          this.props.onChange(date);
+        } else {
+          this.props.onChange(null);
+        }
       }
     });
   }
@@ -51,25 +55,17 @@ class DateRangePicker extends React.Component<IPropsType, IStateType> {
   public render(): React.ReactElement<IPropsType> {
     const { format, value } = this.props;
     return (
-      <input
-        ref={this.input}
-        type="text"
-        value={this.props.value?.toString().length ? moment(this.props.value).format(format ?? 'DD-MM-YY') : ''}
-        className={`form-control ${this.props.className ?? ''}`}
-        onChange={(e) => {
-          if (typeof (this.props.onChange) === 'function') {
-            if (e.target.value !== value) {
-              const date = moment(e.target.value, format ?? 'DD-MM-YY', true);
-              if (date.isValid()) {
-                this.props.onChange(date);
-              } else {
-                this.props.onChange(null);
-              }
-            }
-          }
-        }}
-        style={{ ...this.props.style }}
-      />
+      <div className="input-group">
+        <input
+          ref={this.input}
+          type="text"
+          value={value?.toString().length ? moment(value).format(format ?? 'DD-MM-YY') : ''}
+          className={`form-control ${this.props.className ?? ''}`}
+          onChange={(e) => {}}
+          style={{ ...this.props.style }}
+        />
+        <span className="input-group-addon"><i className="fa fa-calendar" /></span>
+      </div>
     );
   }
 }

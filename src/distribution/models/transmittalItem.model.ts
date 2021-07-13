@@ -10,6 +10,10 @@ const transmittalItemSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Transmittal'
   },
+  request: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Request'
+  },
   requestItem: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'RequestItem'

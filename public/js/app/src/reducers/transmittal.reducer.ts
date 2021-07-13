@@ -4,7 +4,7 @@ import {
   ITransmittalActionTypes,
   ITransmittalState, LOAD_CARRIERS_TRANSMITTAL,
   LOAD_TRANSMITTAL, LOAD_VENUES_TRANSMITTAL,
-  LOADING_TRANSMITTAL
+  LOADING_TRANSMITTAL, TOOGLE_TAB_TRANSMITTAL
 } from "../actions/transmittal.types";
 
 
@@ -13,6 +13,7 @@ const initialState: ITransmittalState = {
   data: [],
   carriers: [],
   venues: [],
+  transmittalOpen: [],
   source: null,
   options: {
     orderBy: '_id',
@@ -52,6 +53,13 @@ export default function transmittalReducer(state = initialState, action: ITransm
       return {
         ...state,
         venues: action.payload.venues,
+      };
+    case TOOGLE_TAB_TRANSMITTAL:
+      return {
+        ...state,
+        transmittalOpen: state.transmittalOpen.includes(action.payload.transmittalId) ?
+          state.transmittalOpen.filter(id => id !== action.payload.transmittalId) :
+          [...state.transmittalOpen, action.payload.transmittalId]
       };
     case CHANGE_ORDER_TRANSMITTAL:
       return {

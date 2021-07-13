@@ -7,14 +7,14 @@ import {
   LOAD_CARRIERS_TRANSMITTAL,
   LOAD_TRANSMITTAL,
   LOAD_VENUES_TRANSMITTAL,
-  LOADING_TRANSMITTAL
+  LOADING_TRANSMITTAL, TOOGLE_TAB_TRANSMITTAL
 } from "./transmittal.types";
 import ApiService from "../utils/axios";
 import Axios, {AxiosError, CancelTokenSource} from "axios";
 import {ThunkDispatch} from "redux-thunk";
 import {IVenueModel} from '../../../../../src/app/models/venue.model';
 import {ICarrierModel} from '../../../../../src/app/models/carrier.model';
-import {arrayPush, autofill, submit} from "redux-form";
+import {arrayPush, autofill, FormAction, submit} from "redux-form";
 
 export default class TransmittalActions {
   private api: ApiService;
@@ -22,7 +22,7 @@ export default class TransmittalActions {
   public formName: string = 'transmittalForm';
 
   constructor(
-    private dispatch: ThunkDispatch<{ transmittal: ITransmittalState }, {}, ITransmittalActionTypes>
+    private dispatch: ThunkDispatch<{ transmittal: ITransmittalState }, {}, ITransmittalActionTypes | FormAction>
   ) {
     this.api = new ApiService();
   }
@@ -33,7 +33,7 @@ export default class TransmittalActions {
       payload: {
         loading,
       }
-    })
+    });
   }
 
   public loadAction(data: ITransmittal[], count: number, pages: number, page: number): void {
@@ -45,7 +45,7 @@ export default class TransmittalActions {
         pages,
         page
       }
-    })
+    });
   }
 
   public cancelRequestAction(source: CancelTokenSource): void {
@@ -54,7 +54,7 @@ export default class TransmittalActions {
       payload: {
         source
       }
-    })
+    });
   }
 
   public changeOrderAction(orderBy: string, orderType: string): void {
@@ -64,7 +64,7 @@ export default class TransmittalActions {
         orderBy,
         orderType
       }
-    })
+    });
   }
 
   public loadCarriers(carriers:  ICarrierModel[]): void {
@@ -73,7 +73,7 @@ export default class TransmittalActions {
       payload: {
         carriers,
       }
-    })
+    });
   }
 
 
@@ -83,11 +83,20 @@ export default class TransmittalActions {
       payload: {
         venues,
       }
-    })
+    });
+  }
+
+  public toogleTab(transmittalId:  string): void {
+    this.dispatch({
+      type: TOOGLE_TAB_TRANSMITTAL,
+      payload: {
+        transmittalId,
+      }
+    });
   }
 
   public submit(form: string) {
-     this.dispatch(submit('form'))
+    this.dispatch(submit(form));
   }
 
   public autofill(field: string, value: any) {
@@ -146,4 +155,5 @@ export default class TransmittalActions {
         });
     });
   }
+
 }

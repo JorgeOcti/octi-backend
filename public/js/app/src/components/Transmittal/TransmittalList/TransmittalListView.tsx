@@ -13,6 +13,7 @@ import ShowIf from '../../Utils/ShowIf';
 import TrackingBasePage from "../../Utils/TrackingBasePage";
 import TransmittalActions from "../../../actions/transmittal.actions";
 import {ITransmittalActionTypes, ITransmittalState} from "../../../actions/transmittal.types";
+import TransmitalListDetail from './TransmitalListDetail';
 
 interface IPropsType extends RouteComponentProps<{ ticket: string }> {
   dispatch: Dispatch<ITransmittalActionTypes>;
@@ -177,66 +178,52 @@ class TransmittalListView extends TrackingBasePage<IPropsType, IStateType> {
                 </ShowIf>
               </div>
             </div>
-            <div className="box-body table-responsive request-list">
+            <div className="box-body table-responsive transmittal-list">
               <ShowIf condition={data.length > 0}>
-                <div className="row request bg-primary">
+                <div className="row transmittal bg-primary">
                   <div className="col-sm-1 col-xs-1 col-md-1 col-lg-1 center pointer head-sorted" onClick={() => this.changeOrder('_id')}>
                     <strong>ID</strong> <i className={`fa ${orderBy === '_id' ? `${orderType === 'descending' ? 'fa-sort-down' : 'fa-sort-up'}` : 'fa-sort'}`} />
                   </div>
                   <div className="col-sm-1 col-xs-1 col-md-1 col-lg-1">
-                    <strong>Canal</strong>
+                    <strong>Placa</strong>
                   </div>
                   <div className="col-sm-2 col-xs-2 col-md-2 col-lg-2">
-                    <strong>Vendedor</strong>
+                    <strong>Chofer</strong>
                   </div>
                   <div className="col-sm-2 col-xs-2 col-md-2 col-lg-2">
-                    <strong>Destino</strong>
+                    <strong>Documentos</strong>
                   </div>
                   <div className="col-sm-1 col-xs-1 col-md-1 col-lg-1">
                     <strong>Nº Vehículos</strong>
                   </div>
-                  <div className="col-sm-2 col-xs-2 col-md-2 col-lg-2  pointer head-sorted" onClick={() => this.changeOrder('createdAt')}>
-                    <strong>Fecha Creación</strong> <i className={`fa ${orderBy === 'createdAt' ? `${orderType === 'descending' ? 'fa-sort-down' : 'fa-sort-up'}` : 'fa-sort'}`} />
-                  </div>
-                  <div className="col-sm-2 col-xs-2 col-md-2 col-lg-2  pointer head-sorted" onClick={() => this.changeOrder('updatedAt')}>
-                    <strong>Última Actualización</strong> <i className={`fa ${orderBy === 'updatedAt' ? `${orderType === 'descending' ? 'fa-sort-down' : 'fa-sort-up'}` : 'fa-sort'}`} />
-                  </div>
-                  {/* <div className="col-sm-1 col-xs-1 col-md-1 col-lg-1 center"> */}
-                    {/* <strong><i className="fa fa-comment" /></strong> */}
-                  {/* </div> */}
-                  <div className="col-sm-1 col-xs-1 col-md-1 col-lg-1" />
+                  <div className="col-sm-5 col-xs-5 col-md-5 col-lg-5" />
                 </div>
                 {
                   data.map((item: any) => (
-                    <div key={item._id}>{JSON.stringify(item)}</div>
-                    // <RequestListDetail
-                    //   request={request}
-                    //   requestItemStatus={requestItemStatus}
-                    //   reasons={reasons}
-                    //   carriers={carriers}
-                    //   key={request._id}
-                    //   {...this.props}
-                    // />
+                    <TransmitalListDetail
+                      item={item}
+                      key={item._id}
+                    />
                   ))
                 }
               </ShowIf>
               <ShowIf condition={!loading && data.length === 0}>
                 <div className="row">
                   <div className="col-md-12 text-center" style={{paddingTop: '10px', paddingBottom: '10px'}}>
-                      <ImageLazyLoad
-                        url="/images/not_found.png"
-                        height={'200px'}
-                        style={{
-                          opacity: 0.5,
-                          maxHeight: '200px',
-                          marginBottom: '10px'
-                        }}
-                        replaceLoading={<i
-                          className={'fa fa-2x fa-circle-o-notch text-primary fa-spin'}
-                          style={{ padding: '30px' }}
-                        />}
-                      /><br />
-                      <strong>No hay información para mostrar</strong>
+                    <ImageLazyLoad
+                      url="/images/not_found.png"
+                      height={'200px'}
+                      style={{
+                        opacity: 0.5,
+                        maxHeight: '200px',
+                        marginBottom: '10px'
+                      }}
+                      replaceLoading={<i
+                        className={'fa fa-2x fa-circle-o-notch text-primary fa-spin'}
+                        style={{ padding: '30px' }}
+                      />}
+                    /><br />
+                    <strong>No hay información para mostrar</strong>
                   </div>
                 </div>
               </ShowIf>

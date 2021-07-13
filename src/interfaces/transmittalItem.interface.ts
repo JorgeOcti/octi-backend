@@ -6,9 +6,12 @@ import {ICar} from "./car.interface";
 import {ICarModel} from "../app/models/car.model";
 import {IRequestItemModel} from "../request/models/requestItem.model";
 import {IRequestItem} from "./requestItem.interface";
+import {IRequest} from "./request.interface";
+import {IRequestModel} from "../request/models/request.model";
 
 export interface ITransmittalItem {
   transmittal: ITransmittal | ITransmittalModel;
+  request: IRequest | IRequestModel;
   requestItem: IRequestItem | IRequestItemModel;
   car: ICar | ICarModel;
   destination: IVenue | IVenueModel;

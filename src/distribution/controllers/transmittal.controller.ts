@@ -66,7 +66,7 @@ class TransmittalController {
         createdBy: user._id
       });
       await transmittal.save();
-      const itemsResponse = await Promise.all(
+      await Promise.all(
         items.map((item: ITransmittalItem) => (
           new TransmittalItem({
             ...item,
@@ -79,14 +79,12 @@ class TransmittalController {
         await transmittal.save();
         await TransmittalFile.updateMany({_id: {$in: files}}, {$set: {transmittal}})
       }
-      const transporterResponse = await new TransmittalTransporter({
+      await new TransmittalTransporter({
         ...transporter,
         transmittal
       }).save();
       res.json({
-        transmittal,
-        itemsResponse,
-        transporterResponse
+        status: 200
       })
     } catch (e) {
       /* istanbul ignore next */
@@ -136,6 +134,9 @@ class TransmittalController {
         populate: [{
           path: 'car',
           select: ['invoice', 'entry', 'denomination', 'patent', 'material', 'vin', 'brand', 'color']
+        }, {
+          path: 'request',
+          select: ['number']
         }, {
           path: 'destination',
           select: ['name']
@@ -190,7 +191,8 @@ class TransmittalController {
     logger.info(`TransmittalController.apiListByAgregate`);
     logger.info(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
     const {team} = req.user;
-       const { page, pageSize, orderBy, orderType, filters } = req.body as { page: string; pageSize: string; search: string; orderBy: string; orderType: string, filters: any };
+
+     const { page, pageSize, orderBy, orderType, filters } = req.body as { page: string; pageSize: string; search: string; orderBy: string; orderType: string, filters: any };
     try {
       console.log('filters', filters);
       const options: PaginateOptions = {

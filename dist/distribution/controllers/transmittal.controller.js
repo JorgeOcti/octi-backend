@@ -57,7 +57,7 @@ class TransmittalController {
                 createdBy: user._id
             });
             await transmittal.save();
-            const itemsResponse = await Promise.all(items.map((item) => (new transmittalItem_model_1.default({
+            await Promise.all(items.map((item) => (new transmittalItem_model_1.default({
                 ...item,
                 transmittal
             }).save())));
@@ -66,14 +66,12 @@ class TransmittalController {
                 await transmittal.save();
                 await transmittalFile_model_1.default.updateMany({ _id: { $in: files } }, { $set: { transmittal } });
             }
-            const transporterResponse = await new transmittalTransporter_model_1.default({
+            await new transmittalTransporter_model_1.default({
                 ...transporter,
                 transmittal
             }).save();
             res.json({
-                transmittal,
-                itemsResponse,
-                transporterResponse
+                status: 200
             });
         }
         catch (e) {
@@ -116,6 +114,9 @@ class TransmittalController {
                     populate: [{
                             path: 'car',
                             select: ['invoice', 'entry', 'denomination', 'patent', 'material', 'vin', 'brand', 'color']
+                        }, {
+                            path: 'request',
+                            select: ['number']
                         }, {
                             path: 'destination',
                             select: ['name']

@@ -3,7 +3,7 @@
   "version": "1.0.1",
   "main": "index.js",
   "scripts": {
-    "start": "NODE_ENV=development webpack-dashboard -- webpack --mode development --watch",
+    "start": "NODE_ENV=development webpack --mode development --watch",
     "dev": "NODE_ENV=development webpack-dev-server --mode development --hot --progress --color --open ",
     "build": "NODE_ENV=production SENTRY_ORG=osa webpack --mode production"
   },
