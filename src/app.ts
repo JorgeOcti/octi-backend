@@ -182,7 +182,14 @@ passport.serializeUser((User as any).serializeUser());
 // passport.deserializeUser((User as any).deserializeUser());
 passport.deserializeUser(async (email: string, done) => {
   try {
-    const user = await User.findOne({email}).populate([{
+    const user = await User.findOne({email}, {
+      _id: true,
+      firstName: true,
+      lastName: true,
+      email: true,
+      preferred: true,
+      venuesAccess: true
+    }).populate([{
       path: 'userPermissions',
       select: ['codeName']
     }, {

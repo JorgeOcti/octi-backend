@@ -166,7 +166,14 @@ passport.serializeUser(user_model_1.default.serializeUser());
 // passport.deserializeUser((User as any).deserializeUser());
 passport.deserializeUser(async (email, done) => {
     try {
-        const user = await user_model_1.default.findOne({ email }).populate([{
+        const user = await user_model_1.default.findOne({ email }, {
+            _id: true,
+            firstName: true,
+            lastName: true,
+            email: true,
+            preferred: true,
+            venuesAccess: true
+        }).populate([{
                 path: 'userPermissions',
                 select: ['codeName']
             }, {

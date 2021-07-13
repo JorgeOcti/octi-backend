@@ -14,11 +14,11 @@ distributionRouter.get('/transmittals/create/', middlewares_1.default.isLoggedIn
 // apis
 distributionRouter.get('/api/v1/transmittals/', middlewares_1.default.isJWTAuthenticated, transmittal_controller_1.default.apiList);
 distributionRouter.post('/api/v1/transmittals/', middlewares_1.default.isJWTAuthenticated, transmittal_controller_1.default.apiCreate);
-distributionRouter.get('/api/v1/transmittals/:id/', middlewares_1.default.isLoggedIn, transmittal_controller_1.default.apiDetail);
-distributionRouter.delete('/api/v1/transmittals/:id/', middlewares_1.default.isLoggedIn, transmittal_controller_1.default.apiDelete);
+distributionRouter.get('/api/v1/transmittals/:id/', middlewares_1.default.isJWTAuthenticated, transmittal_controller_1.default.apiDetail);
+distributionRouter.delete('/api/v1/transmittals/:id/', middlewares_1.default.isJWTAuthenticated, transmittal_controller_1.default.apiDelete);
 distributionRouter.post('/api/v1/transmittals/upload-file/', middlewares_1.default.isJWTAuthenticated, transmittal_controller_1.default.uploadFile);
-distributionRouter.get('/api/v1/transmittals/item/', middlewares_1.default.isLoggedIn, transmittalItem_controller_1.default.apiList);
-distributionRouter.post('/api/v1/transmittals/item/', middlewares_1.default.isLoggedIn, transmittalItem_controller_1.default.apiCreate);
-distributionRouter.get('/api/v1/transmittals/item/:id/', middlewares_1.default.isLoggedIn, transmittalItem_controller_1.default.apiDetail);
-distributionRouter.delete('/api/v1/transmittals/item/:id/', middlewares_1.default.isLoggedIn, transmittalItem_controller_1.default.apiDelete);
+distributionRouter.get('/api/v1/transmittals/item/', middlewares_1.default.isJWTAuthenticated, transmittalItem_controller_1.default.apiList);
+distributionRouter.post('/api/v1/transmittals/item/', middlewares_1.default.isJWTAuthenticated, transmittalItem_controller_1.default.apiCreate);
+distributionRouter.get('/api/v1/transmittals/item/:id/', middlewares_1.default.isJWTAuthenticated, transmittalItem_controller_1.default.apiDetail);
+distributionRouter.delete('/api/v1/transmittals/item/:id/', middlewares_1.default.isJWTAuthenticated, transmittalItem_controller_1.default.apiDelete);
 //# sourceMappingURL=router.js.map

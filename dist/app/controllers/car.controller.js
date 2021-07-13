@@ -206,7 +206,6 @@ class CarController {
         let { vin, vin2 } = req.body;
         const { inventory } = req.body;
         // const {multi} = req.query;
-        const { company } = req.user;
         const team = req.user.team._id;
         logger_service_1.default.info(`checkVIN`);
         logger_service_1.default.info(`{user: {_id: ${req.user._id}, email: ${req.user.email}}, body: ${JSON.stringify(req.body)}}`);
@@ -1420,15 +1419,15 @@ class CarController {
                         const kind = damage.kind && cache.kinds.hasOwnProperty(damage.kind.toString())
                             ? cache.kinds[damage.kind.toString()]
                             : answer.damages.kinds
-                                .find((d) => Boolean(d._id && damage.kind && d._id.toString() == damage.kind.toString()));
+                                .find((d) => Boolean(d._id && damage.kind && d._id.toString() === damage.kind.toString()));
                         const part = damage.part && cache.parts.hasOwnProperty(damage.part.toString())
                             ? cache.parts[damage.part.toString()]
                             : answer.damages.parts
-                                .find((d) => Boolean(d._id && damage.part && d._id.toString() == damage.part.toString()));
+                                .find((d) => Boolean(d._id && damage.part && d._id.toString() === damage.part.toString()));
                         const position = damage.position && cache.positions.hasOwnProperty(damage.position.toString())
                             ? cache.positions[damage.position.toString()]
                             : answer.damages.positions
-                                .find((d) => Boolean(d._id && damage.position && d._id.toString() == damage.position.toString()));
+                                .find((d) => Boolean(d._id && damage.position && d._id.toString() === damage.position.toString()));
                         if (kind && part) {
                             damages.push({ kind, part, position });
                         }

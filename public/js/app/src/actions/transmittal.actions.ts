@@ -14,7 +14,7 @@ import Axios, {AxiosError, CancelTokenSource} from "axios";
 import {ThunkDispatch} from "redux-thunk";
 import {IVenueModel} from '../../../../../src/app/models/venue.model';
 import {ICarrierModel} from '../../../../../src/app/models/carrier.model';
-import {arrayPush, autofill} from "redux-form";
+import {arrayPush, autofill, submit} from "redux-form";
 
 export default class TransmittalActions {
   private api: ApiService;
@@ -84,6 +84,10 @@ export default class TransmittalActions {
         venues,
       }
     })
+  }
+
+  public submit(form: string) {
+     this.dispatch(submit('form'))
   }
 
   public autofill(field: string, value: any) {

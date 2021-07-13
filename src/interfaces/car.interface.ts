@@ -11,6 +11,7 @@ export interface ICar {
   engineNumber: string;
   vin: string;
   vin2: string;
+  imported: boolean;
   brand: string;
   denomination: string;
   material: string;

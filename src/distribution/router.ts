@@ -13,14 +13,14 @@ distributionRouter.get('/transmittals/create/', Middlewares.isLoggedIn, Transmit
 // apis
 distributionRouter.get('/api/v1/transmittals/', Middlewares.isJWTAuthenticated, TransmittalController.apiList);
 distributionRouter.post('/api/v1/transmittals/', Middlewares.isJWTAuthenticated, TransmittalController.apiCreate);
-distributionRouter.get('/api/v1/transmittals/:id/', Middlewares.isLoggedIn, TransmittalController.apiDetail);
-distributionRouter.delete('/api/v1/transmittals/:id/', Middlewares.isLoggedIn, TransmittalController.apiDelete);
+distributionRouter.get('/api/v1/transmittals/:id/', Middlewares.isJWTAuthenticated, TransmittalController.apiDetail);
+distributionRouter.delete('/api/v1/transmittals/:id/', Middlewares.isJWTAuthenticated, TransmittalController.apiDelete);
 distributionRouter.post('/api/v1/transmittals/upload-file/', Middlewares.isJWTAuthenticated, TransmittalController.uploadFile);
 
-distributionRouter.get('/api/v1/transmittals/item/', Middlewares.isLoggedIn, TransmittalItemController.apiList);
-distributionRouter.post('/api/v1/transmittals/item/', Middlewares.isLoggedIn, TransmittalItemController.apiCreate);
-distributionRouter.get('/api/v1/transmittals/item/:id/', Middlewares.isLoggedIn, TransmittalItemController.apiDetail);
-distributionRouter.delete('/api/v1/transmittals/item/:id/', Middlewares.isLoggedIn, TransmittalItemController.apiDelete);
+distributionRouter.get('/api/v1/transmittals/item/', Middlewares.isJWTAuthenticated, TransmittalItemController.apiList);
+distributionRouter.post('/api/v1/transmittals/item/', Middlewares.isJWTAuthenticated, TransmittalItemController.apiCreate);
+distributionRouter.get('/api/v1/transmittals/item/:id/', Middlewares.isJWTAuthenticated, TransmittalItemController.apiDetail);
+distributionRouter.delete('/api/v1/transmittals/item/:id/', Middlewares.isJWTAuthenticated, TransmittalItemController.apiDelete);
 
 export {
   distributionRouter

@@ -210,14 +210,13 @@ class RequestController {
     }
   }
 
-  public async apiListItems(req: IRequest, res: Response) {
+  public async apiListItems(req: IRequest, res: Response){
     logger.info(`RequestController.apiListItems`);
     logger.info(`{user: {_id: ${req.user._id}, email: ${req.user.email}}, body: ${JSON.stringify(req.body)} }`);
     const team = req.user.team._id;
     const { page, pageSize, orderBy, orderType, filters } = req.body as { page: string; pageSize: string; search: string; orderBy: string; orderType: string, filters: any };
-    console.log('**************************************');
-    console.log(filters);
-    let venuesIds: any[] = [];
+
+    let venuesIds: any[];
     const extraQuery: any = {};
     const extraMatch: any = {};
     if (filters.venues && filters.venues.length) {
@@ -277,81 +276,73 @@ class RequestController {
       });
     }
     try {
-      const requestsAggregate = RequestItem.aggregate([{
-        $match: {
-          team,
-          $or: [{
-            destination: {
-              $in: venuesIds
-            }
-          }, {
-            origin: {
-              $in: venuesIds
-            }
-          }],
-          ...extraQuery
-        }
+      if(Object.keys(extraMatch).length || Object.keys(extraQuery).length) {
+        const baseAggregate: any[] = [{
+          $match: {
+            team,
+            $or: [{
+              destination: {
+                $in: venuesIds
+              }
+            }, {
+              origin: {
+                $in: venuesIds
+              }
+            }],
+            ...extraQuery
+          }
+        }];
+        const aggregatePopulate = [{
+          $lookup: {from: 'cars', localField: 'car', foreignField: '_id', as: 'car'}
         }, {
-          $lookup: { from: 'cars', localField: 'car', foreignField: '_id', as: 'car' }
+          $unwind: {path: '$car', preserveNullAndEmptyArrays: true}
         }, {
-          $unwind: { path: '$car', preserveNullAndEmptyArrays: true }
+          $lookup: {from: 'venues', localField: 'origin', foreignField: '_id', as: 'origin'}
         }, {
-          $lookup: { from: 'users', localField: 'createdBy', foreignField: '_id', as: 'createdBy' }
+          $unwind: {path: '$origin', preserveNullAndEmptyArrays: true}
         }, {
-          $unwind: { path: '$createdBy', preserveNullAndEmptyArrays: true }
+          $lookup: {from: 'venues', localField: 'destination', foreignField: '_id', as: 'destination'}
         }, {
-          $lookup: { from: 'venues', localField: 'origin', foreignField: '_id', as: 'origin' }
+          $unwind: {path: '$destination', preserveNullAndEmptyArrays: true}
         }, {
-          $unwind: { path: '$origin', preserveNullAndEmptyArrays: true }
+          $lookup: {from: 'requests', localField: 'request', foreignField: '_id', as: 'request'}
         }, {
-          $lookup: { from: 'venues', localField: 'destination', foreignField: '_id', as: 'destination' }
+          $unwind: {path: '$request', preserveNullAndEmptyArrays: false}
         }, {
-          $unwind: { path: '$destination', preserveNullAndEmptyArrays: true }
+          $lookup: {from: 'requestitemstatuses', localField: 'status', foreignField: '_id', as: 'status'}
         }, {
-          $lookup: { from: 'requests', localField: 'request', foreignField: '_id', as: 'request' }
+          $unwind: {path: '$status', preserveNullAndEmptyArrays: true}
         }, {
-          $unwind: { path: '$request', preserveNullAndEmptyArrays: false }
+          $lookup: {from: 'requestfiles', localField: 'files', foreignField: '_id', as: 'files'}
         }, {
-          $lookup: { from: 'requestitemstatuses', localField: 'status', foreignField: '_id', as: 'status' }
+          $lookup: {from: 'reasons', localField: 'reason', foreignField: '_id', as: 'reason'}
         }, {
-          $unwind: { path: '$status', preserveNullAndEmptyArrays: true }
+          $unwind: {path: '$reason', preserveNullAndEmptyArrays: true}
         }, {
-          $lookup: { from: 'saleschannels', localField: 'request.channel', foreignField: '_id', as: 'request.channel' }
-        }, {
-          $unwind: { path: '$request.channel', preserveNullAndEmptyArrays: true }
-        }, {
-          $lookup: { from: 'carriers', localField: 'carrier', foreignField: '_id', as: 'carrier' }
-        }, {
-          $unwind: { path: '$carrier', preserveNullAndEmptyArrays: true }
-        }, {
-          $lookup: { from: 'requestfiles', localField: 'files', foreignField: '_id', as: 'files' }
-        }, {
-          $lookup: { from: 'reasons', localField: 'reason', foreignField: '_id', as: 'reason' }
-        }, {
-          $unwind: { path: '$reason', preserveNullAndEmptyArrays: true }
-        }, {
-          $addFields: { requestNumber: { $toString: '$request.number' } }
+          $addFields: {requestNumber: {$toString: '$request.number'}}
         }, {
           $project: {
             '_id': 1,
-            'request': 1,
+            'request.number': 1,
             'priority': 1,
             'observation': 1,
             'equipment': 1,
             'washed': 1,
             'review': 1,
             'body': 1,
-            'files': 1,
+            'files._id': 1,
             'requestNumber': 1,
             'status._id': 1,
             'status.name': 1,
-            'carrier._id': 1,
-            'carrier.name': 1,
             'status.weigth': 1,
-            'createdBy._id': 1,
-            'createdBy.firstName': 1,
-            'createdBy.lastName': 1,
-            'car': 1,
+            'car.vin': 1,
+            'car.brand': 1,
+            'car.color': 1,
+            'car.material': 1,
+            'car.patent': 1,
+            'car.denomination': 1,
+            'car.internalNumber': 1,
+            'car.property': 1,
             'origin._id': 1,
             'origin.name': 1,
             'destination._id': 1,
@@ -376,28 +367,89 @@ class RequestController {
             }],
             ...extraMatch
           }
-        }, {
-          $sort: { [orderBy]: orderType === 'ascending' ? 1 : -1 }
-        }]);
-      const options: PaginateOptions = {
-        page: parseInt(page ? page : '1', 10),
-        limit: parseInt(pageSize ? pageSize : '10', 10),
-        customLabels: this.aggregateCustomLabels
-      };
-      const requests = await RequestItem.aggregatePaginate(requestsAggregate, options);
-
-      if (options.page && requests.pages && requests.pages < options.page) {
-        res.status(400).json({
-          message: 'La página solicitada no existe.',
-          status: 400
-        });
+        }];
+        const aggregate = [
+          ...baseAggregate,
+          ...aggregatePopulate,
+          {
+            $sort: {[orderBy]: orderType === 'ascending' ? 1 : -1}
+          }];
+        const requestsAggregate = RequestItem.aggregate(aggregate);
+        const options: PaginateOptions = {
+          page: parseInt(page ? page : '1', 10),
+          limit: parseInt(pageSize ? pageSize : '10', 10),
+          customLabels: this.aggregateCustomLabels,
+        };
+        const requests = await RequestItem.aggregatePaginate(requestsAggregate, options);
+        if (options.page && requests.pages && requests.pages < options.page) {
+          res.status(400).json({
+            message: 'La página solicitada no existe.',
+            status: 400
+          });
+        } else {
+          res.json({
+            extraMatch,
+            extraQuery,
+            count: requests.total,
+            pages: requests.pages,
+            hasPrevious: requests.hasPrevious,
+            hasNext: requests.hasNext,
+            results: requests.docs,
+            status: 200
+          });
+        }
       } else {
+        const query = {
+          team,
+          $or: [{
+            destination: {
+              $in: venuesIds
+            }
+          }, {
+            origin: {
+              $in: venuesIds
+            }
+          }]
+        };
+        const options: PaginateOptions = {
+          sort: {
+            _id: -1
+          },
+          select:['priority', 'observation', 'createdAt', 'updatedAt'],
+          populate: [{
+            path: 'files',
+            select: ['_id']
+          }, {
+            path: 'request',
+            select: ['number']
+          }, {
+            path: 'car',
+            select: ['vin', 'internalNumber', 'patent', 'color', 'brand', 'denomination', 'material', 'property']
+          }, {
+            path: 'reason',
+            select: ['name']
+          }, {
+            path: 'origin',
+            select: ['name']
+          }, {
+            path: 'destination',
+            select: ['name']
+          }, {
+            path: 'status',
+            select: ['name', 'weigth']
+          }],
+          page: parseInt(page ? page : '1', 10),
+          limit: parseInt(pageSize ? pageSize : '200', 10)
+        };
+        const request = await RequestItem.paginate(query, options);
         res.json({
-          count: requests.total,
-          pages: requests.pages,
-          hasPrevious: requests.hasPrevious,
-          hasNext: requests.hasNext,
-          results: requests.docs,
+          extraMatch,
+          extraQuery,
+          count: request.total,
+          pages: request.pages,
+          hasPrevious: options.page && options.page > 1 && request.pages && request.pages >= options.page,
+          hasNext: options.page && request.pages && request.pages > options.page,
+          results: request.docs,
           status: 200
         });
       }
@@ -989,7 +1041,7 @@ class RequestController {
 
   private getRequets(filter: any, options: PaginateOptions): Promise<PaginateResult<IRequestModel>> {
     return new Promise((resolve, reject) => {
-      Request.paginate(filter, options, (err, result) => {
+      Request.paginate!(filter, options, (err, result) => {
         if (err) {
           return reject(err);
         }

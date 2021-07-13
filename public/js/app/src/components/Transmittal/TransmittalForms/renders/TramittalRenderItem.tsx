@@ -38,7 +38,6 @@ class TramittalRenderItem extends React.Component<IPropsType, IStateType> {
               </p>
             </div> :
             fields.map((item, index) => {
-              const fieldValues: any = fields.get(index);
               return (
                 <div style={{
                   borderBottom: index + 1 !== fields.length ? '1px solid #ededed' : '',
@@ -74,9 +73,9 @@ class TramittalRenderItem extends React.Component<IPropsType, IStateType> {
                       component={BootstrapSelectField}
                       validate={[inputStringRequired]}
                       props={{
-                        noneSelectedText: "Selecciona un transportista",
+                        noneSelectedText: "Selecciona un origen",
                         displayItems: 2,
-                        selectedText: "transportistas seleccionadas.",
+                        selectedText: "origenes seleccionados.",
                         autoClouse: true,
                         allOption: false,
                         search: true,
@@ -86,7 +85,7 @@ class TramittalRenderItem extends React.Component<IPropsType, IStateType> {
                             text: venue.name
                           }))
                         ],
-                        onClick: (value: string) => this.props.transmittalActions.autofill(`${item}.origin`, [value]),
+                        onClick: (value: string) => this.props.transmittalActions.autofill(`${item}.origin`, value),
                       }}
                     >
                     </Field>
@@ -105,9 +104,9 @@ class TramittalRenderItem extends React.Component<IPropsType, IStateType> {
                       component={BootstrapSelectField}
                       validate={[inputStringRequired]}
                       props={{
-                        noneSelectedText: "Selecciona un transportista",
+                        noneSelectedText: "Selecciona un destino",
                         displayItems: 2,
-                        selectedText: "transportistas seleccionadas.",
+                        selectedText: "destinos seleccionados.",
                         autoClouse: true,
                         allOption: false,
                         search: true,
@@ -117,7 +116,7 @@ class TramittalRenderItem extends React.Component<IPropsType, IStateType> {
                             text: venue.name
                           }))
                         ],
-                        onClick: (value: string) => this.props.transmittalActions.autofill(`${item}.destination`, [value]),
+                        onClick: (value: string) => this.props.transmittalActions.autofill(`${item}.destination`, value),
                       }}
                     >
                     </Field>

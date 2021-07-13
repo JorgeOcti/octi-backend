@@ -40,7 +40,6 @@ class TransmittalCreateView extends TrackingBasePage<IPropsType, IStateType> {
     this.title = 'Transporte';
     this.processForm = this.processForm.bind(this);
     this.cancel = this.cancel.bind(this);
-    this.submitForm = this.submitForm.bind(this);
   }
 
   public componentWillMount(): void {
@@ -108,9 +107,9 @@ class TransmittalCreateView extends TrackingBasePage<IPropsType, IStateType> {
                 type="button"
                 className="btn btn-sm btn-primary"
                 style={{marginLeft: '5px'}}
-                onClick={this.submitForm}
+                onClick={() => transmittalActions.submit('transmittalForm')}
               >
-                Editar
+                Crear
               </button>
             </div>
             {
@@ -123,10 +122,6 @@ class TransmittalCreateView extends TrackingBasePage<IPropsType, IStateType> {
         </section>
       </AppContainer>
     );
-  }
-
-  private submitForm() {
-    this.props.dispatch(submit('transmittalForm'))
   }
 
   private cancel(): void {
