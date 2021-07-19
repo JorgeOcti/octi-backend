@@ -10,11 +10,12 @@ import {
   LOADING_TRANSMITTAL, TOOGLE_TAB_TRANSMITTAL
 } from "./transmittal.types";
 import ApiService from "../utils/axios";
-import Axios, {AxiosError, CancelTokenSource} from "axios";
+import Axios, {AxiosError, AxiosResponse, CancelTokenSource} from "axios";
 import {ThunkDispatch} from "redux-thunk";
 import {IVenueModel} from '../../../../../src/app/models/venue.model';
 import {ICarrierModel} from '../../../../../src/app/models/carrier.model';
 import {arrayPush, autofill, FormAction, submit} from "redux-form";
+import { ITransmittalItemModel } from '../../../../../src/distribution/models/transmittalItem.model';
 
 export default class TransmittalActions {
   private api: ApiService;
@@ -109,6 +110,21 @@ export default class TransmittalActions {
     this.dispatch(
       arrayPush(this.formName, 'items', value)
     );
+  }
+
+  public updateTransmittalItem(transmitallItem: any) {
+    this.dispatch((dispatch) => {
+      // const transmittalActions = new TransmittalActions(dispatch);
+      // transmittalActions.loadingAction(true);
+      this.api.updateTransmittalItem(transmitallItem)
+        .then((response: AxiosResponse) => {
+          console.log('updateTransmittalItem', response);
+        })
+        .catch((err: AxiosError) => {
+          // transmittalActions.loadingAction(false);
+          this.api.errorHandler(err);
+        });
+    });
   }
 
   public getFormBaseData(): void {

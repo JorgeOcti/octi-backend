@@ -39,6 +39,7 @@ class Form extends React.Component<IPropsType, IStateType> {
   public componentWillMount(): void {
     this.props.transmittalActions.getFormBaseData();
   }
+
   componentDidMount() {
     this.props.transmittalActions.pushItem({});
   }

@@ -25,6 +25,7 @@ import {
 } from '../../../../../src/interfaces/venue.interface';
 import { ITempUser } from '../actions/users.actions';
 import { IFilterCar } from '../reducers/inventory.reducer';
+import { ITransmittalItemModel } from '../../../../../src/distribution/models/transmittalItem.model';
 
 export interface IHeaders {
   'X-CSRFToken'?: string;
@@ -663,6 +664,13 @@ export default class ApiService {
    public getTransmittals({page, pageSize, orderBy, orderType}:{page: number, orderType?: string, orderBy?: string, pageSize?: number}): AxiosPromise {
     return this.instance.get(
       `/api/v1/transmittals/?page=${page}${pageSize ? `&pageSize=${pageSize}` : ''}${orderBy ? `&orderBy=${orderBy}` : ''}${orderType ? `&orderType=${orderType}` : ''}`
+    );
+  }
+
+   public updateTransmittalItem(transmittalItem: Partial<ITransmittalItemModel>) {
+    return this.instance.patch(
+      `/api/v1/transmittals/item/${transmittalItem._id}/`,
+       transmittalItem
     );
   }
 }

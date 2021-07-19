@@ -15,11 +15,12 @@ distributionRouter.get('/api/v1/transmittals/', Middlewares.isJWTAuthenticated, 
 distributionRouter.post('/api/v1/transmittals/', Middlewares.isJWTAuthenticated, TransmittalController.apiCreate);
 distributionRouter.get('/api/v1/transmittals/:id/', Middlewares.isJWTAuthenticated, TransmittalController.apiDetail);
 distributionRouter.delete('/api/v1/transmittals/:id/', Middlewares.isJWTAuthenticated, TransmittalController.apiDelete);
-distributionRouter.post('/api/v1/transmittals/upload-file/', Middlewares.isJWTAuthenticated, TransmittalController.uploadFile);
+distributionRouter.put('/api/v1/transmittals/upload-file/', Middlewares.isJWTAuthenticated, TransmittalController.uploadFile);
 
 distributionRouter.get('/api/v1/transmittals/item/', Middlewares.isJWTAuthenticated, TransmittalItemController.apiList);
 distributionRouter.post('/api/v1/transmittals/item/', Middlewares.isJWTAuthenticated, TransmittalItemController.apiCreate);
 distributionRouter.get('/api/v1/transmittals/item/:id/', Middlewares.isJWTAuthenticated, TransmittalItemController.apiDetail);
+distributionRouter.patch('/api/v1/transmittals/item/:id/', Middlewares.isJWTAuthenticated, TransmittalItemController.apiUpdate);
 distributionRouter.delete('/api/v1/transmittals/item/:id/', Middlewares.isJWTAuthenticated, TransmittalItemController.apiDelete);
 
 export {

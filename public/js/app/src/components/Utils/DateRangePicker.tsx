@@ -17,10 +17,12 @@ interface IStateType {
 class DateRangePicker extends React.Component<IPropsType, IStateType> {
 
   readonly input: RefObject<HTMLInputElement>;
+  readonly inputGroup: RefObject<HTMLInputElement>;
 
   constructor(props: IPropsType) {
     super(props);
     this.input = React.createRef();
+    this.inputGroup = React.createRef();
   }
 
   public componentDidMount() {
@@ -55,17 +57,14 @@ class DateRangePicker extends React.Component<IPropsType, IStateType> {
   public render(): React.ReactElement<IPropsType> {
     const { format, value } = this.props;
     return (
-      <div className="input-group">
-        <input
-          ref={this.input}
-          type="text"
-          value={value?.toString().length ? moment(value).format(format ?? 'DD-MM-YY') : ''}
-          className={`form-control ${this.props.className ?? ''}`}
-          onChange={(e) => {}}
-          style={{ ...this.props.style }}
-        />
-        <span className="input-group-addon"><i className="fa fa-calendar" /></span>
-      </div>
+      <input
+        ref={this.input}
+        type="text"
+        value={value?.toString().length ? moment(value).format(format ?? 'DD-MM-YY') : ''}
+        className={`form-control ${this.props.className ?? ''}`}
+        onChange={(e) => {}}
+        style={{ ...this.props.style }}
+      />
     );
   }
 }

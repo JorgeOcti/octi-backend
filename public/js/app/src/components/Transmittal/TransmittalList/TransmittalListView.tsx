@@ -51,6 +51,7 @@ class TransmittalListView extends TrackingBasePage<IPropsType, IStateType> {
     const {orderBy, orderType} = this.props.transmittal.options;
     const {page} = this.props.transmittal.pagination;
     window.scrollTo(0, 0);
+    this.props.transmittalActions.getFormBaseData();
     this.props.transmittalActions.getTransmittalsThunkAction(page, orderBy, orderType);
 
     // socket
@@ -178,7 +179,7 @@ class TransmittalListView extends TrackingBasePage<IPropsType, IStateType> {
                 </ShowIf>
               </div>
             </div>
-            <div className="box-body table-responsive transmittal-list">
+            <div className={`box-body transmittal-list`}>
               <ShowIf condition={data.length > 0}>
                 <div className="row transmittal bg-primary">
                   <div className="col-sm-1 col-xs-1 col-md-1 col-lg-1 center pointer head-sorted" onClick={() => this.changeOrder('_id')}>
@@ -258,8 +259,10 @@ class TransmittalListView extends TrackingBasePage<IPropsType, IStateType> {
   }
 
   private changeOrder(key: string) {
-    const { page } = this.props.transmittal.pagination;
-    const { orderBy, orderType } = this.props.transmittal.options;
+    const {
+      options: {orderBy, orderType},
+      pagination: {page}
+    } = this.props.transmittal;
     let newOrderType = orderType;
     let newOrderBy = orderBy;
     if (key === orderBy) {
@@ -275,7 +278,7 @@ class TransmittalListView extends TrackingBasePage<IPropsType, IStateType> {
   }
 
   private changePage(page: number): void {
-    const {orderBy, orderType} = this.props.transmittal.options;
+    const {options: {orderBy, orderType}} = this.props.transmittal;
     this.props.transmittalActions.getTransmittalsThunkAction(page, orderBy, orderType);
   }
 

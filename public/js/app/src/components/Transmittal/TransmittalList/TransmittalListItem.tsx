@@ -4,9 +4,11 @@ import {connect} from 'react-redux';
 import {RouteComponentProps} from 'react-router';
 import TransmittalActions from "../../../actions/transmittal.actions";
 import {ITransmittalActionTypes, ITransmittalState} from "../../../actions/transmittal.types";
-import { ITransmittalItemModel } from '../../../../../../../src/distribution/models/transmittalItem.model';
+import {ITransmittalItemModel} from '../../../../../../../src/distribution/models/transmittalItem.model';
 import DateRangePicker from '../../Utils/DateRangePicker';
 import BootstrapSelect from "../../Utils/BootstrapSelect";
+// import {hasPermission} from "../../../utils/common";
+import ShowIf from "../../Utils/ShowIf";
 
 interface IPropsType extends RouteComponentProps<{ ticket: string }> {
   dispatch: Dispatch<ITransmittalActionTypes>;
@@ -27,7 +29,7 @@ class TransmitalListItem extends React.Component<IPropsType, IStateType> {
   };
 
   public render(): React.ReactElement<IPropsType> {
-    const {transmittalItem} = this.props;
+    const {transmittalItem, transmittal: {venues}} = this.props;
     return (
       <tr id={`transmittal-item-${transmittalItem._id}`} className="background-transition">
         <td className={"middle"}>
@@ -43,15 +45,21 @@ class TransmitalListItem extends React.Component<IPropsType, IStateType> {
           <BootstrapSelect
             noneSelectedText="Selecciona una sucursal"
             displayItems={2}
+            sm={true}
             selectedText="sucursales seleccionadas."
-            selected={[]}
+            selected={transmittalItem.origin ? [transmittalItem.origin._id] : []}
+            autoClouse={true}
             allOption={false}
-            options={[].map((venue: any) => ({
+            search={true}
+            options={venues.map((venue: any) => ({
               value: venue._id,
               text: venue.name
             }))}
             onClick={(e: string) => {
-              console.log(e);
+              this.props.transmittalActions.updateTransmittalItem({
+                _id: transmittalItem._id,
+                origin: e
+              });
             }}
           />
         </td>
@@ -59,15 +67,21 @@ class TransmitalListItem extends React.Component<IPropsType, IStateType> {
           <BootstrapSelect
             noneSelectedText="Selecciona una sucursal"
             displayItems={2}
+            sm={true}
             selectedText="sucursales seleccionadas."
-            selected={[]}
+            selected={transmittalItem.destination ? [transmittalItem.destination._id] : []}
+            autoClouse={true}
             allOption={false}
-            options={[].map((venue: any) => ({
+            search={true}
+            options={venues.map((venue: any) => ({
               value: venue._id,
               text: venue.name
             }))}
             onClick={(e: string) => {
-              console.log(e);
+              this.props.transmittalActions.updateTransmittalItem({
+                _id: transmittalItem._id,
+                destination: e
+              });
             }}
           />
         </td>
@@ -77,11 +91,10 @@ class TransmitalListItem extends React.Component<IPropsType, IStateType> {
             value={transmittalItem.loadingDate}
             format={'DD-MM-YYYY'}
             onChange={(e) => {
-              console.log('loadingDate', e)
-              // this.props.updateRequestItemInListReduxAction!(request._id, {
-              //   ...item,
-              //   uploadDate: e
-              // });
+              this.props.transmittalActions.updateTransmittalItem({
+                _id: transmittalItem._id,
+                loadingDate: e?.toDate()
+              });
             }}
           />
         </td>
@@ -91,15 +104,22 @@ class TransmitalListItem extends React.Component<IPropsType, IStateType> {
             value={transmittalItem.arrivalDate}
             format={'DD-MM-YYYY'}
             onChange={(e) => {
-              console.log('arrivalDate', e)
-              // this.props.updateRequestItemInListReduxAction!(request._id, {
-              //   ...item,
-              //   uploadDate: e
-              // });
+              this.props.transmittalActions.updateTransmittalItem({
+                _id: transmittalItem._id,
+                arrivalDate: e?.toDate()
+              });
             }}
           />
         </td>
         <td></td>
+        <ShowIf condition={true}>
+          {/*<ShowIf condition={hasPermission(window.user, 'deleteRequest')}>*/}
+          <td className="middle-center text-red pointer" onClick={() => {
+
+          }}>
+            <i className="fa fa-minus-circle"/>
+          </td>
+        </ShowIf>
       </tr>
     );
   }

@@ -6,6 +6,7 @@ import TransmittalActions from "../../../actions/transmittal.actions";
 import {ITransmittalActionTypes, ITransmittalState} from "../../../actions/transmittal.types";
 import { ITransmittalModel } from '../../../../../../../src/distribution/models/transmittal.model';
 import TransmitalListItem from './TransmittalListItem';
+import ShowIf from "../../Utils/ShowIf";
 
 interface IPropsType extends RouteComponentProps<{ ticket: string }> {
   dispatch: Dispatch<ITransmittalActionTypes>;
@@ -70,6 +71,10 @@ class TransmitalListDetail extends React.Component<IPropsType, IStateType> {
                 <th className="middle" style={{ width: '120px' }}>Fecha emisión</th>
                 <th className="middle" style={{ width: '120px' }}>Fecha arribo</th>
                 <th className="middle" style={{ width: '150px' }}>Observación</th>
+                <ShowIf condition={true}>
+                  {/*<ShowIf condition={hasPermission(window.user, 'deleteRequest')}>*/}
+                  <th className="middle" style={{ width: '30px' }} />
+                </ShowIf>
               </tr>
             </thead>
             <tbody>
