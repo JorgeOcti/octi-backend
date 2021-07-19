@@ -1,37 +1,22 @@
 import {IRequest} from "../../interfaces/global.interface";
 import {Response} from "express";
-import * as mongoose from "mongoose";
-import {CustomLabels, PaginateOptions, PaginateResult} from "mongoose";
-import Transmittal, {ITransmittalModel} from "../models/transmittal.model";
+import { PaginateOptions, PaginateResult} from "mongoose";
+import Transmittal, {ChoicesStatusTransmittal, ITransmittalModel} from "../models/transmittal.model";
 import logger from "../../services/logger.service";
 import TransmittalItem from "../models/transmittalItem.model";
 import {ITransmittalItem} from "../../interfaces/transmittalItem.interface";
-import TransmittalTransporter from "../models/transmittalTransporter.model";
 import TransmittalFile from "../models/transmittalFile.model";
 import GeneralUtils from "../../utils/general.utils";
 import * as GraphicsMagick from "gm";
 import Team from "../../app/models/team.model";
 
-const ObjectId = mongoose.Types.ObjectId;
 
 class TransmittalController {
-
-  private aggregateCustomLabels: CustomLabels = {
-    totalDocs: 'total',
-    docs: 'docs',
-    limit: 'perPage',
-    page: 'currentPage',
-    nextPage: 'next',
-    prevPage: 'prev',
-    totalPages: 'pages',
-    hasPrevPage: 'hasPrevious',
-    hasNextPage: 'hasNext',
-    pagingCounter: 'pageCounter'
-  };
 
   constructor() {
     this.index = this.index.bind(this);
     this.apiList = this.apiList.bind(this);
+    this.apiOnlyMe = this.apiOnlyMe.bind(this);
     this.apiDetail = this.apiDetail.bind(this);
     this.apiCreate = this.apiCreate.bind(this);
     this.apiDelete = this.apiDelete.bind(this);
@@ -63,7 +48,8 @@ class TransmittalController {
         name,
         team: user.team,
         number: updateTeam!.transmittalNumber,
-        createdBy: user._id
+        createdBy: user._id,
+        transporter
       });
       await transmittal.save();
       await Promise.all(
@@ -79,10 +65,6 @@ class TransmittalController {
         await transmittal.save();
         await TransmittalFile.updateMany({_id: {$in: files}}, {$set: {transmittal}})
       }
-      await new TransmittalTransporter({
-        ...transporter,
-        transmittal
-      }).save();
       res.json({
         status: 200
       })
@@ -119,15 +101,11 @@ class TransmittalController {
         [orderBy || '_id']: orderType === 'ascending' ? 1 : -1
       },
       populate: [{
-        path: 'transporter',
-        select: ['carrier', 'driver', 'patent'],
-        populate: [{
-          path: 'carrier',
-          select: ['name']
-        }, {
-          path: 'driver',
-          select: ['firstName', 'lastName']
-        }]
+        path: 'transporter.carrier',
+        select: ['name']
+      }, {
+        path: 'transporter.driver',
+        select: ['firstName', 'lastName']
       }, {
         path: 'items',
         select: ['car', 'requestItem', 'destination', 'origin', 'loadingDate', 'arrivalDate'],
@@ -187,40 +165,60 @@ class TransmittalController {
     }
   }
 
-  public async apiListByAgregate(req: IRequest, res: Response) {
-    logger.info(`TransmittalController.apiListByAgregate`);
+  public async apiOnlyMe(req: IRequest, res: Response) {
+    logger.info(`TransmittalController.apiOnlyMe`);
     logger.info(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
-    const {team} = req.user;
-
-     const { page, pageSize, orderBy, orderType, filters } = req.body as { page: string; pageSize: string; search: string; orderBy: string; orderType: string, filters: any };
+    const team = req.user.team._id;
+    const {
+      page,
+      pageSize,
+      orderBy,
+      orderType
+    } = req.query as { page: string; pageSize: string; orderBy: string; orderType: string };
+    // paginate options
+    const options: PaginateOptions = {
+      sort: {
+        [orderBy || '_id']: orderType === 'ascending' ? 1 : -1
+      },
+      populate: [{
+        path: 'transporter.carrier',
+        select: ['name']
+      }, {
+        path: 'transporter.driver',
+        select: ['firstName', 'lastName']
+      }, {
+        path: 'items',
+        select: ['car', 'requestItem', 'destination', 'origin', 'loadingDate', 'arrivalDate'],
+        populate: [{
+          path: 'car',
+          select: ['invoice', 'entry', 'denomination', 'patent', 'material', 'vin', 'brand', 'color']
+        }, {
+          path: 'request',
+          select: ['number']
+        }, {
+          path: 'destination',
+          select: ['name']
+        }, {
+          path: 'origin',
+          select: ['name']
+        }]
+      }, {
+        path: 'createdBy',
+        select: ['firstName', 'lastName']
+      }],
+      page: parseInt(page ? page : '1', 10),
+      limit: parseInt(pageSize ? pageSize : '20', 10)
+    };
+    const filter: any = {
+      team,
+      'transporter.driver': req.user._id,
+      status: {
+        $in: [ChoicesStatusTransmittal.pending, ChoicesStatusTransmittal.inTransit]
+      }
+    };
     try {
-      console.log('filters', filters);
-      const options: PaginateOptions = {
-        page: parseInt(page ? page : '1', 10),
-        limit: parseInt(pageSize ? pageSize : '10', 10),
-        customLabels: this.aggregateCustomLabels,
-        countQuery: Transmittal.aggregate([{
-          $match: {
-            team: ObjectId(team._id)
-          }
-        }])
-      };
-      const transmittalsAggregate = Transmittal.aggregate([{
-        $match: {
-          team: ObjectId(team._id)
-        }
-      }, {
-        $lookup: {from: 'transmittalitems', localField: '_id', foreignField: 'transmittal', as: 'items'}
-      }, {
-        $lookup: {from: 'transmittaltransporters', localField: '_id', foreignField: 'transmittal', as: 'transporter'}
-      }, {
-        $unwind: {path: '$transporter', preserveNullAndEmptyArrays: true}
-      }, {
-        $sort: {[orderBy]: orderType === 'ascending' ? 1 : -1}
-      }]);
-
-      const transmittals = await Transmittal.aggregatePaginate(transmittalsAggregate, options);
-
+      const transmittals = await this.getTransmittals(filter, options);
+      /* istanbul ignore if  */
       if (options.page && transmittals.pages && transmittals.pages < options.page) {
         res.status(400).json({
           message: 'La página solicitada no existe.',
@@ -230,15 +228,15 @@ class TransmittalController {
         res.json({
           count: transmittals.total,
           pages: transmittals.pages,
-          hasPrevious: transmittals.hasPrevious,
-          hasNext: transmittals.hasNext,
+          hasPrevious: options.page && options.page > 1 && transmittals.pages && transmittals.pages >= options.page,
+          hasNext: options.page && transmittals.pages && transmittals.pages > options.page,
           results: transmittals.docs,
           status: 200
         });
       }
     } catch (e) {
       /* istanbul ignore next */
-      logger.error(`TransmittalController.apiList: Async Error.`);
+      logger.error(`TransmittalController.apiOnlyMe: Async Error.`);
       /* istanbul ignore next */
       logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
       res.status(500).json(e);

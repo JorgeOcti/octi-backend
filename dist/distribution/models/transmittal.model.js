@@ -1,8 +1,35 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.choicesStatusTransmittal = exports.ChoicesStatusTransmittal = void 0;
 const mongoose = require("mongoose");
 const mongoosePaginate = require("mongoose-paginate");
 const mongooseAggregatePaginate = require("mongoose-aggregate-paginate-v2");
+var ChoicesStatusTransmittal;
+(function (ChoicesStatusTransmittal) {
+    ChoicesStatusTransmittal["pending"] = "pending";
+    ChoicesStatusTransmittal["inTransit"] = "inTransit";
+    ChoicesStatusTransmittal["completed"] = "completed";
+})(ChoicesStatusTransmittal = exports.ChoicesStatusTransmittal || (exports.ChoicesStatusTransmittal = {}));
+exports.choicesStatusTransmittal = [
+    ChoicesStatusTransmittal.pending,
+    ChoicesStatusTransmittal.inTransit,
+    ChoicesStatusTransmittal.completed,
+];
+const transmittalTransporterSchema = new mongoose.Schema({
+    carrier: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Carrier'
+    },
+    driver: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User'
+    },
+    patent: {
+        type: String,
+    },
+}, {
+    timestamps: true
+});
 const transmittalSchema = new mongoose.Schema({
     name: {
         type: String
@@ -22,14 +49,16 @@ const transmittalSchema = new mongoose.Schema({
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User'
     },
+    transporter: {
+        type: transmittalTransporterSchema
+    },
+    status: {
+        type: String,
+        enum: exports.choicesStatusTransmittal,
+        default: ChoicesStatusTransmittal.pending
+    }
 }, {
     timestamps: true
-});
-transmittalSchema.virtual('transporter', {
-    ref: 'TransmittalTransporter',
-    localField: '_id',
-    foreignField: 'transmittal',
-    justOne: true
 });
 transmittalSchema.virtual('items', {
     ref: 'TransmittalItem',

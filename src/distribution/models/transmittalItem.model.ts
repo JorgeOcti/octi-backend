@@ -1,7 +1,8 @@
 import * as mongoose from 'mongoose';
-import { PaginateModel } from 'mongoose';
+import {AggregatePaginateModel, PaginateModel} from 'mongoose';
 import * as mongoosePaginate from 'mongoose-paginate';
 import {ITransmittalItem} from '../../interfaces/transmittalItem.interface';
+import mongooseAggregatePaginate = require('mongoose-aggregate-paginate-v2');
 
 export interface ITransmittalItemModel extends ITransmittalItem, mongoose.Document { }
 
@@ -9,6 +10,10 @@ const transmittalItemSchema = new mongoose.Schema({
   transmittal: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Transmittal'
+  },
+  team: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Team'
   },
   request: {
     type: mongoose.Schema.Types.ObjectId,
@@ -41,8 +46,9 @@ const transmittalItemSchema = new mongoose.Schema({
 });
 
 transmittalItemSchema.plugin(mongoosePaginate);
+transmittalItemSchema.plugin(mongooseAggregatePaginate);
 
-export type TransmittalItemSchema = mongoose.Model<ITransmittalItemModel> & PaginateModel<ITransmittalItemModel>;
+export type TransmittalItemSchema = mongoose.Model<ITransmittalItemModel> & PaginateModel<ITransmittalItemModel>& AggregatePaginateModel<ITransmittalItemModel>;
 
 const TransmittalItem = mongoose.model<ITransmittalItemModel, TransmittalItemSchema>('TransmittalItem', transmittalItemSchema);
 

@@ -14,6 +14,7 @@ distributionRouter.get('/transmittals/create/', middlewares_1.default.isLoggedIn
 // apis
 distributionRouter.get('/api/v1/transmittals/', middlewares_1.default.isJWTAuthenticated, transmittal_controller_1.default.apiList);
 distributionRouter.post('/api/v1/transmittals/', middlewares_1.default.isJWTAuthenticated, transmittal_controller_1.default.apiCreate);
+distributionRouter.get('/api/v1/transmittals/only-me/', middlewares_1.default.isJWTAuthenticated, transmittal_controller_1.default.apiOnlyMe);
 distributionRouter.get('/api/v1/transmittals/:id/', middlewares_1.default.isJWTAuthenticated, transmittal_controller_1.default.apiDetail);
 distributionRouter.delete('/api/v1/transmittals/:id/', middlewares_1.default.isJWTAuthenticated, transmittal_controller_1.default.apiDelete);
 distributionRouter.put('/api/v1/transmittals/upload-file/', middlewares_1.default.isJWTAuthenticated, transmittal_controller_1.default.uploadFile);

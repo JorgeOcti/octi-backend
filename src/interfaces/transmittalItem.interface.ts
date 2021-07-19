@@ -8,9 +8,12 @@ import {IRequestItemModel} from "../request/models/requestItem.model";
 import {IRequestItem} from "./requestItem.interface";
 import {IRequest} from "./request.interface";
 import {IRequestModel} from "../request/models/request.model";
+import {ITeam} from "./team.interface";
+import {ITeamModel} from "../app/models/team.model";
 
 export interface ITransmittalItem {
   transmittal: ITransmittal | ITransmittalModel;
+  team: ITeam | ITeamModel;
   request: IRequest | IRequestModel;
   requestItem: IRequestItem | IRequestItemModel;
   car: ICar | ICarModel;

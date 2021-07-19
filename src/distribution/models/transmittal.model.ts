@@ -7,6 +7,33 @@ import mongooseAggregatePaginate = require('mongoose-aggregate-paginate-v2');
 
 export interface ITransmittalModel extends ITransmittal, mongoose.Document { }
 
+export enum ChoicesStatusTransmittal {
+  pending = 'pending',
+  inTransit = 'inTransit',
+  completed = 'completed',
+}
+
+export const choicesStatusTransmittal = [
+  ChoicesStatusTransmittal.pending,
+  ChoicesStatusTransmittal.inTransit,
+  ChoicesStatusTransmittal.completed,
+];
+
+const transmittalTransporterSchema = new mongoose.Schema({
+  carrier: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Carrier'
+  },
+  driver: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User'
+  },
+  patent: {
+    type: String,
+  },
+}, {
+  timestamps: true
+});
 
 const transmittalSchema = new mongoose.Schema<ITransmittal>({
   name: {
@@ -27,16 +54,18 @@ const transmittalSchema = new mongoose.Schema<ITransmittal>({
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User'
   },
+  transporter: {
+    type: transmittalTransporterSchema
+  },
+  status: {
+    type: String,
+    enum: choicesStatusTransmittal,
+    default: ChoicesStatusTransmittal.pending
+  }
 }, {
   timestamps: true
 });
 
-transmittalSchema.virtual('transporter', {
-  ref: 'TransmittalTransporter', // The model to use
-  localField: '_id', // Find field in this model
-  foreignField: 'transmittal', // is equal to field in another model
-  justOne: true
-});
 
 transmittalSchema.virtual('items', {
   ref: 'TransmittalItem', // The model to use

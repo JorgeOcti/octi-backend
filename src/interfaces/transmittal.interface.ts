@@ -14,6 +14,7 @@ export interface ITransmittal {
   items: ITransmittalItemModel[];
   files: ITransmittalFile[];
   transporter: ITransmittalTransporter;
+  status: string;
   createdBy: IUser | IUserModel;
 }
 

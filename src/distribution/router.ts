@@ -13,6 +13,7 @@ distributionRouter.get('/transmittals/create/', Middlewares.isLoggedIn, Transmit
 // apis
 distributionRouter.get('/api/v1/transmittals/', Middlewares.isJWTAuthenticated, TransmittalController.apiList);
 distributionRouter.post('/api/v1/transmittals/', Middlewares.isJWTAuthenticated, TransmittalController.apiCreate);
+distributionRouter.get('/api/v1/transmittals/only-me/', Middlewares.isJWTAuthenticated, TransmittalController.apiOnlyMe);
 distributionRouter.get('/api/v1/transmittals/:id/', Middlewares.isJWTAuthenticated, TransmittalController.apiDetail);
 distributionRouter.delete('/api/v1/transmittals/:id/', Middlewares.isJWTAuthenticated, TransmittalController.apiDelete);
 distributionRouter.put('/api/v1/transmittals/upload-file/', Middlewares.isJWTAuthenticated, TransmittalController.uploadFile);
