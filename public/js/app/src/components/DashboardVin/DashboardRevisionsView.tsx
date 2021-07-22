@@ -1,16 +1,16 @@
 import * as React from 'react';
-import {RouteComponentProps} from 'react-router';
-import {Dispatch} from 'redux';
-import {DashboardReduxAction, getRevisionStats, IDashboardState} from '../../actions/dashboard.actions';
+import { RouteComponentProps } from 'react-router';
+import { Dispatch } from 'redux';
+import { DashboardReduxAction, getRevisionStats, IDashboardState } from '../../actions/dashboard.actions';
 import AppContainer from '../../container/AppContainer';
-import InfoCard, {CardColors} from './InfoCard';
+import InfoCard, { CardColors } from './InfoCard';
 import CircleChartCard from './CircleChartCard';
 import FilterableVenueTable from './FilterableVenueTable';
-import {connect} from 'react-redux';
+import { connect } from 'react-redux';
 import * as moment from 'moment';
 import NumberFormat from 'react-number-format';
-import {IWindow} from '../../interfaces/window';
-import {IUser} from '../../../../../../src/interfaces/user.interface';
+import { IWindow } from '../../interfaces/window';
+import { IUser } from '../../../../../../src/interfaces/user.interface';
 import TrackingBasePage from '../Utils/TrackingBasePage';
 
 declare let window: IWindow;
@@ -171,7 +171,7 @@ class DashboardRevisionsView extends TrackingBasePage<IPropsType, IStateType> {
                           displayType={'text'}
                           thousandSeparator={'.'}
                           decimalScale={0}
-                          decimalSeparator={undefined}
+                          decimalSeparator={','}
                           suffix="%" />
                       </span>
                     }
@@ -185,7 +185,7 @@ class DashboardRevisionsView extends TrackingBasePage<IPropsType, IStateType> {
                           displayType={'text'}
                           thousandSeparator={'.'}
                           decimalScale={0}
-                          decimalSeparator={undefined}
+                          decimalSeparator={','}
                           suffix="%" />
                       </span>
                     }

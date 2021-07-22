@@ -205,22 +205,9 @@ class CarController {
     async checkVIN(req, res) {
         let { vin, vin2 } = req.body;
         const { inventory } = req.body;
-        // const {multi} = req.query;
         const team = req.user.team._id;
         logger_service_1.default.info(`checkVIN`);
         logger_service_1.default.info(`{user: {_id: ${req.user._id}, email: ${req.user.email}}, body: ${JSON.stringify(req.body)}}`);
-        /*
-          {
-            $group: {
-              _id: {
-                vin: {
-                  $substr: ["$vin", 0, 3]
-                },
-                brand: "$brand"
-              }
-            }
-          }
-        */
         if (vin) {
             vin = vin.replace(/[\W_]+/g, '');
             logger_service_1.default.info(`VIN fixed: ${vin}`);

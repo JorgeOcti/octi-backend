@@ -53,7 +53,8 @@ class InfoCard extends React.Component<IPropsType, IStateType> {
                   value={value} displayType={'text'}
                   thousandSeparator={'.'}
                   decimalScale={0}
-                  decimalSeparator={undefined} /> :
+                  decimalSeparator={','}
+                /> :
                 <i className="fa fa-spinner fa-spin" />}
               {this.props.children}
             </span>

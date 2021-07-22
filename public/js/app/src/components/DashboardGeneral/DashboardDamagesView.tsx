@@ -167,7 +167,7 @@ class DashboardDamagesView extends TrackingBasePage<IPropsType, IStateType> {
             <div className="col-md-12">
               <div className="box">
                 <div className="box-header with-border"><h3 className="box-title">Dashboard de daños</h3>
-                  {hasPermission(window.user, 'exportDamages') ?
+                  {false && hasPermission(window.user, 'exportDamages') ?
                     <div className="box-tools pull-right">
                       <button
                         className="btn btn-sm btn-primary hidden-xs hidden-sm"

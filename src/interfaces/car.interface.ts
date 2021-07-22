@@ -15,6 +15,7 @@ export interface ICar {
   brand: string;
   denomination: string;
   material: string;
+  imported: boolean;
   destination: string;
   property: string;
   type: string;
