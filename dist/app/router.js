@@ -57,6 +57,8 @@ appRouter.post('/api/admin/users/', middlewares_1.default.isLoggedIn, user_admin
 appRouter.post('/api/admin/users/change-password/', middlewares_1.default.isLoggedIn, user_admin_controller_1.default.apiChangePasswordUser);
 appRouter.patch('/api/admin/users/:id/', middlewares_1.default.isLoggedIn, user_admin_controller_1.default.apiUpdateUser);
 appRouter.delete('/api/admin/users/:id/', middlewares_1.default.isLoggedIn, user_admin_controller_1.default.apiDeleteUser);
+// drivers
+appRouter.get('/api/v1/users/drivers/', middlewares_1.default.isJWTAuthenticated, user_controller_1.default.apiListDrivers);
 // admin venues
 appRouter.get('/settings/venues/', middlewares_1.default.isLoggedIn, venue_admin_controller_1.default.index);
 appRouter.get('/settings/venues/export-access/', middlewares_1.default.isLoggedIn, venue_admin_controller_1.default.accessByVenue);

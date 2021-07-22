@@ -262,6 +262,12 @@ export default class ApiService {
     );
   }
 
+  public getDrivers(page: number, pageSize?: number): AxiosPromise {
+    return this.instance.get(
+      `/api/v1/users/drivers/?page=${page}${pageSize ? `&pageSize=${pageSize}` : ''}`
+    );
+  }
+
   public createRegion(region: IBaseRegion): AxiosPromise {
     return this.instance.post(
       `/api/admin/regions/`, region
@@ -571,7 +577,7 @@ export default class ApiService {
     );
   }
 
-  public getRequestItems({ page, pageSize, orderBy, orderType, filters }: { page: number, orderBy: string, orderType: string, pageSize: number, filters:any }): AxiosPromise {
+  public getRequestItems({ page, pageSize, orderBy, orderType, filters }: { page: number, orderBy?: string, orderType?: string, pageSize: number, filters:any }): AxiosPromise {
     let body: any = {
       page,
       filters

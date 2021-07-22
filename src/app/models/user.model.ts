@@ -85,6 +85,11 @@ const userSchema = new mongoose.Schema({
 
   lastLogin: Date,
 
+  isDriver: {
+    type: Boolean,
+    default: false
+  },
+
   active: {
     type: Boolean,
     default: true
@@ -167,9 +172,9 @@ userSchema.methods.venuesPermissions = function(inString?: boolean) {
 userSchema.pre('save', function (this: IUserModel, next: HookNextFunction) {
   const user = this;
   if (!user.isModified('password')) { return next(); }
-  bcrypt.genSalt(10, (err, salt) => {
+  bcrypt.genSalt!(10, (err, salt) => {
     if (err) { return next(err); }
-    bcrypt.hash(user.password, salt, (err: mongoose.Error, hash) => {
+    bcrypt.hash!(user.password, salt, (err: mongoose.Error, hash) => {
       if (err) {
         return next(err);
       }
@@ -180,7 +185,7 @@ userSchema.pre('save', function (this: IUserModel, next: HookNextFunction) {
 });
 
 userSchema.methods.comparePassword = function(candidatePassword: string, cb: (err: any, isMatch: any) => {}) {
-  bcrypt.compare(candidatePassword, this.password, (err: mongoose.Error, isMatch: boolean) => {
+  bcrypt.compare!(candidatePassword, this.password, (err: mongoose.Error, isMatch: boolean) => {
     cb(err, isMatch);
   });
 };

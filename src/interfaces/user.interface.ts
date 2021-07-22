@@ -30,5 +30,6 @@ export interface IUser {
   userPermissions: IPermission[];
   userForms: IForm[];
   isAdmin: boolean;
+  isDriver: boolean;
   generateToken: () => string;
 }

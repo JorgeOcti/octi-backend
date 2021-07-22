@@ -73,6 +73,7 @@ class Middlewares {
             _id: true,
             firstName: true,
             lastName: true,
+            isAdmin: true,
             email: true,
             preferred: true,
             venuesAccess: true

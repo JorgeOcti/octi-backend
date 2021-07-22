@@ -226,6 +226,7 @@ class AdminUsersController {
         preferred: true,
         email: true,
         isAdmin: true,
+        isDriver: true,
         updatedAt: true
       },
       populate: [{
@@ -390,7 +391,7 @@ class AdminUsersController {
     }
     const {id} = req.params;
     const team = req.user.team._id;
-    const {firstName, lastName, email, venue, venuesAccess, userPermissions, userForms, preferred, company, isAdmin} = req.body;
+    const {firstName, lastName, email, venue, venuesAccess, userPermissions, userForms, preferred, company, isAdmin, isDriver} = req.body;
     // validate fields required
     if (!firstName || !firstName.length || !lastName || !lastName.length || !email || !email.length || !venue || !venue.length) {
       res.status(400).json({
@@ -414,7 +415,8 @@ class AdminUsersController {
           preferred,
           userForms: userForms && userForms.length ? userForms.map((userForm: IForm) => userForm._id) : [],
           venue,
-          venuesAccess
+          venuesAccess,
+          isDriver
         };
         if ((req.user.isAdmin && [true, false].includes(isAdmin)) || req.user.hasPermission("changeTeamPermissions") ) {
           updateItems.userPermissions = userPermissions && userPermissions.length ? userPermissions.map((userPermission: IPermission) => userPermission._id) : [];

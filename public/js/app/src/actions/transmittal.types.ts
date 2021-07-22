@@ -3,17 +3,19 @@ import {CancelTokenSource} from "axios";
 import {IVenueModel} from '../../../../../src/app/models/venue.model';
 import {ICarrierModel} from '../../../../../src/app/models/carrier.model';
 import { ITransmittalItemModel } from '../../../../../src/distribution/models/transmittalItem.model';
+import { IUserModel } from '../../../../../src/app/models/user.model';
+import { IRequestItem } from '../../../../../src/interfaces/requestItem.interface';
 
 
 export const LOADING_TRANSMITTAL = '@transmittal/IS_LOADING';
 export const LOAD_TRANSMITTAL = '@transmittal/LOAD';
 export const LOAD_VENUES_TRANSMITTAL = '@transmittal/LOAD_VENUES';
 export const LOAD_CARRIERS_TRANSMITTAL = '@transmittal/LOAD_CARRIERS';
+export const LOAD_DRIVERS_TRANSMITTAL = '@transmittal/LOAD_DRIVERS';
 export const TOOGLE_TAB_TRANSMITTAL = '@transmittal/TOOGLE_TAB';
 export const CHANGE_ORDER_TRANSMITTAL = '@transmittal/CHANGE_ORDER';
 export const CANCEL_REQUEST_TRANSMITTAL = '@transmittal/CANCEL_REQUEST';
 export const UPDATE_TRANSMITTAL_ITEM_TRANSMITTAL = '@transmittal/UPDATE_TRANSMITTAL_ITEM';
-
 
 export interface IPaginationListView {
   count: number;
@@ -34,9 +36,23 @@ export interface IListView<T = any> {
   options: IOrderListView;
 }
 
+export interface IRequestItemsFilters {
+  text: string;
+  request: string;
+  venues: any[];
+  properties: any[];
+  status: any[];
+  from: any;
+  to: any;
+}
+
 export interface ITransmittalState<T = ITransmittal> extends IListView<T> {
   venues: IVenueModel[];
   carriers: ICarrierModel[];
+  drivers: IUserModel[];
+  requestItems: IRequestItem[];
+  requestItemsfilters: IRequestItemsFilters;
+  requestItemsPagination: IPaginationListView;
   transmittalOpen: string[];
 }
 
@@ -86,6 +102,13 @@ interface ITransmittalLoadCarriersAction {
   }
 }
 
+interface ITransmittalLoadDriversAction {
+  type: typeof LOAD_DRIVERS_TRANSMITTAL;
+  payload: {
+    drivers: IUserModel[];
+  }
+}
+
 interface ITransmittalToogleTabAction {
   type: typeof TOOGLE_TAB_TRANSMITTAL;
   payload: {
@@ -100,6 +123,35 @@ interface IUpdateTransmittalItemAction {
   }
 }
 
+// SEARCH CARS IN REQUEST
+export const LOAD_REQUEST_ITEMS_TRANSMITTAL = '@transmittal/LOAD_REQUEST_ITEMS';
+export const LOADING_REQUEST_ITEMS_TRANSMITTAL = '@transmittal/LOADING_REQUEST_ITEMS';
+export const FILTER_REQUEST_ITEMS_TRANSMITTAL = '@transmittal/FILTER_REQUEST_ITEMS';
+
+export interface IChangeFilterRequestItemsTransmittalItemAction  {
+  type: typeof FILTER_REQUEST_ITEMS_TRANSMITTAL;
+  payload: {
+    key: keyof IRequestItemsFilters;
+    value: any | any[];
+  };
+}
+
+export interface ILoadRequestItemsTransmittalItemAction  {
+  type: typeof LOAD_REQUEST_ITEMS_TRANSMITTAL;
+  payload: {
+    requestItems: IRequestItem[];
+    count: number;
+    pages: number
+    page: number;
+  };
+}
+
+export interface ILoadingRequestItemsTransmittalItemAction  {
+  type: typeof LOADING_REQUEST_ITEMS_TRANSMITTAL;
+  payload: {
+    requestItems: IRequestItem[];
+  };
+}
 
 export type ITransmittalActionTypes =
   ITransmittalCancerlRequestAction |
@@ -109,5 +161,9 @@ export type ITransmittalActionTypes =
   ITransmittalChangeOrderAction |
   ITransmittalLoadAction |
   IUpdateTransmittalItemAction |
+  ITransmittalLoadDriversAction |
+  IChangeFilterRequestItemsTransmittalItemAction |
+  ILoadRequestItemsTransmittalItemAction |
+  ILoadingRequestItemsTransmittalItemAction |
   ITransmittalLoadingAction;
 

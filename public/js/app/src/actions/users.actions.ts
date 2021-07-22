@@ -83,6 +83,7 @@ export interface ITempUser {
   venuesAccess: IVenue[];
   userForms: IForm[];
   isAdmin: boolean;
+  isDriver: boolean;
   preferred?: string | null;
   userPermissions: IPermission[];
   company: ICompany | null;

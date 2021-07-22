@@ -245,7 +245,7 @@ class TransmittalController {
 
   private getTransmittals(filter: any, options: PaginateOptions): Promise<PaginateResult<ITransmittalModel>> {
     return new Promise((resolve, reject) => {
-      Transmittal.paginate(filter, options, (err, result) => {
+      Transmittal.paginate!(filter, options, (err, result) => {
         if (err) {
           return reject(err);
         }

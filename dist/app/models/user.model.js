@@ -71,6 +71,10 @@ const userSchema = new mongoose.Schema({
     passwordResetToken: String,
     passwordResetExpires: Date,
     lastLogin: Date,
+    isDriver: {
+        type: Boolean,
+        default: false
+    },
     active: {
         type: Boolean,
         default: true

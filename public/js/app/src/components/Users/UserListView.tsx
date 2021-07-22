@@ -401,6 +401,7 @@ class UserListView extends TrackingBasePage<IPropsType, IStateType> {
       company: null,
       email: '',
       isAdmin: false,
+      isDriver: false,
       venue: '',
       userPermissions: [],
       venuesAccess: [],
@@ -519,12 +520,13 @@ class UserListView extends TrackingBasePage<IPropsType, IStateType> {
     }
   }
 
-  private changeTempUser({_id, firstName, lastName, email, venue, userPermissions, preferred, userForms, company, venuesAccess, password, isAdmin}: ITempUser) {
+  private changeTempUser({_id, firstName, lastName, email, venue, userPermissions, preferred, userForms, company, venuesAccess, password, isAdmin, isDriver}: ITempUser) {
     const tempUser: ITempUser = {
       _id: _id ? _id : this.props.users.tempUser._id,
       firstName: firstName ? firstName : this.props.users.tempUser.firstName,
       lastName: lastName ? lastName : this.props.users.tempUser.lastName,
       isAdmin: typeof isAdmin === 'boolean' ? isAdmin : this.props.users.tempUser.isAdmin,
+      isDriver: typeof isDriver === 'boolean' ? isDriver : this.props.users.tempUser.isDriver,
       password: password ? password : '',
       email: email ? email : this.props.users.tempUser.email,
       userPermissions: userPermissions ? userPermissions : this.props.users.tempUser.userPermissions,

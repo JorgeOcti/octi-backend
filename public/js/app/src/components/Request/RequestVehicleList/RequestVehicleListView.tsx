@@ -239,12 +239,12 @@ class RequestVehicleListView extends TrackingBasePage<IPropsType, IStateType> {
                     <div className="form-group">
                       <label className="control-label">
                         Nº Solicitudes
-                    </label>
+                      </label>
                       <input
                         type="text"
                         className="form-control"
                         placeholder="Nº de solicitudes ejemplo: 2, 8, 10"
-                        defaultValue={filters.text}
+                        defaultValue={filters.request}
                         onChange={(e) => {
                           this.changeFilterDebounced('request', e.target.value);
                         }}

@@ -14,16 +14,16 @@ const fileSchema = new mongoose.Schema({
   }
 });
 
-export enum ChoicesTypeQuestuion {
+export enum ChoicesTypeQuestion {
   text = 'text',
   number = 'number',
   paymentMethod = 'paymentMethod'
 }
 
 export const choicesTypeQuestuion = [
-  ChoicesTypeQuestuion.text,
-  ChoicesTypeQuestuion.number,
-  ChoicesTypeQuestuion.paymentMethod
+  ChoicesTypeQuestion.text,
+  ChoicesTypeQuestion.number,
+  ChoicesTypeQuestion.paymentMethod
 ];
 
 const questionSchema = new mongoose.Schema({
@@ -33,7 +33,7 @@ const questionSchema = new mongoose.Schema({
   type: {
     type: String,
     enum: choicesTypeQuestuion,
-    default: ChoicesTypeQuestuion.text
+    default: ChoicesTypeQuestion.text
   },
   required: {
     type: Boolean,

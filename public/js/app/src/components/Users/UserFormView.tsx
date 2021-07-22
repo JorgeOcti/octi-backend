@@ -46,6 +46,7 @@ class UserFormView extends React.Component<IPropsType, IStateType> {
     this.addVenueAccess = this.addVenueAccess.bind(this);
     this.deleteVenueAccess = this.deleteVenueAccess.bind(this);
     this.changeIsAdmin = this.changeIsAdmin.bind(this);
+    this.changeIsDriver = this.changeIsDriver.bind(this);
     this.addForm = this.addForm.bind(this);
     this.deleteForm = this.deleteForm.bind(this);
   }
@@ -297,6 +298,17 @@ class UserFormView extends React.Component<IPropsType, IStateType> {
                   </select>
                 </div>
               </div>
+              <div className="col-md-12">
+                <div className="checkbox">
+                  <Checkbox
+                    active={tempUser && tempUser.isDriver}
+                    action={this.changeIsDriver}
+                    classes="icheck-in-checkbox"
+                    style={{marginTop: '-4px', marginRight: '5px'}}
+                  />
+                  Es Conductor
+                </div>
+              </div>
               {
                 window.user.isAdmin ?
                   <div className="col-md-12">
@@ -451,6 +463,11 @@ class UserFormView extends React.Component<IPropsType, IStateType> {
   private changeIsAdmin() {
     const {isAdmin} = this.props.users.tempUser;
     this.props.changeTempUser({isAdmin: !isAdmin});
+  }
+
+  private changeIsDriver() {
+    const {isDriver} = this.props.users.tempUser;
+    this.props.changeTempUser({isDriver: !isDriver});
   }
 
   private addVenueAccess(id: string) {

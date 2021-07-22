@@ -2,16 +2,80 @@ import * as bcrypt from 'bcrypt';
 import {Response} from 'express';
 import {IRequest} from '../../interfaces/global.interface';
 import logger from '../../services/logger.service';
-import UserModel from '../models/user.model';
+import UserModel, {IUserModel} from '../models/user.model';
 import Venue from '../models/venue.model';
 import PushService from '../../services/push.service';
+import {PaginateOptions, PaginateResult} from "mongoose";
+import User from "../models/user.model";
 
 class UserController {
 
   constructor() {
     this.apiChangePassword = this.apiChangePassword.bind(this);
     this.apiListVenues = this.apiListVenues.bind(this);
+    this.apiListDrivers = this.apiListDrivers.bind(this);
+    this.getUsers = this.getUsers.bind(this);
     this.apiChangeVenue = this.apiChangeVenue.bind(this);
+  }
+
+  public async apiListDrivers(req: IRequest, res: Response) {
+    logger.info(`UserController.apiListDrivers`);
+    logger.info(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
+    const team = req.user.team._id;
+    const {
+      page,
+      pageSize,
+    } = req.query as { page: string; pageSize: string; };
+    // paginate options
+    const options: PaginateOptions = {
+      sort: {
+        firstName: 1
+      },
+      select: {
+        firstName: true,
+        lastName: true,
+        email: true,
+        venue: true
+      },
+      populate: [{
+        path: 'company',
+        select: ['name']
+      }, {
+        path: 'venue',
+        select: ['name']
+      }],
+      page: parseInt(page ? page : '1', 10),
+      limit: parseInt(pageSize ? pageSize : '200', 10)
+    };
+    const filter: any = {
+      team,
+      isDriver: true
+    };
+    try {
+      const drivers = await this.getUsers(filter, options);
+      /* istanbul ignore if  */
+      if (options.page && drivers.pages && drivers.pages < options.page) {
+        res.status(400).json({
+          message: 'La página solicitada no existe.',
+          status: 400
+        });
+      } else {
+        res.json({
+          count: drivers.total,
+          pages: drivers.pages,
+          hasPrevious: options.page && options.page > 1 && drivers.pages && drivers.pages >= options.page,
+          hasNext: options.page && drivers.pages && drivers.pages > options.page,
+          results: drivers.docs,
+          status: 200
+        });
+      }
+    } catch (e) {
+      /* istanbul ignore next */
+      logger.error(`UserController.apiListDrivers: Async Error.`);
+      /* istanbul ignore next */
+      logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
+      res.status(500).json(e);
+    }
   }
 
   public async apiChangePassword(req: IRequest, res: Response) {
@@ -125,9 +189,21 @@ class UserController {
     }
   }
 
+  private getUsers(filter: any, options: PaginateOptions): Promise<PaginateResult<IUserModel>> {
+    return new Promise((resolve, reject) => {
+      User.paginate!(filter, options, (err, result) => {
+        /* istanbul ignore next  */
+        if (err) {
+          return reject(err);
+        }
+        return resolve(result);
+      });
+    });
+  }
+
   public async getPusherToken(req: IRequest, res: Response){
     if (req.user._id === req.query['user_id'])
-      res.status(200).json(PushService.createAuthToken(req.user._id, ))
+      res.status(200).json(PushService.createAuthToken(req.user._id, ));
     else
       res.status(401).json({message: 'Authentication failed. User provided does not match with user_id.'});
   }

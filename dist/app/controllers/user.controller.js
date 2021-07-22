@@ -5,11 +5,72 @@ const logger_service_1 = require("../../services/logger.service");
 const user_model_1 = require("../models/user.model");
 const venue_model_1 = require("../models/venue.model");
 const push_service_1 = require("../../services/push.service");
+const user_model_2 = require("../models/user.model");
 class UserController {
     constructor() {
         this.apiChangePassword = this.apiChangePassword.bind(this);
         this.apiListVenues = this.apiListVenues.bind(this);
+        this.apiListDrivers = this.apiListDrivers.bind(this);
+        this.getUsers = this.getUsers.bind(this);
         this.apiChangeVenue = this.apiChangeVenue.bind(this);
+    }
+    async apiListDrivers(req, res) {
+        logger_service_1.default.info(`UserController.apiListDrivers`);
+        logger_service_1.default.info(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
+        const team = req.user.team._id;
+        const { page, pageSize, } = req.query;
+        // paginate options
+        const options = {
+            sort: {
+                firstName: 1
+            },
+            select: {
+                firstName: true,
+                lastName: true,
+                email: true,
+                venue: true
+            },
+            populate: [{
+                    path: 'company',
+                    select: ['name']
+                }, {
+                    path: 'venue',
+                    select: ['name']
+                }],
+            page: parseInt(page ? page : '1', 10),
+            limit: parseInt(pageSize ? pageSize : '200', 10)
+        };
+        const filter = {
+            team,
+            isDriver: true
+        };
+        try {
+            const drivers = await this.getUsers(filter, options);
+            /* istanbul ignore if  */
+            if (options.page && drivers.pages && drivers.pages < options.page) {
+                res.status(400).json({
+                    message: 'La página solicitada no existe.',
+                    status: 400
+                });
+            }
+            else {
+                res.json({
+                    count: drivers.total,
+                    pages: drivers.pages,
+                    hasPrevious: options.page && options.page > 1 && drivers.pages && drivers.pages >= options.page,
+                    hasNext: options.page && drivers.pages && drivers.pages > options.page,
+                    results: drivers.docs,
+                    status: 200
+                });
+            }
+        }
+        catch (e) {
+            /* istanbul ignore next */
+            logger_service_1.default.error(`UserController.apiListDrivers: Async Error.`);
+            /* istanbul ignore next */
+            logger_service_1.default.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
+            res.status(500).json(e);
+        }
     }
     async apiChangePassword(req, res) {
         const user = req.user;
@@ -125,6 +186,17 @@ class UserController {
                 status: 500
             });
         }
+    }
+    getUsers(filter, options) {
+        return new Promise((resolve, reject) => {
+            user_model_2.default.paginate(filter, options, (err, result) => {
+                /* istanbul ignore next  */
+                if (err) {
+                    return reject(err);
+                }
+                return resolve(result);
+            });
+        });
     }
     async getPusherToken(req, res) {
         if (req.user._id === req.query['user_id'])

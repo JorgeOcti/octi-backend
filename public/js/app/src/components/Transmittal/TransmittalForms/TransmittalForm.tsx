@@ -40,10 +40,6 @@ class Form extends React.Component<IPropsType, IStateType> {
     this.props.transmittalActions.getFormBaseData();
   }
 
-  componentDidMount() {
-    this.props.transmittalActions.pushItem({});
-  }
-
   public componentDidCatch(error: Error, errorInfo: ErrorInfo): void {
     this.setState({error});
     Raven.captureException(error, {
@@ -59,15 +55,59 @@ class Form extends React.Component<IPropsType, IStateType> {
     return (
       <form onSubmit={handleSubmit}>
         <div className="row">
-          <div className="col-md-6">
-            <Field
-              name="driver"
-              label="Conductor *"
-              placeholder="Nombre del conductor"
-              type="text"
-              component={InputField}
-              validate={[inputStringRequired]}
-            />
+          <div className="col-md-12">
+            <div className="row">
+              <div className="col-md-6">
+                <Field
+                  name="driver"
+                  label="Chofer *"
+                  component={BootstrapSelectField}
+                  validate={[inputStringRequired]}
+                  props={{
+                    noneSelectedText: "Selecciona un chofer",
+                    displayItems: 2,
+                    sm: true,
+                    selectedText: "choferes seleccionadas.",
+                    autoClouse: true,
+                    allOption: false,
+                    search: true,
+                    options: [
+                      ...transmittal.drivers.map((driver) => ({
+                        value: driver._id,
+                        text: `${driver.firstName} ${driver.lastName} - ${driver.company.name}`
+                      }))
+                    ],
+                    onClick: (value: string) => this.props.autofill('driver', value)
+                  }}
+                >
+                </Field>
+              </div>
+              <div className="col-md-6">
+                <Field
+                  name="carrier"
+                  label="Transportista *"
+                  component={BootstrapSelectField}
+                  validate={[inputStringRequired]}
+                  props={{
+                    noneSelectedText: "Selecciona un transportista",
+                    displayItems: 2,
+                    selectedText: "transportistas seleccionadas.",
+                    autoClouse: true,
+                    sm: true,
+                    allOption: false,
+                    search: true,
+                    options: [
+                      ...transmittal.carriers.map((carrier) => ({
+                        value: carrier._id,
+                        text: carrier.name
+                      }))
+                    ],
+                    onClick: (value: string) => this.props.autofill('carrier', value)
+                  }}
+                >
+                </Field>
+              </div>
+            </div>
           </div>
           <div className="col-md-6">
             <Field
@@ -79,33 +119,9 @@ class Form extends React.Component<IPropsType, IStateType> {
               validate={[inputStringRequired]}
             />
           </div>
-          <div className="col-md-6">
-            <Field
-              name="carrier"
-              label="Transportista *"
-              component={BootstrapSelectField}
-              validate={[inputStringRequired]}
-              props={{
-                noneSelectedText: "Selecciona un transportista",
-                displayItems: 2,
-                selectedText: "transportistas seleccionadas.",
-                autoClouse: true,
-                allOption: false,
-                search: true,
-                options: [
-                  ...transmittal.carriers.map((carrier) => ({
-                    value: carrier._id,
-                    text: carrier.name
-                  }))
-                ],
-                onClick: (value: string) => this.props.autofill('carrier', value)
-              }}
-            >
-            </Field>
-          </div>
           <div className="col-md-12">
             <div className="form-group">
-              <label className="control-label label-left">Archivos *</label>
+              <label className="control-label label-left">Adjuntar Documentos *</label>
               <div>
                 <MultiUploadFiles
                   url={'/api/v1/transmittals/upload-file/'}

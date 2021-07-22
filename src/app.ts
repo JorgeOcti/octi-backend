@@ -188,6 +188,7 @@ passport.deserializeUser(async (email: string, done) => {
       lastName: true,
       email: true,
       preferred: true,
+      isAdmin: true,
       venuesAccess: true
     }).populate([{
       path: 'userPermissions',

@@ -1,6 +1,6 @@
 import * as Raven from 'raven-js';
 import * as React from 'react';
-import {Dispatch, ErrorInfo, Fragment} from 'react';
+import {ErrorInfo, Fragment} from 'react';
 import {connect} from 'react-redux';
 import {RouteComponentProps} from 'react-router';
 import * as io from 'socket.io-client';
@@ -14,6 +14,7 @@ import TrackingBasePage from "../../Utils/TrackingBasePage";
 import TransmittalActions from "../../../actions/transmittal.actions";
 import {ITransmittalActionTypes, ITransmittalState} from "../../../actions/transmittal.types";
 import TransmitalListDetail from './TransmitalListDetail';
+import {Dispatch} from "redux";
 
 interface IPropsType extends RouteComponentProps<{ ticket: string }> {
   dispatch: Dispatch<ITransmittalActionTypes>;

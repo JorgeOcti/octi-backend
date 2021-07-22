@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.choicesTypeQuestuion = exports.ChoicesTypeQuestuion = void 0;
+exports.choicesTypeQuestuion = exports.ChoicesTypeQuestion = void 0;
 const mongoose = require("mongoose");
 const mongoosePaginate = require("mongoose-paginate");
 const fileSchema = new mongoose.Schema({
@@ -11,16 +11,16 @@ const fileSchema = new mongoose.Schema({
         type: Boolean
     }
 });
-var ChoicesTypeQuestuion;
-(function (ChoicesTypeQuestuion) {
-    ChoicesTypeQuestuion["text"] = "text";
-    ChoicesTypeQuestuion["number"] = "number";
-    ChoicesTypeQuestuion["paymentMethod"] = "paymentMethod";
-})(ChoicesTypeQuestuion = exports.ChoicesTypeQuestuion || (exports.ChoicesTypeQuestuion = {}));
+var ChoicesTypeQuestion;
+(function (ChoicesTypeQuestion) {
+    ChoicesTypeQuestion["text"] = "text";
+    ChoicesTypeQuestion["number"] = "number";
+    ChoicesTypeQuestion["paymentMethod"] = "paymentMethod";
+})(ChoicesTypeQuestion = exports.ChoicesTypeQuestion || (exports.ChoicesTypeQuestion = {}));
 exports.choicesTypeQuestuion = [
-    ChoicesTypeQuestuion.text,
-    ChoicesTypeQuestuion.number,
-    ChoicesTypeQuestuion.paymentMethod
+    ChoicesTypeQuestion.text,
+    ChoicesTypeQuestion.number,
+    ChoicesTypeQuestion.paymentMethod
 ];
 const questionSchema = new mongoose.Schema({
     name: {
@@ -29,7 +29,7 @@ const questionSchema = new mongoose.Schema({
     type: {
         type: String,
         enum: exports.choicesTypeQuestuion,
-        default: ChoicesTypeQuestuion.text
+        default: ChoicesTypeQuestion.text
     },
     required: {
         type: Boolean,

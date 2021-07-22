@@ -16,6 +16,7 @@ const initialState: IUsersState = {
   tempUser: {
     _id: '',
     isAdmin: false,
+    isDriver: false,
     firstName: '',
     company: null,
     lastName: '',

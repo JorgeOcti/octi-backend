@@ -2,11 +2,11 @@ import * as React from "react";
 import {Field, formValueSelector, WrappedFieldArrayProps} from "redux-form";
 import InputField from "../../../Utils/forms/InputField";
 import {inputStringRequired} from "../../../Utils/forms/validations";
-import CheckBoxField from "../../../Utils/forms/CheckBoxField";
 import {ITransmittalState} from "../../../../actions/transmittal.types";
 import TransmittalActions from "../../../../actions/transmittal.actions";
 import {connect} from "react-redux";
 import BootstrapSelectField from "../../../Utils/forms/BootstrapSelectField";
+import SearchCarInRequests from '../SearchCarInRequest';
 
 
 export interface IRenderItemProps {
@@ -34,7 +34,7 @@ class TramittalRenderItem extends React.Component<IPropsType, IStateType> {
                 className="text-center text-muted"
                 style={{padding: '20px 0'}}
               >
-                No hay preguntas personalizadas para agregar una <a href="javascript:void(0)" onClick={() => fields.push({})}>haz click aquí.</a>
+                No se han agregado vehículos aún.
               </p>
             </div> :
             fields.map((item, index) => {
@@ -89,13 +89,6 @@ class TramittalRenderItem extends React.Component<IPropsType, IStateType> {
                       }}
                     >
                     </Field>
-                    {/*<Field*/}
-                    {/*  name={`${item}.required`}*/}
-                    {/*  label="Hacer obligatoria"*/}
-                    {/*  type="checkbox"*/}
-                    {/*  component={CheckBoxField}*/}
-                    {/*  validate={[]}*/}
-                    {/*/>*/}
                   </div>
                   <div className="col-md-2 col-sm-2 col-xs-2">
                     <Field
@@ -136,20 +129,15 @@ class TramittalRenderItem extends React.Component<IPropsType, IStateType> {
               );
             })
         }
-        {
-          fields.length >= 1 ?
-            <div className="col-md-12 col-sm-12 col-xs-12 text-right">
-              <button
-                type="button"
-                className="btn btn-sm btn-success"
-                onClick={() => fields.push({})}
-              >
-                <i className="fa fa-fw fa-plus"/> Agregar pregunta
-              </button>
-              {submitFailed && error && <span>{error}</span>}
-            </div>
-            : null
-        }
+        <SearchCarInRequests fields={fields}/>
+        {/*<button*/}
+        {/*  type="button"*/}
+        {/*  className="btn btn-sm btn-success"*/}
+        {/*  onClick={() => fields.push({})}*/}
+        {/*>*/}
+        {/*  <i className="fa fa-fw fa-plus"/> Agregar pregunta*/}
+        {/*</button>*/}
+        {submitFailed && error && <span>{error}</span>}
       </React.Fragment>
     );
   };

@@ -1,10 +1,14 @@
 import {
   CANCEL_REQUEST_TRANSMITTAL,
-  CHANGE_ORDER_TRANSMITTAL,
+  CHANGE_ORDER_TRANSMITTAL, FILTER_REQUEST_ITEMS_TRANSMITTAL,
   ITransmittalActionTypes,
-  ITransmittalState, LOAD_CARRIERS_TRANSMITTAL,
-  LOAD_TRANSMITTAL, LOAD_VENUES_TRANSMITTAL,
-  LOADING_TRANSMITTAL, TOOGLE_TAB_TRANSMITTAL
+  ITransmittalState,
+  LOAD_CARRIERS_TRANSMITTAL,
+  LOAD_DRIVERS_TRANSMITTAL, LOAD_REQUEST_ITEMS_TRANSMITTAL,
+  LOAD_TRANSMITTAL,
+  LOAD_VENUES_TRANSMITTAL,
+  LOADING_TRANSMITTAL,
+  TOOGLE_TAB_TRANSMITTAL
 } from "../actions/transmittal.types";
 
 
@@ -13,8 +17,24 @@ const initialState: ITransmittalState = {
   data: [],
   carriers: [],
   venues: [],
+  drivers: [],
   transmittalOpen: [],
   source: null,
+  requestItems: [],
+  requestItemsfilters: {
+    request: '',
+    text: '',
+    venues: [],
+    properties: [],
+    status: [],
+    from: null,
+    to: null
+  },
+  requestItemsPagination: {
+    count: 0,
+    page: 1,
+    pages: 0
+  },
   options: {
     orderBy: '_id',
     orderType: 'descending'
@@ -49,6 +69,11 @@ export default function transmittalReducer(state = initialState, action: ITransm
         ...state,
         carriers: action.payload.carriers,
       };
+    case LOAD_DRIVERS_TRANSMITTAL:
+      return {
+        ...state,
+        drivers: action.payload.drivers,
+      };
     case LOAD_VENUES_TRANSMITTAL:
       return {
         ...state,
@@ -73,6 +98,25 @@ export default function transmittalReducer(state = initialState, action: ITransm
       return {
         ...state,
         source: action.payload.source
+      };
+    case FILTER_REQUEST_ITEMS_TRANSMITTAL:
+      return {
+        ...state,
+        requestItemsfilters: {
+          ...state.requestItemsfilters,
+          [action.payload.key]: action.payload.value
+        }
+      };
+    case LOAD_REQUEST_ITEMS_TRANSMITTAL:
+      return {
+        ...state,
+        requestItems: action.payload.requestItems,
+        requestItemsPagination: {
+          ...state.pagination,
+          pages: action.payload.pages,
+          page: action.payload.page,
+          count: action.payload.count
+        }
       };
     default:
       return state;

@@ -5,9 +5,11 @@ import {
   ITransmittalActionTypes,
   ITransmittalState,
   LOAD_CARRIERS_TRANSMITTAL,
+  LOAD_DRIVERS_TRANSMITTAL, LOAD_REQUEST_ITEMS_TRANSMITTAL,
   LOAD_TRANSMITTAL,
-  LOAD_VENUES_TRANSMITTAL,
-  LOADING_TRANSMITTAL, TOOGLE_TAB_TRANSMITTAL
+  LOAD_VENUES_TRANSMITTAL, LOADING_REQUEST_ITEMS_TRANSMITTAL,
+  LOADING_TRANSMITTAL,
+  TOOGLE_TAB_TRANSMITTAL
 } from "./transmittal.types";
 import ApiService from "../utils/axios";
 import Axios, {AxiosError, AxiosResponse, CancelTokenSource} from "axios";
@@ -15,7 +17,8 @@ import {ThunkDispatch} from "redux-thunk";
 import {IVenueModel} from '../../../../../src/app/models/venue.model';
 import {ICarrierModel} from '../../../../../src/app/models/carrier.model';
 import {arrayPush, autofill, FormAction, submit} from "redux-form";
-import { ITransmittalItemModel } from '../../../../../src/distribution/models/transmittalItem.model';
+import { IUserModel } from '../../../../../src/app/models/user.model';
+import { IRequestItem } from '../../../../../src/interfaces/requestItem.interface';
 
 export default class TransmittalActions {
   private api: ApiService;
@@ -77,6 +80,15 @@ export default class TransmittalActions {
     });
   }
 
+  public loadDrivers(drivers: IUserModel[]): void {
+    this.dispatch({
+      type: LOAD_DRIVERS_TRANSMITTAL,
+      payload: {
+        drivers,
+      }
+    });
+  }
+
 
   public loadVenues(venues:  IVenueModel[]): void {
     this.dispatch({
@@ -134,11 +146,13 @@ export default class TransmittalActions {
       Axios
         .all([
           this.api.getVenues(1, 200, true, true),
-          this.api.getCarriers(1, 200)
+          this.api.getCarriers(1, 200),
+          this.api.getDrivers(1, 200)
         ])
-        .then(Axios.spread((venues, carriers) => {
+        .then(Axios.spread((venues, carriers, drivers) => {
           transmittalActions.loadVenues(venues.data.results);
           transmittalActions.loadCarriers(carriers.data.results);
+          transmittalActions.loadDrivers(drivers.data.results);
           transmittalActions.loadingAction(false);
         }))
         .catch((err: AxiosError): void => {
@@ -167,6 +181,51 @@ export default class TransmittalActions {
         }))
         .catch((err: AxiosError) => {
           transmittalActions.loadingAction(false);
+          this.api.errorHandler(err);
+        });
+    });
+  }
+
+  public loadingRequestItemAction(loading: boolean): void {
+    this.dispatch({
+      type: LOADING_REQUEST_ITEMS_TRANSMITTAL,
+      payload: {
+        loading,
+      }
+    });
+  }
+
+  public loadRequestItemAction(requestItems: IRequestItem[], count: number, pages: number, page: number): void {
+    this.dispatch({
+      type: LOAD_REQUEST_ITEMS_TRANSMITTAL,
+      payload: {
+        requestItems,
+        count,
+        pages,
+        page
+      }
+    });
+  }
+
+  public getRequestItemThunkAction(nextPage: number, hideLoading?: boolean) {
+    this.dispatch((dispatch, getState) => {
+      const state = getState();
+      const transmittalActions = new TransmittalActions(dispatch);
+      const page = nextPage ? nextPage : state.transmittal.requestItemsPagination.page;
+      transmittalActions.loadingRequestItemAction(!hideLoading);
+      transmittalActions.cancelRequestAction(this.api.getSource());
+      this.api.getRequestItems({
+        page,
+        pageSize: 20,
+        filters: state.transmittal.requestItemsfilters
+      })
+        .then((response: AxiosResponse) => {
+          const {data} = response;
+          transmittalActions.loadRequestItemAction(data.results, data.count, data.pages, page);
+          transmittalActions.loadingRequestItemAction(false);
+        })
+        .catch((err: AxiosError) => {
+          transmittalActions.loadingRequestItemAction(false);
           this.api.errorHandler(err);
         });
     });
