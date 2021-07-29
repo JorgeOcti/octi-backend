@@ -3,6 +3,7 @@ import * as jwt from 'jsonwebtoken';
 import {IRequest} from '../interfaces/global.interface';
 import logger from '../services/logger.service';
 import User, {IUserModel} from "../app/models/user.model";
+import BaseSchema from "yup/lib/schema";
 
 class Middlewares {
 
@@ -98,6 +99,21 @@ class Middlewares {
   public cleanStaticFiles(req: IRequest, res: Response, next: NextFunction) {
     req.url = req.url.replace(/\/([^\/]+)\.[0-9a-f]+\.(css|js|jpg|png|gif|svg|ico)$/, '/$1.$2');
     next();
+  }
+
+  public validateBody(resourceSchema: BaseSchema) {
+    return async (req: IRequest, res: Response, next: NextFunction) => {
+      const resource = req.body;
+      try {
+        req.body = await resourceSchema.validate(resource, {
+          stripUnknown: true
+        });
+        next();
+      } catch (e) {
+        console.error(e);
+        res.status(400).json({error: e.errors.join(', ')});
+      }
+    }
   }
 }
 

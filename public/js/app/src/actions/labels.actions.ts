@@ -119,7 +119,7 @@ export function createLabelAction(label: IInventoryLabel) {
         showModal(false);
         dispatch(createLabel(response.data.label));
         statusFooterButttonsModal(false);
-        swal(response.data.message, {
+        swal!(response.data.message, {
           icon: 'success'
         });
         const $label = $(`#label-${response.data.label._id}`);
@@ -221,7 +221,7 @@ export function changeLabelAction(label: IInventoryLabel, message?: boolean) {
           setTimeout(() => {
             $label.removeClass('editing-item');
           }, 1000);
-          swal(response.data.message, {
+          swal!(response.data.message, {
             icon: 'success'
           });
         }
@@ -262,7 +262,7 @@ export function deleteLabelAction(id: string) {
     api.deleteLabel(id)
       .then((response: AxiosResponse): void => {
         // effect when removing user
-        swal(response.data.message, {
+        swal!(response.data.message, {
           icon: 'success'
         });
         $(`#label-${id}`)

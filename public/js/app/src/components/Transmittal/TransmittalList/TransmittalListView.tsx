@@ -147,9 +147,8 @@ class TransmittalListView extends TrackingBasePage<IPropsType, IStateType> {
 
   public render(): React.ReactElement<IPropsType> {
     const {
-      pagination, loading, data
+      pagination, loading, data, options: {orderBy, orderType}
     } = this.props.transmittal;
-    const {orderBy, orderType} = this.props.transmittal.options;
     const {exporing} = this.state;
     return (
       <AppContainer title="" cMenu="3" cSubMenu="3.4">
@@ -190,7 +189,7 @@ class TransmittalListView extends TrackingBasePage<IPropsType, IStateType> {
                     <strong>Placa</strong>
                   </div>
                   <div className="col-sm-2 col-xs-2 col-md-2 col-lg-2">
-                    <strong>Chofer</strong>
+                    <strong>Chófer</strong>
                   </div>
                   <div className="col-sm-2 col-xs-2 col-md-2 col-lg-2">
                     <strong>Documentos</strong>

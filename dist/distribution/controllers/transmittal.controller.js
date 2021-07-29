@@ -7,6 +7,7 @@ const transmittalFile_model_1 = require("../models/transmittalFile.model");
 const general_utils_1 = require("../../utils/general.utils");
 const GraphicsMagick = require("gm");
 const team_model_1 = require("../../app/models/team.model");
+const car_model_1 = require("../../app/models/car.model");
 class TransmittalController {
     constructor() {
         this.index = this.index.bind(this);
@@ -16,10 +17,6 @@ class TransmittalController {
         this.apiCreate = this.apiCreate.bind(this);
         this.apiDelete = this.apiDelete.bind(this);
         this.uploadFile = this.uploadFile.bind(this);
-        const test = new transmittalFile_model_1.default();
-        if (test) {
-            console.log(test);
-        }
     }
     async index(req, res) {
         res.render('app/index', { token: await req.user.generateToken() });
@@ -35,15 +32,24 @@ class TransmittalController {
         const { name, items, files, transporter } = req.body;
         const { user } = req;
         try {
-            const updateTeam = await team_model_1.default.findOneAndUpdate({ _id: user.team._id }, { $inc: { transmittalNumber: 1 } }, { new: true });
+            const team = await team_model_1.default.findOneAndUpdate({ _id: user.team._id }, { $inc: { transmittalNumber: 1 } }, { new: true });
             const transmittal = new transmittal_model_1.default({
                 name,
                 team: user.team,
-                number: updateTeam.transmittalNumber,
+                number: team.transmittalNumber,
                 createdBy: user._id,
                 transporter
             });
             await transmittal.save();
+            await Promise.all(items.map((item) => {
+                return car_model_1.default.findOneAndUpdate({
+                    team: user.team,
+                    _id: item.car._id
+                }, {
+                    client: item.car.client,
+                    bl: item.car.bl
+                });
+            }));
             await Promise.all(items.map((item) => (new transmittalItem_model_1.default({
                 ...item,
                 transmittal

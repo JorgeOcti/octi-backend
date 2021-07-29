@@ -13,6 +13,7 @@ export interface ITransmittal {
   team: ITeamModel | ITeam;
   items: ITransmittalItemModel[];
   files: ITransmittalFile[];
+  evidenceFullLoad: ITransmittalFile[];
   transporter: ITransmittalTransporter;
   status: string;
   createdBy: IUser | IUserModel;

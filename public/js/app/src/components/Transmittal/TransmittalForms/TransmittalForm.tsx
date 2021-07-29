@@ -59,7 +59,7 @@ class Form extends React.Component<IPropsType, IStateType> {
             <div className="row">
               <div className="col-md-6">
                 <Field
-                  name="driver"
+                  name="transporter.driver"
                   label="Chofer *"
                   component={BootstrapSelectField}
                   validate={[inputStringRequired]}
@@ -77,14 +77,14 @@ class Form extends React.Component<IPropsType, IStateType> {
                         text: `${driver.firstName} ${driver.lastName} - ${driver.company.name}`
                       }))
                     ],
-                    onClick: (value: string) => this.props.autofill('driver', value)
+                    onClick: (value: string) => this.props.autofill('transporter.driver', value)
                   }}
                 >
                 </Field>
               </div>
               <div className="col-md-6">
                 <Field
-                  name="carrier"
+                  name="transporter.carrier"
                   label="Transportista *"
                   component={BootstrapSelectField}
                   validate={[inputStringRequired]}
@@ -102,7 +102,7 @@ class Form extends React.Component<IPropsType, IStateType> {
                         text: carrier.name
                       }))
                     ],
-                    onClick: (value: string) => this.props.autofill('carrier', value)
+                    onClick: (value: string) => this.props.autofill('transporter.carrier', value)
                   }}
                 >
                 </Field>
@@ -111,7 +111,7 @@ class Form extends React.Component<IPropsType, IStateType> {
           </div>
           <div className="col-md-6">
             <Field
-              name="patent"
+              name="transporter.patent"
               label="Patente del camión *"
               placeholder="ABCD12"
               type="text"

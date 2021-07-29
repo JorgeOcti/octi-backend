@@ -35,7 +35,8 @@ export interface IHeaders {
 }
 
 export default class ApiService {
-  private instance: AxiosInstance;
+
+  private readonly instance: AxiosInstance;
   private CancelToken: CancelTokenStatic;
   private source: CancelTokenSource;
 
@@ -50,9 +51,9 @@ export default class ApiService {
     if (err.response) {
       if ([500].includes(err.response.status)) {
         Raven.captureException(JSON.stringify(err.response));
-        swal('Ups ha ocurrido un error', err.response.data.message ? err.response.data.message : err.response.data.errmsg, 'error');
+        swal!('Ups ha ocurrido un error', err.response.data.message ? err.response.data.message : err.response.data.errmsg, 'error');
       } else {
-        swal('Ups ha ocurrido un error', err.response.data.message ? err.response.data.message : err.response.data.errmsg, 'error');
+        swal!('Ups ha ocurrido un error', err.response.data.message ? err.response.data.message : err.response.data.errmsg, 'error');
       }
     } else if (err.request) {
       Raven.captureException(JSON.stringify(err.request));
@@ -670,6 +671,13 @@ export default class ApiService {
    public getTransmittals({page, pageSize, orderBy, orderType}:{page: number, orderType?: string, orderBy?: string, pageSize?: number}): AxiosPromise {
     return this.instance.get(
       `/api/v1/transmittals/?page=${page}${pageSize ? `&pageSize=${pageSize}` : ''}${orderBy ? `&orderBy=${orderBy}` : ''}${orderType ? `&orderType=${orderType}` : ''}`
+    );
+  }
+
+  public createTransmittals(data: any) {
+    return this.instance.post(
+      `/api/v1/transmittals/`,
+      data
     );
   }
 

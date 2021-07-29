@@ -177,9 +177,11 @@ class DashboardRevisionsView extends TrackingBasePage<IPropsType, IStateType> {
                     }
                     {!shipAcceptance || shipAcceptance === Infinity || shipAcceptance === 0 ? null :
                       <span className="info-box-text xs-center-text text-wrap">
-                        {this.isSALFARAC() ?
+                        {
+                          this.isSALFARAC() ?
                           'RECIBE USUARIO HABITUAL ' :
-                          'ACEPTA DESPACHO '}
+                          'ACEPTA DESPACHO '
+                        }
                         <NumberFormat
                           value={shipAcceptance}
                           displayType={'text'}

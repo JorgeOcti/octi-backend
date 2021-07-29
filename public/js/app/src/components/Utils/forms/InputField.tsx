@@ -3,6 +3,7 @@ import {InputHTMLAttributes} from "react";
 interface IPropsType {
   input: InputHTMLAttributes<any>
   label: string;
+  labelOff?:boolean;
   type: string
   help: string
   placeholder: string;
@@ -15,13 +16,14 @@ interface IPropsType {
 const InputField: React.FunctionComponent<IPropsType> = ({
   input,
   label,
+  labelOff,
   placeholder,
   type,
   help,
   meta: { touched, error, warning }
 }:IPropsType) => (
   <div className={`form-group ${touched && error ? 'has-error' : warning ? 'has-warning' : ''}`}>
-    <label>{label}</label>
+    {!labelOff?<label className="control-label">{label}</label>: null}
     <input
       {...input}
       className={`form-control input-sm`}

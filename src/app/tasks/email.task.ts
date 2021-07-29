@@ -27,7 +27,7 @@ class EmailQueue {
   }
 
   private processEmail(job: Job, done: (error?: Error | null, data?: object) => void) {
-    if (job && done) {
+    if (job) {
       job.log('start process');
       // generate email
       const mail: Mail.Options = {

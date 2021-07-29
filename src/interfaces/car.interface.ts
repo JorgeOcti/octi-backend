@@ -15,13 +15,14 @@ export interface ICar {
   brand: string;
   denomination: string;
   material: string;
-  imported: boolean;
   destination: string;
   property: string;
   type: string;
   isExhibition: boolean;
   invoice: string;
   entry: string;
+  bl: string;
+  client: string;
   color: string;
   team: ITeam | any;
   company: ICompany | any;

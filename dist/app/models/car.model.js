@@ -72,6 +72,14 @@ const carSchema = new mongoose.Schema({
         type: String,
         default: ''
     },
+    client: {
+        type: String,
+        default: ''
+    },
+    bl: {
+        type: String,
+        default: ''
+    },
     isExhibition: {
         type: Boolean,
         default: false

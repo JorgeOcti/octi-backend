@@ -1,6 +1,6 @@
 import * as React from 'react';
-import * as unorm from 'unorm';
 import {RefObject} from 'react';
+import * as unorm from 'unorm';
 import {WrappedFieldProps} from "redux-form/lib/Field";
 
 interface IOption {
@@ -11,6 +11,7 @@ interface IOption {
 
 interface IPropsType extends WrappedFieldProps {
   options: IOption[];
+  labelOff?:boolean;
   className?: string;
   displayItems?: number;
   onClick: (value: string) => void;
@@ -61,6 +62,7 @@ class BootstrapSelectField extends React.Component<IPropsType, IStateType> {
       selectAll,
       label,
       input,
+      labelOff,
       meta: {touched, error, warning}
     } = this.props;
     const {searchText} = this.state;
@@ -68,7 +70,7 @@ class BootstrapSelectField extends React.Component<IPropsType, IStateType> {
 
     return (
       <div className={`form-group ${touched && error ? "has-error" : ""} ${touched && warning ? "has-warning" : ""}`}>
-        <label className="control-label">{label}</label>
+        {!labelOff?<label className="control-label">{label}</label>: null}
         <div
           className={`dropdown bootstrap-select form-control show-tick ${autoClouse ? '' : 'keep-inside-clicks-open'} ${sm ? 'bootstrap-select-sm' : ''}`}>
           <button

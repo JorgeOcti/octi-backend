@@ -8,11 +8,13 @@ var ChoicesStatusTransmittal;
 (function (ChoicesStatusTransmittal) {
     ChoicesStatusTransmittal["pending"] = "pending";
     ChoicesStatusTransmittal["inTransit"] = "inTransit";
+    ChoicesStatusTransmittal["damaged"] = "damaged";
     ChoicesStatusTransmittal["completed"] = "completed";
 })(ChoicesStatusTransmittal = exports.ChoicesStatusTransmittal || (exports.ChoicesStatusTransmittal = {}));
 exports.choicesStatusTransmittal = [
     ChoicesStatusTransmittal.pending,
     ChoicesStatusTransmittal.inTransit,
+    ChoicesStatusTransmittal.damaged,
     ChoicesStatusTransmittal.completed,
 ];
 const transmittalTransporterSchema = new mongoose.Schema({
@@ -42,6 +44,10 @@ const transmittalSchema = new mongoose.Schema({
         ref: 'Team'
     },
     files: [{
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'TransmittalFile'
+        }],
+    evidenceFullLoad: [{
             type: mongoose.Schema.Types.ObjectId,
             ref: 'TransmittalFile'
         }],

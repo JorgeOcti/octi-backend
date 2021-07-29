@@ -620,7 +620,6 @@ class FormController {
       });
     }
     vin = vin.replace(/[\W_]+/g, '');
-    let hasDamages = false;
     try {
       const updatedUser = await User.findById(req.user._id).populate([{path: 'venue'}]);
       if (!updatedUser) {

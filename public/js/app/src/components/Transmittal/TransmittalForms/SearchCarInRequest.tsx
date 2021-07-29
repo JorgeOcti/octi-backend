@@ -1,6 +1,7 @@
 import * as Raven from 'raven-js';
 import * as React from 'react';
 import {ErrorInfo} from 'react';
+import * as moment from 'moment-timezone';
 import {connect} from 'react-redux';
 import {RouteComponentProps} from 'react-router';
 import TransmittalActions from "../../../actions/transmittal.actions";
@@ -8,13 +9,16 @@ import {ITransmittalActionTypes, ITransmittalState} from "../../../actions/trans
 import {Dispatch} from "redux";
 import {FieldArrayFieldsProps} from "redux-form/lib/FieldArray";
 import Paginator from "../../Utils/Paginator";
+import { IRequestItem } from '../../../../../../../src/interfaces/requestItem.interface';
+import {debounce} from "throttle-debounce";
+import { IUser } from '../../../../../../../src/interfaces/user.interface';
 
 
 interface IExternarlPropsType {
   fields: FieldArrayFieldsProps<any>
 }
 
-interface IPropsType extends RouteComponentProps<{ }> {
+interface IPropsType extends RouteComponentProps<{ }>, IExternarlPropsType {
   dispatch: Dispatch<ITransmittalActionTypes>;
   transmittal: ITransmittalState;
   transmittalActions: TransmittalActions
@@ -33,6 +37,8 @@ class SearchCarInRequests extends React.Component<IPropsType, IStateType> {
   constructor(props: IPropsType) {
     super(props);
     this.changePage = this.changePage.bind(this);
+    this.pushItem = this.pushItem.bind(this);
+    this.getRequestItemDebounced = debounce(800, this.getRequestItemDebounced.bind(this));
   }
 
   public componentWillMount(): void {
@@ -54,70 +60,183 @@ class SearchCarInRequests extends React.Component<IPropsType, IStateType> {
   }
 
   public render(): React.ReactElement<IPropsType> {
-    const {transmittalActions, transmittal} = this.props;
-    const {requestItemsfilters, requestItemsPagination} = transmittal;
-    // this.props.transmittalActions.pushItem({});
+    const {transmittalActions, transmittal, fields} = this.props;
+    const {requestItems, requestItemsfilters, requestItemsPagination, requestItemsLoading} = transmittal;
+    const addedItems = fields.getAll() ? fields.getAll().map(field => field._id) : [];
     return (
       <div className="col-md-12">
-        <div className="row">
-          <div className="col-md-12" style={{marginTop: '10px'}}>
-            <h4>Agregar Vehículos</h4>
-          </div>
-          <div className="col-md-8">
-            <div className="form-group">
-              <label className="control-label">
-                Vehículo
-              </label>
-              <input
-                type="text"
-                className="form-control input-sm"
-                placeholder="Busca por VIN, marca, modelo, material o nº de solicitud."
-                defaultValue={requestItemsfilters.text}
-                onChange={(e) => {
-                  // this.changeFilterDebounced('text', e.target.value);
-                }}
-              />
-            </div>
-          </div>
-          <div className="col-md-4">
-            <div className="form-group">
-              <label className="control-label">
-                Nº Solicitudes
-              </label>
-              <input
-                type="text"
-                className="form-control input-sm"
-                placeholder="Nº de solicitudes ejemplo: 2, 8, 10"
-                defaultValue={requestItemsfilters.request}
-                onChange={(e) => {
-                  // this.changeFilterDebounced('request', e.target.value);
-                }}
-              />
-            </div>
-          </div>
-        </div>
-        {
-          requestItemsPagination.pages > 1 &&
+        <div className="table-container-overlay">
           <div className="row">
-            <div className="col-md-6" style={{padding: '20px 15px'}}>
+            <div className="col-md-12" style={{marginTop: '10px'}}>
+              <h4>Agregar Vehículos</h4>
+            </div>
+            <div className="col-md-8">
+              <div className="form-group">
+                <label className="control-label">
+                  Vehículo
+                </label>
+                <input
+                  type="text"
+                  className="form-control input-sm"
+                  placeholder="Busca por VIN, marca, modelo, material o nº de solicitud."
+                  defaultValue={requestItemsfilters.text}
+                  onChange={(e) => {
+                    transmittalActions.filterRequestItemAction('text', e.target.value);
+                    this.getRequestItemDebounced();
+                  }}
+                />
+              </div>
+            </div>
+            <div className="col-md-4">
+              <div className="form-group">
+                <label className="control-label">
+                  Nº Solicitudes
+                </label>
+                <input
+                  type="text"
+                  className="form-control input-sm"
+                  placeholder="Nº de solicitudes ejemplo: 2, 8, 10"
+                  defaultValue={requestItemsfilters.request}
+                  onChange={(e) => {
+                    transmittalActions.filterRequestItemAction('request', e.target.value);
+                    this.getRequestItemDebounced();
+                  }}
+                />
+              </div>
+            </div>
+            <div className="col-md-12">
+              <table className="table table-xs table-hover" style={{minWidth: '1000px'}}>
+                <thead>
+                <tr className="bg-primary" style={{height: '45px'}}>
+                  <th className="middle-center" style={{width: '45px'}}>ID Sol.</th>
+                  <th className="middle" style={{width: '120px'}}>VIN</th>
+                  <th className="middle">Marca</th>
+                  <th className="middle">Modelo</th>
+                  <th className="middle">Color</th>
+                  <th className="middle" style={{width: '100px'}}>Partida</th>
+                  <th className="middle" style={{width: '100px'}}>Factura</th>
+                  <th className="middle" style={{width: '150px'}}>Solicitante</th>
+                  <th className="middle" style={{width: '100px'}}>Fecha</th>
+                  <th className="middle" style={{width: '28px'}}/>
+                </tr>
+                </thead>
+                <tbody>
+                {
+                  requestItems
+                    .filter(item => !addedItems.includes(item._id))
+                    .map((item) => {
+                      return (
+                        <tr key={item._id}>
+                          <td className={`middle-center`}>
+                            #{this.padNumber(item.request?.number)}
+                          </td>
+                          <td className={`middle`}>
+                            {item.car?.vin}
+                          </td>
+                          <td className={`middle`}>
+                            {item.car?.brand}
+                          </td>
+                          <td className={`middle`}>
+                            {item.car?.denomination}
+                          </td>
+                          <td className={`middle`}>
+                            {item.car?.color}
+                          </td>
+                          <td className={`middle`}>
+                            {item.car?.entry ?? '-'}
+                          </td>
+                          <td className={`middle`}>
+                            {item.car?.invoice ?? '-'}
+                          </td>
+                          <td className={`middle`}>
+                            {this.createdBy(item.request?.createdBy) ?? '-'}
+                          </td>
+                          <td className={`middle`}>
+                            {moment(item.request?.createdAt).format('DD/MM/YY') ?? '-'}
+                          </td>
+                          <td className={`middle`}>
+                            <a
+                              className="btn btn-success btn-xs"
+                              href={'javascript:void(0);'}
+                              onClick={() => this.pushItem(item)}
+                            >
+                              <i className="fa fa-plus"/> Agregar
+                            </a>
+                          </td>
+                        </tr>
+                      )
+                    })
+                }
+                </tbody>
+              </table>
+            </div>
+          </div>
+          {
+            requestItemsPagination.pages > 1 &&
+            <div className="row">
+              <div className="col-md-6" style={{padding: '20px 15px'}}>
               <span className="react-bootstrap-table-pagination-total text-ellipsis">
                 &nbsp;&nbsp;Mostrando registros del {(requestItemsPagination.page - 1) * 20 + 1} al {(requestItemsPagination.page) * 20} de {requestItemsPagination.count} registros.
               </span>
-            </div>
-            <div className="col-md-6">
-              <div className="text-right" style={{marginRight: '15px'}}>
-                <Paginator changePage={this.changePage} page={requestItemsPagination.page} pages={requestItemsPagination.pages}/>
+              </div>
+              <div className="col-md-6">
+                <div className="text-right" style={{marginRight: '15px'}}>
+                  <Paginator changePage={this.changePage} page={requestItemsPagination.page} pages={requestItemsPagination.pages}/>
+                </div>
               </div>
             </div>
+          }
+        </div>
+        {
+          requestItemsLoading &&
+          <div className="overlay" style={{
+            position: 'absolute',
+            top: 0,
+            height: '100%',
+            width: '100%'
+          }}>
+            <i className="fa fa-spinner fa-spin text-purple"/>
           </div>
         }
       </div>
     );
   }
 
+  private createdBy(createdBy: IUser): string | null {
+    return createdBy ? `${createdBy.firstName} ${createdBy.lastName}` : null;
+  }
+
+  private getRequestItemDebounced(){
+    this.props.transmittalActions.getRequestItemThunkAction(1, false);
+  }
+
+  private pushItem(item: IRequestItem) {
+    console.log({
+      _id: item._id,
+      car: item.car,
+      request: item.request,
+      reason: item.reason,
+      origin: item.origin._id,
+      destination: item.destination._id
+    })
+    this.props.transmittalActions.pushItem({
+      _id: item._id,
+      car: item.car,
+      request: item.request,
+      reason: item.reason,
+      origin: item.origin._id,
+      destination: item.destination._id
+    })
+  }
+
   private changePage(page: number): void {
-    window.scrollTo(0, 0);
-     this.props.transmittalActions.getRequestItemThunkAction(page);
+    // window.scrollTo(0, 0);
+    this.props.transmittalActions.getRequestItemThunkAction(page);
+  }
+
+  private padNumber(n: number): string {
+    const s = '000' + n;
+    return s.substr(s.length - 4);
   }
 
 }

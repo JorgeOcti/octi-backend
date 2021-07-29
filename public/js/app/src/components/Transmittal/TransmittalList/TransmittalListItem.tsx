@@ -7,7 +7,7 @@ import {ITransmittalActionTypes, ITransmittalState} from "../../../actions/trans
 import {ITransmittalItemModel} from '../../../../../../../src/distribution/models/transmittalItem.model';
 import DateRangePicker from '../../Utils/DateRangePicker';
 import BootstrapSelect from "../../Utils/BootstrapSelect";
-// import {hasPermission} from "../../../utils/common";
+
 import ShowIf from "../../Utils/ShowIf";
 
 interface IPropsType extends RouteComponentProps<{ ticket: string }> {
@@ -111,7 +111,7 @@ class TransmitalListItem extends React.Component<IPropsType, IStateType> {
             }}
           />
         </td>
-        <td></td>
+        <td />
         <ShowIf condition={true}>
           {/*<ShowIf condition={hasPermission(window.user, 'deleteRequest')}>*/}
           <td className="middle-center text-red pointer" onClick={() => {

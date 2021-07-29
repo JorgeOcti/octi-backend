@@ -98,6 +98,21 @@ class Middlewares {
         req.url = req.url.replace(/\/([^\/]+)\.[0-9a-f]+\.(css|js|jpg|png|gif|svg|ico)$/, '/$1.$2');
         next();
     }
+    validateBody(resourceSchema) {
+        return async (req, res, next) => {
+            const resource = req.body;
+            try {
+                req.body = await resourceSchema.validate(resource, {
+                    stripUnknown: true
+                });
+                next();
+            }
+            catch (e) {
+                console.error(e);
+                res.status(400).json({ error: e.errors.join(', ') });
+            }
+        };
+    }
 }
 exports.default = new Middlewares();
 //# sourceMappingURL=middlewares.js.map

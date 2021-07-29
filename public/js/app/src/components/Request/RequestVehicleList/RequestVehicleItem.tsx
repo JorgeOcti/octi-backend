@@ -1,20 +1,18 @@
-import * as moment from 'moment-timezone';
-import { AxiosError, AxiosResponse } from 'axios';
+import {AxiosError, AxiosResponse} from 'axios';
 import * as Raven from 'raven-js';
 import * as React from 'react';
-import { ErrorInfo } from 'react';
-import { connect } from 'react-redux';
-import { RouteComponentProps } from 'react-router-dom';
-import { debounce } from 'throttle-debounce';
-import { ICar } from '../../../../../../../src/interfaces/car.interface';
-import { IRequestItem } from '../../../../../../../src/interfaces/requestItem.interface';
-import { deleteRequestItemsThunkAction, updateRequestItemsThunkAction } from '../../../actions/requestItems.actions';
-import { IRequestItemsState } from '../../../actions/requestItems.types';
-import { IWindow } from '../../../interfaces/window';
+import {ErrorInfo} from 'react';
+import {connect} from 'react-redux';
+import {RouteComponentProps} from 'react-router-dom';
+import {debounce} from 'throttle-debounce';
+import {ICar} from '../../../../../../../src/interfaces/car.interface';
+import {IRequestItem} from '../../../../../../../src/interfaces/requestItem.interface';
+import {deleteRequestItemsThunkAction, updateRequestItemsThunkAction} from '../../../actions/requestItems.actions';
+import {IRequestItemsState} from '../../../actions/requestItems.types';
+import {IWindow} from '../../../interfaces/window';
 import ApiService from '../../../utils/axios';
-import { hasPermission } from '../../../utils/common';
+import {hasPermission} from '../../../utils/common';
 import AutocompleteInput from '../../Utils/AutocompleteInput';
-import DateRangePicker from '../../Utils/DateRangePicker';
 import * as swal from 'sweetalert';
 import ShowIf from '../../Utils/ShowIf';
 
@@ -490,7 +488,7 @@ class RequestVehicleItem extends React.Component<IPropsType, IStateType> {
                 }}
               />
             </td>
-            : <td className="middle">{item.uploadDate ? moment(item.uploadDate).format('DD-MM-YY') : '-'}</td>
+            : <td className="middle">{item.uploadDate ? moment(item.uploadDate).format('DD-MM-YY') fa fa-chevron-up: '-'}</td>
             */
         }
         { /*

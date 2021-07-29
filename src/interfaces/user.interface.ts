@@ -17,7 +17,7 @@ export interface IUser {
   venuesAccess: IVenue | any;
   preferred: IForm | any;
   email: string;
-  password: string;
+  password?: string;
   hash_password: string;
   passwordResetToken: string | undefined;
   passwordResetExpires: Date | undefined;

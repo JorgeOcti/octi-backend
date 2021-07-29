@@ -2,12 +2,16 @@ import {ITransmittal} from '../../../../../src/interfaces/transmittal.interface'
 import {
   CANCEL_REQUEST_TRANSMITTAL,
   CHANGE_ORDER_TRANSMITTAL,
+  FILTER_REQUEST_ITEMS_TRANSMITTAL,
+  IRequestItemsFilters,
   ITransmittalActionTypes,
   ITransmittalState,
   LOAD_CARRIERS_TRANSMITTAL,
-  LOAD_DRIVERS_TRANSMITTAL, LOAD_REQUEST_ITEMS_TRANSMITTAL,
+  LOAD_DRIVERS_TRANSMITTAL,
+  LOAD_REQUEST_ITEMS_TRANSMITTAL,
   LOAD_TRANSMITTAL,
-  LOAD_VENUES_TRANSMITTAL, LOADING_REQUEST_ITEMS_TRANSMITTAL,
+  LOAD_VENUES_TRANSMITTAL,
+  LOADING_REQUEST_ITEMS_TRANSMITTAL,
   LOADING_TRANSMITTAL,
   TOOGLE_TAB_TRANSMITTAL
 } from "./transmittal.types";
@@ -17,8 +21,8 @@ import {ThunkDispatch} from "redux-thunk";
 import {IVenueModel} from '../../../../../src/app/models/venue.model';
 import {ICarrierModel} from '../../../../../src/app/models/carrier.model';
 import {arrayPush, autofill, FormAction, submit} from "redux-form";
-import { IUserModel } from '../../../../../src/app/models/user.model';
-import { IRequestItem } from '../../../../../src/interfaces/requestItem.interface';
+import {IUserModel} from '../../../../../src/app/models/user.model';
+import {IRequestItem} from '../../../../../src/interfaces/requestItem.interface';
 
 export default class TransmittalActions {
   private api: ApiService;
@@ -186,11 +190,21 @@ export default class TransmittalActions {
     });
   }
 
-  public loadingRequestItemAction(loading: boolean): void {
+  public loadingRequestItemAction(requestItemsLoading: boolean): void {
     this.dispatch({
       type: LOADING_REQUEST_ITEMS_TRANSMITTAL,
       payload: {
-        loading,
+        requestItemsLoading,
+      }
+    });
+  }
+
+  public filterRequestItemAction(key: keyof IRequestItemsFilters, value: any | any[]): void {
+    this.dispatch({
+      type: FILTER_REQUEST_ITEMS_TRANSMITTAL,
+      payload: {
+        key,
+        value
       }
     });
   }

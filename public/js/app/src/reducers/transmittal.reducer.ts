@@ -1,12 +1,15 @@
 import {
   CANCEL_REQUEST_TRANSMITTAL,
-  CHANGE_ORDER_TRANSMITTAL, FILTER_REQUEST_ITEMS_TRANSMITTAL,
+  CHANGE_ORDER_TRANSMITTAL,
+  FILTER_REQUEST_ITEMS_TRANSMITTAL,
   ITransmittalActionTypes,
   ITransmittalState,
   LOAD_CARRIERS_TRANSMITTAL,
-  LOAD_DRIVERS_TRANSMITTAL, LOAD_REQUEST_ITEMS_TRANSMITTAL,
+  LOAD_DRIVERS_TRANSMITTAL,
+  LOAD_REQUEST_ITEMS_TRANSMITTAL,
   LOAD_TRANSMITTAL,
   LOAD_VENUES_TRANSMITTAL,
+  LOADING_REQUEST_ITEMS_TRANSMITTAL,
   LOADING_TRANSMITTAL,
   TOOGLE_TAB_TRANSMITTAL
 } from "../actions/transmittal.types";
@@ -14,6 +17,7 @@ import {
 
 const initialState: ITransmittalState = {
   loading: true,
+  requestItemsLoading: true,
   data: [],
   carriers: [],
   venues: [],
@@ -98,6 +102,11 @@ export default function transmittalReducer(state = initialState, action: ITransm
       return {
         ...state,
         source: action.payload.source
+      };
+    case LOADING_REQUEST_ITEMS_TRANSMITTAL:
+       return {
+        ...state,
+        requestItemsLoading: action.payload.requestItemsLoading
       };
     case FILTER_REQUEST_ITEMS_TRANSMITTAL:
       return {

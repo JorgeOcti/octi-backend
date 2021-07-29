@@ -33,7 +33,7 @@ class TransmittalItemController {
   public async apiUpdate(req: IRequest, res: Response) {
     logger.info(`TransmittalItemController.apiUpdate`);
     const {id} = req.params;
-    const transmittalItem = req.body;
+     const { body: transmittalItem } = req;
     try {
       const newTransmittalItem = await TransmittalItem.findOneAndUpdate({_id: id}, {$set: transmittalItem}, {new: true});
       res.json({

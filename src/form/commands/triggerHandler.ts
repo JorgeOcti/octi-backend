@@ -103,7 +103,9 @@ export default class TriggerHandler {
       }
 
       let triggerDelegate: ITriggerDelegate = this.getTrigger(trigger);
-      payload = await triggerDelegate.trigger(trigger, this.answers, {...payload, participant: this.participant, user: this.participant!.user});
+      payload = await triggerDelegate.trigger(trigger, this.answers, {
+        ...payload, participant: this.participant, user: this.participant!.user
+      });
     }
   }
 
@@ -147,13 +149,13 @@ class NullTriggerDelegate implements ITriggerDelegate {
 class EmailTriggerDelegate extends NullTriggerDelegate {
 
   private validateEmail(email: string) {
-    const re = /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+    const re = /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
     return re.test(String(email).toLowerCase());
   }
 
   trigger(trigger: IFormTriggerModel, answers: any, payload: any): any {
-    logger.info(`Kind Trigger: ${trigger.kind} performing`)
-    let data = this.processTrigerConfig(trigger, {...answers, ...payload.user})
+    logger.info(`Kind Trigger: ${trigger.kind} performing`);
+    let data = this.processTrigerConfig(trigger, {...answers, ...payload.user});
     if (!this.validateEmail(data.email))
       return payload;
 
@@ -190,7 +192,7 @@ class FileTriggerDelegate extends NullTriggerDelegate {
         bucket: process.env.S3_BUCKET || s3Config.bucket,
         acl: 'public-read', // defaults to public-read
         region: process.env.S3_REGION || s3Config.region, // defaults to us-standard
-      });
+      } as any);
 
       let data: Buffer = await fs.readFileSync(filePath);
       let s3FileOptions: AWS.S3.Types.PutObjectRequest = {
@@ -212,7 +214,7 @@ class FileTriggerDelegate extends NullTriggerDelegate {
 
       return await upload();
     } catch (e) {
-      logger.error(e.stack)
+      logger.error(e.stack);
       return "";
     }
   }

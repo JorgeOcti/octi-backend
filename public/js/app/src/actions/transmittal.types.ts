@@ -47,6 +47,7 @@ export interface IRequestItemsFilters {
 }
 
 export interface ITransmittalState<T = ITransmittal> extends IListView<T> {
+  requestItemsLoading: boolean;
   venues: IVenueModel[];
   carriers: ICarrierModel[];
   drivers: IUserModel[];
@@ -149,7 +150,7 @@ export interface ILoadRequestItemsTransmittalItemAction  {
 export interface ILoadingRequestItemsTransmittalItemAction  {
   type: typeof LOADING_REQUEST_ITEMS_TRANSMITTAL;
   payload: {
-    requestItems: IRequestItem[];
+    requestItemsLoading: boolean;
   };
 }
 

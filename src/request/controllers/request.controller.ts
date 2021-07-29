@@ -292,6 +292,7 @@ class RequestController {
             ...extraQuery
           }
         }];
+
         const aggregatePopulate = [{
           $lookup: {from: 'cars', localField: 'car', foreignField: '_id', as: 'car'}
         }, {
@@ -309,6 +310,10 @@ class RequestController {
         }, {
           $unwind: {path: '$request', preserveNullAndEmptyArrays: false}
         }, {
+          $lookup: {from: 'users', localField: 'request.createdBy', foreignField: '_id', as: 'request.createdBy'}
+        }, {
+          $unwind: {path: '$request.createdBy', preserveNullAndEmptyArrays: false}
+        }, {
           $lookup: {from: 'requestitemstatuses', localField: 'status', foreignField: '_id', as: 'status'}
         }, {
           $unwind: {path: '$status', preserveNullAndEmptyArrays: true}
@@ -324,6 +329,8 @@ class RequestController {
           $project: {
             '_id': 1,
             'request.number': 1,
+            'request.createdBy.firstName': 1,
+            'request.createdBy.lastName': 1,
             'priority': 1,
             'observation': 1,
             'equipment': 1,
@@ -340,9 +347,12 @@ class RequestController {
             'car.color': 1,
             'car.material': 1,
             'car.patent': 1,
+            'car.property': 1,
+            'car.type': 1,
+            'car.client': 1,
+            'car.bl': 1,
             'car.denomination': 1,
             'car.internalNumber': 1,
-            'car.property': 1,
             'origin._id': 1,
             'origin.name': 1,
             'destination._id': 1,
@@ -421,10 +431,14 @@ class RequestController {
             select: ['_id']
           }, {
             path: 'request',
-            select: ['number']
+            select: ['number', 'createdAt'],
+            populate: [{
+              path: 'createdBy',
+              select: ['firstName', 'lastName']
+            }]
           }, {
             path: 'car',
-            select: ['vin', 'internalNumber', 'patent', 'color', 'brand', 'denomination', 'material', 'property']
+            select: ['vin', 'internalNumber', 'patent', 'color', 'brand', 'denomination', 'material', 'property', 'type', 'client', 'bl']
           }, {
             path: 'reason',
             select: ['name']

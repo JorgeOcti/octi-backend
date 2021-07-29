@@ -27,7 +27,7 @@ class TransmittalItemController {
     async apiUpdate(req, res) {
         logger_service_1.default.info(`TransmittalItemController.apiUpdate`);
         const { id } = req.params;
-        const transmittalItem = req.body;
+        const { body: transmittalItem } = req;
         try {
             const newTransmittalItem = await transmittalItem_model_1.default.findOneAndUpdate({ _id: id }, { $set: transmittalItem }, { new: true });
             res.json({

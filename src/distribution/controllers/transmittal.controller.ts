@@ -9,6 +9,7 @@ import TransmittalFile from "../models/transmittalFile.model";
 import GeneralUtils from "../../utils/general.utils";
 import * as GraphicsMagick from "gm";
 import Team from "../../app/models/team.model";
+import Car from "../../app/models/car.model";
 
 
 class TransmittalController {
@@ -21,10 +22,6 @@ class TransmittalController {
     this.apiCreate = this.apiCreate.bind(this);
     this.apiDelete = this.apiDelete.bind(this);
     this.uploadFile = this.uploadFile.bind(this);
-    const test = new TransmittalFile();
-    if(test){
-      console.log(test)
-    }
   }
 
   public async index(req: IRequest, res: Response) {
@@ -43,15 +40,26 @@ class TransmittalController {
     const {name, items, files, transporter} = req.body;
     const {user} = req;
     try {
-      const updateTeam = await Team.findOneAndUpdate({ _id: user.team._id }, { $inc: { transmittalNumber: 1 } }, { new: true });
+      const team = await Team.findOneAndUpdate({ _id: user.team._id }, { $inc: { transmittalNumber: 1 } }, { new: true });
       const transmittal = new Transmittal({
         name,
         team: user.team,
-        number: updateTeam!.transmittalNumber,
+        number: team!.transmittalNumber,
         createdBy: user._id,
         transporter
       });
       await transmittal.save();
+      await Promise.all(
+        items.map((item: ITransmittalItem) => {
+          return Car.findOneAndUpdate({
+            team: user.team,
+            _id: item.car._id
+          }, {
+            client: item.car.client,
+            bl: item.car.bl
+          })
+        })
+      );
       await Promise.all(
         items.map((item: ITransmittalItem) => (
           new TransmittalItem({

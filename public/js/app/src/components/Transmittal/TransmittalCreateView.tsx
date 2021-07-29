@@ -10,6 +10,12 @@ import TrackingBasePage from "../Utils/TrackingBasePage";
 import TransmittalActions from "../../actions/transmittal.actions";
 import {ITransmittalActionTypes, ITransmittalState} from "../../actions/transmittal.types";
 import TransmittalForm from './TransmittalForms/TransmittalForm'
+import ShowIf from '../Utils/ShowIf';
+import ApiService from "../../utils/axios";
+import {AxiosError, AxiosResponse} from "axios";
+import * as swal from 'sweetalert';
+import {imageStatus} from "../Utils/MultiUploadFiles";
+import {ITransmittal} from '../../../../../../src/interfaces/transmittal.interface';
 
 interface IPropsType extends RouteComponentProps<{ ticket: string }> {
   dispatch: Dispatch<ITransmittalActionTypes>;
@@ -19,7 +25,7 @@ interface IPropsType extends RouteComponentProps<{ ticket: string }> {
 
 interface IStateType {
   error: Error | null;
-  exporing: boolean;
+  loading: boolean;
 }
 
 declare let window: IWindow;
@@ -29,16 +35,19 @@ class TransmittalCreateView extends TrackingBasePage<IPropsType, IStateType> {
 
   readonly state = {
     error: null,
-    exporing: false
+    loading: false,
   };
 
   private socket: SocketIOClient.Socket;
 
+  private readonly api: ApiService;
+
   constructor(props: IPropsType) {
     super(props);
-    this.title = 'Transporte';
+    this.title = 'Crear transporte';
     this.processForm = this.processForm.bind(this);
     this.cancel = this.cancel.bind(this);
+    this.api = new ApiService();
   }
 
   public componentWillMount(): void {
@@ -86,6 +95,7 @@ class TransmittalCreateView extends TrackingBasePage<IPropsType, IStateType> {
   public render(): React.ReactElement<IPropsType> {
     const {transmittalActions} = this.props;
     const {loading} = this.props.transmittal;
+
     return (
       <AppContainer title="" cMenu="3" cSubMenu="3.4" cAction="Crear Order">
         <section className="content">
@@ -95,7 +105,10 @@ class TransmittalCreateView extends TrackingBasePage<IPropsType, IStateType> {
             </div>
             <div className="box-body">
               <TransmittalForm
-                initialValues={{}}
+                initialValues={{
+                  files: [],
+                  items: []
+                }}
                 onSubmit={this.processForm}
               />
             </div>
@@ -104,18 +117,18 @@ class TransmittalCreateView extends TrackingBasePage<IPropsType, IStateType> {
               <button
                 type="button"
                 className="btn btn-sm btn-primary"
+                disabled={this.state.loading}
                 style={{marginLeft: '5px'}}
                 onClick={() => transmittalActions.submit('transmittalForm')}
               >
-                Crear
+                <ShowIf condition={this.state.loading}><i className="fa fa-spinner fa-spin "/></ShowIf> Crear
               </button>
             </div>
-            {
-              loading &&
+            <ShowIf condition={loading || this.state.loading}>
               <div className="overlay">
                 <i className="fa fa-spinner fa-spin text-purple"/>
               </div>
-            }
+            </ShowIf>
           </div>
         </section>
       </AppContainer>
@@ -126,8 +139,33 @@ class TransmittalCreateView extends TrackingBasePage<IPropsType, IStateType> {
     this.props.history.push('/transmittals/');
   }
 
-  private processForm(data: any) {
-    console.log(data);
+  private processForm(data: ITransmittal) {
+    const {history} = this.props;
+    const isUploadingFiles = data.files?.filter((file: any) => file.status !== imageStatus.complete).length;
+    if(isUploadingFiles){
+      // TODO: show sweetalert with error here
+    } else{
+      this.setState({ loading: true });
+      this.api.createTransmittals({
+        ...data,
+        items: data.items.map((item) => ({
+          ...item,
+          request: item.request._id,
+          requestItem: item._id
+        }))
+      })
+        .then((response: AxiosResponse): void => {
+          swal('Order de transporte', 'Se ha creado satisfactoriamente.', 'success')
+            .then(() => {
+              this.setState({loading: false});
+              history.push('/transmittals/');
+            });
+        })
+        .catch((err: AxiosError): void => {
+          this.setState({loading: false});
+          this.api.errorHandler(err);
+        });
+    }
   }
 }
 

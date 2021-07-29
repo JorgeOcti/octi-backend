@@ -192,8 +192,9 @@ class RequestStatusListView extends TrackingBasePage<IPropsType, IStateType> {
                                     // className={'middle text-red pointer'}
                                     onClick={canDelete ? () => this.deleteRequestStatus(item) : undefined}
                                   >
-                                    <i className="fa fa-minus-circle" />
-                                  </td> : null
+                                    <i className="fa fa-minus-circle"/>
+                                  </td> : canDelete ?
+                                    <td/> : null
                               }
                             </tr>
                           );

@@ -20,7 +20,7 @@ class EmailQueue {
         return pugCompile(context);
     }
     processEmail(job, done) {
-        if (job && done) {
+        if (job) {
             job.log('start process');
             // generate email
             const mail = {
