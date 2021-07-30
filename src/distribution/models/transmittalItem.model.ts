@@ -1,7 +1,7 @@
 import * as mongoose from 'mongoose';
 import {AggregatePaginateModel, PaginateModel} from 'mongoose';
 import * as mongoosePaginate from 'mongoose-paginate';
-import {ITransmittalItem} from '../../interfaces/transmittalItem.interface';
+import {ITransmittalItem} from '../interfaces/transmittalItem.interface';
 import mongooseAggregatePaginate = require('mongoose-aggregate-paginate-v2');
 
 export interface ITransmittalItemModel extends ITransmittalItem, mongoose.Document {}

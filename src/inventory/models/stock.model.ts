@@ -1,5 +1,5 @@
 import * as mongoose from 'mongoose';
-import {IStock, IStockCar} from "../../interfaces/stock.interface";
+import {IStock, IStockCar} from "../interfaces/stock.interface";
 
 export interface IStockModel extends IStock, mongoose.Document {
   cars: IStockCar[]

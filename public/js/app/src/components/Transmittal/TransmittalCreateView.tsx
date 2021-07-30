@@ -15,7 +15,7 @@ import ApiService from "../../utils/axios";
 import {AxiosError, AxiosResponse} from "axios";
 import * as swal from 'sweetalert';
 import {imageStatus} from "../Utils/MultiUploadFiles";
-import {ITransmittal} from '../../../../../../src/interfaces/transmittal.interface';
+import {ITransmittal} from '../../../../../../src/distribution/interfaces/transmittal.interface';
 
 interface IPropsType extends RouteComponentProps<{ ticket: string }> {
   dispatch: Dispatch<ITransmittalActionTypes>;
@@ -44,7 +44,7 @@ class TransmittalCreateView extends TrackingBasePage<IPropsType, IStateType> {
 
   constructor(props: IPropsType) {
     super(props);
-    this.title = 'Crear transporte';
+    this.title = 'Crear orden de transporte';
     this.processForm = this.processForm.bind(this);
     this.cancel = this.cancel.bind(this);
     this.api = new ApiService();
@@ -101,7 +101,7 @@ class TransmittalCreateView extends TrackingBasePage<IPropsType, IStateType> {
         <section className="content">
           <div className="box">
             <div className="box-header with-border">
-              <h3 className="box-title">Crear Order</h3>
+              <h3 className="box-title">Crear orden de transporte</h3>
             </div>
             <div className="box-body">
               <TransmittalForm
@@ -142,20 +142,24 @@ class TransmittalCreateView extends TrackingBasePage<IPropsType, IStateType> {
   private processForm(data: ITransmittal) {
     const {history} = this.props;
     const isUploadingFiles = data.files?.filter((file: any) => file.status !== imageStatus.complete).length;
-    if(isUploadingFiles){
-      // TODO: show sweetalert with error here
-    } else{
-      this.setState({ loading: true });
+    const hasItemsLoaded = data.items?.length >= 1;
+    if (isUploadingFiles) {
+      swal!('Orden de transporte', 'Aún se estan cargando archivos, espera que terminen para enviar.', 'error');
+    } else if (!hasItemsLoaded) {
+      swal!('Orden de transporte', 'Debes agregar al menos un vehículo para poder crear una order.', 'error');
+    } else {
+      this.setState({loading: true});
       this.api.createTransmittals({
         ...data,
         items: data.items.map((item) => ({
           ...item,
           request: item.request._id,
           requestItem: item._id
-        }))
+        })),
+        files: data.files.map((file) => file._id)
       })
         .then((response: AxiosResponse): void => {
-          swal('Order de transporte', 'Se ha creado satisfactoriamente.', 'success')
+          swal('Orden de transporte', 'Se ha creado satisfactoriamente.', 'success')
             .then(() => {
               this.setState({loading: false});
               history.push('/transmittals/');

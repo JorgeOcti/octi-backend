@@ -1,5 +1,5 @@
-import {IForm} from "../../interfaces/form.interface";
-import {IParticipant} from "../../interfaces/participant.interface";
+import {IForm} from "../interfaces/form.interface";
+import {IParticipant} from "../interfaces/participant.interface";
 import ParticipantModel from "../models/participant.model";
 import logger from '../../services/logger.service';
 import {IFormTriggerModel, KindTrigger} from "../models/trigger.model";

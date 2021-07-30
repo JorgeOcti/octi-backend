@@ -16,9 +16,9 @@ import {Dispatch} from 'redux';
 import * as io from 'socket.io-client';
 import * as swal from 'sweetalert';
 import * as XLSX from 'xlsx';
-import {IInventoryCar} from '../../../../../../src/interfaces/inventory.interface';
-import {IInventoryLabel} from '../../../../../../src/interfaces/inventoryLabel.interface';
-import {IInventorySettting} from '../../../../../../src/interfaces/teamSetting.interface';
+import {IInventoryCar} from '../../../../../../src/inventory/interfaces/inventory.interface';
+import {IInventoryLabel} from '../../../../../../src/inventory/interfaces/inventoryLabel.interface';
+import {IInventorySettting} from '../../../../../../src/app/interfaces/teamSetting.interface';
 import {
   actionSetLabel,
   addCommentAction,

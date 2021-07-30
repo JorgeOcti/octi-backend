@@ -1,6 +1,6 @@
 import * as mongoose from 'mongoose';
 import {PaginateModel} from 'mongoose';
-import {ISalesChannel} from '../../interfaces/salesChannel.interface';
+import {ISalesChannel} from '../interfaces/salesChannel.interface';
 import {ICarModel} from '../../app/models/car.model';
 
 export interface ISalesChannelModel extends ISalesChannel, mongoose.Document {}

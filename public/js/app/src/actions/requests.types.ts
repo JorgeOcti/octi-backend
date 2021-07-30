@@ -1,9 +1,9 @@
 import { CancelTokenSource } from 'axios';
-import { ICarrier } from '../../../../../src/interfaces/carrier.interface';
-import { IReason } from '../../../../../src/interfaces/reason.interface';
-import { IRequest } from '../../../../../src/interfaces/request.interface';
-import { IRequestItem } from '../../../../../src/interfaces/requestItem.interface';
-import { IRequestItemStatus } from '../../../../../src/interfaces/requestItemStatus.interface';
+import { ICarrier } from '../../../../../src/app/interfaces/carrier.interface';
+import { IReason } from '../../../../../src/request/interfaces/reason.interface';
+import { IRequest } from '../../../../../src/request/interfaces/request.interface';
+import { IRequestItem } from '../../../../../src/request/interfaces/requestItem.interface';
+import { IRequestItemStatus } from '../../../../../src/request/interfaces/requestItemStatus.interface';
 
 export const REQUEST_CANCEL_REQUEST = '/REQUESTS/CANCEL_REQUEST';
 export const REQUEST_IS_LOADING = '/REQUESTS/IS_LOADING';

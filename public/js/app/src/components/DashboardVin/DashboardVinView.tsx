@@ -8,7 +8,7 @@ import { Dispatch } from 'redux';
 import * as io from 'socket.io-client';
 import { debounce } from 'throttle-debounce';
 import * as swal from 'sweetalert';
-import { IParticipant } from '../../../../../../src/interfaces/participant.interface';
+import { IParticipant } from '../../../../../../src/form/interfaces/participant.interface';
 import {
   changeRangeDashboardAction,
   changeSearchDashboardAction,

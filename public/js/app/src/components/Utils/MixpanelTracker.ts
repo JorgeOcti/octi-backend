@@ -1,5 +1,5 @@
 import * as Mixpanel from 'mixpanel-browser';
-import {IUser} from "../../../../../../src/interfaces/user.interface";
+import {IUser} from "../../../../../../src/app/interfaces/user.interface";
 import {IWindow} from "../../interfaces/window";
 
 declare let window: IWindow;

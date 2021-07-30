@@ -1,13 +1,14 @@
 import * as React from "react";
-import {Field, formValueSelector, WrappedFieldArrayProps} from "redux-form";
+import {Field, WrappedFieldArrayProps} from "redux-form";
 import {inputStringRequired} from "../../../Utils/forms/validations";
 import {ITransmittalState} from "../../../../actions/transmittal.types";
 import TransmittalActions from "../../../../actions/transmittal.actions";
 import {connect} from "react-redux";
 import BootstrapSelectField from "../../../Utils/forms/BootstrapSelectField";
 import SearchCarInRequests from '../SearchCarInRequest';
-import {IRequestItem} from "../../../../../../../../src/interfaces/requestItem.interface";
+import {IRequestItem} from "../../../../../../../../src/request/interfaces/requestItem.interface";
 import InputField from "../../../Utils/forms/InputField";
+import TextAreaField from "../../../Utils/forms/TextAreaField";
 
 
 export interface IRenderItemProps {
@@ -168,15 +169,14 @@ class TramittalRenderItem extends React.Component<IPropsType, IStateType> {
                         {
                           openTab ?
                             <tr style={{borderTop: 'none'}}>
-                              {/*<td style={{borderTop: 'none'}}/>*/}
-                              <td colSpan={5} style={{borderTop: 'none'}}>
+                              <td colSpan={5} className={'b-t-0'}>
                                 <table className={'table'} style={{marginBottom:0}}>
                                   <thead>
                                   <tr style={{backgroundColor: '#f9f9f9'}}>
-                                    <th style={{width: '25%'}} className={'middle'}>Cliente</th>
-                                    <th style={{width: '25%'}} className={'middle'}>BL</th>
-                                    <th style={{width: '25%'}} className={'middle'}>Tipo</th>
-                                    <th style={{width: '25%'}} className={'middle'}>Tipo Operación (Motivo)</th>
+                                    <th className={'middle width-25'}>Cliente</th>
+                                    <th className={'middle width-25'}>BL</th>
+                                    <th className={'middle width-25'}>Tipo</th>
+                                    <th className={'middle width-25'}>Tipo Operación (Motivo)</th>
                                   </tr>
                                   </thead>
                                   <tbody>
@@ -218,13 +218,6 @@ class TramittalRenderItem extends React.Component<IPropsType, IStateType> {
             </div>
         }
         <SearchCarInRequests fields={fields}/>
-        {/*<button*/}
-        {/*  type="button"*/}
-        {/*  className="btn btn-sm btn-success"*/}
-        {/*  onClick={() => fields.push({})}*/}
-        {/*>*/}
-        {/*  <i className="fa fa-fw fa-plus"/> Agregar pregunta*/}
-        {/*</button>*/}
         {submitFailed && error && <span>{error}</span>}
       </React.Fragment>
     );
@@ -257,7 +250,6 @@ const mapStateToProps = (state: { transmittal: ITransmittalState }) => {
 
 const mapDispatchToProps = (dispatch: any) => {
   const transmittalActions = new TransmittalActions(dispatch);
-  const selector = formValueSelector('transmittalForm');
   return {
     dispatch,
     transmittalActions

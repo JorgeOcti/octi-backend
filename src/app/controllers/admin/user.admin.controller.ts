@@ -7,9 +7,9 @@ import {
 } from 'mongoose';
 import * as tempfile from 'tempfile';
 import { queue } from '../../../app';
-import { IForm } from '../../../interfaces/form.interface';
+import { IForm } from '../../../form/interfaces/form.interface';
 import { IRequest } from '../../../interfaces/global.interface';
-import { IPermission } from '../../../interfaces/permision.interface';
+import { IPermission } from '../../interfaces/permision.interface';
 import { io } from '../../../server';
 import User, {
   IUserModel

@@ -3,8 +3,8 @@ import {Dispatch} from 'redux';
 import * as swal from 'sweetalert';
 import {
   IInventoryLabel
-} from '../../../../../src/interfaces/inventoryLabel.interface';
-import {IInventorySettting} from '../../../../../src/interfaces/teamSetting.interface';
+} from '../../../../../src/inventory/interfaces/inventoryLabel.interface';
+import {IInventorySettting} from '../../../../../src/app/interfaces/teamSetting.interface';
 import ApiService from '../utils/axios';
 import {showModal, statusFooterButttonsModal} from '../utils/common';
 

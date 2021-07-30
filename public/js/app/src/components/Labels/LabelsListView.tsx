@@ -5,7 +5,7 @@ import {connect} from 'react-redux';
 import {RouteComponentProps} from 'react-router';
 import {Dispatch} from 'redux';
 import * as swal from 'sweetalert';
-import {IInventoryLabel} from '../../../../../../src/interfaces/inventoryLabel.interface';
+import {IInventoryLabel} from '../../../../../../src/inventory/interfaces/inventoryLabel.interface';
 import {
   changeLabelAction,
   changeTempLabelAction,

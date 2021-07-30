@@ -1,5 +1,5 @@
 import { CancelTokenSource } from 'axios';
-import { IRequestStatus } from '../../../../../src/interfaces/requestStatus.interface';
+import { IRequestStatus } from '../../../../../src/request/interfaces/requestStatus.interface';
 
 export const REQUEST_CANCEL_STATUS = '/REQUEST/CANCEL_STATUS';
 export const REQUEST_IS_LOADING = '/REQUEST/IS_LOADING';

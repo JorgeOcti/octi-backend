@@ -2,7 +2,7 @@ import * as React from 'react';
 import {connect} from 'react-redux';
 import {
   IBaseCarrier
-} from '../../../../../../src/interfaces/carrier.interface';
+} from '../../../../../../src/app/interfaces/carrier.interface';
 import {
   CarrierReduxAction,
   changeTempCarrierAction,

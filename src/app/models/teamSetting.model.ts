@@ -1,5 +1,5 @@
 import * as mongoose from 'mongoose';
-import {ITeamSetting} from '../../interfaces/teamSetting.interface';
+import {ITeamSetting} from '../interfaces/teamSetting.interface';
 
 export interface ITeamSettingModel extends ITeamSetting, mongoose.Document {}
 

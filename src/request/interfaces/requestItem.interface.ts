@@ -1,0 +1,47 @@
+import { ICarrierModel } from '../../app/models/carrier.model';
+import { IRequestItemStatusModel } from '../request//models/requestItemStatus.model';
+import { ICarModel } from '../../app/models/car.model';
+import { ITeamModel } from '../../app/models/team.model';
+import { IUserModel } from '../../app/models/user.model';
+import { IVenueModel } from '../../app/models/venue.model';
+import { IReasonModel } from '../models/reason.model';
+import { IRequestModel } from '../models/request.model';
+import { ICar } from '../../app/interfaces/car.interface';
+import { ICarrier } from '../../app/interfaces/carrier.interface';
+import { IReason } from './reason.interface';
+import { IRequest } from './request.interface';
+import { IRequestItemStatus } from './requestItemStatus.interface';
+import { ITeam } from '../../app/interfaces/team.interface';
+import { IUser } from '../../app/interfaces/user.interface';
+import { IVenue } from '../../app/interfaces/venue.interface';
+import { IRequestFile } from './requestFile.interface';
+
+export interface IRequestAnswer {
+  questionId: any;
+  question: string;
+  answer: string;
+}
+
+export interface IRequestItem {
+  _id: any;
+  request: IRequest | IRequestModel;
+  team: ITeam | ITeamModel;
+  origin: IVenue | IVenueModel;
+  position: IVenue | IVenueModel;
+  destination: IVenue | IVenueModel;
+  answers: IRequestAnswer[];
+  car: ICar | ICarModel;
+  files: IRequestFile[];
+  carrier: ICarrier | ICarrierModel | any;
+  reason: IReason | IReasonModel;
+  status: IRequestItemStatus | IRequestItemStatusModel;
+  priority: boolean;
+  observation: string;
+  equipment: boolean;
+  washed: boolean;
+  review: boolean;
+  body: boolean;
+  uploadDate?: Date;
+  estimatedArrival?: Date;
+  createdBy: IUser | IUserModel;
+}

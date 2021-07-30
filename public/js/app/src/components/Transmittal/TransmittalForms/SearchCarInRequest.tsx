@@ -9,9 +9,9 @@ import {ITransmittalActionTypes, ITransmittalState} from "../../../actions/trans
 import {Dispatch} from "redux";
 import {FieldArrayFieldsProps} from "redux-form/lib/FieldArray";
 import Paginator from "../../Utils/Paginator";
-import { IRequestItem } from '../../../../../../../src/interfaces/requestItem.interface';
+import { IRequestItem } from '../../../../../../../src/request/interfaces/requestItem.interface';
 import {debounce} from "throttle-debounce";
-import { IUser } from '../../../../../../../src/interfaces/user.interface';
+import { IUser } from '../../../../../../../src/app/interfaces/user.interface';
 
 
 interface IExternarlPropsType {
@@ -211,17 +211,13 @@ class SearchCarInRequests extends React.Component<IPropsType, IStateType> {
   }
 
   private pushItem(item: IRequestItem) {
-    console.log({
-      _id: item._id,
-      car: item.car,
-      request: item.request,
-      reason: item.reason,
-      origin: item.origin._id,
-      destination: item.destination._id
-    })
     this.props.transmittalActions.pushItem({
       _id: item._id,
-      car: item.car,
+      car: {
+        ...item.car,
+        bl: item.car.bl ?? '',
+        client: item.car.client ?? ''
+      },
       request: item.request,
       reason: item.reason,
       origin: item.origin._id,

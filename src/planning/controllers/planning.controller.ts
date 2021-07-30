@@ -2,7 +2,7 @@ import {Response} from "express";
 import Planning, {IPlanningModel} from "../models/planning.model";
 import {IRequest} from "../../interfaces/global.interface";
 import {PaginateOptions, PaginateResult} from "mongoose";
-import {IPlanning} from "../../interfaces/planning.interface";
+import {IPlanning} from "../interfaces/planning.interface";
 import * as moment from "moment";
 import CarModel, {ChoicesStatusCar, ICarModel} from "../../app/models/car.model";
 import {io} from "../../server";

@@ -1,6 +1,6 @@
 import {  ObjectId } from 'bson';
 import * as mongoose from 'mongoose';
-import {IActivityHistoryInterface} from '../../interfaces/activityHistory.interface';
+import {IActivityHistoryInterface} from '../interfaces/activityHistory.interface';
 
 const detailInventorySchema = new mongoose.Schema({
   name: {

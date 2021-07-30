@@ -2,7 +2,7 @@ import * as Raven from 'raven-js';
 import * as React from 'react';
 import {ErrorInfo} from 'react';
 import {connect} from 'react-redux';
-import {IUser} from '../../../../../../src/interfaces/user.interface';
+import {IUser} from '../../../../../../src/app/interfaces/user.interface';
 import {IUsersState} from '../../actions/users.actions';
 
 interface IPropsType {

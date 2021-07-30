@@ -8,7 +8,7 @@ import * as swal from 'sweetalert';
 import { debounce } from 'throttle-debounce';
 import {
   IRequestItem
-} from '../../../../../../../src/interfaces/requestItem.interface';
+} from '../../../../../../../src/request/interfaces/requestItem.interface';
 import {
   changeFilterRequestAction,
   createRequestItemAction,

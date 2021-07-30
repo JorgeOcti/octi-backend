@@ -1,10 +1,10 @@
-import {ITransmittal} from '../../../../../src/interfaces/transmittal.interface';
+import {ITransmittal} from '../../../../../src/distribution/interfaces/transmittal.interface';
 import {CancelTokenSource} from "axios";
 import {IVenueModel} from '../../../../../src/app/models/venue.model';
 import {ICarrierModel} from '../../../../../src/app/models/carrier.model';
 import { ITransmittalItemModel } from '../../../../../src/distribution/models/transmittalItem.model';
 import { IUserModel } from '../../../../../src/app/models/user.model';
-import { IRequestItem } from '../../../../../src/interfaces/requestItem.interface';
+import { IRequestItem } from '../../../../../src/request/interfaces/requestItem.interface';
 
 
 export const LOADING_TRANSMITTAL = '@transmittal/IS_LOADING';
@@ -12,6 +12,7 @@ export const LOAD_TRANSMITTAL = '@transmittal/LOAD';
 export const LOAD_VENUES_TRANSMITTAL = '@transmittal/LOAD_VENUES';
 export const LOAD_CARRIERS_TRANSMITTAL = '@transmittal/LOAD_CARRIERS';
 export const LOAD_DRIVERS_TRANSMITTAL = '@transmittal/LOAD_DRIVERS';
+export const UPDATE__TRANSMITTAL = '@transmittal/UPDATE_';
 export const TOOGLE_TAB_TRANSMITTAL = '@transmittal/TOOGLE_TAB';
 export const CHANGE_ORDER_TRANSMITTAL = '@transmittal/CHANGE_ORDER';
 export const CANCEL_REQUEST_TRANSMITTAL = '@transmittal/CANCEL_REQUEST';

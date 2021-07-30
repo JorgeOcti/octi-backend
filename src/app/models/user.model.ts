@@ -5,7 +5,7 @@ import * as mongoose from 'mongoose';
 import {HookNextFunction, PaginateModel} from 'mongoose';
 import * as mongoosePaginate from 'mongoose-paginate';
 import * as passportLocalMongoose from 'passport-local-mongoose';
-import { IUser } from '../../interfaces/user.interface';
+import { IUser } from '../interfaces/user.interface';
 import { IPermissionModel } from './permision.model';
 
 export interface IUserModel extends IUser, mongoose.Document {

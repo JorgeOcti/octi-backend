@@ -1,7 +1,7 @@
 import * as mongoose from 'mongoose';
 import {PaginateModel} from 'mongoose';
 import * as mongoosePaginate from 'mongoose-paginate';
-import {ICarrier} from '../../interfaces/carrier.interface';
+import {ICarrier} from '../interfaces/carrier.interface';
 
 export interface ICarrierModel extends ICarrier, mongoose.Document {}
 const carrierSchema = new mongoose.Schema({

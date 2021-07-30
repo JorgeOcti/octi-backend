@@ -1,6 +1,6 @@
 import * as mongoose from 'mongoose';
 import {AggregatePaginateModel, PaginateModel} from 'mongoose';
-import {IRequestItem} from '../../interfaces/requestItem.interface';
+import {IRequestItem} from '../interfaces/requestItem.interface';
 import * as mongoosePaginate from 'mongoose-paginate';
 import mongooseAggregatePaginate = require('mongoose-aggregate-paginate-v2');
 
@@ -25,6 +25,14 @@ const requestItemSchema = new mongoose.Schema({
   request: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Request'
+  },
+  transmittal: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Transmittal'
+  },
+  transmittalItem: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'TransmittalItem'
   },
   team: {
     type: mongoose.Schema.Types.ObjectId,

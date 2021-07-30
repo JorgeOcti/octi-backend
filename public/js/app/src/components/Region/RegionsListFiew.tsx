@@ -6,7 +6,7 @@ import {connect} from 'react-redux';
 import {RouteComponentProps} from 'react-router';
 import {Dispatch} from 'redux';
 import * as swal from 'sweetalert';
-import {IBaseRegion, IRegion} from '../../../../../../src/interfaces/region.interface';
+import {IBaseRegion, IRegion} from '../../../../../../src/app/interfaces/region.interface';
 
 import {loadDataAction, ModalReduxAction} from '../../actions/modal.actions';
 import AppContainer from '../../container/AppContainer';

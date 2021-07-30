@@ -1,5 +1,5 @@
 import * as mongoose from "mongoose";
-import {IStockCar} from "../../interfaces/stock.interface";
+import {IStockCar} from "../interfaces/stock.interface";
 
 export interface IStockCarModel extends IStockCar, mongoose.Document {}
 const stockCarSchema = new mongoose.Schema({

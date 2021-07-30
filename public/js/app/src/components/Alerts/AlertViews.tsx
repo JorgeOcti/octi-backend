@@ -5,7 +5,7 @@ import {connect} from 'react-redux';
 import {RouteComponentProps} from 'react-router';
 import {Dispatch} from 'redux';
 import * as swal from 'sweetalert';
-import {IAlert} from '../../../../../../src/interfaces/alert.interface';
+import {IAlert} from '../../../../../../src/app/interfaces/alert.interface';
 import {AlertReduxAction, createAlertAction, deleteAlertAction, getAlertsAction, IAlertsState} from '../../actions/alerts.actions';
 import {loadDataAction, ModalReduxAction} from '../../actions/modal.actions';
 import AppContainer from '../../container/AppContainer';

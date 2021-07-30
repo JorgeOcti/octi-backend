@@ -1,6 +1,6 @@
 import {IStockState, StockReducerAction} from "../actions/stock.actions";
 import * as unorm from "unorm";
-import {IInventoryCar} from '../../../../../src/interfaces/inventory.interface';
+import {IInventoryCar} from '../../../../../src/inventory/interfaces/inventory.interface';
 
 const initialState: IStockState = {
   cars: [],

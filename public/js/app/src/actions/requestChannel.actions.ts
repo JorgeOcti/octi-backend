@@ -1,6 +1,6 @@
 import Axios, { AxiosError, AxiosResponse, CancelTokenSource } from 'axios';
 import { Dispatch } from 'redux';
-import { ISalesChannel } from '../../../../../src/interfaces/salesChannel.interface';
+import { ISalesChannel } from '../../../../../src/request/interfaces/salesChannel.interface';
 import ApiService from '../utils/axios';
 import { ICancelRequestChannel, IIsLoadingRequestChannel, ILoadRequestChannel, ICreateRequestChannel, IUpdateRequestChannel, IDeleteRequestChannel, IChangeOrderRequestChannel, RequestChannelReduxActions, ISalesChannelState } from './requestChannel.types';
 import { REQUEST_CANCEL_CHANNEL,

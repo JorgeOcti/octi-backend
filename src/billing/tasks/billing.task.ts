@@ -6,7 +6,7 @@ import * as Raven from 'raven';
 import * as request from 'request';
 import { queue } from '../../app';
 import Company from '../../app/models/company.model';
-import { ICompany } from '../../interfaces/company.interface';
+import { ICompany } from '../../app/interfaces/company.interface';
 import GeneralUtils from '../../utils/general.utils';
 import ActivityHistory, { ChoicesTypeActivity } from '../models/activityHistory.model';
 import Invoice, { IInvoiceModel } from '../models/invoice.model';

@@ -1,10 +1,10 @@
 import {AxiosError, AxiosResponse, CancelTokenSource, default as Axios} from 'axios';
 import {Dispatch} from 'redux';
 import * as swal from 'sweetalert';
-import {ICarrier} from '../../../../../src/interfaces/carrier.interface';
-import {ICompany} from '../../../../../src/interfaces/company.interface';
-import {IRegion} from '../../../../../src/interfaces/region.interface';
-import {IBaseVenue, IVenue} from '../../../../../src/interfaces/venue.interface';
+import {ICarrier} from '../../../../../src/app/interfaces/carrier.interface';
+import {ICompany} from '../../../../../src/app/interfaces/company.interface';
+import {IRegion} from '../../../../../src/app/interfaces/region.interface';
+import {IBaseVenue, IVenue} from '../../../../../src/app/interfaces/venue.interface';
 import ApiService from '../utils/axios';
 import {showModal, statusFooterButttonsModal} from '../utils/common';
 

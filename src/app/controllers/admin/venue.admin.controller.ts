@@ -9,7 +9,7 @@ import Venue, {IVenueModel} from '../../models/venue.model';
 import * as excel from 'exceljs';
 import * as tempfile from 'tempfile';
 import {Alignment} from 'exceljs';
-import {IVenueDay} from '../../../interfaces/venueDay.interface';
+import {IVenueDay} from '../../interfaces/venueDay.interface';
 
 class AdminVenueController {
 

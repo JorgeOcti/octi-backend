@@ -1,10 +1,10 @@
 import {AxiosError, AxiosResponse, CancelTokenSource, default as Axios} from 'axios';
 import {Dispatch} from 'redux';
 import * as swal from 'sweetalert';
-import {IInventoryCar} from '../../../../../src/interfaces/inventory.interface';
-import {IInventorySettting} from '../../../../../src/interfaces/teamSetting.interface';
-import {IInventoryComment} from '../../../../../src/interfaces/inventoryComment.interface';
-import {IInventoryLabel} from '../../../../../src/interfaces/inventoryLabel.interface';
+import {IInventoryCar} from '../../../../../src/inventory/interfaces/inventory.interface';
+import {IInventorySettting} from '../../../../../src/app/interfaces/teamSetting.interface';
+import {IInventoryComment} from '../../../../../src/inventory/interfaces/inventoryComment.interface';
+import {IInventoryLabel} from '../../../../../src/inventory/interfaces/inventoryLabel.interface';
 import {IFilterCar} from '../reducers/inventory.reducer';
 import ApiService from '../utils/axios';
 

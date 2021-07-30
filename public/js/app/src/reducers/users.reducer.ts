@@ -3,7 +3,7 @@ import {
   UserReduxAction
 } from '../actions/users.actions';
 
-import {IUser} from '../../../../../src/interfaces/user.interface';
+import {IUser} from '../../../../../src/app/interfaces/user.interface';
 
 const initialState: IUsersState = {
   users: [],

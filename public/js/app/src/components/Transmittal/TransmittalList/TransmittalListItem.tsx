@@ -56,7 +56,7 @@ class TransmitalListItem extends React.Component<IPropsType, IStateType> {
               text: venue.name
             }))}
             onClick={(e: string) => {
-              this.props.transmittalActions.updateTransmittalItem({
+              this.props.transmittalActions.updateTransmittalItemThunkAction({
                 _id: transmittalItem._id,
                 origin: e
               });
@@ -78,7 +78,7 @@ class TransmitalListItem extends React.Component<IPropsType, IStateType> {
               text: venue.name
             }))}
             onClick={(e: string) => {
-              this.props.transmittalActions.updateTransmittalItem({
+              this.props.transmittalActions.updateTransmittalItemThunkAction({
                 _id: transmittalItem._id,
                 destination: e
               });
@@ -91,7 +91,7 @@ class TransmitalListItem extends React.Component<IPropsType, IStateType> {
             value={transmittalItem.loadingDate}
             format={'DD-MM-YYYY'}
             onChange={(e) => {
-              this.props.transmittalActions.updateTransmittalItem({
+              this.props.transmittalActions.updateTransmittalItemThunkAction({
                 _id: transmittalItem._id,
                 loadingDate: e?.toDate()
               });
@@ -104,7 +104,7 @@ class TransmitalListItem extends React.Component<IPropsType, IStateType> {
             value={transmittalItem.arrivalDate}
             format={'DD-MM-YYYY'}
             onChange={(e) => {
-              this.props.transmittalActions.updateTransmittalItem({
+              this.props.transmittalActions.updateTransmittalItemThunkAction({
                 _id: transmittalItem._id,
                 arrivalDate: e?.toDate()
               });
@@ -114,9 +114,7 @@ class TransmitalListItem extends React.Component<IPropsType, IStateType> {
         <td />
         <ShowIf condition={true}>
           {/*<ShowIf condition={hasPermission(window.user, 'deleteRequest')}>*/}
-          <td className="middle-center text-red pointer" onClick={() => {
-
-          }}>
+          <td className="middle-center text-red pointer" onClick={() => {}}>
             <i className="fa fa-minus-circle"/>
           </td>
         </ShowIf>

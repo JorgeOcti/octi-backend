@@ -1,6 +1,6 @@
 import Axios, { AxiosError, AxiosResponse, CancelTokenSource } from 'axios';
 import { Dispatch } from 'redux';
-import { IRequestStatus } from '../../../../../src/interfaces/requestStatus.interface';
+import { IRequestStatus } from '../../../../../src/request/interfaces/requestStatus.interface';
 import ApiService from '../utils/axios';
 import {
   REQUEST_IS_LOADING,

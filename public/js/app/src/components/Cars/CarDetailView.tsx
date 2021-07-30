@@ -6,7 +6,7 @@ import * as React from 'react';
 import {connect} from 'react-redux';
 import {RouteComponentProps} from 'react-router';
 import {Dispatch} from 'redux';
-import {IParticipant} from '../../../../../../src/interfaces/participant.interface';
+import {IParticipant} from '../../../../../../src/form/interfaces/participant.interface';
 import {CarReduxAction, getCarAction, ICarsState} from '../../actions/cars.actions';
 import {getParticipant, IDashboardState, loadParticipantInCarAction} from '../../actions/dashboard.actions';
 import AppContainer from '../../container/AppContainer';

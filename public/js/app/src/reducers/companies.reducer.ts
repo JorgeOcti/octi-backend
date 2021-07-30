@@ -1,4 +1,4 @@
-import {ICompany} from '../../../../../src/interfaces/company.interface';
+import {ICompany} from '../../../../../src/app/interfaces/company.interface';
 import {CompaniesReduxAction, ICompaniesState} from '../actions/companies.actions';
 
 const initialState: ICompaniesState = {

@@ -1,7 +1,7 @@
 import * as unorm from 'unorm';
 import {
   IInventoryCar
-} from '../../../../../src/interfaces/inventory.interface';
+} from '../../../../../src/inventory/interfaces/inventory.interface';
 import {IInventoryState, InventoryReduxAction} from '../actions/inventory.actions';
 
 const initialState: IInventoryState = {

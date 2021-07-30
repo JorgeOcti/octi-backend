@@ -9,7 +9,7 @@ import {
   IParticipantItems,
   IParticipantScale,
   IParticipantSection
-} from '../../interfaces/participant.interface';
+} from '../interfaces/participant.interface';
 import { KindForm, kindForm, KindQuestion, kindQuestion } from './form.model';
 import { choiceBackgroundColors } from './scale.model';
 

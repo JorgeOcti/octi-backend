@@ -1,5 +1,5 @@
 import * as mongoose from 'mongoose';
-import {IGroup} from '../../interfaces/group.interface';
+import {IGroup} from '../interfaces/group.interface';
 
 export interface IGroupModel extends IGroup, mongoose.Document {}
 

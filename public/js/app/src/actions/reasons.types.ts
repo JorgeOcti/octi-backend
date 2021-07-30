@@ -1,5 +1,5 @@
 import { CancelTokenSource } from 'axios';
-import { IReason } from '../../../../../src/interfaces/reason.interface';
+import { IReason } from '../../../../../src/request/interfaces/reason.interface';
 
 export const REASON_CANCEL_REASON = '/REASONS/CANCEL_REASON';
 export const REASON_IS_LOADING = '/REASONS/IS_LOADING';

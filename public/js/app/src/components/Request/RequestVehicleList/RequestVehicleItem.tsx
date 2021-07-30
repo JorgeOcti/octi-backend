@@ -5,8 +5,8 @@ import {ErrorInfo} from 'react';
 import {connect} from 'react-redux';
 import {RouteComponentProps} from 'react-router-dom';
 import {debounce} from 'throttle-debounce';
-import {ICar} from '../../../../../../../src/interfaces/car.interface';
-import {IRequestItem} from '../../../../../../../src/interfaces/requestItem.interface';
+import {ICar} from '../../../../../../../src/app/interfaces/car.interface';
+import {IRequestItem} from '../../../../../../../src/request/interfaces/requestItem.interface';
 import {deleteRequestItemsThunkAction, updateRequestItemsThunkAction} from '../../../actions/requestItems.actions';
 import {IRequestItemsState} from '../../../actions/requestItems.types';
 import {IWindow} from '../../../interfaces/window';
@@ -55,7 +55,7 @@ class RequestVehicleItem extends React.Component<IPropsType, IStateType> {
 
   public render(): React.ReactElement<IPropsType> {
     const { item } = this.props;
-    const { requestItemStatus, reasons, carriers } = this.props.requestItems;
+    const { requestItemStatus, reasons } = this.props.requestItems;
     const { recommends } = this.state;
     const canChangeRequest = hasPermission(window.user, 'changeRequest');
     return (
@@ -341,82 +341,6 @@ class RequestVehicleItem extends React.Component<IPropsType, IStateType> {
             </td>
             : <td className="middle">{item.reason?.name}</td>
         }
-        {/* <td className="middle">
-          <div className="flex-wrap">
-            <div
-              className={`flex-wrap-item-center ${canChangeRequest ? 'pointer' : ''} ${item.equipment ? '' : 'text-gray'}`}
-              data-toggle="tooltip"
-              data-placement="top"
-              title="Accesorización"
-              onClick={canChangeRequest ? () => {
-                this.props.updateRequestItemsThunkAction({
-                  item: {
-                    ...item,
-                    equipment: !item.equipment
-                  },
-                  debounce: false
-                });
-              } : undefined}
-            >
-              <i className="material-icons font-14">library_add</i>
-            </div>
-            <div
-              className={`flex-wrap-item-center ${canChangeRequest ? 'pointer' : ''} ${item.body ? '' : 'text-gray'}`}
-              data-toggle="tooltip"
-              data-placement="top"
-              title="Carrocero"
-              onClick={canChangeRequest ? () => {
-                this.props.updateRequestItemsThunkAction({
-                  item: {
-                    ...item,
-                    body: !item.body
-                  },
-                  debounce: false
-                });
-              }: undefined}
-            >
-              <i className="material-icons font-14">rv_hookup</i>
-            </div>
-          </div>
-        </td>
-        <td className="middle">
-          <div className="flex-wrap">
-            <div
-              className={`flex-wrap-item-center ${canChangeRequest ? 'pointer' : ''} ${item.washed ? '' : 'text-gray'}`}
-              data-toggle="tooltip"
-              data-placement="top"
-              title="Pre-Lavado"
-              onClick={canChangeRequest ? () => {
-                this.props.updateRequestItemsThunkAction({
-                  item: {
-                    ...item,
-                    washed: !item.washed
-                  },
-                  debounce: false
-                });
-              } : undefined}
-            >
-              <i className="material-icons font-14">local_car_wash</i>
-            </div>
-            <div
-              className={`flex-wrap-item-center ${canChangeRequest ? 'pointer' : ''} ${item.review ? '' : 'text-gray'}`}
-              data-toggle="tooltip"
-              data-placement="top"
-              title="Inspección Pre-entrega"
-              onClick={canChangeRequest ? () => {
-                this.props.updateRequestItemsThunkAction({
-                  item: {
-                    ...item,
-                    review: !item.review
-                  },
-                  debounce: false
-                });
-              } : undefined}
-            >
-              <i className="material-icons font-14">build</i>
-            </div>
-          </div>
-        </td> */}
         <td
           className={`middle-center ${item.files && item.files.length ? 'pointer' : ''}`}
           style={{ fontSize: '80%' }}
@@ -444,73 +368,6 @@ class RequestVehicleItem extends React.Component<IPropsType, IStateType> {
               /> : null
           }
         </td>
-        { /*
-          canChangeRequest ?
-            <td className="middle">
-              <select className="form-control select-sm font-12" value={item.carrier?._id ?? ''}
-                onChange={(e: React.ChangeEvent<HTMLSelectElement>) => {
-                  this.props.updateRequestItemsThunkAction({
-                    item: {
-                      ...item,
-                      carrier: !e.target.value.length ? null : {
-                        ...item.carrier,
-                        _id: e.target.value
-                      }
-                    },
-                    debounce: false
-                  });
-                }}
-              >
-                <option value="">-</option>
-                {
-                  carriers.map((carrier) => (
-                    <option key={carrier._id} value={carrier._id}>{carrier.name}</option>
-                  ))
-                }
-              </select>
-            </td>
-            : <td className="middle">{item.carrier?.name}</td>*/
-        }
-        { /*
-          canChangeRequest ?
-            <td className="middle">
-              <DateRangePicker
-                className={'input-sm'}
-                value={item.uploadDate}
-                onChange={(e) => {
-                  this.props.updateRequestItemsThunkAction({
-                    item: {
-                      ...item,
-                      uploadDate: e as any
-                    },
-                    debounce: false
-                  });
-                }}
-              />
-            </td>
-            : <td className="middle">{item.uploadDate ? moment(item.uploadDate).format('DD-MM-YY') fa fa-chevron-up: '-'}</td>
-            */
-        }
-        { /*
-          canChangeRequest ?
-            <td className="middle">
-              <DateRangePicker
-                className={'input-sm'}
-                value={item.estimatedArrival}
-                onChange={(e) => {
-                  this.props.updateRequestItemsThunkAction({
-                    item: {
-                      ...item,
-                      estimatedArrival: e as any
-                    },
-                    debounce: false
-                  });
-                }}
-              />
-            </td>
-            : <td className="middle">{item.estimatedArrival ? moment(item.estimatedArrival).format('DD-MM-YY') : '-'}</td>
-            */
-        }
         <ShowIf condition={hasPermission(window.user, 'deleteRequest')}>
           <td className="middle-center text-red pointer" onClick={() => this.deleteRequestItem(item)}>
             <i className="fa fa-minus-circle" />

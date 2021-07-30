@@ -1,6 +1,6 @@
 import * as mongoose from 'mongoose';
 import {PaginateModel} from 'mongoose';
-import {IRequestStatus} from '../../interfaces/requestStatus.interface';
+import {IRequestStatus} from '../interfaces/requestStatus.interface';
 import {ICarModel} from '../../app/models/car.model';
 
 export interface IRequestStatusModel extends IRequestStatus, mongoose.Document {}

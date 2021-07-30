@@ -58,6 +58,9 @@ const transmittalSchema = new mongoose.Schema({
     transporter: {
         type: transmittalTransporterSchema
     },
+    observation: {
+        type: String
+    },
     status: {
         type: String,
         enum: exports.choicesStatusTransmittal,

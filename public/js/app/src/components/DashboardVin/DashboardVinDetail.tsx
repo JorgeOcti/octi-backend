@@ -7,7 +7,7 @@ import {connect} from 'react-redux';
 import {RouteComponentProps} from 'react-router';
 import {Dispatch} from 'redux';
 import * as io from 'socket.io-client';
-import {IParticipant} from '../../../../../../src/interfaces/participant.interface';
+import {IParticipant} from '../../../../../../src/form/interfaces/participant.interface';
 import {
   DashboardReduxAction,
   getCarAction,

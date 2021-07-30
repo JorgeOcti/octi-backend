@@ -1,15 +1,15 @@
 import {IRequest} from "../../interfaces/global.interface";
 import {Response} from "express";
-import { PaginateOptions, PaginateResult} from "mongoose";
+import {PaginateOptions, PaginateResult} from "mongoose";
 import Transmittal, {ChoicesStatusTransmittal, ITransmittalModel} from "../models/transmittal.model";
 import logger from "../../services/logger.service";
 import TransmittalItem from "../models/transmittalItem.model";
-import {ITransmittalItem} from "../../interfaces/transmittalItem.interface";
 import TransmittalFile from "../models/transmittalFile.model";
 import GeneralUtils from "../../utils/general.utils";
 import * as GraphicsMagick from "gm";
 import Team from "../../app/models/team.model";
 import Car from "../../app/models/car.model";
+import RequestItem from "../../request/models/requestItem.model";
 
 
 class TransmittalController {
@@ -37,42 +37,53 @@ class TransmittalController {
 
   public async apiCreate(req: IRequest, res: Response) {
     logger.info(`TransmittalController.apiCreate`);
-    const {name, items, files, transporter} = req.body;
+    const {name, items, files, transporter, observation} = req.body;
     const {user} = req;
     try {
       const team = await Team.findOneAndUpdate({ _id: user.team._id }, { $inc: { transmittalNumber: 1 } }, { new: true });
-      const transmittal = new Transmittal({
+
+      // create new transmittal
+      const transmittal = await new Transmittal({
         name,
         team: user.team,
         number: team!.transmittalNumber,
         createdBy: user._id,
-        transporter
-      });
-      await transmittal.save();
-      await Promise.all(
-        items.map((item: ITransmittalItem) => {
-          return Car.findOneAndUpdate({
-            team: user.team,
-            _id: item.car._id
-          }, {
-            client: item.car.client,
-            bl: item.car.bl
-          })
-        })
-      );
-      await Promise.all(
-        items.map((item: ITransmittalItem) => (
-          new TransmittalItem({
-            ...item,
-            transmittal
-          }).save()
-        ))
-      );
-      if(files && files.length){
-        transmittal.files = files;
-        await transmittal.save();
-        await TransmittalFile.updateMany({_id: {$in: files}}, {$set: {transmittal}})
+        transporter,
+        observation
+      }).save();
+
+      for (const item of items) {
+        // update cars params
+        await Car.findOneAndUpdate({
+          team: user.team,
+          _id: item.car._id
+        }, {
+          client: item.car.client,
+          bl: item.car.bl
+        });
+        // create transmittal items
+        const transmittalItem = await new TransmittalItem({
+          ...item,
+          transmittal
+        }).save();
+        // associate request item with transmittal and transmittal item
+        await RequestItem.findOneAndUpdate({
+          _id: item.requestItem
+        }, {
+          transmittal: transmittal._id,
+          transmittalItem: transmittalItem._id
+        });
       }
+
+      if(files && files.length){
+        await transmittal.updateOne({files});
+        await TransmittalFile.updateMany({
+          _id: {$in: files}
+        }, {
+          $set: {transmittal}
+        });
+      }
+
       res.json({
         status: 200
       })

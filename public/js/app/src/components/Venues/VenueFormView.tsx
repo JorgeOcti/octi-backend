@@ -2,12 +2,12 @@ import * as Raven from 'raven-js';
 import * as React from 'react';
 import {ErrorInfo} from 'react';
 import {connect} from 'react-redux';
-import {IBaseVenue, IVenue} from '../../../../../../src/interfaces/venue.interface';
+import {IBaseVenue, IVenue} from '../../../../../../src/app/interfaces/venue.interface';
 import {changeTempVenueAction, IVenuesState, VenueReduxAction} from '../../actions/venues.actions';
 import {updateTooltip} from '../../utils/common';
 import BootstrapSelect from '../Utils/BootstrapSelect';
 import Checkbox from '../Utils/CheckBox';
-import {IVenueDay} from '../../../../../../src/interfaces/venueDay.interface';
+import {IVenueDay} from '../../../../../../src/app/interfaces/venueDay.interface';
 
 interface IPropsType {
   venues?: IVenuesState;

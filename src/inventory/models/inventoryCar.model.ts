@@ -1,8 +1,8 @@
 import * as mongoose from 'mongoose';
 import {
   IInventoryCar
-} from '../../interfaces/inventory.interface';
-import {IInventoryComment} from '../../interfaces/inventoryComment.interface';
+} from '../interfaces/inventory.interface';
+import {IInventoryComment} from '../interfaces/inventoryComment.interface';
 
 export interface IIventoryCommentModel extends IInventoryComment, mongoose.Types.Subdocument {}
 

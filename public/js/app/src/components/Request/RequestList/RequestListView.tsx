@@ -9,7 +9,7 @@ import * as io from 'socket.io-client';
 import * as swal from 'sweetalert';
 import {
   IRequestItem
-} from '../../../../../../../src/interfaces/requestItem.interface';
+} from '../../../../../../../src/request/interfaces/requestItem.interface';
 import {
   createRequestItemActionInList,
   deleteRequestActionInList,

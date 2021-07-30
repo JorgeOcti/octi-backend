@@ -2,7 +2,7 @@ import { AxiosError, default as Axios } from 'axios';
 import {Dispatch} from 'redux';
 import {IFilterCar} from '../reducers/inventory.reducer';
 import ApiService from '../utils/axios';
-import {IInventorySettting} from '../../../../../src/interfaces/teamSetting.interface';
+import {IInventorySettting} from '../../../../../src/app/interfaces/teamSetting.interface';
 
 export interface IInventoryDashboardState {
   venues: any[];

@@ -11,6 +11,7 @@ import TransmittalActions from "../../../actions/transmittal.actions";
 import tramittalRenderItem, {IRenderItemProps} from "./renders/TramittalRenderItem";
 import BootstrapSelectField from "../../Utils/forms/BootstrapSelectField";
 import ShowIf from '../../Utils/ShowIf';
+import TextAreaField from "../../Utils/forms/TextAreaField";
 
 
 interface IPropsType extends InjectedFormProps {
@@ -139,7 +140,7 @@ class Form extends React.Component<IPropsType, IStateType> {
               </div>
             </div>
           </div>
-          <div className="col-md-12" style={{marginTop: '10px'}}>
+          <div className="col-md-12 m-t-10">
             <h4>Vehículos Cargados ({formValues.items ? formValues.items.length : ''})</h4>
           </div>
           <FieldArray<IRenderItemProps>
@@ -149,12 +150,23 @@ class Form extends React.Component<IPropsType, IStateType> {
               transmittal
             }}
           />
+          <div className="col-md-12 m-t-10">
+            <Field
+              name={`observation`}
+              label="Observación"
+              component={TextAreaField}
+              type="text"
+              rows={4}
+              props={{
+                resize: 'none'
+              }}
+            />
+          </div>
           {
             submitFailed && !valid &&
             <div className="col-md-12">
               <div
-                className="alert alert-danger"
-                style={{marginTop: '20px'}}
+                className="alert alert-danger m-t-20"
               >
                 Todos los campos con * son obligatorios
               </div>

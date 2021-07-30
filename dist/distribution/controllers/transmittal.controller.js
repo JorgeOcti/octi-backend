@@ -8,6 +8,7 @@ const general_utils_1 = require("../../utils/general.utils");
 const GraphicsMagick = require("gm");
 const team_model_1 = require("../../app/models/team.model");
 const car_model_1 = require("../../app/models/car.model");
+const requestItem_model_1 = require("../../request/models/requestItem.model");
 class TransmittalController {
     constructor() {
         this.index = this.index.bind(this);
@@ -29,35 +30,48 @@ class TransmittalController {
     }
     async apiCreate(req, res) {
         logger_service_1.default.info(`TransmittalController.apiCreate`);
-        const { name, items, files, transporter } = req.body;
+        const { name, items, files, transporter, observation } = req.body;
         const { user } = req;
         try {
             const team = await team_model_1.default.findOneAndUpdate({ _id: user.team._id }, { $inc: { transmittalNumber: 1 } }, { new: true });
-            const transmittal = new transmittal_model_1.default({
+            // create new transmittal
+            const transmittal = await new transmittal_model_1.default({
                 name,
                 team: user.team,
                 number: team.transmittalNumber,
                 createdBy: user._id,
-                transporter
-            });
-            await transmittal.save();
-            await Promise.all(items.map((item) => {
-                return car_model_1.default.findOneAndUpdate({
+                transporter,
+                observation
+            }).save();
+            for (const item of items) {
+                // update cars params
+                await car_model_1.default.findOneAndUpdate({
                     team: user.team,
                     _id: item.car._id
                 }, {
                     client: item.car.client,
                     bl: item.car.bl
                 });
-            }));
-            await Promise.all(items.map((item) => (new transmittalItem_model_1.default({
-                ...item,
-                transmittal
-            }).save())));
+                // create transmittal items
+                const transmittalItem = await new transmittalItem_model_1.default({
+                    ...item,
+                    transmittal
+                }).save();
+                // associate request item with transmittal and transmittal item
+                await requestItem_model_1.default.findOneAndUpdate({
+                    _id: item.requestItem
+                }, {
+                    transmittal: transmittal._id,
+                    transmittalItem: transmittalItem._id
+                });
+            }
             if (files && files.length) {
-                transmittal.files = files;
-                await transmittal.save();
-                await transmittalFile_model_1.default.updateMany({ _id: { $in: files } }, { $set: { transmittal } });
+                await transmittal.updateOne({ files });
+                await transmittalFile_model_1.default.updateMany({
+                    _id: { $in: files }
+                }, {
+                    $set: { transmittal }
+                });
             }
             res.json({
                 status: 200

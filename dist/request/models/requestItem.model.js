@@ -19,6 +19,14 @@ const requestItemSchema = new mongoose.Schema({
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Request'
     },
+    transmittal: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Transmittal'
+    },
+    transmittalItem: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'TransmittalItem'
+    },
     team: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Team'

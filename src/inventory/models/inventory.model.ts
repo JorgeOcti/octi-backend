@@ -3,7 +3,7 @@ import * as mongooseCrate from 'mongoose-crate';
 import * as MongooseCrateS3 from 'mongoose-crate-s3';
 import * as uuid from 'uuid';
 import * as s3Config from '../../../s3-config.json';
-import {IInventory} from '../../interfaces/inventory.interface';
+import {IInventory} from '../interfaces/inventory.interface';
 import * as mongoosePaginate from 'mongoose-paginate';
 import {PaginateModel} from 'mongoose';
 

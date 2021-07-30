@@ -7,7 +7,7 @@ import { Link } from 'react-router-dom';
 import { Dispatch } from 'redux';
 import { FormAction, submit } from 'redux-form';
 import * as swal from 'sweetalert';
-import { IRequestStatus } from '../../../../../../src/interfaces/requestStatus.interface';
+import { IRequestStatus } from '../../../../../../src/request/interfaces/requestStatus.interface';
 import { loadDataAction, ModalReduxAction } from '../../actions/modal.actions';
 import {
   createRequestStatusThunkAction,

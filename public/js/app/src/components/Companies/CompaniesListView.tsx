@@ -6,7 +6,7 @@ import {connect} from 'react-redux';
 import {RouteComponentProps} from 'react-router';
 import {Dispatch} from 'redux';
 import * as swal from 'sweetalert';
-import {IBaseCompany, ICompany} from '../../../../../../src/interfaces/company.interface';
+import {IBaseCompany, ICompany} from '../../../../../../src/app/interfaces/company.interface';
 import {
   changeTempCompanyAction,
   CompaniesReduxAction,

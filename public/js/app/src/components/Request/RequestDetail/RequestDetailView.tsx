@@ -8,8 +8,8 @@ import { RouteComponentProps } from 'react-router-dom';
 import * as io from 'socket.io-client';
 import * as swal from 'sweetalert';
 import { debounce } from 'throttle-debounce';
-import { ICar } from '../../../../../../../src/interfaces/car.interface';
-import { IRequestItem } from '../../../../../../../src/interfaces/requestItem.interface';
+import { ICar } from '../../../../../../../src/app/interfaces/car.interface';
+import { IRequestItem } from '../../../../../../../src/request/interfaces/requestItem.interface';
 import {
   createRequestItemActionInDetail,
   deleteRequestItemActionInDetail,

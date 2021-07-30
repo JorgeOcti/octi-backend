@@ -7,7 +7,7 @@ import { Link } from 'react-router-dom';
 import { Dispatch } from 'redux';
 import { FormAction, submit } from 'redux-form';
 import * as swal from 'sweetalert';
-import { IReason } from '../../../../../../src/interfaces/reason.interface';
+import { IReason } from '../../../../../../src/request/interfaces/reason.interface';
 import { loadDataAction, ModalReduxAction } from '../../actions/modal.actions';
 import {
   createReasonThunkAction,

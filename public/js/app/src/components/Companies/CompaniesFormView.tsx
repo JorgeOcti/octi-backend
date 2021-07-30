@@ -1,6 +1,6 @@
 import * as React from 'react';
 import {connect} from 'react-redux';
-import {IBaseCompany} from '../../../../../../src/interfaces/company.interface';
+import {IBaseCompany} from '../../../../../../src/app/interfaces/company.interface';
 import {
   changeTempCompanyAction,
   CompaniesReduxAction,

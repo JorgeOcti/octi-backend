@@ -1,5 +1,5 @@
 import * as mongoose from 'mongoose';
-import {IFormTrigger, ITriggerConfig} from '../../interfaces/form.interface';
+import {IFormTrigger, ITriggerConfig} from '../interfaces/form.interface';
 
 export enum KindTrigger {
   file = 'file',

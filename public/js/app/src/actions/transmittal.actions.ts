@@ -1,4 +1,4 @@
-import {ITransmittal} from '../../../../../src/interfaces/transmittal.interface';
+import {ITransmittal} from '../../../../../src/distribution/interfaces/transmittal.interface';
 import {
   CANCEL_REQUEST_TRANSMITTAL,
   CHANGE_ORDER_TRANSMITTAL,
@@ -22,7 +22,7 @@ import {IVenueModel} from '../../../../../src/app/models/venue.model';
 import {ICarrierModel} from '../../../../../src/app/models/carrier.model';
 import {arrayPush, autofill, FormAction, submit} from "redux-form";
 import {IUserModel} from '../../../../../src/app/models/user.model';
-import {IRequestItem} from '../../../../../src/interfaces/requestItem.interface';
+import {IRequestItem} from '../../../../../src/request/interfaces/requestItem.interface';
 
 export default class TransmittalActions {
   private api: ApiService;
@@ -128,7 +128,11 @@ export default class TransmittalActions {
     );
   }
 
-  public updateTransmittalItem(transmitallItem: any) {
+  public updateTransmittalItemAction(transmitallItem: any){
+
+  }
+
+  public updateTransmittalItemThunkAction(transmitallItem: any) {
     this.dispatch((dispatch) => {
       // const transmittalActions = new TransmittalActions(dispatch);
       // transmittalActions.loadingAction(true);
@@ -137,7 +141,6 @@ export default class TransmittalActions {
           console.log('updateTransmittalItem', response);
         })
         .catch((err: AxiosError) => {
-          // transmittalActions.loadingAction(false);
           this.api.errorHandler(err);
         });
     });

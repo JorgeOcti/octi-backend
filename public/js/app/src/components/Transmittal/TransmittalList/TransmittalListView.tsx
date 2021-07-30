@@ -160,7 +160,7 @@ class TransmittalListView extends TrackingBasePage<IPropsType, IStateType> {
                 {
                   hasPermission(window.user, 'createRequest') ?
                     <button className="btn btn-sm btn-success" onClick={this.create}>
-                      <i className="fa fa-fw fa-plus" /> Crear order
+                      <i className="fa fa-fw fa-plus" /> Crear orden
                     </button>
                     : null
                 }

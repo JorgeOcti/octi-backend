@@ -1,5 +1,5 @@
 import { CancelTokenSource } from 'axios';
-import { ISalesChannel } from '../../../../../src/interfaces/salesChannel.interface';
+import { ISalesChannel } from '../../../../../src/request/interfaces/salesChannel.interface';
 
 export const REQUEST_CANCEL_CHANNEL = '/REQUEST/CANCEL_CHANNEL';
 export const REQUEST_IS_LOADING = '/REQUEST/IS_LOADING';

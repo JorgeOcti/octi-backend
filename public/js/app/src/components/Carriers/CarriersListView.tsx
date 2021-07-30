@@ -8,7 +8,7 @@ import {Dispatch} from 'redux';
 import * as swal from 'sweetalert';
 import {
   IBaseCarrier, ICarrier
-} from '../../../../../../src/interfaces/carrier.interface';
+} from '../../../../../../src/app/interfaces/carrier.interface';
 import {
   CarrierReduxAction,
   changeTempCarrierAction,

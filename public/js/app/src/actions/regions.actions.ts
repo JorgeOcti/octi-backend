@@ -11,7 +11,7 @@ import * as swal from 'sweetalert';
 import {
   IBaseRegion,
   IRegion
-} from '../../../../../src/interfaces/region.interface';
+} from '../../../../../src/app/interfaces/region.interface';
 import ApiService from '../utils/axios';
 import {showModal, statusFooterButttonsModal} from '../utils/common';
 

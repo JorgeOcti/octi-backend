@@ -1,4 +1,4 @@
-import {IVenue} from '../../../../../src/interfaces/venue.interface';
+import {IVenue} from '../../../../../src/app/interfaces/venue.interface';
 import {IVenuesState, VenueReduxAction} from '../actions/venues.actions';
 
 const initialState: IVenuesState = {

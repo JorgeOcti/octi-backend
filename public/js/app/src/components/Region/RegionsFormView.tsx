@@ -2,7 +2,7 @@ import * as React from 'react';
 import {connect} from 'react-redux';
 import {
   IBaseRegion
-} from '../../../../../../src/interfaces/region.interface';
+} from '../../../../../../src/app/interfaces/region.interface';
 import {
   RegionReduxAction,
   changeTempRegionAction,

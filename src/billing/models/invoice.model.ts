@@ -1,6 +1,6 @@
 import * as mongoose from 'mongoose';
 import * as mongoosePaginate from 'mongoose-paginate';
-import {IInvoice} from '../../interfaces/invoice.interface';
+import {IInvoice} from '../interfaces/invoice.interface';
 import * as mongooseCrate from 'mongoose-crate';
 import * as MongooseCrateS3 from 'mongoose-crate-s3';
 import * as s3Config from '../../../s3-config.json';

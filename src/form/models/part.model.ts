@@ -1,5 +1,5 @@
 import * as mongoose from 'mongoose';
-import {IPart} from '../../interfaces/part.interface';
+import {IPart} from '../interfaces/part.interface';
 
 export interface IPartModel extends IPart, mongoose.Document {}
 export const partSchema = new mongoose.Schema({

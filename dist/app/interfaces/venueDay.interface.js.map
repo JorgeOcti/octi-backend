@@ -1,0 +1,1 @@
+{"version":3,"file":"venueDay.interface.js","sourceRoot":"","sources":["../../../src/app/interfaces/venueDay.interface.ts"],"names":[],"mappings":"","sourcesContent":["import {IVenue} from \"./venue.interface\";\n\nexport interface IVenueDay {\n  _id: any;\n  shippingMaxDays: number | undefined;\n  venue: IVenue;\n}\n"]}

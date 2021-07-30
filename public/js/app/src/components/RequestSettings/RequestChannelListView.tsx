@@ -7,7 +7,7 @@ import { Link } from 'react-router-dom';
 import { Dispatch } from 'redux';
 import { FormAction, submit } from 'redux-form';
 import * as swal from 'sweetalert';
-import { ISalesChannel } from '../../../../../../src/interfaces/salesChannel.interface';
+import { ISalesChannel } from '../../../../../../src/request/interfaces/salesChannel.interface';
 import { loadDataAction, ModalReduxAction } from '../../actions/modal.actions';
 import { ISalesChannelState, RequestChannelReduxActions } from '../../actions/requestChannel.types';
 import {

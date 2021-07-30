@@ -1,5 +1,5 @@
 import {AxiosError, AxiosResponse, CancelTokenSource} from "axios";
-import {IInventoryCar} from '../../../../../src/interfaces/inventory.interface';
+import {IInventoryCar} from '../../../../../src/inventory/interfaces/inventory.interface';
 import {Dispatch} from "redux";
 import ApiService from "../utils/axios";
 import {IFilterStock} from "../reducers/stock.reducer";

@@ -1,11 +1,11 @@
 import Axios, { AxiosError, AxiosResponse, CancelTokenSource } from 'axios';
 import { Dispatch } from 'redux';
 import { debounce } from 'throttle-debounce';
-import { ICarrier } from '../../../../../src/interfaces/carrier.interface';
-import { IReason } from '../../../../../src/interfaces/reason.interface';
-import { IRequestItem } from '../../../../../src/interfaces/requestItem.interface';
-import { IRequestItemStatus } from '../../../../../src/interfaces/requestItemStatus.interface';
-import { IVenue } from '../../../../../src/interfaces/venue.interface';
+import { ICarrier } from '../../../../../src/app/interfaces/carrier.interface';
+import { IReason } from '../../../../../src/request/interfaces/reason.interface';
+import { IRequestItem } from '../../../../../src/request/interfaces/requestItem.interface';
+import { IRequestItemStatus } from '../../../../../src/request/interfaces/requestItemStatus.interface';
+import { IVenue } from '../../../../../src/app/interfaces/venue.interface';
 import ApiService from '../utils/axios';
 import {
   ICancelRequestItems,

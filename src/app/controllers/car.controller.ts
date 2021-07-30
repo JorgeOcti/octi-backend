@@ -11,7 +11,7 @@ import Part from '../../form/models/part.model';
 import ParticipantModel, { IParticipantAnswerModel } from '../../form/models/participant.model';
 import Position from '../../form/models/position.model';
 import { IAnyObject, IRequest } from '../../interfaces/global.interface';
-import { IParticipant } from '../../interfaces/participant.interface';
+import { IParticipant } from '../../form/interfaces/participant.interface';
 import InventoryModel, { ChoicesStatusInventory } from '../../inventory/models/inventory.model';
 import { ChoicesStatusCarInventory } from '../../inventory/models/inventoryCar.model';
 import Planning from '../../planning/models/planning.model';

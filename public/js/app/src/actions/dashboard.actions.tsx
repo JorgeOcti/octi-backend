@@ -2,11 +2,11 @@ import {AxiosError, AxiosResponse, CancelTokenSource, default as Axios} from 'ax
 import * as moment from 'moment';
 import * as React from 'react';
 import {Dispatch} from 'redux';
-import {ICar} from '../../../../../src/interfaces/car.interface';
+import {ICar} from '../../../../../src/app/interfaces/car.interface';
 import {
   IParticipant,
   IParticipantSection
-} from '../../../../../src/interfaces/participant.interface';
+} from '../../../../../src/form/interfaces/participant.interface';
 import ImageLazyLoad from '../components/Utils/ImageLazyLoad';
 import ApiService from '../utils/axios';
 import {loadDataAction} from './modal.actions';

@@ -8,7 +8,7 @@ import { RouteComponentProps } from 'react-router';
 import { Dispatch } from 'redux';
 import * as swal from 'sweetalert';
 import { debounce } from 'throttle-debounce';
-import { IUser } from '../../../../../../src/interfaces/user.interface';
+import { IUser } from '../../../../../../src/app/interfaces/user.interface';
 import {
   loadDataAction,
   ModalReduxAction

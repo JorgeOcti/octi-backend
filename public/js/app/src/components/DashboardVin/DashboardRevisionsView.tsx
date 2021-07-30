@@ -10,7 +10,7 @@ import { connect } from 'react-redux';
 import * as moment from 'moment';
 import NumberFormat from 'react-number-format';
 import { IWindow } from '../../interfaces/window';
-import { IUser } from '../../../../../../src/interfaces/user.interface';
+import { IUser } from '../../../../../../src/app/interfaces/user.interface';
 import TrackingBasePage from '../Utils/TrackingBasePage';
 
 declare let window: IWindow;

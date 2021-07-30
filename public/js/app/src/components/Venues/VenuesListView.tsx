@@ -10,7 +10,7 @@ import * as swal from 'sweetalert';
 import * as mapboxgl from 'mapbox-gl';
 import ApiService from '../../utils/axios'
 // var mapboxgl = require('mapbox-gl/dist/mapbox-gl.js');
-import {IBaseVenue, IVenue} from '../../../../../../src/interfaces/venue.interface';
+import {IBaseVenue, IVenue} from '../../../../../../src/app/interfaces/venue.interface';
 import {loadDataAction, ModalReduxAction} from '../../actions/modal.actions';
 import {
   changeTempVenueAction,

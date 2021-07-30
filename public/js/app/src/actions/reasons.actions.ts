@@ -1,6 +1,6 @@
 import Axios, { AxiosError, AxiosResponse, CancelTokenSource } from 'axios';
 import { Dispatch } from 'redux';
-import { IReason } from '../../../../../src/interfaces/reason.interface';
+import { IReason } from '../../../../../src/request/interfaces/reason.interface';
 import ApiService from '../utils/axios';
 import {
   ICancelReason,

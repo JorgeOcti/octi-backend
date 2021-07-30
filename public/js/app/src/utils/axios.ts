@@ -9,20 +9,20 @@ import * as Raven from 'raven-js';
 import * as swal from 'sweetalert';
 import {
   IBaseCarrier
-} from '../../../../../src/interfaces/carrier.interface';
+} from '../../../../../src/app/interfaces/carrier.interface';
 import {
   IBaseCompany
-} from '../../../../../src/interfaces/company.interface';
-import { IReason } from '../../../../../src/interfaces/reason.interface';
+} from '../../../../../src/app/interfaces/company.interface';
+import { IReason } from '../../../../../src/request/interfaces/reason.interface';
 import {
   IBaseRegion
-} from '../../../../../src/interfaces/region.interface';
-import { IRequestItem } from '../../../../../src/interfaces/requestItem.interface';
-import { IRequestStatus } from '../../../../../src/interfaces/requestStatus.interface';
-import { ISalesChannel } from '../../../../../src/interfaces/salesChannel.interface';
+} from '../../../../../src/app/interfaces/region.interface';
+import { IRequestItem } from '../../../../../src/request/interfaces/requestItem.interface';
+import { IRequestStatus } from '../../../../../src/request/interfaces/requestStatus.interface';
+import { ISalesChannel } from '../../../../../src/request/interfaces/salesChannel.interface';
 import {
   IBaseVenue
-} from '../../../../../src/interfaces/venue.interface';
+} from '../../../../../src/app/interfaces/venue.interface';
 import { ITempUser } from '../actions/users.actions';
 import { IFilterCar } from '../reducers/inventory.reducer';
 import { ITransmittalItemModel } from '../../../../../src/distribution/models/transmittalItem.model';

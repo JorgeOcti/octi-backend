@@ -1,7 +1,7 @@
 import * as mongoose from 'mongoose';
 import {AggregatePaginateModel, PaginateModel} from 'mongoose';
 import * as mongoosePaginate from 'mongoose-paginate';
-import {ITransmittal} from '../../interfaces/transmittal.interface';
+import {ITransmittal} from '../interfaces/transmittal.interface';
 import mongooseAggregatePaginate = require('mongoose-aggregate-paginate-v2');
 
 
@@ -62,6 +62,9 @@ const transmittalSchema = new mongoose.Schema<ITransmittal>({
   },
   transporter: {
     type: transmittalTransporterSchema
+  },
+  observation: {
+    type: String
   },
   status: {
     type: String,

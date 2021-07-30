@@ -1,6 +1,6 @@
 import * as mongoose from 'mongoose';
 import {PaginateModel} from 'mongoose';
-import {IRequest} from '../../interfaces/request.interface';
+import {IRequest} from '../interfaces/request.interface';
 import * as mongoosePaginate from 'mongoose-paginate';
 
 export interface IRequestModel extends IRequest, mongoose.Document {}
