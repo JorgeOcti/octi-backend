@@ -2,6 +2,7 @@ import {ITransmittal} from '../../../../../src/distribution/interfaces/transmitt
 import {
   CANCEL_REQUEST_TRANSMITTAL,
   CHANGE_ORDER_TRANSMITTAL,
+  DELETE_TRANSMITTAL_ITEM_TRANSMITTAL,
   FILTER_REQUEST_ITEMS_TRANSMITTAL,
   IRequestItemsFilters,
   ITransmittalActionTypes,
@@ -13,7 +14,9 @@ import {
   LOAD_VENUES_TRANSMITTAL,
   LOADING_REQUEST_ITEMS_TRANSMITTAL,
   LOADING_TRANSMITTAL,
-  TOOGLE_TAB_TRANSMITTAL
+  TOOGLE_TAB_TRANSMITTAL,
+  UPDATE_TRANSMITTAL_ITEM_TRANSMITTAL,
+  UPDATE_TRANSMITTAL_TRANSMITTAL
 } from "./transmittal.types";
 import ApiService from "../utils/axios";
 import Axios, {AxiosError, AxiosResponse, CancelTokenSource} from "axios";
@@ -128,17 +131,52 @@ export default class TransmittalActions {
     );
   }
 
-  public updateTransmittalItemAction(transmitallItem: any){
+  public updateTransmittalAction(transmittal: Partial<ITransmittal>){
+    this.dispatch({
+      type: UPDATE_TRANSMITTAL_TRANSMITTAL,
+      payload: {
+        transmittal
+      }
+    })
+  }
 
+  public updateTransmittalThunkAction(transmittal: any) {
+    this.dispatch((dispatch) => {
+      const transmittalActions = new TransmittalActions(dispatch);
+      this.api.updateTransmittal(transmittal)
+        .then((response: AxiosResponse) => {
+          transmittalActions.updateTransmittalAction(response.data.data);
+        })
+        .catch((err: AxiosError) => {
+          this.api.errorHandler(err);
+        });
+    });
+  }
+
+  public deleteTransmittalItemAction(transmittalItem: Partial<ITransmittal>){
+    this.dispatch({
+      type: DELETE_TRANSMITTAL_ITEM_TRANSMITTAL,
+      payload: {
+        transmittalItem
+      }
+    })
+  }
+
+  public updateTransmittalItemAction(transmittalItem: Partial<ITransmittal>){
+    this.dispatch({
+      type: UPDATE_TRANSMITTAL_ITEM_TRANSMITTAL,
+      payload: {
+        transmittalItem
+      }
+    })
   }
 
   public updateTransmittalItemThunkAction(transmitallItem: any) {
     this.dispatch((dispatch) => {
-      // const transmittalActions = new TransmittalActions(dispatch);
-      // transmittalActions.loadingAction(true);
+      const transmittalActions = new TransmittalActions(dispatch);
       this.api.updateTransmittalItem(transmitallItem)
         .then((response: AxiosResponse) => {
-          console.log('updateTransmittalItem', response);
+          transmittalActions.updateTransmittalItemAction(response.data.data);
         })
         .catch((err: AxiosError) => {
           this.api.errorHandler(err);

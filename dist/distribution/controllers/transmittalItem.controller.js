@@ -1,7 +1,9 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 const transmittalItem_model_1 = require("../models/transmittalItem.model");
+const transmittal_controller_1 = require("./transmittal.controller");
 const logger_service_1 = require("../../services/logger.service");
+const server_1 = require("../../server");
 class TransmittalItemController {
     constructor() {
         this.index = this.index.bind(this);
@@ -28,12 +30,16 @@ class TransmittalItemController {
         logger_service_1.default.info(`TransmittalItemController.apiUpdate`);
         const { id } = req.params;
         const { body: transmittalItem } = req;
+        const { team } = req.user;
         try {
-            const newTransmittalItem = await transmittalItem_model_1.default.findOneAndUpdate({ _id: id }, { $set: transmittalItem }, { new: true });
+            const newTransmittalItem = await transmittalItem_model_1.default
+                .findOneAndUpdate({ _id: id }, { $set: transmittalItem }, { new: true })
+                .populate(transmittal_controller_1.default.itemPopulate);
+            server_1.io.to(`transmittal-list-${team._id}`).emit('UPDATE_TRANSMITTAL_ITEM', {
+                transmittalItem: newTransmittalItem
+            });
             res.json({
-                transmittalItem,
-                newTransmittalItem,
-                api: 'TransmittalItemController:apiUpdate'
+                data: newTransmittalItem,
             });
         }
         catch (e) {
@@ -52,9 +58,30 @@ class TransmittalItemController {
         });
     }
     async apiDelete(req, res) {
-        res.json({
-            api: 'TransmittalItemController:apiDelete'
-        });
+        logger_service_1.default.info(`TransmittalItemController.apiDelete`);
+        const { id } = req.params;
+        const { team } = req.user;
+        try {
+            const transmittalItem = await transmittalItem_model_1.default.findOne({ _id: id });
+            if (transmittalItem) {
+                await transmittalItem.remove();
+                server_1.io.to(`transmittal-list-${team._id}`).emit('DELETE_TRANSMITTAL_ITEM', {
+                    transmittalItem
+                });
+            }
+            res.json({
+                transmittalItem
+            });
+        }
+        catch (e) {
+            /* istanbul ignore next */
+            logger_service_1.default.error(e);
+            /* istanbul ignore next */
+            logger_service_1.default.error(`TransmittalItemController.apiDelete: Async Error.`);
+            /* istanbul ignore next */
+            logger_service_1.default.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
+            res.status(500).json(e);
+        }
     }
 }
 exports.default = new TransmittalItemController();

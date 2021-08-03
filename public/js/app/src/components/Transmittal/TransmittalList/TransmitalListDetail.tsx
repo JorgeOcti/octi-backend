@@ -7,6 +7,7 @@ import {ITransmittalActionTypes, ITransmittalState} from "../../../actions/trans
 import { ITransmittalModel } from '../../../../../../../src/distribution/models/transmittal.model';
 import TransmitalListItem from './TransmittalListItem';
 import ShowIf from "../../Utils/ShowIf";
+import BootstrapSelect from "../../Utils/BootstrapSelect";
 
 interface IPropsType extends RouteComponentProps<{ ticket: string }> {
   dispatch: Dispatch<ITransmittalActionTypes>;
@@ -28,28 +29,73 @@ class TransmitalListDetail extends React.Component<IPropsType, IStateType> {
 
   public render(): React.ReactElement<IPropsType> {
     const {item: transmittal, transmittalActions} = this.props;
+    const {carriers, drivers} = this.props.transmittal;
     const open = this.props.transmittal.transmittalOpen.includes(transmittal._id);
     return (
       <React.Fragment>
         <div id={`transmittal-${transmittal._id}`} className="row transmittal bg-transmittal-title background-transition">
-          <div className="col-sm-1 col-xs-1 col-md-1 col-lg-1 center pointer head-sorted">
+          <div className="flex-45 col-sm-1 col-xs-1 col-md-1 col-lg-1 center pointer head-sorted">
             <strong className="text-underline">#{this.padNumber(transmittal.number)}</strong>&nbsp;
           </div>
-          <div className="col-sm-1 col-xs-1 col-md-1 col-lg-1">
+          <div className="flex-45 col-sm-1 col-xs-1 col-md-1 col-lg-1">
             {transmittal.transporter.patent}
           </div>
-          <div className="col-sm-2 col-xs-2 col-md-2 col-lg-2">
-            {transmittal.transporter.driver.firstName} {transmittal.transporter.driver.lastName}
+          <div className="flex-45 col-sm-2 col-xs-2 col-md-2 col-lg-2">
+            <BootstrapSelect
+              noneSelectedText="Selecciona un chófer"
+              displayItems={2}
+              sm={true}
+              selectedText="choferes seleccionadas."
+              selected={transmittal.transporter.driver ? [transmittal.transporter.driver._id] : []}
+              autoClouse={true}
+              allOption={false}
+              search={true}
+              options={drivers.map((driver: any) => ({
+                value: driver._id,
+                text: `${driver.firstName} ${driver.lastName}`
+              }))}
+              onClick={(e: string) => {
+                this.props.transmittalActions.updateTransmittalThunkAction({
+                  _id: transmittal._id,
+                  'transporter.driver': e
+                });
+              }}
+            />
+            {/*{transmittal.transporter.driver._id}*/}
+            {/*{transmittal.transporter.driver.firstName} {transmittal.transporter.driver.lastName}*/}
           </div>
-          <div className="col-sm-2 col-xs-2 col-md-2 col-lg-2">
+          <div className="flex-45 col-sm-2 col-xs-2 col-md-2 col-lg-2">
+            <BootstrapSelect
+              noneSelectedText="Selecciona un transportista"
+              displayItems={2}
+              sm={true}
+              selectedText="transportistas seleccionadas."
+              selected={transmittal.transporter.carrier ? [transmittal.transporter.carrier._id] : []}
+              autoClouse={true}
+              allOption={false}
+              search={true}
+              options={carriers.map((carrier: any) => ({
+                value: carrier._id,
+                text: carrier.name
+              }))}
+              onClick={(e: string) => {
+                this.props.transmittalActions.updateTransmittalThunkAction({
+                  _id: transmittal._id,
+                  'transporter.carrier': e
+                });
+              }}
+            />
+            {/*{transmittal.transporter.carrier.name}*/}
+          </div>
+          <div className="flex-45 col-sm-2 col-xs-2 col-md-2 col-lg-2">
             {transmittal.files.length}
           </div>
-          <div className="col-sm-1 col-xs-1 col-md-1 col-lg-1">
+          <div className="flex-45 col-sm-1 col-xs-1 col-md-1 col-lg-1">
             {transmittal.items.length}
           </div>
-          <div className="col-sm-4 col-xs-4 col-md-4 col-lg-4"/>
+          <div className="flex-45 col-sm-2 col-xs-2 col-md-2 col-lg-2"/>
           <div
-            className="col-sm-1 col-xs-1 col-md-1 col-lg-1 chevron pointer"
+            className="flex-45 col-sm-1 col-xs-1 col-md-1 col-lg-1 chevron pointer"
             onClick={() => transmittalActions.toogleTab(transmittal._id)}
           >
             {

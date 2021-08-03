@@ -67,30 +67,42 @@ class TransmittalListView extends TrackingBasePage<IPropsType, IStateType> {
 
     this.socket.on('connect', () => {
       this.socket.emit('join', {
-        room: `distribution-list-${window.user.team._id}`
+        room: `transmittal-list-${window.user.team._id}`
       });
     });
 
-    // this.socket.on('UPDATE_REQUEST_ITEM', (data: any): void => {
-    //   this.props.updateRequestItemActionInList(data.idRequest, data.item);
-    //   const $item = $(`#request-item-${data.item._id}`);
-    //   if ($item) {
-    //     $item.addClass('bg-aqua-active');
-    //     setTimeout(() => {
-    //       $item.removeClass('bg-aqua-active');
-    //     }, 300);
-    //   }
-    // });
-    //
-    // this.socket.on('DELETE_REQUEST_ITEM', (data: any): void => {
-    //   const $item = $(`#request-item-${data.item._id}`);
-    //   if ($item) {
-    //     $item.addClass('bg-red-active');
-    //   }
-    //   setTimeout(() => {
-    //     this.props.deleteRequestItemActionInList(data.idRequest, data.item);
-    //   }, 300);
-    // });
+    this.socket.on('UPDATE_TRANSMITTAL_ITEM', (data: any): void => {
+      this.props.transmittalActions.updateTransmittalItemAction(data.transmittalItem);
+      const $item = $(`#transmittal-item-${data.transmittalItem._id}`);
+      if ($item) {
+        $item.addClass('bg-aqua-active');
+        setTimeout(() => {
+          $item.removeClass('bg-aqua-active');
+        }, 300);
+      }
+    });
+
+    this.socket.on('UPDATE_TRANSMITTAL', (data: any): void => {
+      this.props.transmittalActions.updateTransmittalAction(data.transmittal);
+      const $item = $(`#transmittal-${data.transmittal._id}`);
+      if ($item) {
+        $item.addClass('bg-aqua-active');
+        setTimeout(() => {
+          $item.removeClass('bg-aqua-active');
+        }, 300);
+      }
+    });
+
+    this.socket.on('DELETE_TRANSMITTAL_ITEM', (data: any): void => {
+      const $item = $(`#transmittal-item-${data.transmittalItem._id}`);
+      if ($item) {
+        $item.addClass('bg-red-active');
+      }
+      setTimeout(() => {
+        this.props.transmittalActions.deleteTransmittalItemAction(data.transmittalItem);
+      }, 300);
+    });
+
     //
     // this.socket.on('DELETE_REQUEST', (data: any): void => {
     //   const $item = $(`#request-${data.idRequest}`);
@@ -182,22 +194,27 @@ class TransmittalListView extends TrackingBasePage<IPropsType, IStateType> {
             <div className={`box-body transmittal-list`}>
               <ShowIf condition={data.length > 0}>
                 <div className="row transmittal bg-primary">
-                  <div className="col-sm-1 col-xs-1 col-md-1 col-lg-1 center pointer head-sorted" onClick={() => this.changeOrder('_id')}>
+                  <div className="flex-45 col-sm-1 col-xs-1 col-md-1 col-lg-1 center pointer head-sorted"
+                       onClick={() => this.changeOrder('_id')}
+                  >
                     <strong>ID</strong> <i className={`fa ${orderBy === '_id' ? `${orderType === 'descending' ? 'fa-sort-down' : 'fa-sort-up'}` : 'fa-sort'}`} />
                   </div>
-                  <div className="col-sm-1 col-xs-1 col-md-1 col-lg-1">
+                  <div className="flex-45 col-sm-1 col-xs-1 col-md-1 col-lg-1">
                     <strong>Placa</strong>
                   </div>
-                  <div className="col-sm-2 col-xs-2 col-md-2 col-lg-2">
+                  <div className="flex-45 col-sm-2 col-xs-2 col-md-2 col-lg-2">
                     <strong>Chófer</strong>
                   </div>
-                  <div className="col-sm-2 col-xs-2 col-md-2 col-lg-2">
+                  <div className="flex-45 col-sm-2 col-xs-2 col-md-2 col-lg-2">
+                    <strong>Transportista</strong>
+                  </div>
+                  <div className="flex-45 col-sm-2 col-xs-2 col-md-2 col-lg-2">
                     <strong>Documentos</strong>
                   </div>
-                  <div className="col-sm-1 col-xs-1 col-md-1 col-lg-1">
+                  <div className="flex-45 col-sm-1 col-xs-1 col-md-1 col-lg-1">
                     <strong>Nº Vehículos</strong>
                   </div>
-                  <div className="col-sm-5 col-xs-5 col-md-5 col-lg-5" />
+                  <div className="flex-45 col-sm-3 col-xs-3 col-md-3 col-lg-3" />
                 </div>
                 {
                   data.map((item: any) => (

@@ -26,6 +26,7 @@ import {
 import { ITempUser } from '../actions/users.actions';
 import { IFilterCar } from '../reducers/inventory.reducer';
 import { ITransmittalItemModel } from '../../../../../src/distribution/models/transmittalItem.model';
+import { ITransmittalModel } from '../../../../../src/distribution/models/transmittal.model';
 
 export interface IHeaders {
   'X-CSRFToken'?: string;
@@ -681,10 +682,23 @@ export default class ApiService {
     );
   }
 
-   public updateTransmittalItem(transmittalItem: Partial<ITransmittalItemModel>) {
+  public updateTransmittal(transmittal: Partial<ITransmittalModel>) {
+    return this.instance.patch(
+      `/api/v1/transmittals/${transmittal._id}/`,
+      transmittal
+    );
+  }
+
+  public updateTransmittalItem(transmittalItem: Partial<ITransmittalItemModel>) {
     return this.instance.patch(
       `/api/v1/transmittals/item/${transmittalItem._id}/`,
-       transmittalItem
+      transmittalItem
+    );
+  }
+
+  public deleteTransmittalItem(transmittalItem: Partial<ITransmittalItemModel>) {
+    return this.instance.delete(
+      `/api/v1/transmittals/item/${transmittalItem._id}/`
     );
   }
 }

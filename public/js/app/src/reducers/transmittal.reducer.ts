@@ -1,6 +1,7 @@
 import {
   CANCEL_REQUEST_TRANSMITTAL,
   CHANGE_ORDER_TRANSMITTAL,
+  DELETE_TRANSMITTAL_ITEM_TRANSMITTAL,
   FILTER_REQUEST_ITEMS_TRANSMITTAL,
   ITransmittalActionTypes,
   ITransmittalState,
@@ -11,11 +12,13 @@ import {
   LOAD_VENUES_TRANSMITTAL,
   LOADING_REQUEST_ITEMS_TRANSMITTAL,
   LOADING_TRANSMITTAL,
-  TOOGLE_TAB_TRANSMITTAL
+  TOOGLE_TAB_TRANSMITTAL,
+  UPDATE_TRANSMITTAL_ITEM_TRANSMITTAL,
+  UPDATE_TRANSMITTAL_TRANSMITTAL
 } from "../actions/transmittal.types";
+import {ITransmittal} from "../../../../../src/distribution/interfaces/transmittal.interface";
 
-
-const initialState: ITransmittalState = {
+const initialState: ITransmittalState<ITransmittal> = {
   loading: true,
   requestItemsLoading: true,
   data: [],
@@ -50,7 +53,7 @@ const initialState: ITransmittalState = {
   }
 };
 
-export default function transmittalReducer(state = initialState, action: ITransmittalActionTypes): ITransmittalState {
+export default function transmittalReducer(state= initialState, action: ITransmittalActionTypes): ITransmittalState {
   switch (action.type) {
     case LOADING_TRANSMITTAL:
       return {
@@ -67,6 +70,77 @@ export default function transmittalReducer(state = initialState, action: ITransm
           page: action.payload.page,
           count: action.payload.count
         }
+      };
+    case DELETE_TRANSMITTAL_ITEM_TRANSMITTAL:
+      return  {
+        ...state,
+        data: state.data.map<ITransmittal>((transmittal: any) => {
+          if (transmittal._id === action.payload.transmittalItem?.transmittal) {
+            return {
+              ...transmittal,
+              items: transmittal.items.filter((item: any) => {
+                return item._id !== action.payload.transmittalItem._id
+              })
+            }
+          }
+          return transmittal;
+        })
+      };
+    case UPDATE_TRANSMITTAL_TRANSMITTAL:
+      return {
+        ...state,
+        data: state.data.map<ITransmittal>((transmittal: any) => {
+          if (transmittal._id === action.payload.transmittal._id) {
+            return {
+              ...transmittal,
+              ...action.payload.transmittal
+            }
+          } else {
+            return transmittal;
+          }
+        })
+      };
+    case UPDATE_TRANSMITTAL_ITEM_TRANSMITTAL:
+      return  {
+        ...state,
+        data: state.data.map<ITransmittal>((transmittal: any) => {
+          if (transmittal._id === action.payload.transmittalItem?.transmittal) {
+            return {
+              ...transmittal,
+              items: transmittal.items.map((item: any) => {
+                if (item._id === action.payload.transmittalItem._id) {
+                  return {
+                    ...item,
+                    ...action.payload.transmittalItem
+                  }
+                }
+                return item;
+              })
+            }
+          }
+          return transmittal;
+        })
+      };
+    case UPDATE_TRANSMITTAL_ITEM_TRANSMITTAL:
+      return  {
+        ...state,
+        data: state.data.map<ITransmittal>((transmittal: any) => {
+          if (transmittal._id === action.payload.transmittalItem?.transmittal) {
+            return {
+              ...transmittal,
+              items: transmittal.items.map((item: any) => {
+                if (item._id === action.payload.transmittalItem._id) {
+                  return {
+                    ...item,
+                    ...action.payload.transmittalItem
+                  }
+                }
+                return item;
+              })
+            }
+          }
+          return transmittal;
+        })
       };
     case LOAD_CARRIERS_TRANSMITTAL:
       return {

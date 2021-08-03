@@ -10,9 +10,23 @@ import * as GraphicsMagick from "gm";
 import Team from "../../app/models/team.model";
 import Car from "../../app/models/car.model";
 import RequestItem from "../../request/models/requestItem.model";
+import {io} from "../../server";
 
 
 class TransmittalController {
+  public itemPopulate = [{
+    path: 'car',
+    select: ['invoice', 'entry', 'denomination', 'patent', 'material', 'vin', 'brand', 'color']
+  }, {
+    path: 'request',
+    select: ['number']
+  }, {
+    path: 'destination',
+    select: ['name']
+  }, {
+    path: 'origin',
+    select: ['name']
+  }];
 
   constructor() {
     this.index = this.index.bind(this);
@@ -20,6 +34,7 @@ class TransmittalController {
     this.apiOnlyMe = this.apiOnlyMe.bind(this);
     this.apiDetail = this.apiDetail.bind(this);
     this.apiCreate = this.apiCreate.bind(this);
+    this.apiUpdate = this.apiUpdate.bind(this);
     this.apiDelete = this.apiDelete.bind(this);
     this.uploadFile = this.uploadFile.bind(this);
   }
@@ -41,7 +56,6 @@ class TransmittalController {
     const {user} = req;
     try {
       const team = await Team.findOneAndUpdate({ _id: user.team._id }, { $inc: { transmittalNumber: 1 } }, { new: true });
-
       // create new transmittal
       const transmittal = await new Transmittal({
         name,
@@ -96,6 +110,47 @@ class TransmittalController {
     }
   }
 
+  public async apiUpdate(req: IRequest, res: Response) {
+    logger.info(`TransmittalController.apiUpdate`);
+    const {id} = req.params;
+    const {body: transmittal} = req;
+    const {team} = req.user;
+    try {
+      const newTransmittal = await Transmittal
+        .findOneAndUpdate({_id: id}, {$set: transmittal}, {new: true})
+        .populate([{
+          path: 'transporter.carrier',
+          select: ['name']
+        }, {
+          path: 'transporter.driver',
+          select: ['firstName', 'lastName']
+        }, {
+          path: 'items',
+          select: ['car', 'requestItem', 'destination', 'origin', 'loadingDate', 'arrivalDate'],
+          populate: this.itemPopulate
+        }, {
+          path: 'files',
+          select: ['file', 'thumbnail']
+        }, {
+          path: 'createdBy',
+          select: ['firstName', 'lastName']
+        }]);
+      io.to(`transmittal-list-${team._id}`).emit('UPDATE_TRANSMITTAL', {
+        transmittal: newTransmittal
+      });
+      res.json({
+        data: newTransmittal,
+      });
+    } catch (e) {
+      console.log(e);
+      /* istanbul ignore next */
+      logger.error(`TransmittalController.apiUpdate: Async Error.`);
+      /* istanbul ignore next */
+      logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
+      res.status(500).json(e);
+    }
+  }
+
   public async apiDelete(req: IRequest, res: Response) {
     logger.info(`TransmittalController.apiDelete`);
     res.json({
@@ -128,19 +183,7 @@ class TransmittalController {
       }, {
         path: 'items',
         select: ['car', 'requestItem', 'destination', 'origin', 'loadingDate', 'arrivalDate'],
-        populate: [{
-          path: 'car',
-          select: ['invoice', 'entry', 'denomination', 'patent', 'material', 'vin', 'brand', 'color']
-        }, {
-          path: 'request',
-          select: ['number']
-        }, {
-          path: 'destination',
-          select: ['name']
-        }, {
-          path: 'origin',
-          select: ['name']
-        }]
+        populate: this.itemPopulate
       }, {
         path: 'files',
         select: ['file', 'thumbnail']

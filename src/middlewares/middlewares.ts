@@ -115,6 +115,7 @@ class Middlewares {
       }
     }
   }
+
 }
 
 export default new Middlewares();

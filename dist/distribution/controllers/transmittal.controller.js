@@ -9,13 +9,28 @@ const GraphicsMagick = require("gm");
 const team_model_1 = require("../../app/models/team.model");
 const car_model_1 = require("../../app/models/car.model");
 const requestItem_model_1 = require("../../request/models/requestItem.model");
+const server_1 = require("../../server");
 class TransmittalController {
+    itemPopulate = [{
+            path: 'car',
+            select: ['invoice', 'entry', 'denomination', 'patent', 'material', 'vin', 'brand', 'color']
+        }, {
+            path: 'request',
+            select: ['number']
+        }, {
+            path: 'destination',
+            select: ['name']
+        }, {
+            path: 'origin',
+            select: ['name']
+        }];
     constructor() {
         this.index = this.index.bind(this);
         this.apiList = this.apiList.bind(this);
         this.apiOnlyMe = this.apiOnlyMe.bind(this);
         this.apiDetail = this.apiDetail.bind(this);
         this.apiCreate = this.apiCreate.bind(this);
+        this.apiUpdate = this.apiUpdate.bind(this);
         this.apiDelete = this.apiDelete.bind(this);
         this.uploadFile = this.uploadFile.bind(this);
     }
@@ -85,6 +100,47 @@ class TransmittalController {
             res.status(500).json(e);
         }
     }
+    async apiUpdate(req, res) {
+        logger_service_1.default.info(`TransmittalController.apiUpdate`);
+        const { id } = req.params;
+        const { body: transmittal } = req;
+        const { team } = req.user;
+        try {
+            const newTransmittal = await transmittal_model_1.default
+                .findOneAndUpdate({ _id: id }, { $set: transmittal }, { new: true })
+                .populate([{
+                    path: 'transporter.carrier',
+                    select: ['name']
+                }, {
+                    path: 'transporter.driver',
+                    select: ['firstName', 'lastName']
+                }, {
+                    path: 'items',
+                    select: ['car', 'requestItem', 'destination', 'origin', 'loadingDate', 'arrivalDate'],
+                    populate: this.itemPopulate
+                }, {
+                    path: 'files',
+                    select: ['file', 'thumbnail']
+                }, {
+                    path: 'createdBy',
+                    select: ['firstName', 'lastName']
+                }]);
+            server_1.io.to(`transmittal-list-${team._id}`).emit('UPDATE_TRANSMITTAL', {
+                transmittal: newTransmittal
+            });
+            res.json({
+                data: newTransmittal,
+            });
+        }
+        catch (e) {
+            console.log(e);
+            /* istanbul ignore next */
+            logger_service_1.default.error(`TransmittalController.apiUpdate: Async Error.`);
+            /* istanbul ignore next */
+            logger_service_1.default.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
+            res.status(500).json(e);
+        }
+    }
     async apiDelete(req, res) {
         logger_service_1.default.info(`TransmittalController.apiDelete`);
         res.json({
@@ -110,19 +166,7 @@ class TransmittalController {
                 }, {
                     path: 'items',
                     select: ['car', 'requestItem', 'destination', 'origin', 'loadingDate', 'arrivalDate'],
-                    populate: [{
-                            path: 'car',
-                            select: ['invoice', 'entry', 'denomination', 'patent', 'material', 'vin', 'brand', 'color']
-                        }, {
-                            path: 'request',
-                            select: ['number']
-                        }, {
-                            path: 'destination',
-                            select: ['name']
-                        }, {
-                            path: 'origin',
-                            select: ['name']
-                        }]
+                    populate: this.itemPopulate
                 }, {
                     path: 'files',
                     select: ['file', 'thumbnail']

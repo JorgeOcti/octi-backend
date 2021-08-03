@@ -2,9 +2,10 @@ import {ITransmittal} from '../../../../../src/distribution/interfaces/transmitt
 import {CancelTokenSource} from "axios";
 import {IVenueModel} from '../../../../../src/app/models/venue.model';
 import {ICarrierModel} from '../../../../../src/app/models/carrier.model';
-import { ITransmittalItemModel } from '../../../../../src/distribution/models/transmittalItem.model';
-import { IUserModel } from '../../../../../src/app/models/user.model';
-import { IRequestItem } from '../../../../../src/request/interfaces/requestItem.interface';
+import {ITransmittalItemModel} from '../../../../../src/distribution/models/transmittalItem.model';
+import {IUserModel} from '../../../../../src/app/models/user.model';
+import {IRequestItem} from '../../../../../src/request/interfaces/requestItem.interface';
+import { ITransmittalModel } from '../../../../../src/distribution/models/transmittal.model';
 
 
 export const LOADING_TRANSMITTAL = '@transmittal/IS_LOADING';
@@ -12,11 +13,12 @@ export const LOAD_TRANSMITTAL = '@transmittal/LOAD';
 export const LOAD_VENUES_TRANSMITTAL = '@transmittal/LOAD_VENUES';
 export const LOAD_CARRIERS_TRANSMITTAL = '@transmittal/LOAD_CARRIERS';
 export const LOAD_DRIVERS_TRANSMITTAL = '@transmittal/LOAD_DRIVERS';
-export const UPDATE__TRANSMITTAL = '@transmittal/UPDATE_';
 export const TOOGLE_TAB_TRANSMITTAL = '@transmittal/TOOGLE_TAB';
 export const CHANGE_ORDER_TRANSMITTAL = '@transmittal/CHANGE_ORDER';
 export const CANCEL_REQUEST_TRANSMITTAL = '@transmittal/CANCEL_REQUEST';
 export const UPDATE_TRANSMITTAL_ITEM_TRANSMITTAL = '@transmittal/UPDATE_TRANSMITTAL_ITEM';
+export const DELETE_TRANSMITTAL_ITEM_TRANSMITTAL = '@transmittal/DELETE_TRANSMITTAL_ITEM';
+export const UPDATE_TRANSMITTAL_TRANSMITTAL = '@transmittal/UPDATE_TRANSMITTAL';
 
 export interface IPaginationListView {
   count: number;
@@ -121,7 +123,21 @@ interface ITransmittalToogleTabAction {
 interface IUpdateTransmittalItemAction {
   type: typeof UPDATE_TRANSMITTAL_ITEM_TRANSMITTAL;
   payload: {
-    transmitallItem: Partial<ITransmittalItemModel>;
+    transmittalItem: Partial<ITransmittalItemModel>;
+  }
+}
+
+interface IDeleteTransmittalItemAction {
+  type: typeof DELETE_TRANSMITTAL_ITEM_TRANSMITTAL;
+  payload: {
+    transmittalItem: Partial<ITransmittalItemModel>;
+  }
+}
+
+interface IUpdateTransmittalAction {
+  type: typeof UPDATE_TRANSMITTAL_TRANSMITTAL;
+  payload: {
+    transmittal: Partial<ITransmittalModel>;
   }
 }
 
@@ -162,6 +178,8 @@ export type ITransmittalActionTypes =
   ITransmittalToogleTabAction |
   ITransmittalChangeOrderAction |
   ITransmittalLoadAction |
+  IUpdateTransmittalAction |
+  IDeleteTransmittalItemAction |
   IUpdateTransmittalItemAction |
   ITransmittalLoadDriversAction |
   IChangeFilterRequestItemsTransmittalItemAction |

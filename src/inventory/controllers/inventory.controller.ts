@@ -2284,6 +2284,7 @@ class InventoryController {
         });
     });
   }
+
 }
 
 export default new InventoryController();
