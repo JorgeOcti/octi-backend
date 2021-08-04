@@ -153,7 +153,7 @@ class DashboardRevisionsView extends TrackingBasePage<IPropsType, IStateType> {
             </div>
             <div className="box-body">
               <div className="row">
-                <CircleChartCard className="col-md-6 col-lg-4 lg-tm-10"
+                <CircleChartCard className="col-md-6 col-lg-6 lg-tm-10"
                   title={this.isSALFARAC() ?
                     '% DE ENTREGAS/RECEPCIONES POR USUARIO HABITUAL' :
                     '% ACEPTA REVISIÓN (pórtico)'}
@@ -193,8 +193,10 @@ class DashboardRevisionsView extends TrackingBasePage<IPropsType, IStateType> {
                     }
                   </div>
                 </CircleChartCard>
-                <CircleChartCard className="col-md-6 col-lg-4 lg-tm-10" title="SUCURSALES ACTIVAS MES" value={venueActivity} bordered showLoading={loading} />
-                <FilterableVenueTable className="col-md-12 col-lg-4 lg-tm-10" bordered />
+                <CircleChartCard className="col-md-6 lg-tm-10" title="SUCURSALES ACTIVAS MES" value={venueActivity} bordered showLoading={loading} />
+              </div>
+              <div className="row">
+                <FilterableVenueTable className="col-md-12 col-lg-12 lg-tm-12" bordered />
               </div>
             </div>
             {
