@@ -1351,7 +1351,7 @@ class InventoryController {
             as: 'cars'
           }
         }, {
-          $unwind: '$cars'
+          $unwind: {path: '$cars', preserveNullAndEmptyArrays: true}
         }, {
           $match: {
             $or: [
@@ -1423,7 +1423,7 @@ class InventoryController {
             as: 'userInfo'
           }
         }, {
-          $unwind: '$userInfo'
+          $unwind: {path: '$userInfo', preserveNullAndEmptyArrays: true}
         }, {
           $project: {
             '_id': 1,
