@@ -4,6 +4,7 @@ import TransmittalItem from "../models/transmittalItem.model";
 import TransmittalController from "./transmittal.controller";
 import logger from "../../services/logger.service";
 import {io} from "../../server";
+import Transmittal from "../models/transmittal.model";
 
 class TransmittalItemController {
 
@@ -59,9 +60,29 @@ class TransmittalItemController {
   }
 
   public async apiCreate(req: IRequest, res: Response) {
-    res.json({
-      api: 'TransmittalItemController:apiCreate'
-    })
+    const {body: item, user} = req;
+    const {team} = user;
+    try {
+      const transmittalItem = await new TransmittalItem({
+        team,
+        ...item
+      }).save();
+      const transmittalItemData = await TransmittalItem.findById(transmittalItem._id).populate(TransmittalController.itemPopulate);
+      io.to(`transmittal-list-${team._id}`).emit('CREATE_TRANSMITTAL_ITEM', {
+        transmittalItem: transmittalItemData
+      });
+      res.json({
+        data: transmittalItemData
+      });
+    } catch (e) {
+      /* istanbul ignore next */
+      logger.error(e);
+      /* istanbul ignore next */
+      logger.error(`TransmittalItemController.apiCreate: Async Error.`);
+      /* istanbul ignore next */
+      logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
+      res.status(500).json(e);
+    }
   }
 
   public async apiDelete(req: IRequest, res: Response) {
@@ -72,9 +93,18 @@ class TransmittalItemController {
       const transmittalItem = await TransmittalItem.findOne({_id: id});
       if(transmittalItem){
         await transmittalItem.remove();
+        const transmittalItems = await TransmittalItem.find({transmittal: transmittalItem.transmittal}).count();
         io.to(`transmittal-list-${team._id}`).emit('DELETE_TRANSMITTAL_ITEM', {
-          transmittalItem
-        });
+            transmittalItem
+          });
+        // clean transmittal
+        if (transmittalItems === 0) {
+          const transmittal = await Transmittal.findOne({_id: transmittalItem.transmittal});
+          await transmittal!.remove();
+          io.to(`transmittal-list-${team._id}`).emit('DELETE_TRANSMITTAL', {
+            transmittal
+          });
+        }
       }
       res.json({
         transmittalItem

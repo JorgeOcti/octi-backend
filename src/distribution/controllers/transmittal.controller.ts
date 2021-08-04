@@ -78,6 +78,7 @@ class TransmittalController {
         // create transmittal items
         const transmittalItem = await new TransmittalItem({
           ...item,
+          team,
           transmittal
         }).save();
         // associate request item with transmittal and transmittal item
@@ -97,6 +98,10 @@ class TransmittalController {
           $set: {transmittal}
         });
       }
+
+      io.to(`transmittal-list-${team!._id}`).emit('CREATE_TRANSMITTAL', {
+        transmittal
+      });
 
       res.json({
         status: 200

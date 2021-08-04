@@ -4,7 +4,6 @@ import * as mongoosePaginate from 'mongoose-paginate';
 import {ITransmittal} from '../interfaces/transmittal.interface';
 import mongooseAggregatePaginate = require('mongoose-aggregate-paginate-v2');
 
-
 export interface ITransmittalModel extends ITransmittal, mongoose.Document { }
 
 export enum ChoicesStatusTransmittal {

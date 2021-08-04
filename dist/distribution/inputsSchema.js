@@ -8,7 +8,7 @@ const createTransmittalSchema = yup.object().shape({
     transporter: yup.object({
         carrier: yup.string().required(),
         driver: yup.string().required(),
-        patent: yup.string().required(),
+        patent: yup.string(),
     }),
     items: yup.array().of(yup.object({
         request: yup.string().required(),

@@ -1,7 +1,7 @@
 import {
   CANCEL_REQUEST_TRANSMITTAL,
-  CHANGE_ORDER_TRANSMITTAL,
-  DELETE_TRANSMITTAL_ITEM_TRANSMITTAL,
+  CHANGE_ORDER_TRANSMITTAL, CREATE_TRANSMITTAL_ITEM_TRANSMITTAL,
+  DELETE_TRANSMITTAL_ITEM_TRANSMITTAL, DELETE_TRANSMITTAL_TRANSMITTAL,
   FILTER_REQUEST_ITEMS_TRANSMITTAL,
   ITransmittalActionTypes,
   ITransmittalState,
@@ -86,6 +86,13 @@ export default function transmittalReducer(state= initialState, action: ITransmi
           return transmittal;
         })
       };
+    case DELETE_TRANSMITTAL_TRANSMITTAL:
+      return {
+        ...state,
+        data: state.data.filter((transmittal: any) => {
+          return transmittal._id !== action.payload.transmittal._id
+        })
+      };
     case UPDATE_TRANSMITTAL_TRANSMITTAL:
       return {
         ...state,
@@ -100,22 +107,14 @@ export default function transmittalReducer(state= initialState, action: ITransmi
           }
         })
       };
-    case UPDATE_TRANSMITTAL_ITEM_TRANSMITTAL:
-      return  {
+    case CREATE_TRANSMITTAL_ITEM_TRANSMITTAL:
+      return {
         ...state,
         data: state.data.map<ITransmittal>((transmittal: any) => {
           if (transmittal._id === action.payload.transmittalItem?.transmittal) {
             return {
               ...transmittal,
-              items: transmittal.items.map((item: any) => {
-                if (item._id === action.payload.transmittalItem._id) {
-                  return {
-                    ...item,
-                    ...action.payload.transmittalItem
-                  }
-                }
-                return item;
-              })
+              items: [...transmittal.items, action.payload.transmittalItem]
             }
           }
           return transmittal;

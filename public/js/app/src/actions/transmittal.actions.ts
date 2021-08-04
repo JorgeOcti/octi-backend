@@ -2,7 +2,9 @@ import {ITransmittal} from '../../../../../src/distribution/interfaces/transmitt
 import {
   CANCEL_REQUEST_TRANSMITTAL,
   CHANGE_ORDER_TRANSMITTAL,
+  CREATE_TRANSMITTAL_ITEM_TRANSMITTAL,
   DELETE_TRANSMITTAL_ITEM_TRANSMITTAL,
+  DELETE_TRANSMITTAL_TRANSMITTAL,
   FILTER_REQUEST_ITEMS_TRANSMITTAL,
   IRequestItemsFilters,
   ITransmittalActionTypes,
@@ -26,6 +28,7 @@ import {ICarrierModel} from '../../../../../src/app/models/carrier.model';
 import {arrayPush, autofill, FormAction, submit} from "redux-form";
 import {IUserModel} from '../../../../../src/app/models/user.model';
 import {IRequestItem} from '../../../../../src/request/interfaces/requestItem.interface';
+import {ITransmittalItemModel} from '../../../../../src/distribution/models/transmittalItem.model';
 
 export default class TransmittalActions {
   private api: ApiService;
@@ -42,7 +45,7 @@ export default class TransmittalActions {
     this.dispatch({
       type: LOADING_TRANSMITTAL,
       payload: {
-        loading,
+        loading
       }
     });
   }
@@ -153,9 +156,27 @@ export default class TransmittalActions {
     });
   }
 
-  public deleteTransmittalItemAction(transmittalItem: Partial<ITransmittal>){
+  public deleteTransmittalAction(transmittal: Partial<ITransmittal>){
+    this.dispatch({
+      type: DELETE_TRANSMITTAL_TRANSMITTAL,
+      payload: {
+        transmittal
+      }
+    })
+  }
+
+  public deleteTransmittalItemAction(transmittalItem: Partial<ITransmittalItemModel>){
     this.dispatch({
       type: DELETE_TRANSMITTAL_ITEM_TRANSMITTAL,
+      payload: {
+        transmittalItem
+      }
+    })
+  }
+
+  public createTransmittalItemAction(transmittalItem: Partial<ITransmittal>){
+    this.dispatch({
+      type: CREATE_TRANSMITTAL_ITEM_TRANSMITTAL,
       payload: {
         transmittalItem
       }
@@ -212,7 +233,7 @@ export default class TransmittalActions {
       const state = getState();
       const transmittalActions = new TransmittalActions(dispatch);
       const page = nextPage ? nextPage : state.transmittal.pagination.page;
-      transmittalActions.loadingAction(!hideLoading);
+      transmittalActions.loadingAction(hideLoading ? false : true);
       transmittalActions.changeOrderAction(orderBy, orderType);
       transmittalActions.cancelRequestAction(this.api.getSource());
       Axios
@@ -267,7 +288,7 @@ export default class TransmittalActions {
       const state = getState();
       const transmittalActions = new TransmittalActions(dispatch);
       const page = nextPage ? nextPage : state.transmittal.requestItemsPagination.page;
-      transmittalActions.loadingRequestItemAction(!hideLoading);
+      transmittalActions.loadingRequestItemAction(hideLoading ? false : true);
       transmittalActions.cancelRequestAction(this.api.getSource());
       this.api.getRequestItems({
         page,

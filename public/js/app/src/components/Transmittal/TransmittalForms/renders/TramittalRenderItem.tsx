@@ -8,7 +8,6 @@ import BootstrapSelectField from "../../../Utils/forms/BootstrapSelectField";
 import SearchCarInRequests from '../SearchCarInRequest';
 import {IRequestItem} from "../../../../../../../../src/request/interfaces/requestItem.interface";
 import InputField from "../../../Utils/forms/InputField";
-import TextAreaField from "../../../Utils/forms/TextAreaField";
 
 
 export interface IRenderItemProps {
@@ -35,7 +34,8 @@ class TramittalRenderItem extends React.Component<IPropsType, IStateType> {
 
   constructor(props:IPropsType) {
     super(props);
-    this.toogleTab = this.toogleTab.bind(this)
+    this.toogleTab = this.toogleTab.bind(this);
+    this.pushItem = this.pushItem.bind(this)
   }
 
   public render(): React.ReactElement<IPropsType> {
@@ -169,14 +169,15 @@ class TramittalRenderItem extends React.Component<IPropsType, IStateType> {
                         {
                           openTab ?
                             <tr style={{borderTop: 'none'}}>
-                              <td colSpan={5} className={'b-t-0'}>
+                              <td colSpan={11} className={'b-t-0'}>
                                 <table className={'table'} style={{marginBottom:0}}>
                                   <thead>
                                   <tr style={{backgroundColor: '#f9f9f9'}}>
-                                    <th className={'middle width-25'}>Cliente</th>
-                                    <th className={'middle width-25'}>BL</th>
-                                    <th className={'middle width-25'}>Tipo</th>
-                                    <th className={'middle width-25'}>Tipo Operación (Motivo)</th>
+                                    <th className={'middle width-20'}>Cliente</th>
+                                    <th className={'middle width-20'}>BL</th>
+                                    <th className={'middle width-20'}>Tipo</th>
+                                    <th className={'middle width-20'}>Tipo Operación (Motivo)</th>
+                                    <th className={'middle width-20'}>Observación</th>
                                   </tr>
                                   </thead>
                                   <tbody>
@@ -203,6 +204,16 @@ class TramittalRenderItem extends React.Component<IPropsType, IStateType> {
                                     </td>
                                     <td className={'middle'}>{value.car?.type ?? '-'}</td>
                                     <td className={'middle'}>{value.reason?.name ?? '-'}</td>
+                                    <td className={'middle form-group-no-margin'}>
+                                      <Field
+                                        name={`${item}.observation`}
+                                        type="text"
+                                        component={InputField}
+                                        props={{
+                                          labelOff: true
+                                        }}
+                                      />
+                                    </td>
                                   </tr>
                                   </tbody>
                                 </table>
@@ -217,10 +228,30 @@ class TramittalRenderItem extends React.Component<IPropsType, IStateType> {
               </table>
             </div>
         }
-        <SearchCarInRequests fields={fields}/>
+        <div className="col-md-12" style={{marginTop: '10px'}}>
+          <h4>Agregar Vehículos</h4>
+        </div>
+        <div className="col-md-12">
+          <SearchCarInRequests fields={fields} onClick={this.pushItem}/>
+        </div>
         {submitFailed && error && <span>{error}</span>}
       </React.Fragment>
     );
+  }
+
+  private pushItem(item: IRequestItem) {
+    this.props.transmittalActions.pushItem({
+      _id: item._id,
+      car: {
+        ...item.car,
+        bl: item.car.bl ?? '',
+        client: item.car.client ?? ''
+      },
+      request: item.request,
+      reason: item.reason,
+      origin: item.origin._id,
+      destination: item.destination._id
+    })
   }
 
   private toogleTab(id: string) {

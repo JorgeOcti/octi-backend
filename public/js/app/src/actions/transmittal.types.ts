@@ -16,9 +16,12 @@ export const LOAD_DRIVERS_TRANSMITTAL = '@transmittal/LOAD_DRIVERS';
 export const TOOGLE_TAB_TRANSMITTAL = '@transmittal/TOOGLE_TAB';
 export const CHANGE_ORDER_TRANSMITTAL = '@transmittal/CHANGE_ORDER';
 export const CANCEL_REQUEST_TRANSMITTAL = '@transmittal/CANCEL_REQUEST';
+export const CREATE_TRANSMITTAL_ITEM_TRANSMITTAL = '@transmittal/CREATE_TRANSMITTAL_ITEM';
 export const UPDATE_TRANSMITTAL_ITEM_TRANSMITTAL = '@transmittal/UPDATE_TRANSMITTAL_ITEM';
 export const DELETE_TRANSMITTAL_ITEM_TRANSMITTAL = '@transmittal/DELETE_TRANSMITTAL_ITEM';
 export const UPDATE_TRANSMITTAL_TRANSMITTAL = '@transmittal/UPDATE_TRANSMITTAL';
+export const DELETE_TRANSMITTAL_TRANSMITTAL = '@transmittal/DELETE_TRANSMITTAL';
+
 
 export interface IPaginationListView {
   count: number;
@@ -120,10 +123,24 @@ interface ITransmittalToogleTabAction {
   }
 }
 
+interface ICreateTransmittalItemAction {
+  type: typeof CREATE_TRANSMITTAL_ITEM_TRANSMITTAL;
+  payload: {
+    transmittalItem: Partial<ITransmittalItemModel>;
+  }
+}
+
 interface IUpdateTransmittalItemAction {
   type: typeof UPDATE_TRANSMITTAL_ITEM_TRANSMITTAL;
   payload: {
     transmittalItem: Partial<ITransmittalItemModel>;
+  }
+}
+
+interface IDeleteTransmittalAction {
+  type: typeof DELETE_TRANSMITTAL_TRANSMITTAL;
+  payload: {
+    transmittal: Partial<ITransmittalModel>;
   }
 }
 
@@ -180,7 +197,9 @@ export type ITransmittalActionTypes =
   ITransmittalLoadAction |
   IUpdateTransmittalAction |
   IDeleteTransmittalItemAction |
+  ICreateTransmittalItemAction |
   IUpdateTransmittalItemAction |
+  IDeleteTransmittalAction |
   ITransmittalLoadDriversAction |
   IChangeFilterRequestItemsTransmittalItemAction |
   ILoadRequestItemsTransmittalItemAction |

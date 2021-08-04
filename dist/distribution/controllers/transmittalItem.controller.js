@@ -4,6 +4,7 @@ const transmittalItem_model_1 = require("../models/transmittalItem.model");
 const transmittal_controller_1 = require("./transmittal.controller");
 const logger_service_1 = require("../../services/logger.service");
 const server_1 = require("../../server");
+const transmittal_model_1 = require("../models/transmittal.model");
 class TransmittalItemController {
     constructor() {
         this.index = this.index.bind(this);
@@ -53,9 +54,30 @@ class TransmittalItemController {
         }
     }
     async apiCreate(req, res) {
-        res.json({
-            api: 'TransmittalItemController:apiCreate'
-        });
+        const { body: item, user } = req;
+        const { team } = user;
+        try {
+            const transmittalItem = await new transmittalItem_model_1.default({
+                team,
+                ...item
+            }).save();
+            const transmittalItemData = await transmittalItem_model_1.default.findById(transmittalItem._id).populate(transmittal_controller_1.default.itemPopulate);
+            server_1.io.to(`transmittal-list-${team._id}`).emit('CREATE_TRANSMITTAL_ITEM', {
+                transmittalItem: transmittalItemData
+            });
+            res.json({
+                data: transmittalItemData
+            });
+        }
+        catch (e) {
+            /* istanbul ignore next */
+            logger_service_1.default.error(e);
+            /* istanbul ignore next */
+            logger_service_1.default.error(`TransmittalItemController.apiCreate: Async Error.`);
+            /* istanbul ignore next */
+            logger_service_1.default.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
+            res.status(500).json(e);
+        }
     }
     async apiDelete(req, res) {
         logger_service_1.default.info(`TransmittalItemController.apiDelete`);
@@ -65,9 +87,18 @@ class TransmittalItemController {
             const transmittalItem = await transmittalItem_model_1.default.findOne({ _id: id });
             if (transmittalItem) {
                 await transmittalItem.remove();
+                const transmittalItems = await transmittalItem_model_1.default.find({ transmittal: transmittalItem.transmittal }).count();
                 server_1.io.to(`transmittal-list-${team._id}`).emit('DELETE_TRANSMITTAL_ITEM', {
                     transmittalItem
                 });
+                // clean transmittal
+                if (transmittalItems === 0) {
+                    const transmittal = await transmittal_model_1.default.findOne({ _id: transmittalItem.transmittal });
+                    await transmittal.remove();
+                    server_1.io.to(`transmittal-list-${team._id}`).emit('DELETE_TRANSMITTAL', {
+                        transmittal
+                    });
+                }
             }
             res.json({
                 transmittalItem

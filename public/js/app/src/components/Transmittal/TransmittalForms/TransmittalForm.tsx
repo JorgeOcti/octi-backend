@@ -113,11 +113,11 @@ class Form extends React.Component<IPropsType, IStateType> {
           <div className="col-md-6">
             <Field
               name="transporter.patent"
-              label="Patente del camión *"
+              label="Patente del camión"
               placeholder="ABCD12"
               type="text"
               component={InputField}
-              validate={[inputStringRequired]}
+              // validate={[inputStringRequired]}
             />
           </div>
           <div className="col-md-12">

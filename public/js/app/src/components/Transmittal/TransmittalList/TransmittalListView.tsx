@@ -15,12 +15,12 @@ import TransmittalActions from "../../../actions/transmittal.actions";
 import {ITransmittalActionTypes, ITransmittalState} from "../../../actions/transmittal.types";
 import TransmitalListDetail from './TransmitalListDetail';
 import {Dispatch} from "redux";
+import ModalView from "../../Modal/ModalView";
 
 interface IPropsType extends RouteComponentProps<{ ticket: string }> {
   dispatch: Dispatch<ITransmittalActionTypes>;
   transmittal: ITransmittalState;
   transmittalActions : TransmittalActions
-  getTransmittalsThunkAction: (page: number, orderBy: string, orderType: string, hideLoading?: boolean) => void;
 }
 
 interface IStateType {
@@ -51,9 +51,10 @@ class TransmittalListView extends TrackingBasePage<IPropsType, IStateType> {
   public componentWillMount(): void {
     const {orderBy, orderType} = this.props.transmittal.options;
     const {page} = this.props.transmittal.pagination;
+    const {transmittalActions} = this.props;
     window.scrollTo(0, 0);
-    this.props.transmittalActions.getFormBaseData();
-    this.props.transmittalActions.getTransmittalsThunkAction(page, orderBy, orderType);
+    transmittalActions.getFormBaseData();
+    transmittalActions.getTransmittalsThunkAction(page, orderBy, orderType);
 
     // socket
     this.socket = io.connect(`${location.protocol}//${location.host}`, {
@@ -71,8 +72,19 @@ class TransmittalListView extends TrackingBasePage<IPropsType, IStateType> {
       });
     });
 
+    this.socket.on('CREATE_TRANSMITTAL_ITEM', (data: any): void => {
+      transmittalActions.createTransmittalItemAction(data.transmittalItem);
+      const $item = $(`#transmittal-item-${data.transmittalItem._id}`);
+      if ($item) {
+        $item.addClass('bg-green-active');
+      }
+      setTimeout(() => {
+        $item.removeClass('bg-green-active');
+      }, 300);
+    });
+
     this.socket.on('UPDATE_TRANSMITTAL_ITEM', (data: any): void => {
-      this.props.transmittalActions.updateTransmittalItemAction(data.transmittalItem);
+      transmittalActions.updateTransmittalItemAction(data.transmittalItem);
       const $item = $(`#transmittal-item-${data.transmittalItem._id}`);
       if ($item) {
         $item.addClass('bg-aqua-active');
@@ -83,7 +95,7 @@ class TransmittalListView extends TrackingBasePage<IPropsType, IStateType> {
     });
 
     this.socket.on('UPDATE_TRANSMITTAL', (data: any): void => {
-      this.props.transmittalActions.updateTransmittalAction(data.transmittal);
+      transmittalActions.updateTransmittalAction(data.transmittal);
       const $item = $(`#transmittal-${data.transmittal._id}`);
       if ($item) {
         $item.addClass('bg-aqua-active');
@@ -99,37 +111,29 @@ class TransmittalListView extends TrackingBasePage<IPropsType, IStateType> {
         $item.addClass('bg-red-active');
       }
       setTimeout(() => {
-        this.props.transmittalActions.deleteTransmittalItemAction(data.transmittalItem);
+        transmittalActions.deleteTransmittalItemAction(data.transmittalItem);
       }, 300);
     });
 
-    //
-    // this.socket.on('DELETE_REQUEST', (data: any): void => {
-    //   const $item = $(`#request-${data.idRequest}`);
-    //   if ($item) {
-    //     $item.addClass('bg-red-active');
-    //   }
-    //   setTimeout(() => {
-    //     this.props.deleteRequestActionInList(data.idRequest);
-    //   }, 300);
-    // });
-    //
-    // this.socket.on('CREATE_REQUEST', (data: any): void => {
-    //   const { page } = this.props.requests.pagination;
-    //   const { orderBy, orderType } = this.props.requests.options;
-    //   this.props.getRequestsThunkAction(page, orderBy, orderType, true);
-    // });
-    //
-    // this.socket.on('CREATE_REQUEST_ITEM', (data: any): void => {
-    //   this.props.createRequestItemActionInList(data.idRequest, data.item);
-    //     const $item = $(`#request-item-${data.item._id}`);
-    //     if ($item) {
-    //       $item.addClass('bg-green-active');
-    //     }
-    //     setTimeout(() => {
-    //       $item.removeClass('bg-green-active');
-    //     }, 300);
-    // });
+    this.socket.on('DELETE_TRANSMITTAL', (data: any): void => {
+      const $item = $(`#transmittal-${data.transmittal._id}`);
+      if ($item) {
+        $item.addClass('bg-red-active');
+      }
+      setTimeout(() => {
+        transmittalActions.deleteTransmittalAction(data.transmittal);
+        const {orderBy, orderType} = this.props.transmittal.options;
+        const {page} = this.props.transmittal.pagination;
+        transmittalActions.getTransmittalsThunkAction(page, orderBy, orderType, true);
+      }, 300);
+    });
+
+    this.socket.on('CREATE_TRANSMITTAL', (data: any): void => {
+      const {page} = this.props.transmittal.pagination;
+      const {orderBy, orderType} = this.props.transmittal.options;
+      transmittalActions.getTransmittalsThunkAction(page, orderBy, orderType, true);
+    });
+
   }
 
   public componentDidMount(): void {
@@ -270,6 +274,7 @@ class TransmittalListView extends TrackingBasePage<IPropsType, IStateType> {
               </div>
             }
           </div>
+          <ModalView modalLarge={true}/>
         </section>
       </AppContainer>
     );

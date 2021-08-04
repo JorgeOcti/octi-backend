@@ -1041,7 +1041,6 @@ class RequestController {
       res.status(200).json({
         ...item
       });
-      // todo: send update object to socket team
     } catch (e) {
       /* istanbul ignore next */
       logger.error(e);

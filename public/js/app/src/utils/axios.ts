@@ -682,21 +682,28 @@ export default class ApiService {
     );
   }
 
-  public updateTransmittal(transmittal: Partial<ITransmittalModel>) {
+  public updateTransmittal(transmittal: Partial<ITransmittalModel>): AxiosPromise {
     return this.instance.patch(
       `/api/v1/transmittals/${transmittal._id}/`,
       transmittal
     );
   }
 
-  public updateTransmittalItem(transmittalItem: Partial<ITransmittalItemModel>) {
+  public addTransmittalItem(data: any): AxiosPromise {
+    return this.instance.post(
+      `/api/v1/transmittals/item/`,
+      data
+    );
+  }
+
+  public updateTransmittalItem(transmittalItem: Partial<ITransmittalItemModel>): AxiosPromise {
     return this.instance.patch(
       `/api/v1/transmittals/item/${transmittalItem._id}/`,
       transmittalItem
     );
   }
 
-  public deleteTransmittalItem(transmittalItem: Partial<ITransmittalItemModel>) {
+  public deleteTransmittalItem(transmittalItem: Partial<ITransmittalItemModel>): AxiosPromise {
     return this.instance.delete(
       `/api/v1/transmittals/item/${transmittalItem._id}/`
     );
