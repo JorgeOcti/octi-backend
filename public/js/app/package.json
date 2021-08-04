@@ -3,7 +3,7 @@
   "version": "1.0.1",
   "main": "index.js",
   "scripts": {
-    "start": "NODE_ENV=development webpack-dashboard -- webpack --mode development --watch",
+    "start": "NODE_ENV=development webpack --mode development --watch",
     "dev": "NODE_ENV=development webpack-dev-server --mode development --hot --progress --color --open ",
     "build": "NODE_ENV=production SENTRY_ORG=osa webpack --mode production"
   },
@@ -36,7 +36,7 @@
     "react-datepicker": "^3.3.0",
     "react-dom": "^16.13.1",
     "react-exif-orientation-img": "~0.1.5",
-    "react-number-format": "^4.4.4",
+    "react-number-format": "^4.6.4",
     "react-redux": "^7.2.1",
     "react-router-dom": "^5.2.0",
     "react-router-redux": "~4.0.8",
