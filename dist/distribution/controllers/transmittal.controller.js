@@ -77,6 +77,7 @@ class TransmittalController {
                 await requestItem_model_1.default.findOneAndUpdate({
                     _id: item.requestItem
                 }, {
+                    assigned: true,
                     transmittal: transmittal._id,
                     transmittalItem: transmittalItem._id
                 });
@@ -233,13 +234,21 @@ class TransmittalController {
                     select: ['firstName', 'lastName']
                 }, {
                     path: 'items',
-                    select: ['car', 'requestItem', 'destination', 'origin', 'loadingDate', 'arrivalDate'],
+                    select: ['car', 'requestItem', 'destination', 'origin', 'loadingDate', 'arrivalDate', 'revisions'],
                     populate: [{
                             path: 'car',
                             select: ['invoice', 'entry', 'denomination', 'patent', 'material', 'vin', 'brand', 'color']
                         }, {
                             path: 'request',
                             select: ['number']
+                        }, {
+                            path: 'revisions',
+                            select: ['_id', 'hasDamages', 'receptionConfirmation', 'shippingConfirmation', 'createdAt'],
+                            options: {
+                                sort: {
+                                    _id: -1
+                                }
+                            }
                         }, {
                             path: 'destination',
                             select: ['name']

@@ -12,6 +12,8 @@ import Paginator from "../../Utils/Paginator";
 import { IRequestItem } from '../../../../../../../src/request/interfaces/requestItem.interface';
 import {debounce} from "throttle-debounce";
 import { IUser } from '../../../../../../../src/app/interfaces/user.interface';
+import * as io from 'socket.io-client';
+import {IWindow} from "../../../interfaces/window";
 
 
 interface IExternarlPropsType {
@@ -30,11 +32,15 @@ interface IStateType {
   error: Error | null;
 }
 
+declare let window: IWindow;
+
 class SearchCarInRequests extends React.Component<IPropsType, IStateType> {
 
   readonly state = {
     error: null
   };
+
+  private socket: SocketIOClient.Socket;
 
   constructor(props: IPropsType) {
     super(props);
@@ -44,6 +50,41 @@ class SearchCarInRequests extends React.Component<IPropsType, IStateType> {
 
   public componentWillMount(): void {
     this.props.transmittalActions.getRequestItemThunkAction(1);
+
+    // socket
+    this.socket = io.connect(`${location.protocol}//${location.host}`, {
+      secure: location.protocol === 'https:',
+      transports: ['websocket'],
+      reconnection: true,
+      query: {
+        token: window.user.token
+      }
+    });
+
+    this.socket.on('connect', () => {
+      this.socket.emit('join', {
+        room: `transmittal-list-${window.user.team._id}`
+      });
+    });
+
+    this.socket.on('CREATE_TRANSMITTAL_ITEM', (data: any): void => {
+      const {requestItemsPagination} = this.props.transmittal;
+      this.props.transmittalActions.getRequestItemThunkAction(requestItemsPagination.page, true);
+    });
+
+    this.socket.on('DELETE_TRANSMITTAL_ITEM', (data: any): void => {
+      const {requestItemsPagination} = this.props.transmittal;
+      this.props.transmittalActions.getRequestItemThunkAction(requestItemsPagination.page, true );
+    });
+    this.socket.on('DELETE_TRANSMITTAL', (data: any): void => {
+      const {requestItemsPagination} = this.props.transmittal;
+      this.props.transmittalActions.getRequestItemThunkAction(requestItemsPagination.page, true );
+    });
+
+    this.socket.on('CREATE_TRANSMITTAL', (data: any): void => {
+      const {requestItemsPagination} = this.props.transmittal;
+      this.props.transmittalActions.getRequestItemThunkAction(requestItemsPagination.page, true );
+    });
   }
 
   public componentWillUnmount(): void {
@@ -230,10 +271,21 @@ class SearchCarInRequests extends React.Component<IPropsType, IStateType> {
             <div className="overlay" style={{
               position: 'absolute',
               top: 0,
+              left: 0,
               height: '100%',
-              width: '100%'
+              width: '100%',
+              zIndex: 50,
+              background: "rgba(255,255,255,0.7)",
             }}>
-              <i className="fa fa-spinner fa-spin text-purple"/>
+              <i className="fa fa-spinner fa-spin text-purple" style={{
+                position: "absolute",
+                top: "50%",
+                left: "50%",
+                marginLeft: "-15px",
+                marginTop: "-15px",
+                color: "#000",
+                fontSize: "30px"
+              }}/>
             </div>
           }
         </div>

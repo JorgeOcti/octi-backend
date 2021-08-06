@@ -160,6 +160,7 @@ const damagesSelectedSchema = new mongoose.Schema({
 });
 
 export interface IParticipantAnswerModel extends IParticipantAnswer, mongoose.Types.Subdocument {}
+
 const participantAnswersSchema = new mongoose.Schema({
   question: {type: String, required: true, trim: true},
   shortName: {type: String, trim: true},
@@ -404,6 +405,11 @@ const participantSchema = new mongoose.Schema({
     ref: 'ParticipantFile'
   }],
 
+  transmittalItem: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'TransmittalItem'
+  },
+
   active: {
     type: Boolean,
     default: true
@@ -423,7 +429,9 @@ participantSchema.index({_id: 1, company: 1, venue: 1, createdAt: 1 });
 
 participantSchema.plugin(mongoosePaginate);
 
-export type ParticipantSchema = mongoose.Model<IParticipantModel> & PaginateModel<IParticipantModel>;
+export type ParticipantSchema =
+  mongoose.Model<IParticipantModel>
+  & PaginateModel<IParticipantModel>;
 
 const Participant = mongoose.model<IParticipantModel, ParticipantSchema>('Participant', participantSchema);
 

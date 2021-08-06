@@ -23,6 +23,7 @@ class DateRangePicker extends React.Component<IPropsType, IStateType> {
     super(props);
     this.input = React.createRef();
     this.inputGroup = React.createRef();
+    this.clickCalendar = this.clickCalendar.bind(this);
   }
 
   public componentDidMount() {
@@ -54,17 +55,24 @@ class DateRangePicker extends React.Component<IPropsType, IStateType> {
     });
   }
 
+  private clickCalendar(){
+    $(this.input.current!).datepicker("show");
+  }
+
   public render(): React.ReactElement<IPropsType> {
     const { format, value } = this.props;
     return (
-      <input
-        ref={this.input}
-        type="text"
-        value={value?.toString().length ? moment(value).format(format ?? 'DD-MM-YY') : ''}
-        className={`form-control ${this.props.className ?? ''}`}
-        onChange={(e) => {}}
-        style={{ ...this.props.style }}
-      />
+      <div className="input-group">
+        <input
+          ref={this.input}
+          type="text"
+          value={value?.toString().length ? moment(value).format(format ?? 'DD-MM-YY') : ''}
+          className={`form-control ${this.props.className ?? ''}`}
+          onChange={(e) => {}}
+          style={{ ...this.props.style }}
+        />
+        <span className="input-group-addon pointer" onClick={this.clickCalendar}><i className="fa fa-calendar" /></span>
+      </div>
     );
   }
 }

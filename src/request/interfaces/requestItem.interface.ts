@@ -1,5 +1,4 @@
 import { ICarrierModel } from '../../app/models/carrier.model';
-import { IRequestItemStatusModel } from '../request//models/requestItemStatus.model';
 import { ICarModel } from '../../app/models/car.model';
 import { ITeamModel } from '../../app/models/team.model';
 import { IUserModel } from '../../app/models/user.model';
@@ -15,6 +14,11 @@ import { ITeam } from '../../app/interfaces/team.interface';
 import { IUser } from '../../app/interfaces/user.interface';
 import { IVenue } from '../../app/interfaces/venue.interface';
 import { IRequestFile } from './requestFile.interface';
+import {IRequestItemStatusModel} from "../models/requestItemStatus.model";
+import {ITransmittal} from "../../distribution/interfaces/transmittal.interface";
+import {ITransmittalModel} from "../../distribution/models/transmittal.model";
+import {ITransmittalItem} from "../../distribution/interfaces/transmittalItem.interface";
+import {ITransmittalItemModel} from "../../distribution/models/transmittalItem.model";
 
 export interface IRequestAnswer {
   questionId: any;
@@ -25,6 +29,9 @@ export interface IRequestAnswer {
 export interface IRequestItem {
   _id: any;
   request: IRequest | IRequestModel;
+  transmittal: ITransmittal | ITransmittalModel;
+  transmittalItem: ITransmittalItem | ITransmittalItemModel;
+  assigned: boolean;
   team: ITeam | ITeamModel;
   origin: IVenue | IVenueModel;
   position: IVenue | IVenueModel;

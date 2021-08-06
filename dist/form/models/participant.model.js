@@ -360,6 +360,10 @@ const participantSchema = new mongoose.Schema({
             type: mongoose.Schema.Types.ObjectId,
             ref: 'ParticipantFile'
         }],
+    transmittalItem: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'TransmittalItem'
+    },
     active: {
         type: Boolean,
         default: true

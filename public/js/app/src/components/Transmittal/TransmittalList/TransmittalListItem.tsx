@@ -11,10 +11,12 @@ import BootstrapSelect from "../../Utils/BootstrapSelect";
 import ShowIf from "../../Utils/ShowIf";
 import * as swal from "sweetalert";
 import ApiService from "../../../utils/axios";
+import { ITransmittalModel } from '../../../../../../../src/distribution/models/transmittal.model';
 
 interface IPropsType extends RouteComponentProps<{ ticket: string }> {
   dispatch: Dispatch<ITransmittalActionTypes>;
   transmittal: ITransmittalState;
+  item: ITransmittalModel;
   transmittalItem: ITransmittalItemModel;
   transmittalActions: TransmittalActions;
 }
@@ -28,7 +30,7 @@ class TransmitalListItem extends React.Component<IPropsType, IStateType> {
   title: string;
 
   readonly state = {
-    error: null,
+    error: null
   };
 
   constructor(props: IPropsType) {
@@ -36,7 +38,6 @@ class TransmitalListItem extends React.Component<IPropsType, IStateType> {
     this.delete = this.delete.bind(this);
     this.api = new ApiService();
   }
-
 
   public render(): React.ReactElement<IPropsType> {
     const {transmittalItem, transmittal: {venues}} = this.props;
@@ -101,12 +102,12 @@ class TransmitalListItem extends React.Component<IPropsType, IStateType> {
           <DateRangePicker
             className={'input-sm'}
             value={transmittalItem.loadingDate}
-            format={'DD-MM-YYYY'}
+            format={'DD-MM-YY'}
             onChange={(e) => {
               this.props.transmittalActions.updateTransmittalItemThunkAction({
                 _id: transmittalItem._id,
                 transmittal: transmittalItem.transmittal,
-                loadingDate: e?.toDate()
+                loadingDate: e?.toDate() ?? ''
               });
             }}
           />
@@ -115,17 +116,17 @@ class TransmitalListItem extends React.Component<IPropsType, IStateType> {
           <DateRangePicker
             className={'input-sm'}
             value={transmittalItem.arrivalDate}
-            format={'DD-MM-YYYY'}
+            format={'DD-MM-YY'}
             onChange={(e) => {
               this.props.transmittalActions.updateTransmittalItemThunkAction({
                 _id: transmittalItem._id,
                 transmittal: transmittalItem.transmittal,
-                arrivalDate: e?.toDate()
+                arrivalDate: e?.toDate() ?? ''
               });
             }}
           />
         </td>
-        <td/>
+        <td>{transmittalItem.observation}</td>
         <ShowIf condition={true}>
           {/*<ShowIf condition={hasPermission(window.user, 'deleteRequest')}>*/}
           <td className="middle-center text-red pointer" onClick={this.delete}>
@@ -137,9 +138,11 @@ class TransmitalListItem extends React.Component<IPropsType, IStateType> {
   }
 
   private delete() {
+    const {transmittalItem} = this.props;
+    const {item: transmittal} = this.props;
     swal!({
       title: '¿Estás seguro?',
-      text: `Vas a eliminar este vehículo .`,
+      text: `Vas a eliminar ${transmittalItem.car.brand} ${transmittalItem.car.denomination}, de la orden ${this.padNumber(transmittal.number)}.`,
       icon: 'warning',
       dangerMode: true,
       buttons: {
@@ -157,8 +160,8 @@ class TransmitalListItem extends React.Component<IPropsType, IStateType> {
   }
 
   private padNumber(n: number): string {
-    const s = '000' + n;
-    return s.substr(s.length - 4);
+    const s = '0000' + n;
+    return s.substr(s.length - 5);
   }
 
 }

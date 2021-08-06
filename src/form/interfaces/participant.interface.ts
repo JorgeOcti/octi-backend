@@ -16,6 +16,8 @@ import {
 import {IDamages, IDamageSelected} from './damage.interface';
 import {IParticipantFile} from './participantFile.interface';
 import {ICarrierModel} from '../../app/models/carrier.model';
+import {ITransmittalItem} from "../../distribution/interfaces/transmittalItem.interface";
+import {ITransmittalModel} from "../../distribution/models/transmittal.model";
 
 export interface IParticipantChoices {
   choice: string;
@@ -136,6 +138,8 @@ export interface IParticipant {
   conciliation: boolean;
   conciliationText: string;
   conciliationImages: IParticipantFile[];
+
+  transmittalItem: ITransmittalItem | ITransmittalModel;
 
   active: boolean;
   updatedAt: Date;

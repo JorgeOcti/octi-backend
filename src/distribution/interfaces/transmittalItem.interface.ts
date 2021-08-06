@@ -10,6 +10,8 @@ import {IRequest} from "../../request/interfaces/request.interface";
 import {IRequestModel} from "../../request/models/request.model";
 import {ITeam} from "../../app/interfaces/team.interface";
 import {ITeamModel} from "../../app/models/team.model";
+import {IParticipant} from "../../form/interfaces/participant.interface";
+import {IParticipantModel} from "../../form/models/participant.model";
 
 export interface ITransmittalItem {
   transmittal: ITransmittal | ITransmittalModel;
@@ -19,6 +21,8 @@ export interface ITransmittalItem {
   car: ICar | ICarModel;
   destination: IVenue | IVenueModel;
   origin: IVenue | IVenueModel;
+  revisions: IParticipant[] | IParticipantModel[];
+  observation: String;
   loadingDate: Date;
   arrivalDate: Date;
 }

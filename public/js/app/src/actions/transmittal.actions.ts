@@ -293,7 +293,12 @@ export default class TransmittalActions {
       this.api.getRequestItems({
         page,
         pageSize: 20,
-        filters: state.transmittal.requestItemsfilters
+        orderBy: "request.number",
+        orderType: "descending",
+        filters: {
+          ...state.transmittal.requestItemsfilters,
+          transmitttalModule: true
+        },
       })
         .then((response: AxiosResponse) => {
           const {data} = response;

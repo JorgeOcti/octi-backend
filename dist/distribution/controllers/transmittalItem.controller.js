@@ -5,6 +5,7 @@ const transmittal_controller_1 = require("./transmittal.controller");
 const logger_service_1 = require("../../services/logger.service");
 const server_1 = require("../../server");
 const transmittal_model_1 = require("../models/transmittal.model");
+const requestItem_model_1 = require("../../request/models/requestItem.model");
 class TransmittalItemController {
     constructor() {
         this.index = this.index.bind(this);
@@ -62,6 +63,14 @@ class TransmittalItemController {
                 ...item
             }).save();
             const transmittalItemData = await transmittalItem_model_1.default.findById(transmittalItem._id).populate(transmittal_controller_1.default.itemPopulate);
+            // associate request item with transmittal and transmittal item
+            await requestItem_model_1.default.findOneAndUpdate({
+                _id: item.requestItem
+            }, {
+                assigned: true,
+                transmittal: item.transmittal,
+                transmittalItem: transmittalItem._id
+            });
             server_1.io.to(`transmittal-list-${team._id}`).emit('CREATE_TRANSMITTAL_ITEM', {
                 transmittalItem: transmittalItemData
             });
@@ -90,6 +99,14 @@ class TransmittalItemController {
                 const transmittalItems = await transmittalItem_model_1.default.find({ transmittal: transmittalItem.transmittal }).count();
                 server_1.io.to(`transmittal-list-${team._id}`).emit('DELETE_TRANSMITTAL_ITEM', {
                     transmittalItem
+                });
+                // clear assigned request item
+                await requestItem_model_1.default.findOneAndUpdate({
+                    _id: transmittalItem.requestItem
+                }, {
+                    assigned: false,
+                    transmittal: null,
+                    transmittalItem: null
                 });
                 // clean transmittal
                 if (transmittalItems === 0) {

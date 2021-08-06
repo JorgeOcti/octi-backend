@@ -118,7 +118,7 @@ class TransmitalListDetail extends React.Component<IPropsType, IStateType> {
             }
           </div>
         </div>
-        <div className="table-request" style={{display: open ? 'block' : 'none'}}>
+        <div className="table-transmittal" style={{display: open ? 'block' : 'none'}}>
           <table className="table table-hover m-0">
             <thead>
               <tr style={{ backgroundColor: '#f9f9f9' }}>
@@ -129,8 +129,8 @@ class TransmitalListDetail extends React.Component<IPropsType, IStateType> {
                 <th className="middle" style={{ width: '80px' }}>Partida</th>
                 <th className="middle" style={{ minWidth: '120px' }}>Origen</th>
                 <th className="middle" style={{ minWidth: '120px' }}>Destino</th>
-                <th className="middle" style={{ width: '100px' }}>Fecha emisión</th>
-                <th className="middle" style={{ width: '100px' }}>Fecha arribo</th>
+                <th className="middle" style={{ width: '110px' }}>Fecha emisión</th>
+                <th className="middle" style={{ width: '110px' }}>Fecha arribo</th>
                 <th className="middle" style={{ width: '150px' }}>Observación</th>
                 <ShowIf condition={true}>
                   {/*<ShowIf condition={hasPermission(window.user, 'deleteRequest')}>*/}
@@ -142,6 +142,7 @@ class TransmitalListDetail extends React.Component<IPropsType, IStateType> {
               {
                 transmittal.items.map((transmittalItem) => (
                   <TransmitalListItem
+                    item={transmittal}
                     transmittalItem={transmittalItem}
                     key={transmittalItem._id}
                   />
@@ -150,7 +151,7 @@ class TransmitalListDetail extends React.Component<IPropsType, IStateType> {
             </tbody>
           </table>
           <div className="row">
-            <div className="col-md-12 text-right m-b-10">
+            <div className="col-md-12 text-right m-b-10 m-t-10">
               <button className="btn btn-sm btn-success" onClick={this.openDialogAddCar}>
                 <i className="fa fa-fw fa-plus" /> Agregar vehículo
               </button>
@@ -174,6 +175,7 @@ class TransmitalListDetail extends React.Component<IPropsType, IStateType> {
 
   private pushItem(requestItem: IRequestItem) {
     const {item: transmittal} = this.props;
+    this.props.transmittalActions.loadingRequestItemAction(true);
     this.api.addTransmittalItem({
       requestItem: requestItem._id,
       car: requestItem.car._id,
@@ -183,7 +185,9 @@ class TransmitalListDetail extends React.Component<IPropsType, IStateType> {
       transmittal: transmittal._id
     })
       .then((response: AxiosResponse): void => {
-        swal!('Orden de transporte', 'Se ha creado satisfactoriamente.', 'success')
+        swal!('Vehículos agregado', `Se ha agregado ${requestItem.car.brand} ${requestItem.car.denomination} a la order #${this.padNumber(transmittal.number)} satisfactoriamente.`, 'success');
+        const {page} = this.props.transmittal.requestItemsPagination;
+        this.props.transmittalActions.getRequestItemThunkAction(page, true);
       })
       .catch((err: AxiosError): void => {
         this.api.errorHandler(err);

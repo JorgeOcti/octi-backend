@@ -30,6 +30,7 @@ const scale_model_1 = require("../models/scale.model");
 const bluebird = require("bluebird");
 const activityHistory_model_1 = require("../../billing/models/activityHistory.model");
 const triggerHandler_1 = require("../commands/triggerHandler");
+const transmittalItem_model_1 = require("../../distribution/models/transmittalItem.model");
 // import {ValidationResult} from 'joi';
 // import * as puppeteer from 'puppeteer';
 const DERCO_TEAM = '5bf2de34caf8ef7096105cda';
@@ -588,8 +589,7 @@ class FormController {
     }
     async complete(req, res) {
         const { id } = req.params;
-        let { vin } = req.body;
-        const { answers } = req.body;
+        let { vin, answers, transmittalItem } = req.body;
         const { company, venue, team } = req.user;
         logger_service_1.default.info(`complete`);
         logger_service_1.default.info(`{user: {_id: ${req.user._id}, email: ${req.user.email}}, body: ${JSON.stringify(req.body)}}`);
@@ -797,6 +797,12 @@ class FormController {
                         }
                         // save the participant
                         await newParticipant.save();
+                        // associate transmittalItem to participant
+                        if (transmittalItem && transmittalItem.length) {
+                            await transmittalItem_model_1.default.findOneAndUpdate({ _id: transmittalItem }, { $push: { revisions: newParticipant._id } });
+                            newParticipant.transmittalItem = transmittalItem;
+                            await newParticipant.save();
+                        }
                         // associate file to participant
                         if (allImages.length) {
                             await participantFile_model_1.default.update({ _id: { $in: allImages } }, { participant: newParticipant }, { multi: true });

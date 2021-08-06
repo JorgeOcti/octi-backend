@@ -32,6 +32,7 @@ import {IParticipant} from '../interfaces/participant.interface';
 import {IVenueDay} from '../../app/interfaces/venueDay.interface';
 import ActivityHistory, {ChoicesTypeActivity} from '../../billing/models/activityHistory.model';
 import TriggerHandler from "../commands/triggerHandler";
+import TransmittalItem from "../../distribution/models/transmittalItem.model";
 // import {ValidationResult} from 'joi';
 
 
@@ -600,8 +601,7 @@ class FormController {
 
   public async complete(req: IRequest, res: Response): Promise<any> {
     const {id} = req.params;
-    let {vin} = req.body;
-    const {answers} = req.body;
+    let {vin, answers, transmittalItem} = req.body;
     const { company, venue, team } = req.user;
     logger.info(`complete`);
     logger.info(`{user: {_id: ${req.user._id}, email: ${req.user.email}}, body: ${JSON.stringify(req.body)}}`);
@@ -804,6 +804,7 @@ class FormController {
           // calculate participant qualification
           const formQualification = sumSectionQualifications ? sumSectionQualifications / sumSectionWeigths : 0;
           newParticipant.qualification = formQualification;
+
           newParticipant.hasDamages = newParticipant.sections.some((section: any) => {
             return section.answers.some((answer: any) => {
               return answer.damagesSelected.length > 0;
@@ -816,6 +817,13 @@ class FormController {
             }
             // save the participant
             await newParticipant.save();
+
+            // associate transmittalItem to participant
+            if (transmittalItem && transmittalItem.length) {
+              await TransmittalItem.findOneAndUpdate({_id: transmittalItem}, {$push: {revisions: newParticipant._id}});
+              newParticipant.transmittalItem = transmittalItem;
+              await newParticipant.save();
+            }
 
             // associate file to participant
             if (allImages.length) {

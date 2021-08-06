@@ -5,6 +5,7 @@ import TransmittalController from "./transmittal.controller";
 import logger from "../../services/logger.service";
 import {io} from "../../server";
 import Transmittal from "../models/transmittal.model";
+import RequestItem from "../../request/models/requestItem.model";
 
 class TransmittalItemController {
 
@@ -68,6 +69,14 @@ class TransmittalItemController {
         ...item
       }).save();
       const transmittalItemData = await TransmittalItem.findById(transmittalItem._id).populate(TransmittalController.itemPopulate);
+      // associate request item with transmittal and transmittal item
+      await RequestItem.findOneAndUpdate({
+        _id: item.requestItem
+      }, {
+        assigned: true,
+        transmittal: item.transmittal,
+        transmittalItem: transmittalItem._id
+      });
       io.to(`transmittal-list-${team._id}`).emit('CREATE_TRANSMITTAL_ITEM', {
         transmittalItem: transmittalItemData
       });
@@ -95,8 +104,16 @@ class TransmittalItemController {
         await transmittalItem.remove();
         const transmittalItems = await TransmittalItem.find({transmittal: transmittalItem.transmittal}).count();
         io.to(`transmittal-list-${team._id}`).emit('DELETE_TRANSMITTAL_ITEM', {
-            transmittalItem
-          });
+          transmittalItem
+        });
+        // clear assigned request item
+        await RequestItem.findOneAndUpdate({
+          _id: transmittalItem.requestItem
+        }, {
+          assigned: false,
+          transmittal: null,
+          transmittalItem: null
+        });
         // clean transmittal
         if (transmittalItems === 0) {
           const transmittal = await Transmittal.findOne({_id: transmittalItem.transmittal});
@@ -105,6 +122,7 @@ class TransmittalItemController {
             transmittal
           });
         }
+
       }
       res.json({
         transmittalItem

@@ -45,11 +45,18 @@ const transmittalItemSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Car'
   },
+  revisions: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Participant'
+  }],
   loadingDate: {
     type: Date
   },
   arrivalDate: {
     type: Date
+  },
+  observation: {
+    type: String
   },
   status: {
     type: String,

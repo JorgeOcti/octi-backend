@@ -214,18 +214,27 @@ class RequestController {
     logger.info(`RequestController.apiListItems`);
     logger.info(`{user: {_id: ${req.user._id}, email: ${req.user.email}}, body: ${JSON.stringify(req.body)} }`);
     const team = req.user.team._id;
-    const { page, pageSize, orderBy, orderType, filters } = req.body as { page: string; pageSize: string; search: string; orderBy: string; orderType: string, filters: any };
+    const {
+      page,
+      pageSize,
+      orderBy,
+      orderType,
+      filters
+    } = req.body as {
+      page: string; pageSize: string; search: string;
+      orderBy: string; orderType: string; filters: any;
+    };
 
     let venuesIds: any[];
     const extraQuery: any = {};
     const extraMatch: any = {};
     if (filters.venues && filters.venues.length) {
-      venuesIds = req.user.venuesPermissions().filter(i => (filters.venues.includes(i.toString())));
+      venuesIds = req.user.venuesPermissions().filter(venue => (filters.venues.includes(venue.toString())));
     } else {
       venuesIds = req.user.venuesPermissions();
     }
     if (filters.status && filters.status.length) {
-      extraQuery.status = { $in: filters.status.map((s:any)=> new ObjectID(s)) };
+      extraQuery.status = {$in: filters.status.map((status: any) => new ObjectID(status))};
     }
     if (filters.from){
       if(!extraQuery.hasOwnProperty('createdAt')){
@@ -243,6 +252,7 @@ class RequestController {
       .replace(/[^0-9,]/g, '')
       .split(',')
       .filter((requestNumber: string) => (requestNumber.length));
+
     if (requestNumbers.length) {
       extraMatch.requestNumber = { $in: requestNumbers };
     }
@@ -276,7 +286,10 @@ class RequestController {
       });
     }
     try {
-      if(Object.keys(extraMatch).length || Object.keys(extraQuery).length) {
+      if(orderBy !== 'request.number' || Object.keys(extraMatch).length || Object.keys(extraQuery).length) {
+        if (filters && filters.transmitttalModule) {
+          extraQuery.assigned = {$in: [null, false]}
+        }
         const baseAggregate: any[] = [{
           $match: {
             team,
@@ -328,6 +341,7 @@ class RequestController {
         }, {
           $project: {
             '_id': 1,
+            'request._id': 1,
             'request.number': 1,
             'request.createdBy.firstName': 1,
             'request.createdBy.lastName': 1,
@@ -342,6 +356,7 @@ class RequestController {
             'status._id': 1,
             'status.name': 1,
             'status.weigth': 1,
+            'car._id': 1,
             'car.vin': 1,
             'car.brand': 1,
             'car.color': 1,
@@ -398,8 +413,6 @@ class RequestController {
           });
         } else {
           res.json({
-            extraMatch,
-            extraQuery,
             count: requests.total,
             pages: requests.pages,
             hasPrevious: requests.hasPrevious,
@@ -409,18 +422,6 @@ class RequestController {
           });
         }
       } else {
-        const query = {
-          team,
-          $or: [{
-            destination: {
-              $in: venuesIds
-            }
-          }, {
-            origin: {
-              $in: venuesIds
-            }
-          }]
-        };
         const options: PaginateOptions = {
           sort: {
             _id: -1
@@ -455,6 +456,21 @@ class RequestController {
           page: parseInt(page ? page : '1', 10),
           limit: parseInt(pageSize ? pageSize : '200', 10)
         };
+        const query: any = {
+          team,
+          $or: [{
+            destination: {
+              $in: venuesIds
+            }
+          }, {
+            origin: {
+              $in: venuesIds
+            }
+          }]
+        };
+        if (filters && filters.transmitttalModule) {
+          query.assigned = {$in: [null, false]}
+        }
         const request = await RequestItem.paginate(query, options);
         res.json({
           extraMatch,

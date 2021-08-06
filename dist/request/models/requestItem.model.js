@@ -27,6 +27,11 @@ const requestItemSchema = new mongoose.Schema({
         type: mongoose.Schema.Types.ObjectId,
         ref: 'TransmittalItem'
     },
+    // if assigned to transmittal
+    assigned: {
+        type: Boolean,
+        default: false
+    },
     team: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Team'
