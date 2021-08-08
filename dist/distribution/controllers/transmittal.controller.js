@@ -23,6 +23,14 @@ class TransmittalController {
         }, {
             path: 'origin',
             select: ['name']
+        }, {
+            path: 'revisions',
+            select: ['_id', 'hasDamages', 'receptionConfirmation', 'shippingConfirmation', 'createdAt'],
+            options: {
+                sort: {
+                    _id: -1
+                }
+            }
         }];
     constructor() {
         this.index = this.index.bind(this);

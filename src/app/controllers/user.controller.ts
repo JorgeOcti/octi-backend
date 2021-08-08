@@ -85,7 +85,7 @@ class UserController {
       try {
         const User = await UserModel.findById(user._id);
         if (User) {
-          const isPassword = bcrypt.compareSync(password, User.password);
+          const isPassword = bcrypt.compareSync(password, User.password!);
           if (isPassword) {
             User.password = newPassword;
             User.save();

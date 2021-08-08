@@ -14,6 +14,7 @@ import {io} from "../../server";
 
 
 class TransmittalController {
+
   public itemPopulate = [{
     path: 'car',
     select: ['invoice', 'entry', 'denomination', 'patent', 'material', 'vin', 'brand', 'color']
@@ -26,6 +27,14 @@ class TransmittalController {
   }, {
     path: 'origin',
     select: ['name']
+  }, {
+    path: 'revisions',
+    select: ['_id', 'hasDamages', 'receptionConfirmation', 'shippingConfirmation', 'createdAt'],
+    options: {
+      sort: {
+        _id: -1
+      }
+    }
   }];
 
   constructor() {
