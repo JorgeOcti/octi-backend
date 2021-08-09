@@ -31,6 +31,7 @@ const bluebird = require("bluebird");
 const activityHistory_model_1 = require("../../billing/models/activityHistory.model");
 const triggerHandler_1 = require("../commands/triggerHandler");
 const transmittalItem_model_1 = require("../../distribution/models/transmittalItem.model");
+const transmittal_controller_1 = require("../../distribution/controllers/transmittal.controller");
 // import {ValidationResult} from 'joi';
 // import * as puppeteer from 'puppeteer';
 const DERCO_TEAM = '5bf2de34caf8ef7096105cda';
@@ -799,9 +800,14 @@ class FormController {
                         await newParticipant.save();
                         // associate transmittalItem to participant
                         if (transmittalItem && transmittalItem.length) {
-                            await transmittalItem_model_1.default.findOneAndUpdate({ _id: transmittalItem }, { $push: { revisions: newParticipant._id } });
                             newParticipant.transmittalItem = transmittalItem;
                             await newParticipant.save();
+                            const transmittalItemData = await transmittalItem_model_1.default
+                                .findOneAndUpdate({ _id: transmittalItem }, { $push: { revisions: newParticipant._id } }, { new: true })
+                                .populate(transmittal_controller_1.default.itemPopulate);
+                            server_1.io.to(`transmittal-list-${team._id}`).emit('UPDATE_TRANSMITTAL_ITEM', {
+                                transmittalItem: transmittalItemData
+                            });
                         }
                         // associate file to participant
                         if (allImages.length) {

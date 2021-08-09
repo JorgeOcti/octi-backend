@@ -46,6 +46,7 @@ class TransmittalController {
     this.apiUpdate = this.apiUpdate.bind(this);
     this.apiDelete = this.apiDelete.bind(this);
     this.uploadFile = this.uploadFile.bind(this);
+    this.attachEvidence = this.attachEvidence.bind(this);
   }
 
   public async index(req: IRequest, res: Response) {
@@ -197,7 +198,7 @@ class TransmittalController {
         select: ['firstName', 'lastName']
       }, {
         path: 'items',
-        select: ['car', 'requestItem', 'destination', 'origin', 'loadingDate', 'arrivalDate'],
+        select: ['car', 'requestItem', 'destination', 'origin', 'loadingDate', 'arrivalDate', 'observation'],
         populate: this.itemPopulate
       }, {
         path: 'files',
@@ -325,6 +326,34 @@ class TransmittalController {
       /* istanbul ignore next */
       logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
       res.status(500).json(e);
+    }
+  }
+
+  public async attachEvidence(req: IRequest, res: Response) {
+    const {user} = req;
+    const {files, transmittal} = req.body;
+    logger.info(`TransmittalController.uploadFile`);
+    logger.info(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
+    try {
+       const transmittalData = await Transmittal
+         .findOneAndUpdate({
+           _id: transmittal,
+           team: user.team._id,
+         }, { $push: { evidenceFullLoad: files } }, { new: true });
+       //  TODO: need update socket from here
+      res.status(200).json({
+        data: transmittalData,
+        status: 201
+      });
+    } catch (e) {
+      /* istanbul ignore next */
+      logger.error(`TransmittalController.uploadFile: Async Error.`);
+      /* istanbul ignore next */
+      logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
+      /* istanbul ignore next */
+      logger.error(e);
+      /* istanbul ignore next */
+      res.status(400).json(e);
     }
   }
 

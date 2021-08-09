@@ -11,6 +11,7 @@ const createTransmittalSchema = yup.object().shape({
   items: yup.array().of(yup.object({
     request: yup.string().required(),
     requestItem: yup.string().required(),
+    observation: yup.string(),
     car: yup.object({
       _id: yup.string().required(),
       bl: yup.string(),

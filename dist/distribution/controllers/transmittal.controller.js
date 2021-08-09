@@ -41,6 +41,7 @@ class TransmittalController {
         this.apiUpdate = this.apiUpdate.bind(this);
         this.apiDelete = this.apiDelete.bind(this);
         this.uploadFile = this.uploadFile.bind(this);
+        this.attachEvidence = this.attachEvidence.bind(this);
     }
     async index(req, res) {
         res.render('app/index', { token: await req.user.generateToken() });
@@ -178,7 +179,7 @@ class TransmittalController {
                     select: ['firstName', 'lastName']
                 }, {
                     path: 'items',
-                    select: ['car', 'requestItem', 'destination', 'origin', 'loadingDate', 'arrivalDate'],
+                    select: ['car', 'requestItem', 'destination', 'origin', 'loadingDate', 'arrivalDate', 'observation'],
                     populate: this.itemPopulate
                 }, {
                     path: 'files',
@@ -304,6 +305,34 @@ class TransmittalController {
             /* istanbul ignore next */
             logger_service_1.default.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
             res.status(500).json(e);
+        }
+    }
+    async attachEvidence(req, res) {
+        const { user } = req;
+        const { files, transmittal } = req.body;
+        logger_service_1.default.info(`TransmittalController.uploadFile`);
+        logger_service_1.default.info(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
+        try {
+            const transmittalData = await transmittal_model_1.default
+                .findOneAndUpdate({
+                _id: transmittal,
+                team: user.team._id,
+            }, { $push: { evidenceFullLoad: files } }, { new: true });
+            //  TODO: need update socket from here
+            res.status(200).json({
+                data: transmittalData,
+                status: 201
+            });
+        }
+        catch (e) {
+            /* istanbul ignore next */
+            logger_service_1.default.error(`TransmittalController.uploadFile: Async Error.`);
+            /* istanbul ignore next */
+            logger_service_1.default.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
+            /* istanbul ignore next */
+            logger_service_1.default.error(e);
+            /* istanbul ignore next */
+            res.status(400).json(e);
         }
     }
     getTransmittals(filter, options) {

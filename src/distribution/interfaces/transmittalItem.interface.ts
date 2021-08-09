@@ -22,7 +22,7 @@ export interface ITransmittalItem {
   destination: IVenue | IVenueModel;
   origin: IVenue | IVenueModel;
   revisions: IParticipant[] | IParticipantModel[];
-  observation: String;
+  observation: string;
   loadingDate: Date;
   arrivalDate: Date;
 }

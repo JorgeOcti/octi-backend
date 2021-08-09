@@ -21,6 +21,7 @@ distributionRouter.get('/api/v1/transmittals/:id/', isJWTAuthenticated, transmit
 distributionRouter.patch('/api/v1/transmittals/:id/', isJWTAuthenticated, transmittal_controller_1.default.apiUpdate);
 distributionRouter.delete('/api/v1/transmittals/:id/', isJWTAuthenticated, transmittal_controller_1.default.apiDelete);
 distributionRouter.post('/api/v1/transmittals/upload-file/', isJWTAuthenticated, transmittal_controller_1.default.uploadFile);
+distributionRouter.post('/api/v1/transmittals/attach-evidence/', isJWTAuthenticated, transmittal_controller_1.default.attachEvidence);
 distributionRouter.get('/api/v1/transmittals/item/', isJWTAuthenticated, transmittalItem_controller_1.default.apiList);
 distributionRouter.post('/api/v1/transmittals/item/', isJWTAuthenticated, transmittalItem_controller_1.default.apiCreate);
 distributionRouter.get('/api/v1/transmittals/item/:id/', isJWTAuthenticated, transmittalItem_controller_1.default.apiDetail);

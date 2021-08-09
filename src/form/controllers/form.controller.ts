@@ -33,6 +33,7 @@ import {IVenueDay} from '../../app/interfaces/venueDay.interface';
 import ActivityHistory, {ChoicesTypeActivity} from '../../billing/models/activityHistory.model';
 import TriggerHandler from "../commands/triggerHandler";
 import TransmittalItem from "../../distribution/models/transmittalItem.model";
+import TransmittalController from "../../distribution/controllers/transmittal.controller";
 // import {ValidationResult} from 'joi';
 
 
@@ -810,8 +811,10 @@ class FormController {
               return answer.damagesSelected.length > 0;
             });
           });
+
           try {
             const updateTeam = await Team.findOneAndUpdate({_id: team._id}, {$inc: {formsNumber: 1}}, {new: true});
+
             if (updateTeam) {
               newParticipant.number = updateTeam.formsNumber;
             }
@@ -820,9 +823,16 @@ class FormController {
 
             // associate transmittalItem to participant
             if (transmittalItem && transmittalItem.length) {
-              await TransmittalItem.findOneAndUpdate({_id: transmittalItem}, {$push: {revisions: newParticipant._id}});
               newParticipant.transmittalItem = transmittalItem;
               await newParticipant.save();
+
+              const transmittalItemData = await TransmittalItem
+                .findOneAndUpdate({_id: transmittalItem}, {$push: {revisions: newParticipant._id}}, {new: true})
+                .populate(TransmittalController.itemPopulate);
+
+              io.to(`transmittal-list-${team._id}`).emit('UPDATE_TRANSMITTAL_ITEM', {
+                transmittalItem: transmittalItemData
+              });
             }
 
             // associate file to participant

@@ -12,6 +12,9 @@ import ShowIf from "../../Utils/ShowIf";
 import * as swal from "sweetalert";
 import ApiService from "../../../utils/axios";
 import { ITransmittalModel } from '../../../../../../../src/distribution/models/transmittal.model';
+import { IParticipant } from '../../../../../../../src/form/interfaces/participant.interface';
+import {getParticipant} from "../../../actions/dashboard.actions";
+import {debounce} from "throttle-debounce";
 
 interface IPropsType extends RouteComponentProps<{ ticket: string }> {
   dispatch: Dispatch<ITransmittalActionTypes>;
@@ -19,6 +22,7 @@ interface IPropsType extends RouteComponentProps<{ ticket: string }> {
   item: ITransmittalModel;
   transmittalItem: ITransmittalItemModel;
   transmittalActions: TransmittalActions;
+  getParticipant(id: string): void;
 }
 
 interface IStateType {
@@ -36,6 +40,8 @@ class TransmitalListItem extends React.Component<IPropsType, IStateType> {
   constructor(props: IPropsType) {
     super(props);
     this.delete = this.delete.bind(this);
+    this.statusIcon = this.statusIcon.bind(this);
+    this.debounceUpdateTransmittalItem = debounce(300, this.debounceUpdateTransmittalItem);
     this.api = new ApiService();
   }
 
@@ -52,7 +58,7 @@ class TransmitalListItem extends React.Component<IPropsType, IStateType> {
         <td className={"middle"}>{transmittalItem.car.brand} {transmittalItem.car.denomination}</td>
         <td className={"middle"}>{transmittalItem.car.invoice}</td>
         <td className={"middle"}>{transmittalItem.car.entry}</td>
-        <td>
+        <td className={"middle"}>
           <BootstrapSelect
             noneSelectedText="Selecciona una sucursal"
             displayItems={2}
@@ -75,7 +81,7 @@ class TransmitalListItem extends React.Component<IPropsType, IStateType> {
             }}
           />
         </td>
-        <td>
+        <td className={"middle"}>
           <BootstrapSelect
             noneSelectedText="Selecciona una sucursal"
             displayItems={2}
@@ -98,7 +104,7 @@ class TransmitalListItem extends React.Component<IPropsType, IStateType> {
             }}
           />
         </td>
-        <td>
+        <td className={"middle"}>
           <DateRangePicker
             className={'input-sm'}
             value={transmittalItem.loadingDate}
@@ -112,7 +118,7 @@ class TransmitalListItem extends React.Component<IPropsType, IStateType> {
             }}
           />
         </td>
-        <td>
+        <td className={"middle"}>
           <DateRangePicker
             className={'input-sm'}
             value={transmittalItem.arrivalDate}
@@ -126,7 +132,24 @@ class TransmitalListItem extends React.Component<IPropsType, IStateType> {
             }}
           />
         </td>
-        <td>{transmittalItem.observation}</td>
+        <td className={"middle"}>
+          <input
+            className="form-control input-sm"
+            defaultValue={transmittalItem.observation}
+            onChange={(e)=>{
+              this.debounceUpdateTransmittalItem({
+                _id: transmittalItem._id,
+                transmittal: transmittalItem.transmittal,
+                observation: e.target.value
+              })
+            }}
+          />
+        </td>
+        {
+          transmittalItem.revisions.length ?
+            this.statusIcon(transmittalItem.revisions[0]) :
+            <td className={"middle"} />
+        }
         <ShowIf condition={true}>
           {/*<ShowIf condition={hasPermission(window.user, 'deleteRequest')}>*/}
           <td className="middle-center text-red pointer" onClick={this.delete}>
@@ -135,6 +158,27 @@ class TransmitalListItem extends React.Component<IPropsType, IStateType> {
         </ShowIf>
       </tr>
     );
+  }
+  private debounceUpdateTransmittalItem(transmittalItem: Partial<ITransmittalItemModel>){
+    this.props.transmittalActions.updateTransmittalItemThunkAction(transmittalItem);
+  }
+
+  private statusIcon(revision: IParticipant){
+    if (revision.hasDamages) {
+      return (
+        <td className={"middle pointer"} onClick={() => this.props.getParticipant(revision._id)}>
+          <i className="fa fa-warning text-red"/>
+        </td>
+      );
+
+    } else if (revision.receptionConfirmation) {
+      return (
+        <td className={"middle pointer"} onClick={() => this.props.getParticipant(revision._id)}>
+          <i className="fa fa-check-circle text-primary"/>
+        </td>
+      );
+    }
+    return <td className={"middle"} />;
   }
 
   private delete() {
@@ -176,7 +220,8 @@ const mapDispatchToProps = (dispatch: any) => {
   const transmittalActions = new TransmittalActions(dispatch);
   return {
     dispatch,
-    transmittalActions
+    transmittalActions,
+    getParticipant: (id: string) => dispatch(getParticipant(id)),
   };
 };
 

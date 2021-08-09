@@ -132,6 +132,7 @@ class TransmitalListDetail extends React.Component<IPropsType, IStateType> {
                 <th className="middle" style={{ width: '110px' }}>Fecha emisión</th>
                 <th className="middle" style={{ width: '110px' }}>Fecha arribo</th>
                 <th className="middle" style={{ width: '150px' }}>Observación</th>
+                <th className="middle" style={{ width: '30px' }}>Llegó</th>
                 <ShowIf condition={true}>
                   {/*<ShowIf condition={hasPermission(window.user, 'deleteRequest')}>*/}
                   <th className="middle" style={{ width: '30px' }} />
@@ -196,7 +197,7 @@ class TransmitalListDetail extends React.Component<IPropsType, IStateType> {
 
   private padNumber(n: number): string {
     const s = '0000' + n;
-    return s.substr(s.length - 4);
+    return s.substr(s.length - 5);
   }
 
 }
@@ -212,7 +213,7 @@ const mapDispatchToProps = (dispatch: any) => {
   return {
     dispatch,
     transmittalActions,
-    loadDataAction: (title: string, body: JSX.Element, footer: JSX.Element) => dispatch(loadDataAction(title, body, footer)),
+    loadDataAction: (title: string, body: JSX.Element, footer: JSX.Element) => dispatch(loadDataAction(title, body, footer))
   };
 };
 
