@@ -54,7 +54,8 @@ class JWTController {
           company: true,
           userForms: true,
           userPermissions: true,
-          active: true
+          active: true,
+          isDriver: true
         })
         .populate([{
           path: 'venue',
@@ -114,6 +115,7 @@ class JWTController {
                     preferred: user.preferred,
                     userPermissions: user.userPermissions,
                     userForms: user.userForms,
+                    isDriver: user.isDriver || false,
                     venue: {
                       _id: GeneralUtils.getObjectProperty(user.venue, '_id', null),
                       name: GeneralUtils.getObjectProperty(user.venue, 'name', null),
