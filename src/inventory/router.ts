@@ -7,6 +7,7 @@ const inventoryRouter = express.Router();
 
 // Inventories List
 inventoryRouter.get('/inventory/', Middlewares.isLoggedIn, InventoryController.index);
+inventoryRouter.get('/inventory/analysis/', Middlewares.isLoggedIn, InventoryController.index);
 inventoryRouter.get('/inventory/dashboard/', Middlewares.isLoggedIn, InventoryController.index);
 inventoryRouter.get('/settings/labels/', Middlewares.isLoggedIn, LabelController.index);
 inventoryRouter.get('/inventory/create/', Middlewares.isLoggedIn, InventoryController.index);
