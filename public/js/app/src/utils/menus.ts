@@ -157,6 +157,15 @@ if (hasPermission(window.user, 'viewLabel')) {
   });
 }
 
+if (hasPermission(window.user, 'viewInventoryCustomDashboard')) {
+  inventoryItems.push({
+    id: '2.5',
+    icon: 'fa-circle-o',
+    text: 'Análisis',
+    url: '/inventory/analysis/'
+  });
+}
+
 if (inventoryItems.length) {
   menus.push({
     id: '2',
