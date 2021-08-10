@@ -12,7 +12,7 @@ import {IWindow} from "../../interfaces/window";
 
 declare let window: IWindow;
 
-interface IPropsType extends RouteComponentProps<{ ticket: string }> {
+export interface IPropsType extends RouteComponentProps<{ ticket: string }> {
   dispatch: Dispatch<CompaniesReduxAction>;
   dashboard: ICompaniesState;
 }
@@ -25,7 +25,7 @@ interface IStateType {
   to: Date,
 }
 
-class DashboardTimingView extends TrackingBasePage<IPropsType, IStateType> {
+export class DashboardTimingView extends TrackingBasePage<IPropsType, IStateType> {
   public title: string;
   public cMenu  : string = "1";
   public cSubMenu  : string = "1.7";
