@@ -118,7 +118,7 @@ class FilterableVenueTable extends React.Component<IPropsType, IStateType> {
               </div>
             </div>
           </div>
-          <div className="row" style={{overflowY: "scroll", maxHeight: "122px", margin: "0px"}}>
+          <div className="row" style={{overflowY: "scroll", minHeight: "122px", height: "50vh",  margin: "0px"}}>
             <table className="table table-striped">
               <thead>
               <tr>
