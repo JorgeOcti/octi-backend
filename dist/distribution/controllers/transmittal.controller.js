@@ -472,7 +472,10 @@ var TransmittalController = /** @class */ (function () {
                                 .findOneAndUpdate({
                                 _id: transmittal,
                                 team: user.team._id
-                            }, { $push: { evidenceFullLoad: files } }, { "new": true })];
+                            }, {
+                                $push: { evidenceFullLoad: files },
+                                status: transmittal_model_1.ChoicesStatusTransmittal.inTransit
+                            }, { "new": true })];
                     case 2:
                         transmittalData = _b.sent();
                         //  TODO: need update socket from here

@@ -342,7 +342,10 @@ class TransmittalController {
         .findOneAndUpdate({
           _id: transmittal,
           team: user.team._id,
-        }, {$push: {evidenceFullLoad: files}}, {new: true});
+        }, {
+          $push: {evidenceFullLoad: files},
+          status: ChoicesStatusTransmittal.inTransit
+        }, {new: true});
       //  TODO: need update socket from here
       res.status(200).json({
         data: transmittalData,
