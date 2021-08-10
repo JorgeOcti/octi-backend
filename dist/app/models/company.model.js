@@ -106,6 +106,9 @@ const companySchema = new mongoose.Schema({
     },
     iFrameURL: {
         type: String
+    },
+    iFrameURLInventory: {
+        type: String
     }
 }, {
     timestamps: true
