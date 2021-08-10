@@ -1,11 +1,11 @@
 "use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
+exports.__esModule = true;
 exports.scaleSchema = void 0;
-const mongoose = require("mongoose");
-const mongoosePaginate = require("mongoose-paginate");
-const form_model_1 = require("./form.model");
-const scale_model_1 = require("./scale.model");
-const participantChoiceSchema = new mongoose.Schema({
+var mongoose = require("mongoose");
+var mongoosePaginate = require("mongoose-paginate");
+var form_model_1 = require("./form.model");
+var scale_model_1 = require("./scale.model");
+var participantChoiceSchema = new mongoose.Schema({
     choice: {
         type: String,
         required: true,
@@ -17,28 +17,28 @@ const participantChoiceSchema = new mongoose.Schema({
     },
     backgroundColor: {
         type: String,
-        enum: scale_model_1.choiceBackgroundColors,
-        default: 'blue'
+        "enum": scale_model_1.choiceBackgroundColors,
+        "default": 'blue'
     },
     requireImage: {
         type: Boolean,
-        default: false
+        "default": false
     },
     requireComment: {
         type: Boolean,
-        default: false
+        "default": false
     },
     requireAccesories: {
         type: Boolean,
-        default: false
+        "default": false
     },
     requireConciliation: {
         type: Boolean,
-        default: false
+        "default": false
     },
     na: {
         type: Boolean,
-        default: false
+        "default": false
     },
     order: {
         type: Number,
@@ -46,12 +46,12 @@ const participantChoiceSchema = new mongoose.Schema({
     },
     optional: {
         type: Boolean,
-        default: true
+        "default": true
     },
     hint: {
         type: String,
         trim: true
-    },
+    }
 });
 exports.scaleSchema = new mongoose.Schema({
     name: String,
@@ -66,10 +66,10 @@ exports.scaleSchema = new mongoose.Schema({
     choices: [participantChoiceSchema],
     active: {
         type: Boolean,
-        default: true
+        "default": true
     }
 });
-const itemSchema = new mongoose.Schema({
+var itemSchema = new mongoose.Schema({
     item: {
         type: String,
         required: true,
@@ -77,10 +77,10 @@ const itemSchema = new mongoose.Schema({
     },
     amount: {
         type: Boolean,
-        default: false
+        "default": false
     }
 });
-const accesorySchema = new mongoose.Schema({
+var accesorySchema = new mongoose.Schema({
     item: {
         type: String,
         required: true,
@@ -88,12 +88,12 @@ const accesorySchema = new mongoose.Schema({
     },
     amount: {
         type: Number,
-        default: 1
+        "default": 1
     }
 }, {
     _id: false
 });
-const accessorySchema = new mongoose.Schema({
+var accessorySchema = new mongoose.Schema({
     question: {
         type: String,
         required: true,
@@ -101,22 +101,22 @@ const accessorySchema = new mongoose.Schema({
     },
     items: [{ type: itemSchema }]
 });
-const positionSchema = new mongoose.Schema({
+var positionSchema = new mongoose.Schema({
     name: {
         type: String
     }
 });
-const kindSchema = new mongoose.Schema({
+var kindSchema = new mongoose.Schema({
     name: {
         type: String
     }
 });
-const partSchema = new mongoose.Schema({
+var partSchema = new mongoose.Schema({
     name: {
         type: String
     }
 });
-const damagesSchema = new mongoose.Schema({
+var damagesSchema = new mongoose.Schema({
     name: {
         type: String
     },
@@ -124,7 +124,7 @@ const damagesSchema = new mongoose.Schema({
     kinds: [kindSchema],
     parts: [partSchema]
 });
-const damagesSelectedSchema = new mongoose.Schema({
+var damagesSelectedSchema = new mongoose.Schema({
     position: {
         type: mongoose.Schema.Types.ObjectId
     },
@@ -139,7 +139,7 @@ const damagesSelectedSchema = new mongoose.Schema({
             ref: 'ParticipantFile'
         }]
 });
-const participantAnswersSchema = new mongoose.Schema({
+var participantAnswersSchema = new mongoose.Schema({
     question: { type: String, required: true, trim: true },
     shortName: { type: String, trim: true },
     scale: exports.scaleSchema,
@@ -147,7 +147,7 @@ const participantAnswersSchema = new mongoose.Schema({
     damagesSelected: [damagesSelectedSchema],
     accessories: {
         type: accessorySchema,
-        default: null
+        "default": null
     },
     accesoriesSelected: [mongoose.Schema.Types.ObjectId],
     accesoriesAnswered: [{
@@ -155,7 +155,7 @@ const participantAnswersSchema = new mongoose.Schema({
         }],
     conciliation: {
         type: Boolean,
-        default: false
+        "default": false
     },
     risk: {
         type: String,
@@ -177,7 +177,7 @@ const participantAnswersSchema = new mongoose.Schema({
     },
     na: {
         type: Boolean,
-        default: false
+        "default": false
     },
     qualification: {
         type: Number
@@ -188,8 +188,8 @@ const participantAnswersSchema = new mongoose.Schema({
     },
     kind: {
         type: String,
-        enum: form_model_1.kindQuestion,
-        default: form_model_1.KindQuestion.scale
+        "enum": form_model_1.kindQuestion,
+        "default": form_model_1.KindQuestion.scale
     },
     order: {
         type: Number,
@@ -197,14 +197,14 @@ const participantAnswersSchema = new mongoose.Schema({
     },
     optional: {
         type: Boolean,
-        default: false
+        "default": false
     },
     hint: {
         type: String,
         trim: true
-    },
+    }
 });
-const participantSectionsSchema = new mongoose.Schema({
+var participantSectionsSchema = new mongoose.Schema({
     section_id: {
         type: mongoose.Schema.Types.ObjectId
     },
@@ -230,7 +230,7 @@ const participantSectionsSchema = new mongoose.Schema({
         required: true
     }
 });
-const participantSchema = new mongoose.Schema({
+var participantSchema = new mongoose.Schema({
     name: {
         type: String,
         required: true,
@@ -275,19 +275,19 @@ const participantSchema = new mongoose.Schema({
     sections: [participantSectionsSchema],
     hasDamages: {
         type: Boolean,
-        default: false
+        "default": false
     },
     qualification: {
         type: Number,
-        default: 0
+        "default": 0
     },
     shipping: {
         type: Boolean,
-        default: false
+        "default": false
     },
     shippingText: {
         type: String,
-        default: ''
+        "default": ''
     },
     shippingImages: [{
             type: mongoose.Schema.Types.ObjectId,
@@ -308,11 +308,11 @@ const participantSchema = new mongoose.Schema({
     },
     reception: {
         type: Boolean,
-        default: false
+        "default": false
     },
     receptionText: {
         type: String,
-        default: ''
+        "default": ''
     },
     receptionImages: [{
             type: mongoose.Schema.Types.ObjectId,
@@ -333,16 +333,16 @@ const participantSchema = new mongoose.Schema({
     },
     kind: {
         type: String,
-        enum: form_model_1.kindForm,
-        default: form_model_1.KindForm.control
+        "enum": form_model_1.kindForm,
+        "default": form_model_1.KindForm.control
     },
     carrier: {
         type: Boolean,
-        default: false
+        "default": false
     },
     carrierText: {
         type: String,
-        default: false
+        "default": false
     },
     carrierBy: {
         type: mongoose.Schema.Types.ObjectId,
@@ -350,11 +350,11 @@ const participantSchema = new mongoose.Schema({
     },
     conciliation: {
         type: Boolean,
-        default: false
+        "default": false
     },
     conciliationText: {
         type: String,
-        default: ''
+        "default": ''
     },
     conciliationImages: [{
             type: mongoose.Schema.Types.ObjectId,
@@ -366,7 +366,7 @@ const participantSchema = new mongoose.Schema({
     },
     active: {
         type: Boolean,
-        default: true
+        "default": true
     }
 }, {
     timestamps: true
@@ -380,6 +380,6 @@ participantSchema.index({ form: 1, user: 1 });
 participantSchema.index({ company: 1, venue: 1, createdAt: 1 });
 participantSchema.index({ _id: 1, company: 1, venue: 1, createdAt: 1 });
 participantSchema.plugin(mongoosePaginate);
-const Participant = mongoose.model('Participant', participantSchema);
-exports.default = Participant;
+var Participant = mongoose.model('Participant', participantSchema);
+exports["default"] = Participant;
 //# sourceMappingURL=participant.model.js.map

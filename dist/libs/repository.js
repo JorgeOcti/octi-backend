@@ -1,22 +1,25 @@
 "use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
+exports.__esModule = true;
 exports.BaseRepository = void 0;
-class BaseRepository {
-    create(item) {
-        throw new Error("Method not implemented.");
+var BaseRepository = /** @class */ (function () {
+    function BaseRepository() {
     }
-    update(id, fieldsToUpdate) {
+    BaseRepository.prototype.create = function (item) {
         throw new Error("Method not implemented.");
-    }
-    delete(id) {
+    };
+    BaseRepository.prototype.update = function (id, fieldsToUpdate) {
         throw new Error("Method not implemented.");
-    }
-    find(item) {
+    };
+    BaseRepository.prototype["delete"] = function (id) {
         throw new Error("Method not implemented.");
-    }
-    findOne(id) {
+    };
+    BaseRepository.prototype.find = function (item) {
         throw new Error("Method not implemented.");
-    }
-}
+    };
+    BaseRepository.prototype.findOne = function (id) {
+        throw new Error("Method not implemented.");
+    };
+    return BaseRepository;
+}());
 exports.BaseRepository = BaseRepository;
 //# sourceMappingURL=repository.js.map

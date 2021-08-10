@@ -1,7 +1,7 @@
 "use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
+exports.__esModule = true;
 exports.partSchema = void 0;
-const mongoose = require("mongoose");
+var mongoose = require("mongoose");
 exports.partSchema = new mongoose.Schema({
     team: {
         type: mongoose.Schema.Types.ObjectId,
@@ -15,6 +15,6 @@ exports.partSchema = new mongoose.Schema({
 }, {
     timestamps: true
 });
-const Part = mongoose.model('Part', exports.partSchema);
-exports.default = Part;
+var Part = mongoose.model('Part', exports.partSchema);
+exports["default"] = Part;
 //# sourceMappingURL=part.model.js.map

@@ -1,9 +1,9 @@
 "use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
+exports.__esModule = true;
 /* data from
 * https://support.alldata.com/alldata-repair-online-article/vin-to-year-chart
  */
-const Years = {
+var Years = {
     'L': 1990,
     'M': 1991,
     'N': 1992,
@@ -35,5 +35,5 @@ const Years = {
     'J': 2018,
     'K': 2019
 };
-exports.default = Years;
+exports["default"] = Years;
 //# sourceMappingURL=years.js.map

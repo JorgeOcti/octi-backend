@@ -1,22 +1,22 @@
 "use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-const chai = require("chai");
-const chaiHttp = require("chai-http");
-const cheerio = require("cheerio");
+exports.__esModule = true;
+var chai = require("chai");
+var chaiHttp = require("chai-http");
+var cheerio = require("cheerio");
 require("mocha");
-const server_1 = require("../../server");
-const user_model_1 = require("../models/user.model");
-const request = require('supertest');
+var server_1 = require("../../server");
+var user_model_1 = require("../models/user.model");
+var request = require('supertest');
 chai.use(chaiHttp);
-const expect = chai.expect;
-const authenticatedUser = request.agent(server_1.default);
-describe('app', () => {
-    before((done) => {
+var expect = chai.expect;
+var authenticatedUser = request.agent(server_1["default"]);
+describe('app', function () {
+    before(function (done) {
         authenticatedUser
             .get('/account/login/')
-            .end((err, res) => {
-            const $html = cheerio(res.text);
-            const csrf = $html.find('input[name=_csrf]').val();
+            .end(function (err, res) {
+            var $html = cheerio(res.text);
+            var csrf = $html.find('input[name=_csrf]').val();
             authenticatedUser
                 .post('/account/login/')
                 .set('cookie', res.header['set-cookie'][0])
@@ -25,77 +25,77 @@ describe('app', () => {
                 password: '123',
                 _csrf: csrf
             })
-                .end((err, res) => {
+                .end(function (err, res) {
                 expect(res.status).to.equal(302);
                 done();
             });
         });
     });
-    it('it should get robots.txt', (done) => {
-        chai.request(server_1.default)
+    it('it should get robots.txt', function (done) {
+        chai.request(server_1["default"])
             .get('/robots.txt')
-            .end((err, res) => {
+            .end(function (err, res) {
             expect(res.status).to.equal(200);
             done();
         });
     });
-    it('it should get login web', (done) => {
-        chai.request(server_1.default)
+    it('it should get login web', function (done) {
+        chai.request(server_1["default"])
             .get('/account/login/')
-            .end((err, res) => {
+            .end(function (err, res) {
             expect(res.status).to.equal(200);
             done();
         });
     });
-    it('it should login web redirect if user authenticated', (done) => {
+    it('it should login web redirect if user authenticated', function (done) {
         authenticatedUser
             .get('/account/login/')
-            .end((err, res) => {
+            .end(function (err, res) {
             expect(res.status).to.equal(302);
             done();
         });
     });
-    it('it should get forgot password web', (done) => {
-        chai.request(server_1.default)
+    it('it should get forgot password web', function (done) {
+        chai.request(server_1["default"])
             .get('/account/forgot-password/')
-            .end((err, res) => {
+            .end(function (err, res) {
             expect(res.status).to.equal(200);
-            const $html = cheerio(res.text);
-            const csrf = $html.find('input[name=_csrf]').val();
-            chai.request(server_1.default)
+            var $html = cheerio(res.text);
+            var csrf = $html.find('input[name=_csrf]').val();
+            chai.request(server_1["default"])
                 .post('/account/forgot-password/')
                 .set('cookie', res.header['set-cookie'][0])
                 .send({
                 username: 'gmunoz@osacontrol.com',
                 _csrf: csrf
             })
-                .end((err, res) => {
+                .end(function (err, res) {
                 expect(res.status).to.equal(200);
                 done();
             });
         });
     });
-    it('it should enter in recovery page and process recovery', (done) => {
-        user_model_1.default.findOne({ email: 'gmunoz@osacontrol.com' }).exec((err, user) => {
+    it('it should enter in recovery page and process recovery', function (done) {
+        user_model_1["default"].findOne({ email: 'gmunoz@osacontrol.com' }).exec(function (err, user) {
             if (err) {
                 console.log(err);
             }
             if (user) {
-                chai.request(server_1.default)
-                    .get(`/account/recovery/${user.passwordResetToken}`)
-                    .end((err, res) => {
+                chai.request(server_1["default"])
+                    .get("/account/recovery/" + user.passwordResetToken)
+                    .end(function (err, res) {
                     expect(res.status).to.equal(200);
-                    const $html = cheerio(res.text);
-                    const csrf = $html.find('input[name=_csrf]').val();
-                    chai.request(server_1.default)
-                        .post(`/account/recovery/${user.passwordResetToken}`)
+                    var $html = cheerio(res.text);
+                    var csrf = $html.find('input[name=_csrf]').val();
+                    chai.request(server_1["default"])
+                        .post("/account/recovery/" + user.passwordResetToken)
                         .set('cookie', res.header['set-cookie'][0])
                         .send({
                         password: '123',
                         password2: '123',
                         _csrf: csrf
                     })
-                        .end((err, res) => {
+                        .end(function (err, res) {
                         console.log('res.status', res.status);
                         expect(res.status).to.equal(200);
                         done();
@@ -104,10 +104,10 @@ describe('app', () => {
             }
         });
     });
-    it('it should logout', (done) => {
-        chai.request(server_1.default)
+    it('it should logout', function (done) {
+        chai.request(server_1["default"])
             .get('/account/logout/')
-            .end((err, res) => {
+            .end(function (err, res) {
             expect(res.status).to.equal(200);
             done();
         });

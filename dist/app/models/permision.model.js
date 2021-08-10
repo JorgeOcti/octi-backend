@@ -1,8 +1,8 @@
 "use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-const mongoose = require("mongoose");
-const mongoosePaginate = require("mongoose-paginate");
-const permisionSchema = new mongoose.Schema({
+exports.__esModule = true;
+var mongoose = require("mongoose");
+var mongoosePaginate = require("mongoose-paginate");
+var permisionSchema = new mongoose.Schema({
     name: {
         type: String,
         unique: true
@@ -15,6 +15,6 @@ const permisionSchema = new mongoose.Schema({
     timestamps: true
 });
 permisionSchema.plugin(mongoosePaginate);
-const Permission = mongoose.model('Permission', permisionSchema);
-exports.default = Permission;
+var Permission = mongoose.model('Permission', permisionSchema);
+exports["default"] = Permission;
 //# sourceMappingURL=permision.model.js.map

@@ -1,7 +1,7 @@
 "use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-const mongoose = require("mongoose");
-const salesChannelSchema = new mongoose.Schema({
+exports.__esModule = true;
+var mongoose = require("mongoose");
+var salesChannelSchema = new mongoose.Schema({
     name: {
         type: String
     },
@@ -11,11 +11,11 @@ const salesChannelSchema = new mongoose.Schema({
     },
     fleet: {
         type: Boolean,
-        default: false
+        "default": false
     }
 }, {
     timestamps: true
 });
-const SalesChannel = mongoose.model('SalesChannel', salesChannelSchema);
-exports.default = SalesChannel;
+var SalesChannel = mongoose.model('SalesChannel', salesChannelSchema);
+exports["default"] = SalesChannel;
 //# sourceMappingURL=salesChannel.model.js.map

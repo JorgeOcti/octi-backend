@@ -1,12 +1,12 @@
 "use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
+exports.__esModule = true;
 exports.transmittalFileSchema = void 0;
-const mongoose = require("mongoose");
-const mongooseCrate = require("mongoose-crate");
-const MongooseCrateS3 = require("mongoose-crate-s3");
-const uuid = require("uuid");
-const s3Config = require("../../../s3-config.json");
-const fileSchema = new mongoose.Schema({
+var mongoose = require("mongoose");
+var mongooseCrate = require("mongoose-crate");
+var MongooseCrateS3 = require("mongoose-crate-s3");
+var uuid = require("uuid");
+var s3Config = require("../../../s3-config.json");
+var fileSchema = new mongoose.Schema({
     url: {
         type: String
     },
@@ -20,7 +20,7 @@ const fileSchema = new mongoose.Schema({
         type: Number
     }
 }, {
-    _id: false,
+    _id: false
 });
 exports.transmittalFileSchema = new mongoose.Schema({
     transmittal: {
@@ -48,7 +48,7 @@ exports.transmittalFileSchema.plugin(mongooseCrate, {
         acl: 'public-read',
         region: process.env.S3_REGION || s3Config.region,
         // where the file is stored in the bucket - defaults to this function
-        path: (attachment) => {
+        path: function (attachment) {
             /* attachment params:
             estination:"/tmp/"
             encoding:"7bit"s
@@ -61,7 +61,7 @@ exports.transmittalFileSchema.plugin(mongooseCrate, {
             size:966
             type:"image/svg"
             * */
-            return `/transmittal/files/${attachment.team}/${uuid.v1()}-${attachment.originalname}`;
+            return "/transmittal/files/" + attachment.team + "/" + uuid.v1() + "-" + attachment.originalname;
         }
     }),
     fields: {
@@ -70,6 +70,6 @@ exports.transmittalFileSchema.plugin(mongooseCrate, {
     }
 });
 // transmittalFileSchema.index({ form: 1, user: 1 });
-const TransmittalFile = mongoose.model('TransmittalFile', exports.transmittalFileSchema);
-exports.default = TransmittalFile;
+var TransmittalFile = mongoose.model('TransmittalFile', exports.transmittalFileSchema);
+exports["default"] = TransmittalFile;
 //# sourceMappingURL=transmittalFile.model.js.map

@@ -1,8 +1,8 @@
 "use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-const mongoose = require("mongoose");
-const mongoosePaginate = require("mongoose-paginate");
-const requestSchema = new mongoose.Schema({
+exports.__esModule = true;
+var mongoose = require("mongoose");
+var mongoosePaginate = require("mongoose-paginate");
+var requestSchema = new mongoose.Schema({
     team: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Team'
@@ -33,7 +33,7 @@ const requestSchema = new mongoose.Schema({
     },
     fleet: {
         type: Boolean,
-        default: false
+        "default": false
     },
     // status: {
     //   type: mongoose.Schema.Types.ObjectId,
@@ -42,7 +42,7 @@ const requestSchema = new mongoose.Schema({
     createdBy: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User',
-        default: null
+        "default": null
     }
 }, {
     timestamps: true
@@ -56,6 +56,6 @@ requestSchema.virtual('items', {
 requestSchema.set('toObject', { virtuals: true });
 requestSchema.set('toJSON', { virtuals: true });
 requestSchema.plugin(mongoosePaginate);
-const Request = mongoose.model('Request', requestSchema);
-exports.default = Request;
+var Request = mongoose.model('Request', requestSchema);
+exports["default"] = Request;
 //# sourceMappingURL=request.model.js.map

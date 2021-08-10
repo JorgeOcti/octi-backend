@@ -1,12 +1,12 @@
 "use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-const mongoose = require("mongoose");
-const mongoosePaginate = require("mongoose-paginate");
-const mongooseCrate = require("mongoose-crate");
-const MongooseCrateS3 = require("mongoose-crate-s3");
-const s3Config = require("../../../s3-config.json");
-const uuid = require("uuid");
-const fileSchema = new mongoose.Schema({
+exports.__esModule = true;
+var mongoose = require("mongoose");
+var mongoosePaginate = require("mongoose-paginate");
+var mongooseCrate = require("mongoose-crate");
+var MongooseCrateS3 = require("mongoose-crate-s3");
+var s3Config = require("../../../s3-config.json");
+var uuid = require("uuid");
+var fileSchema = new mongoose.Schema({
     url: {
         type: String
     },
@@ -20,7 +20,7 @@ const fileSchema = new mongoose.Schema({
         type: Number
     }
 });
-const invoiceSchema = new mongoose.Schema({
+var invoiceSchema = new mongoose.Schema({
     team: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Team'
@@ -34,51 +34,51 @@ const invoiceSchema = new mongoose.Schema({
     },
     inventoryCars: {
         type: Number,
-        default: 0
+        "default": 0
     },
     checklistCars: {
         type: Number,
-        default: 0
+        "default": 0
     },
     requestCars: {
         type: Number,
-        default: 0
+        "default": 0
     },
     inventoryPrice: {
         type: Number,
-        default: 0
+        "default": 0
     },
     checklistPrice: {
         type: Number,
-        default: 0
+        "default": 0
     },
     requestPrice: {
         type: Number,
-        default: 0
+        "default": 0
     },
     totalUF: {
         type: Number,
-        default: 0
+        "default": 0
     },
     totalDolar: {
         type: Number,
-        default: 0
+        "default": 0
     },
     totalPeso: {
         type: Number,
-        default: 0
+        "default": 0
     },
     valueUF: {
         type: Number,
-        default: 0
+        "default": 0
     },
     valueDolar: {
         type: Number,
-        default: 0
+        "default": 0
     },
     file: {
         type: fileSchema,
-        default: {}
+        "default": {}
     }
 }, {
     timestamps: true
@@ -91,7 +91,7 @@ invoiceSchema.plugin(mongooseCrate, {
         acl: 'public-read',
         region: process.env.S3_REGION || s3Config.region,
         // where the file is stored in the bucket - defaults to this function
-        path: (attachment) => {
+        path: function (attachment) {
             /* attachment params:
             destination:"/tmp/"
             encoding:"7bit"
@@ -104,7 +104,7 @@ invoiceSchema.plugin(mongooseCrate, {
             size:966
             type:"image/svg"
             * */
-            return `/invoices/${attachment.team}/${attachment.createdAt}/${attachment.company}/${uuid.v1()}-${attachment.originalname}`;
+            return "/invoices/" + attachment.team + "/" + attachment.createdAt + "/" + attachment.company + "/" + uuid.v1() + "-" + attachment.originalname;
             // console.log('invoice-attachment', attachment);
             // return `/invoices/${uuid.v1()}-${attachment.originalname}`;
         }
@@ -114,6 +114,6 @@ invoiceSchema.plugin(mongooseCrate, {
     }
 });
 invoiceSchema.plugin(mongoosePaginate);
-const Invoice = mongoose.model('Invoice', invoiceSchema);
-exports.default = Invoice;
+var Invoice = mongoose.model('Invoice', invoiceSchema);
+exports["default"] = Invoice;
 //# sourceMappingURL=invoice.model.js.map

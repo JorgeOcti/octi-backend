@@ -1,7 +1,7 @@
 "use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-const mongoose = require("mongoose");
-const stockSchema = new mongoose.Schema({
+exports.__esModule = true;
+var mongoose = require("mongoose");
+var stockSchema = new mongoose.Schema({
     team: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Team',
@@ -15,7 +15,7 @@ const stockSchema = new mongoose.Schema({
     createdBy: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User'
-    },
+    }
 }, {
     timestamps: true
 });
@@ -25,6 +25,6 @@ stockSchema.virtual('cars', {
     foreignField: 'stock',
     justOne: false
 });
-const Stock = mongoose.model('Stock', stockSchema);
-exports.default = Stock;
+var Stock = mongoose.model('Stock', stockSchema);
+exports["default"] = Stock;
 //# sourceMappingURL=stock.model.js.map

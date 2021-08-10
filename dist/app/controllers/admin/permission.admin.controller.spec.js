@@ -1,21 +1,21 @@
 "use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-const chai = require("chai");
-const chaiHttp = require("chai-http");
-const cheerio = require("cheerio");
+exports.__esModule = true;
+var chai = require("chai");
+var chaiHttp = require("chai-http");
+var cheerio = require("cheerio");
 require("mocha");
-const server_1 = require("../../../server");
-const request = require('supertest');
+var server_1 = require("../../../server");
+var request = require('supertest');
 chai.use(chaiHttp);
-const expect = chai.expect;
-const authenticatedUser = request.agent(server_1.default);
-describe('admin permissions', () => {
-    before((done) => {
+var expect = chai.expect;
+var authenticatedUser = request.agent(server_1["default"]);
+describe('admin permissions', function () {
+    before(function (done) {
         authenticatedUser
             .get('/account/login/')
-            .end((err, response) => {
-            const $html = cheerio(response.text);
-            const csrf = $html.find('input[name=_csrf]').val();
+            .end(function (err, response) {
+            var $html = cheerio(response.text);
+            var csrf = $html.find('input[name=_csrf]').val();
             authenticatedUser
                 .post('/account/login/')
                 .set('cookie', response.header['set-cookie'][0])
@@ -24,16 +24,16 @@ describe('admin permissions', () => {
                 password: '123',
                 _csrf: csrf
             })
-                .end((err, response) => {
+                .end(function (err, response) {
                 expect(response.status).to.equal(302);
                 done();
             });
         });
     });
-    it('it should get data in list permissions', (done) => {
+    it('it should get data in list permissions', function (done) {
         authenticatedUser
             .get('/api/admin/permissions/')
-            .end((err, res) => {
+            .end(function (err, res) {
             expect(res.status).to.equal(200);
             done();
         });

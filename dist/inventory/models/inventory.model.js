@@ -1,13 +1,13 @@
 "use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
+exports.__esModule = true;
 exports.choicesStatusInventory = exports.ChoicesStatusInventory = void 0;
-const mongoose = require("mongoose");
-const mongooseCrate = require("mongoose-crate");
-const MongooseCrateS3 = require("mongoose-crate-s3");
-const uuid = require("uuid");
-const s3Config = require("../../../s3-config.json");
-const mongoosePaginate = require("mongoose-paginate");
-const fileSchema = new mongoose.Schema({
+var mongoose = require("mongoose");
+var mongooseCrate = require("mongoose-crate");
+var MongooseCrateS3 = require("mongoose-crate-s3");
+var uuid = require("uuid");
+var s3Config = require("../../../s3-config.json");
+var mongoosePaginate = require("mongoose-paginate");
+var fileSchema = new mongoose.Schema({
     url: {
         type: String
     },
@@ -21,19 +21,19 @@ const fileSchema = new mongoose.Schema({
         type: Number
     }
 });
-const photoSettingSchema = new mongoose.Schema({
+var photoSettingSchema = new mongoose.Schema({
     manual: {
         type: Number,
-        default: 1
+        "default": 1
     },
     report: {
         type: Number,
-        default: 1
+        "default": 1
     }
 }, {
     _id: false
 });
-const settingSchema = new mongoose.Schema({
+var settingSchema = new mongoose.Schema({
     photos: {
         type: photoSettingSchema
     }
@@ -51,7 +51,7 @@ exports.choicesStatusInventory = [
     ChoicesStatusInventory.inProcess,
     ChoicesStatusInventory.finalized
 ];
-const inventorySchema = new mongoose.Schema({
+var inventorySchema = new mongoose.Schema({
     name: {
         type: String
     },
@@ -71,11 +71,11 @@ const inventorySchema = new mongoose.Schema({
         }],
     file: {
         type: fileSchema,
-        default: {}
+        "default": {}
     },
     settings: {
         type: settingSchema,
-        default: {
+        "default": {
             photos: {
                 manual: 1,
                 report: 1
@@ -84,7 +84,7 @@ const inventorySchema = new mongoose.Schema({
     },
     backup: {
         type: fileSchema,
-        default: {}
+        "default": {}
     },
     createdBy: {
         type: mongoose.Schema.Types.ObjectId,
@@ -99,8 +99,8 @@ const inventorySchema = new mongoose.Schema({
     },
     status: {
         type: String,
-        enum: exports.choicesStatusInventory,
-        default: ChoicesStatusInventory.pending
+        "enum": exports.choicesStatusInventory,
+        "default": ChoicesStatusInventory.pending
     }
 }, {
     timestamps: true
@@ -113,7 +113,7 @@ inventorySchema.plugin(mongooseCrate, {
         acl: 'public-read',
         region: process.env.S3_REGION || s3Config.region,
         // where the file is stored in the bucket - defaults to this function
-        path: (attachment) => {
+        path: function (attachment) {
             /* attachment params:
             estination:"/tmp/"
             encoding:"7bit"s
@@ -126,7 +126,7 @@ inventorySchema.plugin(mongooseCrate, {
             size:966
             type:"image/svg"
             * */
-            return `/inventories/setting/${attachment.team}/${uuid.v1()}-${attachment.originalname}`;
+            return "/inventories/setting/" + attachment.team + "/" + uuid.v1() + "-" + attachment.originalname;
         }
     }),
     fields: {
@@ -145,6 +145,6 @@ inventorySchema.set('toJSON', { virtuals: true });
 inventorySchema.index({ team: 1 });
 inventorySchema.index({ team: 1, status: 1, venues: 1 });
 inventorySchema.plugin(mongoosePaginate);
-const Inventory = mongoose.model('Inventory', inventorySchema);
-exports.default = Inventory;
+var Inventory = mongoose.model('Inventory', inventorySchema);
+exports["default"] = Inventory;
 //# sourceMappingURL=inventory.model.js.map

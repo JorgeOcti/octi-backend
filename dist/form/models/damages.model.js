@@ -1,8 +1,8 @@
 "use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
+exports.__esModule = true;
 exports.damagesSchema = void 0;
-const mongoose = require("mongoose");
-const mongoosePaginate = require("mongoose-paginate");
+var mongoose = require("mongoose");
+var mongoosePaginate = require("mongoose-paginate");
 exports.damagesSchema = new mongoose.Schema({
     name: {
         type: String,
@@ -37,6 +37,6 @@ exports.damagesSchema = new mongoose.Schema({
     timestamps: true
 });
 exports.damagesSchema.plugin(mongoosePaginate);
-const Damages = mongoose.model('Damages', exports.damagesSchema);
-exports.default = Damages;
+var Damages = mongoose.model('Damages', exports.damagesSchema);
+exports["default"] = Damages;
 //# sourceMappingURL=damages.model.js.map

@@ -16,6 +16,10 @@ import {ITransmittalActionTypes, ITransmittalState} from "../../../actions/trans
 import TransmitalListDetail from './TransmitalListDetail';
 import {Dispatch} from "redux";
 import ModalView from "../../Modal/ModalView";
+import ApiService from "../../../utils/axios";
+import * as moment from "moment";
+import Axios from "axios";
+import * as swal from "sweetalert";
 
 interface IPropsType extends RouteComponentProps<{ ticket: string }> {
   dispatch: Dispatch<ITransmittalActionTypes>;
@@ -45,6 +49,7 @@ class TransmittalListView extends TrackingBasePage<IPropsType, IStateType> {
     this.title = 'Transporte';
     this.create = this.create.bind(this);
     this.changeOrder = this.changeOrder.bind(this);
+    this.exportExcel = this.exportExcel.bind(this);
     this.changePage = this.changePage.bind(this);
   }
 
@@ -183,7 +188,7 @@ class TransmittalListView extends TrackingBasePage<IPropsType, IStateType> {
                 <ShowIf condition={data.length > 0}>
                   <button
                     className="btn btn-sm btn-primary hidden-xs"
-                    // onClick={this.exportExcel}
+                    onClick={this.exportExcel}
                     disabled={exporing}
                     style={{ marginLeft: '5px' }}
                   >
@@ -302,6 +307,59 @@ class TransmittalListView extends TrackingBasePage<IPropsType, IStateType> {
   private changePage(page: number): void {
     const {options: {orderBy, orderType}} = this.props.transmittal;
     this.props.transmittalActions.getTransmittalsThunkAction(page, orderBy, orderType);
+  }
+
+  public exportExcel(): void {
+    this.trackClick('Exportar');
+    this.setState({
+      exporing: true
+    });
+    const api: ApiService = new ApiService();
+    const instance = api.getInstance();
+    instance.defaults.responseType = 'blob';
+    instance
+      .get(`/transmittals/export-xls/`)
+      .then((response) => {
+        const blob = new Blob([response.data], {
+          type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+        });
+        const fileName = `${moment().format('YYYYMMDD')}-distribución.xlsx`;
+        if (typeof window.navigator.msSaveBlob !== 'undefined') {
+          // IE workaround for "HTML7007: One or more blob URLs were
+          // revoked by closing the blob for which they were created.
+          // These URLs will no longer resolve as the data backing
+          // the URL has been freed."
+          window.navigator.msSaveBlob(blob, fileName);
+        } else {
+          const blobURL = URL.createObjectURL(blob);
+          const tempLink = document.createElement('a');
+          tempLink.style.display = 'none';
+          tempLink.href = blobURL;
+          tempLink.setAttribute('download', fileName);
+          // Safari thinks _blank anchor are pop ups. We only want to set _blank
+          // target if the browser does not support the HTML5 download attribute.
+          // This allows you to download files in desktop safari if pop up blocking
+          // is enabled.
+          if (typeof tempLink.download === 'undefined') {
+            tempLink.setAttribute('target', '_blank');
+          }
+          this.setState({
+            exporing: false
+          });
+          document.body.appendChild(tempLink);
+          tempLink.click();
+          document.body.removeChild(tempLink);
+          URL.revokeObjectURL(blobURL);
+        }
+      })
+      .catch((err) => {
+        this.setState({
+          exporing: false
+        });
+        if (!Axios.isCancel(err)) {
+          swal('Exportar usuarios', 'Ha ocurrido un error al general el excel.', 'error');
+        }
+      });
   }
 
 }

@@ -1,35 +1,87 @@
 "use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-const archiver = require("archiver");
-const bluebird = require("bluebird");
-const bson_1 = require("bson");
-const excel = require("exceljs");
-const fs = require("fs");
-const GraphicsMagick = require("gm");
-const https = require("https");
-const moment = require("moment");
-const mongoose = require("mongoose");
-const Raven = require("raven");
-const tempfile = require("tempfile");
-const app_1 = require("../../app");
-const car_model_1 = require("../../app/models/car.model");
-const team_model_1 = require("../../app/models/team.model");
-const teamSetting_model_1 = require("../../app/models/teamSetting.model");
-const user_model_1 = require("../../app/models/user.model");
-const venue_model_1 = require("../../app/models/venue.model");
-const activityHistory_model_1 = require("../../billing/models/activityHistory.model");
-const server_1 = require("../../server");
-const logger_service_1 = require("../../services/logger.service");
-const push_service_1 = require("../../services/push.service");
-const general_utils_1 = require("../../utils/general.utils");
-const inventory_model_1 = require("../models/inventory.model");
-const inventoryCar_model_1 = require("../models/inventoryCar.model");
-const inventoryFile_model_1 = require("../models/inventoryFile.model");
-const inventoryLabel_model_1 = require("../models/inventoryLabel.model");
-const stock_model_1 = require("../models/stock.model");
-const stockCar_model_1 = require("../models/stockCar.model");
-class InventoryController {
-    constructor() {
+var __assign = (this && this.__assign) || function () {
+    __assign = Object.assign || function(t) {
+        for (var s, i = 1, n = arguments.length; i < n; i++) {
+            s = arguments[i];
+            for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p))
+                t[p] = s[p];
+        }
+        return t;
+    };
+    return __assign.apply(this, arguments);
+};
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+var __generator = (this && this.__generator) || function (thisArg, body) {
+    var _ = { label: 0, sent: function() { if (t[0] & 1) throw t[1]; return t[1]; }, trys: [], ops: [] }, f, y, t, g;
+    return g = { next: verb(0), "throw": verb(1), "return": verb(2) }, typeof Symbol === "function" && (g[Symbol.iterator] = function() { return this; }), g;
+    function verb(n) { return function (v) { return step([n, v]); }; }
+    function step(op) {
+        if (f) throw new TypeError("Generator is already executing.");
+        while (_) try {
+            if (f = 1, y && (t = op[0] & 2 ? y["return"] : op[0] ? y["throw"] || ((t = y["return"]) && t.call(y), 0) : y.next) && !(t = t.call(y, op[1])).done) return t;
+            if (y = 0, t) op = [op[0] & 2, t.value];
+            switch (op[0]) {
+                case 0: case 1: t = op; break;
+                case 4: _.label++; return { value: op[1], done: false };
+                case 5: _.label++; y = op[1]; op = [0]; continue;
+                case 7: op = _.ops.pop(); _.trys.pop(); continue;
+                default:
+                    if (!(t = _.trys, t = t.length > 0 && t[t.length - 1]) && (op[0] === 6 || op[0] === 2)) { _ = 0; continue; }
+                    if (op[0] === 3 && (!t || (op[1] > t[0] && op[1] < t[3]))) { _.label = op[1]; break; }
+                    if (op[0] === 6 && _.label < t[1]) { _.label = t[1]; t = op; break; }
+                    if (t && _.label < t[2]) { _.label = t[2]; _.ops.push(op); break; }
+                    if (t[2]) _.ops.pop();
+                    _.trys.pop(); continue;
+            }
+            op = body.call(thisArg, _);
+        } catch (e) { op = [6, e]; y = 0; } finally { f = t = 0; }
+        if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
+    }
+};
+var __spreadArray = (this && this.__spreadArray) || function (to, from) {
+    for (var i = 0, il = from.length, j = to.length; i < il; i++, j++)
+        to[j] = from[i];
+    return to;
+};
+exports.__esModule = true;
+var archiver = require("archiver");
+var bluebird = require("bluebird");
+var bson_1 = require("bson");
+var excel = require("exceljs");
+var fs = require("fs");
+var GraphicsMagick = require("gm");
+var https = require("https");
+var moment = require("moment");
+var mongoose = require("mongoose");
+var Raven = require("raven");
+var tempfile = require("tempfile");
+var app_1 = require("../../app");
+var car_model_1 = require("../../app/models/car.model");
+var team_model_1 = require("../../app/models/team.model");
+var teamSetting_model_1 = require("../../app/models/teamSetting.model");
+var user_model_1 = require("../../app/models/user.model");
+var venue_model_1 = require("../../app/models/venue.model");
+var activityHistory_model_1 = require("../../billing/models/activityHistory.model");
+var server_1 = require("../../server");
+var logger_service_1 = require("../../services/logger.service");
+var push_service_1 = require("../../services/push.service");
+var general_utils_1 = require("../../utils/general.utils");
+var inventory_model_1 = require("../models/inventory.model");
+var inventoryCar_model_1 = require("../models/inventoryCar.model");
+var inventoryFile_model_1 = require("../models/inventoryFile.model");
+var inventoryLabel_model_1 = require("../models/inventoryLabel.model");
+var stock_model_1 = require("../models/stock.model");
+var stockCar_model_1 = require("../models/stockCar.model");
+var InventoryController = /** @class */ (function () {
+    function InventoryController() {
         this.index = this.index.bind(this);
         this.stock = this.stock.bind(this);
         this.detail = this.detail.bind(this);
@@ -54,1965 +106,152 @@ class InventoryController {
         this.currentStock = this.currentStock.bind(this);
         this.loadStock = this.loadStock.bind(this);
     }
-    async index(req, res) {
-        try {
-            res.render('app/index', {
-                token: await req.user.generateToken()
-            });
-        }
-        catch (e) {
-            console.log(e);
-        }
-    }
-    async stock(req, res) {
-        try {
-            res.render('app/index', {
-                token: await req.user.generateToken()
-            });
-        }
-        catch (e) {
-            console.log(e);
-        }
-    }
-    async detail(req, res) {
-        const team = req.user.team._id;
-        const { id } = req.params;
-        try {
-            const inventory = await inventory_model_1.default.findOne({ _id: id, team });
-            if (!inventory) {
-                return res.status(404).render('404');
-            }
-            else {
-                res.render('app/index', { token: await req.user.generateToken() });
-            }
-        }
-        catch (e) {
-            /* istanbul ignore next */
-            if (e) {
-                res.status(500).send(e);
-            }
-        }
-    }
-    async create(req, res) {
-        const { company, team } = req.user;
-        const { name, manualPhoto, reportPhoto } = req.body;
-        let { carsByVenue, notification } = req.body;
-        carsByVenue = JSON.parse(carsByVenue);
-        notification = notification === 'true';
-        try {
-            const inventoryCars = [];
-            const activityHistories = [];
-            const venuesIDs = [];
-            for (const venue of carsByVenue) {
-                if (venue.name && venue.name.trim().length) {
-                    const venueRegExp = new RegExp(`^${venue.name.trim()}$`, 'i');
-                    let currentVenue = await venue_model_1.default.findOne({
-                        team,
-                        name: venueRegExp
-                    });
-                    // create venue if no existe
-                    if (currentVenue === null) {
-                        currentVenue = new venue_model_1.default({
-                            name: venue.name.trim(),
-                            team,
-                            company
-                        });
-                        await currentVenue.save();
-                    }
-                    venuesIDs.push(currentVenue._id.toString());
-                    if (venue.cars && venue.cars.length) {
-                        for (const car of venue.cars) {
-                            let currentCar = await car_model_1.default.findOne({
-                                team,
-                                vin: car.vin.trim()
-                            });
-                            if (currentCar === null && car.vin && car.vin.trim().length) {
-                                currentCar = new car_model_1.default({
-                                    team,
-                                    company,
-                                    vin: car.vin,
-                                    vin2: car.vin.substr(car.vin.length - 6),
-                                    color: car.color,
-                                    type: car.type,
-                                    property: car.property,
-                                    denomination: car.denomination,
-                                    brand: car.brand,
-                                    patent: car.patent,
-                                    createdBy: req.user,
-                                    status: car_model_1.ChoicesStatusCar.active
-                                });
-                                await currentCar.save();
-                            }
-                            if (currentVenue && currentCar) {
-                                inventoryCars.push({
-                                    venue: currentVenue._id,
-                                    car: currentCar._id,
-                                    comments: [],
-                                    images: []
-                                });
-                                activityHistories.push({
-                                    team,
-                                    company,
-                                    user: req.user._id,
-                                    type: activityHistory_model_1.ChoicesTypeActivity.inventory,
-                                    car: {
-                                        _id: currentCar._id,
-                                        vin: currentCar.vin
-                                    }
-                                });
-                                app_1.queue
-                                    .create('updateCar', {
-                                    title: `updateCar ${car.vin}`,
-                                    currentCar: currentCar._id,
-                                    car
-                                })
-                                    .delay(10000)
-                                    .priority('high')
-                                    .attempts(5)
-                                    .save();
-                            }
-                        }
-                    }
-                }
-            }
-            const inventory = new inventory_model_1.default({
-                name,
-                company,
-                team,
-                venues: venuesIDs,
-                createdBy: req.user._id,
-                status: inventory_model_1.ChoicesStatusInventory.inProcess,
-                settings: {
-                    photos: {
-                        manual: manualPhoto,
-                        report: reportPhoto
-                    }
+    InventoryController.prototype.index = function (req, res) {
+        return __awaiter(this, void 0, void 0, function () {
+            var _a, _b, _c, e_1;
+            var _d;
+            return __generator(this, function (_e) {
+                switch (_e.label) {
+                    case 0:
+                        _e.trys.push([0, 2, , 3]);
+                        _b = (_a = res).render;
+                        _c = ['app/index'];
+                        _d = {};
+                        return [4 /*yield*/, req.user.generateToken()];
+                    case 1:
+                        _b.apply(_a, _c.concat([(_d.token = _e.sent(),
+                                _d)]));
+                        return [3 /*break*/, 3];
+                    case 2:
+                        e_1 = _e.sent();
+                        console.log(e_1);
+                        return [3 /*break*/, 3];
+                    case 3: return [2 /*return*/];
                 }
             });
-            const file = general_utils_1.default.getFileFromRequest(req.files, 'file');
-            if (file) {
-                file.team = team;
-                await inventory.attach('file', file);
-            }
-            const backup = general_utils_1.default.getFileFromRequest(req.files, 'backup');
-            if (backup) {
-                backup.team = team;
-                await inventory.attach('backup', backup);
-            }
-            await inventory.save();
-            inventoryCars.map((i) => {
-                i.inventory = inventory._id;
-                return i;
-            });
-            activityHistories.map((a) => {
-                a.inventory = {
-                    _id: inventory._id,
-                    name: inventory.name
-                };
-                return a;
-            });
-            await activityHistory_model_1.default.insertMany(activityHistories);
-            await inventoryCar_model_1.default.insertMany(inventoryCars);
-            if (notification) {
-                const usersIDs = await user_model_1.default.find({
-                    venue: {
-                        $in: venuesIDs
-                    },
-                    team
-                }, {
-                    _id: true
-                });
-                push_service_1.default.massiveSend('Nuevo inventario', `Se ha iniciado el inventario "${inventory.name}"`, 'Ya puedes empezar a escanear', usersIDs.map((user) => user._id.toString()));
-            }
-            server_1.io.to(`inventory-list-${team}`).emit('REFRESH', {
-                update: true
-            });
-            server_1.io.to(`stock-${team}`).emit('REFRESH', {
-                update: true
-            });
-            const currentTeam = await team_model_1.default.findById(req.user.team._id);
-            app_1.queue
-                .create('email', {
-                from: '',
-                title: `Inventory Notification`,
-                to: `"soporte"<soporte@osacontrol.com>`,
-                subject: `${req.user.firstName} ha creado un inventario en ${currentTeam.name}`,
-                text: `Hola Soporte
-
-          Se ha creado un nuevo inventario.
-
-          Team: ${team.name}
-          Usuario: ${req.user.firstName} ${req.user.lastName}
-          ENV: ${process.env.ENV}
-
-          En caso de dudas o consultas puedes contactarte a soporte@osacontrol.com o a nuestro twitter@TaskforceOSA.`,
-                view: 'alerts/inventoryNotification',
-                context: {
-                    team: currentTeam,
-                    user: req.user,
-                    env: process.env.ENV
-                }
-            })
-                .priority('high')
-                .attempts(5)
-                .save();
-            res.json({
-                _id: inventory._id.toString(),
-                message: 'Inventario creado satisfactoriamente',
-                status: 200
-            });
-        }
-        catch (e) {
-            /* istanbul ignore next */
-            logger_service_1.default.error(`create: Async Error.`);
-            /* istanbul ignore next */
-            logger_service_1.default.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
-            /* istanbul ignore next */
-            logger_service_1.default.error(e);
-            /* istanbul ignore next */
-            res.status(500).json({
-                message: e,
-                status: 500
-            });
-        }
-    }
-    async list(req, res) {
-        const team = req.user.team._id;
-        const { page, pageSize } = req.query;
-        const venuesPermissions = req.user.venuesPermissions();
-        try {
-            // paginate options
-            const options = {
-                select: {
-                    _id: true
-                },
-                sort: {
-                    createdAt: -1
-                },
-                page: parseInt(page ? page : '1', 10),
-                limit: parseInt(pageSize ? pageSize : '10', 10)
-            };
-            const paginatedInventories = await inventory_model_1.default.paginate({
-                team,
-                venues: {
-                    $in: venuesPermissions
-                }
-            }, options);
-            if (options.page && paginatedInventories.pages && paginatedInventories.pages < options.page) {
-                res.status(400).json({
-                    message: 'La página solicitada no existe.',
-                    status: 200
-                });
-            }
-            else {
-                const response = [];
-                const inventories = await inventory_model_1.default.aggregate([{
-                        $match: {
-                            _id: {
-                                $in: paginatedInventories.docs.map(v => v._id)
-                            }
-                        }
-                    }, {
-                        $lookup: {
-                            from: 'inventorycars',
-                            localField: '_id',
-                            foreignField: 'inventory',
-                            as: 'cars'
-                        }
-                    }, {
-                        $unwind: '$cars'
-                    }, {
-                        $match: {
-                            'cars.venue': {
-                                $in: venuesPermissions
-                            },
-                            'cars.status': {
-                                $in: [
-                                    inventoryCar_model_1.ChoicesStatusCarInventory.pending,
-                                    inventoryCar_model_1.ChoicesStatusCarInventory.found,
-                                    inventoryCar_model_1.ChoicesStatusCarInventory.missing,
-                                    inventoryCar_model_1.ChoicesStatusCarInventory.leftover,
-                                    inventoryCar_model_1.ChoicesStatusCarInventory.reported
-                                ]
-                            }
-                        }
-                    }, {
-                        $group: {
-                            _id: {
-                                category: '$_id',
-                                status: '$status',
-                                carStatus: '$cars.status',
-                                name: '$name',
-                                file: '$file',
-                                backup: '$backup',
-                                createdBy: '$createdBy',
-                                createdAt: '$createdAt',
-                                finalizedBy: '$finalizedBy',
-                                finalizedAt: '$finalizedAt'
-                            },
-                            total: {
-                                $sum: 1
-                            }
-                        }
-                    }, {
-                        $group: {
-                            _id: '$_id.category',
-                            name: {
-                                $first: '$_id.name'
-                            },
-                            createdAt: {
-                                $first: '$_id.createdAt'
-                            },
-                            file: {
-                                $first: '$_id.file'
-                            },
-                            backup: {
-                                $first: '$_id.backup'
-                            },
-                            finalizedAt: {
-                                $first: '$_id.finalizedAt'
-                            },
-                            createdBy: {
-                                $first: '$_id.createdBy'
-                            },
-                            finalizedBy: {
-                                $first: '$_id.finalizedBy'
-                            },
-                            results: {
-                                $push: {
-                                    status: '$_id.carStatus',
-                                    total: '$total'
-                                }
-                            },
-                            status: {
-                                $first: '$_id.status'
-                            }
-                        }
-                    }, {
-                        $lookup: {
-                            from: 'users',
-                            localField: 'createdBy',
-                            foreignField: '_id',
-                            as: 'createdBy'
-                        }
-                    }, {
-                        $lookup: {
-                            from: 'users',
-                            localField: 'finalizedBy',
-                            foreignField: '_id',
-                            as: 'finalizedBy'
-                        }
-                    }, {
-                        $project: {
-                            '_id': 1,
-                            'name': 1,
-                            'results': 1,
-                            'file': 1,
-                            'backup': 1,
-                            'createdBy.firstName': 1,
-                            'createdBy.lastName': 1,
-                            'finalizedBy.firstName': 1,
-                            'finalizedBy.lastName': 1,
-                            'status': 1,
-                            'createdAt': 1,
-                            'finalizedAt': 1
-                        }
-                    }, {
-                        $sort: {
-                            createdAt: -1
-                        }
-                    }]);
-                for (const inventory of inventories) {
-                    const defaultResults = {
-                        [inventoryCar_model_1.ChoicesStatusCarInventory.pending]: 0,
-                        [inventoryCar_model_1.ChoicesStatusCarInventory.found]: 0,
-                        [inventoryCar_model_1.ChoicesStatusCarInventory.missing]: 0,
-                        [inventoryCar_model_1.ChoicesStatusCarInventory.reported]: 0,
-                        [inventoryCar_model_1.ChoicesStatusCarInventory.leftover]: 0
-                    };
-                    response.push({
-                        _id: inventory._id,
-                        name: inventory.name,
-                        file: req.user.hasPermission('viewFilesInventory') ? inventory.file : null,
-                        backup: req.user.hasPermission('viewFilesInventory') ? inventory.backup : null,
-                        createdBy: inventory.createdBy.length ? {
-                            fullName: `${inventory.createdBy[0].firstName} ${inventory.createdBy[0].lastName}`
-                        } : {},
-                        finalizedBy: inventory.finalizedBy.length ? {
-                            fullName: `${inventory.finalizedBy[0].firstName} ${inventory.finalizedBy[0].lastName}`
-                        } : {},
-                        results: inventory.results.reduce((acc, cur) => {
-                            acc[cur.status] = cur.total;
-                            return acc;
-                        }, {
-                            ...defaultResults
-                        }),
-                        status: inventory.status,
-                        createdAt: inventory.createdAt,
-                        finalizedAt: inventory.finalizedAt ? inventory.finalizedAt : null
-                    });
-                }
-                const teamSettings = await teamSetting_model_1.default.findOne({ team });
-                res.json({
-                    inventories: response,
-                    inventorySettings: teamSettings.inventory,
-                    count: paginatedInventories.total,
-                    pages: paginatedInventories.pages,
-                    hasPrevious: options.page && options.page > 1 && paginatedInventories.pages && paginatedInventories.pages >= options.page,
-                    hasNext: options.page && paginatedInventories.pages && paginatedInventories.pages > options.page,
-                    status: 200
-                });
-            }
-        }
-        catch (e) {
-            /* istanbul ignore next */
-            logger_service_1.default.error(`list: Async Error.`);
-            /* istanbul ignore next */
-            logger_service_1.default.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
-            /* istanbul ignore next */
-            logger_service_1.default.error(e);
-            /* istanbul ignore next */
-            res.status(500).json({
-                message: e,
-                status: 500
-            });
-        }
-    }
-    async apiDetail(req, res) {
-        const team = req.user.team._id;
-        const { id } = req.params;
-        logger_service_1.default.info(`apiDetail`);
-        logger_service_1.default.info(`{user: {_id: ${req.user._id}, email: ${req.user.email}}, inventory: ${id}}`);
-        try {
-            const updatedUser = await user_model_1.default.findById(req.user._id);
-            if (!updatedUser) {
-                res.status(404).json({
-                    message: 'No se ha encontrado el inventario solicitado.',
-                    status: 404
-                });
-            }
-            else {
-                // const venuesPermissions = req.user.venuesPermissions();
-                const inventory = await inventory_model_1.default
-                    .findOne({
-                    _id: id,
-                    venues: updatedUser.venue,
-                    status: {
-                        $in: [inventory_model_1.ChoicesStatusInventory.inProcess]
-                    },
-                    team
-                })
-                    .populate([{
-                        path: 'cars',
-                        match: {
-                            status: {
-                                $in: [inventoryCar_model_1.ChoicesStatusCarInventory.pending, inventoryCar_model_1.ChoicesStatusCarInventory.found]
-                            }
-                            //   venue: {
-                            //     $in: venuesPermissions
-                            //   }
-                        },
-                        populate: [{
-                                path: 'car',
-                                select: ['vin', 'vin2', 'color', 'denomination', 'brand', 'patent']
-                            }, {
-                                path: 'venue',
-                                select: ['name']
-                            }]
-                    }]).lean();
-                if (inventory) {
-                    res.status(200).json({
-                        data: {
-                            cars: inventory.cars
-                                .map((car) => {
-                                return {
-                                    ...car.car,
-                                    _id: car._id,
-                                    venue: car.venue,
-                                    status: car.status
-                                };
-                            }),
-                            reasons: []
-                        },
-                        status: 200
-                    });
-                }
-                else {
-                    logger_service_1.default.error(`apiDetail: No se ha encontrado el inventario solicitado.`);
-                    logger_service_1.default.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
-                    res.status(404).json({
-                        message: 'No se ha encontrado el inventario solicitado.',
-                        status: 404
-                    });
-                }
-            }
-        }
-        catch (e) {
-            /* istanbul ignore next */
-            logger_service_1.default.error(`apiDetail: Async Error.`);
-            /* istanbul ignore next */
-            logger_service_1.default.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
-            /* istanbul ignore next */
-            logger_service_1.default.error(e);
-            /* istanbul ignore next */
-            res.status(500).json(e);
-        }
-    }
-    async downloadFile(url, dest) {
-        return new Promise(async (resolve, reject) => {
-            try {
-                // generate directory name from dest var
-                const directories = dest.split('/');
-                directories.pop();
-                // validate that the directory exist and create recursive if it does not exist
-                const directoyName = directories.join('/');
-                if (!fs.existsSync(directoyName)) {
-                    fs.mkdirSync(directoyName, { recursive: true });
-                }
-                const file = fs.createWriteStream(dest);
-                // download file
-                https.get(url, (response) => {
-                    response.pipe(file);
-                    file.on('finish', () => {
-                        file.close();
-                        resolve(response.headers['content-length'] ? parseInt(response.headers['content-length'], 10) : 0);
-                    });
-                });
-            }
-            catch (e) {
-                // Validate that the file exists and delete it if it exists.
-                if (fs.existsSync(dest)) {
-                    fs.unlink(dest, (err) => {
-                        if (err) {
-                            reject(err);
-                        }
-                    });
-                }
-                else {
-                    console.log(url);
-                    reject(e);
-                }
-            }
         });
-    }
-    async uploadFile(req, res) {
-        const { id } = req.params;
-        const { company, venue, team } = req.user;
-        logger_service_1.default.info(`uploadFile`);
-        logger_service_1.default.info(`{user: {_id: ${req.user._id}, email: ${req.user.email}}, inventory: ${id}}`);
-        const file = general_utils_1.default.getFileFromRequest(req.files, 'file');
-        if (file) {
-            try {
-                const inventoryFile = new inventoryFile_model_1.default();
-                /*
-                  {
-                    fieldname: 'file',
-                    originalname: 'Captura de pantalla 2018-06-28 a la(s) 11.59.58.png',
-                    encoding: '7bit',
-                    mimetype: 'image/png',
-                    destination: '/tmp/',
-                    filename: 'Captura de pantalla 2018-06-28 a la(s) 11.59.58.png',
-                    path: '/tmp/Captura de pantalla 2018-06-28 a la(s) 11.59.58.png',
-                    size: 794429
-                  }
-                */
-                file.headers = {
-                    'Content-Type': file.mimetype
-                };
-                file.team = team._id;
-                file.venue = venue._id;
-                file.inventory = id;
-                inventoryFile.inventory = id;
-                inventoryFile.user = req.user._id;
-                inventoryFile.company = company._id;
-                // fix exif
-                if (new RegExp('\\bimage\\b').test(file.mimetype)) {
-                    await this.autoRotate(file.path);
+    };
+    InventoryController.prototype.stock = function (req, res) {
+        return __awaiter(this, void 0, void 0, function () {
+            var _a, _b, _c, e_2;
+            var _d;
+            return __generator(this, function (_e) {
+                switch (_e.label) {
+                    case 0:
+                        _e.trys.push([0, 2, , 3]);
+                        _b = (_a = res).render;
+                        _c = ['app/index'];
+                        _d = {};
+                        return [4 /*yield*/, req.user.generateToken()];
+                    case 1:
+                        _b.apply(_a, _c.concat([(_d.token = _e.sent(),
+                                _d)]));
+                        return [3 /*break*/, 3];
+                    case 2:
+                        e_2 = _e.sent();
+                        console.log(e_2);
+                        return [3 /*break*/, 3];
+                    case 3: return [2 /*return*/];
                 }
-                await inventoryFile.attach('file', file);
-                await this.resizeImage(file.path);
-                await inventoryFile.attach('thumbnail', file);
-                await inventoryFile.save();
-                res.status(201).json({
-                    data: {
-                        _id: inventoryFile._id,
-                        file: inventoryFile.file
-                    },
-                    status: 201
-                });
-            }
-            catch (e) {
-                /* istanbul ignore next */
-                logger_service_1.default.error(`uploadFile: Async Error.`);
-                /* istanbul ignore next */
-                logger_service_1.default.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
-                /* istanbul ignore next */
-                logger_service_1.default.error(e);
-                /* istanbul ignore next */
-                res.status(400).json(e);
-            }
-        }
-        else {
-            logger_service_1.default.error(`uploadFile: La imagen es obligatoria.`);
-            logger_service_1.default.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
-            /* istanbul ignore next */
-            res.status(400).json({
-                message: 'La imagen es obligatoria.',
-                status: 400
             });
-        }
-    }
-    async apiFoundCar(req, res) {
-        const { team } = req.user;
-        const { id } = req.params;
-        const { vin, images } = req.body;
-        logger_service_1.default.info(`apiFoundCar`);
-        logger_service_1.default.info(`{user: {_id: ${req.user._id}, email: ${req.user.email}}, body: ${JSON.stringify(req.body)}}`);
-        try {
-            const updatedUser = await user_model_1.default.findById(req.user._id).populate([{
-                    path: 'venue',
-                    select: ['name']
-                }]);
-            const teamSettings = await teamSetting_model_1.default.findOne({ team });
-            if (!updatedUser) {
-                return res.status(404).json({
-                    message: 'No se ha encontrado el inventario solicitado.',
-                    status: 404
-                });
-            }
-            const venueId = updatedUser.venue._id;
-            const inventory = await inventory_model_1.default.findOne({
-                _id: id,
-                team,
-                status: inventory_model_1.ChoicesStatusInventory.inProcess
-            });
-            if (inventory) {
-                const car = await car_model_1.default.findOne({
-                    vin,
-                    team
-                });
-                if (car) {
-                    const inventoriedCar = await inventoryCar_model_1.default.findOne({
-                        inventory: id,
-                        car: car._id,
-                        status: {
-                            $in: [inventoryCar_model_1.ChoicesStatusCarInventory.found, inventoryCar_model_1.ChoicesStatusCarInventory.leftover]
+        });
+    };
+    InventoryController.prototype.detail = function (req, res) {
+        return __awaiter(this, void 0, void 0, function () {
+            var team, id, inventory, _a, _b, _c, e_3;
+            var _d;
+            return __generator(this, function (_e) {
+                switch (_e.label) {
+                    case 0:
+                        team = req.user.team._id;
+                        id = req.params.id;
+                        _e.label = 1;
+                    case 1:
+                        _e.trys.push([1, 6, , 7]);
+                        return [4 /*yield*/, inventory_model_1["default"].findOne({ _id: id, team: team })];
+                    case 2:
+                        inventory = _e.sent();
+                        if (!!inventory) return [3 /*break*/, 3];
+                        return [2 /*return*/, res.status(404).render('404')];
+                    case 3:
+                        _b = (_a = res).render;
+                        _c = ['app/index'];
+                        _d = {};
+                        return [4 /*yield*/, req.user.generateToken()];
+                    case 4:
+                        _b.apply(_a, _c.concat([(_d.token = _e.sent(), _d)]));
+                        _e.label = 5;
+                    case 5: return [3 /*break*/, 7];
+                    case 6:
+                        e_3 = _e.sent();
+                        /* istanbul ignore next */
+                        if (e_3) {
+                            res.status(500).send(e_3);
                         }
-                    });
-                    if (inventoriedCar) {
-                        logger_service_1.default.error(`apiFoundCar: Este vehículo ya ha sido inventariado`);
-                        logger_service_1.default.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
-                        res.status(200).json({
-                            message: 'Este vehículo ya ha sido inventariado',
-                            status: 200
+                        return [3 /*break*/, 7];
+                    case 7: return [2 /*return*/];
+                }
+            });
+        });
+    };
+    InventoryController.prototype.create = function (req, res) {
+        return __awaiter(this, void 0, void 0, function () {
+            var _a, company, team, _b, name, manualPhoto, reportPhoto, _c, carsByVenue, notification, inventoryCars, activityHistories, venuesIDs, _i, carsByVenue_1, venue, venueRegExp, currentVenue, _d, _e, car, currentCar, inventory_1, file, backup, usersIDs, currentTeam, e_4;
+            return __generator(this, function (_f) {
+                switch (_f.label) {
+                    case 0:
+                        _a = req.user, company = _a.company, team = _a.team;
+                        _b = req.body, name = _b.name, manualPhoto = _b.manualPhoto, reportPhoto = _b.reportPhoto;
+                        _c = req.body, carsByVenue = _c.carsByVenue, notification = _c.notification;
+                        carsByVenue = JSON.parse(carsByVenue);
+                        notification = notification === 'true';
+                        _f.label = 1;
+                    case 1:
+                        _f.trys.push([1, 23, , 24]);
+                        inventoryCars = [];
+                        activityHistories = [];
+                        venuesIDs = [];
+                        _i = 0, carsByVenue_1 = carsByVenue;
+                        _f.label = 2;
+                    case 2:
+                        if (!(_i < carsByVenue_1.length)) return [3 /*break*/, 12];
+                        venue = carsByVenue_1[_i];
+                        if (!(venue.name && venue.name.trim().length)) return [3 /*break*/, 11];
+                        venueRegExp = new RegExp("^" + venue.name.trim() + "$", 'i');
+                        return [4 /*yield*/, venue_model_1["default"].findOne({
+                                team: team,
+                                name: venueRegExp
+                            })];
+                    case 3:
+                        currentVenue = _f.sent();
+                        if (!(currentVenue === null)) return [3 /*break*/, 5];
+                        currentVenue = new venue_model_1["default"]({
+                            name: venue.name.trim(),
+                            team: team,
+                            company: company
                         });
-                    }
-                    else {
-                        const inventoryCar = await inventoryCar_model_1.default.findOne({
-                            inventory: id,
-                            car: car._id
-                        });
-                        // if car in inventory
-                        if (inventoryCar) {
-                            inventoryCar.venueFound = venueId;
-                            if (teamSettings.inventory.leftoverDifferentVenue && inventoryCar.venue.toString() !== venueId.toString()) {
-                                inventoryCar.status = inventoryCar_model_1.ChoicesStatusCarInventory.leftover;
-                                server_1.io.to(`inventory-detail-${inventory._id}`).emit('REFRESH', {
-                                    title: 'Vehículo encontrado',
-                                    text: `${req.user.firstName} ${req.user.lastName} encontró ${car.brand} (${car.denomination}) en ${updatedUser.venue.name}.`,
-                                    status: inventoryCar_model_1.ChoicesStatusCarInventory.leftover,
-                                    venue: venueId,
-                                    update: true
-                                });
-                            }
-                            else {
-                                inventoryCar.status = inventoryCar_model_1.ChoicesStatusCarInventory.found;
-                                server_1.io.to(`inventory-detail-${inventory._id}`).emit('REFRESH', {
-                                    title: 'Vehículo encontrado',
-                                    text: `${req.user.firstName} ${req.user.lastName} encontró ${car.brand} (${car.denomination}) en ${updatedUser.venue.name}.`,
-                                    status: inventoryCar_model_1.ChoicesStatusCarInventory.found,
-                                    venue: venueId,
-                                    update: true
-                                });
-                            }
-                            inventoryCar.images = images ? images.map((image) => (new bson_1.ObjectID(image))) : [];
-                            inventoryCar.inventoriedBy = req.user._id;
-                            await inventoryCar.save();
-                            server_1.io.to(`inventory-list-${team._id}`).emit('REFRESH', {
-                                update: true
-                            });
-                            res.status(200).json({
-                                vin: car.vin,
-                                status: 200
-                            });
-                        }
-                        else {
-                            logger_service_1.default.error(`apiFoundCar: Este vehículo no se encuentra en el inventario.`);
-                            logger_service_1.default.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
-                            res.status(400).json({
-                                message: 'Este vehículo no se encuentra en el inventario.',
-                                status: 400
-                            });
-                        }
-                    }
-                }
-                else {
-                    // if car no exist
-                    logger_service_1.default.error(`apiFoundCar: Este vehículo no se encuentra en el inventario.`);
-                    logger_service_1.default.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
-                    res.status(400).json({
-                        message: 'Este vehículo no se encuentra en el inventario.',
-                        status: 400
-                    });
-                }
-            }
-            else {
-                // if inventory no exist
-                logger_service_1.default.error(`apiFoundCar: Este inventario no existe o ya no se encuentra activo.`);
-                logger_service_1.default.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
-                res.status(404).json({
-                    message: 'Este inventario no existe o ya no se encuentra activo.',
-                    status: 404
-                });
-            }
-        }
-        catch (e) {
-            /* istanbul ignore next */
-            logger_service_1.default.error(`apiFoundCar: Async Error.`);
-            /* istanbul ignore next */
-            logger_service_1.default.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}, error: ${e}}`);
-            /* istanbul ignore next */
-            logger_service_1.default.error(e);
-            /* istanbul ignore next */
-            res.status(400).json({
-                message: e,
-                status: 400
-            });
-        }
-    }
-    async finishInventory(req, res) {
-        const team = req.user.team._id;
-        const { id } = req.params;
-        if (!req.user.hasPermission('finishInventory')) {
-            return res.status(403).json({
-                message: 'No tienes permisos para esta operación'
-            });
-        }
-        try {
-            const inventory = await inventory_model_1.default.findOne({ _id: id, team });
-            if (inventory) {
-                await inventory.update({
-                    status: inventory_model_1.ChoicesStatusInventory.finalized,
-                    finalizedAt: new Date(),
-                    finalizedBy: req.user._id
-                });
-                server_1.io.to(`inventory-list-${team}`).emit('REFRESH', {
-                    update: true
-                });
-                server_1.io.to(`stock-${team}`).emit('REFRESH', {
-                    update: true
-                });
-                res.json({
-                    message: 'Se ha finalizado correctamente el inventario.',
-                    status: 200
-                });
-            }
-            else {
-                logger_service_1.default.error(`finishInventory: No se ha encontrado el inventario`);
-                logger_service_1.default.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
-                res.status(400).json({
-                    message: 'No se ha encontrado el inventario',
-                    status: 400
-                });
-            }
-        }
-        catch (e) {
-            /* istanbul ignore next */
-            logger_service_1.default.error(`finishInventory: Async Error.`);
-            /* istanbul ignore next */
-            logger_service_1.default.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
-            /* istanbul ignore next */
-            logger_service_1.default.error(e);
-            /* istanbul ignore next */
-            res.status(400).json({
-                message: 'Ha ocurrido un error',
-                status: 400
-            });
-        }
-    }
-    async deleteInventory(req, res) {
-        const team = req.user.team._id;
-        const { id } = req.params;
-        if (!req.user.hasPermission('deleteInventory')) {
-            return res.status(403).json({
-                message: 'No tienes permisos para esta operación'
-            });
-        }
-        try {
-            const inventory = await inventory_model_1.default.findOne({
-                _id: id,
-                team
-            });
-            if (inventory) {
-                await inventoryCar_model_1.default.find({ inventory }).remove();
-                await inventory.remove();
-                server_1.io.to(`inventory-list-${team}`).emit('REFRESH', {
-                    update: true
-                });
-                server_1.io.to(`stock-${team}`).emit('REFRESH', {
-                    update: true
-                });
-                res.json({
-                    message: 'Se ha eliminado correctamente el inventario.',
-                    status: 200
-                });
-            }
-            else {
-                logger_service_1.default.error(`deleteInventory: No se ha encontrado el inventario`);
-                logger_service_1.default.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
-                res.status(400).json({
-                    message: 'No se ha encontrado el inventario',
-                    status: 400
-                });
-            }
-        }
-        catch (e) {
-            /* istanbul ignore next */
-            logger_service_1.default.error(`deleteInventory: Async Error.`);
-            /* istanbul ignore next */
-            logger_service_1.default.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
-            /* istanbul ignore next */
-            logger_service_1.default.error(e);
-            /* istanbul ignore next */
-            res.status(400).json({
-                message: 'Ha ocurrido un error',
-                status: 400
-            });
-        }
-    }
-    async addComment(req, res) {
-        const { inventory } = req.params;
-        const { _id, comment } = req.body;
-        try {
-            await inventoryCar_model_1.default.update({
-                inventory,
-                _id
-            }, {
-                $push: {
-                    comments: {
-                        user: req.user._id,
-                        comment,
-                        createdAt: new Date()
-                    }
-                }
-            }, {
-                upsert: true
-            });
-            server_1.io.to(`inventory-detail-${inventory}`).emit('REFRESH', {
-                update: true
-            });
-            server_1.io.to(`inventory-comment-${_id}`).emit('NEW_COMMENT', {
-                _id: new bson_1.ObjectID(),
-                user: {
-                    _id: req.user._id,
-                    firstName: req.user.firstName,
-                    lastName: req.user.lastName
-                },
-                comment
-            });
-            res.status(200).json({
-                message: 'Comentario agregado satisfactoriamente.',
-                status: 200
-            });
-        }
-        catch (e) {
-            /* istanbul ignore next */
-            logger_service_1.default.error(`addComment: Async Error.`);
-            /* istanbul ignore next */
-            logger_service_1.default.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
-            /* istanbul ignore next */
-            logger_service_1.default.error(e);
-            /* istanbul ignore next */
-            res.status(400).json({
-                message: 'Ha ocurrido un error',
-                status: 400
-            });
-        }
-    }
-    async downloadImages(req, res) {
-        const { id } = req.params;
-        const { cars } = req.body;
-        const team = req.user.team._id;
-        try {
-            const inventory = await inventory_model_1.default.findOne({
-                _id: id,
-                team
-            }, {
-                name: true
-            });
-            if (inventory) {
-                const inventoriesCars = await inventory_model_1.default.aggregate([{
-                        $match: {
-                            team,
-                            _id: mongoose.Types.ObjectId(id)
-                        }
-                    }, {
-                        $lookup: {
-                            from: 'inventorycars',
-                            localField: '_id',
-                            foreignField: 'inventory',
-                            as: 'cars'
-                        }
-                    }, {
-                        $project: {
-                            cars: {
-                                $filter: {
-                                    input: '$cars',
-                                    as: 'cars',
-                                    cond: {
-                                        $and: [
-                                            {
-                                                $in: ['$$cars._id', cars.map((car) => mongoose.Types.ObjectId(car))]
-                                            }, {
-                                                $ne: ['$$cars.images', []]
-                                            }
-                                        ]
-                                    }
-                                }
-                            }
-                        }
-                    }, {
-                        $unwind: '$cars'
-                    }, {
-                        $replaceRoot: {
-                            newRoot: '$cars'
-                        }
-                    }, {
-                        $lookup: {
-                            from: 'inventoryfiles',
-                            localField: 'images',
-                            foreignField: '_id',
-                            as: 'images'
-                        }
-                    }, {
-                        $lookup: {
-                            from: 'cars',
-                            localField: 'car',
-                            foreignField: '_id',
-                            as: 'car'
-                        }
-                    }, {
-                        $unwind: '$car'
-                    }, {
-                        $lookup: {
-                            from: 'venues',
-                            localField: 'venue',
-                            foreignField: '_id',
-                            as: 'venue'
-                        }
-                    }, {
-                        $unwind: '$venue'
-                    }, {
-                        $project: {
-                            images: 1,
-                            venue: 1,
-                            car: 1
-                        }
-                    }]);
-                const archive = archiver('zip', {
-                    zlib: {
-                        level: 0
-                    }
-                });
-                archive.on('error', (err) => {
-                    res.status(500).send({
-                        error: err.message
-                    });
-                });
-                const filename = `${inventory.name}.zip`;
-                archive.on('end', () => {
-                    console.log(`${filename}: Archive wrote ${(archive.pointer() / (1024 * 1024)).toFixed(2)}MB`);
-                });
-                res.attachment(filename);
-                const imagesToDownload = [];
-                const imagesToCompress = [];
-                for (const car of inventoriesCars) {
-                    for (const image of car.images) {
-                        const destDirectory = `/tmp/${car._id}${image._id}.${image.file.name.split('.')[image.file.name.split('.').length - 1]}`;
-                        imagesToDownload.push(() => this.downloadFile(image.file.url, destDirectory));
-                        imagesToCompress.push({
-                            destDirectory,
-                            name: `${car.car.vin}/IMAGE${image._id.toString().substr(image._id.length - 10, 10).toUpperCase()}.${image.file.name.split('.')[image.file.name.split('.').length - 1]}`
-                        });
-                    }
-                }
-                // download images
-                console.log('EXECUTE PROMISES');
-                let results = [];
-                let numb = 1;
-                while (imagesToDownload.length) {
-                    console.log('promise', numb);
-                    results = [...results, ...await bluebird.all(imagesToDownload.splice(0, 20).map((promise) => promise()))];
-                    numb++;
-                }
-                // compress images
-                console.log('EXECUTE COMPRESS');
-                imagesToCompress.map((image) => {
-                    archive.file(image.destDirectory, {
-                        name: image.name
-                    });
-                    setTimeout(() => {
-                        if (fs.existsSync(image.destDirectory)) {
-                            console.log(`clear ${image.destDirectory}`);
-                            fs.unlink(image.destDirectory, (err) => {
-                                if (err) {
-                                    console.log(err);
-                                }
-                            });
-                        }
-                    }, 7200000);
-                });
-                res.setHeader('size', results.reduce((a, b) => a + b));
-                archive.pipe(res);
-                archive.finalize();
-            }
-            else {
-                logger_service_1.default.error(`downloadImages: 'No se ha encontrado el inventario.`);
-                logger_service_1.default.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
-                res.status(404).json({
-                    message: 'No se ha encontrado el inventario.',
-                    status: 404
-                });
-            }
-        }
-        catch (e) {
-            /* istanbul ignore next */
-            logger_service_1.default.error(`downloadImages: Async Error.`);
-            /* istanbul ignore next */
-            logger_service_1.default.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
-            /* istanbul ignore next */
-            logger_service_1.default.error(e);
-            /* istanbul ignore next */
-            res.status(400).json({
-                message: e,
-                status: 400
-            });
-        }
-    }
-    async reportCar(req, res) {
-        const { company, team } = req.user;
-        const { id } = req.params;
-        const { vin, patent, denomination, brand, color, images } = req.body;
-        logger_service_1.default.info(`reportCar`);
-        logger_service_1.default.info(`{user: {_id: ${req.user._id}, email: ${req.user.email}}, body: ${JSON.stringify(req.body)}}`);
-        try {
-            const updatedUser = await user_model_1.default.findById(req.user._id).populate([{
-                    path: 'venue',
-                    select: ['name']
-                }]);
-            if (!updatedUser) {
-                return res.status(404).json({
-                    message: 'No se ha encontrado el inventario solicitado.',
-                    status: 404
-                });
-            }
-            const venueId = updatedUser.venue._id;
-            const inventory = await inventory_model_1.default.findOne({
-                _id: id,
-                status: inventory_model_1.ChoicesStatusInventory.inProcess,
-                team
-            });
-            let findCOnditions = {};
-            let isVinAvailable = vin && vin.length > 0;
-            if (vin)
-                findCOnditions = { vin, team };
-            if (!isVinAvailable && patent && patent.length > 0)
-                findCOnditions = { patent, team };
-            if (inventory) {
-                const car = await car_model_1.default.findOneOrCreate(findCOnditions, {
-                    vin,
-                    vin2: vin.substr(vin.length - 6),
-                    patent,
-                    brand,
-                    denomination,
-                    color,
-                    team,
-                    company,
-                    createdBy: req.user,
-                    status: car_model_1.ChoicesStatusCar.inventory
-                });
-                const inventoryCar = new inventoryCar_model_1.default({
-                    car,
-                    inventory,
-                    venue: venueId,
-                    venueFound: venueId,
-                    comments: [],
-                    inventoriedBy: req.user._id,
-                    images: images ? images.map((image) => (new bson_1.ObjectID(image))) : [],
-                    status: inventoryCar_model_1.ChoicesStatusCarInventory.reported
-                });
-                await inventoryCar.save();
-                const textNotification = `${req.user.firstName} ${req.user.lastName} encontró ${car.brand} (${car.denomination}) en ${updatedUser.venue.name}.`;
-                server_1.io.to(`inventory-detail-${inventory._id}`).emit('REFRESH', {
-                    title: 'Vehículo reportado',
-                    text: textNotification,
-                    status: inventoryCar_model_1.ChoicesStatusCarInventory.reported,
-                    venue: venueId,
-                    update: true
-                });
-                server_1.io.to(`inventory-list-${team._id}`).emit('REFRESH', {
-                    update: true
-                });
-                res.json({
-                    message: 'Se ha generado el reporte correctamente.',
-                    vin,
-                    status: 200
-                });
-            }
-            else {
-                logger_service_1.default.error(`reportCar: Este inventario ya no se encuentra disponible.`);
-                logger_service_1.default.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
-                res.status(404).json({
-                    message: 'Este inventario ya no se encuentra disponible.',
-                    status: 404
-                });
-            }
-        }
-        catch (e) {
-            /* istanbul ignore next */
-            logger_service_1.default.error(`reportCar: Async Error.`);
-            /* istanbul ignore next */
-            logger_service_1.default.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
-            /* istanbul ignore next */
-            logger_service_1.default.error(e);
-            /* istanbul ignore next */
-            res.status(400).json({
-                message: e,
-                status: 400
-            });
-        }
-    }
-    async setLabel(req, res) {
-        const team = req.user.team._id;
-        const { id } = req.params;
-        const { car, label, custom, carID } = req.body;
-        logger_service_1.default.info(`setLabel`);
-        logger_service_1.default.info(`{user: {_id: ${req.user._id}, email: ${req.user.email}}, body: ${JSON.stringify(req.body)}, params: ${JSON.stringify(req.params)}}`);
-        try {
-            if (label === 'deleted') {
-                const inventoryCar = await inventoryCar_model_1.default.findById(car, { venue: true });
-                if (inventoryCar) {
-                    await inventoryCar_model_1.default.update({
-                        _id: car,
-                        inventory: id
-                    }, {
-                        status: inventoryCar_model_1.ChoicesStatusCarInventory.deleted,
-                        deletedBy: req.user._id
-                    }, {
-                        upsert: true
-                    });
-                    server_1.io.to(`inventory-detail-${id}`).emit('REFRESH', {
-                        update: true,
-                        venue: inventoryCar.venue
-                    });
-                    server_1.io.to(`inventory-list-${team}`).emit('REFRESH', {
-                        update: true
-                    });
-                }
-                res.json({
-                    message: 'Opción procesada correctamente.',
-                    status: 200
-                });
-            }
-            else {
-                const newLabel = await inventoryLabel_model_1.default.findOne({
-                    _id: label,
-                    team
-                });
-                if (newLabel) {
-                    const inventoryCar = await inventoryCar_model_1.default.findById(car, { venue: true });
-                    if (inventoryCar) {
-                        await inventoryCar_model_1.default.update({
-                            _id: car,
-                            inventory: id
-                        }, {
-                            status: newLabel.sendTo,
-                            label: newLabel._id,
-                            labelBy: req.user._id,
-                            labelText: custom
-                        }, {
-                            upsert: true
-                        });
-                        if (newLabel.isExhibition) {
-                            await car_model_1.default.findOneAndUpdate({
-                                _id: carID,
-                                team
-                            }, {
-                                isExhibition: true
-                            });
-                        }
-                        server_1.io.to(`inventory-detail-${id}`).emit('REFRESH', {
-                            update: true,
-                            venue: inventoryCar.venue
-                        });
-                        server_1.io.to(`inventory-list-${team}`).emit('REFRESH', {
-                            update: true
-                        });
-                        res.json({
-                            message: 'Opción procesada correctamente.',
-                            status: 200
-                        });
-                    }
-                }
-            }
-        }
-        catch (e) {
-            /* istanbul ignore next */
-            logger_service_1.default.error(`setLabel: Async Error.`);
-            /* istanbul ignore next */
-            logger_service_1.default.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
-            /* istanbul ignore next */
-            logger_service_1.default.error(e);
-            /* istanbul ignore next */
-            res.status(500).json({
-                message: e,
-                status: 500
-            });
-        }
-    }
-    async apiList(req, res) {
-        const team = req.user.team._id;
-        logger_service_1.default.info(`apiList`);
-        logger_service_1.default.info(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
-        try {
-            const updatedUser = await user_model_1.default.findById(req.user._id);
-            if (updatedUser) {
-                const inventories = await inventory_model_1.default.find({
-                    team,
-                    venues: updatedUser.venue,
-                    status: {
-                        $in: [inventory_model_1.ChoicesStatusInventory.inProcess]
-                    }
-                }, {
-                    _id: true,
-                    name: true,
-                    settings: true
-                }).lean();
-                res.json({
-                    data: inventories,
-                    status: 200
-                });
-            }
-            else {
-                logger_service_1.default.error(`apiList: Usuario no encontrado`);
-                logger_service_1.default.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
-                /* istanbul ignore next */
-                res.status(400).json({
-                    message: 'Usuario no encontrado',
-                    status: 400
-                });
-            }
-        }
-        catch (e) {
-            /* istanbul ignore next */
-            logger_service_1.default.error(`apiList: Async Error.`);
-            /* istanbul ignore next */
-            logger_service_1.default.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
-            /* istanbul ignore next */
-            logger_service_1.default.error(e);
-            /* istanbul ignore next */
-            res.status(400).json({
-                message: e,
-                status: 400
-            });
-        }
-    }
-    async detaill(req, res) {
-        const { id } = req.params;
-        const team = req.user.team._id;
-        const venuesPermissions = req.user.venuesPermissions();
-        try {
-            // summary
-            const inventory = await inventory_model_1.default.aggregate([
-                {
-                    $match: {
-                        team,
-                        _id: { $in: [mongoose.Types.ObjectId(id)] }
-                    }
-                }, {
-                    $lookup: {
-                        from: 'inventorycars',
-                        localField: '_id',
-                        foreignField: 'inventory',
-                        as: 'cars'
-                    }
-                }, {
-                    $unwind: { path: '$cars', preserveNullAndEmptyArrays: true }
-                }, {
-                    $match: {
-                        $or: [
-                            {
-                                'cars.venue': {
-                                    $in: venuesPermissions
-                                }
-                            }, {
-                                'cars.venueFound': {
-                                    $in: venuesPermissions
-                                }
-                            }
-                        ],
-                        'cars.status': {
-                            $in: [
-                                inventoryCar_model_1.ChoicesStatusCarInventory.pending,
-                                inventoryCar_model_1.ChoicesStatusCarInventory.found,
-                                inventoryCar_model_1.ChoicesStatusCarInventory.missing,
-                                inventoryCar_model_1.ChoicesStatusCarInventory.leftover,
-                                inventoryCar_model_1.ChoicesStatusCarInventory.reported
-                            ]
-                        }
-                    }
-                }, {
-                    $group: {
-                        _id: {
-                            category: '$_id',
-                            status: '$status',
-                            carStatus: '$cars.status',
-                            name: '$name',
-                            createdBy: '$createdBy',
-                            createdAt: '$createdAt',
-                            finalizedAt: '$finalizedAt'
-                        },
-                        total: {
-                            $sum: 1
-                        }
-                    }
-                }, {
-                    $group: {
-                        _id: '$_id.category',
-                        name: {
-                            $first: '$_id.name'
-                        },
-                        createdAt: {
-                            $first: '$_id.createdAt'
-                        },
-                        finalizedAt: {
-                            $first: '$_id.finalizedAt'
-                        },
-                        user: {
-                            $first: '$_id.createdBy'
-                        },
-                        results: {
-                            $push: {
-                                status: '$_id.carStatus',
-                                total: '$total'
-                            }
-                        },
-                        status: {
-                            $first: '$_id.status'
-                        }
-                    }
-                }, {
-                    $lookup: {
-                        from: 'users',
-                        localField: 'user',
-                        foreignField: '_id',
-                        as: 'userInfo'
-                    }
-                }, {
-                    $unwind: { path: '$userInfo', preserveNullAndEmptyArrays: true }
-                }, {
-                    $project: {
-                        '_id': 1,
-                        'name': 1,
-                        'results': 1,
-                        'userInfo.firstName': 1,
-                        'userInfo.lastName': 1,
-                        'status': 1,
-                        'createdAt': 1,
-                        'finalizedAt': 1
-                    }
-                }, {
-                    $sort: {
-                        createdAt: -1
-                    }
-                }
-            ]);
-            // detail by venue
-            const detailByVenues = await inventory_model_1.default.aggregate([
-                {
-                    $match: {
-                        team,
-                        _id: { $in: [mongoose.Types.ObjectId(id)] }
-                    }
-                }, {
-                    $lookup: {
-                        from: 'inventorycars',
-                        localField: '_id',
-                        foreignField: 'inventory',
-                        as: 'cars'
-                    }
-                }, {
-                    $unwind: '$cars'
-                }, {
-                    $match: {
-                        $or: [
-                            {
-                                'cars.venue': {
-                                    $in: venuesPermissions
-                                }
-                            }, {
-                                'cars.venueFound': {
-                                    $in: venuesPermissions
-                                }
-                            }
-                        ],
-                        'cars.status': {
-                            $in: [
-                                inventoryCar_model_1.ChoicesStatusCarInventory.pending,
-                                inventoryCar_model_1.ChoicesStatusCarInventory.found,
-                                inventoryCar_model_1.ChoicesStatusCarInventory.missing,
-                                inventoryCar_model_1.ChoicesStatusCarInventory.leftover,
-                                inventoryCar_model_1.ChoicesStatusCarInventory.reported
-                            ]
-                        }
-                    }
-                }, {
-                    $group: {
-                        _id: {
-                            category: {
-                                $cond: {
-                                    if: {
-                                        $gt: ['$cars.venueFound', null]
-                                    },
-                                    then: '$cars.venueFound',
-                                    else: '$cars.venue'
-                                }
-                            },
-                            status: '$cars.status'
-                        },
-                        total: {
-                            $sum: 1
-                        }
-                    }
-                }, {
-                    $group: {
-                        _id: '$_id.category',
-                        status: {
-                            $push: {
-                                name: '$_id.status',
-                                total: '$total'
-                            }
-                        }
-                    }
-                }, {
-                    $lookup: {
-                        from: 'venues',
-                        localField: '_id',
-                        foreignField: '_id',
-                        as: 'info'
-                    }
-                }, {
-                    $unwind: '$info'
-                }
-            ]);
-            /*
-              console.log('################');
-              cp.json(detailByVenues);
-              console.log('################');
-            * */
-            // detail by brands
-            const detailByBrands = await inventory_model_1.default.aggregate([
-                {
-                    $match: {
-                        team,
-                        _id: { $in: [mongoose.Types.ObjectId(id)] }
-                    }
-                }, {
-                    $lookup: {
-                        from: 'inventorycars',
-                        localField: '_id',
-                        foreignField: 'inventory',
-                        as: 'cars'
-                    }
-                }, {
-                    $unwind: '$cars'
-                }, {
-                    $match: {
-                        $or: [
-                            {
-                                'cars.venue': {
-                                    $in: venuesPermissions
-                                }
-                            }, {
-                                'cars.venueFound': {
-                                    $in: venuesPermissions
-                                }
-                            }
-                        ],
-                        'cars.status': {
-                            $in: [
-                                inventoryCar_model_1.ChoicesStatusCarInventory.pending,
-                                inventoryCar_model_1.ChoicesStatusCarInventory.found,
-                                inventoryCar_model_1.ChoicesStatusCarInventory.missing,
-                                inventoryCar_model_1.ChoicesStatusCarInventory.leftover,
-                                inventoryCar_model_1.ChoicesStatusCarInventory.reported
-                            ]
-                        }
-                    }
-                }, {
-                    $lookup: {
-                        from: 'cars',
-                        localField: 'cars.car',
-                        foreignField: '_id',
-                        as: 'car'
-                    }
-                }, {
-                    $unwind: '$car'
-                }, {
-                    $group: {
-                        _id: {
-                            car: '$car.brand',
-                            status: '$cars.status'
-                        },
-                        total: {
-                            $sum: 1
-                        }
-                    }
-                }, {
-                    $group: {
-                        _id: '$_id.car',
-                        status: {
-                            $push: {
-                                name: '$_id.status',
-                                total: '$total'
-                            }
-                        }
-                    }
-                }, {
-                    $lookup: {
-                        from: 'venues',
-                        localField: '_id',
-                        foreignField: '_id',
-                        as: 'info'
-                    }
-                }
-            ]);
-            const detailByBrand = [];
-            const detailByVenue = [];
-            const defaultResults = {
-                [inventoryCar_model_1.ChoicesStatusCarInventory.pending]: 0,
-                [inventoryCar_model_1.ChoicesStatusCarInventory.found]: 0,
-                [inventoryCar_model_1.ChoicesStatusCarInventory.leftover]: 0,
-                [inventoryCar_model_1.ChoicesStatusCarInventory.missing]: 0,
-                [inventoryCar_model_1.ChoicesStatusCarInventory.reported]: 0
-            };
-            for (const db of detailByBrands) {
-                detailByBrand.push({
-                    name: db._id ? db._id : 'Sin Marca',
-                    results: db.status.reduce((acc, cur) => {
-                        acc[cur.name] = cur.total;
-                        return acc;
-                    }, {
-                        ...defaultResults
-                    })
-                });
-            }
-            for (const dv of detailByVenues) {
-                detailByVenue.push({
-                    _id: dv.info._id,
-                    name: dv.info.name,
-                    results: dv.status.reduce((acc, cur) => {
-                        acc[cur.name] = cur.total;
-                        return acc;
-                    }, {
-                        ...defaultResults
-                    })
-                });
-            }
-            if (inventory && inventory.length) {
-                const currentInventory = inventory[0];
-                const response = {
-                    _id: currentInventory._id,
-                    name: currentInventory.name,
-                    createdBy: currentInventory.userInfo ? {
-                        ...currentInventory.userInfo,
-                        fullName: `${currentInventory.userInfo.firstName} ${currentInventory.userInfo.lastName}`
-                    } : {},
-                    results: currentInventory.results.reduce((acc, cur) => {
-                        acc[cur.status] = cur.total;
-                        return acc;
-                    }, {
-                        ...defaultResults
-                    }),
-                    status: currentInventory.status,
-                    createdAt: currentInventory.createdAt,
-                    finalizedAt: currentInventory.finalizedAt ? currentInventory.finalizedAt : null
-                };
-                const detailInventory = await inventory_model_1.default.findById(id, {
-                    name: true,
-                    status: true,
-                    cars: true,
-                    venues: true,
-                    company: true,
-                    team: true,
-                }).populate([{
-                        path: 'cars',
-                        match: {
-                            $or: [
-                                {
-                                    venue: {
-                                        $in: venuesPermissions
-                                    }
-                                }, {
-                                    venueFound: {
-                                        $in: venuesPermissions
-                                    }
-                                }
-                            ],
-                            status: {
-                                $in: [
-                                    inventoryCar_model_1.ChoicesStatusCarInventory.pending,
-                                    inventoryCar_model_1.ChoicesStatusCarInventory.found,
-                                    inventoryCar_model_1.ChoicesStatusCarInventory.missing,
-                                    inventoryCar_model_1.ChoicesStatusCarInventory.leftover,
-                                    inventoryCar_model_1.ChoicesStatusCarInventory.reported
-                                ]
-                            }
-                        },
-                        populate: [{
-                                path: 'car',
-                                select: ['vin', 'vin2', 'internalNumber', 'color', 'denomination', 'brand', 'venue', 'patent', 'internalNumber', 'property', 'type']
-                            }, {
-                                path: 'label'
-                            }, {
-                                path: 'venue',
-                                select: ['name']
-                            }, {
-                                path: 'images'
-                            }, {
-                                path: 'venueFound',
-                                select: ['name']
-                            }, {
-                                path: 'inventoriedBy',
-                                select: ['firstName', 'lastName']
-                            }, {
-                                path: 'comments.user',
-                                select: ['_id', 'firstName', 'lastName']
-                            }]
-                    }, {
-                        path: 'venues',
-                        select: ['_id', 'name'],
-                        match: {
-                            _id: {
-                                $in: venuesPermissions
-                            }
-                        },
-                        options: {
-                            sort: {
-                                name: 1
-                            }
-                        }
-                    }]).lean();
-                const teamSettings = await teamSetting_model_1.default.findOne({ team });
-                const labels = await inventoryLabel_model_1.default.find({
-                    team,
-                    active: true
-                }, {
-                    name: true,
-                    color: true,
-                    affected: true,
-                    sendTo: true,
-                    isExhibition: true,
-                    requireCustomText: true
-                });
-                res.json({
-                    summary: response,
-                    inventorySettings: teamSettings.inventory,
-                    labels,
-                    detailByVenue,
-                    detailByBrand,
-                    detail: detailInventory,
-                    status: 200
-                });
-            }
-            else {
-                console.log('inventory', inventory);
-                res.status(404).json({
-                    message: 'Inventario no encontrado',
-                    status: 404
-                });
-            }
-        }
-        catch (e) {
-            /* istanbul ignore next */
-            logger_service_1.default.error(`detaill: Async Error.`);
-            /* istanbul ignore next */
-            logger_service_1.default.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
-            /* istanbul ignore next */
-            logger_service_1.default.error(e);
-            /* istanbul ignore next */
-            res.status(400).json({
-                message: e,
-                status: 400
-            });
-        }
-    }
-    async dashboard(req, res) {
-        let venuesPermissions = req.user.venuesPermissions();
-        const { venues } = req.body;
-        const team = req.user.team._id;
-        if (venues && venues.length) {
-            venuesPermissions = venuesPermissions.filter((v) => venues.includes(v.toString()));
-        }
-        const total = 6;
-        try {
-            const inventory = await inventoryCar_model_1.default.aggregate([{
-                    $match: {
-                        createdAt: {
-                            $gte: moment()
-                                .subtract(total, 'months')
-                                .startOf('month')
-                                .toDate()
-                        },
-                        venue: {
-                            $in: venuesPermissions
-                        }
-                    }
-                }, {
-                    $group: {
-                        _id: {
-                            status: '$status',
-                            month: {
-                                $dateToString: { format: '%Y-%m', date: '$createdAt' }
-                            }
-                        },
-                        total: {
-                            $sum: 1
-                        }
-                    }
-                }, {
-                    $group: {
-                        _id: '$_id.month',
-                        results: {
-                            $push: {
-                                status: '$_id.status',
-                                total: '$total'
-                            }
-                        }
-                    }
-                }]);
-            const data = {};
-            const defaultResults = {
-                [inventoryCar_model_1.ChoicesStatusCarInventory.pending]: 0,
-                [inventoryCar_model_1.ChoicesStatusCarInventory.found]: 0,
-                [inventoryCar_model_1.ChoicesStatusCarInventory.missing]: 0,
-                [inventoryCar_model_1.ChoicesStatusCarInventory.reported]: 0,
-                [inventoryCar_model_1.ChoicesStatusCarInventory.leftover]: 0
-            };
-            for (let i = 0; i <= total; i++) {
-                const month = moment()
-                    .subtract(total - i, 'months')
-                    .format('YYYY-MM');
-                data[month] = { ...defaultResults };
-            }
-            for (const item of inventory) {
-                data[item._id] = item.results.reduce((acc, cur) => {
-                    acc[cur.status] = cur.total;
-                    return acc;
-                }, {
-                    ...defaultResults
-                });
-            }
-            const teamSettings = await teamSetting_model_1.default.findOne({ team });
-            res.json({
-                data,
-                inventorySettings: teamSettings.inventory
-            });
-        }
-        catch (e) {
-            /* istanbul ignore next */
-            logger_service_1.default.error(`inventory dashboard: Async Error.`);
-            /* istanbul ignore next */
-            logger_service_1.default.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
-            /* istanbul ignore next */
-            logger_service_1.default.error(e);
-            Raven.captureException(e, { req });
-            /* istanbul ignore next */
-            res.status(500).json({
-                message: JSON.stringify(e),
-                status: 500
-            });
-        }
-    }
-    async inventoryByCars(req, res) {
-        const team = req.user.team._id;
-        try {
-            /* generate file */
-            const workbook = new excel.Workbook();
-            const worksheet = workbook.addWorksheet('Detalle', {
-                properties: {
-                    defaultRowHeight: 30
-                }, pageSetup: {
-                    fitToPage: true, fitToHeight: 100, fitToWidth: 1
-                }
-            });
-            worksheet.views = [{
-                    state: 'frozen',
-                    xSplit: 3,
-                    ySplit: 1,
-                    topLeftCell: 'D2',
-                    activeCell: 'D2'
-                }];
-            const columns = [{
-                    header: 'VIN',
-                    key: 'vin',
-                    width: 30,
-                    alignment: {
-                        wrapText: true
-                    }
-                }, {
-                    header: 'MARCA',
-                    key: 'marca',
-                    width: 30,
-                    alignment: {
-                        wrapText: true
-                    }
-                }, {
-                    header: 'MODELO',
-                    key: 'modelo',
-                    width: 40,
-                    alignment: {
-                        wrapText: true
-                    }
-                }];
-            const venues = await venue_model_1.default.find({ team, deleted: false }).sort('name');
-            for (const venue of venues) {
-                columns.push({
-                    header: venue.name, key: venue._id.toString(), width: 5,
-                    style: {
-                        alignment: {
-                            vertical: 'middle',
-                            horizontal: 'center'
-                        }
-                    }
-                });
-            }
-            worksheet.columns = columns;
-            worksheet.autoFilter = {
-                from: 'A1',
-                to: {
-                    row: 1,
-                    column: columns.length
-                }
-            };
-            worksheet.getColumn(1).eachCell((cell) => {
-                cell.alignment = {
-                    vertical: 'middle',
-                    textRotation: 0,
-                    wrapText: true
-                };
-                cell.font = {
-                    bold: true
-                };
-            });
-            worksheet.getRow(1).eachCell((cell) => {
-                const alignment = {
-                    vertical: 'middle',
-                    horizontal: 'center',
-                    textRotation: 0,
-                    wrapText: true
-                };
-                if (parseInt(cell.col, 10) > 3) {
-                    alignment.textRotation = 90;
-                }
-                cell.alignment = alignment;
-                cell.font = {
-                    bold: true
-                };
-            });
-            const cars = await car_model_1.default.find({
-                team,
-                isExhibition: false,
-                createdAt: {
-                    $gte: moment().subtract(6, 'months')
-                    //   $lte: tf,
-                }
-            }, {
-                vin: true,
-                denomination: true,
-                color: true,
-                brand: true
-            }).populate({
-                path: 'inventories',
-                select: ['name', 'createdAt', 'venueFound', 'status'],
-                match: {
-                    status: {
-                        $in: [inventoryCar_model_1.ChoicesStatusCarInventory.found]
-                    }
-                },
-                options: {
-                    sort: {
-                        createdAt: 1
-                    }
-                }
-            });
-            for (const car of cars) {
-                const inventories = car.inventories;
-                if (inventories.length) {
-                    const carData = {
-                        vin: car.vin,
-                        marca: car.brand,
-                        modelo: car.denomination
-                    };
-                    for (const inventory of inventories) {
-                        carData[inventory.venueFound] = carData.hasOwnProperty(inventory.venueFound) ? carData[inventory.venueFound] + 1 : 1;
-                    }
-                    worksheet.addRow(carData);
-                }
-            }
-            const tempFilePath = tempfile('.xlsx');
-            await workbook.xlsx.writeFile(tempFilePath);
-            res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-            res.setHeader('Content-Disposition', 'attachment; filename=detalle-inventarios.xlsx');
-            return res.sendFile(tempFilePath);
-        }
-        catch (e) {
-            console.log(e);
-            return res.status(500).json({
-                message: 'Ha ocurrido un error. Comunicate con soporte para que te ayudemos a solucionarlo.'
-            });
-        }
-    }
-    async loadStock(req, res) {
-        const { company } = req.user;
-        const team = req.user.team._id;
-        const { carsByVenue } = req.body;
-        try {
-            const stockCars = [];
-            for (const venue of carsByVenue) {
-                const venueRegExp = new RegExp(`^${venue.name.trim()}$`, 'i');
-                let currentVenue = await venue_model_1.default.findOne({
-                    team,
-                    name: venueRegExp
-                });
-                // create venue if no existe
-                if (currentVenue === null) {
-                    currentVenue = new venue_model_1.default({
-                        name: venue.name.trim(),
-                        team,
-                        company
-                    });
-                    await currentVenue.save();
-                }
-                for (const car of venue.cars) {
-                    let currentCar = await car_model_1.default.findOne({
-                        team,
-                        vin: car.vin.trim()
-                    });
-                    if (currentCar === null && car.vin && car.vin.trim().length) {
-                        currentCar = new car_model_1.default({
-                            team,
-                            company,
+                        return [4 /*yield*/, currentVenue.save()];
+                    case 4:
+                        _f.sent();
+                        _f.label = 5;
+                    case 5:
+                        venuesIDs.push(currentVenue._id.toString());
+                        if (!(venue.cars && venue.cars.length)) return [3 /*break*/, 11];
+                        _d = 0, _e = venue.cars;
+                        _f.label = 6;
+                    case 6:
+                        if (!(_d < _e.length)) return [3 /*break*/, 11];
+                        car = _e[_d];
+                        return [4 /*yield*/, car_model_1["default"].findOne({
+                                team: team,
+                                vin: car.vin.trim()
+                            })];
+                    case 7:
+                        currentCar = _f.sent();
+                        if (!(currentCar === null && car.vin && car.vin.trim().length)) return [3 /*break*/, 9];
+                        currentCar = new car_model_1["default"]({
+                            team: team,
+                            company: company,
                             vin: car.vin,
                             vin2: car.vin.substr(car.vin.length - 6),
                             color: car.color,
@@ -2024,235 +263,2456 @@ class InventoryController {
                             createdBy: req.user,
                             status: car_model_1.ChoicesStatusCar.active
                         });
-                        await currentCar.save();
-                    }
-                    if (currentVenue && currentCar) {
-                        stockCars.push({
-                            venue: currentVenue._id,
-                            car: currentCar._id
+                        return [4 /*yield*/, currentCar.save()];
+                    case 8:
+                        _f.sent();
+                        _f.label = 9;
+                    case 9:
+                        if (currentVenue && currentCar) {
+                            inventoryCars.push({
+                                venue: currentVenue._id,
+                                car: currentCar._id,
+                                comments: [],
+                                images: []
+                            });
+                            activityHistories.push({
+                                team: team,
+                                company: company,
+                                user: req.user._id,
+                                type: activityHistory_model_1.ChoicesTypeActivity.inventory,
+                                car: {
+                                    _id: currentCar._id,
+                                    vin: currentCar.vin
+                                }
+                            });
+                            app_1.queue
+                                .create('updateCar', {
+                                title: "updateCar " + car.vin,
+                                currentCar: currentCar._id,
+                                car: car
+                            })
+                                .delay(10000)
+                                .priority('high')
+                                .attempts(5)
+                                .save();
+                        }
+                        _f.label = 10;
+                    case 10:
+                        _d++;
+                        return [3 /*break*/, 6];
+                    case 11:
+                        _i++;
+                        return [3 /*break*/, 2];
+                    case 12:
+                        inventory_1 = new inventory_model_1["default"]({
+                            name: name,
+                            company: company,
+                            team: team,
+                            venues: venuesIDs,
+                            createdBy: req.user._id,
+                            status: inventory_model_1.ChoicesStatusInventory.inProcess,
+                            settings: {
+                                photos: {
+                                    manual: manualPhoto,
+                                    report: reportPhoto
+                                }
+                            }
                         });
+                        file = general_utils_1["default"].getFileFromRequest(req.files, 'file');
+                        if (!file) return [3 /*break*/, 14];
+                        file.team = team;
+                        return [4 /*yield*/, inventory_1.attach('file', file)];
+                    case 13:
+                        _f.sent();
+                        _f.label = 14;
+                    case 14:
+                        backup = general_utils_1["default"].getFileFromRequest(req.files, 'backup');
+                        if (!backup) return [3 /*break*/, 16];
+                        backup.team = team;
+                        return [4 /*yield*/, inventory_1.attach('backup', backup)];
+                    case 15:
+                        _f.sent();
+                        _f.label = 16;
+                    case 16: return [4 /*yield*/, inventory_1.save()];
+                    case 17:
+                        _f.sent();
+                        inventoryCars.map(function (i) {
+                            i.inventory = inventory_1._id;
+                            return i;
+                        });
+                        activityHistories.map(function (a) {
+                            a.inventory = {
+                                _id: inventory_1._id,
+                                name: inventory_1.name
+                            };
+                            return a;
+                        });
+                        return [4 /*yield*/, activityHistory_model_1["default"].insertMany(activityHistories)];
+                    case 18:
+                        _f.sent();
+                        return [4 /*yield*/, inventoryCar_model_1["default"].insertMany(inventoryCars)];
+                    case 19:
+                        _f.sent();
+                        if (!notification) return [3 /*break*/, 21];
+                        return [4 /*yield*/, user_model_1["default"].find({
+                                venue: {
+                                    $in: venuesIDs
+                                },
+                                team: team
+                            }, {
+                                _id: true
+                            })];
+                    case 20:
+                        usersIDs = _f.sent();
+                        push_service_1["default"].massiveSend('Nuevo inventario', "Se ha iniciado el inventario \"" + inventory_1.name + "\"", 'Ya puedes empezar a escanear', usersIDs.map(function (user) { return user._id.toString(); }));
+                        _f.label = 21;
+                    case 21:
+                        server_1.io.to("inventory-list-" + team).emit('REFRESH', {
+                            update: true
+                        });
+                        server_1.io.to("stock-" + team).emit('REFRESH', {
+                            update: true
+                        });
+                        return [4 /*yield*/, team_model_1["default"].findById(req.user.team._id)];
+                    case 22:
+                        currentTeam = _f.sent();
                         app_1.queue
-                            .create('updateCar', {
-                            title: `updateCar ${car.vin}`,
-                            currentCar: currentCar._id,
-                            car
+                            .create('email', {
+                            from: '',
+                            title: "Inventory Notification",
+                            to: "\"soporte\"<soporte@osacontrol.com>",
+                            subject: req.user.firstName + " ha creado un inventario en " + currentTeam.name,
+                            text: "Hola Soporte\n\n          Se ha creado un nuevo inventario.\n\n          Team: " + team.name + "\n          Usuario: " + req.user.firstName + " " + req.user.lastName + "\n          ENV: " + process.env.ENV + "\n\n          En caso de dudas o consultas puedes contactarte a soporte@osacontrol.com o a nuestro twitter@TaskforceOSA.",
+                            view: 'alerts/inventoryNotification',
+                            context: {
+                                team: currentTeam,
+                                user: req.user,
+                                env: process.env.ENV
+                            }
                         })
-                            .delay(10000)
                             .priority('high')
                             .attempts(5)
                             .save();
-                    }
+                        res.json({
+                            _id: inventory_1._id.toString(),
+                            message: 'Inventario creado satisfactoriamente',
+                            status: 200
+                        });
+                        return [3 /*break*/, 24];
+                    case 23:
+                        e_4 = _f.sent();
+                        /* istanbul ignore next */
+                        logger_service_1["default"].error("create: Async Error.");
+                        /* istanbul ignore next */
+                        logger_service_1["default"].error("{user: {_id: " + req.user._id + ", email: " + req.user.email + "}}");
+                        /* istanbul ignore next */
+                        logger_service_1["default"].error(e_4);
+                        /* istanbul ignore next */
+                        res.status(500).json({
+                            message: e_4,
+                            status: 500
+                        });
+                        return [3 /*break*/, 24];
+                    case 24: return [2 /*return*/];
                 }
-            }
-            const stock = new stock_model_1.default({
-                company,
-                team,
-                createdBy: req.user._id
             });
-            await stock.save();
-            stockCars.map((s) => {
-                s.stock = stock._id;
-                return s;
-            });
-            await stockCar_model_1.default.insertMany(stockCars);
-            server_1.io.to(`stock-${team}`).emit('REFRESH', {
-                update: true
-            });
-            res.json({
-                message: 'Stock creado satisfactoriamente',
-                status: 200
-            });
-        }
-        catch (e) {
-            /* istanbul ignore next */
-            logger_service_1.default.error(`loadStock: Async Error.`);
-            /* istanbul ignore next */
-            logger_service_1.default.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
-            /* istanbul ignore next */
-            logger_service_1.default.error(e);
-            /* istanbul ignore next */
-            res.status(500).json({
-                message: e,
-                status: 500
-            });
-        }
-    }
-    async currentStock(req, res) {
-        try {
-            const { company, venue } = req.user;
-            const lastInventory = await inventory_model_1.default
-                .findOne({
-                company
-            }, {
-                name: true,
-                status: true,
-                cars: true,
-                createdAt: true
-            }, {
-                sort: { 'createdAt': -1 }
-            });
-            const lastStock = await stock_model_1.default
-                .findOne({
-                company
-            }, {}, {
-                sort: { 'createdAt': -1 }
-            });
-            let showInventory = false;
-            let showStock = false;
-            if (lastInventory && !lastStock) {
-                showInventory = true;
-                console.log('showInventory');
-            }
-            else if (!lastInventory && lastStock) {
-                showStock = true;
-                console.log('showStock');
-            }
-            else if (lastInventory && lastStock) {
-                console.log('lastInventory.createdAt', lastInventory.createdAt);
-                console.log('lastStock.createdAt', lastStock.createdAt);
-                console.log('moment(lastInventory.createdAt).isAfter(lastStock.createdAt)', moment(lastInventory.createdAt).isAfter(lastStock.createdAt));
-                if (moment(lastInventory.createdAt).isAfter(lastStock.createdAt)) {
-                    showInventory = true;
-                    console.log('showInventory');
+        });
+    };
+    InventoryController.prototype.list = function (req, res) {
+        return __awaiter(this, void 0, void 0, function () {
+            var team, _a, page, pageSize, venuesPermissions, options, paginatedInventories, response, inventories, _i, inventories_1, inventory, defaultResults, teamSettings, e_5;
+            var _b;
+            return __generator(this, function (_c) {
+                switch (_c.label) {
+                    case 0:
+                        team = req.user.team._id;
+                        _a = req.query, page = _a.page, pageSize = _a.pageSize;
+                        venuesPermissions = req.user.venuesPermissions();
+                        _c.label = 1;
+                    case 1:
+                        _c.trys.push([1, 7, , 8]);
+                        options = {
+                            select: {
+                                _id: true
+                            },
+                            sort: {
+                                createdAt: -1
+                            },
+                            page: parseInt(page ? page : '1', 10),
+                            limit: parseInt(pageSize ? pageSize : '10', 10)
+                        };
+                        return [4 /*yield*/, inventory_model_1["default"].paginate({
+                                team: team,
+                                venues: {
+                                    $in: venuesPermissions
+                                }
+                            }, options)];
+                    case 2:
+                        paginatedInventories = _c.sent();
+                        if (!(options.page && paginatedInventories.pages && paginatedInventories.pages < options.page)) return [3 /*break*/, 3];
+                        res.status(400).json({
+                            message: 'La página solicitada no existe.',
+                            status: 200
+                        });
+                        return [3 /*break*/, 6];
+                    case 3:
+                        response = [];
+                        return [4 /*yield*/, inventory_model_1["default"].aggregate([{
+                                    $match: {
+                                        _id: {
+                                            $in: paginatedInventories.docs.map(function (v) { return v._id; })
+                                        }
+                                    }
+                                }, {
+                                    $lookup: {
+                                        from: 'inventorycars',
+                                        localField: '_id',
+                                        foreignField: 'inventory',
+                                        as: 'cars'
+                                    }
+                                }, {
+                                    $unwind: '$cars'
+                                }, {
+                                    $match: {
+                                        'cars.venue': {
+                                            $in: venuesPermissions
+                                        },
+                                        'cars.status': {
+                                            $in: [
+                                                inventoryCar_model_1.ChoicesStatusCarInventory.pending,
+                                                inventoryCar_model_1.ChoicesStatusCarInventory.found,
+                                                inventoryCar_model_1.ChoicesStatusCarInventory.missing,
+                                                inventoryCar_model_1.ChoicesStatusCarInventory.leftover,
+                                                inventoryCar_model_1.ChoicesStatusCarInventory.reported
+                                            ]
+                                        }
+                                    }
+                                }, {
+                                    $group: {
+                                        _id: {
+                                            category: '$_id',
+                                            status: '$status',
+                                            carStatus: '$cars.status',
+                                            name: '$name',
+                                            file: '$file',
+                                            backup: '$backup',
+                                            createdBy: '$createdBy',
+                                            createdAt: '$createdAt',
+                                            finalizedBy: '$finalizedBy',
+                                            finalizedAt: '$finalizedAt'
+                                        },
+                                        total: {
+                                            $sum: 1
+                                        }
+                                    }
+                                }, {
+                                    $group: {
+                                        _id: '$_id.category',
+                                        name: {
+                                            $first: '$_id.name'
+                                        },
+                                        createdAt: {
+                                            $first: '$_id.createdAt'
+                                        },
+                                        file: {
+                                            $first: '$_id.file'
+                                        },
+                                        backup: {
+                                            $first: '$_id.backup'
+                                        },
+                                        finalizedAt: {
+                                            $first: '$_id.finalizedAt'
+                                        },
+                                        createdBy: {
+                                            $first: '$_id.createdBy'
+                                        },
+                                        finalizedBy: {
+                                            $first: '$_id.finalizedBy'
+                                        },
+                                        results: {
+                                            $push: {
+                                                status: '$_id.carStatus',
+                                                total: '$total'
+                                            }
+                                        },
+                                        status: {
+                                            $first: '$_id.status'
+                                        }
+                                    }
+                                }, {
+                                    $lookup: {
+                                        from: 'users',
+                                        localField: 'createdBy',
+                                        foreignField: '_id',
+                                        as: 'createdBy'
+                                    }
+                                }, {
+                                    $lookup: {
+                                        from: 'users',
+                                        localField: 'finalizedBy',
+                                        foreignField: '_id',
+                                        as: 'finalizedBy'
+                                    }
+                                }, {
+                                    $project: {
+                                        '_id': 1,
+                                        'name': 1,
+                                        'results': 1,
+                                        'file': 1,
+                                        'backup': 1,
+                                        'createdBy.firstName': 1,
+                                        'createdBy.lastName': 1,
+                                        'finalizedBy.firstName': 1,
+                                        'finalizedBy.lastName': 1,
+                                        'status': 1,
+                                        'createdAt': 1,
+                                        'finalizedAt': 1
+                                    }
+                                }, {
+                                    $sort: {
+                                        createdAt: -1
+                                    }
+                                }])];
+                    case 4:
+                        inventories = _c.sent();
+                        for (_i = 0, inventories_1 = inventories; _i < inventories_1.length; _i++) {
+                            inventory = inventories_1[_i];
+                            defaultResults = (_b = {},
+                                _b[inventoryCar_model_1.ChoicesStatusCarInventory.pending] = 0,
+                                _b[inventoryCar_model_1.ChoicesStatusCarInventory.found] = 0,
+                                _b[inventoryCar_model_1.ChoicesStatusCarInventory.missing] = 0,
+                                _b[inventoryCar_model_1.ChoicesStatusCarInventory.reported] = 0,
+                                _b[inventoryCar_model_1.ChoicesStatusCarInventory.leftover] = 0,
+                                _b);
+                            response.push({
+                                _id: inventory._id,
+                                name: inventory.name,
+                                file: req.user.hasPermission('viewFilesInventory') ? inventory.file : null,
+                                backup: req.user.hasPermission('viewFilesInventory') ? inventory.backup : null,
+                                createdBy: inventory.createdBy.length ? {
+                                    fullName: inventory.createdBy[0].firstName + " " + inventory.createdBy[0].lastName
+                                } : {},
+                                finalizedBy: inventory.finalizedBy.length ? {
+                                    fullName: inventory.finalizedBy[0].firstName + " " + inventory.finalizedBy[0].lastName
+                                } : {},
+                                results: inventory.results.reduce(function (acc, cur) {
+                                    acc[cur.status] = cur.total;
+                                    return acc;
+                                }, __assign({}, defaultResults)),
+                                status: inventory.status,
+                                createdAt: inventory.createdAt,
+                                finalizedAt: inventory.finalizedAt ? inventory.finalizedAt : null
+                            });
+                        }
+                        return [4 /*yield*/, teamSetting_model_1["default"].findOne({ team: team })];
+                    case 5:
+                        teamSettings = _c.sent();
+                        res.json({
+                            inventories: response,
+                            inventorySettings: teamSettings.inventory,
+                            count: paginatedInventories.total,
+                            pages: paginatedInventories.pages,
+                            hasPrevious: options.page && options.page > 1 && paginatedInventories.pages && paginatedInventories.pages >= options.page,
+                            hasNext: options.page && paginatedInventories.pages && paginatedInventories.pages > options.page,
+                            status: 200
+                        });
+                        _c.label = 6;
+                    case 6: return [3 /*break*/, 8];
+                    case 7:
+                        e_5 = _c.sent();
+                        /* istanbul ignore next */
+                        logger_service_1["default"].error("list: Async Error.");
+                        /* istanbul ignore next */
+                        logger_service_1["default"].error("{user: {_id: " + req.user._id + ", email: " + req.user.email + "}}");
+                        /* istanbul ignore next */
+                        logger_service_1["default"].error(e_5);
+                        /* istanbul ignore next */
+                        res.status(500).json({
+                            message: e_5,
+                            status: 500
+                        });
+                        return [3 /*break*/, 8];
+                    case 8: return [2 /*return*/];
                 }
-                else {
-                    showStock = true;
-                    console.log('showStock');
-                }
-            }
-            if (showInventory) {
-                const inventory = await inventory_model_1.default
-                    .findOne({
-                    company
-                }, {
-                    name: true,
-                    status: true,
-                    cars: true
-                }, {
-                    sort: { 'createdAt': -1 }
-                })
-                    .populate([{
-                        path: 'cars',
-                        select: ['_id', 'car', 'venue', 'venueFound'],
-                        match: {
+            });
+        });
+    };
+    InventoryController.prototype.apiDetail = function (req, res) {
+        return __awaiter(this, void 0, void 0, function () {
+            var team, id, updatedUser, inventory, e_6;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0:
+                        team = req.user.team._id;
+                        id = req.params.id;
+                        logger_service_1["default"].info("apiDetail");
+                        logger_service_1["default"].info("{user: {_id: " + req.user._id + ", email: " + req.user.email + "}, inventory: " + id + "}");
+                        _a.label = 1;
+                    case 1:
+                        _a.trys.push([1, 6, , 7]);
+                        return [4 /*yield*/, user_model_1["default"].findById(req.user._id)];
+                    case 2:
+                        updatedUser = _a.sent();
+                        if (!!updatedUser) return [3 /*break*/, 3];
+                        res.status(404).json({
+                            message: 'No se ha encontrado el inventario solicitado.',
+                            status: 404
+                        });
+                        return [3 /*break*/, 5];
+                    case 3: return [4 /*yield*/, inventory_model_1["default"]
+                            .findOne({
+                            _id: id,
+                            venues: updatedUser.venue,
                             status: {
-                                $in: [
-                                    inventoryCar_model_1.ChoicesStatusCarInventory.found,
-                                    inventoryCar_model_1.ChoicesStatusCarInventory.leftover
-                                ]
-                            }
-                        },
-                        populate: [{
-                                path: 'car',
-                                select: ['vin', 'vin2', 'internalNumber', 'color', 'denomination', 'brand', 'venue', 'patent', 'internalNumber', 'property', 'type']
-                            }, {
-                                path: 'venue',
-                                select: ['name'],
+                                $in: [inventory_model_1.ChoicesStatusInventory.inProcess]
+                            },
+                            team: team
+                        })
+                            .populate([{
+                                path: 'cars',
+                                match: {
+                                    status: {
+                                        $in: [inventoryCar_model_1.ChoicesStatusCarInventory.pending, inventoryCar_model_1.ChoicesStatusCarInventory.found]
+                                    }
+                                    //   venue: {
+                                    //     $in: venuesPermissions
+                                    //   }
+                                },
                                 populate: [{
-                                        path: 'region',
-                                        select: ['code', 'name']
+                                        path: 'car',
+                                        select: ['vin', 'vin2', 'color', 'denomination', 'brand', 'patent']
+                                    }, {
+                                        path: 'venue',
+                                        select: ['name']
                                     }]
-                            }, {
-                                path: 'venueFound',
-                                select: ['name'],
-                                populate: [{
-                                        path: 'region',
-                                        select: ['code', 'name']
-                                    }]
-                            }]
-                    }]).lean();
-                if (!inventory) {
-                    res
-                        .status(200)
-                        .json({
-                        message: 'No se han realizado inventarios para ver el stock.',
-                        cars: []
-                    });
+                            }]).lean()];
+                    case 4:
+                        inventory = _a.sent();
+                        if (inventory) {
+                            res.status(200).json({
+                                data: {
+                                    cars: inventory.cars
+                                        .map(function (car) {
+                                        return __assign(__assign({}, car.car), { _id: car._id, venue: car.venue, status: car.status });
+                                    }),
+                                    reasons: []
+                                },
+                                status: 200
+                            });
+                        }
+                        else {
+                            logger_service_1["default"].error("apiDetail: No se ha encontrado el inventario solicitado.");
+                            logger_service_1["default"].error("{user: {_id: " + req.user._id + ", email: " + req.user.email + "}}");
+                            res.status(404).json({
+                                message: 'No se ha encontrado el inventario solicitado.',
+                                status: 404
+                            });
+                        }
+                        _a.label = 5;
+                    case 5: return [3 /*break*/, 7];
+                    case 6:
+                        e_6 = _a.sent();
+                        /* istanbul ignore next */
+                        logger_service_1["default"].error("apiDetail: Async Error.");
+                        /* istanbul ignore next */
+                        logger_service_1["default"].error("{user: {_id: " + req.user._id + ", email: " + req.user.email + "}}");
+                        /* istanbul ignore next */
+                        logger_service_1["default"].error(e_6);
+                        /* istanbul ignore next */
+                        res.status(500).json(e_6);
+                        return [3 /*break*/, 7];
+                    case 7: return [2 /*return*/];
                 }
-                else if (inventory.status !== inventory_model_1.ChoicesStatusInventory.finalized) {
-                    res
-                        .status(200)
-                        .json({
-                        message: 'Se esta procesando la toma de inventario.',
-                        cars: []
-                    });
-                }
-                else if (await inventoryCar_model_1.default.find({ inventory, venue, status: inventoryCar_model_1.ChoicesStatusCarInventory.pending }).count()) {
-                    res
-                        .status(200)
-                        .json({
-                        message: 'Tú sucursal no ha terminado el inventario.',
-                        cars: []
-                    });
-                }
-                else {
-                    res
-                        .status(200)
-                        .json({
-                        message: '',
-                        cars: inventory.cars
-                    });
-                }
-            }
-            else if (showStock) {
-                const stock = await stock_model_1.default
-                    .findOne({
-                    company
-                }, {
-                    name: true,
-                    status: true,
-                    cars: true
-                }, {
-                    sort: { 'createdAt': -1 }
-                })
-                    .populate([{
-                        path: 'cars',
-                        select: ['_id', 'car', 'venue'],
-                        populate: [{
-                                path: 'car',
-                                select: ['vin', 'vin2', 'internalNumber', 'color', 'denomination', 'brand', 'venue', 'patent', 'internalNumber', 'property', 'type']
-                            }, {
-                                path: 'venue',
-                                select: ['name'],
-                                populate: [{
-                                        path: 'region',
-                                        select: ['code', 'name']
-                                    }]
-                            }]
-                    }]).lean();
-                res
-                    .status(200)
-                    .json({
-                    message: '',
-                    cars: stock.cars
-                });
-            }
-        }
-        catch (e) {
-            /* istanbul ignore next */
-            logger_service_1.default.error(`inventory currentStock: Async Error.`);
-            /* istanbul ignore next */
-            logger_service_1.default.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
-            /* istanbul ignore next */
-            logger_service_1.default.error(e);
-            Raven.captureException(e, { req });
-            /* istanbul ignore next */
-            res.status(500).json({
-                message: JSON.stringify(e),
-                status: 500
             });
-        }
-    }
-    autoRotate(path) {
+        });
+    };
+    InventoryController.prototype.downloadFile = function (url, dest) {
+        return __awaiter(this, void 0, void 0, function () {
+            var _this = this;
+            return __generator(this, function (_a) {
+                return [2 /*return*/, new Promise(function (resolve, reject) { return __awaiter(_this, void 0, void 0, function () {
+                        var directories, directoyName, file_1;
+                        return __generator(this, function (_a) {
+                            try {
+                                directories = dest.split('/');
+                                directories.pop();
+                                directoyName = directories.join('/');
+                                if (!fs.existsSync(directoyName)) {
+                                    fs.mkdirSync(directoyName, { recursive: true });
+                                }
+                                file_1 = fs.createWriteStream(dest);
+                                // download file
+                                https.get(url, function (response) {
+                                    response.pipe(file_1);
+                                    file_1.on('finish', function () {
+                                        file_1.close();
+                                        resolve(response.headers['content-length'] ? parseInt(response.headers['content-length'], 10) : 0);
+                                    });
+                                });
+                            }
+                            catch (e) {
+                                // Validate that the file exists and delete it if it exists.
+                                if (fs.existsSync(dest)) {
+                                    fs.unlink(dest, function (err) {
+                                        if (err) {
+                                            reject(err);
+                                        }
+                                    });
+                                }
+                                else {
+                                    console.log(url);
+                                    reject(e);
+                                }
+                            }
+                            return [2 /*return*/];
+                        });
+                    }); })];
+            });
+        });
+    };
+    InventoryController.prototype.uploadFile = function (req, res) {
+        return __awaiter(this, void 0, void 0, function () {
+            var id, _a, company, venue, team, file, inventoryFile, e_7;
+            return __generator(this, function (_b) {
+                switch (_b.label) {
+                    case 0:
+                        id = req.params.id;
+                        _a = req.user, company = _a.company, venue = _a.venue, team = _a.team;
+                        logger_service_1["default"].info("uploadFile");
+                        logger_service_1["default"].info("{user: {_id: " + req.user._id + ", email: " + req.user.email + "}, inventory: " + id + "}");
+                        file = general_utils_1["default"].getFileFromRequest(req.files, 'file');
+                        if (!file) return [3 /*break*/, 10];
+                        _b.label = 1;
+                    case 1:
+                        _b.trys.push([1, 8, , 9]);
+                        inventoryFile = new inventoryFile_model_1["default"]();
+                        /*
+                          {
+                            fieldname: 'file',
+                            originalname: 'Captura de pantalla 2018-06-28 a la(s) 11.59.58.png',
+                            encoding: '7bit',
+                            mimetype: 'image/png',
+                            destination: '/tmp/',
+                            filename: 'Captura de pantalla 2018-06-28 a la(s) 11.59.58.png',
+                            path: '/tmp/Captura de pantalla 2018-06-28 a la(s) 11.59.58.png',
+                            size: 794429
+                          }
+                        */
+                        file.headers = {
+                            'Content-Type': file.mimetype
+                        };
+                        file.team = team._id;
+                        file.venue = venue._id;
+                        file.inventory = id;
+                        inventoryFile.inventory = id;
+                        inventoryFile.user = req.user._id;
+                        inventoryFile.company = company._id;
+                        if (!new RegExp('\\bimage\\b').test(file.mimetype)) return [3 /*break*/, 3];
+                        return [4 /*yield*/, this.autoRotate(file.path)];
+                    case 2:
+                        _b.sent();
+                        _b.label = 3;
+                    case 3: return [4 /*yield*/, inventoryFile.attach('file', file)];
+                    case 4:
+                        _b.sent();
+                        return [4 /*yield*/, this.resizeImage(file.path)];
+                    case 5:
+                        _b.sent();
+                        return [4 /*yield*/, inventoryFile.attach('thumbnail', file)];
+                    case 6:
+                        _b.sent();
+                        return [4 /*yield*/, inventoryFile.save()];
+                    case 7:
+                        _b.sent();
+                        res.status(201).json({
+                            data: {
+                                _id: inventoryFile._id,
+                                file: inventoryFile.file
+                            },
+                            status: 201
+                        });
+                        return [3 /*break*/, 9];
+                    case 8:
+                        e_7 = _b.sent();
+                        /* istanbul ignore next */
+                        logger_service_1["default"].error("uploadFile: Async Error.");
+                        /* istanbul ignore next */
+                        logger_service_1["default"].error("{user: {_id: " + req.user._id + ", email: " + req.user.email + "}}");
+                        /* istanbul ignore next */
+                        logger_service_1["default"].error(e_7);
+                        /* istanbul ignore next */
+                        res.status(400).json(e_7);
+                        return [3 /*break*/, 9];
+                    case 9: return [3 /*break*/, 11];
+                    case 10:
+                        logger_service_1["default"].error("uploadFile: La imagen es obligatoria.");
+                        logger_service_1["default"].error("{user: {_id: " + req.user._id + ", email: " + req.user.email + "}}");
+                        /* istanbul ignore next */
+                        res.status(400).json({
+                            message: 'La imagen es obligatoria.',
+                            status: 400
+                        });
+                        _b.label = 11;
+                    case 11: return [2 /*return*/];
+                }
+            });
+        });
+    };
+    InventoryController.prototype.apiFoundCar = function (req, res) {
+        return __awaiter(this, void 0, void 0, function () {
+            var team, id, _a, vin, images, updatedUser, teamSettings, venueId, inventory, car, inventoriedCar, inventoryCar, e_8;
+            return __generator(this, function (_b) {
+                switch (_b.label) {
+                    case 0:
+                        team = req.user.team;
+                        id = req.params.id;
+                        _a = req.body, vin = _a.vin, images = _a.images;
+                        logger_service_1["default"].info("apiFoundCar");
+                        logger_service_1["default"].info("{user: {_id: " + req.user._id + ", email: " + req.user.email + "}, body: " + JSON.stringify(req.body) + "}");
+                        _b.label = 1;
+                    case 1:
+                        _b.trys.push([1, 16, , 17]);
+                        return [4 /*yield*/, user_model_1["default"].findById(req.user._id).populate([{
+                                    path: 'venue',
+                                    select: ['name']
+                                }])];
+                    case 2:
+                        updatedUser = _b.sent();
+                        return [4 /*yield*/, teamSetting_model_1["default"].findOne({ team: team })];
+                    case 3:
+                        teamSettings = _b.sent();
+                        if (!updatedUser) {
+                            return [2 /*return*/, res.status(404).json({
+                                    message: 'No se ha encontrado el inventario solicitado.',
+                                    status: 404
+                                })];
+                        }
+                        venueId = updatedUser.venue._id;
+                        return [4 /*yield*/, inventory_model_1["default"].findOne({
+                                _id: id,
+                                team: team,
+                                status: inventory_model_1.ChoicesStatusInventory.inProcess
+                            })];
+                    case 4:
+                        inventory = _b.sent();
+                        if (!inventory) return [3 /*break*/, 14];
+                        return [4 /*yield*/, car_model_1["default"].findOne({
+                                vin: vin,
+                                team: team
+                            })];
+                    case 5:
+                        car = _b.sent();
+                        if (!car) return [3 /*break*/, 12];
+                        return [4 /*yield*/, inventoryCar_model_1["default"].findOne({
+                                inventory: id,
+                                car: car._id,
+                                status: {
+                                    $in: [inventoryCar_model_1.ChoicesStatusCarInventory.found, inventoryCar_model_1.ChoicesStatusCarInventory.leftover]
+                                }
+                            })];
+                    case 6:
+                        inventoriedCar = _b.sent();
+                        if (!inventoriedCar) return [3 /*break*/, 7];
+                        logger_service_1["default"].error("apiFoundCar: Este veh\u00EDculo ya ha sido inventariado");
+                        logger_service_1["default"].error("{user: {_id: " + req.user._id + ", email: " + req.user.email + "}}");
+                        res.status(200).json({
+                            message: 'Este vehículo ya ha sido inventariado',
+                            status: 200
+                        });
+                        return [3 /*break*/, 11];
+                    case 7: return [4 /*yield*/, inventoryCar_model_1["default"].findOne({
+                            inventory: id,
+                            car: car._id
+                        })];
+                    case 8:
+                        inventoryCar = _b.sent();
+                        if (!inventoryCar) return [3 /*break*/, 10];
+                        inventoryCar.venueFound = venueId;
+                        if (teamSettings.inventory.leftoverDifferentVenue && inventoryCar.venue.toString() !== venueId.toString()) {
+                            inventoryCar.status = inventoryCar_model_1.ChoicesStatusCarInventory.leftover;
+                            server_1.io.to("inventory-detail-" + inventory._id).emit('REFRESH', {
+                                title: 'Vehículo encontrado',
+                                text: req.user.firstName + " " + req.user.lastName + " encontr\u00F3 " + car.brand + " (" + car.denomination + ") en " + updatedUser.venue.name + ".",
+                                status: inventoryCar_model_1.ChoicesStatusCarInventory.leftover,
+                                venue: venueId,
+                                update: true
+                            });
+                        }
+                        else {
+                            inventoryCar.status = inventoryCar_model_1.ChoicesStatusCarInventory.found;
+                            server_1.io.to("inventory-detail-" + inventory._id).emit('REFRESH', {
+                                title: 'Vehículo encontrado',
+                                text: req.user.firstName + " " + req.user.lastName + " encontr\u00F3 " + car.brand + " (" + car.denomination + ") en " + updatedUser.venue.name + ".",
+                                status: inventoryCar_model_1.ChoicesStatusCarInventory.found,
+                                venue: venueId,
+                                update: true
+                            });
+                        }
+                        inventoryCar.images = images ? images.map(function (image) { return (new bson_1.ObjectID(image)); }) : [];
+                        inventoryCar.inventoriedBy = req.user._id;
+                        return [4 /*yield*/, inventoryCar.save()];
+                    case 9:
+                        _b.sent();
+                        server_1.io.to("inventory-list-" + team._id).emit('REFRESH', {
+                            update: true
+                        });
+                        res.status(200).json({
+                            vin: car.vin,
+                            status: 200
+                        });
+                        return [3 /*break*/, 11];
+                    case 10:
+                        logger_service_1["default"].error("apiFoundCar: Este veh\u00EDculo no se encuentra en el inventario.");
+                        logger_service_1["default"].error("{user: {_id: " + req.user._id + ", email: " + req.user.email + "}}");
+                        res.status(400).json({
+                            message: 'Este vehículo no se encuentra en el inventario.',
+                            status: 400
+                        });
+                        _b.label = 11;
+                    case 11: return [3 /*break*/, 13];
+                    case 12:
+                        // if car no exist
+                        logger_service_1["default"].error("apiFoundCar: Este veh\u00EDculo no se encuentra en el inventario.");
+                        logger_service_1["default"].error("{user: {_id: " + req.user._id + ", email: " + req.user.email + "}}");
+                        res.status(400).json({
+                            message: 'Este vehículo no se encuentra en el inventario.',
+                            status: 400
+                        });
+                        _b.label = 13;
+                    case 13: return [3 /*break*/, 15];
+                    case 14:
+                        // if inventory no exist
+                        logger_service_1["default"].error("apiFoundCar: Este inventario no existe o ya no se encuentra activo.");
+                        logger_service_1["default"].error("{user: {_id: " + req.user._id + ", email: " + req.user.email + "}}");
+                        res.status(404).json({
+                            message: 'Este inventario no existe o ya no se encuentra activo.',
+                            status: 404
+                        });
+                        _b.label = 15;
+                    case 15: return [3 /*break*/, 17];
+                    case 16:
+                        e_8 = _b.sent();
+                        /* istanbul ignore next */
+                        logger_service_1["default"].error("apiFoundCar: Async Error.");
+                        /* istanbul ignore next */
+                        logger_service_1["default"].error("{user: {_id: " + req.user._id + ", email: " + req.user.email + "}, error: " + e_8 + "}");
+                        /* istanbul ignore next */
+                        logger_service_1["default"].error(e_8);
+                        /* istanbul ignore next */
+                        res.status(400).json({
+                            message: e_8,
+                            status: 400
+                        });
+                        return [3 /*break*/, 17];
+                    case 17: return [2 /*return*/];
+                }
+            });
+        });
+    };
+    InventoryController.prototype.finishInventory = function (req, res) {
+        return __awaiter(this, void 0, void 0, function () {
+            var team, id, inventory, e_9;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0:
+                        team = req.user.team._id;
+                        id = req.params.id;
+                        if (!req.user.hasPermission('finishInventory')) {
+                            return [2 /*return*/, res.status(403).json({
+                                    message: 'No tienes permisos para esta operación'
+                                })];
+                        }
+                        _a.label = 1;
+                    case 1:
+                        _a.trys.push([1, 6, , 7]);
+                        return [4 /*yield*/, inventory_model_1["default"].findOne({ _id: id, team: team })];
+                    case 2:
+                        inventory = _a.sent();
+                        if (!inventory) return [3 /*break*/, 4];
+                        return [4 /*yield*/, inventory.update({
+                                status: inventory_model_1.ChoicesStatusInventory.finalized,
+                                finalizedAt: new Date(),
+                                finalizedBy: req.user._id
+                            })];
+                    case 3:
+                        _a.sent();
+                        server_1.io.to("inventory-list-" + team).emit('REFRESH', {
+                            update: true
+                        });
+                        server_1.io.to("stock-" + team).emit('REFRESH', {
+                            update: true
+                        });
+                        res.json({
+                            message: 'Se ha finalizado correctamente el inventario.',
+                            status: 200
+                        });
+                        return [3 /*break*/, 5];
+                    case 4:
+                        logger_service_1["default"].error("finishInventory: No se ha encontrado el inventario");
+                        logger_service_1["default"].error("{user: {_id: " + req.user._id + ", email: " + req.user.email + "}}");
+                        res.status(400).json({
+                            message: 'No se ha encontrado el inventario',
+                            status: 400
+                        });
+                        _a.label = 5;
+                    case 5: return [3 /*break*/, 7];
+                    case 6:
+                        e_9 = _a.sent();
+                        /* istanbul ignore next */
+                        logger_service_1["default"].error("finishInventory: Async Error.");
+                        /* istanbul ignore next */
+                        logger_service_1["default"].error("{user: {_id: " + req.user._id + ", email: " + req.user.email + "}}");
+                        /* istanbul ignore next */
+                        logger_service_1["default"].error(e_9);
+                        /* istanbul ignore next */
+                        res.status(400).json({
+                            message: 'Ha ocurrido un error',
+                            status: 400
+                        });
+                        return [3 /*break*/, 7];
+                    case 7: return [2 /*return*/];
+                }
+            });
+        });
+    };
+    InventoryController.prototype.deleteInventory = function (req, res) {
+        return __awaiter(this, void 0, void 0, function () {
+            var team, id, inventory, e_10;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0:
+                        team = req.user.team._id;
+                        id = req.params.id;
+                        if (!req.user.hasPermission('deleteInventory')) {
+                            return [2 /*return*/, res.status(403).json({
+                                    message: 'No tienes permisos para esta operación'
+                                })];
+                        }
+                        _a.label = 1;
+                    case 1:
+                        _a.trys.push([1, 7, , 8]);
+                        return [4 /*yield*/, inventory_model_1["default"].findOne({
+                                _id: id,
+                                team: team
+                            })];
+                    case 2:
+                        inventory = _a.sent();
+                        if (!inventory) return [3 /*break*/, 5];
+                        return [4 /*yield*/, inventoryCar_model_1["default"].find({ inventory: inventory }).remove()];
+                    case 3:
+                        _a.sent();
+                        return [4 /*yield*/, inventory.remove()];
+                    case 4:
+                        _a.sent();
+                        server_1.io.to("inventory-list-" + team).emit('REFRESH', {
+                            update: true
+                        });
+                        server_1.io.to("stock-" + team).emit('REFRESH', {
+                            update: true
+                        });
+                        res.json({
+                            message: 'Se ha eliminado correctamente el inventario.',
+                            status: 200
+                        });
+                        return [3 /*break*/, 6];
+                    case 5:
+                        logger_service_1["default"].error("deleteInventory: No se ha encontrado el inventario");
+                        logger_service_1["default"].error("{user: {_id: " + req.user._id + ", email: " + req.user.email + "}}");
+                        res.status(400).json({
+                            message: 'No se ha encontrado el inventario',
+                            status: 400
+                        });
+                        _a.label = 6;
+                    case 6: return [3 /*break*/, 8];
+                    case 7:
+                        e_10 = _a.sent();
+                        /* istanbul ignore next */
+                        logger_service_1["default"].error("deleteInventory: Async Error.");
+                        /* istanbul ignore next */
+                        logger_service_1["default"].error("{user: {_id: " + req.user._id + ", email: " + req.user.email + "}}");
+                        /* istanbul ignore next */
+                        logger_service_1["default"].error(e_10);
+                        /* istanbul ignore next */
+                        res.status(400).json({
+                            message: 'Ha ocurrido un error',
+                            status: 400
+                        });
+                        return [3 /*break*/, 8];
+                    case 8: return [2 /*return*/];
+                }
+            });
+        });
+    };
+    InventoryController.prototype.addComment = function (req, res) {
+        return __awaiter(this, void 0, void 0, function () {
+            var inventory, _a, _id, comment, e_11;
+            return __generator(this, function (_b) {
+                switch (_b.label) {
+                    case 0:
+                        inventory = req.params.inventory;
+                        _a = req.body, _id = _a._id, comment = _a.comment;
+                        _b.label = 1;
+                    case 1:
+                        _b.trys.push([1, 3, , 4]);
+                        return [4 /*yield*/, inventoryCar_model_1["default"].update({
+                                inventory: inventory,
+                                _id: _id
+                            }, {
+                                $push: {
+                                    comments: {
+                                        user: req.user._id,
+                                        comment: comment,
+                                        createdAt: new Date()
+                                    }
+                                }
+                            }, {
+                                upsert: true
+                            })];
+                    case 2:
+                        _b.sent();
+                        server_1.io.to("inventory-detail-" + inventory).emit('REFRESH', {
+                            update: true
+                        });
+                        server_1.io.to("inventory-comment-" + _id).emit('NEW_COMMENT', {
+                            _id: new bson_1.ObjectID(),
+                            user: {
+                                _id: req.user._id,
+                                firstName: req.user.firstName,
+                                lastName: req.user.lastName
+                            },
+                            comment: comment
+                        });
+                        res.status(200).json({
+                            message: 'Comentario agregado satisfactoriamente.',
+                            status: 200
+                        });
+                        return [3 /*break*/, 4];
+                    case 3:
+                        e_11 = _b.sent();
+                        /* istanbul ignore next */
+                        logger_service_1["default"].error("addComment: Async Error.");
+                        /* istanbul ignore next */
+                        logger_service_1["default"].error("{user: {_id: " + req.user._id + ", email: " + req.user.email + "}}");
+                        /* istanbul ignore next */
+                        logger_service_1["default"].error(e_11);
+                        /* istanbul ignore next */
+                        res.status(400).json({
+                            message: 'Ha ocurrido un error',
+                            status: 400
+                        });
+                        return [3 /*break*/, 4];
+                    case 4: return [2 /*return*/];
+                }
+            });
+        });
+    };
+    InventoryController.prototype.downloadImages = function (req, res) {
+        return __awaiter(this, void 0, void 0, function () {
+            var id, cars, team, inventory, inventoriesCars, archive_1, filename_1, imagesToDownload, imagesToCompress, _i, inventoriesCars_1, car, _loop_1, _a, _b, image, results, numb, _c, e_12;
+            var _this = this;
+            return __generator(this, function (_d) {
+                switch (_d.label) {
+                    case 0:
+                        id = req.params.id;
+                        cars = req.body.cars;
+                        team = req.user.team._id;
+                        _d.label = 1;
+                    case 1:
+                        _d.trys.push([1, 9, , 10]);
+                        return [4 /*yield*/, inventory_model_1["default"].findOne({
+                                _id: id,
+                                team: team
+                            }, {
+                                name: true
+                            })];
+                    case 2:
+                        inventory = _d.sent();
+                        if (!inventory) return [3 /*break*/, 7];
+                        return [4 /*yield*/, inventory_model_1["default"].aggregate([{
+                                    $match: {
+                                        team: team,
+                                        _id: mongoose.Types.ObjectId(id)
+                                    }
+                                }, {
+                                    $lookup: {
+                                        from: 'inventorycars',
+                                        localField: '_id',
+                                        foreignField: 'inventory',
+                                        as: 'cars'
+                                    }
+                                }, {
+                                    $project: {
+                                        cars: {
+                                            $filter: {
+                                                input: '$cars',
+                                                as: 'cars',
+                                                cond: {
+                                                    $and: [
+                                                        {
+                                                            $in: ['$$cars._id', cars.map(function (car) { return mongoose.Types.ObjectId(car); })]
+                                                        }, {
+                                                            $ne: ['$$cars.images', []]
+                                                        }
+                                                    ]
+                                                }
+                                            }
+                                        }
+                                    }
+                                }, {
+                                    $unwind: '$cars'
+                                }, {
+                                    $replaceRoot: {
+                                        newRoot: '$cars'
+                                    }
+                                }, {
+                                    $lookup: {
+                                        from: 'inventoryfiles',
+                                        localField: 'images',
+                                        foreignField: '_id',
+                                        as: 'images'
+                                    }
+                                }, {
+                                    $lookup: {
+                                        from: 'cars',
+                                        localField: 'car',
+                                        foreignField: '_id',
+                                        as: 'car'
+                                    }
+                                }, {
+                                    $unwind: '$car'
+                                }, {
+                                    $lookup: {
+                                        from: 'venues',
+                                        localField: 'venue',
+                                        foreignField: '_id',
+                                        as: 'venue'
+                                    }
+                                }, {
+                                    $unwind: '$venue'
+                                }, {
+                                    $project: {
+                                        images: 1,
+                                        venue: 1,
+                                        car: 1
+                                    }
+                                }])];
+                    case 3:
+                        inventoriesCars = _d.sent();
+                        archive_1 = archiver('zip', {
+                            zlib: {
+                                level: 0
+                            }
+                        });
+                        archive_1.on('error', function (err) {
+                            res.status(500).send({
+                                error: err.message
+                            });
+                        });
+                        filename_1 = inventory.name + ".zip";
+                        archive_1.on('end', function () {
+                            console.log(filename_1 + ": Archive wrote " + (archive_1.pointer() / (1024 * 1024)).toFixed(2) + "MB");
+                        });
+                        res.attachment(filename_1);
+                        imagesToDownload = [];
+                        imagesToCompress = [];
+                        for (_i = 0, inventoriesCars_1 = inventoriesCars; _i < inventoriesCars_1.length; _i++) {
+                            car = inventoriesCars_1[_i];
+                            _loop_1 = function (image) {
+                                var destDirectory = "/tmp/" + car._id + image._id + "." + image.file.name.split('.')[image.file.name.split('.').length - 1];
+                                imagesToDownload.push(function () { return _this.downloadFile(image.file.url, destDirectory); });
+                                imagesToCompress.push({
+                                    destDirectory: destDirectory,
+                                    name: car.car.vin + "/IMAGE" + image._id.toString().substr(image._id.length - 10, 10).toUpperCase() + "." + image.file.name.split('.')[image.file.name.split('.').length - 1]
+                                });
+                            };
+                            for (_a = 0, _b = car.images; _a < _b.length; _a++) {
+                                image = _b[_a];
+                                _loop_1(image);
+                            }
+                        }
+                        // download images
+                        console.log('EXECUTE PROMISES');
+                        results = [];
+                        numb = 1;
+                        _d.label = 4;
+                    case 4:
+                        if (!imagesToDownload.length) return [3 /*break*/, 6];
+                        console.log('promise', numb);
+                        _c = [__spreadArray([], results)];
+                        return [4 /*yield*/, bluebird.all(imagesToDownload.splice(0, 20).map(function (promise) { return promise(); }))];
+                    case 5:
+                        results = __spreadArray.apply(void 0, _c.concat([_d.sent()]));
+                        numb++;
+                        return [3 /*break*/, 4];
+                    case 6:
+                        // compress images
+                        console.log('EXECUTE COMPRESS');
+                        imagesToCompress.map(function (image) {
+                            archive_1.file(image.destDirectory, {
+                                name: image.name
+                            });
+                            setTimeout(function () {
+                                if (fs.existsSync(image.destDirectory)) {
+                                    console.log("clear " + image.destDirectory);
+                                    fs.unlink(image.destDirectory, function (err) {
+                                        if (err) {
+                                            console.log(err);
+                                        }
+                                    });
+                                }
+                            }, 7200000);
+                        });
+                        res.setHeader('size', results.reduce(function (a, b) { return a + b; }));
+                        archive_1.pipe(res);
+                        archive_1.finalize();
+                        return [3 /*break*/, 8];
+                    case 7:
+                        logger_service_1["default"].error("downloadImages: 'No se ha encontrado el inventario.");
+                        logger_service_1["default"].error("{user: {_id: " + req.user._id + ", email: " + req.user.email + "}}");
+                        res.status(404).json({
+                            message: 'No se ha encontrado el inventario.',
+                            status: 404
+                        });
+                        _d.label = 8;
+                    case 8: return [3 /*break*/, 10];
+                    case 9:
+                        e_12 = _d.sent();
+                        /* istanbul ignore next */
+                        logger_service_1["default"].error("downloadImages: Async Error.");
+                        /* istanbul ignore next */
+                        logger_service_1["default"].error("{user: {_id: " + req.user._id + ", email: " + req.user.email + "}}");
+                        /* istanbul ignore next */
+                        logger_service_1["default"].error(e_12);
+                        /* istanbul ignore next */
+                        res.status(400).json({
+                            message: e_12,
+                            status: 400
+                        });
+                        return [3 /*break*/, 10];
+                    case 10: return [2 /*return*/];
+                }
+            });
+        });
+    };
+    InventoryController.prototype.reportCar = function (req, res) {
+        return __awaiter(this, void 0, void 0, function () {
+            var _a, company, team, id, _b, vin, patent, denomination, brand, color, images, updatedUser, venueId, inventory, findCOnditions, isVinAvailable, car, inventoryCar, textNotification, e_13;
+            return __generator(this, function (_c) {
+                switch (_c.label) {
+                    case 0:
+                        _a = req.user, company = _a.company, team = _a.team;
+                        id = req.params.id;
+                        _b = req.body, vin = _b.vin, patent = _b.patent, denomination = _b.denomination, brand = _b.brand, color = _b.color, images = _b.images;
+                        logger_service_1["default"].info("reportCar");
+                        logger_service_1["default"].info("{user: {_id: " + req.user._id + ", email: " + req.user.email + "}, body: " + JSON.stringify(req.body) + "}");
+                        _c.label = 1;
+                    case 1:
+                        _c.trys.push([1, 8, , 9]);
+                        return [4 /*yield*/, user_model_1["default"].findById(req.user._id).populate([{
+                                    path: 'venue',
+                                    select: ['name']
+                                }])];
+                    case 2:
+                        updatedUser = _c.sent();
+                        if (!updatedUser) {
+                            return [2 /*return*/, res.status(404).json({
+                                    message: 'No se ha encontrado el inventario solicitado.',
+                                    status: 404
+                                })];
+                        }
+                        venueId = updatedUser.venue._id;
+                        return [4 /*yield*/, inventory_model_1["default"].findOne({
+                                _id: id,
+                                status: inventory_model_1.ChoicesStatusInventory.inProcess,
+                                team: team
+                            })];
+                    case 3:
+                        inventory = _c.sent();
+                        findCOnditions = {};
+                        isVinAvailable = vin && vin.length > 0;
+                        if (vin)
+                            findCOnditions = { vin: vin, team: team };
+                        if (!isVinAvailable && patent && patent.length > 0)
+                            findCOnditions = { patent: patent, team: team };
+                        if (!inventory) return [3 /*break*/, 6];
+                        return [4 /*yield*/, car_model_1["default"].findOneOrCreate(findCOnditions, {
+                                vin: vin,
+                                vin2: vin.substr(vin.length - 6),
+                                patent: patent,
+                                brand: brand,
+                                denomination: denomination,
+                                color: color,
+                                team: team,
+                                company: company,
+                                createdBy: req.user,
+                                status: car_model_1.ChoicesStatusCar.inventory
+                            })];
+                    case 4:
+                        car = _c.sent();
+                        inventoryCar = new inventoryCar_model_1["default"]({
+                            car: car,
+                            inventory: inventory,
+                            venue: venueId,
+                            venueFound: venueId,
+                            comments: [],
+                            inventoriedBy: req.user._id,
+                            images: images ? images.map(function (image) { return (new bson_1.ObjectID(image)); }) : [],
+                            status: inventoryCar_model_1.ChoicesStatusCarInventory.reported
+                        });
+                        return [4 /*yield*/, inventoryCar.save()];
+                    case 5:
+                        _c.sent();
+                        textNotification = req.user.firstName + " " + req.user.lastName + " encontr\u00F3 " + car.brand + " (" + car.denomination + ") en " + updatedUser.venue.name + ".";
+                        server_1.io.to("inventory-detail-" + inventory._id).emit('REFRESH', {
+                            title: 'Vehículo reportado',
+                            text: textNotification,
+                            status: inventoryCar_model_1.ChoicesStatusCarInventory.reported,
+                            venue: venueId,
+                            update: true
+                        });
+                        server_1.io.to("inventory-list-" + team._id).emit('REFRESH', {
+                            update: true
+                        });
+                        res.json({
+                            message: 'Se ha generado el reporte correctamente.',
+                            vin: vin,
+                            status: 200
+                        });
+                        return [3 /*break*/, 7];
+                    case 6:
+                        logger_service_1["default"].error("reportCar: Este inventario ya no se encuentra disponible.");
+                        logger_service_1["default"].error("{user: {_id: " + req.user._id + ", email: " + req.user.email + "}}");
+                        res.status(404).json({
+                            message: 'Este inventario ya no se encuentra disponible.',
+                            status: 404
+                        });
+                        _c.label = 7;
+                    case 7: return [3 /*break*/, 9];
+                    case 8:
+                        e_13 = _c.sent();
+                        /* istanbul ignore next */
+                        logger_service_1["default"].error("reportCar: Async Error.");
+                        /* istanbul ignore next */
+                        logger_service_1["default"].error("{user: {_id: " + req.user._id + ", email: " + req.user.email + "}}");
+                        /* istanbul ignore next */
+                        logger_service_1["default"].error(e_13);
+                        /* istanbul ignore next */
+                        res.status(400).json({
+                            message: e_13,
+                            status: 400
+                        });
+                        return [3 /*break*/, 9];
+                    case 9: return [2 /*return*/];
+                }
+            });
+        });
+    };
+    InventoryController.prototype.setLabel = function (req, res) {
+        return __awaiter(this, void 0, void 0, function () {
+            var team, id, _a, car, label, custom, carID, inventoryCar, newLabel, inventoryCar, e_14;
+            return __generator(this, function (_b) {
+                switch (_b.label) {
+                    case 0:
+                        team = req.user.team._id;
+                        id = req.params.id;
+                        _a = req.body, car = _a.car, label = _a.label, custom = _a.custom, carID = _a.carID;
+                        logger_service_1["default"].info("setLabel");
+                        logger_service_1["default"].info("{user: {_id: " + req.user._id + ", email: " + req.user.email + "}, body: " + JSON.stringify(req.body) + ", params: " + JSON.stringify(req.params) + "}");
+                        _b.label = 1;
+                    case 1:
+                        _b.trys.push([1, 12, , 13]);
+                        if (!(label === 'deleted')) return [3 /*break*/, 5];
+                        return [4 /*yield*/, inventoryCar_model_1["default"].findById(car, { venue: true })];
+                    case 2:
+                        inventoryCar = _b.sent();
+                        if (!inventoryCar) return [3 /*break*/, 4];
+                        return [4 /*yield*/, inventoryCar_model_1["default"].update({
+                                _id: car,
+                                inventory: id
+                            }, {
+                                status: inventoryCar_model_1.ChoicesStatusCarInventory.deleted,
+                                deletedBy: req.user._id
+                            }, {
+                                upsert: true
+                            })];
+                    case 3:
+                        _b.sent();
+                        server_1.io.to("inventory-detail-" + id).emit('REFRESH', {
+                            update: true,
+                            venue: inventoryCar.venue
+                        });
+                        server_1.io.to("inventory-list-" + team).emit('REFRESH', {
+                            update: true
+                        });
+                        _b.label = 4;
+                    case 4:
+                        res.json({
+                            message: 'Opción procesada correctamente.',
+                            status: 200
+                        });
+                        return [3 /*break*/, 11];
+                    case 5: return [4 /*yield*/, inventoryLabel_model_1["default"].findOne({
+                            _id: label,
+                            team: team
+                        })];
+                    case 6:
+                        newLabel = _b.sent();
+                        if (!newLabel) return [3 /*break*/, 11];
+                        return [4 /*yield*/, inventoryCar_model_1["default"].findById(car, { venue: true })];
+                    case 7:
+                        inventoryCar = _b.sent();
+                        if (!inventoryCar) return [3 /*break*/, 11];
+                        return [4 /*yield*/, inventoryCar_model_1["default"].update({
+                                _id: car,
+                                inventory: id
+                            }, {
+                                status: newLabel.sendTo,
+                                label: newLabel._id,
+                                labelBy: req.user._id,
+                                labelText: custom
+                            }, {
+                                upsert: true
+                            })];
+                    case 8:
+                        _b.sent();
+                        if (!newLabel.isExhibition) return [3 /*break*/, 10];
+                        return [4 /*yield*/, car_model_1["default"].findOneAndUpdate({
+                                _id: carID,
+                                team: team
+                            }, {
+                                isExhibition: true
+                            })];
+                    case 9:
+                        _b.sent();
+                        _b.label = 10;
+                    case 10:
+                        server_1.io.to("inventory-detail-" + id).emit('REFRESH', {
+                            update: true,
+                            venue: inventoryCar.venue
+                        });
+                        server_1.io.to("inventory-list-" + team).emit('REFRESH', {
+                            update: true
+                        });
+                        res.json({
+                            message: 'Opción procesada correctamente.',
+                            status: 200
+                        });
+                        _b.label = 11;
+                    case 11: return [3 /*break*/, 13];
+                    case 12:
+                        e_14 = _b.sent();
+                        /* istanbul ignore next */
+                        logger_service_1["default"].error("setLabel: Async Error.");
+                        /* istanbul ignore next */
+                        logger_service_1["default"].error("{user: {_id: " + req.user._id + ", email: " + req.user.email + "}}");
+                        /* istanbul ignore next */
+                        logger_service_1["default"].error(e_14);
+                        /* istanbul ignore next */
+                        res.status(500).json({
+                            message: e_14,
+                            status: 500
+                        });
+                        return [3 /*break*/, 13];
+                    case 13: return [2 /*return*/];
+                }
+            });
+        });
+    };
+    InventoryController.prototype.apiList = function (req, res) {
+        return __awaiter(this, void 0, void 0, function () {
+            var team, updatedUser, inventories, e_15;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0:
+                        team = req.user.team._id;
+                        logger_service_1["default"].info("apiList");
+                        logger_service_1["default"].info("{user: {_id: " + req.user._id + ", email: " + req.user.email + "}}");
+                        _a.label = 1;
+                    case 1:
+                        _a.trys.push([1, 6, , 7]);
+                        return [4 /*yield*/, user_model_1["default"].findById(req.user._id)];
+                    case 2:
+                        updatedUser = _a.sent();
+                        if (!updatedUser) return [3 /*break*/, 4];
+                        return [4 /*yield*/, inventory_model_1["default"].find({
+                                team: team,
+                                venues: updatedUser.venue,
+                                status: {
+                                    $in: [inventory_model_1.ChoicesStatusInventory.inProcess]
+                                }
+                            }, {
+                                _id: true,
+                                name: true,
+                                settings: true
+                            }).lean()];
+                    case 3:
+                        inventories = _a.sent();
+                        res.json({
+                            data: inventories,
+                            status: 200
+                        });
+                        return [3 /*break*/, 5];
+                    case 4:
+                        logger_service_1["default"].error("apiList: Usuario no encontrado");
+                        logger_service_1["default"].error("{user: {_id: " + req.user._id + ", email: " + req.user.email + "}}");
+                        /* istanbul ignore next */
+                        res.status(400).json({
+                            message: 'Usuario no encontrado',
+                            status: 400
+                        });
+                        _a.label = 5;
+                    case 5: return [3 /*break*/, 7];
+                    case 6:
+                        e_15 = _a.sent();
+                        /* istanbul ignore next */
+                        logger_service_1["default"].error("apiList: Async Error.");
+                        /* istanbul ignore next */
+                        logger_service_1["default"].error("{user: {_id: " + req.user._id + ", email: " + req.user.email + "}}");
+                        /* istanbul ignore next */
+                        logger_service_1["default"].error(e_15);
+                        /* istanbul ignore next */
+                        res.status(400).json({
+                            message: e_15,
+                            status: 400
+                        });
+                        return [3 /*break*/, 7];
+                    case 7: return [2 /*return*/];
+                }
+            });
+        });
+    };
+    InventoryController.prototype.detaill = function (req, res) {
+        return __awaiter(this, void 0, void 0, function () {
+            var id, team, venuesPermissions, inventory, detailByVenues, detailByBrands, detailByBrand, detailByVenue, defaultResults, _i, detailByBrands_1, db, _a, detailByVenues_1, dv, currentInventory, response, detailInventory, teamSettings, labels, e_16;
+            var _b;
+            return __generator(this, function (_c) {
+                switch (_c.label) {
+                    case 0:
+                        id = req.params.id;
+                        team = req.user.team._id;
+                        venuesPermissions = req.user.venuesPermissions();
+                        _c.label = 1;
+                    case 1:
+                        _c.trys.push([1, 10, , 11]);
+                        return [4 /*yield*/, inventory_model_1["default"].aggregate([
+                                {
+                                    $match: {
+                                        team: team,
+                                        _id: { $in: [mongoose.Types.ObjectId(id)] }
+                                    }
+                                }, {
+                                    $lookup: {
+                                        from: 'inventorycars',
+                                        localField: '_id',
+                                        foreignField: 'inventory',
+                                        as: 'cars'
+                                    }
+                                }, {
+                                    $unwind: { path: '$cars', preserveNullAndEmptyArrays: true }
+                                }, {
+                                    $match: {
+                                        $or: [
+                                            {
+                                                'cars.venue': {
+                                                    $in: venuesPermissions
+                                                }
+                                            }, {
+                                                'cars.venueFound': {
+                                                    $in: venuesPermissions
+                                                }
+                                            }
+                                        ],
+                                        'cars.status': {
+                                            $in: [
+                                                inventoryCar_model_1.ChoicesStatusCarInventory.pending,
+                                                inventoryCar_model_1.ChoicesStatusCarInventory.found,
+                                                inventoryCar_model_1.ChoicesStatusCarInventory.missing,
+                                                inventoryCar_model_1.ChoicesStatusCarInventory.leftover,
+                                                inventoryCar_model_1.ChoicesStatusCarInventory.reported
+                                            ]
+                                        }
+                                    }
+                                }, {
+                                    $group: {
+                                        _id: {
+                                            category: '$_id',
+                                            status: '$status',
+                                            carStatus: '$cars.status',
+                                            name: '$name',
+                                            createdBy: '$createdBy',
+                                            createdAt: '$createdAt',
+                                            finalizedAt: '$finalizedAt'
+                                        },
+                                        total: {
+                                            $sum: 1
+                                        }
+                                    }
+                                }, {
+                                    $group: {
+                                        _id: '$_id.category',
+                                        name: {
+                                            $first: '$_id.name'
+                                        },
+                                        createdAt: {
+                                            $first: '$_id.createdAt'
+                                        },
+                                        finalizedAt: {
+                                            $first: '$_id.finalizedAt'
+                                        },
+                                        user: {
+                                            $first: '$_id.createdBy'
+                                        },
+                                        results: {
+                                            $push: {
+                                                status: '$_id.carStatus',
+                                                total: '$total'
+                                            }
+                                        },
+                                        status: {
+                                            $first: '$_id.status'
+                                        }
+                                    }
+                                }, {
+                                    $lookup: {
+                                        from: 'users',
+                                        localField: 'user',
+                                        foreignField: '_id',
+                                        as: 'userInfo'
+                                    }
+                                }, {
+                                    $unwind: { path: '$userInfo', preserveNullAndEmptyArrays: true }
+                                }, {
+                                    $project: {
+                                        '_id': 1,
+                                        'name': 1,
+                                        'results': 1,
+                                        'userInfo.firstName': 1,
+                                        'userInfo.lastName': 1,
+                                        'status': 1,
+                                        'createdAt': 1,
+                                        'finalizedAt': 1
+                                    }
+                                }, {
+                                    $sort: {
+                                        createdAt: -1
+                                    }
+                                }
+                            ])];
+                    case 2:
+                        inventory = _c.sent();
+                        return [4 /*yield*/, inventory_model_1["default"].aggregate([
+                                {
+                                    $match: {
+                                        team: team,
+                                        _id: { $in: [mongoose.Types.ObjectId(id)] }
+                                    }
+                                }, {
+                                    $lookup: {
+                                        from: 'inventorycars',
+                                        localField: '_id',
+                                        foreignField: 'inventory',
+                                        as: 'cars'
+                                    }
+                                }, {
+                                    $unwind: '$cars'
+                                }, {
+                                    $match: {
+                                        $or: [
+                                            {
+                                                'cars.venue': {
+                                                    $in: venuesPermissions
+                                                }
+                                            }, {
+                                                'cars.venueFound': {
+                                                    $in: venuesPermissions
+                                                }
+                                            }
+                                        ],
+                                        'cars.status': {
+                                            $in: [
+                                                inventoryCar_model_1.ChoicesStatusCarInventory.pending,
+                                                inventoryCar_model_1.ChoicesStatusCarInventory.found,
+                                                inventoryCar_model_1.ChoicesStatusCarInventory.missing,
+                                                inventoryCar_model_1.ChoicesStatusCarInventory.leftover,
+                                                inventoryCar_model_1.ChoicesStatusCarInventory.reported
+                                            ]
+                                        }
+                                    }
+                                }, {
+                                    $group: {
+                                        _id: {
+                                            category: {
+                                                $cond: {
+                                                    "if": {
+                                                        $gt: ['$cars.venueFound', null]
+                                                    },
+                                                    then: '$cars.venueFound',
+                                                    "else": '$cars.venue'
+                                                }
+                                            },
+                                            status: '$cars.status'
+                                        },
+                                        total: {
+                                            $sum: 1
+                                        }
+                                    }
+                                }, {
+                                    $group: {
+                                        _id: '$_id.category',
+                                        status: {
+                                            $push: {
+                                                name: '$_id.status',
+                                                total: '$total'
+                                            }
+                                        }
+                                    }
+                                }, {
+                                    $lookup: {
+                                        from: 'venues',
+                                        localField: '_id',
+                                        foreignField: '_id',
+                                        as: 'info'
+                                    }
+                                }, {
+                                    $unwind: '$info'
+                                }
+                            ])];
+                    case 3:
+                        detailByVenues = _c.sent();
+                        return [4 /*yield*/, inventory_model_1["default"].aggregate([
+                                {
+                                    $match: {
+                                        team: team,
+                                        _id: { $in: [mongoose.Types.ObjectId(id)] }
+                                    }
+                                }, {
+                                    $lookup: {
+                                        from: 'inventorycars',
+                                        localField: '_id',
+                                        foreignField: 'inventory',
+                                        as: 'cars'
+                                    }
+                                }, {
+                                    $unwind: '$cars'
+                                }, {
+                                    $match: {
+                                        $or: [
+                                            {
+                                                'cars.venue': {
+                                                    $in: venuesPermissions
+                                                }
+                                            }, {
+                                                'cars.venueFound': {
+                                                    $in: venuesPermissions
+                                                }
+                                            }
+                                        ],
+                                        'cars.status': {
+                                            $in: [
+                                                inventoryCar_model_1.ChoicesStatusCarInventory.pending,
+                                                inventoryCar_model_1.ChoicesStatusCarInventory.found,
+                                                inventoryCar_model_1.ChoicesStatusCarInventory.missing,
+                                                inventoryCar_model_1.ChoicesStatusCarInventory.leftover,
+                                                inventoryCar_model_1.ChoicesStatusCarInventory.reported
+                                            ]
+                                        }
+                                    }
+                                }, {
+                                    $lookup: {
+                                        from: 'cars',
+                                        localField: 'cars.car',
+                                        foreignField: '_id',
+                                        as: 'car'
+                                    }
+                                }, {
+                                    $unwind: '$car'
+                                }, {
+                                    $group: {
+                                        _id: {
+                                            car: '$car.brand',
+                                            status: '$cars.status'
+                                        },
+                                        total: {
+                                            $sum: 1
+                                        }
+                                    }
+                                }, {
+                                    $group: {
+                                        _id: '$_id.car',
+                                        status: {
+                                            $push: {
+                                                name: '$_id.status',
+                                                total: '$total'
+                                            }
+                                        }
+                                    }
+                                }, {
+                                    $lookup: {
+                                        from: 'venues',
+                                        localField: '_id',
+                                        foreignField: '_id',
+                                        as: 'info'
+                                    }
+                                }
+                            ])];
+                    case 4:
+                        detailByBrands = _c.sent();
+                        detailByBrand = [];
+                        detailByVenue = [];
+                        defaultResults = (_b = {},
+                            _b[inventoryCar_model_1.ChoicesStatusCarInventory.pending] = 0,
+                            _b[inventoryCar_model_1.ChoicesStatusCarInventory.found] = 0,
+                            _b[inventoryCar_model_1.ChoicesStatusCarInventory.leftover] = 0,
+                            _b[inventoryCar_model_1.ChoicesStatusCarInventory.missing] = 0,
+                            _b[inventoryCar_model_1.ChoicesStatusCarInventory.reported] = 0,
+                            _b);
+                        for (_i = 0, detailByBrands_1 = detailByBrands; _i < detailByBrands_1.length; _i++) {
+                            db = detailByBrands_1[_i];
+                            detailByBrand.push({
+                                name: db._id ? db._id : 'Sin Marca',
+                                results: db.status.reduce(function (acc, cur) {
+                                    acc[cur.name] = cur.total;
+                                    return acc;
+                                }, __assign({}, defaultResults))
+                            });
+                        }
+                        for (_a = 0, detailByVenues_1 = detailByVenues; _a < detailByVenues_1.length; _a++) {
+                            dv = detailByVenues_1[_a];
+                            detailByVenue.push({
+                                _id: dv.info._id,
+                                name: dv.info.name,
+                                results: dv.status.reduce(function (acc, cur) {
+                                    acc[cur.name] = cur.total;
+                                    return acc;
+                                }, __assign({}, defaultResults))
+                            });
+                        }
+                        if (!(inventory && inventory.length)) return [3 /*break*/, 8];
+                        currentInventory = inventory[0];
+                        response = {
+                            _id: currentInventory._id,
+                            name: currentInventory.name,
+                            createdBy: currentInventory.userInfo ? __assign(__assign({}, currentInventory.userInfo), { fullName: currentInventory.userInfo.firstName + " " + currentInventory.userInfo.lastName }) : {},
+                            results: currentInventory.results.reduce(function (acc, cur) {
+                                acc[cur.status] = cur.total;
+                                return acc;
+                            }, __assign({}, defaultResults)),
+                            status: currentInventory.status,
+                            createdAt: currentInventory.createdAt,
+                            finalizedAt: currentInventory.finalizedAt ? currentInventory.finalizedAt : null
+                        };
+                        return [4 /*yield*/, inventory_model_1["default"].findById(id, {
+                                name: true,
+                                status: true,
+                                cars: true,
+                                venues: true,
+                                company: true,
+                                team: true
+                            }).populate([{
+                                    path: 'cars',
+                                    match: {
+                                        $or: [
+                                            {
+                                                venue: {
+                                                    $in: venuesPermissions
+                                                }
+                                            }, {
+                                                venueFound: {
+                                                    $in: venuesPermissions
+                                                }
+                                            }
+                                        ],
+                                        status: {
+                                            $in: [
+                                                inventoryCar_model_1.ChoicesStatusCarInventory.pending,
+                                                inventoryCar_model_1.ChoicesStatusCarInventory.found,
+                                                inventoryCar_model_1.ChoicesStatusCarInventory.missing,
+                                                inventoryCar_model_1.ChoicesStatusCarInventory.leftover,
+                                                inventoryCar_model_1.ChoicesStatusCarInventory.reported
+                                            ]
+                                        }
+                                    },
+                                    populate: [{
+                                            path: 'car',
+                                            select: ['vin', 'vin2', 'internalNumber', 'color', 'denomination', 'brand', 'venue', 'patent', 'internalNumber', 'property', 'type']
+                                        }, {
+                                            path: 'label'
+                                        }, {
+                                            path: 'venue',
+                                            select: ['name']
+                                        }, {
+                                            path: 'images'
+                                        }, {
+                                            path: 'venueFound',
+                                            select: ['name']
+                                        }, {
+                                            path: 'inventoriedBy',
+                                            select: ['firstName', 'lastName']
+                                        }, {
+                                            path: 'comments.user',
+                                            select: ['_id', 'firstName', 'lastName']
+                                        }]
+                                }, {
+                                    path: 'venues',
+                                    select: ['_id', 'name'],
+                                    match: {
+                                        _id: {
+                                            $in: venuesPermissions
+                                        }
+                                    },
+                                    options: {
+                                        sort: {
+                                            name: 1
+                                        }
+                                    }
+                                }]).lean()];
+                    case 5:
+                        detailInventory = _c.sent();
+                        return [4 /*yield*/, teamSetting_model_1["default"].findOne({ team: team })];
+                    case 6:
+                        teamSettings = _c.sent();
+                        return [4 /*yield*/, inventoryLabel_model_1["default"].find({
+                                team: team,
+                                active: true
+                            }, {
+                                name: true,
+                                color: true,
+                                affected: true,
+                                sendTo: true,
+                                isExhibition: true,
+                                requireCustomText: true
+                            })];
+                    case 7:
+                        labels = _c.sent();
+                        res.json({
+                            summary: response,
+                            inventorySettings: teamSettings.inventory,
+                            labels: labels,
+                            detailByVenue: detailByVenue,
+                            detailByBrand: detailByBrand,
+                            detail: detailInventory,
+                            status: 200
+                        });
+                        return [3 /*break*/, 9];
+                    case 8:
+                        console.log('inventory', inventory);
+                        res.status(404).json({
+                            message: 'Inventario no encontrado',
+                            status: 404
+                        });
+                        _c.label = 9;
+                    case 9: return [3 /*break*/, 11];
+                    case 10:
+                        e_16 = _c.sent();
+                        /* istanbul ignore next */
+                        logger_service_1["default"].error("detaill: Async Error.");
+                        /* istanbul ignore next */
+                        logger_service_1["default"].error("{user: {_id: " + req.user._id + ", email: " + req.user.email + "}}");
+                        /* istanbul ignore next */
+                        logger_service_1["default"].error(e_16);
+                        /* istanbul ignore next */
+                        res.status(400).json({
+                            message: e_16,
+                            status: 400
+                        });
+                        return [3 /*break*/, 11];
+                    case 11: return [2 /*return*/];
+                }
+            });
+        });
+    };
+    InventoryController.prototype.dashboard = function (req, res) {
+        return __awaiter(this, void 0, void 0, function () {
+            var venuesPermissions, venues, team, total, inventory, data, defaultResults, i, month, _i, inventory_2, item, teamSettings, e_17;
+            var _a;
+            return __generator(this, function (_b) {
+                switch (_b.label) {
+                    case 0:
+                        venuesPermissions = req.user.venuesPermissions();
+                        venues = req.body.venues;
+                        team = req.user.team._id;
+                        if (venues && venues.length) {
+                            venuesPermissions = venuesPermissions.filter(function (v) { return venues.includes(v.toString()); });
+                        }
+                        total = 6;
+                        _b.label = 1;
+                    case 1:
+                        _b.trys.push([1, 4, , 5]);
+                        return [4 /*yield*/, inventoryCar_model_1["default"].aggregate([{
+                                    $match: {
+                                        createdAt: {
+                                            $gte: moment()
+                                                .subtract(total, 'months')
+                                                .startOf('month')
+                                                .toDate()
+                                        },
+                                        venue: {
+                                            $in: venuesPermissions
+                                        }
+                                    }
+                                }, {
+                                    $group: {
+                                        _id: {
+                                            status: '$status',
+                                            month: {
+                                                $dateToString: { format: '%Y-%m', date: '$createdAt' }
+                                            }
+                                        },
+                                        total: {
+                                            $sum: 1
+                                        }
+                                    }
+                                }, {
+                                    $group: {
+                                        _id: '$_id.month',
+                                        results: {
+                                            $push: {
+                                                status: '$_id.status',
+                                                total: '$total'
+                                            }
+                                        }
+                                    }
+                                }])];
+                    case 2:
+                        inventory = _b.sent();
+                        data = {};
+                        defaultResults = (_a = {},
+                            _a[inventoryCar_model_1.ChoicesStatusCarInventory.pending] = 0,
+                            _a[inventoryCar_model_1.ChoicesStatusCarInventory.found] = 0,
+                            _a[inventoryCar_model_1.ChoicesStatusCarInventory.missing] = 0,
+                            _a[inventoryCar_model_1.ChoicesStatusCarInventory.reported] = 0,
+                            _a[inventoryCar_model_1.ChoicesStatusCarInventory.leftover] = 0,
+                            _a);
+                        for (i = 0; i <= total; i++) {
+                            month = moment()
+                                .subtract(total - i, 'months')
+                                .format('YYYY-MM');
+                            data[month] = __assign({}, defaultResults);
+                        }
+                        for (_i = 0, inventory_2 = inventory; _i < inventory_2.length; _i++) {
+                            item = inventory_2[_i];
+                            data[item._id] = item.results.reduce(function (acc, cur) {
+                                acc[cur.status] = cur.total;
+                                return acc;
+                            }, __assign({}, defaultResults));
+                        }
+                        return [4 /*yield*/, teamSetting_model_1["default"].findOne({ team: team })];
+                    case 3:
+                        teamSettings = _b.sent();
+                        res.json({
+                            data: data,
+                            inventorySettings: teamSettings.inventory
+                        });
+                        return [3 /*break*/, 5];
+                    case 4:
+                        e_17 = _b.sent();
+                        /* istanbul ignore next */
+                        logger_service_1["default"].error("inventory dashboard: Async Error.");
+                        /* istanbul ignore next */
+                        logger_service_1["default"].error("{user: {_id: " + req.user._id + ", email: " + req.user.email + "}}");
+                        /* istanbul ignore next */
+                        logger_service_1["default"].error(e_17);
+                        Raven.captureException(e_17, { req: req });
+                        /* istanbul ignore next */
+                        res.status(500).json({
+                            message: JSON.stringify(e_17),
+                            status: 500
+                        });
+                        return [3 /*break*/, 5];
+                    case 5: return [2 /*return*/];
+                }
+            });
+        });
+    };
+    InventoryController.prototype.inventoryByCars = function (req, res) {
+        return __awaiter(this, void 0, void 0, function () {
+            var team, workbook, worksheet, columns, venues, _i, venues_1, venue, cars, _a, cars_1, car, inventories, carData, _b, inventories_2, inventory, tempFilePath, e_18;
+            return __generator(this, function (_c) {
+                switch (_c.label) {
+                    case 0:
+                        team = req.user.team._id;
+                        _c.label = 1;
+                    case 1:
+                        _c.trys.push([1, 5, , 6]);
+                        workbook = new excel.Workbook();
+                        worksheet = workbook.addWorksheet('Detalle', {
+                            properties: {
+                                defaultRowHeight: 30
+                            }, pageSetup: {
+                                fitToPage: true, fitToHeight: 100, fitToWidth: 1
+                            }
+                        });
+                        worksheet.views = [{
+                                state: 'frozen',
+                                xSplit: 3,
+                                ySplit: 1,
+                                topLeftCell: 'D2',
+                                activeCell: 'D2'
+                            }];
+                        columns = [{
+                                header: 'VIN',
+                                key: 'vin',
+                                width: 30,
+                                alignment: {
+                                    wrapText: true
+                                }
+                            }, {
+                                header: 'MARCA',
+                                key: 'marca',
+                                width: 30,
+                                alignment: {
+                                    wrapText: true
+                                }
+                            }, {
+                                header: 'MODELO',
+                                key: 'modelo',
+                                width: 40,
+                                alignment: {
+                                    wrapText: true
+                                }
+                            }];
+                        return [4 /*yield*/, venue_model_1["default"].find({ team: team, deleted: false }).sort('name')];
+                    case 2:
+                        venues = _c.sent();
+                        for (_i = 0, venues_1 = venues; _i < venues_1.length; _i++) {
+                            venue = venues_1[_i];
+                            columns.push({
+                                header: venue.name, key: venue._id.toString(), width: 5,
+                                style: {
+                                    alignment: {
+                                        vertical: 'middle',
+                                        horizontal: 'center'
+                                    }
+                                }
+                            });
+                        }
+                        worksheet.columns = columns;
+                        worksheet.autoFilter = {
+                            from: 'A1',
+                            to: {
+                                row: 1,
+                                column: columns.length
+                            }
+                        };
+                        worksheet.getColumn(1).eachCell(function (cell) {
+                            cell.alignment = {
+                                vertical: 'middle',
+                                textRotation: 0,
+                                wrapText: true
+                            };
+                            cell.font = {
+                                bold: true
+                            };
+                        });
+                        worksheet.getRow(1).eachCell(function (cell) {
+                            var alignment = {
+                                vertical: 'middle',
+                                horizontal: 'center',
+                                textRotation: 0,
+                                wrapText: true
+                            };
+                            if (parseInt(cell.col, 10) > 3) {
+                                alignment.textRotation = 90;
+                            }
+                            cell.alignment = alignment;
+                            cell.font = {
+                                bold: true
+                            };
+                        });
+                        return [4 /*yield*/, car_model_1["default"].find({
+                                team: team,
+                                isExhibition: false,
+                                createdAt: {
+                                    $gte: moment().subtract(6, 'months')
+                                    //   $lte: tf,
+                                }
+                            }, {
+                                vin: true,
+                                denomination: true,
+                                color: true,
+                                brand: true
+                            }).populate({
+                                path: 'inventories',
+                                select: ['name', 'createdAt', 'venueFound', 'status'],
+                                match: {
+                                    status: {
+                                        $in: [inventoryCar_model_1.ChoicesStatusCarInventory.found]
+                                    }
+                                },
+                                options: {
+                                    sort: {
+                                        createdAt: 1
+                                    }
+                                }
+                            })];
+                    case 3:
+                        cars = _c.sent();
+                        for (_a = 0, cars_1 = cars; _a < cars_1.length; _a++) {
+                            car = cars_1[_a];
+                            inventories = car.inventories;
+                            if (inventories.length) {
+                                carData = {
+                                    vin: car.vin,
+                                    marca: car.brand,
+                                    modelo: car.denomination
+                                };
+                                for (_b = 0, inventories_2 = inventories; _b < inventories_2.length; _b++) {
+                                    inventory = inventories_2[_b];
+                                    carData[inventory.venueFound] = carData.hasOwnProperty(inventory.venueFound) ? carData[inventory.venueFound] + 1 : 1;
+                                }
+                                worksheet.addRow(carData);
+                            }
+                        }
+                        tempFilePath = tempfile('.xlsx');
+                        return [4 /*yield*/, workbook.xlsx.writeFile(tempFilePath)];
+                    case 4:
+                        _c.sent();
+                        res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+                        res.setHeader('Content-Disposition', 'attachment; filename=detalle-inventarios.xlsx');
+                        return [2 /*return*/, res.sendFile(tempFilePath)];
+                    case 5:
+                        e_18 = _c.sent();
+                        console.log(e_18);
+                        return [2 /*return*/, res.status(500).json({
+                                message: 'Ha ocurrido un error. Comunicate con soporte para que te ayudemos a solucionarlo.'
+                            })];
+                    case 6: return [2 /*return*/];
+                }
+            });
+        });
+    };
+    InventoryController.prototype.loadStock = function (req, res) {
+        return __awaiter(this, void 0, void 0, function () {
+            var company, team, carsByVenue, stockCars, _i, carsByVenue_2, venue, venueRegExp, currentVenue, _a, _b, car, currentCar, stock_1, e_19;
+            return __generator(this, function (_c) {
+                switch (_c.label) {
+                    case 0:
+                        company = req.user.company;
+                        team = req.user.team._id;
+                        carsByVenue = req.body.carsByVenue;
+                        _c.label = 1;
+                    case 1:
+                        _c.trys.push([1, 15, , 16]);
+                        stockCars = [];
+                        _i = 0, carsByVenue_2 = carsByVenue;
+                        _c.label = 2;
+                    case 2:
+                        if (!(_i < carsByVenue_2.length)) return [3 /*break*/, 12];
+                        venue = carsByVenue_2[_i];
+                        venueRegExp = new RegExp("^" + venue.name.trim() + "$", 'i');
+                        return [4 /*yield*/, venue_model_1["default"].findOne({
+                                team: team,
+                                name: venueRegExp
+                            })];
+                    case 3:
+                        currentVenue = _c.sent();
+                        if (!(currentVenue === null)) return [3 /*break*/, 5];
+                        currentVenue = new venue_model_1["default"]({
+                            name: venue.name.trim(),
+                            team: team,
+                            company: company
+                        });
+                        return [4 /*yield*/, currentVenue.save()];
+                    case 4:
+                        _c.sent();
+                        _c.label = 5;
+                    case 5:
+                        _a = 0, _b = venue.cars;
+                        _c.label = 6;
+                    case 6:
+                        if (!(_a < _b.length)) return [3 /*break*/, 11];
+                        car = _b[_a];
+                        return [4 /*yield*/, car_model_1["default"].findOne({
+                                team: team,
+                                vin: car.vin.trim()
+                            })];
+                    case 7:
+                        currentCar = _c.sent();
+                        if (!(currentCar === null && car.vin && car.vin.trim().length)) return [3 /*break*/, 9];
+                        currentCar = new car_model_1["default"]({
+                            team: team,
+                            company: company,
+                            vin: car.vin,
+                            vin2: car.vin.substr(car.vin.length - 6),
+                            color: car.color,
+                            type: car.type,
+                            property: car.property,
+                            denomination: car.denomination,
+                            brand: car.brand,
+                            patent: car.patent,
+                            createdBy: req.user,
+                            status: car_model_1.ChoicesStatusCar.active
+                        });
+                        return [4 /*yield*/, currentCar.save()];
+                    case 8:
+                        _c.sent();
+                        _c.label = 9;
+                    case 9:
+                        if (currentVenue && currentCar) {
+                            stockCars.push({
+                                venue: currentVenue._id,
+                                car: currentCar._id
+                            });
+                            app_1.queue
+                                .create('updateCar', {
+                                title: "updateCar " + car.vin,
+                                currentCar: currentCar._id,
+                                car: car
+                            })
+                                .delay(10000)
+                                .priority('high')
+                                .attempts(5)
+                                .save();
+                        }
+                        _c.label = 10;
+                    case 10:
+                        _a++;
+                        return [3 /*break*/, 6];
+                    case 11:
+                        _i++;
+                        return [3 /*break*/, 2];
+                    case 12:
+                        stock_1 = new stock_model_1["default"]({
+                            company: company,
+                            team: team,
+                            createdBy: req.user._id
+                        });
+                        return [4 /*yield*/, stock_1.save()];
+                    case 13:
+                        _c.sent();
+                        stockCars.map(function (s) {
+                            s.stock = stock_1._id;
+                            return s;
+                        });
+                        return [4 /*yield*/, stockCar_model_1["default"].insertMany(stockCars)];
+                    case 14:
+                        _c.sent();
+                        server_1.io.to("stock-" + team).emit('REFRESH', {
+                            update: true
+                        });
+                        res.json({
+                            message: 'Stock creado satisfactoriamente',
+                            status: 200
+                        });
+                        return [3 /*break*/, 16];
+                    case 15:
+                        e_19 = _c.sent();
+                        /* istanbul ignore next */
+                        logger_service_1["default"].error("loadStock: Async Error.");
+                        /* istanbul ignore next */
+                        logger_service_1["default"].error("{user: {_id: " + req.user._id + ", email: " + req.user.email + "}}");
+                        /* istanbul ignore next */
+                        logger_service_1["default"].error(e_19);
+                        /* istanbul ignore next */
+                        res.status(500).json({
+                            message: e_19,
+                            status: 500
+                        });
+                        return [3 /*break*/, 16];
+                    case 16: return [2 /*return*/];
+                }
+            });
+        });
+    };
+    InventoryController.prototype.currentStock = function (req, res) {
+        return __awaiter(this, void 0, void 0, function () {
+            var _a, company, venue, lastInventory, lastStock, showInventory, showStock, inventory, stock, e_20;
+            return __generator(this, function (_b) {
+                switch (_b.label) {
+                    case 0:
+                        _b.trys.push([0, 11, , 12]);
+                        _a = req.user, company = _a.company, venue = _a.venue;
+                        return [4 /*yield*/, inventory_model_1["default"]
+                                .findOne({
+                                company: company
+                            }, {
+                                name: true,
+                                status: true,
+                                cars: true,
+                                createdAt: true
+                            }, {
+                                sort: { 'createdAt': -1 }
+                            })];
+                    case 1:
+                        lastInventory = _b.sent();
+                        return [4 /*yield*/, stock_model_1["default"]
+                                .findOne({
+                                company: company
+                            }, {}, {
+                                sort: { 'createdAt': -1 }
+                            })];
+                    case 2:
+                        lastStock = _b.sent();
+                        showInventory = false;
+                        showStock = false;
+                        if (lastInventory && !lastStock) {
+                            showInventory = true;
+                            console.log('showInventory');
+                        }
+                        else if (!lastInventory && lastStock) {
+                            showStock = true;
+                            console.log('showStock');
+                        }
+                        else if (lastInventory && lastStock) {
+                            console.log('lastInventory.createdAt', lastInventory.createdAt);
+                            console.log('lastStock.createdAt', lastStock.createdAt);
+                            console.log('moment(lastInventory.createdAt).isAfter(lastStock.createdAt)', moment(lastInventory.createdAt).isAfter(lastStock.createdAt));
+                            if (moment(lastInventory.createdAt).isAfter(lastStock.createdAt)) {
+                                showInventory = true;
+                                console.log('showInventory');
+                            }
+                            else {
+                                showStock = true;
+                                console.log('showStock');
+                            }
+                        }
+                        if (!showInventory) return [3 /*break*/, 8];
+                        return [4 /*yield*/, inventory_model_1["default"]
+                                .findOne({
+                                company: company
+                            }, {
+                                name: true,
+                                status: true,
+                                cars: true
+                            }, {
+                                sort: { 'createdAt': -1 }
+                            })
+                                .populate([{
+                                    path: 'cars',
+                                    select: ['_id', 'car', 'venue', 'venueFound'],
+                                    match: {
+                                        status: {
+                                            $in: [
+                                                inventoryCar_model_1.ChoicesStatusCarInventory.found,
+                                                inventoryCar_model_1.ChoicesStatusCarInventory.leftover
+                                            ]
+                                        }
+                                    },
+                                    populate: [{
+                                            path: 'car',
+                                            select: ['vin', 'vin2', 'internalNumber', 'color', 'denomination', 'brand', 'venue', 'patent', 'internalNumber', 'property', 'type']
+                                        }, {
+                                            path: 'venue',
+                                            select: ['name'],
+                                            populate: [{
+                                                    path: 'region',
+                                                    select: ['code', 'name']
+                                                }]
+                                        }, {
+                                            path: 'venueFound',
+                                            select: ['name'],
+                                            populate: [{
+                                                    path: 'region',
+                                                    select: ['code', 'name']
+                                                }]
+                                        }]
+                                }]).lean()];
+                    case 3:
+                        inventory = _b.sent();
+                        if (!!inventory) return [3 /*break*/, 4];
+                        res
+                            .status(200)
+                            .json({
+                            message: 'No se han realizado inventarios para ver el stock.',
+                            cars: []
+                        });
+                        return [3 /*break*/, 7];
+                    case 4:
+                        if (!(inventory.status !== inventory_model_1.ChoicesStatusInventory.finalized)) return [3 /*break*/, 5];
+                        res
+                            .status(200)
+                            .json({
+                            message: 'Se esta procesando la toma de inventario.',
+                            cars: []
+                        });
+                        return [3 /*break*/, 7];
+                    case 5: return [4 /*yield*/, inventoryCar_model_1["default"].find({ inventory: inventory, venue: venue, status: inventoryCar_model_1.ChoicesStatusCarInventory.pending }).count()];
+                    case 6:
+                        if (_b.sent()) {
+                            res
+                                .status(200)
+                                .json({
+                                message: 'Tú sucursal no ha terminado el inventario.',
+                                cars: []
+                            });
+                        }
+                        else {
+                            res
+                                .status(200)
+                                .json({
+                                message: '',
+                                cars: inventory.cars
+                            });
+                        }
+                        _b.label = 7;
+                    case 7: return [3 /*break*/, 10];
+                    case 8:
+                        if (!showStock) return [3 /*break*/, 10];
+                        return [4 /*yield*/, stock_model_1["default"]
+                                .findOne({
+                                company: company
+                            }, {
+                                name: true,
+                                status: true,
+                                cars: true
+                            }, {
+                                sort: { 'createdAt': -1 }
+                            })
+                                .populate([{
+                                    path: 'cars',
+                                    select: ['_id', 'car', 'venue'],
+                                    populate: [{
+                                            path: 'car',
+                                            select: ['vin', 'vin2', 'internalNumber', 'color', 'denomination', 'brand', 'venue', 'patent', 'internalNumber', 'property', 'type']
+                                        }, {
+                                            path: 'venue',
+                                            select: ['name'],
+                                            populate: [{
+                                                    path: 'region',
+                                                    select: ['code', 'name']
+                                                }]
+                                        }]
+                                }]).lean()];
+                    case 9:
+                        stock = _b.sent();
+                        res
+                            .status(200)
+                            .json({
+                            message: '',
+                            cars: stock.cars
+                        });
+                        _b.label = 10;
+                    case 10: return [3 /*break*/, 12];
+                    case 11:
+                        e_20 = _b.sent();
+                        /* istanbul ignore next */
+                        logger_service_1["default"].error("inventory currentStock: Async Error.");
+                        /* istanbul ignore next */
+                        logger_service_1["default"].error("{user: {_id: " + req.user._id + ", email: " + req.user.email + "}}");
+                        /* istanbul ignore next */
+                        logger_service_1["default"].error(e_20);
+                        Raven.captureException(e_20, { req: req });
+                        /* istanbul ignore next */
+                        res.status(500).json({
+                            message: JSON.stringify(e_20),
+                            status: 500
+                        });
+                        return [3 /*break*/, 12];
+                    case 12: return [2 /*return*/];
+                }
+            });
+        });
+    };
+    InventoryController.prototype.autoRotate = function (path) {
         // doc http://aheckmann.github.io/gm/docs.html
         /**** REQUIRE *****
          brew install imagemagick
          brew install graphicsmagick
          * */
-        return new Promise((resolve, reject) => {
+        return new Promise(function (resolve, reject) {
             GraphicsMagick(path)
                 .autoOrient()
-                .write(path, (err) => {
+                .write(path, function (err) {
                 if (err) {
                     /* istanbul ignore next */
                     reject(err);
@@ -2262,17 +2722,17 @@ class InventoryController {
                 }
             });
         });
-    }
-    resizeImage(path) {
+    };
+    InventoryController.prototype.resizeImage = function (path) {
         // doc http://aheckmann.github.io/gm/docs.html
         /**** REQUIRE *****
          brew install imagemagick
          brew install graphicsmagick
          * */
-        return new Promise((resolve, reject) => {
+        return new Promise(function (resolve, reject) {
             GraphicsMagick(path)
                 .resize(100, 100)
-                .write(path, (err) => {
+                .write(path, function (err) {
                 if (err) {
                     /* istanbul ignore next */
                     reject(err);
@@ -2282,7 +2742,8 @@ class InventoryController {
                 }
             });
         });
-    }
-}
-exports.default = new InventoryController();
+    };
+    return InventoryController;
+}());
+exports["default"] = new InventoryController();
 //# sourceMappingURL=inventory.controller.js.map

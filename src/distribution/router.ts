@@ -10,8 +10,9 @@ const distributionRouter = express.Router();
 
 // web pages
 distributionRouter.get('/transmittals/', isLoggedIn, TransmittalController.index);
-distributionRouter.get('/transmittals/:id/', isLoggedIn, TransmittalController.index);
+distributionRouter.get('/transmittals/export-xls/', isJWTAuthenticated, TransmittalController.xlsExport);
 distributionRouter.get('/transmittals/create/', isLoggedIn, TransmittalController.index);
+distributionRouter.get('/transmittals/:id/', isLoggedIn, TransmittalController.index);
 
 // apis
 distributionRouter.get('/api/v1/transmittals/', isJWTAuthenticated, TransmittalController.apiList);

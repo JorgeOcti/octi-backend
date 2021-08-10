@@ -1,8 +1,8 @@
 "use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-const mongoose = require("mongoose");
-const mongoosePaginate = require("mongoose-paginate");
-const teamSchema = new mongoose.Schema({
+exports.__esModule = true;
+var mongoose = require("mongoose");
+var mongoosePaginate = require("mongoose-paginate");
+var teamSchema = new mongoose.Schema({
     name: {
         type: String,
         trim: true,
@@ -10,19 +10,19 @@ const teamSchema = new mongoose.Schema({
     },
     formsNumber: {
         type: Number,
-        default: 0
+        "default": 0
     },
     requestNumber: {
         type: Number,
-        default: 0
+        "default": 0
     },
     transmittalNumber: {
         type: Number,
-        default: 0
+        "default": 0
     },
     active: {
         type: Boolean,
-        default: true
+        "default": true
     }
 }, {
     timestamps: true
@@ -52,6 +52,6 @@ teamSchema.virtual('histories', {
     justOne: true
 });
 teamSchema.plugin(mongoosePaginate);
-const Team = mongoose.model('Team', teamSchema);
-exports.default = Team;
+var Team = mongoose.model('Team', teamSchema);
+exports["default"] = Team;
 //# sourceMappingURL=team.model.js.map

@@ -1,12 +1,12 @@
 "use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-const mongoose = require("mongoose");
-const mongooseCrate = require("mongoose-crate");
-const MongooseCrateS3 = require("mongoose-crate-s3");
-const mongoosePaginate = require("mongoose-paginate");
-const uuid = require("uuid");
-const s3Config = require("../../../s3-config.json");
-const imageSchema = new mongoose.Schema({
+exports.__esModule = true;
+var mongoose = require("mongoose");
+var mongooseCrate = require("mongoose-crate");
+var MongooseCrateS3 = require("mongoose-crate-s3");
+var mongoosePaginate = require("mongoose-paginate");
+var uuid = require("uuid");
+var s3Config = require("../../../s3-config.json");
+var imageSchema = new mongoose.Schema({
     url: {
         type: String
     },
@@ -22,43 +22,43 @@ const imageSchema = new mongoose.Schema({
 }, {
     _id: false
 });
-const billingSchema = new mongoose.Schema({
+var billingSchema = new mongoose.Schema({
     checklistPrice: {
         type: Number,
-        default: 0
+        "default": 0
     },
     inventoryPrice: {
         type: Number,
-        default: 0
+        "default": 0
     },
     requestPrice: {
         type: Number,
-        default: 0
+        "default": 0
     },
     active: {
         type: Boolean,
-        default: false
+        "default": false
     }
 }, {
     _id: true
 });
-const billingNotificationsSchema = new mongoose.Schema({
+var billingNotificationsSchema = new mongoose.Schema({
     name: {
         type: String,
-        default: ''
+        "default": ''
     },
     email: {
         type: String,
-        default: ''
+        "default": ''
     },
     active: {
         type: Boolean,
-        default: true
+        "default": true
     }
 }, {
     _id: true
 });
-const companySchema = new mongoose.Schema({
+var companySchema = new mongoose.Schema({
     name: {
         type: String,
         trim: true,
@@ -66,11 +66,11 @@ const companySchema = new mongoose.Schema({
     },
     businessName: {
         type: String,
-        trim: true,
+        trim: true
     },
     rut: {
         type: String,
-        trim: true,
+        trim: true
     },
     team: {
         type: mongoose.Schema.Types.ObjectId,
@@ -78,11 +78,11 @@ const companySchema = new mongoose.Schema({
     },
     deleted: {
         type: Boolean,
-        default: false
+        "default": false
     },
     billing: {
         type: billingSchema,
-        default: {
+        "default": {
             active: true,
             checklistPrice: 0.07,
             inventoryPrice: 0.022
@@ -90,19 +90,19 @@ const companySchema = new mongoose.Schema({
     },
     notifications: {
         type: [billingNotificationsSchema],
-        default: []
+        "default": []
     },
     image: {
         type: imageSchema,
-        default: {}
+        "default": {}
     },
     marker: {
         type: imageSchema,
-        default: {}
+        "default": {}
     },
     active: {
         type: Boolean,
-        default: true
+        "default": true
     },
     iFrameURL: {
         type: String
@@ -120,7 +120,7 @@ companySchema.plugin(mongooseCrate, {
         acl: 'public-read',
         region: process.env.S3_REGION || s3Config.region,
         // where the file is stored in the bucket - defaults to this function
-        path: (attachment) => {
+        path: function (attachment) {
             /* attachment params:
             estination:"/tmp/"
             encoding:"7bit"s
@@ -133,7 +133,7 @@ companySchema.plugin(mongooseCrate, {
             size:966
             type:"image/svg"
             * */
-            return `/company/files/${attachment.team}/${uuid.v1()}-${attachment.originalname}`;
+            return "/company/files/" + attachment.team + "/" + uuid.v1() + "-" + attachment.originalname;
         }
     }),
     fields: {
@@ -147,6 +147,6 @@ companySchema.virtual('users', {
     foreignField: 'company',
     justOne: false
 });
-const Company = mongoose.model('Company', companySchema);
-exports.default = Company;
+var Company = mongoose.model('Company', companySchema);
+exports["default"] = Company;
 //# sourceMappingURL=company.model.js.map

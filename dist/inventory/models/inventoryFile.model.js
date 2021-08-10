@@ -1,12 +1,12 @@
 "use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
+exports.__esModule = true;
 exports.inventoryFileSchema = void 0;
-const mongoose = require("mongoose");
-const mongooseCrate = require("mongoose-crate");
-const MongooseCrateS3 = require("mongoose-crate-s3");
-const uuid = require("uuid");
-const s3Config = require("../../../s3-config.json");
-const fileSchema = new mongoose.Schema({
+var mongoose = require("mongoose");
+var mongooseCrate = require("mongoose-crate");
+var MongooseCrateS3 = require("mongoose-crate-s3");
+var uuid = require("uuid");
+var s3Config = require("../../../s3-config.json");
+var fileSchema = new mongoose.Schema({
     url: {
         type: String
     },
@@ -46,7 +46,7 @@ exports.inventoryFileSchema.plugin(mongooseCrate, {
         acl: 'public-read',
         region: process.env.S3_REGION || s3Config.region,
         // where the file is stored in the bucket - defaults to this function
-        path: (attachment) => {
+        path: function (attachment) {
             /* attachment params:
             estination:"/tmp/"
             encoding:"7bit"s
@@ -59,7 +59,7 @@ exports.inventoryFileSchema.plugin(mongooseCrate, {
             size:966
             type:"image/svg"
             * */
-            return `/inventories/files/${attachment.team}/${attachment.inventory}/${attachment.venue}/${uuid.v1()}-${attachment.originalname}`;
+            return "/inventories/files/" + attachment.team + "/" + attachment.inventory + "/" + attachment.venue + "/" + uuid.v1() + "-" + attachment.originalname;
         }
     }),
     fields: {
@@ -68,6 +68,6 @@ exports.inventoryFileSchema.plugin(mongooseCrate, {
     }
 });
 // inventoryFileSchema.index({ form: 1, user: 1 });
-const InventoryFile = mongoose.model('InventoryFile', exports.inventoryFileSchema);
-exports.default = InventoryFile;
+var InventoryFile = mongoose.model('InventoryFile', exports.inventoryFileSchema);
+exports["default"] = InventoryFile;
 //# sourceMappingURL=inventoryFile.model.js.map

@@ -1,9 +1,9 @@
 "use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-const mongoose = require("mongoose");
-const mongoosePaginate = require("mongoose-paginate");
-const mongooseAggregatePaginate = require("mongoose-aggregate-paginate-v2");
-const requestItemAnswerSchema = new mongoose.Schema({
+exports.__esModule = true;
+var mongoose = require("mongoose");
+var mongoosePaginate = require("mongoose-paginate");
+var mongooseAggregatePaginate = require("mongoose-aggregate-paginate-v2");
+var requestItemAnswerSchema = new mongoose.Schema({
     questionId: {
         type: mongoose.Schema.Types.ObjectId
     },
@@ -14,7 +14,7 @@ const requestItemAnswerSchema = new mongoose.Schema({
         type: String
     }
 });
-const requestItemSchema = new mongoose.Schema({
+var requestItemSchema = new mongoose.Schema({
     request: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Request'
@@ -30,7 +30,7 @@ const requestItemSchema = new mongoose.Schema({
     // if assigned to transmittal
     assigned: {
         type: Boolean,
-        default: false
+        "default": false
     },
     team: {
         type: mongoose.Schema.Types.ObjectId,
@@ -58,7 +58,7 @@ const requestItemSchema = new mongoose.Schema({
     },
     answers: {
         type: [requestItemAnswerSchema],
-        default: []
+        "default": []
     },
     files: [{
             type: mongoose.Schema.Types.ObjectId,
@@ -70,27 +70,27 @@ const requestItemSchema = new mongoose.Schema({
     },
     priority: {
         type: Boolean,
-        default: false
+        "default": false
     },
     observation: {
         type: String,
-        default: ''
+        "default": ''
     },
     equipment: {
         type: Boolean,
-        default: false
+        "default": false
     },
     washed: {
         type: Boolean,
-        default: false
+        "default": false
     },
     review: {
         type: Boolean,
-        default: false
+        "default": false
     },
     body: {
         type: Boolean,
-        default: false
+        "default": false
     },
     uploadDate: {
         type: Date
@@ -105,13 +105,13 @@ const requestItemSchema = new mongoose.Schema({
     createdBy: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User',
-        default: null
+        "default": null
     }
 }, {
     timestamps: true
 });
 requestItemSchema.plugin(mongoosePaginate);
 requestItemSchema.plugin(mongooseAggregatePaginate);
-const RequestItem = mongoose.model('RequestItem', requestItemSchema);
-exports.default = RequestItem;
+var RequestItem = mongoose.model('RequestItem', requestItemSchema);
+exports["default"] = RequestItem;
 //# sourceMappingURL=requestItem.model.js.map

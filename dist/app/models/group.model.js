@@ -1,7 +1,7 @@
 "use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-const mongoose = require("mongoose");
-const groupSchema = new mongoose.Schema({
+exports.__esModule = true;
+var mongoose = require("mongoose");
+var groupSchema = new mongoose.Schema({
     name: {
         type: String,
         unique: true
@@ -23,6 +23,6 @@ const groupSchema = new mongoose.Schema({
 }, {
     timestamps: true
 });
-const Group = mongoose.model('Group', groupSchema);
-exports.default = Group;
+var Group = mongoose.model('Group', groupSchema);
+exports["default"] = Group;
 //# sourceMappingURL=group.model.js.map

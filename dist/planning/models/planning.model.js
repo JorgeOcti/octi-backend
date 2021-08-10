@@ -1,8 +1,8 @@
 "use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-const mongoose = require("mongoose");
-const mongoosePaginate = require("mongoose-paginate");
-const planningSchema = new mongoose.Schema({
+exports.__esModule = true;
+var mongoose = require("mongoose");
+var mongoosePaginate = require("mongoose-paginate");
+var planningSchema = new mongoose.Schema({
     team: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Team'
@@ -21,12 +21,12 @@ const planningSchema = new mongoose.Schema({
     },
     date: {
         type: Date,
-        default: new Date()
+        "default": new Date()
     }
 }, {
     timestamps: true
 });
 planningSchema.plugin(mongoosePaginate);
-const Planning = mongoose.model('Planning', planningSchema);
-exports.default = Planning;
+var Planning = mongoose.model('Planning', planningSchema);
+exports["default"] = Planning;
 //# sourceMappingURL=planning.model.js.map

@@ -1,7 +1,7 @@
 "use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
+exports.__esModule = true;
 exports.positionSchema = void 0;
-const mongoose = require("mongoose");
+var mongoose = require("mongoose");
 exports.positionSchema = new mongoose.Schema({
     team: {
         type: mongoose.Schema.Types.ObjectId,
@@ -15,6 +15,6 @@ exports.positionSchema = new mongoose.Schema({
 }, {
     timestamps: true
 });
-const Position = mongoose.model('Position', exports.positionSchema);
-exports.default = Position;
+var Position = mongoose.model('Position', exports.positionSchema);
+exports["default"] = Position;
 //# sourceMappingURL=position.model.js.map

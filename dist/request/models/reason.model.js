@@ -1,9 +1,9 @@
 "use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
+exports.__esModule = true;
 exports.choicesTypeQuestuion = exports.ChoicesTypeQuestion = void 0;
-const mongoose = require("mongoose");
-const mongoosePaginate = require("mongoose-paginate");
-const fileSchema = new mongoose.Schema({
+var mongoose = require("mongoose");
+var mongoosePaginate = require("mongoose-paginate");
+var fileSchema = new mongoose.Schema({
     active: {
         type: Boolean
     },
@@ -22,21 +22,21 @@ exports.choicesTypeQuestuion = [
     ChoicesTypeQuestion.number,
     ChoicesTypeQuestion.paymentMethod
 ];
-const questionSchema = new mongoose.Schema({
+var questionSchema = new mongoose.Schema({
     name: {
         type: String
     },
     type: {
         type: String,
-        enum: exports.choicesTypeQuestuion,
-        default: ChoicesTypeQuestion.text
+        "enum": exports.choicesTypeQuestuion,
+        "default": ChoicesTypeQuestion.text
     },
     required: {
         type: Boolean,
-        default: false
+        "default": false
     }
 });
-const reasonSchema = new mongoose.Schema({
+var reasonSchema = new mongoose.Schema({
     name: {
         type: String
     },
@@ -46,17 +46,17 @@ const reasonSchema = new mongoose.Schema({
     },
     file: {
         type: fileSchema,
-        default: {
+        "default": {
             active: false,
             required: false
         }
     },
     questions: {
         type: [questionSchema],
-        default: []
+        "default": []
     }
 });
 reasonSchema.plugin(mongoosePaginate);
-const Reason = mongoose.model('Reason', reasonSchema);
-exports.default = Reason;
+var Reason = mongoose.model('Reason', reasonSchema);
+exports["default"] = Reason;
 //# sourceMappingURL=reason.model.js.map

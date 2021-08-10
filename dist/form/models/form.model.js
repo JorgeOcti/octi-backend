@@ -1,10 +1,10 @@
 "use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
+exports.__esModule = true;
 exports.kindForm = exports.KindForm = exports.kindQuestionImage = exports.KindQuestionImage = exports.kindQuestionKeyboard = exports.KindQuestionKeyboard = exports.kindQuestion = exports.KindQuestion = void 0;
-const mongoose = require("mongoose");
-const mongoosePaginate = require("mongoose-paginate");
-const trigger_model_1 = require("./trigger.model");
-const itemSchema = new mongoose.Schema({
+var mongoose = require("mongoose");
+var mongoosePaginate = require("mongoose-paginate");
+var trigger_model_1 = require("./trigger.model");
+var itemSchema = new mongoose.Schema({
     item: {
         type: String,
         required: true,
@@ -12,10 +12,10 @@ const itemSchema = new mongoose.Schema({
     },
     amount: {
         type: Boolean,
-        default: false
+        "default": false
     }
 });
-const accessorySchema = new mongoose.Schema({
+var accessorySchema = new mongoose.Schema({
     question: {
         type: String,
         required: true,
@@ -64,7 +64,7 @@ exports.kindQuestionImage = [
     KindQuestionImage.signature,
     KindQuestionImage.picture
 ];
-const formQuestionsSchema = new mongoose.Schema({
+var formQuestionsSchema = new mongoose.Schema({
     question: {
         type: String,
         required: true,
@@ -84,11 +84,11 @@ const formQuestionsSchema = new mongoose.Schema({
     },
     accessories: {
         type: accessorySchema,
-        default: null
+        "default": null
     },
     conciliation: {
         type: Boolean,
-        default: false
+        "default": false
     },
     risk: {
         type: String,
@@ -104,8 +104,8 @@ const formQuestionsSchema = new mongoose.Schema({
     },
     kind: {
         type: String,
-        enum: exports.kindQuestion,
-        default: KindQuestion.scale
+        "enum": exports.kindQuestion,
+        "default": KindQuestion.scale
     },
     order: {
         type: Number,
@@ -113,7 +113,7 @@ const formQuestionsSchema = new mongoose.Schema({
     },
     optional: {
         type: Boolean,
-        default: false
+        "default": false
     },
     hint: {
         type: String,
@@ -121,16 +121,16 @@ const formQuestionsSchema = new mongoose.Schema({
     },
     keyboardType: {
         type: String,
-        enum: exports.kindQuestionKeyboard,
-        default: KindQuestionKeyboard.text
+        "enum": exports.kindQuestionKeyboard,
+        "default": KindQuestionKeyboard.text
     },
     imageType: {
         type: String,
-        enum: exports.kindQuestionImage,
-        default: KindQuestionImage.picture
+        "enum": exports.kindQuestionImage,
+        "default": KindQuestionImage.picture
     }
 });
-const formSectionsSchema = new mongoose.Schema({
+var formSectionsSchema = new mongoose.Schema({
     name: {
         type: String,
         required: true,
@@ -161,7 +161,7 @@ exports.kindForm = [
     KindForm.final,
     KindForm.control,
 ];
-const formSchema = new mongoose.Schema({
+var formSchema = new mongoose.Schema({
     name: {
         type: String,
         required: true,
@@ -184,80 +184,80 @@ const formSchema = new mongoose.Schema({
     // if shipping form
     shipping: {
         type: Boolean,
-        default: false
+        "default": false
     },
     shippingText: {
         type: String,
-        default: ''
+        "default": ''
     },
     shippingImage: {
         type: Boolean,
-        default: false
+        "default": false
     },
     // mark if require venue
     shippingVenue: {
         type: Boolean,
-        default: false
+        "default": false
     },
     // text if require venue
     shippingVenueText: {
         type: String,
-        default: ''
+        "default": ''
     },
     // if reception form
     reception: {
         type: Boolean,
-        default: false
+        "default": false
     },
     receptionText: {
         type: String,
-        default: ''
+        "default": ''
     },
     receptionImage: {
         type: Boolean,
-        default: false
+        "default": false
     },
     // mark if require venue
     receptionVenue: {
         type: Boolean,
-        default: false
+        "default": false
     },
     // text if require venue
     receptionVenueText: {
         type: String,
-        default: ''
+        "default": ''
     },
     // if require select carrier
     carrier: {
         type: Boolean,
-        default: false
+        "default": false
     },
     carrierText: {
         type: String,
-        default: ''
+        "default": ''
     },
     conciliation: {
         type: Boolean,
-        default: false
+        "default": false
     },
     conciliationText: {
         type: String,
-        default: ''
+        "default": ''
     },
     conciliationImage: {
         type: Boolean,
-        default: false
+        "default": false
     },
     kind: {
         type: String,
-        enum: exports.kindForm,
-        default: KindForm.control
+        "enum": exports.kindForm,
+        "default": KindForm.control
     },
     sections: [formSectionsSchema],
     triggers: [trigger_model_1.formTriggerSchema],
     active: {
         type: Boolean,
-        default: true
+        "default": true
     }
 }, {
     timestamps: true
@@ -269,6 +269,6 @@ formSchema.virtual('participants', {
     foreignField: 'form',
     justOne: false
 });
-const Form = mongoose.model('Form', formSchema);
-exports.default = Form;
+var Form = mongoose.model('Form', formSchema);
+exports["default"] = Form;
 //# sourceMappingURL=form.model.js.map

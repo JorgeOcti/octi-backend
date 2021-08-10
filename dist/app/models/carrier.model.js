@@ -1,8 +1,8 @@
 "use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-const mongoose = require("mongoose");
-const mongoosePaginate = require("mongoose-paginate");
-const carrierSchema = new mongoose.Schema({
+exports.__esModule = true;
+var mongoose = require("mongoose");
+var mongoosePaginate = require("mongoose-paginate");
+var carrierSchema = new mongoose.Schema({
     name: {
         type: String,
         trim: true,
@@ -16,6 +16,6 @@ const carrierSchema = new mongoose.Schema({
     timestamps: true
 });
 carrierSchema.plugin(mongoosePaginate);
-const Carrier = mongoose.model('Carrier', carrierSchema);
-exports.default = Carrier;
+var Carrier = mongoose.model('Carrier', carrierSchema);
+exports["default"] = Carrier;
 //# sourceMappingURL=carrier.model.js.map

@@ -1,9 +1,9 @@
 "use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
+exports.__esModule = true;
 exports.inventoryLabelSchema = void 0;
-const mongoose = require("mongoose");
-const mongoosePaginate = require("mongoose-paginate");
-const inventoryCar_model_1 = require("./inventoryCar.model");
+var mongoose = require("mongoose");
+var mongoosePaginate = require("mongoose-paginate");
+var inventoryCar_model_1 = require("./inventoryCar.model");
 exports.inventoryLabelSchema = new mongoose.Schema({
     team: {
         type: mongoose.Schema.Types.ObjectId,
@@ -15,32 +15,32 @@ exports.inventoryLabelSchema = new mongoose.Schema({
     },
     description: {
         type: String,
-        default: ""
+        "default": ""
     },
     color: {
         type: String,
-        default: '#C4C4C4'
+        "default": '#C4C4C4'
     },
     affected: [{
             type: String,
-            enum: inventoryCar_model_1.choicesStatusCarInventory
+            "enum": inventoryCar_model_1.choicesStatusCarInventory
         }],
     sendTo: {
         type: String,
-        enum: inventoryCar_model_1.choicesStatusCarInventory,
+        "enum": inventoryCar_model_1.choicesStatusCarInventory,
         required: true
     },
     isExhibition: {
         type: Boolean,
-        default: false
+        "default": false
     },
     requireCustomText: {
         type: Boolean,
-        default: false
+        "default": false
     },
     active: {
         type: Boolean,
-        default: true
+        "default": true
     },
     updatedBy: {
         type: mongoose.Schema.Types.ObjectId,
@@ -51,6 +51,6 @@ exports.inventoryLabelSchema = new mongoose.Schema({
 });
 mongoose.plugin(mongoosePaginate);
 exports.inventoryLabelSchema.index({ active: 1, team: 1 });
-const InventoryLabel = mongoose.model('InventoryLabel', exports.inventoryLabelSchema);
-exports.default = InventoryLabel;
+var InventoryLabel = mongoose.model('InventoryLabel', exports.inventoryLabelSchema);
+exports["default"] = InventoryLabel;
 //# sourceMappingURL=inventoryLabel.model.js.map

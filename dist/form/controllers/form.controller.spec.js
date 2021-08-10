@@ -1,40 +1,40 @@
 "use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-const chai = require("chai");
-const chaiHttp = require("chai-http");
-const fs = require("fs");
+exports.__esModule = true;
+var chai = require("chai");
+var chaiHttp = require("chai-http");
+var fs = require("fs");
 require("mocha");
-const path = require("path");
-const server_1 = require("../../server");
+var path = require("path");
+var server_1 = require("../../server");
 // chai.should();
 chai.config.includeStack = true;
 chai.config.showDiff = true;
 chai.use(chaiHttp);
-const expect = chai.expect;
-let token = '';
-describe('formularies', () => {
-    beforeEach((done) => {
-        chai.request(server_1.default)
+var expect = chai.expect;
+var token = '';
+describe('formularies', function () {
+    beforeEach(function (done) {
+        chai.request(server_1["default"])
             .post('/api/v1/login/')
             .send({
             username: 'gmunoz@osacontrol.com',
             password: '123'
         })
-            .end((err, res) => {
+            .end(function (err, res) {
             expect(res.status).to.equal(200);
             token = res.body.data.token;
             done();
         });
     });
-    afterEach((done) => {
+    afterEach(function (done) {
         done();
     });
-    let firstForm = '';
-    it('it should return list of forms', (done) => {
-        chai.request(server_1.default)
+    var firstForm = '';
+    it('it should return list of forms', function (done) {
+        chai.request(server_1["default"])
             .get('/api/v1/forms/')
-            .set('Authorization', `JWT ${token}`)
-            .end((err, res) => {
+            .set('Authorization', "JWT " + token)
+            .end(function (err, res) {
             expect(res.status).to.equal(200);
             expect(res.body).to.have.all.keys([
                 'data',
@@ -45,7 +45,7 @@ describe('formularies', () => {
             expect(res.body.status).to.equal(200);
             expect(res.body.data).be.a('array');
             firstForm = res.body.data[0];
-            res.body.data.forEach((item) => {
+            res.body.data.forEach(function (item) {
                 expect(item).to.have.all.keys([
                     '_id',
                     'name'
@@ -54,11 +54,11 @@ describe('formularies', () => {
             done();
         });
     });
-    it('it should return detail of the form', (done) => {
-        chai.request(server_1.default)
-            .get(`/api/v1/forms/${firstForm._id.toString()}`)
-            .set('Authorization', `JWT ${token}`)
-            .end((err, res) => {
+    it('it should return detail of the form', function (done) {
+        chai.request(server_1["default"])
+            .get("/api/v1/forms/" + firstForm._id.toString())
+            .set('Authorization', "JWT " + token)
+            .end(function (err, res) {
             expect(res.status).to.equal(200);
             expect(res.body).have.property('data');
             expect(res.body).have.property('status');
@@ -92,7 +92,8 @@ describe('formularies', () => {
             ]);
             expect(res.body.data.form.sections).be.a('array');
             // validate sections keys
-            for (const section of res.body.data.form.sections) {
+            for (var _i = 0, _a = res.body.data.form.sections; _i < _a.length; _i++) {
+                var section = _a[_i];
                 expect(section).to.have.all.keys([
                     '_id',
                     'name',
@@ -102,7 +103,8 @@ describe('formularies', () => {
                 ]);
                 // validate question keys
                 expect(section.questions).be.a('array');
-                for (const question of section.questions) {
+                for (var _b = 0, _c = section.questions; _b < _c.length; _b++) {
+                    var question = _c[_b];
                     expect(question).to.have.all.keys([
                         '_id',
                         'question',
@@ -122,7 +124,8 @@ describe('formularies', () => {
             }
             // validate scales keys
             expect(res.body.data.scales).be.a('array');
-            for (const scale of res.body.data.scales) {
+            for (var _d = 0, _e = res.body.data.scales; _d < _e.length; _d++) {
+                var scale = _e[_d];
                 expect(scale).to.have.all.keys([
                     '_id',
                     'name',
@@ -145,14 +148,14 @@ describe('formularies', () => {
             done();
         });
     });
-    it('it should change preferred successful', (done) => {
-        chai.request(server_1.default)
+    it('it should change preferred successful', function (done) {
+        chai.request(server_1["default"])
             .put('/api/v1/forms/preferred/')
-            .set('Authorization', `JWT ${token}`)
+            .set('Authorization', "JWT " + token)
             .send({
             form: firstForm._id.toString()
         })
-            .end((err, res) => {
+            .end(function (err, res) {
             expect(res.status).to.equal(200);
             expect(res.body).have.property('message');
             expect(res.body).have.property('status');
@@ -163,13 +166,13 @@ describe('formularies', () => {
             done();
         });
     });
-    it('it should upload image successful in the check', (done) => {
-        chai.request(server_1.default)
-            .post(`/api/v1/forms/${firstForm._id.toString()}/upload-file/`)
-            .set('Authorization', `JWT ${token}`)
+    it('it should upload image successful in the check', function (done) {
+        chai.request(server_1["default"])
+            .post("/api/v1/forms/" + firstForm._id.toString() + "/upload-file/")
+            .set('Authorization', "JWT " + token)
             .type('form')
             .attach('file', fs.readFileSync(path.join(__dirname, '../../../test/assets/images/t_head_bg_america.jpg')), 't_head_bg_america.jpg')
-            .end((err, res) => {
+            .end(function (err, res) {
             expect(res.status).to.equal(201);
             expect(res.body).have.property('data');
             expect(res.body).have.property('status');
@@ -180,10 +183,10 @@ describe('formularies', () => {
             done();
         });
     });
-    it('it should complete check successful', (done) => {
-        chai.request(server_1.default)
-            .post(`/api/v1/forms/${firstForm._id.toString()}`)
-            .set('Authorization', `JWT ${token}`)
+    it('it should complete check successful', function (done) {
+        chai.request(server_1["default"])
+            .post("/api/v1/forms/" + firstForm._id.toString())
+            .set('Authorization', "JWT " + token)
             .send({
             answers: {
                 '5b0487db835536612bab1b64': {
@@ -225,7 +228,7 @@ describe('formularies', () => {
             },
             vin: '3BRBD33B7J1590498'
         })
-            .end((err, res) => {
+            .end(function (err, res) {
             expect(res.status).to.equal(200);
             expect(res.body).have.property('data');
             expect(res.body).have.property('status');

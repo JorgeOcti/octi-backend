@@ -3,7 +3,6 @@
     "incremental": true,
     "module": "commonjs",
     "moduleResolution": "node",
-    "target": "esnext",
     "baseUrl": "src",
     "sourceMap": true,
     "inlineSources": true,
@@ -14,6 +13,11 @@
     "noImplicitThis": false,
     "strictNullChecks": true,
     "noUnusedLocals": true,
+    "lib": [
+      "es6",
+      "es7",
+      "ES2020"
+    ],
     "typeRoots": [
       "./node_modules/@types",
       "../node_modules/@types/",
