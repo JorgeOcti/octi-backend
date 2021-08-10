@@ -45,6 +45,7 @@ import { isIntenertExplorer } from './utils/common';
 import CustomDashboardComponent from "./components/CustomDashboard/CustomDashboardComponent";
 import TransmittalListView from "./components/Transmittal/TransmittalList/TransmittalListView";
 import TransmittalCreateView from "./components/Transmittal/TransmittalCreateView";
+import CustomInventoryAnalysis from "./components/CustomDashboard/CustomInventoryAnalysis";
 
 
 declare let window: IWindow;
@@ -73,6 +74,7 @@ const App = () => (
         <Route exact path="/stock/import/" component={StockImportView}/>
         <Route exact path="/cars/:id/" component={DashboardVinDetail}/>
         <Route exact path="/inventory/" component={InventoryListView}/>
+        <Route exact path="/inventory/analysis/" component={CustomInventoryAnalysis}/>
         <Route exact path="/inventory/dashboard/" component={InventoryDashboardView}/>
         <Route exact path="/inventory/create/" component={InventoryCreateView}/>
         <Route exact path="/inventory/:id/" component={InventoryDetailView}/>

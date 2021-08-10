@@ -225,7 +225,7 @@ passport.deserializeUser(function (email, done) { return __awaiter(void 0, void 
                             select: ['name']
                         }, {
                             path: 'company',
-                            select: ['name', "iFrameURL"]
+                            select: ['name', "iFrameURL", "iFrameURLInventory"]
                         }, {
                             path: 'team',
                             select: ['name']

@@ -37,4 +37,5 @@ export interface ICompany extends IBaseCompany {
   updatedAt: Date;
   createdAt: Date;
   iFrameURL: string;
+  iFrameURLInventory: string;
 }
