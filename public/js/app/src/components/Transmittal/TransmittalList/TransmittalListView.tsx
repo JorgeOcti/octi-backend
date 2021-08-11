@@ -179,7 +179,7 @@ class TransmittalListView extends TrackingBasePage<IPropsType, IStateType> {
               <h3 className="box-title">Transporte <small>{pagination.count}</small></h3>
               <div className="pull-right box-tools">
                 {
-                  hasPermission(window.user, 'createRequest') ?
+                  hasPermission(window.user, 'addTransmittal') ?
                     <button className="btn btn-sm btn-success" onClick={this.create}>
                       <i className="fa fa-fw fa-plus" /> Crear orden
                     </button>

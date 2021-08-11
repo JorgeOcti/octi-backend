@@ -349,7 +349,8 @@ class RequestVehicleListView extends TrackingBasePage<IPropsType, IStateType> {
                       />
                     </div>
                   </div>
-                  {/* <div className="col-md-3">
+                  {
+                    /* <div className="col-md-3">
                     <div className="form-group">
                       <label htmlFor="venues" className="control-label">Marcas</label>
                       <BootstrapSelect
@@ -364,7 +365,8 @@ class RequestVehicleListView extends TrackingBasePage<IPropsType, IStateType> {
                         onClick={() => { }}
                       />
                     </div>
-                  </div> */}
+                  </div> */
+                  }
                   <div className="col-md-3">
                     <div className="row">
                       <div className="col-md-6">

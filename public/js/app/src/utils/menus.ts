@@ -91,7 +91,7 @@ if (hasPermission(window.user, 'viewRequest')) {
   });
 }
 
-if (hasPermission(window.user, 'adminRequest')) {
+if (hasPermission(window.user, 'viewTransmittal')) {
   distributionItems.push({
     id: '3.4',
     icon: 'fa-circle-o',
