@@ -80,8 +80,8 @@ class RequestVehicleItem extends React.Component<IPropsType, IStateType> {
         >
             <strong className="text-underline">#{this.padNumber(item.request?.number)}</strong>
         </td>
-        <td className="middle" style={{fontSize: '80%'}}>{item.origin.name}</td>
-        <td className="middle" style={{fontSize: '80%'}}>{item.destination.name}</td>
+        <td className="middle" style={{fontSize: '80%'}}>{item.origin?.name ?? '-'}</td>
+        <td className="middle" style={{fontSize: '80%'}}>{item.destination?.name ?? '-'}</td>
         <td className="middle">{item.car.property ? item.car.property : '-'}</td>
         {
           canChangeRequest ?
