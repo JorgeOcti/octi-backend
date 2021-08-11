@@ -249,8 +249,8 @@ class TramittalRenderItem extends React.Component<IPropsType, IStateType> {
       },
       request: item.request,
       reason: item.reason,
-      origin: item.origin._id,
-      destination: item.destination._id
+      origin: item.origin?._id,
+      destination: item.destination?._id
     })
   }
 

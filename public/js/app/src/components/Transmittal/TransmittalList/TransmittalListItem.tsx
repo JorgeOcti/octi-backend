@@ -208,8 +208,14 @@ class TransmitalListItem extends React.Component<IPropsType, IStateType> {
     this.props.transmittalActions.updateTransmittalItemThunkAction(transmittalItem);
   }
 
-  private statusIcon(revision: IParticipant){
-    if (revision.receptionConfirmation) {
+  private statusIcon(revision: IParticipant) {
+    if (revision.hasDamages) {
+      return (
+        <td className={"middle pointer"} onClick={() => this.props.getParticipant(revision._id)}>
+          <i className="fa fa-warning text-red"/>
+        </td>
+      );
+    } else if (revision.receptionConfirmation) {
       return (
         <td className={"middle pointer"} onClick={() => this.props.getParticipant(revision._id)}>
           <i className="fa fa-check-circle text-primary"/>
@@ -221,14 +227,8 @@ class TransmitalListItem extends React.Component<IPropsType, IStateType> {
           <i className="fa fa-close text-danger"/>
         </td>
       );
-    } else if (revision.hasDamages) {
-      return (
-        <td className={"middle pointer"} onClick={() => this.props.getParticipant(revision._id)}>
-          <i className="fa fa-warning text-red"/>
-        </td>
-      );
     }
-    return <td className={"middle"} />;
+    return <td className={"middle"}/>;
   }
 
   private delete() {
