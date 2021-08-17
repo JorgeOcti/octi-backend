@@ -51,7 +51,7 @@ services:
       resources:
         limits:
           memory: 500M
-    command: ['nodemon', 'dist/server.js', ' --max-old-space-size=4096']
+    command: ['nodemon', '--inspect=0.0.0.0:9229', 'dist/server.js', ' --max-old-space-size=4096']
     # command: ['nodemon', '--inspect=0.0.0.0:9229', 'dist/server.js', ' --max-old-space-size=4096']
     env_file:
       - .env

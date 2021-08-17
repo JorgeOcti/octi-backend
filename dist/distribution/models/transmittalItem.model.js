@@ -1,9 +1,9 @@
 "use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
+exports.__esModule = true;
 exports.choicesStatusTransmittalItem = exports.ChoicesStatusTransmittalItem = void 0;
-const mongoose = require("mongoose");
-const mongoosePaginate = require("mongoose-paginate");
-const mongooseAggregatePaginate = require("mongoose-aggregate-paginate-v2");
+var mongoose = require("mongoose");
+var mongoosePaginate = require("mongoose-paginate");
+var mongooseAggregatePaginate = require("mongoose-aggregate-paginate-v2");
 var ChoicesStatusTransmittalItem;
 (function (ChoicesStatusTransmittalItem) {
     ChoicesStatusTransmittalItem["pending"] = "pending";
@@ -13,7 +13,7 @@ exports.choicesStatusTransmittalItem = [
     ChoicesStatusTransmittalItem.pending,
     ChoicesStatusTransmittalItem.completed,
 ];
-const transmittalItemSchema = new mongoose.Schema({
+var transmittalItemSchema = new mongoose.Schema({
     transmittal: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Transmittal'
@@ -57,14 +57,14 @@ const transmittalItemSchema = new mongoose.Schema({
     },
     status: {
         type: String,
-        enum: exports.choicesStatusTransmittalItem,
-        default: ChoicesStatusTransmittalItem.pending
+        "enum": exports.choicesStatusTransmittalItem,
+        "default": ChoicesStatusTransmittalItem.pending
     }
 }, {
     timestamps: true
 });
 transmittalItemSchema.plugin(mongoosePaginate);
 transmittalItemSchema.plugin(mongooseAggregatePaginate);
-const TransmittalItem = mongoose.model('TransmittalItem', transmittalItemSchema);
-exports.default = TransmittalItem;
+var TransmittalItem = mongoose.model('TransmittalItem', transmittalItemSchema);
+exports["default"] = TransmittalItem;
 //# sourceMappingURL=transmittalItem.model.js.map

@@ -12,7 +12,7 @@ import {IWindow} from "../../interfaces/window";
 
 declare let window: IWindow;
 
-interface IPropsType extends RouteComponentProps<{ ticket: string }> {
+export interface IPropsType extends RouteComponentProps<{ ticket: string }> {
   dispatch: Dispatch<CompaniesReduxAction>;
   dashboard: ICompaniesState;
 }
@@ -25,8 +25,10 @@ interface IStateType {
   to: Date,
 }
 
-class DashboardTimingView extends TrackingBasePage<IPropsType, IStateType> {
-  title: string;
+export class DashboardTimingView extends TrackingBasePage<IPropsType, IStateType> {
+  public title: string;
+  public cMenu  : string = "1";
+  public cSubMenu  : string = "1.7";
 
   constructor(props: IPropsType) {
     super(props);
@@ -40,9 +42,13 @@ class DashboardTimingView extends TrackingBasePage<IPropsType, IStateType> {
     });
   }
 
+  public getDashboardURL() : string{
+    return window.user.company.iFrameURL;
+  }
+
   public render(): React.ReactElement<IPropsType> {
     return (
-      <AppContainer title="" cMenu="1" cSubMenu="1.7">
+      <AppContainer title="" cMenu={this.cMenu} cSubMenu={this.cSubMenu}>
         <section className="content">
           <Row>
             <div className="col-md-12">
@@ -50,7 +56,7 @@ class DashboardTimingView extends TrackingBasePage<IPropsType, IStateType> {
                 <div className="box-header with-border"><h1 className="box-title">Dashboard de análisis de datos</h1>
                 </div>
                 <div className="box-body">
-                  <iframe src={`${window.user.company.iFrameURL}`} style={{width: "100%", minWidth: "1000px" ,minHeight: "500px", height: "100vh"}} allowFullScreen={true}  frameBorder={0} security={""}/>
+                  <iframe src={this.getDashboardURL()} style={{width: "100%", minWidth: "1000px" ,minHeight: "500px", height: "100vh"}} allowFullScreen={true}  frameBorder={0} security={""}/>
                 </div>
               </div>
             </div>

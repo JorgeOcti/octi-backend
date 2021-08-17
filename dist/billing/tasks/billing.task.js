@@ -1,32 +1,68 @@
 "use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-const fs = require("fs");
-const HtmlPdf = require("html-pdf");
-const moment = require("moment-timezone");
-const path = require("path");
-const Raven = require("raven");
-const request = require("request");
-const app_1 = require("../../app");
-const company_model_1 = require("../../app/models/company.model");
-const general_utils_1 = require("../../utils/general.utils");
-const activityHistory_model_1 = require("../models/activityHistory.model");
-const invoice_model_1 = require("../models/invoice.model");
-class BillingQueue {
-    apiKey = '6d9b28d228cd00669f37484223d876daad754636';
-    PDFconfig = {
-        directory: 'tmp',
-        format: 'Letter',
-        orientation: 'portrait',
-        border: {
-            top: '0.3in',
-            right: '0.5in',
-            bottom: '0.3in',
-            left: '0.5in'
-        },
-        type: 'pdf',
-        quality: '75'
-    };
-    constructor() {
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+var __generator = (this && this.__generator) || function (thisArg, body) {
+    var _ = { label: 0, sent: function() { if (t[0] & 1) throw t[1]; return t[1]; }, trys: [], ops: [] }, f, y, t, g;
+    return g = { next: verb(0), "throw": verb(1), "return": verb(2) }, typeof Symbol === "function" && (g[Symbol.iterator] = function() { return this; }), g;
+    function verb(n) { return function (v) { return step([n, v]); }; }
+    function step(op) {
+        if (f) throw new TypeError("Generator is already executing.");
+        while (_) try {
+            if (f = 1, y && (t = op[0] & 2 ? y["return"] : op[0] ? y["throw"] || ((t = y["return"]) && t.call(y), 0) : y.next) && !(t = t.call(y, op[1])).done) return t;
+            if (y = 0, t) op = [op[0] & 2, t.value];
+            switch (op[0]) {
+                case 0: case 1: t = op; break;
+                case 4: _.label++; return { value: op[1], done: false };
+                case 5: _.label++; y = op[1]; op = [0]; continue;
+                case 7: op = _.ops.pop(); _.trys.pop(); continue;
+                default:
+                    if (!(t = _.trys, t = t.length > 0 && t[t.length - 1]) && (op[0] === 6 || op[0] === 2)) { _ = 0; continue; }
+                    if (op[0] === 3 && (!t || (op[1] > t[0] && op[1] < t[3]))) { _.label = op[1]; break; }
+                    if (op[0] === 6 && _.label < t[1]) { _.label = t[1]; t = op; break; }
+                    if (t && _.label < t[2]) { _.label = t[2]; _.ops.push(op); break; }
+                    if (t[2]) _.ops.pop();
+                    _.trys.pop(); continue;
+            }
+            op = body.call(thisArg, _);
+        } catch (e) { op = [6, e]; y = 0; } finally { f = t = 0; }
+        if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
+    }
+};
+exports.__esModule = true;
+var fs = require("fs");
+var HtmlPdf = require("html-pdf");
+var moment = require("moment-timezone");
+var path = require("path");
+var Raven = require("raven");
+var request = require("request");
+var app_1 = require("../../app");
+var company_model_1 = require("../../app/models/company.model");
+var general_utils_1 = require("../../utils/general.utils");
+var activityHistory_model_1 = require("../models/activityHistory.model");
+var invoice_model_1 = require("../models/invoice.model");
+var BillingQueue = /** @class */ (function () {
+    function BillingQueue() {
+        this.apiKey = '6d9b28d228cd00669f37484223d876daad754636';
+        this.PDFconfig = {
+            directory: 'tmp',
+            format: 'Letter',
+            orientation: 'portrait',
+            border: {
+                top: '0.3in',
+                right: '0.5in',
+                bottom: '0.3in',
+                left: '0.5in'
+            },
+            type: 'pdf',
+            quality: '75'
+        };
         this.processBilling = this.processBilling.bind(this);
         this.calculateCarsInChecklist = this.calculateCarsInChecklist.bind(this);
         this.calculateCarsInInventory = this.calculateCarsInInventory.bind(this);
@@ -37,18 +73,18 @@ class BillingQueue {
         this.createPDF = this.createPDF.bind(this);
         this.sendEmail = this.sendEmail.bind(this);
     }
-    getUFPrice() {
-        return new Promise((resolve, reject) => {
+    BillingQueue.prototype.getUFPrice = function () {
+        return new Promise(function (resolve, reject) {
             try {
-                const now = moment().subtract(1, 'day');
-                const [year, month, day] = [now.format('YYYY'), now.format('MM'), now.format('DD')];
-                request.get(`https://mindicador.cl/api/uf/${day}-${month}-${year}`, (err, resp, body) => {
+                var now = moment().subtract(1, 'day');
+                var _a = [now.format('YYYY'), now.format('MM'), now.format('DD')], year = _a[0], month = _a[1], day = _a[2];
+                request.get("https://mindicador.cl/api/uf/" + day + "-" + month + "-" + year, function (err, resp, body) {
                     if (err) {
                         reject(err);
                     }
                     else {
-                        const dailyIndicators = JSON.parse(body);
-                        const value = parseFloat(dailyIndicators.serie[0].valor);
+                        var dailyIndicators = JSON.parse(body);
+                        var value = parseFloat(dailyIndicators.serie[0].valor);
                         resolve(value);
                     }
                 });
@@ -57,12 +93,13 @@ class BillingQueue {
                 console.log(error);
             }
         });
-    }
-    getDolarPrice() {
-        return new Promise((resolve, reject) => {
-            const now = moment().subtract(1, 'day');
-            const [year, month, day] = [now.format('YYYY'), now.format('MM'), now.format('DD')];
-            request.get(`https://api.sbif.cl/api-sbifv3/recursos_api/dolar/${year}/${month}/dias/${day}?apikey=${this.apiKey}&formato=json`, (err, resp, body) => {
+    };
+    BillingQueue.prototype.getDolarPrice = function () {
+        var _this = this;
+        return new Promise(function (resolve, reject) {
+            var now = moment().subtract(1, 'day');
+            var _a = [now.format('YYYY'), now.format('MM'), now.format('DD')], year = _a[0], month = _a[1], day = _a[2];
+            request.get("https://api.sbif.cl/api-sbifv3/recursos_api/dolar/" + year + "/" + month + "/dias/" + day + "?apikey=" + _this.apiKey + "&formato=json", function (err, resp, body) {
                 if (err) {
                     reject(err);
                 }
@@ -72,224 +109,305 @@ class BillingQueue {
                 }
             });
         });
-    }
-    async calculateCarsInChecklist(company) {
-        const vinInChecklist = await activityHistory_model_1.default
-            .aggregate([{
-                $match: {
-                    company: company._id,
-                    type: activityHistory_model_1.ChoicesTypeActivity.checklist,
-                    createdAt: {
-                        $gte: moment()
-                            .subtract(1, 'day')
-                            .startOf('month')
-                            .toDate(),
-                        $lte: moment()
-                            .subtract(1, 'day')
-                            .endOf('month')
-                            .toDate()
-                    }
+    };
+    BillingQueue.prototype.calculateCarsInChecklist = function (company) {
+        return __awaiter(this, void 0, void 0, function () {
+            var vinInChecklist;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0: return [4 /*yield*/, activityHistory_model_1["default"]
+                            .aggregate([{
+                                $match: {
+                                    company: company._id,
+                                    type: activityHistory_model_1.ChoicesTypeActivity.checklist,
+                                    createdAt: {
+                                        $gte: moment()
+                                            .subtract(1, 'day')
+                                            .startOf('month')
+                                            .toDate(),
+                                        $lte: moment()
+                                            .subtract(1, 'day')
+                                            .endOf('month')
+                                            .toDate()
+                                    }
+                                }
+                            }, {
+                                $group: {
+                                    _id: '$car.vin'
+                                }
+                            }, {
+                                $group: {
+                                    _id: 1,
+                                    count: {
+                                        $sum: 1
+                                    }
+                                }
+                            }])];
+                    case 1:
+                        vinInChecklist = _a.sent();
+                        return [2 /*return*/, vinInChecklist.length ? vinInChecklist[0].count : 0];
                 }
-            }, {
-                $group: {
-                    _id: '$car.vin'
+            });
+        });
+    };
+    BillingQueue.prototype.calculateCarsInInventory = function (company) {
+        return __awaiter(this, void 0, void 0, function () {
+            var vinInInventories;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0: return [4 /*yield*/, activityHistory_model_1["default"]
+                            .aggregate([{
+                                $match: {
+                                    company: company._id,
+                                    type: activityHistory_model_1.ChoicesTypeActivity.inventory,
+                                    createdAt: {
+                                        $gte: moment()
+                                            .subtract(1, 'day')
+                                            .startOf('month')
+                                            .toDate(),
+                                        $lte: moment()
+                                            .subtract(1, 'day')
+                                            .endOf('month')
+                                            .toDate()
+                                    }
+                                }
+                            }, {
+                                $group: {
+                                    _id: '$car.vin'
+                                }
+                            }, {
+                                $group: {
+                                    _id: 1,
+                                    count: {
+                                        $sum: 1
+                                    }
+                                }
+                            }])];
+                    case 1:
+                        vinInInventories = _a.sent();
+                        return [2 /*return*/, vinInInventories.length ? vinInInventories[0].count : 0];
                 }
-            }, {
-                $group: {
-                    _id: 1,
-                    count: {
-                        $sum: 1
-                    }
+            });
+        });
+    };
+    BillingQueue.prototype.calculateCarsInRequest = function (company) {
+        return __awaiter(this, void 0, void 0, function () {
+            var vinInInventories;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0: return [4 /*yield*/, activityHistory_model_1["default"]
+                            .aggregate([{
+                                $match: {
+                                    company: company._id,
+                                    type: activityHistory_model_1.ChoicesTypeActivity.request,
+                                    createdAt: {
+                                        $gte: moment()
+                                            .subtract(1, 'day')
+                                            .startOf('month')
+                                            .toDate(),
+                                        $lte: moment()
+                                            .subtract(1, 'day')
+                                            .endOf('month')
+                                            .toDate()
+                                    }
+                                }
+                            }, {
+                                $group: {
+                                    _id: '$_id'
+                                }
+                            }, {
+                                $group: {
+                                    _id: 1,
+                                    count: {
+                                        $sum: 1
+                                    }
+                                }
+                            }])];
+                    case 1:
+                        vinInInventories = _a.sent();
+                        return [2 /*return*/, vinInInventories.length ? vinInInventories[0].count : 0];
                 }
-            }]);
-        return vinInChecklist.length ? vinInChecklist[0].count : 0;
-    }
-    async calculateCarsInInventory(company) {
-        const vinInInventories = await activityHistory_model_1.default
-            .aggregate([{
-                $match: {
-                    company: company._id,
-                    type: activityHistory_model_1.ChoicesTypeActivity.inventory,
-                    createdAt: {
-                        $gte: moment()
-                            .subtract(1, 'day')
-                            .startOf('month')
-                            .toDate(),
-                        $lte: moment()
-                            .subtract(1, 'day')
-                            .endOf('month')
-                            .toDate()
-                    }
-                }
-            }, {
-                $group: {
-                    _id: '$car.vin'
-                }
-            }, {
-                $group: {
-                    _id: 1,
-                    count: {
-                        $sum: 1
-                    }
-                }
-            }]);
-        return vinInInventories.length ? vinInInventories[0].count : 0;
-    }
-    async calculateCarsInRequest(company) {
-        const vinInInventories = await activityHistory_model_1.default
-            .aggregate([{
-                $match: {
-                    company: company._id,
-                    type: activityHistory_model_1.ChoicesTypeActivity.request,
-                    createdAt: {
-                        $gte: moment()
-                            .subtract(1, 'day')
-                            .startOf('month')
-                            .toDate(),
-                        $lte: moment()
-                            .subtract(1, 'day')
-                            .endOf('month')
-                            .toDate()
-                    }
-                }
-            }, {
-                $group: {
-                    _id: '$_id'
-                }
-            }, {
-                $group: {
-                    _id: 1,
-                    count: {
-                        $sum: 1
-                    }
-                }
-            }]);
-        return vinInInventories.length ? vinInInventories[0].count : 0;
-    }
-    generateHTML(invoice) {
+            });
+        });
+    };
+    BillingQueue.prototype.generateHTML = function (invoice) {
         moment.locale('es');
         moment.tz.setDefault('America/Santiago');
-        const css = fs.readFileSync(`${path.join(__dirname, '../../../views/')}billing/pdf/style.css`, 'utf8');
-        const templatePath = `${path.join(__dirname, '../../../views/')}billing/pdf/index.pug`;
-        return general_utils_1.default.generateHtmlFromPugFile(templatePath, {
+        var css = fs.readFileSync(path.join(__dirname, '../../../views/') + "billing/pdf/style.css", 'utf8');
+        var templatePath = path.join(__dirname, '../../../views/') + "billing/pdf/index.pug";
+        return general_utils_1["default"].generateHtmlFromPugFile(templatePath, {
             css: css.replace(/(\r\n|\n|\r)/gm, ''),
-            moment,
-            invoice,
-            jsUcfirst: (text) => (text.charAt(0).toUpperCase() + text.slice(1))
+            moment: moment,
+            invoice: invoice,
+            jsUcfirst: function (text) { return (text.charAt(0).toUpperCase() + text.slice(1)); }
         });
-    }
-    async createPDF(invoice, company) {
-        try {
-            const newInvoice = await invoice_model_1.default.findById(invoice._id)
-                .populate([{
-                    path: 'company'
-                }, {
-                    path: 'team'
-                }]);
-            if (newInvoice) {
-                HtmlPdf
-                    .create(this.generateHTML(newInvoice), this.PDFconfig)
-                    .toFile(`/tmp/invoice-${invoice._id}.pdf`, async (err, res) => {
-                    if (err)
-                        return console.log(err);
-                    invoice.attach('file', {
-                        originalname: `invoice-${invoice._id}.pdf`,
-                        team: `${newInvoice.team._id} ${newInvoice.team.name}`,
-                        company: `${newInvoice.company._id} ${newInvoice.company.name}`,
-                        createdAt: moment(newInvoice.createdAt).subtract(1, 'month').format('YYYY-MM'),
-                        path: res.filename
-                    }, async (error) => {
-                        if (error) {
-                            /* istanbul ignore next */
-                            console.log(error);
+    };
+    BillingQueue.prototype.createPDF = function (invoice, company) {
+        return __awaiter(this, void 0, void 0, function () {
+            var newInvoice_1, e_1;
+            var _this = this;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0:
+                        _a.trys.push([0, 2, , 3]);
+                        return [4 /*yield*/, invoice_model_1["default"].findById(invoice._id)
+                                .populate([{
+                                    path: 'company'
+                                }, {
+                                    path: 'team'
+                                }])];
+                    case 1:
+                        newInvoice_1 = _a.sent();
+                        if (newInvoice_1) {
+                            HtmlPdf
+                                .create(this.generateHTML(newInvoice_1), this.PDFconfig)
+                                .toFile("/tmp/invoice-" + invoice._id + ".pdf", function (err, res) { return __awaiter(_this, void 0, void 0, function () {
+                                var _this = this;
+                                return __generator(this, function (_a) {
+                                    if (err)
+                                        return [2 /*return*/, console.log(err)];
+                                    invoice.attach('file', {
+                                        originalname: "invoice-" + invoice._id + ".pdf",
+                                        team: newInvoice_1.team._id + " " + newInvoice_1.team.name,
+                                        company: newInvoice_1.company._id + " " + newInvoice_1.company.name,
+                                        createdAt: moment(newInvoice_1.createdAt).subtract(1, 'month').format('YYYY-MM'),
+                                        path: res.filename
+                                    }, function (error) { return __awaiter(_this, void 0, void 0, function () {
+                                        return __generator(this, function (_a) {
+                                            switch (_a.label) {
+                                                case 0:
+                                                    if (!error) return [3 /*break*/, 1];
+                                                    /* istanbul ignore next */
+                                                    console.log(error);
+                                                    return [3 /*break*/, 3];
+                                                case 1: return [4 /*yield*/, invoice.update({ file: invoice.file })];
+                                                case 2:
+                                                    _a.sent();
+                                                    this.sendEmail(invoice, company);
+                                                    _a.label = 3;
+                                                case 3: return [2 /*return*/];
+                                            }
+                                        });
+                                    }); });
+                                    return [2 /*return*/];
+                                });
+                            }); });
                         }
-                        else {
-                            await invoice.update({ file: invoice.file });
-                            this.sendEmail(invoice, company);
-                        }
-                    });
-                });
-            }
-        }
-        catch (e) {
-            Raven.captureException(e);
-            console.log(e.message);
-        }
-    }
-    sendEmail(invoice, company) {
-        const period = moment(invoice.createdAt).subtract(1, 'month').format('MMMM YYYY');
-        for (const notification of company.notifications) {
+                        return [3 /*break*/, 3];
+                    case 2:
+                        e_1 = _a.sent();
+                        Raven.captureException(e_1);
+                        console.log(e_1.message);
+                        return [3 /*break*/, 3];
+                    case 3: return [2 /*return*/];
+                }
+            });
+        });
+    };
+    BillingQueue.prototype.sendEmail = function (invoice, company) {
+        var period = moment(invoice.createdAt).subtract(1, 'month').format('MMMM YYYY');
+        for (var _i = 0, _a = company.notifications; _i < _a.length; _i++) {
+            var notification = _a[_i];
             app_1.queue.create('email', {
                 from: '',
-                title: `Billing for ${invoice.company.name}`,
-                to: `"${notification.name}"<${notification.email}`,
-                subject: `Billing ${invoice.company.name} - ${period}`,
-                text: ``,
+                title: "Billing for " + invoice.company.name,
+                to: "\"" + notification.name + "\"<" + notification.email,
+                subject: "Billing " + invoice.company.name + " - " + period,
+                text: "",
                 attachments: {
-                    filename: `${invoice.company.name} ${period}.pdf`,
+                    filename: invoice.company.name + " " + period + ".pdf",
                     path: decodeURI(invoice.file.url)
                 },
                 view: 'billing/report',
                 context: {
-                    period,
+                    period: period,
                     name: notification.name,
                     company: invoice.company.name
                 }
             }).priority('high').attempts(5).save();
         }
-    }
-    async processBilling(team) {
-        try {
-            console.log('start billing');
-            // const valueUF = 28662.81; /*await this.getUFPrice();*/
-            // const valueDolar = 767.98; /*await this.getDolarPrice();*/
-            const valueUF = await this.getUFPrice();
-            const filter = {
-                'billing.active': true
-            };
-            if (team) {
-                filter.team = team;
-            }
-            const companies = await company_model_1.default.find(filter);
-            for (const company of companies) {
-                console.log(`calculating billing ${company.name}`);
-                const inventoryCars = await this.calculateCarsInInventory(company);
-                const checklistCars = await this.calculateCarsInChecklist(company);
-                const requestCars = await this.calculateCarsInRequest(company);
-                const totalInventory = inventoryCars * company.billing.inventoryPrice;
-                const totalChecklist = checklistCars * company.billing.checklistPrice;
-                const totalRequest = requestCars * company.billing.requestPrice;
-                const totalUF = totalInventory + totalChecklist + totalRequest;
-                const period = moment().format('YYYYMM');
-                const invoice = new invoice_model_1.default({
-                    team: company.team,
-                    company,
-                    period,
-                    inventoryCars,
-                    checklistCars,
-                    requestCars,
-                    inventoryPrice: company.billing.inventoryPrice,
-                    checklistPrice: company.billing.checklistPrice,
-                    requestPrice: company.billing.requestPrice,
-                    totalUF,
-                    valueUF,
-                    // valueDolar,
-                    // totalDolar: (totalUF * valueUF) / valueDolar,
-                    totalPeso: totalUF * valueUF
-                });
-                if (!await invoice_model_1.default.find({ company, period }).count()) {
-                    await invoice.save();
-                    this.createPDF(invoice, company);
+    };
+    BillingQueue.prototype.processBilling = function (team) {
+        return __awaiter(this, void 0, void 0, function () {
+            var valueUF, filter, companies, _i, companies_1, company, inventoryCars, checklistCars, requestCars, totalInventory, totalChecklist, totalRequest, totalUF, period, invoice, e_2;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0:
+                        _a.trys.push([0, 12, , 13]);
+                        console.log('start billing');
+                        return [4 /*yield*/, this.getUFPrice()];
+                    case 1:
+                        valueUF = _a.sent();
+                        filter = {
+                            'billing.active': true
+                        };
+                        if (team) {
+                            filter.team = team;
+                        }
+                        return [4 /*yield*/, company_model_1["default"].find(filter)];
+                    case 2:
+                        companies = _a.sent();
+                        _i = 0, companies_1 = companies;
+                        _a.label = 3;
+                    case 3:
+                        if (!(_i < companies_1.length)) return [3 /*break*/, 11];
+                        company = companies_1[_i];
+                        console.log("calculating billing " + company.name);
+                        return [4 /*yield*/, this.calculateCarsInInventory(company)];
+                    case 4:
+                        inventoryCars = _a.sent();
+                        return [4 /*yield*/, this.calculateCarsInChecklist(company)];
+                    case 5:
+                        checklistCars = _a.sent();
+                        return [4 /*yield*/, this.calculateCarsInRequest(company)];
+                    case 6:
+                        requestCars = _a.sent();
+                        totalInventory = inventoryCars * company.billing.inventoryPrice;
+                        totalChecklist = checklistCars * company.billing.checklistPrice;
+                        totalRequest = requestCars * company.billing.requestPrice;
+                        totalUF = totalInventory + totalChecklist + totalRequest;
+                        period = moment().format('YYYYMM');
+                        invoice = new invoice_model_1["default"]({
+                            team: company.team,
+                            company: company,
+                            period: period,
+                            inventoryCars: inventoryCars,
+                            checklistCars: checklistCars,
+                            requestCars: requestCars,
+                            inventoryPrice: company.billing.inventoryPrice,
+                            checklistPrice: company.billing.checklistPrice,
+                            requestPrice: company.billing.requestPrice,
+                            totalUF: totalUF,
+                            valueUF: valueUF,
+                            // valueDolar,
+                            // totalDolar: (totalUF * valueUF) / valueDolar,
+                            totalPeso: totalUF * valueUF
+                        });
+                        return [4 /*yield*/, invoice_model_1["default"].find({ company: company, period: period }).count()];
+                    case 7:
+                        if (!!(_a.sent())) return [3 /*break*/, 9];
+                        return [4 /*yield*/, invoice.save()];
+                    case 8:
+                        _a.sent();
+                        this.createPDF(invoice, company);
+                        return [3 /*break*/, 10];
+                    case 9:
+                        console.log(period + " " + company.name + " ya existe!!!.");
+                        _a.label = 10;
+                    case 10:
+                        _i++;
+                        return [3 /*break*/, 3];
+                    case 11: return [3 /*break*/, 13];
+                    case 12:
+                        e_2 = _a.sent();
+                        console.log(e_2);
+                        return [3 /*break*/, 13];
+                    case 13: return [2 /*return*/];
                 }
-                else {
-                    console.log(`${period} ${company.name} ya existe!!!.`);
-                }
-            }
-        }
-        catch (e) {
-            console.log(e);
-        }
-    }
-}
-exports.default = BillingQueue;
+            });
+        });
+    };
+    return BillingQueue;
+}());
+exports["default"] = BillingQueue;
 //# sourceMappingURL=billing.task.js.map

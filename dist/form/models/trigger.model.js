@@ -1,7 +1,7 @@
 "use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
+exports.__esModule = true;
 exports.formTriggerSchema = exports.triggerConfigSchema = exports.kindTrigger = exports.KindTrigger = void 0;
-const mongoose = require("mongoose");
+var mongoose = require("mongoose");
 var KindTrigger;
 (function (KindTrigger) {
     KindTrigger["file"] = "file";
@@ -31,14 +31,14 @@ exports.formTriggerSchema = new mongoose.Schema({
     },
     kind: {
         type: String,
-        enum: exports.kindTrigger
+        "enum": exports.kindTrigger
     },
     enabled: {
         type: Boolean,
-        default: true
+        "default": true
     },
     config: exports.triggerConfigSchema
 });
-const FormTrigger = mongoose.model('FormTrigger', exports.formTriggerSchema);
-exports.default = FormTrigger;
+var FormTrigger = mongoose.model('FormTrigger', exports.formTriggerSchema);
+exports["default"] = FormTrigger;
 //# sourceMappingURL=trigger.model.js.map

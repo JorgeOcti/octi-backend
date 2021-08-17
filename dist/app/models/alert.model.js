@@ -1,7 +1,7 @@
 "use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-const mongoose = require("mongoose");
-const alertSchema = new mongoose.Schema({
+exports.__esModule = true;
+var mongoose = require("mongoose");
+var alertSchema = new mongoose.Schema({
     name: {
         type: String
     },
@@ -15,11 +15,11 @@ const alertSchema = new mongoose.Schema({
     },
     gte: {
         type: Number,
-        default: 0
+        "default": 0
     },
     lte: {
         type: Number,
-        default: 0
+        "default": 0
     },
     users: [{
             type: mongoose.Schema.Types.ObjectId,
@@ -28,6 +28,6 @@ const alertSchema = new mongoose.Schema({
 }, {
     timestamps: true
 });
-const Alert = mongoose.model('Alert', alertSchema);
-exports.default = Alert;
+var Alert = mongoose.model('Alert', alertSchema);
+exports["default"] = Alert;
 //# sourceMappingURL=alert.model.js.map

@@ -10,8 +10,9 @@ const distributionRouter = express.Router();
 
 // web pages
 distributionRouter.get('/transmittals/', isLoggedIn, TransmittalController.index);
-distributionRouter.get('/transmittals/:id/', isLoggedIn, TransmittalController.index);
+distributionRouter.get('/transmittals/export-xls/', isJWTAuthenticated, TransmittalController.xlsExport);
 distributionRouter.get('/transmittals/create/', isLoggedIn, TransmittalController.index);
+distributionRouter.get('/transmittals/:id/', isLoggedIn, TransmittalController.index);
 
 // apis
 distributionRouter.get('/api/v1/transmittals/', isJWTAuthenticated, TransmittalController.apiList);
@@ -21,6 +22,7 @@ distributionRouter.get('/api/v1/transmittals/:id/', isJWTAuthenticated, Transmit
 distributionRouter.patch('/api/v1/transmittals/:id/', isJWTAuthenticated, TransmittalController.apiUpdate);
 distributionRouter.delete('/api/v1/transmittals/:id/', isJWTAuthenticated, TransmittalController.apiDelete);
 distributionRouter.post('/api/v1/transmittals/upload-file/', isJWTAuthenticated, TransmittalController.uploadFile);
+distributionRouter.post('/api/v1/transmittals/attach-evidence/', isJWTAuthenticated, TransmittalController.attachEvidence);
 
 distributionRouter.get('/api/v1/transmittals/item/', isJWTAuthenticated, TransmittalItemController.apiList);
 distributionRouter.post('/api/v1/transmittals/item/', isJWTAuthenticated, TransmittalItemController.apiCreate);

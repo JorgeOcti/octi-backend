@@ -1,7 +1,7 @@
 "use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-const mongoose = require("mongoose");
-const inventorySettingSchema = new mongoose.Schema({
+exports.__esModule = true;
+var mongoose = require("mongoose");
+var inventorySettingSchema = new mongoose.Schema({
     pending: {
         type: String
     },
@@ -40,7 +40,7 @@ const inventorySettingSchema = new mongoose.Schema({
     },
     leftoverDifferentVenue: {
         type: Boolean,
-        default: false
+        "default": false
     },
     reported: {
         type: String
@@ -52,7 +52,7 @@ const inventorySettingSchema = new mongoose.Schema({
         type: String
     }
 });
-const teamSettingSchema = new mongoose.Schema({
+var teamSettingSchema = new mongoose.Schema({
     team: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Team'
@@ -61,6 +61,6 @@ const teamSettingSchema = new mongoose.Schema({
 }, {
     timestamps: true
 });
-const TeamSetting = mongoose.model('TeamSetting', teamSettingSchema);
-exports.default = TeamSetting;
+var TeamSetting = mongoose.model('TeamSetting', teamSettingSchema);
+exports["default"] = TeamSetting;
 //# sourceMappingURL=teamSetting.model.js.map

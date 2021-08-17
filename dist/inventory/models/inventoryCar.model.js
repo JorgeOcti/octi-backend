@@ -1,8 +1,8 @@
 "use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
+exports.__esModule = true;
 exports.choicesStatusCarInventory = exports.ChoicesStatusCarInventory = void 0;
-const mongoose = require("mongoose");
-const invetoryCommentCars = new mongoose.Schema({
+var mongoose = require("mongoose");
+var invetoryCommentCars = new mongoose.Schema({
     user: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User'
@@ -12,7 +12,7 @@ const invetoryCommentCars = new mongoose.Schema({
     },
     createdAt: {
         type: Date,
-        default: new Date()
+        "default": new Date()
     }
 });
 var ChoicesStatusCarInventory;
@@ -31,7 +31,7 @@ exports.choicesStatusCarInventory = [
     ChoicesStatusCarInventory.missing,
     ChoicesStatusCarInventory.reported
 ];
-const inventoryCarSchema = new mongoose.Schema({
+var inventoryCarSchema = new mongoose.Schema({
     inventory: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Inventory'
@@ -63,7 +63,7 @@ const inventoryCarSchema = new mongoose.Schema({
     },
     labelText: {
         type: String,
-        default: ''
+        "default": ''
     },
     labelBy: {
         type: mongoose.Schema.Types.ObjectId,
@@ -75,12 +75,12 @@ const inventoryCarSchema = new mongoose.Schema({
     },
     customizedStatusText: {
         type: String,
-        default: ''
+        "default": ''
     },
     status: {
         type: String,
-        enum: exports.choicesStatusCarInventory,
-        default: ChoicesStatusCarInventory.pending
+        "enum": exports.choicesStatusCarInventory,
+        "default": ChoicesStatusCarInventory.pending
     }
 }, {
     timestamps: true
@@ -88,6 +88,6 @@ const inventoryCarSchema = new mongoose.Schema({
 inventoryCarSchema.index({ inventory: 1 });
 inventoryCarSchema.index({ inventory: 1, car: 1 });
 inventoryCarSchema.index({ venue: 1, venueFound: 1, createdAt: 1 });
-const InventoryCar = mongoose.model('InventoryCar', inventoryCarSchema);
-exports.default = InventoryCar;
+var InventoryCar = mongoose.model('InventoryCar', inventoryCarSchema);
+exports["default"] = InventoryCar;
 //# sourceMappingURL=inventoryCar.model.js.map

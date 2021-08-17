@@ -14,6 +14,8 @@ import {IRequestItem} from '../../../../../../../src/request/interfaces/requestI
 import ApiService from "../../../utils/axios";
 import {AxiosError, AxiosResponse} from "axios";
 import * as  swal from "sweetalert";
+import {hasPermission} from "../../../utils/common";
+import {IWindow} from "../../../interfaces/window";
 
 interface IPropsType extends RouteComponentProps<{ ticket: string }> {
   dispatch: Dispatch<ITransmittalActionTypes>;
@@ -26,6 +28,7 @@ interface IPropsType extends RouteComponentProps<{ ticket: string }> {
 interface IStateType {
   error: Error | null;
 }
+declare let window: IWindow;
 
 class TransmitalListDetail extends React.Component<IPropsType, IStateType> {
 
@@ -56,51 +59,66 @@ class TransmitalListDetail extends React.Component<IPropsType, IStateType> {
             {transmittal.transporter.patent}
           </div>
           <div className="flex-45 col-sm-2 col-xs-2 col-md-2 col-lg-2">
-            <BootstrapSelect
-              noneSelectedText="Selecciona un chófer"
-              displayItems={2}
-              sm={true}
-              selectedText="choferes seleccionadas."
-              selected={transmittal.transporter.driver ? [transmittal.transporter.driver._id] : []}
-              autoClouse={true}
-              allOption={false}
-              search={true}
-              options={drivers.map((driver: any) => ({
-                value: driver._id,
-                text: `${driver.firstName} ${driver.lastName}`
-              }))}
-              onClick={(e: string) => {
-                this.props.transmittalActions.updateTransmittalThunkAction({
-                  _id: transmittal._id,
-                  'transporter.driver': e
-                });
-              }}
-            />
+            {
+              hasPermission(window.user, 'changeTransmittal') ?
+                (
+                  <BootstrapSelect
+                    noneSelectedText="Selecciona un chófer"
+                    displayItems={2}
+                    sm={true}
+                    selectedText="choferes seleccionadas."
+                    selected={transmittal.transporter.driver ? [transmittal.transporter.driver._id] : []}
+                    autoClouse={true}
+                    allOption={false}
+                    search={true}
+                    options={drivers.map((driver: any) => ({
+                      value: driver._id,
+                      text: `${driver.firstName} ${driver.lastName}`
+                    }))}
+                    onClick={(e: string) => {
+                      this.props.transmittalActions.updateTransmittalThunkAction({
+                        _id: transmittal._id,
+                        'transporter.driver': e
+                      });
+                    }}
+                  />
+                ) :
+                (
+                  `${transmittal.transporter.driver.firstName} ${transmittal.transporter.driver.lastName}`
+                )
+            }
             {/*{transmittal.transporter.driver._id}*/}
-            {/*{transmittal.transporter.driver.firstName} {transmittal.transporter.driver.lastName}*/}
           </div>
           <div className="flex-45 col-sm-2 col-xs-2 col-md-2 col-lg-2">
-            <BootstrapSelect
-              noneSelectedText="Selecciona un transportista"
-              displayItems={2}
-              sm={true}
-              selectedText="transportistas seleccionadas."
-              selected={transmittal.transporter.carrier ? [transmittal.transporter.carrier._id] : []}
-              autoClouse={true}
-              allOption={false}
-              search={true}
-              options={carriers.map((carrier: any) => ({
-                value: carrier._id,
-                text: carrier.name
-              }))}
-              onClick={(e: string) => {
-                this.props.transmittalActions.updateTransmittalThunkAction({
-                  _id: transmittal._id,
-                  'transporter.carrier': e
-                });
-              }}
-            />
-            {/*{transmittal.transporter.carrier.name}*/}
+            {
+              hasPermission(window.user, 'changeTransmittal') ?
+                (
+                  <BootstrapSelect
+                    noneSelectedText="Selecciona un transportista"
+                    displayItems={2}
+                    sm={true}
+                    selectedText="transportistas seleccionadas."
+                    selected={transmittal.transporter.carrier ? [transmittal.transporter.carrier._id] : []}
+                    autoClouse={true}
+                    allOption={false}
+                    search={true}
+                    options={carriers.map((carrier: any) => ({
+                      value: carrier._id,
+                      text: carrier.name
+                    }))}
+                    onClick={(e: string) => {
+                      this.props.transmittalActions.updateTransmittalThunkAction({
+                        _id: transmittal._id,
+                        'transporter.carrier': e
+                      });
+                    }}
+                  />
+                ) :
+                (
+                  `${transmittal.transporter.carrier.name}`
+                )
+            }
+
           </div>
           <div className="flex-45 col-sm-2 col-xs-2 col-md-2 col-lg-2">
             {transmittal.files.length}
@@ -132,9 +150,9 @@ class TransmitalListDetail extends React.Component<IPropsType, IStateType> {
                 <th className="middle" style={{ width: '110px' }}>Fecha emisión</th>
                 <th className="middle" style={{ width: '110px' }}>Fecha arribo</th>
                 <th className="middle" style={{ width: '150px' }}>Observación</th>
-                <ShowIf condition={true}>
-                  {/*<ShowIf condition={hasPermission(window.user, 'deleteRequest')}>*/}
-                  <th className="middle" style={{ width: '30px' }} />
+                <th className="middle" style={{width: '30px'}}>Llegó</th>
+                <ShowIf condition={hasPermission(window.user, 'changeTransmittal')}>
+                  <th className="middle" style={{width: '30px'}}/>
                 </ShowIf>
               </tr>
             </thead>
@@ -150,13 +168,15 @@ class TransmitalListDetail extends React.Component<IPropsType, IStateType> {
               }
             </tbody>
           </table>
-          <div className="row">
-            <div className="col-md-12 text-right m-b-10 m-t-10">
-              <button className="btn btn-sm btn-success" onClick={this.openDialogAddCar}>
-                <i className="fa fa-fw fa-plus" /> Agregar vehículo
-              </button>
+          <ShowIf condition={hasPermission(window.user, 'changeTransmittal')}>
+            <div className="row">
+              <div className="col-md-12 text-right m-b-10 m-t-10">
+                <button className="btn btn-sm btn-success" onClick={this.openDialogAddCar}>
+                  <i className="fa fa-fw fa-plus"/> Agregar vehículo
+                </button>
+              </div>
             </div>
-          </div>
+          </ShowIf>
         </div>
       </React.Fragment>
     );
@@ -196,7 +216,7 @@ class TransmitalListDetail extends React.Component<IPropsType, IStateType> {
 
   private padNumber(n: number): string {
     const s = '0000' + n;
-    return s.substr(s.length - 4);
+    return s.substr(s.length - 5);
   }
 
 }
@@ -212,7 +232,7 @@ const mapDispatchToProps = (dispatch: any) => {
   return {
     dispatch,
     transmittalActions,
-    loadDataAction: (title: string, body: JSX.Element, footer: JSX.Element) => dispatch(loadDataAction(title, body, footer)),
+    loadDataAction: (title: string, body: JSX.Element, footer: JSX.Element) => dispatch(loadDataAction(title, body, footer))
   };
 };
 

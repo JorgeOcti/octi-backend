@@ -1,9 +1,9 @@
 "use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
+exports.__esModule = true;
 exports.choicesStatusTransmittal = exports.ChoicesStatusTransmittal = void 0;
-const mongoose = require("mongoose");
-const mongoosePaginate = require("mongoose-paginate");
-const mongooseAggregatePaginate = require("mongoose-aggregate-paginate-v2");
+var mongoose = require("mongoose");
+var mongoosePaginate = require("mongoose-paginate");
+var mongooseAggregatePaginate = require("mongoose-aggregate-paginate-v2");
 var ChoicesStatusTransmittal;
 (function (ChoicesStatusTransmittal) {
     ChoicesStatusTransmittal["pending"] = "pending";
@@ -17,7 +17,7 @@ exports.choicesStatusTransmittal = [
     ChoicesStatusTransmittal.damaged,
     ChoicesStatusTransmittal.completed,
 ];
-const transmittalTransporterSchema = new mongoose.Schema({
+var transmittalTransporterSchema = new mongoose.Schema({
     carrier: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Carrier'
@@ -27,12 +27,12 @@ const transmittalTransporterSchema = new mongoose.Schema({
         ref: 'User'
     },
     patent: {
-        type: String,
-    },
+        type: String
+    }
 }, {
     timestamps: true
 });
-const transmittalSchema = new mongoose.Schema({
+var transmittalSchema = new mongoose.Schema({
     name: {
         type: String
     },
@@ -63,8 +63,8 @@ const transmittalSchema = new mongoose.Schema({
     },
     status: {
         type: String,
-        enum: exports.choicesStatusTransmittal,
-        default: ChoicesStatusTransmittal.pending
+        "enum": exports.choicesStatusTransmittal,
+        "default": ChoicesStatusTransmittal.pending
     }
 }, {
     timestamps: true
@@ -79,6 +79,6 @@ transmittalSchema.set('toObject', { virtuals: true });
 transmittalSchema.set('toJSON', { virtuals: true });
 transmittalSchema.plugin(mongoosePaginate);
 transmittalSchema.plugin(mongooseAggregatePaginate);
-const Transmittal = mongoose.model('Transmittal', transmittalSchema);
-exports.default = Transmittal;
+var Transmittal = mongoose.model('Transmittal', transmittalSchema);
+exports["default"] = Transmittal;
 //# sourceMappingURL=transmittal.model.js.map

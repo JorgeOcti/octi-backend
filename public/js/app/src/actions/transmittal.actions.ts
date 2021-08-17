@@ -99,7 +99,6 @@ export default class TransmittalActions {
     });
   }
 
-
   public loadVenues(venues:  IVenueModel[]): void {
     this.dispatch({
       type: LOAD_VENUES_TRANSMITTAL,

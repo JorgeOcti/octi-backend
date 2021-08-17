@@ -1,7 +1,7 @@
 "use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
+exports.__esModule = true;
 exports.kindSchema = void 0;
-const mongoose = require("mongoose");
+var mongoose = require("mongoose");
 exports.kindSchema = new mongoose.Schema({
     team: {
         type: mongoose.Schema.Types.ObjectId,
@@ -15,6 +15,6 @@ exports.kindSchema = new mongoose.Schema({
 }, {
     timestamps: true
 });
-const Kind = mongoose.model('Kind', exports.kindSchema);
-exports.default = Kind;
+var Kind = mongoose.model('Kind', exports.kindSchema);
+exports["default"] = Kind;
 //# sourceMappingURL=kind.model.js.map

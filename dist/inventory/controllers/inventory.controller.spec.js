@@ -1,22 +1,33 @@
 "use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-const chai = require("chai");
-const chaiHttp = require("chai-http");
-const cheerio = require("cheerio");
-const fs = require("fs");
+var __assign = (this && this.__assign) || function () {
+    __assign = Object.assign || function(t) {
+        for (var s, i = 1, n = arguments.length; i < n; i++) {
+            s = arguments[i];
+            for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p))
+                t[p] = s[p];
+        }
+        return t;
+    };
+    return __assign.apply(this, arguments);
+};
+exports.__esModule = true;
+var chai = require("chai");
+var chaiHttp = require("chai-http");
+var cheerio = require("cheerio");
+var fs = require("fs");
 require("mocha");
-const path = require("path");
-const server_1 = require("../../server");
-const inventory_model_1 = require("../models/inventory.model");
-const request = require('supertest');
+var path = require("path");
+var server_1 = require("../../server");
+var inventory_model_1 = require("../models/inventory.model");
+var request = require('supertest');
 chai.use(chaiHttp);
 chai.config.includeStack = true;
 chai.config.showDiff = true;
-const expect = chai.expect;
-let token = '';
-const authenticatedUser = request.agent(server_1.default);
-let firstInventory;
-const inventoryData = {
+var expect = chai.expect;
+var token = '';
+var authenticatedUser = request.agent(server_1["default"]);
+var firstInventory;
+var inventoryData = {
     name: 'Inventory test',
     notification: true,
     carsByVenue: [{
@@ -51,22 +62,22 @@ const inventoryData = {
                 }]
         }]
 };
-describe('inventories', () => {
-    before((done) => {
-        chai.request(server_1.default)
+describe('inventories', function () {
+    before(function (done) {
+        chai.request(server_1["default"])
             .post('/api/v1/login/')
             .send({
             username: 'gmunoz@osacontrol.com',
             password: '123'
         })
-            .end((err, res) => {
+            .end(function (err, res) {
             token = res.body.data.token;
             authenticatedUser
                 .get('/account/login/')
-                .end((err, res) => {
+                .end(function (err, res) {
                 expect(res.status).to.equal(200);
-                const $html = cheerio(res.text);
-                const csrf = $html.find('input[name=_csrf]').val();
+                var $html = cheerio(res.text);
+                var csrf = $html.find('input[name=_csrf]').val();
                 authenticatedUser
                     .post('/account/login/')
                     .set('cookie', res.header['set-cookie'][0])
@@ -75,18 +86,18 @@ describe('inventories', () => {
                     password: '123',
                     _csrf: csrf
                 })
-                    .end((err, res) => {
+                    .end(function (err, res) {
                     expect(res.status).to.equal(302);
                     done();
                 });
             });
         });
     });
-    it('it should return list of inventories api', (done) => {
-        chai.request(server_1.default)
+    it('it should return list of inventories api', function (done) {
+        chai.request(server_1["default"])
             .get('/api/v1/inventory/')
-            .set('Authorization', `JWT ${token}`)
-            .end((err, res) => {
+            .set('Authorization', "JWT " + token)
+            .end(function (err, res) {
             expect(res.status).to.equal(200);
             expect(res.body).have.property('status');
             expect(res.body.status).to.equal(200);
@@ -96,7 +107,7 @@ describe('inventories', () => {
                 'status'
             ]);
             expect(res.body.data).be.a('array');
-            res.body.data.forEach((item) => {
+            res.body.data.forEach(function (item) {
                 expect(item).to.have.all.keys([
                     '_id',
                     'name',
@@ -107,72 +118,68 @@ describe('inventories', () => {
             done();
         });
     });
-    it('it should enter in list of inventories', (done) => {
+    it('it should enter in list of inventories', function (done) {
         authenticatedUser
             .get('/inventory/')
-            .end((err, res) => {
+            .end(function (err, res) {
             expect(res.status).to.equal(200);
             done();
         });
     });
-    it('it should get list of inventories', (done) => {
+    it('it should get list of inventories', function (done) {
         authenticatedUser
             .get('/api/inventory/')
-            .end((err, res) => {
+            .end(function (err, res) {
             expect(res.status).to.equal(200);
             done();
         });
     });
-    it('it should get detail of inventories', (done) => {
+    it('it should get detail of inventories', function (done) {
         authenticatedUser
-            .get(`/api/inventory/${firstInventory._id}`)
-            .end((err, res) => {
+            .get("/api/inventory/" + firstInventory._id)
+            .end(function (err, res) {
             expect(res.status).to.equal(200);
             done();
         });
     });
-    it('it should fail when get detail of inventories', (done) => {
+    it('it should fail when get detail of inventories', function (done) {
         authenticatedUser
-            .get(`/api/inventory/0af487b4f6a4c95ccd991400`)
-            .end((err, res) => {
+            .get("/api/inventory/0af487b4f6a4c95ccd991400")
+            .end(function (err, res) {
             expect(res.status).to.equal(404);
             done();
         });
     });
-    it('it should enter in detail of inventories', (done) => {
+    it('it should enter in detail of inventories', function (done) {
         authenticatedUser
-            .get(`/inventory/${firstInventory._id}`)
-            .end((err, res) => {
+            .get("/inventory/" + firstInventory._id)
+            .end(function (err, res) {
             expect(res.status).to.equal(200);
             done();
         });
     });
-    it('it should fail when enter in detail of inventories', (done) => {
+    it('it should fail when enter in detail of inventories', function (done) {
         authenticatedUser
-            .get(`/inventory/0af487b4f6a4c95ccd991400`)
-            .end((err, res) => {
+            .get("/inventory/0af487b4f6a4c95ccd991400")
+            .end(function (err, res) {
             expect(res.status).to.equal(404);
             done();
         });
     });
-    let inventoryID = '';
-    it('it should enter in create inventory', (done) => {
+    var inventoryID = '';
+    it('it should enter in create inventory', function (done) {
         authenticatedUser
             .get('/api/inventory/')
-            .end((err, res) => {
+            .end(function (err, res) {
             expect(res.status).to.equal(200);
             done();
         });
     });
-    it('it should create inventory', (done) => {
+    it('it should create inventory', function (done) {
         authenticatedUser
             .post('/api/inventory/')
-            .send({
-            ...inventoryData,
-            carsByVenue: JSON.stringify(inventoryData.carsByVenue),
-            notification: inventoryData.notification.toString()
-        })
-            .end((err, res) => {
+            .send(__assign(__assign({}, inventoryData), { carsByVenue: JSON.stringify(inventoryData.carsByVenue), notification: inventoryData.notification.toString() }))
+            .end(function (err, res) {
             expect(res.status).to.equal(200);
             expect(res.body).have.property('message');
             expect(res.body).have.property('status');
@@ -180,75 +187,75 @@ describe('inventories', () => {
             done();
         });
     });
-    it('it should found car in my venue', (done) => {
+    it('it should found car in my venue', function (done) {
         authenticatedUser
-            .post(`/api/v1/inventory/${inventoryID}/`)
+            .post("/api/v1/inventory/" + inventoryID + "/")
             .send({
             vin: inventoryData.carsByVenue[0].cars[0].vin,
             images: ['5b88332bd99c9365a40e0b63']
         })
-            .end((err, res) => {
+            .end(function (err, res) {
             expect(res.status).to.equal(200);
             expect(res.body).have.property('status');
             expect(res.body.status).to.equal(200);
             done();
         });
     });
-    it('it should fail found repeat car in my venue', (done) => {
+    it('it should fail found repeat car in my venue', function (done) {
         authenticatedUser
-            .post(`/api/v1/inventory/${inventoryID}/`)
+            .post("/api/v1/inventory/" + inventoryID + "/")
             .send({
             vin: inventoryData.carsByVenue[0].cars[0].vin,
             images: []
         })
-            .end((err, res) => {
+            .end(function (err, res) {
             expect(res.status).to.equal(400);
             expect(res.body.status).to.equal(400);
             done();
         });
     });
-    it('it should fail found when no exist inventary', (done) => {
+    it('it should fail found when no exist inventary', function (done) {
         authenticatedUser
-            .post(`/api/v1/inventory/0af487b4f6a4c95ccd991400`)
+            .post("/api/v1/inventory/0af487b4f6a4c95ccd991400")
             .send({
             vin: inventoryData.carsByVenue[0].cars[0].vin,
             images: []
         })
-            .end((err, res) => {
+            .end(function (err, res) {
             expect(res.status).to.equal(404);
             expect(res.body.status).to.equal(404);
             done();
         });
     });
-    it('it should found car in other venue', (done) => {
+    it('it should found car in other venue', function (done) {
         authenticatedUser
-            .post(`/api/v1/inventory/${inventoryID}/`)
+            .post("/api/v1/inventory/" + inventoryID + "/")
             .send({
             vin: inventoryData.carsByVenue[1].cars[0].vin,
             images: []
         })
-            .end((err, res) => {
+            .end(function (err, res) {
             expect(res.status).to.equal(200);
             expect(res.body).have.property('status');
             expect(res.body.status).to.equal(200);
             done();
         });
     });
-    it('it should comment car', (done) => {
-        inventory_model_1.default.findById(inventoryID).populate([{
+    it('it should comment car', function (done) {
+        inventory_model_1["default"].findById(inventoryID).populate([{
                 path: 'cars'
-            }]).exec((err, invetory) => {
+            }]).exec(function (err, invetory) {
             if (err) {
                 console.log(err);
             }
             if (invetory) {
                 authenticatedUser
-                    .post(`/api/inventory/${inventoryID}/comment/`)
+                    .post("/api/inventory/" + inventoryID + "/comment/")
                     .send({
                     _id: invetory.cars[0]._id,
                     comment: 'Prueba comentario'
                 })
-                    .end((err, res) => {
+                    .end(function (err, res) {
                     expect(res.status).to.equal(200);
                     expect(res.body).have.property('message');
                     expect(res.body).have.property('status');
@@ -258,9 +265,9 @@ describe('inventories', () => {
             }
         });
     });
-    it('it should report found car', (done) => {
+    it('it should report found car', function (done) {
         authenticatedUser
-            .post(`/api/v1/inventory/${inventoryID}/report-car/`)
+            .post("/api/v1/inventory/" + inventoryID + "/report-car/")
             .send({
             vin: '3BRBD33B7J159042',
             brand: 'GONZALO',
@@ -268,16 +275,16 @@ describe('inventories', () => {
             color: 'Blanco',
             images: ['5b88332bd99c9365a40e0b63']
         })
-            .end((err, res) => {
+            .end(function (err, res) {
             expect(res.status).to.equal(200);
             expect(res.body).have.property('status');
             expect(res.body.status).to.equal(200);
             done();
         });
     });
-    it('it should fail report found car', (done) => {
+    it('it should fail report found car', function (done) {
         authenticatedUser
-            .post(`/api/v1/inventory/0af487b4f6a4c95ccd991400/report-car/`)
+            .post("/api/v1/inventory/0af487b4f6a4c95ccd991400/report-car/")
             .send({
             vin: '3BRBD33B7J159042',
             brand: 'GONZALO',
@@ -285,50 +292,48 @@ describe('inventories', () => {
             color: 'Blanco',
             images: []
         })
-            .end((err, res) => {
+            .end(function (err, res) {
             expect(res.status).to.equal(404);
             done();
         });
     });
-    it('it should upload photo', (done) => {
+    it('it should upload photo', function (done) {
         authenticatedUser
-            .post(`/api/v1/inventory/${inventoryID}/upload-file/`)
+            .post("/api/v1/inventory/" + inventoryID + "/upload-file/")
             .attach('file', fs.readFileSync(path.join(__dirname, '../../../test/assets/images/t_head_bg_america.jpg')), 't_head_bg_america.jpg')
-            .end((err, res) => {
+            .end(function (err, res) {
             expect(res.status).to.equal(201);
             expect(res.body).have.property('status');
             expect(res.body.status).to.equal(201);
             done();
         });
     });
-    it('it should finish inventory', (done) => {
+    it('it should finish inventory', function (done) {
         authenticatedUser
-            .post(`/api/inventory/0af487b4f6a4c95ccd991400/finish/`)
-            .end((err, res) => {
+            .post("/api/inventory/0af487b4f6a4c95ccd991400/finish/")
+            .end(function (err, res) {
             expect(res.status).to.equal(400);
             done();
         });
     });
-    it('it should fail finish inventory', (done) => {
+    it('it should fail finish inventory', function (done) {
         authenticatedUser
-            .post(`/api/inventory/${inventoryID}/finish/`)
-            .end((err, res) => {
+            .post("/api/inventory/" + inventoryID + "/finish/")
+            .end(function (err, res) {
             expect(res.status).to.equal(200);
             done();
         });
     });
-    it('it should fail delete inventory', (done) => {
-        authenticatedUser
-            .delete(`/api/inventory/0af487b4f6a4c95ccd991400/`)
-            .end((err, res) => {
+    it('it should fail delete inventory', function (done) {
+        authenticatedUser["delete"]("/api/inventory/0af487b4f6a4c95ccd991400/")
+            .end(function (err, res) {
             expect(res.status).to.equal(400);
             done();
         });
     });
-    it('it should delete inventory', (done) => {
-        authenticatedUser
-            .delete(`/api/inventory/${inventoryID}/`)
-            .end((err, res) => {
+    it('it should delete inventory', function (done) {
+        authenticatedUser["delete"]("/api/inventory/" + inventoryID + "/")
+            .end(function (err, res) {
             expect(res.status).to.equal(200);
             done();
         });

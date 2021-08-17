@@ -1,6 +1,6 @@
 "use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-const Manufacturers = {
+exports.__esModule = true;
+var Manufacturers = {
     "935": "Citroën Brazil",
     "936": "Peugeot Brazil",
     "4TL": "Toyota",
@@ -1056,7 +1056,7 @@ const Manufacturers = {
     "LGW": "GREAT WALL",
     "LJ1": "JAC"
 };
-exports.default = Manufacturers;
+exports["default"] = Manufacturers;
 /*
 10T, Oshkosh
 11V, Ottawa

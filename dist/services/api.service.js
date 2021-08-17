@@ -1,31 +1,31 @@
 "use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-const axios_1 = require("axios");
-const logger_service_1 = require("./logger.service");
-class ApiService {
-    instance;
-    constructor() {
-        const headers = {};
+exports.__esModule = true;
+var axios_1 = require("axios");
+var logger_service_1 = require("./logger.service");
+var ApiService = /** @class */ (function () {
+    function ApiService() {
+        var headers = {};
         headers['Content-Type'] = 'application/json';
-        this.instance = axios_1.default.create({
-            headers
+        this.instance = axios_1["default"].create({
+            headers: headers
         });
     }
     /* istanbul ignore next */
-    errorHandler(err) {
-        const ingnoreStatus = [404];
+    ApiService.prototype.errorHandler = function (err) {
+        var ingnoreStatus = [404];
         if (err.response) {
             if (!ingnoreStatus.includes(err.response.status)) {
-                logger_service_1.default.error(JSON.stringify(err.response));
+                logger_service_1["default"].error(JSON.stringify(err.response));
             }
         }
         else if (err.request) {
-            logger_service_1.default.error(JSON.stringify(err.request));
+            logger_service_1["default"].error(JSON.stringify(err.request));
         }
         else {
-            logger_service_1.default.error(JSON.stringify(err));
+            logger_service_1["default"].error(JSON.stringify(err));
         }
-    }
-}
-exports.default = new ApiService();
+    };
+    return ApiService;
+}());
+exports["default"] = new ApiService();
 //# sourceMappingURL=api.service.js.map

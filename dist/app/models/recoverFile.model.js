@@ -1,11 +1,11 @@
 "use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
+exports.__esModule = true;
 exports.recoverFileSchema = void 0;
-const mongoose = require("mongoose");
-const mongooseCrate = require("mongoose-crate");
-const MongooseCrateS3 = require("mongoose-crate-s3");
-const s3Config = require("../../../s3-config.json");
-const fileSchema = new mongoose.Schema({
+var mongoose = require("mongoose");
+var mongooseCrate = require("mongoose-crate");
+var MongooseCrateS3 = require("mongoose-crate-s3");
+var s3Config = require("../../../s3-config.json");
+var fileSchema = new mongoose.Schema({
     url: {
         type: String
     },
@@ -44,7 +44,7 @@ exports.recoverFileSchema.plugin(mongooseCrate, {
         acl: 'public-read',
         region: process.env.S3_REGION || s3Config.region,
         // where the file is stored in the bucket - defaults to this function
-        path: (attachment) => {
+        path: function (attachment) {
             /* attachment params:
             estination:"/tmp/"
             encoding:"7bit"
@@ -57,13 +57,13 @@ exports.recoverFileSchema.plugin(mongooseCrate, {
             size:966
             type:"image/svg"
             * */
-            return `/forms/files/${attachment.company}/recover/${attachment.user}/${attachment.originalname}`;
+            return "/forms/files/" + attachment.company + "/recover/" + attachment.user + "/" + attachment.originalname;
         }
     }),
     fields: {
         file: {}
     }
 });
-const RecoverFile = mongoose.model('RecoverFile', exports.recoverFileSchema);
-exports.default = RecoverFile;
+var RecoverFile = mongoose.model('RecoverFile', exports.recoverFileSchema);
+exports["default"] = RecoverFile;
 //# sourceMappingURL=recoverFile.model.js.map

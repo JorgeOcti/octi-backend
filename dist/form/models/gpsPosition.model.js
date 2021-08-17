@@ -1,8 +1,8 @@
 "use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-const mongoose = require("mongoose");
-const mongoosePaginate = require("mongoose-paginate");
-const gpsPositionSchema = new mongoose.Schema({
+exports.__esModule = true;
+var mongoose = require("mongoose");
+var mongoosePaginate = require("mongoose-paginate");
+var gpsPositionSchema = new mongoose.Schema({
     lat: {
         type: Number
     },
@@ -33,11 +33,11 @@ const gpsPositionSchema = new mongoose.Schema({
     },
     provider: {
         type: String
-    },
+    }
 }, {
     timestamps: true
 });
 gpsPositionSchema.plugin(mongoosePaginate);
-const GPSPosition = mongoose.model('GPSPosition', gpsPositionSchema);
-exports.default = GPSPosition;
+var GPSPosition = mongoose.model('GPSPosition', gpsPositionSchema);
+exports["default"] = GPSPosition;
 //# sourceMappingURL=gpsPosition.model.js.map

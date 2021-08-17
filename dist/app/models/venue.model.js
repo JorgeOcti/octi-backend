@@ -1,9 +1,9 @@
 "use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
+exports.__esModule = true;
 exports.choicesStatusCarInventory = exports.ChoicesTypeVenue = void 0;
-const mongoose = require("mongoose");
-const mongoosePaginate = require("mongoose-paginate");
-const venueDay_model_1 = require("./venueDay.model");
+var mongoose = require("mongoose");
+var mongoosePaginate = require("mongoose-paginate");
+var venueDay_model_1 = require("./venueDay.model");
 var ChoicesTypeVenue;
 (function (ChoicesTypeVenue) {
     ChoicesTypeVenue["distributor"] = "distributor";
@@ -13,21 +13,21 @@ exports.choicesStatusCarInventory = [
     ChoicesTypeVenue.distributor,
     ChoicesTypeVenue.receiver
 ];
-const venueSchema = new mongoose.Schema({
+var venueSchema = new mongoose.Schema({
     name: {
         type: String,
         required: true
     },
     abbreviation: {
-        type: String,
+        type: String
     },
     lat: {
         type: Number,
-        default: 0
+        "default": 0
     },
     lng: {
         type: Number,
-        default: 0
+        "default": 0
     },
     team: {
         type: mongoose.Schema.Types.ObjectId,
@@ -43,12 +43,12 @@ const venueSchema = new mongoose.Schema({
     },
     shippingMaxDays: {
         type: Number,
-        default: 5
+        "default": 5
     },
     type: {
         type: String,
-        enum: exports.choicesStatusCarInventory,
-        default: ChoicesTypeVenue.receiver
+        "enum": exports.choicesStatusCarInventory,
+        "default": ChoicesTypeVenue.receiver
     },
     sendToDays: {
         type: [venueDay_model_1.venueDaySchema]
@@ -58,36 +58,36 @@ const venueSchema = new mongoose.Schema({
                 type: mongoose.Schema.Types.ObjectId,
                 ref: 'Venue'
             }],
-        default: []
+        "default": []
     },
     receiveFrom: {
         type: [{
                 type: mongoose.Schema.Types.ObjectId,
                 ref: 'Venue'
             }],
-        default: []
+        "default": []
     },
     receptionCarriers: {
         type: [{
                 type: mongoose.Schema.Types.ObjectId,
                 ref: 'Carrier'
             }],
-        default: []
+        "default": []
     },
     shippingCarriers: {
         type: [{
                 type: mongoose.Schema.Types.ObjectId,
                 ref: 'Carrier'
             }],
-        default: []
+        "default": []
     },
     deleted: {
         type: Boolean,
-        default: false
+        "default": false
     },
     active: {
         type: Boolean,
-        default: true
+        "default": true
     }
 }, {
     timestamps: true
@@ -105,6 +105,6 @@ venueSchema.virtual('participants', {
     foreignField: 'venue',
     justOne: false
 });
-const Venue = mongoose.model('Venue', venueSchema);
-exports.default = Venue;
+var Venue = mongoose.model('Venue', venueSchema);
+exports["default"] = Venue;
 //# sourceMappingURL=venue.model.js.map

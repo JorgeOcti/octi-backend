@@ -11,6 +11,8 @@ import Team from "../../app/models/team.model";
 import Car from "../../app/models/car.model";
 import RequestItem from "../../request/models/requestItem.model";
 import {io} from "../../server";
+import * as excel from "exceljs";
+import * as moment from "moment-timezone";
 
 
 class TransmittalController {
@@ -45,7 +47,9 @@ class TransmittalController {
     this.apiCreate = this.apiCreate.bind(this);
     this.apiUpdate = this.apiUpdate.bind(this);
     this.apiDelete = this.apiDelete.bind(this);
+    this.xlsExport = this.xlsExport.bind(this);
     this.uploadFile = this.uploadFile.bind(this);
+    this.attachEvidence = this.attachEvidence.bind(this);
   }
 
   public async index(req: IRequest, res: Response) {
@@ -64,7 +68,7 @@ class TransmittalController {
     const {name, items, files, transporter, observation} = req.body;
     const {user} = req;
     try {
-      const team = await Team.findOneAndUpdate({ _id: user.team._id }, { $inc: { transmittalNumber: 1 } }, { new: true });
+      const team = await Team.findOneAndUpdate({_id: user.team._id}, {$inc: {transmittalNumber: 1}}, {new: true});
       // create new transmittal
       const transmittal = await new Transmittal({
         name,
@@ -100,7 +104,7 @@ class TransmittalController {
         });
       }
 
-      if(files && files.length){
+      if (files && files.length) {
         await transmittal.updateOne({files});
         await TransmittalFile.updateMany({
           _id: {$in: files}
@@ -197,7 +201,7 @@ class TransmittalController {
         select: ['firstName', 'lastName']
       }, {
         path: 'items',
-        select: ['car', 'requestItem', 'destination', 'origin', 'loadingDate', 'arrivalDate'],
+        select: ['car', 'requestItem', 'destination', 'origin', 'loadingDate', 'arrivalDate', 'observation'],
         populate: this.itemPopulate
       }, {
         path: 'files',
@@ -324,6 +328,146 @@ class TransmittalController {
       logger.error(`TransmittalController.apiOnlyMe: Async Error.`);
       /* istanbul ignore next */
       logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
+      res.status(500).json(e);
+    }
+  }
+
+  public async attachEvidence(req: IRequest, res: Response) {
+    const {user} = req;
+    const {files, transmittal} = req.body;
+    logger.info(`TransmittalController.uploadFile`);
+    logger.info(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
+    try {
+      const transmittalData = await Transmittal
+        .findOneAndUpdate({
+          _id: transmittal,
+          team: user.team._id,
+        }, {
+          $push: {evidenceFullLoad: files},
+          status: ChoicesStatusTransmittal.inTransit
+        }, {new: true});
+      //  TODO: need update socket from here
+      res.status(200).json({
+        data: transmittalData,
+        status: 201
+      });
+    } catch (e) {
+      /* istanbul ignore next */
+      logger.error(`TransmittalController.uploadFile: Async Error.`);
+      /* istanbul ignore next */
+      logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
+      /* istanbul ignore next */
+      logger.error(e);
+      /* istanbul ignore next */
+      res.status(400).json(e);
+    }
+  }
+
+  public async xlsExport(req: IRequest, res: Response) {
+    logger.info(`TransmittalController.xlsExport`);
+    logger.info(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
+    const team = req.user.team._id;
+    try {
+      // Create columns/headers for excel
+      let columns = [{
+        header: '# Orden transporte', key: 'transmittalNumber', width: 30
+      }, {
+        header: '# Solicitud', key: 'requestNumber', width: 30
+      }, {
+        header: 'Chofer', key: 'driver', width: 30
+      }, {
+        header: 'Transportista', key: 'carrier', width: 30
+      }, {
+        header: 'VIN', key: 'vin', width: 30
+      }, {
+        header: 'Marca', key: 'brand', width: 30
+      }, {
+        header: 'Modelo', key: 'denomination', width: 30
+      }, {
+        header: 'Color', key: 'color', width: 30
+      }, {
+        header: 'Observación', key: 'observation', width: 30
+      }, {
+        header: 'Fecha', key: 'createdAt', width: 30, style: {
+          numFmt: 'dd/mm/yyyy hh:mm'
+        }
+      }];
+      res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+      res.setHeader('Content-Disposition', `attachment; filename=distribution-${moment().format('YYYY-MM-DD')}.xlsx`);
+      const options = {
+        stream: res,
+        useStyles: true,
+        useSharedStrings: true
+      };
+      const workbook = new excel.stream.xlsx.WorkbookWriter(options);
+      const worksheet = workbook.addWorksheet('Rotación de unidades', {
+        pageSetup: {
+          fitToPage: true, fitToHeight: 100, fitToWidth: 1
+        }
+      });
+      worksheet.columns = columns;
+
+      const cursor = await Transmittal
+        .find({team})
+        .populate([{
+          path: 'transporter.carrier',
+          select: ['name']
+        }, {
+          path: 'transporter.driver',
+          select: ['firstName', 'lastName']
+        }, {
+          path: 'items',
+          select: ['car', 'requestItem', 'destination', 'origin', 'loadingDate', 'arrivalDate', 'observation', 'createdAt'],
+          populate: this.itemPopulate
+        }, {
+          path: 'files',
+          select: ['file', 'thumbnail']
+        }, {
+          path: 'createdBy',
+          select: ['firstName', 'lastName']
+        }])
+        .batchSize(100)
+        .cursor();
+
+      cursor.on('data', async (transmittal) => {
+        // const row = await this.processParticipant(participant);
+        for (const item of transmittal.items) {
+          worksheet.addRow({
+            transmittalNumber: transmittal.number,
+            requestNumber: item.request.number,
+            driver: `${transmittal.transporter?.driver?.firstName} ${transmittal.transporter?.driver?.lastName}`,
+            carrier: transmittal.transporter?.carrier?.name,
+            vin: item.car?.vin,
+            brand: item.car?.brand,
+            denomination: item.car?.denomination,
+            color: item.car?.color,
+            observation: item.observation,
+            createdAt: item.createdAt,
+          }).commit();
+        }
+      });
+
+      // code to handle connection abort or finish query read process
+      cursor.on('end', async () => {
+        await workbook.commit();
+        res.status(200);
+      });
+
+      cursor.on('error', (error) => logger.error(error.message));
+
+      // code to handle connection abort or finish of data send
+      req.connection.on('close', async () => {
+        await cursor.close();
+        res.status(200);
+      });
+    } catch (e) {
+      /* istanbul ignore next */
+      logger.error(`TransmittalController.xlsExport: Async Error.`);
+      /* istanbul ignore next */
+      logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
+      /* istanbul ignore next */
+      logger.error(e);
+      /* istanbul ignore next */
       res.status(500).json(e);
     }
   }

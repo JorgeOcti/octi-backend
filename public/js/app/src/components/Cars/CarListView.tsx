@@ -93,7 +93,7 @@ class CarListView extends TrackingBasePage<IPropsType, IStateType> {
                 {
                   hasPermission(window.user, 'addCar') ?
                     <button
-                      className="btn btn-sm btn-primary  hidden-xs"
+                      className="btn btn-sm btn-primary hidden-xs"
                       onClick={() => this.props.history.push(`/settings/cars/import/`)}
                       style={{marginRight: '5px'}}
                     ><i className="fa fa-fw fa-cloud-upload" /> Importar</button> : null

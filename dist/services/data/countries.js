@@ -1,6 +1,6 @@
 "use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-const Countries = {
+exports.__esModule = true;
+var Countries = {
     "10": "United States",
     "11": "United States",
     "12": "United States",
@@ -467,5 +467,5 @@ const Countries = {
     "X9": "Russia",
     "TD": "Switzerland"
 };
-exports.default = Countries;
+exports["default"] = Countries;
 //# sourceMappingURL=countries.js.map

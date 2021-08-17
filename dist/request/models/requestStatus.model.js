@@ -1,7 +1,7 @@
 "use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-const mongoose = require("mongoose");
-const requestStatusSchema = new mongoose.Schema({
+exports.__esModule = true;
+var mongoose = require("mongoose");
+var requestStatusSchema = new mongoose.Schema({
     name: {
         type: String
     },
@@ -9,24 +9,24 @@ const requestStatusSchema = new mongoose.Schema({
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Team'
     },
-    default: {
+    "default": {
         type: Boolean,
-        default: false
+        "default": false
     }
 }, {
     timestamps: true
 });
 requestStatusSchema.statics.findOneOrCreate = function (condition, create) {
-    const model = this;
-    return new Promise((resolve, reject) => {
-        model.findOne(condition, (err, result) => {
+    var model = this;
+    return new Promise(function (resolve, reject) {
+        model.findOne(condition, function (err, result) {
             if (err) {
                 return reject(err);
             }
             if (result) {
                 return resolve(result);
             }
-            model.create(create, (err, result) => {
+            model.create(create, function (err, result) {
                 if (err) {
                     return reject(err);
                 }
@@ -35,6 +35,6 @@ requestStatusSchema.statics.findOneOrCreate = function (condition, create) {
         });
     });
 };
-const RequestStatus = mongoose.model('RequestStatus', requestStatusSchema);
-exports.default = RequestStatus;
+var RequestStatus = mongoose.model('RequestStatus', requestStatusSchema);
+exports["default"] = RequestStatus;
 //# sourceMappingURL=requestStatus.model.js.map

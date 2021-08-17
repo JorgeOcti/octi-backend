@@ -1,7 +1,7 @@
 "use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-const mongoose = require("mongoose");
-const stockCarSchema = new mongoose.Schema({
+exports.__esModule = true;
+var mongoose = require("mongoose");
+var stockCarSchema = new mongoose.Schema({
     car: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Car'
@@ -17,6 +17,6 @@ const stockCarSchema = new mongoose.Schema({
 }, {
     timestamps: true
 });
-const StockCar = mongoose.model('StockCar', stockCarSchema);
-exports.default = StockCar;
+var StockCar = mongoose.model('StockCar', stockCarSchema);
+exports["default"] = StockCar;
 //# sourceMappingURL=stockCar.model.js.map

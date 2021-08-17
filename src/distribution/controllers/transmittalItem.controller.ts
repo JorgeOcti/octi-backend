@@ -68,7 +68,9 @@ class TransmittalItemController {
         team,
         ...item
       }).save();
-      const transmittalItemData = await TransmittalItem.findById(transmittalItem._id).populate(TransmittalController.itemPopulate);
+      const transmittalItemData = await TransmittalItem
+        .findById(transmittalItem._id)
+        .populate(TransmittalController.itemPopulate);
       // associate request item with transmittal and transmittal item
       await RequestItem.findOneAndUpdate({
         _id: item.requestItem
@@ -77,9 +79,10 @@ class TransmittalItemController {
         transmittal: item.transmittal,
         transmittalItem: transmittalItem._id
       });
-      io.to(`transmittal-list-${team._id}`).emit('CREATE_TRANSMITTAL_ITEM', {
-        transmittalItem: transmittalItemData
-      });
+      io.to(`transmittal-list-${team._id}`)
+        .emit('CREATE_TRANSMITTAL_ITEM', {
+          transmittalItem: transmittalItemData
+        });
       res.json({
         data: transmittalItemData
       });

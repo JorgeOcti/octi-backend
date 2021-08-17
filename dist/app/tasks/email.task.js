@@ -1,30 +1,29 @@
 "use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-const path = require("path");
-const pug = require("pug");
-const aws_ses_service_1 = require("../../services/aws-ses.service");
-class EmailQueue {
-    queue;
-    constructor(queue) {
+exports.__esModule = true;
+var path = require("path");
+var pug = require("pug");
+var aws_ses_service_1 = require("../../services/aws-ses.service");
+var EmailQueue = /** @class */ (function () {
+    function EmailQueue(queue) {
         this.queue = queue;
         this.generateHTML = this.generateHTML.bind(this);
         this.processEmail = this.processEmail.bind(this);
     }
-    run() {
+    EmailQueue.prototype.run = function () {
         this.queue.process('email', this.processEmail);
-    }
-    generateHTML(view, context) {
-        const extension = view.includes('.pug', view.length - 4) ? '' : '.pug';
-        const templatePath = path.join(__dirname, '../../../views/') + 'emails/' + view + extension;
-        const pugCompile = pug.compileFile(templatePath);
+    };
+    EmailQueue.prototype.generateHTML = function (view, context) {
+        var extension = view.includes('.pug', view.length - 4) ? '' : '.pug';
+        var templatePath = path.join(__dirname, '../../../views/') + 'emails/' + view + extension;
+        var pugCompile = pug.compileFile(templatePath);
         return pugCompile(context);
-    }
-    processEmail(job, done) {
+    };
+    EmailQueue.prototype.processEmail = function (job, done) {
         if (job) {
             job.log('start process');
             // generate email
-            const mail = {
-                from: `"${job.data.from && job.data.from.length ? job.data.from : 'OSA Andes'}"<osa.andes@osacontrol.com>`,
+            var mail = {
+                from: "\"" + (job.data.from && job.data.from.length ? job.data.from : 'OSA Andes') + "\"<osa.andes@osacontrol.com>",
                 // to: job.data.to,
                 to: job.data.to,
                 bcc: job.data.bcc,
@@ -42,7 +41,7 @@ class EmailQueue {
             };
             job.log('send email');
             // send mail with defined transport object
-            aws_ses_service_1.default.sendMail(mail, (error, info) => {
+            aws_ses_service_1["default"].sendMail(mail, function (error, info) {
                 if (error) {
                     console.log(error);
                     done(error);
@@ -56,7 +55,8 @@ class EmailQueue {
                 // console.log('Preview URL: %s', nodemailer.getTestMessageUrl(info));
             });
         }
-    }
-}
-exports.default = EmailQueue;
+    };
+    return EmailQueue;
+}());
+exports["default"] = EmailQueue;
 //# sourceMappingURL=email.task.js.map

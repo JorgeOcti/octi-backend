@@ -1,16 +1,13 @@
 "use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-const moment = require("moment");
-const Raven = require("raven");
-const app_1 = require("../app");
-const general_utils_1 = require("../utils/general.utils");
-class LoggerService {
-    colors;
-    message;
-    env;
-    constructor() {
+exports.__esModule = true;
+var moment = require("moment");
+var Raven = require("raven");
+var app_1 = require("../app");
+var general_utils_1 = require("../utils/general.utils");
+var LoggerService = /** @class */ (function () {
+    function LoggerService() {
         this.message = '';
-        this.env = general_utils_1.default.getFromEnviroment('ENV', 'development');
+        this.env = general_utils_1["default"].getFromEnviroment('ENV', 'development');
         // https://github.com/shiena/ansicolor/blob/master/README.md
         this.colors = {
             black: '\x1b[30m',
@@ -31,42 +28,43 @@ class LoggerService {
             brighwhite: '\x1b[97m'
         };
     }
-    info(message) {
+    LoggerService.prototype.info = function (message) {
         this.logger('INFO', 'production', message, this.colors.brightBlack);
         this.logger('INFO', 'development', message, this.colors.brightBlack);
-    }
+    };
     /* istanbul ignore next */
-    debug(message) {
+    LoggerService.prototype.debug = function (message) {
         this.logger('DEBUG', 'development', message, this.colors.brighGreen, this.colors.brightBlack);
-    }
+    };
     /* istanbul ignore next */
-    error(message, propagate) {
+    LoggerService.prototype.error = function (message, propagate) {
         this.logger('ERROR', 'production', message, this.colors.brighRed);
         this.logger('ERROR', 'development', message, this.colors.brighRed);
         if (propagate) {
             Raven.captureException(new Error(message));
         }
-    }
+    };
     /* istanbul ignore next */
-    now() {
+    LoggerService.prototype.now = function () {
         // return moment();
         return moment().utc().format('DD/MMM/YYYY:HH:mm:ss ZZ').replace('.', "");
-    }
+    };
     /* istanbul ignore next */
-    logger(type, env, message, color, textColor) {
+    LoggerService.prototype.logger = function (type, env, message, color, textColor) {
         if (this.env === env) {
             this.message = message;
             if (!textColor) {
                 textColor = this.colors.reset;
             }
-            console.log(`${color}[${this.now()}] [${type}]:${textColor} ${this.message}${this.colors.reset}`);
+            console.log(color + "[" + this.now() + "] [" + type + "]:" + textColor + " " + this.message + this.colors.reset);
             this.writeLog(type);
         }
-    }
+    };
     /* istanbul ignore next */
-    writeLog(type) {
-        app_1.accessLogStream.write(`[${this.now()}] [${type}]: ${this.message} \n`);
-    }
-}
-exports.default = new LoggerService();
+    LoggerService.prototype.writeLog = function (type) {
+        app_1.accessLogStream.write("[" + this.now() + "] [" + type + "]: " + this.message + " \n");
+    };
+    return LoggerService;
+}());
+exports["default"] = new LoggerService();
 //# sourceMappingURL=logger.service.js.map

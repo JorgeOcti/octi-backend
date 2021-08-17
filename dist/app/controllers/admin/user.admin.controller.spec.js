@@ -1,23 +1,23 @@
 "use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-const chai = require("chai");
-const chaiHttp = require("chai-http");
-const cheerio = require("cheerio");
+exports.__esModule = true;
+var chai = require("chai");
+var chaiHttp = require("chai-http");
+var cheerio = require("cheerio");
 require("mocha");
-const server_1 = require("../../../server");
-const request = require('supertest');
-const randomstring = require("randomstring");
-const user_model_1 = require("../../models/user.model");
+var server_1 = require("../../../server");
+var request = require('supertest');
+var randomstring = require("randomstring");
+var user_model_1 = require("../../models/user.model");
 chai.use(chaiHttp);
-const expect = chai.expect;
-const authenticatedUser = request.agent(server_1.default);
-describe('admin users', () => {
-    before((done) => {
+var expect = chai.expect;
+var authenticatedUser = request.agent(server_1["default"]);
+describe('admin users', function () {
+    before(function (done) {
         authenticatedUser
             .get('/account/login/')
-            .end((err, response) => {
-            const $html = cheerio(response.text);
-            const csrf = $html.find('input[name=_csrf]').val();
+            .end(function (err, response) {
+            var $html = cheerio(response.text);
+            var csrf = $html.find('input[name=_csrf]').val();
             authenticatedUser
                 .post('/account/login/')
                 .set('cookie', response.header['set-cookie'][0])
@@ -26,46 +26,46 @@ describe('admin users', () => {
                 password: '123',
                 _csrf: csrf
             })
-                .end((err, response) => {
+                .end(function (err, response) {
                 expect(response.status).to.equal(302);
                 done();
             });
         });
     });
-    after((done) => {
-        user_model_1.default.find({ firstName: 'Prueba' }).remove((err) => {
+    after(function (done) {
+        user_model_1["default"].find({ firstName: 'Prueba' }).remove(function (err) {
             if (err) {
                 console.log(err);
             }
             done();
         });
     });
-    it('it should get list users', (done) => {
+    it('it should get list users', function (done) {
         authenticatedUser
             .get('/settings/users/')
-            .end((err, res) => {
+            .end(function (err, res) {
             expect(res.status).to.equal(200);
             done();
         });
     });
-    it('it should get data in list users', (done) => {
+    it('it should get data in list users', function (done) {
         authenticatedUser
             .get('/api/admin/users/')
-            .end((err, res) => {
+            .end(function (err, res) {
             expect(res.status).to.equal(200);
             done();
         });
     });
-    let testUser = {};
-    it('it should create user', (done) => {
+    var testUser = {};
+    it('it should create user', function (done) {
         authenticatedUser
             .post('/api/admin/users/')
             .send({
             company: { _id: '5b17f8f0346a450658b5721e' },
-            email: `gmunoz+${randomstring.generate({
+            email: "gmunoz+" + randomstring.generate({
                 length: 5,
                 charset: 'alphanumeric'
-            })}@osacontrol.com`,
+            }) + "@osacontrol.com",
             firstName: 'Prueba',
             lastName: 'Prueba',
             preferred: '5b0487db835536612bab1b61',
@@ -74,33 +74,31 @@ describe('admin users', () => {
             venue: '5b1959faa9683b31cd2d8f11',
             venuesAccess: []
         })
-            .end((err, res) => {
+            .end(function (err, res) {
             expect(res.status).to.equal(201);
             testUser = res.body.user;
             done();
         });
     });
-    it('it should update user', (done) => {
+    it('it should update user', function (done) {
         authenticatedUser
-            .patch(`/api/admin/users/${testUser._id}`)
+            .patch("/api/admin/users/" + testUser._id)
             .send(testUser)
-            .end((err, res) => {
+            .end(function (err, res) {
             expect(res.status).to.equal(200);
             done();
         });
     });
-    it('it should delete user', (done) => {
-        authenticatedUser
-            .delete(`/api/admin/users/${testUser._id}`)
-            .end((err, res) => {
+    it('it should delete user', function (done) {
+        authenticatedUser["delete"]("/api/admin/users/" + testUser._id)
+            .end(function (err, res) {
             expect(res.status).to.equal(200);
             done();
         });
     });
-    it('it should delete user again', (done) => {
-        authenticatedUser
-            .delete(`/api/admin/users/${testUser._id}`)
-            .end((err, res) => {
+    it('it should delete user again', function (done) {
+        authenticatedUser["delete"]("/api/admin/users/" + testUser._id)
+            .end(function (err, res) {
             expect(res.status).to.equal(200);
             done();
         });

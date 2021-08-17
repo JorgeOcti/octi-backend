@@ -1,23 +1,28 @@
 "use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-const bcrypt = require("bcrypt");
-const bson_1 = require("bson");
-const jwt = require("jsonwebtoken");
-const mongoose = require("mongoose");
-const mongoosePaginate = require("mongoose-paginate");
-const passportLocalMongoose = require("passport-local-mongoose");
-const userSchema = new mongoose.Schema({
+var __spreadArray = (this && this.__spreadArray) || function (to, from) {
+    for (var i = 0, il = from.length, j = to.length; i < il; i++, j++)
+        to[j] = from[i];
+    return to;
+};
+exports.__esModule = true;
+var bcrypt = require("bcrypt");
+var bson_1 = require("bson");
+var jwt = require("jsonwebtoken");
+var mongoose = require("mongoose");
+var mongoosePaginate = require("mongoose-paginate");
+var passportLocalMongoose = require("passport-local-mongoose");
+var userSchema = new mongoose.Schema({
     username: {
         type: String,
         unique: true
     },
     firstName: {
         type: String,
-        default: null
+        "default": null
     },
     lastName: {
         type: String,
-        default: null
+        "default": null
     },
     team: {
         type: mongoose.Schema.Types.ObjectId,
@@ -41,7 +46,7 @@ const userSchema = new mongoose.Schema({
     preferred: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Form',
-        default: null
+        "default": null
     },
     email: {
         type: String,
@@ -64,7 +69,7 @@ const userSchema = new mongoose.Schema({
         }],
     isAdmin: {
         type: Boolean,
-        default: false
+        "default": false
     },
     password: String,
     hash_password: String,
@@ -73,11 +78,11 @@ const userSchema = new mongoose.Schema({
     lastLogin: Date,
     isDriver: {
         type: Boolean,
-        default: false
+        "default": false
     },
     active: {
         type: Boolean,
-        default: true
+        "default": true
     }
 }, {
     // toObject: {
@@ -87,7 +92,7 @@ const userSchema = new mongoose.Schema({
     //   }
     // },
     toJSON: {
-        transform: (doc, ret) => {
+        transform: function (doc, ret) {
             // delete ret._id;
             delete ret.password;
         }
@@ -103,13 +108,13 @@ userSchema.methods.fullName = function () {
 // validate user has permissions
 userSchema.methods.hasPermission = function (permission) {
     if (permission && permission.length && this.userPermissions && this.userPermissions.length) {
-        return this.userPermissions.some((p) => p.codeName === permission);
+        return this.userPermissions.some(function (p) { return p.codeName === permission; });
     }
     return false;
 };
 // used by sockets
 userSchema.methods.generateToken = function () {
-    const userInfo = {
+    var userInfo = {
         _id: this._id,
         firstName: this.firstName,
         lastName: this.lastName,
@@ -121,42 +126,39 @@ userSchema.methods.generateToken = function () {
     });
 };
 userSchema.methods.venuesPermissions = function (inString) {
-    let venuesPermissions = [];
-    const currentVenue = this.venue && this.venue._id ? this.venue._id : this.venue;
+    var venuesPermissions = [];
+    var currentVenue = this.venue && this.venue._id ? this.venue._id : this.venue;
     if (currentVenue) {
         venuesPermissions.push(currentVenue);
     }
     if (this.venuesAccess && this.venuesAccess.length) {
-        venuesPermissions = Array.from(new Set([
-            ...venuesPermissions,
-            ...this.venuesAccess.map((venue) => (venue && venue._id ? venue._id : venue))
-        ]));
+        venuesPermissions = Array.from(new Set(__spreadArray(__spreadArray([], venuesPermissions), this.venuesAccess.map(function (venue) { return (venue && venue._id ? venue._id : venue); }))));
     }
     venuesPermissions = venuesPermissions
-        .map((id) => id.toString())
-        .filter((elem, pos, arr) => {
+        .map(function (id) { return id.toString(); })
+        .filter(function (elem, pos, arr) {
         return arr.indexOf(elem) === pos;
     });
     if (inString) {
         return venuesPermissions;
     }
     else {
-        return venuesPermissions.map((id) => new bson_1.ObjectID(id));
+        return venuesPermissions.map(function (id) { return new bson_1.ObjectID(id); });
     }
 };
 /**
  * Password hash middleware.
  */
 userSchema.pre('save', function (next) {
-    const user = this;
+    var user = this;
     if (!user.isModified('password')) {
         return next();
     }
-    bcrypt.genSalt(10, (err, salt) => {
+    bcrypt.genSalt(10, function (err, salt) {
         if (err) {
             return next(err);
         }
-        bcrypt.hash(user.password, salt, (err, hash) => {
+        bcrypt.hash(user.password, salt, function (err, hash) {
             if (err) {
                 return next(err);
             }
@@ -166,13 +168,13 @@ userSchema.pre('save', function (next) {
     });
 });
 userSchema.methods.comparePassword = function (candidatePassword, cb) {
-    bcrypt.compare(candidatePassword, this.password, (err, isMatch) => {
+    bcrypt.compare(candidatePassword, this.password, function (err, isMatch) {
         cb(err, isMatch);
     });
 };
 userSchema.methods.comparePasswordSync = function (candidatePassword) {
     return bcrypt.compareSync(candidatePassword, this.password);
 };
-const User = mongoose.model('User', userSchema);
-exports.default = User;
+var User = mongoose.model('User', userSchema);
+exports["default"] = User;
 //# sourceMappingURL=user.model.js.map

@@ -1,12 +1,12 @@
 "use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
+exports.__esModule = true;
 exports.participantFileSchema = void 0;
-const mongoose = require("mongoose");
-const mongooseCrate = require("mongoose-crate");
-const MongooseCrateS3 = require("mongoose-crate-s3");
-const uuid = require("uuid");
-const s3Config = require("../../../s3-config.json");
-const fileSchema = new mongoose.Schema({
+var mongoose = require("mongoose");
+var mongooseCrate = require("mongoose-crate");
+var MongooseCrateS3 = require("mongoose-crate-s3");
+var uuid = require("uuid");
+var s3Config = require("../../../s3-config.json");
+var fileSchema = new mongoose.Schema({
     url: {
         type: String
     },
@@ -45,7 +45,7 @@ exports.participantFileSchema.plugin(mongooseCrate, {
         acl: 'public-read',
         region: process.env.S3_REGION || s3Config.region,
         // where the file is stored in the bucket - defaults to this function
-        path: (attachment) => {
+        path: function (attachment) {
             /* attachment params:
             estination:"/tmp/"
             encoding:"7bit"
@@ -58,7 +58,7 @@ exports.participantFileSchema.plugin(mongooseCrate, {
             size:966
             type:"image/svg"
             * */
-            return `/forms/files/${attachment.company}/${attachment.form}/${uuid.v1()}-${attachment.originalname}`;
+            return "/forms/files/" + attachment.company + "/" + attachment.form + "/" + uuid.v1() + "-" + attachment.originalname;
         }
     }),
     fields: {
@@ -66,6 +66,6 @@ exports.participantFileSchema.plugin(mongooseCrate, {
     }
 });
 // participantFileSchema.index({ form: 1, user: 1 });
-const ParticipantFile = mongoose.model('ParticipantFile', exports.participantFileSchema);
-exports.default = ParticipantFile;
+var ParticipantFile = mongoose.model('ParticipantFile', exports.participantFileSchema);
+exports["default"] = ParticipantFile;
 //# sourceMappingURL=participantFile.model.js.map

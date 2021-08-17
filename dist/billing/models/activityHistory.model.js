@@ -1,24 +1,24 @@
 "use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
+exports.__esModule = true;
 exports.choicesTypeActivity = exports.ChoicesTypeActivity = void 0;
-const bson_1 = require("bson");
-const mongoose = require("mongoose");
-const detailInventorySchema = new mongoose.Schema({
+var bson_1 = require("bson");
+var mongoose = require("mongoose");
+var detailInventorySchema = new mongoose.Schema({
     name: {
         type: String
     }
 });
-const detailFormSchema = new mongoose.Schema({
+var detailFormSchema = new mongoose.Schema({
     name: {
         type: String
     }
 });
-const detailCarSchema = new mongoose.Schema({
+var detailCarSchema = new mongoose.Schema({
     vin: {
         type: String
     }
 });
-const responseCarSchema = new mongoose.Schema({
+var responseCarSchema = new mongoose.Schema({
     item: {
         type: bson_1.ObjectId
     },
@@ -37,7 +37,7 @@ exports.choicesTypeActivity = [
     ChoicesTypeActivity.checklist,
     ChoicesTypeActivity.request
 ];
-const activityHistorySchema = new mongoose.Schema({
+var activityHistorySchema = new mongoose.Schema({
     team: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Team'
@@ -52,27 +52,27 @@ const activityHistorySchema = new mongoose.Schema({
     },
     type: {
         type: String,
-        enum: exports.choicesTypeActivity
+        "enum": exports.choicesTypeActivity
     },
     inventory: {
         type: detailInventorySchema,
-        default: {}
+        "default": {}
     },
     form: {
         type: detailFormSchema,
-        default: {}
+        "default": {}
     },
     car: {
         type: detailCarSchema,
-        default: {}
+        "default": {}
     },
     request: {
         type: responseCarSchema,
-        default: {}
+        "default": {}
     }
 }, {
     timestamps: true
 });
-const ActivityHistory = mongoose.model('ActivityHistory', activityHistorySchema);
-exports.default = ActivityHistory;
+var ActivityHistory = mongoose.model('ActivityHistory', activityHistorySchema);
+exports["default"] = ActivityHistory;
 //# sourceMappingURL=activityHistory.model.js.map

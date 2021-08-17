@@ -1,8 +1,8 @@
 "use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-const mongoose = require("mongoose");
-const mongoosePaginate = require("mongoose-paginate");
-const regionSchema = new mongoose.Schema({
+exports.__esModule = true;
+var mongoose = require("mongoose");
+var mongoosePaginate = require("mongoose-paginate");
+var regionSchema = new mongoose.Schema({
     name: {
         type: String,
         trim: true,
@@ -11,7 +11,7 @@ const regionSchema = new mongoose.Schema({
     code: {
         type: String,
         trim: true,
-        default: ''
+        "default": ''
     },
     team: {
         type: mongoose.Schema.Types.ObjectId,
@@ -21,6 +21,6 @@ const regionSchema = new mongoose.Schema({
     timestamps: true
 });
 regionSchema.plugin(mongoosePaginate);
-const Region = mongoose.model('Region', regionSchema);
-exports.default = Region;
+var Region = mongoose.model('Region', regionSchema);
+exports["default"] = Region;
 //# sourceMappingURL=region.model.js.map

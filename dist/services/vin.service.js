@@ -1,34 +1,31 @@
 "use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-const general_utils_1 = require("../utils/general.utils");
-const countries_1 = require("./data/countries");
-const manufacters_1 = require("./data/manufacters");
-const years_1 = require("./data/years");
-class VINService {
-    INDEXES = {
-        MADE_IN_START: 0,
-        MADE_IN_END: 2,
-        MANUFACTURER_START: 0,
-        MANUFACTURER_END: 3,
-        DETAILS_START: 3,
-        DETAILS_END: 8,
-        SECURITY_CODE: 8,
-        YEAR: 9,
-        ASSEMBLY_PLANT: 10,
-        SERIAL_NUMBER_START: 11
-    };
-    manufacturers;
-    years;
-    countries;
-    constructor() {
-        this.manufacturers = manufacters_1.default;
-        this.years = years_1.default;
-        this.countries = countries_1.default;
+exports.__esModule = true;
+var general_utils_1 = require("../utils/general.utils");
+var countries_1 = require("./data/countries");
+var manufacters_1 = require("./data/manufacters");
+var years_1 = require("./data/years");
+var VINService = /** @class */ (function () {
+    function VINService() {
+        this.INDEXES = {
+            MADE_IN_START: 0,
+            MADE_IN_END: 2,
+            MANUFACTURER_START: 0,
+            MANUFACTURER_END: 3,
+            DETAILS_START: 3,
+            DETAILS_END: 8,
+            SECURITY_CODE: 8,
+            YEAR: 9,
+            ASSEMBLY_PLANT: 10,
+            SERIAL_NUMBER_START: 11
+        };
+        this.manufacturers = manufacters_1["default"];
+        this.years = years_1["default"];
+        this.countries = countries_1["default"];
     }
-    decode(vin) {
+    VINService.prototype.decode = function (vin) {
         /* istanbul ignore else */
         if (vin && vin.length > 12) {
-            const codeValues = this.split(vin);
+            var codeValues = this.split(vin);
             return {
                 serialNumber: codeValues.serialNumber,
                 securityCode: codeValues.securityCode,
@@ -41,8 +38,8 @@ class VINService {
         else {
             return 'Este VIN no ha podido ser procesado. =(';
         }
-    }
-    split(vin) {
+    };
+    VINService.prototype.split = function (vin) {
         return {
             madeIn: vin.substring(this.INDEXES.MADE_IN_START, this.INDEXES.MADE_IN_END),
             manufacturer: vin.substring(this.INDEXES.MANUFACTURER_START, this.INDEXES.MANUFACTURER_END),
@@ -52,16 +49,17 @@ class VINService {
             assemblyPlant: vin.charAt(this.INDEXES.ASSEMBLY_PLANT),
             serialNumber: vin.substring(this.INDEXES.SERIAL_NUMBER_START)
         };
-    }
-    getManufacturer(code) {
-        return general_utils_1.default.getObjectProperty(this.manufacturers, 'code', '');
-    }
-    getYear(code) {
-        return general_utils_1.default.getObjectProperty(this.years, 'code', '');
-    }
-    getCountry(code) {
-        return general_utils_1.default.getObjectProperty(this.countries, 'code', '');
-    }
-}
-exports.default = new VINService();
+    };
+    VINService.prototype.getManufacturer = function (code) {
+        return general_utils_1["default"].getObjectProperty(this.manufacturers, 'code', '');
+    };
+    VINService.prototype.getYear = function (code) {
+        return general_utils_1["default"].getObjectProperty(this.years, 'code', '');
+    };
+    VINService.prototype.getCountry = function (code) {
+        return general_utils_1["default"].getObjectProperty(this.countries, 'code', '');
+    };
+    return VINService;
+}());
+exports["default"] = new VINService();
 //# sourceMappingURL=vin.service.js.map

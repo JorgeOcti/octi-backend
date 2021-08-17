@@ -1,21 +1,21 @@
 "use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
+exports.__esModule = true;
 exports.scaleSchema = exports.choiceBackgroundColors = void 0;
-const mongoose = require("mongoose");
+var mongoose = require("mongoose");
 exports.choiceBackgroundColors = ['red', 'green', 'yellow', 'blue'];
-const choiceSchema = new mongoose.Schema({
+var choiceSchema = new mongoose.Schema({
     choice: { type: String, required: true, trim: true },
     value: { type: Number, required: true },
     backgroundColor: {
         type: String,
-        enum: exports.choiceBackgroundColors,
-        default: 'blue'
+        "enum": exports.choiceBackgroundColors,
+        "default": 'blue'
     },
-    requireImage: { type: Boolean, default: false },
-    requireComment: { type: Boolean, default: false },
-    requireAccesories: { type: Boolean, default: false },
-    requireConciliation: { type: Boolean, default: false },
-    na: { type: Boolean, default: false },
+    requireImage: { type: Boolean, "default": false },
+    requireComment: { type: Boolean, "default": false },
+    requireAccesories: { type: Boolean, "default": false },
+    requireConciliation: { type: Boolean, "default": false },
+    na: { type: Boolean, "default": false },
     order: { type: Number, required: true }
 });
 exports.scaleSchema = new mongoose.Schema({
@@ -41,11 +41,11 @@ exports.scaleSchema = new mongoose.Schema({
     choices: [choiceSchema],
     active: {
         type: Boolean,
-        default: true
+        "default": true
     }
 }, {
     timestamps: true
 });
-const Scale = mongoose.model('Scale', exports.scaleSchema);
-exports.default = Scale;
+var Scale = mongoose.model('Scale', exports.scaleSchema);
+exports["default"] = Scale;
 //# sourceMappingURL=scale.model.js.map

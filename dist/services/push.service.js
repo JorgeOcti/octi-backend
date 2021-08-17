@@ -1,60 +1,59 @@
 "use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-const PushNotifications = require("@pusher/push-notifications-server");
-const dotenv = require("dotenv");
-const path = require("path");
-const general_utils_1 = require("../utils/general.utils");
-const logger_service_1 = require("./logger.service");
-class PushService {
-    pushNotifications;
-    constructor() {
+exports.__esModule = true;
+var PushNotifications = require("@pusher/push-notifications-server");
+var dotenv = require("dotenv");
+var path = require("path");
+var general_utils_1 = require("../utils/general.utils");
+var logger_service_1 = require("./logger.service");
+var PushService = /** @class */ (function () {
+    function PushService() {
         dotenv.config({
             path: path.join(__dirname, '../../.env')
         });
         this.pushNotifications = new PushNotifications({
-            instanceId: general_utils_1.default.getFromEnviroment('PUSHER_INSTANCE_ID', ''),
-            secretKey: general_utils_1.default.getFromEnviroment('PUHSER_SECRET_KEY', '')
+            instanceId: general_utils_1["default"].getFromEnviroment('PUSHER_INSTANCE_ID', ''),
+            secretKey: general_utils_1["default"].getFromEnviroment('PUHSER_SECRET_KEY', '')
         });
     }
-    createAuthToken(userId) {
+    PushService.prototype.createAuthToken = function (userId) {
         return this.pushNotifications.generateToken(userId);
-    }
-    send(title, subtitle, body, interests) {
-        logger_service_1.default.info('-----------------------PUSH---------------------------');
-        logger_service_1.default.info(`title, ${title}`);
-        logger_service_1.default.info(`subtitle, ${subtitle}`);
-        logger_service_1.default.info(`body, ${body}`);
-        logger_service_1.default.info(`interests, ${interests}`);
+    };
+    PushService.prototype.send = function (title, subtitle, body, interests) {
+        logger_service_1["default"].info('-----------------------PUSH---------------------------');
+        logger_service_1["default"].info("title, " + title);
+        logger_service_1["default"].info("subtitle, " + subtitle);
+        logger_service_1["default"].info("body, " + body);
+        logger_service_1["default"].info("interests, " + interests);
         this.pushNotifications.publishToUsers(interests, {
             apns: {
                 aps: {
                     alert: {
-                        title,
-                        subtitle,
-                        body
+                        title: title,
+                        subtitle: subtitle,
+                        body: body
                     },
                     sound: 'default'
                 }
             },
             fcm: {
                 notification: {
-                    title,
-                    subtitle,
+                    title: title,
+                    subtitle: subtitle,
                     sound: 'default',
-                    body
+                    body: body
                 }
             }
-        }).then((publishResponse) => {
-            logger_service_1.default.info(`PUSH Just published:, ${publishResponse.publishId}`);
-        }).catch((error) => {
-            logger_service_1.default.info(`PUSH Error:, ${error}`);
+        }).then(function (publishResponse) {
+            logger_service_1["default"].info("PUSH Just published:, " + publishResponse.publishId);
+        })["catch"](function (error) {
+            logger_service_1["default"].info("PUSH Error:, " + error);
         });
-    }
-    massiveSend(title, subtitle, body, interests) {
-        const total = interests.length;
+    };
+    PushService.prototype.massiveSend = function (title, subtitle, body, interests) {
+        var total = interests.length;
         /* istanbul ignore if */
         if (total === 0) {
-            logger_service_1.default.info(`PUSH NOT published: No users to send`);
+            logger_service_1["default"].info("PUSH NOT published: No users to send");
             return;
         }
         if (total > 100) {
@@ -65,7 +64,8 @@ class PushService {
         else {
             this.send(title, subtitle, body, interests);
         }
-    }
-}
-exports.default = new PushService();
+    };
+    return PushService;
+}());
+exports["default"] = new PushService();
 //# sourceMappingURL=push.service.js.map
