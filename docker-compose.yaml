@@ -4,6 +4,10 @@ services:
   mongo:
     image: mongo:4.2.1
     restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 500M
     environment:
       MONGO_INITDB_ROOT_USERNAME: 'osacontrol'
       MONGO_INITDB_ROOT_PASSWORD: 'osacontrol'
@@ -15,6 +19,10 @@ services:
   redis:
     image: redis:5.0.3
     restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 500M
     ports:
       - 6379:6379
     volumes:
@@ -39,6 +47,10 @@ services:
       context: .
     image: andes:latest
     restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 500M
     command: ['nodemon', 'dist/server.js', ' --max-old-space-size=4096']
     # command: ['nodemon', '--inspect=0.0.0.0:9229', 'dist/server.js', ' --max-old-space-size=4096']
     env_file:
