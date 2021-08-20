@@ -319,7 +319,7 @@ class TransmittalController {
           pages: transmittals.pages,
           hasPrevious: options.page && options.page > 1 && transmittals.pages && transmittals.pages >= options.page,
           hasNext: options.page && transmittals.pages && transmittals.pages > options.page,
-          results: transmittals.docs,
+          data: transmittals.docs,
           status: 200
         });
       }
