@@ -200,8 +200,8 @@ class TransmitalListDetail extends React.Component<IPropsType, IStateType> {
       requestItem: requestItem._id,
       car: requestItem.car._id,
       request: requestItem.request._id,
-      origin: requestItem.origin._id,
-      destination: requestItem.destination._id,
+      origin: requestItem.origin?._id,
+      destination: requestItem.destination?._id,
       transmittal: transmittal._id
     })
       .then((response: AxiosResponse): void => {

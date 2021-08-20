@@ -122,7 +122,7 @@ class Form extends React.Component<IPropsType, IStateType> {
           </div>
           <div className="col-md-12">
             <div className="form-group">
-              <label className="control-label label-left">Adjuntar Documentos *</label>
+              <label className="control-label label-left">Adjuntar Documentos</label>
               <div>
                 <MultiUploadFiles
                   url={'/api/v1/transmittals/upload-file/'}

@@ -13,6 +13,7 @@ import RequestItem from "../../request/models/requestItem.model";
 import {io} from "../../server";
 import * as excel from "exceljs";
 import * as moment from "moment-timezone";
+import Milestone from "../models/milestone.model";
 
 
 class TransmittalController {
@@ -314,12 +315,20 @@ class TransmittalController {
           status: 400
         });
       } else {
+        const millestones = await Milestone.find({
+          team
+        }).populate([{
+          path: 'form'
+        }]);
         res.json({
           count: transmittals.total,
           pages: transmittals.pages,
           hasPrevious: options.page && options.page > 1 && transmittals.pages && transmittals.pages >= options.page,
           hasNext: options.page && transmittals.pages && transmittals.pages > options.page,
-          data: transmittals.docs,
+          data: transmittals.docs.map((transmittal)=>({
+            ...transmittal.toObject(),
+            millestones
+          })),
           status: 200
         });
       }

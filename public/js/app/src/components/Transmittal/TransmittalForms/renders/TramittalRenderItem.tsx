@@ -66,7 +66,7 @@ class TramittalRenderItem extends React.Component<IPropsType, IStateType> {
                   <th className="middle" style={{width: '100px'}}>Factura</th>
                   <th className="middle" style={{width: '150px'}}>Origen</th>
                   <th className="middle" style={{width: '150px'}}>Destino</th>
-                  <th className="middle" style={{width: '30px'}}/>
+                  <th className="middle" style={{width: '40px'}}/>
                   <th className="middle" style={{width: '28px'}}/>
                 </tr>
                 </thead>
@@ -249,8 +249,8 @@ class TramittalRenderItem extends React.Component<IPropsType, IStateType> {
       },
       request: item.request,
       reason: item.reason,
-      origin: item.origin._id,
-      destination: item.destination._id
+      origin: item.origin?._id,
+      destination: item.destination?._id
     })
   }
 

@@ -59,6 +59,7 @@ var requestItem_model_1 = require("../../request/models/requestItem.model");
 var server_1 = require("../../server");
 var excel = require("exceljs");
 var moment = require("moment-timezone");
+var milestone_model_1 = require("../models/milestone.model");
 var TransmittalController = /** @class */ (function () {
     function TransmittalController() {
         this.itemPopulate = [{
@@ -361,7 +362,7 @@ var TransmittalController = /** @class */ (function () {
     };
     TransmittalController.prototype.apiOnlyMe = function (req, res) {
         return __awaiter(this, void 0, void 0, function () {
-            var team, _a, page, pageSize, orderBy, orderType, options, filter, transmittals, e_4;
+            var team, _a, page, pageSize, orderBy, orderType, options, filter, transmittals, millestones, e_4;
             var _b;
             return __generator(this, function (_c) {
                 switch (_c.label) {
@@ -420,37 +421,42 @@ var TransmittalController = /** @class */ (function () {
                         };
                         _c.label = 1;
                     case 1:
-                        _c.trys.push([1, 3, , 4]);
+                        _c.trys.push([1, 6, , 7]);
                         return [4 /*yield*/, this.getTransmittals(filter, options)];
                     case 2:
                         transmittals = _c.sent();
-                        /* istanbul ignore if  */
-                        if (options.page && transmittals.pages && transmittals.pages < options.page) {
-                            res.status(400).json({
-                                message: 'La página solicitada no existe.',
-                                status: 400
-                            });
-                        }
-                        else {
-                            res.json({
-                                count: transmittals.total,
-                                pages: transmittals.pages,
-                                hasPrevious: options.page && options.page > 1 && transmittals.pages && transmittals.pages >= options.page,
-                                hasNext: options.page && transmittals.pages && transmittals.pages > options.page,
-                                data: transmittals.docs,
-                                status: 200
-                            });
-                        }
-                        return [3 /*break*/, 4];
-                    case 3:
+                        if (!(options.page && transmittals.pages && transmittals.pages < options.page)) return [3 /*break*/, 3];
+                        res.status(400).json({
+                            message: 'La página solicitada no existe.',
+                            status: 400
+                        });
+                        return [3 /*break*/, 5];
+                    case 3: return [4 /*yield*/, milestone_model_1["default"].find({
+                            team: team
+                        }).populate([{
+                                path: 'form'
+                            }])];
+                    case 4:
+                        millestones = _c.sent();
+                        res.json({
+                            count: transmittals.total,
+                            pages: transmittals.pages,
+                            hasPrevious: options.page && options.page > 1 && transmittals.pages && transmittals.pages >= options.page,
+                            hasNext: options.page && transmittals.pages && transmittals.pages > options.page,
+                            data: transmittals.docs,
+                            status: 200
+                        });
+                        _c.label = 5;
+                    case 5: return [3 /*break*/, 7];
+                    case 6:
                         e_4 = _c.sent();
                         /* istanbul ignore next */
                         logger_service_1["default"].error("TransmittalController.apiOnlyMe: Async Error.");
                         /* istanbul ignore next */
                         logger_service_1["default"].error("{user: {_id: " + req.user._id + ", email: " + req.user.email + "}}");
                         res.status(500).json(e_4);
-                        return [3 /*break*/, 4];
-                    case 4: return [2 /*return*/];
+                        return [3 /*break*/, 7];
+                    case 7: return [2 /*return*/];
                 }
             });
         });
