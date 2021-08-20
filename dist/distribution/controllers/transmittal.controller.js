@@ -362,7 +362,7 @@ var TransmittalController = /** @class */ (function () {
     };
     TransmittalController.prototype.apiOnlyMe = function (req, res) {
         return __awaiter(this, void 0, void 0, function () {
-            var team, _a, page, pageSize, orderBy, orderType, options, filter, transmittals, millestones, e_4;
+            var team, _a, page, pageSize, orderBy, orderType, options, filter, transmittals, millestones_1, e_4;
             var _b;
             return __generator(this, function (_c) {
                 switch (_c.label) {
@@ -437,13 +437,13 @@ var TransmittalController = /** @class */ (function () {
                                 path: 'form'
                             }])];
                     case 4:
-                        millestones = _c.sent();
+                        millestones_1 = _c.sent();
                         res.json({
                             count: transmittals.total,
                             pages: transmittals.pages,
                             hasPrevious: options.page && options.page > 1 && transmittals.pages && transmittals.pages >= options.page,
                             hasNext: options.page && transmittals.pages && transmittals.pages > options.page,
-                            data: transmittals.docs,
+                            data: transmittals.docs.map(function (transmittal) { return (__assign(__assign({}, transmittal.toObject()), { millestones: millestones_1 })); }),
                             status: 200
                         });
                         _c.label = 5;
