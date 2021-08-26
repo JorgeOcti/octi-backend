@@ -13,6 +13,8 @@ interface IPropsType extends WrappedFieldProps {
   options: IOption[];
   labelOff?:boolean;
   className?: string;
+  disabled?:boolean;
+  right?:boolean;
   displayItems?: number;
   onClick: (value: string) => void;
   selectAll?: any;
@@ -61,6 +63,8 @@ class BootstrapSelectField extends React.Component<IPropsType, IStateType> {
       autoClouse,
       selectAll,
       label,
+      disabled,
+      right,
       input,
       labelOff,
       meta: {touched, error, warning}
@@ -77,6 +81,7 @@ class BootstrapSelectField extends React.Component<IPropsType, IStateType> {
             type="button"
             className={`btn dropdown-toggle bs-placeholder btn-filter btn-default`}
             data-toggle="dropdown"
+            disabled={disabled}
             style={{borderRadius: '0px'}}
             onClick={this.handlerOpen}
           >
@@ -106,7 +111,7 @@ class BootstrapSelectField extends React.Component<IPropsType, IStateType> {
             <span className="caret"/>
           </span>
           </button>
-          <div className="dropdown-menu" style={{borderRadius: '0px'}}>
+          <div className={`dropdown-menu ${right?'dropdown-menu-right':''}`} style={{borderRadius: '0px'}}>
             {
               search ?
                 <div className="bs-searchbox">

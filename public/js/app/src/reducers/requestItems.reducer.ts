@@ -13,7 +13,7 @@ import {
   REQUEST_ITEMS_LOAD_REASONS,
   REQUEST_ITEMS_LOAD_REQUESTS_ITEMS,
   REQUEST_ITEMS_LOAD_VENUES,
-  REQUEST_ITEMS_UPDATE_ITEM
+  REQUEST_ITEMS_UPDATE_ITEM, REQUEST_ITEMS_LOAD_SETTINGS
 } from '../actions/requestItems.types';
 
 const initialState: IRequestItemsState = {
@@ -27,6 +27,17 @@ const initialState: IRequestItemsState = {
   requestItemStatusMax: 100,
   loading: true,
   source: null,
+  requestSettings: {
+    color: false,
+    colorRequired: false,
+    denomination: false,
+    denominationRequired: false,
+    internalNumber: false,
+    internalNumberRequired: false,
+    internalNumberText: "Número interno",
+    material: false,
+    materialRequired: false
+  },
   filters: {
     request: '',
     text: '',
@@ -79,6 +90,11 @@ export function requestItemsReducers(state = initialState, action: RequestItemsR
           ...state,
           properties: action.payload.properties
         };
+    case REQUEST_ITEMS_LOAD_SETTINGS:
+      return {
+        ...state,
+        requestSettings: action.payload.requestSettings
+      };
     case REQUEST_ITEMS_LOAD_ITEM_STATUS:
       return {
         ...state,

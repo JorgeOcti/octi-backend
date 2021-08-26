@@ -19,9 +19,22 @@ export interface IInventorySettting {
   reportedColor: string;
 }
 
+export interface IRequestSettting {
+  denomination: boolean;
+  denominationRequired: boolean;
+  material: boolean;
+  materialRequired: boolean;
+  color: boolean;
+  colorRequired: boolean;
+  internalNumber: boolean;
+  internalNumberRequired: boolean;
+  internalNumberText: string;
+}
+
 export interface ITeamSetting {
   _id: any;
   inventory: IInventorySettting;
+  request: IRequestSettting;
   team: ITeam;
   updatedAt: Date;
   createdAt: Date;

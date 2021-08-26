@@ -87,6 +87,7 @@ appRouter.delete('/api/admin/companies/:id', Middlewares.isLoggedIn, AdminCompan
 
 // api team
 appRouter.get('/api/admin/teams/', Middlewares.isLoggedIn, AdminTeamsController.apiListTeams);
+appRouter.get('/api/admin/team-settings/', Middlewares.isLoggedIn, AdminTeamsController.teamSetting);
 
 // import cars
 appRouter.get('/settings/cars/import/', Middlewares.isLoggedIn, AdminCarsController.imports);

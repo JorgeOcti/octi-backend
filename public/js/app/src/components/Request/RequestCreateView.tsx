@@ -15,6 +15,7 @@ import BootstrapSelect from '../Utils/BootstrapSelect';
 import MultiUploadFiles, {imageStatus} from '../Utils/MultiUploadFiles';
 import ShowIf from '../Utils/ShowIf';
 import TrackingBasePage from '../Utils/TrackingBasePage';
+import { IRequestSettting } from '../../../../../../src/app/interfaces/teamSetting.interface';
 
 
 interface IPropsType extends RouteComponentProps<{}> { }
@@ -49,6 +50,7 @@ interface IStateType {
   fleet: boolean;
   loading: boolean;
   error: Error | null;
+  requestSettings: IRequestSettting
 }
 
 const initialNewCar = {
@@ -66,7 +68,7 @@ const initialNewCar = {
   reason: '',
   priority: false,
   equipment: false,
-  washed: false
+  washed: false,
 };
 
 class RequestCreateView extends TrackingBasePage<IPropsType, IStateType> {
@@ -74,7 +76,7 @@ class RequestCreateView extends TrackingBasePage<IPropsType, IStateType> {
 
   readonly api: ApiService;
 
-  readonly state = {
+  readonly state: IStateType = {
     newCar: initialNewCar,
     cars: [],
     venue: '',
@@ -85,7 +87,18 @@ class RequestCreateView extends TrackingBasePage<IPropsType, IStateType> {
     loading: false,
     fleet: false,
     channel: '',
-    error: null
+    error: null,
+    requestSettings: {
+      color: false,
+      colorRequired: false,
+      denomination: false,
+      denominationRequired: false,
+      internalNumber: false,
+      internalNumberRequired: false,
+      internalNumberText: "Número interno",
+      material: false,
+      materialRequired: false
+    }
   };
 
   constructor(props: IPropsType) {
@@ -125,7 +138,7 @@ class RequestCreateView extends TrackingBasePage<IPropsType, IStateType> {
   }
 
   public render(): React.ReactElement<IPropsType> {
-    const { newCar, cars, fleet, loading, venues, reasons, channel, channels } = this.state;
+    const { newCar, cars, requestSettings, loading, venues, reasons, channel, channels } = this.state;
     const vehiclesView = this.props.location.pathname === '/requests/vehicles/create/';
     const filesCompleted = newCar.files.filter((file: any) => file.status === imageStatus.complete);
     const isUploadingFiles = newCar.files.length > 0 && filesCompleted.length < newCar.files.length;
@@ -177,7 +190,9 @@ class RequestCreateView extends TrackingBasePage<IPropsType, IStateType> {
                       </div>
                     </div>
                     <div className="form-group">
-                      <label htmlFor="modelo" className="col-sm-3 control-label label-left">Modelo *</label>
+                      <label htmlFor="modelo" className="col-sm-3 control-label label-left">Modelo {
+                        requestSettings.materialRequired ? '*' : ''
+                      }</label>
                       <div className="col-sm-9">
                         <AutocompleteInput
                           value={newCar.denomination}
@@ -210,42 +225,49 @@ class RequestCreateView extends TrackingBasePage<IPropsType, IStateType> {
                         />
                       </div>
                     </div>
-                    <div className="form-group">
-                      <label htmlFor="material" className="col-sm-3 control-label label-left">Material *</label>
-                      <div className="col-sm-9">
-                        <AutocompleteInput
-                          value={newCar.material}
-                          inputClass={'input-sm'}
-                          items={newCar.materials}
-                          renderItem={(item, index) => (
-                            <div key={index} className="item">
-                              {item.material ? `${item.material} - ` : ''} {item.denomination} <br />
-                              <strong>{item.brand}</strong>
-                            </div>
-                          )}
-                          onChange={(e) => {
-                            const { value } = e.target;
-                            this.changeNewCar('material', value);
-                            this.search(value, 'materials');
-                          }}
-                          onSelect={(item) => {
-                            this.setState({
-                              newCar: {
-                                ...this.state.newCar,
-                                brand: item.brand,
-                                brands: [],
-                                denomination: item.denomination,
-                                denominations: [],
-                                material: '',
-                                materials: []
-                              }
-                            });
-                          }}
-                        />
+                    <ShowIf condition={requestSettings.material}>
+                      <div className="form-group">
+                        <label htmlFor="material" className="col-sm-3 control-label label-left">Material {
+                          requestSettings.materialRequired ? '*' : ''
+                        }</label>
+                        <div className="col-sm-9">
+                          <AutocompleteInput
+                            value={newCar.material}
+                            inputClass={'input-sm'}
+                            items={newCar.materials}
+                            renderItem={(item, index) => (
+                              <div key={index} className="item">
+                                {item.material ? `${item.material} - ` : ''} {item.denomination} <br/>
+                                <strong>{item.brand}</strong>
+                              </div>
+
+                            )}
+                            onChange={(e) => {
+                              const {value} = e.target;
+                              this.changeNewCar('material', value);
+                              this.search(value, 'materials');
+                            }}
+                            onSelect={(item) => {
+                              this.setState({
+                                newCar: {
+                                  ...this.state.newCar,
+                                  brand: item.brand,
+                                  brands: [],
+                                  denomination: item.denomination,
+                                  denominations: [],
+                                  material: '',
+                                  materials: []
+                                }
+                              });
+                            }}
+                          />
+                        </div>
                       </div>
-                    </div>
+                    </ShowIf>
                     <div className="form-group">
-                      <label htmlFor="color" className="col-sm-3 control-label label-left">Color *</label>
+                      <label htmlFor="color" className="col-sm-3 control-label label-left">Color {
+                        requestSettings.colorRequired ? '*' : ''
+                      }</label>
                       <div className="col-sm-9">
                         <input
                           type="text"
@@ -279,13 +301,14 @@ class RequestCreateView extends TrackingBasePage<IPropsType, IStateType> {
                         />
                       </div>
                     </div>
-                    {
-                      reasonSelected && reasonSelected.questions.length ?
-                        reasonSelected.questions.map((question: any) => {
+                    <ShowIf condition={!!(reasonSelected && reasonSelected.questions.length)}>
+                      {
+                        reasonSelected?.questions.map((question: any) => {
                           const currentAnswer: any = newCar.answers.find((answer: any) => (answer.questionId === question._id));
                           return (
                             <div className="form-group" key={(question)._id}>
-                              <label htmlFor="color" className="col-sm-3 control-label label-left">{question.name} {question.required ? '*' : ''}</label>
+                              <label htmlFor="color"
+                                     className="col-sm-3 control-label label-left">{question.name} {question.required ? '*' : ''}</label>
                               <div className="col-sm-9">
                                 <input
                                   type="text"
@@ -315,28 +338,29 @@ class RequestCreateView extends TrackingBasePage<IPropsType, IStateType> {
                               </div>
                             </div>
                           );
-                        }) : null
-                    }
-                    {
-                      reasonSelected && reasonSelected.file.active ?
-                        <div className="form-group">
-                          <label className="col-sm-3 control-label label-left">Archivos *</label>
-                          <div className="col-sm-9">
-                            <MultiUploadFiles
-                              url={'/api/v1/requests/upload-file/'}
-                              onChange={(files) => {
-                                this.changeNewCar('files', files);
-                              }}
-                              files={newCar.files}
-                            />
-                            <ShowIf condition={isUploadingFiles}>
-                              <p>
-                                Se están cargando sus archivos, llevamos {filesCompleted.length} de {newCar.files.length} <i className="fa fa-spinner fa-spin" />.
+                        })
+                      }
+                    </ShowIf>
+                    <ShowIf condition={!!(reasonSelected && reasonSelected.file.active)}>
+                      <div className="form-group">
+                        <label className="col-sm-3 control-label label-left">Archivos *</label>
+                        <div className="col-sm-9">
+                          <MultiUploadFiles
+                            url={'/api/v1/requests/upload-file/'}
+                            onChange={(files) => {
+                              this.changeNewCar('files', files);
+                            }}
+                            files={newCar.files}
+                          />
+                          <ShowIf condition={isUploadingFiles}>
+                            <p>
+                              Se están cargando sus archivos, llevamos {filesCompleted.length} de {newCar.files.length} <i
+                              className="fa fa-spinner fa-spin"/>.
                             </p>
-                            </ShowIf>
-                          </div>
-                        </div> : null
-                    }
+                          </ShowIf>
+                        </div>
+                      </div>
+                    </ShowIf>
                     {
                       /* <div className="form-group">
                         <label className="col-sm-3 control-label label-left">Pre-entrega</label>
@@ -413,9 +437,9 @@ class RequestCreateView extends TrackingBasePage<IPropsType, IStateType> {
                         disabled={
                           !(reasonSelected && reasonSelected.questions.length === newCar.answers.length) ||
                           !newCar.brand.length ||
-                          !newCar.denomination.length ||
-                          !newCar.material.length ||
-                          !newCar.color.length ||
+                          (requestSettings.denomination && requestSettings.denominationRequired && !newCar.denomination.length) ||
+                          (requestSettings.material && requestSettings.materialRequired && !newCar.material.length) ||
+                          (requestSettings.color &&requestSettings.colorRequired && !newCar.color.length) ||
                           !newCar.reason ||
                           isUploadingFiles
                         }
@@ -679,13 +703,15 @@ class RequestCreateView extends TrackingBasePage<IPropsType, IStateType> {
       .all([
         this.api.getVenues(1, 200, true, true),
         this.api.getReasons({ page: 1, pageSize: 200 }),
-        this.api.getSalesChannel({ page: 1, pageSize: 200 })
+        this.api.getSalesChannel({ page: 1, pageSize: 200 }),
+        this.api.getTeamSettings()
       ])
-      .then(Axios.spread((venues, reasons, channels) => {
+      .then(Axios.spread((venues, reasons, channels, teamSettings) => {
         this.setState({
           venues: venues.data.results,
           reasons: reasons.data.results,
           channels: channels.data.results,
+          requestSettings: teamSettings.data.request,
           loading: false
         });
       }))

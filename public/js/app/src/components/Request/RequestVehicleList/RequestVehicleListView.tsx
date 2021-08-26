@@ -172,7 +172,7 @@ class RequestVehicleListView extends TrackingBasePage<IPropsType, IStateType> {
 
   public render(): React.ReactElement<IPropsType> {
     const {
-      pagination, loading, requestItems, requestItemStatus, venues, filters, properties
+      pagination, loading, requestItems, requestItemStatus, venues, filters, properties, requestSettings
     } = this.props.requestItems;
     const { orderBy, orderType } = this.props.requestItems.options;
     const { exporing } = this.state;
@@ -441,33 +441,42 @@ class RequestVehicleListView extends TrackingBasePage<IPropsType, IStateType> {
                           Marca
                       <span style={{ float: 'right' }}><i className={`fa fa-fw ${orderBy === 'car.brand' ? `${orderType === 'descending' ? 'fa-sort-down' : 'fa-sort-up'}` : 'fa-sort'}`} /></span>
                         </th>
-                        <th
-                          className="middle pointer"
-                          style={{ minWidth: '120px' }}
-                          onClick={() => this.changeOrder('car.description')}
-                        >
-                          Modelo
-                      <span style={{ float: 'right' }}><i className={`fa fa-fw ${orderBy === 'car.description' ? `${orderType === 'descending' ? 'fa-sort-down' : 'fa-sort-up'}` : 'fa-sort'}`} /></span>
-                        </th>
-                        <th
-                          className="middle pointer"
-                          style={{ width: '70px' }}
-                          onClick={() => this.changeOrder('car.material')}
-                        >
-                          Material
-                          <span style={{ float: 'right' }}><i className={`fa fa-fw ${orderBy === 'car.material' ? `${orderType === 'descending' ? 'fa-sort-down' : 'fa-sort-up'}` : 'fa-sort'}`} /></span>
-                        </th>
-                        <th className="middle"  style={{ minWidth: '80px' }}>Color</th>
+                        <ShowIf condition={requestSettings.denomination}>
+                          <th
+                            className="middle pointer"
+                            style={{ minWidth: '120px' }}
+                            onClick={() => this.changeOrder('car.denomination')}
+                          >
+                            Modelo
+                        <span style={{ float: 'right' }}><i className={`fa fa-fw ${orderBy === 'car.denomination' ? `${orderType === 'descending' ? 'fa-sort-down' : 'fa-sort-up'}` : 'fa-sort'}`} /></span>
+                          </th>
+                        </ShowIf>
+                        <ShowIf condition={requestSettings.material}>
+                          <th
+                            className="middle pointer"
+                            style={{width: '70px'}}
+                            onClick={() => this.changeOrder('car.material')}
+                          >
+                            Material
+                            <span style={{float: 'right'}}><i
+                              className={`fa fa-fw ${orderBy === 'car.material' ? `${orderType === 'descending' ? 'fa-sort-down' : 'fa-sort-up'}` : 'fa-sort'}`}/></span>
+                          </th>
+                        </ShowIf>
+                        <ShowIf condition={requestSettings.color}>
+                          <th className="middle"  style={{ minWidth: '80px' }}>Color</th>
+                        </ShowIf>
                         <th
                           className="middle pointer"
                           style={{ minWidth: '120px', maxWidth: '160px' }}
                           onClick={() => this.changeOrder('status.weigth')}
                         >
                           Estado
-                      <span style={{ float: 'right' }}><i className={`fa fa-fw ${orderBy === 'status.weigth' ? `${orderType === 'descending' ? 'fa-sort-down' : 'fa-sort-up'}` : 'fa-sort'}`} /></span>
+                          <span style={{ float: 'right' }}><i className={`fa fa-fw ${orderBy === 'status.weigth' ? `${orderType === 'descending' ? 'fa-sort-down' : 'fa-sort-up'}` : 'fa-sort'}`} /></span>
                         </th>
-                        <th className="middle" style={{ width: '130px' }}>VIN</th>
-                        <th className="middle" style={{ width: '60px' }}>CDO</th>
+                        <th className="middle" style={{ width: '150px' }}>VIN</th>
+                        <ShowIf condition={requestSettings.internalNumber}>
+                          <th className="middle" style={{ width: '60px' }}>CDO</th>
+                        </ShowIf>
                         <th
                           className="middle pointer"
                           style={{ minWidth: '100px' }}

@@ -4,6 +4,7 @@ import { IReason } from '../../../../../src/request/interfaces/reason.interface'
 import { IRequestItem } from '../../../../../src/request/interfaces/requestItem.interface';
 import { IRequestItemStatus } from '../../../../../src/request/interfaces/requestItemStatus.interface';
 import { IVenue } from '../../../../../src/app/interfaces/venue.interface';
+import { IRequestSettting } from '../../../../../src/app/interfaces/teamSetting.interface';
 
 export const REQUEST_ITEMS_CANCEL_REQUEST = '/REQUESTS_ITEMS/CANCEL_REQUEST';
 export const REQUEST_ITEMS_IS_LOADING = '/REQUESTS_ITEMS/IS_LOADING';
@@ -18,6 +19,7 @@ export const REQUEST_ITEMS_CHANGE_FILTER = '/REQUESTS_ITEMS/CHANGE_FILTER';
 export const REQUEST_ITEMS_CREATE_ITEM = '/REQUESTS_ITEMS/CREATE_ITEM';
 export const REQUEST_ITEMS_UPDATE_ITEM = '/REQUESTS_ITEMS/UPDATE_ITEM';
 export const REQUEST_ITEMS_DELETE_ITEM = '/REQUESTS_ITEMS/DELETE_ITEM';
+export const REQUEST_ITEMS_LOAD_SETTINGS = '/REQUESTS_ITEMS/LOAD_SETTINGS';
 
 export interface IRequestItemsFilters {
   text: string;
@@ -36,6 +38,7 @@ export interface IRequestItemsState {
   properties: ICarrier[];
   venues: IVenue[];
   requestItemStatus: IRequestItemStatus[];
+  requestSettings: IRequestSettting;
   requestItemStatusMin: number;
   requestItemStatusMax: number;
   loading: boolean;
@@ -150,6 +153,13 @@ export interface IDeleteRequestItems {
   };
 }
 
+export interface ILoadSettingsRequestItems {
+  type: typeof REQUEST_ITEMS_LOAD_SETTINGS;
+  payload: {
+    requestSettings: IRequestSettting;
+  };
+}
+
 export type RequestItemsReduxActions =
   ICancelRequestItems |
   ILoadReasonsRequestItems |
@@ -163,4 +173,5 @@ export type RequestItemsReduxActions =
   ICreateRequestItems |
   IUpdateRequestItems |
   IDeleteRequestItems |
+  ILoadSettingsRequestItems |
   IIsLoadingRequestItems;

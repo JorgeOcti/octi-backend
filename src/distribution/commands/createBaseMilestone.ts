@@ -8,7 +8,7 @@ import Form from "../../form/models/form.model";
 
 // import ActivityHistory, { ChoicesTypeActivity } from '../models/activityHistory.model';
 
-async function fixDuplicatesCar() {
+async function createBaseMilestone() {
   try {
     dotenv.config({
       path: path.join(__dirname, '../../../.env')
@@ -52,4 +52,4 @@ async function fixDuplicatesCar() {
   process.exit(1);
 }
 
-fixDuplicatesCar();
+createBaseMilestone();

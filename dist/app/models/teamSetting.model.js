@@ -52,15 +52,74 @@ var inventorySettingSchema = new mongoose.Schema({
         type: String
     }
 });
+var requestSettingSchema = new mongoose.Schema({
+    denomination: {
+        type: Boolean,
+        "default": true
+    },
+    denominationRequired: {
+        type: Boolean,
+        "default": true
+    },
+    material: {
+        type: Boolean,
+        "default": true
+    },
+    materialRequired: {
+        type: Boolean,
+        "default": true
+    },
+    color: {
+        type: Boolean,
+        "default": true
+    },
+    colorRequired: {
+        type: Boolean,
+        "default": true
+    },
+    internalNumber: {
+        type: Boolean,
+        "default": true
+    },
+    internalNumberRequired: {
+        type: Boolean,
+        "default": true
+    },
+    internalNumberText: {
+        type: String,
+        "default": "Número interno"
+    }
+});
 var teamSettingSchema = new mongoose.Schema({
     team: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Team'
     },
-    inventory: inventorySettingSchema
+    inventory: inventorySettingSchema,
+    request: requestSettingSchema
 }, {
     timestamps: true
 });
+// db.teamsettings.updateMany({}, {$set:{request:{denomination: true, denominationRequired: true, material: true, materialRequired: true, internalNumber: true, internalNumberRequired: false, internalNumberText:  "Número interno", color: true, colorRequired: true}}},{many: true});
+teamSettingSchema.statics.findOneOrCreate = function (condition, create) {
+    var model = this;
+    return new Promise(function (resolve, reject) {
+        model.findOne(condition, function (err, result) {
+            if (err) {
+                return reject(err);
+            }
+            if (result) {
+                return resolve(result);
+            }
+            model.create(create, function (err, result) {
+                if (err) {
+                    return reject(err);
+                }
+                return resolve(result);
+            });
+        });
+    });
+};
 var TeamSetting = mongoose.model('TeamSetting', teamSettingSchema);
 exports["default"] = TeamSetting;
 //# sourceMappingURL=teamSetting.model.js.map

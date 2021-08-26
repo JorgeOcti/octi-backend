@@ -708,4 +708,10 @@ export default class ApiService {
       `/api/v1/transmittals/item/${transmittalItem._id}/`
     );
   }
+
+  public getTeamSettings(): AxiosPromise {
+    return this.instance.get(
+      `/api/admin/team-settings/`
+    );
+  }
 }

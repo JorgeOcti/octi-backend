@@ -1,5 +1,7 @@
 import * as mongoose from 'mongoose';
 import {ITeamSetting} from '../interfaces/teamSetting.interface';
+import {ICarModel} from "./car.model";
+import {PaginateModel} from "mongoose";
 
 export interface ITeamSettingModel extends ITeamSetting, mongoose.Document {}
 
@@ -55,16 +57,81 @@ const inventorySettingSchema = new mongoose.Schema({
   }
 });
 
+const requestSettingSchema = new mongoose.Schema({
+  denomination: {
+    type: Boolean,
+    default: true
+  },
+  denominationRequired: {
+    type: Boolean,
+    default: true
+  },
+  material: {
+    type: Boolean,
+    default: true
+  },
+  materialRequired: {
+    type: Boolean,
+    default: true
+  },
+  color: {
+    type: Boolean,
+    default: true
+  },
+  colorRequired: {
+    type: Boolean,
+    default: true
+  },
+  internalNumber: {
+    type: Boolean,
+    default: true
+  },
+  internalNumberRequired: {
+    type: Boolean,
+    default: true
+  },
+  internalNumberText: {
+    type: String,
+    default: "Número interno"
+  }
+});
+
 const teamSettingSchema = new mongoose.Schema({
   team: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Team'
   },
-  inventory: inventorySettingSchema
+  inventory: inventorySettingSchema,
+  request: requestSettingSchema
 }, {
   timestamps: true
 });
+// db.teamsettings.updateMany({}, {$set:{request:{denomination: true, denominationRequired: true, material: true, materialRequired: true, internalNumber: true, internalNumberRequired: false, internalNumberText:  "Número interno", color: true, colorRequired: true}}},{many: true});
 
-const TeamSetting = mongoose.model<ITeamSettingModel>('TeamSetting', teamSettingSchema);
+teamSettingSchema.statics.findOneOrCreate = function(condition: any, create: any): Promise<ICarModel> {
+  const model = this;
+  return new Promise((resolve, reject) => {
+    model.findOne(condition, (err: any, result: ICarModel) => {
+      if (err) {
+        return reject(err);
+      }
+      if (result) {
+        return resolve(result);
+      }
+      model.create(create, (err: any, result: ICarModel) => {
+        if (err) {
+          return reject(err);
+        }
+        return resolve(result);
+      });
+    });
+  });
+};
+
+export type TeamSettingSchema = mongoose.Model<ITeamSettingModel> & PaginateModel<ITeamSettingModel> & {
+  findOneOrCreate(condition: any, create: any): Promise<ITeamSettingModel>
+};
+
+const TeamSetting = mongoose.model<ITeamSettingModel, TeamSettingSchema>('TeamSetting', teamSettingSchema);
 
 export default TeamSetting;
