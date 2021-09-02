@@ -3,7 +3,7 @@ import {Dispatch} from 'redux';
 import * as swal from 'sweetalert';
 import {ICompany} from '../../../../../src/app/interfaces/company.interface';
 import {IForm} from '../../../../../src/form/interfaces/form.interface';
-import {IPermission} from '../../../../../src/app/interfaces/permision.interface';
+import {IPermission} from '../../../../../src/app/interfaces/permission.interface';
 import {IUser} from '../../../../../src/app/interfaces/user.interface';
 import {IVenue} from '../../../../../src/app/interfaces/venue.interface';
 import ApiService from '../utils/axios';
@@ -292,43 +292,48 @@ export function getUsersAction(nextPage: number, search?: string) {
       dispatch(isLoadingAction(true));
     }
     // get venues and permissions
-    if (!state.users.searchText.length) {
-      Axios.all([
-        api.getCompanies(1, 200),
-        api.getVenues(1, 200),
-        api.getPermissions(1, 200),
-        api.getForms(1, 200)
-      ])
-        .then(Axios.spread((companies, venues, permissions, forms) => {
-          dispatch(loadCompaniesUserAction(companies.data.results));
-          dispatch(loadVenuesUserAction(venues.data.results));
-          dispatch(loadPermissionsUserAction(permissions.data.results));
-          dispatch(loadFormsUserAction(forms.data.results));
-        }))
-        .catch((err: AxiosError): void => {
-          api.errorHandler(err);
-        });
-    }
 
     dispatch(cancelRequestAction(api.getSource()));
     const page = nextPage ? nextPage : state.users.pagination.page;
     if (nextPage) {
       dispatch(changePageAction(nextPage));
     }
-    api.getUsers(page, state.users.searchText)
-      .then((response: AxiosResponse): void => {
-        dispatch(loadUserAction(response.data.results, response.data.count, response.data.pages));
+
+    Axios.all([
+      api.getUsers(page, state.users.searchText),
+      api.getCompanies(1, 200),
+      api.getVenues(1, 200, true),
+      api.getPermissions(1, 200),
+      api.getForms(1, 200)
+    ])
+      .then(Axios.spread((users, companies, venues, permissions, forms) => {
+        dispatch(loadUserAction(users.data.results, users.data.count, users.data.pages));
+        dispatch(loadCompaniesUserAction(companies.data.results));
+        dispatch(loadVenuesUserAction(venues.data.results));
+        dispatch(loadPermissionsUserAction(permissions.data.results));
+        dispatch(loadFormsUserAction(forms.data.results));
         dispatch(isLoadingAction(false));
-      })
+      }))
       .catch((err: AxiosError): void => {
-        // if the request is canceled
-        if (Axios.isCancel(err)) {
-          dispatch(isLoadingAction(true));
-        } else {
-          dispatch(isLoadingAction(false));
-          api.errorHandler(err);
-        }
+        dispatch(isLoadingAction(false));
+        api.errorHandler(err);
       });
+
+
+
+      // .then((response: AxiosResponse): void => {
+      //   dispatch(loadUserAction(response.data.results, response.data.count, response.data.pages));
+      //   dispatch(isLoadingAction(false));
+      // })
+      // .catch((err: AxiosError): void => {
+      //   // if the request is canceled
+      //   if (Axios.isCancel(err)) {
+      //     dispatch(isLoadingAction(true));
+      //   } else {
+      //     dispatch(isLoadingAction(false));
+      //     api.errorHandler(err);
+      //   }
+      // });
   };
 }
 

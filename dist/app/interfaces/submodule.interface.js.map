@@ -1,0 +1,1 @@
+{"version":3,"file":"submodule.interface.js","sourceRoot":"","sources":["../../../src/app/interfaces/submodule.interface.ts"],"names":[],"mappings":"","sourcesContent":["import { IModule } from './module.interface';\n\nexport interface ISubmodule {\n  _id: any;\n  name: string;\n  module: IModule;\n  updatedAt: Date;\n  createdAt: Date;\n}\n"]}

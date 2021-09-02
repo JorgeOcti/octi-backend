@@ -1,4 +1,4 @@
-FROM node:12.22.4-stretch-slim
+FROM node:12.22.6-stretch-slim
 MAINTAINER Gonzalo Muñoz Coloma gmunoz@osacontrol.com
 
 RUN apt-get update && \
@@ -41,8 +41,7 @@ COPY ./package.json /srv/package.json
 
 RUN npm --build-from-source install bcrypt && \
     npm --unsafe-perm install && \
-    npm i -g nodemon && \
-    npm i -g typescript && \
+    npm i -g nodemon typescript ts-node ts-node-dev  && \
     touch /srv/s3-config.json && \
     echo "{}" >> /srv/s3-config.json && \
     touch /srv/ses-config.json && \

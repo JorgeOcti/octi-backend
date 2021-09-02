@@ -5,7 +5,7 @@ import * as MongooseCrateS3 from 'mongoose-crate-s3';
 import * as mongoosePaginate from 'mongoose-paginate';
 import * as uuid from 'uuid';
 import * as s3Config from '../../../s3-config.json';
-import {ICompany} from '../interfaces/company.interface';
+import { ICompany } from '../interfaces/company.interface';
 
 export interface ICompanyModel extends ICompany, mongoose.Document {
   attach(fieldName: string, file: any, error?: (err: any) => void): void;
@@ -74,11 +74,11 @@ const companySchema = new mongoose.Schema({
   },
   businessName: {
     type: String,
-    trim: true,
+    trim: true
   },
   rut: {
     type: String,
-    trim: true,
+    trim: true
   },
   team: {
     type: mongoose.Schema.Types.ObjectId,

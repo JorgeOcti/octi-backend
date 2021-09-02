@@ -1,0 +1,1 @@
+{"version":3,"file":"permission.interface.js","sourceRoot":"","sources":["../../../src/app/interfaces/permission.interface.ts"],"names":[],"mappings":"","sourcesContent":["import { ISubmodule } from './submodule.interface';\n\nexport interface IPermission {\n  _id: any;\n  name: string;\n  submdule: ISubmodule;\n  codeName: string;\n  updatedAt: Date;\n  createdAt: Date;\n}\n"]}

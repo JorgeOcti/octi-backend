@@ -433,6 +433,7 @@ export function getParticipant(id: string) {
                                             key={choice._id}
                                             type="button"
                                             className={`btn flex-row-item text-wrap ${choice._id === answer.answer ? btnClass : btnDefault}`}
+                                            style={{margin: '2px'}}
                                             disabled={true}
                                           >{choice.choice}</button>
                                         );

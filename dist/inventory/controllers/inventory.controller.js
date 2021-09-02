@@ -46,10 +46,14 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
         if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
     }
 };
-var __spreadArray = (this && this.__spreadArray) || function (to, from) {
-    for (var i = 0, il = from.length, j = to.length; i < il; i++, j++)
-        to[j] = from[i];
-    return to;
+var __spreadArray = (this && this.__spreadArray) || function (to, from, pack) {
+    if (pack || arguments.length === 2) for (var i = 0, l = from.length, ar; i < l; i++) {
+        if (ar || !(i in from)) {
+            if (!ar) ar = Array.prototype.slice.call(from, 0, i);
+            ar[i] = from[i];
+        }
+    }
+    return to.concat(ar || Array.prototype.slice.call(from));
 };
 exports.__esModule = true;
 var archiver = require("archiver");
@@ -1338,10 +1342,10 @@ var InventoryController = /** @class */ (function () {
                     case 4:
                         if (!imagesToDownload.length) return [3 /*break*/, 6];
                         console.log('promise', numb);
-                        _c = [__spreadArray([], results)];
+                        _c = [__spreadArray([], results, true)];
                         return [4 /*yield*/, bluebird.all(imagesToDownload.splice(0, 20).map(function (promise) { return promise(); }))];
                     case 5:
-                        results = __spreadArray.apply(void 0, _c.concat([_d.sent()]));
+                        results = __spreadArray.apply(void 0, _c.concat([_d.sent(), true]));
                         numb++;
                         return [3 /*break*/, 4];
                     case 6:
@@ -1624,16 +1628,14 @@ var InventoryController = /** @class */ (function () {
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
+                        _a.trys.push([0, 5, , 6]);
                         team = req.user.team._id;
                         logger_service_1["default"].info("apiList");
                         logger_service_1["default"].info("{user: {_id: " + req.user._id + ", email: " + req.user.email + "}}");
-                        _a.label = 1;
-                    case 1:
-                        _a.trys.push([1, 6, , 7]);
                         return [4 /*yield*/, user_model_1["default"].findById(req.user._id)];
-                    case 2:
+                    case 1:
                         updatedUser = _a.sent();
-                        if (!updatedUser) return [3 /*break*/, 4];
+                        if (!updatedUser) return [3 /*break*/, 3];
                         return [4 /*yield*/, inventory_model_1["default"].find({
                                 team: team,
                                 venues: updatedUser.venue,
@@ -1645,14 +1647,14 @@ var InventoryController = /** @class */ (function () {
                                 name: true,
                                 settings: true
                             }).lean()];
-                    case 3:
+                    case 2:
                         inventories = _a.sent();
                         res.json({
                             data: inventories,
                             status: 200
                         });
-                        return [3 /*break*/, 5];
-                    case 4:
+                        return [3 /*break*/, 4];
+                    case 3:
                         logger_service_1["default"].error("apiList: Usuario no encontrado");
                         logger_service_1["default"].error("{user: {_id: " + req.user._id + ", email: " + req.user.email + "}}");
                         /* istanbul ignore next */
@@ -1660,9 +1662,9 @@ var InventoryController = /** @class */ (function () {
                             message: 'Usuario no encontrado',
                             status: 400
                         });
-                        _a.label = 5;
-                    case 5: return [3 /*break*/, 7];
-                    case 6:
+                        _a.label = 4;
+                    case 4: return [3 /*break*/, 6];
+                    case 5:
                         e_15 = _a.sent();
                         /* istanbul ignore next */
                         logger_service_1["default"].error("apiList: Async Error.");
@@ -1675,8 +1677,8 @@ var InventoryController = /** @class */ (function () {
                             message: e_15,
                             status: 400
                         });
-                        return [3 /*break*/, 7];
-                    case 7: return [2 /*return*/];
+                        return [3 /*break*/, 6];
+                    case 6: return [2 /*return*/];
                 }
             });
         });
@@ -1688,12 +1690,10 @@ var InventoryController = /** @class */ (function () {
             return __generator(this, function (_c) {
                 switch (_c.label) {
                     case 0:
+                        _c.trys.push([0, 9, , 10]);
                         id = req.params.id;
                         team = req.user.team._id;
                         venuesPermissions = req.user.venuesPermissions();
-                        _c.label = 1;
-                    case 1:
-                        _c.trys.push([1, 10, , 11]);
                         return [4 /*yield*/, inventory_model_1["default"].aggregate([
                                 {
                                     $match: {
@@ -1798,7 +1798,7 @@ var InventoryController = /** @class */ (function () {
                                     }
                                 }
                             ])];
-                    case 2:
+                    case 1:
                         inventory = _c.sent();
                         return [4 /*yield*/, inventory_model_1["default"].aggregate([
                                 {
@@ -1877,7 +1877,7 @@ var InventoryController = /** @class */ (function () {
                                     $unwind: '$info'
                                 }
                             ])];
-                    case 3:
+                    case 2:
                         detailByVenues = _c.sent();
                         return [4 /*yield*/, inventory_model_1["default"].aggregate([
                                 {
@@ -1955,7 +1955,7 @@ var InventoryController = /** @class */ (function () {
                                     }
                                 }
                             ])];
-                    case 4:
+                    case 3:
                         detailByBrands = _c.sent();
                         detailByBrand = [];
                         detailByVenue = [];
@@ -1987,7 +1987,7 @@ var InventoryController = /** @class */ (function () {
                                 }, __assign({}, defaultResults))
                             });
                         }
-                        if (!(inventory && inventory.length)) return [3 /*break*/, 8];
+                        if (!(inventory && inventory.length)) return [3 /*break*/, 7];
                         currentInventory = inventory[0];
                         response = {
                             _id: currentInventory._id,
@@ -2066,10 +2066,10 @@ var InventoryController = /** @class */ (function () {
                                         }
                                     }
                                 }]).lean()];
-                    case 5:
+                    case 4:
                         detailInventory = _c.sent();
                         return [4 /*yield*/, teamSetting_model_1["default"].findOne({ team: team })];
-                    case 6:
+                    case 5:
                         teamSettings = _c.sent();
                         return [4 /*yield*/, inventoryLabel_model_1["default"].find({
                                 team: team,
@@ -2082,7 +2082,7 @@ var InventoryController = /** @class */ (function () {
                                 isExhibition: true,
                                 requireCustomText: true
                             })];
-                    case 7:
+                    case 6:
                         labels = _c.sent();
                         res.json({
                             summary: response,
@@ -2093,16 +2093,16 @@ var InventoryController = /** @class */ (function () {
                             detail: detailInventory,
                             status: 200
                         });
-                        return [3 /*break*/, 9];
-                    case 8:
+                        return [3 /*break*/, 8];
+                    case 7:
                         console.log('inventory', inventory);
                         res.status(404).json({
                             message: 'Inventario no encontrado',
                             status: 404
                         });
-                        _c.label = 9;
-                    case 9: return [3 /*break*/, 11];
-                    case 10:
+                        _c.label = 8;
+                    case 8: return [3 /*break*/, 10];
+                    case 9:
                         e_16 = _c.sent();
                         /* istanbul ignore next */
                         logger_service_1["default"].error("detaill: Async Error.");
@@ -2115,8 +2115,8 @@ var InventoryController = /** @class */ (function () {
                             message: e_16,
                             status: 400
                         });
-                        return [3 /*break*/, 11];
-                    case 11: return [2 /*return*/];
+                        return [3 /*break*/, 10];
+                    case 10: return [2 /*return*/];
                 }
             });
         });

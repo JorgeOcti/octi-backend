@@ -1,1 +1,0 @@
-{"version":3,"file":"inventoryComment.interface.js","sourceRoot":"","sources":["../../src/interfaces/inventoryComment.interface.ts"],"names":[],"mappings":"","sourcesContent":["import {IUserModel} from '../app/models/user.model';\n\nexport interface IInventoryComment {\n  _id: any;\n  user: IUserModel;\n  comment: string;\n  createdAt: Date;\n}\n"]}

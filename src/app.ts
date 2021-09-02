@@ -286,12 +286,12 @@ const billingQueue = new Bull('billing', {
   prefix: '{andes}'
 });
 
-const addCronTask = async () => {
+(async () => {
   try {
     // let job = await billingQueue.removeRepeatable('task', {cron: '0 47 6 * * 4'});
     const jobs = await billingQueue.getRepeatableJobs();
-    if (jobs && jobs.length){
-      for(const job of jobs){
+    if (jobs && jobs.length) {
+      for (const job of jobs) {
         await billingQueue.removeRepeatableByKey(job.key);
         console.log(`${jobs[0].key} Removida`);
       }
@@ -310,11 +310,9 @@ const addCronTask = async () => {
       await new BillingQueue().processBilling();
       done();
     });
-    await billingQueue.add({}, {repeat: {cron: '0 1 1 * *'}, jobId: 'billing'});
+    await billingQueue.add({}, { repeat: { cron: '0 1 1 * *' }, jobId: 'billing' });
   }
-};
-
-addCronTask();
+})();
 
 
 new EmailQueue(queue).run();

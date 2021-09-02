@@ -218,46 +218,69 @@ var TransmittalController = /** @class */ (function () {
     };
     TransmittalController.prototype.apiUpdate = function (req, res) {
         return __awaiter(this, void 0, void 0, function () {
-            var id, transmittal, team, newTransmittal, e_2;
+            var id, transmittal, team, populate, newTransmittal, e_2;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
+                        _a.trys.push([0, 9, , 10]);
                         logger_service_1["default"].info("TransmittalController.apiUpdate");
                         id = req.params.id;
                         transmittal = req.body;
                         team = req.user.team;
-                        _a.label = 1;
+                        populate = [{
+                                path: 'transporter.carrier',
+                                select: ['name']
+                            }, {
+                                path: 'transporter.driver',
+                                select: ['firstName', 'lastName']
+                            }, {
+                                path: 'items',
+                                select: ['car', 'requestItem', 'destination', 'origin', 'loadingDate', 'arrivalDate'],
+                                populate: this.itemPopulate
+                            }, {
+                                path: 'files',
+                                select: ['file', 'thumbnail']
+                            }, {
+                                path: 'createdBy',
+                                select: ['firstName', 'lastName']
+                            }];
+                        newTransmittal = void 0;
+                        if (!transmittal.allLoadingDate) return [3 /*break*/, 3];
+                        return [4 /*yield*/, transmittalItem_model_1["default"].updateMany({ transmittal: id }, { $set: { loadingDate: transmittal.allLoadingDate } })];
                     case 1:
-                        _a.trys.push([1, 3, , 4]);
+                        _a.sent();
                         return [4 /*yield*/, transmittal_model_1["default"]
-                                .findOneAndUpdate({ _id: id }, { $set: transmittal }, { "new": true })
-                                .populate([{
-                                    path: 'transporter.carrier',
-                                    select: ['name']
-                                }, {
-                                    path: 'transporter.driver',
-                                    select: ['firstName', 'lastName']
-                                }, {
-                                    path: 'items',
-                                    select: ['car', 'requestItem', 'destination', 'origin', 'loadingDate', 'arrivalDate'],
-                                    populate: this.itemPopulate
-                                }, {
-                                    path: 'files',
-                                    select: ['file', 'thumbnail']
-                                }, {
-                                    path: 'createdBy',
-                                    select: ['firstName', 'lastName']
-                                }])];
+                                .findOne({ _id: id })
+                                .populate(populate)];
                     case 2:
                         newTransmittal = _a.sent();
+                        return [3 /*break*/, 8];
+                    case 3:
+                        if (!transmittal.allArrivalDate) return [3 /*break*/, 6];
+                        return [4 /*yield*/, transmittalItem_model_1["default"].updateMany({ transmittal: id }, { $set: { arrivalDate: transmittal.allArrivalDate } })];
+                    case 4:
+                        _a.sent();
+                        return [4 /*yield*/, transmittal_model_1["default"]
+                                .findOne({ _id: id })
+                                .populate(populate)];
+                    case 5:
+                        newTransmittal = _a.sent();
+                        return [3 /*break*/, 8];
+                    case 6: return [4 /*yield*/, transmittal_model_1["default"]
+                            .findOneAndUpdate({ _id: id }, { $set: transmittal }, { "new": true })
+                            .populate(populate)];
+                    case 7:
+                        newTransmittal = _a.sent();
+                        _a.label = 8;
+                    case 8:
                         server_1.io.to("transmittal-list-" + team._id).emit('UPDATE_TRANSMITTAL', {
                             transmittal: newTransmittal
                         });
                         res.json({
                             data: newTransmittal
                         });
-                        return [3 /*break*/, 4];
-                    case 3:
+                        return [3 /*break*/, 10];
+                    case 9:
                         e_2 = _a.sent();
                         console.log(e_2);
                         /* istanbul ignore next */
@@ -265,8 +288,8 @@ var TransmittalController = /** @class */ (function () {
                         /* istanbul ignore next */
                         logger_service_1["default"].error("{user: {_id: " + req.user._id + ", email: " + req.user.email + "}}");
                         res.status(500).json(e_2);
-                        return [3 /*break*/, 4];
-                    case 4: return [2 /*return*/];
+                        return [3 /*break*/, 10];
+                    case 10: return [2 /*return*/];
                 }
             });
         });

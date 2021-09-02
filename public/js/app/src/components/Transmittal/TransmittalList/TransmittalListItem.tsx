@@ -1,22 +1,22 @@
 import * as React from 'react';
-import {Dispatch} from 'react';
-import {connect} from 'react-redux';
-import {RouteComponentProps} from 'react-router';
+import { Dispatch } from 'react';
+import { connect } from 'react-redux';
+import { RouteComponentProps } from 'react-router';
 import * as moment from 'moment-timezone';
-import TransmittalActions from "../../../actions/transmittal.actions";
-import {ITransmittalActionTypes, ITransmittalState} from "../../../actions/transmittal.types";
-import {ITransmittalItemModel} from '../../../../../../../src/distribution/models/transmittalItem.model';
+import TransmittalActions from '../../../actions/transmittal.actions';
+import { ITransmittalActionTypes, ITransmittalState } from '../../../actions/transmittal.types';
+import { ITransmittalItemModel } from '../../../../../../../src/distribution/models/transmittalItem.model';
 import DateRangePicker from '../../Utils/DateRangePicker';
-import BootstrapSelect from "../../Utils/BootstrapSelect";
-import ShowIf from "../../Utils/ShowIf";
-import * as swal from "sweetalert";
-import ApiService from "../../../utils/axios";
-import {ITransmittalModel} from '../../../../../../../src/distribution/models/transmittal.model';
-import {IParticipant} from '../../../../../../../src/form/interfaces/participant.interface';
-import {getParticipant} from "../../../actions/dashboard.actions";
-import {debounce} from "throttle-debounce";
-import {hasPermission} from "../../../utils/common";
-import {IWindow} from "../../../interfaces/window";
+import BootstrapSelect from '../../Utils/BootstrapSelect';
+import ShowIf from '../../Utils/ShowIf';
+import * as swal from 'sweetalert';
+import ApiService from '../../../utils/axios';
+import { ITransmittalModel } from '../../../../../../../src/distribution/models/transmittal.model';
+import { IParticipant } from '../../../../../../../src/form/interfaces/participant.interface';
+import { getParticipant } from '../../../actions/dashboard.actions';
+import { debounce } from 'throttle-debounce';
+import { hasPermission } from '../../../utils/common';
+import { IWindow } from '../../../interfaces/window';
 
 interface IPropsType extends RouteComponentProps<{ ticket: string }> {
   dispatch: Dispatch<ITransmittalActionTypes>;
@@ -24,6 +24,7 @@ interface IPropsType extends RouteComponentProps<{ ticket: string }> {
   item: ITransmittalModel;
   transmittalItem: ITransmittalItemModel;
   transmittalActions: TransmittalActions;
+
   getParticipant(id: string): void;
 }
 
@@ -50,27 +51,27 @@ class TransmitalListItem extends React.Component<IPropsType, IStateType> {
   }
 
   public render(): React.ReactElement<IPropsType> {
-    const {transmittalItem, transmittal: {venues}} = this.props;
+    const { transmittalItem, transmittal: { venues } } = this.props;
     return (
-      <tr id={`transmittal-item-${transmittalItem._id}`} className="background-transition">
-        <td className={"middle"}>
+      <tr id={`transmittal-item-${transmittalItem._id}`} className='background-transition'>
+        <td className={'middle'}>
           <strong>
             #{this.padNumber(transmittalItem.request.number)}
           </strong>
         </td>
-        <td className={"middle"}>{transmittalItem.car.vin}</td>
-        <td className={"middle"}>{transmittalItem.car.brand} {transmittalItem.car.denomination}</td>
-        <td className={"middle"}>{transmittalItem.car.invoice}</td>
-        <td className={"middle"}>{transmittalItem.car.entry}</td>
-        <td className={"middle"}>
+        <td className={'middle'}>{transmittalItem.car.vin}</td>
+        <td className={'middle'}>{transmittalItem.car.brand} {transmittalItem.car.denomination}</td>
+        <td className={'middle'}>{transmittalItem.car.invoice}</td>
+        <td className={'middle'}>{transmittalItem.car.entry}</td>
+        <td className={'middle'}>
           {
             hasPermission(window.user, 'changeTransmittal') ?
               (
                 <BootstrapSelect
-                  noneSelectedText="Selecciona una sucursal"
+                  noneSelectedText='Selecciona una sucursal'
                   displayItems={2}
                   sm={true}
-                  selectedText="sucursales seleccionadas."
+                  selectedText='sucursales seleccionadas.'
                   selected={transmittalItem.origin ? [transmittalItem.origin._id] : []}
                   autoClouse={true}
                   allOption={false}
@@ -93,15 +94,15 @@ class TransmitalListItem extends React.Component<IPropsType, IStateType> {
               )
           }
         </td>
-        <td className={"middle"}>
+        <td className={'middle'}>
           {
             hasPermission(window.user, 'changeTransmittal') ?
               (
                 <BootstrapSelect
-                  noneSelectedText="Selecciona una sucursal"
+                  noneSelectedText='Selecciona una sucursal'
                   displayItems={2}
                   sm={true}
-                  selectedText="sucursales seleccionadas."
+                  selectedText='sucursales seleccionadas.'
                   selected={transmittalItem.destination ? [transmittalItem.destination._id] : []}
                   autoClouse={true}
                   allOption={false}
@@ -125,7 +126,7 @@ class TransmitalListItem extends React.Component<IPropsType, IStateType> {
           }
 
         </td>
-        <td className={"middle"}>
+        <td className={'middle'}>
           {
             hasPermission(window.user, 'changeTransmittal') ?
               (
@@ -143,11 +144,11 @@ class TransmitalListItem extends React.Component<IPropsType, IStateType> {
                 />
               ) :
               (
-                `${transmittalItem.loadingDate ? moment(transmittalItem.loadingDate).format('DD-MM-YYYY'): '-'}`
+                `${transmittalItem.loadingDate ? moment(transmittalItem.loadingDate).format('DD-MM-YYYY') : '-'}`
               )
           }
         </td>
-        <td className={"middle"}>
+        <td className={'middle'}>
           {
             hasPermission(window.user, 'changeTransmittal') ?
               (
@@ -165,24 +166,24 @@ class TransmitalListItem extends React.Component<IPropsType, IStateType> {
                 />
               ) :
               (
-                `${transmittalItem.arrivalDate ? moment(transmittalItem.arrivalDate).format('DD-MM-YYYY'): '-'}`
+                `${transmittalItem.arrivalDate ? moment(transmittalItem.arrivalDate).format('DD-MM-YYYY') : '-'}`
               )
           }
 
         </td>
-        <td className={"middle"}>
+        <td className={'middle'}>
           {
             hasPermission(window.user, 'changeTransmittal') ?
               (
                 <input
-                  className="form-control input-sm"
+                  className='form-control input-sm'
                   defaultValue={transmittalItem.observation}
                   onChange={(e) => {
                     this.debounceUpdateTransmittalItem({
                       _id: transmittalItem._id,
                       transmittal: transmittalItem.transmittal,
                       observation: e.target.value
-                    })
+                    });
                   }}
                 />
               ) :
@@ -194,46 +195,47 @@ class TransmitalListItem extends React.Component<IPropsType, IStateType> {
         {
           transmittalItem.revisions.length ?
             this.statusIcon(transmittalItem.revisions[0]) :
-            <td className={"middle"} />
+            <td className={'middle'} />
         }
         <ShowIf condition={hasPermission(window.user, 'changeTransmittal')}>
-          <td className="middle-center text-red pointer" onClick={this.delete}>
-            <i className="fa fa-minus-circle"/>
+          <td className='middle-center text-red pointer' onClick={this.delete}>
+            <i className='fa fa-minus-circle' />
           </td>
         </ShowIf>
       </tr>
     );
   }
-  private debounceUpdateTransmittalItem(transmittalItem: Partial<ITransmittalItemModel>){
+
+  private debounceUpdateTransmittalItem(transmittalItem: Partial<ITransmittalItemModel>) {
     this.props.transmittalActions.updateTransmittalItemThunkAction(transmittalItem);
   }
 
   private statusIcon(revision: IParticipant) {
     if (revision.hasDamages) {
       return (
-        <td className={"middle pointer"} onClick={() => this.props.getParticipant(revision._id)}>
-          <i className="fa fa-warning text-red"/>
+        <td className={'middle pointer'} onClick={() => this.props.getParticipant(revision._id)}>
+          <i className='fa fa-warning text-red' />
         </td>
       );
     } else if (revision.receptionConfirmation) {
       return (
-        <td className={"middle pointer"} onClick={() => this.props.getParticipant(revision._id)}>
-          <i className="fa fa-check-circle text-primary"/>
+        <td className={'middle pointer'} onClick={() => this.props.getParticipant(revision._id)}>
+          <i className='fa fa-check-circle text-primary' />
         </td>
       );
     } else if (!revision.receptionConfirmation) {
       return (
-        <td className={"middle pointer"} onClick={() => this.props.getParticipant(revision._id)}>
-          <i className="fa fa-close text-danger"/>
+        <td className={'middle pointer'} onClick={() => this.props.getParticipant(revision._id)}>
+          <i className='fa fa-close text-danger' />
         </td>
       );
     }
-    return <td className={"middle"}/>;
+    return <td className={'middle'} />;
   }
 
   private delete() {
-    const {transmittalItem} = this.props;
-    const {item: transmittal} = this.props;
+    const { transmittalItem } = this.props;
+    const { item: transmittal } = this.props;
     swal!({
       title: '¿Estás seguro?',
       text: `Vas a eliminar ${transmittalItem.car.brand} ${transmittalItem.car.denomination}, de la orden ${this.padNumber(transmittal.number)}.`,
@@ -247,7 +249,7 @@ class TransmitalListItem extends React.Component<IPropsType, IStateType> {
       }
     }).then((willDelete) => {
       if (willDelete) {
-        const {transmittalItem} = this.props;
+        const { transmittalItem } = this.props;
         this.api.deleteTransmittalItem(transmittalItem);
       }
     });
@@ -271,7 +273,7 @@ const mapDispatchToProps = (dispatch: any) => {
   return {
     dispatch,
     transmittalActions,
-    getParticipant: (id: string) => dispatch(getParticipant(id)),
+    getParticipant: (id: string) => dispatch(getParticipant(id))
   };
 };
 

@@ -1,19 +1,19 @@
-import {IRequest} from "../../interfaces/global.interface";
-import {Response} from "express";
-import {PaginateOptions, PaginateResult} from "mongoose";
-import Transmittal, {ChoicesStatusTransmittal, ITransmittalModel} from "../models/transmittal.model";
-import logger from "../../services/logger.service";
-import TransmittalItem from "../models/transmittalItem.model";
-import TransmittalFile from "../models/transmittalFile.model";
-import GeneralUtils from "../../utils/general.utils";
-import * as GraphicsMagick from "gm";
-import Team from "../../app/models/team.model";
-import Car from "../../app/models/car.model";
-import RequestItem from "../../request/models/requestItem.model";
-import {io} from "../../server";
-import * as excel from "exceljs";
-import * as moment from "moment-timezone";
-import Milestone from "../models/milestone.model";
+import { IRequest } from '../../interfaces/global.interface';
+import { Response } from 'express';
+import { PaginateOptions, PaginateResult } from 'mongoose';
+import Transmittal, { ChoicesStatusTransmittal, ITransmittalModel } from '../models/transmittal.model';
+import logger from '../../services/logger.service';
+import TransmittalItem from '../models/transmittalItem.model';
+import TransmittalFile from '../models/transmittalFile.model';
+import GeneralUtils from '../../utils/general.utils';
+import * as GraphicsMagick from 'gm';
+import Team from '../../app/models/team.model';
+import Car from '../../app/models/car.model';
+import RequestItem from '../../request/models/requestItem.model';
+import { io } from '../../server';
+import * as excel from 'exceljs';
+import * as moment from 'moment-timezone';
+import Milestone from '../models/milestone.model';
 
 
 class TransmittalController {
@@ -54,22 +54,22 @@ class TransmittalController {
   }
 
   public async index(req: IRequest, res: Response) {
-    res.render('app/index', {token: await req.user.generateToken()});
+    res.render('app/index', { token: await req.user.generateToken() });
   }
 
   public async apiDetail(req: IRequest, res: Response) {
     logger.info(`TransmittalController.apiDetail`);
     res.json({
       api: 'TransmittalController:apiDetail'
-    })
+    });
   }
 
   public async apiCreate(req: IRequest, res: Response) {
     logger.info(`TransmittalController.apiCreate`);
-    const {name, items, files, transporter, observation} = req.body;
-    const {user} = req;
+    const { name, items, files, transporter, observation } = req.body;
+    const { user } = req;
     try {
-      const team = await Team.findOneAndUpdate({_id: user.team._id}, {$inc: {transmittalNumber: 1}}, {new: true});
+      const team = await Team.findOneAndUpdate({ _id: user.team._id }, { $inc: { transmittalNumber: 1 } }, { new: true });
       // create new transmittal
       const transmittal = await new Transmittal({
         name,
@@ -106,11 +106,11 @@ class TransmittalController {
       }
 
       if (files && files.length) {
-        await transmittal.updateOne({files});
+        await transmittal.updateOne({ files });
         await TransmittalFile.updateMany({
-          _id: {$in: files}
+          _id: { $in: files }
         }, {
-          $set: {transmittal}
+          $set: { transmittal }
         });
       }
 
@@ -120,7 +120,7 @@ class TransmittalController {
 
       res.json({
         status: 200
-      })
+      });
     } catch (e) {
       /* istanbul ignore next */
       logger.error(`TransmittalController.apiCreate: Async Error.`);
@@ -131,35 +131,52 @@ class TransmittalController {
   }
 
   public async apiUpdate(req: IRequest, res: Response) {
-    logger.info(`TransmittalController.apiUpdate`);
-    const {id} = req.params;
-    const {body: transmittal} = req;
-    const {team} = req.user;
     try {
-      const newTransmittal = await Transmittal
-        .findOneAndUpdate({_id: id}, {$set: transmittal}, {new: true})
-        .populate([{
-          path: 'transporter.carrier',
-          select: ['name']
-        }, {
-          path: 'transporter.driver',
-          select: ['firstName', 'lastName']
-        }, {
-          path: 'items',
-          select: ['car', 'requestItem', 'destination', 'origin', 'loadingDate', 'arrivalDate'],
-          populate: this.itemPopulate
-        }, {
-          path: 'files',
-          select: ['file', 'thumbnail']
-        }, {
-          path: 'createdBy',
-          select: ['firstName', 'lastName']
-        }]);
+      logger.info(`TransmittalController.apiUpdate`);
+      const { id } = req.params;
+      const { body: transmittal } = req;
+      const { team } = req.user;
+
+      const populate = [{
+        path: 'transporter.carrier',
+        select: ['name']
+      }, {
+        path: 'transporter.driver',
+        select: ['firstName', 'lastName']
+      }, {
+        path: 'items',
+        select: ['car', 'requestItem', 'destination', 'origin', 'loadingDate', 'arrivalDate'],
+        populate: this.itemPopulate
+      }, {
+        path: 'files',
+        select: ['file', 'thumbnail']
+      }, {
+        path: 'createdBy',
+        select: ['firstName', 'lastName']
+      }];
+
+      let newTransmittal: any;
+      if(transmittal.allLoadingDate){
+        await TransmittalItem.updateMany({ transmittal: id }, { $set: {loadingDate: transmittal.allLoadingDate}});
+        newTransmittal =  await Transmittal
+          .findOne({ _id: id })
+          .populate(populate);
+      } else if(transmittal.allArrivalDate){
+        await TransmittalItem.updateMany({ transmittal: id }, { $set: {arrivalDate: transmittal.allArrivalDate}});
+        newTransmittal =  await Transmittal
+          .findOne({ _id: id })
+          .populate(populate);
+      } else {
+        newTransmittal = await Transmittal
+          .findOneAndUpdate({ _id: id }, { $set: transmittal }, { new: true })
+          .populate(populate);
+      }
+
       io.to(`transmittal-list-${team._id}`).emit('UPDATE_TRANSMITTAL', {
         transmittal: newTransmittal
       });
       res.json({
-        data: newTransmittal,
+        data: newTransmittal
       });
     } catch (e) {
       console.log(e);
@@ -175,7 +192,7 @@ class TransmittalController {
     logger.info(`TransmittalController.apiDelete`);
     res.json({
       api: 'TransmittalController:apiDelete'
-    })
+    });
   }
 
   public async apiList(req: IRequest, res: Response) {
@@ -342,19 +359,19 @@ class TransmittalController {
   }
 
   public async attachEvidence(req: IRequest, res: Response) {
-    const {user} = req;
-    const {files, transmittal} = req.body;
+    const { user } = req;
+    const { files, transmittal } = req.body;
     logger.info(`TransmittalController.uploadFile`);
     logger.info(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
     try {
       const transmittalData = await Transmittal
         .findOneAndUpdate({
           _id: transmittal,
-          team: user.team._id,
+          team: user.team._id
         }, {
-          $push: {evidenceFullLoad: files},
+          $push: { evidenceFullLoad: files },
           status: ChoicesStatusTransmittal.inTransit
-        }, {new: true});
+        }, { new: true });
       //  TODO: need update socket from here
       res.status(200).json({
         data: transmittalData,
@@ -417,7 +434,7 @@ class TransmittalController {
       worksheet.columns = columns;
 
       const cursor = await Transmittal
-        .find({team})
+        .find({ team })
         .populate([{
           path: 'transporter.carrier',
           select: ['name']
@@ -451,7 +468,7 @@ class TransmittalController {
             denomination: item.car?.denomination,
             color: item.car?.color,
             observation: item.observation,
-            createdAt: item.createdAt,
+            createdAt: item.createdAt
           }).commit();
         }
       });
@@ -493,7 +510,7 @@ class TransmittalController {
   }
 
   public async uploadFile(req: IRequest, res: Response) {
-    const {user} = req;
+    const { user } = req;
     logger.info(`TransmittalController.uploadFile`);
     logger.info(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
     const file: any = GeneralUtils.getFileFromRequest(req.files, 'file');

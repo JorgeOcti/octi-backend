@@ -26,8 +26,9 @@ services:
       context: .
     image: andes:latest
     restart: unless-stopped
-    command: ['tsc', '-w', '--project', 'tsconfig.json']
+    command: [ 'tsc', '-w', '--project', 'tsconfig.json' ]
     volumes:
+      - /srv/node_modules
       - ./buildcache/:/srv/buildcache/
       - ./dist:/srv/dist
       - ./src:/srv/src
@@ -39,7 +40,8 @@ services:
       context: .
     image: andes:latest
     restart: unless-stopped
-    command: ['nodemon', '--inspect=0.0.0.0:9229', 'dist/server.js', ' --max-old-space-size=4096']
+    command: npm run dev
+#    command: [ 'nodemon', '--inspect=0.0.0.0:9229', 'dist/server.js', ' --max-old-space-size=4096' ]
     # command: ['nodemon', '--inspect=0.0.0.0:9229', 'dist/server.js', ' --max-old-space-size=4096']
     env_file:
       - .env
@@ -47,7 +49,7 @@ services:
       REDIS_SERVICE_SERVICE_HOST: redis
       REDIS_CLUSTERED: "false"
       MONGODB_URI: mongodb://osacontrol:osacontrol@mongo:27017/osaAndesProduction?authSource=admin
-#      MONGODB_URI: mongodb+srv://osacontrol:B72R32mTPJeuw8ni7v4AYJ7ZzMyf6f9@osaproduction-uln1t.mongodb.net/osaAndesProduction?retryWrites=true&w=majority
+      #      MONGODB_URI: mongodb+srv://osacontrol:B72R32mTPJeuw8ni7v4AYJ7ZzMyf6f9@osaproduction-uln1t.mongodb.net/osaAndesProduction?retryWrites=true&w=majority
       MIXPANEL: 6ec1276c5e0f03c5ca84343e96503bd0
       MAPBOX: pk.eyJ1IjoicmliYXJyYWNsIiwiYSI6ImNqems3dW85bTAwZmUzbnF0a2xubnl5ejUifQ.tfPmGSbHYdh2nMA6Fmxcxw
     ports:
@@ -55,10 +57,13 @@ services:
       - 9229:9229
       - 3070:3070
     volumes:
+      - /srv/node_modules
       - ./dist:/srv/dist
+      - ./src:/srv/src
       - ./public:/srv/public
       - ./views:/srv/views
       - ./nodemon.json:/srv/nodemon.json
+      - ./tsconfig.json:/srv/tsconfig.json
     depends_on:
       - redis
       - mongo

@@ -1,10 +1,11 @@
 import * as mongoose from 'mongoose';
-import {AggregatePaginateModel, PaginateModel} from 'mongoose';
+import { AggregatePaginateModel, PaginateModel } from 'mongoose';
 import * as mongoosePaginate from 'mongoose-paginate';
-import {IMilestone} from '../interfaces/milestone.interface';
+import { IMilestone } from '../interfaces/milestone.interface';
 import mongooseAggregatePaginate = require('mongoose-aggregate-paginate-v2');
 
-export interface IMilestoneModel extends IMilestone, mongoose.Document {}
+export interface IMilestoneModel extends IMilestone, mongoose.Document {
+}
 
 export enum ChoicesKindMilestone {
   form = 'form',
@@ -39,12 +40,12 @@ const milestoneSchema = new mongoose.Schema({
   kind: {
     type: String,
     enum: choicesKindMilestone,
-    default: ""
+    default: ''
   },
   step: {
     type: String,
     enum: choicesStepMilestone,
-    default: ""
+    default: ''
   },
   form: {
     type: mongoose.Schema.Types.ObjectId,

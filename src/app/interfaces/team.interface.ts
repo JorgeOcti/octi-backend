@@ -1,6 +1,6 @@
-import {IUser} from './user.interface';
-import {ITeamSetting} from './teamSetting.interface';
-import {ITeamSettingModel} from '../models/teamSetting.model';
+import { IUser } from './user.interface';
+import { ITeamSetting } from './teamSetting.interface';
+import { ITeamSettingModel } from '../models/teamSetting.model';
 import { ICompany } from './company.interface';
 
 export interface ITeam {
