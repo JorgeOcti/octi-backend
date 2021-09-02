@@ -83,11 +83,29 @@ var TransmittalController = /** @class */ (function () {
                     }
                 }
             }];
+        this.populate = [{
+                path: 'transporter.carrier',
+                select: ['name']
+            }, {
+                path: 'transporter.driver',
+                select: ['firstName', 'lastName']
+            }, {
+                path: 'items',
+                select: ['car', 'requestItem', 'destination', 'origin', 'loadingDate', 'arrivalDate'],
+                populate: this.itemPopulate
+            }, {
+                path: 'files',
+                select: ['file', 'thumbnail']
+            }, {
+                path: 'createdBy',
+                select: ['firstName', 'lastName']
+            }];
         this.index = this.index.bind(this);
         this.apiList = this.apiList.bind(this);
         this.apiOnlyMe = this.apiOnlyMe.bind(this);
         this.apiDetail = this.apiDetail.bind(this);
         this.apiCreate = this.apiCreate.bind(this);
+        this.apiPatch = this.apiPatch.bind(this);
         this.apiUpdate = this.apiUpdate.bind(this);
         this.apiDelete = this.apiDelete.bind(this);
         this.xlsExport = this.xlsExport.bind(this);
@@ -114,44 +132,61 @@ var TransmittalController = /** @class */ (function () {
     };
     TransmittalController.prototype.apiDetail = function (req, res) {
         return __awaiter(this, void 0, void 0, function () {
+            var id, transmittal, e_1;
             return __generator(this, function (_a) {
-                logger_service_1["default"].info("TransmittalController.apiDetail");
-                res.json({
-                    api: 'TransmittalController:apiDetail'
-                });
-                return [2 /*return*/];
+                switch (_a.label) {
+                    case 0:
+                        _a.trys.push([0, 2, , 3]);
+                        logger_service_1["default"].info("TransmittalController.apiDetail");
+                        id = req.params.id;
+                        return [4 /*yield*/, transmittal_model_1["default"].findById(id).populate(this.populate)];
+                    case 1:
+                        transmittal = _a.sent();
+                        res.json({
+                            data: transmittal
+                        });
+                        return [3 /*break*/, 3];
+                    case 2:
+                        e_1 = _a.sent();
+                        console.log(e_1);
+                        /* istanbul ignore next */
+                        logger_service_1["default"].error("TransmittalController.apiDetail: Async Error.");
+                        /* istanbul ignore next */
+                        logger_service_1["default"].error("{user: {_id: " + req.user._id + ", email: " + req.user.email + "}}");
+                        res.status(500).json(e_1);
+                        return [3 /*break*/, 3];
+                    case 3: return [2 /*return*/];
+                }
             });
         });
     };
     TransmittalController.prototype.apiCreate = function (req, res) {
         return __awaiter(this, void 0, void 0, function () {
-            var _a, name, items, files, transporter, observation, user, team, transmittal, _i, items_1, item, transmittalItem, e_1;
+            var _a, name_1, items, files, transporter, observation, user, team, transmittal, _i, items_1, item, transmittalItem, e_2;
             return __generator(this, function (_b) {
                 switch (_b.label) {
                     case 0:
+                        _b.trys.push([0, 12, , 13]);
                         logger_service_1["default"].info("TransmittalController.apiCreate");
-                        _a = req.body, name = _a.name, items = _a.items, files = _a.files, transporter = _a.transporter, observation = _a.observation;
+                        _a = req.body, name_1 = _a.name, items = _a.items, files = _a.files, transporter = _a.transporter, observation = _a.observation;
                         user = req.user;
-                        _b.label = 1;
-                    case 1:
-                        _b.trys.push([1, 13, , 14]);
                         return [4 /*yield*/, team_model_1["default"].findOneAndUpdate({ _id: user.team._id }, { $inc: { transmittalNumber: 1 } }, { "new": true })];
-                    case 2:
+                    case 1:
                         team = _b.sent();
                         return [4 /*yield*/, new transmittal_model_1["default"]({
-                                name: name,
+                                name: name_1,
                                 team: user.team,
                                 number: team.transmittalNumber,
                                 createdBy: user._id,
                                 transporter: transporter,
                                 observation: observation
                             }).save()];
-                    case 3:
+                    case 2:
                         transmittal = _b.sent();
                         _i = 0, items_1 = items;
-                        _b.label = 4;
-                    case 4:
-                        if (!(_i < items_1.length)) return [3 /*break*/, 9];
+                        _b.label = 3;
+                    case 3:
+                        if (!(_i < items_1.length)) return [3 /*break*/, 8];
                         item = items_1[_i];
                         // update cars params
                         return [4 /*yield*/, car_model_1["default"].findOneAndUpdate({
@@ -161,11 +196,11 @@ var TransmittalController = /** @class */ (function () {
                                 client: item.car.client,
                                 bl: item.car.bl
                             })];
-                    case 5:
+                    case 4:
                         // update cars params
                         _b.sent();
                         return [4 /*yield*/, new transmittalItem_model_1["default"](__assign(__assign({}, item), { team: team, transmittal: transmittal })).save()];
-                    case 6:
+                    case 5:
                         transmittalItem = _b.sent();
                         // associate request item with transmittal and transmittal item
                         return [4 /*yield*/, requestItem_model_1["default"].findOneAndUpdate({
@@ -175,50 +210,72 @@ var TransmittalController = /** @class */ (function () {
                                 transmittal: transmittal._id,
                                 transmittalItem: transmittalItem._id
                             })];
-                    case 7:
+                    case 6:
                         // associate request item with transmittal and transmittal item
                         _b.sent();
-                        _b.label = 8;
-                    case 8:
+                        _b.label = 7;
+                    case 7:
                         _i++;
-                        return [3 /*break*/, 4];
-                    case 9:
-                        if (!(files && files.length)) return [3 /*break*/, 12];
+                        return [3 /*break*/, 3];
+                    case 8:
+                        if (!(files && files.length)) return [3 /*break*/, 11];
                         return [4 /*yield*/, transmittal.updateOne({ files: files })];
-                    case 10:
+                    case 9:
                         _b.sent();
                         return [4 /*yield*/, transmittalFile_model_1["default"].updateMany({
                                 _id: { $in: files }
                             }, {
                                 $set: { transmittal: transmittal }
                             })];
-                    case 11:
+                    case 10:
                         _b.sent();
-                        _b.label = 12;
-                    case 12:
+                        _b.label = 11;
+                    case 11:
                         server_1.io.to("transmittal-list-" + team._id).emit('CREATE_TRANSMITTAL', {
                             transmittal: transmittal
                         });
                         res.json({
                             status: 200
                         });
-                        return [3 /*break*/, 14];
-                    case 13:
-                        e_1 = _b.sent();
+                        return [3 /*break*/, 13];
+                    case 12:
+                        e_2 = _b.sent();
                         /* istanbul ignore next */
                         logger_service_1["default"].error("TransmittalController.apiCreate: Async Error.");
                         /* istanbul ignore next */
                         logger_service_1["default"].error("{user: {_id: " + req.user._id + ", email: " + req.user.email + "}}");
-                        res.status(500).json(e_1);
-                        return [3 /*break*/, 14];
-                    case 14: return [2 /*return*/];
+                        res.status(500).json(e_2);
+                        return [3 /*break*/, 13];
+                    case 13: return [2 /*return*/];
                 }
             });
         });
     };
     TransmittalController.prototype.apiUpdate = function (req, res) {
         return __awaiter(this, void 0, void 0, function () {
-            var id, transmittal, team, populate, newTransmittal, e_2;
+            return __generator(this, function (_a) {
+                try {
+                    // const { id } = req.params;
+                    logger_service_1["default"].info("TransmittalController.apiUpdate");
+                    res.json({
+                        api: 'TransmittalController:apiUpdate'
+                    });
+                }
+                catch (e) {
+                    console.log(e);
+                    /* istanbul ignore next */
+                    logger_service_1["default"].error("TransmittalController.apiUpdate: Async Error.");
+                    /* istanbul ignore next */
+                    logger_service_1["default"].error("{user: {_id: " + req.user._id + ", email: " + req.user.email + "}}");
+                    res.status(500).json(e);
+                }
+                return [2 /*return*/];
+            });
+        });
+    };
+    TransmittalController.prototype.apiPatch = function (req, res) {
+        return __awaiter(this, void 0, void 0, function () {
+            var id, transmittal, team, newTransmittal, e_3;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
@@ -227,48 +284,35 @@ var TransmittalController = /** @class */ (function () {
                         id = req.params.id;
                         transmittal = req.body;
                         team = req.user.team;
-                        populate = [{
-                                path: 'transporter.carrier',
-                                select: ['name']
-                            }, {
-                                path: 'transporter.driver',
-                                select: ['firstName', 'lastName']
-                            }, {
-                                path: 'items',
-                                select: ['car', 'requestItem', 'destination', 'origin', 'loadingDate', 'arrivalDate'],
-                                populate: this.itemPopulate
-                            }, {
-                                path: 'files',
-                                select: ['file', 'thumbnail']
-                            }, {
-                                path: 'createdBy',
-                                select: ['firstName', 'lastName']
-                            }];
                         newTransmittal = void 0;
                         if (!transmittal.allLoadingDate) return [3 /*break*/, 3];
+                        // update all item loading dates
                         return [4 /*yield*/, transmittalItem_model_1["default"].updateMany({ transmittal: id }, { $set: { loadingDate: transmittal.allLoadingDate } })];
                     case 1:
+                        // update all item loading dates
                         _a.sent();
                         return [4 /*yield*/, transmittal_model_1["default"]
                                 .findOne({ _id: id })
-                                .populate(populate)];
+                                .populate(this.populate)];
                     case 2:
                         newTransmittal = _a.sent();
                         return [3 /*break*/, 8];
                     case 3:
                         if (!transmittal.allArrivalDate) return [3 /*break*/, 6];
+                        // update all item arrival dates
                         return [4 /*yield*/, transmittalItem_model_1["default"].updateMany({ transmittal: id }, { $set: { arrivalDate: transmittal.allArrivalDate } })];
                     case 4:
+                        // update all item arrival dates
                         _a.sent();
                         return [4 /*yield*/, transmittal_model_1["default"]
                                 .findOne({ _id: id })
-                                .populate(populate)];
+                                .populate(this.populate)];
                     case 5:
                         newTransmittal = _a.sent();
                         return [3 /*break*/, 8];
                     case 6: return [4 /*yield*/, transmittal_model_1["default"]
                             .findOneAndUpdate({ _id: id }, { $set: transmittal }, { "new": true })
-                            .populate(populate)];
+                            .populate(this.populate)];
                     case 7:
                         newTransmittal = _a.sent();
                         _a.label = 8;
@@ -281,13 +325,13 @@ var TransmittalController = /** @class */ (function () {
                         });
                         return [3 /*break*/, 10];
                     case 9:
-                        e_2 = _a.sent();
-                        console.log(e_2);
+                        e_3 = _a.sent();
+                        console.log(e_3);
                         /* istanbul ignore next */
                         logger_service_1["default"].error("TransmittalController.apiUpdate: Async Error.");
                         /* istanbul ignore next */
                         logger_service_1["default"].error("{user: {_id: " + req.user._id + ", email: " + req.user.email + "}}");
-                        res.status(500).json(e_2);
+                        res.status(500).json(e_3);
                         return [3 /*break*/, 10];
                     case 10: return [2 /*return*/];
                 }
@@ -307,7 +351,7 @@ var TransmittalController = /** @class */ (function () {
     };
     TransmittalController.prototype.apiList = function (req, res) {
         return __awaiter(this, void 0, void 0, function () {
-            var team, _a, page, pageSize, search, orderBy, orderType, options, filter, transmittals, e_3;
+            var team, _a, page, pageSize, search, orderBy, orderType, options, filter, transmittals, e_4;
             var _b;
             return __generator(this, function (_c) {
                 switch (_c.label) {
@@ -371,12 +415,12 @@ var TransmittalController = /** @class */ (function () {
                         }
                         return [3 /*break*/, 4];
                     case 3:
-                        e_3 = _c.sent();
+                        e_4 = _c.sent();
                         /* istanbul ignore next */
                         logger_service_1["default"].error("TransmittalController.apiList: Async Error.");
                         /* istanbul ignore next */
                         logger_service_1["default"].error("{user: {_id: " + req.user._id + ", email: " + req.user.email + "}}");
-                        res.status(500).json(e_3);
+                        res.status(500).json(e_4);
                         return [3 /*break*/, 4];
                     case 4: return [2 /*return*/];
                 }
@@ -385,7 +429,7 @@ var TransmittalController = /** @class */ (function () {
     };
     TransmittalController.prototype.apiOnlyMe = function (req, res) {
         return __awaiter(this, void 0, void 0, function () {
-            var team, _a, page, pageSize, orderBy, orderType, options, filter, transmittals, millestones_1, e_4;
+            var team, _a, page, pageSize, orderBy, orderType, options, filter, transmittals, millestones_1, e_5;
             var _b;
             return __generator(this, function (_c) {
                 switch (_c.label) {
@@ -472,12 +516,12 @@ var TransmittalController = /** @class */ (function () {
                         _c.label = 5;
                     case 5: return [3 /*break*/, 7];
                     case 6:
-                        e_4 = _c.sent();
+                        e_5 = _c.sent();
                         /* istanbul ignore next */
                         logger_service_1["default"].error("TransmittalController.apiOnlyMe: Async Error.");
                         /* istanbul ignore next */
                         logger_service_1["default"].error("{user: {_id: " + req.user._id + ", email: " + req.user.email + "}}");
-                        res.status(500).json(e_4);
+                        res.status(500).json(e_5);
                         return [3 /*break*/, 7];
                     case 7: return [2 /*return*/];
                 }
@@ -486,7 +530,7 @@ var TransmittalController = /** @class */ (function () {
     };
     TransmittalController.prototype.attachEvidence = function (req, res) {
         return __awaiter(this, void 0, void 0, function () {
-            var user, _a, files, transmittal, transmittalData, e_5;
+            var user, _a, files, transmittal, transmittalData, e_6;
             return __generator(this, function (_b) {
                 switch (_b.label) {
                     case 0:
@@ -514,15 +558,15 @@ var TransmittalController = /** @class */ (function () {
                         });
                         return [3 /*break*/, 4];
                     case 3:
-                        e_5 = _b.sent();
+                        e_6 = _b.sent();
                         /* istanbul ignore next */
                         logger_service_1["default"].error("TransmittalController.uploadFile: Async Error.");
                         /* istanbul ignore next */
                         logger_service_1["default"].error("{user: {_id: " + req.user._id + ", email: " + req.user.email + "}}");
                         /* istanbul ignore next */
-                        logger_service_1["default"].error(e_5);
+                        logger_service_1["default"].error(e_6);
                         /* istanbul ignore next */
-                        res.status(400).json(e_5);
+                        res.status(400).json(e_6);
                         return [3 /*break*/, 4];
                     case 4: return [2 /*return*/];
                 }
@@ -531,7 +575,7 @@ var TransmittalController = /** @class */ (function () {
     };
     TransmittalController.prototype.xlsExport = function (req, res) {
         return __awaiter(this, void 0, void 0, function () {
-            var team, columns, options, workbook_1, worksheet_1, cursor_1, e_6;
+            var team, columns, options, workbook_1, worksheet_1, cursor_1, e_7;
             var _this = this;
             return __generator(this, function (_a) {
                 switch (_a.label) {
@@ -652,15 +696,15 @@ var TransmittalController = /** @class */ (function () {
                         }); });
                         return [3 /*break*/, 4];
                     case 3:
-                        e_6 = _a.sent();
+                        e_7 = _a.sent();
                         /* istanbul ignore next */
                         logger_service_1["default"].error("TransmittalController.xlsExport: Async Error.");
                         /* istanbul ignore next */
                         logger_service_1["default"].error("{user: {_id: " + req.user._id + ", email: " + req.user.email + "}}");
                         /* istanbul ignore next */
-                        logger_service_1["default"].error(e_6);
+                        logger_service_1["default"].error(e_7);
                         /* istanbul ignore next */
-                        res.status(500).json(e_6);
+                        res.status(500).json(e_7);
                         return [3 /*break*/, 4];
                     case 4: return [2 /*return*/];
                 }
@@ -679,7 +723,7 @@ var TransmittalController = /** @class */ (function () {
     };
     TransmittalController.prototype.uploadFile = function (req, res) {
         return __awaiter(this, void 0, void 0, function () {
-            var user, file, transmittaltFile, e_7, e_8, e_9;
+            var user, file, transmittaltFile, e_8, e_9, e_10;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
@@ -719,7 +763,7 @@ var TransmittalController = /** @class */ (function () {
                         _a.sent();
                         return [3 /*break*/, 5];
                     case 4:
-                        e_7 = _a.sent();
+                        e_8 = _a.sent();
                         logger_service_1["default"].error('TransmittalController.uploadFile: Error making autoRotate');
                         return [3 /*break*/, 5];
                     case 5: return [4 /*yield*/, transmittaltFile.attach('file', file)];
@@ -737,7 +781,7 @@ var TransmittalController = /** @class */ (function () {
                         _a.sent();
                         return [3 /*break*/, 11];
                     case 10:
-                        e_8 = _a.sent();
+                        e_9 = _a.sent();
                         logger_service_1["default"].error('TransmittalController.uploadFile: Error making thumbnail');
                         return [3 /*break*/, 11];
                     case 11: return [4 /*yield*/, transmittaltFile.save()];
@@ -752,15 +796,15 @@ var TransmittalController = /** @class */ (function () {
                         });
                         return [3 /*break*/, 14];
                     case 13:
-                        e_9 = _a.sent();
+                        e_10 = _a.sent();
                         /* istanbul ignore next */
                         logger_service_1["default"].error("TransmittalController.uploadFile: Async Error.");
                         /* istanbul ignore next */
                         logger_service_1["default"].error("{user: {_id: " + req.user._id + ", email: " + req.user.email + "}}");
                         /* istanbul ignore next */
-                        logger_service_1["default"].error(e_9);
+                        logger_service_1["default"].error(e_10);
                         /* istanbul ignore next */
-                        res.status(400).json(e_9);
+                        res.status(400).json(e_10);
                         return [3 /*break*/, 14];
                     case 14: return [3 /*break*/, 16];
                     case 15:

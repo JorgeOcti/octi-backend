@@ -148,11 +148,12 @@ class TransmitalListDetail extends React.Component<IPropsType, IStateType> {
               <th className='middle' style={{ width: '160px' }}>Modelo</th>
               <th className='middle' style={{ width: '80px' }}>Factura</th>
               <th className='middle' style={{ width: '80px' }}>Partida</th>
-              <th className='middle' style={{ minWidth: '120px' }}>Origen</th>
-              <th className='middle' style={{ minWidth: '120px' }}>Destino</th>
+              <th className='middle' style={{ width: '80px' }}>BL</th>
+              <th className='middle' style={{ minWidth: '100px' }}>Origen</th>
+              <th className='middle' style={{ minWidth: '100px' }}>Destino</th>
               <th className='middle' style={{ width: '110px' }}>Fecha emisión</th>
               <th className='middle' style={{ width: '110px' }}>Fecha arribo</th>
-              <th className='middle' style={{ width: '150px' }}>Observación</th>
+              <th className='middle' style={{ width: '120px' }}>Observación</th>
               <th className='middle' style={{ width: '30px' }}>Llegó</th>
               <ShowIf condition={hasPermission(window.user, 'changeTransmittal')}>
                 <th className='middle' style={{ width: '30px' }} />
@@ -171,7 +172,7 @@ class TransmitalListDetail extends React.Component<IPropsType, IStateType> {
             }
             <ShowIf condition={transmittal.items.length > 1}>
               <tr className='no-striped'>
-                <td colSpan={7} className='middle text-right'>
+                <td colSpan={8} className='middle text-right'>
                   {/*Masivo*/}
                 </td>
                 <td className='middle'>

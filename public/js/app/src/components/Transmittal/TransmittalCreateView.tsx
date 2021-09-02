@@ -1,26 +1,26 @@
 import * as Raven from 'raven-js';
 import * as React from 'react';
-import {Dispatch, ErrorInfo} from 'react';
-import {connect} from 'react-redux';
-import {RouteComponentProps} from 'react-router';
+import { Dispatch, ErrorInfo } from 'react';
+import { connect } from 'react-redux';
+import { RouteComponentProps } from 'react-router';
 import * as io from 'socket.io-client';
 import AppContainer from '../../container/AppContainer';
-import {IWindow} from '../../interfaces/window';
-import TrackingBasePage from "../Utils/TrackingBasePage";
-import TransmittalActions from "../../actions/transmittal.actions";
-import {ITransmittalActionTypes, ITransmittalState} from "../../actions/transmittal.types";
-import TransmittalForm from './TransmittalForms/TransmittalForm'
+import { IWindow } from '../../interfaces/window';
+import TrackingBasePage from '../Utils/TrackingBasePage';
+import TransmittalActions from '../../actions/transmittal.actions';
+import { ITransmittalActionTypes, ITransmittalState } from '../../actions/transmittal.types';
+import TransmittalForm from './TransmittalForms/TransmittalForm';
 import ShowIf from '../Utils/ShowIf';
-import ApiService from "../../utils/axios";
-import {AxiosError, AxiosResponse} from "axios";
+import ApiService from '../../utils/axios';
+import { AxiosError, AxiosResponse } from 'axios';
 import * as swal from 'sweetalert';
-import {imageStatus} from "../Utils/MultiUploadFiles";
-import {ITransmittal} from '../../../../../../src/distribution/interfaces/transmittal.interface';
+import { imageStatus } from '../Utils/MultiUploadFiles';
+import { ITransmittal } from '../../../../../../src/distribution/interfaces/transmittal.interface';
 
 interface IPropsType extends RouteComponentProps<{ ticket: string }> {
   dispatch: Dispatch<ITransmittalActionTypes>;
   transmittal: ITransmittalState;
-  transmittalActions: TransmittalActions
+  transmittalActions: TransmittalActions;
 }
 
 interface IStateType {
@@ -35,7 +35,7 @@ class TransmittalCreateView extends TrackingBasePage<IPropsType, IStateType> {
 
   readonly state = {
     error: null,
-    loading: false,
+    loading: false
   };
 
   private socket: SocketIOClient.Socket;
@@ -81,29 +81,29 @@ class TransmittalCreateView extends TrackingBasePage<IPropsType, IStateType> {
     if (this.props.transmittal.source) {
       this.props.transmittal.source.cancel('Operation canceled by the user.');
     }
-    this.socket.emit('leave', {room: `distribution-create-${window.user.team._id}`});
+    this.socket.emit('leave', { room: `distribution-create-${window.user.team._id}` });
     this.socket.disconnect();
   }
 
   public componentDidCatch(error: Error, errorInfo: ErrorInfo): void {
-    this.setState({error});
+    this.setState({ error });
     Raven.captureException(error, {
       extra: errorInfo
     });
   }
 
   public render(): React.ReactElement<IPropsType> {
-    const {transmittalActions} = this.props;
-    const {loading} = this.props.transmittal;
+    const { transmittalActions } = this.props;
+    const { loading } = this.props.transmittal;
 
     return (
-      <AppContainer title="" cMenu="3" cSubMenu="3.4" cAction="Crear Order">
-        <section className="content">
-          <div className="box">
-            <div className="box-header with-border">
-              <h3 className="box-title">Crear orden de transporte</h3>
+      <AppContainer title='' cMenu='3' cSubMenu='3.4' cAction='Crear Order'>
+        <section className='content'>
+          <div className='box'>
+            <div className='box-header with-border'>
+              <h3 className='box-title'>Crear orden de transporte</h3>
             </div>
-            <div className="box-body">
+            <div className='box-body'>
               <TransmittalForm
                 initialValues={{
                   files: [],
@@ -112,21 +112,29 @@ class TransmittalCreateView extends TrackingBasePage<IPropsType, IStateType> {
                 onSubmit={this.processForm}
               />
             </div>
-            <div className="box-footer text-right">
-              <button type="button" className="btn btn-sm btn-default" onClick={this.cancel}>Cancelar</button>
+            <div className='box-footer text-right'>
               <button
-                type="button"
-                className="btn btn-sm btn-primary"
+                type='button'
+                className='btn btn-sm btn-default'
+                onClick={this.cancel}
+              >
+                Cancelar
+              </button>
+              <button
+                type='button'
+                className='btn btn-sm btn-primary'
                 disabled={this.state.loading}
-                style={{marginLeft: '5px'}}
+                style={{ marginLeft: '5px' }}
                 onClick={() => transmittalActions.submit('transmittalForm')}
               >
-                <ShowIf condition={this.state.loading}><i className="fa fa-spinner fa-spin "/></ShowIf> Crear
+                <ShowIf condition={this.state.loading}>
+                  <i className='fa fa-spinner fa-spin ' />
+                </ShowIf> Crear
               </button>
             </div>
             <ShowIf condition={loading || this.state.loading}>
-              <div className="overlay">
-                <i className="fa fa-spinner fa-spin text-purple"/>
+              <div className='overlay'>
+                <i className='fa fa-spinner fa-spin text-purple' />
               </div>
             </ShowIf>
           </div>
@@ -140,7 +148,7 @@ class TransmittalCreateView extends TrackingBasePage<IPropsType, IStateType> {
   }
 
   private processForm(data: ITransmittal) {
-    const {history} = this.props;
+    const { history } = this.props;
     const isUploadingFiles = data.files?.filter((file: any) => file.status !== imageStatus.complete).length;
     const hasItemsLoaded = data.items?.length >= 1;
     if (isUploadingFiles) {
@@ -148,7 +156,7 @@ class TransmittalCreateView extends TrackingBasePage<IPropsType, IStateType> {
     } else if (!hasItemsLoaded) {
       swal!('Orden de transporte', 'Debes agregar al menos un vehículo para poder crear una order.', 'error');
     } else {
-      this.setState({loading: true});
+      this.setState({ loading: true });
       this.api.createTransmittals({
         ...data,
         items: data.items.map((item) => ({
@@ -161,12 +169,12 @@ class TransmittalCreateView extends TrackingBasePage<IPropsType, IStateType> {
         .then((response: AxiosResponse): void => {
           swal('Orden de transporte', 'Se ha creado satisfactoriamente.', 'success')
             .then(() => {
-              this.setState({loading: false});
+              this.setState({ loading: false });
               history.push('/transmittals/');
             });
         })
         .catch((err: AxiosError): void => {
-          this.setState({loading: false});
+          this.setState({ loading: false });
           this.api.errorHandler(err);
         });
     }

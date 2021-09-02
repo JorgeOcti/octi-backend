@@ -28,6 +28,11 @@ interface IPropsType extends RouteComponentProps<{ ticket: string }> {
   getParticipant(id: string): void;
 }
 
+type RecursivePartial<T> = {
+  [P in keyof T]?: RecursivePartial<T[P]>;
+};
+
+
 interface IStateType {
   error: Error | null;
 }
@@ -61,8 +66,63 @@ class TransmitalListItem extends React.Component<IPropsType, IStateType> {
         </td>
         <td className={'middle'}>{transmittalItem.car.vin}</td>
         <td className={'middle'}>{transmittalItem.car.brand} {transmittalItem.car.denomination}</td>
-        <td className={'middle'}>{transmittalItem.car.invoice}</td>
-        <td className={'middle'}>{transmittalItem.car.entry}</td>
+        <td className={'middle-center'}>
+          <ShowIf condition={hasPermission(window.user, 'changeTransmittal')} or={transmittalItem.car.invoice}>
+            <input
+              type='text'
+              className='form-control input-sm'
+              defaultValue={transmittalItem.car.invoice}
+              onChange={(e) => {
+                this.debounceUpdateTransmittalItem({
+                  _id: transmittalItem._id,
+                  transmittal: transmittalItem.transmittal,
+                  car: {
+                    _id: transmittalItem.car._id,
+                    invoice: e.target.value
+                  }
+                });
+              }}
+            />
+          </ShowIf>
+        </td>
+        <td className={'middle-center'}>
+          <ShowIf condition={hasPermission(window.user, 'changeTransmittal')} or={transmittalItem.car.entry}>
+            <input
+              type='text'
+              className='form-control input-sm'
+              defaultValue={transmittalItem.car.entry}
+              onChange={(e) => {
+                this.debounceUpdateTransmittalItem({
+                  _id: transmittalItem._id,
+                  transmittal: transmittalItem.transmittal,
+                  car: {
+                    _id: transmittalItem.car._id,
+                    entry: e.target.value
+                  }
+                });
+              }}
+            />
+          </ShowIf>
+        </td>
+        <td className={'middle-center'}>
+          <ShowIf condition={hasPermission(window.user, 'changeTransmittal')} or={transmittalItem.car.bl}>
+            <input
+              type='text'
+              className='form-control input-sm'
+              defaultValue={transmittalItem.car.bl}
+              onChange={(e) => {
+                this.debounceUpdateTransmittalItem({
+                  _id: transmittalItem._id,
+                  transmittal: transmittalItem.transmittal,
+                  car: {
+                    _id: transmittalItem.car._id,
+                    bl: e.target.value
+                  }
+                });
+              }}
+            />
+          </ShowIf>
+        </td>
         <td className={'middle'}>
           {
             hasPermission(window.user, 'changeTransmittal') ?
@@ -206,7 +266,7 @@ class TransmitalListItem extends React.Component<IPropsType, IStateType> {
     );
   }
 
-  private debounceUpdateTransmittalItem(transmittalItem: Partial<ITransmittalItemModel>) {
+  private debounceUpdateTransmittalItem(transmittalItem: RecursivePartial<ITransmittalItemModel>) {
     this.props.transmittalActions.updateTransmittalItemThunkAction(transmittalItem);
   }
 

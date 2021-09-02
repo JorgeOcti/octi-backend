@@ -40,12 +40,31 @@ class TransmittalController {
     }
   }];
 
+  public populate = [{
+    path: 'transporter.carrier',
+    select: ['name']
+  }, {
+    path: 'transporter.driver',
+    select: ['firstName', 'lastName']
+  }, {
+    path: 'items',
+    select: ['car', 'requestItem', 'destination', 'origin', 'loadingDate', 'arrivalDate'],
+    populate: this.itemPopulate
+  }, {
+    path: 'files',
+    select: ['file', 'thumbnail']
+  }, {
+    path: 'createdBy',
+    select: ['firstName', 'lastName']
+  }];
+
   constructor() {
     this.index = this.index.bind(this);
     this.apiList = this.apiList.bind(this);
     this.apiOnlyMe = this.apiOnlyMe.bind(this);
     this.apiDetail = this.apiDetail.bind(this);
     this.apiCreate = this.apiCreate.bind(this);
+    this.apiPatch = this.apiPatch.bind(this);
     this.apiUpdate = this.apiUpdate.bind(this);
     this.apiDelete = this.apiDelete.bind(this);
     this.xlsExport = this.xlsExport.bind(this);
@@ -58,17 +77,28 @@ class TransmittalController {
   }
 
   public async apiDetail(req: IRequest, res: Response) {
-    logger.info(`TransmittalController.apiDetail`);
-    res.json({
-      api: 'TransmittalController:apiDetail'
-    });
+    try {
+      logger.info(`TransmittalController.apiDetail`);
+      const { id } = req.params;
+      const transmittal = await Transmittal.findById(id).populate(this.populate);
+      res.json({
+        data: transmittal
+      });
+    } catch (e) {
+      console.log(e);
+      /* istanbul ignore next */
+      logger.error(`TransmittalController.apiDetail: Async Error.`);
+      /* istanbul ignore next */
+      logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
+      res.status(500).json(e);
+    }
   }
 
   public async apiCreate(req: IRequest, res: Response) {
-    logger.info(`TransmittalController.apiCreate`);
-    const { name, items, files, transporter, observation } = req.body;
-    const { user } = req;
     try {
+      logger.info(`TransmittalController.apiCreate`);
+      const { name, items, files, transporter, observation } = req.body;
+      const { user } = req;
       const team = await Team.findOneAndUpdate({ _id: user.team._id }, { $inc: { transmittalNumber: 1 } }, { new: true });
       // create new transmittal
       const transmittal = await new Transmittal({
@@ -132,44 +162,47 @@ class TransmittalController {
 
   public async apiUpdate(req: IRequest, res: Response) {
     try {
+      // const { id } = req.params;
+      logger.info(`TransmittalController.apiUpdate`);
+      res.json({
+        api: 'TransmittalController:apiUpdate'
+      });
+    } catch (e) {
+      console.log(e);
+      /* istanbul ignore next */
+      logger.error(`TransmittalController.apiUpdate: Async Error.`);
+      /* istanbul ignore next */
+      logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
+      res.status(500).json(e);
+    }
+
+  }
+
+  public async apiPatch(req: IRequest, res: Response) {
+    try {
       logger.info(`TransmittalController.apiUpdate`);
       const { id } = req.params;
       const { body: transmittal } = req;
       const { team } = req.user;
 
-      const populate = [{
-        path: 'transporter.carrier',
-        select: ['name']
-      }, {
-        path: 'transporter.driver',
-        select: ['firstName', 'lastName']
-      }, {
-        path: 'items',
-        select: ['car', 'requestItem', 'destination', 'origin', 'loadingDate', 'arrivalDate'],
-        populate: this.itemPopulate
-      }, {
-        path: 'files',
-        select: ['file', 'thumbnail']
-      }, {
-        path: 'createdBy',
-        select: ['firstName', 'lastName']
-      }];
-
       let newTransmittal: any;
-      if(transmittal.allLoadingDate){
-        await TransmittalItem.updateMany({ transmittal: id }, { $set: {loadingDate: transmittal.allLoadingDate}});
-        newTransmittal =  await Transmittal
+
+      if (transmittal.allLoadingDate) {
+        // update all item loading dates
+        await TransmittalItem.updateMany({ transmittal: id }, { $set: { loadingDate: transmittal.allLoadingDate } });
+        newTransmittal = await Transmittal
           .findOne({ _id: id })
-          .populate(populate);
-      } else if(transmittal.allArrivalDate){
-        await TransmittalItem.updateMany({ transmittal: id }, { $set: {arrivalDate: transmittal.allArrivalDate}});
-        newTransmittal =  await Transmittal
+          .populate(this.populate);
+      } else if (transmittal.allArrivalDate) {
+        // update all item arrival dates
+        await TransmittalItem.updateMany({ transmittal: id }, { $set: { arrivalDate: transmittal.allArrivalDate } });
+        newTransmittal = await Transmittal
           .findOne({ _id: id })
-          .populate(populate);
+          .populate(this.populate);
       } else {
         newTransmittal = await Transmittal
           .findOneAndUpdate({ _id: id }, { $set: transmittal }, { new: true })
-          .populate(populate);
+          .populate(this.populate);
       }
 
       io.to(`transmittal-list-${team._id}`).emit('UPDATE_TRANSMITTAL', {

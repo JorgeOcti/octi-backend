@@ -6,6 +6,7 @@ import logger from '../../services/logger.service';
 import { io } from '../../server';
 import Transmittal from '../models/transmittal.model';
 import RequestItem from '../../request/models/requestItem.model';
+import Car from '../../app/models/car.model';
 
 class TransmittalItemController {
 
@@ -35,11 +36,15 @@ class TransmittalItemController {
   }
 
   public async apiUpdate(req: IRequest, res: Response) {
-    logger.info(`TransmittalItemController.apiUpdate`);
-    const { id } = req.params;
-    const { body: transmittalItem } = req;
-    const { team } = req.user;
     try {
+      logger.info(`TransmittalItemController.apiUpdate`);
+      const { id } = req.params;
+      const { body: transmittalItem } = req;
+      const { team } = req.user;
+      if (transmittalItem.car) {
+        const { car } = transmittalItem;
+        await Car.findOneAndUpdate({ _id: car._id, team }, { $set: car });
+      }
       const newTransmittalItem = await TransmittalItem
         .findOneAndUpdate({ _id: id }, { $set: transmittalItem }, { new: true })
         .populate(TransmittalController.itemPopulate);
