@@ -1,7 +1,7 @@
 import * as excel from 'exceljs';
 import * as tempfile from 'tempfile';
-import {ObjectID} from 'bson';
-import {Response} from 'express';
+import { ObjectID } from 'bson';
+import { Response } from 'express';
 import * as fs from 'fs';
 import * as GraphicsMagick from 'gm';
 import * as HtmlPdf from 'html-pdf';
@@ -10,30 +10,30 @@ import * as moment from 'moment-timezone';
 import * as path from 'path';
 import * as QRCode from 'qrcode';
 import * as Raven from 'raven';
-import {queue} from '../../app';
+import { queue } from '../../app';
 import Alert from '../../app/models/alert.model';
-import CarModel, {ICarModel} from '../../app/models/car.model';
-import Team, {ITeamModel} from '../../app/models/team.model';
+import CarModel, { ICarModel } from '../../app/models/car.model';
+import Team, { ITeamModel } from '../../app/models/team.model';
 import User from '../../app/models/user.model';
-import UserModel, {IUserModel} from '../../app/models/user.model';
-import Venue, {IVenueModel} from '../../app/models/venue.model';
+import UserModel, { IUserModel } from '../../app/models/user.model';
+import Venue, { IVenueModel } from '../../app/models/venue.model';
 import GPSPosition from '../models/gpsPosition.model';
-import {IAnyObject, IRequest} from '../../interfaces/global.interface';
-import {io} from '../../server';
+import { IAnyObject, IRequest } from '../../interfaces/global.interface';
+import { io } from '../../server';
 import logger from '../../services/logger.service';
 import redisClient from '../../services/redis.service';
 import GeneralUtils from '../../utils/general.utils';
-import FormModel, {IFormModel, KindQuestion} from '../models/form.model';
+import FormModel, { IFormModel, KindQuestion } from '../models/form.model';
 import ParticipantModel from '../models/participant.model';
 import ParticipantFile from '../models/participantFile.model';
-import ScaleModel, {IScaleModel} from '../models/scale.model';
+import ScaleModel, { IScaleModel } from '../models/scale.model';
 import * as bluebird from 'bluebird';
-import {IParticipant} from '../interfaces/participant.interface';
-import {IVenueDay} from '../../app/interfaces/venueDay.interface';
-import ActivityHistory, {ChoicesTypeActivity} from '../../billing/models/activityHistory.model';
-import TriggerHandler from "../commands/triggerHandler";
-import TransmittalItem from "../../distribution/models/transmittalItem.model";
-import TransmittalController from "../../distribution/controllers/transmittal.controller";
+import { IParticipant } from '../interfaces/participant.interface';
+import { IVenueDay } from '../../app/interfaces/venueDay.interface';
+import ActivityHistory, { ChoicesTypeActivity } from '../../billing/models/activityHistory.model';
+import TriggerHandler from '../commands/triggerHandler';
+import TransmittalItem from '../../distribution/models/transmittalItem.model';
+import TransmittalController from '../../distribution/controllers/transmittal.controller';
 // import {ValidationResult} from 'joi';
 
 
@@ -55,8 +55,8 @@ class FormController {
   }
 
   public async pdf(req: IRequest, res: Response): Promise<any> {
-    const {debug, timezone} = req.query as { debug: string, timezone: string };
-    const {id} = req.params;
+    const { debug, timezone } = req.query as { debug: string, timezone: string };
+    const { id } = req.params;
     const team = req.user.team._id;
     try {
       const config: HtmlPdf.CreateOptions = {
@@ -266,7 +266,7 @@ class FormController {
         });
       }
     } catch (e) {
-      Raven.captureException(e, {req});
+      Raven.captureException(e, { req });
       res.status(500).json(e.message);
     }
   }
@@ -299,7 +299,7 @@ class FormController {
         });
       }
     } catch (e) {
-      Raven.captureException(e, {req});
+      Raven.captureException(e, { req });
       /* istanbul ignore next */
       logger.error(`Async Error.`);
       res.status(400).json({
@@ -310,12 +310,12 @@ class FormController {
   }
 
   public async detail(req: IRequest, res: Response): Promise<any> {
-    const {id} = req.params;
+    const { id } = req.params;
     const team = req.user.team._id;
     logger.info(`detail forms`);
     logger.info(`{user: {_id: ${req.user._id}, email: ${req.user.email}}, {form: ${id}}}`);
     try {
-      if (await User.find({_id: req.user._id, userForms: id}).count() < 1) {
+      if (await User.find({ _id: req.user._id, userForms: id }).count() < 1) {
         return res.status(403).json({
           message: 'No tienes permisos para esta operación'
         });
@@ -583,7 +583,7 @@ class FormController {
         status: 200
       });
     } catch (e) {
-      Raven.captureException(e, {req});
+      Raven.captureException(e, { req });
       /* istanbul ignore next */
       logger.error(`detail form: Async Error.`);
       /* istanbul ignore next */
@@ -591,7 +591,7 @@ class FormController {
       /* istanbul ignore next */
       logger.error(e);
       /* istanbul ignore next */
-      Raven.captureException(e, {req});
+      Raven.captureException(e, { req });
       /* istanbul ignore next */
       res.status(500).json({
         message: 'No se encontro formularío',
@@ -601,8 +601,8 @@ class FormController {
   }
 
   public async complete(req: IRequest, res: Response): Promise<any> {
-    const {id} = req.params;
-    let {vin, answers, transmittalItem} = req.body;
+    const { id } = req.params;
+    let { vin, answers, transmittalItem } = req.body;
     const { company, venue, team } = req.user;
     logger.info(`complete`);
     logger.info(`{user: {_id: ${req.user._id}, email: ${req.user.email}}, body: ${JSON.stringify(req.body)}}`);
@@ -622,7 +622,7 @@ class FormController {
     }
     vin = vin.replace(/[\W_]+/g, '');
     try {
-      const updatedUser = await User.findById(req.user._id).populate([{path: 'venue'}]);
+      const updatedUser = await User.findById(req.user._id).populate([{ path: 'venue' }]);
       if (!updatedUser) {
         return res.status(404).json({
           message: 'No se ha encontrado el formulario solicitado.',
@@ -630,7 +630,7 @@ class FormController {
         });
       }
       const car = await CarModel.findOne({
-        $or: [{vin: {$eq: vin}}, {vin2: {$eq: vin}}],
+        $or: [{ vin: { $eq: vin } }, { vin2: { $eq: vin } }],
         team
       });
       if (car) {
@@ -659,14 +659,14 @@ class FormController {
             participantObject.receptionVenue = form.receptionVenue;
             participantObject.receptionVenueText = form.receptionVenueText;
             if ('reception' in answers) {
-              const {reception} = answers;
+              const { reception } = answers;
               participantObject.receptionConfirmation = [true, 'true'].includes(reception.value);
               if (reception.images) {
                 participantObject.receptionImages = reception.images.map((image: string) => (new ObjectID(image)));
               }
             }
             if ('receptionVenue' in answers) {
-              const {receptionVenue} = answers;
+              const { receptionVenue } = answers;
               participantObject.receiveFrom = receptionVenue.value;
             }
           }
@@ -677,14 +677,14 @@ class FormController {
             participantObject.shippingVenue = form.shippingVenue;
             participantObject.shippingVenueText = form.shippingVenueText;
             if ('shipping' in answers) {
-              const {shipping} = answers;
+              const { shipping } = answers;
               participantObject.shippingConfirmation = [true, 'true'].includes(shipping.value);
               if (shipping.images) {
                 participantObject.shippingImages = shipping.images.map((image: string) => (new ObjectID(image)));
               }
             }
             if ('shippingVenue' in answers) {
-              const {shippingVenue} = answers;
+              const { shippingVenue } = answers;
               participantObject.sendTo = shippingVenue.value;
             }
           }
@@ -693,7 +693,7 @@ class FormController {
             participantObject.carrier = form.carrier;
             participantObject.carrierText = form.carrierText;
             if ('carrier' in answers) {
-              const {carrier} = answers;
+              const { carrier } = answers;
               participantObject.carrierBy = carrier.value;
             }
           }
@@ -813,7 +813,7 @@ class FormController {
           });
 
           try {
-            const updateTeam = await Team.findOneAndUpdate({_id: team._id}, {$inc: {formsNumber: 1}}, {new: true});
+            const updateTeam = await Team.findOneAndUpdate({ _id: team._id }, { $inc: { formsNumber: 1 } }, { new: true });
 
             if (updateTeam) {
               newParticipant.number = updateTeam.formsNumber;
@@ -827,7 +827,7 @@ class FormController {
               await newParticipant.save();
 
               const transmittalItemData = await TransmittalItem
-                .findOneAndUpdate({_id: transmittalItem}, {$push: {revisions: newParticipant._id}}, {new: true})
+                .findOneAndUpdate({ _id: transmittalItem }, { $push: { revisions: newParticipant._id } }, { new: true })
                 .populate(TransmittalController.itemPopulate);
 
               io.to(`transmittal-list-${team._id}`).emit('UPDATE_TRANSMITTAL_ITEM', {
@@ -837,7 +837,7 @@ class FormController {
 
             // associate file to participant
             if (allImages.length) {
-              await ParticipantFile.update({_id: {$in: allImages}}, {participant: newParticipant}, {multi: true});
+              await ParticipantFile.update({ _id: { $in: allImages } }, { participant: newParticipant }, { multi: true });
             }
 
             car.lastForm = newParticipant;
@@ -852,9 +852,9 @@ class FormController {
               }
             });
 
-            if (form.triggers && form.triggers.length){
+            if (form.triggers && form.triggers.length) {
               let triggersHandler = new TriggerHandler(form, newParticipant);
-              await triggersHandler.execute({})
+              await triggersHandler.execute({});
             }
 
             /* Search alerts */
@@ -862,8 +862,8 @@ class FormController {
               .find({
                 team,
                 $or: [
-                  {$and: [{lte: {$gte: formQualification}}, {lte: {$gt: 0}}]},
-                  {$and: [{gte: {$lte: formQualification}}, {gte: {$gt: 0}}]}
+                  { $and: [{ lte: { $gte: formQualification } }, { lte: { $gt: 0 } }] },
+                  { $and: [{ gte: { $lte: formQualification } }, { gte: { $gt: 0 } }] }
                 ]
               }).populate([{
                 path: 'users',
@@ -908,7 +908,7 @@ class FormController {
             io.to(`dashboard-vin-view-${team._id}`).emit('REFRESH', {
               update: true,
               car: newParticipant._id,
-              notification:{
+              notification: {
                 title: 'Vehículo revisado',
                 text: `${req.user.firstName} ${req.user.lastName} revisó ${car.brand} (${car.denomination}) en ${updatedUser.venue.name}.`
               }
@@ -916,7 +916,7 @@ class FormController {
 
             // send refresh with websocket to dashboard detail
             io.to(`dashboard-vin-detail-${car._id}`).emit(`ADD_PARTICIPANT`, await ParticipantModel
-              .findById(newParticipant._id, {number: 1, name: 1, user: 1, venue: 1, createdAt: 1, qualification: 1})
+              .findById(newParticipant._id, { number: 1, name: 1, user: 1, venue: 1, createdAt: 1, qualification: 1 })
               .populate([{
                 path: 'user',
                 select: ['firstName', 'lastName']
@@ -926,7 +926,7 @@ class FormController {
               }])
             );
 
-            await ActivityHistory.create({
+            await new ActivityHistory({
               team,
               company,
               user: req.user._id,
@@ -935,7 +935,7 @@ class FormController {
                 _id: car._id,
                 vin: car.vin
               }
-            });
+            }).save();
 
             return res.json({
               data: {
@@ -970,7 +970,7 @@ class FormController {
         });
       }
     } catch (e) {
-      Raven.captureException(e, {req});
+      Raven.captureException(e, { req });
       /* istanbul ignore next */
       console.log(e);
       /* istanbul ignore next */
@@ -982,7 +982,7 @@ class FormController {
   }
 
   public async uploadFile(req: IRequest, res: Response): Promise<any> {
-    const {id} = req.params;
+    const { id } = req.params;
     const { company } = req.user;
     const file: any = GeneralUtils.getFileFromRequest(req.files, 'file');
     logger.info(`uploadFile`);
@@ -1030,7 +1030,7 @@ class FormController {
           }
         });
       } catch (e) {
-        Raven.captureException(e, {req});
+        Raven.captureException(e, { req });
         /* istanbul ignore next */
         logger.error(`async error:`);
         /* istanbul ignore next */
@@ -1049,15 +1049,15 @@ class FormController {
   }
 
   public async changePreferred(req: IRequest, res: Response): Promise<any> {
-    let {form} = req.body;
+    let { form } = req.body;
     const team = req.user.team._id;
     logger.info(`changePreferred`);
     logger.info(`{user: {_id: ${req.user._id}, email: ${req.user.email}}, body: ${JSON.stringify(req.body)}}`);
     try {
-      const user = await UserModel.findOne({_id: req.user._id, team, active: true});
+      const user = await UserModel.findOne({ _id: req.user._id, team, active: true });
       // validate exist user
       if (user) {
-        form = await FormModel.findOne({_id: form, team});
+        form = await FormModel.findOne({ _id: form, team });
         // validate exist form
         if (form) {
           user.preferred = form;
@@ -1083,7 +1083,7 @@ class FormController {
         });
       }
     } catch (e) {
-      Raven.captureException(e, {req});
+      Raven.captureException(e, { req });
       /* istanbul ignore next */
       logger.error(`changePreferred: Async Error.`);
       /* istanbul ignore next */
@@ -1108,14 +1108,14 @@ class FormController {
             $in: req.user.venuesPermissions()
           },
           'sections.answers.kind': 'damage',
-          'sections.answers.damagesSelected._id': {$exists: true}
+          'sections.answers.damagesSelected._id': { $exists: true }
         }
       }, {
         $group: {
           _id: {
-            $dateToString: {format: '%Y-%m-%d', date: '$createdAt'}
+            $dateToString: { format: '%Y-%m-%d', date: '$createdAt' }
           },
-          count: {$sum: 1}
+          count: { $sum: 1 }
         }
       }]);
 
@@ -1126,14 +1126,14 @@ class FormController {
             $in: req.user.venuesPermissions()
           },
           'sections.answers.kind': 'damage',
-          'sections.answers.damagesSelected._id': {$exists: false}
+          'sections.answers.damagesSelected._id': { $exists: false }
         }
       }, {
         $group: {
           _id: {
-            $dateToString: {format: '%Y-%m-%d', date: '$createdAt'}
+            $dateToString: { format: '%Y-%m-%d', date: '$createdAt' }
           },
-          count: {$sum: 1}
+          count: { $sum: 1 }
         }
       }]);
 
@@ -1160,7 +1160,7 @@ class FormController {
       });
 
       const damagesData: any = {};
-      venues.forEach((venue) => damagesData[venue] = {damaged: 0, undamaged: 0});
+      venues.forEach((venue) => damagesData[venue] = { damaged: 0, undamaged: 0 });
 
       damaged.forEach((item) => {
         if (item._id.venue in damagesData) {
@@ -1182,7 +1182,7 @@ class FormController {
       res.json(data);
 
     } catch (e) {
-      Raven.captureException(e, {req});
+      Raven.captureException(e, { req });
       /* istanbul ignore next */
       logger.error(`dashboard damages: Async Error.`);
       /* istanbul ignore next */
@@ -1286,7 +1286,7 @@ class FormController {
       }
       res.json(data);
     } catch (e) {
-      Raven.captureException(e, {req});
+      Raven.captureException(e, { req });
       /* istanbul ignore next */
       logger.error(`dashboard damages: Async Error.`);
       /* istanbul ignore next */
@@ -1305,7 +1305,7 @@ class FormController {
     try {
 
       const team = req.user.team._id;
-      const userObject = await User.findOne({_id: req.user._id});
+      const userObject = await User.findOne({ _id: req.user._id });
 
       // Derco
       if (userObject && userObject.team.toString() === '5bf2de34caf8ef7096105cda') {
@@ -1315,14 +1315,14 @@ class FormController {
 
         // despacho:  5b0487db835536612bab1b61
         // recepcion: 5b1ae5799ebea419025b3e41
-        const reception = await FormModel.findOne({_id: '5b0487db835536612bab1b61'});
+        const reception = await FormModel.findOne({ _id: '5b0487db835536612bab1b61' });
         const cars = await CarModel.find({
           team,
-          lastForm: {$ne: null}
+          lastForm: { $ne: null }
         });
 
         const carsDict: any = {};
-        for (const car of cars){
+        for (const car of cars) {
           carsDict[car._id.toString()] = car;
         }
 
@@ -1412,7 +1412,7 @@ class FormController {
 
       }
     } catch (e) {
-      Raven.captureException(e, {req});
+      Raven.captureException(e, { req });
       /* istanbul ignore next */
       logger.error(`dashboard timing derco: Async Error.`);
       /* istanbul ignore next */
@@ -1428,7 +1428,7 @@ class FormController {
 
   private static async getDercoDeliveryParticipants(team: ITeamModel, from: moment.Moment, to: moment.Moment): Promise<IParticipant[]> {
 
-    const receptionForm = await FormModel.findOne({_id: '5b1ae5799ebea419025b3e41'});
+    const receptionForm = await FormModel.findOne({ _id: '5b1ae5799ebea419025b3e41' });
     return ParticipantModel.aggregate([
       {
         $match: {
@@ -1457,11 +1457,11 @@ class FormController {
           as: 'related_car'
         }
       },
-      {$unwind: '$related_car'},
+      { $unwind: '$related_car' },
       {
         $match: {
           'related_car.team': team,
-          'related_car.lastForm': {$ne: null},
+          'related_car.lastForm': { $ne: null },
           'related_car.createdAt': {
             $gte: from,
             $lte: to
@@ -1476,14 +1476,14 @@ class FormController {
           as: 'to'
         }
       },
-      {$unwind: '$to'}
+      { $unwind: '$to' }
     ]);
 
   }
 
-  private async getDeliveryParticipants(team: ITeamModel, from: moment.Moment, to: moment.Moment) : Promise<IParticipant[]>{
-    const distributors = await Venue.find({team, type: 'distributor'});
-    const receivers = await Venue.find({team, type: 'receiver'});
+  private async getDeliveryParticipants(team: ITeamModel, from: moment.Moment, to: moment.Moment): Promise<IParticipant[]> {
+    const distributors = await Venue.find({ team, type: 'distributor' });
+    const receivers = await Venue.find({ team, type: 'receiver' });
 
     const receptions = await ParticipantModel.aggregate([
       {
@@ -1500,14 +1500,14 @@ class FormController {
       {
         $match: {
           team,
-          venue: {$in: receivers.map((v) => v._id)},
-          receiveFrom: {$in: distributors.map((v) => v._id)},
+          venue: { $in: receivers.map((v) => v._id) },
+          receiveFrom: { $in: distributors.map((v) => v._id) },
           reception: true,
           createdAt: {
             $gte: from,
             $lte: to
           },
-          'recived_participants.venue': {$in: distributors.map((v) => v._id)},
+          'recived_participants.venue': { $in: distributors.map((v) => v._id) },
           'recived_participants.reception': false,
           'recived_participants.createdAt': {
             $gte: from,
@@ -1528,7 +1528,7 @@ class FormController {
         }
       },
       {
-        $sort: {'recived_participants.createdAt': -1}
+        $sort: { 'recived_participants.createdAt': -1 }
       },
       {
         $lookup: {
@@ -1538,7 +1538,7 @@ class FormController {
           as: 'venue'
         }
       },
-      {$unwind: '$venue'},
+      { $unwind: '$venue' },
       {
         $lookup: {
           from: 'venues',
@@ -1547,14 +1547,14 @@ class FormController {
           as: 'recived_participants.venue'
         }
       },
-      {$unwind: '$recived_participants.venue'},
+      { $unwind: '$recived_participants.venue' },
       {
         $group: {
           _id: '$_id',
-          car: {$first: '$car'},
-          venue: {$first: '$venue'},
-          createdAt: {$first: '$createdAt'},
-          recived_participants: {$push: '$recived_participants'}
+          car: { $first: '$car' },
+          venue: { $first: '$venue' },
+          createdAt: { $first: '$createdAt' },
+          recived_participants: { $push: '$recived_participants' }
         }
       },
       {
@@ -1562,7 +1562,7 @@ class FormController {
           car: 1,
           venue: 1,
           createdAt: 1,
-          'recived_participants': {'$arrayElemAt': ['$recived_participants', 0]}
+          'recived_participants': { '$arrayElemAt': ['$recived_participants', 0] }
         }
       }
     ]);
@@ -1574,14 +1574,14 @@ class FormController {
     });
   }
 
-  private static isDercoUser(user: IUserModel) : boolean{
+  private static isDercoUser(user: IUserModel): boolean {
     return user && user.team.toString() === DERCO_TEAM;
   }
 
-  private static parseReception(reception : IParticipant, distributorTable : any) : any {
+  private static parseReception(reception: IParticipant, distributorTable: any): any {
 
-    const recivedparticipant : IParticipant = (reception as any).recived_participants as IParticipant;
-    const sendingVenue : IVenueModel = recivedparticipant.venue;
+    const recivedparticipant: IParticipant = (reception as any).recived_participants as IParticipant;
+    const sendingVenue: IVenueModel = recivedparticipant.venue;
 
     const daysLimit = distributorTable[sendingVenue._id.toString()] &&
     distributorTable[sendingVenue._id.toString()][reception.venue._id.toString()] ?
@@ -1604,14 +1604,14 @@ class FormController {
     };
   }
 
-  private static parseDercoReception(reception: IParticipant, distributorTable : any, dercoDistributionVenue: IVenueModel) : any {
+  private static parseDercoReception(reception: IParticipant, distributorTable: any, dercoDistributionVenue: IVenueModel): any {
     const car: ICarModel = (reception as any).related_car as ICarModel;
     // TODO: Get The real origin Venue
     const sendingVenue = dercoDistributionVenue;
     const venue = (reception as any).to as IVenueModel;
 
     const daysLimit = distributorTable[sendingVenue._id.toString()] &&
-      distributorTable[sendingVenue._id.toString()][venue._id.toString()] ?
+    distributorTable[sendingVenue._id.toString()][venue._id.toString()] ?
       distributorTable[sendingVenue._id.toString()][venue._id.toString()] :
       5;
     const threshold = daysLimit * 60 * 24;
@@ -1632,9 +1632,9 @@ class FormController {
 
   public async timingDashboard(req: IRequest, res: Response): Promise<any> {
     try {
-      const {team} = req.user as {team: ITeamModel};
-      const userObject = await User.findOne({_id: req.user._id});
-      const distributors = await Venue.find({team, type: 'distributor'}, {}).populate({
+      const { team } = req.user as { team: ITeamModel };
+      const userObject = await User.findOne({ _id: req.user._id });
+      const distributors = await Venue.find({ team, type: 'distributor' }, {}).populate({
         path: 'sendToDays.venue',
         select: ['_id']
       });
@@ -1649,22 +1649,21 @@ class FormController {
         moment().endOf('month').endOf('day');
 
 
-
-      const distributorTable : any = {};
+      const distributorTable: any = {};
       distributors.map((distributor: IVenueModel) => {
         const distributorId = distributor._id.toString();
         if (!(distributorId in distributors))
           distributorTable[distributorId] = {};
 
-        distributor.sendToDays.map((venueDay : IVenueDay) => {
+        distributor.sendToDays.map((venueDay: IVenueDay) => {
           const venueId = venueDay.venue._id.toString();
           distributorTable[distributorId][venueId] = venueDay.shippingMaxDays;
         });
       });
 
-      const data : any = {};
+      const data: any = {};
 
-      for (let i : moment.Moment = startDate; i <= toDate; i=i.add(1, 'month') ) {
+      for (let i: moment.Moment = startDate; i <= toDate; i = i.add(1, 'month')) {
         const month = i.format('MM-YYYY');
         data[month] = [];
       }
@@ -1672,13 +1671,13 @@ class FormController {
       startDate = start && start !== '' ? moment(start, 'YYYY-MM-DD') :
         moment().subtract(3, 'months').startOf('month').startOf('day');
 
-      const isDercoUser : boolean = FormController.isDercoUser(userObject!);
-      const receptions : IParticipant[] = isDercoUser ?
+      const isDercoUser: boolean = FormController.isDercoUser(userObject!);
+      const receptions: IParticipant[] = isDercoUser ?
         await FormController.getDercoDeliveryParticipants(team, startDate.toDate(), toDate.toDate()) :
         await this.getDeliveryParticipants(team, startDate.toDate(), toDate.toDate());
 
       for (const reception of receptions) {
-        const value : any  = isDercoUser ? FormController.parseDercoReception(reception, distributorTable, distributors[0]) :
+        const value: any = isDercoUser ? FormController.parseDercoReception(reception, distributorTable, distributors[0]) :
           FormController.parseReception(reception, distributorTable);
         const month = value.date_send.format('MM-YYYY');
         data[month].push(value);
@@ -1687,7 +1686,7 @@ class FormController {
       return res.json(data);
 
     } catch (e) {
-      Raven.captureException(e, {req});
+      Raven.captureException(e, { req });
       /* istanbul ignore next */
       logger.error(`dashboard timing: Async Error.`);
       /* istanbul ignore next */
@@ -1719,7 +1718,7 @@ class FormController {
           fitToPage: true, fitToHeight: 100, fitToWidth: 1
         }
       });
-      worksheet.autoFilter = {from: 'A1', to: 'F1'};
+      worksheet.autoFilter = { from: 'A1', to: 'F1' };
 
       worksheet.columns = [{
         header: 'VIN', key: 'vin', width: 30
@@ -1756,14 +1755,14 @@ class FormController {
       const team = req.user.team._id;
 
       const periods = 6;
-      for(let i = 0; i < periods; i++) {
+      for (let i = 0; i < periods; i++) {
 
         const t0 = moment().subtract(i + 1, 'months');
         const t1 = moment().subtract(i, 'months');
 
         const cars = await CarModel.find({
           team,
-          lastForm: {$exists: true},
+          lastForm: { $exists: true },
           createdAt: {
             $gte: t0,
             $lte: t1
@@ -1789,8 +1788,8 @@ class FormController {
 
             const participants = car.participants!.sort((p0: any, p1: any) => p0.createdAt >= p1.createdAt ? 1 : 0);
 
-            let p0:any = null;
-            let p1:any = null;
+            let p0: any = null;
+            let p1: any = null;
 
             // only one form
             if (participants.length < 2) {
@@ -1800,11 +1799,10 @@ class FormController {
               else if (participants[0].form.toString() == f1)
                 p1 = participants[0];
 
-            }
-            else {
+            } else {
               const length = participants.length;
               p0 = participants[0];
-              p1 = participants[length-1];
+              p1 = participants[length - 1];
             }
 
             let choice0Gas = null;
@@ -1839,13 +1837,13 @@ class FormController {
             let choice0SheetMetal = null;
             let choice1SheetMetal = null;
             if (p0) {
-              const answer0SheetMetal = p0.sections.map((s: any) => s.answers).reduce((x: any[], y: any[]) => [...x, ...y], []).find((a:any) => a._id.toString() == sheetMetalQuestion);
+              const answer0SheetMetal = p0.sections.map((s: any) => s.answers).reduce((x: any[], y: any[]) => [...x, ...y], []).find((a: any) => a._id.toString() == sheetMetalQuestion);
               if (answer0SheetMetal)
                 choice0SheetMetal = answer0SheetMetal.scale.choices.find((c: any) => c._id.toString() == answer0SheetMetal.answer.toString());
             }
 
             if (p1) {
-              const answer1SheetMetal = p1.sections.map((s: any) => s.answers).reduce((x: any[], y: any[]) => [...x, ...y], []).find((a:any) => a._id.toString() == sheetMetalQuestion);
+              const answer1SheetMetal = p1.sections.map((s: any) => s.answers).reduce((x: any[], y: any[]) => [...x, ...y], []).find((a: any) => a._id.toString() == sheetMetalQuestion);
               if (answer1SheetMetal)
                 choice1SheetMetal = answer1SheetMetal.scale.choices.find((c: any) => c._id.toString() == answer1SheetMetal.answer.toString());
             }
@@ -1937,15 +1935,15 @@ class FormController {
               team,
               form: form._id,
               'sections.answers.answer': answer,
-              createdAt: {$gt: t0.toDate()}
+              createdAt: { $gt: t0.toDate() }
             }
           },
           {
             $group: {
               _id: {
-                $dateToString: {format: '%Y-%m-%d', date: '$createdAt'}
+                $dateToString: { format: '%Y-%m-%d', date: '$createdAt' }
               },
-              count: {$sum: 1}
+              count: { $sum: 1 }
             }
           }
         ]);
@@ -1962,16 +1960,16 @@ class FormController {
             $match: {
               team,
               form: form._id,
-              'sections.answers.answer': {$ne: answer},
-              createdAt: {$gt: t0.toDate()}
+              'sections.answers.answer': { $ne: answer },
+              createdAt: { $gt: t0.toDate() }
             }
           },
           {
             $group: {
               _id: {
-                $dateToString: {format: '%Y-%m-%d', date: '$createdAt'}
+                $dateToString: { format: '%Y-%m-%d', date: '$createdAt' }
               },
-              count: {$sum: 1}
+              count: { $sum: 1 }
             }
           }
         ]);
@@ -1989,7 +1987,7 @@ class FormController {
         notClean: days.map((d) => daysDict[d].notClean)
       });
     } catch (e) {
-      Raven.captureException(e, {req});
+      Raven.captureException(e, { req });
       /* istanbul ignore next */
       logger.error(`dashboard timing: Async Error.`);
       /* istanbul ignore next */
@@ -2218,7 +2216,7 @@ class FormController {
     try {
       const { company, venue } = req.user;
       const team = req.user.team._id;
-      const {lat, lng, accuracy, provider} = req.body;
+      const { lat, lng, accuracy, provider } = req.body;
 
       const os = 'user-agent' in req.headers ? req.headers['user-agent'] : '';
 
@@ -2242,7 +2240,7 @@ class FormController {
 
 
     } catch (e) {
-      Raven.captureException(e, {req});
+      Raven.captureException(e, { req });
       /* istanbul ignore next */
       logger.error(`position create. Error`);
       /* istanbul ignore next */

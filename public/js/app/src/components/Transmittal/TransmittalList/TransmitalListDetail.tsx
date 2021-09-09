@@ -243,9 +243,9 @@ class TransmitalListDetail extends React.Component<IPropsType, IStateType> {
       transmittal: transmittal._id
     })
       .then((response: AxiosResponse): void => {
-        swal!('Vehículos agregado', `Se ha agregado ${requestItem.car.brand} ${requestItem.car.denomination} a la order #${this.padNumber(transmittal.number)} satisfactoriamente.`, 'success');
-        const { page } = this.props.transmittal.requestItemsPagination;
-        this.props.transmittalActions.getRequestItemThunkAction(page, true);
+        // swal!('Vehículos agregado', `Se ha agregado ${requestItem.car.brand} ${requestItem.car.denomination} a la order #${this.padNumber(transmittal.number)} satisfactoriamente.`, 'success');
+        // const { page } = this.props.transmittal.requestItemsPagination;
+        // this.props.transmittalActions.getRequestItemThunkAction(page, true);
       })
       .catch((err: AxiosError): void => {
         this.api.errorHandler(err);

@@ -1,4 +1,10 @@
-import {ITeam} from "./team.interface";
+import { ITeam } from './team.interface';
+
+
+export interface IFormSettting {
+  vinMinCharacters: number;
+  vinMaxCharacters: number;
+}
 
 export interface IInventorySettting {
   pending: string;
@@ -35,6 +41,7 @@ export interface ITeamSetting {
   _id: any;
   inventory: IInventorySettting;
   request: IRequestSettting;
+  form: IFormSettting;
   team: ITeam;
   updatedAt: Date;
   createdAt: Date;

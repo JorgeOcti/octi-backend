@@ -1,24 +1,26 @@
-import {AxiosError, AxiosResponse, default as Axios} from 'axios';
+import { AxiosError, AxiosResponse, default as Axios } from 'axios';
 import * as React from 'react';
-import {connect} from 'react-redux';
-import {RouteComponentProps} from 'react-router';
+import { connect } from 'react-redux';
+import { RouteComponentProps } from 'react-router';
 import * as swal from 'sweetalert';
-import {debounce} from 'throttle-debounce';
+import { debounce } from 'throttle-debounce';
 import * as uuid from 'uuid';
-import {IReason} from '../../../../../../src/request/interfaces/reason.interface';
-import {ISalesChannel} from '../../../../../../src/request/interfaces/salesChannel.interface';
-import {IInventoryState} from '../../actions/inventory.actions';
+import { IReason } from '../../../../../../src/request/interfaces/reason.interface';
+import { ISalesChannel } from '../../../../../../src/request/interfaces/salesChannel.interface';
+import { IInventoryState } from '../../actions/inventory.actions';
 import AppContainer from '../../container/AppContainer';
 import ApiService from '../../utils/axios';
 import AutocompleteInput from '../Utils/AutocompleteInput';
 import BootstrapSelect from '../Utils/BootstrapSelect';
-import MultiUploadFiles, {imageStatus} from '../Utils/MultiUploadFiles';
+import MultiUploadFiles, { imageStatus } from '../Utils/MultiUploadFiles';
 import ShowIf from '../Utils/ShowIf';
 import TrackingBasePage from '../Utils/TrackingBasePage';
 import { IRequestSettting } from '../../../../../../src/app/interfaces/teamSetting.interface';
+import { IOperationType } from '../../../../../../src/request/interfaces/operationType.interface';
 
 
-interface IPropsType extends RouteComponentProps<{}> { }
+interface IPropsType extends RouteComponentProps<{}> {
+}
 
 interface INewCar {
   brand: string;
@@ -47,10 +49,12 @@ interface IStateType {
   reasons: IReason[];
   channels: ISalesChannel[];
   channel: string;
+  operationTypes: IOperationType[];
+  operationType: string;
   fleet: boolean;
   loading: boolean;
   error: Error | null;
-  requestSettings: IRequestSettting
+  requestSettings: IRequestSettting;
 }
 
 const initialNewCar = {
@@ -68,11 +72,11 @@ const initialNewCar = {
   reason: '',
   priority: false,
   equipment: false,
-  washed: false,
+  washed: false
 };
 
 class RequestCreateView extends TrackingBasePage<IPropsType, IStateType> {
-  title : string;
+  title: string;
 
   readonly api: ApiService;
 
@@ -84,6 +88,8 @@ class RequestCreateView extends TrackingBasePage<IPropsType, IStateType> {
     venues: [],
     reasons: [],
     channels: [],
+    operationTypes: [],
+    operationType: '',
     loading: false,
     fleet: false,
     channel: '',
@@ -95,7 +101,7 @@ class RequestCreateView extends TrackingBasePage<IPropsType, IStateType> {
       denominationRequired: false,
       internalNumber: false,
       internalNumberRequired: false,
-      internalNumberText: "Número interno",
+      internalNumberText: 'Número interno',
       material: false,
       materialRequired: false
     }
@@ -138,32 +144,32 @@ class RequestCreateView extends TrackingBasePage<IPropsType, IStateType> {
   }
 
   public render(): React.ReactElement<IPropsType> {
-    const { newCar, cars, requestSettings, loading, venues, reasons, channel, channels } = this.state;
+    const { newCar, cars, requestSettings, loading, venues, reasons, channel, channels, operationTypes, operationType } = this.state;
     const vehiclesView = this.props.location.pathname === '/requests/vehicles/create/';
     const filesCompleted = newCar.files.filter((file: any) => file.status === imageStatus.complete);
     const isUploadingFiles = newCar.files.length > 0 && filesCompleted.length < newCar.files.length;
     const reasonSelected: IReason | undefined = (reasons as IReason[]).find((reason: IReason) => reason._id === newCar.reason);
     return (
-      <AppContainer title="" cMenu="3" cSubMenu={vehiclesView ? '3.2' : '3.1'} cAction="Crear solicitud">
-        <section className="content">
-          <div className="box">
-            <div className="box-header with-border">
-              <h3 className="box-title">Crear solicitud</h3>
+      <AppContainer title='' cMenu='3' cSubMenu={vehiclesView ? '3.2' : '3.1'} cAction='Crear solicitud'>
+        <section className='content'>
+          <div className='box'>
+            <div className='box-header with-border'>
+              <h3 className='box-title'>Crear solicitud</h3>
             </div>
-            <div className="box-body create-request">
-              <div className="row">
-                <div className="col-md-6 col-lg-6">
+            <div className='box-body create-request'>
+              <div className='row'>
+                <div className='col-md-6 col-lg-6'>
                   <h3>Agregar Vehículos</h3>
-                  <div className="form-horizontal">
-                    <div className="form-group">
-                      <label htmlFor="marca" className="col-sm-3 control-label label-left">Marca *</label>
-                      <div className="col-sm-9">
+                  <div className='form-horizontal'>
+                    <div className='form-group'>
+                      <label htmlFor='marca' className='col-sm-3 control-label label-left'>Marca *</label>
+                      <div className='col-sm-9'>
                         <AutocompleteInput
                           value={newCar.brand}
                           inputClass={'input-sm'}
                           items={newCar.brands}
                           renderItem={(item, index) => (
-                            <div key={index} className="item">
+                            <div key={index} className='item'>
                               {item.material ? `${item.material} - ` : ''} {item.denomination} <br />
                               <strong>{item.brand}</strong>
                             </div>
@@ -189,17 +195,17 @@ class RequestCreateView extends TrackingBasePage<IPropsType, IStateType> {
                         />
                       </div>
                     </div>
-                    <div className="form-group">
-                      <label htmlFor="modelo" className="col-sm-3 control-label label-left">Modelo {
+                    <div className='form-group'>
+                      <label htmlFor='modelo' className='col-sm-3 control-label label-left'>Modelo {
                         requestSettings.materialRequired ? '*' : ''
                       }</label>
-                      <div className="col-sm-9">
+                      <div className='col-sm-9'>
                         <AutocompleteInput
                           value={newCar.denomination}
                           inputClass={'input-sm'}
                           items={newCar.denominations}
                           renderItem={(item, index) => (
-                            <div key={index} className="item">
+                            <div key={index} className='item'>
                               {item.material ? `${item.material} - ` : ''} {item.denomination} <br />
                               <strong>{item.brand}</strong>
                             </div>
@@ -226,24 +232,24 @@ class RequestCreateView extends TrackingBasePage<IPropsType, IStateType> {
                       </div>
                     </div>
                     <ShowIf condition={requestSettings.material}>
-                      <div className="form-group">
-                        <label htmlFor="material" className="col-sm-3 control-label label-left">Material {
+                      <div className='form-group'>
+                        <label htmlFor='material' className='col-sm-3 control-label label-left'>Material {
                           requestSettings.materialRequired ? '*' : ''
                         }</label>
-                        <div className="col-sm-9">
+                        <div className='col-sm-9'>
                           <AutocompleteInput
                             value={newCar.material}
                             inputClass={'input-sm'}
                             items={newCar.materials}
                             renderItem={(item, index) => (
-                              <div key={index} className="item">
-                                {item.material ? `${item.material} - ` : ''} {item.denomination} <br/>
+                              <div key={index} className='item'>
+                                {item.material ? `${item.material} - ` : ''} {item.denomination} <br />
                                 <strong>{item.brand}</strong>
                               </div>
 
                             )}
                             onChange={(e) => {
-                              const {value} = e.target;
+                              const { value } = e.target;
                               this.changeNewCar('material', value);
                               this.search(value, 'materials');
                             }}
@@ -264,14 +270,14 @@ class RequestCreateView extends TrackingBasePage<IPropsType, IStateType> {
                         </div>
                       </div>
                     </ShowIf>
-                    <div className="form-group">
-                      <label htmlFor="color" className="col-sm-3 control-label label-left">Color {
+                    <div className='form-group'>
+                      <label htmlFor='color' className='col-sm-3 control-label label-left'>Color {
                         requestSettings.colorRequired ? '*' : ''
                       }</label>
-                      <div className="col-sm-9">
+                      <div className='col-sm-9'>
                         <input
-                          type="text"
-                          className="input-sm form-control"
+                          type='text'
+                          className='input-sm form-control'
                           value={newCar.color}
                           onChange={(e) => {
                             this.changeNewCar('color', e.target.value);
@@ -279,16 +285,16 @@ class RequestCreateView extends TrackingBasePage<IPropsType, IStateType> {
                         />
                       </div>
                     </div>
-                    <div className="form-group">
-                      <label className="col-sm-3 control-label label-left">Motivo *</label>
-                      <div className="col-sm-9">
+                    <div className='form-group'>
+                      <label className='col-sm-3 control-label label-left'>Motivo *</label>
+                      <div className='col-sm-9'>
                         <BootstrapSelect
-                          noneSelectedText="Seleccione"
+                          noneSelectedText='Seleccione'
                           displayItems={1}
                           sm={true}
                           search={true}
                           autoClouse={true}
-                          selectedText="motivos seleccionados."
+                          selectedText='motivos seleccionados.'
                           selected={newCar.reason.length ? [newCar.reason] : []}
                           allOption={false}
                           options={reasons.map((reason: any) => ({
@@ -306,13 +312,13 @@ class RequestCreateView extends TrackingBasePage<IPropsType, IStateType> {
                         reasonSelected?.questions.map((question: any) => {
                           const currentAnswer: any = newCar.answers.find((answer: any) => (answer.questionId === question._id));
                           return (
-                            <div className="form-group" key={(question)._id}>
-                              <label htmlFor="color"
-                                     className="col-sm-3 control-label label-left">{question.name} {question.required ? '*' : ''}</label>
-                              <div className="col-sm-9">
+                            <div className='form-group' key={(question)._id}>
+                              <label htmlFor='color'
+                                     className='col-sm-3 control-label label-left'>{question.name} {question.required ? '*' : ''}</label>
+                              <div className='col-sm-9'>
                                 <input
-                                  type="text"
-                                  className="input-sm form-control"
+                                  type='text'
+                                  className='input-sm form-control'
                                   value={currentAnswer ? currentAnswer.answer : ''}
                                   onChange={(e) => {
                                     this.changeNewCar('answers', (() => {
@@ -342,9 +348,9 @@ class RequestCreateView extends TrackingBasePage<IPropsType, IStateType> {
                       }
                     </ShowIf>
                     <ShowIf condition={!!(reasonSelected && reasonSelected.file.active)}>
-                      <div className="form-group">
-                        <label className="col-sm-3 control-label label-left">Archivos *</label>
-                        <div className="col-sm-9">
+                      <div className='form-group'>
+                        <label className='col-sm-3 control-label label-left'>Archivos *</label>
+                        <div className='col-sm-9'>
                           <MultiUploadFiles
                             url={'/api/v1/requests/upload-file/'}
                             onChange={(files) => {
@@ -355,7 +361,7 @@ class RequestCreateView extends TrackingBasePage<IPropsType, IStateType> {
                           <ShowIf condition={isUploadingFiles}>
                             <p>
                               Se están cargando sus archivos, llevamos {filesCompleted.length} de {newCar.files.length} <i
-                              className="fa fa-spinner fa-spin"/>.
+                              className='fa fa-spinner fa-spin' />.
                             </p>
                           </ShowIf>
                         </div>
@@ -390,36 +396,36 @@ class RequestCreateView extends TrackingBasePage<IPropsType, IStateType> {
                         </div>
                       </div> */
                     }
-                    <div className="form-group">
-                      <label className="col-sm-3 control-label label-left">Cantidad</label>
-                      <div className="col-sm-4">
-                        <input id="amount" type="text" className="form-control" />
+                    <div className='form-group'>
+                      <label className='col-sm-3 control-label label-left'>Cantidad</label>
+                      <div className='col-sm-4'>
+                        <input id='amount' type='text' className='form-control' />
                       </div>
                     </div>
-                    <div className="form-group">
-                      <label className="col-sm-3 control-label label-left">Prioridad</label>
-                      <div className="col-sm-6">
+                    <div className='form-group'>
+                      <label className='col-sm-3 control-label label-left'>Prioridad</label>
+                      <div className='col-sm-6'>
                         {
                           newCar.priority ?
                             <i
-                              className="fa fa-2x fa-star text-yellow pointer"
+                              className='fa fa-2x fa-star text-yellow pointer'
                               style={{ marginTop: '5px', fontSize: '1.7em' }}
                               onClick={() => this.changeBooleanNewCar('priority', false)}
                             />
                             :
                             <i
-                              className="fa fa-2x fa-star-o text-yellow pointer"
+                              className='fa fa-2x fa-star-o text-yellow pointer'
                               style={{ marginTop: '5px', fontSize: '1.7em' }}
                               onClick={() => this.changeBooleanNewCar('priority', true)}
                             />
                         }
                       </div>
                     </div>
-                    <div className="form-group">
-                      <label className="col-sm-3 control-label label-left">Observación despacho</label>
-                      <div className="col-sm-9">
+                    <div className='form-group'>
+                      <label className='col-sm-3 control-label label-left'>Observación despacho</label>
+                      <div className='col-sm-9'>
                         <textarea
-                          className="form-control input-sm"
+                          className='form-control input-sm'
                           onChange={(e) => {
                             const { value } = e.target;
                             this.changeNewCar('observation', value);
@@ -430,16 +436,16 @@ class RequestCreateView extends TrackingBasePage<IPropsType, IStateType> {
                         />
                       </div>
                     </div>
-                    <div className="text-right">
+                    <div className='text-right'>
                       <button
-                        className="btn btn-sm btn-primary"
+                        className='btn btn-sm btn-primary'
                         onClick={this.addCar}
                         disabled={
                           !(reasonSelected && reasonSelected.questions.length === newCar.answers.length) ||
                           !newCar.brand.length ||
                           (requestSettings.denomination && requestSettings.denominationRequired && !newCar.denomination.length) ||
                           (requestSettings.material && requestSettings.materialRequired && !newCar.material.length) ||
-                          (requestSettings.color &&requestSettings.colorRequired && !newCar.color.length) ||
+                          (requestSettings.color && requestSettings.colorRequired && !newCar.color.length) ||
                           !newCar.reason ||
                           isUploadingFiles
                         }
@@ -449,24 +455,24 @@ class RequestCreateView extends TrackingBasePage<IPropsType, IStateType> {
                     </div>
                   </div>
                 </div>
-                <div className="col-md-6 col-lg-6" style={{ paddingLeft: '10px' }}>
-                  <div className="add-cars">
-                    <div className="arrow">
-                      <i className="fa fa-3x fa-caret-right" />
+                <div className='col-md-6 col-lg-6' style={{ paddingLeft: '10px' }}>
+                  <div className='add-cars'>
+                    <div className='arrow'>
+                      <i className='fa fa-3x fa-caret-right' />
                     </div>
-                    <div className="detail">
+                    <div className='detail'>
                       <h3>Solicitud</h3>
-                      <div className="form-horizontal">
-                        <div className="form-group">
-                          <label className="col-sm-2 control-label label-left">Destino</label>
-                          <div className="col-sm-10">
+                      <div className='form-horizontal'>
+                        <div className='form-group'>
+                          <label className='col-sm-3 control-label label-left'>Destino</label>
+                          <div className='col-sm-9'>
                             <BootstrapSelect
-                              noneSelectedText="Seleccione"
+                              noneSelectedText='Seleccione'
                               displayItems={1}
                               sm={true}
                               search={true}
                               autoClouse={true}
-                              selectedText="sucursales seleccionadas."
+                              selectedText='sucursales seleccionadas.'
                               selected={this.state.venue.length ? [this.state.venue] : []}
                               allOption={false}
                               options={venues.map((venue: any) => ({
@@ -479,21 +485,21 @@ class RequestCreateView extends TrackingBasePage<IPropsType, IStateType> {
                             />
                           </div>
                         </div>
-                        <div className="form-group">
-                          <label className="col-sm-2 control-label label-left">Vendedor</label>
-                          <div className="col-sm-10">
-                            <input type="text" className="form-control" onChange={(e) => {
+                        <div className='form-group'>
+                          <label className='col-sm-3 control-label label-left'>Vendedor</label>
+                          <div className='col-sm-9'>
+                            <input type='text' className='form-control input-sm' onChange={(e) => {
                               this.setState({
                                 sellerText: e.target.value
                               });
                             }} />
                           </div>
                         </div>
-                        <div className="form-group">
-                          <label className="col-sm-2 control-label label-left">Canal *</label>
-                          <div className="col-sm-10">
+                        <div className='form-group'>
+                          <label className='col-sm-3 control-label label-left'>Canal *</label>
+                          <div className='col-sm-9'>
                             <BootstrapSelect
-                              noneSelectedText="Seleccione"
+                              noneSelectedText='Seleccione'
                               displayItems={1}
                               sm={true}
                               search={true}
@@ -512,6 +518,29 @@ class RequestCreateView extends TrackingBasePage<IPropsType, IStateType> {
                             />
                           </div>
                         </div>
+                        <div className='form-group'>
+                          <label className='col-sm-3 control-label label-left'>Tipo operación</label>
+                          <div className='col-sm-9'>
+                            <BootstrapSelect
+                              noneSelectedText='Seleccione'
+                              displayItems={1}
+                              sm={true}
+                              search={true}
+                              autoClouse={true}
+                              selected={operationType.length ? [operationType] : []}
+                              allOption={false}
+                              options={operationTypes.map((operationType: any) => ({
+                                value: operationType._id,
+                                text: operationType.name
+                              }))}
+                              onClick={(value: string) => {
+                                this.setState({
+                                  operationType: value
+                                });
+                              }}
+                            />
+                          </div>
+                        </div>
                       </div>
                       {/* <div className="form-group-switch">
                         <label className="switch-label switch-label-left">Estás solicitando flota</label>
@@ -521,44 +550,44 @@ class RequestCreateView extends TrackingBasePage<IPropsType, IStateType> {
                           onChange={this.changeFleet}
                         />
                       </div> */}
-                      <div className="create-detail">
-                        <table className="table">
+                      <div className='create-detail'>
+                        <table className='table'>
                           <tbody>
-                            {
-                              cars.map((car: any) => (
-                                <tr key={car.tid}>
-                                  <td className="middle">{`${car.denomination} ${car.material} ${car.brand}`}</td>
-                                  <td className="middle">{car.color}</td>
-                                  <td className="middle">{this.searchReason(car.reason)}</td>
-                                  <td className="middle">
-                                    <i className={`material-icons ${!car.washed ? 'text-gray' : ''}`}>local_car_wash</i>
-                                  </td>
-                                  <td className="middle">
-                                    <i className={`material-icons ${!car.equipment ? 'text-gray' : ''}`}>build</i>
-                                  </td>
-                                  <td className="middle">
-                                    {car.files.length ? <i className={`fa fa-paperclip`} /> : null}
-                                  </td>
-                                  <td className="middle text-muted" style={{ width: '140px' }}>
-                                    {
-                                      car.observation && car.observation.length ?
-                                        car.observation
-                                        : 'Sin observaciones'
-                                    }
-                                  </td>
-                                  <td
-                                    className="middle"
-                                    onClick={() => this.deleteCar(car)}
-                                  >
-                                    <i className="fa fa-trash text-red pointer" />
-                                  </td>
-                                </tr>
-                              ))
-                            }
+                          {
+                            cars.map((car: any) => (
+                              <tr key={car.tid}>
+                                <td className='middle'>{`${car.denomination} ${car.material} ${car.brand}`}</td>
+                                <td className='middle'>{car.color}</td>
+                                <td className='middle'>{this.searchReason(car.reason)}</td>
+                                <td className='middle'>
+                                  <i className={`material-icons ${!car.washed ? 'text-gray' : ''}`}>local_car_wash</i>
+                                </td>
+                                <td className='middle'>
+                                  <i className={`material-icons ${!car.equipment ? 'text-gray' : ''}`}>build</i>
+                                </td>
+                                <td className='middle'>
+                                  {car.files.length ? <i className={`fa fa-paperclip`} /> : null}
+                                </td>
+                                <td className='middle text-muted' style={{ width: '140px' }}>
+                                  {
+                                    car.observation && car.observation.length ?
+                                      car.observation
+                                      : 'Sin observaciones'
+                                  }
+                                </td>
+                                <td
+                                  className='middle'
+                                  onClick={() => this.deleteCar(car)}
+                                >
+                                  <i className='fa fa-trash text-red pointer' />
+                                </td>
+                              </tr>
+                            ))
+                          }
                           </tbody>
                         </table>
                       </div>
-                      <div className="text-right text-muted" style={{ padding: '2px' }}>
+                      <div className='text-right text-muted' style={{ padding: '2px' }}>
                         {cars.length} vehículos
                       </div>
                     </div>
@@ -566,10 +595,10 @@ class RequestCreateView extends TrackingBasePage<IPropsType, IStateType> {
                 </div>
               </div>
             </div>
-            <div className="box-footer text-right">
-              <button className="btn btn-sm btn-default" onClick={this.cancel}>Cancelar</button>
+            <div className='box-footer text-right'>
+              <button className='btn btn-sm btn-default' onClick={this.cancel}>Cancelar</button>
               <button
-                className="btn btn-sm btn-primary"
+                className='btn btn-sm btn-primary'
                 style={{ marginLeft: '5px' }}
                 onClick={this.createRequest}
               >
@@ -578,8 +607,8 @@ class RequestCreateView extends TrackingBasePage<IPropsType, IStateType> {
             </div>
             {
               loading ?
-                <div className="overlay">
-                  <i className="fa fa-spinner fa-spin text-purple" />
+                <div className='overlay'>
+                  <i className='fa fa-spinner fa-spin text-purple' />
                 </div> : null
             }
           </div>
@@ -592,7 +621,7 @@ class RequestCreateView extends TrackingBasePage<IPropsType, IStateType> {
     const { newCar, reasons } = this.state;
     const reasonSelected: IReason | undefined = (reasons as IReason[]).find((reason: IReason) => reason._id === newCar.reason);
     if (reasonSelected?.file.required && !newCar.files.length) {
-      swal('Solicitud', `Se requiere que subas un archivo para este vehículo.`, 'error');
+      swal!('Solicitud', `Se requiere que subas un archivo para este vehículo.`, 'error');
     } else {
       const $amount: any = $('#amount');
       const cars = Array(newCar.amount).fill({
@@ -675,6 +704,7 @@ class RequestCreateView extends TrackingBasePage<IPropsType, IStateType> {
       }
     });
   }
+
   private changeBooleanNewCar(field: 'priority' | 'equipment' | 'washed', value: boolean) {
     this.setState({
       newCar: {
@@ -701,17 +731,19 @@ class RequestCreateView extends TrackingBasePage<IPropsType, IStateType> {
     this.setState({ loading: true });
     Axios
       .all([
-        this.api.getVenues(1, 200, true, true),
+        this.api.getVenues({ page: 1, pageSize: 200, noPopulate: true, filted: true }),
         this.api.getReasons({ page: 1, pageSize: 200 }),
         this.api.getSalesChannel({ page: 1, pageSize: 200 }),
-        this.api.getTeamSettings()
+        this.api.getTeamSettings(),
+        this.api.getOperationTypes({ page: 1, pageSize: 200 })
       ])
-      .then(Axios.spread((venues, reasons, channels, teamSettings) => {
+      .then(Axios.spread((venues, reasons, channels, teamSettings, operationTypes) => {
         this.setState({
           venues: venues.data.results,
           reasons: reasons.data.results,
           channels: channels.data.results,
           requestSettings: teamSettings.data.request,
+          operationTypes: operationTypes.data.results,
           loading: false
         });
       }))
@@ -738,23 +770,24 @@ class RequestCreateView extends TrackingBasePage<IPropsType, IStateType> {
 
   private createRequest() {
     const vehiclesView = this.props.location.pathname === '/requests/vehicles/create/';
-    const { cars, channel, venue, sellerText } = this.state;
+    const { cars, channel, venue, sellerText, operationType } = this.state;
     if (!cars.length) {
-      swal('Solicitud', 'No se han agregado vehículos para crear la solicitud.', 'error');
+      swal!('Solicitud', 'No se han agregado vehículos para crear la solicitud.', 'error');
     } else if (!venue.length) {
-      swal('Solicitud', 'No se ha seleccionado destino para crear la solicitud.', 'error');
+      swal!('Solicitud', 'No se ha seleccionado destino para crear la solicitud.', 'error');
     } else if (!channel.length) {
-      swal('Solicitud', 'No se ha seleccionado canal para crear la solicitud.', 'error');
+      swal!('Solicitud', 'No se ha seleccionado canal para crear la solicitud.', 'error');
     } else {
       this.api
         .createRequest({
           cars,
           channel,
+          operationType,
           venue,
           sellerText
         })
-        .then((response: AxiosResponse): void => {
-          swal('Solicitud', 'Se ha creado satisfactoriamente.', 'success').then(() => {
+        .then(() => {
+          swal!('Solicitud', 'Se ha creado satisfactoriamente.', 'success').then(() => {
             this.props.history.push(vehiclesView ? '/requests/vehicles/' : '/requests/');
           });
         })

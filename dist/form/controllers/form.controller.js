@@ -1065,7 +1065,7 @@ var FormController = /** @class */ (function () {
                     case 25:
                         // send refresh with websocket to dashboard detail
                         _g.apply(_f, _h.concat([_j.sent()]));
-                        return [4 /*yield*/, activityHistory_model_1["default"].create({
+                        return [4 /*yield*/, new activityHistory_model_1["default"]({
                                 team: team,
                                 company: company,
                                 user: req.user._id,
@@ -1074,7 +1074,7 @@ var FormController = /** @class */ (function () {
                                     _id: car_1._id,
                                     vin: car_1.vin
                                 }
-                            })];
+                            }).save()];
                     case 26:
                         _j.sent();
                         return [2 /*return*/, res.json({

@@ -10,6 +10,7 @@ import {
 import ImageLazyLoad from '../components/Utils/ImageLazyLoad';
 import ApiService from '../utils/axios';
 import {loadDataAction} from './modal.actions';
+import ShowIf from '../components/Utils/ShowIf';
 
 export interface IDashboardState {
   loading: boolean;
@@ -455,35 +456,37 @@ export function getParticipant(id: string) {
                                               <strong>Daño</strong> {kinds.hasOwnProperty(ds.kind) ? kinds[ds.kind] : '-'}{' '}
                                               <strong>Posición</strong> {positions.hasOwnProperty(ds.position) ? positions[ds.position] : '-'}
                                             </p>
-                                            <div className="row images">
-                                              {
-                                                ds.images.map((image: any) => {
-                                                  return (
-                                                    <div className="col-md-3 col-sm-4 col-xs-4 text-center" key={image._id}>
-                                                      <a
-                                                        href={image.file.url}
-                                                        data-toggle="lightbox"
-                                                        className="zoom-in"
-                                                        data-gallery={ds._id}
-                                                        data-title={parts.hasOwnProperty(ds.part) ? parts[ds.part] : '-'}
-                                                      >
-                                                        <ImageLazyLoad
-                                                          url={image.file.url}
-                                                          height={'100px'}
-                                                        />
-                                                      </a>
-                                                      <p
-                                                        className={'text-ellipsis'}
-                                                        data-toggle="tooltip"
-                                                        data-placement="top"
-                                                        title={image.file.name}>
-                                                        {image.file.name}
-                                                      </p>
-                                                    </div>
-                                                  );
-                                                })
-                                              }
-                                            </div>
+                                            <ShowIf condition={!!ds.images.length} alternative={"No se reportaron imágenes."}>
+                                              <div className='row images'>
+                                                {
+                                                  ds.images.map((image: any) => {
+                                                    return (
+                                                      <div className='col-md-3 col-sm-4 col-xs-4 text-center' key={image._id}>
+                                                        <a
+                                                          href={image.file.url}
+                                                          data-toggle='lightbox'
+                                                          className='zoom-in'
+                                                          data-gallery={ds._id}
+                                                          data-title={parts.hasOwnProperty(ds.part) ? parts[ds.part] : '-'}
+                                                        >
+                                                          <ImageLazyLoad
+                                                            url={image.file.url}
+                                                            height={'100px'}
+                                                          />
+                                                        </a>
+                                                        <p
+                                                          className={'text-ellipsis'}
+                                                          data-toggle='tooltip'
+                                                          data-placement='top'
+                                                          title={image.file.name}>
+                                                          {image.file.name}
+                                                        </p>
+                                                      </div>
+                                                    );
+                                                  })
+                                                }
+                                              </div>
+                                            </ShowIf>
                                           </div>
                                         </div>
                                       ))

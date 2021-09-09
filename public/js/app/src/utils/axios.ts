@@ -27,6 +27,7 @@ import { ITempUser } from '../actions/users.actions';
 import { IFilterCar } from '../reducers/inventory.reducer';
 import { ITransmittalItemModel } from '../../../../../src/distribution/models/transmittalItem.model';
 import { ITransmittalModel } from '../../../../../src/distribution/models/transmittal.model';
+import { IOperationType } from '../../../../../src/request/interfaces/operationType.interface';
 
 export interface IHeaders {
   'X-CSRFToken'?: string;
@@ -112,6 +113,7 @@ export default class ApiService {
       `/api/participants-per-date/${companies ? `?companies=${companies}` : ''}`
     );
   }
+
   public getParticipant(id: string) {
     return this.instance.get(
       `/api/participant/${id}/`
@@ -186,9 +188,9 @@ export default class ApiService {
     );
   }
 
-  public getVenues(page: number, pageSize?: number, noPopulate?: boolean, filted?: boolean): AxiosPromise {
+  public getVenues({page, pageSize, noPopulate, filted, search}:{ page: number, pageSize?: number, noPopulate?: boolean, filted?: boolean, search?:string }): AxiosPromise {
     return this.instance.get(
-      `/api/admin/venues/?page=${page}${pageSize ? `&pageSize=${pageSize}` : ''}${noPopulate ? `&noPopulate=${noPopulate}` : ''}${filted ? `&filted=${filted}` : ''}`
+      `/api/admin/venues/?page=${page}${pageSize ? `&pageSize=${pageSize}` : ''}${noPopulate ? `&noPopulate=${noPopulate}` : ''}${filted ? `&filted=${filted}` : ''}${search ? `&search=${search}` : ''}`
     );
   }
 
@@ -210,7 +212,7 @@ export default class ApiService {
     );
   }
 
-  public getReasons({page, pageSize, orderBy, orderType}:{page: number, orderType?: string, orderBy?: string, pageSize?: number}): AxiosPromise {
+  public getReasons({ page, pageSize, orderBy, orderType }: { page: number, orderType?: string, orderBy?: string, pageSize?: number }): AxiosPromise {
     return this.instance.get(
       `/api/v1/reasons/?page=${page}${pageSize ? `&pageSize=${pageSize}` : ''}${orderBy ? `&orderBy=${orderBy}` : ''}${orderType ? `&orderType=${orderType}` : ''}`
     );
@@ -234,7 +236,12 @@ export default class ApiService {
     );
   }
 
-  public getSalesChannel({page, pageSize, orderBy, orderType}:{page: number, orderType?: string, orderBy?: string, pageSize?: number}): AxiosPromise {
+  public getSalesChannel({
+                           page,
+                           pageSize,
+                           orderBy,
+                           orderType
+                         }: { page: number, orderType?: string, orderBy?: string, pageSize?: number }): AxiosPromise {
     return this.instance.get(
       `/api/v1/sales-channel/?page=${page}${pageSize ? `&pageSize=${pageSize}` : ''}${orderBy ? `&orderBy=${orderBy}` : ''}${orderType ? `&orderType=${orderType}` : ''}`
     );
@@ -309,8 +316,8 @@ export default class ApiService {
   public getCars(page: number, search?: string): AxiosPromise {
     return this.instance.get(
       `/api/cars/?page=${page}${search ? `&search=${search}` : ''}`, {
-      cancelToken: this.source.token
-    }
+        cancelToken: this.source.token
+      }
     );
   }
 
@@ -327,65 +334,66 @@ export default class ApiService {
 
     return this.instance.get(
       `/api/revisions/${query}`, {
-      cancelToken: this.source.token
-    }
+        cancelToken: this.source.token
+      }
     );
   }
 
   public getAdminCars(page?: number, search?: string): AxiosPromise {
     return this.instance.get(
       `/api/admin/cars/?page=${page}${search ? `&search=${search}` : ''}`, {
-      cancelToken: this.source.token
-    }
+        cancelToken: this.source.token
+      }
     );
   }
 
   public getCar(id: string): AxiosPromise {
     return this.instance.get(
       `/api/cars/${id}`, {
-      cancelToken: this.source.token
-    }
+        cancelToken: this.source.token
+      }
     );
   }
 
   public sendImportCars(data: any): AxiosPromise {
     return this.instance.post(
       `/api/admin/import-cars/`, data, {
-      cancelToken: this.source.token
-    }
+        cancelToken: this.source.token
+      }
     );
   }
 
   public getInventories(page: number): AxiosPromise {
     return this.instance.get(
       `/api/inventory/?page=${page}`, {
-      cancelToken: this.source.token
-    }
+        cancelToken: this.source.token
+      }
     );
   }
 
   public getInventory(id: string): AxiosPromise {
     return this.instance.get(
       `/api/inventory/${id}`, {
-      cancelToken: this.source.token
-    }
+        cancelToken: this.source.token
+      }
     );
   }
 
   public addComment(id: string, carId: string, comment: string): AxiosPromise {
     return this.instance.post(
       `/api/inventory/${id}/comment/`, {
-      _id: carId,
-      comment
-    }
+        _id: carId,
+        comment
+      }
     );
   }
 
   // public createInventory({carsByVenue: any, name: string, notification: boolean, file: File, backup: File | null}): AxiosPromise {
-  public createInventory({
-    carsByVenue, name, notification, file, backupFile, manualPhoto, reportPhoto
-  }: {
-    carsByVenue: any, name: string, notification: boolean, file: File | null, backupFile: File | null, manualPhoto: number, reportPhoto: number
+  public createInventory(
+    {
+      carsByVenue, name, notification, file, backupFile, manualPhoto, reportPhoto
+    }: {
+      carsByVenue: any, name: string, notification: boolean, file: File | null, backupFile: File | null, manualPhoto: number, reportPhoto: number
   }): AxiosPromise {
     const formData = new FormData();
     formData.append('carsByVenue', JSON.stringify(carsByVenue));
@@ -400,24 +408,24 @@ export default class ApiService {
     this.instance.defaults.headers.common['Content-Type'] = 'multipart/form-data';
     return this.instance.post(
       `/api/inventory/`, formData, {
-      cancelToken: this.source.token
-    }
+        cancelToken: this.source.token
+      }
     );
   }
 
   public importPlanning(data: any): AxiosPromise {
     return this.instance.post(
       `/api/admin/planning/`, data, {
-      cancelToken: this.source.token
-    }
+        cancelToken: this.source.token
+      }
     );
   }
 
   public updateMassiveRequest(data: any): AxiosPromise {
     return this.instance.post(
       `/api/v1/requests/update-massive/`, data, {
-      cancelToken: this.source.token
-    }
+        cancelToken: this.source.token
+      }
     );
   }
 
@@ -436,8 +444,8 @@ export default class ApiService {
   public getAlerts(): AxiosPromise {
     return this.instance.get(
       `/api/admin/alerts/`, {
-      cancelToken: this.source.token
-    }
+        cancelToken: this.source.token
+      }
     );
   }
 
@@ -462,11 +470,11 @@ export default class ApiService {
   public setLabel(inventory: string, car: string, carID: string, label: string, custom?: string): AxiosPromise {
     return this.instance.post(
       `/api/inventory/${inventory}/set-label/`, {
-      car,
-      label,
-      carID,
-      custom
-    });
+        car,
+        label,
+        carID,
+        custom
+      });
   }
 
   public getInstance(): AxiosInstance {
@@ -531,17 +539,17 @@ export default class ApiService {
   public loadStock({ carsByVenue }: { carsByVenue: any }): AxiosPromise {
     return this.instance.post(
       `/api/load-stock/`, {
-      carsByVenue
-    }, {
-      cancelToken: this.source.token
-    });
+        carsByVenue
+      }, {
+        cancelToken: this.source.token
+      });
   }
 
   public getStock(): AxiosPromise {
     return this.instance.get(
       `/api/current-stock/`, {
-      cancelToken: this.source.token
-    });
+        cancelToken: this.source.token
+      });
   }
 
   public getPlanning(page: number, pageSize?: number): AxiosPromise {
@@ -579,7 +587,14 @@ export default class ApiService {
     );
   }
 
-  public getRequestItems({ page, pageSize, orderBy, orderType, filters }: { page: number, orderBy?: string, orderType?: string, pageSize: number, filters:any }): AxiosPromise {
+  public getRequestItems(
+    {
+      page,
+      pageSize,
+      orderBy,
+      orderType,
+      filters
+    }: { page: number, orderBy?: string, orderType?: string, pageSize: number, filters: any }): AxiosPromise {
     let body: any = {
       page,
       filters
@@ -609,9 +624,9 @@ export default class ApiService {
   public createRequestItem(idRequest: string, car: any) {
     return this.instance.post(
       `/api/v1/add-requests-item/`, {
-      idRequest,
-      car
-    });
+        idRequest,
+        car
+      });
   }
 
   public createRequestItemsStatus(requestStatus: IRequestStatus): AxiosPromise {
@@ -632,9 +647,44 @@ export default class ApiService {
     );
   }
 
-  public getRequestItemsStatus({page, pageSize, orderBy, orderType}:{page: number, orderType?: string, orderBy?: string, pageSize?: number}): AxiosPromise {
+  public getRequestItemsStatus({
+                                 page,
+                                 pageSize,
+                                 orderBy,
+                                 orderType
+                               }: { page: number, orderType?: string, orderBy?: string, pageSize?: number }): AxiosPromise {
     return this.instance.get(
       `/api/v1/request-item-status/?page=${page}${pageSize ? `&pageSize=${pageSize}` : ''}${orderBy ? `&orderBy=${orderBy}` : ''}${orderType ? `&orderType=${orderType}` : ''}`
+    );
+  }
+
+
+  public createOperationType(operationType: IOperationType): AxiosPromise {
+    return this.instance.post(
+      `/api/v1/operation-types/`, operationType
+    );
+  }
+
+  public updateOperationType(operationType: IOperationType): AxiosPromise {
+    return this.instance.patch(
+      `/api/v1/operation-types/${operationType._id}/`, operationType
+    );
+  }
+
+  public deleteOperationType(operationType: IOperationType): AxiosPromise {
+    return this.instance.delete(
+      `/api/v1/operation-types/${operationType._id}/`
+    );
+  }
+
+  public getOperationTypes({
+                             page,
+                             pageSize,
+                             orderBy,
+                             orderType
+                           }: { page: number, orderType?: string, orderBy?: string, pageSize?: number }): AxiosPromise {
+    return this.instance.get(
+      `/api/v1/operation-types/?page=${page}${pageSize ? `&pageSize=${pageSize}` : ''}${orderBy ? `&orderBy=${orderBy}` : ''}${orderType ? `&orderType=${orderType}` : ''}`
     );
   }
 
@@ -669,7 +719,12 @@ export default class ApiService {
     );
   }
 
-   public getTransmittals({page, pageSize, orderBy, orderType}:{page: number, orderType?: string, orderBy?: string, pageSize?: number}): AxiosPromise {
+  public getTransmittals({
+                           page,
+                           pageSize,
+                           orderBy,
+                           orderType
+                         }: { page: number, orderType?: string, orderBy?: string, pageSize?: number }): AxiosPromise {
     return this.instance.get(
       `/api/v1/transmittals/?page=${page}${pageSize ? `&pageSize=${pageSize}` : ''}${orderBy ? `&orderBy=${orderBy}` : ''}${orderType ? `&orderType=${orderType}` : ''}`
     );

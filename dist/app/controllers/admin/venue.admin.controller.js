@@ -186,12 +186,12 @@ var AdminVenueController = /** @class */ (function () {
     };
     AdminVenueController.prototype.apiListVenues = function (req, res) {
         return __awaiter(this, void 0, void 0, function () {
-            var team, _a, page, pageSize, noPopulate, filted, options, filter, venues, e_1;
+            var team, _a, page, pageSize, noPopulate, filted, search, options, filter, venues, e_1;
             return __generator(this, function (_b) {
                 switch (_b.label) {
                     case 0:
                         team = req.user.team._id;
-                        _a = req.query, page = _a.page, pageSize = _a.pageSize, noPopulate = _a.noPopulate, filted = _a.filted;
+                        _a = req.query, page = _a.page, pageSize = _a.pageSize, noPopulate = _a.noPopulate, filted = _a.filted, search = _a.search;
                         options = {
                             select: {
                                 _id: true,
@@ -259,7 +259,7 @@ var AdminVenueController = /** @class */ (function () {
                         _b.label = 1;
                     case 1:
                         _b.trys.push([1, 3, , 4]);
-                        return [4 /*yield*/, this.getVenues(filter, options)];
+                        return [4 /*yield*/, this.getVenues(filter, options, search)];
                     case 2:
                         venues = _b.sent();
                         /* istanbul ignore if  */
@@ -619,7 +619,15 @@ var AdminVenueController = /** @class */ (function () {
             });
         });
     };
-    AdminVenueController.prototype.getVenues = function (filter, options) {
+    AdminVenueController.prototype.getVenues = function (filter, options, search) {
+        if (search && search.length) {
+            var searchText = new RegExp(search, 'i');
+            filter = {
+                $and: [{
+                        name: { $regex: searchText }
+                    }, filter]
+            };
+        }
         return new Promise(function (resolve, reject) {
             venue_model_1["default"].paginate(filter, options, function (err, result) {
                 /* istanbul ignore next  */

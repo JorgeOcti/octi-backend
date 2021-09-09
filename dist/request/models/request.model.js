@@ -31,6 +31,10 @@ var requestSchema = new mongoose.Schema({
         type: mongoose.Schema.Types.ObjectId,
         ref: 'SalesChannel'
     },
+    operationType: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'OperationType'
+    },
     fleet: {
         type: Boolean,
         "default": false

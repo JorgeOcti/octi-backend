@@ -1,9 +1,21 @@
 import * as mongoose from 'mongoose';
-import {ITeamSetting} from '../interfaces/teamSetting.interface';
-import {ICarModel} from "./car.model";
-import {PaginateModel} from "mongoose";
+import { ITeamSetting } from '../interfaces/teamSetting.interface';
+import { ICarModel } from './car.model';
+import { PaginateModel } from 'mongoose';
 
-export interface ITeamSettingModel extends ITeamSetting, mongoose.Document {}
+export interface ITeamSettingModel extends ITeamSetting, mongoose.Document {
+}
+
+const formSettingSchema = new mongoose.Schema({
+  vinMinCharacters: {
+    type: Number,
+    default: 17
+  },
+  vinMaxCharacters: {
+    type: Number,
+    default: 17
+  }
+});
 
 const inventorySettingSchema = new mongoose.Schema({
   pending: {
@@ -92,7 +104,7 @@ const requestSettingSchema = new mongoose.Schema({
   },
   internalNumberText: {
     type: String,
-    default: "Número interno"
+    default: 'Número interno'
   }
 });
 
@@ -102,11 +114,15 @@ const teamSettingSchema = new mongoose.Schema({
     ref: 'Team'
   },
   inventory: inventorySettingSchema,
-  request: requestSettingSchema
+  request: requestSettingSchema,
+  form: formSettingSchema
 }, {
   timestamps: true
 });
 // db.teamsettings.updateMany({}, {$set:{request:{denomination: true, denominationRequired: true, material: true, materialRequired: true, internalNumber: true, internalNumberRequired: false, internalNumberText:  "Número interno", color: true, colorRequired: true}}},{many: true});
+
+// db.teamsettings.updateMany({}, { $set: { form: { vinMinCharacters: 17, vinMaxCharacters: 17 } } }, { many: true });
+
 
 teamSettingSchema.statics.findOneOrCreate = function(condition: any, create: any): Promise<ICarModel> {
   const model = this;

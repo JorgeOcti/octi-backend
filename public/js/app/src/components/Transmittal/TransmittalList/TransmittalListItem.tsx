@@ -67,7 +67,7 @@ class TransmitalListItem extends React.Component<IPropsType, IStateType> {
         <td className={'middle'}>{transmittalItem.car.vin}</td>
         <td className={'middle'}>{transmittalItem.car.brand} {transmittalItem.car.denomination}</td>
         <td className={'middle-center'}>
-          <ShowIf condition={hasPermission(window.user, 'changeTransmittal')} or={transmittalItem.car.invoice}>
+          <ShowIf condition={hasPermission(window.user, 'changeTransmittal')} alternative={transmittalItem.car.invoice}>
             <input
               type='text'
               className='form-control input-sm'
@@ -86,7 +86,7 @@ class TransmitalListItem extends React.Component<IPropsType, IStateType> {
           </ShowIf>
         </td>
         <td className={'middle-center'}>
-          <ShowIf condition={hasPermission(window.user, 'changeTransmittal')} or={transmittalItem.car.entry}>
+          <ShowIf condition={hasPermission(window.user, 'changeTransmittal')} alternative={transmittalItem.car.entry}>
             <input
               type='text'
               className='form-control input-sm'
@@ -105,7 +105,7 @@ class TransmitalListItem extends React.Component<IPropsType, IStateType> {
           </ShowIf>
         </td>
         <td className={'middle-center'}>
-          <ShowIf condition={hasPermission(window.user, 'changeTransmittal')} or={transmittalItem.car.bl}>
+          <ShowIf condition={hasPermission(window.user, 'changeTransmittal')} alternative={transmittalItem.car.bl}>
             <input
               type='text'
               className='form-control input-sm'
@@ -124,133 +124,110 @@ class TransmitalListItem extends React.Component<IPropsType, IStateType> {
           </ShowIf>
         </td>
         <td className={'middle'}>
-          {
-            hasPermission(window.user, 'changeTransmittal') ?
-              (
-                <BootstrapSelect
-                  noneSelectedText='Selecciona una sucursal'
-                  displayItems={2}
-                  sm={true}
-                  selectedText='sucursales seleccionadas.'
-                  selected={transmittalItem.origin ? [transmittalItem.origin._id] : []}
-                  autoClouse={true}
-                  allOption={false}
-                  search={true}
-                  options={venues.map((venue: any) => ({
-                    value: venue._id,
-                    text: venue.name
-                  }))}
-                  onClick={(e: string) => {
-                    this.props.transmittalActions.updateTransmittalItemThunkAction({
-                      _id: transmittalItem._id,
-                      transmittal: transmittalItem.transmittal,
-                      origin: e
-                    });
-                  }}
-                />
-              ) :
-              (
-                `${transmittalItem.origin?.name}`
-              )
-          }
+          <ShowIf condition={hasPermission(window.user, 'changeTransmittal')} alternative={transmittalItem.origin?.name}>
+            <BootstrapSelect
+              noneSelectedText='Selecciona una sucursal'
+              displayItems={2}
+              sm={true}
+              selectedText='sucursales seleccionadas.'
+              selected={transmittalItem.origin ? [transmittalItem.origin._id] : []}
+              autoClouse={true}
+              allOption={false}
+              search={true}
+              options={venues.map((venue: any) => ({
+                value: venue._id,
+                text: venue.name
+              }))}
+              onClick={(e: string) => {
+                this.props.transmittalActions.updateTransmittalItemThunkAction({
+                  _id: transmittalItem._id,
+                  transmittal: transmittalItem.transmittal,
+                  origin: e
+                });
+              }}
+            />
+          </ShowIf>
         </td>
         <td className={'middle'}>
-          {
-            hasPermission(window.user, 'changeTransmittal') ?
-              (
-                <BootstrapSelect
-                  noneSelectedText='Selecciona una sucursal'
-                  displayItems={2}
-                  sm={true}
-                  selectedText='sucursales seleccionadas.'
-                  selected={transmittalItem.destination ? [transmittalItem.destination._id] : []}
-                  autoClouse={true}
-                  allOption={false}
-                  search={true}
-                  options={venues.map((venue: any) => ({
-                    value: venue._id,
-                    text: venue.name
-                  }))}
-                  onClick={(e: string) => {
-                    this.props.transmittalActions.updateTransmittalItemThunkAction({
-                      _id: transmittalItem._id,
-                      transmittal: transmittalItem.transmittal,
-                      destination: e
-                    });
-                  }}
-                />
-              ) :
-              (
-                `${transmittalItem.destination?.name}`
-              )
-          }
-
+          <ShowIf condition={hasPermission(window.user, 'changeTransmittal')} alternative={transmittalItem.destination?.name}>
+            <BootstrapSelect
+              noneSelectedText='Selecciona una sucursal'
+              displayItems={2}
+              sm={true}
+              selectedText='sucursales seleccionadas.'
+              selected={transmittalItem.destination ? [transmittalItem.destination._id] : []}
+              autoClouse={true}
+              allOption={false}
+              search={true}
+              options={venues.map((venue: any) => ({
+                value: venue._id,
+                text: venue.name
+              }))}
+              onClick={(e: string) => {
+                this.props.transmittalActions.updateTransmittalItemThunkAction({
+                  _id: transmittalItem._id,
+                  transmittal: transmittalItem.transmittal,
+                  destination: e
+                });
+              }}
+            />
+          </ShowIf>
         </td>
         <td className={'middle'}>
-          {
-            hasPermission(window.user, 'changeTransmittal') ?
-              (
-                <DateRangePicker
-                  className={'input-sm'}
-                  value={transmittalItem.loadingDate}
-                  format={'DD-MM-YY'}
-                  onChange={(e) => {
-                    this.props.transmittalActions.updateTransmittalItemThunkAction({
-                      _id: transmittalItem._id,
-                      transmittal: transmittalItem.transmittal,
-                      loadingDate: e?.toDate() ?? ''
-                    });
-                  }}
-                />
-              ) :
-              (
-                `${transmittalItem.loadingDate ? moment(transmittalItem.loadingDate).format('DD-MM-YYYY') : '-'}`
-              )
-          }
+          <ShowIf
+            condition={hasPermission(window.user, 'changeTransmittal')}
+            alternative={transmittalItem.loadingDate ? moment(transmittalItem.loadingDate).format('DD-MM-YYYY') : '-'}
+          >
+            <DateRangePicker
+              className={'input-sm'}
+              value={transmittalItem.loadingDate}
+              format={'DD-MM-YY'}
+              onChange={(e) => {
+                this.props.transmittalActions.updateTransmittalItemThunkAction({
+                  _id: transmittalItem._id,
+                  transmittal: transmittalItem.transmittal,
+                  loadingDate: e?.toDate() ?? ''
+                });
+              }}
+            />
+          </ShowIf>
         </td>
         <td className={'middle'}>
-          {
-            hasPermission(window.user, 'changeTransmittal') ?
-              (
-                <DateRangePicker
-                  className={'input-sm'}
-                  value={transmittalItem.arrivalDate}
-                  format={'DD-MM-YY'}
-                  onChange={(e) => {
-                    this.props.transmittalActions.updateTransmittalItemThunkAction({
-                      _id: transmittalItem._id,
-                      transmittal: transmittalItem.transmittal,
-                      arrivalDate: e?.toDate() ?? ''
-                    });
-                  }}
-                />
-              ) :
-              (
-                `${transmittalItem.arrivalDate ? moment(transmittalItem.arrivalDate).format('DD-MM-YYYY') : '-'}`
-              )
-          }
-
+          <ShowIf
+            condition={hasPermission(window.user, 'changeTransmittal')}
+            alternative={transmittalItem.arrivalDate ? moment(transmittalItem.arrivalDate).format('DD-MM-YYYY') : '-'}
+          >
+            <DateRangePicker
+              className={'input-sm'}
+              value={transmittalItem.arrivalDate}
+              format={'DD-MM-YY'}
+              onChange={(e) => {
+                this.props.transmittalActions.updateTransmittalItemThunkAction({
+                  _id: transmittalItem._id,
+                  transmittal: transmittalItem.transmittal,
+                  arrivalDate: e?.toDate() ?? ''
+                });
+              }}
+            />
+          </ShowIf>
         </td>
         <td className={'middle'}>
-          {
-            hasPermission(window.user, 'changeTransmittal') ?
-              (
-                <input
-                  className='form-control input-sm'
-                  defaultValue={transmittalItem.observation}
-                  onChange={(e) => {
-                    this.debounceUpdateTransmittalItem({
-                      _id: transmittalItem._id,
-                      transmittal: transmittalItem.transmittal,
-                      observation: e.target.value
-                    });
-                  }}
-                />
-              ) :
-              (
-                `${transmittalItem.observation ?? '-'}`
-              )
-          }
+          <ShowIf
+            condition={hasPermission(window.user, 'changeTransmittal')}
+            alternative={transmittalItem.observation ?? '-'}
+          >
+            <input
+              className='form-control input-sm'
+              defaultValue={transmittalItem.observation}
+              onChange={(e) => {
+                this.debounceUpdateTransmittalItem({
+                  _id: transmittalItem._id,
+                  transmittal: transmittalItem.transmittal,
+                  observation: e.target.value
+                });
+              }}
+            />
+          </ShowIf>
         </td>
         {
           transmittalItem.revisions.length ?

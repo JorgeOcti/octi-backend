@@ -187,7 +187,7 @@ export function getRequestItemsThunkAction(nextPage: number, orderBy: string, or
         api.getReasons({ page: 1, pageSize: 200 }),
         api.getRequestItemsStatus({ page: 1, pageSize: 200 }),
         // api.getCarriers(1, 200),
-        api.getVenues(1, 200, true, true),
+        api.getVenues({ page: 1, pageSize: 200, noPopulate: true, filted: true }),
         api.getProperties(),
         api.getTeamSettings()
       ])

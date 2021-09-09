@@ -3,7 +3,7 @@ import * as React from 'react';
 interface IPropsType {
   condition: boolean;
   children?: React.ReactNode;
-  or?: React.ReactNode;
+  alternative?: React.ReactNode;
 }
 
 const ShowIf: React.FunctionComponent<IPropsType> = (props: IPropsType) => {
@@ -14,10 +14,10 @@ const ShowIf: React.FunctionComponent<IPropsType> = (props: IPropsType) => {
       </React.Fragment>
     );
   }
-  if (props.or) {
+  if (props.alternative) {
     return (
       <React.Fragment>
-        {props.or}
+        {props.alternative}
       </React.Fragment>
     );
   }

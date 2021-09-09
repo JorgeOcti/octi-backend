@@ -114,7 +114,7 @@ class RequestController {
     const { team } = req.user;
     try {
       for (const property of properties) {
-        if(property.key.length && property.brands.length){
+        if (property.key.length && property.brands.length) {
           const find: any = {
             team,
             $or: property.brands.map((brand: string) => {
@@ -130,9 +130,9 @@ class RequestController {
         }
       }
       res.status(200).json({
-          message: 'Actualización realizada satisfactoriamente',
-          status: 200
-        });
+        message: 'Actualización realizada satisfactoriamente',
+        status: 200
+      });
     } catch (e) {
       /* istanbul ignore next */
       if (e) {
@@ -146,10 +146,15 @@ class RequestController {
     logger.info(`RequestController.apiCreate`);
     logger.info(`{user: {_id: ${req.user._id}, email: ${req.user.email}}, body: ${JSON.stringify(req.body)} }`);
     const { company, team } = req.user;
-    const { cars, venue, channel, sellerText } = req.body;
+    const { cars, venue, channel, sellerText, operationType } = req.body;
 
     try {
-      const defaultItemStatus = await RequestItemStatus.findOneOrCreate({ team, default: true }, { name: 'Pendiente', default: true, team, weigth: 10 });
+      const defaultItemStatus = await RequestItemStatus.findOneOrCreate({ team, default: true }, {
+        name: 'Pendiente',
+        default: true,
+        team,
+        weigth: 10
+      });
       const updateTeam = await Team.findOne({ _id: team._id });
       const request = await new Request({
         team,
@@ -157,6 +162,7 @@ class RequestController {
         number: updateTeam!.requestNumber + 1,
         origin: venue,
         destination: venue,
+        operationType,
         // status,
         channel,
         createdBy: req.user
@@ -210,7 +216,7 @@ class RequestController {
     }
   }
 
-  public async apiListItems(req: IRequest, res: Response){
+  public async apiListItems(req: IRequest, res: Response) {
     logger.info(`RequestController.apiListItems`);
     logger.info(`{user: {_id: ${req.user._id}, email: ${req.user.email}}, body: ${JSON.stringify(req.body)} }`);
     const team = req.user.team._id;
@@ -234,16 +240,16 @@ class RequestController {
       venuesIds = req.user.venuesPermissions();
     }
     if (filters.status && filters.status.length) {
-      extraQuery.status = {$in: filters.status.map((status: any) => new ObjectID(status))};
+      extraQuery.status = { $in: filters.status.map((status: any) => new ObjectID(status)) };
     }
-    if (filters.from){
-      if(!extraQuery.hasOwnProperty('createdAt')){
+    if (filters.from) {
+      if (!extraQuery.hasOwnProperty('createdAt')) {
         extraQuery.createdAt = {};
       }
       extraQuery.createdAt.$gte = moment(filters.from).startOf('day').toDate();
     }
-    if (filters.to){
-      if(!extraQuery.hasOwnProperty('createdAt')){
+    if (filters.to) {
+      if (!extraQuery.hasOwnProperty('createdAt')) {
         extraQuery.createdAt = {};
       }
       extraQuery.createdAt.$lte = moment(filters.to).endOf('day').toDate();
@@ -286,9 +292,9 @@ class RequestController {
       });
     }
     try {
-      if(orderBy !== 'request.number' || Object.keys(extraMatch).length || Object.keys(extraQuery).length) {
+      if (orderBy !== 'request.number' || Object.keys(extraMatch).length || Object.keys(extraQuery).length) {
         if (filters && filters.transmitttalModule) {
-          extraQuery.assigned = {$in: [null, false]}
+          extraQuery.assigned = { $in: [null, false] };
         }
         const baseAggregate: any[] = [{
           $match: {
@@ -307,37 +313,37 @@ class RequestController {
         }];
 
         const aggregatePopulate = [{
-          $lookup: {from: 'cars', localField: 'car', foreignField: '_id', as: 'car'}
+          $lookup: { from: 'cars', localField: 'car', foreignField: '_id', as: 'car' }
         }, {
-          $unwind: {path: '$car', preserveNullAndEmptyArrays: true}
+          $unwind: { path: '$car', preserveNullAndEmptyArrays: true }
         }, {
-          $lookup: {from: 'venues', localField: 'origin', foreignField: '_id', as: 'origin'}
+          $lookup: { from: 'venues', localField: 'origin', foreignField: '_id', as: 'origin' }
         }, {
-          $unwind: {path: '$origin', preserveNullAndEmptyArrays: true}
+          $unwind: { path: '$origin', preserveNullAndEmptyArrays: true }
         }, {
-          $lookup: {from: 'venues', localField: 'destination', foreignField: '_id', as: 'destination'}
+          $lookup: { from: 'venues', localField: 'destination', foreignField: '_id', as: 'destination' }
         }, {
-          $unwind: {path: '$destination', preserveNullAndEmptyArrays: true}
+          $unwind: { path: '$destination', preserveNullAndEmptyArrays: true }
         }, {
-          $lookup: {from: 'requests', localField: 'request', foreignField: '_id', as: 'request'}
+          $lookup: { from: 'requests', localField: 'request', foreignField: '_id', as: 'request' }
         }, {
-          $unwind: {path: '$request', preserveNullAndEmptyArrays: false}
+          $unwind: { path: '$request', preserveNullAndEmptyArrays: false }
         }, {
-          $lookup: {from: 'users', localField: 'request.createdBy', foreignField: '_id', as: 'request.createdBy'}
+          $lookup: { from: 'users', localField: 'request.createdBy', foreignField: '_id', as: 'request.createdBy' }
         }, {
-          $unwind: {path: '$request.createdBy', preserveNullAndEmptyArrays: false}
+          $unwind: { path: '$request.createdBy', preserveNullAndEmptyArrays: false }
         }, {
-          $lookup: {from: 'requestitemstatuses', localField: 'status', foreignField: '_id', as: 'status'}
+          $lookup: { from: 'requestitemstatuses', localField: 'status', foreignField: '_id', as: 'status' }
         }, {
-          $unwind: {path: '$status', preserveNullAndEmptyArrays: true}
+          $unwind: { path: '$status', preserveNullAndEmptyArrays: true }
         }, {
-          $lookup: {from: 'requestfiles', localField: 'files', foreignField: '_id', as: 'files'}
+          $lookup: { from: 'requestfiles', localField: 'files', foreignField: '_id', as: 'files' }
         }, {
-          $lookup: {from: 'reasons', localField: 'reason', foreignField: '_id', as: 'reason'}
+          $lookup: { from: 'reasons', localField: 'reason', foreignField: '_id', as: 'reason' }
         }, {
-          $unwind: {path: '$reason', preserveNullAndEmptyArrays: true}
+          $unwind: { path: '$reason', preserveNullAndEmptyArrays: true }
         }, {
-          $addFields: {requestNumber: {$toString: '$request.number'}}
+          $addFields: { requestNumber: { $toString: '$request.number' } }
         }, {
           $project: {
             '_id': 1,
@@ -397,13 +403,13 @@ class RequestController {
           ...baseAggregate,
           ...aggregatePopulate,
           {
-            $sort: {[orderBy]: orderType === 'ascending' ? 1 : -1}
+            $sort: { [orderBy]: orderType === 'ascending' ? 1 : -1 }
           }];
         const requestsAggregate = RequestItem.aggregate(aggregate);
         const options: PaginateOptions = {
           page: parseInt(page ? page : '1', 10),
           limit: parseInt(pageSize ? pageSize : '10', 10),
-          customLabels: this.aggregateCustomLabels,
+          customLabels: this.aggregateCustomLabels
         };
         const requests = await RequestItem.aggregatePaginate(requestsAggregate, options);
         if (options.page && requests.pages && requests.pages < options.page) {
@@ -426,7 +432,7 @@ class RequestController {
           sort: {
             _id: -1
           },
-          select:['priority', 'observation', 'createdAt', 'updatedAt'],
+          select: ['priority', 'observation', 'createdAt', 'updatedAt'],
           populate: [{
             path: 'files',
             select: ['_id']
@@ -469,7 +475,7 @@ class RequestController {
           }]
         };
         if (filters && filters.transmitttalModule) {
-          query.assigned = {$in: [null, false]}
+          query.assigned = { $in: [null, false] };
         }
         const request = await RequestItem.paginate(query, options);
         res.json({
@@ -707,7 +713,13 @@ class RequestController {
     logger.info(`RequestController.apiList`);
     logger.info(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
     const team = req.user.team._id;
-    const { page, pageSize, search, orderBy, orderType } = req.query as { page: string; pageSize: string; search: string; orderBy: string; orderType: string };
+    const {
+      page,
+      pageSize,
+      search,
+      orderBy,
+      orderType
+    } = req.query as { page: string; pageSize: string; search: string; orderBy: string; orderType: string };
     // paginate options
     const options: PaginateOptions = {
       sort: {
@@ -795,7 +807,7 @@ class RequestController {
           team
         });
       if (request) {
-        await RequestItem.find({_id: id,team}).remove();
+        await RequestItem.find({ _id: id, team }).remove();
         await request.remove();
         io.to(`request-list-${team}`).emit('DELETE_REQUEST', {
           idRequest: request._id
@@ -939,7 +951,7 @@ class RequestController {
     const { car, idRequest } = req.body;
     try {
       const request = await Request.findOne({ _id: idRequest, team });
-      if(request){
+      if (request) {
         const defaultItemStatus = await RequestItemStatus.findOneOrCreate({ team, default: true }, { name: 'En proceso', default: true, team });
         const newCar = await new Car({
           team,
@@ -964,7 +976,7 @@ class RequestController {
           status: defaultItemStatus,
           createdBy: req.user
         }).save();
-        const item = await RequestItem.findOne({_id: newItem._id}).populate(this.itemPopulate);
+        const item = await RequestItem.findOne({ _id: newItem._id }).populate(this.itemPopulate);
         request.update({ $set: { updatedAt: moment() } });
         io.to(`request-list-${team}`).emit('CREATE_REQUEST_ITEM', {
           idRequest: request._id,
@@ -995,12 +1007,15 @@ class RequestController {
 
   public async apiPatchItem(req: IRequest, res: Response) {
     logger.info(`RequestController.apiPatchItem`);
-    const {team, company} = req.user;
+    const { team, company } = req.user;
     const updateObject = req.body;
     const { id } = req.params;
     logger.info(`{user: {_id: ${req.user._id}, email: ${req.user.email}}, body: ${JSON.stringify(updateObject)} }`);
     try {
-      const requestItem = await RequestItem.findOneAndUpdate({ _id: id, team }, { $set: { ...updateObject } }).populate([{ path: 'car' }, {path:'request'}]);
+      const requestItem = await RequestItem.findOneAndUpdate({
+        _id: id,
+        team
+      }, { $set: { ...updateObject } }).populate([{ path: 'car' }, { path: 'request' }]);
       if (Object.keys(updateObject.car).length) {
         // add vin2 to car
         updateObject.car.vin2 = updateObject.car && updateObject.car.vin ? updateObject.car.vin.substr(updateObject.car.vin.length - 6) : '';
@@ -1008,7 +1023,7 @@ class RequestController {
         if (requestItem && ((updateObject.car.vin && updateObject.car.vin.length) || (updateObject.car.material && updateObject.car.material.length))) {
           const existActivity = await ActivityHistory.findOne({ team, 'request.item': requestItem._id });
           if (!existActivity) {
-            await ActivityHistory.create({
+            await new ActivityHistory({
               team,
               company,
               user: req.user._id,
@@ -1018,7 +1033,7 @@ class RequestController {
                 item: requestItem._id,
                 number: requestItem.request.number
               }
-            });
+            }).save();
           }
         }
         if (existCar && requestItem && existCar.vin !== requestItem.car.vin) {
@@ -1142,8 +1157,8 @@ class RequestController {
         res.setHeader('size', results.reduce((a: number, b: number) => a + b));
         archive.pipe(res);
         archive.finalize();
-      } else{
-        res.status(404).json({message: 'Not found'});
+      } else {
+        res.status(404).json({ message: 'Not found' });
       }
     } catch (e) {
       /* istanbul ignore next */
@@ -1166,7 +1181,7 @@ class RequestController {
         // validate that the directory exist and create recursive if it does not exist
         const directoyName = directories.join('/');
         if (!fs.existsSync(directoyName)) {
-          fs.mkdirSync(directoyName, {recursive: true});
+          fs.mkdirSync(directoyName, { recursive: true });
         }
         const file = fs.createWriteStream(dest);
         // download file

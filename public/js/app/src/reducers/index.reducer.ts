@@ -26,6 +26,7 @@ import { requestChannelReducer } from './requestChannel.reducer';
 import { venuesReducer } from './venues.reducer';
 import { versionsReducer } from './versions.reducer';
 import transmittalReducer from "./transmittal.reducer";
+import { operationTypeReducer } from './operationType.reducer';
 
 export default (history: any) => combineReducers({
   users: usersReducer,
@@ -50,6 +51,7 @@ export default (history: any) => combineReducers({
   labels: labelsReducer,
   requests: requestsReducers,
   requestItems: requestItemsReducers,
+  operationType: operationTypeReducer,
   regions: regionsReducer,
   stock: stockReducer,
   planning: planningReducer,

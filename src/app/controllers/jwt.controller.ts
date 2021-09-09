@@ -10,6 +10,7 @@ import GeneralUtils from '../../utils/general.utils';
 import User from '../models/user.model';
 import UserModel, {IUserModel} from '../models/user.model';
 import Version from "../models/version.model";
+import TeamSetting from '../models/teamSetting.model';
 
 class JWTController {
 
@@ -62,7 +63,7 @@ class JWTController {
           select: ['name', 'lat', 'lng']
         }, {
           path: 'team',
-          select: ['name']
+          select: ['name'],
         }, {
           path: 'company',
           select: ['name']
@@ -105,8 +106,9 @@ class JWTController {
                     $gte: today.toDate(),
                     $lt: tomorrow.toDate()
                   }
-                }, (err, count) => {
+                }, async (err, count) => {
                   user = user.toObject();
+                  const teamSettings = await TeamSetting.findOne({ team: user.team });
                   const userInfo = {
                     _id: user._id,
                     firstName: user.firstName,
@@ -128,7 +130,14 @@ class JWTController {
                     },
                     team: {
                       _id: GeneralUtils.getObjectProperty(user.team, '_id', null),
-                      name: GeneralUtils.getObjectProperty(user.team, 'name', null)
+                      name: GeneralUtils.getObjectProperty(user.team, 'name', null),
+                      settings: {
+                        form: GeneralUtils.getObjectProperty(teamSettings!, 'form', {
+                          vinMinCharacters: 17,
+                          vinMaxCharacters: 17
+                        })
+                      }
+                      // settings: GeneralUtils.getObjectProperty(user.team, 'settings', {})
                     },
                     count
                   };
@@ -239,8 +248,9 @@ class JWTController {
                         $gte: today.toDate(),
                         $lt: tomorrow.toDate()
                       }
-                    }, (err, count) => {
+                    }, async (err, count) => {
                       user = user.toObject();
+                      const teamSettings = await TeamSetting.findOne({ team: user.team });
                       const userInfo = {
                         _id: user._id,
                         firstName: user.firstName,
@@ -259,7 +269,14 @@ class JWTController {
                         },
                         team: {
                           _id: GeneralUtils.getObjectProperty(user.team, '_id', null),
-                          name: GeneralUtils.getObjectProperty(user.team, 'name', null)
+                          name: GeneralUtils.getObjectProperty(user.team, 'name', null),
+                          settings: {
+                            form: GeneralUtils.getObjectProperty(teamSettings!, 'form', {
+                              vinMinCharacters: 17,
+                              vinMaxCharacters: 17
+                            })
+                          }
+                          // settings: GeneralUtils.getObjectProperty(user.team, 'settings', {})
                         },
                         count
                       };

@@ -46,6 +46,7 @@ var general_utils_1 = require("../../utils/general.utils");
 var user_model_1 = require("../models/user.model");
 var user_model_2 = require("../models/user.model");
 var version_model_1 = require("../models/version.model");
+var teamSetting_model_1 = require("../models/teamSetting.model");
 var JWTController = /** @class */ (function () {
     function JWTController() {
         this.androidVersion = '2.4.2';
@@ -58,6 +59,7 @@ var JWTController = /** @class */ (function () {
     JWTController.prototype.login = function (req, res) {
         return __awaiter(this, void 0, void 0, function () {
             var version_1;
+            var _this = this;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
@@ -142,51 +144,68 @@ var JWTController = /** @class */ (function () {
                                                 $gte: today.toDate(),
                                                 $lt: tomorrow.toDate()
                                             }
-                                        }, function (err, count) {
-                                            user = user.toObject();
-                                            var userInfo = {
-                                                _id: user._id,
-                                                firstName: user.firstName,
-                                                lastName: user.lastName,
-                                                email: user.email,
-                                                preferred: user.preferred,
-                                                userPermissions: user.userPermissions,
-                                                userForms: user.userForms,
-                                                isDriver: user.isDriver || false,
-                                                venue: {
-                                                    _id: general_utils_1["default"].getObjectProperty(user.venue, '_id', null),
-                                                    name: general_utils_1["default"].getObjectProperty(user.venue, 'name', null),
-                                                    lat: general_utils_1["default"].getObjectProperty(user.venue, 'lat', 0),
-                                                    lng: general_utils_1["default"].getObjectProperty(user.venue, 'lng', 0)
-                                                },
-                                                company: {
-                                                    _id: general_utils_1["default"].getObjectProperty(user.company, '_id', null),
-                                                    name: general_utils_1["default"].getObjectProperty(user.company, 'name', null)
-                                                },
-                                                team: {
-                                                    _id: general_utils_1["default"].getObjectProperty(user.team, '_id', null),
-                                                    name: general_utils_1["default"].getObjectProperty(user.team, 'name', null)
-                                                },
-                                                count: count
-                                            };
-                                            res.json({
-                                                data: {
-                                                    token: jwt.sign(userInfo, req.app.locals.secretKey, {
-                                                        expiresIn: '7 days'
-                                                    }),
-                                                    // token: jwt.sign(userInfo, req.app.locals.secretKey, {
-                                                    //   expiresIn: '60 seconds'
-                                                    // }),
-                                                    refreshToken: jwt.sign(userInfo, req.app.locals.secretKey, {
-                                                        expiresIn: '30 days'
-                                                    }),
-                                                    iosVersion: version_1.ios,
-                                                    androidVersion: version_1.android,
-                                                    user: userInfo
-                                                },
-                                                status: 200
+                                        }, function (err, count) { return __awaiter(_this, void 0, void 0, function () {
+                                            var teamSettings, userInfo;
+                                            return __generator(this, function (_a) {
+                                                switch (_a.label) {
+                                                    case 0:
+                                                        user = user.toObject();
+                                                        return [4 /*yield*/, teamSetting_model_1["default"].findOne({ team: user.team })];
+                                                    case 1:
+                                                        teamSettings = _a.sent();
+                                                        userInfo = {
+                                                            _id: user._id,
+                                                            firstName: user.firstName,
+                                                            lastName: user.lastName,
+                                                            email: user.email,
+                                                            preferred: user.preferred,
+                                                            userPermissions: user.userPermissions,
+                                                            userForms: user.userForms,
+                                                            isDriver: user.isDriver || false,
+                                                            venue: {
+                                                                _id: general_utils_1["default"].getObjectProperty(user.venue, '_id', null),
+                                                                name: general_utils_1["default"].getObjectProperty(user.venue, 'name', null),
+                                                                lat: general_utils_1["default"].getObjectProperty(user.venue, 'lat', 0),
+                                                                lng: general_utils_1["default"].getObjectProperty(user.venue, 'lng', 0)
+                                                            },
+                                                            company: {
+                                                                _id: general_utils_1["default"].getObjectProperty(user.company, '_id', null),
+                                                                name: general_utils_1["default"].getObjectProperty(user.company, 'name', null)
+                                                            },
+                                                            team: {
+                                                                _id: general_utils_1["default"].getObjectProperty(user.team, '_id', null),
+                                                                name: general_utils_1["default"].getObjectProperty(user.team, 'name', null),
+                                                                settings: {
+                                                                    form: general_utils_1["default"].getObjectProperty(teamSettings, 'form', {
+                                                                        vinMinCharacters: 17,
+                                                                        vinMaxCharacters: 17
+                                                                    })
+                                                                }
+                                                                // settings: GeneralUtils.getObjectProperty(user.team, 'settings', {})
+                                                            },
+                                                            count: count
+                                                        };
+                                                        res.json({
+                                                            data: {
+                                                                token: jwt.sign(userInfo, req.app.locals.secretKey, {
+                                                                    expiresIn: '7 days'
+                                                                }),
+                                                                // token: jwt.sign(userInfo, req.app.locals.secretKey, {
+                                                                //   expiresIn: '60 seconds'
+                                                                // }),
+                                                                refreshToken: jwt.sign(userInfo, req.app.locals.secretKey, {
+                                                                    expiresIn: '30 days'
+                                                                }),
+                                                                iosVersion: version_1.ios,
+                                                                androidVersion: version_1.android,
+                                                                user: userInfo
+                                                            },
+                                                            status: 200
+                                                        });
+                                                        return [2 /*return*/];
+                                                }
                                             });
-                                        });
+                                        }); });
                                     }
                                 });
                             }
@@ -286,45 +305,62 @@ var JWTController = /** @class */ (function () {
                                             $gte: today.toDate(),
                                             $lt: tomorrow.toDate()
                                         }
-                                    }, function (err, count) {
-                                        user = user.toObject();
-                                        var userInfo = {
-                                            _id: user._id,
-                                            firstName: user.firstName,
-                                            lastName: user.lastName,
-                                            email: user.email,
-                                            preferred: user.preferred,
-                                            userPermissions: user.userPermissions,
-                                            userForms: user.userForms,
-                                            venue: {
-                                                _id: general_utils_1["default"].getObjectProperty(user.venue, '_id', null),
-                                                name: general_utils_1["default"].getObjectProperty(user.venue, 'name', null)
-                                            },
-                                            company: {
-                                                _id: general_utils_1["default"].getObjectProperty(user.company, '_id', null),
-                                                name: general_utils_1["default"].getObjectProperty(user.company, 'name', null)
-                                            },
-                                            team: {
-                                                _id: general_utils_1["default"].getObjectProperty(user.team, '_id', null),
-                                                name: general_utils_1["default"].getObjectProperty(user.team, 'name', null)
-                                            },
-                                            count: count
-                                        };
-                                        res.json({
-                                            data: {
-                                                token: jwt.sign(userInfo, req.app.locals.secretKey, {
-                                                    expiresIn: '7 days'
-                                                }),
-                                                refreshToken: jwt.sign(userInfo, req.app.locals.secretKey, {
-                                                    expiresIn: '30 days'
-                                                }),
-                                                iosVersion: _this.iosVersion,
-                                                androidVersion: _this.androidVersion,
-                                                user: userInfo
-                                            },
-                                            status: 200
+                                    }, function (err, count) { return __awaiter(_this, void 0, void 0, function () {
+                                        var teamSettings, userInfo;
+                                        return __generator(this, function (_a) {
+                                            switch (_a.label) {
+                                                case 0:
+                                                    user = user.toObject();
+                                                    return [4 /*yield*/, teamSetting_model_1["default"].findOne({ team: user.team })];
+                                                case 1:
+                                                    teamSettings = _a.sent();
+                                                    userInfo = {
+                                                        _id: user._id,
+                                                        firstName: user.firstName,
+                                                        lastName: user.lastName,
+                                                        email: user.email,
+                                                        preferred: user.preferred,
+                                                        userPermissions: user.userPermissions,
+                                                        userForms: user.userForms,
+                                                        venue: {
+                                                            _id: general_utils_1["default"].getObjectProperty(user.venue, '_id', null),
+                                                            name: general_utils_1["default"].getObjectProperty(user.venue, 'name', null)
+                                                        },
+                                                        company: {
+                                                            _id: general_utils_1["default"].getObjectProperty(user.company, '_id', null),
+                                                            name: general_utils_1["default"].getObjectProperty(user.company, 'name', null)
+                                                        },
+                                                        team: {
+                                                            _id: general_utils_1["default"].getObjectProperty(user.team, '_id', null),
+                                                            name: general_utils_1["default"].getObjectProperty(user.team, 'name', null),
+                                                            settings: {
+                                                                form: general_utils_1["default"].getObjectProperty(teamSettings, 'form', {
+                                                                    vinMinCharacters: 17,
+                                                                    vinMaxCharacters: 17
+                                                                })
+                                                            }
+                                                            // settings: GeneralUtils.getObjectProperty(user.team, 'settings', {})
+                                                        },
+                                                        count: count
+                                                    };
+                                                    res.json({
+                                                        data: {
+                                                            token: jwt.sign(userInfo, req.app.locals.secretKey, {
+                                                                expiresIn: '7 days'
+                                                            }),
+                                                            refreshToken: jwt.sign(userInfo, req.app.locals.secretKey, {
+                                                                expiresIn: '30 days'
+                                                            }),
+                                                            iosVersion: this.iosVersion,
+                                                            androidVersion: this.androidVersion,
+                                                            user: userInfo
+                                                        },
+                                                        status: 200
+                                                    });
+                                                    return [2 /*return*/];
+                                            }
                                         });
-                                    });
+                                    }); });
                                 }
                             });
                         }

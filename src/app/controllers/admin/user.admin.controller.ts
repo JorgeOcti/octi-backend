@@ -569,7 +569,7 @@ class AdminUsersController {
       };
     }
     return new Promise((resolve, reject) => {
-      User.paginate(filter, options, (err, result) => {
+      User.paginate!(filter, options, (err, result) => {
         /* istanbul ignore next  */
         if (err) {
           return reject(err);
