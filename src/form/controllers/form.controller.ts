@@ -34,6 +34,7 @@ import ActivityHistory, { ChoicesTypeActivity } from '../../billing/models/activ
 import TriggerHandler from '../commands/triggerHandler';
 import TransmittalItem from '../../distribution/models/transmittalItem.model';
 import TransmittalController from '../../distribution/controllers/transmittal.controller';
+import Transmittal, { ChoicesStatusTransmittal } from '../../distribution/models/transmittal.model';
 // import {ValidationResult} from 'joi';
 
 
@@ -602,7 +603,7 @@ class FormController {
 
   public async complete(req: IRequest, res: Response): Promise<any> {
     const { id } = req.params;
-    let { vin, answers, transmittalItem } = req.body;
+    let { vin, answers, transmittalItem, transmittal } = req.body;
     const { company, venue, team } = req.user;
     logger.info(`complete`);
     logger.info(`{user: {_id: ${req.user._id}, email: ${req.user.email}}, body: ${JSON.stringify(req.body)}}`);
@@ -822,7 +823,7 @@ class FormController {
             await newParticipant.save();
 
             // associate transmittalItem to participant
-            if (transmittalItem && transmittalItem.length) {
+            if (transmittalItem?.length) {
               newParticipant.transmittalItem = transmittalItem;
               await newParticipant.save();
 
@@ -835,9 +836,35 @@ class FormController {
               });
             }
 
+            if(transmittal?.length){
+              newParticipant.transmittal = transmittal;
+              await newParticipant.save();
+              const newTransmittal = await Transmittal
+                .findOneAndUpdate({
+                  _id: transmittal
+                }, {
+                  $set: {
+                    status: ChoicesStatusTransmittal.completed
+                  }
+                }, {
+                  new: true
+                })
+                .populate(TransmittalController.populate);
+
+              io.to(`transmittal-list-${team._id}`).emit('UPDATE_TRANSMITTAL', {
+                transmittal: newTransmittal
+              });
+            }
+
             // associate file to participant
             if (allImages.length) {
-              await ParticipantFile.update({ _id: { $in: allImages } }, { participant: newParticipant }, { multi: true });
+              await ParticipantFile.update({
+                _id: { $in: allImages }
+              }, {
+                participant: newParticipant
+              }, {
+                multi: true
+              });
             }
 
             car.lastForm = newParticipant;
