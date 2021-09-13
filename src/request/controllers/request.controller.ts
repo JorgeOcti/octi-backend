@@ -162,7 +162,7 @@ class RequestController {
         number: updateTeam!.requestNumber + 1,
         origin: venue,
         destination: venue,
-        operationType,
+        operationType: operationType.length ? operationType: null,
         // status,
         channel,
         createdBy: req.user

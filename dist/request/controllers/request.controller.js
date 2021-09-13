@@ -255,7 +255,7 @@ var RequestController = /** @class */ (function () {
                                 number: updateTeam.requestNumber + 1,
                                 origin: venue,
                                 destination: venue,
-                                operationType: operationType,
+                                operationType: operationType.length ? operationType : null,
                                 // status,
                                 channel: channel,
                                 createdBy: req.user
