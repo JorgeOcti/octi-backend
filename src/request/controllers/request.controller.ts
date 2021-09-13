@@ -149,7 +149,10 @@ class RequestController {
     const { cars, venue, channel, sellerText, operationType } = req.body;
 
     try {
-      const defaultItemStatus = await RequestItemStatus.findOneOrCreate({ team, default: true }, {
+      const defaultItemStatus = await RequestItemStatus.findOneOrCreate({
+        team,
+        default: true
+      }, {
         name: 'Pendiente',
         default: true,
         team,
@@ -162,7 +165,7 @@ class RequestController {
         number: updateTeam!.requestNumber + 1,
         origin: venue,
         destination: venue,
-        operationType: operationType.length ? operationType: null,
+        operationType: operationType?.length ? operationType: null,
         // status,
         channel,
         createdBy: req.user

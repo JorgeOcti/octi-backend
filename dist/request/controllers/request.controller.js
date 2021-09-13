@@ -238,7 +238,10 @@ var RequestController = /** @class */ (function () {
                         _c.label = 1;
                     case 1:
                         _c.trys.push([1, 12, , 13]);
-                        return [4 /*yield*/, requestItemStatus_model_1["default"].findOneOrCreate({ team: team, "default": true }, {
+                        return [4 /*yield*/, requestItemStatus_model_1["default"].findOneOrCreate({
+                                team: team,
+                                "default": true
+                            }, {
                                 name: 'Pendiente',
                                 "default": true,
                                 team: team,
@@ -255,7 +258,7 @@ var RequestController = /** @class */ (function () {
                                 number: updateTeam.requestNumber + 1,
                                 origin: venue,
                                 destination: venue,
-                                operationType: operationType.length ? operationType : null,
+                                operationType: (operationType === null || operationType === void 0 ? void 0 : operationType.length) ? operationType : null,
                                 // status,
                                 channel: channel,
                                 createdBy: req.user

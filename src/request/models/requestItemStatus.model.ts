@@ -2,7 +2,6 @@ import { IRequestItemStatus } from '../interfaces/requestItemStatus.interface';
 import * as mongoose from 'mongoose';
 import { PaginateModel } from 'mongoose';
 import * as mongoosePaginate from 'mongoose-paginate';
-import { ICarModel } from '../../app/models/car.model';
 
 export interface IRequestItemStatusModel extends IRequestItemStatus, mongoose.Document {}
 
@@ -26,17 +25,17 @@ const requestItemStatusSchema = new mongoose.Schema({
   timestamps: true
 });
 
-requestItemStatusSchema.statics.findOneOrCreate = function(condition: any, create: any): Promise<ICarModel> {
+requestItemStatusSchema.statics.findOneOrCreate = function(condition: any, create: Partial<IRequestItemStatusModel>): Promise<IRequestItemStatusModel> {
   const model = this;
   return new Promise((resolve, reject) => {
-    model.findOne(condition, (err: any, result: ICarModel) => {
+    model.findOne(condition, (err: any, result: IRequestItemStatusModel) => {
       if (err) {
         return reject(err);
       }
       if (result) {
         return resolve(result);
       }
-      model.create(create, (err: any, result: ICarModel) => {
+      model.create(create, (err: any, result: IRequestItemStatusModel) => {
         if (err) {
           return reject(err);
         }
@@ -49,7 +48,7 @@ requestItemStatusSchema.statics.findOneOrCreate = function(condition: any, creat
 requestItemStatusSchema.plugin(mongoosePaginate);
 
 export type RequestItemStatusSchema = mongoose.Model<IRequestItemStatusModel> & PaginateModel<IRequestItemStatusModel> & {
-  findOneOrCreate(condition: any, create: any): Promise<ICarModel>
+  findOneOrCreate(condition: any, create: Partial<IRequestItemStatusModel>): Promise<IRequestItemStatusModel>
 };
 
 const RequestItemStatus = mongoose.model<IRequestItemStatusModel, RequestItemStatusSchema>('RequestItemStatus', requestItemStatusSchema);
