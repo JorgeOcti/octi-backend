@@ -1,4 +1,4 @@
-import {IRequest} from "../../interfaces/global.interface";
+import {IAnyObject, IRequest} from "../../interfaces/global.interface";
 import {Response} from "express";
 import {PaginateOptions, PaginateResult} from "mongoose";
 import Transmittal, {ChoicesStatusTransmittal, ITransmittalModel} from "../models/transmittal.model";
@@ -13,7 +13,11 @@ import RequestItem from "../../request/models/requestItem.model";
 import {io} from "../../server";
 import * as excel from "exceljs";
 import * as moment from "moment-timezone";
-import Milestone from "../models/milestone.model";
+import Milestone  from "../models/milestone.model";
+import FormModel, {IFormModel, KindQuestion} from "../../form/models/form.model";
+import ScaleModel, {IScaleModel} from "../../form/models/scale.model";
+import redisClient from "../../services/redis.service";
+import {IUserModel} from "../../app/models/user.model";
 
 
 class TransmittalController {
@@ -51,6 +55,8 @@ class TransmittalController {
     this.xlsExport = this.xlsExport.bind(this);
     this.uploadFile = this.uploadFile.bind(this);
     this.attachEvidence = this.attachEvidence.bind(this);
+    this.fillFormSections = this.fillFormSections.bind(this);
+    this.getScales = this.getScales.bind(this);
   }
 
   public async index(req: IRequest, res: Response) {
@@ -315,11 +321,16 @@ class TransmittalController {
           status: 400
         });
       } else {
-        const millestones = await Milestone.find({
+        let milestones = await Milestone.find({
           team
-        }).populate([{
-          path: 'form'
-        }]);
+        });
+
+        for (let i=0;i < milestones.length; i++){
+          let milestone = milestones[i].toObject();
+          let form = await this.fillFormSections(milestone.form, req.user);
+          milestones[i] = {...milestone, ...form};
+        }
+
         res.json({
           count: transmittals.total,
           pages: transmittals.pages,
@@ -327,19 +338,371 @@ class TransmittalController {
           hasNext: options.page && transmittals.pages && transmittals.pages > options.page,
           data: transmittals.docs.map((transmittal)=>({
             ...transmittal.toObject(),
-            millestones
+            milestones
           })),
           status: 200
         });
       }
     } catch (e) {
       /* istanbul ignore next */
-      logger.error(`TransmittalController.apiOnlyMe: Async Error.`);
+      logger.error(`TransmittalController.apiOnlyMe:`, e.toString());
       /* istanbul ignore next */
       logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
       res.status(500).json(e);
     }
   }
+
+private getForm(filter: any): Promise<IFormModel> {
+  const keyCache = `form-${filter._id}`;
+  logger.debug(`keyCache ${keyCache}`);
+  return new Promise((resolve, reject) => {
+    redisClient.get(keyCache, async (error, result) => {
+      if (result) {
+        logger.debug(`FROM CACHE`);
+        resolve(JSON.parse(result));
+      } else {
+        logger.debug(`NEW CACHE`);
+        FormModel
+          .findOne(filter, {
+            'company': false,
+            'updatedAt': false,
+            'createdAt': false,
+            'active': false,
+            'sections.shortName': false,
+            'sections.questions.shortName': false,
+            '__v': false
+          })
+          .populate([{
+            path: 'sections.questions.damages',
+            select: ['name', 'positions', 'kinds', 'parts', 'partFallback', 'kindFallback'],
+            populate: [{
+              path: 'positions',
+              select: ['name'],
+              options: {
+                sort: {
+                  name: 1
+                }
+              }
+            }, {
+              path: 'kinds',
+              select: ['name'],
+              options: {
+                sort: {
+                  name: 1
+                }
+              }
+            }, {
+              path: 'parts',
+              select: ['name'],
+              options: {
+                sort: {
+                  name: 1
+                }
+              }
+            }, {
+              path: 'kindFallback',
+              select: ['name'],
+              options: {
+                sort: {
+                  name: 1
+                }
+              }
+            }, {
+              path: 'partFallback',
+              select: ['name'],
+              options: {
+                sort: {
+                  name: 1
+                }
+              }
+            }]
+          }])
+          .lean()
+          .exec((err, form: IFormModel) => {
+            if (err) {
+              /* istanbul ignore next */
+              return reject(err);
+            }
+            if (form) {
+              redisClient.set(keyCache, JSON.stringify(form), 'ex', 60);
+              return resolve(form);
+            }
+            return reject('No se encontro formularío');
+          });
+      }
+    });
+  });
+}
+
+  public async fillFormSections(formID : String, user: IUserModel){
+    try {
+      if (!formID){
+        return {};
+      }
+
+      let form = await this.getForm({
+        _id: formID,
+        team: user.team
+      })
+
+      const team = user.team;
+      // generate array of scale ids
+      const scalesIds: any[] = [];
+      form.sections.forEach((section) => {
+        section.questions.forEach((question) => {
+          const scaleID = question.scale ? question.scale.toString() : null;
+          if (scaleID && !scalesIds.includes(scaleID)) {
+            scalesIds.push(scaleID);
+          }
+        });
+      });
+
+      const extra: IAnyObject = {
+        accessories: []
+      };
+      const extraSection: any = {
+        _id: 'extraSection',
+        name: '',
+        questions: [],
+        weight: 0,
+        order: form.sections.length + 1
+      };
+      const extraScales: any = [];
+      const response: any = {};
+
+      if (form.shippingVenue) {
+        extraSection.questions.push({
+          _id: 'shippingVenue',
+          question: form.shippingVenueText,
+          venues: user.venue.sendTo,
+          kind: KindQuestion.venue,
+          order: extraSection.questions.length + 1
+        });
+      }
+      if (form.shipping) {
+        extraSection.questions.push({
+          _id: 'shipping',
+          question: form.shippingText,
+          scale: 'shipping',
+          kind: KindQuestion.scale,
+          order: extraSection.questions.length + 1
+        });
+        extraScales.push({
+          _id: 'shipping',
+          name: 'shipping',
+          choices: [
+            {
+              _id: 'false',
+              choice: 'No',
+              backgroundColor: 'red',
+              requireImage: form.shippingImage,
+              requireComment: false,
+              requireAccesories: false,
+              requireConciliation: false,
+              value: 0,
+              order: 1
+            }, {
+              _id: 'true',
+              choice: 'Si',
+              backgroundColor: 'green',
+              requireImage: false,
+              requireComment: false,
+              requireAccesories: false,
+              requireConciliation: false,
+              value: 1,
+              order: 2
+            }
+          ]
+        });
+      }
+
+      if (form.receptionVenue) {
+        extraSection.questions.push({
+          _id: 'receptionVenue',
+          question: form.receptionVenueText,
+          venues: user.venue.receiveFrom,
+          kind: KindQuestion.venue,
+          order: extraSection.questions.length + 1
+        });
+      }
+      if (form.reception) {
+        extraSection.questions.push({
+          _id: 'reception',
+          question: form.receptionText,
+          scale: 'reception',
+          kind: KindQuestion.scale,
+          order: extraSection.questions.length + 1
+        });
+        extraScales.push({
+          _id: 'reception',
+          name: 'reception',
+          choices: [
+            {
+              _id: 'false',
+              choice: 'No',
+              backgroundColor: 'red',
+              requireImage: form.receptionImage,
+              requireComment: false,
+              requireAccesories: false,
+              requireConciliation: false,
+              value: 0,
+              order: 1
+            }, {
+              _id: 'true',
+              choice: 'Si',
+              backgroundColor: 'green',
+              requireImage: false,
+              requireComment: false,
+              requireAccesories: false,
+              requireConciliation: false,
+              value: 1,
+              order: 2
+            }
+          ]
+        });
+      }
+
+      if (form.carrier && (form.reception || form.shipping)) {
+        extraSection.questions.push({
+          _id: 'carrier',
+          question: form.carrierText,
+          carriers: form.reception ? user.venue.receptionCarriers : user.venue.shippingCarriers,
+          kind: KindQuestion.carrier,
+          order: extraSection.questions.length + 1
+        });
+      }
+
+      if (form.conciliation) {
+        extraSection.questions.push({
+          _id: 'conciliation',
+          question: form.conciliationText,
+          scale: 'conciliation',
+          kind: KindQuestion.scale,
+          order: extraSection.questions.length + 1
+        });
+        extraScales.push({
+          _id: 'conciliation',
+          name: 'conciliation',
+          choices: [
+            {
+              _id: 'false',
+              choice: 'No',
+              backgroundColor: 'red',
+              requireImage: false,
+              requireComment: false,
+              requireAccesories: false,
+              requireConciliation: false,
+              value: 0,
+              order: 1
+            }, {
+              _id: 'true',
+              choice: 'Si',
+              backgroundColor: 'green',
+              requireImage: form.conciliationImage,
+              requireComment: false,
+              requireAccesories: false,
+              requireConciliation: false,
+              value: 1,
+              order: 2
+            }
+          ]
+        });
+      }
+
+      let scales = await this.getScales({
+        _id: {
+          $in: scalesIds
+        },
+        team
+      });
+
+      scales = [...scales, ...extraScales];
+      if (extraSection.questions.length) {
+        (form as any).sections = [...form.sections, extraSection];
+      }
+      const baseQuestion = {
+        _id: '',
+        question: '',
+        scale: null,
+        risk: '',
+        observe: '',
+        accessories: null,
+        damages: null,
+        venues: [],
+        carriers: [],
+        conciliation: false,
+        kind: '',
+        weight: 0,
+        order: 0,
+        optional: false,
+        hint: ''
+      };
+      // get scales from db
+
+      return {
+          form: {
+            _id: form._id,
+            name: form.name,
+            description: form.description,
+            // norrmalize questions in sections
+            sections: form.sections.map((section) => {
+              return {
+                _id: section._id,
+                name: section.name,
+                questions: section.questions.map((question) => {
+                  return {
+                    ...baseQuestion,
+                    ...question
+                  };
+                }),
+                weight: section.weight,
+                order: section.order
+              };
+            })
+          },
+          scales,
+          extra,
+          ...response
+        };
+    } catch (e) {
+      /* istanbul ignore next */
+      logger.error(`TransmittalController.apiOnlyMe:`, e);
+    }
+  }
+
+  private getScales(filter: any): Promise<IScaleModel[]> {
+    const keyCache = `scales-${JSON.stringify(filter)}`;
+    return new Promise((resolve, reject) => {
+      redisClient.get(keyCache, async (error, result) => {
+        if (result) {
+          resolve(JSON.parse(result));
+        } else {
+          ScaleModel
+            .find(filter, {
+              'updatedAt': false,
+              'createdAt': false,
+              'active': false,
+              'company': false,
+              'minValue': false,
+              'maxValue': false,
+              'choices.na': false,
+              'team': false,
+              '__v': false
+            })
+            .lean()
+            .exec((err, scales: IScaleModel[]) => {
+              if (err) {
+                /* istanbul ignore next */
+                return reject(err);
+              }
+              redisClient.set(keyCache, JSON.stringify(scales), 'ex', 30);
+              return resolve(scales);
+            });
+        }
+      });
+    });
+  }
+
 
   public async attachEvidence(req: IRequest, res: Response) {
     const {user} = req;

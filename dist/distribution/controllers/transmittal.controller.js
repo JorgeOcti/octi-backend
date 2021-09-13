@@ -46,6 +46,11 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
         if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
     }
 };
+var __spreadArray = (this && this.__spreadArray) || function (to, from) {
+    for (var i = 0, il = from.length, j = to.length; i < il; i++, j++)
+        to[j] = from[i];
+    return to;
+};
 exports.__esModule = true;
 var transmittal_model_1 = require("../models/transmittal.model");
 var logger_service_1 = require("../../services/logger.service");
@@ -60,6 +65,9 @@ var server_1 = require("../../server");
 var excel = require("exceljs");
 var moment = require("moment-timezone");
 var milestone_model_1 = require("../models/milestone.model");
+var form_model_1 = require("../../form/models/form.model");
+var scale_model_1 = require("../../form/models/scale.model");
+var redis_service_1 = require("../../services/redis.service");
 var TransmittalController = /** @class */ (function () {
     function TransmittalController() {
         this.itemPopulate = [{
@@ -93,6 +101,8 @@ var TransmittalController = /** @class */ (function () {
         this.xlsExport = this.xlsExport.bind(this);
         this.uploadFile = this.uploadFile.bind(this);
         this.attachEvidence = this.attachEvidence.bind(this);
+        this.fillFormSections = this.fillFormSections.bind(this);
+        this.getScales = this.getScales.bind(this);
     }
     TransmittalController.prototype.index = function (req, res) {
         return __awaiter(this, void 0, void 0, function () {
@@ -362,7 +372,7 @@ var TransmittalController = /** @class */ (function () {
     };
     TransmittalController.prototype.apiOnlyMe = function (req, res) {
         return __awaiter(this, void 0, void 0, function () {
-            var team, _a, page, pageSize, orderBy, orderType, options, filter, transmittals, millestones_1, e_4;
+            var team, _a, page, pageSize, orderBy, orderType, options, filter, transmittals, milestones_1, i, milestone, form, e_4;
             var _b;
             return __generator(this, function (_c) {
                 switch (_c.label) {
@@ -421,7 +431,7 @@ var TransmittalController = /** @class */ (function () {
                         };
                         _c.label = 1;
                     case 1:
-                        _c.trys.push([1, 6, , 7]);
+                        _c.trys.push([1, 10, , 11]);
                         return [4 /*yield*/, this.getTransmittals(filter, options)];
                     case 2:
                         transmittals = _c.sent();
@@ -430,40 +440,405 @@ var TransmittalController = /** @class */ (function () {
                             message: 'La página solicitada no existe.',
                             status: 400
                         });
-                        return [3 /*break*/, 5];
+                        return [3 /*break*/, 9];
                     case 3: return [4 /*yield*/, milestone_model_1["default"].find({
                             team: team
-                        }).populate([{
-                                path: 'form'
-                            }])];
+                        })];
                     case 4:
-                        millestones_1 = _c.sent();
+                        milestones_1 = _c.sent();
+                        i = 0;
+                        _c.label = 5;
+                    case 5:
+                        if (!(i < milestones_1.length)) return [3 /*break*/, 8];
+                        milestone = milestones_1[i].toObject();
+                        return [4 /*yield*/, this.fillFormSections(milestone.form, req.user)];
+                    case 6:
+                        form = _c.sent();
+                        milestones_1[i] = __assign(__assign({}, milestone), form);
+                        _c.label = 7;
+                    case 7:
+                        i++;
+                        return [3 /*break*/, 5];
+                    case 8:
                         res.json({
                             count: transmittals.total,
                             pages: transmittals.pages,
                             hasPrevious: options.page && options.page > 1 && transmittals.pages && transmittals.pages >= options.page,
                             hasNext: options.page && transmittals.pages && transmittals.pages > options.page,
-                            data: transmittals.docs.map(function (transmittal) { return (__assign(__assign({}, transmittal.toObject()), { millestones: millestones_1 })); }),
+                            data: transmittals.docs.map(function (transmittal) { return (__assign(__assign({}, transmittal.toObject()), { milestones: milestones_1 })); }),
                             status: 200
                         });
-                        _c.label = 5;
-                    case 5: return [3 /*break*/, 7];
-                    case 6:
+                        _c.label = 9;
+                    case 9: return [3 /*break*/, 11];
+                    case 10:
                         e_4 = _c.sent();
                         /* istanbul ignore next */
-                        logger_service_1["default"].error("TransmittalController.apiOnlyMe: Async Error.");
+                        logger_service_1["default"].error("TransmittalController.apiOnlyMe:", e_4.toString());
                         /* istanbul ignore next */
                         logger_service_1["default"].error("{user: {_id: " + req.user._id + ", email: " + req.user.email + "}}");
                         res.status(500).json(e_4);
-                        return [3 /*break*/, 7];
-                    case 7: return [2 /*return*/];
+                        return [3 /*break*/, 11];
+                    case 11: return [2 /*return*/];
                 }
             });
         });
     };
+    TransmittalController.prototype.getForm = function (filter) {
+        var _this = this;
+        var keyCache = "form-" + filter._id;
+        logger_service_1["default"].debug("keyCache " + keyCache);
+        return new Promise(function (resolve, reject) {
+            redis_service_1["default"].get(keyCache, function (error, result) { return __awaiter(_this, void 0, void 0, function () {
+                return __generator(this, function (_a) {
+                    if (result) {
+                        logger_service_1["default"].debug("FROM CACHE");
+                        resolve(JSON.parse(result));
+                    }
+                    else {
+                        logger_service_1["default"].debug("NEW CACHE");
+                        form_model_1["default"]
+                            .findOne(filter, {
+                            'company': false,
+                            'updatedAt': false,
+                            'createdAt': false,
+                            'active': false,
+                            'sections.shortName': false,
+                            'sections.questions.shortName': false,
+                            '__v': false
+                        })
+                            .populate([{
+                                path: 'sections.questions.damages',
+                                select: ['name', 'positions', 'kinds', 'parts', 'partFallback', 'kindFallback'],
+                                populate: [{
+                                        path: 'positions',
+                                        select: ['name'],
+                                        options: {
+                                            sort: {
+                                                name: 1
+                                            }
+                                        }
+                                    }, {
+                                        path: 'kinds',
+                                        select: ['name'],
+                                        options: {
+                                            sort: {
+                                                name: 1
+                                            }
+                                        }
+                                    }, {
+                                        path: 'parts',
+                                        select: ['name'],
+                                        options: {
+                                            sort: {
+                                                name: 1
+                                            }
+                                        }
+                                    }, {
+                                        path: 'kindFallback',
+                                        select: ['name'],
+                                        options: {
+                                            sort: {
+                                                name: 1
+                                            }
+                                        }
+                                    }, {
+                                        path: 'partFallback',
+                                        select: ['name'],
+                                        options: {
+                                            sort: {
+                                                name: 1
+                                            }
+                                        }
+                                    }]
+                            }])
+                            .lean()
+                            .exec(function (err, form) {
+                            if (err) {
+                                /* istanbul ignore next */
+                                return reject(err);
+                            }
+                            if (form) {
+                                redis_service_1["default"].set(keyCache, JSON.stringify(form), 'ex', 60);
+                                return resolve(form);
+                            }
+                            return reject('No se encontro formularío');
+                        });
+                    }
+                    return [2 /*return*/];
+                });
+            }); });
+        });
+    };
+    TransmittalController.prototype.fillFormSections = function (formID, user) {
+        return __awaiter(this, void 0, void 0, function () {
+            var form, team, scalesIds_1, extra, extraSection, extraScales, response, scales, baseQuestion_1, e_5;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0:
+                        _a.trys.push([0, 3, , 4]);
+                        if (!formID) {
+                            return [2 /*return*/, {}];
+                        }
+                        return [4 /*yield*/, this.getForm({
+                                _id: formID,
+                                team: user.team
+                            })];
+                    case 1:
+                        form = _a.sent();
+                        team = user.team;
+                        scalesIds_1 = [];
+                        form.sections.forEach(function (section) {
+                            section.questions.forEach(function (question) {
+                                var scaleID = question.scale ? question.scale.toString() : null;
+                                if (scaleID && !scalesIds_1.includes(scaleID)) {
+                                    scalesIds_1.push(scaleID);
+                                }
+                            });
+                        });
+                        extra = {
+                            accessories: []
+                        };
+                        extraSection = {
+                            _id: 'extraSection',
+                            name: '',
+                            questions: [],
+                            weight: 0,
+                            order: form.sections.length + 1
+                        };
+                        extraScales = [];
+                        response = {};
+                        if (form.shippingVenue) {
+                            extraSection.questions.push({
+                                _id: 'shippingVenue',
+                                question: form.shippingVenueText,
+                                venues: user.venue.sendTo,
+                                kind: form_model_1.KindQuestion.venue,
+                                order: extraSection.questions.length + 1
+                            });
+                        }
+                        if (form.shipping) {
+                            extraSection.questions.push({
+                                _id: 'shipping',
+                                question: form.shippingText,
+                                scale: 'shipping',
+                                kind: form_model_1.KindQuestion.scale,
+                                order: extraSection.questions.length + 1
+                            });
+                            extraScales.push({
+                                _id: 'shipping',
+                                name: 'shipping',
+                                choices: [
+                                    {
+                                        _id: 'false',
+                                        choice: 'No',
+                                        backgroundColor: 'red',
+                                        requireImage: form.shippingImage,
+                                        requireComment: false,
+                                        requireAccesories: false,
+                                        requireConciliation: false,
+                                        value: 0,
+                                        order: 1
+                                    }, {
+                                        _id: 'true',
+                                        choice: 'Si',
+                                        backgroundColor: 'green',
+                                        requireImage: false,
+                                        requireComment: false,
+                                        requireAccesories: false,
+                                        requireConciliation: false,
+                                        value: 1,
+                                        order: 2
+                                    }
+                                ]
+                            });
+                        }
+                        if (form.receptionVenue) {
+                            extraSection.questions.push({
+                                _id: 'receptionVenue',
+                                question: form.receptionVenueText,
+                                venues: user.venue.receiveFrom,
+                                kind: form_model_1.KindQuestion.venue,
+                                order: extraSection.questions.length + 1
+                            });
+                        }
+                        if (form.reception) {
+                            extraSection.questions.push({
+                                _id: 'reception',
+                                question: form.receptionText,
+                                scale: 'reception',
+                                kind: form_model_1.KindQuestion.scale,
+                                order: extraSection.questions.length + 1
+                            });
+                            extraScales.push({
+                                _id: 'reception',
+                                name: 'reception',
+                                choices: [
+                                    {
+                                        _id: 'false',
+                                        choice: 'No',
+                                        backgroundColor: 'red',
+                                        requireImage: form.receptionImage,
+                                        requireComment: false,
+                                        requireAccesories: false,
+                                        requireConciliation: false,
+                                        value: 0,
+                                        order: 1
+                                    }, {
+                                        _id: 'true',
+                                        choice: 'Si',
+                                        backgroundColor: 'green',
+                                        requireImage: false,
+                                        requireComment: false,
+                                        requireAccesories: false,
+                                        requireConciliation: false,
+                                        value: 1,
+                                        order: 2
+                                    }
+                                ]
+                            });
+                        }
+                        if (form.carrier && (form.reception || form.shipping)) {
+                            extraSection.questions.push({
+                                _id: 'carrier',
+                                question: form.carrierText,
+                                carriers: form.reception ? user.venue.receptionCarriers : user.venue.shippingCarriers,
+                                kind: form_model_1.KindQuestion.carrier,
+                                order: extraSection.questions.length + 1
+                            });
+                        }
+                        if (form.conciliation) {
+                            extraSection.questions.push({
+                                _id: 'conciliation',
+                                question: form.conciliationText,
+                                scale: 'conciliation',
+                                kind: form_model_1.KindQuestion.scale,
+                                order: extraSection.questions.length + 1
+                            });
+                            extraScales.push({
+                                _id: 'conciliation',
+                                name: 'conciliation',
+                                choices: [
+                                    {
+                                        _id: 'false',
+                                        choice: 'No',
+                                        backgroundColor: 'red',
+                                        requireImage: false,
+                                        requireComment: false,
+                                        requireAccesories: false,
+                                        requireConciliation: false,
+                                        value: 0,
+                                        order: 1
+                                    }, {
+                                        _id: 'true',
+                                        choice: 'Si',
+                                        backgroundColor: 'green',
+                                        requireImage: form.conciliationImage,
+                                        requireComment: false,
+                                        requireAccesories: false,
+                                        requireConciliation: false,
+                                        value: 1,
+                                        order: 2
+                                    }
+                                ]
+                            });
+                        }
+                        return [4 /*yield*/, this.getScales({
+                                _id: {
+                                    $in: scalesIds_1
+                                },
+                                team: team
+                            })];
+                    case 2:
+                        scales = _a.sent();
+                        scales = __spreadArray(__spreadArray([], scales), extraScales);
+                        if (extraSection.questions.length) {
+                            form.sections = __spreadArray(__spreadArray([], form.sections), [extraSection]);
+                        }
+                        baseQuestion_1 = {
+                            _id: '',
+                            question: '',
+                            scale: null,
+                            risk: '',
+                            observe: '',
+                            accessories: null,
+                            damages: null,
+                            venues: [],
+                            carriers: [],
+                            conciliation: false,
+                            kind: '',
+                            weight: 0,
+                            order: 0,
+                            optional: false,
+                            hint: ''
+                        };
+                        // get scales from db
+                        return [2 /*return*/, __assign({ form: {
+                                    _id: form._id,
+                                    name: form.name,
+                                    description: form.description,
+                                    // norrmalize questions in sections
+                                    sections: form.sections.map(function (section) {
+                                        return {
+                                            _id: section._id,
+                                            name: section.name,
+                                            questions: section.questions.map(function (question) {
+                                                return __assign(__assign({}, baseQuestion_1), question);
+                                            }),
+                                            weight: section.weight,
+                                            order: section.order
+                                        };
+                                    })
+                                }, scales: scales, extra: extra }, response)];
+                    case 3:
+                        e_5 = _a.sent();
+                        /* istanbul ignore next */
+                        logger_service_1["default"].error("TransmittalController.apiOnlyMe:", e_5);
+                        return [3 /*break*/, 4];
+                    case 4: return [2 /*return*/];
+                }
+            });
+        });
+    };
+    TransmittalController.prototype.getScales = function (filter) {
+        var _this = this;
+        var keyCache = "scales-" + JSON.stringify(filter);
+        return new Promise(function (resolve, reject) {
+            redis_service_1["default"].get(keyCache, function (error, result) { return __awaiter(_this, void 0, void 0, function () {
+                return __generator(this, function (_a) {
+                    if (result) {
+                        resolve(JSON.parse(result));
+                    }
+                    else {
+                        scale_model_1["default"]
+                            .find(filter, {
+                            'updatedAt': false,
+                            'createdAt': false,
+                            'active': false,
+                            'company': false,
+                            'minValue': false,
+                            'maxValue': false,
+                            'choices.na': false,
+                            'team': false,
+                            '__v': false
+                        })
+                            .lean()
+                            .exec(function (err, scales) {
+                            if (err) {
+                                /* istanbul ignore next */
+                                return reject(err);
+                            }
+                            redis_service_1["default"].set(keyCache, JSON.stringify(scales), 'ex', 30);
+                            return resolve(scales);
+                        });
+                    }
+                    return [2 /*return*/];
+                });
+            }); });
+        });
+    };
     TransmittalController.prototype.attachEvidence = function (req, res) {
         return __awaiter(this, void 0, void 0, function () {
-            var user, _a, files, transmittal, transmittalData, e_5;
+            var user, _a, files, transmittal, transmittalData, e_6;
             return __generator(this, function (_b) {
                 switch (_b.label) {
                     case 0:
@@ -491,15 +866,15 @@ var TransmittalController = /** @class */ (function () {
                         });
                         return [3 /*break*/, 4];
                     case 3:
-                        e_5 = _b.sent();
+                        e_6 = _b.sent();
                         /* istanbul ignore next */
                         logger_service_1["default"].error("TransmittalController.uploadFile: Async Error.");
                         /* istanbul ignore next */
                         logger_service_1["default"].error("{user: {_id: " + req.user._id + ", email: " + req.user.email + "}}");
                         /* istanbul ignore next */
-                        logger_service_1["default"].error(e_5);
+                        logger_service_1["default"].error(e_6);
                         /* istanbul ignore next */
-                        res.status(400).json(e_5);
+                        res.status(400).json(e_6);
                         return [3 /*break*/, 4];
                     case 4: return [2 /*return*/];
                 }
@@ -508,7 +883,7 @@ var TransmittalController = /** @class */ (function () {
     };
     TransmittalController.prototype.xlsExport = function (req, res) {
         return __awaiter(this, void 0, void 0, function () {
-            var team, columns, options, workbook_1, worksheet_1, cursor_1, e_6;
+            var team, columns, options, workbook_1, worksheet_1, cursor_1, e_7;
             var _this = this;
             return __generator(this, function (_a) {
                 switch (_a.label) {
@@ -629,15 +1004,15 @@ var TransmittalController = /** @class */ (function () {
                         }); });
                         return [3 /*break*/, 4];
                     case 3:
-                        e_6 = _a.sent();
+                        e_7 = _a.sent();
                         /* istanbul ignore next */
                         logger_service_1["default"].error("TransmittalController.xlsExport: Async Error.");
                         /* istanbul ignore next */
                         logger_service_1["default"].error("{user: {_id: " + req.user._id + ", email: " + req.user.email + "}}");
                         /* istanbul ignore next */
-                        logger_service_1["default"].error(e_6);
+                        logger_service_1["default"].error(e_7);
                         /* istanbul ignore next */
-                        res.status(500).json(e_6);
+                        res.status(500).json(e_7);
                         return [3 /*break*/, 4];
                     case 4: return [2 /*return*/];
                 }
@@ -656,7 +1031,7 @@ var TransmittalController = /** @class */ (function () {
     };
     TransmittalController.prototype.uploadFile = function (req, res) {
         return __awaiter(this, void 0, void 0, function () {
-            var user, file, transmittaltFile, e_7, e_8, e_9;
+            var user, file, transmittaltFile, e_8, e_9, e_10;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
@@ -696,7 +1071,7 @@ var TransmittalController = /** @class */ (function () {
                         _a.sent();
                         return [3 /*break*/, 5];
                     case 4:
-                        e_7 = _a.sent();
+                        e_8 = _a.sent();
                         logger_service_1["default"].error('TransmittalController.uploadFile: Error making autoRotate');
                         return [3 /*break*/, 5];
                     case 5: return [4 /*yield*/, transmittaltFile.attach('file', file)];
@@ -714,7 +1089,7 @@ var TransmittalController = /** @class */ (function () {
                         _a.sent();
                         return [3 /*break*/, 11];
                     case 10:
-                        e_8 = _a.sent();
+                        e_9 = _a.sent();
                         logger_service_1["default"].error('TransmittalController.uploadFile: Error making thumbnail');
                         return [3 /*break*/, 11];
                     case 11: return [4 /*yield*/, transmittaltFile.save()];
@@ -729,15 +1104,15 @@ var TransmittalController = /** @class */ (function () {
                         });
                         return [3 /*break*/, 14];
                     case 13:
-                        e_9 = _a.sent();
+                        e_10 = _a.sent();
                         /* istanbul ignore next */
                         logger_service_1["default"].error("TransmittalController.uploadFile: Async Error.");
                         /* istanbul ignore next */
                         logger_service_1["default"].error("{user: {_id: " + req.user._id + ", email: " + req.user.email + "}}");
                         /* istanbul ignore next */
-                        logger_service_1["default"].error(e_9);
+                        logger_service_1["default"].error(e_10);
                         /* istanbul ignore next */
-                        res.status(400).json(e_9);
+                        res.status(400).json(e_10);
                         return [3 /*break*/, 14];
                     case 14: return [3 /*break*/, 16];
                     case 15:
