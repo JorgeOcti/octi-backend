@@ -456,12 +456,25 @@ export function getParticipant(id: string) {
                                               <strong>Daño</strong> {kinds.hasOwnProperty(ds.kind) ? kinds[ds.kind] : '-'}{' '}
                                               <strong>Posición</strong> {positions.hasOwnProperty(ds.position) ? positions[ds.position] : '-'}
                                             </p>
-                                            <ShowIf condition={!!ds.images.length} alternative={"No se reportaron imágenes."}>
+                                            <ShowIf
+                                              condition={!!ds.images.length}
+                                              alternative={
+                                                <p style={{ padding: '0 5px' }} className="text-muted">
+                                                  No se reportaron imágenes.
+                                                </p>
+                                              }
+                                            >
                                               <div className='row images'>
                                                 {
                                                   ds.images.map((image: any) => {
                                                     return (
-                                                      <div className='col-md-3 col-sm-4 col-xs-4 text-center' key={image._id}>
+                                                      <div
+                                                        className='col-md-3 col-sm-4 col-xs-4 text-center'
+                                                        key={image._id}
+                                                        data-toggle='tooltip'
+                                                        data-placement='bottom'
+                                                        title={image.file.name}
+                                                      >
                                                         <a
                                                           href={image.file.url}
                                                           data-toggle='lightbox'
@@ -474,13 +487,14 @@ export function getParticipant(id: string) {
                                                             height={'100px'}
                                                           />
                                                         </a>
-                                                        <p
-                                                          className={'text-ellipsis'}
-                                                          data-toggle='tooltip'
-                                                          data-placement='top'
-                                                          title={image.file.name}>
-                                                          {image.file.name}
-                                                        </p>
+                                                        {/*<p*/}
+                                                        {/*  className={'text-ellipsis'}*/}
+                                                        {/*  data-toggle='tooltip'*/}
+                                                        {/*  data-placement='top'*/}
+                                                        {/*  title={image.file.name}*/}
+                                                        {/*>*/}
+                                                        {/*  {image.file.name}*/}
+                                                        {/*</p>*/}
                                                       </div>
                                                     );
                                                   })
