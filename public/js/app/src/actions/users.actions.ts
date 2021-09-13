@@ -302,7 +302,7 @@ export function getUsersAction(nextPage: number, search?: string) {
     Axios.all([
       api.getUsers(page, state.users.searchText),
       api.getCompanies(1, 200),
-      api.getVenues({ page: 1, pageSize: 200, noPopulate: true }),
+      api.getVenues({ page: 1, pageSize: 200, noPopulate: false }),
       api.getPermissions(1, 200),
       api.getForms(1, 200)
     ])

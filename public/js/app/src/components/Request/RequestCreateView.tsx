@@ -518,29 +518,31 @@ class RequestCreateView extends TrackingBasePage<IPropsType, IStateType> {
                             />
                           </div>
                         </div>
-                        <div className='form-group'>
-                          <label className='col-sm-3 control-label label-left'>Tipo operación</label>
-                          <div className='col-sm-9'>
-                            <BootstrapSelect
-                              noneSelectedText='Seleccione'
-                              displayItems={1}
-                              sm={true}
-                              search={true}
-                              autoClouse={true}
-                              selected={operationType.length ? [operationType] : []}
-                              allOption={false}
-                              options={operationTypes.map((operationType: any) => ({
-                                value: operationType._id,
-                                text: operationType.name
-                              }))}
-                              onClick={(value: string) => {
-                                this.setState({
-                                  operationType: value
-                                });
-                              }}
-                            />
+                        <ShowIf condition={!!operationTypes.length}>
+                          <div className='form-group'>
+                            <label className='col-sm-3 control-label label-left'>Tipo operación</label>
+                            <div className='col-sm-9'>
+                              <BootstrapSelect
+                                noneSelectedText='Seleccione'
+                                displayItems={1}
+                                sm={true}
+                                search={true}
+                                autoClouse={true}
+                                selected={operationType.length ? [operationType] : []}
+                                allOption={false}
+                                options={operationTypes.map((operationType: any) => ({
+                                  value: operationType._id,
+                                  text: operationType.name
+                                }))}
+                                onClick={(value: string) => {
+                                  this.setState({
+                                    operationType: value
+                                  });
+                                }}
+                              />
+                            </div>
                           </div>
-                        </div>
+                        </ShowIf>
                       </div>
                       {/* <div className="form-group-switch">
                         <label className="switch-label switch-label-left">Estás solicitando flota</label>

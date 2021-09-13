@@ -12,6 +12,7 @@ import { IWindow } from '../../interfaces/window';
 import ApiService from '../../utils/axios';
 import ModalView from '../Modal/ModalView';
 import TrackingBasePage from '../Utils/TrackingBasePage';
+import ShowIf from '../Utils/ShowIf';
 
 interface IPropsType extends RouteComponentProps<{ ticket: string }> {
   requestItems: IRequestItemsState;
@@ -87,16 +88,14 @@ class RequestUpdaterView extends TrackingBasePage<IPropsType, IStateType> {
             <div className="box-header with-border">
               <h3 className="box-title">Importador de solicitudes</h3>
               <div className="pull-right box-tools">
-                {
-                  !properties.length?
-                    <button
-                      className="btn btn-sm btn-primary"
-                      onClick={this.downloadTemplate}
-                      style={{marginRight: '5px'}}>
-                      <i className="fa fa-fw fa-download" /> Descargar Formato
-                    </button>
-                    :null
-                }
+                <ShowIf condition={!properties.length}>
+                  <button
+                    className='btn btn-sm btn-primary'
+                    onClick={this.downloadTemplate}
+                    style={{ marginRight: '5px' }}>
+                    <i className='fa fa-fw fa-download' /> Descargar Formato
+                  </button>
+                </ShowIf>
               </div>
             </div>
             <div className="box-body margin">
@@ -113,16 +112,16 @@ class RequestUpdaterView extends TrackingBasePage<IPropsType, IStateType> {
                         </thead>
                         <tbody>
                           {
-                            properties.map((property: any) => {
+                            properties.map((property: any, index) => {
                               return (
-                                <tr key={property.key}>
-                                  <td>{property.key}</td>
+                                <tr key={index}>
+                                  <td>{property['Numero solicitud']}</td>
                                   <td>
-                                    {
+                                    {/*{
                                       property.brands.map((brand: string) => (
                                         <React.Fragment key={brand}>- {brand}<br /></React.Fragment>)
                                       )
-                                    }
+                                    }*/}
                                   </td>
                                 </tr>
                               );
@@ -132,7 +131,7 @@ class RequestUpdaterView extends TrackingBasePage<IPropsType, IStateType> {
                       </table>
                     </div>
                     <div className="col col-md-6">
-                      {/* <strong>Total de :</strong> {properties.reduce((total, x: any) => (total + x.cars.length), 0)} */}
+                       <strong>Total de :</strong> {properties.length}
                     </div>
                     <div className="col-md-6 text-right">
                       <button className="btn btn-sm btn-primary" onClick={this.downloadTemplate}>
@@ -174,7 +173,8 @@ class RequestUpdaterView extends TrackingBasePage<IPropsType, IStateType> {
                 type="file"
                 onChange={this.handleChangeInputFile}
                 style={{display: 'None'}}
-                ref={this.inputFile} accept="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel"
+                ref={this.inputFile}
+                accept="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel"
               />
             </div>
             <div className="box-footer text-right">
@@ -184,15 +184,15 @@ class RequestUpdaterView extends TrackingBasePage<IPropsType, IStateType> {
               >
                 Cancelar
               </button>
-              {properties.length ? <button className="btn btn-sm btn-primary" style={{marginLeft: '5px'}} onClick={this.sendCreate} disabled={sending}>
-                {
-                  sending ?
+              <ShowIf condition={!!properties.length}>
+                <button className='btn btn-sm btn-primary' style={{ marginLeft: '5px' }} onClick={this.sendCreate} disabled={sending}>
+                  <ShowIf condition={sending} alternative={'Actualizar'}>
                     <React.Fragment>
-                      <i className="fa fa-fw fa-spin fa-spinner"/> Actualizando...
+                      <i className='fa fa-fw fa-spin fa-spinner' /> Actualizando...
                     </React.Fragment>
-                    : 'Actualizar'
-                }
-              </button> : null}
+                  </ShowIf>
+                </button>
+              </ShowIf>
             </div>
             {
               loadingSettings || sending &&
@@ -267,8 +267,34 @@ class RequestUpdaterView extends TrackingBasePage<IPropsType, IStateType> {
   private downloadTemplate(): void {
     /* make the worksheet */
     const ws = XLSX.utils.json_to_sheet([{
-      propiedad: '',
-      marca: ''
+      ['Numero solicitud']: '',
+      ['Tipo operacion']: '',
+      ['Canal']: '',
+      ['Motivo']: '',
+      ['Vendedor']: '',
+      ['Chasis']: '',
+      ['Motor']: '',
+      ['Marca']: '',
+      ['Modelo']: '',
+      ['Color']: '',
+      ['Tipo']: '',
+      ['Cliente']: '',
+      ['Partida']: '',
+      ['Factura']: '',
+      ['Origen']: '',
+      ['Destino']: '',
+      ['BL']: '',
+      ['Cilindrada']: '',
+      ['Traccion']: '',
+      ['Año Comercial']: '',
+      ['Año Fabricacion']: '',
+      ['Monto']: '',
+      ['Seguro']: '',
+      ['Peso']: '',
+      ['Gas']: '',
+      ['AP']: '',
+      ['Pais Origen']: '',
+      ['Observacion']: '',
     }]);
     /* add to workbook */
     const wb = XLSX.utils.book_new();
@@ -293,22 +319,22 @@ class RequestUpdaterView extends TrackingBasePage<IPropsType, IStateType> {
           type: rABS ? 'binary' : 'array',
           cellDates: true
         });
-        const excelData = workbook.Sheets.hasOwnProperty('Propiedades') ? XLSX.utils.sheet_to_json(workbook.Sheets.Propiedades) : [];
-        const brandByProperty: any = {};
+        const excelData = 'Propiedades' in workbook.Sheets ? XLSX.utils.sheet_to_json(workbook.Sheets.Propiedades) : [];
+        const vehicleByRequestNumber: any = {};
         if (excelData.length >= 1) {
           excelData.forEach((item: any, index: number) => {
-            const key =  item.propiedad;
-            if (!brandByProperty.hasOwnProperty(key)) {
-              brandByProperty[key] = {
+            const key =  item['Numero solicitud'];
+            if (!(key in vehicleByRequestNumber)) {
+              vehicleByRequestNumber[key] = {
                 brands: []
               };
             }
-            brandByProperty[key].brands.push(item.marca);
+            vehicleByRequestNumber[key].brands.push(item);
           });
           this.setState({
             loadingSettings: false,
-            properties: Object.keys(brandByProperty)
-              .map((key) => ({key, ...brandByProperty[key]}))
+            properties: Object.keys(vehicleByRequestNumber)
+              .map((key) => ({key, ...vehicleByRequestNumber[key]}))
               .sort((a, b) => {
                 if (a.key < b.key) return 1;
                 if (a.key > b.key) return -1;
@@ -317,9 +343,9 @@ class RequestUpdaterView extends TrackingBasePage<IPropsType, IStateType> {
               .reverse()
           });
         } else {
-          swal(
+          swal!(
             'Importador de configuración',
-            `"${file.name}" no cumple con los requisitos mínimos o no tiene autos.`,
+            `"${file.name}" no cumple con los requisitos mínimos o no tiene vehículos.`,
             'error'
           );
           this.setState({
@@ -354,14 +380,14 @@ class RequestUpdaterView extends TrackingBasePage<IPropsType, IStateType> {
         const { message } = response.data;
         history.push('/requests/vehicles/');
         setTimeout(() => {
-          swal('Actualización masiva', message, 'success');
+          swal!('Actualización masiva', message, 'success');
         }, 200);
         this.setState({
           sending: false
         });
       })
       .catch((e) => {
-        swal('Actualización masiva', 'Se produjo un error al actualizar.', 'error');
+        swal!('Actualización masiva', 'Se produjo un error al actualizar.', 'error');
         this.setState({
           sending: false
         });
