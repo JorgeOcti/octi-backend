@@ -18,6 +18,23 @@ import FormModel, {IFormModel, KindQuestion} from "../../form/models/form.model"
 import ScaleModel, {IScaleModel} from "../../form/models/scale.model";
 import redisClient from "../../services/redis.service";
 import {IUserModel} from "../../app/models/user.model";
+// =======
+// import { IRequest } from '../../interfaces/global.interface';
+// import { Response } from 'express';
+// import { PaginateOptions, PaginateResult } from 'mongoose';
+// import Transmittal, { ChoicesStatusTransmittal, ITransmittalModel } from '../models/transmittal.model';
+// import logger from '../../services/logger.service';
+// import TransmittalItem from '../models/transmittalItem.model';
+// import TransmittalFile from '../models/transmittalFile.model';
+// import GeneralUtils from '../../utils/general.utils';
+// import * as GraphicsMagick from 'gm';
+// import Team from '../../app/models/team.model';
+// import Car from '../../app/models/car.model';
+// import RequestItem from '../../request/models/requestItem.model';
+// import { io } from '../../server';
+// import * as excel from 'exceljs';
+// import * as moment from 'moment-timezone';
+// import Milestone from '../models/milestone.model';
 
 
 class TransmittalController {
@@ -44,12 +61,31 @@ class TransmittalController {
     }
   }];
 
+  public populate = [{
+    path: 'transporter.carrier',
+    select: ['name']
+  }, {
+    path: 'transporter.driver',
+    select: ['firstName', 'lastName']
+  }, {
+    path: 'items',
+    select: ['car', 'requestItem', 'destination', 'origin', 'loadingDate', 'arrivalDate'],
+    populate: this.itemPopulate
+  }, {
+    path: 'files',
+    select: ['file', 'thumbnail']
+  }, {
+    path: 'createdBy',
+    select: ['firstName', 'lastName']
+  }];
+
   constructor() {
     this.index = this.index.bind(this);
     this.apiList = this.apiList.bind(this);
     this.apiOnlyMe = this.apiOnlyMe.bind(this);
     this.apiDetail = this.apiDetail.bind(this);
     this.apiCreate = this.apiCreate.bind(this);
+    this.apiPatch = this.apiPatch.bind(this);
     this.apiUpdate = this.apiUpdate.bind(this);
     this.apiDelete = this.apiDelete.bind(this);
     this.xlsExport = this.xlsExport.bind(this);
@@ -60,22 +96,33 @@ class TransmittalController {
   }
 
   public async index(req: IRequest, res: Response) {
-    res.render('app/index', {token: await req.user.generateToken()});
+    res.render('app/index', { token: await req.user.generateToken() });
   }
 
   public async apiDetail(req: IRequest, res: Response) {
-    logger.info(`TransmittalController.apiDetail`);
-    res.json({
-      api: 'TransmittalController:apiDetail'
-    })
+    try {
+      logger.info(`TransmittalController.apiDetail`);
+      const { id } = req.params;
+      const transmittal = await Transmittal.findById(id).populate(this.populate);
+      res.json({
+        data: transmittal
+      });
+    } catch (e) {
+      console.log(e);
+      /* istanbul ignore next */
+      logger.error(`TransmittalController.apiDetail: Async Error.`);
+      /* istanbul ignore next */
+      logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
+      res.status(500).json(e);
+    }
   }
 
   public async apiCreate(req: IRequest, res: Response) {
-    logger.info(`TransmittalController.apiCreate`);
-    const {name, items, files, transporter, observation} = req.body;
-    const {user} = req;
     try {
-      const team = await Team.findOneAndUpdate({_id: user.team._id}, {$inc: {transmittalNumber: 1}}, {new: true});
+      logger.info(`TransmittalController.apiCreate`);
+      const { name, items, files, transporter, observation } = req.body;
+      const { user } = req;
+      const team = await Team.findOneAndUpdate({ _id: user.team._id }, { $inc: { transmittalNumber: 1 } }, { new: true });
       // create new transmittal
       const transmittal = await new Transmittal({
         name,
@@ -112,11 +159,11 @@ class TransmittalController {
       }
 
       if (files && files.length) {
-        await transmittal.updateOne({files});
+        await transmittal.updateOne({ files });
         await TransmittalFile.updateMany({
-          _id: {$in: files}
+          _id: { $in: files }
         }, {
-          $set: {transmittal}
+          $set: { transmittal }
         });
       }
 
@@ -126,7 +173,7 @@ class TransmittalController {
 
       res.json({
         status: 200
-      })
+      });
     } catch (e) {
       /* istanbul ignore next */
       logger.error(`TransmittalController.apiCreate: Async Error.`);
@@ -137,35 +184,55 @@ class TransmittalController {
   }
 
   public async apiUpdate(req: IRequest, res: Response) {
-    logger.info(`TransmittalController.apiUpdate`);
-    const {id} = req.params;
-    const {body: transmittal} = req;
-    const {team} = req.user;
     try {
-      const newTransmittal = await Transmittal
-        .findOneAndUpdate({_id: id}, {$set: transmittal}, {new: true})
-        .populate([{
-          path: 'transporter.carrier',
-          select: ['name']
-        }, {
-          path: 'transporter.driver',
-          select: ['firstName', 'lastName']
-        }, {
-          path: 'items',
-          select: ['car', 'requestItem', 'destination', 'origin', 'loadingDate', 'arrivalDate'],
-          populate: this.itemPopulate
-        }, {
-          path: 'files',
-          select: ['file', 'thumbnail']
-        }, {
-          path: 'createdBy',
-          select: ['firstName', 'lastName']
-        }]);
+      // const { id } = req.params;
+      logger.info(`TransmittalController.apiUpdate`);
+      res.json({
+        api: 'TransmittalController:apiUpdate'
+      });
+    } catch (e) {
+      console.log(e);
+      /* istanbul ignore next */
+      logger.error(`TransmittalController.apiUpdate: Async Error.`);
+      /* istanbul ignore next */
+      logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
+      res.status(500).json(e);
+    }
+
+  }
+
+  public async apiPatch(req: IRequest, res: Response) {
+    try {
+      logger.info(`TransmittalController.apiUpdate`);
+      const { id } = req.params;
+      const { body: transmittal } = req;
+      const { team } = req.user;
+
+      let newTransmittal: any;
+
+      if (transmittal.allLoadingDate) {
+        // update all item loading dates
+        await TransmittalItem.updateMany({ transmittal: id }, { $set: { loadingDate: transmittal.allLoadingDate } });
+        newTransmittal = await Transmittal
+          .findOne({ _id: id })
+          .populate(this.populate);
+      } else if (transmittal.allArrivalDate) {
+        // update all item arrival dates
+        await TransmittalItem.updateMany({ transmittal: id }, { $set: { arrivalDate: transmittal.allArrivalDate } });
+        newTransmittal = await Transmittal
+          .findOne({ _id: id })
+          .populate(this.populate);
+      } else {
+        newTransmittal = await Transmittal
+          .findOneAndUpdate({ _id: id }, { $set: transmittal }, { new: true })
+          .populate(this.populate);
+      }
+
       io.to(`transmittal-list-${team._id}`).emit('UPDATE_TRANSMITTAL', {
         transmittal: newTransmittal
       });
       res.json({
-        data: newTransmittal,
+        data: newTransmittal
       });
     } catch (e) {
       console.log(e);
@@ -181,7 +248,7 @@ class TransmittalController {
     logger.info(`TransmittalController.apiDelete`);
     res.json({
       api: 'TransmittalController:apiDelete'
-    })
+    });
   }
 
   public async apiList(req: IRequest, res: Response) {
@@ -705,19 +772,19 @@ private getForm(filter: any): Promise<IFormModel> {
 
 
   public async attachEvidence(req: IRequest, res: Response) {
-    const {user} = req;
-    const {files, transmittal} = req.body;
+    const { user } = req;
+    const { files, transmittal } = req.body;
     logger.info(`TransmittalController.uploadFile`);
     logger.info(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
     try {
       const transmittalData = await Transmittal
         .findOneAndUpdate({
           _id: transmittal,
-          team: user.team._id,
+          team: user.team._id
         }, {
-          $push: {evidenceFullLoad: files},
+          $push: { evidenceFullLoad: files },
           status: ChoicesStatusTransmittal.inTransit
-        }, {new: true});
+        }, { new: true });
       //  TODO: need update socket from here
       res.status(200).json({
         data: transmittalData,
@@ -780,7 +847,7 @@ private getForm(filter: any): Promise<IFormModel> {
       worksheet.columns = columns;
 
       const cursor = await Transmittal
-        .find({team})
+        .find({ team })
         .populate([{
           path: 'transporter.carrier',
           select: ['name']
@@ -814,7 +881,7 @@ private getForm(filter: any): Promise<IFormModel> {
             denomination: item.car?.denomination,
             color: item.car?.color,
             observation: item.observation,
-            createdAt: item.createdAt,
+            createdAt: item.createdAt
           }).commit();
         }
       });
@@ -856,7 +923,7 @@ private getForm(filter: any): Promise<IFormModel> {
   }
 
   public async uploadFile(req: IRequest, res: Response) {
-    const {user} = req;
+    const { user } = req;
     logger.info(`TransmittalController.uploadFile`);
     logger.info(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
     const file: any = GeneralUtils.getFileFromRequest(req.files, 'file');

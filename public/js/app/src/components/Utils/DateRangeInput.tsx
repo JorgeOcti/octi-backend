@@ -1,5 +1,5 @@
 import * as React from 'react';
-import {createRef, RefObject} from 'react';
+import { createRef, RefObject } from 'react';
 
 interface IPropsType {
   options: daterangepicker.Options,
@@ -15,38 +15,41 @@ interface IStateType {
 
 class DateRangeInput extends React.Component<IPropsType, IStateType> {
 
-  state = {
+  readonly state: IStateType = {
     from: this.props.startDate,
     to: this.props.startDate
   };
-  pickerRef : RefObject<HTMLInputElement> = createRef();
+  pickerRef: RefObject<HTMLInputElement> = createRef();
+
+  constructor(props: IPropsType) {
+    super(props);
+    this.onChange = this.onChange.bind(this);
+  }
 
   componentDidMount(): void {
-    let $this = this;
-    const {options, startDate, endDate} = this.props;
-    ($(this.pickerRef.current!) as any).daterangepicker({...options, startDate, endDate},
-      function (from: any, to: any, label: any) {
-        $this.onChange(from, to);
-      });
+    const { options, startDate, endDate } = this.props;
+    $(this.pickerRef.current!).daterangepicker({ ...options, startDate, endDate }, (from: any, to: any) => {
+      this.onChange(from, to);
+    });
   }
 
   onChange = (from: Date, to: Date) => {
     this.setState({
-      from: from,
-      to: to
+      from,
+      to
     }, () => {
       this.props.onChange(from, to);
     });
-  }
+  };
 
   render() {
-    return <div className="input-group input-group-sm" style={{padding: '10px 5px'}}>
-      <input type="text" className="form-control input-sm" ref={this.pickerRef} />
-      <div className="input-group-btn">
-        <button className="btn btn-default" onClick={() => {
+    return <div className='input-group input-group-sm' style={{ padding: '10px 5px' }}>
+      <input type='text' className='form-control input-sm' ref={this.pickerRef} />
+      <div className='input-group-btn'>
+        <button className='btn btn-default' onClick={() => {
           ($(this.pickerRef.current!) as any).click();
         }}>
-          <i className="fa fa-calendar"/></button>
+          <i className='fa fa-calendar' /></button>
       </div>
     </div>;
   }

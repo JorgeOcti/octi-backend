@@ -17,7 +17,7 @@ class PushService {
     });
   }
 
-  public createAuthToken(userId: string){
+  public createAuthToken(userId: string) {
     return this.pushNotifications.generateToken(userId);
   }
 
@@ -46,7 +46,7 @@ class PushService {
           body
         }
       }
-    }).then((publishResponse: PushNotifications.PublishResponse) => {
+    } as PushNotifications.PublishRequest).then((publishResponse: PushNotifications.PublishResponse) => {
       logger.info(`PUSH Just published:, ${publishResponse.publishId}`);
     }).catch((error: any) => {
       logger.info(`PUSH Error:, ${error}`);
@@ -56,7 +56,7 @@ class PushService {
   public massiveSend(title: string, subtitle: string, body: string, interests: string[]) {
     const total = interests.length;
     /* istanbul ignore if */
-    if (total === 0){
+    if (total === 0) {
       logger.info(`PUSH NOT published: No users to send`);
       return;
     }

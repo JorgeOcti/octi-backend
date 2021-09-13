@@ -51,12 +51,12 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
     }
 };
 exports.__esModule = true;
-var permision_model_1 = require("../../models/permision.model");
+var permission_model_1 = require("../../models/permission.model");
 var base_admin_controller_1 = require("./base.admin.controller");
 var AdminPermissionController = /** @class */ (function (_super) {
     __extends(AdminPermissionController, _super);
     function AdminPermissionController() {
-        var _this = _super.call(this, permision_model_1["default"]) || this;
+        var _this = _super.call(this, permission_model_1["default"]) || this;
         _this.apiList = _this.apiList.bind(_this);
         return _this;
     }

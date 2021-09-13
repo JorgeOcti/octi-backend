@@ -123,7 +123,7 @@ class RequestItemStatusController {
 
   private getRequetsItemStatus(filter: any, options: PaginateOptions): Promise<PaginateResult<IRequestItemStatusModel>> {
     return new Promise((resolve, reject) => {
-      RequestItemStatus.paginate(filter, options, (err, result) => {
+      RequestItemStatus.paginate!(filter, options, (err, result) => {
         if (err) {
           return reject(err);
         }

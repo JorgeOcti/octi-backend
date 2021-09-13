@@ -47,7 +47,7 @@ interface IStateType {
 declare let window: IWindow;
 
 class RequestVehicleListView extends TrackingBasePage<IPropsType, IStateType> {
-  title : string;
+  title: string;
 
   private socket: SocketIOClient.Socket;
 
@@ -66,6 +66,7 @@ class RequestVehicleListView extends TrackingBasePage<IPropsType, IStateType> {
     this.exportExcel = this.exportExcel.bind(this);
     this.create = this.create.bind(this);
     this.update = this.update.bind(this);
+    this.import = this.import.bind(this);
   }
 
   componentDidMount() {
@@ -172,62 +173,71 @@ class RequestVehicleListView extends TrackingBasePage<IPropsType, IStateType> {
 
   public render(): React.ReactElement<IPropsType> {
     const {
-      pagination, loading, requestItems, requestItemStatus, venues, filters, properties
+      pagination, loading, requestItems, requestItemStatus, venues, filters, properties, requestSettings
     } = this.props.requestItems;
     const { orderBy, orderType } = this.props.requestItems.options;
     const { exporing } = this.state;
     return (
-      <AppContainer title="" cMenu="3" cSubMenu="3.2">
-        <section className="content">
-          <div className="box">
-            <div className="box-header with-border">
-              <h3 className="box-title">Vehículos <small>{pagination.count}</small></h3>
-              <div className="pull-right box-tools">
+      <AppContainer title='' cMenu='3' cSubMenu='3.2'>
+        <section className='content'>
+          <div className='box'>
+            <div className='box-header with-border'>
+              <h3 className='box-title'>Vehículos <small>{pagination.count}</small></h3>
+              <div className='pull-right box-tools'>
                 <ShowIf condition={hasPermission(window.user, 'updateMassiveRequest')}>
                   <button
-                    className="btn btn-sm btn-success"
+                    className='btn btn-sm btn-success'
                     onClick={this.update}
                   >
-                    <i className="fa fa-fw fa-plus" /> Actualizador
+                    <i className='fa fa-fw fa-plus' /> Actualizador
+                  </button>
+                </ShowIf>
+                <ShowIf condition={process.env.NODE_ENV === 'development' && hasPermission(window.user, 'createRequest')}>
+                  <button
+                    style={{ marginLeft: '5px' }}
+                    className='btn btn-sm btn-success'
+                    onClick={this.import}
+                  >
+                    <i className='fa fa-fw fa-plus' /> Importar
                   </button>
                 </ShowIf>
                 <ShowIf condition={hasPermission(window.user, 'createRequest')}>
                   <button
-                    className="btn btn-sm btn-success"
+                    className='btn btn-sm btn-success'
                     onClick={this.create}
                     style={{ marginLeft: '5px' }}
                   >
-                    <i className="fa fa-fw fa-plus" /> Crear solicitud
+                    <i className='fa fa-fw fa-plus' /> Crear solicitud
                   </button>
                 </ShowIf>
                 <ShowIf condition={requestItems.length > 0}>
                   <button
-                    className="btn btn-sm btn-primary hidden-xs"
+                    className='btn btn-sm btn-primary hidden-xs'
                     onClick={this.exportExcel}
                     disabled={exporing}
                     style={{ marginLeft: '5px' }}
                   >
                     {
                       exporing ?
-                        <Fragment><i className="fa fa-spin fa-spinner" /> Exportando</Fragment> :
-                        <Fragment><i className="fa fa-fw fa-download" /> Exportar</Fragment>
+                        <Fragment><i className='fa fa-spin fa-spinner' /> Exportando</Fragment> :
+                        <Fragment><i className='fa fa-fw fa-download' /> Exportar</Fragment>
                     }
                   </button>
                 </ShowIf>
               </div>
             </div>
-            <div className="box-body no-padding">
+            <div className='box-body no-padding'>
               <div style={{ padding: '10px 0' }}>
-                <div className="row" style={{ margin: 0 }}>
-                  <div className="col-md-8">
-                    <div className="form-group">
-                      <label className="control-label">
+                <div className='row' style={{ margin: 0 }}>
+                  <div className='col-md-8'>
+                    <div className='form-group'>
+                      <label className='control-label'>
                         Vehículo
-                    </label>
+                      </label>
                       <input
-                        type="text"
-                        className="form-control"
-                        placeholder="Busca por VIN, marca, modelo, material o nº de solicitud."
+                        type='text'
+                        className='form-control input-sm'
+                        placeholder='Busca por VIN, marca, modelo, material o nº de solicitud.'
                         defaultValue={filters.text}
                         onChange={(e) => {
                           this.changeFilterDebounced('text', e.target.value);
@@ -235,15 +245,15 @@ class RequestVehicleListView extends TrackingBasePage<IPropsType, IStateType> {
                       />
                     </div>
                   </div>
-                  <div className="col-md-4">
-                    <div className="form-group">
-                      <label className="control-label">
+                  <div className='col-md-4'>
+                    <div className='form-group'>
+                      <label className='control-label'>
                         Nº Solicitudes
                       </label>
                       <input
-                        type="text"
-                        className="form-control"
-                        placeholder="Nº de solicitudes ejemplo: 2, 8, 10"
+                        type='text'
+                        className='form-control input-sm'
+                        placeholder='Nº de solicitudes ejemplo: 2, 8, 10'
                         defaultValue={filters.request}
                         onChange={(e) => {
                           this.changeFilterDebounced('request', e.target.value);
@@ -251,15 +261,16 @@ class RequestVehicleListView extends TrackingBasePage<IPropsType, IStateType> {
                       />
                     </div>
                   </div>
-                  <div className="col-md-3">
-                    <div className="form-group">
-                      <label htmlFor="venues" className="control-label">Propiedad</label>
+                  <div className='col-md-3'>
+                    <div className='form-group'>
+                      <label htmlFor='venues' className='control-label'>Propiedad</label>
                       <BootstrapSelect
-                        noneSelectedText="Todas"
+                        noneSelectedText='Todas'
                         search={true}
                         displayItems={2}
-                        selectedText="propiedades seleccionadas."
+                        selectedText='propiedades seleccionadas.'
                         selected={filters.properties}
+                        sm={true}
                         allOption={true}
                         selectAll={
                           (all: boolean) => {
@@ -284,15 +295,16 @@ class RequestVehicleListView extends TrackingBasePage<IPropsType, IStateType> {
                       />
                     </div>
                   </div>
-                  <div className="col-md-3">
-                    <div className="form-group">
-                      <label htmlFor="venues" className="control-label">Sucursales</label>
+                  <div className='col-md-3'>
+                    <div className='form-group'>
+                      <label htmlFor='venues' className='control-label'>Sucursales</label>
                       <BootstrapSelect
-                        noneSelectedText="Todas"
+                        noneSelectedText='Todas'
                         search={true}
                         displayItems={2}
-                        selectedText="sucursales seleccionadas."
+                        selectedText='sucursales seleccionadas.'
                         selected={filters.venues}
+                        sm={true}
                         allOption={true}
                         selectAll={
                           (all: boolean) => {
@@ -317,14 +329,15 @@ class RequestVehicleListView extends TrackingBasePage<IPropsType, IStateType> {
                       />
                     </div>
                   </div>
-                  <div className="col-md-3">
-                    <div className="form-group">
-                      <label htmlFor="venues" className="control-label">Estados</label>
+                  <div className='col-md-3'>
+                    <div className='form-group'>
+                      <label htmlFor='venues' className='control-label'>Estados</label>
                       <BootstrapSelect
-                        noneSelectedText="Todos"
+                        noneSelectedText='Todos'
                         displayItems={2}
-                        selectedText="estados seleccionados."
+                        selectedText='estados seleccionados.'
                         selected={filters.status}
+                        sm={true}
                         allOption={true}
                         selectAll={
                           (all: boolean) => {
@@ -367,24 +380,26 @@ class RequestVehicleListView extends TrackingBasePage<IPropsType, IStateType> {
                     </div>
                   </div> */
                   }
-                  <div className="col-md-3">
-                    <div className="row">
-                      <div className="col-md-6">
-                        <div className="form-group">
-                          <label htmlFor="venues" className="control-label">Desde</label>
+                  <div className='col-md-3'>
+                    <div className='row'>
+                      <div className='col-md-6'>
+                        <div className='form-group'>
+                          <label htmlFor='venues' className='control-label'>Desde</label>
                           <DateRangePicker
                             value={filters.from}
+                            className={'input-sm'}
                             onChange={(e) => {
                               this.changeFilter('from', e);
                             }}
                           />
                         </div>
                       </div>
-                      <div className="col-md-6">
-                        <div className="form-group">
-                          <label htmlFor="venues" className="control-label">Hasta</label>
+                      <div className='col-md-6'>
+                        <div className='form-group'>
+                          <label htmlFor='venues' className='control-label'>Hasta</label>
                           <DateRangePicker
                             value={filters.to}
+                            className={'input-sm'}
                             onChange={(e) => {
                               this.changeFilter('to', e);
                             }}
@@ -396,91 +411,108 @@ class RequestVehicleListView extends TrackingBasePage<IPropsType, IStateType> {
                 </div>
               </div>
               <ShowIf condition={requestItems.length > 0}>
-                <div className="table-responsive">
-                  <table className="table table-xs table-hover" style={{ minWidth: '1000px' }}>
+                <div className='table-responsive'>
+                  <table className='table table-xs table-hover' style={{ minWidth: '1000px' }}>
                     <thead>
-                      <tr className="bg-primary" style={{ height: '45px' }}>
-                        <th className="middle" style={{ width: '28px' }} />
+                    <tr className='bg-primary' style={{ height: '45px' }}>
+                      <th className='middle' style={{ width: '28px' }} />
+                      <th
+                        className='middle pointer'
+                        style={{ width: '80px' }}
+                        onClick={() => this.changeOrder('request.number')}
+                      >
+                        Solicitud
+                        <span style={{ float: 'right' }}><i
+                          className={`fa fa-fw ${orderBy === 'request.number' ? `${orderType === 'descending' ? 'fa-sort-down' : 'fa-sort-up'}` : 'fa-sort'}`} /></span>
+                      </th>
+                      <th
+                        className='middle pointer'
+                        style={{ width: '80px' }}
+                        onClick={() => this.changeOrder('origin.name')}
+                      >
+                        Creada
+                        <span style={{ float: 'right' }}><i
+                          className={`fa fa-fw ${orderBy === 'origin.name' ? `${orderType === 'descending' ? 'fa-sort-down' : 'fa-sort-up'}` : 'fa-sort'}`} /></span>
+                      </th>
+                      <th
+                        className='middle pointer'
+                        style={{ width: '80px' }}
+                        onClick={() => this.changeOrder('destination.name')}
+                      >
+                        Destino
+                        <span style={{ float: 'right' }}><i
+                          className={`fa fa-fw ${orderBy === 'destination.name' ? `${orderType === 'descending' ? 'fa-sort-down' : 'fa-sort-up'}` : 'fa-sort'}`} /></span>
+                      </th>
+                      <th
+                        className='middle pointer'
+                        // style={{ width: '100px' }}
+                        onClick={() => this.changeOrder('car.property')}
+                      >
+                        Prop.
+                        <span style={{ float: 'right' }}><i
+                          className={`fa fa-fw ${orderBy === 'car.property' ? `${orderType === 'descending' ? 'fa-sort-down' : 'fa-sort-up'}` : 'fa-sort'}`} /></span>
+                      </th>
+                      <th
+                        className='middle pointer'
+                        style={{ minWidth: '100px', maxWidth: '120px' }}
+                        onClick={() => this.changeOrder('car.brand')}
+                      >
+                        Marca
+                        <span style={{ float: 'right' }}><i
+                          className={`fa fa-fw ${orderBy === 'car.brand' ? `${orderType === 'descending' ? 'fa-sort-down' : 'fa-sort-up'}` : 'fa-sort'}`} /></span>
+                      </th>
+                      <ShowIf condition={requestSettings.denomination}>
                         <th
-                          className="middle pointer"
-                          style={{ width: '80px' }}
-                          onClick={() => this.changeOrder('request.number')}
-                        >
-                          Solicitud
-                      <span style={{ float: 'right' }}><i className={`fa fa-fw ${orderBy === 'request.number' ? `${orderType === 'descending' ? 'fa-sort-down' : 'fa-sort-up'}` : 'fa-sort'}`} /></span>
-                        </th>
-                        <th
-                          className="middle pointer"
-                          style={{ width: '80px' }}
-                          onClick={() => this.changeOrder('origin.name')}
-                        >
-                          Creada
-                      <span style={{ float: 'right' }}><i className={`fa fa-fw ${orderBy === 'origin.name' ? `${orderType === 'descending' ? 'fa-sort-down' : 'fa-sort-up'}` : 'fa-sort'}`} /></span>
-                        </th>
-                        <th
-                          className="middle pointer"
-                          style={{ width: '80px' }}
-                          onClick={() => this.changeOrder('destination.name')}
-                        >
-                          Destino
-                      <span style={{ float: 'right' }}><i className={`fa fa-fw ${orderBy === 'destination.name' ? `${orderType === 'descending' ? 'fa-sort-down' : 'fa-sort-up'}` : 'fa-sort'}`} /></span>
-                        </th>
-                        <th
-                          className="middle pointer"
-                          // style={{ width: '100px' }}
-                          onClick={() => this.changeOrder('car.property')}
-                        >
-                          Prop.
-                      <span style={{ float: 'right' }}><i className={`fa fa-fw ${orderBy === 'car.property' ? `${orderType === 'descending' ? 'fa-sort-down' : 'fa-sort-up'}` : 'fa-sort'}`} /></span>
-                        </th>
-                        <th
-                          className="middle pointer"
-                          style={{ minWidth: '100px', maxWidth: '120px' }}
-                          onClick={() => this.changeOrder('car.brand')}
-                        >
-                          Marca
-                      <span style={{ float: 'right' }}><i className={`fa fa-fw ${orderBy === 'car.brand' ? `${orderType === 'descending' ? 'fa-sort-down' : 'fa-sort-up'}` : 'fa-sort'}`} /></span>
-                        </th>
-                        <th
-                          className="middle pointer"
+                          className='middle pointer'
                           style={{ minWidth: '120px' }}
-                          onClick={() => this.changeOrder('car.description')}
+                          onClick={() => this.changeOrder('car.denomination')}
                         >
                           Modelo
-                      <span style={{ float: 'right' }}><i className={`fa fa-fw ${orderBy === 'car.description' ? `${orderType === 'descending' ? 'fa-sort-down' : 'fa-sort-up'}` : 'fa-sort'}`} /></span>
+                          <span style={{ float: 'right' }}><i
+                            className={`fa fa-fw ${orderBy === 'car.denomination' ? `${orderType === 'descending' ? 'fa-sort-down' : 'fa-sort-up'}` : 'fa-sort'}`} /></span>
                         </th>
+                      </ShowIf>
+                      <ShowIf condition={requestSettings.material}>
                         <th
-                          className="middle pointer"
+                          className='middle pointer'
                           style={{ width: '70px' }}
                           onClick={() => this.changeOrder('car.material')}
                         >
                           Material
-                          <span style={{ float: 'right' }}><i className={`fa fa-fw ${orderBy === 'car.material' ? `${orderType === 'descending' ? 'fa-sort-down' : 'fa-sort-up'}` : 'fa-sort'}`} /></span>
+                          <span style={{ float: 'right' }}><i
+                            className={`fa fa-fw ${orderBy === 'car.material' ? `${orderType === 'descending' ? 'fa-sort-down' : 'fa-sort-up'}` : 'fa-sort'}`} /></span>
                         </th>
-                        <th className="middle"  style={{ minWidth: '80px' }}>Color</th>
-                        <th
-                          className="middle pointer"
-                          style={{ minWidth: '120px', maxWidth: '160px' }}
-                          onClick={() => this.changeOrder('status.weigth')}
-                        >
-                          Estado
-                      <span style={{ float: 'right' }}><i className={`fa fa-fw ${orderBy === 'status.weigth' ? `${orderType === 'descending' ? 'fa-sort-down' : 'fa-sort-up'}` : 'fa-sort'}`} /></span>
-                        </th>
-                        <th className="middle" style={{ width: '130px' }}>VIN</th>
-                        <th className="middle" style={{ width: '60px' }}>CDO</th>
-                        <th
-                          className="middle pointer"
-                          style={{ minWidth: '100px' }}
-                          onClick={() => this.changeOrder('reason.name')}
-                        >
-                          Motivo
-                      <span style={{ float: 'right' }}><i className={`fa fa-fw ${orderBy === 'reason.name' ? `${orderType === 'descending' ? 'fa-sort-down' : 'fa-sort-up'}` : 'fa-sort'}`} /></span>
-                        </th>
-                        {/* <th className="middle">Carrocería</th>
+                      </ShowIf>
+                      <ShowIf condition={requestSettings.color}>
+                        <th className='middle' style={{ minWidth: '80px' }}>Color</th>
+                      </ShowIf>
+                      <th
+                        className='middle pointer'
+                        style={{ minWidth: '120px', maxWidth: '160px' }}
+                        onClick={() => this.changeOrder('status.weigth')}
+                      >
+                        Estado
+                        <span style={{ float: 'right' }}><i
+                          className={`fa fa-fw ${orderBy === 'status.weigth' ? `${orderType === 'descending' ? 'fa-sort-down' : 'fa-sort-up'}` : 'fa-sort'}`} /></span>
+                      </th>
+                      <th className='middle' style={{ width: '150px' }}>VIN</th>
+                      <ShowIf condition={requestSettings.internalNumber}>
+                        <th className='middle' style={{ width: '60px' }}>CDO</th>
+                      </ShowIf>
+                      <th
+                        className='middle pointer'
+                        style={{ minWidth: '100px' }}
+                        onClick={() => this.changeOrder('reason.name')}
+                      >
+                        Motivo
+                        <span style={{ float: 'right' }}><i
+                          className={`fa fa-fw ${orderBy === 'reason.name' ? `${orderType === 'descending' ? 'fa-sort-down' : 'fa-sort-up'}` : 'fa-sort'}`} /></span>
+                      </th>
+                      {/* <th className="middle">Carrocería</th>
                         <th className="middle">Pre-Entrega</th> */}
-                        <th className="middle-center" style={{ width: '40px' }}>Adj</th>
-                        <th className="middle-center" style={{ width: '20px' }}>Obs</th>
-                        {/* <th
+                      <th className='middle-center' style={{ width: '40px' }}>Adj</th>
+                      <th className='middle-center' style={{ width: '20px' }}>Obs</th>
+                      {/* <th
                           className="middle pointer"
                           style={{ width: '100px' }}
                           onClick={() => this.changeOrder('carrier.name')}
@@ -504,71 +536,71 @@ class RequestVehicleListView extends TrackingBasePage<IPropsType, IStateType> {
                           F. llegada
                       <span style={{ float: 'right' }}><i className={`fa fa-fw ${orderBy === 'estimatedArrival' ? `${orderType === 'descending' ? 'fa-sort-down' : 'fa-sort-up'}` : 'fa-sort'}`} /></span>
                         </th> */}
-                        <ShowIf condition={hasPermission(window.user, 'deleteRequest')}>
-                          <th className="middle" style={{ width: '30px' }} />
-                        </ShowIf>
-                      </tr>
+                      <ShowIf condition={hasPermission(window.user, 'deleteRequest')}>
+                        <th className='middle' style={{ width: '30px' }} />
+                      </ShowIf>
+                    </tr>
                     </thead>
                     <tbody>
-                      {
-                        requestItems.map((item, index) => (
-                          <RequestVehicleItem
-                            key={item._id}
-                            item={item}
-                            {...this.props}
-                          />
-                        ))
-                      }
+                    {
+                      requestItems.map((item, index) => (
+                        <RequestVehicleItem
+                          key={item._id}
+                          item={item}
+                          {...this.props}
+                        />
+                      ))
+                    }
                     </tbody>
                   </table>
                 </div>
               </ShowIf>
               <ShowIf condition={!loading && requestItems.length === 0}>
-                <div className="row">
-                  <div className="col-md-12 text-center" style={{paddingTop: '10px', paddingBottom: '10px'}}>
-                      <ImageLazyLoad
-                        url="/images/not_found.png"
-                        height={'200px'}
-                        style={{
-                          opacity: 0.5,
-                          maxHeight: '200px',
-                          marginBottom: '10px'
-                        }}
-                        replaceLoading={<i
-                          className={'fa fa-2x fa-circle-o-notch text-primary fa-spin'}
-                          style={{ padding: '30px' }}
-                        />}
-                      /><br />
-                      <strong>No hay información para mostrar</strong>
+                <div className='row'>
+                  <div className='col-md-12 text-center' style={{ paddingTop: '10px', paddingBottom: '10px' }}>
+                    <ImageLazyLoad
+                      url='/images/not_found.png'
+                      height={'200px'}
+                      style={{
+                        opacity: 0.5,
+                        maxHeight: '200px',
+                        marginBottom: '10px'
+                      }}
+                      replaceLoading={<i
+                        className={'fa fa-2x fa-circle-o-notch text-primary fa-spin'}
+                        style={{ padding: '30px' }}
+                      />}
+                    /><br />
+                    <strong>No hay información para mostrar</strong>
                   </div>
                 </div>
               </ShowIf>
             </div>
-            <div className="box-footer">
-              <div className="row">
-                <div className="col-md-12">
+            <div className='box-footer'>
+              <div className='row'>
+                <div className='col-md-12'>
                   {
                     pagination.pages > 1 &&
-                      <div className="row">
-                        <div className="col-md-6" style={{ padding: '20px 15px' }}>
-                          <span className="react-bootstrap-table-pagination-total text-ellipsis">
+                    <div className='row'>
+                      <div className='col-md-6' style={{ padding: '20px 15px' }}>
+                          <span className='react-bootstrap-table-pagination-total text-ellipsis'>
                             &nbsp;&nbsp;Mostrando registros del {(pagination.page - 1) * 20 + 1} al {(pagination.page) * 20} de {pagination.count} registros.
                           </span>
-                        </div>
-                        <div className="col-md-6">
-                          <div className="text-right" style={{ marginRight: '15px' }}>
-                            <Paginator changePage={this.changePage} page={pagination.page} pages={pagination.pages} />
-                          </div>
+                      </div>
+                      <div className='col-md-6'>
+                        <div className='text-right' style={{ marginRight: '15px' }}>
+                          <Paginator changePage={this.changePage} page={pagination.page} pages={pagination.pages} />
                         </div>
                       </div>
+                    </div>
                   }
                 </div>
               </div>
             </div>
             {
               loading &&
-              <div className="overlay">
-                <i className="fa fa-spinner fa-spin text-purple" />
+              <div className='overlay'>
+                <i className='fa fa-spinner fa-spin text-purple' />
               </div>
             }
           </div>
@@ -581,8 +613,12 @@ class RequestVehicleListView extends TrackingBasePage<IPropsType, IStateType> {
     this.props.history.push('/requests/vehicles/create/');
   }
 
-  private update(){
+  private update() {
     this.props.history.push('/requests/update/');
+  }
+
+  private import() {
+    this.props.history.push('/requests/import/');
   }
 
   private changeFilterDebounced(key: keyof IRequestItemsFilters, value: any | any[]): void {

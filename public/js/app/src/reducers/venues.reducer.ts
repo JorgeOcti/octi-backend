@@ -7,6 +7,7 @@ const initialState: IVenuesState = {
   companies: [],
   carriers: [],
   regions: [],
+  searchText: '',
   loading: true,
   source: null,
   tempVenue: {
@@ -49,6 +50,11 @@ export function venuesReducer(state = initialState, action: VenueReduxAction): I
           ...state.pagination,
           page: action.payload.page
         }
+      };
+    case '/VENUES/CHANGE_SEARCH':
+      return {
+        ...state,
+        searchText: action.payload.searchText
       };
     case '/VENUES/LOAD_COMPANIES':
       return {

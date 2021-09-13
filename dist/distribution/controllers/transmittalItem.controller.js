@@ -53,6 +53,7 @@ var logger_service_1 = require("../../services/logger.service");
 var server_1 = require("../../server");
 var transmittal_model_1 = require("../models/transmittal.model");
 var requestItem_model_1 = require("../../request/models/requestItem.model");
+var car_model_1 = require("../../app/models/car.model");
 var TransmittalItemController = /** @class */ (function () {
     function TransmittalItemController() {
         this.index = this.index.bind(this);
@@ -102,21 +103,25 @@ var TransmittalItemController = /** @class */ (function () {
     };
     TransmittalItemController.prototype.apiUpdate = function (req, res) {
         return __awaiter(this, void 0, void 0, function () {
-            var id, transmittalItem, team, newTransmittalItem, e_1;
+            var id, transmittalItem, team, car, newTransmittalItem, e_1;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
+                        _a.trys.push([0, 4, , 5]);
                         logger_service_1["default"].info("TransmittalItemController.apiUpdate");
                         id = req.params.id;
                         transmittalItem = req.body;
                         team = req.user.team;
-                        _a.label = 1;
+                        if (!transmittalItem.car) return [3 /*break*/, 2];
+                        car = transmittalItem.car;
+                        return [4 /*yield*/, car_model_1["default"].findOneAndUpdate({ _id: car._id, team: team }, { $set: car })];
                     case 1:
-                        _a.trys.push([1, 3, , 4]);
-                        return [4 /*yield*/, transmittalItem_model_1["default"]
-                                .findOneAndUpdate({ _id: id }, { $set: transmittalItem }, { "new": true })
-                                .populate(transmittal_controller_1["default"].itemPopulate)];
-                    case 2:
+                        _a.sent();
+                        _a.label = 2;
+                    case 2: return [4 /*yield*/, transmittalItem_model_1["default"]
+                            .findOneAndUpdate({ _id: id }, { $set: transmittalItem }, { "new": true })
+                            .populate(transmittal_controller_1["default"].itemPopulate)];
+                    case 3:
                         newTransmittalItem = _a.sent();
                         server_1.io.to("transmittal-list-" + team._id).emit('UPDATE_TRANSMITTAL_ITEM', {
                             transmittalItem: newTransmittalItem
@@ -124,8 +129,8 @@ var TransmittalItemController = /** @class */ (function () {
                         res.json({
                             data: newTransmittalItem
                         });
-                        return [3 /*break*/, 4];
-                    case 3:
+                        return [3 /*break*/, 5];
+                    case 4:
                         e_1 = _a.sent();
                         /* istanbul ignore next */
                         logger_service_1["default"].error(e_1);
@@ -134,8 +139,8 @@ var TransmittalItemController = /** @class */ (function () {
                         /* istanbul ignore next */
                         logger_service_1["default"].error("{user: {_id: " + req.user._id + ", email: " + req.user.email + "}}");
                         res.status(500).json(e_1);
-                        return [3 /*break*/, 4];
-                    case 4: return [2 /*return*/];
+                        return [3 /*break*/, 5];
+                    case 5: return [2 /*return*/];
                 }
             });
         });

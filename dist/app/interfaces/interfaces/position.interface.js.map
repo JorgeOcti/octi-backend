@@ -1,1 +1,0 @@
-{"version":3,"file":"position.interface.js","sourceRoot":"","sources":["../../../../src/app/interfaces/interfaces/position.interface.ts"],"names":[],"mappings":"","sourcesContent":["import {ITeam} from '../team.interface';\n\nexport interface IPosition {\n  _id: any;\n  name: string;\n  team: ITeam | any;\n}\n"]}

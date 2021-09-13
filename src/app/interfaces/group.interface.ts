@@ -1,6 +1,6 @@
-import {ICompany} from './company.interface';
-import {IForm} from '../../form/interfaces/form.interface';
-import {IPermission} from './permision.interface';
+import { ICompany } from './company.interface';
+import { IForm } from '../../form/interfaces/form.interface';
+import { IPermission } from './permission.interface';
 
 export interface IGroup {
   _id: any;

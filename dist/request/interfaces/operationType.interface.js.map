@@ -1,0 +1,1 @@
+{"version":3,"file":"operationType.interface.js","sourceRoot":"","sources":["../../../src/request/interfaces/operationType.interface.ts"],"names":[],"mappings":"","sourcesContent":["import { ITeam } from '../../app/interfaces/team.interface';\n\nexport interface IOperationType {\n  _id: any;\n  name: string;\n  team: ITeam;\n}\n"]}

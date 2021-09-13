@@ -44,7 +44,7 @@ var milestone_model_1 = require("../models/milestone.model");
 var team_model_1 = require("../../app/models/team.model");
 var form_model_1 = require("../../form/models/form.model");
 // import ActivityHistory, { ChoicesTypeActivity } from '../models/activityHistory.model';
-function fixDuplicatesCar() {
+function createBaseMilestone() {
     return __awaiter(this, void 0, void 0, function () {
         var MONGODB_URI, teams, _i, teams_1, team, milestones, receptionForm, e_1;
         return __generator(this, function (_a) {
@@ -115,5 +115,5 @@ function fixDuplicatesCar() {
         });
     });
 }
-fixDuplicatesCar();
+createBaseMilestone();
 //# sourceMappingURL=createBaseMilestone.js.map

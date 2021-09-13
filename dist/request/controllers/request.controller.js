@@ -46,10 +46,14 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
         if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
     }
 };
-var __spreadArray = (this && this.__spreadArray) || function (to, from) {
-    for (var i = 0, il = from.length, j = to.length; i < il; i++, j++)
-        to[j] = from[i];
-    return to;
+var __spreadArray = (this && this.__spreadArray) || function (to, from, pack) {
+    if (pack || arguments.length === 2) for (var i = 0, l = from.length, ar; i < l; i++) {
+        if (ar || !(i in from)) {
+            if (!ar) ar = Array.prototype.slice.call(from, 0, i);
+            ar[i] = from[i];
+        }
+    }
+    return to.concat(ar || Array.prototype.slice.call(from));
 };
 exports.__esModule = true;
 var archiver = require("archiver");
@@ -223,18 +227,26 @@ var RequestController = /** @class */ (function () {
     };
     RequestController.prototype.apiCreate = function (req, res) {
         return __awaiter(this, void 0, void 0, function () {
-            var _a, company, team, _b, cars, venue, channel, sellerText, defaultItemStatus, updateTeam, request, _i, cars_1, car, newCar, newRequest, e_2;
+            var _a, company, team, _b, cars, venue, channel, sellerText, operationType, defaultItemStatus, updateTeam, request, _i, cars_1, car, newCar, newRequest, e_2;
             return __generator(this, function (_c) {
                 switch (_c.label) {
                     case 0:
                         logger_service_1["default"].info("RequestController.apiCreate");
                         logger_service_1["default"].info("{user: {_id: " + req.user._id + ", email: " + req.user.email + "}, body: " + JSON.stringify(req.body) + " }");
                         _a = req.user, company = _a.company, team = _a.team;
-                        _b = req.body, cars = _b.cars, venue = _b.venue, channel = _b.channel, sellerText = _b.sellerText;
+                        _b = req.body, cars = _b.cars, venue = _b.venue, channel = _b.channel, sellerText = _b.sellerText, operationType = _b.operationType;
                         _c.label = 1;
                     case 1:
                         _c.trys.push([1, 12, , 13]);
-                        return [4 /*yield*/, requestItemStatus_model_1["default"].findOneOrCreate({ team: team, "default": true }, { name: 'Pendiente', "default": true, team: team, weigth: 10 })];
+                        return [4 /*yield*/, requestItemStatus_model_1["default"].findOneOrCreate({
+                                team: team,
+                                "default": true
+                            }, {
+                                name: 'Pendiente',
+                                "default": true,
+                                team: team,
+                                weigth: 10
+                            })];
                     case 2:
                         defaultItemStatus = _c.sent();
                         return [4 /*yield*/, team_model_1["default"].findOne({ _id: team._id })];
@@ -246,6 +258,7 @@ var RequestController = /** @class */ (function () {
                                 number: updateTeam.requestNumber + 1,
                                 origin: venue,
                                 destination: venue,
+                                operationType: (operationType === null || operationType === void 0 ? void 0 : operationType.length) ? operationType : null,
                                 // status,
                                 channel: channel,
                                 createdBy: req.user
@@ -493,11 +506,11 @@ var RequestController = /** @class */ (function () {
                                             }
                                         }] }, extraMatch)
                             }];
-                        aggregate = __spreadArray(__spreadArray(__spreadArray([], baseAggregate), aggregatePopulate), [
+                        aggregate = __spreadArray(__spreadArray(__spreadArray([], baseAggregate, true), aggregatePopulate, true), [
                             {
                                 $sort: (_b = {}, _b[orderBy] = orderType === 'ascending' ? 1 : -1, _b)
                             }
-                        ]);
+                        ], false);
                         requestsAggregate = requestItem_model_1["default"].aggregate(aggregate);
                         options = {
                             page: parseInt(page ? page : '1', 10),
@@ -776,7 +789,7 @@ var RequestController = /** @class */ (function () {
                                 header: 'FECHA ACTUALIZACION', key: 'updated', width: 21, style: { numFmt: 'dd/mm/yyyy hh:mm' }
                             }, {
                                 header: 'OBSERVACIÓN', key: 'observation', width: 21
-                            }], questionColumns);
+                            }], questionColumns, true);
                         for (_d = 0, requestItems_1 = requestItems; _d < requestItems_1.length; _d++) {
                             item = requestItems_1[_d];
                             extraAnswers = {};
@@ -1216,7 +1229,10 @@ var RequestController = /** @class */ (function () {
                         _b.label = 1;
                     case 1:
                         _b.trys.push([1, 22, , 23]);
-                        return [4 /*yield*/, requestItem_model_1["default"].findOneAndUpdate({ _id: id, team: team }, { $set: __assign({}, updateObject) }).populate([{ path: 'car' }, { path: 'request' }])];
+                        return [4 /*yield*/, requestItem_model_1["default"].findOneAndUpdate({
+                                _id: id,
+                                team: team
+                            }, { $set: __assign({}, updateObject) }).populate([{ path: 'car' }, { path: 'request' }])];
                     case 2:
                         requestItem = _b.sent();
                         if (!Object.keys(updateObject.car).length) return [3 /*break*/, 19];
@@ -1230,7 +1246,7 @@ var RequestController = /** @class */ (function () {
                     case 4:
                         existActivity = _b.sent();
                         if (!!existActivity) return [3 /*break*/, 6];
-                        return [4 /*yield*/, activityHistory_model_1["default"].create({
+                        return [4 /*yield*/, new activityHistory_model_1["default"]({
                                 team: team,
                                 company: company,
                                 user: req.user._id,
@@ -1240,7 +1256,7 @@ var RequestController = /** @class */ (function () {
                                     item: requestItem._id,
                                     number: requestItem.request.number
                                 }
-                            })];
+                            }).save()];
                     case 5:
                         _b.sent();
                         _b.label = 6;
@@ -1381,10 +1397,10 @@ var RequestController = /** @class */ (function () {
                     case 3:
                         if (!filesToDownload.length) return [3 /*break*/, 5];
                         console.log('promise', numb);
-                        _b = [__spreadArray([], results)];
+                        _b = [__spreadArray([], results, true)];
                         return [4 /*yield*/, bluebird.all(filesToDownload.splice(0, 20).map(function (promise) { return promise(); }))];
                     case 4:
-                        results = __spreadArray.apply(void 0, _b.concat([_c.sent()]));
+                        results = __spreadArray.apply(void 0, _b.concat([_c.sent(), true]));
                         numb++;
                         return [3 /*break*/, 3];
                     case 5:

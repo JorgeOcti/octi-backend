@@ -1,21 +1,22 @@
 // import * as PropTypes from 'prop-types';
 import * as Raven from 'raven-js';
 import * as React from 'react';
-import {ErrorInfo} from 'react';
+import { ErrorInfo } from 'react';
 import * as moment from 'moment';
-import {connect} from 'react-redux';
-import {RouteComponentProps} from 'react-router';
-import {Dispatch} from 'redux';
-import {DashboardReduxAction} from '../../actions/dashboard.actions';
-import { getDashboardTiming, IDashboardTimingState} from '../../actions/dashboardTiming.actions';
+import { connect } from 'react-redux';
+import { RouteComponentProps } from 'react-router';
+import { Dispatch } from 'redux';
+import { DashboardReduxAction } from '../../actions/dashboard.actions';
+import { getDashboardTiming, IDashboardTimingState } from '../../actions/dashboardTiming.actions';
 import AppContainer from '../../container/AppContainer';
 import Row from '../Utils/Row';
-import TrackingBasePage from "../Utils/TrackingBasePage";
-import DateRangeInput from "../Utils/DateRangeInput";
+import TrackingBasePage from '../Utils/TrackingBasePage';
+import DateRangeInput from '../Utils/DateRangeInput';
 
 interface IPropsType extends RouteComponentProps<{ ticket: string }> {
   dispatch: Dispatch<DashboardReduxAction>;
   dashboard: IDashboardTimingState;
+
   getDashboardTiming(from: string, to: string): void;
 }
 
@@ -28,7 +29,7 @@ interface IStateType {
 }
 
 class DashboardTimingView extends TrackingBasePage<IPropsType, IStateType> {
-  title : string;
+  title: string;
   timingPerMonthChart: echarts.ECharts;
   timingPerVenueChart: echarts.ECharts;
 
@@ -37,8 +38,8 @@ class DashboardTimingView extends TrackingBasePage<IPropsType, IStateType> {
     error: null,
     selectedDate: null,
     from: moment().subtract(2, 'months').startOf('month').toDate(),
-    to: moment().endOf('month').toDate(),
-  }
+    to: moment().endOf('month').toDate()
+  };
 
   constructor(props: IPropsType) {
     super(props);
@@ -64,17 +65,17 @@ class DashboardTimingView extends TrackingBasePage<IPropsType, IStateType> {
       maxDate: moment(),
       locale: {
         format: 'MM/YYYY',
-        customRangeLabel: "Período personalizado",
-        applyLabel: "Aplicar",
-        cancelLabel: "Cancelar",
+        customRangeLabel: 'Período personalizado',
+        applyLabel: 'Aplicar',
+        cancelLabel: 'Cancelar'
       },
       ranges: {
         'Este mes': [moment().startOf('month'), moment().endOf('month')],
         'Últimos 3 meses': [moment().subtract(2, 'months').startOf('month'), moment().endOf('month')],
         'Últimos 6 meses': [moment().subtract(5, 'months').startOf('month'), moment().endOf('month')],
-        'Último año': [moment().subtract(11, 'months').startOf('month'), moment().endOf('month')],
+        'Último año': [moment().subtract(11, 'months').startOf('month'), moment().endOf('month')]
       }
-    }
+    };
   }
 
   public componentDidMount(): void {
@@ -84,20 +85,20 @@ class DashboardTimingView extends TrackingBasePage<IPropsType, IStateType> {
     this.timingPerMonthChart.on('click', this.showVenueChart);
   }
 
-  onDateRangeChange(from: Date, to: Date){
+  onDateRangeChange(from: Date, to: Date) {
     this.props.getDashboardTiming(moment(from).format('YYYY-MM-DD'), moment(to).format('YYYY-MM-DD'));
   }
 
   public componentDidCatch(error: Error, errorInfo: ErrorInfo): void {
-    this.setState({error});
+    this.setState({ error });
     Raven.captureException(error, {
       extra: errorInfo
     });
   }
 
   public componentDidUpdate(prevProps: IPropsType, prevState: IStateType): void {
-    const {loading, loadingPerVenue, perVenue} = this.props.dashboard;
-    const {showDrilldown} = this.state;
+    const { loading, loadingPerVenue, perVenue } = this.props.dashboard;
+    const { showDrilldown } = this.state;
     if (!loading) {
       showDrilldown ? this.updateTimingPerVenueChart() :
         this.updateTimingPerMonthChart();
@@ -111,42 +112,44 @@ class DashboardTimingView extends TrackingBasePage<IPropsType, IStateType> {
   }
 
   public render(): React.ReactElement<IPropsType> {
-    const {loading} = this.props.dashboard;
-    const {selectedDate, from, to} = this.state;
+    const { loading } = this.props.dashboard;
+    const { selectedDate, from, to } = this.state;
     let selectedMonth = selectedDate ?
-      this.capitalizeFirstLetter(moment(selectedDate, 'MM-YYYY').format('MMMM YYYY'))  : "";
+      this.capitalizeFirstLetter(moment(selectedDate, 'MM-YYYY').format('MMMM YYYY')) : '';
 
     return (
-      <AppContainer title="" cMenu="1" cSubMenu="1.5">
-        <section className="content">
+      <AppContainer title='' cMenu='1' cSubMenu='1.5'>
+        <section className='content'>
           <Row>
-            <div className="col-md-12">
-              <div className="box">
-                <div className="box-header with-border"><h3 className="box-title">{selectedDate ?`Traslados nacionales: ${selectedMonth}` : 'Traslados nacionales por mes'}</h3>
-                  <div className="box-tools pull-right">
+            <div className='col-md-12'>
+              <div className='box'>
+                <div className='box-header with-border'><h3
+                  className='box-title'>{selectedDate ? `Traslados nacionales: ${selectedMonth}` : 'Traslados nacionales por mes'}</h3>
+                  <div className='box-tools pull-right'>
                   </div>
                 </div>
 
-                 <div className="row" style={{display: selectedDate ? 'none' : 'inherit'}}>
-                  <div className="col-md-offset-8 col-md-4">
+                <div className='row' style={{ display: selectedDate ? 'none' : 'inherit' }}>
+                  <div className='col-md-offset-8 col-md-4'>
                     <DateRangeInput
                       options={this.getDateRangeOptions()}
                       onChange={this.onDateRangeChange}
                       startDate={from}
-                      endDate={to} />
+                      endDate={to}
+                    />
                   </div>
                 </div>
-                <div className="box-body">
-                <p
-                  className="text-muted text-center"
-                  style={{padding: '10px 0 0 0', margin: '0'}}
-                >{selectedDate ? '' : 'Haz click en el gráfico para ver detalles de no cumplimiento'}.</p>
-                  <div id="damages-per-month" style={{minHeight: '350px', maxWidth: '100%'}} />
+                <div className='box-body'>
+                  <p
+                    className='text-muted text-center'
+                    style={{ padding: '10px 0 0 0', margin: '0' }}
+                  >{selectedDate ? '' : 'Haz click en el gráfico para ver detalles de no cumplimiento'}.</p>
+                  <div id='damages-per-month' style={{ minHeight: '350px', maxWidth: '100%' }} />
                 </div>
                 {
                   loading &&
-                  <div className="overlay">
-                    <i className="fa fa-spinner fa-spin text-purple"/>
+                  <div className='overlay'>
+                    <i className='fa fa-spinner fa-spin text-purple' />
                   </div>
                 }
               </div>
@@ -162,23 +165,23 @@ class DashboardTimingView extends TrackingBasePage<IPropsType, IStateType> {
   }
 
   private updateTimingPerMonthChart() {
-    const {data} = this.props.dashboard;
-    let months : string[] = [];
-    let overdue : any[] = []
-    let ontime : any[] = [];
+    const { data } = this.props.dashboard;
+    let months: string[] = [];
+    let overdue: any[] = [];
+    let ontime: any[] = [];
     const createDataElement = (n: number) => n > 0 ? {
-        value: n,
-        label : n > 0 ? {show: true, position: 'insideRight'} : {show: false}
-      } : null;
+      value: n,
+      label: n > 0 ? { show: true, position: 'insideRight' } : { show: false }
+    } : null;
 
-    Object.keys(data).map( k => {
-      months.push(this.capitalizeFirstLetter(moment(k, "MM-YYYY").format('MMMM YYYY')));
-      ontime.push(data[k].filter( (d: { atTime: boolean; }) => d.atTime).length);
-      overdue.push(data[k].filter( (d: { atTime: boolean; }) => !d.atTime).length);
+    Object.keys(data).map(k => {
+      months.push(this.capitalizeFirstLetter(moment(k, 'MM-YYYY').format('MMMM YYYY')));
+      ontime.push(data[k].filter((d: { atTime: boolean; }) => d.atTime).length);
+      overdue.push(data[k].filter((d: { atTime: boolean; }) => !d.atTime).length);
     });
 
-    ontime = ontime.map(createDataElement)
-    overdue = overdue.map(createDataElement)
+    ontime = ontime.map(createDataElement);
+    overdue = overdue.map(createDataElement);
 
     const option: echarts.EChartOption = {
       color: ['#f1392c', '#00aa51'],
@@ -215,17 +218,17 @@ class DashboardTimingView extends TrackingBasePage<IPropsType, IStateType> {
           type: 'bar',
           stack: '1',
           data: overdue,
-          barMinHeight: 15,
+          barMinHeight: 15
         },
         {
           name: 'Cumple',
           type: 'bar',
           stack: '1',
           data: ontime,
-          barMinHeight: 15,
+          barMinHeight: 15
         }
       ],
-      toolbox: [],
+      toolbox: []
     };
 
     this.timingPerMonthChart.setOption(option, true);
@@ -235,49 +238,49 @@ class DashboardTimingView extends TrackingBasePage<IPropsType, IStateType> {
     const { selectedDate } = this.state;
     const { data } = this.props.dashboard;
     let values = data[selectedDate!];
-    let routes : any = {};
-    let names : string[] = [];
+    let routes: any = {};
+    let names: string[] = [];
 
-    const createDataElement = (n: number) =>  n > 0 ? {
-        value: n,
-        label : n > 0 ? {show: true, position: 'insideRight'} : {show: false}
-      } : null;
+    const createDataElement = (n: number) => n > 0 ? {
+      value: n,
+      label: n > 0 ? { show: true, position: 'insideRight' } : { show: false }
+    } : null;
 
-    values.map( (d : any) => {
-      let routeName = d.from + " - " + d.to;
+    values.map((d: any) => {
+      let routeName = d.from + ' - ' + d.to;
       if (routes[routeName] === undefined) {
-        routes[routeName] = {overdue: 0, ontime: 0, limitTime: d.daysLimit};
+        routes[routeName] = { overdue: 0, ontime: 0, limitTime: d.daysLimit };
         names.push(routeName);
       }
-      d.atTime ?  routes[routeName].ontime++ : routes[routeName].overdue++;
+      d.atTime ? routes[routeName].ontime++ : routes[routeName].overdue++;
     });
 
     names.sort();
-    let ontime : any[] = [];
-    let overdue : any[] = [];
+    let ontime: any[] = [];
+    let overdue: any[] = [];
 
-    names.map((n : string) => {
+    names.map((n: string) => {
       let data = routes[n];
-      ontime.push({...createDataElement(data.ontime as number), limitTime: data.limitTime });
-      overdue.push({...createDataElement(data.overdue as number), limitTime: data.limitTime });
+      ontime.push({ ...createDataElement(data.ontime as number), limitTime: data.limitTime });
+      overdue.push({ ...createDataElement(data.overdue as number), limitTime: data.limitTime });
     });
 
     const option: echarts.EChartOption = {
       color: ['#f1392c', '#00aa51'],
       tooltip: {
         trigger: 'axis',
-        formatter: function(params : any) {
+        formatter: function(params: any) {
           let timeLimit = 0;
-          let output = '<b>' + params[0].name + '</b><br/>'
+          let output = '<b>' + params[0].name + '</b><br/>';
 
           params.map((p: any) => {
-            output += p.marker + p.seriesName + ': ' + (p.value ? p.value : '-')  + '<br/>'; // : every 2nth
+            output += p.marker + p.seriesName + ': ' + (p.value ? p.value : '-') + '<br/>'; // : every 2nth
             if (timeLimit === 0)
-              timeLimit = p.data.limitTime
+              timeLimit = p.data.limitTime;
           });
 
-          output += `Tiempo límite de entrega: ${timeLimit} días`
-          return output
+          output += `Tiempo límite de entrega: ${timeLimit} días`;
+          return output;
         },
         axisPointer: {
           type: 'shadow'
@@ -311,7 +314,7 @@ class DashboardTimingView extends TrackingBasePage<IPropsType, IStateType> {
           stack: '1',
           data: overdue,
           barMinHeight: 15,
-          barMinWidth: 25,
+          barMinWidth: 25
         },
         {
           name: 'Cumple',
@@ -319,7 +322,7 @@ class DashboardTimingView extends TrackingBasePage<IPropsType, IStateType> {
           stack: '1',
           data: ontime,
           barMinHeight: 15,
-          barMinWidth: 25,
+          barMinWidth: 25
         }
       ],
       toolbox: {
@@ -341,10 +344,10 @@ class DashboardTimingView extends TrackingBasePage<IPropsType, IStateType> {
           emphasis: {
             color: '#a94442',
             borderColor: 'rgba(0, 0, 0, 0)',
-            shadowColor: 'rgba(0, 0, 0, 0)',
+            shadowColor: 'rgba(0, 0, 0, 0)'
           }
         }
-      },
+      }
     };
 
     this.timingPerMonthChart.setOption(option, true);
@@ -360,21 +363,21 @@ class DashboardTimingView extends TrackingBasePage<IPropsType, IStateType> {
     }, () => {
       setTimeout(() => {
         this.timingPerMonthChart.off('click');
-      }, 200)
+      }, 200);
     });
   }
 
-  private showDateChart(){
+  private showDateChart() {
     this.setState({
       showDrilldown: false,
-      selectedDate: null,
+      selectedDate: null
     }, () => {
-      setTimeout(()=> {
+      setTimeout(() => {
         this.timingPerMonthChart.on('click', this.showVenueChart);
       }, 500);
       const $timingPerMonth = document.getElementById('damages-per-month') as HTMLDivElement;
       this.timingPerMonthChart = echarts.init($timingPerMonth);
-    })
+    });
   }
 
   private resizeCharts() {
@@ -403,7 +406,7 @@ const mapStateToProps = (state: { dashboardTiming: IDashboardTimingState }) => {
 const mapDispatchToProps = (dispatch: any) => {
   return {
     dispatch,
-    getDashboardTiming: (from: string, to: string) => dispatch(getDashboardTiming(from, to)),
+    getDashboardTiming: (from: string, to: string) => dispatch(getDashboardTiming(from, to))
   };
 };
 

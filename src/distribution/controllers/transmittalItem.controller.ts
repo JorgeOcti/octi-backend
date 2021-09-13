@@ -1,11 +1,12 @@
-import {IRequest} from "../../interfaces/global.interface";
-import {Response} from "express";
-import TransmittalItem from "../models/transmittalItem.model";
-import TransmittalController from "./transmittal.controller";
-import logger from "../../services/logger.service";
-import {io} from "../../server";
-import Transmittal from "../models/transmittal.model";
-import RequestItem from "../../request/models/requestItem.model";
+import { IRequest } from '../../interfaces/global.interface';
+import { Response } from 'express';
+import TransmittalItem from '../models/transmittalItem.model';
+import TransmittalController from './transmittal.controller';
+import logger from '../../services/logger.service';
+import { io } from '../../server';
+import Transmittal from '../models/transmittal.model';
+import RequestItem from '../../request/models/requestItem.model';
+import Car from '../../app/models/car.model';
 
 class TransmittalItemController {
 
@@ -19,35 +20,39 @@ class TransmittalItemController {
   }
 
   public async index(req: IRequest, res: Response) {
-    res.render('app/index', {token: await req.user.generateToken()});
+    res.render('app/index', { token: await req.user.generateToken() });
   }
 
   public async apiList(req: IRequest, res: Response) {
     res.json({
       api: 'apiList:apiDetail'
-    })
+    });
   }
 
   public async apiDetail(req: IRequest, res: Response) {
     res.json({
       api: 'TransmittalItemController:apiDetail'
-    })
+    });
   }
 
   public async apiUpdate(req: IRequest, res: Response) {
-    logger.info(`TransmittalItemController.apiUpdate`);
-    const {id} = req.params;
-    const {body: transmittalItem} = req;
-    const {team} = req.user;
     try {
+      logger.info(`TransmittalItemController.apiUpdate`);
+      const { id } = req.params;
+      const { body: transmittalItem } = req;
+      const { team } = req.user;
+      if (transmittalItem.car) {
+        const { car } = transmittalItem;
+        await Car.findOneAndUpdate({ _id: car._id, team }, { $set: car });
+      }
       const newTransmittalItem = await TransmittalItem
-        .findOneAndUpdate({_id: id}, {$set: transmittalItem}, {new: true})
+        .findOneAndUpdate({ _id: id }, { $set: transmittalItem }, { new: true })
         .populate(TransmittalController.itemPopulate);
       io.to(`transmittal-list-${team._id}`).emit('UPDATE_TRANSMITTAL_ITEM', {
         transmittalItem: newTransmittalItem
       });
       res.json({
-        data: newTransmittalItem,
+        data: newTransmittalItem
       });
     } catch (e) {
       /* istanbul ignore next */
@@ -61,8 +66,8 @@ class TransmittalItemController {
   }
 
   public async apiCreate(req: IRequest, res: Response) {
-    const {body: item, user} = req;
-    const {team} = user;
+    const { body: item, user } = req;
+    const { team } = user;
     try {
       const transmittalItem = await new TransmittalItem({
         team,
@@ -99,13 +104,13 @@ class TransmittalItemController {
 
   public async apiDelete(req: IRequest, res: Response) {
     logger.info(`TransmittalItemController.apiDelete`);
-    const {id} = req.params;
-    const {team} = req.user;
+    const { id } = req.params;
+    const { team } = req.user;
     try {
-      const transmittalItem = await TransmittalItem.findOne({_id: id});
-      if(transmittalItem){
+      const transmittalItem = await TransmittalItem.findOne({ _id: id });
+      if (transmittalItem) {
         await transmittalItem.remove();
-        const transmittalItems = await TransmittalItem.find({transmittal: transmittalItem.transmittal}).count();
+        const transmittalItems = await TransmittalItem.find({ transmittal: transmittalItem.transmittal }).count();
         io.to(`transmittal-list-${team._id}`).emit('DELETE_TRANSMITTAL_ITEM', {
           transmittalItem
         });
@@ -119,7 +124,7 @@ class TransmittalItemController {
         });
         // clean transmittal
         if (transmittalItems === 0) {
-          const transmittal = await Transmittal.findOne({_id: transmittalItem.transmittal});
+          const transmittal = await Transmittal.findOne({ _id: transmittalItem.transmittal });
           await transmittal!.remove();
           io.to(`transmittal-list-${team._id}`).emit('DELETE_TRANSMITTAL', {
             transmittal
@@ -129,7 +134,7 @@ class TransmittalItemController {
       }
       res.json({
         transmittalItem
-      })
+      });
     } catch (e) {
       /* istanbul ignore next */
       logger.error(e);

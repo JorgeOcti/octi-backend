@@ -1,30 +1,30 @@
 import * as Raven from 'raven-js';
 import * as React from 'react';
-import {ErrorInfo, Fragment} from 'react';
-import {connect} from 'react-redux';
-import {RouteComponentProps} from 'react-router';
+import { ErrorInfo, Fragment } from 'react';
+import { connect } from 'react-redux';
+import { RouteComponentProps } from 'react-router';
 import * as io from 'socket.io-client';
 import AppContainer from '../../../container/AppContainer';
-import {IWindow} from '../../../interfaces/window';
-import {hasPermission} from '../../../utils/common';
+import { IWindow } from '../../../interfaces/window';
+import { hasPermission } from '../../../utils/common';
 import ImageLazyLoad from '../../Utils/ImageLazyLoad';
 import Paginator from '../../Utils/Paginator';
 import ShowIf from '../../Utils/ShowIf';
-import TrackingBasePage from "../../Utils/TrackingBasePage";
-import TransmittalActions from "../../../actions/transmittal.actions";
-import {ITransmittalActionTypes, ITransmittalState} from "../../../actions/transmittal.types";
+import TrackingBasePage from '../../Utils/TrackingBasePage';
+import TransmittalActions from '../../../actions/transmittal.actions';
+import { ITransmittalActionTypes, ITransmittalState } from '../../../actions/transmittal.types';
 import TransmitalListDetail from './TransmitalListDetail';
-import {Dispatch} from "redux";
-import ModalView from "../../Modal/ModalView";
-import ApiService from "../../../utils/axios";
-import * as moment from "moment";
-import Axios from "axios";
-import * as swal from "sweetalert";
+import { Dispatch } from 'redux';
+import ModalView from '../../Modal/ModalView';
+import ApiService from '../../../utils/axios';
+import * as moment from 'moment';
+import Axios from 'axios';
+import * as swal from 'sweetalert';
 
 interface IPropsType extends RouteComponentProps<{ ticket: string }> {
   dispatch: Dispatch<ITransmittalActionTypes>;
   transmittal: ITransmittalState;
-  transmittalActions : TransmittalActions
+  transmittalActions: TransmittalActions;
 }
 
 interface IStateType {
@@ -35,7 +35,7 @@ interface IStateType {
 declare let window: IWindow;
 
 class TransmittalListView extends TrackingBasePage<IPropsType, IStateType> {
-  title : string;
+  title: string;
 
   readonly state = {
     error: null,
@@ -54,9 +54,9 @@ class TransmittalListView extends TrackingBasePage<IPropsType, IStateType> {
   }
 
   public componentWillMount(): void {
-    const {orderBy, orderType} = this.props.transmittal.options;
-    const {page} = this.props.transmittal.pagination;
-    const {transmittalActions} = this.props;
+    const { orderBy, orderType } = this.props.transmittal.options;
+    const { page } = this.props.transmittal.pagination;
+    const { transmittalActions } = this.props;
     window.scrollTo(0, 0);
     transmittalActions.getFormBaseData();
     transmittalActions.getTransmittalsThunkAction(page, orderBy, orderType);
@@ -127,15 +127,15 @@ class TransmittalListView extends TrackingBasePage<IPropsType, IStateType> {
       }
       setTimeout(() => {
         transmittalActions.deleteTransmittalAction(data.transmittal);
-        const {orderBy, orderType} = this.props.transmittal.options;
-        const {page} = this.props.transmittal.pagination;
+        const { orderBy, orderType } = this.props.transmittal.options;
+        const { page } = this.props.transmittal.pagination;
         transmittalActions.getTransmittalsThunkAction(page, orderBy, orderType, true);
       }, 300);
     });
 
     this.socket.on('CREATE_TRANSMITTAL', (data: any): void => {
-      const {page} = this.props.transmittal.pagination;
-      const {orderBy, orderType} = this.props.transmittal.options;
+      const { page } = this.props.transmittal.pagination;
+      const { orderBy, orderType } = this.props.transmittal.options;
       transmittalActions.getTransmittalsThunkAction(page, orderBy, orderType, true);
     });
 
@@ -155,12 +155,12 @@ class TransmittalListView extends TrackingBasePage<IPropsType, IStateType> {
     if (this.props.transmittal.source) {
       this.props.transmittal.source.cancel('Operation canceled by the user.');
     }
-    this.socket.emit('leave', {room: `distribution-list-${window.user.team._id}`});
+    this.socket.emit('leave', { room: `distribution-list-${window.user.team._id}` });
     this.socket.disconnect();
   }
 
   public componentDidCatch(error: Error, errorInfo: ErrorInfo): void {
-    this.setState({error});
+    this.setState({ error });
     Raven.captureException(error, {
       extra: errorInfo
     });
@@ -168,33 +168,33 @@ class TransmittalListView extends TrackingBasePage<IPropsType, IStateType> {
 
   public render(): React.ReactElement<IPropsType> {
     const {
-      pagination, loading, data, options: {orderBy, orderType}
+      pagination, loading, data, options: { orderBy, orderType }
     } = this.props.transmittal;
-    const {exporing} = this.state;
+    const { exporing } = this.state;
     return (
-      <AppContainer title="" cMenu="3" cSubMenu="3.4">
-        <section className="content">
-          <div className="box">
-            <div className="box-header with-border">
-              <h3 className="box-title">Transporte <small>{pagination.count}</small></h3>
-              <div className="pull-right box-tools">
+      <AppContainer title='' cMenu='3' cSubMenu='3.4'>
+        <section className='content'>
+          <div className='box'>
+            <div className='box-header with-border'>
+              <h3 className='box-title'>Transporte <small>{pagination.count}</small></h3>
+              <div className='pull-right box-tools'>
                 {
                   hasPermission(window.user, 'addTransmittal') ?
-                    <button className="btn btn-sm btn-success" onClick={this.create}>
-                      <i className="fa fa-fw fa-plus" /> Crear orden
+                    <button className='btn btn-sm btn-success' onClick={this.create}>
+                      <i className='fa fa-fw fa-plus' /> Crear orden
                     </button>
                     : null
                 }
                 <ShowIf condition={data.length > 0}>
                   <button
-                    className="btn btn-sm btn-primary hidden-xs"
+                    className='btn btn-sm btn-primary hidden-xs'
                     onClick={this.exportExcel}
                     disabled={exporing}
                     style={{ marginLeft: '5px' }}
                   >
                     {
-                      exporing ? <Fragment><i className="fa fa-spin fa-spinner" /> Exportando</Fragment>
-                        : <Fragment><i className="fa fa-fw fa-download" /> Exportar</Fragment>
+                      exporing ? <Fragment><i className='fa fa-spin fa-spinner' /> Exportando</Fragment>
+                        : <Fragment><i className='fa fa-fw fa-download' /> Exportar</Fragment>
                     }
                   </button>
                 </ShowIf>
@@ -202,28 +202,29 @@ class TransmittalListView extends TrackingBasePage<IPropsType, IStateType> {
             </div>
             <div className={`box-body transmittal-list`}>
               <ShowIf condition={data.length > 0}>
-                <div className="row transmittal bg-primary">
-                  <div className="flex-45 col-sm-1 col-xs-1 col-md-1 col-lg-1 center pointer head-sorted"
+                <div className='row transmittal bg-primary'>
+                  <div className='flex-45 col-sm-1 col-xs-1 col-md-1 col-lg-1 center pointer head-sorted'
                        onClick={() => this.changeOrder('_id')}
                   >
-                    <strong>ID</strong> <i className={`fa ${orderBy === '_id' ? `${orderType === 'descending' ? 'fa-sort-down' : 'fa-sort-up'}` : 'fa-sort'}`} />
+                    <strong>ID</strong> <i
+                    className={`fa ${orderBy === '_id' ? `${orderType === 'descending' ? 'fa-sort-down' : 'fa-sort-up'}` : 'fa-sort'}`} />
                   </div>
-                  <div className="flex-45 col-sm-1 col-xs-1 col-md-1 col-lg-1">
+                  <div className='flex-45 col-sm-1 col-xs-1 col-md-1 col-lg-1'>
                     <strong>Placa</strong>
                   </div>
-                  <div className="flex-45 col-sm-2 col-xs-2 col-md-2 col-lg-2">
+                  <div className='flex-45 col-sm-2 col-xs-2 col-md-2 col-lg-2'>
                     <strong>Chófer</strong>
                   </div>
-                  <div className="flex-45 col-sm-2 col-xs-2 col-md-2 col-lg-2">
+                  <div className='flex-45 col-sm-2 col-xs-2 col-md-2 col-lg-2'>
                     <strong>Transportista</strong>
                   </div>
-                  <div className="flex-45 col-sm-2 col-xs-2 col-md-2 col-lg-2">
+                  <div className='flex-45 col-sm-2 col-xs-2 col-md-2 col-lg-2'>
                     <strong>Documentos</strong>
                   </div>
-                  <div className="flex-45 col-sm-1 col-xs-1 col-md-1 col-lg-1">
+                  <div className='flex-45 col-sm-1 col-xs-1 col-md-1 col-lg-1'>
                     <strong>Nº Vehículos</strong>
                   </div>
-                  <div className="flex-45 col-sm-3 col-xs-3 col-md-3 col-lg-3" />
+                  <div className='flex-45 col-sm-3 col-xs-3 col-md-3 col-lg-3' />
                 </div>
                 {
                   data.map((item: any) => (
@@ -235,10 +236,10 @@ class TransmittalListView extends TrackingBasePage<IPropsType, IStateType> {
                 }
               </ShowIf>
               <ShowIf condition={!loading && data.length === 0}>
-                <div className="row">
-                  <div className="col-md-12 text-center" style={{paddingTop: '10px', paddingBottom: '10px'}}>
+                <div className='row'>
+                  <div className='col-md-12 text-center' style={{ paddingTop: '10px', paddingBottom: '10px' }}>
                     <ImageLazyLoad
-                      url="/images/not_found.png"
+                      url='/images/not_found.png'
                       height={'200px'}
                       style={{
                         opacity: 0.5,
@@ -257,15 +258,15 @@ class TransmittalListView extends TrackingBasePage<IPropsType, IStateType> {
             </div>
             {
               pagination.pages > 1 &&
-              <div className="box-footer">
-                <div className="row">
-                  <div className="col-md-6" style={{ padding: '20px 15px' }}>
-                    <span className="react-bootstrap-table-pagination-total text-ellipsis">
+              <div className='box-footer'>
+                <div className='row'>
+                  <div className='col-md-6' style={{ padding: '20px 15px' }}>
+                    <span className='react-bootstrap-table-pagination-total text-ellipsis'>
                       &nbsp;&nbsp;Mostrando registros del {(pagination.page - 1) * 20 + 1} al {(pagination.page) * 20} de {pagination.count} registros.
                       </span>
                   </div>
-                  <div className="col-md-6">
-                    <div className="text-right" style={{ marginRight: '15px' }}>
+                  <div className='col-md-6'>
+                    <div className='text-right' style={{ marginRight: '15px' }}>
                       <Paginator changePage={this.changePage} page={pagination.page} pages={pagination.pages} />
                     </div>
                   </div>
@@ -274,12 +275,12 @@ class TransmittalListView extends TrackingBasePage<IPropsType, IStateType> {
             }
             {
               loading &&
-              <div className="overlay">
-                <i className="fa fa-spinner fa-spin text-purple" />
+              <div className='overlay'>
+                <i className='fa fa-spinner fa-spin text-purple' />
               </div>
             }
           </div>
-          <ModalView modalLarge={true}/>
+          <ModalView modalLarge={true} />
         </section>
       </AppContainer>
     );
@@ -287,8 +288,8 @@ class TransmittalListView extends TrackingBasePage<IPropsType, IStateType> {
 
   private changeOrder(key: string) {
     const {
-      options: {orderBy, orderType},
-      pagination: {page}
+      options: { orderBy, orderType },
+      pagination: { page }
     } = this.props.transmittal;
     let newOrderType = orderType;
     let newOrderBy = orderBy;
@@ -305,7 +306,7 @@ class TransmittalListView extends TrackingBasePage<IPropsType, IStateType> {
   }
 
   private changePage(page: number): void {
-    const {options: {orderBy, orderType}} = this.props.transmittal;
+    const { options: { orderBy, orderType } } = this.props.transmittal;
     this.props.transmittalActions.getTransmittalsThunkAction(page, orderBy, orderType);
   }
 

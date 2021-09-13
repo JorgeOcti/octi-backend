@@ -47,11 +47,13 @@ services:
       context: .
     image: andes:latest
     restart: unless-stopped
+    command: npm run dev
+#    command: [ 'nodemon', '--inspect=0.0.0.0:9229', 'dist/server.js', ' --max-old-space-size=4096' ]
     deploy:
       resources:
         limits:
           memory: 500M
-    command: ['nodemon', '--inspect=0.0.0.0:9229', 'dist/server.js', ' --max-old-space-size=4096']
+    # command: ['nodemon', '--inspect=0.0.0.0:9229', 'dist/server.js', ' --max-old-space-size=4096']
     # command: ['nodemon', '--inspect=0.0.0.0:9229', 'dist/server.js', ' --max-old-space-size=4096']
     env_file:
       - .env

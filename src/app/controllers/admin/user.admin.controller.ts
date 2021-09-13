@@ -9,7 +9,7 @@ import * as tempfile from 'tempfile';
 import { queue } from '../../../app';
 import { IForm } from '../../../form/interfaces/form.interface';
 import { IRequest } from '../../../interfaces/global.interface';
-import { IPermission } from '../../interfaces/permision.interface';
+import { IPermission } from '../../interfaces/permission.interface';
 import { io } from '../../../server';
 import User, {
   IUserModel
@@ -569,7 +569,7 @@ class AdminUsersController {
       };
     }
     return new Promise((resolve, reject) => {
-      User.paginate(filter, options, (err, result) => {
+      User.paginate!(filter, options, (err, result) => {
         /* istanbul ignore next  */
         if (err) {
           return reject(err);

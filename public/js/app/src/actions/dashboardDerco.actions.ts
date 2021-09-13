@@ -49,7 +49,7 @@ export function getDashboardCleaning() {
     const api: ApiService = new ApiService();
     dispatch(isLoadingAction(true));
     Axios.all([
-      api.getVenues(1, 200),
+      api.getVenues({ page: 1, pageSize: 200 }),
       api.getDashboardCleaning()
     ]).then(Axios.spread((venues, dashboard) => {
       dispatch(loadDashboardCleaningAction(dashboard.data));

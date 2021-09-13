@@ -108,7 +108,7 @@ class CarController {
         newCar.status = ChoicesStatusCar.active;
         await newCar.save();
       } else {
-        await CarModel.create({
+        await new CarModel({
           vin: car.vin,
           vin2: car.vin2,
           color: car.color ? car.color : '',
@@ -120,7 +120,7 @@ class CarController {
           team,
           createdBy: req.user,
           status: ChoicesStatusCar.active
-        });
+        }).save();
       }
 
       res.json({
@@ -1376,7 +1376,6 @@ class CarController {
         });
       }
 
-      console.log(participantFilter);
       const revisions = await this.getRevisions(participantFilter, options);
 
       // validate exist page

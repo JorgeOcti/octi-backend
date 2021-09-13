@@ -298,17 +298,17 @@ app.use('/api/v1', router_1.jwtRouter);
 exports.queue = kue.createQueue({
     redis: {
         createClientFactory: function () {
-            return redis_service_1.createRedisClient();
+            return (0, redis_service_1.createRedisClient)();
         }
     }
 });
 var billingQueue = new Bull('billing', {
     createClient: function () {
-        return redis_service_1.createRedisClient();
+        return (0, redis_service_1.createRedisClient)();
     },
     prefix: '{andes}'
 });
-var addCronTask = function () { return __awaiter(void 0, void 0, void 0, function () {
+(function () { return __awaiter(void 0, void 0, void 0, function () {
     var jobs, _i, jobs_1, job, error_1;
     return __generator(this, function (_a) {
         switch (_a.label) {
@@ -364,8 +364,7 @@ var addCronTask = function () { return __awaiter(void 0, void 0, void 0, functio
             case 11: return [2 /*return*/];
         }
     });
-}); };
-addCronTask();
+}); })();
 new email_task_1["default"](exports.queue).run();
 new inventory_task_1["default"](exports.queue).run();
 kue.app.listen((parseInt(process.env.PORT, 10) || 3000) + 40);

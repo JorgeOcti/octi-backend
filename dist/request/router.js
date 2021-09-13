@@ -7,6 +7,7 @@ var reason_controller_1 = require("./controllers/reason.controller");
 var salesChannel_controller_1 = require("./controllers/salesChannel.controller");
 var request_controller_1 = require("./controllers/request.controller");
 var requestItemStatus_controller_1 = require("./controllers/requestItemStatus.controller");
+var operationType_controller_1 = require("./controllers/operationType.controller");
 var requestRouter = express.Router();
 exports.requestRouter = requestRouter;
 // web pages
@@ -14,7 +15,9 @@ requestRouter.get('/requests/', middlewares_1["default"].isLoggedIn, request_con
 requestRouter.get('/requests/settings/reasons/', middlewares_1["default"].isLoggedIn, request_controller_1["default"].index);
 requestRouter.get('/requests/settings/channels/', middlewares_1["default"].isLoggedIn, request_controller_1["default"].index);
 requestRouter.get('/requests/settings/status/', middlewares_1["default"].isLoggedIn, request_controller_1["default"].index);
+requestRouter.get('/requests/settings/operations-type/', middlewares_1["default"].isLoggedIn, request_controller_1["default"].index);
 requestRouter.get('/requests/export/', middlewares_1["default"].isLoggedIn, request_controller_1["default"].exportExcel);
+requestRouter.get('/requests/import/', middlewares_1["default"].isLoggedIn, request_controller_1["default"].index);
 requestRouter.get('/requests/vehicles/:id/', middlewares_1["default"].isLoggedIn, request_controller_1["default"].index);
 requestRouter.get('/requests/vehicles/', middlewares_1["default"].isLoggedIn, request_controller_1["default"].index);
 requestRouter.get('/requests/:id/', middlewares_1["default"].isLoggedIn, request_controller_1["default"].index);
@@ -46,4 +49,8 @@ requestRouter.get('/api/v1/request-item-status/', middlewares_1["default"].isJWT
 requestRouter.post('/api/v1/request-item-status/', middlewares_1["default"].isJWTAuthenticated, requestItemStatus_controller_1["default"].apiCreate);
 requestRouter.patch('/api/v1/request-item-status/:id/', middlewares_1["default"].isJWTAuthenticated, requestItemStatus_controller_1["default"].apiUpdate);
 requestRouter["delete"]('/api/v1/request-item-status/:id/', middlewares_1["default"].isJWTAuthenticated, requestItemStatus_controller_1["default"].apiDelete);
+requestRouter.get('/api/v1/operation-types/', middlewares_1["default"].isJWTAuthenticated, operationType_controller_1["default"].apiList);
+requestRouter.post('/api/v1/operation-types/', middlewares_1["default"].isJWTAuthenticated, operationType_controller_1["default"].apiCreate);
+requestRouter.patch('/api/v1/operation-types/:id/', middlewares_1["default"].isJWTAuthenticated, operationType_controller_1["default"].apiUpdate);
+requestRouter["delete"]('/api/v1/operation-types/:id/', middlewares_1["default"].isJWTAuthenticated, operationType_controller_1["default"].apiDelete);
 //# sourceMappingURL=router.js.map

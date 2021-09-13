@@ -35,12 +35,12 @@ var milestoneSchema = new mongoose.Schema({
     kind: {
         type: String,
         "enum": exports.choicesKindMilestone,
-        "default": ""
+        "default": ''
     },
     step: {
         type: String,
         "enum": exports.choicesStepMilestone,
-        "default": ""
+        "default": ''
     },
     form: {
         type: mongoose.Schema.Types.ObjectId,
