@@ -364,6 +364,10 @@ var participantSchema = new mongoose.Schema({
         type: mongoose.Schema.Types.ObjectId,
         ref: 'TransmittalItem'
     },
+    transmittal: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Transmittal'
+    },
     active: {
         type: Boolean,
         "default": true

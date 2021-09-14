@@ -84,6 +84,7 @@ var activityHistory_model_1 = require("../../billing/models/activityHistory.mode
 var triggerHandler_1 = require("../commands/triggerHandler");
 var transmittalItem_model_1 = require("../../distribution/models/transmittalItem.model");
 var transmittal_controller_1 = require("../../distribution/controllers/transmittal.controller");
+var transmittal_model_1 = require("../../distribution/models/transmittal.model");
 // import {ValidationResult} from 'joi';
 // import * as puppeteer from 'puppeteer';
 var DERCO_TEAM = '5bf2de34caf8ef7096105cda';
@@ -689,13 +690,13 @@ var FormController = /** @class */ (function () {
     };
     FormController.prototype.complete = function (req, res) {
         return __awaiter(this, void 0, void 0, function () {
-            var id, _a, vin, answers, transmittalItem, _b, company, venue, team, updatedUser, car_1, form, participantObject, reception, receptionVenue, shipping, shippingVenue, carrier, conciliation, newParticipant, sumSectionWeigths, sumSectionQualifications, allImages, _i, _c, section, sumWeigths, sumQualifications, newAnswers, _loop_1, this_1, _d, _e, question, sectionQualification, formQualification_1, updateTeam, transmittalItemData, today, tomorrow, count, triggersHandler, alerts, _f, _g, _h, e_4, e_5;
+            var id, _a, vin, answers, transmittalItem, transmittal, _b, company, venue, team, updatedUser, car_1, form, participantObject, reception, receptionVenue, shipping, shippingVenue, carrier, conciliation, newParticipant, sumSectionWeigths, sumSectionQualifications, allImages, _i, _c, section, sumWeigths, sumQualifications, newAnswers, _loop_1, this_1, _d, _e, question, sectionQualification, formQualification_1, updateTeam, transmittalItemData, newTransmittal, today, tomorrow, count, triggersHandler, alerts, _f, _g, _h, e_4, e_5;
             var _this = this;
             return __generator(this, function (_j) {
                 switch (_j.label) {
                     case 0:
                         id = req.params.id;
-                        _a = req.body, vin = _a.vin, answers = _a.answers, transmittalItem = _a.transmittalItem;
+                        _a = req.body, vin = _a.vin, answers = _a.answers, transmittalItem = _a.transmittalItem, transmittal = _a.transmittal;
                         _b = req.user, company = _b.company, venue = _b.venue, team = _b.team;
                         logger_service_1["default"].info("complete");
                         logger_service_1["default"].info("{user: {_id: " + req.user._id + ", email: " + req.user.email + "}, body: " + JSON.stringify(req.body) + "}");
@@ -716,7 +717,7 @@ var FormController = /** @class */ (function () {
                         vin = vin.replace(/[\W_]+/g, '');
                         _j.label = 1;
                     case 1:
-                        _j.trys.push([1, 33, , 34]);
+                        _j.trys.push([1, 36, , 37]);
                         return [4 /*yield*/, user_model_1["default"].findById(req.user._id).populate([{ path: 'venue' }])];
                     case 2:
                         updatedUser = _j.sent();
@@ -732,14 +733,14 @@ var FormController = /** @class */ (function () {
                             })];
                     case 3:
                         car_1 = _j.sent();
-                        if (!car_1) return [3 /*break*/, 31];
+                        if (!car_1) return [3 /*break*/, 34];
                         return [4 /*yield*/, this.getFormWithScale({
                                 _id: id,
                                 team: team
                             })];
                     case 4:
                         form = _j.sent();
-                        if (!form) return [3 /*break*/, 29];
+                        if (!form) return [3 /*break*/, 32];
                         participantObject = {
                             name: form.name,
                             team: team,
@@ -945,7 +946,7 @@ var FormController = /** @class */ (function () {
                         });
                         _j.label = 12;
                     case 12:
-                        _j.trys.push([12, 27, , 28]);
+                        _j.trys.push([12, 30, , 31]);
                         return [4 /*yield*/, team_model_1["default"].findOneAndUpdate({ _id: team._id }, { $inc: { formsNumber: 1 } }, { "new": true })];
                     case 13:
                         updateTeam = _j.sent();
@@ -957,7 +958,7 @@ var FormController = /** @class */ (function () {
                     case 14:
                         // save the participant
                         _j.sent();
-                        if (!(transmittalItem && transmittalItem.length)) return [3 /*break*/, 17];
+                        if (!(transmittalItem === null || transmittalItem === void 0 ? void 0 : transmittalItem.length)) return [3 /*break*/, 17];
                         newParticipant.transmittalItem = transmittalItem;
                         return [4 /*yield*/, newParticipant.save()];
                     case 15:
@@ -972,15 +973,44 @@ var FormController = /** @class */ (function () {
                         });
                         _j.label = 17;
                     case 17:
-                        if (!allImages.length) return [3 /*break*/, 19];
-                        return [4 /*yield*/, participantFile_model_1["default"].update({ _id: { $in: allImages } }, { participant: newParticipant }, { multi: true })];
+                        if (!(transmittal === null || transmittal === void 0 ? void 0 : transmittal.length)) return [3 /*break*/, 20];
+                        newParticipant.transmittal = transmittal;
+                        return [4 /*yield*/, newParticipant.save()];
                     case 18:
                         _j.sent();
-                        _j.label = 19;
+                        return [4 /*yield*/, transmittal_model_1["default"]
+                                .findOneAndUpdate({
+                                _id: transmittal
+                            }, {
+                                $set: {
+                                    status: transmittal_model_1.ChoicesStatusTransmittal.completed
+                                }
+                            }, {
+                                "new": true
+                            })
+                                .populate(transmittal_controller_1["default"].populate)];
                     case 19:
+                        newTransmittal = _j.sent();
+                        server_1.io.to("transmittal-list-" + team._id).emit('UPDATE_TRANSMITTAL', {
+                            transmittal: newTransmittal
+                        });
+                        _j.label = 20;
+                    case 20:
+                        if (!allImages.length) return [3 /*break*/, 22];
+                        return [4 /*yield*/, participantFile_model_1["default"].update({
+                                _id: { $in: allImages }
+                            }, {
+                                participant: newParticipant
+                            }, {
+                                multi: true
+                            })];
+                    case 21:
+                        _j.sent();
+                        _j.label = 22;
+                    case 22:
                         car_1.lastForm = newParticipant;
                         return [4 /*yield*/, car_1.save()];
-                    case 20:
+                    case 23:
                         _j.sent();
                         today = moment().startOf('day');
                         tomorrow = moment(today).add(1, 'days');
@@ -991,15 +1021,15 @@ var FormController = /** @class */ (function () {
                                     $lt: tomorrow.toDate()
                                 }
                             })];
-                    case 21:
+                    case 24:
                         count = _j.sent();
-                        if (!(form.triggers && form.triggers.length)) return [3 /*break*/, 23];
+                        if (!(form.triggers && form.triggers.length)) return [3 /*break*/, 26];
                         triggersHandler = new triggerHandler_1["default"](form, newParticipant);
                         return [4 /*yield*/, triggersHandler.execute({})];
-                    case 22:
+                    case 25:
                         _j.sent();
-                        _j.label = 23;
-                    case 23: return [4 /*yield*/, alert_model_1["default"]
+                        _j.label = 26;
+                    case 26: return [4 /*yield*/, alert_model_1["default"]
                             .find({
                             team: team,
                             $or: [
@@ -1010,7 +1040,7 @@ var FormController = /** @class */ (function () {
                                 path: 'users',
                                 select: ['firstName', 'lastName', 'email', 'venue', 'venuesAccess']
                             }])];
-                    case 24:
+                    case 27:
                         alerts = _j.sent();
                         /* Send alerts if exist */
                         if (alerts.length) {
@@ -1058,7 +1088,7 @@ var FormController = /** @class */ (function () {
                                     path: 'venue',
                                     select: ['name']
                                 }])];
-                    case 25:
+                    case 28:
                         // send refresh with websocket to dashboard detail
                         _g.apply(_f, _h.concat([_j.sent()]));
                         return [4 /*yield*/, new activityHistory_model_1["default"]({
@@ -1071,7 +1101,7 @@ var FormController = /** @class */ (function () {
                                     vin: car_1.vin
                                 }
                             }).save()];
-                    case 26:
+                    case 29:
                         _j.sent();
                         return [2 /*return*/, res.json({
                                 data: {
@@ -1082,7 +1112,7 @@ var FormController = /** @class */ (function () {
                                 },
                                 status: 200
                             })];
-                    case 27:
+                    case 30:
                         e_4 = _j.sent();
                         /* istanbul ignore next */
                         console.log(e_4);
@@ -1092,20 +1122,20 @@ var FormController = /** @class */ (function () {
                                 message: e_4,
                                 status: 400
                             })];
-                    case 28: return [3 /*break*/, 30];
-                    case 29: 
+                    case 31: return [3 /*break*/, 33];
+                    case 32: 
                     // return error, if the form could not find
                     return [2 /*return*/, res.status(400).json({
                             message: 'No se ha encontrado el formularío',
                             status: 400
                         })];
-                    case 30: return [3 /*break*/, 32];
-                    case 31: return [2 /*return*/, res.status(400).json({
+                    case 33: return [3 /*break*/, 35];
+                    case 34: return [2 /*return*/, res.status(400).json({
                             message: 'VIN no encontrado.',
                             status: 400
                         })];
-                    case 32: return [3 /*break*/, 34];
-                    case 33:
+                    case 35: return [3 /*break*/, 37];
+                    case 36:
                         e_5 = _j.sent();
                         Raven.captureException(e_5, { req: req });
                         /* istanbul ignore next */
@@ -1115,7 +1145,7 @@ var FormController = /** @class */ (function () {
                                 message: e_5,
                                 status: 400
                             })];
-                    case 34: return [2 /*return*/];
+                    case 37: return [2 /*return*/];
                 }
             });
         });
