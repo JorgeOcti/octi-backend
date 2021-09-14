@@ -103,10 +103,25 @@ class RequestController {
     this.downloadItemFiles = this.downloadItemFiles.bind(this);
     this.downloadFile = this.downloadFile.bind(this);
     this.apiUpdateMassive = this.apiUpdateMassive.bind(this);
+    this.apiImport = this.apiImport.bind(this);
   }
 
   public async index(req: IRequest, res: Response) {
     res.render('app/index', { token: await req.user.generateToken() });
+  }
+
+  public async apiImport(req: IRequest, res: Response) {
+    try {
+      const { team } = req.user;
+      console.log('team', team);
+      console.log('req.body', req.body);
+    } catch (e) {
+      /* istanbul ignore next */
+      if (e) {
+        console.log(e);
+        res.status(500).json(e);
+      }
+    }
   }
 
   public async apiUpdateMassive(req: IRequest, res: Response) {
@@ -590,6 +605,7 @@ class RequestController {
           fitToPage: true, fitToHeight: 100, fitToWidth: 1
         }
       });
+
       /* headers */
       const questionColumns: Partial<Column>[] = [];
 
@@ -600,6 +616,7 @@ class RequestController {
           });
         }
       }
+
       worksheet.columns = [{
         header: 'Nª SOLICITUD', key: 'request', width: 10
       }, {

@@ -579,8 +579,7 @@ class RequestVehicleListView extends TrackingBasePage<IPropsType, IStateType> {
             <div className='box-footer'>
               <div className='row'>
                 <div className='col-md-12'>
-                  {
-                    pagination.pages > 1 &&
+                  <ShowIf condition={pagination.pages > 1}>
                     <div className='row'>
                       <div className='col-md-6' style={{ padding: '20px 15px' }}>
                           <span className='react-bootstrap-table-pagination-total text-ellipsis'>
@@ -593,16 +592,15 @@ class RequestVehicleListView extends TrackingBasePage<IPropsType, IStateType> {
                         </div>
                       </div>
                     </div>
-                  }
+                  </ShowIf>
                 </div>
               </div>
             </div>
-            {
-              loading &&
+            <ShowIf condition={loading}>
               <div className='overlay'>
                 <i className='fa fa-spinner fa-spin text-purple' />
               </div>
-            }
+            </ShowIf>
           </div>
         </section>
       </AppContainer>

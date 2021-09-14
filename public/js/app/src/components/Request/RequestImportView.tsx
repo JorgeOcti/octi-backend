@@ -102,12 +102,40 @@ class RequestUpdaterView extends TrackingBasePage<IPropsType, IStateType> {
               {
                 properties.length?
                   <div className="row">
-                    <div className="col col-md-12">
-                      <table className="table table-striped">
+                    <div className="col col-md-12 table-responsive">
+                      <table className='table table-striped' style={{
+                        minWidth: '3000px'
+                      }}>
                         <thead>
                           <tr>
-                            <th>Propiedad</th>
+                            <th>Número solicitud</th>
+                            <th>Tipo operación</th>
+                            <th>Canal</th>
+                            <th>Motivo</th>
+                            <th>Vendedor</th>
+                            <th>Chasis</th>
+                            <th>Motor</th>
                             <th>Marca</th>
+                            <th>Modelo</th>
+                            <th>Color</th>
+                            <th>Tipo</th>
+                            <th>Cliente</th>
+                            <th>Partida</th>
+                            <th>Factura</th>
+                            <th>Origen</th>
+                            <th>Destino</th>
+                            <th>BL</th>
+                            <th>Cilindrada</th>
+                            <th>Tracción</th>
+                            <th>Año Comercial</th>
+                            <th>Año Fabricacion</th>
+                            <th>Monto</th>
+                            <th>Seguro</th>
+                            <th>Peso</th>
+                            <th>Gas</th>
+                            <th>AP</th>
+                            <th>Pais Origen</th>
+                            <th>Observacion</th>
                           </tr>
                         </thead>
                         <tbody>
@@ -116,13 +144,33 @@ class RequestUpdaterView extends TrackingBasePage<IPropsType, IStateType> {
                               return (
                                 <tr key={index}>
                                   <td>{property['Numero solicitud']}</td>
-                                  <td>
-                                    {/*{
-                                      property.brands.map((brand: string) => (
-                                        <React.Fragment key={brand}>- {brand}<br /></React.Fragment>)
-                                      )
-                                    }*/}
-                                  </td>
+                                  <td>{property['Tipo operacion']}</td>
+                                  <td>{property['Canal']}</td>
+                                  <td>{property['Motivo']}</td>
+                                  <td>{property['Vendedor']}</td>
+                                  <td>{property['Chasis']}</td>
+                                  <td>{property['Motor']}</td>
+                                  <td>{property['Marca']}</td>
+                                  <td>{property['Modelo']}</td>
+                                  <td>{property['Color']}</td>
+                                  <td>{property['Tipo']}</td>
+                                  <td>{property['Cliente']}</td>
+                                  <td>{property['Partida']}</td>
+                                  <td>{property['Factura']}</td>
+                                  <td>{property['Origen']}</td>
+                                  <td>{property['Destino']}</td>
+                                  <td>{property['BL']}</td>
+                                  <td>{property['Cilindrada']}</td>
+                                  <td>{property['Traccion']}</td>
+                                  <td>{property['Ano Comercial']}</td>
+                                  <td>{property['Ano Fabricacion']}</td>
+                                  <td>{property['Monto']}</td>
+                                  <td>{property['Seguro']}</td>
+                                  <td>{property['Peso']}</td>
+                                  <td>{property['Gas']}</td>
+                                  <td>{property['AP']}</td>
+                                  <td>{property['Pais Origen']}</td>
+                                  <td>{property['Observacion']}</td>
                                 </tr>
                               );
                             })
@@ -185,7 +233,12 @@ class RequestUpdaterView extends TrackingBasePage<IPropsType, IStateType> {
                 Cancelar
               </button>
               <ShowIf condition={!!properties.length}>
-                <button className='btn btn-sm btn-primary' style={{ marginLeft: '5px' }} onClick={this.sendCreate} disabled={sending}>
+                <button
+                  className='btn btn-sm btn-primary'
+                  style={{ marginLeft: '5px' }}
+                  onClick={this.sendCreate}
+                  disabled={sending}
+                >
                   <ShowIf condition={sending} alternative={'Actualizar'}>
                     <React.Fragment>
                       <i className='fa fa-fw fa-spin fa-spinner' /> Actualizando...
@@ -194,12 +247,11 @@ class RequestUpdaterView extends TrackingBasePage<IPropsType, IStateType> {
                 </button>
               </ShowIf>
             </div>
-            {
-              loadingSettings || sending &&
-                <div className="overlay">
-                  <i className="fa fa-spinner fa-spin text-purple"/>
-                </div>
-            }
+            <ShowIf condition={loadingSettings || sending}>
+              <div className='overlay'>
+                <i className='fa fa-spinner fa-spin text-purple' />
+              </div>
+            </ShowIf>
           </div>
           <ModalView/>
         </section>
@@ -286,8 +338,8 @@ class RequestUpdaterView extends TrackingBasePage<IPropsType, IStateType> {
       ['BL']: '',
       ['Cilindrada']: '',
       ['Traccion']: '',
-      ['Año Comercial']: '',
-      ['Año Fabricacion']: '',
+      ['Ano Comercial']: '',
+      ['Ano Fabricacion']: '',
       ['Monto']: '',
       ['Seguro']: '',
       ['Peso']: '',
@@ -319,28 +371,25 @@ class RequestUpdaterView extends TrackingBasePage<IPropsType, IStateType> {
           type: rABS ? 'binary' : 'array',
           cellDates: true
         });
-        const excelData = 'Propiedades' in workbook.Sheets ? XLSX.utils.sheet_to_json(workbook.Sheets.Propiedades) : [];
-        const vehicleByRequestNumber: any = {};
+        const excelData = 'Propiedades' in workbook.Sheets
+          ? XLSX.utils.sheet_to_json(workbook.Sheets.Propiedades)
+          : [];
+        // const requests: any[] = [];
         if (excelData.length >= 1) {
-          excelData.forEach((item: any, index: number) => {
-            const key =  item['Numero solicitud'];
-            if (!(key in vehicleByRequestNumber)) {
-              vehicleByRequestNumber[key] = {
-                brands: []
-              };
-            }
-            vehicleByRequestNumber[key].brands.push(item);
-          });
+          // excelData.forEach((item: any, index: number) => {
+          //   requests.push(item);
+          // });
           this.setState({
             loadingSettings: false,
-            properties: Object.keys(vehicleByRequestNumber)
-              .map((key) => ({key, ...vehicleByRequestNumber[key]}))
-              .sort((a, b) => {
-                if (a.key < b.key) return 1;
-                if (a.key > b.key) return -1;
-                return 0;
+            properties: excelData
+              .sort((a: any, b: any) => {
+                return a['Numero solicitud'].localeCompare(b['Numero solicitud'], 'en', { numeric: true });
+                // if (a['Numero solicitud'] < b['Numero solicitud']) return -1;
+                // if (a['Numero solicitud'] > b['Numero solicitud']) return 1;
+                // return 0;
               })
-              .reverse()
+          }, () => {
+            console.log(this.state.properties);
           });
         } else {
           swal!(
@@ -386,7 +435,7 @@ class RequestUpdaterView extends TrackingBasePage<IPropsType, IStateType> {
           sending: false
         });
       })
-      .catch((e) => {
+      .catch(() => {
         swal!('Actualización masiva', 'Se produjo un error al actualizar.', 'error');
         this.setState({
           sending: false

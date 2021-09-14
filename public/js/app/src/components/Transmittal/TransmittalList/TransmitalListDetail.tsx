@@ -154,7 +154,7 @@ class TransmitalListDetail extends React.Component<IPropsType, IStateType> {
               <th className='middle' style={{ width: '110px' }}>Fecha emisión</th>
               <th className='middle' style={{ width: '110px' }}>Fecha arribo</th>
               <th className='middle' style={{ width: '120px' }}>Observación</th>
-              <th className='middle' style={{ width: '30px' }}>Llegó</th>
+              <th className='middle' style={{ width: '40px' }}>Cargado</th>
               <ShowIf condition={hasPermission(window.user, 'changeTransmittal')}>
                 <th className='middle' style={{ width: '30px' }} />
               </ShowIf>
