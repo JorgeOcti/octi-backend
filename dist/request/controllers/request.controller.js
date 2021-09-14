@@ -46,14 +46,10 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
         if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
     }
 };
-var __spreadArray = (this && this.__spreadArray) || function (to, from, pack) {
-    if (pack || arguments.length === 2) for (var i = 0, l = from.length, ar; i < l; i++) {
-        if (ar || !(i in from)) {
-            if (!ar) ar = Array.prototype.slice.call(from, 0, i);
-            ar[i] = from[i];
-        }
-    }
-    return to.concat(ar || Array.prototype.slice.call(from));
+var __spreadArray = (this && this.__spreadArray) || function (to, from) {
+    for (var i = 0, il = from.length, j = to.length; i < il; i++, j++)
+        to[j] = from[i];
+    return to;
 };
 exports.__esModule = true;
 var archiver = require("archiver");
@@ -506,11 +502,11 @@ var RequestController = /** @class */ (function () {
                                             }
                                         }] }, extraMatch)
                             }];
-                        aggregate = __spreadArray(__spreadArray(__spreadArray([], baseAggregate, true), aggregatePopulate, true), [
+                        aggregate = __spreadArray(__spreadArray(__spreadArray([], baseAggregate), aggregatePopulate), [
                             {
                                 $sort: (_b = {}, _b[orderBy] = orderType === 'ascending' ? 1 : -1, _b)
                             }
-                        ], false);
+                        ]);
                         requestsAggregate = requestItem_model_1["default"].aggregate(aggregate);
                         options = {
                             page: parseInt(page ? page : '1', 10),
@@ -789,7 +785,7 @@ var RequestController = /** @class */ (function () {
                                 header: 'FECHA ACTUALIZACION', key: 'updated', width: 21, style: { numFmt: 'dd/mm/yyyy hh:mm' }
                             }, {
                                 header: 'OBSERVACIÓN', key: 'observation', width: 21
-                            }], questionColumns, true);
+                            }], questionColumns);
                         for (_d = 0, requestItems_1 = requestItems; _d < requestItems_1.length; _d++) {
                             item = requestItems_1[_d];
                             extraAnswers = {};
@@ -1397,10 +1393,10 @@ var RequestController = /** @class */ (function () {
                     case 3:
                         if (!filesToDownload.length) return [3 /*break*/, 5];
                         console.log('promise', numb);
-                        _b = [__spreadArray([], results, true)];
+                        _b = [__spreadArray([], results)];
                         return [4 /*yield*/, bluebird.all(filesToDownload.splice(0, 20).map(function (promise) { return promise(); }))];
                     case 4:
-                        results = __spreadArray.apply(void 0, _b.concat([_c.sent(), true]));
+                        results = __spreadArray.apply(void 0, _b.concat([_c.sent()]));
                         numb++;
                         return [3 /*break*/, 3];
                     case 5:

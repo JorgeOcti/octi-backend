@@ -68,6 +68,23 @@ var milestone_model_1 = require("../models/milestone.model");
 var form_model_1 = require("../../form/models/form.model");
 var scale_model_1 = require("../../form/models/scale.model");
 var redis_service_1 = require("../../services/redis.service");
+// =======
+// import { IRequest } from '../../interfaces/global.interface';
+// import { Response } from 'express';
+// import { PaginateOptions, PaginateResult } from 'mongoose';
+// import Transmittal, { ChoicesStatusTransmittal, ITransmittalModel } from '../models/transmittal.model';
+// import logger from '../../services/logger.service';
+// import TransmittalItem from '../models/transmittalItem.model';
+// import TransmittalFile from '../models/transmittalFile.model';
+// import GeneralUtils from '../../utils/general.utils';
+// import * as GraphicsMagick from 'gm';
+// import Team from '../../app/models/team.model';
+// import Car from '../../app/models/car.model';
+// import RequestItem from '../../request/models/requestItem.model';
+// import { io } from '../../server';
+// import * as excel from 'exceljs';
+// import * as moment from 'moment-timezone';
+// import Milestone from '../models/milestone.model';
 var TransmittalController = /** @class */ (function () {
     function TransmittalController() {
         this.itemPopulate = [{
