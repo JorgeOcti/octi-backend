@@ -9,6 +9,7 @@ import SearchCarInRequests from '../SearchCarInRequest';
 import { IRequestItem } from '../../../../../../../../src/request/interfaces/requestItem.interface';
 import InputField from '../../../Utils/forms/InputField';
 import BootstrapSwitchField from '../../../Utils/forms/BootsrapSwitchField';
+import ShowIf from '../../../Utils/ShowIf';
 
 
 export interface IRenderItemProps {
@@ -34,8 +35,8 @@ class TramittalRenderItem extends React.Component<IPropsType, IStateType> {
     error: null,
     exporing: false,
     openTabs: [],
-    oneOrigin: false,
-    oneDestination: false
+    oneOrigin: true,
+    oneDestination: true
   };
 
   constructor(props: IPropsType) {
@@ -238,22 +239,25 @@ class TramittalRenderItem extends React.Component<IPropsType, IStateType> {
                   <td colSpan={2}>
                     <div className='flex flex-row'>
                       <div className='flex-1' style={{ paddingRight: '3px' }}>
-                        <Field
-                          name='oneOrigin'
-                          label='Un solo origen'
-                          type='checkbox'
-                          component={BootstrapSwitchField}
-                          onChange={(e: any) => {
-                            const { checked } = e.target;
-                            if (!checked) {
-                              this.props.transmittalActions.autofill(`all.origin`, null);
-                            }
-                            this.setState({
-                              oneOrigin: checked
-                            });
-                          }}
-                          validate={[]}
-                        />
+                        <ShowIf condition={false}>
+                          <Field
+                            name='oneOrigin'
+                            label='Un solo origen'
+                            type='checkbox'
+                            checked={oneOrigin}
+                            component={BootstrapSwitchField}
+                            onChange={(e: any) => {
+                              const { checked } = e.target;
+                              if (!checked) {
+                                this.props.transmittalActions.autofill(`all.origin`, null);
+                              }
+                              this.setState({
+                                oneOrigin: checked
+                              });
+                            }}
+                            validate={[]}
+                          />
+                        </ShowIf>
                         <Field
                           name={`all.origin`}
                           label=''
@@ -285,22 +289,25 @@ class TramittalRenderItem extends React.Component<IPropsType, IStateType> {
                         </Field>
                       </div>
                       <div className='flex-1' style={{ paddingLeft: '3px' }}>
-                        <Field
-                          name='oneDestination'
-                          label='Un solo destino'
-                          type='checkbox'
-                          component={BootstrapSwitchField}
-                          onChange={(e: any) => {
-                            const { checked } = e.target;
-                            if (!checked) {
-                              this.props.transmittalActions.autofill(`all.destination`, null);
-                            }
-                            this.setState({
-                              oneDestination: checked
-                            });
-                          }}
-                          validate={[]}
-                        />
+                        <ShowIf condition={false}>
+                          <Field
+                            name='oneDestination'
+                            label='Un solo destino'
+                            type='checkbox'
+                            checked={oneDestination}
+                            component={BootstrapSwitchField}
+                            onChange={(e: any) => {
+                              // const { checked } = e.target;
+                              // if (!checked) {
+                              //   this.props.transmittalActions.autofill(`all.destination`, null);
+                              // }
+                              // this.setState({
+                              //   oneDestination: checked
+                              // });
+                            }}
+                            validate={[]}
+                          />
+                        </ShowIf>
                         <Field
                           name={`all.destination`}
                           label=''
@@ -363,7 +370,8 @@ class TramittalRenderItem extends React.Component<IPropsType, IStateType> {
       request: item.request,
       reason: item.reason,
       origin: formValues?.all?.origin,
-      destination: formValues?.all?.destination ?? item.destination?._id
+      // destination: formValues?.all?.destination ?? item.destination?._id
+      destination: formValues?.all?.destination
     });
   }
 
