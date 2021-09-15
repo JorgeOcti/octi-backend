@@ -5,7 +5,7 @@ import * as moment from 'moment-timezone';
 import * as mongoose from 'mongoose';
 import { PaginateOptions, PaginateResult } from 'mongoose';
 import * as tempfile from 'tempfile';
-import FormModel, { IFormModel, KindQuestion } from '../../form/models/form.model';
+import FormModel, {IFormModel, KindForm, KindQuestion} from '../../form/models/form.model';
 import Kind from '../../form/models/kind.model';
 import Part from '../../form/models/part.model';
 import ParticipantModel, { IParticipantAnswerModel } from '../../form/models/participant.model';
@@ -400,7 +400,7 @@ class CarController {
   public async apiParticipantsPerDate(req: IRequest, res: Response) {
     const team = req.user.team._id;
     try {
-      const { companies } = req.query;
+      const { companies, only_controls } = req.query;
       const venuesPermissions = req.user.venuesPermissions();
       const query: any = {
         _id: {
@@ -412,19 +412,28 @@ class CarController {
           $in: [companies]
         };
       }
+
       const venuesByCompanies = await Venue.find(query);
       const venuesPermissionsFilterByCompanies = venuesByCompanies.map(venue => venue._id);
+
+      let participantQuery : any = {
+        venue: {
+          $in: venuesPermissionsFilterByCompanies
+        },
+        createdAt: {
+          $gte: moment().subtract(30, 'd').toDate()
+        }
+      }
+      if (only_controls == "1"){
+        participantQuery.kind = {$ne: KindForm.transmittal}
+      }
+
       const participantReceivedPerDay = await ParticipantModel
         .aggregate([
           {
             $match: {
-              venue: {
-                $in: venuesPermissionsFilterByCompanies
-              },
+              ...participantQuery,
               reception: true,
-              createdAt: {
-                $gte: moment().subtract(30, 'd').toDate()
-              }
             }
           }, {
             $project: {
@@ -494,13 +503,8 @@ class CarController {
         .aggregate([
           {
             $match: {
-              venue: {
-                $in: venuesPermissionsFilterByCompanies
-              },
+              ...participantQuery,
               shipping: true,
-              createdAt: {
-                $gte: moment().subtract(30, 'd').toDate()
-              }
             }
           }, {
             $project: {
@@ -1261,6 +1265,7 @@ class CarController {
       from: string, to: string
     };
     const team = req.user.team._id;
+    const { only_controls } = req.query;
     // paginate options
     const options: PaginateOptions = {
       select: {
@@ -1303,6 +1308,10 @@ class CarController {
           team
         }]
       };
+
+      if (only_controls == "1"){
+        participantFilter.kind = {$ne: KindForm.transmittal}
+      }
 
       if (search && search.length) {
         const searchText = new RegExp(search, 'i');
@@ -1925,7 +1934,8 @@ class CarController {
         team,
         venue: {
           $in: venuesPermissions
-        }
+        },
+        kind: {$ne: KindForm.transmittal}
       };
 
       if (from && to){
@@ -1980,7 +1990,8 @@ class CarController {
         team,
         venue: {
           $in: venuesPermissions
-        }
+        },
+        kind: {$ne: KindForm.transmittal}
       };
 
       const todayParticipants: number = await ParticipantModel.count({...queryFilter,

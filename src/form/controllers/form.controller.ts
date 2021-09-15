@@ -23,7 +23,7 @@ import { io } from '../../server';
 import logger from '../../services/logger.service';
 import redisClient from '../../services/redis.service';
 import GeneralUtils from '../../utils/general.utils';
-import FormModel, { IFormModel, KindQuestion } from '../models/form.model';
+import FormModel, {IFormModel, KindForm, KindQuestion} from '../models/form.model';
 import ParticipantModel from '../models/participant.model';
 import ParticipantFile from '../models/participantFile.model';
 import ScaleModel, { IScaleModel } from '../models/scale.model';
@@ -615,26 +615,31 @@ class FormController {
       });
     }
     // validate vin in body
-    if (!vin) {
+    if (!vin && !transmittal) {
       return res.status(400).json({
-        message: 'Debes enviar el vin',
+        message: 'Debes enviar el vin o OT',
         status: 400
       });
     }
-    vin = vin.replace(/[\W_]+/g, '');
+    const updatedUser = await User.findById(req.user._id).populate([{path: 'venue'}]);
+    if (!updatedUser) {
+      return res.status(404).json({
+        message: 'No se ha encontrado el formulario solicitado.',
+        status: 404
+      });
+    }
+
     try {
-      const updatedUser = await User.findById(req.user._id).populate([{ path: 'venue' }]);
-      if (!updatedUser) {
-        return res.status(404).json({
-          message: 'No se ha encontrado el formulario solicitado.',
-          status: 404
+      let car : any = null;
+      if (vin) {
+        vin = vin.replace(/[\W_]+/g, '');
+        car = await CarModel.findOne({
+          $or: [{vin: {$eq: vin}}, {vin2: {$eq: vin}}],
+          team
         });
       }
-      const car = await CarModel.findOne({
-        $or: [{ vin: { $eq: vin } }, { vin2: { $eq: vin } }],
-        team
-      });
-      if (car) {
+
+      if (car || transmittal) {
         const form = await this.getFormWithScale({
           _id: id,
           team
@@ -647,11 +652,12 @@ class FormController {
             company,
             form: form._id,
             car,
+            transmittal: transmittal,
             description: form.description,
             user: req.user._id,
             venue: updatedUser.venue,
             active: form.active,
-            kind: form.kind
+            kind: transmittal ? KindForm.transmittal : form.kind
           };
 
           if (form.reception) {
@@ -836,9 +842,7 @@ class FormController {
               });
             }
 
-            if(transmittal?.length){
-              newParticipant.transmittal = transmittal;
-              await newParticipant.save();
+            if (transmittal && transmittal?.length) {
               const newTransmittal = await Transmittal
                 .findOneAndUpdate({
                   _id: transmittal
@@ -867,8 +871,43 @@ class FormController {
               });
             }
 
-            car.lastForm = newParticipant;
-            await car.save();
+            if (car){
+              car.lastForm = newParticipant;
+              await car.save();
+
+              // send refresh with websocket to dashboard list
+              io.to(`dashboard-vin-view-${team._id}`).emit('REFRESH', {
+                update: true,
+                car: newParticipant._id,
+                notification: {
+                  title: 'Vehículo revisado',
+                  text: `${req.user.firstName} ${req.user.lastName} revisó ${car.brand} (${car.denomination}) en ${updatedUser.venue.name}.`
+                }
+              });
+
+              // send refresh with websocket to dashboard detail
+              io.to(`dashboard-vin-detail-${car._id}`).emit(`ADD_PARTICIPANT`, await ParticipantModel
+                .findById(newParticipant._id, { number: 1, name: 1, user: 1, venue: 1, createdAt: 1, qualification: 1 })
+                .populate([{
+                  path: 'user',
+                  select: ['firstName', 'lastName']
+                }, {
+                  path: 'venue',
+                  select: ['name']
+                }])
+              );
+
+              await new ActivityHistory({
+                team,
+                company,
+                user: req.user._id,
+                type: ChoicesTypeActivity.checklist,
+                car: {
+                  _id: car._id,
+                  vin: car.vin
+                }
+              }).save();
+            }
             const today = moment().startOf('day');
             const tomorrow = moment(today).add(1, 'days');
             const count = await ParticipantModel.count({
@@ -897,7 +936,7 @@ class FormController {
                 select: ['firstName', 'lastName', 'email', 'venue', 'venuesAccess']
               }]);
             /* Send alerts if exist */
-            if (alerts.length) {
+            if (alerts.length && car) {
               alerts.forEach((alert) => {
                 alert.users.forEach((user: IUserModel) => {
                   const userName = `${user.firstName} ${user.lastName}`;
@@ -931,38 +970,7 @@ class FormController {
                 });
               });
             }
-            // send refresh with websocket to dashboard list
-            io.to(`dashboard-vin-view-${team._id}`).emit('REFRESH', {
-              update: true,
-              car: newParticipant._id,
-              notification: {
-                title: 'Vehículo revisado',
-                text: `${req.user.firstName} ${req.user.lastName} revisó ${car.brand} (${car.denomination}) en ${updatedUser.venue.name}.`
-              }
-            });
 
-            // send refresh with websocket to dashboard detail
-            io.to(`dashboard-vin-detail-${car._id}`).emit(`ADD_PARTICIPANT`, await ParticipantModel
-              .findById(newParticipant._id, { number: 1, name: 1, user: 1, venue: 1, createdAt: 1, qualification: 1 })
-              .populate([{
-                path: 'user',
-                select: ['firstName', 'lastName']
-              }, {
-                path: 'venue',
-                select: ['name']
-              }])
-            );
-
-            await new ActivityHistory({
-              team,
-              company,
-              user: req.user._id,
-              type: ChoicesTypeActivity.checklist,
-              car: {
-                _id: car._id,
-                vin: car.vin
-              }
-            }).save();
 
             return res.json({
               data: {
@@ -1246,7 +1254,8 @@ class FormController {
         },
         createdAt: {
           $gte: moment().endOf('day').subtract(days, 'd').toDate()
-        }
+        },
+        kind: { $ne: KindForm.transmittal }
       }, {
         _id: true,
         venue: true,
