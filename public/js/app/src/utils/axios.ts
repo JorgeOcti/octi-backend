@@ -108,9 +108,9 @@ export default class ApiService {
     );
   }
 
-  public getParticipantsPerDate(companies?: string) {
+  public getParticipantsPerDate(onlyControls: Boolean, companies?: string) {
     return this.instance.get(
-      `/api/participants-per-date/${companies ? `?companies=${companies}` : ''}`
+      `/api/participants-per-date/${ onlyControls ? `?only_controls=1` : `?only_controls=0`}${companies ? `&companies=${companies}` : ''}`
     );
   }
 
@@ -321,8 +321,8 @@ export default class ApiService {
     );
   }
 
-  public getRevisions(page: number, search?: string, from?: string, to?: string): AxiosPromise {
-    let query = `?page=${page}`;
+  public getRevisions(onlyControls : Boolean,page: number, search?: string, from?: string, to?: string): AxiosPromise {
+    let query = `?page=${page}&only_controls=${onlyControls ? '1' : '0'}`;
     if (search)
       query += `&search=${search}`;
 

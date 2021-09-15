@@ -175,7 +175,7 @@ export function changeRangeDashboardAction(from: string, to: string): IChangeRan
   }
 }
 
-export function getRevisionsAction(nextPage: number, loading: boolean, search?: string, from?: string, to?: string) {
+export function getRevisionsAction(nextPage: number, loading: boolean, search?: string, from?: string, to?: string, onlyControls : Boolean = true) {
   return (dispatch: Dispatch<DashboardReduxAction>, getState: () => {dashboard: IDashboardState}) => {
     const api: ApiService = new ApiService();
     const state = getState();
@@ -188,7 +188,7 @@ export function getRevisionsAction(nextPage: number, loading: boolean, search?: 
       dispatch(changePageAction(nextPage));
     }
     const { searchText, searchFrom, searchTo } = state.dashboard;
-    api.getRevisions(page, searchText, searchFrom, searchTo)
+    api.getRevisions(onlyControls, page, searchText, searchFrom, searchTo)
       .then((response: AxiosResponse) => {
         dispatch(loadCarsAction(response.data.results, response.data.count, response.data.pages));
         if (loading) {
@@ -633,12 +633,12 @@ export function loadParticipantsPerDateAction(companies: any[], participantsRece
   };
 }
 
-export function getParticipantsPerDateAction(companies?:string) {
+export function getParticipantsPerDateAction(companies?:string, onlyControls: boolean = true) {
   return (dispatch: Dispatch<DashboardReduxAction>) => {
     const api: ApiService = new ApiService();
     dispatch(cancelRequestAction(api.getSource()));
     dispatch(isLoadingAction(true));
-    api.getParticipantsPerDate(companies)
+    api.getParticipantsPerDate(onlyControls, companies)
       .then((response: AxiosResponse) => {
         dispatch(loadParticipantsPerDateAction(response.data.companies, response.data.participantsReceived, response.data.participantsSent, response.data.cars, response.data.planning, response.data.planningProcess, response.data.totalCars, response.data.carsByVenue, response.data.participantPerRange));
         dispatch(isLoadingAction(false));
