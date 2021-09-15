@@ -148,6 +148,7 @@ var RequestController = /** @class */ (function () {
         this.downloadItemFiles = this.downloadItemFiles.bind(this);
         this.downloadFile = this.downloadFile.bind(this);
         this.apiUpdateMassive = this.apiUpdateMassive.bind(this);
+        this.apiImport = this.apiImport.bind(this);
     }
     RequestController.prototype.index = function (req, res) {
         return __awaiter(this, void 0, void 0, function () {
@@ -164,6 +165,26 @@ var RequestController = /** @class */ (function () {
                         _b.apply(_a, _c.concat([(_d.token = _e.sent(), _d)]));
                         return [2 /*return*/];
                 }
+            });
+        });
+    };
+    RequestController.prototype.apiImport = function (req, res) {
+        return __awaiter(this, void 0, void 0, function () {
+            var team;
+            return __generator(this, function (_a) {
+                try {
+                    team = req.user.team;
+                    console.log('team', team);
+                    console.log('req.body', req.body);
+                }
+                catch (e) {
+                    /* istanbul ignore next */
+                    if (e) {
+                        console.log(e);
+                        res.status(500).json(e);
+                    }
+                }
+                return [2 /*return*/];
             });
         });
     };

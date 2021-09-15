@@ -16,13 +16,12 @@ const BootstrapSwitchField: React.FunctionComponent<IPropsType> = ({
   input,
   label,
   checked,
-  type,
   help,
   meta: { touched, error, warning }
 }:IPropsType) => (
   <div className="form-group-switch">
     <label className={`switch switch-blue`}>
-      <input type="checkbox" className="switch" checked={checked} {...input} />
+      <input type='checkbox' className='switch' {...input} checked={checked} />
       <span className="slider round" />
     </label>
     <label className="switch-label">{label}</label>

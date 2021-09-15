@@ -28,6 +28,7 @@ requestRouter.post('/api/v1/requests/upload-file/', Middlewares.isJWTAuthenticat
 requestRouter.post('/api/v1/requests/update-massive/', Middlewares.isJWTAuthenticated, RequestController.apiUpdateMassive);
 
 requestRouter.get('/api/v1/requests/', Middlewares.isJWTAuthenticated, RequestController.apiList);
+requestRouter.get('/api/v1/requests/import/', Middlewares.isJWTAuthenticated, RequestController.apiImport);
 requestRouter.post('/api/v1/requests/', Middlewares.isJWTAuthenticated, RequestController.apiCreate);
 requestRouter.get('/api/v1/requests/:id/', Middlewares.isJWTAuthenticated, RequestController.apiDetail);
 requestRouter.delete('/api/v1/requests/:id/', Middlewares.isJWTAuthenticated, RequestController.apiDeleteRequest);

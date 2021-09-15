@@ -13,7 +13,6 @@ import SearchCarInRequests from '../TransmittalForms/SearchCarInRequest';
 import { IRequestItem } from '../../../../../../../src/request/interfaces/requestItem.interface';
 import ApiService from '../../../utils/axios';
 import { AxiosError, AxiosResponse } from 'axios';
-import * as  swal from 'sweetalert';
 import { hasPermission } from '../../../utils/common';
 import { IWindow } from '../../../interfaces/window';
 import DateRangePicker from '../../Utils/DateRangePicker';
@@ -154,7 +153,7 @@ class TransmitalListDetail extends React.Component<IPropsType, IStateType> {
               <th className='middle' style={{ width: '110px' }}>Fecha emisión</th>
               <th className='middle' style={{ width: '110px' }}>Fecha arribo</th>
               <th className='middle' style={{ width: '120px' }}>Observación</th>
-              <th className='middle' style={{ width: '30px' }}>Llegó</th>
+              <th className='middle' style={{ width: '40px' }}>Cargado</th>
               <ShowIf condition={hasPermission(window.user, 'changeTransmittal')}>
                 <th className='middle' style={{ width: '30px' }} />
               </ShowIf>
@@ -242,10 +241,8 @@ class TransmitalListDetail extends React.Component<IPropsType, IStateType> {
       destination: requestItem.destination?._id,
       transmittal: transmittal._id
     })
-      .then((response: AxiosResponse): void => {
-        // swal!('Vehículos agregado', `Se ha agregado ${requestItem.car.brand} ${requestItem.car.denomination} a la order #${this.padNumber(transmittal.number)} satisfactoriamente.`, 'success');
-        // const { page } = this.props.transmittal.requestItemsPagination;
-        // this.props.transmittalActions.getRequestItemThunkAction(page, true);
+      .then((): void => {
+
       })
       .catch((err: AxiosError): void => {
         this.api.errorHandler(err);
