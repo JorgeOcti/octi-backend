@@ -690,7 +690,7 @@ var FormController = /** @class */ (function () {
     };
     FormController.prototype.complete = function (req, res) {
         return __awaiter(this, void 0, void 0, function () {
-            var id, _a, vin, answers, transmittalItem, transmittal, _b, company, venue, team, updatedUser, car_1, form, participantObject, reception, receptionVenue, shipping, shippingVenue, carrier, conciliation, newParticipant, sumSectionWeigths, sumSectionQualifications, allImages, _i, _c, section, sumWeigths, sumQualifications, newAnswers, _loop_1, this_1, _d, _e, question, sectionQualification, formQualification_1, updateTeam, transmittalItemData, newTransmittal, today, tomorrow, count, triggersHandler, alerts, _f, _g, _h, e_4, e_5;
+            var id, _a, vin, answers, transmittalItem, transmittal, _b, company, venue, team, updatedUser, car_1, form, participantObject, reception, receptionVenue, shipping, shippingVenue, carrier, conciliation, newParticipant, sumSectionWeigths, sumSectionQualifications, allImages, _i, _c, section, sumWeigths, sumQualifications, newAnswers, _loop_1, this_1, _d, _e, question, sectionQualification, formQualification_1, updateTeam, transmittalItemData, newTransmittal, _f, _g, _h, today, tomorrow, count, triggersHandler, alerts, e_4, e_5;
             var _this = this;
             return __generator(this, function (_j) {
                 switch (_j.label) {
@@ -708,18 +708,14 @@ var FormController = /** @class */ (function () {
                                 })];
                         }
                         // validate vin in body
-                        if (!vin) {
+                        if (!vin && !transmittal) {
                             return [2 /*return*/, res.status(400).json({
-                                    message: 'Debes enviar el vin',
+                                    message: 'Debes enviar el vin o OT',
                                     status: 400
                                 })];
                         }
-                        vin = vin.replace(/[\W_]+/g, '');
-                        _j.label = 1;
-                    case 1:
-                        _j.trys.push([1, 36, , 37]);
                         return [4 /*yield*/, user_model_1["default"].findById(req.user._id).populate([{ path: 'venue' }])];
-                    case 2:
+                    case 1:
                         updatedUser = _j.sent();
                         if (!updatedUser) {
                             return [2 /*return*/, res.status(404).json({
@@ -727,31 +723,40 @@ var FormController = /** @class */ (function () {
                                     status: 404
                                 })];
                         }
+                        _j.label = 2;
+                    case 2:
+                        _j.trys.push([2, 37, , 38]);
+                        car_1 = null;
+                        if (!vin) return [3 /*break*/, 4];
+                        vin = vin.replace(/[\W_]+/g, '');
                         return [4 /*yield*/, car_model_1["default"].findOne({
                                 $or: [{ vin: { $eq: vin } }, { vin2: { $eq: vin } }],
                                 team: team
                             })];
                     case 3:
                         car_1 = _j.sent();
-                        if (!car_1) return [3 /*break*/, 34];
+                        _j.label = 4;
+                    case 4:
+                        if (!(car_1 || transmittal)) return [3 /*break*/, 35];
                         return [4 /*yield*/, this.getFormWithScale({
                                 _id: id,
                                 team: team
                             })];
-                    case 4:
+                    case 5:
                         form = _j.sent();
-                        if (!form) return [3 /*break*/, 32];
+                        if (!form) return [3 /*break*/, 33];
                         participantObject = {
                             name: form.name,
                             team: team,
                             company: company,
                             form: form._id,
                             car: car_1,
+                            transmittal: transmittal,
                             description: form.description,
                             user: req.user._id,
                             venue: updatedUser.venue,
                             active: form.active,
-                            kind: form.kind
+                            kind: transmittal ? form_model_1.KindForm.transmittal : form.kind
                         };
                         if (form.reception) {
                             participantObject.reception = form.reception;
@@ -808,9 +813,9 @@ var FormController = /** @class */ (function () {
                         sumSectionQualifications = 0;
                         allImages = [];
                         _i = 0, _c = form.sections;
-                        _j.label = 5;
-                    case 5:
-                        if (!(_i < _c.length)) return [3 /*break*/, 11];
+                        _j.label = 6;
+                    case 6:
+                        if (!(_i < _c.length)) return [3 /*break*/, 12];
                         section = _c[_i];
                         sumWeigths = 0;
                         sumQualifications = 0;
@@ -907,18 +912,18 @@ var FormController = /** @class */ (function () {
                         };
                         this_1 = this;
                         _d = 0, _e = section.questions;
-                        _j.label = 6;
-                    case 6:
-                        if (!(_d < _e.length)) return [3 /*break*/, 9];
+                        _j.label = 7;
+                    case 7:
+                        if (!(_d < _e.length)) return [3 /*break*/, 10];
                         question = _e[_d];
                         return [5 /*yield**/, _loop_1(question)];
-                    case 7:
-                        _j.sent();
-                        _j.label = 8;
                     case 8:
-                        _d++;
-                        return [3 /*break*/, 6];
+                        _j.sent();
+                        _j.label = 9;
                     case 9:
+                        _d++;
+                        return [3 /*break*/, 7];
+                    case 10:
                         sectionQualification = sumQualifications ? sumQualifications / sumWeigths : 0;
                         sumSectionQualifications += (sectionQualification * section.weight);
                         sumSectionWeigths += section.weight;
@@ -932,11 +937,11 @@ var FormController = /** @class */ (function () {
                             weight: section.weight,
                             order: section.order
                         });
-                        _j.label = 10;
-                    case 10:
-                        _i++;
-                        return [3 /*break*/, 5];
+                        _j.label = 11;
                     case 11:
+                        _i++;
+                        return [3 /*break*/, 6];
+                    case 12:
                         formQualification_1 = sumSectionQualifications ? sumSectionQualifications / sumSectionWeigths : 0;
                         newParticipant.qualification = formQualification_1;
                         newParticipant.hasDamages = newParticipant.sections.some(function (section) {
@@ -944,40 +949,36 @@ var FormController = /** @class */ (function () {
                                 return answer.damagesSelected.length > 0;
                             });
                         });
-                        _j.label = 12;
-                    case 12:
-                        _j.trys.push([12, 30, , 31]);
-                        return [4 /*yield*/, team_model_1["default"].findOneAndUpdate({ _id: team._id }, { $inc: { formsNumber: 1 } }, { "new": true })];
+                        _j.label = 13;
                     case 13:
+                        _j.trys.push([13, 31, , 32]);
+                        return [4 /*yield*/, team_model_1["default"].findOneAndUpdate({ _id: team._id }, { $inc: { formsNumber: 1 } }, { "new": true })];
+                    case 14:
                         updateTeam = _j.sent();
                         if (updateTeam) {
                             newParticipant.number = updateTeam.formsNumber;
                         }
                         // save the participant
                         return [4 /*yield*/, newParticipant.save()];
-                    case 14:
+                    case 15:
                         // save the participant
                         _j.sent();
-                        if (!(transmittalItem === null || transmittalItem === void 0 ? void 0 : transmittalItem.length)) return [3 /*break*/, 17];
+                        if (!(transmittalItem === null || transmittalItem === void 0 ? void 0 : transmittalItem.length)) return [3 /*break*/, 18];
                         newParticipant.transmittalItem = transmittalItem;
                         return [4 /*yield*/, newParticipant.save()];
-                    case 15:
+                    case 16:
                         _j.sent();
                         return [4 /*yield*/, transmittalItem_model_1["default"]
                                 .findOneAndUpdate({ _id: transmittalItem }, { $push: { revisions: newParticipant._id } }, { "new": true })
                                 .populate(transmittal_controller_1["default"].itemPopulate)];
-                    case 16:
+                    case 17:
                         transmittalItemData = _j.sent();
                         server_1.io.to("transmittal-list-" + team._id).emit('UPDATE_TRANSMITTAL_ITEM', {
                             transmittalItem: transmittalItemData
                         });
-                        _j.label = 17;
-                    case 17:
-                        if (!(transmittal === null || transmittal === void 0 ? void 0 : transmittal.length)) return [3 /*break*/, 20];
-                        newParticipant.transmittal = transmittal;
-                        return [4 /*yield*/, newParticipant.save()];
+                        _j.label = 18;
                     case 18:
-                        _j.sent();
+                        if (!(transmittal && (transmittal === null || transmittal === void 0 ? void 0 : transmittal.length))) return [3 /*break*/, 20];
                         return [4 /*yield*/, transmittal_model_1["default"]
                                 .findOneAndUpdate({
                                 _id: transmittal
@@ -1008,10 +1009,49 @@ var FormController = /** @class */ (function () {
                         _j.sent();
                         _j.label = 22;
                     case 22:
+                        if (!car_1) return [3 /*break*/, 26];
                         car_1.lastForm = newParticipant;
                         return [4 /*yield*/, car_1.save()];
                     case 23:
                         _j.sent();
+                        // send refresh with websocket to dashboard list
+                        server_1.io.to("dashboard-vin-view-" + team._id).emit('REFRESH', {
+                            update: true,
+                            car: newParticipant._id,
+                            notification: {
+                                title: 'Vehículo revisado',
+                                text: req.user.firstName + " " + req.user.lastName + " revis\u00F3 " + car_1.brand + " (" + car_1.denomination + ") en " + updatedUser.venue.name + "."
+                            }
+                        });
+                        // send refresh with websocket to dashboard detail
+                        _g = (_f = server_1.io.to("dashboard-vin-detail-" + car_1._id)).emit;
+                        _h = ["ADD_PARTICIPANT"];
+                        return [4 /*yield*/, participant_model_1["default"]
+                                .findById(newParticipant._id, { number: 1, name: 1, user: 1, venue: 1, createdAt: 1, qualification: 1 })
+                                .populate([{
+                                    path: 'user',
+                                    select: ['firstName', 'lastName']
+                                }, {
+                                    path: 'venue',
+                                    select: ['name']
+                                }])];
+                    case 24:
+                        // send refresh with websocket to dashboard detail
+                        _g.apply(_f, _h.concat([_j.sent()]));
+                        return [4 /*yield*/, new activityHistory_model_1["default"]({
+                                team: team,
+                                company: company,
+                                user: req.user._id,
+                                type: activityHistory_model_1.ChoicesTypeActivity.checklist,
+                                car: {
+                                    _id: car_1._id,
+                                    vin: car_1.vin
+                                }
+                            }).save()];
+                    case 25:
+                        _j.sent();
+                        _j.label = 26;
+                    case 26:
                         today = moment().startOf('day');
                         tomorrow = moment(today).add(1, 'days');
                         return [4 /*yield*/, participant_model_1["default"].count({
@@ -1021,15 +1061,15 @@ var FormController = /** @class */ (function () {
                                     $lt: tomorrow.toDate()
                                 }
                             })];
-                    case 24:
+                    case 27:
                         count = _j.sent();
-                        if (!(form.triggers && form.triggers.length)) return [3 /*break*/, 26];
+                        if (!(form.triggers && form.triggers.length)) return [3 /*break*/, 29];
                         triggersHandler = new triggerHandler_1["default"](form, newParticipant);
                         return [4 /*yield*/, triggersHandler.execute({})];
-                    case 25:
+                    case 28:
                         _j.sent();
-                        _j.label = 26;
-                    case 26: return [4 /*yield*/, alert_model_1["default"]
+                        _j.label = 29;
+                    case 29: return [4 /*yield*/, alert_model_1["default"]
                             .find({
                             team: team,
                             $or: [
@@ -1040,10 +1080,10 @@ var FormController = /** @class */ (function () {
                                 path: 'users',
                                 select: ['firstName', 'lastName', 'email', 'venue', 'venuesAccess']
                             }])];
-                    case 27:
+                    case 30:
                         alerts = _j.sent();
                         /* Send alerts if exist */
-                        if (alerts.length) {
+                        if (alerts.length && car_1) {
                             alerts.forEach(function (alert) {
                                 alert.users.forEach(function (user) {
                                     var userName = user.firstName + " " + user.lastName;
@@ -1067,42 +1107,6 @@ var FormController = /** @class */ (function () {
                                 });
                             });
                         }
-                        // send refresh with websocket to dashboard list
-                        server_1.io.to("dashboard-vin-view-" + team._id).emit('REFRESH', {
-                            update: true,
-                            car: newParticipant._id,
-                            notification: {
-                                title: 'Vehículo revisado',
-                                text: req.user.firstName + " " + req.user.lastName + " revis\u00F3 " + car_1.brand + " (" + car_1.denomination + ") en " + updatedUser.venue.name + "."
-                            }
-                        });
-                        // send refresh with websocket to dashboard detail
-                        _g = (_f = server_1.io.to("dashboard-vin-detail-" + car_1._id)).emit;
-                        _h = ["ADD_PARTICIPANT"];
-                        return [4 /*yield*/, participant_model_1["default"]
-                                .findById(newParticipant._id, { number: 1, name: 1, user: 1, venue: 1, createdAt: 1, qualification: 1 })
-                                .populate([{
-                                    path: 'user',
-                                    select: ['firstName', 'lastName']
-                                }, {
-                                    path: 'venue',
-                                    select: ['name']
-                                }])];
-                    case 28:
-                        // send refresh with websocket to dashboard detail
-                        _g.apply(_f, _h.concat([_j.sent()]));
-                        return [4 /*yield*/, new activityHistory_model_1["default"]({
-                                team: team,
-                                company: company,
-                                user: req.user._id,
-                                type: activityHistory_model_1.ChoicesTypeActivity.checklist,
-                                car: {
-                                    _id: car_1._id,
-                                    vin: car_1.vin
-                                }
-                            }).save()];
-                    case 29:
-                        _j.sent();
                         return [2 /*return*/, res.json({
                                 data: {
                                     id: id,
@@ -1112,7 +1116,7 @@ var FormController = /** @class */ (function () {
                                 },
                                 status: 200
                             })];
-                    case 30:
+                    case 31:
                         e_4 = _j.sent();
                         /* istanbul ignore next */
                         console.log(e_4);
@@ -1122,20 +1126,20 @@ var FormController = /** @class */ (function () {
                                 message: e_4,
                                 status: 400
                             })];
-                    case 31: return [3 /*break*/, 33];
-                    case 32: 
+                    case 32: return [3 /*break*/, 34];
+                    case 33: 
                     // return error, if the form could not find
                     return [2 /*return*/, res.status(400).json({
                             message: 'No se ha encontrado el formularío',
                             status: 400
                         })];
-                    case 33: return [3 /*break*/, 35];
-                    case 34: return [2 /*return*/, res.status(400).json({
+                    case 34: return [3 /*break*/, 36];
+                    case 35: return [2 /*return*/, res.status(400).json({
                             message: 'VIN no encontrado.',
                             status: 400
                         })];
-                    case 35: return [3 /*break*/, 37];
-                    case 36:
+                    case 36: return [3 /*break*/, 38];
+                    case 37:
                         e_5 = _j.sent();
                         Raven.captureException(e_5, { req: req });
                         /* istanbul ignore next */
@@ -1145,7 +1149,7 @@ var FormController = /** @class */ (function () {
                                 message: e_5,
                                 status: 400
                             })];
-                    case 37: return [2 /*return*/];
+                    case 38: return [2 /*return*/];
                 }
             });
         });
@@ -1424,7 +1428,8 @@ var FormController = /** @class */ (function () {
                                 },
                                 createdAt: {
                                     $gte: moment().endOf('day').subtract(days, 'd').toDate()
-                                }
+                                },
+                                kind: { $ne: form_model_1.KindForm.transmittal }
                             }, {
                                 _id: true,
                                 venue: true,

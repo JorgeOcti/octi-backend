@@ -155,11 +155,13 @@ var KindForm;
     KindForm["init"] = "init";
     KindForm["control"] = "control";
     KindForm["final"] = "final";
+    KindForm["transmittal"] = "transmittal";
 })(KindForm = exports.KindForm || (exports.KindForm = {}));
 exports.kindForm = [
     KindForm.init,
     KindForm.final,
     KindForm.control,
+    KindForm.transmittal
 ];
 var formSchema = new mongoose.Schema({
     name: {

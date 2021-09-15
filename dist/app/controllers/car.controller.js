@@ -558,16 +558,16 @@ var CarController = /** @class */ (function () {
     };
     CarController.prototype.apiParticipantsPerDate = function (req, res) {
         return __awaiter(this, void 0, void 0, function () {
-            var team, companies, venuesPermissions, query, venuesByCompanies, venuesPermissionsFilterByCompanies, participantReceivedPerDay, participantSentPerDay, importCarsPerDay, planningPerDay, planningByProcessing, planningByProcessingByKey, _loop_2, _i, planningByProcessing_1, process_1, participantsReceived, planning, planningProcess, participantsSent, cars, _loop_3, i, proyection, proyectionInterval, i, max, participantPerRange, venues, companiesData, companiesIDS, _a, venues_1, venue, companieID, _b, _c, e_6;
-            var _d;
-            return __generator(this, function (_e) {
-                switch (_e.label) {
+            var team, _a, companies, only_controls, venuesPermissions, query, venuesByCompanies, venuesPermissionsFilterByCompanies, participantQuery, participantReceivedPerDay, participantSentPerDay, importCarsPerDay, planningPerDay, planningByProcessing, planningByProcessingByKey, _loop_2, _i, planningByProcessing_1, process_1, participantsReceived, planning, planningProcess, participantsSent, cars, _loop_3, i, proyection, proyectionInterval, i, max, participantPerRange, venues, companiesData, companiesIDS, _b, venues_1, venue, companieID, _c, _d, e_6;
+            var _e;
+            return __generator(this, function (_f) {
+                switch (_f.label) {
                     case 0:
                         team = req.user.team._id;
-                        _e.label = 1;
+                        _f.label = 1;
                     case 1:
-                        _e.trys.push([1, 11, , 12]);
-                        companies = req.query.companies;
+                        _f.trys.push([1, 11, , 12]);
+                        _a = req.query, companies = _a.companies, only_controls = _a.only_controls;
                         venuesPermissions = req.user.venuesPermissions();
                         query = {
                             _id: {
@@ -581,20 +581,23 @@ var CarController = /** @class */ (function () {
                         }
                         return [4 /*yield*/, venue_model_1["default"].find(query)];
                     case 2:
-                        venuesByCompanies = _e.sent();
+                        venuesByCompanies = _f.sent();
                         venuesPermissionsFilterByCompanies = venuesByCompanies.map(function (venue) { return venue._id; });
+                        participantQuery = {
+                            venue: {
+                                $in: venuesPermissionsFilterByCompanies
+                            },
+                            createdAt: {
+                                $gte: moment().subtract(30, 'd').toDate()
+                            }
+                        };
+                        if (only_controls == "1") {
+                            participantQuery.kind = { $ne: form_model_1.KindForm.transmittal };
+                        }
                         return [4 /*yield*/, participant_model_1["default"]
                                 .aggregate([
                                 {
-                                    $match: {
-                                        venue: {
-                                            $in: venuesPermissionsFilterByCompanies
-                                        },
-                                        reception: true,
-                                        createdAt: {
-                                            $gte: moment().subtract(30, 'd').toDate()
-                                        }
-                                    }
+                                    $match: __assign(__assign({}, participantQuery), { reception: true })
                                 }, {
                                     $project: {
                                         _id: 1, user: 1, form: 1, car: 1, createdAt: {
@@ -660,19 +663,11 @@ var CarController = /** @class */ (function () {
                                 }
                             ])];
                     case 3:
-                        participantReceivedPerDay = _e.sent();
+                        participantReceivedPerDay = _f.sent();
                         return [4 /*yield*/, participant_model_1["default"]
                                 .aggregate([
                                 {
-                                    $match: {
-                                        venue: {
-                                            $in: venuesPermissionsFilterByCompanies
-                                        },
-                                        shipping: true,
-                                        createdAt: {
-                                            $gte: moment().subtract(30, 'd').toDate()
-                                        }
-                                    }
+                                    $match: __assign(__assign({}, participantQuery), { shipping: true })
                                 }, {
                                     $project: {
                                         _id: 1,
@@ -742,7 +737,7 @@ var CarController = /** @class */ (function () {
                                 }
                             ])];
                     case 4:
-                        participantSentPerDay = _e.sent();
+                        participantSentPerDay = _f.sent();
                         return [4 /*yield*/, car_model_1["default"]
                                 .aggregate([
                                 {
@@ -775,7 +770,7 @@ var CarController = /** @class */ (function () {
                                 }
                             ])];
                     case 5:
-                        importCarsPerDay = _e.sent();
+                        importCarsPerDay = _f.sent();
                         return [4 /*yield*/, planning_model_1["default"]
                                 .aggregate([
                                 {
@@ -806,7 +801,7 @@ var CarController = /** @class */ (function () {
                                 }
                             ])];
                     case 6:
-                        planningPerDay = _e.sent();
+                        planningPerDay = _f.sent();
                         return [4 /*yield*/, planning_model_1["default"]
                                 .find({
                                 team: team,
@@ -823,7 +818,7 @@ var CarController = /** @class */ (function () {
                                         }]
                                 }]).lean()];
                     case 7:
-                        planningByProcessing = _e.sent();
+                        planningByProcessing = _f.sent();
                         planningByProcessingByKey = {};
                         _loop_2 = function (process_1) {
                             var key = moment(process_1.date).format('YYYY-MM-DD');
@@ -948,25 +943,25 @@ var CarController = /** @class */ (function () {
                                 }
                             ])];
                     case 8:
-                        participantPerRange = _e.sent();
+                        participantPerRange = _f.sent();
                         return [4 /*yield*/, venue_model_1["default"].find({ _id: { $in: venuesPermissions } }).populate([{
                                     path: 'company',
                                     select: ['id', 'name']
                                 }])];
                     case 9:
-                        venues = _e.sent();
+                        venues = _f.sent();
                         companiesData = [];
                         companiesIDS = [];
-                        for (_a = 0, venues_1 = venues; _a < venues_1.length; _a++) {
-                            venue = venues_1[_a];
+                        for (_b = 0, venues_1 = venues; _b < venues_1.length; _b++) {
+                            venue = venues_1[_b];
                             companieID = venue.company.id.toString();
                             if (!companiesIDS.includes(companieID)) {
                                 companiesData.push(venue.company);
                                 companiesIDS.push(companieID);
                             }
                         }
-                        _c = (_b = res).json;
-                        _d = {
+                        _d = (_c = res).json;
+                        _e = {
                             planningPerDay: planningPerDay,
                             carsByVenue: [],
                             companies: companiesData,
@@ -979,12 +974,12 @@ var CarController = /** @class */ (function () {
                         };
                         return [4 /*yield*/, car_model_1["default"].count({ team: team })];
                     case 10:
-                        _c.apply(_b, [(_d.totalCars = _e.sent(),
-                                _d.status = 200,
-                                _d)]);
+                        _d.apply(_c, [(_e.totalCars = _f.sent(),
+                                _e.status = 200,
+                                _e)]);
                         return [3 /*break*/, 12];
                     case 11:
-                        e_6 = _e.sent();
+                        e_6 = _f.sent();
                         /* istanbul ignore next */
                         console.log('e', e_6);
                         /* istanbul ignore next */
@@ -1513,12 +1508,13 @@ var CarController = /** @class */ (function () {
     };
     CarController.prototype.apiRevisions = function (req, res) {
         return __awaiter(this, void 0, void 0, function () {
-            var _a, page, pageSize, search, from, to, team, options, participantFilter, searchText, searchUser, searchVenue, searchCar, createdAtFilter, revisions, e_10;
+            var _a, page, pageSize, search, from, to, team, only_controls, options, participantFilter, searchText, searchUser, searchVenue, searchCar, createdAtFilter, revisions, e_10;
             return __generator(this, function (_b) {
                 switch (_b.label) {
                     case 0:
                         _a = req.query, page = _a.page, pageSize = _a.pageSize, search = _a.search, from = _a.from, to = _a.to;
                         team = req.user.team._id;
+                        only_controls = req.query.only_controls;
                         options = {
                             select: {
                                 createdAt: true,
@@ -1561,6 +1557,9 @@ var CarController = /** @class */ (function () {
                                     team: team
                                 }]
                         };
+                        if (only_controls == "1") {
+                            participantFilter.kind = { $ne: form_model_1.KindForm.transmittal };
+                        }
                         if (!(search && search.length)) return [3 /*break*/, 7];
                         searchText = new RegExp(search, 'i');
                         return [4 /*yield*/, user_model_1["default"].find({
@@ -2220,7 +2219,8 @@ var CarController = /** @class */ (function () {
                             team: team,
                             venue: {
                                 $in: venuesPermissions
-                            }
+                            },
+                            kind: { $ne: form_model_1.KindForm.transmittal }
                         };
                         if (from && to) {
                             queryFilter.createdAt = {
@@ -2284,7 +2284,8 @@ var CarController = /** @class */ (function () {
                             team: team,
                             venue: {
                                 $in: venuesPermissions
-                            }
+                            },
+                            kind: { $ne: form_model_1.KindForm.transmittal }
                         };
                         return [4 /*yield*/, participant_model_1["default"].count(__assign(__assign({}, queryFilter), { createdAt: {
                                     $gte: moment().hour(0).minute(0).toDate(),
