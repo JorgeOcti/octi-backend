@@ -11,6 +11,11 @@ var formSettingSchema = new mongoose.Schema({
         "default": 17
     }
 });
+var helpPhonesSettingSchema = new mongoose.Schema({
+    transmittal: {
+        type: String
+    }
+});
 var inventorySettingSchema = new mongoose.Schema({
     pending: {
         type: String
@@ -107,6 +112,7 @@ var teamSettingSchema = new mongoose.Schema({
     },
     inventory: inventorySettingSchema,
     request: requestSettingSchema,
+    helpPhones: helpPhonesSettingSchema,
     form: formSettingSchema
 }, {
     timestamps: true
