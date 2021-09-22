@@ -14,6 +14,7 @@ import { debounce } from 'throttle-debounce';
 import { IUser } from '../../../../../../../src/app/interfaces/user.interface';
 import * as io from 'socket.io-client';
 import { IWindow } from '../../../interfaces/window';
+import ShowIf from '../../Utils/ShowIf';
 
 
 interface IExternarlPropsType {
@@ -128,7 +129,7 @@ class SearchCarInRequests extends React.Component<IPropsType, IStateType> {
                   />
                 </div>
               </div>
-              <div className='col-md-4'>
+              <div className='col-md-2'>
                 <div className='form-group'>
                   <label className='control-label'>
                     Nº Solicitudes
@@ -140,6 +141,23 @@ class SearchCarInRequests extends React.Component<IPropsType, IStateType> {
                     defaultValue={requestItemsfilters.request}
                     onChange={(e) => {
                       transmittalActions.filterRequestItemAction('request', e.target.value);
+                      this.getRequestItemDebounced();
+                    }}
+                  />
+                </div>
+              </div>
+              <div className='col-md-2'>
+                <div className='form-group'>
+                  <label className='control-label'>
+                    Partida
+                  </label>
+                  <input
+                    type='text'
+                    className='form-control input-sm'
+                    placeholder='Nº de partida ejemplo: J-2136'
+                    defaultValue={requestItemsfilters.request}
+                    onChange={(e) => {
+                      transmittalActions.filterRequestItemAction('entry', e.target.value);
                       this.getRequestItemDebounced();
                     }}
                   />
@@ -235,13 +253,15 @@ class SearchCarInRequests extends React.Component<IPropsType, IStateType> {
                                 </React.Fragment>
                             }
                             <td className={`middle`}>
-                              <a
-                                className='btn btn-success btn-xs'
-                                href={'javascript:void(0);'}
-                                onClick={() => this.props.onClick(item)}
-                              >
-                                <i className='fa fa-plus' /> Agregar
-                              </a>
+                              <ShowIf condition={!!item.car?.vin?.trim()}>
+                                <a
+                                  className='btn btn-success btn-xs'
+                                  href={'javascript:void(0);'}
+                                  onClick={() => this.props.onClick(item)}
+                                >
+                                  <i className='fa fa-plus' /> Agregar
+                                </a>
+                              </ShowIf>
                             </td>
                           </tr>
                         );

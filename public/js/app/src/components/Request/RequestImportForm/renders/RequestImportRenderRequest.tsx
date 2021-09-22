@@ -65,9 +65,9 @@ class RequestImportRenderRequest extends React.Component<IPropsType, IStateType>
                 <div className='col-md-3'>
                   <Field
                     name={`${item}.channel`}
-                    label='Canal *'
+                    label='Canal'
                     component={BootstrapSelectField}
-                    validate={[inputStringRequired]}
+                    validate={[]}
                     props={{
                       noneSelectedText: 'Seleccione...',
                       displayItems: 2,

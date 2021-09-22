@@ -421,7 +421,9 @@ class RequestController {
     if (requestNumbers.length) {
       extraMatch.requestNumber = { $in: requestNumbers };
     }
-    if (filters.text) {
+    if(filters.entry?.length){
+      extraMatch['car.entry'] = { '$regex': filters.entry, '$options': 'i' }
+    } else if (filters.text) {
       extraMatch.$or = [];
       extraMatch.$or.push({
         'car.vin': { '$regex': filters.text, '$options': 'i' }
@@ -526,6 +528,8 @@ class RequestController {
             'car.brand': 1,
             'car.color': 1,
             'car.material': 1,
+            'car.entry': 1,
+            'car.invoice': 1,
             'car.patent': 1,
             'car.property': 1,
             'car.type': 1,
@@ -604,7 +608,7 @@ class RequestController {
             }]
           }, {
             path: 'car',
-            select: ['vin', 'internalNumber', 'patent', 'color', 'brand', 'denomination', 'material', 'property', 'type', 'client', 'bl']
+            select: ['vin', 'internalNumber', 'patent', 'color', 'brand', 'denomination', 'material', 'property', 'type', 'client', 'bl', 'invoice', 'entry']
           }, {
             path: 'reason',
             select: ['name']

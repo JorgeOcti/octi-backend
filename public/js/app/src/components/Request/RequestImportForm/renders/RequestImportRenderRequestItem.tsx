@@ -40,7 +40,6 @@ class RequestImportRenderRequestItem extends React.Component<IPropsType, IStateT
     const { fields, meta: { error, submitFailed, warning }, reasons, venues } = this.props;
     return (
       <>
-        {/*<div>EEEEE {JSON.stringify(error)}</div>*/}
         {
           fields.map((item, index) => {
             return (
@@ -50,7 +49,6 @@ class RequestImportRenderRequestItem extends React.Component<IPropsType, IStateT
                     name={`${item}.reason`}
                     label='Motivo'
                     component={BootstrapSelectField}
-                    validate={[inputStringRequired]}
                     props={{
                       noneSelectedText: 'Seleccione...',
                       displayItems: 2,

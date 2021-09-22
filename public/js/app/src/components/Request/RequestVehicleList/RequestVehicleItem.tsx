@@ -82,7 +82,7 @@ class RequestVehicleItem extends React.Component<IPropsType, IStateType> {
         </td>
         <td className="middle" style={{fontSize: '80%'}}>{item.origin?.name ?? '-'}</td>
         <td className="middle" style={{fontSize: '80%'}}>{item.destination?.name ?? '-'}</td>
-        <td className="middle">{item.car.property ? item.car.property : '-'}</td>
+        {/*<td className="middle">{item.car.property ? item.car.property : '-'}</td>*/}
         {
           canChangeRequest ?
             <td className="middle">
@@ -127,6 +127,52 @@ class RequestVehicleItem extends React.Component<IPropsType, IStateType> {
               />
             </td>
             : <td className="middle">{item.car.brand}</td>
+        }
+        {
+          canChangeRequest ?
+            <td className="middle">
+              <input
+                type="text"
+                className="form-control input-sm"
+                defaultValue={item.car.vin}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                  this.props.updateRequestItemsThunkAction({
+                    item: {
+                      ...item,
+                      car: {
+                        ...item.car,
+                        vin: e.target.value
+                      }
+                    },
+                    debounce: false
+                  });
+                }}
+              />
+            </td>
+            : <td className="middle">{item.car.vin}</td>
+        }
+        {
+          canChangeRequest ?
+            <td className="middle">
+              <input
+                type="text"
+                className="form-control input-sm"
+                defaultValue={item.car.entry}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                  this.props.updateRequestItemsThunkAction({
+                    item: {
+                      ...item,
+                      car: {
+                        ...item.car,
+                        entry: e.target.value
+                      }
+                    },
+                    debounce: false
+                  });
+                }}
+              />
+            </td>
+            : <td className="middle">{item.car.entry}</td>
         }
         <ShowIf condition={requestSettings.denomination}>
           {
@@ -273,29 +319,6 @@ class RequestVehicleItem extends React.Component<IPropsType, IStateType> {
               </select>
             </td>
             : <td className="middle">{item.status?.name}</td>
-        }
-        {
-          canChangeRequest ?
-            <td className="middle">
-              <input
-                type="text"
-                className="form-control input-sm"
-                defaultValue={item.car.vin}
-                onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
-                  this.props.updateRequestItemsThunkAction({
-                    item: {
-                      ...item,
-                      car: {
-                        ...item.car,
-                        vin: e.target.value
-                      }
-                    },
-                    debounce: false
-                  });
-                }}
-              />
-            </td>
-            : <td className="middle">{item.car.vin}</td>
         }
         <ShowIf condition={requestSettings.internalNumber}>
           {

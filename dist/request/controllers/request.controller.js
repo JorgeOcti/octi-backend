@@ -543,16 +543,17 @@ var RequestController = /** @class */ (function () {
         });
     };
     RequestController.prototype.apiListItems = function (req, res) {
+        var _a;
         return __awaiter(this, void 0, void 0, function () {
-            var team, _a, page, pageSize, orderBy, orderType, filters, venuesIds, extraQuery, extraMatch, requestNumbers, baseAggregate, aggregatePopulate, aggregate, requestsAggregate, options, requests, options, query, request, e_5;
-            var _b;
-            return __generator(this, function (_c) {
-                switch (_c.label) {
+            var team, _b, page, pageSize, orderBy, orderType, filters, venuesIds, extraQuery, extraMatch, requestNumbers, baseAggregate, aggregatePopulate, aggregate, requestsAggregate, options, requests, options, query, request, e_5;
+            var _c;
+            return __generator(this, function (_d) {
+                switch (_d.label) {
                     case 0:
                         logger_service_1["default"].info("RequestController.apiListItems");
                         logger_service_1["default"].info("{user: {_id: " + req.user._id + ", email: " + req.user.email + "}, body: " + JSON.stringify(req.body) + " }");
                         team = req.user.team._id;
-                        _a = req.body, page = _a.page, pageSize = _a.pageSize, orderBy = _a.orderBy, orderType = _a.orderType, filters = _a.filters;
+                        _b = req.body, page = _b.page, pageSize = _b.pageSize, orderBy = _b.orderBy, orderType = _b.orderType, filters = _b.filters;
                         extraQuery = {};
                         extraMatch = {};
                         if (filters.venues && filters.venues.length) {
@@ -583,7 +584,10 @@ var RequestController = /** @class */ (function () {
                         if (requestNumbers.length) {
                             extraMatch.requestNumber = { $in: requestNumbers };
                         }
-                        if (filters.text) {
+                        if ((_a = filters.entry) === null || _a === void 0 ? void 0 : _a.length) {
+                            extraMatch['car.entry'] = { '$regex': filters.entry, '$options': 'i' };
+                        }
+                        else if (filters.text) {
                             extraMatch.$or = [];
                             extraMatch.$or.push({
                                 'car.vin': { '$regex': filters.text, '$options': 'i' }
@@ -612,9 +616,9 @@ var RequestController = /** @class */ (function () {
                                 'car.property': { $in: filters.properties.map(function (s) { return s; }) }
                             });
                         }
-                        _c.label = 1;
+                        _d.label = 1;
                     case 1:
-                        _c.trys.push([1, 6, , 7]);
+                        _d.trys.push([1, 6, , 7]);
                         if (!(orderBy !== 'request.number' || Object.keys(extraMatch).length || Object.keys(extraQuery).length)) return [3 /*break*/, 3];
                         if (filters && filters.transmitttalModule) {
                             extraQuery.assigned = { $in: [null, false] };
@@ -685,6 +689,8 @@ var RequestController = /** @class */ (function () {
                                     'car.brand': 1,
                                     'car.color': 1,
                                     'car.material': 1,
+                                    'car.entry': 1,
+                                    'car.invoice': 1,
                                     'car.patent': 1,
                                     'car.property': 1,
                                     'car.type': 1,
@@ -716,7 +722,7 @@ var RequestController = /** @class */ (function () {
                             }];
                         aggregate = __spreadArray(__spreadArray(__spreadArray([], baseAggregate, true), aggregatePopulate, true), [
                             {
-                                $sort: (_b = {}, _b[orderBy] = orderType === 'ascending' ? 1 : -1, _b)
+                                $sort: (_c = {}, _c[orderBy] = orderType === 'ascending' ? 1 : -1, _c)
                             }
                         ], false);
                         requestsAggregate = requestItem_model_1["default"].aggregate(aggregate);
@@ -727,7 +733,7 @@ var RequestController = /** @class */ (function () {
                         };
                         return [4 /*yield*/, requestItem_model_1["default"].aggregatePaginate(requestsAggregate, options)];
                     case 2:
-                        requests = _c.sent();
+                        requests = _d.sent();
                         if (options.page && requests.pages && requests.pages < options.page) {
                             res.status(400).json({
                                 message: 'La página solicitada no existe.',
@@ -763,7 +769,7 @@ var RequestController = /** @class */ (function () {
                                         }]
                                 }, {
                                     path: 'car',
-                                    select: ['vin', 'internalNumber', 'patent', 'color', 'brand', 'denomination', 'material', 'property', 'type', 'client', 'bl']
+                                    select: ['vin', 'internalNumber', 'patent', 'color', 'brand', 'denomination', 'material', 'property', 'type', 'client', 'bl', 'invoice', 'entry']
                                 }, {
                                     path: 'reason',
                                     select: ['name']
@@ -797,7 +803,7 @@ var RequestController = /** @class */ (function () {
                         }
                         return [4 /*yield*/, requestItem_model_1["default"].paginate(query, options)];
                     case 4:
-                        request = _c.sent();
+                        request = _d.sent();
                         res.json({
                             extraMatch: extraMatch,
                             extraQuery: extraQuery,
@@ -808,10 +814,10 @@ var RequestController = /** @class */ (function () {
                             results: request.docs,
                             status: 200
                         });
-                        _c.label = 5;
+                        _d.label = 5;
                     case 5: return [3 /*break*/, 7];
                     case 6:
-                        e_5 = _c.sent();
+                        e_5 = _d.sent();
                         /* istanbul ignore next */
                         logger_service_1["default"].error("RequestController.apiListItems: Async Error.");
                         /* istanbul ignore next */

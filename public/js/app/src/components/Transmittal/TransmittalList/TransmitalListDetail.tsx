@@ -60,7 +60,7 @@ class TransmitalListDetail extends React.Component<IPropsType, IStateType> {
           <div className='flex-45 col-sm-1 col-xs-1 col-md-1 col-lg-1'>
             {transmittal.transporter.patent}
           </div>
-          <div className='flex-45 col-sm-2 col-xs-2 col-md-2 col-lg-2' style={{position: 'static'}}>
+          <div className='flex-45 col-sm-2 col-xs-2 col-md-2 col-lg-2' style={{ position: 'static' }}>
             {
               hasPermission(window.user, 'changeTransmittal') ?
                 (
@@ -91,7 +91,7 @@ class TransmitalListDetail extends React.Component<IPropsType, IStateType> {
             }
             {/*{transmittal.transporter.driver._id}*/}
           </div>
-          <div className='flex-45 col-sm-2 col-xs-2 col-md-2 col-lg-2' style={{position: 'static'}}>
+          <div className='flex-45 col-sm-2 col-xs-2 col-md-2 col-lg-2' style={{ position: 'static' }}>
             {
               hasPermission(window.user, 'changeTransmittal') ?
                 (
@@ -177,27 +177,27 @@ class TransmitalListDetail extends React.Component<IPropsType, IStateType> {
                 <td className='middle'>
                   <DateRangePicker
                     className={'input-sm'}
-                    value={""}
+                    value={''}
                     format={'DD-MM-YY'}
                     onChange={(e) => {
                       this.props.transmittalActions.updateTransmittalThunkAction({
                         _id: transmittal._id,
                         allLoadingDate: e?.toDate() ?? ''
-                      })
+                      });
                     }}
                   />
                 </td>
                 <td className='middle'>
                   <DateRangePicker
                     className={'input-sm'}
-                    value={""}
+                    value={''}
                     format={'DD-MM-YY'}
                     onChange={(e) => {
                       // allArrivalDate
                       this.props.transmittalActions.updateTransmittalThunkAction({
                         _id: transmittal._id,
                         allArrivalDate: e?.toDate() ?? ''
-                      })
+                      });
                     }}
                   />
                 </td>

@@ -421,7 +421,7 @@ class RequestVehicleListView extends TrackingBasePage<IPropsType, IStateType> {
                         style={{ width: '80px' }}
                         onClick={() => this.changeOrder('request.number')}
                       >
-                        Solicitud
+                        Solic.
                         <span style={{ float: 'right' }}><i
                           className={`fa fa-fw ${orderBy === 'request.number' ? `${orderType === 'descending' ? 'fa-sort-down' : 'fa-sort-up'}` : 'fa-sort'}`} /></span>
                       </th>
@@ -443,24 +443,26 @@ class RequestVehicleListView extends TrackingBasePage<IPropsType, IStateType> {
                         <span style={{ float: 'right' }}><i
                           className={`fa fa-fw ${orderBy === 'destination.name' ? `${orderType === 'descending' ? 'fa-sort-down' : 'fa-sort-up'}` : 'fa-sort'}`} /></span>
                       </th>
+                      {/*<th*/}
+                      {/*  className='middle pointer'*/}
+                      {/*  // style={{ width: '100px' }}*/}
+                      {/*  onClick={() => this.changeOrder('car.property')}*/}
+                      {/*>*/}
+                      {/*  Prop.*/}
+                      {/*  <span style={{ float: 'right' }}><i*/}
+                      {/*    className={`fa fa-fw ${orderBy === 'car.property' ? `${orderType === 'descending' ? 'fa-sort-down' : 'fa-sort-up'}` : 'fa-sort'}`} /></span>*/}
+                      {/*</th>*/}
                       <th
                         className='middle pointer'
-                        // style={{ width: '100px' }}
-                        onClick={() => this.changeOrder('car.property')}
-                      >
-                        Prop.
-                        <span style={{ float: 'right' }}><i
-                          className={`fa fa-fw ${orderBy === 'car.property' ? `${orderType === 'descending' ? 'fa-sort-down' : 'fa-sort-up'}` : 'fa-sort'}`} /></span>
-                      </th>
-                      <th
-                        className='middle pointer'
-                        style={{ minWidth: '100px', maxWidth: '120px' }}
+                        style={{ minWidth: '100px', maxWidth: '80px' }}
                         onClick={() => this.changeOrder('car.brand')}
                       >
                         Marca
                         <span style={{ float: 'right' }}><i
                           className={`fa fa-fw ${orderBy === 'car.brand' ? `${orderType === 'descending' ? 'fa-sort-down' : 'fa-sort-up'}` : 'fa-sort'}`} /></span>
                       </th>
+                      <th className='middle' style={{ minWidth: '135px', width: '135px' }}>VIN</th>
+                      <th className='middle' style={{ width: '80px' }}>Partida</th>
                       <ShowIf condition={requestSettings.denomination}>
                         <th
                           className='middle pointer'
@@ -495,7 +497,6 @@ class RequestVehicleListView extends TrackingBasePage<IPropsType, IStateType> {
                         <span style={{ float: 'right' }}><i
                           className={`fa fa-fw ${orderBy === 'status.weigth' ? `${orderType === 'descending' ? 'fa-sort-down' : 'fa-sort-up'}` : 'fa-sort'}`} /></span>
                       </th>
-                      <th className='middle' style={{ width: '150px' }}>VIN</th>
                       <ShowIf condition={requestSettings.internalNumber}>
                         <th className='middle' style={{ width: '60px' }}>CDO</th>
                       </ShowIf>
