@@ -85,8 +85,8 @@ var server = app_1["default"].listen(parseInt(app_1["default"].get('port'), 10) 
 });
 exports.io = socketIO(server);
 exports.io.adapter(socketRedis({
-    pubClient: redis_service_1.createRedisClient(),
-    subClient: redis_service_1.createRedisClient()
+    pubClient: (0, redis_service_1.createRedisClient)(),
+    subClient: (0, redis_service_1.createRedisClient)()
 }));
 /* istanbul ignore next */
 exports.io.use(function (socket, next) { return __awaiter(void 0, void 0, void 0, function () {

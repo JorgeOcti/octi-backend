@@ -200,7 +200,7 @@ class TransmittalListView extends TrackingBasePage<IPropsType, IStateType> {
                 </ShowIf>
               </div>
             </div>
-            <div className={`box-body transmittal-list`}>
+            <div className={`box-body transmittal-list table-responsive`}>
               <ShowIf condition={data.length > 0}>
                 <div className='row transmittal bg-primary'>
                   <div className='flex-45 col-sm-1 col-xs-1 col-md-1 col-lg-1 center pointer head-sorted'

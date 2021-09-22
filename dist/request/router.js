@@ -27,7 +27,7 @@ requestRouter.get('/api/v1/requests/search-car/', middlewares_1["default"].isJWT
 requestRouter.post('/api/v1/requests/upload-file/', middlewares_1["default"].isJWTAuthenticated, request_controller_1["default"].uploadFile);
 requestRouter.post('/api/v1/requests/update-massive/', middlewares_1["default"].isJWTAuthenticated, request_controller_1["default"].apiUpdateMassive);
 requestRouter.get('/api/v1/requests/', middlewares_1["default"].isJWTAuthenticated, request_controller_1["default"].apiList);
-requestRouter.get('/api/v1/requests/import/', middlewares_1["default"].isJWTAuthenticated, request_controller_1["default"].apiImport);
+requestRouter.post('/api/v1/requests/import/', middlewares_1["default"].isJWTAuthenticated, request_controller_1["default"].apiImport);
 requestRouter.post('/api/v1/requests/', middlewares_1["default"].isJWTAuthenticated, request_controller_1["default"].apiCreate);
 requestRouter.get('/api/v1/requests/:id/', middlewares_1["default"].isJWTAuthenticated, request_controller_1["default"].apiDetail);
 requestRouter["delete"]('/api/v1/requests/:id/', middlewares_1["default"].isJWTAuthenticated, request_controller_1["default"].apiDeleteRequest);

@@ -46,10 +46,14 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
         if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
     }
 };
-var __spreadArray = (this && this.__spreadArray) || function (to, from) {
-    for (var i = 0, il = from.length, j = to.length; i < il; i++, j++)
-        to[j] = from[i];
-    return to;
+var __spreadArray = (this && this.__spreadArray) || function (to, from, pack) {
+    if (pack || arguments.length === 2) for (var i = 0, l = from.length, ar; i < l; i++) {
+        if (ar || !(i in from)) {
+            if (!ar) ar = Array.prototype.slice.call(from, 0, i);
+            ar[i] = from[i];
+        }
+    }
+    return to.concat(ar || Array.prototype.slice.call(from));
 };
 exports.__esModule = true;
 var bluebird = require("bluebird");
@@ -930,7 +934,7 @@ var CarController = /** @class */ (function () {
                                         range: {
                                             $concat: __spreadArray([
                                                 { $cond: [{ $lt: ['$qualification', 0] }, 'Unknown', ''] }
-                                            ], proyection)
+                                            ], proyection, true)
                                         }
                                     }
                                 }, {
@@ -1822,7 +1826,7 @@ var CarController = /** @class */ (function () {
                         return [4 /*yield*/, bluebird.all(revisionsToProcess.splice(0, 100))];
                     case 3:
                         data = _b.apply(_a, _c.concat([_d.sent()]));
-                        results = __spreadArray(__spreadArray([], results), data);
+                        results = __spreadArray(__spreadArray([], results, true), data, true);
                         return [3 /*break*/, 2];
                     case 4:
                         resolve(results);
@@ -1918,7 +1922,7 @@ var CarController = /** @class */ (function () {
                         for (i = periods; i >= 0; i--) {
                             periodToProcess.push(this.addRevisions(req.user, i, damagesCache, extraColums));
                         }
-                        newColumns = __spreadArray(__spreadArray([], columns), extraColums.data);
+                        newColumns = __spreadArray(__spreadArray([], columns, true), extraColums.data, true);
                         worksheet.columns = newColumns;
                         worksheet.autoFilter = { from: 'A1', to: { row: 1, column: newColumns.length } };
                         _a.label = 5;

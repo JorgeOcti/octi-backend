@@ -429,6 +429,14 @@ export default class ApiService {
     );
   }
 
+  public importRequests(data: any): AxiosPromise {
+    return this.instance.post(
+      `/api/v1/requests/import/`, data, {
+        cancelToken: this.source.token
+      }
+    );
+  }
+
   public finishInventory(id: string): AxiosPromise {
     return this.instance.post(
       `/api/inventory/${id}/finish/`, {}

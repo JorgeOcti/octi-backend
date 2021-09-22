@@ -193,7 +193,23 @@ var AdminVenueController = /** @class */ (function () {
                         team = req.user.team._id;
                         _a = req.query, page = _a.page, pageSize = _a.pageSize, noPopulate = _a.noPopulate, filted = _a.filted, search = _a.search;
                         options = {
-                            select: {
+                            sort: {
+                                name: 1
+                            },
+                            page: parseInt(page ? page : '1', 10),
+                            limit: parseInt(pageSize ? pageSize : '20', 10)
+                        };
+                        if (noPopulate) {
+                            options['select'] = {
+                                _id: true,
+                                name: true,
+                                abbreviation: true,
+                                updatedAt: true,
+                                createdAt: true
+                            };
+                        }
+                        else {
+                            options['select'] = {
                                 _id: true,
                                 name: true,
                                 abbreviation: true,
@@ -208,8 +224,8 @@ var AdminVenueController = /** @class */ (function () {
                                 type: true,
                                 updatedAt: true,
                                 createdAt: true
-                            },
-                            populate: [{
+                            };
+                            options['populate'] = [{
                                     path: 'receptionCarriers',
                                     select: ['_id', 'name']
                                 }, {
@@ -236,21 +252,12 @@ var AdminVenueController = /** @class */ (function () {
                                 }, {
                                     path: 'company',
                                     select: ['name', 'marker']
-                                }],
-                            lean: true,
-                            sort: {
-                                name: 1
-                            },
-                            page: parseInt(page ? page : '1', 10),
-                            limit: parseInt(pageSize ? pageSize : '20', 10)
-                        };
+                                }];
+                        }
                         filter = {
                             deleted: false,
                             team: team
                         };
-                        if (noPopulate) {
-                            delete options.populate;
-                        }
                         if (filted) {
                             filter._id = {
                                 $in: req.user.venuesPermissions()

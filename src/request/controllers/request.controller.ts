@@ -7,9 +7,8 @@ import * as https from 'https';
 import * as GraphicsMagick from 'gm';
 import * as moment from 'moment';
 import { CustomLabels, PaginateOptions, PaginateResult, QueryPopulateOptions } from 'mongoose';
-import * as tempfile from 'tempfile';
 import { ObjectID } from 'bson';
-import Car, { ChoicesStatusCar } from '../../app/models/car.model';
+import Car, { ChoicesStatusCar, default as CarModel } from '../../app/models/car.model';
 import Team from '../../app/models/team.model';
 import Participant from '../../form/models/participant.model';
 import { IRequest } from '../../interfaces/global.interface';
@@ -104,24 +103,11 @@ class RequestController {
     this.downloadFile = this.downloadFile.bind(this);
     this.apiUpdateMassive = this.apiUpdateMassive.bind(this);
     this.apiImport = this.apiImport.bind(this);
+    this.createRequest = this.createRequest.bind(this);
   }
 
   public async index(req: IRequest, res: Response) {
     res.render('app/index', { token: await req.user.generateToken() });
-  }
-
-  public async apiImport(req: IRequest, res: Response) {
-    try {
-      const { team } = req.user;
-      console.log('team', team);
-      console.log('req.body', req.body);
-    } catch (e) {
-      /* istanbul ignore next */
-      if (e) {
-        console.log(e);
-        res.status(500).json(e);
-      }
-    }
   }
 
   public async apiUpdateMassive(req: IRequest, res: Response) {
@@ -157,6 +143,162 @@ class RequestController {
     }
   }
 
+  private createRequest(user: any, request: any): Promise<any> {
+    return new Promise<any>(async (resolve, reject) => {
+      try {
+        const { company, team } = user;
+        const { cars, number, channel, sellerText, operationType } = request;
+        const defaultItemStatus = await RequestItemStatus.findOneOrCreate({
+          team,
+          default: true
+        }, {
+          name: 'Pendiente',
+          default: true,
+          team,
+          weigth: 10
+        });
+        const newRequest: IRequestModel = await new Request({
+          team,
+          sellerText,
+          number: number,
+          operationType: operationType?.length ? operationType : null,
+          channel,
+          createdBy: user
+        }).save();
+        for (const car of cars) {
+          let currentCar = await CarModel.findOne({
+            team,
+            vin: car.vin.trim()
+          });
+          if (currentCar) {
+            currentCar.engineNumber = car.engineNumber;
+            currentCar.brand = car.brand;
+            currentCar.color = car.color;
+            currentCar.denomination = car.denomination;
+            currentCar.type = car.type;
+            currentCar.client = car.client;
+            currentCar.entry = car.entry;
+            currentCar.invoice = car.invoice;
+            currentCar.bl = car.bl;
+            currentCar.engineSize = car.engineSize;
+            currentCar.driveType = car.driveType;
+            currentCar.businessYear = car.businessYear;
+            currentCar.manufacturingYear = car.manufacturingYear;
+            currentCar.price = car.price;
+            currentCar.insurancePrice = car.insurancePrice;
+            currentCar.weight = car.weight;
+            currentCar.gas = car.gas;
+            currentCar.ap = car.ap;
+            currentCar.countryOrigin = car.countryOrigin;
+            currentCar.save();
+          } else {
+            currentCar = await new Car({
+              team,
+              company,
+              vin: car.vin.trim(),
+              engineNumber: car.engineNumber,
+              brand: car.brand,
+              color: car.color,
+              denomination: car.denomination,
+              type: car.type,
+              client: car.client,
+              entry: car.entry,
+              invoice: car.invoice,
+              bl: car.bl,
+              engineSize: car.engineSize,
+              driveType: car.driveType,
+              businessYear: car.businessYear,
+              manufacturingYear: car.manufacturingYear,
+              price: car.price,
+              insurancePrice: car.insurancePrice,
+              weight: car.weight,
+              gas: car.gas,
+              ap: car.ap,
+              countryOrigin: car.countryOrigin,
+              status: ChoicesStatusCar.pending,
+              createdBy: user
+            }).save();
+          }
+          await new RequestItem({
+            team,
+            request: newRequest,
+            car: currentCar,
+            reason: car.reason,
+            origin: car.origin,
+            destination: car.destination,
+            observation: car.observation,
+            status: defaultItemStatus,
+            createdBy: user
+          }).save();
+        }
+        const updatedRequest = await Request.findById(newRequest._id).populate(this.requestPopulate);
+        io.to(`request-list-${team._id}`).emit('CREATE_REQUEST', {
+          request: updatedRequest
+        });
+        io.to(`request-detail-${team._id}`).emit('CREATE_REQUEST', {
+          request: updatedRequest
+        });
+        resolve({
+          updatedRequest
+        });
+      } catch (e) {
+        /* istanbul ignore next */
+        logger.error(`RequestController.createRequest: Async Error.`);
+        /* istanbul ignore next */
+        logger.error(`{user: {_id: ${user._id}, email: ${user.email}}, user: ${JSON.stringify(user)}`);
+        logger.error(e);
+        reject(e);
+      }
+    });
+  }
+
+  public async apiImport(req: IRequest, res: Response) {
+    try {
+      const { team } = req.user;
+      const { requests } = req.body;
+      if (requests?.length) {
+        const requestsNumbers = requests.map((request: any) => parseInt(request.number));
+        const existsRequest = await Request.find({ team, number: { $in: requestsNumbers } });
+        const updateTeam = await Team.findOne({ _id: team._id });
+        const maxRequest = Math.max(...requestsNumbers);
+        const minRequest = Math.min(...requestsNumbers);
+
+        if (existsRequest.length) {
+          res.status(400).json({
+            message: `Solicitudes número ${existsRequest.map((e) => e.number).join(',')} ya ${existsRequest.length > 1 ? 'existen' : 'existe'}`,
+            status: 400
+          });
+        } else if (minRequest <= updateTeam!.requestNumber) {
+          res.status(400).json({
+            message: `El número de solicitud no puede ser menor que ${updateTeam!.requestNumber}`,
+            status: 400
+          });
+        } else {
+          requests.forEach(async (request: any) => {
+            await this.createRequest(req.user, request);
+          });
+
+          await Team.findOneAndUpdate({ _id: team._id }, { $set: { requestNumber: maxRequest } });
+          res.status(200).json({
+            message: 'Actualización realizada satisfactoriamente',
+            status: 200
+          });
+        }
+      } else {
+        res.status(400).json({
+          message: 'Datos invalidos',
+          status: 400
+        });
+      }
+    } catch (e) {
+      /* istanbul ignore next */
+      if (e) {
+        console.log(e);
+        res.status(500).json(e);
+      }
+    }
+  }
+
   public async apiCreate(req: IRequest, res: Response) {
     logger.info(`RequestController.apiCreate`);
     logger.info(`{user: {_id: ${req.user._id}, email: ${req.user.email}}, body: ${JSON.stringify(req.body)} }`);
@@ -173,14 +315,14 @@ class RequestController {
         team,
         weigth: 10
       });
-      const updateTeam = await Team.findOne({ _id: team._id });
+      const updateTeam = await Team.findOneAndUpdate({ _id: team._id }, { $inc: { requestNumber: 1 } }, { new: true });
       const request = await new Request({
         team,
         sellerText,
-        number: updateTeam!.requestNumber + 1,
+        number: updateTeam!.requestNumber,
         origin: venue,
         destination: venue,
-        operationType: operationType?.length ? operationType: null,
+        operationType: operationType?.length ? operationType : null,
         // status,
         channel,
         createdBy: req.user
@@ -213,7 +355,6 @@ class RequestController {
           createdBy: req.user
         }).save();
       }
-      await Team.findOneAndUpdate({ _id: team._id }, { $inc: { requestNumber: 1 } }, { new: true });
       const newRequest = await Request.findById(request._id).populate(this.requestPopulate);
       io.to(`request-list-${team._id}`).emit('CREATE_REQUEST', {
         request: newRequest
@@ -520,7 +661,7 @@ class RequestController {
   public async exportExcel(req: IRequest, res: Response) {
     const team = req.user.team._id;
     try {
-      const requestItems = await RequestItem.aggregate<IRequestItemModel>([{
+      const cursor = RequestItem.aggregate<IRequestItemModel>([{
         $match: {
           team,
           'destination': {
@@ -596,8 +737,15 @@ class RequestController {
         }
       }, {
         $sort: { _id: 1 }
-      }]);
-      const workbook = new excel.Workbook();
+      }]).cursor({ batchSize: 100 }).exec();
+      res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+      res.setHeader('Content-Disposition', 'attachment; filename=requests.xlsx');
+      const options = {
+        stream: res,
+        useStyles: true,
+        useSharedStrings: true
+      };
+      const workbook = new excel.stream.xlsx.WorkbookWriter(options);
       const worksheet = workbook.addWorksheet('Usuarios', {
         properties: {
           defaultRowHeight: 30
@@ -675,7 +823,8 @@ class RequestController {
         header: 'OBSERVACIÓN', key: 'observation', width: 21
       }, ...questionColumns];
 
-      for (const item of requestItems) {
+      // for (const item of requestItems) {
+      cursor.on('data', async (item: any) => {
         const extraAnswers: any = {};
         for (const answer of item.answers ? item.answers : []) {
           extraAnswers[answer.questionId] = answer.answer;
@@ -711,12 +860,19 @@ class RequestController {
           uploadDate: item.uploadDate,
           estimatedArrival: item.estimatedArrival
         });
-      }
-      const tempFilePath = tempfile('.xlsx');
-      await workbook.xlsx.writeFile(tempFilePath);
-      res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-      res.setHeader('Content-Disposition', 'attachment; filename=requests.xlsx');
-      return res.sendFile(tempFilePath);
+      });
+      cursor.on('end', async () => {
+        await workbook.commit();
+        res.status(200);
+      });
+
+      cursor.on('error', (error: Error) => logger.error(error.message));
+
+      // code to handle connection abort or finish of data send
+      req.connection.on('close', async () => {
+        await cursor.close();
+        res.status(200);
+      });
     } catch (e) {
       /* istanbul ignore next */
       logger.error(e);

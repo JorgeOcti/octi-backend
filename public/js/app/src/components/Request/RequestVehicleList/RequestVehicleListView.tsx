@@ -192,7 +192,7 @@ class RequestVehicleListView extends TrackingBasePage<IPropsType, IStateType> {
                     <i className='fa fa-fw fa-plus' /> Actualizador
                   </button>
                 </ShowIf>
-                <ShowIf condition={process.env.NODE_ENV === 'development' && hasPermission(window.user, 'createRequest')}>
+                <ShowIf condition={hasPermission(window.user, 'importRequest')}>
                   <button
                     style={{ marginLeft: '5px' }}
                     className='btn btn-sm btn-success'

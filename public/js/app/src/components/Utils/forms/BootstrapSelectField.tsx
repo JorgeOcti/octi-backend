@@ -71,7 +71,7 @@ class BootstrapSelectField extends React.Component<IPropsType, IStateType> {
     } = this.props;
     const {searchText} = this.state;
     const selectedItems = options.filter((option) => (input.value.includes(option.value)));
-
+    // console.log('onClick', onClick)
     return (
       <div className={`form-group ${touched && error ? "has-error" : ""} ${touched && warning ? "has-warning" : ""}`}>
         {!labelOff?<label className="control-label">{label}</label>: null}
@@ -147,7 +147,7 @@ class BootstrapSelectField extends React.Component<IPropsType, IStateType> {
               aria-expanded="false"
               tabIndex={-1}
             >
-              <ul className="dropdown-menu inner" style={{maxHeight: '30vh', overflowY: 'auto'}}>
+              <ul className="dropdown-menu inner" style={{maxHeight: '20vh', overflowY: 'auto'}}>
                 {
                   options.filter((option) => {
                     if (!searchText || !searchText.length) {

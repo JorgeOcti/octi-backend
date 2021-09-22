@@ -136,7 +136,22 @@ class AdminVenueController {
     } = req.query as { page: string, pageSize: string, noPopulate: any, filted: any, search: string };
     // paginate options
     const options: PaginateOptions = {
-      select: {
+      sort: {
+        name: 1
+      },
+      page: parseInt(page ? page : '1', 10),
+      limit: parseInt(pageSize ? pageSize : '20', 10)
+    };
+    if (noPopulate) {
+      options['select'] = {
+        _id: true,
+        name: true,
+        abbreviation: true,
+        updatedAt: true,
+        createdAt: true
+      };
+    } else {
+      options['select'] = {
         _id: true,
         name: true,
         abbreviation: true,
@@ -151,8 +166,8 @@ class AdminVenueController {
         type: true,
         updatedAt: true,
         createdAt: true
-      },
-      populate: [{
+      };
+      options['populate'] = [{
         path: 'receptionCarriers',
         select: ['_id', 'name']
       }, {
@@ -179,21 +194,12 @@ class AdminVenueController {
       }, {
         path: 'company',
         select: ['name', 'marker']
-      }],
-      lean: true,
-      sort: {
-        name: 1
-      },
-      page: parseInt(page ? page : '1', 10),
-      limit: parseInt(pageSize ? pageSize : '20', 10)
-    };
+      }];
+    }
     const filter: any = {
       deleted: false,
       team
     };
-    if (noPopulate) {
-      delete options.populate;
-    }
     if (filted) {
       filter._id = {
         $in: req.user.venuesPermissions()
