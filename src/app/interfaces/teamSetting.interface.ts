@@ -37,11 +37,16 @@ export interface IRequestSettting {
   internalNumberText: string;
 }
 
+export interface IHelpPhonesSettingSchema {
+  transmittal: string
+}
+
 export interface ITeamSetting {
   _id: any;
   inventory: IInventorySettting;
   request: IRequestSettting;
   form: IFormSettting;
+  helpPhones: IHelpPhonesSettingSchema
   team: ITeam;
   updatedAt: Date;
   createdAt: Date;

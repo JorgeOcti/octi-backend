@@ -132,9 +132,12 @@ class JWTController {
                       _id: GeneralUtils.getObjectProperty(user.team, '_id', null),
                       name: GeneralUtils.getObjectProperty(user.team, 'name', null),
                       settings: {
-                        form: GeneralUtils.getObjectProperty(teamSettings!, 'form', {
+                        form: GeneralUtils.getObjectProperty(teamSettings!.toJSON(), 'form', {
                           vinMinCharacters: 17,
                           vinMaxCharacters: 17
+                        }),
+                        helpNumber: GeneralUtils.getObjectProperty(teamSettings!.toJSON(), 'helpPhones', {
+                          transmittal: ""
                         })
                       }
                       // settings: GeneralUtils.getObjectProperty(user.team, 'settings', {})
@@ -252,6 +255,7 @@ class JWTController {
                     }, async (err, count) => {
                       user = user.toObject();
                       const teamSettings = await TeamSetting.findOne({ team: user.team });
+                      logger.debug(JSON.stringify(teamSettings))
                       const userInfo = {
                         _id: user._id,
                         firstName: user.firstName,
@@ -273,9 +277,12 @@ class JWTController {
                           _id: GeneralUtils.getObjectProperty(user.team, '_id', null),
                           name: GeneralUtils.getObjectProperty(user.team, 'name', null),
                           settings: {
-                            form: GeneralUtils.getObjectProperty(teamSettings!, 'form', {
+                            form: GeneralUtils.getObjectProperty(teamSettings!.toJSON(), 'form', {
                               vinMinCharacters: 17,
                               vinMaxCharacters: 17
+                            }),
+                            helpNumber: GeneralUtils.getObjectProperty(teamSettings!.toJSON(), 'helpPhones', {
+                              transmittal: ""
                             })
                           }
                           // settings: GeneralUtils.getObjectProperty(user.team, 'settings', {})

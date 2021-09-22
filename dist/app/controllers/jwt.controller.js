@@ -176,9 +176,12 @@ var JWTController = /** @class */ (function () {
                                                                 _id: general_utils_1["default"].getObjectProperty(user.team, '_id', null),
                                                                 name: general_utils_1["default"].getObjectProperty(user.team, 'name', null),
                                                                 settings: {
-                                                                    form: general_utils_1["default"].getObjectProperty(teamSettings, 'form', {
+                                                                    form: general_utils_1["default"].getObjectProperty(teamSettings.toJSON(), 'form', {
                                                                         vinMinCharacters: 17,
                                                                         vinMaxCharacters: 17
+                                                                    }),
+                                                                    helpNumber: general_utils_1["default"].getObjectProperty(teamSettings.toJSON(), 'helpPhones', {
+                                                                        transmittal: ""
                                                                     })
                                                                 }
                                                                 // settings: GeneralUtils.getObjectProperty(user.team, 'settings', {})
@@ -315,6 +318,7 @@ var JWTController = /** @class */ (function () {
                                                     return [4 /*yield*/, teamSetting_model_1["default"].findOne({ team: user.team })];
                                                 case 1:
                                                     teamSettings = _a.sent();
+                                                    logger_service_1["default"].debug(JSON.stringify(teamSettings));
                                                     userInfo = {
                                                         _id: user._id,
                                                         firstName: user.firstName,
@@ -336,9 +340,12 @@ var JWTController = /** @class */ (function () {
                                                             _id: general_utils_1["default"].getObjectProperty(user.team, '_id', null),
                                                             name: general_utils_1["default"].getObjectProperty(user.team, 'name', null),
                                                             settings: {
-                                                                form: general_utils_1["default"].getObjectProperty(teamSettings, 'form', {
+                                                                form: general_utils_1["default"].getObjectProperty(teamSettings.toJSON(), 'form', {
                                                                     vinMinCharacters: 17,
                                                                     vinMaxCharacters: 17
+                                                                }),
+                                                                helpNumber: general_utils_1["default"].getObjectProperty(teamSettings.toJSON(), 'helpPhones', {
+                                                                    transmittal: ""
                                                                 })
                                                             }
                                                             // settings: GeneralUtils.getObjectProperty(user.team, 'settings', {})

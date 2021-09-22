@@ -14,6 +14,13 @@ const formSettingSchema = new mongoose.Schema({
   vinMaxCharacters: {
     type: Number,
     default: 17
+  },
+
+});
+
+const helpPhonesSettingSchema = new mongoose.Schema({
+  transmittal: {
+    type: String,
   }
 });
 
@@ -115,6 +122,7 @@ const teamSettingSchema = new mongoose.Schema({
   },
   inventory: inventorySettingSchema,
   request: requestSettingSchema,
+  helpPhones: helpPhonesSettingSchema,
   form: formSettingSchema
 }, {
   timestamps: true
