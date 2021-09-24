@@ -168,7 +168,7 @@ class RequestDetailView extends TrackingBasePage<IPropsType, IStateType> {
         <section className="content">
           <div className="box">
             <div className="box-header with-border">
-              <h3 className="box-title">Detalle solicitud #{this.padNumber(request?.number)}</h3>
+              <h3 className="box-title">Detalle solicitud #{request?.number}</h3>
               {
                 hasPermission(window.user, 'deleteRequest') ?
                   <div className="pull-right box-tools">
@@ -254,7 +254,7 @@ class RequestDetailView extends TrackingBasePage<IPropsType, IStateType> {
                                     <th>Material</th>
                                     <th>Color</th>
                                     <th>Motivo</th>
-                                    <th style={{width: '150px'}}></th>
+                                    <th style={{width: '150px'}} />
                                   </tr>
                                 </thead>
                                 <tbody>
@@ -494,13 +494,6 @@ class RequestDetailView extends TrackingBasePage<IPropsType, IStateType> {
     });
   }
 
-  private padNumber(n: number | undefined): string {
-    if (n) {
-      const s = '000' + n;
-      return s.substr(s.length - 4);
-    }
-    return '0000';
-  }
 }
 
 

@@ -203,7 +203,7 @@ class SearchCarInRequests extends React.Component<IPropsType, IStateType> {
                         return (
                           <tr key={item._id}>
                             <td className={`middle-center`}>
-                              #{this.padNumber(item.request?.number)}
+                              #{item.request?.number}
                             </td>
                             <td className={`middle`}>
                               {item.car?.vin}
@@ -325,11 +325,6 @@ class SearchCarInRequests extends React.Component<IPropsType, IStateType> {
   private changePage(page: number): void {
     // window.scrollTo(0, 0);
     this.props.transmittalActions.getRequestItemThunkAction(page);
-  }
-
-  private padNumber(n: number): string {
-    const s = '000' + n;
-    return s.substr(s.length - 4);
   }
 
 }
