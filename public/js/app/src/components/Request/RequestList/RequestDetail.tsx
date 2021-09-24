@@ -158,7 +158,7 @@ class RequestListDetail extends React.Component<IPropsType, IStateType> {
                         <td className="middle">{item.status?.name}</td>
                     }
                     <td className="middle">
-                      {`${item.car.brand} ${item.car.denomination} ${item.car.material}`}
+                      {`${item.car.brand} ${item.car.denomination} ${item.car.material ?? ''}`}
                     </td>
                     <td className="middle">
                       {item.car.color}
