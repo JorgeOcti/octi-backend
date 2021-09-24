@@ -251,6 +251,10 @@ var RequestController = /** @class */ (function () {
                                 team: team,
                                 sellerText: sellerText,
                                 number: number,
+                                // mark origin and destination with first car
+                                // TODO: change to venues arrays in cars
+                                origin: cars[0].origin,
+                                destination: cars[0].destination,
                                 operationType: (operationType === null || operationType === void 0 ? void 0 : operationType.length) ? operationType : null,
                                 channel: channel,
                                 createdBy: user

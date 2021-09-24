@@ -78,7 +78,7 @@ class RequestVehicleItem extends React.Component<IPropsType, IStateType> {
           className="middle pointer"
           onClick={() => this.goToDetail(item.request._id)}
         >
-            <strong className="text-underline">#{this.padNumber(item.request?.number)}</strong>
+            <strong className="text-underline">#{item.request?.number}</strong>
         </td>
         <td className="middle" style={{fontSize: '80%'}}>{item.origin?.name ?? '-'}</td>
         <td className="middle" style={{fontSize: '80%'}}>{item.destination?.name ?? '-'}</td>
@@ -466,11 +466,6 @@ class RequestVehicleItem extends React.Component<IPropsType, IStateType> {
     //     }
     //   });
     // }
-  }
-
-  private padNumber(n: number): string {
-    const s = '000' + n;
-    return s.substr(s.length - 4);
   }
 }
 

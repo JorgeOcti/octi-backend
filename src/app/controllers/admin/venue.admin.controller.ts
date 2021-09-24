@@ -186,9 +186,6 @@ class AdminVenueController {
         path: 'users',
         select: ['_id']
       }, {
-        path: 'participants',
-        select: ['_id']
-      }, {
         path: 'region',
         select: ['name']
       }, {
@@ -196,6 +193,12 @@ class AdminVenueController {
         select: ['name', 'marker']
       }];
     }
+    // if(false){
+    //    (options['populate'] as any[]).push({
+    //     path: 'participants',
+    //     select: ['_id']
+    //   })
+    // }
     const filter: any = {
       deleted: false,
       team

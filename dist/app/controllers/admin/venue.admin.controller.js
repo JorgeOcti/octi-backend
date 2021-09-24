@@ -244,9 +244,6 @@ var AdminVenueController = /** @class */ (function () {
                                     path: 'users',
                                     select: ['_id']
                                 }, {
-                                    path: 'participants',
-                                    select: ['_id']
-                                }, {
                                     path: 'region',
                                     select: ['name']
                                 }, {
