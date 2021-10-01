@@ -10,6 +10,7 @@ import GeneralUtils from '../../utils/general.utils';
 import User from '../models/user.model';
 import UserModel, {IUserModel} from '../models/user.model';
 import Version from "../models/version.model";
+import TeamSetting from '../models/teamSetting.model';
 
 class JWTController {
 
@@ -62,7 +63,7 @@ class JWTController {
           select: ['name', 'lat', 'lng']
         }, {
           path: 'team',
-          select: ['name']
+          select: ['name'],
         }, {
           path: 'company',
           select: ['name']
@@ -105,8 +106,9 @@ class JWTController {
                     $gte: today.toDate(),
                     $lt: tomorrow.toDate()
                   }
-                }, (err, count) => {
+                }, async (err, count) => {
                   user = user.toObject();
+                  const teamSettings = await TeamSetting.findOne({ team: user.team });
                   const userInfo = {
                     _id: user._id,
                     firstName: user.firstName,
@@ -128,7 +130,17 @@ class JWTController {
                     },
                     team: {
                       _id: GeneralUtils.getObjectProperty(user.team, '_id', null),
-                      name: GeneralUtils.getObjectProperty(user.team, 'name', null)
+                      name: GeneralUtils.getObjectProperty(user.team, 'name', null),
+                      settings: {
+                        form: GeneralUtils.getObjectProperty(teamSettings!.toJSON(), 'form', {
+                          vinMinCharacters: 17,
+                          vinMaxCharacters: 17
+                        }),
+                        helpNumber: GeneralUtils.getObjectProperty(teamSettings!.toJSON(), 'helpPhones', {
+                          transmittal: ""
+                        })
+                      }
+                      // settings: GeneralUtils.getObjectProperty(user.team, 'settings', {})
                     },
                     count
                   };
@@ -189,7 +201,8 @@ class JWTController {
               team: true,
               userForms: true,
               userPermissions: true,
-              active: true
+              active: true,
+              isDriver: true,
             })
             .populate([{
               path: 'venue',
@@ -239,8 +252,10 @@ class JWTController {
                         $gte: today.toDate(),
                         $lt: tomorrow.toDate()
                       }
-                    }, (err, count) => {
+                    }, async (err, count) => {
                       user = user.toObject();
+                      const teamSettings = await TeamSetting.findOne({ team: user.team });
+                      logger.debug(JSON.stringify(teamSettings))
                       const userInfo = {
                         _id: user._id,
                         firstName: user.firstName,
@@ -249,6 +264,7 @@ class JWTController {
                         preferred: user.preferred,
                         userPermissions: user.userPermissions,
                         userForms: user.userForms,
+                        isDriver: user.isDriver || false,
                         venue: {
                           _id: GeneralUtils.getObjectProperty(user.venue, '_id', null),
                           name: GeneralUtils.getObjectProperty(user.venue, 'name', null)
@@ -259,7 +275,17 @@ class JWTController {
                         },
                         team: {
                           _id: GeneralUtils.getObjectProperty(user.team, '_id', null),
-                          name: GeneralUtils.getObjectProperty(user.team, 'name', null)
+                          name: GeneralUtils.getObjectProperty(user.team, 'name', null),
+                          settings: {
+                            form: GeneralUtils.getObjectProperty(teamSettings!.toJSON(), 'form', {
+                              vinMinCharacters: 17,
+                              vinMaxCharacters: 17
+                            }),
+                            helpNumber: GeneralUtils.getObjectProperty(teamSettings!.toJSON(), 'helpPhones', {
+                              transmittal: ""
+                            })
+                          }
+                          // settings: GeneralUtils.getObjectProperty(user.team, 'settings', {})
                         },
                         count
                       };

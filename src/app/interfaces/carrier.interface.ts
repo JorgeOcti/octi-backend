@@ -1,4 +1,4 @@
-import {ITeam} from './team.interface';
+import { ITeam } from './team.interface';
 
 export interface IBaseCarrier {
   _id?: any;

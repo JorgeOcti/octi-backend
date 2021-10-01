@@ -443,7 +443,7 @@ class StockImportView extends TrackingBasePage<IPropsType, IStateType> {
   private getVenues(){
     this.setState({loading: true});
     const api: ApiService = new ApiService();
-    api.getVenues(1, 200)
+    api.getVenues({ page: 1, pageSize: 200 })
       .then((response: AxiosResponse):void =>{
         this.setState({
           venues: response.data.results,

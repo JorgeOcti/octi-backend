@@ -9,6 +9,8 @@ export interface ICar {
   internalNumber: string;
   patent: string;
   engineNumber: string;
+  engineSize: string;
+  driveType: string;
   vin: string;
   vin2: string;
   imported: boolean;
@@ -20,6 +22,14 @@ export interface ICar {
   type: string;
   isExhibition: boolean;
   invoice: string;
+  businessYear: Date;
+  manufacturingYear: Date;
+  price: string;
+  insurancePrice: string;
+  weight: string;
+  countryOrigin: string;
+  gas: string;
+  ap: string;
   entry: string;
   bl: string;
   client: string;

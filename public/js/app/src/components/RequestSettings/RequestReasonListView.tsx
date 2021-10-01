@@ -127,6 +127,9 @@ class RequestReasonListView extends TrackingBasePage<IPropsType, IStateType> {
                 <Link to="/requests/settings/status/" className="list-group-item ">
                   Estados
                 </Link>
+                <Link to="/requests/settings/operations-type/" className="list-group-item ">
+                  Tipos de operación
+                </Link>
               </div>
             </div>
             <div className="col-md-9">

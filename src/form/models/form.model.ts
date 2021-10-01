@@ -181,12 +181,14 @@ export enum KindForm {
   init = 'init',
   control = 'control',
   final = 'final',
+  transmittal = 'transmittal'
 }
 
 export const kindForm = [
   KindForm.init,
   KindForm.final,
   KindForm.control,
+  KindForm.transmittal
 ];
 
 export interface IFormModel extends IForm, mongoose.Document {}

@@ -49,85 +49,89 @@ class TimeLineInventory extends React.Component<IPropsType, IStateType> {
   }
 
   public componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
-    this.setState({error});
+    this.setState({ error });
     Raven.captureException(error, {
       extra: errorInfo
     });
   }
 
   render(): React.ReactElement<IPropsType> {
-    const {inventory} = this.props;
+    const { inventory } = this.props;
     return (
-      <li style={{marginRight: '0'}}>
-        <i className={`fa ${this.iconStatus[inventory.status]} ${this.classStatus[inventory.status]}`}/>
-        <div className="timeline-item">
-          <span className="time" style={{
+      <li style={{ marginRight: '0' }}>
+        <i className={`fa ${this.iconStatus[inventory.status]} ${this.classStatus[inventory.status]}`} />
+        <div className='timeline-item'>
+          <span className='time' style={{
             color: '#888',
             fontSize: '13px'
           }}>
-            <i className="fa fa-fw fa-calendar-o"/> {inventory.createdAt.format('LL')}
+            <i className='fa fa-fw fa-calendar-o' /> {inventory.createdAt.format('LL')}
           </span>
 
-          <h3 className="timeline-header"><a href={`/inventory/${inventory.inventory._id}`} target="_blank">{inventory.inventory.name}</a></h3>
+          <h3 className='timeline-header'><a href={`/inventory/${inventory.inventory._id}`} target='_blank'>{inventory.inventory.name}</a></h3>
 
-          <div className="timeline-body">
+          <div className='timeline-body'>
             {
               ['found'].includes(inventory.status) ?
                 <React.Fragment>
-                  El vehículo fue encontrado en <span className="text-blue">{inventory.venueFound ? inventory.venueFound.name : inventory.venue.name}</span>.
+                  El vehículo fue encontrado en <span
+                  className='text-blue'>{inventory.venueFound ? inventory.venueFound.name : inventory.venue.name}</span>.
                 </React.Fragment>
                 : null
             }
             {
               ['pending'].includes(inventory.status) ?
                 <React.Fragment>
-                  El vehículo no fue encontrado en <span className="text-blue">{inventory.venue.name}</span>.
+                  El vehículo no fue encontrado en <span className='text-blue'>{inventory.venue.name}</span>.
                 </React.Fragment> : null
             }
             {
               ['reported'].includes(inventory.status) ?
                 <React.Fragment>
-                  El vehículo fue reportado en <span className="text-blue">{inventory.venue.name}</span>.
+                  El vehículo fue reportado en <span className='text-blue'>{inventory.venue.name}</span>.
                 </React.Fragment> : null
             }
             {
               ['missing'].includes(inventory.status) ?
                 <React.Fragment>
-                  El vehículo fue marcado como faltante en <span className="text-blue">{inventory.venueFound ? inventory.venueFound.name : inventory.venue.name}</span>.
+                  El vehículo fue marcado como faltante en <span
+                  className='text-blue'>{inventory.venueFound ? inventory.venueFound.name : inventory.venue.name}</span>.
                 </React.Fragment> : null
             }
             {
               ['leftover'].includes(inventory.status) ?
                 <React.Fragment>
                   El vehículo fue marcado como sobrante en <span
-                  className="text-blue">{inventory.venueFound ? inventory.venueFound.name : inventory.venue.name}</span>.
+                  className='text-blue'>{inventory.venueFound ? inventory.venueFound.name : inventory.venue.name}</span>.
                 </React.Fragment> : null
             }
           </div>
-          <div className="timeline-footer">
+          <div className='timeline-footer'>
             <Row>
               <div
-                className="col col-md-6"
+                className='col col-md-6'
                 style={{
                   padding: '5px 15px'
                 }}>
                 {this.status(inventory.status)}{' '}
                 {this.label(inventory.label, inventory.labelText)}
               </div>
-              <div className="col col-md-6 text-right" style={{
-                color: '#888',
-                fontSize: '12px',
-                padding: '5px 15px'
-              }}>
+              <div
+                className='col col-md-6 text-right'
+                style={{
+                  color: '#888',
+                  fontSize: '12px',
+                  padding: '5px 15px'
+                }}>
                 {
                   ['leftover', 'missing'].includes(inventory.status) && inventory.labelBy ?
                     <React.Fragment>
-                      <i className="fa fa-user"/> {inventory.labelBy.firstName} {inventory.labelBy.lastName}
+                      <i className='fa fa-user' /> {inventory.labelBy.firstName} {inventory.labelBy.lastName}
                     </React.Fragment>
                     : inventory.inventoriedBy ?
-                    <React.Fragment>
-                      <i className="fa fa-user"/> {inventory.inventoriedBy.firstName} {inventory.inventoriedBy.lastName}
-                    </React.Fragment> : null
+                      <React.Fragment>
+                        <i className='fa fa-user' /> {inventory.inventoriedBy.firstName} {inventory.inventoriedBy.lastName}
+                      </React.Fragment> : null
                 }
               </div>
             </Row>
@@ -139,7 +143,7 @@ class TimeLineInventory extends React.Component<IPropsType, IStateType> {
 
   private label(label: any, labelText: string) {
     if (label) {
-      const {sendTo} = label;
+      const { sendTo } = label;
       return (
         <span
           className={
@@ -149,10 +153,10 @@ class TimeLineInventory extends React.Component<IPropsType, IStateType> {
             padding: '5px 10px'
           }}
         >
-          <i className={`fa fa-fw ${this.iconStatus[sendTo]}`}/>
+          <i className={`fa fa-fw ${this.iconStatus[sendTo]}`} />
           {label.name} {label.requireCustomText ? <span
-          data-toggle="tooltip"
-          data-placement="top"
+          data-toggle='tooltip'
+          data-placement='top'
           title={labelText}>Ver más</span> : ''}
         </span>
       );

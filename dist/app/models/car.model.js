@@ -39,6 +39,14 @@ var carSchema = new mongoose.Schema({
         "default": '',
         trim: true
     },
+    engineSize: {
+        type: String,
+        "default": ''
+    },
+    driveType: {
+        type: String,
+        "default": ''
+    },
     destination: {
         type: String
     },
@@ -67,6 +75,30 @@ var carSchema = new mongoose.Schema({
     invoice: {
         type: String,
         "default": ''
+    },
+    businessYear: {
+        type: String
+    },
+    manufacturingYear: {
+        type: String
+    },
+    price: {
+        type: String
+    },
+    insurancePrice: {
+        type: String
+    },
+    weight: {
+        type: String
+    },
+    countryOrigin: {
+        type: String
+    },
+    gas: {
+        type: String
+    },
+    ap: {
+        type: String
     },
     entry: {
         type: String,

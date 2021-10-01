@@ -47,16 +47,39 @@
 .zoom-out
   cursor: zoom-out
 
+.no-striped
+  background-color: #ffffff !important
+  &:hover
+    background-color: #ffffff !important
+
 .has-error
   > .input-group-addon
     border-color: $redErros
     box-shadow: inset 0 1px 1px rgba(0, 0, 0, .075)
 
-//.table-andes
-//  tbody
-//    tr
-//      &:hover
-//        box-shadow: inset 3px 0 0 0 #8e3b57
+.table-sm
+  tbody
+    tr
+      td
+        font-size: 12px
+
+.table-responsive
+  .open
+    overflow: visible
+    position: absolute
+    min-width: 200px
+    max-width: 200px
+    z-index: 999
+
+.dropdown-menu
+  li
+    .check-mark
+      margin-right: 0 !important
+      right: 10px !important
+      top: 8px !important
+    a
+      padding: 5px 8px
+
 
 .input-group-addon
   &.input-group-primary
@@ -110,6 +133,8 @@
 
 .form-group-no-margin
   .form-group
+    margin: 0 !important
+  .help-block
     margin: 0 !important
 
 .icheck-in-checkbox
@@ -281,6 +306,18 @@
 
 .flex
   display: flex
+
+.flex-row
+  flex-direction: row
+
+.flex-column
+  flex-direction: column
+
+.flex-1
+  flex: 1
+
+.p-3
+  padding: 3px
 
 .flex-row-item
   flex: 1 1 0

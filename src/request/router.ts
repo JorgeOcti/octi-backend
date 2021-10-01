@@ -4,6 +4,7 @@ import ReasonController from './controllers/reason.controller';
 import SalesChannelController from './controllers/salesChannel.controller';
 import RequestController from './controllers/request.controller';
 import RequestItemStatusController from './controllers/requestItemStatus.controller';
+import OperationTypeController from './controllers/operationType.controller';
 
 const requestRouter = express.Router();
 
@@ -12,7 +13,9 @@ requestRouter.get('/requests/', Middlewares.isLoggedIn, RequestController.index)
 requestRouter.get('/requests/settings/reasons/', Middlewares.isLoggedIn, RequestController.index);
 requestRouter.get('/requests/settings/channels/', Middlewares.isLoggedIn, RequestController.index);
 requestRouter.get('/requests/settings/status/', Middlewares.isLoggedIn, RequestController.index);
+requestRouter.get('/requests/settings/operations-type/', Middlewares.isLoggedIn, RequestController.index);
 requestRouter.get('/requests/export/', Middlewares.isLoggedIn, RequestController.exportExcel);
+requestRouter.get('/requests/import/', Middlewares.isLoggedIn, RequestController.index);
 requestRouter.get('/requests/vehicles/:id/', Middlewares.isLoggedIn, RequestController.index);
 requestRouter.get('/requests/vehicles/', Middlewares.isLoggedIn, RequestController.index);
 requestRouter.get('/requests/:id/', Middlewares.isLoggedIn, RequestController.index);
@@ -25,6 +28,7 @@ requestRouter.post('/api/v1/requests/upload-file/', Middlewares.isJWTAuthenticat
 requestRouter.post('/api/v1/requests/update-massive/', Middlewares.isJWTAuthenticated, RequestController.apiUpdateMassive);
 
 requestRouter.get('/api/v1/requests/', Middlewares.isJWTAuthenticated, RequestController.apiList);
+requestRouter.post('/api/v1/requests/import/', Middlewares.isJWTAuthenticated, RequestController.apiImport);
 requestRouter.post('/api/v1/requests/', Middlewares.isJWTAuthenticated, RequestController.apiCreate);
 requestRouter.get('/api/v1/requests/:id/', Middlewares.isJWTAuthenticated, RequestController.apiDetail);
 requestRouter.delete('/api/v1/requests/:id/', Middlewares.isJWTAuthenticated, RequestController.apiDeleteRequest);
@@ -53,6 +57,11 @@ requestRouter.get('/api/v1/request-item-status/', Middlewares.isJWTAuthenticated
 requestRouter.post('/api/v1/request-item-status/', Middlewares.isJWTAuthenticated, RequestItemStatusController.apiCreate);
 requestRouter.patch('/api/v1/request-item-status/:id/', Middlewares.isJWTAuthenticated, RequestItemStatusController.apiUpdate);
 requestRouter.delete('/api/v1/request-item-status/:id/', Middlewares.isJWTAuthenticated, RequestItemStatusController.apiDelete);
+
+requestRouter.get('/api/v1/operation-types/', Middlewares.isJWTAuthenticated, OperationTypeController.apiList);
+requestRouter.post('/api/v1/operation-types/', Middlewares.isJWTAuthenticated, OperationTypeController.apiCreate);
+requestRouter.patch('/api/v1/operation-types/:id/', Middlewares.isJWTAuthenticated, OperationTypeController.apiUpdate);
+requestRouter.delete('/api/v1/operation-types/:id/', Middlewares.isJWTAuthenticated, OperationTypeController.apiDelete);
 
 export {
   requestRouter

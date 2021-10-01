@@ -46,6 +46,15 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
         if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
     }
 };
+var __spreadArray = (this && this.__spreadArray) || function (to, from, pack) {
+    if (pack || arguments.length === 2) for (var i = 0, l = from.length, ar; i < l; i++) {
+        if (ar || !(i in from)) {
+            if (!ar) ar = Array.prototype.slice.call(from, 0, i);
+            ar[i] = from[i];
+        }
+    }
+    return to.concat(ar || Array.prototype.slice.call(from));
+};
 exports.__esModule = true;
 var transmittal_model_1 = require("../models/transmittal.model");
 var logger_service_1 = require("../../services/logger.service");
@@ -59,6 +68,27 @@ var requestItem_model_1 = require("../../request/models/requestItem.model");
 var server_1 = require("../../server");
 var excel = require("exceljs");
 var moment = require("moment-timezone");
+var milestone_model_1 = require("../models/milestone.model");
+var form_model_1 = require("../../form/models/form.model");
+var scale_model_1 = require("../../form/models/scale.model");
+var redis_service_1 = require("../../services/redis.service");
+// =======
+// import { IRequest } from '../../interfaces/global.interface';
+// import { Response } from 'express';
+// import { PaginateOptions, PaginateResult } from 'mongoose';
+// import Transmittal, { ChoicesStatusTransmittal, ITransmittalModel } from '../models/transmittal.model';
+// import logger from '../../services/logger.service';
+// import TransmittalItem from '../models/transmittalItem.model';
+// import TransmittalFile from '../models/transmittalFile.model';
+// import GeneralUtils from '../../utils/general.utils';
+// import * as GraphicsMagick from 'gm';
+// import Team from '../../app/models/team.model';
+// import Car from '../../app/models/car.model';
+// import RequestItem from '../../request/models/requestItem.model';
+// import { io } from '../../server';
+// import * as excel from 'exceljs';
+// import * as moment from 'moment-timezone';
+// import Milestone from '../models/milestone.model';
 var TransmittalController = /** @class */ (function () {
     function TransmittalController() {
         this.itemPopulate = [{
@@ -82,16 +112,36 @@ var TransmittalController = /** @class */ (function () {
                     }
                 }
             }];
+        this.populate = [{
+                path: 'transporter.carrier',
+                select: ['name']
+            }, {
+                path: 'transporter.driver',
+                select: ['firstName', 'lastName']
+            }, {
+                path: 'items',
+                select: ['car', 'requestItem', 'destination', 'origin', 'loadingDate', 'arrivalDate'],
+                populate: this.itemPopulate
+            }, {
+                path: 'files',
+                select: ['file', 'thumbnail']
+            }, {
+                path: 'createdBy',
+                select: ['firstName', 'lastName']
+            }];
         this.index = this.index.bind(this);
         this.apiList = this.apiList.bind(this);
         this.apiOnlyMe = this.apiOnlyMe.bind(this);
         this.apiDetail = this.apiDetail.bind(this);
         this.apiCreate = this.apiCreate.bind(this);
+        this.apiPatch = this.apiPatch.bind(this);
         this.apiUpdate = this.apiUpdate.bind(this);
         this.apiDelete = this.apiDelete.bind(this);
         this.xlsExport = this.xlsExport.bind(this);
         this.uploadFile = this.uploadFile.bind(this);
         this.attachEvidence = this.attachEvidence.bind(this);
+        this.fillFormSections = this.fillFormSections.bind(this);
+        this.getScales = this.getScales.bind(this);
     }
     TransmittalController.prototype.index = function (req, res) {
         return __awaiter(this, void 0, void 0, function () {
@@ -113,44 +163,61 @@ var TransmittalController = /** @class */ (function () {
     };
     TransmittalController.prototype.apiDetail = function (req, res) {
         return __awaiter(this, void 0, void 0, function () {
+            var id, transmittal, e_1;
             return __generator(this, function (_a) {
-                logger_service_1["default"].info("TransmittalController.apiDetail");
-                res.json({
-                    api: 'TransmittalController:apiDetail'
-                });
-                return [2 /*return*/];
+                switch (_a.label) {
+                    case 0:
+                        _a.trys.push([0, 2, , 3]);
+                        logger_service_1["default"].info("TransmittalController.apiDetail");
+                        id = req.params.id;
+                        return [4 /*yield*/, transmittal_model_1["default"].findById(id).populate(this.populate)];
+                    case 1:
+                        transmittal = _a.sent();
+                        res.json({
+                            data: transmittal
+                        });
+                        return [3 /*break*/, 3];
+                    case 2:
+                        e_1 = _a.sent();
+                        console.log(e_1);
+                        /* istanbul ignore next */
+                        logger_service_1["default"].error("TransmittalController.apiDetail: Async Error.");
+                        /* istanbul ignore next */
+                        logger_service_1["default"].error("{user: {_id: " + req.user._id + ", email: " + req.user.email + "}}");
+                        res.status(500).json(e_1);
+                        return [3 /*break*/, 3];
+                    case 3: return [2 /*return*/];
+                }
             });
         });
     };
     TransmittalController.prototype.apiCreate = function (req, res) {
         return __awaiter(this, void 0, void 0, function () {
-            var _a, name, items, files, transporter, observation, user, team, transmittal, _i, items_1, item, transmittalItem, e_1;
+            var _a, name_1, items, files, transporter, observation, user, team, transmittal, _i, items_1, item, transmittalItem, e_2;
             return __generator(this, function (_b) {
                 switch (_b.label) {
                     case 0:
+                        _b.trys.push([0, 12, , 13]);
                         logger_service_1["default"].info("TransmittalController.apiCreate");
-                        _a = req.body, name = _a.name, items = _a.items, files = _a.files, transporter = _a.transporter, observation = _a.observation;
+                        _a = req.body, name_1 = _a.name, items = _a.items, files = _a.files, transporter = _a.transporter, observation = _a.observation;
                         user = req.user;
-                        _b.label = 1;
-                    case 1:
-                        _b.trys.push([1, 13, , 14]);
                         return [4 /*yield*/, team_model_1["default"].findOneAndUpdate({ _id: user.team._id }, { $inc: { transmittalNumber: 1 } }, { "new": true })];
-                    case 2:
+                    case 1:
                         team = _b.sent();
                         return [4 /*yield*/, new transmittal_model_1["default"]({
-                                name: name,
+                                name: name_1,
                                 team: user.team,
                                 number: team.transmittalNumber,
                                 createdBy: user._id,
                                 transporter: transporter,
                                 observation: observation
                             }).save()];
-                    case 3:
+                    case 2:
                         transmittal = _b.sent();
                         _i = 0, items_1 = items;
-                        _b.label = 4;
-                    case 4:
-                        if (!(_i < items_1.length)) return [3 /*break*/, 9];
+                        _b.label = 3;
+                    case 3:
+                        if (!(_i < items_1.length)) return [3 /*break*/, 8];
                         item = items_1[_i];
                         // update cars params
                         return [4 /*yield*/, car_model_1["default"].findOneAndUpdate({
@@ -160,11 +227,11 @@ var TransmittalController = /** @class */ (function () {
                                 client: item.car.client,
                                 bl: item.car.bl
                             })];
-                    case 5:
+                    case 4:
                         // update cars params
                         _b.sent();
                         return [4 /*yield*/, new transmittalItem_model_1["default"](__assign(__assign({}, item), { team: team, transmittal: transmittal })).save()];
-                    case 6:
+                    case 5:
                         transmittalItem = _b.sent();
                         // associate request item with transmittal and transmittal item
                         return [4 /*yield*/, requestItem_model_1["default"].findOneAndUpdate({
@@ -174,98 +241,130 @@ var TransmittalController = /** @class */ (function () {
                                 transmittal: transmittal._id,
                                 transmittalItem: transmittalItem._id
                             })];
-                    case 7:
+                    case 6:
                         // associate request item with transmittal and transmittal item
                         _b.sent();
-                        _b.label = 8;
-                    case 8:
+                        _b.label = 7;
+                    case 7:
                         _i++;
-                        return [3 /*break*/, 4];
-                    case 9:
-                        if (!(files && files.length)) return [3 /*break*/, 12];
+                        return [3 /*break*/, 3];
+                    case 8:
+                        if (!(files && files.length)) return [3 /*break*/, 11];
                         return [4 /*yield*/, transmittal.updateOne({ files: files })];
-                    case 10:
+                    case 9:
                         _b.sent();
                         return [4 /*yield*/, transmittalFile_model_1["default"].updateMany({
                                 _id: { $in: files }
                             }, {
                                 $set: { transmittal: transmittal }
                             })];
-                    case 11:
+                    case 10:
                         _b.sent();
-                        _b.label = 12;
-                    case 12:
+                        _b.label = 11;
+                    case 11:
                         server_1.io.to("transmittal-list-" + team._id).emit('CREATE_TRANSMITTAL', {
                             transmittal: transmittal
                         });
                         res.json({
                             status: 200
                         });
-                        return [3 /*break*/, 14];
-                    case 13:
-                        e_1 = _b.sent();
+                        return [3 /*break*/, 13];
+                    case 12:
+                        e_2 = _b.sent();
                         /* istanbul ignore next */
                         logger_service_1["default"].error("TransmittalController.apiCreate: Async Error.");
                         /* istanbul ignore next */
                         logger_service_1["default"].error("{user: {_id: " + req.user._id + ", email: " + req.user.email + "}}");
-                        res.status(500).json(e_1);
-                        return [3 /*break*/, 14];
-                    case 14: return [2 /*return*/];
+                        res.status(500).json(e_2);
+                        return [3 /*break*/, 13];
+                    case 13: return [2 /*return*/];
                 }
             });
         });
     };
     TransmittalController.prototype.apiUpdate = function (req, res) {
         return __awaiter(this, void 0, void 0, function () {
-            var id, transmittal, team, newTransmittal, e_2;
+            return __generator(this, function (_a) {
+                try {
+                    // const { id } = req.params;
+                    logger_service_1["default"].info("TransmittalController.apiUpdate");
+                    res.json({
+                        api: 'TransmittalController:apiUpdate'
+                    });
+                }
+                catch (e) {
+                    console.log(e);
+                    /* istanbul ignore next */
+                    logger_service_1["default"].error("TransmittalController.apiUpdate: Async Error.");
+                    /* istanbul ignore next */
+                    logger_service_1["default"].error("{user: {_id: " + req.user._id + ", email: " + req.user.email + "}}");
+                    res.status(500).json(e);
+                }
+                return [2 /*return*/];
+            });
+        });
+    };
+    TransmittalController.prototype.apiPatch = function (req, res) {
+        return __awaiter(this, void 0, void 0, function () {
+            var id, transmittal, team, newTransmittal, e_3;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
+                        _a.trys.push([0, 9, , 10]);
                         logger_service_1["default"].info("TransmittalController.apiUpdate");
                         id = req.params.id;
                         transmittal = req.body;
                         team = req.user.team;
-                        _a.label = 1;
+                        newTransmittal = void 0;
+                        if (!transmittal.allLoadingDate) return [3 /*break*/, 3];
+                        // update all item loading dates
+                        return [4 /*yield*/, transmittalItem_model_1["default"].updateMany({ transmittal: id }, { $set: { loadingDate: transmittal.allLoadingDate } })];
                     case 1:
-                        _a.trys.push([1, 3, , 4]);
+                        // update all item loading dates
+                        _a.sent();
                         return [4 /*yield*/, transmittal_model_1["default"]
-                                .findOneAndUpdate({ _id: id }, { $set: transmittal }, { "new": true })
-                                .populate([{
-                                    path: 'transporter.carrier',
-                                    select: ['name']
-                                }, {
-                                    path: 'transporter.driver',
-                                    select: ['firstName', 'lastName']
-                                }, {
-                                    path: 'items',
-                                    select: ['car', 'requestItem', 'destination', 'origin', 'loadingDate', 'arrivalDate'],
-                                    populate: this.itemPopulate
-                                }, {
-                                    path: 'files',
-                                    select: ['file', 'thumbnail']
-                                }, {
-                                    path: 'createdBy',
-                                    select: ['firstName', 'lastName']
-                                }])];
+                                .findOne({ _id: id })
+                                .populate(this.populate)];
                     case 2:
                         newTransmittal = _a.sent();
+                        return [3 /*break*/, 8];
+                    case 3:
+                        if (!transmittal.allArrivalDate) return [3 /*break*/, 6];
+                        // update all item arrival dates
+                        return [4 /*yield*/, transmittalItem_model_1["default"].updateMany({ transmittal: id }, { $set: { arrivalDate: transmittal.allArrivalDate } })];
+                    case 4:
+                        // update all item arrival dates
+                        _a.sent();
+                        return [4 /*yield*/, transmittal_model_1["default"]
+                                .findOne({ _id: id })
+                                .populate(this.populate)];
+                    case 5:
+                        newTransmittal = _a.sent();
+                        return [3 /*break*/, 8];
+                    case 6: return [4 /*yield*/, transmittal_model_1["default"]
+                            .findOneAndUpdate({ _id: id }, { $set: transmittal }, { "new": true })
+                            .populate(this.populate)];
+                    case 7:
+                        newTransmittal = _a.sent();
+                        _a.label = 8;
+                    case 8:
                         server_1.io.to("transmittal-list-" + team._id).emit('UPDATE_TRANSMITTAL', {
                             transmittal: newTransmittal
                         });
                         res.json({
                             data: newTransmittal
                         });
-                        return [3 /*break*/, 4];
-                    case 3:
-                        e_2 = _a.sent();
-                        console.log(e_2);
+                        return [3 /*break*/, 10];
+                    case 9:
+                        e_3 = _a.sent();
+                        console.log(e_3);
                         /* istanbul ignore next */
                         logger_service_1["default"].error("TransmittalController.apiUpdate: Async Error.");
                         /* istanbul ignore next */
                         logger_service_1["default"].error("{user: {_id: " + req.user._id + ", email: " + req.user.email + "}}");
-                        res.status(500).json(e_2);
-                        return [3 /*break*/, 4];
-                    case 4: return [2 /*return*/];
+                        res.status(500).json(e_3);
+                        return [3 /*break*/, 10];
+                    case 10: return [2 /*return*/];
                 }
             });
         });
@@ -283,7 +382,7 @@ var TransmittalController = /** @class */ (function () {
     };
     TransmittalController.prototype.apiList = function (req, res) {
         return __awaiter(this, void 0, void 0, function () {
-            var team, _a, page, pageSize, search, orderBy, orderType, options, filter, transmittals, e_3;
+            var team, _a, page, pageSize, search, orderBy, orderType, options, filter, transmittals, e_4;
             var _b;
             return __generator(this, function (_c) {
                 switch (_c.label) {
@@ -347,12 +446,12 @@ var TransmittalController = /** @class */ (function () {
                         }
                         return [3 /*break*/, 4];
                     case 3:
-                        e_3 = _c.sent();
+                        e_4 = _c.sent();
                         /* istanbul ignore next */
                         logger_service_1["default"].error("TransmittalController.apiList: Async Error.");
                         /* istanbul ignore next */
                         logger_service_1["default"].error("{user: {_id: " + req.user._id + ", email: " + req.user.email + "}}");
-                        res.status(500).json(e_3);
+                        res.status(500).json(e_4);
                         return [3 /*break*/, 4];
                     case 4: return [2 /*return*/];
                 }
@@ -361,7 +460,7 @@ var TransmittalController = /** @class */ (function () {
     };
     TransmittalController.prototype.apiOnlyMe = function (req, res) {
         return __awaiter(this, void 0, void 0, function () {
-            var team, _a, page, pageSize, orderBy, orderType, options, filter, transmittals, e_4;
+            var team, _a, page, pageSize, orderBy, orderType, options, filter, transmittals, milestones_1, i, milestone, form, e_5;
             var _b;
             return __generator(this, function (_c) {
                 switch (_c.label) {
@@ -420,44 +519,414 @@ var TransmittalController = /** @class */ (function () {
                         };
                         _c.label = 1;
                     case 1:
-                        _c.trys.push([1, 3, , 4]);
+                        _c.trys.push([1, 10, , 11]);
                         return [4 /*yield*/, this.getTransmittals(filter, options)];
                     case 2:
                         transmittals = _c.sent();
-                        /* istanbul ignore if  */
-                        if (options.page && transmittals.pages && transmittals.pages < options.page) {
-                            res.status(400).json({
-                                message: 'La página solicitada no existe.',
-                                status: 400
-                            });
-                        }
-                        else {
-                            res.json({
-                                count: transmittals.total,
-                                pages: transmittals.pages,
-                                hasPrevious: options.page && options.page > 1 && transmittals.pages && transmittals.pages >= options.page,
-                                hasNext: options.page && transmittals.pages && transmittals.pages > options.page,
-                                results: transmittals.docs,
-                                status: 200
-                            });
-                        }
-                        return [3 /*break*/, 4];
-                    case 3:
-                        e_4 = _c.sent();
+                        if (!(options.page && transmittals.pages && transmittals.pages < options.page)) return [3 /*break*/, 3];
+                        res.status(400).json({
+                            message: 'La página solicitada no existe.',
+                            status: 400
+                        });
+                        return [3 /*break*/, 9];
+                    case 3: return [4 /*yield*/, milestone_model_1["default"].find({
+                            team: team
+                        })];
+                    case 4:
+                        milestones_1 = _c.sent();
+                        i = 0;
+                        _c.label = 5;
+                    case 5:
+                        if (!(i < milestones_1.length)) return [3 /*break*/, 8];
+                        milestone = milestones_1[i].toObject();
+                        return [4 /*yield*/, this.fillFormSections(milestone.form, req.user)];
+                    case 6:
+                        form = _c.sent();
+                        milestones_1[i] = __assign(__assign({}, milestone), form);
+                        _c.label = 7;
+                    case 7:
+                        i++;
+                        return [3 /*break*/, 5];
+                    case 8:
+                        res.json({
+                            count: transmittals.total,
+                            pages: transmittals.pages,
+                            hasPrevious: options.page && options.page > 1 && transmittals.pages && transmittals.pages >= options.page,
+                            hasNext: options.page && transmittals.pages && transmittals.pages > options.page,
+                            data: transmittals.docs.map(function (transmittal) { return (__assign(__assign({}, transmittal.toObject()), { milestones: milestones_1 })); }),
+                            status: 200
+                        });
+                        _c.label = 9;
+                    case 9: return [3 /*break*/, 11];
+                    case 10:
+                        e_5 = _c.sent();
                         /* istanbul ignore next */
-                        logger_service_1["default"].error("TransmittalController.apiOnlyMe: Async Error.");
+                        logger_service_1["default"].error("TransmittalController.apiOnlyMe:", e_5.toString());
                         /* istanbul ignore next */
                         logger_service_1["default"].error("{user: {_id: " + req.user._id + ", email: " + req.user.email + "}}");
-                        res.status(500).json(e_4);
+                        res.status(500).json(e_5);
+                        return [3 /*break*/, 11];
+                    case 11: return [2 /*return*/];
+                }
+            });
+        });
+    };
+    TransmittalController.prototype.getForm = function (filter) {
+        var _this = this;
+        var keyCache = "form-" + filter._id;
+        logger_service_1["default"].debug("keyCache " + keyCache);
+        return new Promise(function (resolve, reject) {
+            redis_service_1["default"].get(keyCache, function (error, result) { return __awaiter(_this, void 0, void 0, function () {
+                return __generator(this, function (_a) {
+                    if (result) {
+                        logger_service_1["default"].debug("FROM CACHE");
+                        resolve(JSON.parse(result));
+                    }
+                    else {
+                        logger_service_1["default"].debug("NEW CACHE");
+                        form_model_1["default"]
+                            .findOne(filter, {
+                            'company': false,
+                            'updatedAt': false,
+                            'createdAt': false,
+                            'active': false,
+                            'sections.shortName': false,
+                            'sections.questions.shortName': false,
+                            '__v': false
+                        })
+                            .populate([{
+                                path: 'sections.questions.damages',
+                                select: ['name', 'positions', 'kinds', 'parts', 'partFallback', 'kindFallback'],
+                                populate: [{
+                                        path: 'positions',
+                                        select: ['name'],
+                                        options: {
+                                            sort: {
+                                                name: 1
+                                            }
+                                        }
+                                    }, {
+                                        path: 'kinds',
+                                        select: ['name'],
+                                        options: {
+                                            sort: {
+                                                name: 1
+                                            }
+                                        }
+                                    }, {
+                                        path: 'parts',
+                                        select: ['name'],
+                                        options: {
+                                            sort: {
+                                                name: 1
+                                            }
+                                        }
+                                    }, {
+                                        path: 'kindFallback',
+                                        select: ['name'],
+                                        options: {
+                                            sort: {
+                                                name: 1
+                                            }
+                                        }
+                                    }, {
+                                        path: 'partFallback',
+                                        select: ['name'],
+                                        options: {
+                                            sort: {
+                                                name: 1
+                                            }
+                                        }
+                                    }]
+                            }])
+                            .lean()
+                            .exec(function (err, form) {
+                            if (err) {
+                                /* istanbul ignore next */
+                                return reject(err);
+                            }
+                            if (form) {
+                                redis_service_1["default"].set(keyCache, JSON.stringify(form), 'ex', 60);
+                                return resolve(form);
+                            }
+                            return reject('No se encontro formularío');
+                        });
+                    }
+                    return [2 /*return*/];
+                });
+            }); });
+        });
+    };
+    TransmittalController.prototype.fillFormSections = function (formID, user) {
+        return __awaiter(this, void 0, void 0, function () {
+            var form, team, scalesIds_1, extra, extraSection, extraScales, response, scales, baseQuestion_1, e_6;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0:
+                        _a.trys.push([0, 3, , 4]);
+                        if (!formID) {
+                            return [2 /*return*/, {}];
+                        }
+                        return [4 /*yield*/, this.getForm({
+                                _id: formID,
+                                team: user.team
+                            })];
+                    case 1:
+                        form = _a.sent();
+                        team = user.team;
+                        scalesIds_1 = [];
+                        form.sections.forEach(function (section) {
+                            section.questions.forEach(function (question) {
+                                var scaleID = question.scale ? question.scale.toString() : null;
+                                if (scaleID && !scalesIds_1.includes(scaleID)) {
+                                    scalesIds_1.push(scaleID);
+                                }
+                            });
+                        });
+                        extra = {
+                            accessories: []
+                        };
+                        extraSection = {
+                            _id: 'extraSection',
+                            name: '',
+                            questions: [],
+                            weight: 0,
+                            order: form.sections.length + 1
+                        };
+                        extraScales = [];
+                        response = {};
+                        if (form.shippingVenue) {
+                            extraSection.questions.push({
+                                _id: 'shippingVenue',
+                                question: form.shippingVenueText,
+                                venues: user.venue.sendTo,
+                                kind: form_model_1.KindQuestion.venue,
+                                order: extraSection.questions.length + 1
+                            });
+                        }
+                        if (form.shipping) {
+                            extraSection.questions.push({
+                                _id: 'shipping',
+                                question: form.shippingText,
+                                scale: 'shipping',
+                                kind: form_model_1.KindQuestion.scale,
+                                order: extraSection.questions.length + 1
+                            });
+                            extraScales.push({
+                                _id: 'shipping',
+                                name: 'shipping',
+                                choices: [
+                                    {
+                                        _id: 'false',
+                                        choice: 'No',
+                                        backgroundColor: 'red',
+                                        requireImage: form.shippingImage,
+                                        requireComment: false,
+                                        requireAccesories: false,
+                                        requireConciliation: false,
+                                        value: 0,
+                                        order: 1
+                                    }, {
+                                        _id: 'true',
+                                        choice: 'Si',
+                                        backgroundColor: 'green',
+                                        requireImage: false,
+                                        requireComment: false,
+                                        requireAccesories: false,
+                                        requireConciliation: false,
+                                        value: 1,
+                                        order: 2
+                                    }
+                                ]
+                            });
+                        }
+                        if (form.receptionVenue) {
+                            extraSection.questions.push({
+                                _id: 'receptionVenue',
+                                question: form.receptionVenueText,
+                                venues: user.venue.receiveFrom,
+                                kind: form_model_1.KindQuestion.venue,
+                                order: extraSection.questions.length + 1
+                            });
+                        }
+                        if (form.reception) {
+                            extraSection.questions.push({
+                                _id: 'reception',
+                                question: form.receptionText,
+                                scale: 'reception',
+                                kind: form_model_1.KindQuestion.scale,
+                                order: extraSection.questions.length + 1
+                            });
+                            extraScales.push({
+                                _id: 'reception',
+                                name: 'reception',
+                                choices: [
+                                    {
+                                        _id: 'false',
+                                        choice: 'No',
+                                        backgroundColor: 'red',
+                                        requireImage: form.receptionImage,
+                                        requireComment: false,
+                                        requireAccesories: false,
+                                        requireConciliation: false,
+                                        value: 0,
+                                        order: 1
+                                    }, {
+                                        _id: 'true',
+                                        choice: 'Si',
+                                        backgroundColor: 'green',
+                                        requireImage: false,
+                                        requireComment: false,
+                                        requireAccesories: false,
+                                        requireConciliation: false,
+                                        value: 1,
+                                        order: 2
+                                    }
+                                ]
+                            });
+                        }
+                        if (form.carrier && (form.reception || form.shipping)) {
+                            extraSection.questions.push({
+                                _id: 'carrier',
+                                question: form.carrierText,
+                                carriers: form.reception ? user.venue.receptionCarriers : user.venue.shippingCarriers,
+                                kind: form_model_1.KindQuestion.carrier,
+                                order: extraSection.questions.length + 1
+                            });
+                        }
+                        if (form.conciliation) {
+                            extraSection.questions.push({
+                                _id: 'conciliation',
+                                question: form.conciliationText,
+                                scale: 'conciliation',
+                                kind: form_model_1.KindQuestion.scale,
+                                order: extraSection.questions.length + 1
+                            });
+                            extraScales.push({
+                                _id: 'conciliation',
+                                name: 'conciliation',
+                                choices: [
+                                    {
+                                        _id: 'false',
+                                        choice: 'No',
+                                        backgroundColor: 'red',
+                                        requireImage: false,
+                                        requireComment: false,
+                                        requireAccesories: false,
+                                        requireConciliation: false,
+                                        value: 0,
+                                        order: 1
+                                    }, {
+                                        _id: 'true',
+                                        choice: 'Si',
+                                        backgroundColor: 'green',
+                                        requireImage: form.conciliationImage,
+                                        requireComment: false,
+                                        requireAccesories: false,
+                                        requireConciliation: false,
+                                        value: 1,
+                                        order: 2
+                                    }
+                                ]
+                            });
+                        }
+                        return [4 /*yield*/, this.getScales({
+                                _id: {
+                                    $in: scalesIds_1
+                                },
+                                team: team
+                            })];
+                    case 2:
+                        scales = _a.sent();
+                        scales = __spreadArray(__spreadArray([], scales, true), extraScales, true);
+                        if (extraSection.questions.length) {
+                            form.sections = __spreadArray(__spreadArray([], form.sections, true), [extraSection], false);
+                        }
+                        baseQuestion_1 = {
+                            _id: '',
+                            question: '',
+                            scale: null,
+                            risk: '',
+                            observe: '',
+                            accessories: null,
+                            damages: null,
+                            venues: [],
+                            carriers: [],
+                            conciliation: false,
+                            kind: '',
+                            weight: 0,
+                            order: 0,
+                            optional: false,
+                            hint: ''
+                        };
+                        // get scales from db
+                        return [2 /*return*/, __assign({ form: {
+                                    _id: form._id,
+                                    name: form.name,
+                                    description: form.description,
+                                    // norrmalize questions in sections
+                                    sections: form.sections.map(function (section) {
+                                        return {
+                                            _id: section._id,
+                                            name: section.name,
+                                            questions: section.questions.map(function (question) {
+                                                return __assign(__assign({}, baseQuestion_1), question);
+                                            }),
+                                            weight: section.weight,
+                                            order: section.order
+                                        };
+                                    })
+                                }, scales: scales, extra: extra }, response)];
+                    case 3:
+                        e_6 = _a.sent();
+                        /* istanbul ignore next */
+                        logger_service_1["default"].error("TransmittalController.apiOnlyMe:", e_6);
                         return [3 /*break*/, 4];
                     case 4: return [2 /*return*/];
                 }
             });
         });
     };
+    TransmittalController.prototype.getScales = function (filter) {
+        var _this = this;
+        var keyCache = "scales-" + JSON.stringify(filter);
+        return new Promise(function (resolve, reject) {
+            redis_service_1["default"].get(keyCache, function (error, result) { return __awaiter(_this, void 0, void 0, function () {
+                return __generator(this, function (_a) {
+                    if (result) {
+                        resolve(JSON.parse(result));
+                    }
+                    else {
+                        scale_model_1["default"]
+                            .find(filter, {
+                            'updatedAt': false,
+                            'createdAt': false,
+                            'active': false,
+                            'company': false,
+                            'minValue': false,
+                            'maxValue': false,
+                            'choices.na': false,
+                            'team': false,
+                            '__v': false
+                        })
+                            .lean()
+                            .exec(function (err, scales) {
+                            if (err) {
+                                /* istanbul ignore next */
+                                return reject(err);
+                            }
+                            redis_service_1["default"].set(keyCache, JSON.stringify(scales), 'ex', 30);
+                            return resolve(scales);
+                        });
+                    }
+                    return [2 /*return*/];
+                });
+            }); });
+        });
+    };
     TransmittalController.prototype.attachEvidence = function (req, res) {
         return __awaiter(this, void 0, void 0, function () {
-            var user, _a, files, transmittal, transmittalData, e_5;
+            var user, _a, files, transmittal, transmittalData, e_7;
             return __generator(this, function (_b) {
                 switch (_b.label) {
                     case 0:
@@ -485,15 +954,15 @@ var TransmittalController = /** @class */ (function () {
                         });
                         return [3 /*break*/, 4];
                     case 3:
-                        e_5 = _b.sent();
+                        e_7 = _b.sent();
                         /* istanbul ignore next */
                         logger_service_1["default"].error("TransmittalController.uploadFile: Async Error.");
                         /* istanbul ignore next */
                         logger_service_1["default"].error("{user: {_id: " + req.user._id + ", email: " + req.user.email + "}}");
                         /* istanbul ignore next */
-                        logger_service_1["default"].error(e_5);
+                        logger_service_1["default"].error(e_7);
                         /* istanbul ignore next */
-                        res.status(400).json(e_5);
+                        res.status(400).json(e_7);
                         return [3 /*break*/, 4];
                     case 4: return [2 /*return*/];
                 }
@@ -502,7 +971,7 @@ var TransmittalController = /** @class */ (function () {
     };
     TransmittalController.prototype.xlsExport = function (req, res) {
         return __awaiter(this, void 0, void 0, function () {
-            var team, columns, options, workbook_1, worksheet_1, cursor_1, e_6;
+            var team, columns, options, workbook_1, worksheet_1, cursor_1, e_8;
             var _this = this;
             return __generator(this, function (_a) {
                 switch (_a.label) {
@@ -623,15 +1092,15 @@ var TransmittalController = /** @class */ (function () {
                         }); });
                         return [3 /*break*/, 4];
                     case 3:
-                        e_6 = _a.sent();
+                        e_8 = _a.sent();
                         /* istanbul ignore next */
                         logger_service_1["default"].error("TransmittalController.xlsExport: Async Error.");
                         /* istanbul ignore next */
                         logger_service_1["default"].error("{user: {_id: " + req.user._id + ", email: " + req.user.email + "}}");
                         /* istanbul ignore next */
-                        logger_service_1["default"].error(e_6);
+                        logger_service_1["default"].error(e_8);
                         /* istanbul ignore next */
-                        res.status(500).json(e_6);
+                        res.status(500).json(e_8);
                         return [3 /*break*/, 4];
                     case 4: return [2 /*return*/];
                 }
@@ -650,7 +1119,7 @@ var TransmittalController = /** @class */ (function () {
     };
     TransmittalController.prototype.uploadFile = function (req, res) {
         return __awaiter(this, void 0, void 0, function () {
-            var user, file, transmittaltFile, e_7, e_8, e_9;
+            var user, file, transmittaltFile, e_9, e_10, e_11;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
@@ -690,7 +1159,7 @@ var TransmittalController = /** @class */ (function () {
                         _a.sent();
                         return [3 /*break*/, 5];
                     case 4:
-                        e_7 = _a.sent();
+                        e_9 = _a.sent();
                         logger_service_1["default"].error('TransmittalController.uploadFile: Error making autoRotate');
                         return [3 /*break*/, 5];
                     case 5: return [4 /*yield*/, transmittaltFile.attach('file', file)];
@@ -708,7 +1177,7 @@ var TransmittalController = /** @class */ (function () {
                         _a.sent();
                         return [3 /*break*/, 11];
                     case 10:
-                        e_8 = _a.sent();
+                        e_10 = _a.sent();
                         logger_service_1["default"].error('TransmittalController.uploadFile: Error making thumbnail');
                         return [3 /*break*/, 11];
                     case 11: return [4 /*yield*/, transmittaltFile.save()];
@@ -723,15 +1192,15 @@ var TransmittalController = /** @class */ (function () {
                         });
                         return [3 /*break*/, 14];
                     case 13:
-                        e_9 = _a.sent();
+                        e_11 = _a.sent();
                         /* istanbul ignore next */
                         logger_service_1["default"].error("TransmittalController.uploadFile: Async Error.");
                         /* istanbul ignore next */
                         logger_service_1["default"].error("{user: {_id: " + req.user._id + ", email: " + req.user.email + "}}");
                         /* istanbul ignore next */
-                        logger_service_1["default"].error(e_9);
+                        logger_service_1["default"].error(e_11);
                         /* istanbul ignore next */
-                        res.status(400).json(e_9);
+                        res.status(400).json(e_11);
                         return [3 /*break*/, 14];
                     case 14: return [3 /*break*/, 16];
                     case 15:

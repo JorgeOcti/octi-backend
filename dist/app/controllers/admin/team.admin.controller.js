@@ -37,6 +37,8 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
 };
 exports.__esModule = true;
 var team_model_1 = require("../../models/team.model");
+var teamSetting_model_1 = require("../../models/teamSetting.model");
+var logger_service_1 = require("../../../services/logger.service");
 var AdminsTeamController = /** @class */ (function () {
     function AdminsTeamController() {
         this.index = this.index.bind(this);
@@ -101,6 +103,68 @@ var AdminsTeamController = /** @class */ (function () {
                             });
                         }
                         return [2 /*return*/];
+                }
+            });
+        });
+    };
+    AdminsTeamController.prototype.teamSetting = function (req, res) {
+        return __awaiter(this, void 0, void 0, function () {
+            var team, teamSetting, e_1;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0:
+                        team = req.user.team;
+                        _a.label = 1;
+                    case 1:
+                        _a.trys.push([1, 3, , 4]);
+                        return [4 /*yield*/, teamSetting_model_1["default"].findOneOrCreate({
+                                team: team._id
+                            }, {
+                                team: team._id,
+                                inventory: {
+                                    leftoverDifferentVenue: true,
+                                    pending: "Pendientes",
+                                    pendingClass: "aqua",
+                                    pendingColor: "#00c2f4",
+                                    found: "Encontrados",
+                                    foundClass: "green",
+                                    foundColor: "#00aa51",
+                                    missing: "Faltantes",
+                                    missingClass: "red",
+                                    missingColor: "#f1392c",
+                                    leftover: "Encontrados*",
+                                    leftoverClass: "yellow",
+                                    leftoverColor: "#ff9600",
+                                    reported: "Reportados",
+                                    reportedClass: "gray-dark",
+                                    reportedColor: "#96a4b3"
+                                },
+                                request: {
+                                    color: true,
+                                    colorRequired: true,
+                                    denomination: true,
+                                    denominationRequired: true,
+                                    internalNumber: true,
+                                    internalNumberRequired: false,
+                                    internalNumberText: "Número interno",
+                                    material: true,
+                                    materialRequired: true
+                                }
+                            })];
+                    case 2:
+                        teamSetting = _a.sent();
+                        res.status(200).json(teamSetting);
+                        return [3 /*break*/, 4];
+                    case 3:
+                        e_1 = _a.sent();
+                        /* istanbul ignore next */
+                        console.log(e_1);
+                        logger_service_1["default"].error("RequestController.apiCreateItem: Async Error.");
+                        /* istanbul ignore next */
+                        logger_service_1["default"].error("{user: {_id: " + req.user._id + ", email: " + req.user.email + "}}");
+                        res.status(500).json(e_1);
+                        return [3 /*break*/, 4];
+                    case 4: return [2 /*return*/];
                 }
             });
         });

@@ -1,7 +1,7 @@
 import * as mongoose from 'mongoose';
-import {PaginateModel} from 'mongoose';
+import { PaginateModel } from 'mongoose';
 import * as mongoosePaginate from 'mongoose-paginate';
-import {ICar} from '../interfaces/car.interface';
+import { ICar } from '../interfaces/car.interface';
 
 export enum ChoicesStatusCar {
   active = 'active',
@@ -16,7 +16,9 @@ export const choicesStatusCar = [
   ChoicesStatusCar.inventory
 ];
 
-export interface ICarModel extends ICar, mongoose.Document {}
+export interface ICarModel extends ICar, mongoose.Document {
+}
+
 const carSchema = new mongoose.Schema({
   vin: {
     type: String,
@@ -40,6 +42,14 @@ const carSchema = new mongoose.Schema({
     type: String,
     default: '',
     trim: true
+  },
+  engineSize: {
+    type: String,
+    default: ''
+  },
+  driveType: {
+    type: String,
+    default: '',
   },
   destination: {
     type: String
@@ -69,6 +79,30 @@ const carSchema = new mongoose.Schema({
   invoice: {
     type: String,
     default: ''
+  },
+  businessYear: {
+    type: String,
+  },
+  manufacturingYear: {
+    type: String,
+  },
+  price: {
+    type: String,
+  },
+  insurancePrice: {
+    type: String,
+  },
+  weight:{
+    type: String,
+  },
+  countryOrigin: {
+    type: String,
+  },
+  gas:{
+    type: String,
+  },
+  ap:{
+    type: String,
   },
   entry: {
     type: String,

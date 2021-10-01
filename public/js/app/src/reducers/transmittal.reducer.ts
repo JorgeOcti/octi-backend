@@ -30,6 +30,7 @@ const initialState: ITransmittalState<ITransmittal> = {
   requestItems: [],
   requestItemsfilters: {
     request: '',
+    entry: '',
     text: '',
     venues: [],
     properties: [],

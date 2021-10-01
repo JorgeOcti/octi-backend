@@ -66,7 +66,7 @@ class RequestListDetail extends React.Component<IPropsType, IStateType> {
           >
             {/* <i className="fa fa-circle status-circle-red" /> */}
             <strong className="text-underline">
-              #{this.padNumber(request.number)}
+              #{request.number}
             </strong>&nbsp;
             <i className="fa fa-share-square-o" style={{fontSize: '10px'}}/>
           </div>
@@ -158,7 +158,7 @@ class RequestListDetail extends React.Component<IPropsType, IStateType> {
                         <td className="middle">{item.status?.name}</td>
                     }
                     <td className="middle">
-                      {`${item.car.brand} ${item.car.denomination} ${item.car.material}`}
+                      {`${item.car.brand} ${item.car.denomination} ${item.car.material ?? ''}`}
                     </td>
                     <td className="middle">
                       {item.car.color}
@@ -332,11 +332,6 @@ class RequestListDetail extends React.Component<IPropsType, IStateType> {
 
   private goToDetail(id: string): void {
     this.props.history.push(`/requests/${id}/`);
-  }
-
-  private padNumber(n: number): string {
-    const s = '000' + n;
-    return s.substr(s.length - 4);
   }
 }
 

@@ -18,6 +18,8 @@ import {IParticipantFile} from './participantFile.interface';
 import {ICarrierModel} from '../../app/models/carrier.model';
 import {ITransmittalItem} from "../../distribution/interfaces/transmittalItem.interface";
 import {ITransmittalModel} from "../../distribution/models/transmittal.model";
+import { ITransmittal } from '../../distribution/interfaces/transmittal.interface';
+import { ITransmittalItemModel } from '../../distribution/models/transmittalItem.model';
 
 export interface IParticipantChoices {
   choice: string;
@@ -139,7 +141,9 @@ export interface IParticipant {
   conciliationText: string;
   conciliationImages: IParticipantFile[];
 
-  transmittalItem: ITransmittalItem | ITransmittalModel;
+  transmittalItem?: ITransmittalItem | ITransmittalItemModel;
+
+  transmittal?: ITransmittal | ITransmittalModel;
 
   active: boolean;
   updatedAt: Date;

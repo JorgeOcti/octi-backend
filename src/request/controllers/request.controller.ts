@@ -7,9 +7,8 @@ import * as https from 'https';
 import * as GraphicsMagick from 'gm';
 import * as moment from 'moment';
 import { CustomLabels, PaginateOptions, PaginateResult, QueryPopulateOptions } from 'mongoose';
-import * as tempfile from 'tempfile';
 import { ObjectID } from 'bson';
-import Car, { ChoicesStatusCar } from '../../app/models/car.model';
+import Car, { ChoicesStatusCar, default as CarModel } from '../../app/models/car.model';
 import Team from '../../app/models/team.model';
 import Participant from '../../form/models/participant.model';
 import { IRequest } from '../../interfaces/global.interface';
@@ -103,6 +102,8 @@ class RequestController {
     this.downloadItemFiles = this.downloadItemFiles.bind(this);
     this.downloadFile = this.downloadFile.bind(this);
     this.apiUpdateMassive = this.apiUpdateMassive.bind(this);
+    this.apiImport = this.apiImport.bind(this);
+    this.createRequest = this.createRequest.bind(this);
   }
 
   public async index(req: IRequest, res: Response) {
@@ -114,7 +115,7 @@ class RequestController {
     const { team } = req.user;
     try {
       for (const property of properties) {
-        if(property.key.length && property.brands.length){
+        if (property.key.length && property.brands.length) {
           const find: any = {
             team,
             $or: property.brands.map((brand: string) => {
@@ -130,9 +131,169 @@ class RequestController {
         }
       }
       res.status(200).json({
-          message: 'Actualización realizada satisfactoriamente',
-          status: 200
+        message: 'Actualización realizada satisfactoriamente',
+        status: 200
+      });
+    } catch (e) {
+      /* istanbul ignore next */
+      if (e) {
+        console.log(e);
+        res.status(500).json(e);
+      }
+    }
+  }
+
+  private createRequest(user: any, request: any): Promise<any> {
+    return new Promise<any>(async (resolve, reject) => {
+      try {
+        const { company, team } = user;
+        const { cars, number, channel, sellerText, operationType } = request;
+        const defaultItemStatus = await RequestItemStatus.findOneOrCreate({
+          team,
+          default: true
+        }, {
+          name: 'Pendiente',
+          default: true,
+          team,
+          weigth: 10
         });
+        const newRequest: IRequestModel = await new Request({
+          team,
+          sellerText,
+          number: number,
+          // mark origin and destination with first car
+          // TODO: change to venues arrays in cars
+          origin: cars[0].origin,
+          destination: cars[0].destination,
+          operationType: operationType?.length ? operationType : null,
+          channel,
+          createdBy: user
+        }).save();
+        for (const car of cars) {
+          let currentCar = await CarModel.findOne({
+            team,
+            vin: car.vin.trim()
+          });
+          if (currentCar) {
+            currentCar.engineNumber = car.engineNumber;
+            currentCar.brand = car.brand;
+            currentCar.color = car.color;
+            currentCar.denomination = car.denomination;
+            currentCar.type = car.type;
+            currentCar.client = car.client;
+            currentCar.entry = car.entry;
+            currentCar.invoice = car.invoice;
+            currentCar.bl = car.bl;
+            currentCar.engineSize = car.engineSize;
+            currentCar.driveType = car.driveType;
+            currentCar.businessYear = car.businessYear;
+            currentCar.manufacturingYear = car.manufacturingYear;
+            currentCar.price = car.price;
+            currentCar.insurancePrice = car.insurancePrice;
+            currentCar.weight = car.weight;
+            currentCar.gas = car.gas;
+            currentCar.ap = car.ap;
+            currentCar.countryOrigin = car.countryOrigin;
+            currentCar.save();
+          } else {
+            currentCar = await new Car({
+              team,
+              company,
+              vin: car.vin.trim(),
+              engineNumber: car.engineNumber,
+              brand: car.brand,
+              color: car.color,
+              denomination: car.denomination,
+              type: car.type,
+              client: car.client,
+              entry: car.entry,
+              invoice: car.invoice,
+              bl: car.bl,
+              engineSize: car.engineSize,
+              driveType: car.driveType,
+              businessYear: car.businessYear,
+              manufacturingYear: car.manufacturingYear,
+              price: car.price,
+              insurancePrice: car.insurancePrice,
+              weight: car.weight,
+              gas: car.gas,
+              ap: car.ap,
+              countryOrigin: car.countryOrigin,
+              status: ChoicesStatusCar.pending,
+              createdBy: user
+            }).save();
+          }
+          await new RequestItem({
+            team,
+            request: newRequest,
+            car: currentCar,
+            reason: car.reason,
+            origin: car.origin,
+            destination: car.destination,
+            observation: car.observation,
+            status: defaultItemStatus,
+            createdBy: user
+          }).save();
+        }
+        const updatedRequest = await Request.findById(newRequest._id).populate(this.requestPopulate);
+        io.to(`request-list-${team._id}`).emit('CREATE_REQUEST', {
+          request: updatedRequest
+        });
+        io.to(`request-detail-${team._id}`).emit('CREATE_REQUEST', {
+          request: updatedRequest
+        });
+        resolve({
+          updatedRequest
+        });
+      } catch (e) {
+        /* istanbul ignore next */
+        logger.error(`RequestController.createRequest: Async Error.`);
+        /* istanbul ignore next */
+        logger.error(`{user: {_id: ${user._id}, email: ${user.email}}, user: ${JSON.stringify(user)}`);
+        logger.error(e);
+        reject(e);
+      }
+    });
+  }
+
+  public async apiImport(req: IRequest, res: Response) {
+    try {
+      const { team } = req.user;
+      const { requests } = req.body;
+      if (requests?.length) {
+        const requestsNumbers = requests.map((request: any) => parseInt(request.number));
+        const existsRequest = await Request.find({ team, number: { $in: requestsNumbers } });
+        const updateTeam = await Team.findOne({ _id: team._id });
+        const maxRequest = Math.max(...requestsNumbers);
+        const minRequest = Math.min(...requestsNumbers);
+
+        if (existsRequest.length) {
+          res.status(400).json({
+            message: `Solicitudes número ${existsRequest.map((e) => e.number).join(',')} ya ${existsRequest.length > 1 ? 'existen' : 'existe'}`,
+            status: 400
+          });
+        } else if (minRequest <= updateTeam!.requestNumber) {
+          res.status(400).json({
+            message: `El número de solicitud no puede ser menor que ${updateTeam!.requestNumber}`,
+            status: 400
+          });
+        } else {
+          requests.forEach(async (request: any) => {
+            await this.createRequest(req.user, request);
+          });
+
+          await Team.findOneAndUpdate({ _id: team._id }, { $set: { requestNumber: maxRequest } });
+          res.status(200).json({
+            message: 'Actualización realizada satisfactoriamente',
+            status: 200
+          });
+        }
+      } else {
+        res.status(400).json({
+          message: 'Datos invalidos',
+          status: 400
+        });
+      }
     } catch (e) {
       /* istanbul ignore next */
       if (e) {
@@ -146,17 +307,26 @@ class RequestController {
     logger.info(`RequestController.apiCreate`);
     logger.info(`{user: {_id: ${req.user._id}, email: ${req.user.email}}, body: ${JSON.stringify(req.body)} }`);
     const { company, team } = req.user;
-    const { cars, venue, channel, sellerText } = req.body;
+    const { cars, venue, channel, sellerText, operationType } = req.body;
 
     try {
-      const defaultItemStatus = await RequestItemStatus.findOneOrCreate({ team, default: true }, { name: 'Pendiente', default: true, team, weigth: 10 });
-      const updateTeam = await Team.findOne({ _id: team._id });
+      const defaultItemStatus = await RequestItemStatus.findOneOrCreate({
+        team,
+        default: true
+      }, {
+        name: 'Pendiente',
+        default: true,
+        team,
+        weigth: 10
+      });
+      const updateTeam = await Team.findOneAndUpdate({ _id: team._id }, { $inc: { requestNumber: 1 } }, { new: true });
       const request = await new Request({
         team,
         sellerText,
-        number: updateTeam!.requestNumber + 1,
+        number: updateTeam!.requestNumber,
         origin: venue,
         destination: venue,
+        operationType: operationType?.length ? operationType : null,
         // status,
         channel,
         createdBy: req.user
@@ -189,7 +359,6 @@ class RequestController {
           createdBy: req.user
         }).save();
       }
-      await Team.findOneAndUpdate({ _id: team._id }, { $inc: { requestNumber: 1 } }, { new: true });
       const newRequest = await Request.findById(request._id).populate(this.requestPopulate);
       io.to(`request-list-${team._id}`).emit('CREATE_REQUEST', {
         request: newRequest
@@ -210,7 +379,7 @@ class RequestController {
     }
   }
 
-  public async apiListItems(req: IRequest, res: Response){
+  public async apiListItems(req: IRequest, res: Response) {
     logger.info(`RequestController.apiListItems`);
     logger.info(`{user: {_id: ${req.user._id}, email: ${req.user.email}}, body: ${JSON.stringify(req.body)} }`);
     const team = req.user.team._id;
@@ -234,16 +403,16 @@ class RequestController {
       venuesIds = req.user.venuesPermissions();
     }
     if (filters.status && filters.status.length) {
-      extraQuery.status = {$in: filters.status.map((status: any) => new ObjectID(status))};
+      extraQuery.status = { $in: filters.status.map((status: any) => new ObjectID(status)) };
     }
-    if (filters.from){
-      if(!extraQuery.hasOwnProperty('createdAt')){
+    if (filters.from) {
+      if (!extraQuery.hasOwnProperty('createdAt')) {
         extraQuery.createdAt = {};
       }
       extraQuery.createdAt.$gte = moment(filters.from).startOf('day').toDate();
     }
-    if (filters.to){
-      if(!extraQuery.hasOwnProperty('createdAt')){
+    if (filters.to) {
+      if (!extraQuery.hasOwnProperty('createdAt')) {
         extraQuery.createdAt = {};
       }
       extraQuery.createdAt.$lte = moment(filters.to).endOf('day').toDate();
@@ -256,7 +425,9 @@ class RequestController {
     if (requestNumbers.length) {
       extraMatch.requestNumber = { $in: requestNumbers };
     }
-    if (filters.text) {
+    if(filters.entry?.length){
+      extraMatch['car.entry'] = { '$regex': filters.entry, '$options': 'i' }
+    } else if (filters.text) {
       extraMatch.$or = [];
       extraMatch.$or.push({
         'car.vin': { '$regex': filters.text, '$options': 'i' }
@@ -286,9 +457,9 @@ class RequestController {
       });
     }
     try {
-      if(orderBy !== 'request.number' || Object.keys(extraMatch).length || Object.keys(extraQuery).length) {
+      if (orderBy !== 'request.number' || Object.keys(extraMatch).length || Object.keys(extraQuery).length) {
         if (filters && filters.transmitttalModule) {
-          extraQuery.assigned = {$in: [null, false]}
+          extraQuery.assigned = { $in: [null, false] };
         }
         const baseAggregate: any[] = [{
           $match: {
@@ -307,37 +478,37 @@ class RequestController {
         }];
 
         const aggregatePopulate = [{
-          $lookup: {from: 'cars', localField: 'car', foreignField: '_id', as: 'car'}
+          $lookup: { from: 'cars', localField: 'car', foreignField: '_id', as: 'car' }
         }, {
-          $unwind: {path: '$car', preserveNullAndEmptyArrays: true}
+          $unwind: { path: '$car', preserveNullAndEmptyArrays: true }
         }, {
-          $lookup: {from: 'venues', localField: 'origin', foreignField: '_id', as: 'origin'}
+          $lookup: { from: 'venues', localField: 'origin', foreignField: '_id', as: 'origin' }
         }, {
-          $unwind: {path: '$origin', preserveNullAndEmptyArrays: true}
+          $unwind: { path: '$origin', preserveNullAndEmptyArrays: true }
         }, {
-          $lookup: {from: 'venues', localField: 'destination', foreignField: '_id', as: 'destination'}
+          $lookup: { from: 'venues', localField: 'destination', foreignField: '_id', as: 'destination' }
         }, {
-          $unwind: {path: '$destination', preserveNullAndEmptyArrays: true}
+          $unwind: { path: '$destination', preserveNullAndEmptyArrays: true }
         }, {
-          $lookup: {from: 'requests', localField: 'request', foreignField: '_id', as: 'request'}
+          $lookup: { from: 'requests', localField: 'request', foreignField: '_id', as: 'request' }
         }, {
-          $unwind: {path: '$request', preserveNullAndEmptyArrays: false}
+          $unwind: { path: '$request', preserveNullAndEmptyArrays: false }
         }, {
-          $lookup: {from: 'users', localField: 'request.createdBy', foreignField: '_id', as: 'request.createdBy'}
+          $lookup: { from: 'users', localField: 'request.createdBy', foreignField: '_id', as: 'request.createdBy' }
         }, {
-          $unwind: {path: '$request.createdBy', preserveNullAndEmptyArrays: false}
+          $unwind: { path: '$request.createdBy', preserveNullAndEmptyArrays: false }
         }, {
-          $lookup: {from: 'requestitemstatuses', localField: 'status', foreignField: '_id', as: 'status'}
+          $lookup: { from: 'requestitemstatuses', localField: 'status', foreignField: '_id', as: 'status' }
         }, {
-          $unwind: {path: '$status', preserveNullAndEmptyArrays: true}
+          $unwind: { path: '$status', preserveNullAndEmptyArrays: true }
         }, {
-          $lookup: {from: 'requestfiles', localField: 'files', foreignField: '_id', as: 'files'}
+          $lookup: { from: 'requestfiles', localField: 'files', foreignField: '_id', as: 'files' }
         }, {
-          $lookup: {from: 'reasons', localField: 'reason', foreignField: '_id', as: 'reason'}
+          $lookup: { from: 'reasons', localField: 'reason', foreignField: '_id', as: 'reason' }
         }, {
-          $unwind: {path: '$reason', preserveNullAndEmptyArrays: true}
+          $unwind: { path: '$reason', preserveNullAndEmptyArrays: true }
         }, {
-          $addFields: {requestNumber: {$toString: '$request.number'}}
+          $addFields: { requestNumber: { $toString: '$request.number' } }
         }, {
           $project: {
             '_id': 1,
@@ -361,6 +532,8 @@ class RequestController {
             'car.brand': 1,
             'car.color': 1,
             'car.material': 1,
+            'car.entry': 1,
+            'car.invoice': 1,
             'car.patent': 1,
             'car.property': 1,
             'car.type': 1,
@@ -397,13 +570,13 @@ class RequestController {
           ...baseAggregate,
           ...aggregatePopulate,
           {
-            $sort: {[orderBy]: orderType === 'ascending' ? 1 : -1}
+            $sort: { [orderBy]: orderType === 'ascending' ? 1 : -1 }
           }];
         const requestsAggregate = RequestItem.aggregate(aggregate);
         const options: PaginateOptions = {
           page: parseInt(page ? page : '1', 10),
           limit: parseInt(pageSize ? pageSize : '10', 10),
-          customLabels: this.aggregateCustomLabels,
+          customLabels: this.aggregateCustomLabels
         };
         const requests = await RequestItem.aggregatePaginate(requestsAggregate, options);
         if (options.page && requests.pages && requests.pages < options.page) {
@@ -426,7 +599,7 @@ class RequestController {
           sort: {
             _id: -1
           },
-          select:['priority', 'observation', 'createdAt', 'updatedAt'],
+          select: ['priority', 'observation', 'createdAt', 'updatedAt'],
           populate: [{
             path: 'files',
             select: ['_id']
@@ -439,7 +612,7 @@ class RequestController {
             }]
           }, {
             path: 'car',
-            select: ['vin', 'internalNumber', 'patent', 'color', 'brand', 'denomination', 'material', 'property', 'type', 'client', 'bl']
+            select: ['vin', 'internalNumber', 'patent', 'color', 'brand', 'denomination', 'material', 'property', 'type', 'client', 'bl', 'invoice', 'entry']
           }, {
             path: 'reason',
             select: ['name']
@@ -469,7 +642,7 @@ class RequestController {
           }]
         };
         if (filters && filters.transmitttalModule) {
-          query.assigned = {$in: [null, false]}
+          query.assigned = { $in: [null, false] };
         }
         const request = await RequestItem.paginate(query, options);
         res.json({
@@ -496,7 +669,7 @@ class RequestController {
   public async exportExcel(req: IRequest, res: Response) {
     const team = req.user.team._id;
     try {
-      const requestItems = await RequestItem.aggregate<IRequestItemModel>([{
+      const cursor = RequestItem.aggregate<IRequestItemModel>([{
         $match: {
           team,
           'destination': {
@@ -572,8 +745,15 @@ class RequestController {
         }
       }, {
         $sort: { _id: 1 }
-      }]);
-      const workbook = new excel.Workbook();
+      }]).cursor({ batchSize: 100 }).exec();
+      res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+      res.setHeader('Content-Disposition', 'attachment; filename=requests.xlsx');
+      const options = {
+        stream: res,
+        useStyles: true,
+        useSharedStrings: true
+      };
+      const workbook = new excel.stream.xlsx.WorkbookWriter(options);
       const worksheet = workbook.addWorksheet('Usuarios', {
         properties: {
           defaultRowHeight: 30
@@ -581,6 +761,7 @@ class RequestController {
           fitToPage: true, fitToHeight: 100, fitToWidth: 1
         }
       });
+
       /* headers */
       const questionColumns: Partial<Column>[] = [];
 
@@ -591,6 +772,7 @@ class RequestController {
           });
         }
       }
+
       worksheet.columns = [{
         header: 'Nª SOLICITUD', key: 'request', width: 10
       }, {
@@ -649,7 +831,8 @@ class RequestController {
         header: 'OBSERVACIÓN', key: 'observation', width: 21
       }, ...questionColumns];
 
-      for (const item of requestItems) {
+      // for (const item of requestItems) {
+      cursor.on('data', async (item: any) => {
         const extraAnswers: any = {};
         for (const answer of item.answers ? item.answers : []) {
           extraAnswers[answer.questionId] = answer.answer;
@@ -685,12 +868,19 @@ class RequestController {
           uploadDate: item.uploadDate,
           estimatedArrival: item.estimatedArrival
         });
-      }
-      const tempFilePath = tempfile('.xlsx');
-      await workbook.xlsx.writeFile(tempFilePath);
-      res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-      res.setHeader('Content-Disposition', 'attachment; filename=requests.xlsx');
-      return res.sendFile(tempFilePath);
+      });
+      cursor.on('end', async () => {
+        await workbook.commit();
+        res.status(200);
+      });
+
+      cursor.on('error', (error: Error) => logger.error(error.message));
+
+      // code to handle connection abort or finish of data send
+      req.connection.on('close', async () => {
+        await cursor.close();
+        res.status(200);
+      });
     } catch (e) {
       /* istanbul ignore next */
       logger.error(e);
@@ -707,7 +897,13 @@ class RequestController {
     logger.info(`RequestController.apiList`);
     logger.info(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
     const team = req.user.team._id;
-    const { page, pageSize, search, orderBy, orderType } = req.query as { page: string; pageSize: string; search: string; orderBy: string; orderType: string };
+    const {
+      page,
+      pageSize,
+      search,
+      orderBy,
+      orderType
+    } = req.query as { page: string; pageSize: string; search: string; orderBy: string; orderType: string };
     // paginate options
     const options: PaginateOptions = {
       sort: {
@@ -795,7 +991,7 @@ class RequestController {
           team
         });
       if (request) {
-        await RequestItem.find({_id: id,team}).remove();
+        await RequestItem.find({ _id: id, team }).remove();
         await request.remove();
         io.to(`request-list-${team}`).emit('DELETE_REQUEST', {
           idRequest: request._id
@@ -939,7 +1135,7 @@ class RequestController {
     const { car, idRequest } = req.body;
     try {
       const request = await Request.findOne({ _id: idRequest, team });
-      if(request){
+      if (request) {
         const defaultItemStatus = await RequestItemStatus.findOneOrCreate({ team, default: true }, { name: 'En proceso', default: true, team });
         const newCar = await new Car({
           team,
@@ -964,7 +1160,7 @@ class RequestController {
           status: defaultItemStatus,
           createdBy: req.user
         }).save();
-        const item = await RequestItem.findOne({_id: newItem._id}).populate(this.itemPopulate);
+        const item = await RequestItem.findOne({ _id: newItem._id }).populate(this.itemPopulate);
         request.update({ $set: { updatedAt: moment() } });
         io.to(`request-list-${team}`).emit('CREATE_REQUEST_ITEM', {
           idRequest: request._id,
@@ -995,12 +1191,15 @@ class RequestController {
 
   public async apiPatchItem(req: IRequest, res: Response) {
     logger.info(`RequestController.apiPatchItem`);
-    const {team, company} = req.user;
+    const { team, company } = req.user;
     const updateObject = req.body;
     const { id } = req.params;
     logger.info(`{user: {_id: ${req.user._id}, email: ${req.user.email}}, body: ${JSON.stringify(updateObject)} }`);
     try {
-      const requestItem = await RequestItem.findOneAndUpdate({ _id: id, team }, { $set: { ...updateObject } }).populate([{ path: 'car' }, {path:'request'}]);
+      const requestItem = await RequestItem.findOneAndUpdate({
+        _id: id,
+        team
+      }, { $set: { ...updateObject } }).populate([{ path: 'car' }, { path: 'request' }]);
       if (Object.keys(updateObject.car).length) {
         // add vin2 to car
         updateObject.car.vin2 = updateObject.car && updateObject.car.vin ? updateObject.car.vin.substr(updateObject.car.vin.length - 6) : '';
@@ -1008,7 +1207,7 @@ class RequestController {
         if (requestItem && ((updateObject.car.vin && updateObject.car.vin.length) || (updateObject.car.material && updateObject.car.material.length))) {
           const existActivity = await ActivityHistory.findOne({ team, 'request.item': requestItem._id });
           if (!existActivity) {
-            await ActivityHistory.create({
+            await new ActivityHistory({
               team,
               company,
               user: req.user._id,
@@ -1018,7 +1217,7 @@ class RequestController {
                 item: requestItem._id,
                 number: requestItem.request.number
               }
-            });
+            }).save();
           }
         }
         if (existCar && requestItem && existCar.vin !== requestItem.car.vin) {
@@ -1142,8 +1341,8 @@ class RequestController {
         res.setHeader('size', results.reduce((a: number, b: number) => a + b));
         archive.pipe(res);
         archive.finalize();
-      } else{
-        res.status(404).json({message: 'Not found'});
+      } else {
+        res.status(404).json({ message: 'Not found' });
       }
     } catch (e) {
       /* istanbul ignore next */
@@ -1166,7 +1365,7 @@ class RequestController {
         // validate that the directory exist and create recursive if it does not exist
         const directoyName = directories.join('/');
         if (!fs.existsSync(directoyName)) {
-          fs.mkdirSync(directoyName, {recursive: true});
+          fs.mkdirSync(directoyName, { recursive: true });
         }
         const file = fs.createWriteStream(dest);
         // download file

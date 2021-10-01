@@ -45,6 +45,7 @@ export interface IListView<T = any> {
 export interface IRequestItemsFilters {
   text: string;
   request: string;
+  entry: string;
   venues: any[];
   properties: any[];
   status: any[];

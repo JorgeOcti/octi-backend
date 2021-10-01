@@ -86,9 +86,9 @@ class UserListView extends TrackingBasePage<IPropsType, IStateType> {
     this.changeTempUser = this.changeTempUser.bind(this);
     this.changePassword = this.changePassword.bind(this);
     this.processChangePassword = this.processChangePassword.bind(this);
-    this.onChangeSearch = this.onChangeSearch.bind(this);
     this.exportExcel = this.exportExcel.bind(this);
     this.cloneUser = this.cloneUser.bind(this);
+    this.onChangeSearch = this.onChangeSearch.bind(this);
     this.debounceOnChangeSearch = debounce(300, this.debounceOnChangeSearch);
   }
 

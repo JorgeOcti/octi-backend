@@ -15,6 +15,8 @@ import {ITransmittalModel} from "../../distribution/models/transmittal.model";
 import {ITransmittal} from "../../distribution/interfaces/transmittal.interface";
 import {ITransmittalItemModel} from "../../distribution/models/transmittalItem.model";
 import {ITransmittalItem} from "../../distribution/interfaces/transmittalItem.interface";
+import { IOperationType } from './operationType.interface';
+import { IOperationTypeModel } from '../models/operationType.model';
 
 export interface IRequest {
   _id: any;
@@ -29,6 +31,7 @@ export interface IRequest {
   loadingDate: Date;
   arrivalDate: Date;
   channel: ISalesChannel | ISalesChannelModel;
+  operationType: IOperationType | IOperationTypeModel;
   transmital?: ITransmittalModel | ITransmittal;
   transmitalItem?: ITransmittalItemModel | ITransmittalItem;
   fleet: boolean;

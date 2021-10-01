@@ -46,10 +46,14 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
         if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
     }
 };
-var __spreadArray = (this && this.__spreadArray) || function (to, from) {
-    for (var i = 0, il = from.length, j = to.length; i < il; i++, j++)
-        to[j] = from[i];
-    return to;
+var __spreadArray = (this && this.__spreadArray) || function (to, from, pack) {
+    if (pack || arguments.length === 2) for (var i = 0, l = from.length, ar; i < l; i++) {
+        if (ar || !(i in from)) {
+            if (!ar) ar = Array.prototype.slice.call(from, 0, i);
+            ar[i] = from[i];
+        }
+    }
+    return to.concat(ar || Array.prototype.slice.call(from));
 };
 exports.__esModule = true;
 var archiver = require("archiver");
@@ -59,7 +63,6 @@ var fs = require("fs");
 var https = require("https");
 var GraphicsMagick = require("gm");
 var moment = require("moment");
-var tempfile = require("tempfile");
 var bson_1 = require("bson");
 var car_model_1 = require("../../app/models/car.model");
 var team_model_1 = require("../../app/models/team.model");
@@ -148,6 +151,8 @@ var RequestController = /** @class */ (function () {
         this.downloadItemFiles = this.downloadItemFiles.bind(this);
         this.downloadFile = this.downloadFile.bind(this);
         this.apiUpdateMassive = this.apiUpdateMassive.bind(this);
+        this.apiImport = this.apiImport.bind(this);
+        this.createRequest = this.createRequest.bind(this);
     }
     RequestController.prototype.index = function (req, res) {
         return __awaiter(this, void 0, void 0, function () {
@@ -221,42 +226,265 @@ var RequestController = /** @class */ (function () {
             });
         });
     };
+    RequestController.prototype.createRequest = function (user, request) {
+        var _this = this;
+        return new Promise(function (resolve, reject) { return __awaiter(_this, void 0, void 0, function () {
+            var company, team, cars, number, channel, sellerText, operationType, defaultItemStatus, newRequest, _i, cars_1, car, currentCar, updatedRequest, e_2;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0:
+                        _a.trys.push([0, 12, , 13]);
+                        company = user.company, team = user.team;
+                        cars = request.cars, number = request.number, channel = request.channel, sellerText = request.sellerText, operationType = request.operationType;
+                        return [4 /*yield*/, requestItemStatus_model_1["default"].findOneOrCreate({
+                                team: team,
+                                "default": true
+                            }, {
+                                name: 'Pendiente',
+                                "default": true,
+                                team: team,
+                                weigth: 10
+                            })];
+                    case 1:
+                        defaultItemStatus = _a.sent();
+                        return [4 /*yield*/, new request_model_1["default"]({
+                                team: team,
+                                sellerText: sellerText,
+                                number: number,
+                                // mark origin and destination with first car
+                                // TODO: change to venues arrays in cars
+                                origin: cars[0].origin,
+                                destination: cars[0].destination,
+                                operationType: (operationType === null || operationType === void 0 ? void 0 : operationType.length) ? operationType : null,
+                                channel: channel,
+                                createdBy: user
+                            }).save()];
+                    case 2:
+                        newRequest = _a.sent();
+                        _i = 0, cars_1 = cars;
+                        _a.label = 3;
+                    case 3:
+                        if (!(_i < cars_1.length)) return [3 /*break*/, 10];
+                        car = cars_1[_i];
+                        return [4 /*yield*/, car_model_1["default"].findOne({
+                                team: team,
+                                vin: car.vin.trim()
+                            })];
+                    case 4:
+                        currentCar = _a.sent();
+                        if (!currentCar) return [3 /*break*/, 5];
+                        currentCar.engineNumber = car.engineNumber;
+                        currentCar.brand = car.brand;
+                        currentCar.color = car.color;
+                        currentCar.denomination = car.denomination;
+                        currentCar.type = car.type;
+                        currentCar.client = car.client;
+                        currentCar.entry = car.entry;
+                        currentCar.invoice = car.invoice;
+                        currentCar.bl = car.bl;
+                        currentCar.engineSize = car.engineSize;
+                        currentCar.driveType = car.driveType;
+                        currentCar.businessYear = car.businessYear;
+                        currentCar.manufacturingYear = car.manufacturingYear;
+                        currentCar.price = car.price;
+                        currentCar.insurancePrice = car.insurancePrice;
+                        currentCar.weight = car.weight;
+                        currentCar.gas = car.gas;
+                        currentCar.ap = car.ap;
+                        currentCar.countryOrigin = car.countryOrigin;
+                        currentCar.save();
+                        return [3 /*break*/, 7];
+                    case 5: return [4 /*yield*/, new car_model_1["default"]({
+                            team: team,
+                            company: company,
+                            vin: car.vin.trim(),
+                            engineNumber: car.engineNumber,
+                            brand: car.brand,
+                            color: car.color,
+                            denomination: car.denomination,
+                            type: car.type,
+                            client: car.client,
+                            entry: car.entry,
+                            invoice: car.invoice,
+                            bl: car.bl,
+                            engineSize: car.engineSize,
+                            driveType: car.driveType,
+                            businessYear: car.businessYear,
+                            manufacturingYear: car.manufacturingYear,
+                            price: car.price,
+                            insurancePrice: car.insurancePrice,
+                            weight: car.weight,
+                            gas: car.gas,
+                            ap: car.ap,
+                            countryOrigin: car.countryOrigin,
+                            status: car_model_1.ChoicesStatusCar.pending,
+                            createdBy: user
+                        }).save()];
+                    case 6:
+                        currentCar = _a.sent();
+                        _a.label = 7;
+                    case 7: return [4 /*yield*/, new requestItem_model_1["default"]({
+                            team: team,
+                            request: newRequest,
+                            car: currentCar,
+                            reason: car.reason,
+                            origin: car.origin,
+                            destination: car.destination,
+                            observation: car.observation,
+                            status: defaultItemStatus,
+                            createdBy: user
+                        }).save()];
+                    case 8:
+                        _a.sent();
+                        _a.label = 9;
+                    case 9:
+                        _i++;
+                        return [3 /*break*/, 3];
+                    case 10: return [4 /*yield*/, request_model_1["default"].findById(newRequest._id).populate(this.requestPopulate)];
+                    case 11:
+                        updatedRequest = _a.sent();
+                        server_1.io.to("request-list-" + team._id).emit('CREATE_REQUEST', {
+                            request: updatedRequest
+                        });
+                        server_1.io.to("request-detail-" + team._id).emit('CREATE_REQUEST', {
+                            request: updatedRequest
+                        });
+                        resolve({
+                            updatedRequest: updatedRequest
+                        });
+                        return [3 /*break*/, 13];
+                    case 12:
+                        e_2 = _a.sent();
+                        /* istanbul ignore next */
+                        logger_service_1["default"].error("RequestController.createRequest: Async Error.");
+                        /* istanbul ignore next */
+                        logger_service_1["default"].error("{user: {_id: " + user._id + ", email: " + user.email + "}, user: " + JSON.stringify(user));
+                        logger_service_1["default"].error(e_2);
+                        reject(e_2);
+                        return [3 /*break*/, 13];
+                    case 13: return [2 /*return*/];
+                }
+            });
+        }); });
+    };
+    RequestController.prototype.apiImport = function (req, res) {
+        return __awaiter(this, void 0, void 0, function () {
+            var team, requests, requestsNumbers, existsRequest, updateTeam, maxRequest, minRequest, e_3;
+            var _this = this;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0:
+                        _a.trys.push([0, 9, , 10]);
+                        team = req.user.team;
+                        requests = req.body.requests;
+                        if (!(requests === null || requests === void 0 ? void 0 : requests.length)) return [3 /*break*/, 7];
+                        requestsNumbers = requests.map(function (request) { return parseInt(request.number); });
+                        return [4 /*yield*/, request_model_1["default"].find({ team: team, number: { $in: requestsNumbers } })];
+                    case 1:
+                        existsRequest = _a.sent();
+                        return [4 /*yield*/, team_model_1["default"].findOne({ _id: team._id })];
+                    case 2:
+                        updateTeam = _a.sent();
+                        maxRequest = Math.max.apply(Math, requestsNumbers);
+                        minRequest = Math.min.apply(Math, requestsNumbers);
+                        if (!existsRequest.length) return [3 /*break*/, 3];
+                        res.status(400).json({
+                            message: "Solicitudes n\u00FAmero " + existsRequest.map(function (e) { return e.number; }).join(',') + " ya " + (existsRequest.length > 1 ? 'existen' : 'existe'),
+                            status: 400
+                        });
+                        return [3 /*break*/, 6];
+                    case 3:
+                        if (!(minRequest <= updateTeam.requestNumber)) return [3 /*break*/, 4];
+                        res.status(400).json({
+                            message: "El n\u00FAmero de solicitud no puede ser menor que " + updateTeam.requestNumber,
+                            status: 400
+                        });
+                        return [3 /*break*/, 6];
+                    case 4:
+                        requests.forEach(function (request) { return __awaiter(_this, void 0, void 0, function () {
+                            return __generator(this, function (_a) {
+                                switch (_a.label) {
+                                    case 0: return [4 /*yield*/, this.createRequest(req.user, request)];
+                                    case 1:
+                                        _a.sent();
+                                        return [2 /*return*/];
+                                }
+                            });
+                        }); });
+                        return [4 /*yield*/, team_model_1["default"].findOneAndUpdate({ _id: team._id }, { $set: { requestNumber: maxRequest } })];
+                    case 5:
+                        _a.sent();
+                        res.status(200).json({
+                            message: 'Actualización realizada satisfactoriamente',
+                            status: 200
+                        });
+                        _a.label = 6;
+                    case 6: return [3 /*break*/, 8];
+                    case 7:
+                        res.status(400).json({
+                            message: 'Datos invalidos',
+                            status: 400
+                        });
+                        _a.label = 8;
+                    case 8: return [3 /*break*/, 10];
+                    case 9:
+                        e_3 = _a.sent();
+                        /* istanbul ignore next */
+                        if (e_3) {
+                            console.log(e_3);
+                            res.status(500).json(e_3);
+                        }
+                        return [3 /*break*/, 10];
+                    case 10: return [2 /*return*/];
+                }
+            });
+        });
+    };
     RequestController.prototype.apiCreate = function (req, res) {
         return __awaiter(this, void 0, void 0, function () {
-            var _a, company, team, _b, cars, venue, channel, sellerText, defaultItemStatus, updateTeam, request, _i, cars_1, car, newCar, newRequest, e_2;
+            var _a, company, team, _b, cars, venue, channel, sellerText, operationType, defaultItemStatus, updateTeam, request, _i, cars_2, car, newCar, newRequest, e_4;
             return __generator(this, function (_c) {
                 switch (_c.label) {
                     case 0:
                         logger_service_1["default"].info("RequestController.apiCreate");
                         logger_service_1["default"].info("{user: {_id: " + req.user._id + ", email: " + req.user.email + "}, body: " + JSON.stringify(req.body) + " }");
                         _a = req.user, company = _a.company, team = _a.team;
-                        _b = req.body, cars = _b.cars, venue = _b.venue, channel = _b.channel, sellerText = _b.sellerText;
+                        _b = req.body, cars = _b.cars, venue = _b.venue, channel = _b.channel, sellerText = _b.sellerText, operationType = _b.operationType;
                         _c.label = 1;
                     case 1:
-                        _c.trys.push([1, 12, , 13]);
-                        return [4 /*yield*/, requestItemStatus_model_1["default"].findOneOrCreate({ team: team, "default": true }, { name: 'Pendiente', "default": true, team: team, weigth: 10 })];
+                        _c.trys.push([1, 11, , 12]);
+                        return [4 /*yield*/, requestItemStatus_model_1["default"].findOneOrCreate({
+                                team: team,
+                                "default": true
+                            }, {
+                                name: 'Pendiente',
+                                "default": true,
+                                team: team,
+                                weigth: 10
+                            })];
                     case 2:
                         defaultItemStatus = _c.sent();
-                        return [4 /*yield*/, team_model_1["default"].findOne({ _id: team._id })];
+                        return [4 /*yield*/, team_model_1["default"].findOneAndUpdate({ _id: team._id }, { $inc: { requestNumber: 1 } }, { "new": true })];
                     case 3:
                         updateTeam = _c.sent();
                         return [4 /*yield*/, new request_model_1["default"]({
                                 team: team,
                                 sellerText: sellerText,
-                                number: updateTeam.requestNumber + 1,
+                                number: updateTeam.requestNumber,
                                 origin: venue,
                                 destination: venue,
+                                operationType: (operationType === null || operationType === void 0 ? void 0 : operationType.length) ? operationType : null,
                                 // status,
                                 channel: channel,
                                 createdBy: req.user
                             }).save()];
                     case 4:
                         request = _c.sent();
-                        _i = 0, cars_1 = cars;
+                        _i = 0, cars_2 = cars;
                         _c.label = 5;
                     case 5:
-                        if (!(_i < cars_1.length)) return [3 /*break*/, 9];
-                        car = cars_1[_i];
+                        if (!(_i < cars_2.length)) return [3 /*break*/, 9];
+                        car = cars_2[_i];
                         return [4 /*yield*/, new car_model_1["default"]({
                                 team: team,
                                 company: company,
@@ -291,11 +519,8 @@ var RequestController = /** @class */ (function () {
                     case 8:
                         _i++;
                         return [3 /*break*/, 5];
-                    case 9: return [4 /*yield*/, team_model_1["default"].findOneAndUpdate({ _id: team._id }, { $inc: { requestNumber: 1 } }, { "new": true })];
+                    case 9: return [4 /*yield*/, request_model_1["default"].findById(request._id).populate(this.requestPopulate)];
                     case 10:
-                        _c.sent();
-                        return [4 /*yield*/, request_model_1["default"].findById(request._id).populate(this.requestPopulate)];
-                    case 11:
                         newRequest = _c.sent();
                         server_1.io.to("request-list-" + team._id).emit('CREATE_REQUEST', {
                             request: newRequest
@@ -306,32 +531,33 @@ var RequestController = /** @class */ (function () {
                         res.json({
                             status: 200
                         });
-                        return [3 /*break*/, 13];
-                    case 12:
-                        e_2 = _c.sent();
+                        return [3 /*break*/, 12];
+                    case 11:
+                        e_4 = _c.sent();
                         /* istanbul ignore next */
                         logger_service_1["default"].error("RequestController.apiCreate: Async Error.");
                         /* istanbul ignore next */
                         logger_service_1["default"].error("{user: {_id: " + req.user._id + ", email: " + req.user.email + "}, body: " + JSON.stringify(req.body));
-                        logger_service_1["default"].error(e_2);
-                        res.status(500).json(e_2);
-                        return [3 /*break*/, 13];
-                    case 13: return [2 /*return*/];
+                        logger_service_1["default"].error(e_4);
+                        res.status(500).json(e_4);
+                        return [3 /*break*/, 12];
+                    case 12: return [2 /*return*/];
                 }
             });
         });
     };
     RequestController.prototype.apiListItems = function (req, res) {
+        var _a;
         return __awaiter(this, void 0, void 0, function () {
-            var team, _a, page, pageSize, orderBy, orderType, filters, venuesIds, extraQuery, extraMatch, requestNumbers, baseAggregate, aggregatePopulate, aggregate, requestsAggregate, options, requests, options, query, request, e_3;
-            var _b;
-            return __generator(this, function (_c) {
-                switch (_c.label) {
+            var team, _b, page, pageSize, orderBy, orderType, filters, venuesIds, extraQuery, extraMatch, requestNumbers, baseAggregate, aggregatePopulate, aggregate, requestsAggregate, options, requests, options, query, request, e_5;
+            var _c;
+            return __generator(this, function (_d) {
+                switch (_d.label) {
                     case 0:
                         logger_service_1["default"].info("RequestController.apiListItems");
                         logger_service_1["default"].info("{user: {_id: " + req.user._id + ", email: " + req.user.email + "}, body: " + JSON.stringify(req.body) + " }");
                         team = req.user.team._id;
-                        _a = req.body, page = _a.page, pageSize = _a.pageSize, orderBy = _a.orderBy, orderType = _a.orderType, filters = _a.filters;
+                        _b = req.body, page = _b.page, pageSize = _b.pageSize, orderBy = _b.orderBy, orderType = _b.orderType, filters = _b.filters;
                         extraQuery = {};
                         extraMatch = {};
                         if (filters.venues && filters.venues.length) {
@@ -362,7 +588,10 @@ var RequestController = /** @class */ (function () {
                         if (requestNumbers.length) {
                             extraMatch.requestNumber = { $in: requestNumbers };
                         }
-                        if (filters.text) {
+                        if ((_a = filters.entry) === null || _a === void 0 ? void 0 : _a.length) {
+                            extraMatch['car.entry'] = { '$regex': filters.entry, '$options': 'i' };
+                        }
+                        else if (filters.text) {
                             extraMatch.$or = [];
                             extraMatch.$or.push({
                                 'car.vin': { '$regex': filters.text, '$options': 'i' }
@@ -391,9 +620,9 @@ var RequestController = /** @class */ (function () {
                                 'car.property': { $in: filters.properties.map(function (s) { return s; }) }
                             });
                         }
-                        _c.label = 1;
+                        _d.label = 1;
                     case 1:
-                        _c.trys.push([1, 6, , 7]);
+                        _d.trys.push([1, 6, , 7]);
                         if (!(orderBy !== 'request.number' || Object.keys(extraMatch).length || Object.keys(extraQuery).length)) return [3 /*break*/, 3];
                         if (filters && filters.transmitttalModule) {
                             extraQuery.assigned = { $in: [null, false] };
@@ -464,6 +693,8 @@ var RequestController = /** @class */ (function () {
                                     'car.brand': 1,
                                     'car.color': 1,
                                     'car.material': 1,
+                                    'car.entry': 1,
+                                    'car.invoice': 1,
                                     'car.patent': 1,
                                     'car.property': 1,
                                     'car.type': 1,
@@ -493,11 +724,11 @@ var RequestController = /** @class */ (function () {
                                             }
                                         }] }, extraMatch)
                             }];
-                        aggregate = __spreadArray(__spreadArray(__spreadArray([], baseAggregate), aggregatePopulate), [
+                        aggregate = __spreadArray(__spreadArray(__spreadArray([], baseAggregate, true), aggregatePopulate, true), [
                             {
-                                $sort: (_b = {}, _b[orderBy] = orderType === 'ascending' ? 1 : -1, _b)
+                                $sort: (_c = {}, _c[orderBy] = orderType === 'ascending' ? 1 : -1, _c)
                             }
-                        ]);
+                        ], false);
                         requestsAggregate = requestItem_model_1["default"].aggregate(aggregate);
                         options = {
                             page: parseInt(page ? page : '1', 10),
@@ -506,7 +737,7 @@ var RequestController = /** @class */ (function () {
                         };
                         return [4 /*yield*/, requestItem_model_1["default"].aggregatePaginate(requestsAggregate, options)];
                     case 2:
-                        requests = _c.sent();
+                        requests = _d.sent();
                         if (options.page && requests.pages && requests.pages < options.page) {
                             res.status(400).json({
                                 message: 'La página solicitada no existe.',
@@ -542,7 +773,7 @@ var RequestController = /** @class */ (function () {
                                         }]
                                 }, {
                                     path: 'car',
-                                    select: ['vin', 'internalNumber', 'patent', 'color', 'brand', 'denomination', 'material', 'property', 'type', 'client', 'bl']
+                                    select: ['vin', 'internalNumber', 'patent', 'color', 'brand', 'denomination', 'material', 'property', 'type', 'client', 'bl', 'invoice', 'entry']
                                 }, {
                                     path: 'reason',
                                     select: ['name']
@@ -576,7 +807,7 @@ var RequestController = /** @class */ (function () {
                         }
                         return [4 /*yield*/, requestItem_model_1["default"].paginate(query, options)];
                     case 4:
-                        request = _c.sent();
+                        request = _d.sent();
                         res.json({
                             extraMatch: extraMatch,
                             extraQuery: extraQuery,
@@ -587,16 +818,16 @@ var RequestController = /** @class */ (function () {
                             results: request.docs,
                             status: 200
                         });
-                        _c.label = 5;
+                        _d.label = 5;
                     case 5: return [3 /*break*/, 7];
                     case 6:
-                        e_3 = _c.sent();
+                        e_5 = _d.sent();
                         /* istanbul ignore next */
                         logger_service_1["default"].error("RequestController.apiListItems: Async Error.");
                         /* istanbul ignore next */
                         logger_service_1["default"].error("{user: {_id: " + req.user._id + ", email: " + req.user.email + "}, body: " + JSON.stringify(req.body) + ", params: " + JSON.stringify(req.params));
-                        logger_service_1["default"].error(e_3);
-                        res.status(500).json(e_3);
+                        logger_service_1["default"].error(e_5);
+                        res.status(500).json(e_5);
                         return [3 /*break*/, 7];
                     case 7: return [2 /*return*/];
                 }
@@ -605,95 +836,101 @@ var RequestController = /** @class */ (function () {
     };
     RequestController.prototype.exportExcel = function (req, res) {
         return __awaiter(this, void 0, void 0, function () {
-            var team, requestItems, workbook, worksheet, questionColumns, _i, _a, reason, _b, _c, question, _d, requestItems_1, item, extraAnswers, _e, _f, answer, tempFilePath, e_4;
-            return __generator(this, function (_g) {
-                switch (_g.label) {
+            var team, cursor_1, options, workbook_1, worksheet_1, questionColumns, _i, _a, reason, _b, _c, question, e_6;
+            var _this = this;
+            return __generator(this, function (_d) {
+                switch (_d.label) {
                     case 0:
                         team = req.user.team._id;
-                        _g.label = 1;
+                        _d.label = 1;
                     case 1:
-                        _g.trys.push([1, 8, , 9]);
-                        return [4 /*yield*/, requestItem_model_1["default"].aggregate([{
-                                    $match: {
-                                        team: team,
-                                        'destination': {
-                                            $in: req.user.venuesPermissions()
-                                        }
+                        _d.trys.push([1, 6, , 7]);
+                        cursor_1 = requestItem_model_1["default"].aggregate([{
+                                $match: {
+                                    team: team,
+                                    'destination': {
+                                        $in: req.user.venuesPermissions()
                                     }
-                                }, {
-                                    $lookup: { from: 'cars', localField: 'car', foreignField: '_id', as: 'car' }
-                                }, {
-                                    $unwind: { path: '$car', preserveNullAndEmptyArrays: true }
-                                }, {
-                                    $lookup: { from: 'users', localField: 'createdBy', foreignField: '_id', as: 'createdBy' }
-                                }, {
-                                    $unwind: { path: '$createdBy', preserveNullAndEmptyArrays: true }
-                                }, {
-                                    $lookup: { from: 'venues', localField: 'origin', foreignField: '_id', as: 'origin' }
-                                }, {
-                                    $unwind: { path: '$origin', preserveNullAndEmptyArrays: true }
-                                }, {
-                                    $lookup: { from: 'venues', localField: 'destination', foreignField: '_id', as: 'destination' }
-                                }, {
-                                    $unwind: { path: '$destination', preserveNullAndEmptyArrays: true }
-                                }, {
-                                    $lookup: { from: 'requests', localField: 'request', foreignField: '_id', as: 'request' }
-                                }, {
-                                    $unwind: { path: '$request', preserveNullAndEmptyArrays: false }
-                                }, {
-                                    $lookup: { from: 'requestitemstatuses', localField: 'status', foreignField: '_id', as: 'status' }
-                                }, {
-                                    $unwind: { path: '$status', preserveNullAndEmptyArrays: true }
-                                }, {
-                                    $lookup: { from: 'carriers', localField: 'carrier', foreignField: '_id', as: 'carrier' }
-                                }, {
-                                    $unwind: { path: '$carrier', preserveNullAndEmptyArrays: true }
-                                }, {
-                                    $lookup: { from: 'reasons', localField: 'reason', foreignField: '_id', as: 'reason' }
-                                }, {
-                                    $unwind: { path: '$reason', preserveNullAndEmptyArrays: true }
-                                }, {
-                                    $lookup: { from: 'saleschannels', localField: 'request.channel', foreignField: '_id', as: 'request.channel' }
-                                }, {
-                                    $unwind: { path: '$request.channel', preserveNullAndEmptyArrays: true }
-                                }, {
-                                    $project: {
-                                        '_id': 1,
-                                        'request': 1,
-                                        'priority': 1,
-                                        'observation': 1,
-                                        'equipment': 1,
-                                        'washed': 1,
-                                        'answers': 1,
-                                        'review': 1,
-                                        'body': 1,
-                                        'status._id': 1,
-                                        'status.name': 1,
-                                        'carrier._id': 1,
-                                        'carrier.name': 1,
-                                        'status.weigth': 1,
-                                        'createdBy._id': 1,
-                                        'createdBy.firstName': 1,
-                                        'createdBy.lastName': 1,
-                                        'car': 1,
-                                        'origin._id': 1,
-                                        'origin.name': 1,
-                                        'destination._id': 1,
-                                        'destination.name': 1,
-                                        'reason._id': 1,
-                                        'reason.name': 1,
-                                        'uploadDate': 1,
-                                        'estimatedArrival': 1,
-                                        'createdAt': 1,
-                                        'updatedAt': 1
-                                    }
-                                }, {
-                                    $sort: { _id: 1 }
-                                }])];
-                    case 2:
-                        requestItems = _g.sent();
-                        workbook = new excel.Workbook();
-                        worksheet = workbook.addWorksheet('Usuarios', {
+                                }
+                            }, {
+                                $lookup: { from: 'cars', localField: 'car', foreignField: '_id', as: 'car' }
+                            }, {
+                                $unwind: { path: '$car', preserveNullAndEmptyArrays: true }
+                            }, {
+                                $lookup: { from: 'users', localField: 'createdBy', foreignField: '_id', as: 'createdBy' }
+                            }, {
+                                $unwind: { path: '$createdBy', preserveNullAndEmptyArrays: true }
+                            }, {
+                                $lookup: { from: 'venues', localField: 'origin', foreignField: '_id', as: 'origin' }
+                            }, {
+                                $unwind: { path: '$origin', preserveNullAndEmptyArrays: true }
+                            }, {
+                                $lookup: { from: 'venues', localField: 'destination', foreignField: '_id', as: 'destination' }
+                            }, {
+                                $unwind: { path: '$destination', preserveNullAndEmptyArrays: true }
+                            }, {
+                                $lookup: { from: 'requests', localField: 'request', foreignField: '_id', as: 'request' }
+                            }, {
+                                $unwind: { path: '$request', preserveNullAndEmptyArrays: false }
+                            }, {
+                                $lookup: { from: 'requestitemstatuses', localField: 'status', foreignField: '_id', as: 'status' }
+                            }, {
+                                $unwind: { path: '$status', preserveNullAndEmptyArrays: true }
+                            }, {
+                                $lookup: { from: 'carriers', localField: 'carrier', foreignField: '_id', as: 'carrier' }
+                            }, {
+                                $unwind: { path: '$carrier', preserveNullAndEmptyArrays: true }
+                            }, {
+                                $lookup: { from: 'reasons', localField: 'reason', foreignField: '_id', as: 'reason' }
+                            }, {
+                                $unwind: { path: '$reason', preserveNullAndEmptyArrays: true }
+                            }, {
+                                $lookup: { from: 'saleschannels', localField: 'request.channel', foreignField: '_id', as: 'request.channel' }
+                            }, {
+                                $unwind: { path: '$request.channel', preserveNullAndEmptyArrays: true }
+                            }, {
+                                $project: {
+                                    '_id': 1,
+                                    'request': 1,
+                                    'priority': 1,
+                                    'observation': 1,
+                                    'equipment': 1,
+                                    'washed': 1,
+                                    'answers': 1,
+                                    'review': 1,
+                                    'body': 1,
+                                    'status._id': 1,
+                                    'status.name': 1,
+                                    'carrier._id': 1,
+                                    'carrier.name': 1,
+                                    'status.weigth': 1,
+                                    'createdBy._id': 1,
+                                    'createdBy.firstName': 1,
+                                    'createdBy.lastName': 1,
+                                    'car': 1,
+                                    'origin._id': 1,
+                                    'origin.name': 1,
+                                    'destination._id': 1,
+                                    'destination.name': 1,
+                                    'reason._id': 1,
+                                    'reason.name': 1,
+                                    'uploadDate': 1,
+                                    'estimatedArrival': 1,
+                                    'createdAt': 1,
+                                    'updatedAt': 1
+                                }
+                            }, {
+                                $sort: { _id: 1 }
+                            }]).cursor({ batchSize: 100 }).exec();
+                        res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+                        res.setHeader('Content-Disposition', 'attachment; filename=requests.xlsx');
+                        options = {
+                            stream: res,
+                            useStyles: true,
+                            useSharedStrings: true
+                        };
+                        workbook_1 = new excel.stream.xlsx.WorkbookWriter(options);
+                        worksheet_1 = workbook_1.addWorksheet('Usuarios', {
                             properties: {
                                 defaultRowHeight: 30
                             }, pageSetup: {
@@ -703,11 +940,11 @@ var RequestController = /** @class */ (function () {
                         questionColumns = [];
                         _i = 0;
                         return [4 /*yield*/, reason_model_1["default"].find({ team: team })];
+                    case 2:
+                        _a = _d.sent();
+                        _d.label = 3;
                     case 3:
-                        _a = _g.sent();
-                        _g.label = 4;
-                    case 4:
-                        if (!(_i < _a.length)) return [3 /*break*/, 6];
+                        if (!(_i < _a.length)) return [3 /*break*/, 5];
                         reason = _a[_i];
                         for (_b = 0, _c = reason.questions; _b < _c.length; _b++) {
                             question = _c[_b];
@@ -715,12 +952,12 @@ var RequestController = /** @class */ (function () {
                                 header: question.name, key: question._id, width: 10
                             });
                         }
-                        _g.label = 5;
-                    case 5:
+                        _d.label = 4;
+                    case 4:
                         _i++;
-                        return [3 /*break*/, 4];
-                    case 6:
-                        worksheet.columns = __spreadArray([{
+                        return [3 /*break*/, 3];
+                    case 5:
+                        worksheet_1.columns = __spreadArray([{
                                 header: 'Nª SOLICITUD', key: 'request', width: 10
                             }, {
                                 header: 'FECHA SOLICITUD', key: 'created', width: 21, style: { numFmt: 'dd/mm/yyyy hh:mm' }
@@ -776,42 +1013,64 @@ var RequestController = /** @class */ (function () {
                                 header: 'FECHA ACTUALIZACION', key: 'updated', width: 21, style: { numFmt: 'dd/mm/yyyy hh:mm' }
                             }, {
                                 header: 'OBSERVACIÓN', key: 'observation', width: 21
-                            }], questionColumns);
-                        for (_d = 0, requestItems_1 = requestItems; _d < requestItems_1.length; _d++) {
-                            item = requestItems_1[_d];
-                            extraAnswers = {};
-                            for (_e = 0, _f = item.answers ? item.answers : []; _e < _f.length; _e++) {
-                                answer = _f[_e];
-                                extraAnswers[answer.questionId] = answer.answer;
-                            }
-                            worksheet.addRow(__assign(__assign({}, extraAnswers), { request: item.request.number, created: item.createdAt, updated: item.updatedAt, observation: item.observation, fleet: item.request.fleet ? 'Si' : 'No', priority: item.priority ? 'Si' : 'No', createdBy: item.createdBy ? item.createdBy.firstName + " " + item.createdBy.lastName : '-', seller: item.request.sellerText, channel: item.request.channel ? item.request.channel.name : '', reason: item.reason.name, group: '', property: item.car.property, brand: item.car.brand, denomination: item.car.denomination, material: item.car.material, vin: item.car.vin, cdo: item.car.internalNumber, color: item.car.color, destination: item.destination.name, origin: item.origin.name, status: item.status.name, equipment: item.equipment ? 'Si' : 'No', body: item.body ? 'Si' : 'No', washed: item.washed ? 'Si' : 'No', review: item.review ? 'Si' : 'No', carrier: item.carrier ? item.carrier.name : '', uploadDate: item.uploadDate, estimatedArrival: item.estimatedArrival }));
-                        }
-                        tempFilePath = tempfile('.xlsx');
-                        return [4 /*yield*/, workbook.xlsx.writeFile(tempFilePath)];
-                    case 7:
-                        _g.sent();
-                        res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-                        res.setHeader('Content-Disposition', 'attachment; filename=requests.xlsx');
-                        return [2 /*return*/, res.sendFile(tempFilePath)];
-                    case 8:
-                        e_4 = _g.sent();
+                            }], questionColumns, true);
+                        // for (const item of requestItems) {
+                        cursor_1.on('data', function (item) { return __awaiter(_this, void 0, void 0, function () {
+                            var extraAnswers, _i, _a, answer;
+                            return __generator(this, function (_b) {
+                                extraAnswers = {};
+                                for (_i = 0, _a = item.answers ? item.answers : []; _i < _a.length; _i++) {
+                                    answer = _a[_i];
+                                    extraAnswers[answer.questionId] = answer.answer;
+                                }
+                                worksheet_1.addRow(__assign(__assign({}, extraAnswers), { request: item.request.number, created: item.createdAt, updated: item.updatedAt, observation: item.observation, fleet: item.request.fleet ? 'Si' : 'No', priority: item.priority ? 'Si' : 'No', createdBy: item.createdBy ? item.createdBy.firstName + " " + item.createdBy.lastName : '-', seller: item.request.sellerText, channel: item.request.channel ? item.request.channel.name : '', reason: item.reason.name, group: '', property: item.car.property, brand: item.car.brand, denomination: item.car.denomination, material: item.car.material, vin: item.car.vin, cdo: item.car.internalNumber, color: item.car.color, destination: item.destination.name, origin: item.origin.name, status: item.status.name, equipment: item.equipment ? 'Si' : 'No', body: item.body ? 'Si' : 'No', washed: item.washed ? 'Si' : 'No', review: item.review ? 'Si' : 'No', carrier: item.carrier ? item.carrier.name : '', uploadDate: item.uploadDate, estimatedArrival: item.estimatedArrival }));
+                                return [2 /*return*/];
+                            });
+                        }); });
+                        cursor_1.on('end', function () { return __awaiter(_this, void 0, void 0, function () {
+                            return __generator(this, function (_a) {
+                                switch (_a.label) {
+                                    case 0: return [4 /*yield*/, workbook_1.commit()];
+                                    case 1:
+                                        _a.sent();
+                                        res.status(200);
+                                        return [2 /*return*/];
+                                }
+                            });
+                        }); });
+                        cursor_1.on('error', function (error) { return logger_service_1["default"].error(error.message); });
+                        // code to handle connection abort or finish of data send
+                        req.connection.on('close', function () { return __awaiter(_this, void 0, void 0, function () {
+                            return __generator(this, function (_a) {
+                                switch (_a.label) {
+                                    case 0: return [4 /*yield*/, cursor_1.close()];
+                                    case 1:
+                                        _a.sent();
+                                        res.status(200);
+                                        return [2 /*return*/];
+                                }
+                            });
+                        }); });
+                        return [3 /*break*/, 7];
+                    case 6:
+                        e_6 = _d.sent();
                         /* istanbul ignore next */
-                        logger_service_1["default"].error(e_4);
+                        logger_service_1["default"].error(e_6);
                         /* istanbul ignore next */
                         logger_service_1["default"].error("RequestController.exportExcel: Async Error.");
                         /* istanbul ignore next */
                         logger_service_1["default"].error("{user: {_id: " + req.user._id + ", email: " + req.user.email + "}, body: " + JSON.stringify(req.body) + ", params: " + JSON.stringify(req.params));
-                        logger_service_1["default"].error(e_4);
-                        res.status(500).json(e_4);
-                        return [3 /*break*/, 9];
-                    case 9: return [2 /*return*/];
+                        logger_service_1["default"].error(e_6);
+                        res.status(500).json(e_6);
+                        return [3 /*break*/, 7];
+                    case 7: return [2 /*return*/];
                 }
             });
         });
     };
     RequestController.prototype.apiList = function (req, res) {
         return __awaiter(this, void 0, void 0, function () {
-            var team, _a, page, pageSize, search, orderBy, orderType, options, filter, requests, e_5;
+            var team, _a, page, pageSize, search, orderBy, orderType, options, filter, requests, e_7;
             var _b;
             return __generator(this, function (_c) {
                 switch (_c.label) {
@@ -863,12 +1122,12 @@ var RequestController = /** @class */ (function () {
                         }
                         return [3 /*break*/, 4];
                     case 3:
-                        e_5 = _c.sent();
+                        e_7 = _c.sent();
                         /* istanbul ignore next */
                         logger_service_1["default"].error("RequestController.apiList: Async Error.");
                         /* istanbul ignore next */
                         logger_service_1["default"].error("{user: {_id: " + req.user._id + ", email: " + req.user.email + "}}");
-                        res.status(500).json(e_5);
+                        res.status(500).json(e_7);
                         return [3 /*break*/, 4];
                     case 4: return [2 /*return*/];
                 }
@@ -877,7 +1136,7 @@ var RequestController = /** @class */ (function () {
     };
     RequestController.prototype.apiDetail = function (req, res) {
         return __awaiter(this, void 0, void 0, function () {
-            var team, id, request, e_6;
+            var team, id, request, e_8;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
@@ -907,13 +1166,13 @@ var RequestController = /** @class */ (function () {
                         }
                         return [3 /*break*/, 4];
                     case 3:
-                        e_6 = _a.sent();
+                        e_8 = _a.sent();
                         /* istanbul ignore next */
                         logger_service_1["default"].error("RequestController.apiDetail: Async Error.");
                         /* istanbul ignore next */
                         logger_service_1["default"].error("{user: {_id: " + req.user._id + ", email: " + req.user.email + "}, body: " + JSON.stringify(req.body) + ", params: " + JSON.stringify(req.params));
-                        logger_service_1["default"].error(e_6);
-                        res.status(500).json(e_6);
+                        logger_service_1["default"].error(e_8);
+                        res.status(500).json(e_8);
                         return [3 /*break*/, 4];
                     case 4: return [2 /*return*/];
                 }
@@ -922,7 +1181,7 @@ var RequestController = /** @class */ (function () {
     };
     RequestController.prototype.apiDeleteRequest = function (req, res) {
         return __awaiter(this, void 0, void 0, function () {
-            var team, id, request, e_7;
+            var team, id, request, e_9;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
@@ -965,13 +1224,13 @@ var RequestController = /** @class */ (function () {
                         _a.label = 6;
                     case 6: return [3 /*break*/, 8];
                     case 7:
-                        e_7 = _a.sent();
+                        e_9 = _a.sent();
                         /* istanbul ignore next */
                         logger_service_1["default"].error("RequestController.apiDeleteRequest: Async Error.");
                         /* istanbul ignore next */
                         logger_service_1["default"].error("{user: {_id: " + req.user._id + ", email: " + req.user.email + "}, body: " + JSON.stringify(req.body) + ", params: " + JSON.stringify(req.params));
-                        logger_service_1["default"].error(e_7);
-                        res.status(500).json(e_7);
+                        logger_service_1["default"].error(e_9);
+                        res.status(500).json(e_9);
                         return [3 /*break*/, 8];
                     case 8: return [2 /*return*/];
                 }
@@ -980,7 +1239,7 @@ var RequestController = /** @class */ (function () {
     };
     RequestController.prototype.apiDeleteRequestItem = function (req, res) {
         return __awaiter(this, void 0, void 0, function () {
-            var team, id, item, e_8;
+            var team, id, item, e_10;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
@@ -1026,13 +1285,13 @@ var RequestController = /** @class */ (function () {
                         _a.label = 6;
                     case 6: return [3 /*break*/, 8];
                     case 7:
-                        e_8 = _a.sent();
+                        e_10 = _a.sent();
                         /* istanbul ignore next */
                         logger_service_1["default"].error("RequestController.apiDeleteRequestItem: Async Error.");
                         /* istanbul ignore next */
                         logger_service_1["default"].error("{user: {_id: " + req.user._id + ", email: " + req.user.email + "}, body: " + JSON.stringify(req.body) + ", params: " + JSON.stringify(req.params));
-                        logger_service_1["default"].error(e_8);
-                        res.status(500).json(e_8);
+                        logger_service_1["default"].error(e_10);
+                        res.status(500).json(e_10);
                         return [3 /*break*/, 8];
                     case 8: return [2 /*return*/];
                 }
@@ -1041,7 +1300,7 @@ var RequestController = /** @class */ (function () {
     };
     RequestController.prototype.searhCar = function (req, res) {
         return __awaiter(this, void 0, void 0, function () {
-            var team, search, cars, e_9;
+            var team, search, cars, e_11;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
@@ -1106,13 +1365,13 @@ var RequestController = /** @class */ (function () {
                         });
                         return [3 /*break*/, 4];
                     case 3:
-                        e_9 = _a.sent();
+                        e_11 = _a.sent();
                         /* istanbul ignore next */
                         logger_service_1["default"].error("RequestController.searhCar: Async Error.");
                         /* istanbul ignore next */
                         logger_service_1["default"].error("{user: {_id: " + req.user._id + ", email: " + req.user.email + "}}");
-                        logger_service_1["default"].error(e_9);
-                        res.status(500).json(e_9);
+                        logger_service_1["default"].error(e_11);
+                        res.status(500).json(e_11);
                         return [3 /*break*/, 4];
                     case 4: return [2 /*return*/];
                 }
@@ -1121,7 +1380,7 @@ var RequestController = /** @class */ (function () {
     };
     RequestController.prototype.apiCreateItem = function (req, res) {
         return __awaiter(this, void 0, void 0, function () {
-            var company, team, _a, car, idRequest, request, defaultItemStatus, newCar, newItem, item, e_10;
+            var company, team, _a, car, idRequest, request, defaultItemStatus, newCar, newItem, item, e_12;
             return __generator(this, function (_b) {
                 switch (_b.label) {
                     case 0:
@@ -1189,13 +1448,13 @@ var RequestController = /** @class */ (function () {
                         _b.label = 8;
                     case 8: return [3 /*break*/, 10];
                     case 9:
-                        e_10 = _b.sent();
+                        e_12 = _b.sent();
                         /* istanbul ignore next */
-                        console.log(e_10);
+                        console.log(e_12);
                         logger_service_1["default"].error("RequestController.apiCreateItem: Async Error.");
                         /* istanbul ignore next */
                         logger_service_1["default"].error("{user: {_id: " + req.user._id + ", email: " + req.user.email + "}}");
-                        res.status(500).json(e_10);
+                        res.status(500).json(e_12);
                         return [3 /*break*/, 10];
                     case 10: return [2 /*return*/];
                 }
@@ -1204,7 +1463,7 @@ var RequestController = /** @class */ (function () {
     };
     RequestController.prototype.apiPatchItem = function (req, res) {
         return __awaiter(this, void 0, void 0, function () {
-            var _a, team, company, updateObject, id, requestItem, existCar, existActivity, inventories, participants, requests, newCar, item, e_11;
+            var _a, team, company, updateObject, id, requestItem, existCar, existActivity, inventories, participants, requests, newCar, item, e_13;
             return __generator(this, function (_b) {
                 switch (_b.label) {
                     case 0:
@@ -1216,7 +1475,10 @@ var RequestController = /** @class */ (function () {
                         _b.label = 1;
                     case 1:
                         _b.trys.push([1, 22, , 23]);
-                        return [4 /*yield*/, requestItem_model_1["default"].findOneAndUpdate({ _id: id, team: team }, { $set: __assign({}, updateObject) }).populate([{ path: 'car' }, { path: 'request' }])];
+                        return [4 /*yield*/, requestItem_model_1["default"].findOneAndUpdate({
+                                _id: id,
+                                team: team
+                            }, { $set: __assign({}, updateObject) }).populate([{ path: 'car' }, { path: 'request' }])];
                     case 2:
                         requestItem = _b.sent();
                         if (!Object.keys(updateObject.car).length) return [3 /*break*/, 19];
@@ -1230,7 +1492,7 @@ var RequestController = /** @class */ (function () {
                     case 4:
                         existActivity = _b.sent();
                         if (!!existActivity) return [3 /*break*/, 6];
-                        return [4 /*yield*/, activityHistory_model_1["default"].create({
+                        return [4 /*yield*/, new activityHistory_model_1["default"]({
                                 team: team,
                                 company: company,
                                 user: req.user._id,
@@ -1240,7 +1502,7 @@ var RequestController = /** @class */ (function () {
                                     item: requestItem._id,
                                     number: requestItem.request.number
                                 }
-                            })];
+                            }).save()];
                     case 5:
                         _b.sent();
                         _b.label = 6;
@@ -1302,14 +1564,14 @@ var RequestController = /** @class */ (function () {
                         res.status(200).json(__assign({}, item));
                         return [3 /*break*/, 23];
                     case 22:
-                        e_11 = _b.sent();
+                        e_13 = _b.sent();
                         /* istanbul ignore next */
-                        logger_service_1["default"].error(e_11);
+                        logger_service_1["default"].error(e_13);
                         /* istanbul ignore next */
                         logger_service_1["default"].error("RequestController.apiPatchItem: Async Error.");
                         /* istanbul ignore next */
                         logger_service_1["default"].error("{user: {_id: " + req.user._id + ", email: " + req.user.email + "}}");
-                        res.status(500).json(e_11);
+                        res.status(500).json(e_13);
                         return [3 /*break*/, 23];
                     case 23: return [2 /*return*/];
                 }
@@ -1328,7 +1590,7 @@ var RequestController = /** @class */ (function () {
     };
     RequestController.prototype.downloadItemFiles = function (req, res) {
         return __awaiter(this, void 0, void 0, function () {
-            var id, team, requestItems, archive_1, filename_1, filesToDownload, filesToCompress, _loop_1, _i, _a, file, results, numb, _b, e_12;
+            var id, team, requestItems, archive_1, filename_1, filesToDownload, filesToCompress, _loop_1, _i, _a, file, results, numb, _b, e_14;
             var _this = this;
             return __generator(this, function (_c) {
                 switch (_c.label) {
@@ -1381,10 +1643,10 @@ var RequestController = /** @class */ (function () {
                     case 3:
                         if (!filesToDownload.length) return [3 /*break*/, 5];
                         console.log('promise', numb);
-                        _b = [__spreadArray([], results)];
+                        _b = [__spreadArray([], results, true)];
                         return [4 /*yield*/, bluebird.all(filesToDownload.splice(0, 20).map(function (promise) { return promise(); }))];
                     case 4:
-                        results = __spreadArray.apply(void 0, _b.concat([_c.sent()]));
+                        results = __spreadArray.apply(void 0, _b.concat([_c.sent(), true]));
                         numb++;
                         return [3 /*break*/, 3];
                     case 5:
@@ -1415,14 +1677,14 @@ var RequestController = /** @class */ (function () {
                         _c.label = 7;
                     case 7: return [3 /*break*/, 9];
                     case 8:
-                        e_12 = _c.sent();
+                        e_14 = _c.sent();
                         /* istanbul ignore next */
-                        logger_service_1["default"].error(e_12);
+                        logger_service_1["default"].error(e_14);
                         /* istanbul ignore next */
                         logger_service_1["default"].error("RequestController.downloadItemFiles: Async Error.");
                         /* istanbul ignore next */
                         logger_service_1["default"].error("{user: {_id: " + req.user._id + ", email: " + req.user.email + "}}");
-                        res.status(500).json(e_12);
+                        res.status(500).json(e_14);
                         return [3 /*break*/, 9];
                     case 9: return [2 /*return*/];
                 }
@@ -1475,7 +1737,7 @@ var RequestController = /** @class */ (function () {
     };
     RequestController.prototype.uploadFile = function (req, res) {
         return __awaiter(this, void 0, void 0, function () {
-            var company, team, file, requestFile, e_13, e_14, e_15;
+            var company, team, file, requestFile, e_15, e_16, e_17;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
@@ -1516,7 +1778,7 @@ var RequestController = /** @class */ (function () {
                         _a.sent();
                         return [3 /*break*/, 5];
                     case 4:
-                        e_13 = _a.sent();
+                        e_15 = _a.sent();
                         logger_service_1["default"].error('RequestController.uploadFile: Error making autoRotate');
                         return [3 /*break*/, 5];
                     case 5: return [4 /*yield*/, requestFile.attach('file', file)];
@@ -1534,7 +1796,7 @@ var RequestController = /** @class */ (function () {
                         _a.sent();
                         return [3 /*break*/, 11];
                     case 10:
-                        e_14 = _a.sent();
+                        e_16 = _a.sent();
                         logger_service_1["default"].error('RequestController.uploadFile: Error making thumbnail');
                         return [3 /*break*/, 11];
                     case 11: return [4 /*yield*/, requestFile.save()];
@@ -1549,15 +1811,15 @@ var RequestController = /** @class */ (function () {
                         });
                         return [3 /*break*/, 14];
                     case 13:
-                        e_15 = _a.sent();
+                        e_17 = _a.sent();
                         /* istanbul ignore next */
                         logger_service_1["default"].error("RequestController.uploadFile: Async Error.");
                         /* istanbul ignore next */
                         logger_service_1["default"].error("{user: {_id: " + req.user._id + ", email: " + req.user.email + "}}");
                         /* istanbul ignore next */
-                        logger_service_1["default"].error(e_15);
+                        logger_service_1["default"].error(e_17);
                         /* istanbul ignore next */
-                        res.status(400).json(e_15);
+                        res.status(400).json(e_17);
                         return [3 /*break*/, 14];
                     case 14: return [3 /*break*/, 16];
                     case 15:

@@ -19,7 +19,8 @@ distributionRouter.get('/api/v1/transmittals/', isJWTAuthenticated, transmittal_
 distributionRouter.post('/api/v1/transmittals/', isJWTAuthenticated, validateBody(inputsSchema_1.createTransmittalSchema), transmittal_controller_1["default"].apiCreate);
 distributionRouter.get('/api/v1/transmittals/only-me/', isJWTAuthenticated, transmittal_controller_1["default"].apiOnlyMe);
 distributionRouter.get('/api/v1/transmittals/:id/', isJWTAuthenticated, transmittal_controller_1["default"].apiDetail);
-distributionRouter.patch('/api/v1/transmittals/:id/', isJWTAuthenticated, transmittal_controller_1["default"].apiUpdate);
+distributionRouter.patch('/api/v1/transmittals/:id/', isJWTAuthenticated, transmittal_controller_1["default"].apiPatch);
+distributionRouter.put('/api/v1/transmittals/:id/', isJWTAuthenticated, transmittal_controller_1["default"].apiUpdate);
 distributionRouter["delete"]('/api/v1/transmittals/:id/', isJWTAuthenticated, transmittal_controller_1["default"].apiDelete);
 distributionRouter.post('/api/v1/transmittals/upload-file/', isJWTAuthenticated, transmittal_controller_1["default"].uploadFile);
 distributionRouter.post('/api/v1/transmittals/attach-evidence/', isJWTAuthenticated, transmittal_controller_1["default"].attachEvidence);

@@ -13,6 +13,7 @@ import ApiService from '../../utils/axios'
 import {IBaseVenue, IVenue} from '../../../../../../src/app/interfaces/venue.interface';
 import {loadDataAction, ModalReduxAction} from '../../actions/modal.actions';
 import {
+  changeSearchAction,
   changeTempVenueAction,
   createVenueAction,
   deleteVenueAction,
@@ -28,6 +29,7 @@ import ModalView from '../Modal/ModalView';
 import Paginator from '../Utils/Paginator';
 import VenueFormView from './VenueFormView';
 import TrackingBasePage from "../Utils/TrackingBasePage";
+import { debounce } from 'throttle-debounce';
 
 interface IPropsType extends RouteComponentProps<{ ticket: string }> {
   dispatch: Dispatch<VenueReduxAction>;
@@ -38,6 +40,7 @@ interface IPropsType extends RouteComponentProps<{ ticket: string }> {
   updateVenueAction(): VenueReduxAction;
   deleteVenueAction(id?: string): VenueReduxAction;
   changeTempVenueAction(venue: IBaseVenue): VenueReduxAction;
+  changeSearchAction(searchText: string): VenueReduxAction;
   loadDataAction(title: string, body: JSX.Element, footer: JSX.Element): ModalReduxAction;
 }
 
@@ -69,6 +72,8 @@ class VenuesListView extends TrackingBasePage<IPropsType, IStateType> {
     this.deleteVenue = this.deleteVenue.bind(this);
     this.onChangeTab = this.onChangeTab.bind(this);
     this.exportExcel = this.exportExcel.bind(this);
+    this.onChangeSearch = this.onChangeSearch.bind(this);
+    this.debounceOnChangeSearch = debounce(300, this.debounceOnChangeSearch);
   }
 
   public componentWillMount(): void {
@@ -212,7 +217,7 @@ class VenuesListView extends TrackingBasePage<IPropsType, IStateType> {
     });
     this.map.addControl(new mapboxgl.NavigationControl(), 'bottom-right');
 
-    $('a[href=\'#tab_2\']').on('shown.bs.tab', (e) => {
+    $('a[href=\'#tab_2\']').on('shown.bs.tab', () => {
       this.onChangeTab();
     });
   }
@@ -241,7 +246,7 @@ class VenuesListView extends TrackingBasePage<IPropsType, IStateType> {
 
   public render(): React.ReactElement<IPropsType> {
     const {exporing} = this.state;
-    const {loading, venues, pagination} = this.props.venues;
+    const {loading, venues, pagination, searchText} = this.props.venues;
     return (
       <AppContainer title="" cMenu="10" cSubMenu="10.4" cAction="Listado">
         <section className="content">
@@ -283,9 +288,26 @@ class VenuesListView extends TrackingBasePage<IPropsType, IStateType> {
                   </li>
                 </ul>
                 <div className="tab-content">
-                  <div className="tab-pane active" id="tab_1">
-                    <div className="box-body table-responsive no-padding">
-                      <table className="table table-andes table-striped">
+                  <div className='tab-pane active' id='tab_1'>
+                    <div className='box-body table-responsive no-padding'>
+                      <div className='row'>
+                        <div className='col-md-offset-8 col-md-4'>
+                          <div className='input-group input-group-sm'
+                               style={{ padding: '10px' }}
+                          >
+                            <input
+                              type='text'
+                              value={searchText}
+                              className='form-control pull-right'
+                              onChange={this.onChangeSearch}
+                              placeholder='Buscar' />
+                            <div className='input-group-btn'>
+                              <button className='btn btn-default'><i className='fa fa-search' /></button>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                      <table className='table table-andes table-striped'>
                         <thead>
                         <tr>
                           <th style={{width: '50%'}} className="middle">Nombre</th>
@@ -392,6 +414,18 @@ class VenuesListView extends TrackingBasePage<IPropsType, IStateType> {
     );
   }
 
+
+  private onChangeSearch(e: React.ChangeEvent<HTMLInputElement>): void {
+    e.preventDefault();
+    const value = e.target.value.trim();
+    this.props.changeSearchAction(value);
+    this.debounceOnChangeSearch();
+  }
+
+  private debounceOnChangeSearch(): void {
+    this.props.getVenuesAction(1);
+  }
+
   private createVenue(): void {
     this.props.changeTempVenueAction({
       _id: '',
@@ -420,9 +454,9 @@ class VenuesListView extends TrackingBasePage<IPropsType, IStateType> {
   private processCreateVenue(): void {
     const {tempVenue} = this.props.venues;
     if (!tempVenue.name || !tempVenue.name.trim()) {
-      swal('Agregar sucursal', 'El nombres es requerido', 'error');
+      swal!('Agregar sucursal', 'El nombres es requerido', 'error');
     } else if (!tempVenue.company || !tempVenue.company._id) {
-      swal('Agregar sucursal', 'La empresa es requerida', 'error');
+      swal!('Agregar sucursal', 'La empresa es requerida', 'error');
     } else {
       this.props.createVenueAction();
     }
@@ -458,11 +492,11 @@ class VenuesListView extends TrackingBasePage<IPropsType, IStateType> {
   private processUpdateVenue(): void {
     const {tempVenue} = this.props.venues;
     if (!tempVenue.name || !tempVenue.name.trim()) {
-      swal('Editar sucursal', 'El nombres es requerido', 'error');
+      swal!('Editar sucursal', 'El nombres es requerido', 'error');
     } else if (!tempVenue.abbreviation || !tempVenue.abbreviation.trim()) {
-      swal('Editar sucursal', 'Una abreviación/sigla del nombre es requerida', 'error');
+      swal!('Editar sucursal', 'Una abreviación/sigla del nombre es requerida', 'error');
     } else if (!tempVenue.company || !tempVenue.company._id) {
-      swal('Editar sucursal', 'La empresa es requerida', 'error');
+      swal!('Editar sucursal', 'La empresa es requerida', 'error');
     } else {
       this.props.updateVenueAction();
     }
@@ -507,6 +541,7 @@ const mapDispatchToProps = (dispatch: any ) => {
     createVenueAction: () => dispatch(createVenueAction()),
     updateVenueAction: () => dispatch(updateVenueAction()),
     deleteVenueAction: (id: string) => dispatch(deleteVenueAction(id)),
+    changeSearchAction: (searchText: string) => dispatch(changeSearchAction(searchText)),
     changeTempVenueAction: (venue: IBaseVenue) => dispatch(changeTempVenueAction(venue)),
     loadDataAction: (title: string, body: JSX.Element, footer: JSX.Element) => dispatch(loadDataAction(title, body, footer))
   };

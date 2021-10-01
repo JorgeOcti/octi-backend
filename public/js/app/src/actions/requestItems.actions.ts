@@ -36,8 +36,9 @@ import {
   REQUEST_ITEMS_LOAD_REASONS,
   REQUEST_ITEMS_LOAD_REQUESTS_ITEMS,
   REQUEST_ITEMS_LOAD_VENUES,
-  REQUEST_ITEMS_UPDATE_ITEM
+  REQUEST_ITEMS_UPDATE_ITEM, REQUEST_ITEMS_LOAD_SETTINGS, ILoadSettingsRequestItems
 } from './requestItems.types';
+import { IRequestSettting } from '../../../../../src/app/interfaces/teamSetting.interface';
 
 export function cancelRequestItemsAction(source: CancelTokenSource): ICancelRequestItems {
   return {
@@ -163,6 +164,15 @@ export function deleteRequestItemAction(item: IRequestItem): IDeleteRequestItems
   };
 }
 
+export function loadRequestSettingsAction(requestSettings: IRequestSettting): ILoadSettingsRequestItems {
+  return {
+    type: REQUEST_ITEMS_LOAD_SETTINGS,
+    payload: {
+      requestSettings
+    }
+  };
+}
+
 export function getRequestItemsThunkAction(nextPage: number, orderBy: string, orderType: string, hideLoading?: boolean) {
   return (dispatch: Dispatch<RequestItemsReduxActions>, getState: () => { requestItems: IRequestItemsState }) => {
     const api: ApiService = new ApiService();
@@ -177,10 +187,11 @@ export function getRequestItemsThunkAction(nextPage: number, orderBy: string, or
         api.getReasons({ page: 1, pageSize: 200 }),
         api.getRequestItemsStatus({ page: 1, pageSize: 200 }),
         // api.getCarriers(1, 200),
-        api.getVenues(1, 200, true, true),
-        api.getProperties()
+        api.getVenues({ page: 1, pageSize: 200, noPopulate: true, filted: true }),
+        api.getProperties(),
+        api.getTeamSettings()
       ])
-      .then(Axios.spread((requests, reasons, requestItemStatus/*, carriers*/, venues, properties) => {
+      .then(Axios.spread((requests, reasons, requestItemStatus/*, carriers*/, venues, properties, teamsettings) => {
         const { data } = requests;
         dispatch(loadRequestsItemsAction(data.results, data.count, data.pages, page));
         dispatch(loadReasonsRequestItemsAction(reasons.data.results));
@@ -189,6 +200,7 @@ export function getRequestItemsThunkAction(nextPage: number, orderBy: string, or
         dispatch(loadVenuesRequestItemsAction(venues.data.results));
         dispatch(loadPropertiesRequestItemsAction(properties.data));
         dispatch(isLoadingRequestItemsAction(false));
+        dispatch(loadRequestSettingsAction(teamsettings.data.request));
       }))
       .catch((err: AxiosError) => {
         dispatch(isLoadingRequestItemsAction(false));

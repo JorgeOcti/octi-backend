@@ -1,10 +1,10 @@
-import {ICarrier} from './carrier.interface';
-import {ICompany} from './company.interface';
-import {IParticipant} from '../../form/interfaces/participant.interface';
-import {IRegion} from './region.interface';
-import {ITeam} from './team.interface';
-import {IUser} from './user.interface';
-import {IVenueDay} from './venueDay.interface';
+import { ICarrier } from './carrier.interface';
+import { ICompany } from './company.interface';
+import { IParticipant } from '../../form/interfaces/participant.interface';
+import { IRegion } from './region.interface';
+import { ITeam } from './team.interface';
+import { IUser } from './user.interface';
+import { IVenueDay } from './venueDay.interface';
 
 export interface IBaseVenue {
   sendToDays: IVenueDay[];

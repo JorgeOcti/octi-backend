@@ -2,7 +2,7 @@ import {ITeamModel} from '../models/team.model';
 import {ICompany} from './company.interface';
 import {IForm} from '../../form/interfaces/form.interface';
 import {IGroup} from './group.interface';
-import {IPermission} from './permision.interface';
+import {IPermission} from './permission.interface';
 import {ITeam} from './team.interface';
 import {IVenue} from './venue.interface';
 

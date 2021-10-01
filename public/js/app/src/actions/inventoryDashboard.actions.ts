@@ -72,7 +72,7 @@ export function getInventoryDashboard() {
     const api: ApiService = new ApiService();
     dispatch(isLoadingAction(true));
     Axios.all([
-      api.getVenues(1, 200),
+      api.getVenues({ page: 1, pageSize: 200 }),
       api.getInventoryDashboard()
     ]).then(Axios.spread((venues, dashboard) => {
       dispatch(loadInventoriesDashboardAction(venues.data.results, dashboard.data.data, dashboard.data.inventorySettings));

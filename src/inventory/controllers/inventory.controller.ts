@@ -1290,10 +1290,10 @@ class InventoryController {
   }
 
   public async apiList(req: IRequest, res: Response) {
-    const team = req.user.team._id;
-    logger.info(`apiList`);
-    logger.info(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
     try {
+      const team = req.user.team._id;
+      logger.info(`apiList`);
+      logger.info(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
       const updatedUser = await User.findById(req.user._id);
       if (updatedUser) {
         const inventories = await InventoryModel.find({
@@ -1336,10 +1336,10 @@ class InventoryController {
   }
 
   public async detaill(req: IRequest, res: Response) {
-    const {id} = req.params;
-    const team = req.user.team._id;
-    const venuesPermissions = req.user.venuesPermissions();
     try {
+      const {id} = req.params;
+      const team = req.user.team._id;
+      const venuesPermissions = req.user.venuesPermissions();
       // summary
       const inventory = await InventoryModel.aggregate([
         {

@@ -127,6 +127,9 @@ class RequestStatusListView extends TrackingBasePage<IPropsType, IStateType> {
                 <Link to="/requests/settings/status/" className="list-group-item active">
                   Estados
                 </Link>
+                <Link to="/requests/settings/operations-type/" className="list-group-item ">
+                  Tipos de operación
+                </Link>
               </div>
             </div>
             <div className="col-md-9">
@@ -226,7 +229,7 @@ class RequestStatusListView extends TrackingBasePage<IPropsType, IStateType> {
 
   private createRequestStatus(): void {
     this.props.loadDataAction(
-      'Agregar Motivo',
+      'Agregar Estado',
       <StatusForm
         initialValues={{ update: false }}
         onSubmit={this.processCreateRequestStatus}
@@ -247,7 +250,7 @@ class RequestStatusListView extends TrackingBasePage<IPropsType, IStateType> {
 
   private updateReaon(reason: any): void {
     this.props.loadDataAction(
-      'Editar Motivo',
+      'Editar Estado',
       <StatusForm
         initialValues={{ update: false, ...reason }}
         onSubmit={this.processUpdateRequestStatus}

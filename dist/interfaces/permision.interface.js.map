@@ -1,1 +1,0 @@
-{"version":3,"file":"permision.interface.js","sourceRoot":"","sources":["../../src/interfaces/permision.interface.ts"],"names":[],"mappings":"","sourcesContent":["export interface IPermission {\n  _id: any;\n  name: string;\n  codeName: string;\n  updatedAt: Date;\n  createdAt: Date;\n}\n"]}

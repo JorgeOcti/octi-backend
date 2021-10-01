@@ -10,6 +10,7 @@ import {
 import ImageLazyLoad from '../components/Utils/ImageLazyLoad';
 import ApiService from '../utils/axios';
 import {loadDataAction} from './modal.actions';
+import ShowIf from '../components/Utils/ShowIf';
 
 export interface IDashboardState {
   loading: boolean;
@@ -174,7 +175,7 @@ export function changeRangeDashboardAction(from: string, to: string): IChangeRan
   }
 }
 
-export function getRevisionsAction(nextPage: number, loading: boolean, search?: string, from?: string, to?: string) {
+export function getRevisionsAction(nextPage: number, loading: boolean, search?: string, from?: string, to?: string, onlyControls : Boolean = true) {
   return (dispatch: Dispatch<DashboardReduxAction>, getState: () => {dashboard: IDashboardState}) => {
     const api: ApiService = new ApiService();
     const state = getState();
@@ -187,7 +188,7 @@ export function getRevisionsAction(nextPage: number, loading: boolean, search?: 
       dispatch(changePageAction(nextPage));
     }
     const { searchText, searchFrom, searchTo } = state.dashboard;
-    api.getRevisions(page, searchText, searchFrom, searchTo)
+    api.getRevisions(onlyControls, page, searchText, searchFrom, searchTo)
       .then((response: AxiosResponse) => {
         dispatch(loadCarsAction(response.data.results, response.data.count, response.data.pages));
         if (loading) {
@@ -433,6 +434,7 @@ export function getParticipant(id: string) {
                                             key={choice._id}
                                             type="button"
                                             className={`btn flex-row-item text-wrap ${choice._id === answer.answer ? btnClass : btnDefault}`}
+                                            style={{margin: '2px'}}
                                             disabled={true}
                                           >{choice.choice}</button>
                                         );
@@ -454,35 +456,51 @@ export function getParticipant(id: string) {
                                               <strong>Daño</strong> {kinds.hasOwnProperty(ds.kind) ? kinds[ds.kind] : '-'}{' '}
                                               <strong>Posición</strong> {positions.hasOwnProperty(ds.position) ? positions[ds.position] : '-'}
                                             </p>
-                                            <div className="row images">
-                                              {
-                                                ds.images.map((image: any) => {
-                                                  return (
-                                                    <div className="col-md-3 col-sm-4 col-xs-4 text-center" key={image._id}>
-                                                      <a
-                                                        href={image.file.url}
-                                                        data-toggle="lightbox"
-                                                        className="zoom-in"
-                                                        data-gallery={ds._id}
-                                                        data-title={parts.hasOwnProperty(ds.part) ? parts[ds.part] : '-'}
-                                                      >
-                                                        <ImageLazyLoad
-                                                          url={image.file.url}
-                                                          height={'100px'}
-                                                        />
-                                                      </a>
-                                                      <p
-                                                        className={'text-ellipsis'}
-                                                        data-toggle="tooltip"
-                                                        data-placement="top"
-                                                        title={image.file.name}>
-                                                        {image.file.name}
-                                                      </p>
-                                                    </div>
-                                                  );
-                                                })
+                                            <ShowIf
+                                              condition={!!ds.images.length}
+                                              alternative={
+                                                <p style={{ padding: '0 5px' }} className="text-muted">
+                                                  No se reportaron imágenes.
+                                                </p>
                                               }
-                                            </div>
+                                            >
+                                              <div className='row images'>
+                                                {
+                                                  ds.images.map((image: any) => {
+                                                    return (
+                                                      <div
+                                                        className='col-md-3 col-sm-4 col-xs-4 text-center'
+                                                        key={image._id}
+                                                        data-toggle='tooltip'
+                                                        data-placement='bottom'
+                                                        title={image.file.name}
+                                                      >
+                                                        <a
+                                                          href={image.file.url}
+                                                          data-toggle='lightbox'
+                                                          className='zoom-in'
+                                                          data-gallery={ds._id}
+                                                          data-title={parts.hasOwnProperty(ds.part) ? parts[ds.part] : '-'}
+                                                        >
+                                                          <ImageLazyLoad
+                                                            url={image.file.url}
+                                                            height={'100px'}
+                                                          />
+                                                        </a>
+                                                        {/*<p*/}
+                                                        {/*  className={'text-ellipsis'}*/}
+                                                        {/*  data-toggle='tooltip'*/}
+                                                        {/*  data-placement='top'*/}
+                                                        {/*  title={image.file.name}*/}
+                                                        {/*>*/}
+                                                        {/*  {image.file.name}*/}
+                                                        {/*</p>*/}
+                                                      </div>
+                                                    );
+                                                  })
+                                                }
+                                              </div>
+                                            </ShowIf>
                                           </div>
                                         </div>
                                       ))
@@ -615,12 +633,12 @@ export function loadParticipantsPerDateAction(companies: any[], participantsRece
   };
 }
 
-export function getParticipantsPerDateAction(companies?:string) {
+export function getParticipantsPerDateAction(companies?:string, onlyControls: boolean = true) {
   return (dispatch: Dispatch<DashboardReduxAction>) => {
     const api: ApiService = new ApiService();
     dispatch(cancelRequestAction(api.getSource()));
     dispatch(isLoadingAction(true));
-    api.getParticipantsPerDate(companies)
+    api.getParticipantsPerDate(onlyControls, companies)
       .then((response: AxiosResponse) => {
         dispatch(loadParticipantsPerDateAction(response.data.companies, response.data.participantsReceived, response.data.participantsSent, response.data.cars, response.data.planning, response.data.planningProcess, response.data.totalCars, response.data.carsByVenue, response.data.participantPerRange));
         dispatch(isLoadingAction(false));

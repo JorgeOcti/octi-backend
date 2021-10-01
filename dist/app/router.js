@@ -76,6 +76,7 @@ appRouter.patch('/api/admin/companies/:id', middlewares_1["default"].isLoggedIn,
 appRouter["delete"]('/api/admin/companies/:id', middlewares_1["default"].isLoggedIn, company_admin_controller_1["default"].apiDeleteCompany);
 // api team
 appRouter.get('/api/admin/teams/', middlewares_1["default"].isLoggedIn, team_admin_controller_1["default"].apiListTeams);
+appRouter.get('/api/admin/team-settings/', middlewares_1["default"].isLoggedIn, team_admin_controller_1["default"].teamSetting);
 // import cars
 appRouter.get('/settings/cars/import/', middlewares_1["default"].isLoggedIn, car_admin_controller_1["default"].imports);
 appRouter.post('/api/admin/import-cars/', middlewares_1["default"].isLoggedIn, car_admin_controller_1["default"].importCars);

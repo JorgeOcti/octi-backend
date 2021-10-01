@@ -42,17 +42,19 @@ import VersionListView from './components/Versions/VersionListView';
 import { IWindow } from './interfaces/window';
 import configureStore, { history } from './store/configureStore';
 import { isIntenertExplorer } from './utils/common';
-import CustomDashboardComponent from "./components/CustomDashboard/CustomDashboardComponent";
-import TransmittalListView from "./components/Transmittal/TransmittalList/TransmittalListView";
-import TransmittalCreateView from "./components/Transmittal/TransmittalCreateView";
-import CustomInventoryAnalysis from "./components/CustomDashboard/CustomInventoryAnalysis";
+import CustomDashboardComponent from './components/CustomDashboard/CustomDashboardComponent';
+import TransmittalListView from './components/Transmittal/TransmittalList/TransmittalListView';
+import TransmittalCreateView from './components/Transmittal/TransmittalCreateView';
+import CustomInventoryAnalysis from './components/CustomDashboard/CustomInventoryAnalysis';
+import OperationTypeListView from './components/RequestSettings/OperationTypeListView';
+import RequestImportView from './components/Request/RequestImportView';
 
 
 declare let window: IWindow;
 
 const store = configureStore();
 
-const NoMatch = ({location}: RouteComponentProps<{}>) => (
+const NoMatch = ({ location }: RouteComponentProps<{}>) => (
   <div>
     <h3>No match for <code>{location.pathname}</code></h3>
   </div>
@@ -61,49 +63,51 @@ const App = () => (
   <Provider store={store}>
     <ConnectedRouter history={history}>
       <Switch>
-        <Route exact path="/" component={DashboardGeneralView}/>
-        <Route exact path="/revision-report/" component={DashboardRevisionsView}/>
-        <Route exact path="/cars/" component={DashboardVinView}/>
-        <Route exact path="/planning/import/" component={PlanningImportView}/>
-        <Route exact path="/planning/" component={PlanningListView}/>
-        <Route exact path="/dashboard/damages/" component={DashboardDamagesView}/>
-        <Route exact path="/dashboard/timing/" component={DashboardTimingView}/>
-        <Route exact path="/dashboard/derco/" component={DashboardDercoView}/>
-        <Route exact path="/dashboard/custom-dashboard/" component={CustomDashboardComponent}/>
-        <Route exact path="/stock/" component={StockView}/>
-        <Route exact path="/stock/import/" component={StockImportView}/>
-        <Route exact path="/cars/:id/" component={DashboardVinDetail}/>
-        <Route exact path="/inventory/" component={InventoryListView}/>
-        <Route exact path="/inventory/analysis/" component={CustomInventoryAnalysis}/>
-        <Route exact path="/inventory/dashboard/" component={InventoryDashboardView}/>
-        <Route exact path="/inventory/create/" component={InventoryCreateView}/>
-        <Route exact path="/inventory/:id/" component={InventoryDetailView}/>
-        <Route exact path="/inventory/:id/:tab/" component={InventoryDetailView}/>
-        <Route exact path="/settings/users/" component={UsersListView}/>
-        <Route exact path="/settings/cars/" component={CarsListView}/>
-        <Route exact path="/settings/cars/import/" component={ImportCarsView}/>
-        <Route exact path="/settings/cars/:id/" component={CarDetailView}/>
-        <Route exact path="/settings/labels/" component={LabelsListView}/>
-        <Route exact path="/settings/venues/" component={VenuesListView}/>
-        <Route exact path="/settings/regions/" component={RegionsListView}/>
-        <Route exact path="/settings/carriers/" component={CarriersListView}/>
-        <Route exact path="/settings/companies/" component={CompaniesListView}/>
-        <Route exact path="/settings/alerts/" component={AlertsViews}/>
-        <Route exact path="/settings/billing/" component={BillingListView}/>
-        <Route exact path="/settings/versions/" component={VersionListView}/>
-        <Route exact path="/requests/create/" component={RequestCreateView}/>
-        <Route exact path="/transmittals/" component={TransmittalListView}/>
-        <Route exact path="/transmittals/create/" component={TransmittalCreateView}/>
-        <Route exact path="/requests/" component={RequestListView}/>
-        <Route exact path="/requests/settings/reasons/" component={RequestReasonListView}/>
-        <Route exact path="/requests/settings/channels/" component={RequestChannelListView}/>
-        <Route exact path="/requests/settings/status/" component={RequestStatusListView}/>
-        <Route exact path="/requests/update/" component={RequestUpdaterView}/>
-        <Route exact path="/requests/vehicles/create" component={RequestCreateView}/>
-        <Route exact path="/requests/vehicles/:id/" component={RequestDetailView}/>
-        <Route exact path="/requests/vehicles/" component={RequestVehicleListView}/>
-        <Route exact path="/requests/:id/" component={RequestDetailView}/>
-        <Route component={NoMatch}/>
+        <Route exact path='/' component={DashboardGeneralView} />
+        <Route exact path='/revision-report/' component={DashboardRevisionsView} />
+        <Route exact path='/cars/' component={DashboardVinView} />
+        <Route exact path='/planning/import/' component={PlanningImportView} />
+        <Route exact path='/planning/' component={PlanningListView} />
+        <Route exact path='/dashboard/damages/' component={DashboardDamagesView} />
+        <Route exact path='/dashboard/timing/' component={DashboardTimingView} />
+        <Route exact path='/dashboard/derco/' component={DashboardDercoView} />
+        <Route exact path='/dashboard/custom-dashboard/' component={CustomDashboardComponent} />
+        <Route exact path='/stock/' component={StockView} />
+        <Route exact path='/stock/import/' component={StockImportView} />
+        <Route exact path='/cars/:id/' component={DashboardVinDetail} />
+        <Route exact path='/inventory/' component={InventoryListView} />
+        <Route exact path='/inventory/analysis/' component={CustomInventoryAnalysis} />
+        <Route exact path='/inventory/dashboard/' component={InventoryDashboardView} />
+        <Route exact path='/inventory/create/' component={InventoryCreateView} />
+        <Route exact path='/inventory/:id/' component={InventoryDetailView} />
+        <Route exact path='/inventory/:id/:tab/' component={InventoryDetailView} />
+        <Route exact path='/settings/users/' component={UsersListView} />
+        <Route exact path='/settings/cars/' component={CarsListView} />
+        <Route exact path='/settings/cars/import/' component={ImportCarsView} />
+        <Route exact path='/settings/cars/:id/' component={CarDetailView} />
+        <Route exact path='/settings/labels/' component={LabelsListView} />
+        <Route exact path='/settings/venues/' component={VenuesListView} />
+        <Route exact path='/settings/regions/' component={RegionsListView} />
+        <Route exact path='/settings/carriers/' component={CarriersListView} />
+        <Route exact path='/settings/companies/' component={CompaniesListView} />
+        <Route exact path='/settings/alerts/' component={AlertsViews} />
+        <Route exact path='/settings/billing/' component={BillingListView} />
+        <Route exact path='/settings/versions/' component={VersionListView} />
+        <Route exact path='/requests/create/' component={RequestCreateView} />
+        <Route exact path='/transmittals/' component={TransmittalListView} />
+        <Route exact path='/transmittals/create/' component={TransmittalCreateView} />
+        <Route exact path='/requests/' component={RequestListView} />
+        <Route exact path='/requests/settings/reasons/' component={RequestReasonListView} />
+        <Route exact path='/requests/settings/channels/' component={RequestChannelListView} />
+        <Route exact path='/requests/settings/status/' component={RequestStatusListView} />
+        <Route exact path='/requests/settings/operations-type/' component={OperationTypeListView} />
+        <Route exact path='/requests/import/' component={RequestImportView} />
+        <Route exact path='/requests/update/' component={RequestUpdaterView} />
+        <Route exact path='/requests/vehicles/create' component={RequestCreateView} />
+        <Route exact path='/requests/vehicles/:id/' component={RequestDetailView} />
+        <Route exact path='/requests/vehicles/' component={RequestVehicleListView} />
+        <Route exact path='/requests/:id/' component={RequestDetailView} />
+        <Route component={NoMatch} />
       </Switch>
     </ConnectedRouter>
   </Provider>
@@ -129,8 +133,8 @@ $(() => {
 
   moment.locale('es');
   ReactDOM.render(
-      <App />,
-      document.querySelector('#app')
+    <App />,
+    document.querySelector('#app')
   );
   ($('.sidebar-menu') as any).tree();
   $('body').on('click', '.treeview-menu li', () => {
@@ -152,7 +156,7 @@ $(() => {
     event.stopPropagation();
   });
   // prevenet show modal addons when is open and user change page
-  window.addEventListener('popstate', function(e){
+  window.addEventListener('popstate', function(e) {
     $('.modal-backdrop').remove();
     $('body').removeClass('modal-open');
     // ($('#andesModal') as any).modal('hide');
