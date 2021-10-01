@@ -119,7 +119,7 @@ app.use(bodyParser.urlencoded({ extended: true }));
 // For parsing multipart/form-data
 // const upload = multer({dest:'/tmp/'});
 const upload = multer({
-  limits: { fieldSize: 1024 * 1024 },
+  limits: { fieldSize: 32 * 1024 * 1024 },
   storage: multer.diskStorage({
     destination: '/tmp/',
     filename: (req, file, callback) => {
