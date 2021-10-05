@@ -375,10 +375,10 @@ class RequestVehicleItem extends React.Component<IPropsType, IStateType> {
         <td
           className={`middle-center ${item.files && item.files.length ? 'pointer' : ''}`}
           style={{ fontSize: '80%' }}
-          onClick={() => this.downloadFiles(item)}
+          onClick={item.files?.length ? () => this.downloadFiles(item) : undefined}
         >
           {
-            item.files && item.files.length ?
+            item.files?.length ?
               <span
                 data-toggle={'tooltip'}
                 data-placement={'top'}

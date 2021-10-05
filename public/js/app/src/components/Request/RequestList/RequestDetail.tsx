@@ -179,10 +179,10 @@ class RequestListDetail extends React.Component<IPropsType, IStateType> {
                     </td>
                     <td
                       className={`middle-center ${item.files && item.files.length ? 'pointer' : ''}`}
-                      onClick={() => this.downloadFiles(item)}
+                      onClick={item.files?.length ? () => this.downloadFiles(item) : undefined}
                     >
                       {
-                        item.files && item.files.length ?
+                        item.files?.length ?
                           <i
                             className="fa fa-paperclip"
                             data-toggle="tooltip"
