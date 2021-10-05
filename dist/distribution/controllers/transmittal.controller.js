@@ -93,7 +93,7 @@ var TransmittalController = /** @class */ (function () {
     function TransmittalController() {
         this.itemPopulate = [{
                 path: 'car',
-                select: ['invoice', 'entry', 'denomination', 'patent', 'material', 'vin', 'brand', 'color']
+                select: ['invoice', 'entry', 'denomination', 'patent', 'material', 'vin', 'brand', 'color', 'bl']
             }, {
                 path: 'request',
                 select: ['number']
