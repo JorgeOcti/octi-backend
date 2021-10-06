@@ -55,6 +55,10 @@ class DateRangePicker extends React.Component<IPropsType, IStateType> {
     });
   }
 
+  public componentWillUnmount() {
+    $(this.input.current!).datepicker('destroy');
+  }
+
   private clickCalendar() {
     $(this.input.current!).datepicker('show');
   }

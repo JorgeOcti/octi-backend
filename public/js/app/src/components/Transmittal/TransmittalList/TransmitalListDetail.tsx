@@ -138,7 +138,8 @@ class TransmitalListDetail extends React.Component<IPropsType, IStateType> {
             }
           </div>
         </div>
-        <div className='table-transmittal' style={{ display: open ? 'block' : 'none' }}>
+        <ShowIf condition={open}>
+          <div className='table-transmittal'>
           <table className='table table-hover m-0'>
             <thead>
             <tr style={{ backgroundColor: '#f9f9f9' }}>
@@ -215,6 +216,7 @@ class TransmitalListDetail extends React.Component<IPropsType, IStateType> {
             </div>
           </ShowIf>
         </div>
+        </ShowIf>
       </React.Fragment>
     );
   }

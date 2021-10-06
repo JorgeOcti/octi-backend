@@ -18,23 +18,6 @@ import FormModel, {IFormModel, KindQuestion} from "../../form/models/form.model"
 import ScaleModel, {IScaleModel} from "../../form/models/scale.model";
 import redisClient from "../../services/redis.service";
 import {IUserModel} from "../../app/models/user.model";
-// =======
-// import { IRequest } from '../../interfaces/global.interface';
-// import { Response } from 'express';
-// import { PaginateOptions, PaginateResult } from 'mongoose';
-// import Transmittal, { ChoicesStatusTransmittal, ITransmittalModel } from '../models/transmittal.model';
-// import logger from '../../services/logger.service';
-// import TransmittalItem from '../models/transmittalItem.model';
-// import TransmittalFile from '../models/transmittalFile.model';
-// import GeneralUtils from '../../utils/general.utils';
-// import * as GraphicsMagick from 'gm';
-// import Team from '../../app/models/team.model';
-// import Car from '../../app/models/car.model';
-// import RequestItem from '../../request/models/requestItem.model';
-// import { io } from '../../server';
-// import * as excel from 'exceljs';
-// import * as moment from 'moment-timezone';
-// import Milestone from '../models/milestone.model';
 
 
 class TransmittalController {
@@ -510,7 +493,7 @@ private getForm(filter: any): Promise<IFormModel> {
       let form = await this.getForm({
         _id: formID,
         team: user.team
-      })
+      });
 
       const team = user.team;
       // generate array of scale ids

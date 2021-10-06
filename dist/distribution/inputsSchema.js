@@ -4,15 +4,15 @@ exports.createTransmittalSchema = void 0;
 var yup = require("yup");
 var createTransmittalSchema = yup.object().shape({
     name: yup.string(),
-    files: yup.array().of(yup.string()).required(),
+    files: yup.array().of(yup.string()),
     transporter: yup.object({
         carrier: yup.string().required(),
         driver: yup.string().required(),
         patent: yup.string()
     }),
     items: yup.array().of(yup.object({
-        request: yup.string().required(),
-        requestItem: yup.string().required(),
+        request: yup.string(),
+        requestItem: yup.string(),
         observation: yup.string(),
         car: yup.object({
             _id: yup.string().required(),
