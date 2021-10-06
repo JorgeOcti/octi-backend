@@ -379,8 +379,14 @@ var TransmittalController = /** @class */ (function () {
                                 _b[orderBy || '_id'] = orderType === 'ascending' ? 1 : -1,
                                 _b),
                             populate: [{
+                                    path: 'revision',
+                                    select: ['_id', 'hasDamages']
+                                }, {
                                     path: 'transporter.carrier',
                                     select: ['name']
+                                }, {
+                                    path: 'evidenceFullLoad'
+                                    // select: ['firstName', 'lastName']
                                 }, {
                                     path: 'transporter.driver',
                                     select: ['firstName', 'lastName']

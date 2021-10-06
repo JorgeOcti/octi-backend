@@ -94,7 +94,7 @@ class RequestListDetail extends React.Component<IPropsType, IStateType> {
           {/* </div> */}
           <div className="col-sm-1 col-xs-1 col-md-1 col-lg-1 chevron pointer" onClick={() => this.props.tabStatusAction(request._id)}>
             {
-              open ? <i className="fa fa-chevron-up" /> : <i className="fa fa-chevron-down" />
+              open ? (<i className='fa fa-chevron-up' />) : (<i className='fa fa-chevron-down' />)
             }
           </div>
         </div>

@@ -16,12 +16,15 @@ import { AxiosError, AxiosResponse } from 'axios';
 import { hasPermission } from '../../../utils/common';
 import { IWindow } from '../../../interfaces/window';
 import DateRangePicker from '../../Utils/DateRangePicker';
+import { getParticipant } from '../../../actions/dashboard.actions';
+import { IParticipant } from '../../../../../../../src/form/interfaces/participant.interface';
 
 interface IPropsType extends RouteComponentProps<{ ticket: string }> {
   dispatch: Dispatch<ITransmittalActionTypes>;
   transmittal: ITransmittalState;
   item: ITransmittalModel;
   transmittalActions: TransmittalActions;
+  getParticipant(id: string): void;
 
   loadDataAction(title: string, body: JSX.Element, footer: JSX.Element): ModalReduxAction;
 }
@@ -44,6 +47,7 @@ class TransmitalListDetail extends React.Component<IPropsType, IStateType> {
     super(props);
     this.openDialogAddCar = this.openDialogAddCar.bind(this);
     this.pushItem = this.pushItem.bind(this);
+    this.statusIcon = this.statusIcon.bind(this);
     this.api = new ApiService();
   }
 
@@ -58,7 +62,7 @@ class TransmitalListDetail extends React.Component<IPropsType, IStateType> {
             <strong className='text-underline'>#{this.padNumber(transmittal.number)}</strong>&nbsp;
           </div>
           <div className='flex-45 col-sm-1 col-xs-1 col-md-1 col-lg-1'>
-            {transmittal.transporter.patent}
+            {transmittal.transporter?.patent}
           </div>
           <div className='flex-45 col-sm-2 col-xs-2 col-md-2 col-lg-2' style={{ position: 'static' }}>
             {
@@ -122,13 +126,45 @@ class TransmitalListDetail extends React.Component<IPropsType, IStateType> {
             }
 
           </div>
-          <div className='flex-45 col-sm-2 col-xs-2 col-md-2 col-lg-2'>
-            {transmittal.files.length}
-          </div>
           <div className='flex-45 col-sm-1 col-xs-1 col-md-1 col-lg-1'>
             {transmittal.items.length}
           </div>
-          <div className='flex-45 col-sm-2 col-xs-2 col-md-2 col-lg-2' />
+          <div className='flex-45 col-sm-2 col-xs-2 col-md-2 col-lg-2'>
+            {transmittal.files.length}&nbsp;
+            <ShowIf condition={process.env.NODE_ENV === 'development'}>
+              <i
+                className='fa fa-paperclip'
+                data-toggle='tooltip'
+                data-placement='top'
+                title={`2 archivos adjuntos.`}
+              />
+            </ShowIf>
+          </div>
+          <div className='flex-45 col-sm-1 col-xs-1 col-md-1 col-lg-1'>
+            {
+              transmittal.evidenceFullLoad.map((image: any, index: number) => (
+                <div key={image._id} className={'text-center'} style={{ display: index === 0 ? '' : 'none' }}>
+                  <a href={decodeURI(image.file.url)}
+                     data-toggle='lightbox'
+                     data-gallery={transmittal._id}
+                     data-title={`#${this.padNumber(transmittal.number)}`}
+                     data-footer={`Conductor ${transmittal.transporter.driver ? `${transmittal.transporter.driver.firstName} ${transmittal.transporter.driver.lastName}` : ''} (${transmittal.transporter?.patent})`}
+                  >
+                    <button className='btn btn-xs btn-default'>
+                      <i className='fa fa-fw fa-image' /> {transmittal.evidenceFullLoad.length}
+                    </button>
+                  </a>
+                </div>
+              ))
+            }
+          </div>
+          <div className='flex-45 col-sm-1 col-xs-1 col-md-1 col-lg-1'>
+            {
+              transmittal?.revision ?
+                this.statusIcon(transmittal.revision) :
+                null
+            }
+          </div>
           <div
             className='flex-45 col-sm-1 col-xs-1 col-md-1 col-lg-1 chevron pointer'
             onClick={() => transmittalActions.toogleTab(transmittal._id)}
@@ -154,7 +190,7 @@ class TransmitalListDetail extends React.Component<IPropsType, IStateType> {
               <th className='middle' style={{ width: '110px' }}>Fecha emisión</th>
               <th className='middle' style={{ width: '110px' }}>Fecha arribo</th>
               <th className='middle' style={{ width: '120px' }}>Observación</th>
-              <th className='middle' style={{ width: '40px' }}>Cargado</th>
+              <th className='middle' style={{ width: '40px' }}>Carga</th>
               <ShowIf condition={hasPermission(window.user, 'changeTransmittal')}>
                 <th className='middle' style={{ width: '30px' }} />
               </ShowIf>
@@ -221,6 +257,22 @@ class TransmitalListDetail extends React.Component<IPropsType, IStateType> {
     );
   }
 
+  private statusIcon(revision: IParticipant) {
+    if (revision.hasDamages) {
+      return (
+        <div className={'middle pointer'} onClick={() => this.props.getParticipant(revision._id)}>
+          <i className='fa fa-warning text-red' />
+        </div>
+      );
+    } else  {
+      return (
+        <div className={'middle pointer'} onClick={() => this.props.getParticipant(revision._id)}>
+          <i className='fa fa-check-circle text-primary' />
+        </div>
+      );
+    }
+  }
+
   private openDialogAddCar() {
     const { item: transmittal } = this.props;
     this.props.loadDataAction(
@@ -269,6 +321,7 @@ const mapDispatchToProps = (dispatch: any) => {
   return {
     dispatch,
     transmittalActions,
+    getParticipant: (id: string) => dispatch(getParticipant(id)),
     loadDataAction: (title: string, body: JSX.Element, footer: JSX.Element) => dispatch(loadDataAction(title, body, footer))
   };
 };

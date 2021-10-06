@@ -251,8 +251,14 @@ class TransmittalController {
         [orderBy || '_id']: orderType === 'ascending' ? 1 : -1
       },
       populate: [{
+        path: 'revision',
+        select: ['_id', 'hasDamages']
+      }, {
         path: 'transporter.carrier',
         select: ['name']
+      }, {
+        path: 'evidenceFullLoad'
+        // select: ['firstName', 'lastName']
       }, {
         path: 'transporter.driver',
         select: ['firstName', 'lastName']

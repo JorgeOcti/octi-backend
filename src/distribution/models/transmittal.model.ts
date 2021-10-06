@@ -74,6 +74,12 @@ const transmittalSchema = new mongoose.Schema<ITransmittal>({
   timestamps: true
 });
 
+transmittalSchema.virtual('revision', {
+  ref: 'Participant', // The model to use
+  localField: '_id', // Find field in this model
+  foreignField: 'transmittal', // is equal to field in another model
+  justOne: true
+});
 
 transmittalSchema.virtual('items', {
   ref: 'TransmittalItem', // The model to use

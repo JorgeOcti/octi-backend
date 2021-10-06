@@ -58,7 +58,6 @@ class TransmittalListView extends TrackingBasePage<IPropsType, IStateType> {
     const { page } = this.props.transmittal.pagination;
     const { transmittalActions } = this.props;
     window.scrollTo(0, 0);
-    transmittalActions.getFormBaseData();
     transmittalActions.getTransmittalsThunkAction(page, orderBy, orderType);
 
     // socket
@@ -133,7 +132,7 @@ class TransmittalListView extends TrackingBasePage<IPropsType, IStateType> {
       }, 300);
     });
 
-    this.socket.on('CREATE_TRANSMITTAL', (data: any): void => {
+    this.socket.on('CREATE_TRANSMITTAL', (): void => {
       const { page } = this.props.transmittal.pagination;
       const { orderBy, orderType } = this.props.transmittal.options;
       transmittalActions.getTransmittalsThunkAction(page, orderBy, orderType, true);
@@ -218,13 +217,19 @@ class TransmittalListView extends TrackingBasePage<IPropsType, IStateType> {
                   <div className='flex-45 col-sm-2 col-xs-2 col-md-2 col-lg-2'>
                     <strong>Transportista</strong>
                   </div>
+                  <div className='flex-45 col-sm-1 col-xs-1 col-md-1 col-lg-1'>
+                    <strong>Nº Vehículos</strong>
+                  </div>
                   <div className='flex-45 col-sm-2 col-xs-2 col-md-2 col-lg-2'>
                     <strong>Documentos</strong>
                   </div>
                   <div className='flex-45 col-sm-1 col-xs-1 col-md-1 col-lg-1'>
-                    <strong>Nº Vehículos</strong>
+                    <strong>Carga</strong>
                   </div>
-                  <div className='flex-45 col-sm-3 col-xs-3 col-md-3 col-lg-3' />
+                  <div className='flex-45 col-sm-1 col-xs-1 col-md-1 col-lg-1'>
+                    <strong>Llegó</strong>
+                  </div>
+                  <div className='flex-45 col-sm-1 col-xs-1 col-md-1 col-lg-1' />
                 </div>
                 {
                   data.map((item: any) => (
@@ -358,7 +363,7 @@ class TransmittalListView extends TrackingBasePage<IPropsType, IStateType> {
           exporing: false
         });
         if (!Axios.isCancel(err)) {
-          swal('Exportar usuarios', 'Ha ocurrido un error al general el excel.', 'error');
+          swal!('Exportar usuarios', 'Ha ocurrido un error al general el excel.', 'error');
         }
       });
   }

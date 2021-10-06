@@ -232,16 +232,22 @@ export default class TransmittalActions {
       const state = getState();
       const transmittalActions = new TransmittalActions(dispatch);
       const page = nextPage ? nextPage : state.transmittal.pagination.page;
-      transmittalActions.loadingAction(hideLoading ? false : true);
+      transmittalActions.loadingAction(!hideLoading);
       transmittalActions.changeOrderAction(orderBy, orderType);
       transmittalActions.cancelRequestAction(this.api.getSource());
       Axios
         .all([
-          this.api.getTransmittals({page, orderBy, orderType})
+          this.api.getTransmittals({page, orderBy, orderType}),
+          this.api.getVenues({ page: 1, pageSize: 200, noPopulate: true, filted: true }),
+          this.api.getCarriers(1, 200),
+          this.api.getDrivers(1, 200)
         ])
-        .then(Axios.spread((transmittals) => {
+        .then(Axios.spread((transmittals,venues, carriers, drivers) => {
           const {data} = transmittals;
           transmittalActions.loadAction(data.results, data.count, data.pages, page);
+          transmittalActions.loadVenues(venues.data.results);
+          transmittalActions.loadCarriers(carriers.data.results);
+          transmittalActions.loadDrivers(drivers.data.results);
           transmittalActions.loadingAction(false);
         }))
         .catch((err: AxiosError) => {
@@ -287,7 +293,7 @@ export default class TransmittalActions {
       const state = getState();
       const transmittalActions = new TransmittalActions(dispatch);
       const page = nextPage ? nextPage : state.transmittal.requestItemsPagination.page;
-      transmittalActions.loadingRequestItemAction(hideLoading ? false : true);
+      transmittalActions.loadingRequestItemAction(!hideLoading);
       transmittalActions.cancelRequestAction(this.api.getSource());
       this.api.getRequestItems({
         page,

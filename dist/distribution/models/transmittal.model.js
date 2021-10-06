@@ -69,6 +69,12 @@ var transmittalSchema = new mongoose.Schema({
 }, {
     timestamps: true
 });
+transmittalSchema.virtual('revision', {
+    ref: 'Participant',
+    localField: '_id',
+    foreignField: 'transmittal',
+    justOne: true
+});
 transmittalSchema.virtual('items', {
     ref: 'TransmittalItem',
     localField: '_id',

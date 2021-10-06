@@ -9,16 +9,12 @@ interface IPropsType {
 const ShowIf: React.FunctionComponent<IPropsType> = (props: IPropsType) => {
   if (props.condition) {
     return (
-      <React.Fragment>
-        {props.children}
-      </React.Fragment>
+      <>{props.children}</>
     );
   }
   if (props.alternative) {
     return (
-      <React.Fragment>
-        {props.alternative}
-      </React.Fragment>
+      <>{props.alternative}</>
     );
   }
   return null;

@@ -5,6 +5,7 @@ import {ITransmittalTransporter} from "./transmittalTransporter.interface";
 import {IUserModel} from "../../app/models/user.model";
 import {ITransmittalFile} from "./transmittalFile.interface";
 import {ITransmittalItemModel} from "../models/transmittalItem.model";
+import { IParticipant } from '../../form/interfaces/participant.interface';
 
 
 export interface ITransmittal {
@@ -16,6 +17,7 @@ export interface ITransmittal {
   evidenceFullLoad: ITransmittalFile[];
   transporter: ITransmittalTransporter;
   observation: string;
+  revision: IParticipant;
   status: string;
   createdBy: IUser | IUserModel;
 }
