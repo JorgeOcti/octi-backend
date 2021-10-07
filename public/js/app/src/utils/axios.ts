@@ -759,6 +759,12 @@ export default class ApiService {
     );
   }
 
+  public uploadTransmittalFile(data: any): AxiosPromise{
+    return this.instance.post(
+      `/api/v1/transmittals/upload-file/`, data
+    );
+  }
+
   public updateTransmittalItem(transmittalItem: Partial<ITransmittalItemModel>): AxiosPromise {
     return this.instance.patch(
       `/api/v1/transmittals/item/${transmittalItem._id}/`,

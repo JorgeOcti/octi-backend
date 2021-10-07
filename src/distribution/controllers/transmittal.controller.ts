@@ -18,6 +18,10 @@ import FormModel, {IFormModel, KindQuestion} from "../../form/models/form.model"
 import ScaleModel, {IScaleModel} from "../../form/models/scale.model";
 import redisClient from "../../services/redis.service";
 import {IUserModel} from "../../app/models/user.model";
+import * as archiver from 'archiver';
+import * as bluebird from 'bluebird';
+import * as fs from 'fs';
+import * as https from 'https';
 
 
 class TransmittalController {
@@ -58,6 +62,9 @@ class TransmittalController {
     path: 'files',
     select: ['file', 'thumbnail']
   }, {
+    path: 'evidenceFullLoad',
+    select: ['file', 'thumbnail']
+  }, {
     path: 'createdBy',
     select: ['firstName', 'lastName']
   }];
@@ -73,6 +80,8 @@ class TransmittalController {
     this.apiDelete = this.apiDelete.bind(this);
     this.xlsExport = this.xlsExport.bind(this);
     this.uploadFile = this.uploadFile.bind(this);
+    this.downloadTransmittalFiles = this.downloadTransmittalFiles.bind(this);
+    this.downloadFile = this.downloadFile.bind(this);
     this.attachEvidence = this.attachEvidence.bind(this);
     this.fillFormSections = this.fillFormSections.bind(this);
     this.getScales = this.getScales.bind(this);
@@ -257,8 +266,8 @@ class TransmittalController {
         path: 'transporter.carrier',
         select: ['name']
       }, {
-        path: 'evidenceFullLoad'
-        // select: ['firstName', 'lastName']
+        path: 'evidenceFullLoad',
+        select: ['file', 'thumbnail']
       }, {
         path: 'transporter.driver',
         select: ['firstName', 'lastName']
@@ -913,6 +922,7 @@ private getForm(filter: any): Promise<IFormModel> {
 
   public async uploadFile(req: IRequest, res: Response) {
     const { user } = req;
+    const { transmittal } = req.body;
     logger.info(`TransmittalController.uploadFile`);
     logger.info(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
     const file: any = GeneralUtils.getFileFromRequest(req.files, 'file');
@@ -957,6 +967,12 @@ private getForm(filter: any): Promise<IFormModel> {
         }
 
         await transmittaltFile.save();
+        const newTransmittal = await Transmittal
+          .findOneAndUpdate({ _id: transmittal }, { $push: { files: transmittaltFile } }, { new: true })
+          .populate(this.populate);
+        io.to(`transmittal-list-${user.team._id}`).emit('UPDATE_TRANSMITTAL', {
+          transmittal: newTransmittal
+        });
         res.status(201).json({
           data: {
             _id: transmittaltFile._id,
@@ -983,6 +999,123 @@ private getForm(filter: any): Promise<IFormModel> {
         status: 400
       });
     }
+  }
+
+  public async downloadTransmittalFiles(req: IRequest, res: Response) {
+    const { id } = req.params;
+    const team = req.user.team._id;
+    try {
+      console.log('**downloadTransmittalFiles', id);
+      const transmittal = await Transmittal
+        .findOne({ _id: id, team })
+        .populate({
+          path: 'files'
+        });
+      if (transmittal) {
+        const archive = archiver('zip', {
+          zlib: {
+            level: 0
+          }
+        });
+        archive.on('error', (err) => {
+          res.status(500).send({
+            error: err.message
+          });
+        });
+        const filename = `transmittal-${transmittal.number}.zip`;
+        archive.on('end', () => {
+          console.log(`${filename}: Archive wrote ${(archive.pointer() / (1024 * 1024)).toFixed(2)}MB`);
+        });
+        res.attachment(filename);
+        const filesToDownload: any = [];
+        const filesToCompress: any = [];
+        for (const file of transmittal.files) {
+          const destDirectory = `/tmp/${file._id}_${file.file.name}`;
+          filesToDownload.push(() => this.downloadFile(decodeURI(file.file.url), destDirectory));
+          filesToCompress.push({
+            destDirectory,
+            name: file.file.name
+          });
+        }
+        // download files
+        console.log('EXECUTE PROMISES');
+        let results: any[] = [];
+        let numb = 1;
+        while (filesToDownload.length) {
+          console.log('promise', numb);
+          results = [...results, ...await bluebird.all(filesToDownload.splice(0, 20).map((promise: any) => promise()))];
+          numb++;
+        }
+        // compress files
+        console.log('EXECUTE COMPRESS');
+        filesToCompress.map((file: any) => {
+          archive.file(file.destDirectory, {
+            name: file.name
+          });
+          setTimeout(() => {
+            if (fs.existsSync(file.destDirectory)) {
+              console.log(`clear ${file.destDirectory}`);
+              fs.unlink(file.destDirectory, (err) => {
+                if (err) {
+                  console.log(err);
+                }
+              });
+            }
+          }, 7200000);
+        });
+        console.log('results', results);
+        res.setHeader('size', results.reduce((a: number, b: number) => a + b));
+        archive.pipe(res);
+        archive.finalize();
+      } else {
+        res.status(404).json({ message: 'Not found' });
+      }
+    } catch (e) {
+      /* istanbul ignore next */
+      logger.error(e);
+      /* istanbul ignore next */
+      logger.error(`TransmittalController.downloadItemFiles: Async Error.`);
+      /* istanbul ignore next */
+      logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
+      res.status(500).json(e);
+    }
+  }
+
+  private async downloadFile(url: string, dest: string): Promise<number> {
+    return new Promise(async (resolve, reject) => {
+      try {
+        // generate directory name from dest var
+        const directories: string[] = dest.split('/');
+        directories.pop();
+
+        // validate that the directory exist and create recursive if it does not exist
+        const directoyName = directories.join('/');
+        if (!fs.existsSync(directoyName)) {
+          fs.mkdirSync(directoyName, { recursive: true });
+        }
+        const file = fs.createWriteStream(dest);
+        // download file
+        https.get(url, (response) => {
+          response.pipe(file);
+          file.on('finish', () => {
+            file.close();
+            resolve(response.headers['content-length'] ? parseInt(response.headers['content-length'], 10) : 0);
+          });
+        });
+      } catch (e) {
+        // Validate that the file exists and delete it if it exists.
+        if (fs.existsSync(dest)) {
+          fs.unlink(dest, (err) => {
+            if (err) {
+              reject(err);
+            }
+          });
+        } else {
+          console.log(url);
+          reject(e);
+        }
+      }
+    });
   }
 
   private autoRotate(path: string): Promise<any> {

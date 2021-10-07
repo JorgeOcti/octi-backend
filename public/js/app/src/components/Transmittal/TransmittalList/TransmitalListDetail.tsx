@@ -18,6 +18,7 @@ import { IWindow } from '../../../interfaces/window';
 import DateRangePicker from '../../Utils/DateRangePicker';
 import { getParticipant } from '../../../actions/dashboard.actions';
 import { IParticipant } from '../../../../../../../src/form/interfaces/participant.interface';
+import UploadTransmittalFile from './UploadTransmittalFile';
 
 interface IPropsType extends RouteComponentProps<{ ticket: string }> {
   dispatch: Dispatch<ITransmittalActionTypes>;
@@ -48,6 +49,7 @@ class TransmitalListDetail extends React.Component<IPropsType, IStateType> {
     this.openDialogAddCar = this.openDialogAddCar.bind(this);
     this.pushItem = this.pushItem.bind(this);
     this.statusIcon = this.statusIcon.bind(this);
+    this.downloadFiles = this.downloadFiles.bind(this);
     this.api = new ApiService();
   }
 
@@ -127,17 +129,22 @@ class TransmitalListDetail extends React.Component<IPropsType, IStateType> {
 
           </div>
           <div className='flex-45 col-sm-1 col-xs-1 col-md-1 col-lg-1'>
-            {transmittal.items.length}
+            {transmittal.items.length} vehículos.
           </div>
           <div className='flex-45 col-sm-2 col-xs-2 col-md-2 col-lg-2'>
-            {transmittal.files.length}&nbsp;
-            <ShowIf condition={process.env.NODE_ENV === 'development'}>
-              <i
-                className='fa fa-paperclip'
-                data-toggle='tooltip'
-                data-placement='top'
-                title={`2 archivos adjuntos.`}
-              />
+           <UploadTransmittalFile transmittal={transmittal} />
+            <ShowIf condition={transmittal.files.length >= 1}>
+              <button
+                className='btn btn-xs btn-default'
+                onClick={() => this.downloadFiles(transmittal)}
+              >
+                <i
+                  className='fa fa-paperclip'
+                  data-toggle='tooltip'
+                  data-placement='top'
+                  title={`${transmittal.files.length} archivos adjuntos.`}
+                /> {`(${transmittal.files.length})`}
+              </button>
             </ShowIf>
           </div>
           <div className='flex-45 col-sm-1 col-xs-1 col-md-1 col-lg-1'>
@@ -260,15 +267,27 @@ class TransmitalListDetail extends React.Component<IPropsType, IStateType> {
   private statusIcon(revision: IParticipant) {
     if (revision.hasDamages) {
       return (
-        <div className={'middle pointer'} onClick={() => this.props.getParticipant(revision._id)}>
+        <button
+          className='btn btn-xs btn-default'
+          data-toggle='tooltip'
+          data-placement='top'
+          title={`Ver detalle`}
+          onClick={() => this.props.getParticipant(revision._id)}
+        >
           <i className='fa fa-warning text-red' />
-        </div>
+        </button>
       );
-    } else  {
+    } else {
       return (
-        <div className={'middle pointer'} onClick={() => this.props.getParticipant(revision._id)}>
+        <button
+          className='btn btn-xs btn-default'
+          data-toggle='tooltip'
+          data-placement='top'
+          title={`Ver detalle`}
+          onClick={() => this.props.getParticipant(revision._id)}
+        >
           <i className='fa fa-check-circle text-primary' />
-        </div>
+        </button>
       );
     }
   }
@@ -282,6 +301,10 @@ class TransmitalListDetail extends React.Component<IPropsType, IStateType> {
         <button type='button' className='btn btn-sm btn-default' data-dismiss='modal'>Cerrar</button>
       </React.Fragment>
     );
+  }
+
+  private downloadFiles(transmittal: ITransmittalModel) {
+    window.open(`/transmittals/${transmittal._id}/download-files/`, '_blank');
   }
 
   private pushItem(requestItem: IRequestItem) {

@@ -72,6 +72,10 @@ var milestone_model_1 = require("../models/milestone.model");
 var form_model_1 = require("../../form/models/form.model");
 var scale_model_1 = require("../../form/models/scale.model");
 var redis_service_1 = require("../../services/redis.service");
+var archiver = require("archiver");
+var bluebird = require("bluebird");
+var fs = require("fs");
+var https = require("https");
 var TransmittalController = /** @class */ (function () {
     function TransmittalController() {
         this.itemPopulate = [{
@@ -109,6 +113,9 @@ var TransmittalController = /** @class */ (function () {
                 path: 'files',
                 select: ['file', 'thumbnail']
             }, {
+                path: 'evidenceFullLoad',
+                select: ['file', 'thumbnail']
+            }, {
                 path: 'createdBy',
                 select: ['firstName', 'lastName']
             }];
@@ -122,6 +129,8 @@ var TransmittalController = /** @class */ (function () {
         this.apiDelete = this.apiDelete.bind(this);
         this.xlsExport = this.xlsExport.bind(this);
         this.uploadFile = this.uploadFile.bind(this);
+        this.downloadTransmittalFiles = this.downloadTransmittalFiles.bind(this);
+        this.downloadFile = this.downloadFile.bind(this);
         this.attachEvidence = this.attachEvidence.bind(this);
         this.fillFormSections = this.fillFormSections.bind(this);
         this.getScales = this.getScales.bind(this);
@@ -385,8 +394,8 @@ var TransmittalController = /** @class */ (function () {
                                     path: 'transporter.carrier',
                                     select: ['name']
                                 }, {
-                                    path: 'evidenceFullLoad'
-                                    // select: ['firstName', 'lastName']
+                                    path: 'evidenceFullLoad',
+                                    select: ['file', 'thumbnail']
                                 }, {
                                     path: 'transporter.driver',
                                     select: ['firstName', 'lastName']
@@ -1108,18 +1117,19 @@ var TransmittalController = /** @class */ (function () {
     };
     TransmittalController.prototype.uploadFile = function (req, res) {
         return __awaiter(this, void 0, void 0, function () {
-            var user, file, transmittaltFile, e_9, e_10, e_11;
+            var user, transmittal, file, transmittaltFile, e_9, e_10, newTransmittal, e_11;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
                         user = req.user;
+                        transmittal = req.body.transmittal;
                         logger_service_1["default"].info("TransmittalController.uploadFile");
                         logger_service_1["default"].info("{user: {_id: " + req.user._id + ", email: " + req.user.email + "}}");
                         file = general_utils_1["default"].getFileFromRequest(req.files, 'file');
-                        if (!file) return [3 /*break*/, 15];
+                        if (!file) return [3 /*break*/, 16];
                         _a.label = 1;
                     case 1:
-                        _a.trys.push([1, 13, , 14]);
+                        _a.trys.push([1, 14, , 15]);
                         transmittaltFile = new transmittalFile_model_1["default"]();
                         /*
                           {
@@ -1172,6 +1182,14 @@ var TransmittalController = /** @class */ (function () {
                     case 11: return [4 /*yield*/, transmittaltFile.save()];
                     case 12:
                         _a.sent();
+                        return [4 /*yield*/, transmittal_model_1["default"]
+                                .findOneAndUpdate({ _id: transmittal }, { $push: { files: transmittaltFile } }, { "new": true })
+                                .populate(this.populate)];
+                    case 13:
+                        newTransmittal = _a.sent();
+                        server_1.io.to("transmittal-list-" + user.team._id).emit('UPDATE_TRANSMITTAL', {
+                            transmittal: newTransmittal
+                        });
                         res.status(201).json({
                             data: {
                                 _id: transmittaltFile._id,
@@ -1179,8 +1197,8 @@ var TransmittalController = /** @class */ (function () {
                             },
                             status: 201
                         });
-                        return [3 /*break*/, 14];
-                    case 13:
+                        return [3 /*break*/, 15];
+                    case 14:
                         e_11 = _a.sent();
                         /* istanbul ignore next */
                         logger_service_1["default"].error("TransmittalController.uploadFile: Async Error.");
@@ -1190,9 +1208,9 @@ var TransmittalController = /** @class */ (function () {
                         logger_service_1["default"].error(e_11);
                         /* istanbul ignore next */
                         res.status(400).json(e_11);
-                        return [3 /*break*/, 14];
-                    case 14: return [3 /*break*/, 16];
-                    case 15:
+                        return [3 /*break*/, 15];
+                    case 15: return [3 /*break*/, 17];
+                    case 16:
                         logger_service_1["default"].error("TransmittalController.uploadFile: The file are required.");
                         logger_service_1["default"].error("{user: {_id: " + req.user._id + ", email: " + req.user.email + "}}");
                         /* istanbul ignore next */
@@ -1200,9 +1218,159 @@ var TransmittalController = /** @class */ (function () {
                             message: 'La imagen es obligatoria.',
                             status: 400
                         });
-                        _a.label = 16;
-                    case 16: return [2 /*return*/];
+                        _a.label = 17;
+                    case 17: return [2 /*return*/];
                 }
+            });
+        });
+    };
+    TransmittalController.prototype.downloadTransmittalFiles = function (req, res) {
+        return __awaiter(this, void 0, void 0, function () {
+            var id, team, transmittal, archive_1, filename_1, filesToDownload, filesToCompress, _loop_1, _i, _a, file, results, numb, _b, e_12;
+            var _this = this;
+            return __generator(this, function (_c) {
+                switch (_c.label) {
+                    case 0:
+                        id = req.params.id;
+                        team = req.user.team._id;
+                        _c.label = 1;
+                    case 1:
+                        _c.trys.push([1, 8, , 9]);
+                        console.log('**downloadTransmittalFiles', id);
+                        return [4 /*yield*/, transmittal_model_1["default"]
+                                .findOne({ _id: id, team: team })
+                                .populate({
+                                path: 'files'
+                            })];
+                    case 2:
+                        transmittal = _c.sent();
+                        if (!transmittal) return [3 /*break*/, 6];
+                        archive_1 = archiver('zip', {
+                            zlib: {
+                                level: 0
+                            }
+                        });
+                        archive_1.on('error', function (err) {
+                            res.status(500).send({
+                                error: err.message
+                            });
+                        });
+                        filename_1 = "transmittal-" + transmittal.number + ".zip";
+                        archive_1.on('end', function () {
+                            console.log(filename_1 + ": Archive wrote " + (archive_1.pointer() / (1024 * 1024)).toFixed(2) + "MB");
+                        });
+                        res.attachment(filename_1);
+                        filesToDownload = [];
+                        filesToCompress = [];
+                        _loop_1 = function (file) {
+                            var destDirectory = "/tmp/" + file._id + "_" + file.file.name;
+                            filesToDownload.push(function () { return _this.downloadFile(decodeURI(file.file.url), destDirectory); });
+                            filesToCompress.push({
+                                destDirectory: destDirectory,
+                                name: file.file.name
+                            });
+                        };
+                        for (_i = 0, _a = transmittal.files; _i < _a.length; _i++) {
+                            file = _a[_i];
+                            _loop_1(file);
+                        }
+                        // download files
+                        console.log('EXECUTE PROMISES');
+                        results = [];
+                        numb = 1;
+                        _c.label = 3;
+                    case 3:
+                        if (!filesToDownload.length) return [3 /*break*/, 5];
+                        console.log('promise', numb);
+                        _b = [__spreadArray([], results, true)];
+                        return [4 /*yield*/, bluebird.all(filesToDownload.splice(0, 20).map(function (promise) { return promise(); }))];
+                    case 4:
+                        results = __spreadArray.apply(void 0, _b.concat([_c.sent(), true]));
+                        numb++;
+                        return [3 /*break*/, 3];
+                    case 5:
+                        // compress files
+                        console.log('EXECUTE COMPRESS');
+                        filesToCompress.map(function (file) {
+                            archive_1.file(file.destDirectory, {
+                                name: file.name
+                            });
+                            setTimeout(function () {
+                                if (fs.existsSync(file.destDirectory)) {
+                                    console.log("clear " + file.destDirectory);
+                                    fs.unlink(file.destDirectory, function (err) {
+                                        if (err) {
+                                            console.log(err);
+                                        }
+                                    });
+                                }
+                            }, 7200000);
+                        });
+                        console.log('results', results);
+                        res.setHeader('size', results.reduce(function (a, b) { return a + b; }));
+                        archive_1.pipe(res);
+                        archive_1.finalize();
+                        return [3 /*break*/, 7];
+                    case 6:
+                        res.status(404).json({ message: 'Not found' });
+                        _c.label = 7;
+                    case 7: return [3 /*break*/, 9];
+                    case 8:
+                        e_12 = _c.sent();
+                        /* istanbul ignore next */
+                        logger_service_1["default"].error(e_12);
+                        /* istanbul ignore next */
+                        logger_service_1["default"].error("TransmittalController.downloadItemFiles: Async Error.");
+                        /* istanbul ignore next */
+                        logger_service_1["default"].error("{user: {_id: " + req.user._id + ", email: " + req.user.email + "}}");
+                        res.status(500).json(e_12);
+                        return [3 /*break*/, 9];
+                    case 9: return [2 /*return*/];
+                }
+            });
+        });
+    };
+    TransmittalController.prototype.downloadFile = function (url, dest) {
+        return __awaiter(this, void 0, void 0, function () {
+            var _this = this;
+            return __generator(this, function (_a) {
+                return [2 /*return*/, new Promise(function (resolve, reject) { return __awaiter(_this, void 0, void 0, function () {
+                        var directories, directoyName, file_1;
+                        return __generator(this, function (_a) {
+                            try {
+                                directories = dest.split('/');
+                                directories.pop();
+                                directoyName = directories.join('/');
+                                if (!fs.existsSync(directoyName)) {
+                                    fs.mkdirSync(directoyName, { recursive: true });
+                                }
+                                file_1 = fs.createWriteStream(dest);
+                                // download file
+                                https.get(url, function (response) {
+                                    response.pipe(file_1);
+                                    file_1.on('finish', function () {
+                                        file_1.close();
+                                        resolve(response.headers['content-length'] ? parseInt(response.headers['content-length'], 10) : 0);
+                                    });
+                                });
+                            }
+                            catch (e) {
+                                // Validate that the file exists and delete it if it exists.
+                                if (fs.existsSync(dest)) {
+                                    fs.unlink(dest, function (err) {
+                                        if (err) {
+                                            reject(err);
+                                        }
+                                    });
+                                }
+                                else {
+                                    console.log(url);
+                                    reject(e);
+                                }
+                            }
+                            return [2 /*return*/];
+                        });
+                    }); })];
             });
         });
     };
