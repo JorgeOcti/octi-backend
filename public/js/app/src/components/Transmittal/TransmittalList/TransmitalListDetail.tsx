@@ -318,9 +318,7 @@ class TransmitalListDetail extends React.Component<IPropsType, IStateType> {
       destination: requestItem.destination?._id,
       transmittal: transmittal._id
     })
-      .then((): void => {
-
-      })
+      .then((): void => {})
       .catch((err: AxiosError): void => {
         this.api.errorHandler(err);
       });

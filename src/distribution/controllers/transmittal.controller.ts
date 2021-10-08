@@ -967,12 +967,14 @@ private getForm(filter: any): Promise<IFormModel> {
         }
 
         await transmittaltFile.save();
-        const newTransmittal = await Transmittal
-          .findOneAndUpdate({ _id: transmittal }, { $push: { files: transmittaltFile } }, { new: true })
-          .populate(this.populate);
-        io.to(`transmittal-list-${user.team._id}`).emit('UPDATE_TRANSMITTAL', {
-          transmittal: newTransmittal
-        });
+        if(transmittal?.length){
+          const newTransmittal = await Transmittal
+            .findOneAndUpdate({ _id: transmittal }, { $push: { files: transmittaltFile } }, { new: true })
+            .populate(this.populate);
+          io.to(`transmittal-list-${user.team._id}`).emit('UPDATE_TRANSMITTAL', {
+            transmittal: newTransmittal
+          });
+        }
         res.status(201).json({
           data: {
             _id: transmittaltFile._id,

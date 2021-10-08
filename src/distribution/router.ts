@@ -23,7 +23,7 @@ distributionRouter.get('/api/v1/transmittals/:id/', isJWTAuthenticated, Transmit
 distributionRouter.patch('/api/v1/transmittals/:id/', isJWTAuthenticated, TransmittalController.apiPatch);
 distributionRouter.put('/api/v1/transmittals/:id/', isJWTAuthenticated, TransmittalController.apiUpdate);
 distributionRouter.delete('/api/v1/transmittals/:id/', isJWTAuthenticated, TransmittalController.apiDelete);
-distributionRouter.post('/api/v1/transmittals/upload-file/', isLoggedIn, TransmittalController.uploadFile);
+distributionRouter.post('/api/v1/transmittals/upload-file/', isJWTAuthenticated, TransmittalController.uploadFile);
 distributionRouter.post('/api/v1/transmittals/attach-evidence/', isJWTAuthenticated, TransmittalController.attachEvidence);
 
 distributionRouter.get('/api/v1/transmittals/item/', isJWTAuthenticated, TransmittalItemController.apiList);

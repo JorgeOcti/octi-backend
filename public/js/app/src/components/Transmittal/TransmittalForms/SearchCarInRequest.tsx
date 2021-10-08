@@ -155,7 +155,7 @@ class SearchCarInRequests extends React.Component<IPropsType, IStateType> {
                     type='text'
                     className='form-control input-sm'
                     placeholder='Nº de partida ejemplo: J-2136'
-                    defaultValue={requestItemsfilters.request}
+                    defaultValue={requestItemsfilters.entry}
                     onChange={(e) => {
                       transmittalActions.filterRequestItemAction('entry', e.target.value);
                       this.getRequestItemDebounced();

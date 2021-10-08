@@ -1126,10 +1126,10 @@ var TransmittalController = /** @class */ (function () {
                         logger_service_1["default"].info("TransmittalController.uploadFile");
                         logger_service_1["default"].info("{user: {_id: " + req.user._id + ", email: " + req.user.email + "}}");
                         file = general_utils_1["default"].getFileFromRequest(req.files, 'file');
-                        if (!file) return [3 /*break*/, 16];
+                        if (!file) return [3 /*break*/, 17];
                         _a.label = 1;
                     case 1:
-                        _a.trys.push([1, 14, , 15]);
+                        _a.trys.push([1, 15, , 16]);
                         transmittaltFile = new transmittalFile_model_1["default"]();
                         /*
                           {
@@ -1182,6 +1182,7 @@ var TransmittalController = /** @class */ (function () {
                     case 11: return [4 /*yield*/, transmittaltFile.save()];
                     case 12:
                         _a.sent();
+                        if (!(transmittal === null || transmittal === void 0 ? void 0 : transmittal.length)) return [3 /*break*/, 14];
                         return [4 /*yield*/, transmittal_model_1["default"]
                                 .findOneAndUpdate({ _id: transmittal }, { $push: { files: transmittaltFile } }, { "new": true })
                                 .populate(this.populate)];
@@ -1190,6 +1191,8 @@ var TransmittalController = /** @class */ (function () {
                         server_1.io.to("transmittal-list-" + user.team._id).emit('UPDATE_TRANSMITTAL', {
                             transmittal: newTransmittal
                         });
+                        _a.label = 14;
+                    case 14:
                         res.status(201).json({
                             data: {
                                 _id: transmittaltFile._id,
@@ -1197,8 +1200,8 @@ var TransmittalController = /** @class */ (function () {
                             },
                             status: 201
                         });
-                        return [3 /*break*/, 15];
-                    case 14:
+                        return [3 /*break*/, 16];
+                    case 15:
                         e_11 = _a.sent();
                         /* istanbul ignore next */
                         logger_service_1["default"].error("TransmittalController.uploadFile: Async Error.");
@@ -1208,9 +1211,9 @@ var TransmittalController = /** @class */ (function () {
                         logger_service_1["default"].error(e_11);
                         /* istanbul ignore next */
                         res.status(400).json(e_11);
-                        return [3 /*break*/, 15];
-                    case 15: return [3 /*break*/, 17];
-                    case 16:
+                        return [3 /*break*/, 16];
+                    case 16: return [3 /*break*/, 18];
+                    case 17:
                         logger_service_1["default"].error("TransmittalController.uploadFile: The file are required.");
                         logger_service_1["default"].error("{user: {_id: " + req.user._id + ", email: " + req.user.email + "}}");
                         /* istanbul ignore next */
@@ -1218,8 +1221,8 @@ var TransmittalController = /** @class */ (function () {
                             message: 'La imagen es obligatoria.',
                             status: 400
                         });
-                        _a.label = 17;
-                    case 17: return [2 /*return*/];
+                        _a.label = 18;
+                    case 18: return [2 /*return*/];
                 }
             });
         });
