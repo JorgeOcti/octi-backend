@@ -80,7 +80,7 @@ class AdminCarController {
               newCar.status = ChoicesStatusCar.active;
               await newCar.save();
             } else {
-              await Car.create({
+              await new Car({
                 vin: car.vin,
                 vin2,
                 type: car.tipo ? car.tipo : '',
@@ -96,7 +96,7 @@ class AdminCarController {
                 team,
                 createdBy: req.user,
                 status: ChoicesStatusCar.active
-              });
+              }).save();
             }
             // io.to(req.user._id).emit('STATUS-CARS', {newCar});
           } catch (e) {
@@ -131,6 +131,10 @@ class AdminCarController {
         denomination: true,
         color: true,
         internalNumber: true,
+        invoice: true,
+        entry: true,
+        client: true,
+        bl: true,
         createdAt: true,
         updatedAt: true
       },
@@ -196,7 +200,7 @@ class AdminCarController {
     }
 
     return new Promise((resolve, reject) => {
-      Car.paginate(filter, options, (err, result) => {
+      Car.paginate!(filter, options, (err, result) => {
         /* istanbul ignore if */
         if (err) {
           reject(err);

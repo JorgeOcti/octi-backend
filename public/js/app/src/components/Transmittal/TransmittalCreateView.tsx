@@ -161,8 +161,8 @@ class TransmittalCreateView extends TrackingBasePage<IPropsType, IStateType> {
         ...data,
         items: data.items.map((item) => ({
           ...item,
-          request: item.request._id,
-          requestItem: item._id
+          request: item.request?._id,
+          requestItem: (item as any).type === 'request' ? item?._id : null
         })),
         files: data.files.map((file) => file._id)
       })

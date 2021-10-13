@@ -175,7 +175,7 @@ var AdminCarController = /** @class */ (function () {
                     case 4:
                         _a.sent();
                         return [3 /*break*/, 7];
-                    case 5: return [4 /*yield*/, car_model_1["default"].create({
+                    case 5: return [4 /*yield*/, new car_model_1["default"]({
                             vin: car.vin,
                             vin2: vin2,
                             type: car.tipo ? car.tipo : '',
@@ -191,7 +191,7 @@ var AdminCarController = /** @class */ (function () {
                             team: team,
                             createdBy: req.user,
                             status: car_model_1.ChoicesStatusCar.active
-                        })];
+                        }).save()];
                     case 6:
                         _a.sent();
                         _a.label = 7;
@@ -239,6 +239,10 @@ var AdminCarController = /** @class */ (function () {
                                 denomination: true,
                                 color: true,
                                 internalNumber: true,
+                                invoice: true,
+                                entry: true,
+                                client: true,
+                                bl: true,
                                 createdAt: true,
                                 updatedAt: true
                             },

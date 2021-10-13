@@ -61,7 +61,9 @@ class TransmitalListItem extends React.Component<IPropsType, IStateType> {
       <tr id={`transmittal-item-${transmittalItem._id}`} className='background-transition'>
         <td className={'middle'}>
           <strong>
-            #{this.padNumber(transmittalItem.request.number)}
+            <ShowIf condition={!!transmittalItem?.request?.number}>
+              #{this.padNumber(transmittalItem.request?.number)}
+            </ShowIf>
           </strong>
         </td>
         <td className={'middle'}>{transmittalItem.car.vin}</td>

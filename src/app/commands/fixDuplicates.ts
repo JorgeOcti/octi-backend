@@ -2,7 +2,6 @@ import * as bluebird from 'bluebird';
 import * as dotenv from 'dotenv';
 import * as mongoose from 'mongoose';
 import * as path from 'path';
-
 import Car from "../models/car.model";
 import InventoryCar from "../../inventory/models/inventoryCar.model";
 import RequestItem from "../../request/models/requestItem.model";
@@ -46,6 +45,7 @@ async function fixDuplicatesCar() {
             let firstCar = undefined;
             for (const carByVIN of carsByVIN) {
               console.log('carByVIN', carByVIN);
+
               if (firstCar === undefined) {
                 firstCar = carByVIN;
               } else {
@@ -54,6 +54,7 @@ async function fixDuplicatesCar() {
                 await Participant.update({car: carByVIN._id}, {$set: {car: firstCar._id}});
                 await StockCar.update({car: carByVIN._id}, {$set: {car: firstCar._id}});
                 await Planning.update({car: carByVIN._id}, {$set: {car: firstCar._id}});
+
                 await Car.findByIdAndDelete(carByVIN._id);
               }
             }

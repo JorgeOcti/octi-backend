@@ -5,11 +5,12 @@ import { ITransmittalState } from '../../../../actions/transmittal.types';
 import TransmittalActions from '../../../../actions/transmittal.actions';
 import { connect } from 'react-redux';
 import BootstrapSelectField from '../../../Utils/forms/BootstrapSelectField';
-import SearchCarInRequests from '../SearchCarInRequest';
 import { IRequestItem } from '../../../../../../../../src/request/interfaces/requestItem.interface';
 import InputField from '../../../Utils/forms/InputField';
 import BootstrapSwitchField from '../../../Utils/forms/BootsrapSwitchField';
 import ShowIf from '../../../Utils/ShowIf';
+import AddItemsToTransmittal from '../AddItemsToTransmittal';
+import { ICar } from '../../../../../../../../src/app/interfaces/car.interface';
 
 
 export interface IRenderItemProps {
@@ -43,6 +44,7 @@ class TramittalRenderItem extends React.Component<IPropsType, IStateType> {
     super(props);
     this.toogleTab = this.toogleTab.bind(this);
     this.pushItem = this.pushItem.bind(this);
+    this.pushItemCar = this.pushItemCar.bind(this);
   }
 
   public render(): React.ReactElement<IPropsType> {
@@ -86,7 +88,9 @@ class TramittalRenderItem extends React.Component<IPropsType, IStateType> {
                       <React.Fragment key={value._id}>
                         <tr>
                           <td className={`middle-center`}>
-                            #{this.padNumber(value.request.number)}
+                            <ShowIf condition={!!value?.request?.number}>
+                              #{this.padNumber(value.request?.number)}
+                            </ShowIf>
                           </td>
                           <td className={`middle`}>
                             {value.car?.vin}
@@ -296,7 +300,7 @@ class TramittalRenderItem extends React.Component<IPropsType, IStateType> {
                             type='checkbox'
                             checked={oneDestination}
                             component={BootstrapSwitchField}
-                            onChange={(e: any) => {
+                            onChange={() => {
                               // const { checked } = e.target;
                               // if (!checked) {
                               //   this.props.transmittalActions.autofill(`all.destination`, null);
@@ -351,17 +355,32 @@ class TramittalRenderItem extends React.Component<IPropsType, IStateType> {
           <h4>Agregar Vehículos</h4>
         </div>
         <div className='col-md-12'>
-          <SearchCarInRequests fields={fields} onClick={this.pushItem} />
+          <AddItemsToTransmittal fields={fields} onClickRequest={this.pushItem} onClickCar={this.pushItemCar} />
         </div>
         {submitFailed && error && <span>{error}</span>}
       </React.Fragment>
     );
   }
 
+  private pushItemCar(car: ICar) {
+    const { formValues } = this.props;
+    this.props.transmittalActions.pushItem({
+      _id: car._id,
+      car: car,
+      type: 'car',
+      request: null,
+      // reason: item.reason,
+      origin: formValues?.all?.origin,
+      // destination: formValues?.all?.destination ?? item.destination?._id
+      destination: formValues?.all?.destination
+    });
+  }
+
   private pushItem(item: IRequestItem) {
     const { formValues } = this.props;
     this.props.transmittalActions.pushItem({
       _id: item._id,
+      type: 'request',
       car: {
         ...item.car,
         bl: item.car.bl ?? '',

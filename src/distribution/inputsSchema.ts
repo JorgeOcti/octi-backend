@@ -9,8 +9,8 @@ const createTransmittalSchema = yup.object().shape({
     patent: yup.string(),
   }),
   items: yup.array().of(yup.object({
-    request: yup.string(),
-    requestItem: yup.string(),
+    request: yup.string().nullable(true),
+    requestItem: yup.string().nullable(true),
     observation: yup.string(),
     car: yup.object({
       _id: yup.string().required(),

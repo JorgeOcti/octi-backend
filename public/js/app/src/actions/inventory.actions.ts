@@ -397,6 +397,7 @@ export function getInventoryDetailAction(id: string, update: boolean) {
           }
         })
         .catch((err: AxiosError) => {
+          console.log('err', err);
           if (!Axios.isCancel(err)) {
             api.errorHandler(err);
           }

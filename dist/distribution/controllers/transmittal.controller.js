@@ -184,18 +184,19 @@ var TransmittalController = /** @class */ (function () {
         });
     };
     TransmittalController.prototype.apiCreate = function (req, res) {
+        var _a;
         return __awaiter(this, void 0, void 0, function () {
-            var _a, name_1, items, files, transporter, observation, user, team, transmittal, _i, items_1, item, transmittalItem, e_2;
-            return __generator(this, function (_b) {
-                switch (_b.label) {
+            var _b, name_1, items, files, transporter, observation, user, team, transmittal, _i, items_1, item, transmittalItem, e_2;
+            return __generator(this, function (_c) {
+                switch (_c.label) {
                     case 0:
-                        _b.trys.push([0, 12, , 13]);
+                        _c.trys.push([0, 12, , 13]);
                         logger_service_1["default"].info("TransmittalController.apiCreate");
-                        _a = req.body, name_1 = _a.name, items = _a.items, files = _a.files, transporter = _a.transporter, observation = _a.observation;
+                        _b = req.body, name_1 = _b.name, items = _b.items, files = _b.files, transporter = _b.transporter, observation = _b.observation;
                         user = req.user;
                         return [4 /*yield*/, team_model_1["default"].findOneAndUpdate({ _id: user.team._id }, { $inc: { transmittalNumber: 1 } }, { "new": true })];
                     case 1:
-                        team = _b.sent();
+                        team = _c.sent();
                         return [4 /*yield*/, new transmittal_model_1["default"]({
                                 name: name_1,
                                 team: user.team,
@@ -205,9 +206,9 @@ var TransmittalController = /** @class */ (function () {
                                 observation: observation
                             }).save()];
                     case 2:
-                        transmittal = _b.sent();
+                        transmittal = _c.sent();
                         _i = 0, items_1 = items;
-                        _b.label = 3;
+                        _c.label = 3;
                     case 3:
                         if (!(_i < items_1.length)) return [3 /*break*/, 8];
                         item = items_1[_i];
@@ -221,11 +222,11 @@ var TransmittalController = /** @class */ (function () {
                             })];
                     case 4:
                         // update cars params
-                        _b.sent();
+                        _c.sent();
                         return [4 /*yield*/, new transmittalItem_model_1["default"](__assign(__assign({}, item), { team: team, transmittal: transmittal })).save()];
                     case 5:
-                        transmittalItem = _b.sent();
-                        // associate request item with transmittal and transmittal item
+                        transmittalItem = _c.sent();
+                        if (!((_a = item.requestItem) === null || _a === void 0 ? void 0 : _a.length)) return [3 /*break*/, 7];
                         return [4 /*yield*/, requestItem_model_1["default"].findOneAndUpdate({
                                 _id: item.requestItem
                             }, {
@@ -234,9 +235,8 @@ var TransmittalController = /** @class */ (function () {
                                 transmittalItem: transmittalItem._id
                             })];
                     case 6:
-                        // associate request item with transmittal and transmittal item
-                        _b.sent();
-                        _b.label = 7;
+                        _c.sent();
+                        _c.label = 7;
                     case 7:
                         _i++;
                         return [3 /*break*/, 3];
@@ -244,15 +244,15 @@ var TransmittalController = /** @class */ (function () {
                         if (!(files && files.length)) return [3 /*break*/, 11];
                         return [4 /*yield*/, transmittal.updateOne({ files: files })];
                     case 9:
-                        _b.sent();
+                        _c.sent();
                         return [4 /*yield*/, transmittalFile_model_1["default"].updateMany({
                                 _id: { $in: files }
                             }, {
                                 $set: { transmittal: transmittal }
                             })];
                     case 10:
-                        _b.sent();
-                        _b.label = 11;
+                        _c.sent();
+                        _c.label = 11;
                     case 11:
                         server_1.io.to("transmittal-list-" + team._id).emit('CREATE_TRANSMITTAL', {
                             transmittal: transmittal
@@ -262,7 +262,7 @@ var TransmittalController = /** @class */ (function () {
                         });
                         return [3 /*break*/, 13];
                     case 12:
-                        e_2 = _b.sent();
+                        e_2 = _c.sent();
                         /* istanbul ignore next */
                         logger_service_1["default"].error("TransmittalController.apiCreate: Async Error.");
                         /* istanbul ignore next */

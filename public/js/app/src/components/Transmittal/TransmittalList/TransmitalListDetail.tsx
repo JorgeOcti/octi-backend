@@ -19,6 +19,8 @@ import DateRangePicker from '../../Utils/DateRangePicker';
 import { getParticipant } from '../../../actions/dashboard.actions';
 import { IParticipant } from '../../../../../../../src/form/interfaces/participant.interface';
 import UploadTransmittalFile from './UploadTransmittalFile';
+import AddItemsToTransmittal from '../TransmittalForms/AddItemsToTransmittal';
+import { ICar } from '../../../../../../../src/app/interfaces/car.interface';
 
 interface IPropsType extends RouteComponentProps<{ ticket: string }> {
   dispatch: Dispatch<ITransmittalActionTypes>;
@@ -48,6 +50,7 @@ class TransmitalListDetail extends React.Component<IPropsType, IStateType> {
     super(props);
     this.openDialogAddCar = this.openDialogAddCar.bind(this);
     this.pushItem = this.pushItem.bind(this);
+    this.pushItemCar = this.pushItemCar.bind(this);
     this.statusIcon = this.statusIcon.bind(this);
     this.downloadFiles = this.downloadFiles.bind(this);
     this.api = new ApiService();
@@ -296,7 +299,7 @@ class TransmitalListDetail extends React.Component<IPropsType, IStateType> {
     const { item: transmittal } = this.props;
     this.props.loadDataAction(
       `Agregar vehículo a orden #${this.padNumber(transmittal.number)}`,
-      <SearchCarInRequests onClick={this.pushItem} slimView={true} />,
+      <AddItemsToTransmittal onClickRequest={this.pushItem} onClickCar={this.pushItemCar} slimView={true} />,
       <React.Fragment>
         <button type='button' className='btn btn-sm btn-default' data-dismiss='modal'>Cerrar</button>
       </React.Fragment>
@@ -306,6 +309,23 @@ class TransmitalListDetail extends React.Component<IPropsType, IStateType> {
   private downloadFiles(transmittal: ITransmittalModel) {
     window.open(`/transmittals/${transmittal._id}/download-files/`, '_blank');
   }
+
+  private pushItemCar(car: ICar) {
+    const { item: transmittal } = this.props;
+    this.api.addTransmittalItem({
+      requestItem: null,
+      car: car._id,
+      request: null,
+      // origin: requestItem.origin?._id,
+      // destination: requestItem.destination?._id,
+      transmittal: transmittal._id
+    })
+      .then((): void => {})
+      .catch((err: AxiosError): void => {
+        this.api.errorHandler(err);
+      });
+  }
+
 
   private pushItem(requestItem: IRequestItem) {
     const { item: transmittal } = this.props;

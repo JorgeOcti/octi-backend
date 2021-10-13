@@ -141,13 +141,15 @@ class TransmittalController {
           transmittal
         }).save();
         // associate request item with transmittal and transmittal item
-        await RequestItem.findOneAndUpdate({
-          _id: item.requestItem
-        }, {
-          assigned: true,
-          transmittal: transmittal._id,
-          transmittalItem: transmittalItem._id
-        });
+        if(item.requestItem?.length) {
+          await RequestItem.findOneAndUpdate({
+            _id: item.requestItem
+          }, {
+            assigned: true,
+            transmittal: transmittal._id,
+            transmittalItem: transmittalItem._id
+          });
+        }
       }
 
       if (files && files.length) {

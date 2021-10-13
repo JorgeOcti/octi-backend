@@ -178,10 +178,10 @@ function processPropertyCars(cars: IInventoryCar[]): IPropertyCar {
     cardTypes: []
   };
   for (const car of cars) {
-    if (car.car.property && !propertyCars.cardProperties.includes(car.car.property)) {
+    if (car.car?.property && !propertyCars.cardProperties.includes(car.car.property)) {
       propertyCars.cardProperties.push(car.car.property);
     }
-    if (car.car.type && !propertyCars.cardTypes.includes(car.car.type)) {
+    if (car.car?.type && !propertyCars.cardTypes.includes(car.car.type)) {
       propertyCars.cardTypes.push(car.car.type);
     }
   }
@@ -190,6 +190,7 @@ function processPropertyCars(cars: IInventoryCar[]): IPropertyCar {
 
 function processCars(cars: IInventoryCar[], selectedItems: { [key: string]: any }, filter: IFilterCar) {
   const products: any[] = [];
+  // const missincars = [];
   for (const car of cars) {
     let add = true;
     if (filter && filter.venues && filter.venues.length && car.venue) {
@@ -214,13 +215,13 @@ function processCars(cars: IInventoryCar[], selectedItems: { [key: string]: any 
           .toLowerCase()
           .includes(text.toLowerCase())
       ));
-      add = result.every((element: boolean) => element === true) === true;
+      add = result.every((element: boolean) => element);
       /*add = `${car.car.vin}${car.car.brand}${car.car.denomination}${car.car.patent}`.normalize('NFD')
         .replace(/[\u0300-\u036f]/g, '')
         .toLowerCase()
         .includes(filter.text.toLowerCase());*/
     }
-    const patent: string = car.car.patent ? car.car.patent : '';
+    const patent: string = car.car?.patent ? car.car.patent : '';
     // if (add && filter && filter && filter.type.length) {
     //   if (filter.type === 'new') {
     //     add = patent.length === 0;
@@ -228,7 +229,7 @@ function processCars(cars: IInventoryCar[], selectedItems: { [key: string]: any 
     //     add = patent.length !== 0;
     //   }
     // }
-    if (add) {
+    if (add && (car as any).car?._id) {
       products.push({
         _id: (car as any)._id,
         carID: (car as any).car._id,
@@ -252,7 +253,13 @@ function processCars(cars: IInventoryCar[], selectedItems: { [key: string]: any 
         status: car.status,
         option: car.status
       });
+    } else {
+      // if(car.status !=="pending"){
+        // console.log('car', car);
+        // missincars.push(car)
+      // }
     }
   }
+  // console.log('missincars', missincars);
   return products;
 }
