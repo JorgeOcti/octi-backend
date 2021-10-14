@@ -93,7 +93,7 @@ class HeaderApp extends React.Component<{}, {}> {
                 <ul className="dropdown-menu">
                   <li className="user-header">
                     <img className="img-circle" src="/static/images/icon_circular.png" alt="User Image"/>
-                    <p>{`${window.user.firstName || ''} ${window.user.firstName || ''}${!window.user.firstName && !window.user.lastName ? 'Unknown User' : ''}`}
+                    <p>{`${window.user.firstName || ''} ${window.user.lastName || ''}${!window.user.firstName && !window.user.lastName ? 'Unknown User' : ''}`}
                       <small>{window.user.email || ''}</small>
                     </p>
                   </li>

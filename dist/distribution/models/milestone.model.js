@@ -46,6 +46,10 @@ var milestoneSchema = new mongoose.Schema({
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Form'
     },
+    requestItemStatus: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'RequestItemStatus'
+    },
     order: {
         type: Number
     }

@@ -4,8 +4,7 @@ import * as mongoosePaginate from 'mongoose-paginate';
 import { IMilestone } from '../interfaces/milestone.interface';
 import mongooseAggregatePaginate = require('mongoose-aggregate-paginate-v2');
 
-export interface IMilestoneModel extends IMilestone, mongoose.Document {
-}
+export interface IMilestoneModel extends IMilestone, mongoose.Document {}
 
 export enum ChoicesKindMilestone {
   form = 'form',
@@ -50,6 +49,10 @@ const milestoneSchema = new mongoose.Schema({
   form: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Form'
+  },
+  requestItemStatus: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'RequestItemStatus'
   },
   order: {
     type: Number

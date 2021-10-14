@@ -36,14 +36,17 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
     }
 };
 exports.__esModule = true;
+var milestone_model_1 = require("../models/milestone.model");
+var logger_service_1 = require("../../services/logger.service");
 var MilestoneController = /** @class */ (function () {
     function MilestoneController() {
         this.index = this.index.bind(this);
-        // this.apiList = this.apiList.bind(this);
+        this.apiList = this.apiList.bind(this);
         // this.apiDetail = this.apiDetail.bind(this);
         // this.apiCreate = this.apiCreate.bind(this);
         // this.apiUpdate = this.apiUpdate.bind(this);
         // this.apiDelete = this.apiDelete.bind(this);
+        this.getMilestone = this.getMilestone.bind(this);
     }
     MilestoneController.prototype.index = function (req, res) {
         return __awaiter(this, void 0, void 0, function () {
@@ -65,8 +68,104 @@ var MilestoneController = /** @class */ (function () {
     };
     MilestoneController.prototype.apiList = function (req, res) {
         return __awaiter(this, void 0, void 0, function () {
-            return __generator(this, function (_a) {
-                return [2 /*return*/];
+            var team, _a, page, pageSize, options, filter, milestones, e_1;
+            return __generator(this, function (_b) {
+                switch (_b.label) {
+                    case 0:
+                        team = req.user.team;
+                        _a = req.query, page = _a.page, pageSize = _a.pageSize;
+                        options = {
+                            sort: {
+                                'order': 1
+                            },
+                            page: parseInt(page ? page : '1', 10),
+                            limit: parseInt(pageSize ? pageSize : '20', 10)
+                        };
+                        _b.label = 1;
+                    case 1:
+                        _b.trys.push([1, 6, , 7]);
+                        /* create default milestones */
+                        return [4 /*yield*/, milestone_model_1["default"].findOneOrCreate({
+                                step: milestone_model_1.ChoicesStepMilestone.checkItem,
+                                team: team
+                            }, {
+                                name: 'Checkear carga',
+                                team: team,
+                                step: milestone_model_1.ChoicesStepMilestone.checkItem,
+                                kind: milestone_model_1.ChoicesKindMilestone.form,
+                                order: 1
+                            })];
+                    case 2:
+                        /* create default milestones */
+                        _b.sent();
+                        return [4 /*yield*/, milestone_model_1["default"].findOneOrCreate({
+                                step: milestone_model_1.ChoicesStepMilestone.loadEvidence,
+                                team: team
+                            }, {
+                                name: 'Evidencia de carga',
+                                team: team,
+                                step: milestone_model_1.ChoicesStepMilestone.loadEvidence,
+                                kind: milestone_model_1.ChoicesKindMilestone.file,
+                                order: 2
+                            })];
+                    case 3:
+                        _b.sent();
+                        return [4 /*yield*/, milestone_model_1["default"].findOneOrCreate({
+                                step: milestone_model_1.ChoicesStepMilestone.finishTransmittal,
+                                team: team
+                            }, {
+                                name: 'Subir Documentos',
+                                team: team,
+                                step: milestone_model_1.ChoicesStepMilestone.finishTransmittal,
+                                kind: milestone_model_1.ChoicesKindMilestone.form,
+                                order: 3
+                            })];
+                    case 4:
+                        _b.sent();
+                        filter = {
+                            team: team._id
+                        };
+                        return [4 /*yield*/, this.getMilestone(filter, options)];
+                    case 5:
+                        milestones = _b.sent();
+                        /* istanbul ignore if  */
+                        if (options.page && milestones.pages && milestones.pages < options.page) {
+                            res.status(400).json({
+                                message: 'La página solicitada no existe.',
+                                status: 400
+                            });
+                        }
+                        else {
+                            res.json({
+                                count: milestones.total,
+                                pages: milestones.pages,
+                                hasPrevious: options.page && options.page > 1 && milestones.pages && milestones.pages >= options.page,
+                                hasNext: options.page && milestones.pages && milestones.pages > options.page,
+                                results: milestones.docs,
+                                status: 200
+                            });
+                        }
+                        return [3 /*break*/, 7];
+                    case 6:
+                        e_1 = _b.sent();
+                        /* istanbul ignore next */
+                        logger_service_1["default"].error("TransmittalController.apiList: Async Error.");
+                        /* istanbul ignore next */
+                        logger_service_1["default"].error("{user: {_id: " + req.user._id + ", email: " + req.user.email + "}}");
+                        res.status(500).json(e_1);
+                        return [3 /*break*/, 7];
+                    case 7: return [2 /*return*/];
+                }
+            });
+        });
+    };
+    MilestoneController.prototype.getMilestone = function (filter, options) {
+        return new Promise(function (resolve, reject) {
+            milestone_model_1["default"].paginate(filter, options, function (err, result) {
+                if (err) {
+                    return reject(err);
+                }
+                return resolve(result);
             });
         });
     };

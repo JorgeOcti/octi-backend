@@ -5,6 +5,7 @@ var express = require("express");
 var middlewares_1 = require("../middlewares/middlewares");
 var transmittal_controller_1 = require("./controllers/transmittal.controller");
 var transmittalItem_controller_1 = require("./controllers/transmittalItem.controller");
+var milestone_controller_1 = require("./controllers/milestone.controller");
 var inputsSchema_1 = require("./inputsSchema");
 var isJWTAuthenticated = middlewares_1["default"].isJWTAuthenticated, isLoggedIn = middlewares_1["default"].isLoggedIn, validateBody = middlewares_1["default"].validateBody;
 var distributionRouter = express.Router();
@@ -30,4 +31,5 @@ distributionRouter.post('/api/v1/transmittals/item/', isJWTAuthenticated, transm
 distributionRouter.get('/api/v1/transmittals/item/:id/', isJWTAuthenticated, transmittalItem_controller_1["default"].apiDetail);
 distributionRouter.patch('/api/v1/transmittals/item/:id/', isJWTAuthenticated, transmittalItem_controller_1["default"].apiUpdate);
 distributionRouter["delete"]('/api/v1/transmittals/item/:id/', isJWTAuthenticated, transmittalItem_controller_1["default"].apiDelete);
+distributionRouter.get('/api/v1/milestones/', isJWTAuthenticated, milestone_controller_1["default"].apiList);
 //# sourceMappingURL=router.js.map
