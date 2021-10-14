@@ -68,7 +68,8 @@ class SearchCarInCars extends React.Component<IPropsType, IStateType> {
                 </div>
               </div>
               <div className='col-md-12'>
-                <table className='table table-xs table-hover' style={!slimView ? { minWidth: '1000px' } : {}}>
+                <div className='table-responsive'>
+                  <table className='table table-xs table-hover' style={!slimView ? { minWidth: '1000px' } : {}}>
                   <thead>
                   <tr className='bg-primary' style={{ height: '45px' }}>
                     <th className='middle' style={{ width: '120px' }}>VIN</th>
@@ -126,6 +127,7 @@ class SearchCarInCars extends React.Component<IPropsType, IStateType> {
                   }
                   </tbody>
                 </table>
+                </div>
               </div>
             </div>
             {

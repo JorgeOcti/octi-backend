@@ -52,6 +52,25 @@ var milestoneSchema = new mongoose.Schema({
 }, {
     timestamps: true
 });
+milestoneSchema.statics.findOneOrCreate = function (condition, create) {
+    var model = this;
+    return new Promise(function (resolve, reject) {
+        model.findOne(condition, function (err, result) {
+            if (err) {
+                return reject(err);
+            }
+            if (result) {
+                return resolve(result);
+            }
+            model.create(create, function (err, result) {
+                if (err) {
+                    return reject(err);
+                }
+                return resolve(result);
+            });
+        });
+    });
+};
 milestoneSchema.plugin(mongoosePaginate);
 milestoneSchema.plugin(mongooseAggregatePaginate);
 var Milestone = mongoose.model('Milestone', milestoneSchema);

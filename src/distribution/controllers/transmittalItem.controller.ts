@@ -25,7 +25,7 @@ class TransmittalItemController {
 
   public async apiList(req: IRequest, res: Response) {
     res.json({
-      api: 'apiList:apiDetail'
+      api: 'TransmittalItemController:apiList'
     });
   }
 

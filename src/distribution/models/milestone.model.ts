@@ -58,13 +58,33 @@ const milestoneSchema = new mongoose.Schema({
   timestamps: true
 });
 
+milestoneSchema.statics.findOneOrCreate = function(condition: any, create: any): Promise<IMilestoneModel> {
+  const model = this;
+  return new Promise((resolve, reject) => {
+    model.findOne(condition, (err: any, result: IMilestoneModel) => {
+      if (err) {
+        return reject(err);
+      }
+      if (result) {
+        return resolve(result);
+      }
+      model.create(create, (err: any, result: IMilestoneModel) => {
+        if (err) {
+          return reject(err);
+        }
+        return resolve(result);
+      });
+    });
+  });
+};
+
 milestoneSchema.plugin(mongoosePaginate);
 milestoneSchema.plugin(mongooseAggregatePaginate);
 
-export type MilestoneSchema =
-  mongoose.Model<IMilestoneModel>
-  & PaginateModel<IMilestoneModel>
-  & AggregatePaginateModel<IMilestoneModel>;
+export type MilestoneSchema = mongoose.Model<IMilestoneModel>
+  & PaginateModel<IMilestoneModel> & AggregatePaginateModel<IMilestoneModel> & {
+  findOneOrCreate(condition: any, create: any): Promise<IMilestoneModel>
+};
 
 const Milestone = mongoose.model<IMilestoneModel, MilestoneSchema>('Milestone', milestoneSchema);
 

@@ -85,7 +85,7 @@ var TransmittalItemController = /** @class */ (function () {
         return __awaiter(this, void 0, void 0, function () {
             return __generator(this, function (_a) {
                 res.json({
-                    api: 'apiList:apiDetail'
+                    api: 'TransmittalItemController:apiList'
                 });
                 return [2 /*return*/];
             });
