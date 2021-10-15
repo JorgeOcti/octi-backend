@@ -210,7 +210,7 @@ export default class TransmittalActions {
       transmittalActions.loadingAction(true);
       Axios
         .all([
-          this.api.getVenues({ page: 1, pageSize: 200, noPopulate: true, filted: true }),
+          this.api.getVenues({ page: 1, pageSize: 200, noPopulate: true }),
           this.api.getCarriers(1, 200),
           this.api.getDrivers(1, 200)
         ])
@@ -238,7 +238,7 @@ export default class TransmittalActions {
       Axios
         .all([
           this.api.getTransmittals({page, orderBy, orderType}),
-          this.api.getVenues({ page: 1, pageSize: 200, noPopulate: true, filted: true }),
+          this.api.getVenues({ page: 1, pageSize: 200, noPopulate: true }),
           this.api.getCarriers(1, 200),
           this.api.getDrivers(1, 200)
         ])

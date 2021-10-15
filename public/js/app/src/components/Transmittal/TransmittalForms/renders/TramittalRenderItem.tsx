@@ -11,6 +11,7 @@ import BootstrapSwitchField from '../../../Utils/forms/BootsrapSwitchField';
 import ShowIf from '../../../Utils/ShowIf';
 import AddItemsToTransmittal from '../AddItemsToTransmittal';
 import { ICar } from '../../../../../../../../src/app/interfaces/car.interface';
+import SelectField from '../../../Utils/forms/SelectField';
 
 
 export interface IRenderItemProps {
@@ -115,6 +116,23 @@ class TramittalRenderItem extends React.Component<IPropsType, IStateType> {
                             <Field
                               name={`${item}.origin`}
                               label='Origen *'
+                              component={SelectField}
+                              validate={[inputStringRequired]}
+                              props={{
+                                labelOff: true,
+                                disabled: true
+                              }}
+                            >
+                              <option value={""} disabled={true} >Seleccione</option>
+                              {
+                                transmittal.venues.map((venue) => (
+                                  <option key={venue._id} value={venue._id}>{venue.name}</option>
+                                ))
+                              }
+                            </Field>
+                            {/*<Field
+                              name={`${item}.origin`}
+                              label='Origen *'
                               component={BootstrapSelectField}
                               validate={[inputStringRequired]}
                               props={{
@@ -136,10 +154,27 @@ class TramittalRenderItem extends React.Component<IPropsType, IStateType> {
                                 onClick: (value: string) => this.props.transmittalActions.autofill(`${item}.origin`, value)
                               }}
                             >
-                            </Field>
+                            </Field>*/}
                           </td>
                           <td className={`middle form-group-no-margin`}>
                             <Field
+                              name={`${item}.destination`}
+                              label='Origen *'
+                              component={SelectField}
+                              validate={[inputStringRequired]}
+                              props={{
+                                labelOff: true,
+                                disabled: true
+                              }}
+                            >
+                              <option value={""} disabled={true} >Seleccione</option>
+                              {
+                                transmittal.venues.map((venue) => (
+                                  <option key={venue._id} value={venue._id}>{venue.name}</option>
+                                ))
+                              }
+                            </Field>
+                            {/*<Field
                               name={`${item}.destination`}
                               label='Destino *'
                               component={BootstrapSelectField}
@@ -164,7 +199,7 @@ class TramittalRenderItem extends React.Component<IPropsType, IStateType> {
                                 onClick: (value: string) => this.props.transmittalActions.autofill(`${item}.destination`, value)
                               }}
                             >
-                            </Field>
+                            </Field>*/}
                           </td>
                           <td className={`middle-center pointer`} onClick={() => this.toogleTab(value._id)}>
                             {
@@ -266,6 +301,36 @@ class TramittalRenderItem extends React.Component<IPropsType, IStateType> {
                         <Field
                           name={`all.origin`}
                           label=''
+                          component={SelectField}
+                          validate={[inputStringRequired]}
+                          props={{
+                            labelOff: true,
+                          }}
+                          input={{
+                            defaultValue:"",
+                            onChange: (e:any) => {
+                              fields.forEach((item) => {
+                                this.props.transmittalActions.autofill(`${item}.origin`, e.target.value);
+                                this.props.transmittalActions.autofill(`all.origin`, e.target.value);
+                              });
+                            }
+                          }}
+                        >
+                          <option value={""} disabled={true} >Seleccione</option>
+                          {
+                            transmittal.venues.map((venue) => (
+                              <option
+                                key={venue._id}
+                                value={venue._id}
+                              >
+                                {venue.name}
+                              </option>
+                            ))
+                          }
+                        </Field>
+                       {/* <Field
+                          name={`all.origin`}
+                          label=''
                           component={BootstrapSelectField}
                           props={{
                             noneSelectedText: 'Seleccione...',
@@ -291,7 +356,7 @@ class TramittalRenderItem extends React.Component<IPropsType, IStateType> {
                             }
                           }}
                         >
-                        </Field>
+                        </Field>*/}
                       </div>
                       <div className='flex-1' style={{ paddingLeft: '3px' }}>
                         <ShowIf condition={false}>
@@ -314,6 +379,36 @@ class TramittalRenderItem extends React.Component<IPropsType, IStateType> {
                           />
                         </ShowIf>
                         <Field
+                          name={`all.destination`}
+                          label=''
+                          component={SelectField}
+                          validate={[inputStringRequired]}
+                          props={{
+                            labelOff: true,
+                          }}
+                          input={{
+                            defaultValue:"",
+                            onChange: (e:any) => {
+                              fields.forEach((item) => {
+                                this.props.transmittalActions.autofill(`${item}.destination`, e.target.value);
+                                this.props.transmittalActions.autofill(`all.destination`, e.target.value);
+                              });
+                            }
+                          }}
+                        >
+                          <option value={""} disabled={true} >Seleccione</option>
+                          {
+                            transmittal.venues.map((venue) => (
+                              <option
+                                key={venue._id}
+                                value={venue._id}
+                              >
+                                {venue.name}
+                              </option>
+                            ))
+                          }
+                        </Field>
+                        {/*<Field
                           name={`all.destination`}
                           label=''
                           component={BootstrapSelectField}
@@ -342,7 +437,7 @@ class TramittalRenderItem extends React.Component<IPropsType, IStateType> {
                             }
                           }}
                         >
-                        </Field>
+                        </Field>*/}
                       </div>
                     </div>
                   </td>

@@ -199,8 +199,9 @@ class TransmittalListView extends TrackingBasePage<IPropsType, IStateType> {
                 </ShowIf>
               </div>
             </div>
-            <div className={`box-body transmittal-list table-responsive`}>
-              <ShowIf condition={data.length > 0}>
+            <div className={`box-body transmittal-list`}>
+              <div className='table-responsive'>
+                <ShowIf condition={data.length > 0}>
                 <div className='row transmittal bg-primary'>
                   <div className='flex-45 col-sm-1 col-xs-1 col-md-1 col-lg-1 center pointer head-sorted'
                        onClick={() => this.changeOrder('_id')}
@@ -240,7 +241,7 @@ class TransmittalListView extends TrackingBasePage<IPropsType, IStateType> {
                   ))
                 }
               </ShowIf>
-              <ShowIf condition={!loading && data.length === 0}>
+                <ShowIf condition={!loading && data.length === 0}>
                 <div className='row'>
                   <div className='col-md-12 text-center' style={{ paddingTop: '10px', paddingBottom: '10px' }}>
                     <ImageLazyLoad
@@ -260,6 +261,7 @@ class TransmittalListView extends TrackingBasePage<IPropsType, IStateType> {
                   </div>
                 </div>
               </ShowIf>
+              </div>
             </div>
             {
               pagination.pages > 1 &&

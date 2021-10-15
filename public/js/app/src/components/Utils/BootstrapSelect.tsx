@@ -37,12 +37,14 @@ class BootstrapSelect extends React.Component<IPropsType, IStateType> {
   };
 
   readonly input: RefObject<HTMLInputElement>;
+  readonly dropdown: RefObject<HTMLInputElement>;
 
   constructor(props: IPropsType) {
     super(props);
     this.handlerOpen = this.handlerOpen.bind(this);
     this.search = this.search.bind(this);
     this.input = React.createRef();
+    this.dropdown = React.createRef();
   }
 
   public render(): React.ReactElement<IPropsType> {
@@ -53,7 +55,9 @@ class BootstrapSelect extends React.Component<IPropsType, IStateType> {
     const selectedItems = options.filter((option) => (selected.includes(option.value)));
 
     return (
-      <div className={`dropdown bootstrap-select form-control show-tick ${autoClouse ? '' : 'keep-inside-clicks-open'} ${sm?'bootstrap-select-sm':''}`}>
+      <div
+        ref={this.dropdown}
+        className={`dropdown bootstrap-select form-control show-tick ${autoClouse ? '' : 'keep-inside-clicks-open'} ${sm?'bootstrap-select-sm':''}`}>
         <button
           type="button"
           className={`btn dropdown-toggle bs-placeholder btn-filter btn-default`}
@@ -152,6 +156,7 @@ class BootstrapSelect extends React.Component<IPropsType, IStateType> {
   }
 
   private handlerOpen() {
+    // https://codepen.io/qpqinc/pen/yLyPVMJ
     if(this.input.current){
       this.input.current.focus()
     }

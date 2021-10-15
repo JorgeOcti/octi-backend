@@ -127,7 +127,24 @@ class TransmitalListItem extends React.Component<IPropsType, IStateType> {
         </td>
         <td className={'middle'}>
           <ShowIf condition={hasPermission(window.user, 'changeTransmittal')} alternative={transmittalItem.origin?.name}>
-            <BootstrapSelect
+            <select
+              className='form-control select-sm font-12' value={transmittalItem.origin?._id ?? ''}
+              onChange={(e: React.ChangeEvent<HTMLSelectElement>) => {
+                this.props.transmittalActions.updateTransmittalItemThunkAction({
+                  _id: transmittalItem._id,
+                  transmittal: transmittalItem.transmittal,
+                  origin: e.target.value
+                });
+              }}
+            >
+              {/*<option value='' disabled={true}>-</option>*/}
+              {
+                venues.map((venue) => (
+                  <option key={venue._id} value={venue._id}>{`${venue.name}`}</option>
+                ))
+              }
+            </select>
+            {/*<BootstrapSelect
               noneSelectedText='Selecciona una sucursal'
               displayItems={2}
               sm={true}
@@ -147,12 +164,29 @@ class TransmitalListItem extends React.Component<IPropsType, IStateType> {
                   origin: e
                 });
               }}
-            />
+            />*/}
           </ShowIf>
         </td>
         <td className={'middle'}>
           <ShowIf condition={hasPermission(window.user, 'changeTransmittal')} alternative={transmittalItem.destination?.name}>
-            <BootstrapSelect
+            <select
+              className='form-control select-sm font-12' value={transmittalItem.destination?._id ?? ''}
+              onChange={(e: React.ChangeEvent<HTMLSelectElement>) => {
+                this.props.transmittalActions.updateTransmittalItemThunkAction({
+                  _id: transmittalItem._id,
+                  transmittal: transmittalItem.transmittal,
+                  destination: e.target.value
+                });
+              }}
+            >
+              {/*<option value='' disabled={true}>-</option>*/}
+              {
+                venues.map((venue) => (
+                  <option key={venue._id} value={venue._id}>{`${venue.name}`}</option>
+                ))
+              }
+            </select>
+            {/*<BootstrapSelect
               noneSelectedText='Selecciona una sucursal'
               displayItems={2}
               sm={true}
@@ -172,7 +206,7 @@ class TransmitalListItem extends React.Component<IPropsType, IStateType> {
                   destination: e
                 });
               }}
-            />
+            />*/}
           </ShowIf>
         </td>
         <td className={'middle'}>

@@ -73,7 +73,23 @@ class TransmitalListDetail extends React.Component<IPropsType, IStateType> {
             {
               hasPermission(window.user, 'changeTransmittal') ?
                 (
-                  <BootstrapSelect
+                  <select
+                    className='form-control select-sm font-12' value={transmittal.transporter.driver?._id ?? ''}
+                    onChange={(e: React.ChangeEvent<HTMLSelectElement>) => {
+                      this.props.transmittalActions.updateTransmittalThunkAction({
+                        _id: transmittal._id,
+                        'transporter.driver': e.target.value
+                      });
+                    }}
+                  >
+                    {/*<option value='' disabled={true}>-</option>*/}
+                    {
+                      drivers.map((driver) => (
+                        <option key={driver._id} value={driver._id}>{`${driver.firstName} ${driver.lastName}`}</option>
+                      ))
+                    }
+                  </select>
+                  /*<BootstrapSelect
                     noneSelectedText='Selecciona un chófer'
                     displayItems={2}
                     sm={true}
@@ -92,7 +108,7 @@ class TransmitalListDetail extends React.Component<IPropsType, IStateType> {
                         'transporter.driver': e
                       });
                     }}
-                  />
+                  />*/
                 ) :
                 (
                   `${transmittal.transporter.driver.firstName} ${transmittal.transporter.driver.lastName}`
@@ -104,7 +120,23 @@ class TransmitalListDetail extends React.Component<IPropsType, IStateType> {
             {
               hasPermission(window.user, 'changeTransmittal') ?
                 (
-                  <BootstrapSelect
+                  <select
+                    className='form-control select-sm font-12' value={transmittal.transporter.carrier?._id ?? ''}
+                    onChange={(e: React.ChangeEvent<HTMLSelectElement>) => {
+                      this.props.transmittalActions.updateTransmittalThunkAction({
+                        _id: transmittal._id,
+                        'transporter.carrier': e.target.value
+                      });
+                    }}
+                  >
+                    {/*<option value='' disabled={true}>-</option>*/}
+                    {
+                      carriers.map((carrier) => (
+                        <option key={carrier._id} value={carrier._id}>{`${carrier.name}`}</option>
+                      ))
+                    }
+                  </select>
+                  /*<BootstrapSelect
                     noneSelectedText='Selecciona un transportista'
                     displayItems={2}
                     sm={true}
@@ -123,7 +155,7 @@ class TransmitalListDetail extends React.Component<IPropsType, IStateType> {
                         'transporter.carrier': e
                       });
                     }}
-                  />
+                  />*/
                 ) :
                 (
                   `${transmittal.transporter.carrier.name}`
