@@ -23,6 +23,7 @@ import ModalView from '../Modal/ModalView';
 import Paginator from '../Utils/Paginator';
 import TrackingBasePage from '../Utils/TrackingBasePage';
 import StatusForm from './StatusForm';
+import ShowIf from '../Utils/ShowIf';
 
 interface IPropsType extends RouteComponentProps<{ ticket: string }> {
   dispatch: Dispatch<RequestStatusReduxActions | FormAction>;
@@ -130,6 +131,11 @@ class RequestStatusListView extends TrackingBasePage<IPropsType, IStateType> {
                 <Link to="/requests/settings/operations-type/" className="list-group-item ">
                   Tipos de operación
                 </Link>
+                <ShowIf condition={process.env.NODE_ENV === 'development'}>
+                  <Link to='/transmittals/settings/milestone/' className='list-group-item'>
+                    Hitos
+                  </Link>
+                </ShowIf>
               </div>
             </div>
             <div className="col-md-9">

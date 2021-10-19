@@ -31,5 +31,6 @@ distributionRouter.post('/api/v1/transmittals/item/', isJWTAuthenticated, transm
 distributionRouter.get('/api/v1/transmittals/item/:id/', isJWTAuthenticated, transmittalItem_controller_1["default"].apiDetail);
 distributionRouter.patch('/api/v1/transmittals/item/:id/', isJWTAuthenticated, transmittalItem_controller_1["default"].apiUpdate);
 distributionRouter["delete"]('/api/v1/transmittals/item/:id/', isJWTAuthenticated, transmittalItem_controller_1["default"].apiDelete);
+distributionRouter.get('/transmittals/settings/milestone/', middlewares_1["default"].isLoggedIn, milestone_controller_1["default"].index);
 distributionRouter.get('/api/v1/milestones/', isJWTAuthenticated, milestone_controller_1["default"].apiList);
 //# sourceMappingURL=router.js.map

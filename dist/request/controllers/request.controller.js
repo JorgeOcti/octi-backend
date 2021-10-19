@@ -1462,36 +1462,48 @@ var RequestController = /** @class */ (function () {
         });
     };
     RequestController.prototype.apiPatchItem = function (req, res) {
+        var _a;
         return __awaiter(this, void 0, void 0, function () {
-            var _a, team, company, updateObject, id, requestItem, existCar, existActivity, inventories, participants, requests, newCar, item, e_13;
-            return __generator(this, function (_b) {
-                switch (_b.label) {
+            var _b, team, company, updateObject, id, cancelRequest_1, requestItem, existCar, _c, existActivity, inventories, participants, requests, newCar, item, e_13;
+            return __generator(this, function (_d) {
+                switch (_d.label) {
                     case 0:
                         logger_service_1["default"].info("RequestController.apiPatchItem");
-                        _a = req.user, team = _a.team, company = _a.company;
+                        _b = req.user, team = _b.team, company = _b.company;
                         updateObject = req.body;
                         id = req.params.id;
                         logger_service_1["default"].info("{user: {_id: " + req.user._id + ", email: " + req.user.email + "}, body: " + JSON.stringify(updateObject) + " }");
-                        _b.label = 1;
+                        _d.label = 1;
                     case 1:
-                        _b.trys.push([1, 22, , 23]);
+                        _d.trys.push([1, 24, , 25]);
+                        cancelRequest_1 = false;
+                        req.on('close', function () {
+                            cancelRequest_1 = true;
+                        });
                         return [4 /*yield*/, requestItem_model_1["default"].findOneAndUpdate({
                                 _id: id,
                                 team: team
                             }, { $set: __assign({}, updateObject) }).populate([{ path: 'car' }, { path: 'request' }])];
                     case 2:
-                        requestItem = _b.sent();
-                        if (!Object.keys(updateObject.car).length) return [3 /*break*/, 19];
+                        requestItem = _d.sent();
+                        if (!Object.keys(updateObject.car).length) return [3 /*break*/, 21];
                         // add vin2 to car
                         updateObject.car.vin2 = updateObject.car && updateObject.car.vin ? updateObject.car.vin.substr(updateObject.car.vin.length - 6) : '';
+                        if (!(((_a = updateObject.car.vin) === null || _a === void 0 ? void 0 : _a.length) >= 16)) return [3 /*break*/, 4];
                         return [4 /*yield*/, car_model_1["default"].findOne({ team: team, vin: updateObject.car.vin })];
                     case 3:
-                        existCar = _b.sent();
-                        if (!(requestItem && ((updateObject.car.vin && updateObject.car.vin.length) || (updateObject.car.material && updateObject.car.material.length)))) return [3 /*break*/, 6];
-                        return [4 /*yield*/, activityHistory_model_1["default"].findOne({ team: team, 'request.item': requestItem._id })];
+                        _c = _d.sent();
+                        return [3 /*break*/, 5];
                     case 4:
-                        existActivity = _b.sent();
-                        if (!!existActivity) return [3 /*break*/, 6];
+                        _c = false;
+                        _d.label = 5;
+                    case 5:
+                        existCar = _c;
+                        if (!(requestItem && ((updateObject.car.vin && updateObject.car.vin.length) || (updateObject.car.material && updateObject.car.material.length)))) return [3 /*break*/, 8];
+                        return [4 /*yield*/, activityHistory_model_1["default"].findOne({ team: team, 'request.item': requestItem._id })];
+                    case 6:
+                        existActivity = _d.sent();
+                        if (!!existActivity) return [3 /*break*/, 8];
                         return [4 /*yield*/, new activityHistory_model_1["default"]({
                                 team: team,
                                 company: company,
@@ -1503,68 +1515,72 @@ var RequestController = /** @class */ (function () {
                                     number: requestItem.request.number
                                 }
                             }).save()];
-                    case 5:
-                        _b.sent();
-                        _b.label = 6;
-                    case 6:
-                        if (!(existCar && requestItem && existCar.vin !== requestItem.car.vin)) return [3 /*break*/, 8];
+                    case 7:
+                        _d.sent();
+                        _d.label = 8;
+                    case 8:
+                        if (!(existCar && requestItem && existCar.vin !== requestItem.car.vin)) return [3 /*break*/, 10];
                         // validate exist car and change vin
                         return [4 /*yield*/, requestItem_model_1["default"].update({ _id: id, team: team }, { $set: { car: existCar } })];
-                    case 7:
-                        // validate exist car and change vin
-                        _b.sent();
-                        return [3 /*break*/, 19];
-                    case 8:
-                        if (!(requestItem && requestItem.car.vin !== updateObject.car.vin)) return [3 /*break*/, 17];
-                        return [4 /*yield*/, inventoryCar_model_1["default"].find({ car: requestItem.car }).count()];
                     case 9:
-                        inventories = _b.sent();
-                        return [4 /*yield*/, participant_model_1["default"].find({ team: team, car: requestItem.car }).count()];
+                        // validate exist car and change vin
+                        _d.sent();
+                        return [3 /*break*/, 21];
                     case 10:
-                        participants = _b.sent();
-                        return [4 /*yield*/, requestItem_model_1["default"].find({ team: team, car: requestItem.car, _id: { $ne: requestItem._id } }).count()];
+                        if (!(requestItem && requestItem.car.vin !== updateObject.car.vin)) return [3 /*break*/, 19];
+                        return [4 /*yield*/, inventoryCar_model_1["default"].find({ car: requestItem.car }).count()];
                     case 11:
-                        requests = _b.sent();
-                        if (!(inventories || participants || requests)) return [3 /*break*/, 14];
+                        inventories = _d.sent();
+                        return [4 /*yield*/, participant_model_1["default"].find({ team: team, car: requestItem.car }).count()];
+                    case 12:
+                        participants = _d.sent();
+                        return [4 /*yield*/, requestItem_model_1["default"].find({ team: team, car: requestItem.car, _id: { $ne: requestItem._id } }).count()];
+                    case 13:
+                        requests = _d.sent();
+                        if (!(inventories || participants || requests)) return [3 /*break*/, 16];
                         // validate car has actions in the system
                         delete updateObject.car._id;
                         return [4 /*yield*/, new car_model_1["default"](updateObject.car).save()];
-                    case 12:
-                        newCar = _b.sent();
+                    case 14:
+                        newCar = _d.sent();
                         return [4 /*yield*/, requestItem_model_1["default"].update({ _id: id, team: team }, { $set: { car: newCar } })];
-                    case 13:
-                        _b.sent();
-                        return [3 /*break*/, 16];
-                    case 14: return [4 /*yield*/, car_model_1["default"].update({ _id: updateObject.car._id, team: team }, { $set: updateObject.car })];
                     case 15:
-                        _b.sent();
-                        _b.label = 16;
-                    case 16: return [3 /*break*/, 19];
-                    case 17: return [4 /*yield*/, car_model_1["default"].update({ _id: updateObject.car._id, team: team }, { $set: updateObject.car })];
-                    case 18:
-                        _b.sent();
-                        _b.label = 19;
-                    case 19: return [4 /*yield*/, requestItem_model_1["default"]
+                        _d.sent();
+                        return [3 /*break*/, 18];
+                    case 16: return [4 /*yield*/, car_model_1["default"].update({ _id: updateObject.car._id, team: team }, { $set: updateObject.car })];
+                    case 17:
+                        _d.sent();
+                        _d.label = 18;
+                    case 18: return [3 /*break*/, 21];
+                    case 19: return [4 /*yield*/, car_model_1["default"].update({ _id: updateObject.car._id, team: team }, { $set: updateObject.car })];
+                    case 20:
+                        _d.sent();
+                        _d.label = 21;
+                    case 21: return [4 /*yield*/, requestItem_model_1["default"]
                             .findOne({ _id: id, team: team })
                             .populate(this.itemPopulate)
                             .lean()];
-                    case 20:
-                        item = _b.sent();
-                        return [4 /*yield*/, request_model_1["default"].update({ _id: item.request._id }, { $set: { updatedAt: moment() } })];
-                    case 21:
-                        _b.sent();
-                        server_1.io.to("request-list-" + team._id).emit('UPDATE_REQUEST_ITEM', {
-                            idRequest: item.request._id,
-                            item: item
-                        });
-                        server_1.io.to("request-detail-" + team._id).emit('UPDATE_REQUEST_ITEM', {
-                            idRequest: item.request._id,
-                            item: item
-                        });
-                        res.status(200).json(__assign({}, item));
-                        return [3 /*break*/, 23];
                     case 22:
-                        e_13 = _b.sent();
+                        item = _d.sent();
+                        return [4 /*yield*/, request_model_1["default"].update({ _id: item.request._id }, { $set: { updatedAt: moment() } })];
+                    case 23:
+                        _d.sent();
+                        if (!cancelRequest_1) {
+                            server_1.io.to("request-list-" + team._id).emit('UPDATE_REQUEST_ITEM', {
+                                idRequest: item.request._id,
+                                item: item
+                            });
+                        }
+                        if (!cancelRequest_1) {
+                            server_1.io.to("request-detail-" + team._id).emit('UPDATE_REQUEST_ITEM', {
+                                idRequest: item.request._id,
+                                item: item
+                            });
+                        }
+                        res.status(200).json(__assign({}, item));
+                        return [3 /*break*/, 25];
+                    case 24:
+                        e_13 = _d.sent();
                         /* istanbul ignore next */
                         logger_service_1["default"].error(e_13);
                         /* istanbul ignore next */
@@ -1572,8 +1588,8 @@ var RequestController = /** @class */ (function () {
                         /* istanbul ignore next */
                         logger_service_1["default"].error("{user: {_id: " + req.user._id + ", email: " + req.user.email + "}}");
                         res.status(500).json(e_13);
-                        return [3 /*break*/, 23];
-                    case 23: return [2 /*return*/];
+                        return [3 /*break*/, 25];
+                    case 25: return [2 /*return*/];
                 }
             });
         });

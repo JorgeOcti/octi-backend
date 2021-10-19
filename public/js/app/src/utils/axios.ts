@@ -28,6 +28,7 @@ import { IFilterCar } from '../reducers/inventory.reducer';
 import { ITransmittalItemModel } from '../../../../../src/distribution/models/transmittalItem.model';
 import { ITransmittalModel } from '../../../../../src/distribution/models/transmittal.model';
 import { IOperationType } from '../../../../../src/request/interfaces/operationType.interface';
+import { IMilestone } from '../../../../../src/distribution/interfaces/milestone.interface';
 
 export interface IHeaders {
   'X-CSRFToken'?: string;
@@ -781,6 +782,35 @@ export default class ApiService {
   public getTeamSettings(): AxiosPromise {
     return this.instance.get(
       `/api/admin/team-settings/`
+    );
+  }
+
+  public createMilestone(milestone: IMilestone): AxiosPromise {
+    return this.instance.post(
+      `/api/v1/milestones/`, milestone
+    );
+  }
+
+  public updateMilestone(milestone: IMilestone): AxiosPromise {
+    return this.instance.patch(
+      `/api/v1/milestones/${milestone._id}/`, milestone
+    );
+  }
+
+  public deleteMilestone(milestone: IMilestone): AxiosPromise {
+    return this.instance.delete(
+      `/api/v1/milestones/${milestone._id}/`
+    );
+  }
+
+  public getMilestones({
+    page,
+    pageSize,
+    orderBy,
+    orderType
+  }: { page: number, orderType?: string, orderBy?: string, pageSize?: number }): AxiosPromise {
+    return this.instance.get(
+      `/api/v1/milestones/?page=${page}${pageSize ? `&pageSize=${pageSize}` : ''}${orderBy ? `&orderBy=${orderBy}` : ''}${orderType ? `&orderType=${orderType}` : ''}`
     );
   }
 }

@@ -1196,6 +1196,10 @@ class RequestController {
     const { id } = req.params;
     logger.info(`{user: {_id: ${req.user._id}, email: ${req.user.email}}, body: ${JSON.stringify(updateObject)} }`);
     try {
+      let cancelRequest = false;
+       req.on('close', function() {
+          cancelRequest = true;
+       });
       const requestItem = await RequestItem.findOneAndUpdate({
         _id: id,
         team
@@ -1203,7 +1207,7 @@ class RequestController {
       if (Object.keys(updateObject.car).length) {
         // add vin2 to car
         updateObject.car.vin2 = updateObject.car && updateObject.car.vin ? updateObject.car.vin.substr(updateObject.car.vin.length - 6) : '';
-        const existCar = await Car.findOne({ team, vin: updateObject.car.vin });
+        const existCar = updateObject.car.vin?.length >= 16 ? await Car.findOne({ team, vin: updateObject.car.vin }) : false;
         if (requestItem && ((updateObject.car.vin && updateObject.car.vin.length) || (updateObject.car.material && updateObject.car.material.length))) {
           const existActivity = await ActivityHistory.findOne({ team, 'request.item': requestItem._id });
           if (!existActivity) {
@@ -1244,15 +1248,20 @@ class RequestController {
         .findOne({ _id: id, team })
         .populate(this.itemPopulate)
         .lean();
+
       await Request.update({ _id: item.request._id }, { $set: { updatedAt: moment() } });
-      io.to(`request-list-${team._id}`).emit('UPDATE_REQUEST_ITEM', {
-        idRequest: item.request._id,
-        item
-      });
-      io.to(`request-detail-${team._id}`).emit('UPDATE_REQUEST_ITEM', {
-        idRequest: item.request._id,
-        item
-      });
+      if (!cancelRequest) {
+        io.to(`request-list-${team._id}`).emit('UPDATE_REQUEST_ITEM', {
+          idRequest: item.request._id,
+          item
+        });
+      }
+      if (!cancelRequest) {
+        io.to(`request-detail-${team._id}`).emit('UPDATE_REQUEST_ITEM', {
+          idRequest: item.request._id,
+          item
+        });
+      }
       res.status(200).json({
         ...item
       });

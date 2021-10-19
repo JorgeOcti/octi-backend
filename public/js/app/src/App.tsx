@@ -48,6 +48,7 @@ import TransmittalCreateView from './components/Transmittal/TransmittalCreateVie
 import CustomInventoryAnalysis from './components/CustomDashboard/CustomInventoryAnalysis';
 import OperationTypeListView from './components/RequestSettings/OperationTypeListView';
 import RequestImportView from './components/Request/RequestImportView';
+import MilestoneListView from './components/RequestSettings/MilestoneListView';
 
 
 declare let window: IWindow;
@@ -101,6 +102,7 @@ const App = () => (
         <Route exact path='/requests/settings/channels/' component={RequestChannelListView} />
         <Route exact path='/requests/settings/status/' component={RequestStatusListView} />
         <Route exact path='/requests/settings/operations-type/' component={OperationTypeListView} />
+        <Route exact path='/transmittals/settings/milestone/' component={MilestoneListView} />
         <Route exact path='/requests/import/' component={RequestImportView} />
         <Route exact path='/requests/update/' component={RequestUpdaterView} />
         <Route exact path='/requests/vehicles/create' component={RequestCreateView} />

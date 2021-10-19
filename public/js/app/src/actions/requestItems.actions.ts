@@ -1,6 +1,10 @@
 import Axios, { AxiosError, AxiosResponse, CancelTokenSource } from 'axios';
 import { Dispatch } from 'redux';
-import { debounce } from 'throttle-debounce';
+import * as Rx from 'rxjs';
+import { debounce } from 'throttle-debounce'
+import { ajax } from 'rxjs/ajax';
+import { of } from 'rxjs';
+import { switchMap, debounceTime } from 'rxjs/operators';
 import { ICarrier } from '../../../../../src/app/interfaces/carrier.interface';
 import { IReason } from '../../../../../src/request/interfaces/reason.interface';
 import { IRequestItem } from '../../../../../src/request/interfaces/requestItem.interface';
@@ -210,19 +214,37 @@ export function getRequestItemsThunkAction(nextPage: number, orderBy: string, or
 }
 
 
-const debounceUpdateRequestItem = debounce(500, (item) => {
+/*const debounceUpdateRequestItem = debounce(800, (item) => {
   const api: ApiService = new ApiService();
   api.updateRequestItem(item._id, item)
     // tslint:disable-next-line: no-empty
     .then((response: AxiosResponse) => { });
-});
+});*/
+const $updateRequestItem = new Rx.Subject<any>();
+
+
+$updateRequestItem.pipe(
+  debounceTime(2000),
+  switchMap((item: any) => {
+    return item ? ajax({
+      url: `/api/v1/requests-item/${item._id}/`,
+      headers: {
+        'Content-Type': 'application/json;charset=UTF-8'
+      },
+      method: 'PATCH',
+      body: item
+    }) : of();
+  })
+).subscribe();
 export function updateRequestItemsThunkAction({ item, debounce }: { item: IRequestItem, debounce?: boolean}) {
   return (dispatch: Dispatch<RequestItemsReduxActions>) => {
     dispatch(updateRequestItemAction(item));
     if (debounce) {
-      debounceUpdateRequestItem(item);
+      // debounceUpdateRequestItem(item);
+      $updateRequestItem.next(item);
     } else {
       const api: ApiService = new ApiService();
+      $updateRequestItem.next(null);
       api.updateRequestItem(item._id, item)
         // tslint:disable-next-line: no-empty
         .then((response: AxiosResponse) => {

@@ -75,6 +75,13 @@ var MilestoneController = /** @class */ (function () {
                         team = req.user.team;
                         _a = req.query, page = _a.page, pageSize = _a.pageSize;
                         options = {
+                            populate: [{
+                                    path: 'form',
+                                    select: ['name']
+                                }, {
+                                    path: 'requestItemStatus',
+                                    select: ['name']
+                                }],
                             sort: {
                                 'order': 1
                             },

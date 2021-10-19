@@ -27,6 +27,13 @@ class MilestoneController {
       pageSize
     } = req.query as { page: string; pageSize: string; };
     const options: PaginateOptions = {
+      populate: [{
+        path: 'form',
+        select: ['name']
+      },{
+        path: 'requestItemStatus',
+        select: ['name']
+      }],
       sort: {
         'order': 1
       },

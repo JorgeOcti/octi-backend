@@ -1,10 +1,8 @@
-import {AxiosError, AxiosResponse} from 'axios';
 import * as Raven from 'raven-js';
 import * as React from 'react';
 import {ErrorInfo} from 'react';
 import {connect} from 'react-redux';
 import {RouteComponentProps} from 'react-router-dom';
-import {debounce} from 'throttle-debounce';
 import {ICar} from '../../../../../../../src/app/interfaces/car.interface';
 import {IRequestItem} from '../../../../../../../src/request/interfaces/requestItem.interface';
 import {deleteRequestItemsThunkAction, updateRequestItemsThunkAction} from '../../../actions/requestItems.actions';
@@ -15,6 +13,9 @@ import {hasPermission} from '../../../utils/common';
 import AutocompleteInput from '../../Utils/AutocompleteInput';
 import * as swal from 'sweetalert';
 import ShowIf from '../../Utils/ShowIf';
+import * as Rx from 'rxjs';
+import { debounceTime, switchMap } from 'rxjs/operators';
+import { ajax } from 'rxjs/ajax';
 
 interface IPropsType extends RouteComponentProps<{ id: string }> {
   requestItems: IRequestItemsState;
@@ -32,6 +33,7 @@ declare let window: IWindow;
 
 class RequestVehicleItem extends React.Component<IPropsType, IStateType> {
   readonly api: ApiService;
+  readonly $subjectRecommends = new Rx.Subject<any>();
 
   readonly state = {
     error: null,
@@ -40,10 +42,25 @@ class RequestVehicleItem extends React.Component<IPropsType, IStateType> {
 
   constructor(props: IPropsType) {
     super(props);
-    this.search = debounce(500, this.search.bind(this));
     this.goToDetail = this.goToDetail.bind(this);
     this.downloadFiles = this.downloadFiles.bind(this);
     this.api = new ApiService();
+    this.$subjectRecommends.pipe(
+      debounceTime(300),
+      switchMap((text: string) => {
+        return ajax({
+          url: `/api/v1/requests/search-car/?search=${text}`,
+          headers: {
+            'Content-Type': 'application/json;charset=UTF-8'
+          },
+          method: 'GET'
+        });
+      })
+    ).subscribe((response) => {
+      this.setState({
+        recommends: response.response.cars
+      });
+    });
   }
 
   public componentDidCatch(error: Error, errorInfo: ErrorInfo): void {
@@ -51,6 +68,10 @@ class RequestVehicleItem extends React.Component<IPropsType, IStateType> {
     Raven.captureException(error, {
       extra: errorInfo
     });
+  }
+
+  componentWillUnmount() {
+    this.$subjectRecommends.unsubscribe();
   }
 
   public render(): React.ReactElement<IPropsType> {
@@ -144,7 +165,7 @@ class RequestVehicleItem extends React.Component<IPropsType, IStateType> {
                         vin: e.target.value
                       }
                     },
-                    debounce: false
+                    debounce: true
                   });
                 }}
               />
@@ -167,7 +188,7 @@ class RequestVehicleItem extends React.Component<IPropsType, IStateType> {
                         entry: e.target.value
                       }
                     },
-                    debounce: false
+                    debounce: true
                   });
                 }}
               />
@@ -417,16 +438,17 @@ class RequestVehicleItem extends React.Component<IPropsType, IStateType> {
   }
 
   private search(text: string): void {
-    this.api
-      .searchCar(text)
-      .then((response: AxiosResponse): void => {
-        this.setState({
-          recommends: response.data.cars
-        });
-      })
-      .catch((err: AxiosError): void => {
-        this.api.errorHandler(err);
-      });
+    this.$subjectRecommends.next(text)
+    // this.api
+    //   .searchCar(text)
+    //   .then((response: AxiosResponse): void => {
+    //     this.setState({
+    //       recommends: response.data.cars
+    //     });
+    //   })
+    //   .catch((err: AxiosError): void => {
+    //     this.api.errorHandler(err);
+    //   });
   }
 
   private deleteRequestItem(item: IRequestItem) {

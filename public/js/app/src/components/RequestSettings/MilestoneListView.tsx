@@ -7,35 +7,35 @@ import { Link } from 'react-router-dom';
 import { Dispatch } from 'redux';
 import { FormAction, submit } from 'redux-form';
 import * as swal from 'sweetalert';
-import { IOperationType } from '../../../../../../src/request/interfaces/operationType.interface';
+import { IMilestone } from '../../../../../../src/distribution/interfaces/milestone.interface';
 import { loadDataAction, ModalReduxAction } from '../../actions/modal.actions';
-import { IOperationTypeState, OperationTypeReduxActions } from '../../actions/operationType.types';
+import { IMilestoneState, MilestoneReduxActions } from '../../actions/milestone.types';
 import {
-  createOperationTypeThunkAction,
-  deleteOperationTypeItemThunkAction,
-  getOperationTypesThunkAction,
-  updateOperationTypeThunkAction
-} from '../../actions/operationType.actions';
+  /*createMilestoneThunkAction,
+  deleteMilestoneItemThunkAction,*/
+  getMilestonesThunkAction,
+  updateMilestoneThunkAction
+} from '../../actions/milestone.actions';
 import AppContainer from '../../container/AppContainer';
 import { IWindow } from '../../interfaces/window';
 import { hasPermission, showModal, statusFooterButttonsModal } from '../../utils/common';
 import ModalView from '../Modal/ModalView';
 import Paginator from '../Utils/Paginator';
 import TrackingBasePage from '../Utils/TrackingBasePage';
-import OperationTypeForm from './OperationTypeForm';
+import MilestoneForm from './MilestoneForm';
 import ShowIf from '../Utils/ShowIf';
 
 interface IPropsType extends RouteComponentProps<{ ticket: string }> {
-  dispatch: Dispatch<OperationTypeReduxActions | FormAction>;
-  operationType: IOperationTypeState;
+  dispatch: Dispatch<MilestoneReduxActions | FormAction>;
+  milestone: IMilestoneState;
 
-  getOperationTypeThunkAction(nextPage: number, orderBy: string, orderType: string, hideLoading?: boolean): OperationTypeReduxActions;
+  getMilestoneThunkAction(nextPage: number, orderBy: string, orderType: string, hideLoading?: boolean): MilestoneReduxActions;
 
-  createOperationTypeThunkAction(operationType: IOperationType): OperationTypeReduxActions;
+  // createMilestoneThunkAction(milestone: IMilestone): MilestoneReduxActions;
 
-  updateOperationTypeThunkAction(operationType: IOperationType): OperationTypeReduxActions;
+  updateMilestoneThunkAction(milestone: IMilestone): MilestoneReduxActions;
 
-  deleteOperationTypeThunkAction(operationType: IOperationType): OperationTypeReduxActions;
+  // deleteMilestoneThunkAction(milestone: IMilestone): MilestoneReduxActions;
 
   loadDataAction(title: string, body: JSX.Element, footer: JSX.Element): ModalReduxAction;
 }
@@ -47,7 +47,7 @@ interface IStateType {
 
 declare let window: IWindow;
 
-class OperationTypeListView extends TrackingBasePage<IPropsType, IStateType> {
+class MilestoneListView extends TrackingBasePage<IPropsType, IStateType> {
   title: string;
 
   private socket: SocketIOClient.Socket;
@@ -58,19 +58,19 @@ class OperationTypeListView extends TrackingBasePage<IPropsType, IStateType> {
 
   constructor(props: IPropsType) {
     super(props);
-    this.title = 'Listado Tipo de operación';
+    this.title = 'Listado Hitos';
     this.changePage = this.changePage.bind(this);
-    this.createOperationType = this.createOperationType.bind(this);
-    this.processCreateOperationType = this.processCreateOperationType.bind(this);
-    this.updateReaon = this.updateReaon.bind(this);
-    this.processUpdateOperationType = this.processUpdateOperationType.bind(this);
-    this.deleteOperationType = this.deleteOperationType.bind(this);
+    /*this.createMilestone = this.createMilestone.bind(this);
+    this.processCreateMilestone = this.processCreateMilestone.bind(this);*/
+    this.updateMilestone = this.updateMilestone.bind(this);
+    this.processUpdateMilestone = this.processUpdateMilestone.bind(this);
+    // this.deleteMilestone = this.deleteMilestone.bind(this);
   }
 
   public componentWillMount(): void {
-    const { pagination } = this.props.operationType;
-    const { orderBy, orderType } = this.props.operationType.options;
-    this.props.getOperationTypeThunkAction(pagination.page, orderBy, orderType);
+    const { pagination } = this.props.milestone;
+    const { orderBy, orderType } = this.props.milestone.options;
+    this.props.getMilestoneThunkAction(pagination.page, orderBy, orderType);
 
     // socket
     this.socket = io.connect(`${location.protocol}//${location.host}`, {
@@ -84,16 +84,16 @@ class OperationTypeListView extends TrackingBasePage<IPropsType, IStateType> {
     });
     this.socket.on('REFRESH', (data: any): void => {
       if (data.update) {
-        const { pagination } = this.props.operationType;
-        const { orderBy, orderType } = this.props.operationType.options;
-        this.props.getOperationTypeThunkAction(pagination.page, orderBy, orderType, true);
+        const { pagination } = this.props.milestone;
+        const { orderBy, orderType } = this.props.milestone.options;
+        this.props.getMilestoneThunkAction(pagination.page, orderBy, orderType, true);
       }
     });
   }
 
 
   public componentDidUpdate(prevProps: Readonly<IPropsType>, prevState: Readonly<IStateType>, snapshot?: any): void {
-    if (this.props.operationType.pagination !== prevProps.operationType.pagination) {
+    if (this.props.milestone.pagination !== prevProps.milestone.pagination) {
       window.scrollTo(0, 0);
     }
   }
@@ -107,18 +107,18 @@ class OperationTypeListView extends TrackingBasePage<IPropsType, IStateType> {
 
   public componentWillUnmount(): void {
     // cancel request if component is inmounted
-    if (this.props.operationType.source) {
-      this.props.operationType.source.cancel('Operation canceled by the user.');
+    if (this.props.milestone.source) {
+      this.props.milestone.source.cancel('Operation canceled by the user.');
     }
     this.socket.disconnect();
   }
 
   public render(): React.ReactElement<IPropsType> {
-    const { loading, operationTypes, pagination } = this.props.operationType;
+    const { loading, milestones, pagination } = this.props.milestone;
     const canEdit = hasPermission(window.user, 'adminRequest');
-    const canDelete = hasPermission(window.user, 'adminRequest');
+    // const canDelete = hasPermission(window.user, 'adminRequest');
     return (
-      <AppContainer title='' cMenu='3' cSubMenu='3.3' cAction='Tipos de operación'>
+      <AppContainer title='' cMenu='3' cSubMenu='3.3' cAction='Hitos'>
         <section className='content'>
           <div className='row'>
             <div className='col-md-3'>
@@ -132,11 +132,11 @@ class OperationTypeListView extends TrackingBasePage<IPropsType, IStateType> {
                 <Link to='/requests/settings/status/' className='list-group-item'>
                   Estados
                 </Link>
-                <Link to='/requests/settings/operations-type/' className='list-group-item active'>
+                <Link to='/requests/settings/operations-type/' className='list-group-item'>
                   Tipos de operación
                 </Link>
                 <ShowIf condition={process.env.NODE_ENV === 'development'}>
-                  <Link to='/transmittals/settings/milestone/' className='list-group-item'>
+                  <Link to='/transmittals/settings/milestone/' className='list-group-item active'>
                     Hitos
                   </Link>
                 </ShowIf>
@@ -145,57 +145,65 @@ class OperationTypeListView extends TrackingBasePage<IPropsType, IStateType> {
             <div className='col-md-9'>
               <div className='box'>
                 <div className='box-header with-border'>
-                  <h3 className='box-title'>Tipos de operación <small>{pagination.count}</small></h3>
+                  <h3 className='box-title'>Hitos <small>{pagination.count}</small></h3>
                   <div className='box-tools pull-right'>
-                    {
+                   {/* {
                       hasPermission(window.user, 'addVenue') ?
                         <button className='btn btn-sm btn-success'
-                                onClick={this.createOperationType}
+                                onClick={this.createMilestone}
                         ><i className='fa fa-plus' /> Agregar</button>
                         : null
-                    }
+                    }*/}
                   </div>
                 </div>
                 <div className='box-body table-responsive no-padding'>
                   <table className='table table-andes table-striped'>
                     <thead>
                     <tr>
-                      <th style={{ width: '98%' }} className='middle'>Nombre</th>
+                      <th className='middle' style={{width: '20px'}}>Orden</th>
+                      <th className='middle'>Paso</th>
+                      <th className='middle'>Tipo</th>
+                      <th className='middle'>Formulario</th>
+                      <th className='middle'>Estado solicitudes</th>
                       {
                         canEdit ?
                           <th style={{ width: '1%' }} className='width-10' /> : null
                       }
-                      {
+                      {/*{
                         canDelete ?
                           <th style={{ width: '1%' }} className='width-10' /> : null
-                      }
+                      }*/}
                     </tr>
                     </thead>
                     <tbody>
                     {
-                      operationTypes.map((item) => {
+                      milestones.map((item) => {
                         return (
                           <tr key={item._id}>
+                            <td className='middle-center'>{item.order}</td>
                             <td className='middle'>{item.name}</td>
+                            <td className='middle'>{item.kind}</td>
+                            <td className='middle'>{item.form?.name}</td>
+                            <td className='middle'>{item.requestItemStatus?.name}</td>
                             {
                               canEdit ?
                                 <td
                                   className='middle text-blue pointer'
-                                  onClick={() => this.updateReaon(item)}
+                                  onClick={() => this.updateMilestone(item)}
                                 >
                                   <i className='fa fa-pencil' />
                                 </td> : null
                             }
-                            {
+                            {/*{
                               canDelete ?
                                 <td
                                   className={canDelete ? 'middle text-red pointer' : 'middle text-muted not-allowed'}
                                   // className={'middle text-red pointer'}
-                                  onClick={canDelete ? () => this.deleteOperationType(item) : undefined}
+                                  onClick={canDelete ? () => this.deleteMilestone(item) : undefined}
                                 >
                                   <i className='fa fa-minus-circle' />
                                 </td> : null
-                            }
+                            }*/}
                           </tr>
                         );
                       })
@@ -224,53 +232,53 @@ class OperationTypeListView extends TrackingBasePage<IPropsType, IStateType> {
     );
   }
 
-  private createOperationType(): void {
+  /*private createMilestone(): void {
     this.props.loadDataAction(
       'Agregar tipo de operación',
-      <OperationTypeForm
+      <MilestoneForm
         initialValues={{ update: false }}
-        onSubmit={this.processCreateOperationType}
+        onSubmit={this.processCreateMilestone}
       />,
       <React.Fragment>
         <button type='button' className='btn btn-sm btn-default' data-dismiss='modal'>Cancelar</button>
-        <button type='button' className='btn btn-sm btn-primary' onClick={() => this.props.dispatch(submit('operationTypeForm'))}>Grabar</button>
+        <button type='button' className='btn btn-sm btn-primary' onClick={() => this.props.dispatch(submit('milestoneForm'))}>Grabar</button>
       </React.Fragment>
     );
-  }
+  }*/
 
-  private processCreateOperationType(operationType: any): void {
+  /*private processCreateMilestone(milestone: any): void {
     statusFooterButttonsModal(true);
-    this.props.createOperationTypeThunkAction(operationType);
+    this.props.createMilestoneThunkAction(milestone);
     statusFooterButttonsModal(false);
     showModal(false);
-  }
+  }*/
 
-  private updateReaon(reason: any): void {
+  private updateMilestone(milestone: any): void {
     this.props.loadDataAction(
-      'Editar tipo de operación',
-      <OperationTypeForm
-        initialValues={{ update: false, ...reason }}
-        onSubmit={this.processUpdateOperationType}
+      'Editar hito',
+      <MilestoneForm
+        initialValues={{ update: false, ...milestone }}
+        onSubmit={this.processUpdateMilestone}
       />,
       <React.Fragment>
         <button type='button' className='btn btn-sm btn-default' data-dismiss='modal'>Cancelar</button>
-        <button type='button' className='btn btn-sm btn-primary' onClick={() => this.props.dispatch(submit('operationTypeForm'))}>Editar</button>
+        <button type='button' className='btn btn-sm btn-primary' onClick={() => this.props.dispatch(submit('milestoneForm'))}>Editar</button>
       </React.Fragment>
     );
   }
 
-  private processUpdateOperationType(operationType: any): void {
+  private processUpdateMilestone(milestone: any): void {
     statusFooterButttonsModal(true);
-    this.props.updateOperationTypeThunkAction(operationType);
+    this.props.updateMilestoneThunkAction(milestone);
     statusFooterButttonsModal(false);
     showModal(false);
   }
 
-  private deleteOperationType(operationType: IOperationType): void {
+  /*private deleteMilestone(milestone: IMilestone): void {
     // ask if you are sure that you are going to delete the user?
     swal({
       title: '¿Estás seguro?',
-      text: `Vas a eliminar el tipo de operación ${operationType.name} `,
+      text: `Vas a eliminar el tipo de operación ${milestone.name} `,
       icon: 'warning',
       dangerMode: true,
       buttons: {
@@ -281,33 +289,33 @@ class OperationTypeListView extends TrackingBasePage<IPropsType, IStateType> {
       }
     }).then((willDelete) => {
       if (willDelete) {
-        this.props.deleteOperationTypeThunkAction(operationType);
+        this.props.deleteMilestoneThunkAction(milestone);
       }
     });
-  }
+  }*/
 
   private changePage(page: number): void {
     // change the page
-    const { orderBy, orderType } = this.props.operationType.options;
-    this.props.getOperationTypeThunkAction(page, orderBy, orderType);
+    const { orderBy, orderType } = this.props.milestone.options;
+    this.props.getMilestoneThunkAction(page, orderBy, orderType);
   }
 }
 
-const mapStateToProps = (state: { operationType: IOperationTypeState }) => {
+const mapStateToProps = (state: { milestone: IMilestoneState }) => {
   return {
-    operationType: state.operationType
+    milestone: state.milestone
   };
 };
 
 const mapDispatchToProps = (dispatch: any) => {
   return {
     dispatch,
-    getOperationTypeThunkAction: (nextPage: number, orderBy: string, orderType: string, hideLoading?: boolean) => dispatch(getOperationTypesThunkAction(nextPage, orderBy, orderType, hideLoading)),
-    createOperationTypeThunkAction: (operationType: IOperationType) => dispatch(createOperationTypeThunkAction(operationType)),
-    updateOperationTypeThunkAction: (operationType: IOperationType) => dispatch(updateOperationTypeThunkAction(operationType)),
-    deleteOperationTypeThunkAction: (operationType: IOperationType) => dispatch(deleteOperationTypeItemThunkAction(operationType)),
+    getMilestoneThunkAction: (nextPage: number, orderBy: string, orderType: string, hideLoading?: boolean) => dispatch(getMilestonesThunkAction(nextPage, orderBy, orderType, hideLoading)),
+    // createMilestoneThunkAction: (milestone: IMilestone) => dispatch(createMilestoneThunkAction(milestone)),
+    updateMilestoneThunkAction: (milestone: IMilestone) => dispatch(updateMilestoneThunkAction(milestone)),
+    // deleteMilestoneThunkAction: (milestone: IMilestone) => dispatch(deleteMilestoneItemThunkAction(milestone)),
     loadDataAction: (title: string, body: JSX.Element, footer: JSX.Element) => dispatch(loadDataAction(title, body, footer))
   };
 };
 
-export default connect<{ operationType: IOperationTypeState }, { dispatch: any }, IPropsType>(mapStateToProps, mapDispatchToProps)(OperationTypeListView);
+export default connect<{ milestone: IMilestoneState }, { dispatch: any }, IPropsType>(mapStateToProps, mapDispatchToProps)(MilestoneListView);

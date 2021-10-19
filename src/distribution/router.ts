@@ -3,7 +3,7 @@ import Middlewares from '../middlewares/middlewares';
 import TransmittalController from './controllers/transmittal.controller';
 import TransmittalItemController from './controllers/transmittalItem.controller';
 import MilestoneController from './controllers/milestone.controller';
-import {createTransmittalSchema} from "./inputsSchema";
+import { createTransmittalSchema } from './inputsSchema';
 
 const {isJWTAuthenticated, isLoggedIn, validateBody} = Middlewares;
 
@@ -33,6 +33,7 @@ distributionRouter.get('/api/v1/transmittals/item/:id/', isJWTAuthenticated, Tra
 distributionRouter.patch('/api/v1/transmittals/item/:id/', isJWTAuthenticated, TransmittalItemController.apiUpdate);
 distributionRouter.delete('/api/v1/transmittals/item/:id/', isJWTAuthenticated, TransmittalItemController.apiDelete);
 
+distributionRouter.get('/transmittals/settings/milestone/', Middlewares.isLoggedIn, MilestoneController.index);
 distributionRouter.get('/api/v1/milestones/', isJWTAuthenticated, MilestoneController.apiList);
 
 export {

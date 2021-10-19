@@ -5,6 +5,7 @@ import { IRequestItemStatus } from '../../request/interfaces/requestItemStatus.i
 import { IRequestItemStatusModel } from '../../request/models/requestItemStatus.model';
 
 export interface IMilestone {
+  _id: any;
   team: ITeam | ITeamModel;
   name: string;
   kind: string;
