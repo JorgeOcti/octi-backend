@@ -131,7 +131,7 @@ class RequestReasonListView extends TrackingBasePage<IPropsType, IStateType> {
                 <Link to="/requests/settings/operations-type/" className="list-group-item ">
                   Tipos de operación
                 </Link>
-                <ShowIf condition={process.env.NODE_ENV === 'development'}>
+                <ShowIf condition={window.user.isAdmin}>
                   <Link to='/transmittals/settings/milestone/' className='list-group-item'>
                     Hitos
                   </Link>

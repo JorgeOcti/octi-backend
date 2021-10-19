@@ -3,6 +3,7 @@ import {ITeamModel} from "../../app/models/team.model";
 import {IForm} from "../../form/interfaces/form.interface";
 import { IRequestItemStatus } from '../../request/interfaces/requestItemStatus.interface';
 import { IRequestItemStatusModel } from '../../request/models/requestItemStatus.model';
+import { IFormModel } from "../../form/models/form.model";
 
 export interface IMilestone {
   _id: any;
@@ -12,5 +13,5 @@ export interface IMilestone {
   step: string;
   order: number;
   requestItemStatus: IRequestItemStatus | IRequestItemStatusModel;
-  form: IForm
+  form: IForm | IFormModel;
 }

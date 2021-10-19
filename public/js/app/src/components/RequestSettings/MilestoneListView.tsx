@@ -5,25 +5,20 @@ import { connect } from 'react-redux';
 import { RouteComponentProps } from 'react-router';
 import { Link } from 'react-router-dom';
 import { Dispatch } from 'redux';
-import { FormAction, submit } from 'redux-form';
-import * as swal from 'sweetalert';
+import { FormAction } from 'redux-form';
 import { IMilestone } from '../../../../../../src/distribution/interfaces/milestone.interface';
 import { loadDataAction, ModalReduxAction } from '../../actions/modal.actions';
 import { IMilestoneState, MilestoneReduxActions } from '../../actions/milestone.types';
-import {
-  /*createMilestoneThunkAction,
-  deleteMilestoneItemThunkAction,*/
-  getMilestonesThunkAction,
-  updateMilestoneThunkAction
-} from '../../actions/milestone.actions';
+import { getMilestonesThunkAction, updateMilestoneThunkAction } from '../../actions/milestone.actions';
 import AppContainer from '../../container/AppContainer';
 import { IWindow } from '../../interfaces/window';
-import { hasPermission, showModal, statusFooterButttonsModal } from '../../utils/common';
+import { showModal, statusFooterButttonsModal } from '../../utils/common';
 import ModalView from '../Modal/ModalView';
 import Paginator from '../Utils/Paginator';
 import TrackingBasePage from '../Utils/TrackingBasePage';
-import MilestoneForm from './MilestoneForm';
 import ShowIf from '../Utils/ShowIf';
+import { IForm } from '../../../../../../src/form/interfaces/form.interface';
+import { IRequestItemStatus } from '../../../../../../src/request/interfaces/requestItemStatus.interface';
 
 interface IPropsType extends RouteComponentProps<{ ticket: string }> {
   dispatch: Dispatch<MilestoneReduxActions | FormAction>;
@@ -62,7 +57,7 @@ class MilestoneListView extends TrackingBasePage<IPropsType, IStateType> {
     this.changePage = this.changePage.bind(this);
     /*this.createMilestone = this.createMilestone.bind(this);
     this.processCreateMilestone = this.processCreateMilestone.bind(this);*/
-    this.updateMilestone = this.updateMilestone.bind(this);
+    /*this.updateMilestone = this.updateMilestone.bind(this);*/
     this.processUpdateMilestone = this.processUpdateMilestone.bind(this);
     // this.deleteMilestone = this.deleteMilestone.bind(this);
   }
@@ -114,8 +109,8 @@ class MilestoneListView extends TrackingBasePage<IPropsType, IStateType> {
   }
 
   public render(): React.ReactElement<IPropsType> {
-    const { loading, milestones, pagination } = this.props.milestone;
-    const canEdit = hasPermission(window.user, 'adminRequest');
+    const { loading, milestones, pagination, forms, requestStatus } = this.props.milestone;
+    // const canEdit = hasPermission(window.user, 'adminRequest');
     // const canDelete = hasPermission(window.user, 'adminRequest');
     return (
       <AppContainer title='' cMenu='3' cSubMenu='3.3' cAction='Hitos'>
@@ -135,7 +130,7 @@ class MilestoneListView extends TrackingBasePage<IPropsType, IStateType> {
                 <Link to='/requests/settings/operations-type/' className='list-group-item'>
                   Tipos de operación
                 </Link>
-                <ShowIf condition={process.env.NODE_ENV === 'development'}>
+                <ShowIf condition={window.user.isAdmin}>
                   <Link to='/transmittals/settings/milestone/' className='list-group-item active'>
                     Hitos
                   </Link>
@@ -165,14 +160,6 @@ class MilestoneListView extends TrackingBasePage<IPropsType, IStateType> {
                       <th className='middle'>Tipo</th>
                       <th className='middle'>Formulario</th>
                       <th className='middle'>Estado solicitudes</th>
-                      {
-                        canEdit ?
-                          <th style={{ width: '1%' }} className='width-10' /> : null
-                      }
-                      {/*{
-                        canDelete ?
-                          <th style={{ width: '1%' }} className='width-10' /> : null
-                      }*/}
                     </tr>
                     </thead>
                     <tbody>
@@ -182,28 +169,58 @@ class MilestoneListView extends TrackingBasePage<IPropsType, IStateType> {
                           <tr key={item._id}>
                             <td className='middle-center'>{item.order}</td>
                             <td className='middle'>{item.name}</td>
-                            <td className='middle'>{item.kind}</td>
-                            <td className='middle'>{item.form?.name}</td>
-                            <td className='middle'>{item.requestItemStatus?.name}</td>
-                            {
-                              canEdit ?
-                                <td
-                                  className='middle text-blue pointer'
-                                  onClick={() => this.updateMilestone(item)}
+                            <td className='middle'>
+                              <select
+                                className='form-control select-sm font-12' value={item.kind}
+                                onChange={(e: React.ChangeEvent<HTMLSelectElement>) => {
+                                  this.props.updateMilestoneThunkAction({
+                                    ...item,
+                                    kind: e.target.value
+                                  });
+                                }}
+                              >
+                                <option key={'form'} value={'form'}>Formulario</option>
+                                <option key={'file'} value={'file'}>Archivo</option>
+                              </select>
+                            </td>
+                            <td className='middle'>
+                              <ShowIf condition={item.kind === 'form'}>
+                                <select
+                                  className='form-control select-sm font-12' value={item.form?._id ?? ''}
+                                  onChange={(e: React.ChangeEvent<HTMLSelectElement>) => {
+                                    this.props.updateMilestoneThunkAction({
+                                      ...item,
+                                      form: e.target.value as unknown as IForm
+                                    });
+                                  }}
                                 >
-                                  <i className='fa fa-pencil' />
-                                </td> : null
-                            }
-                            {/*{
-                              canDelete ?
-                                <td
-                                  className={canDelete ? 'middle text-red pointer' : 'middle text-muted not-allowed'}
-                                  // className={'middle text-red pointer'}
-                                  onClick={canDelete ? () => this.deleteMilestone(item) : undefined}
-                                >
-                                  <i className='fa fa-minus-circle' />
-                                </td> : null
-                            }*/}
+                                  <option value='' disabled={true}>Seleccione</option>
+                                  {
+                                    forms.map((form) => (
+                                      <option key={form._id} value={form._id}>{`${form.name}`}</option>
+                                    ))
+                                  }
+                                </select>
+                              </ShowIf>
+                            </td>
+                            <td className='middle'>
+                              <select
+                                className='form-control select-sm font-12' value={item.requestItemStatus?._id ?? ''}
+                                onChange={(e: React.ChangeEvent<HTMLSelectElement>) => {
+                                  this.props.updateMilestoneThunkAction({
+                                      ...item,
+                                      requestItemStatus: e.target.value  as unknown as IRequestItemStatus
+                                    });
+                                }}
+                              >
+                                <option value={""}>Seleccione</option>
+                                {
+                                  requestStatus.map((status) => (
+                                    <option key={status._id} value={status._id}>{`${status.name}`}</option>
+                                  ))
+                                }
+                              </select>
+                            </td>
                           </tr>
                         );
                       })
@@ -253,7 +270,7 @@ class MilestoneListView extends TrackingBasePage<IPropsType, IStateType> {
     showModal(false);
   }*/
 
-  private updateMilestone(milestone: any): void {
+  /*private updateMilestone(milestone: any): void {
     this.props.loadDataAction(
       'Editar hito',
       <MilestoneForm
@@ -265,7 +282,7 @@ class MilestoneListView extends TrackingBasePage<IPropsType, IStateType> {
         <button type='button' className='btn btn-sm btn-primary' onClick={() => this.props.dispatch(submit('milestoneForm'))}>Editar</button>
       </React.Fragment>
     );
-  }
+  }*/
 
   private processUpdateMilestone(milestone: any): void {
     statusFooterButttonsModal(true);

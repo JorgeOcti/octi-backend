@@ -11,7 +11,7 @@ class MilestoneController {
     this.apiList = this.apiList.bind(this);
     // this.apiDetail = this.apiDetail.bind(this);
     // this.apiCreate = this.apiCreate.bind(this);
-    // this.apiUpdate = this.apiUpdate.bind(this);
+    this.apiUpdate = this.apiUpdate.bind(this);
     // this.apiDelete = this.apiDelete.bind(this);
     this.getMilestone = this.getMilestone.bind(this);
   }
@@ -96,6 +96,37 @@ class MilestoneController {
     } catch (e) {
       /* istanbul ignore next */
       logger.error(`TransmittalController.apiList: Async Error.`);
+      /* istanbul ignore next */
+      logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
+      res.status(500).json(e);
+    }
+  }
+
+  public async apiUpdate(req: IRequest, res: Response) {
+    try {
+      logger.info(`MilestoneController.apiUpdate`);
+      const { id } = req.params;
+      let { body: milestone } = req;
+      if (milestone.requestItemStatus === '') {
+        milestone.requestItemStatus = null;
+      }
+      const newMilestone = await Milestone
+        .findOneAndUpdate({ _id: id }, { $set: milestone }, { new: true })
+        .populate([{
+          path: 'form',
+          select: ['name']
+        }, {
+          path: 'requestItemStatus',
+          select: ['name']
+        }]);
+      res.json({
+        data: newMilestone
+      });
+    } catch (e) {
+      /* istanbul ignore next */
+      logger.error(e);
+      /* istanbul ignore next */
+      logger.error(`MilestoneController.apiUpdate: Async Error.`);
       /* istanbul ignore next */
       logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
       res.status(500).json(e);

@@ -34,7 +34,10 @@ import ActivityHistory, { ChoicesTypeActivity } from '../../billing/models/activ
 import TriggerHandler from '../commands/triggerHandler';
 import TransmittalItem from '../../distribution/models/transmittalItem.model';
 import TransmittalController from '../../distribution/controllers/transmittal.controller';
+import RequestController from '../../request/controllers/request.controller';
 import Transmittal, { ChoicesStatusTransmittal } from '../../distribution/models/transmittal.model';
+import RequestItem from '../../request/models/requestItem.model';
+import Milestone, { ChoicesStepMilestone } from '../../distribution/models/milestone.model';
 // import {ValidationResult} from 'joi';
 
 
@@ -837,6 +840,29 @@ class FormController {
                 .findOneAndUpdate({ _id: transmittalItem }, { $push: { revisions: newParticipant._id } }, { new: true })
                 .populate(TransmittalController.itemPopulate);
 
+              // update request when check item
+              const milestone = await Milestone.findOne({
+                step: ChoicesStepMilestone.checkItem,
+                team
+              });
+              if (milestone && milestone?.requestItemStatus) {
+                const requestItem = await RequestItem
+                  .findOneAndUpdate({ transmittalItem }, { $set: { status: milestone.requestItemStatus } }, { new: true })
+                  .populate(RequestController.itemPopulate);
+                if (requestItem) {
+                  io.to(`request-list-${team._id}`).emit('UPDATE_REQUEST_ITEM', {
+                    idRequest: requestItem.request._id,
+                    item: requestItem
+                  });
+                  io.to(`request-detail-${team._id}`).emit('UPDATE_REQUEST_ITEM', {
+                    idRequest: requestItem.request._id,
+                    item: requestItem
+                  });
+                }
+              }
+              // end update request when check item
+
+
               io.to(`transmittal-list-${team._id}`).emit('UPDATE_TRANSMITTAL_ITEM', {
                 transmittalItem: transmittalItemData
               });
@@ -854,6 +880,30 @@ class FormController {
                   new: true
                 })
                 .populate(TransmittalController.populate);
+
+              // update request when finish transmittal
+              const milestone = await Milestone.findOne({
+                step: ChoicesStepMilestone.finishTransmittal,
+                team
+              });
+              if (milestone && milestone?.requestItemStatus) {
+                await RequestItem.updateMany({ transmittal }, { $set: { status: milestone.requestItemStatus } });
+                const requestItems = await RequestItem
+                  .find({ transmittal, team })
+                  .populate(RequestController.itemPopulate)
+                  .lean();
+                for (const requestItem of requestItems) {
+                  io.to(`request-list-${team._id}`).emit('UPDATE_REQUEST_ITEM', {
+                    idRequest: requestItem.request._id,
+                    item: requestItem
+                  });
+                  io.to(`request-detail-${team._id}`).emit('UPDATE_REQUEST_ITEM', {
+                    idRequest: requestItem.request._id,
+                    item: requestItem
+                  });
+                }
+              }
+              // end update request when finish transmittal
 
               io.to(`transmittal-list-${team._id}`).emit('UPDATE_TRANSMITTAL', {
                 transmittal: newTransmittal

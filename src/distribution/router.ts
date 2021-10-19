@@ -35,6 +35,7 @@ distributionRouter.delete('/api/v1/transmittals/item/:id/', isJWTAuthenticated, 
 
 distributionRouter.get('/transmittals/settings/milestone/', Middlewares.isLoggedIn, MilestoneController.index);
 distributionRouter.get('/api/v1/milestones/', isJWTAuthenticated, MilestoneController.apiList);
+distributionRouter.patch('/api/v1/milestones/:id/', isJWTAuthenticated, MilestoneController.apiUpdate);
 
 export {
   distributionRouter

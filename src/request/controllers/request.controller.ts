@@ -26,7 +26,7 @@ import Reason from '../models/reason.model';
 
 class RequestController {
 
-  private itemPopulate: QueryPopulateOptions[] = [{
+  public itemPopulate: QueryPopulateOptions[] = [{
     path: 'car'
   }, {
     path: 'request'

@@ -18,8 +18,14 @@ import {
   IDeleteMilestone,
   IChangeOrderMilestone,
   IMilestoneState,
-  MilestoneReduxActions
+  MilestoneReduxActions,
+  MILESTONE_LOAD_FORMS,
+  MILESTONE_LOAD_REQUEST_STATUS,
+  ILoadRequestStatusMilestone,
+  ILoadFormsMilestone
 } from './milestone.types';
+import { IForm } from '../../../../../src/form/interfaces/form.interface';
+import { IRequestStatus } from '../../../../../src/request/interfaces/requestStatus.interface';
 
 export function cancelMilestoneAction(source: CancelTokenSource): ICancelMilestone {
   return {
@@ -47,6 +53,25 @@ export function loadMilestoneAction(milestones: IMilestone[], count: number, pag
       count,
       pages,
       page
+    }
+  };
+}
+
+
+export function loadFormsMilestoneAction(forms: IForm[]): ILoadFormsMilestone {
+  return {
+    type: MILESTONE_LOAD_FORMS,
+    payload: {
+      forms
+    }
+  };
+}
+
+export function loadRequestStatusMilestoneAction(requestStatus: IRequestStatus[]): ILoadRequestStatusMilestone {
+  return {
+    type: MILESTONE_LOAD_REQUEST_STATUS,
+    payload: {
+      requestStatus
     }
   };
 }
@@ -100,11 +125,15 @@ export function getMilestonesThunkAction(nextPage: number, orderBy: string, orde
     dispatch(cancelMilestoneAction(api.getSource()));
     Axios
       .all([
-        api.getMilestones({ page, orderBy, orderType })
+        api.getMilestones({ page, orderBy, orderType }),
+        api.getForms(1, 200),
+        api.getRequestItemsStatus({ page:1,pageSize: 200 })
       ])
-      .then(Axios.spread((milestones) => {
+      .then(Axios.spread((milestones, forms, requestStatus) => {
         const { data } = milestones;
         dispatch(loadMilestoneAction(data.results, data.count, data.pages, page));
+        dispatch(loadFormsMilestoneAction(forms.data.results));
+        dispatch(loadRequestStatusMilestoneAction(requestStatus.data.results));
         dispatch(isLoadingMilestoneAction(false));
       }))
       .catch((err: AxiosError) => {
@@ -130,7 +159,7 @@ export function updateMilestoneThunkAction(milestone: IMilestone) {
     const api: ApiService = new ApiService();
     api.updateMilestone(milestone)
       .then((response: AxiosResponse) => {
-        // dispatch(updateMilestoneAction(idMilestone, data));
+        dispatch(updateMilestoneAction(response.data.data));
       });
   };
 }

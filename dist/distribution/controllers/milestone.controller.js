@@ -44,7 +44,7 @@ var MilestoneController = /** @class */ (function () {
         this.apiList = this.apiList.bind(this);
         // this.apiDetail = this.apiDetail.bind(this);
         // this.apiCreate = this.apiCreate.bind(this);
-        // this.apiUpdate = this.apiUpdate.bind(this);
+        this.apiUpdate = this.apiUpdate.bind(this);
         // this.apiDelete = this.apiDelete.bind(this);
         this.getMilestone = this.getMilestone.bind(this);
     }
@@ -162,6 +162,49 @@ var MilestoneController = /** @class */ (function () {
                         res.status(500).json(e_1);
                         return [3 /*break*/, 7];
                     case 7: return [2 /*return*/];
+                }
+            });
+        });
+    };
+    MilestoneController.prototype.apiUpdate = function (req, res) {
+        return __awaiter(this, void 0, void 0, function () {
+            var id, milestone, newMilestone, e_2;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0:
+                        _a.trys.push([0, 2, , 3]);
+                        logger_service_1["default"].info("MilestoneController.apiUpdate");
+                        id = req.params.id;
+                        milestone = req.body;
+                        if (milestone.requestItemStatus === '') {
+                            milestone.requestItemStatus = null;
+                        }
+                        return [4 /*yield*/, milestone_model_1["default"]
+                                .findOneAndUpdate({ _id: id }, { $set: milestone }, { "new": true })
+                                .populate([{
+                                    path: 'form',
+                                    select: ['name']
+                                }, {
+                                    path: 'requestItemStatus',
+                                    select: ['name']
+                                }])];
+                    case 1:
+                        newMilestone = _a.sent();
+                        res.json({
+                            data: newMilestone
+                        });
+                        return [3 /*break*/, 3];
+                    case 2:
+                        e_2 = _a.sent();
+                        /* istanbul ignore next */
+                        logger_service_1["default"].error(e_2);
+                        /* istanbul ignore next */
+                        logger_service_1["default"].error("MilestoneController.apiUpdate: Async Error.");
+                        /* istanbul ignore next */
+                        logger_service_1["default"].error("{user: {_id: " + req.user._id + ", email: " + req.user.email + "}}");
+                        res.status(500).json(e_2);
+                        return [3 /*break*/, 3];
+                    case 3: return [2 /*return*/];
                 }
             });
         });

@@ -135,7 +135,7 @@ class OperationTypeListView extends TrackingBasePage<IPropsType, IStateType> {
                 <Link to='/requests/settings/operations-type/' className='list-group-item active'>
                   Tipos de operación
                 </Link>
-                <ShowIf condition={process.env.NODE_ENV === 'development'}>
+                <ShowIf condition={window.user.isAdmin}>
                   <Link to='/transmittals/settings/milestone/' className='list-group-item'>
                     Hitos
                   </Link>
