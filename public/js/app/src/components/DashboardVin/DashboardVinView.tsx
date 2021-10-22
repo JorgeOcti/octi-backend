@@ -10,10 +10,11 @@ import { debounce } from 'throttle-debounce';
 import * as swal from 'sweetalert';
 import { IParticipant } from '../../../../../../src/form/interfaces/participant.interface';
 import {
+  changeFormsSearchDashboardAction,
   changeRangeDashboardAction,
   changeSearchDashboardAction,
-  DashboardReduxAction,
-  getRevisionsAction,
+  DashboardReduxAction, getForms,
+  getRevisionsAction, getRevisionsThunkAction,
   IDashboardState
 } from '../../actions/dashboard.actions';
 import AppContainer from '../../container/AppContainer';
@@ -21,13 +22,17 @@ import { IWindow } from '../../interfaces/window';
 import Paginator from '../Utils/Paginator';
 import TrackingBasePage from '../Utils/TrackingBasePage';
 import DateRangeInput from '../Utils/DateRangeInput';
+import BootstrapSelect from "../Utils/BootstrapSelect";
+import {IForm} from "../../../../../../src/form/interfaces/form.interface";
 
 declare let window: IWindow;
 
 interface IPropsType extends RouteComponentProps<{ ticket: string }> {
   dispatch: Dispatch<DashboardReduxAction>;
   dashboard: IDashboardState;
+  getRevisionsThunkAction(page: number, loading: boolean, search?: string) : void;
   getRevisionsAction(page: number, loading: boolean, search?: string): void;
+  changeSearchFormsDashboardAction(forms: string[]): DashboardReduxAction;
   changeSearchDashboardAction(searchText: string): DashboardReduxAction;
   changeRangeDashboardAction(from: string, to: string): DashboardReduxAction;
 }
@@ -36,6 +41,7 @@ interface IStateType {
   error: Error | null;
   highlight: string[];
   searchText: string;
+  selectedForms: string[];
   carLoading: string;
   from: Date;
   to: Date;
@@ -50,6 +56,7 @@ class DashboardVinView extends TrackingBasePage<IPropsType, IStateType> {
     highlight: [],
     searchText: '',
     carLoading: '',
+    selectedForms: [],
     from: moment().subtract(30, 'days').toDate(),
     to: moment().toDate(),
     downloading: false
@@ -68,6 +75,9 @@ class DashboardVinView extends TrackingBasePage<IPropsType, IStateType> {
     this.debounceOnChangeSearch = debounce(300, this.debounceOnChangeSearch);
     this.downloadReport = this.downloadReport.bind(this);
     this.onDateRangeChange = this.onDateRangeChange.bind(this);
+    this.filterForms = this.filterForms.bind(this);
+    this.filterAllForms = this.filterAllForms.bind(this);
+    this.showSelect = this.showSelect.bind(this);
   }
 
   public printPdf(url: string, carLoading: string) {
@@ -93,7 +103,7 @@ class DashboardVinView extends TrackingBasePage<IPropsType, IStateType> {
   public componentWillMount(): void {
     // set the title of the page
     const {page} = this.props.dashboard.pagination;
-    this.props.getRevisionsAction(page, true);
+    this.props.getRevisionsThunkAction(page, true);
 
     // socket
     this.socket = io.connect(`${location.protocol}//${location.host}`, {
@@ -253,8 +263,8 @@ class DashboardVinView extends TrackingBasePage<IPropsType, IStateType> {
   }
 
   public render(): React.ReactElement<IPropsType> {
-    const {loading, participants, pagination, searchText} = this.props.dashboard;
-    const {highlight, carLoading, downloading, from, to} = this.state;
+    const {loading, participants, pagination, searchText, forms} = this.props.dashboard;
+    const {highlight, carLoading, downloading, from, to, selectedForms} = this.state;
     return (
       <AppContainer title="" cMenu="1" cSubMenu="1.2">
         <section className="content">
@@ -272,14 +282,14 @@ class DashboardVinView extends TrackingBasePage<IPropsType, IStateType> {
             </div>
             <div className={`box-body no-padding`}>
               <div className="row">
-                <div className="col-md-offset-4 col-md-4">
+                <div className="col-md-offset-2 col-md-4">
                   <DateRangeInput
                     options={this.getDateRangeOptions()}
                     onChange={this.onDateRangeChange}
                     startDate={from}
                     endDate={to} />
                 </div>
-                <div className="col-md-4">
+                <div className="col-md-3">
                   <div className="input-group input-group-sm"
                        style={{padding: '10px'}}
                   >
@@ -293,6 +303,24 @@ class DashboardVinView extends TrackingBasePage<IPropsType, IStateType> {
                       <button className="btn btn-default"><i className="fa fa-search"/></button>
                     </div>
                   </div>
+                </div>
+                <div className="col-md-3" style={{marginTop: "6px", paddingRight: "28px"}}>
+                  <BootstrapSelect
+                    noneSelectedText="Filtrar por checklist"
+                    displayItems={2}
+                    selectedText="Formularios seleccionadas."
+                    selected={selectedForms}
+                    allOption={true}
+                    selectAll={this.filterAllForms}
+                    options={forms.map((form: IForm) => ({
+                      value: form._id,
+                      text: form.name,
+                      className: "label label-aqua"
+                    }))}
+                    onClick={this.filterForms}
+                    displayHandler={this.showSelect}
+                    notHideOnClickOutside={true}
+                  />
                 </div>
               </div>
               {
@@ -411,6 +439,36 @@ class DashboardVinView extends TrackingBasePage<IPropsType, IStateType> {
     );
   }
 
+  private filterForms(value: any) {
+    let {selectedForms} = this.state;
+    let sForms = selectedForms;
+
+    sForms = sForms.includes(value)
+        ? sForms.filter((form) => form !== value)
+        : [value, ...selectedForms]
+
+    this.setState({
+      selectedForms: sForms
+    });
+  }
+
+  private filterAllForms(value: boolean) {
+    let {forms} = this.props.dashboard;
+    let sForms = value ? forms.map( (f: IForm) => f._id) : [];
+
+    this.setState({
+      selectedForms: sForms
+    });
+  }
+
+  showSelect(value: boolean) : void {
+    let {selectedForms} = this.state;
+    if (!value) {
+      this.props.changeSearchFormsDashboardAction(selectedForms);
+      this.props.getRevisionsAction(1, true);
+    }
+  }
+
   private onChangeSearch(e: React.ChangeEvent<HTMLInputElement>): void {
     e.preventDefault();
     const value = e.target.value.trim();
@@ -442,6 +500,8 @@ const mapStateToProps = (state: { dashboard: IDashboardState }) => {
 const mapDispatchToProps = (dispatch: any) => {
   return {
     dispatch,
+    getRevisionsThunkAction: (page: number, loading: boolean, search?: string) => dispatch(getRevisionsThunkAction(page, loading, search)),
+    changeSearchFormsDashboardAction : (forms : string[]) => dispatch(changeFormsSearchDashboardAction(forms)),
     changeSearchDashboardAction: (searchText: string) => dispatch(changeSearchDashboardAction(searchText)),
     changeRangeDashboardAction: (from: string, to: string) => dispatch(changeRangeDashboardAction(from, to)),
     getRevisionsAction: (page: number, loading: boolean, search?: string) => dispatch(getRevisionsAction(page, loading, search))
