@@ -71,7 +71,9 @@ class DashboardVinDetail extends TrackingBasePage<IPropsType, IStateType> {
       secure: location.protocol === 'https:',
       transports: ['websocket'],
       reconnection: true,
-      query: {token: (window.user as any).token}
+      query: {
+        token: (window.user as any).token
+      }
     });
     this.socket.on('connect', () => {
       this.socket.emit('join', {room: `dashboard-vin-detail-${id}`});

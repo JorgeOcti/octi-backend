@@ -280,10 +280,10 @@ var CarController = /** @class */ (function () {
     };
     CarController.prototype.vinDashboardDetail = function (req, res) {
         return __awaiter(this, void 0, void 0, function () {
-            var id, team, _a, car, _b, _c, _d, _e, _f, e_3;
-            var _g, _h, _j;
-            return __generator(this, function (_k) {
-                switch (_k.label) {
+            var id, team, _a, car, _b, _c, _d, e_3;
+            var _e;
+            return __generator(this, function (_f) {
+                switch (_f.label) {
                     case 0:
                         id = req.params.id;
                         team = req.user.team;
@@ -291,8 +291,8 @@ var CarController = /** @class */ (function () {
                         if (_a) return [3 /*break*/, 2];
                         return [4 /*yield*/, car_model_1["default"].find({ _id: id, team: team }).count()];
                     case 1:
-                        _a = !(_k.sent());
-                        _k.label = 2;
+                        _a = !(_f.sent());
+                        _f.label = 2;
                     case 2:
                         // validate params
                         /* istanbul ignore next */
@@ -300,49 +300,46 @@ var CarController = /** @class */ (function () {
                             return [2 /*return*/, res.redirect('/cars/')];
                             // return res.status(404).render('404');
                         }
-                        _k.label = 3;
+                        _f.label = 3;
                     case 3:
-                        _k.trys.push([3, 9, , 10]);
-                        _c = (_b = car_model_1["default"]).findOne;
-                        _g = {
-                            _id: id
-                        };
-                        _h = {
-                            $exists: true,
-                            $ne: null
-                        };
-                        return [4 /*yield*/, participant_model_1["default"].find({
-                                venue: {
-                                    $in: req.user.venuesPermissions()
-                                }
-                            }, {
-                                _id: true
+                        _f.trys.push([3, 8, , 9]);
+                        return [4 /*yield*/, car_model_1["default"].findOne({
+                                _id: id,
+                                // lastForm: {
+                                //   $exists: true,
+                                //   $ne: null,
+                                //   $in: await ParticipantModel.find(
+                                //     {
+                                //       venue: {
+                                //         $in: req.user.venuesPermissions()
+                                //       }
+                                //     }, {
+                                //       _id: true
+                                //     })
+                                // },
+                                team: team._id
                             })];
-                    case 4: return [4 /*yield*/, _c.apply(_b, [(_g.lastForm = (_h.$in = _k.sent(),
-                                _h),
-                                _g.team = team._id,
-                                _g)])];
-                    case 5:
-                        car = _k.sent();
-                        if (!!car) return [3 /*break*/, 6];
+                    case 4:
+                        car = _f.sent();
+                        if (!!car) return [3 /*break*/, 5];
                         return [2 /*return*/, res.status(404).render('404')];
-                    case 6:
-                        _e = (_d = res).render;
-                        _f = ['app/index'];
-                        _j = {};
+                    case 5:
+                        _c = (_b = res).render;
+                        _d = ['app/index'];
+                        _e = {};
                         return [4 /*yield*/, req.user.generateToken()];
-                    case 7:
-                        _e.apply(_d, _f.concat([(_j.token = _k.sent(), _j)]));
-                        _k.label = 8;
-                    case 8: return [3 /*break*/, 10];
-                    case 9:
-                        e_3 = _k.sent();
+                    case 6:
+                        _c.apply(_b, _d.concat([(_e.token = _f.sent(), _e)]));
+                        _f.label = 7;
+                    case 7: return [3 /*break*/, 9];
+                    case 8:
+                        e_3 = _f.sent();
                         /* istanbul ignore next */
                         if (e_3) {
                             res.status(500).send(e_3);
                         }
-                        return [3 /*break*/, 10];
-                    case 10: return [2 /*return*/];
+                        return [3 /*break*/, 9];
+                    case 9: return [2 /*return*/];
                 }
             });
         });

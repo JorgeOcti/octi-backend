@@ -187,18 +187,18 @@ class CarController {
       // validate car exist
       const car = await CarModel.findOne({
         _id: id,
-        lastForm: {
-          $exists: true,
-          $ne: null,
-          $in: await ParticipantModel.find(
-            {
-              venue: {
-                $in: req.user.venuesPermissions()
-              }
-            }, {
-              _id: true
-            })
-        },
+        // lastForm: {
+        //   $exists: true,
+        //   $ne: null,
+        //   $in: await ParticipantModel.find(
+        //     {
+        //       venue: {
+        //         $in: req.user.venuesPermissions()
+        //       }
+        //     }, {
+        //       _id: true
+        //     })
+        // },
         team: team._id
       });
       if (!car) {
