@@ -300,7 +300,7 @@ class DashboardVinView extends TrackingBasePage<IPropsType, IStateType> {
                       className="form-control pull-right"
                       onChange={this.onChangeSearch}
                       value={searchText}
-                      placeholder="Buscar"/>
+                      placeholder="Buscar VIN, marca, supervisor o sucursal"/>
                     <div className="input-group-btn">
                       <button className="btn btn-default"><i className="fa fa-search"/></button>
                     </div>

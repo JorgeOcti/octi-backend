@@ -293,6 +293,7 @@ export function updateVenueAction() {
     const api: ApiService = new ApiService();
     api.updateVenue(tempVenue)
       .then((response: AxiosResponse) => {
+        dispatch(changeVenueAction(response.data.venue));
         dispatch(getVenuesAction(state.venues.pagination.page) as any);
         statusFooterButttonsModal(false);
         showModal(false);

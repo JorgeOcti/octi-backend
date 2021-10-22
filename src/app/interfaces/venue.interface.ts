@@ -10,6 +10,7 @@ export interface IBaseVenue {
   sendToDays: IVenueDay[];
   _id: any;
   name: string;
+  code: string;
   abbreviation: string;
   lat: number;
   lng: number;
