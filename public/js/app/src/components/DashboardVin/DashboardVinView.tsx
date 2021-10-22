@@ -305,18 +305,18 @@ class DashboardVinView extends TrackingBasePage<IPropsType, IStateType> {
                     </div>
                   </div>
                 </div>
-                <div className="col-md-3" style={{marginTop: "6px", paddingRight: "28px"}}>
+                <div className='col-md-3' style={{ paddingTop: '10px', paddingRight: '28px' }}>
                   <BootstrapSelect
                     noneSelectedText="Filtrar por checklist"
                     displayItems={2}
+                    sm={true}
                     selectedText="Formularios seleccionadas."
                     selected={selectedForms}
                     allOption={true}
                     selectAll={this.filterAllForms}
                     options={forms.map((form: IForm) => ({
                       value: form._id,
-                      text: form.name,
-                      className: "label label-aqua"
+                      text: form.name
                     }))}
                     onClick={this.filterForms}
                     displayHandler={this.showSelect}
