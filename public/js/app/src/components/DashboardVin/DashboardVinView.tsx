@@ -13,8 +13,9 @@ import {
   changeFormsSearchDashboardAction,
   changeRangeDashboardAction,
   changeSearchDashboardAction,
-  DashboardReduxAction, getForms,
-  getRevisionsAction, getRevisionsThunkAction,
+  DashboardReduxAction,
+  getRevisionsAction,
+  getRevisionsThunkAction,
   IDashboardState
 } from '../../actions/dashboard.actions';
 import AppContainer from '../../container/AppContainer';
