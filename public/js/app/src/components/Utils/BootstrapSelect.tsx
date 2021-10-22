@@ -22,6 +22,8 @@ interface IPropsType {
   autoClouse?: boolean;
   search?: boolean;
   sm?: boolean;
+  displayHandler?: (value: boolean) => void;
+  notHideOnClickOutside?: boolean
 }
 
 interface IStateType {
@@ -47,9 +49,25 @@ class BootstrapSelect extends React.Component<IPropsType, IStateType> {
     this.dropdown = React.createRef();
   }
 
+  componentDidMount() {
+    const {notHideOnClickOutside, autoClouse} = this.props;
+    if (notHideOnClickOutside && !autoClouse) {
+      $('.osa-dropwdown-button').on('click', (event) => {
+        $('.osa-dropdown').toggleClass('open');
+      });
+    }
+  }
+
+  componentWillUnmount() {
+    const {notHideOnClickOutside, autoClouse} = this.props;
+    if (notHideOnClickOutside && !autoClouse) {
+      $('.osa-dropwdown-button').remove('click')
+    }
+  }
+
   public render(): React.ReactElement<IPropsType> {
     const {
-      sm, options, selected, onClick, displayItems, noneSelectedText, selectedText, separator, allOption, search, autoClouse, selectAll
+      sm, options, selected, onClick, displayItems, noneSelectedText, selectedText, separator, allOption, search, autoClouse, selectAll, notHideOnClickOutside
     } = this.props;
     const  {searchText} = this.state;
     const selectedItems = options.filter((option) => (selected.includes(option.value)));
@@ -57,11 +75,11 @@ class BootstrapSelect extends React.Component<IPropsType, IStateType> {
     return (
       <div
         ref={this.dropdown}
-        className={`dropdown bootstrap-select form-control show-tick ${autoClouse ? '' : 'keep-inside-clicks-open'} ${sm?'bootstrap-select-sm':''}`}>
+        className={`osa-dropdown dropdown bootstrap-select form-control show-tick ${autoClouse ? '' : 'keep-inside-clicks-open'} ${sm?'bootstrap-select-sm':''}`}>
         <button
           type="button"
-          className={`btn dropdown-toggle bs-placeholder btn-filter btn-default`}
-          data-toggle="dropdown"
+          className={`osa-dropwdown-button btn dropdown-toggle bs-placeholder btn-filter btn-default`}
+          data-toggle={notHideOnClickOutside && !autoClouse ? '' : "dropdown"}
           style={{borderRadius: '0px'}}
           onClick={this.handlerOpen}
         >
@@ -157,6 +175,9 @@ class BootstrapSelect extends React.Component<IPropsType, IStateType> {
 
   private handlerOpen() {
     // https://codepen.io/qpqinc/pen/yLyPVMJ
+    if (this.props.displayHandler != null){
+      this.props.displayHandler(!this.state.open);
+    }
     if(this.input.current){
       this.input.current.focus()
     }
