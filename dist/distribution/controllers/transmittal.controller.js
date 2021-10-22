@@ -46,14 +46,10 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
         if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
     }
 };
-var __spreadArray = (this && this.__spreadArray) || function (to, from, pack) {
-    if (pack || arguments.length === 2) for (var i = 0, l = from.length, ar; i < l; i++) {
-        if (ar || !(i in from)) {
-            if (!ar) ar = Array.prototype.slice.call(from, 0, i);
-            ar[i] = from[i];
-        }
-    }
-    return to.concat(ar || Array.prototype.slice.call(from));
+var __spreadArray = (this && this.__spreadArray) || function (to, from) {
+    for (var i = 0, il = from.length, j = to.length; i < il; i++, j++)
+        to[j] = from[i];
+    return to;
 };
 exports.__esModule = true;
 var transmittal_model_1 = require("../models/transmittal.model");
@@ -836,9 +832,9 @@ var TransmittalController = /** @class */ (function () {
                             })];
                     case 2:
                         scales = _a.sent();
-                        scales = __spreadArray(__spreadArray([], scales, true), extraScales, true);
+                        scales = __spreadArray(__spreadArray([], scales), extraScales);
                         if (extraSection.questions.length) {
-                            form.sections = __spreadArray(__spreadArray([], form.sections, true), [extraSection], false);
+                            form.sections = __spreadArray(__spreadArray([], form.sections), [extraSection]);
                         }
                         baseQuestion_1 = {
                             _id: '',
@@ -1285,10 +1281,10 @@ var TransmittalController = /** @class */ (function () {
                     case 3:
                         if (!filesToDownload.length) return [3 /*break*/, 5];
                         console.log('promise', numb);
-                        _b = [__spreadArray([], results, true)];
+                        _b = [__spreadArray([], results)];
                         return [4 /*yield*/, bluebird.all(filesToDownload.splice(0, 20).map(function (promise) { return promise(); }))];
                     case 4:
-                        results = __spreadArray.apply(void 0, _b.concat([_c.sent(), true]));
+                        results = __spreadArray.apply(void 0, _b.concat([_c.sent()]));
                         numb++;
                         return [3 /*break*/, 3];
                     case 5:

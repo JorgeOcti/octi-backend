@@ -46,14 +46,10 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
         if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
     }
 };
-var __spreadArray = (this && this.__spreadArray) || function (to, from, pack) {
-    if (pack || arguments.length === 2) for (var i = 0, l = from.length, ar; i < l; i++) {
-        if (ar || !(i in from)) {
-            if (!ar) ar = Array.prototype.slice.call(from, 0, i);
-            ar[i] = from[i];
-        }
-    }
-    return to.concat(ar || Array.prototype.slice.call(from));
+var __spreadArray = (this && this.__spreadArray) || function (to, from) {
+    for (var i = 0, il = from.length, j = to.length; i < il; i++, j++)
+        to[j] = from[i];
+    return to;
 };
 exports.__esModule = true;
 var bluebird = require("bluebird");
@@ -74,6 +70,7 @@ var logger_service_1 = require("../../services/logger.service");
 var car_model_1 = require("../models/car.model");
 var user_model_1 = require("../models/user.model");
 var venue_model_1 = require("../models/venue.model");
+var bson_1 = require("bson");
 moment.tz.setDefault('America/Santiago');
 var CarController = /** @class */ (function () {
     function CarController() {
@@ -934,7 +931,7 @@ var CarController = /** @class */ (function () {
                                         range: {
                                             $concat: __spreadArray([
                                                 { $cond: [{ $lt: ['$qualification', 0] }, 'Unknown', ''] }
-                                            ], proyection, true)
+                                            ], proyection)
                                         }
                                     }
                                 }, {
@@ -1512,11 +1509,11 @@ var CarController = /** @class */ (function () {
     };
     CarController.prototype.apiRevisions = function (req, res) {
         return __awaiter(this, void 0, void 0, function () {
-            var _a, page, pageSize, search, from, to, team, only_controls, options, participantFilter, searchText, searchUser, searchVenue, searchCar, createdAtFilter, revisions, e_10;
+            var _a, page, pageSize, search, from, to, forms, team, only_controls, options, participantFilter, formArray, searchText, searchUser, searchVenue, searchCar, createdAtFilter, revisions, e_10;
             return __generator(this, function (_b) {
                 switch (_b.label) {
                     case 0:
-                        _a = req.query, page = _a.page, pageSize = _a.pageSize, search = _a.search, from = _a.from, to = _a.to;
+                        _a = req.query, page = _a.page, pageSize = _a.pageSize, search = _a.search, from = _a.from, to = _a.to, forms = _a.forms;
                         team = req.user.team._id;
                         only_controls = req.query.only_controls;
                         options = {
@@ -1561,6 +1558,10 @@ var CarController = /** @class */ (function () {
                                     team: team
                                 }]
                         };
+                        if (forms) {
+                            formArray = forms.split(",");
+                            participantFilter.form = { $in: formArray.map(function (f) { return new bson_1.ObjectID(f); }) };
+                        }
                         if (only_controls == "1") {
                             participantFilter.kind = { $ne: form_model_1.KindForm.transmittal };
                         }
@@ -1826,7 +1827,7 @@ var CarController = /** @class */ (function () {
                         return [4 /*yield*/, bluebird.all(revisionsToProcess.splice(0, 100))];
                     case 3:
                         data = _b.apply(_a, _c.concat([_d.sent()]));
-                        results = __spreadArray(__spreadArray([], results, true), data, true);
+                        results = __spreadArray(__spreadArray([], results), data);
                         return [3 /*break*/, 2];
                     case 4:
                         resolve(results);
@@ -1922,7 +1923,7 @@ var CarController = /** @class */ (function () {
                         for (i = periods; i >= 0; i--) {
                             periodToProcess.push(this.addRevisions(req.user, i, damagesCache, extraColums));
                         }
-                        newColumns = __spreadArray(__spreadArray([], columns, true), extraColums.data, true);
+                        newColumns = __spreadArray(__spreadArray([], columns), extraColums.data);
                         worksheet.columns = newColumns;
                         worksheet.autoFilter = { from: 'A1', to: { row: 1, column: newColumns.length } };
                         _a.label = 5;
