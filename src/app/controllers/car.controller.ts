@@ -20,6 +20,7 @@ import logger from '../../services/logger.service';
 import CarModel, { ChoicesStatusCar, ICarModel } from '../models/car.model';
 import User from '../models/user.model';
 import Venue from '../models/venue.model';
+import { ObjectID } from 'bson';
 
 moment.tz.setDefault('America/Santiago');
 class CarController {
@@ -1260,9 +1261,9 @@ class CarController {
   }
 
   public async apiRevisions(req: IRequest, res: Response) {
-    const { page, pageSize, search, from, to } = req.query as {
+    const { page, pageSize, search, from, to, forms } = req.query as {
       page: string, pageSize: string, search: string,
-      from: string, to: string
+      from: string, to: string, forms: string
     };
     const team = req.user.team._id;
     const { only_controls } = req.query;
@@ -1308,6 +1309,11 @@ class CarController {
           team
         }]
       };
+
+      if (forms) {
+        const formArray = forms.split(",")
+        participantFilter.form = {$in: formArray.map(f => new ObjectID(f))}
+      }
 
       if (only_controls == "1"){
         participantFilter.kind = {$ne: KindForm.transmittal}
