@@ -11,8 +11,11 @@ import ImageLazyLoad from '../components/Utils/ImageLazyLoad';
 import ApiService from '../utils/axios';
 import {loadDataAction} from './modal.actions';
 import ShowIf from '../components/Utils/ShowIf';
+import {IForm} from "../../../../../src/form/interfaces/form.interface";
 
 export interface IDashboardState {
+  forms: IForm[];
+  searchForms: string[],
   loading: boolean;
   source: CancelTokenSource | null;
   participants: any[];
@@ -150,7 +153,8 @@ interface IChangeSearchDashboard {
 export function changeSearchDashboardAction(searchText: string): IChangeSearchDashboard {
   return {
     type: '/DASHBOARD/CHANGE_SEARCH',
-    payload: {
+    payload:
+      {
       searchText
     }
   };
@@ -175,6 +179,80 @@ export function changeRangeDashboardAction(from: string, to: string): IChangeRan
   }
 }
 
+interface IChangeFormsSearchDashboard {
+  type: '/DASHBOARD/CHANGE_FORM_SEARCH';
+  payload: {
+    searchForms: string[];
+  };
+}
+
+export function changeFormsSearchDashboardAction(searchForms: string[]): IChangeFormsSearchDashboard {
+  return {
+    type: '/DASHBOARD/CHANGE_FORM_SEARCH',
+    payload: {
+      searchForms
+    }
+  };
+}
+
+interface ILoadingForms {
+  type: '/DASHBOARD/LOAD_FORMS';
+  payload: {
+    forms: IForm[];
+  };
+}
+
+export function loadForms(forms: IForm[]): ILoadingForms {
+  return {
+    type: '/DASHBOARD/LOAD_FORMS',
+    payload: {
+      forms
+    }
+  };
+}
+
+export function getRevisionsThunkAction(nextPage: number, loading: boolean, search?: string, from?: string, to?: string, onlyControls : Boolean = true) {
+  return (dispatch: Dispatch<DashboardReduxAction>, getState: () => {dashboard: IDashboardState}) => {
+    const api: ApiService = new ApiService();
+    const state = getState();
+    dispatch(cancelRequestAction(api.getSource()));
+    if (loading) {
+      dispatch(isLoadingAction(true));
+    }
+    const page = nextPage ? nextPage : state.dashboard.pagination.page;
+    if (nextPage) {
+      dispatch(changePageAction(nextPage));
+    }
+    const { searchText, searchFrom, searchTo, searchForms } = state.dashboard;
+    Axios
+      .all([
+        api.getRevisions(onlyControls, page, searchText, searchFrom, searchTo, searchForms),
+        api.getForms(1, 100)
+      ])
+      .then(Axios.spread((response, forms) => {
+        dispatch(loadCarsAction(response.data.results, response.data.count, response.data.pages));
+        dispatch(loadForms(forms.data.results));
+        if (loading) {
+          dispatch(isLoadingAction(false));
+        }
+      }))
+      .catch((err: AxiosError) => {
+        // if the request is canceled
+        if (Axios.isCancel(err)) {
+          if (loading) {
+            dispatch(isLoadingAction(true));
+          }
+        } else {
+          if (loading) {
+            dispatch(isLoadingAction(false));
+          }
+          api.errorHandler(err);
+        }
+      });
+  };
+}
+
+
 export function getRevisionsAction(nextPage: number, loading: boolean, search?: string, from?: string, to?: string, onlyControls : Boolean = true) {
   return (dispatch: Dispatch<DashboardReduxAction>, getState: () => {dashboard: IDashboardState}) => {
     const api: ApiService = new ApiService();
@@ -187,8 +265,8 @@ export function getRevisionsAction(nextPage: number, loading: boolean, search?: 
     if (nextPage) {
       dispatch(changePageAction(nextPage));
     }
-    const { searchText, searchFrom, searchTo } = state.dashboard;
-    api.getRevisions(onlyControls, page, searchText, searchFrom, searchTo)
+    const { searchText, searchFrom, searchTo, searchForms } = state.dashboard;
+    api.getRevisions(onlyControls, page, searchText, searchFrom, searchTo, searchForms)
       .then((response: AxiosResponse) => {
         dispatch(loadCarsAction(response.data.results, response.data.count, response.data.pages));
         if (loading) {
@@ -750,6 +828,7 @@ export function getRevisionStats(){
   };
 }
 
+
 export type DashboardReduxAction =
   IIsLoading |
   ICancelRequest |
@@ -762,4 +841,6 @@ export type DashboardReduxAction =
   IChangePage |
   ILoadParticipantInCar |
   ILoadingVenuesStats |
-  ILoadingRevisionsStats;
+  ILoadingRevisionsStats |
+  ILoadingForms |
+  IChangeFormsSearchDashboard;

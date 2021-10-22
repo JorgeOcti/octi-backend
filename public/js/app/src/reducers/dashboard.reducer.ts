@@ -7,6 +7,8 @@ const initialState: IDashboardState = {
   companies:[],
   car: null,
   carEvents: {} ,
+  forms: [],
+  searchForms: [],
   participantsReceivedPerDate: [],
   participantsSentPerDate: [],
   participantPerRange: [],
@@ -108,12 +110,22 @@ export function dashboardReducer(state = initialState, action: DashboardReduxAct
       return {
         ...state,
         venueStats: action.payload.venuesStats
-      }
+      };
     case '/DASHBOARD/LOAD_REVISION_STATS':
       return {
         ...state,
         revisionStats: action.payload.revisionStats
-      }
+      };
+    case '/DASHBOARD/LOAD_FORMS':
+      return {
+        ...state,
+        forms: action.payload.forms
+      };
+    case '/DASHBOARD/CHANGE_FORM_SEARCH':
+      return {
+        ...state,
+        searchForms: action.payload.searchForms
+      };
     default:
       return state;
   }
