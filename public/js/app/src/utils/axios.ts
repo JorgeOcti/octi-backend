@@ -322,7 +322,7 @@ export default class ApiService {
     );
   }
 
-  public getRevisions(onlyControls : Boolean,page: number, search?: string, from?: string, to?: string): AxiosPromise {
+  public getRevisions(onlyControls : Boolean,page: number, search?: string, from?: string, to?: string, forms?: String[]): AxiosPromise {
     let query = `?page=${page}&only_controls=${onlyControls ? '1' : '0'}`;
     if (search)
       query += `&search=${search}`;
@@ -332,6 +332,9 @@ export default class ApiService {
 
     if (to)
       query += `&to=${to}`;
+
+    if (forms)
+      query += `&forms=${forms.join(",")}`
 
     return this.instance.get(
       `/api/revisions/${query}`, {
