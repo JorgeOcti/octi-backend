@@ -19,6 +19,7 @@ import AppContainer from '../../container/AppContainer';
 import {IWindow} from '../../interfaces/window';
 import ModalView from '../Modal/ModalView';
 import TrackingBasePage from '../Utils/TrackingBasePage';
+import ShowIf from '../Utils/ShowIf';
 
 declare let window: IWindow;
 
@@ -63,7 +64,7 @@ class DashboardVinDetail extends TrackingBasePage<IPropsType, IStateType> {
 
   componentWillMount() {
     // set the title of the page
-    const {id} = this.props.match.params;
+    const { id } = this.props.match.params;
     this.props.getCarAction(id);
 
     // socket
@@ -76,7 +77,7 @@ class DashboardVinDetail extends TrackingBasePage<IPropsType, IStateType> {
       }
     });
     this.socket.on('connect', () => {
-      this.socket.emit('join', {room: `dashboard-vin-detail-${id}`});
+      this.socket.emit('join', { room: `dashboard-vin-detail-${window.user.team._id}-${id}` });
     });
     this.socket.on('ADD_PARTICIPANT', (data: any): void => {
       this.setState({
@@ -199,22 +200,24 @@ class DashboardVinDetail extends TrackingBasePage<IPropsType, IStateType> {
                       <td className="middle hidden-xs">{participant.user ? participant.user.firstName : ''} {participant.user ? participant.user.lastName : ''}</td>
                       <td className="middle hidden-xs">{participant.venue ? participant.venue.name : '-'}</td>
                       <td className="middle-center hidden-xs">
-                      {
-                                  `${participant.hasOwnProperty('qualification') ?
-                                    participant.qualification ? `${Math.round(participant.qualification)}%` : !participant.hasDamages ? '-' : '' : ''}`
-                                }
-                                {
-                                  participant.hasDamages ?
-                                    <React.Fragment>
-                                      {' '}<i
-                                        className="fa fa-warning text-red"
-                                        data-toggle="tooltip"
-                                        data-placement="top"
-                                        title="Daños encontrados en esta revisión."
-                                      />
-                                    </React.Fragment>
-                                    : null
-                                }
+                        <ShowIf
+                          condition={!!(participant.hasOwnProperty('qualification') && participant.qualification)}
+                          alternative={'-'}
+                        >
+                          {`${Math.round(participant.qualification)}%`}
+                        </ShowIf>
+                        <ShowIf
+                          condition={participant.hasDamages}
+                        >
+                          <React.Fragment>
+                            {' '}<i
+                            className='fa fa-warning text-red'
+                            data-toggle='tooltip'
+                            data-placement='top'
+                            title='Daños encontrados en esta revisión.'
+                          />
+                          </React.Fragment>
+                        </ShowIf>
                       </td>
                       <td className="text-primary middle-center">
                         <button
@@ -226,15 +229,15 @@ class DashboardVinDetail extends TrackingBasePage<IPropsType, IStateType> {
                       <td className="middle pointer">
                         <button
                           className="btn btn-xs btn-primary"
-                          disabled={loadingParticipant && loadingParticipant === participant._id ? true : false}
+                          disabled={!!(loadingParticipant && loadingParticipant === participant._id)}
                           onClick={loadingParticipant ? undefined : () => getParticipant(participant._id)}
                         >
-                          {
-                            loadingParticipant && loadingParticipant === participant._id ?
-                              <i className="fa fa-spin fa-spinner"/>
-                              :
-                              <i className="fa fa-bar-chart"/>
-                          }
+                          <ShowIf
+                            condition={!!(loadingParticipant && loadingParticipant === participant._id)}
+                            alternative={<i className="fa fa-bar-chart"/>}
+                          >
+                            <i className="fa fa-spin fa-spinner"/>
+                          </ShowIf>
                         </button>
                       </td>
                     </tr>
