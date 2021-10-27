@@ -29,6 +29,7 @@ import { ITransmittalItemModel } from '../../../../../src/distribution/models/tr
 import { ITransmittalModel } from '../../../../../src/distribution/models/transmittal.model';
 import { IOperationType } from '../../../../../src/request/interfaces/operationType.interface';
 import { IMilestone } from '../../../../../src/distribution/interfaces/milestone.interface';
+import { IMilestoneType } from '../../../../../src/distribution/interfaces/milestoneType.interface';
 
 export interface IHeaders {
   'X-CSRFToken'?: string;
@@ -807,13 +808,43 @@ export default class ApiService {
   }
 
   public getMilestones({
+    milestoneType,
+    page,
+    pageSize,
+    orderBy,
+    orderType
+  }: { milestoneType: string, page: number, orderType?: string, orderBy?: string, pageSize?: number }): AxiosPromise {
+    return this.instance.get(
+      `/api/v1/milestones/?page=${page}${pageSize ? `&pageSize=${pageSize}` : ''}${milestoneType ? `&milestoneType=${milestoneType}` : ''}${orderBy ? `&orderBy=${orderBy}` : ''}${orderType ? `&orderType=${orderType}` : ''}`
+    );
+  }
+
+  public createMilestoneType(operationType: IMilestoneType): AxiosPromise {
+    return this.instance.post(
+      `/api/v1/milestone-types/`, operationType
+    );
+  }
+
+  public updateMilestoneType(operationType: IMilestoneType): AxiosPromise {
+    return this.instance.patch(
+      `/api/v1/milestone-types/${operationType._id}/`, operationType
+    );
+  }
+
+  public deleteMilestoneType(operationType: IMilestoneType): AxiosPromise {
+    return this.instance.delete(
+      `/api/v1/milestone-types/${operationType._id}/`
+    );
+  }
+
+  public getMilestoneTypes({
     page,
     pageSize,
     orderBy,
     orderType
   }: { page: number, orderType?: string, orderBy?: string, pageSize?: number }): AxiosPromise {
     return this.instance.get(
-      `/api/v1/milestones/?page=${page}${pageSize ? `&pageSize=${pageSize}` : ''}${orderBy ? `&orderBy=${orderBy}` : ''}${orderType ? `&orderType=${orderType}` : ''}`
+      `/api/v1/milestone-types/?page=${page}${pageSize ? `&pageSize=${pageSize}` : ''}${orderBy ? `&orderBy=${orderBy}` : ''}${orderType ? `&orderType=${orderType}` : ''}`
     );
   }
 }

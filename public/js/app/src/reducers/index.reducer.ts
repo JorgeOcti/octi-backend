@@ -28,6 +28,7 @@ import { versionsReducer } from './versions.reducer';
 import transmittalReducer from "./transmittal.reducer";
 import { operationTypeReducer } from './operationType.reducer';
 import { milestoneReducer } from './milestone.reducer';
+import { milestoneTypeReducer } from './milestoneType.reducer';
 
 export default (history: any) => combineReducers({
   users: usersReducer,
@@ -54,6 +55,7 @@ export default (history: any) => combineReducers({
   requestItems: requestItemsReducers,
   operationType: operationTypeReducer,
   milestone: milestoneReducer,
+  milestoneType: milestoneTypeReducer,
   regions: regionsReducer,
   stock: stockReducer,
   planning: planningReducer,

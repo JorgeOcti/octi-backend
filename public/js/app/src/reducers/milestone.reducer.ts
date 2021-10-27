@@ -4,11 +4,12 @@ import {
   MILESTONE_CANCEL_STATUS,
   MILESTONE_CHANGE_ORDER,
   MILESTONE_IS_LOADING,
-  MILESTONE_LOAD_STATUS, MILESTONE_LOAD_FORMS, MILESTONE_LOAD_REQUEST_STATUS, MILESTONE_UDPATE_STATUS
+  MILESTONE_LOAD_STATUS, MILESTONE_LOAD_FORMS, MILESTONE_LOAD_REQUEST_STATUS, MILESTONE_UDPATE_STATUS, MILESTONE_LOAD_TYPES
 } from '../actions/milestone.types';
 
 const initialState: IMilestoneState = {
   milestones: [],
+  milestoneTypes: [],
   requestStatus: [],
   forms: [],
   loading: true,
@@ -61,6 +62,11 @@ export function milestoneReducer(state = initialState, action: MilestoneReduxAct
       return {
         ...state,
         forms: action.payload.forms
+      };
+    case MILESTONE_LOAD_TYPES:
+      return {
+        ...state,
+        milestoneTypes: action.payload.milestoneTypes
       };
     case MILESTONE_LOAD_REQUEST_STATUS:
       return {

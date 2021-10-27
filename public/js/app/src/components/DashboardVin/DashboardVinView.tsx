@@ -292,8 +292,9 @@ class DashboardVinView extends TrackingBasePage<IPropsType, IStateType> {
                     endDate={to} />
                 </div>
                 <div className="col-md-3">
-                  <div className="input-group input-group-sm"
-                       style={{padding: '10px'}}
+                  <div
+                    className='input-group input-group-sm'
+                    style={{ padding: '10px' }}
                   >
                     <input
                       type="text"

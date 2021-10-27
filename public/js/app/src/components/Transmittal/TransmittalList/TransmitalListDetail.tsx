@@ -58,7 +58,7 @@ class TransmitalListDetail extends React.Component<IPropsType, IStateType> {
 
   public render(): React.ReactElement<IPropsType> {
     const { item: transmittal, transmittalActions } = this.props;
-    const { carriers, drivers } = this.props.transmittal;
+    const { carriers, drivers, milestoneTypes } = this.props.transmittal;
     const open = this.props.transmittal.transmittalOpen.includes(transmittal._id);
     return (
       <React.Fragment>
@@ -161,12 +161,58 @@ class TransmitalListDetail extends React.Component<IPropsType, IStateType> {
                   `${transmittal.transporter.carrier.name}`
                 )
             }
-
           </div>
           <div className='flex-45 col-sm-1 col-xs-1 col-md-1 col-lg-1'>
             {transmittal.items.length} vehículos.
           </div>
-          <div className='flex-45 col-sm-2 col-xs-2 col-md-2 col-lg-2'>
+          <div className='flex-45 col-sm-1 col-xs-1 col-md-1 col-lg-1' style={{ position: 'static' }}>
+            {
+              hasPermission(window.user, 'changeTransmittal') ?
+                (
+                  <select
+                    className='form-control select-sm font-12' value={transmittal.type?._id ?? ''}
+                    onChange={(e: React.ChangeEvent<HTMLSelectElement>) => {
+                      this.props.transmittalActions.updateTransmittalThunkAction({
+                        _id: transmittal._id,
+                        'type': e.target.value
+                      });
+                    }}
+                  >
+                    <option value='' disabled={true}>-</option>
+                    {
+                      milestoneTypes.map((milestoneType) => (
+                        <option key={milestoneType._id} value={milestoneType._id}>{`${milestoneType.name}`}</option>
+                      ))
+                    }
+                  </select>
+                  /*<BootstrapSelect
+                    noneSelectedText='Selecciona un transportista'
+                    displayItems={2}
+                    sm={true}
+                    selectedText='transportistas seleccionadas.'
+                    selected={transmittal.transporter.carrier ? [transmittal.transporter.carrier._id] : []}
+                    autoClouse={true}
+                    allOption={false}
+                    search={true}
+                    options={carriers.map((carrier: any) => ({
+                      value: carrier._id,
+                      text: carrier.name
+                    }))}
+                    onClick={(e: string) => {
+                      this.props.transmittalActions.updateTransmittalThunkAction({
+                        _id: transmittal._id,
+                        'transporter.carrier': e
+                      });
+                    }}
+                  />*/
+                ) :
+                (
+                  `${transmittal.type?.name}`
+                )
+            }
+
+          </div>
+          <div className='flex-45 col-sm-1 col-xs-1 col-md-1 col-lg-1'>
            <UploadTransmittalFile transmittal={transmittal} />
             <ShowIf condition={transmittal.files.length >= 1}>
               <button

@@ -49,6 +49,7 @@ import CustomInventoryAnalysis from './components/CustomDashboard/CustomInventor
 import OperationTypeListView from './components/RequestSettings/OperationTypeListView';
 import RequestImportView from './components/Request/RequestImportView';
 import MilestoneListView from './components/RequestSettings/MilestoneListView';
+import MilestoneTypeListView from './components/RequestSettings/MilestoneTypeListView';
 
 
 declare let window: IWindow;
@@ -103,6 +104,7 @@ const App = () => (
         <Route exact path='/requests/settings/status/' component={RequestStatusListView} />
         <Route exact path='/requests/settings/operations-type/' component={OperationTypeListView} />
         <Route exact path='/transmittals/settings/milestone/' component={MilestoneListView} />
+        <Route exact path='/transmittals/settings/milestone-type/' component={MilestoneTypeListView} />
         <Route exact path='/requests/import/' component={RequestImportView} />
         <Route exact path='/requests/update/' component={RequestUpdaterView} />
         <Route exact path='/requests/vehicles/create' component={RequestCreateView} />

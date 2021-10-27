@@ -24,30 +24,28 @@ interface IPropsType extends RouteComponentProps<{ ticket: string }> {
   dispatch: Dispatch<MilestoneReduxActions | FormAction>;
   milestone: IMilestoneState;
 
-  getMilestoneThunkAction(nextPage: number, orderBy: string, orderType: string, hideLoading?: boolean): MilestoneReduxActions;
-
+  getMilestoneThunkAction(milestoneType: string, nextPage: number, orderBy: string, orderType: string, hideLoading?: boolean): MilestoneReduxActions;
   // createMilestoneThunkAction(milestone: IMilestone): MilestoneReduxActions;
-
   updateMilestoneThunkAction(milestone: IMilestone): MilestoneReduxActions;
-
   // deleteMilestoneThunkAction(milestone: IMilestone): MilestoneReduxActions;
-
   loadDataAction(title: string, body: JSX.Element, footer: JSX.Element): ModalReduxAction;
 }
 
 interface IStateType {
   error: Error | null;
   exporing: boolean;
+  milestoneType: string;
 }
 
 declare let window: IWindow;
 
 class MilestoneListView extends TrackingBasePage<IPropsType, IStateType> {
-  title: string;
+  public title: string;
 
   private socket: SocketIOClient.Socket;
   readonly state = {
     error: null,
+    milestoneType: '',
     exporing: false
   };
 
@@ -65,7 +63,8 @@ class MilestoneListView extends TrackingBasePage<IPropsType, IStateType> {
   public componentWillMount(): void {
     const { pagination } = this.props.milestone;
     const { orderBy, orderType } = this.props.milestone.options;
-    this.props.getMilestoneThunkAction(pagination.page, orderBy, orderType);
+    const {milestoneType} = this.state;
+    this.props.getMilestoneThunkAction(milestoneType, pagination.page, orderBy, orderType);
 
     // socket
     this.socket = io.connect(`${location.protocol}//${location.host}`, {
@@ -81,7 +80,8 @@ class MilestoneListView extends TrackingBasePage<IPropsType, IStateType> {
       if (data.update) {
         const { pagination } = this.props.milestone;
         const { orderBy, orderType } = this.props.milestone.options;
-        this.props.getMilestoneThunkAction(pagination.page, orderBy, orderType, true);
+        const {milestoneType} = this.state;
+        this.props.getMilestoneThunkAction(milestoneType, pagination.page, orderBy, orderType, true);
       }
     });
   }
@@ -109,7 +109,8 @@ class MilestoneListView extends TrackingBasePage<IPropsType, IStateType> {
   }
 
   public render(): React.ReactElement<IPropsType> {
-    const { loading, milestones, pagination, forms, requestStatus } = this.props.milestone;
+    const { loading, milestones, pagination, forms, requestStatus, milestoneTypes } = this.props.milestone;
+    const { milestoneType } = this.state;
     // const canEdit = hasPermission(window.user, 'adminRequest');
     // const canDelete = hasPermission(window.user, 'adminRequest');
     return (
@@ -130,6 +131,11 @@ class MilestoneListView extends TrackingBasePage<IPropsType, IStateType> {
                 <Link to='/requests/settings/operations-type/' className='list-group-item'>
                   Tipos de operación
                 </Link>
+                <ShowIf condition={window.user.isAdmin}>
+                  <Link to='/transmittals/settings/milestone-type/' className='list-group-item'>
+                    Tipos de hitos
+                  </Link>
+                </ShowIf>
                 <ShowIf condition={window.user.isAdmin}>
                   <Link to='/transmittals/settings/milestone/' className='list-group-item active'>
                     Hitos
@@ -152,81 +158,115 @@ class MilestoneListView extends TrackingBasePage<IPropsType, IStateType> {
                   </div>
                 </div>
                 <div className='box-body table-responsive no-padding'>
-                  <table className='table table-andes table-striped'>
-                    <thead>
-                    <tr>
-                      <th className='middle' style={{width: '20px'}}>Orden</th>
-                      <th className='middle'>Paso</th>
-                      <th className='middle'>Tipo</th>
-                      <th className='middle'>Formulario</th>
-                      <th className='middle'>Estado solicitudes</th>
-                    </tr>
-                    </thead>
-                    <tbody>
-                    {
-                      milestones.map((item) => {
-                        return (
-                          <tr key={item._id}>
-                            <td className='middle-center'>{item.order}</td>
-                            <td className='middle'>{item.name}</td>
-                            <td className='middle'>
-                              <select
-                                className='form-control select-sm font-12' value={item.kind}
-                                onChange={(e: React.ChangeEvent<HTMLSelectElement>) => {
-                                  this.props.updateMilestoneThunkAction({
-                                    ...item,
-                                    kind: e.target.value
-                                  });
-                                }}
-                              >
-                                <option key={'form'} value={'form'}>Formulario</option>
-                                <option key={'file'} value={'file'}>Archivo</option>
-                              </select>
-                            </td>
-                            <td className='middle'>
-                              <ShowIf condition={item.kind === 'form'}>
+                  <div className='row' style={{padding: '10px'}}>
+                    {/*<div className='col-md-offset-8 col-md-4'>*/}
+                    <div className='col-md-5'>
+                      <div className={`form-group`} style={{margin: '0'}}>
+                        <label className='control-label'>Seleccione hito a configurar</label>
+                        <div className="input-group">
+                        <select
+                          className='form-control select-sm font-12'
+                          onChange={(e: React.ChangeEvent<HTMLSelectElement>) => {
+                            this.setState({
+                              milestoneType: e.target.value
+                            }, () => {
+                              const { orderBy, orderType } = this.props.milestone.options;
+                              const { milestoneType } = this.state;
+                              this.props.getMilestoneThunkAction(milestoneType, 1, orderBy, orderType);
+                            });
+                          }}
+                        >
+                          <option key={''} value={''}>Seleccione</option>
+                          {
+                            milestoneTypes.map((milestoneType) => (
+                              <option key={milestoneType._id} value={milestoneType._id}>{milestoneType.name}</option>
+                            ))
+                          }
+                        </select>
+                          <div className='input-group-addon input-group-primary pointer'>
+                            <i className='fa fa-cogs' />
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <ShowIf condition={!loading && !!milestoneType?.length}>
+                    <table className='table table-andes table-striped'>
+                      <thead>
+                      <tr>
+                        <th className='middle' style={{ width: '20px' }}>Orden</th>
+                        <th className='middle'>Paso</th>
+                        <th className='middle'>Tipo</th>
+                        <th className='middle'>Formulario</th>
+                        <th className='middle'>Estado solicitudes</th>
+                      </tr>
+                      </thead>
+                      <tbody>
+                      {
+                        milestones.map((item) => {
+                          return (
+                            <tr key={item._id}>
+                              <td className='middle-center'>{item.order}</td>
+                              <td className='middle'>{item.name}</td>
+                              <td className='middle'>
                                 <select
-                                  className='form-control select-sm font-12' value={item.form?._id ?? ''}
+                                  className='form-control select-sm font-12' value={item.kind}
                                   onChange={(e: React.ChangeEvent<HTMLSelectElement>) => {
                                     this.props.updateMilestoneThunkAction({
                                       ...item,
-                                      form: e.target.value as unknown as IForm
+                                      kind: e.target.value
                                     });
                                   }}
                                 >
-                                  <option value='' disabled={true}>Seleccione</option>
+                                  <option key={'form'} value={'form'}>Formulario</option>
+                                  <option key={'file'} value={'file'}>Archivo</option>
+                                </select>
+                              </td>
+                              <td className='middle'>
+                                <ShowIf condition={item.kind === 'form'}>
+                                  <select
+                                    className='form-control select-sm font-12' value={item.form?._id ?? ''}
+                                    onChange={(e: React.ChangeEvent<HTMLSelectElement>) => {
+                                      this.props.updateMilestoneThunkAction({
+                                        ...item,
+                                        form: e.target.value as unknown as IForm
+                                      });
+                                    }}
+                                  >
+                                    <option value='' disabled={true}>Seleccione</option>
+                                    {
+                                      forms.map((form) => (
+                                        <option key={form._id} value={form._id}>{`${form.name}`}</option>
+                                      ))
+                                    }
+                                  </select>
+                                </ShowIf>
+                              </td>
+                              <td className='middle'>
+                                <select
+                                  className='form-control select-sm font-12' value={item.requestItemStatus?._id ?? ''}
+                                  onChange={(e: React.ChangeEvent<HTMLSelectElement>) => {
+                                    this.props.updateMilestoneThunkAction({
+                                      ...item,
+                                      requestItemStatus: e.target.value as unknown as IRequestItemStatus
+                                    });
+                                  }}
+                                >
+                                  <option value={''}>Seleccione</option>
                                   {
-                                    forms.map((form) => (
-                                      <option key={form._id} value={form._id}>{`${form.name}`}</option>
+                                    requestStatus.map((status) => (
+                                      <option key={status._id} value={status._id}>{`${status.name}`}</option>
                                     ))
                                   }
                                 </select>
-                              </ShowIf>
-                            </td>
-                            <td className='middle'>
-                              <select
-                                className='form-control select-sm font-12' value={item.requestItemStatus?._id ?? ''}
-                                onChange={(e: React.ChangeEvent<HTMLSelectElement>) => {
-                                  this.props.updateMilestoneThunkAction({
-                                      ...item,
-                                      requestItemStatus: e.target.value  as unknown as IRequestItemStatus
-                                    });
-                                }}
-                              >
-                                <option value={""}>Seleccione</option>
-                                {
-                                  requestStatus.map((status) => (
-                                    <option key={status._id} value={status._id}>{`${status.name}`}</option>
-                                  ))
-                                }
-                              </select>
-                            </td>
-                          </tr>
-                        );
-                      })
-                    }
-                    </tbody>
-                  </table>
+                              </td>
+                            </tr>
+                          );
+                        })
+                      }
+                      </tbody>
+                    </table>
+                  </ShowIf>
                 </div>
                 {
                   pagination.pages > 1 &&
@@ -314,7 +354,8 @@ class MilestoneListView extends TrackingBasePage<IPropsType, IStateType> {
   private changePage(page: number): void {
     // change the page
     const { orderBy, orderType } = this.props.milestone.options;
-    this.props.getMilestoneThunkAction(page, orderBy, orderType);
+    const {milestoneType} = this.state;
+    this.props.getMilestoneThunkAction(milestoneType, page, orderBy, orderType);
   }
 }
 
@@ -327,7 +368,7 @@ const mapStateToProps = (state: { milestone: IMilestoneState }) => {
 const mapDispatchToProps = (dispatch: any) => {
   return {
     dispatch,
-    getMilestoneThunkAction: (nextPage: number, orderBy: string, orderType: string, hideLoading?: boolean) => dispatch(getMilestonesThunkAction(nextPage, orderBy, orderType, hideLoading)),
+    getMilestoneThunkAction: (milestoneType: string,nextPage: number, orderBy: string, orderType: string, hideLoading?: boolean) => dispatch(getMilestonesThunkAction(milestoneType, nextPage, orderBy, orderType, hideLoading)),
     // createMilestoneThunkAction: (milestone: IMilestone) => dispatch(createMilestoneThunkAction(milestone)),
     updateMilestoneThunkAction: (milestone: IMilestone) => dispatch(updateMilestoneThunkAction(milestone)),
     // deleteMilestoneThunkAction: (milestone: IMilestone) => dispatch(deleteMilestoneItemThunkAction(milestone)),

@@ -49,16 +49,16 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
 exports.__esModule = true;
 var server_1 = require("../../server");
 var logger_service_1 = require("../../services/logger.service");
-var operationType_model_1 = require("../models/operationType.model");
-var OperationTypeController = /** @class */ (function () {
-    function OperationTypeController() {
+var mIlestoneType_model_1 = require("../models/mIlestoneType.model");
+var MilestoneTypeController = /** @class */ (function () {
+    function MilestoneTypeController() {
         this.apiList = this.apiList.bind(this);
         this.apiCreate = this.apiCreate.bind(this);
         this.apiUpdate = this.apiUpdate.bind(this);
         this.apiDelete = this.apiDelete.bind(this);
-        this.getOperationTypes = this.getOperationTypes.bind(this);
+        this.getMilestoneTypes = this.getMilestoneTypes.bind(this);
     }
-    OperationTypeController.prototype.apiCreate = function (req, res) {
+    MilestoneTypeController.prototype.apiCreate = function (req, res) {
         return __awaiter(this, void 0, void 0, function () {
             var team, object, reason, e_1;
             return __generator(this, function (_a) {
@@ -69,10 +69,10 @@ var OperationTypeController = /** @class */ (function () {
                         _a.label = 1;
                     case 1:
                         _a.trys.push([1, 3, , 4]);
-                        return [4 /*yield*/, new operationType_model_1["default"](__assign(__assign({}, object), { team: team })).save()];
+                        return [4 /*yield*/, new mIlestoneType_model_1["default"](__assign(__assign({}, object), { team: team })).save()];
                     case 2:
                         reason = _a.sent();
-                        server_1.io.to("operation-type-list-" + team._id).emit('REFRESH', {
+                        server_1.io.to("milestone-type-list-" + team._id).emit('REFRESH', {
                             update: true
                         });
                         res.status(200).json(__assign({}, reason));
@@ -80,7 +80,7 @@ var OperationTypeController = /** @class */ (function () {
                     case 3:
                         e_1 = _a.sent();
                         /* istanbul ignore next */
-                        logger_service_1["default"].error("OperationTypeController.apiCreate: Async Error.");
+                        logger_service_1["default"].error("MilestoneTypeController.apiCreate: Async Error.");
                         /* istanbul ignore next */
                         logger_service_1["default"].error("{user: {_id: " + req.user._id + ", email: " + req.user.email + "}}");
                         res.status(500).json(e_1);
@@ -90,47 +90,42 @@ var OperationTypeController = /** @class */ (function () {
             });
         });
     };
-    OperationTypeController.prototype.apiUpdate = function (req, res) {
+    MilestoneTypeController.prototype.apiUpdate = function (req, res) {
         return __awaiter(this, void 0, void 0, function () {
-            var team, id, update, reason, e_2;
+            var team, id, body, milestoneType, e_2;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
                         team = req.user.team;
                         id = req.params.id;
-                        update = req.body;
+                        body = req.body;
                         _a.label = 1;
                     case 1:
-                        _a.trys.push([1, 5, , 6]);
-                        if (!update["default"]) return [3 /*break*/, 3];
-                        return [4 /*yield*/, operationType_model_1["default"].updateMany({ team: team }, { $set: { "default": false } })];
+                        _a.trys.push([1, 3, , 4]);
+                        return [4 /*yield*/, mIlestoneType_model_1["default"].findOneAndUpdate({ _id: id, team: team }, { $set: __assign({}, body) }, { "new": true })];
                     case 2:
-                        _a.sent();
-                        _a.label = 3;
-                    case 3: return [4 /*yield*/, operationType_model_1["default"].findOneAndUpdate({ _id: id, team: team }, { $set: __assign({}, update) }, { "new": true })];
-                    case 4:
-                        reason = _a.sent();
-                        server_1.io.to("operation-type-list-" + team._id).emit('REFRESH', {
+                        milestoneType = _a.sent();
+                        server_1.io.to("milestone-type-list-" + team._id).emit('REFRESH', {
                             update: true
                         });
-                        res.status(200).json(reason);
-                        return [3 /*break*/, 6];
-                    case 5:
+                        res.status(200).json(milestoneType);
+                        return [3 /*break*/, 4];
+                    case 3:
                         e_2 = _a.sent();
                         /* istanbul ignore next */
-                        logger_service_1["default"].error("OperationTypeController.apiUpdate: Async Error.");
+                        logger_service_1["default"].error("MilestoneTypeController.apiUpdate: Async Error.");
                         /* istanbul ignore next */
                         logger_service_1["default"].error("{user: {_id: " + req.user._id + ", email: " + req.user.email + "}}");
                         res.status(500).json(e_2);
-                        return [3 /*break*/, 6];
-                    case 6: return [2 /*return*/];
+                        return [3 /*break*/, 4];
+                    case 4: return [2 /*return*/];
                 }
             });
         });
     };
-    OperationTypeController.prototype.apiDelete = function (req, res) {
+    MilestoneTypeController.prototype.apiDelete = function (req, res) {
         return __awaiter(this, void 0, void 0, function () {
-            var team, id, reason, e_3;
+            var team, id, milestoneType, e_3;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
@@ -139,18 +134,18 @@ var OperationTypeController = /** @class */ (function () {
                         _a.label = 1;
                     case 1:
                         _a.trys.push([1, 3, , 4]);
-                        return [4 /*yield*/, operationType_model_1["default"].findOneAndDelete({ _id: id, team: team })];
+                        return [4 /*yield*/, mIlestoneType_model_1["default"].findOneAndDelete({ _id: id, team: team })];
                     case 2:
-                        reason = _a.sent();
-                        server_1.io.to("operation-type-list-" + team._id).emit('REFRESH', {
+                        milestoneType = _a.sent();
+                        server_1.io.to("milestone-type-list-" + team._id).emit('REFRESH', {
                             update: true
                         });
-                        res.status(200).json(__assign({}, reason));
+                        res.status(200).json(milestoneType);
                         return [3 /*break*/, 4];
                     case 3:
                         e_3 = _a.sent();
                         /* istanbul ignore next */
-                        logger_service_1["default"].error("OperationTypeController.apiDelete: Async Error.");
+                        logger_service_1["default"].error("MilestoneTypeController.apiDelete: Async Error.");
                         /* istanbul ignore next */
                         logger_service_1["default"].error("{user: {_id: " + req.user._id + ", email: " + req.user.email + "}}");
                         res.status(500).json(e_3);
@@ -160,9 +155,9 @@ var OperationTypeController = /** @class */ (function () {
             });
         });
     };
-    OperationTypeController.prototype.apiList = function (req, res) {
+    MilestoneTypeController.prototype.apiList = function (req, res) {
         return __awaiter(this, void 0, void 0, function () {
-            var _a, page, pageSize, team, options, filter, operationType, e_4;
+            var _a, page, pageSize, team, options, filter, milestoneType, e_4;
             return __generator(this, function (_b) {
                 switch (_b.label) {
                     case 0:
@@ -178,12 +173,14 @@ var OperationTypeController = /** @class */ (function () {
                         _b.label = 1;
                     case 1:
                         _b.trys.push([1, 3, , 4]);
-                        filter = { team: team };
-                        return [4 /*yield*/, this.getOperationTypes(filter, options)];
+                        filter = {
+                            team: team
+                        };
+                        return [4 /*yield*/, this.getMilestoneTypes(filter, options)];
                     case 2:
-                        operationType = _b.sent();
+                        milestoneType = _b.sent();
                         /* istanbul ignore if  */
-                        if (options.page && operationType.pages && operationType.pages < options.page) {
+                        if (options.page && milestoneType.pages && milestoneType.pages < options.page) {
                             res.status(400).json({
                                 message: 'La página solicitada no existe.',
                                 status: 400
@@ -191,11 +188,11 @@ var OperationTypeController = /** @class */ (function () {
                         }
                         else {
                             res.json({
-                                count: operationType.total,
-                                pages: operationType.pages,
-                                hasPrevious: options.page && options.page > 1 && operationType.pages && operationType.pages >= options.page,
-                                hasNext: options.page && operationType.pages && operationType.pages > options.page,
-                                results: operationType.docs,
+                                count: milestoneType.total,
+                                pages: milestoneType.pages,
+                                hasPrevious: options.page && options.page > 1 && milestoneType.pages && milestoneType.pages >= options.page,
+                                hasNext: options.page && milestoneType.pages && milestoneType.pages > options.page,
+                                results: milestoneType.docs,
                                 status: 200
                             });
                         }
@@ -204,7 +201,7 @@ var OperationTypeController = /** @class */ (function () {
                         e_4 = _b.sent();
                         logger_service_1["default"].error(e_4);
                         /* istanbul ignore next */
-                        logger_service_1["default"].error("OperationTypeController.apiList: Async Error.");
+                        logger_service_1["default"].error("MilestoneTypeController.apiList: Async Error.");
                         /* istanbul ignore next */
                         logger_service_1["default"].error("{user: {_id: " + req.user._id + ", email: " + req.user.email + "}}");
                         res.status(500).json(e_4);
@@ -214,9 +211,9 @@ var OperationTypeController = /** @class */ (function () {
             });
         });
     };
-    OperationTypeController.prototype.getOperationTypes = function (filter, options) {
+    MilestoneTypeController.prototype.getMilestoneTypes = function (filter, options) {
         return new Promise(function (resolve, reject) {
-            operationType_model_1["default"].paginate(filter, options, function (err, result) {
+            mIlestoneType_model_1["default"].paginate(filter, options, function (err, result) {
                 if (err) {
                     return reject(err);
                 }
@@ -224,7 +221,7 @@ var OperationTypeController = /** @class */ (function () {
             });
         });
     };
-    return OperationTypeController;
+    return MilestoneTypeController;
 }());
-exports["default"] = new OperationTypeController();
-//# sourceMappingURL=operationType.controller.js.map
+exports["default"] = new MilestoneTypeController();
+//# sourceMappingURL=milestoneType.controller.js.map

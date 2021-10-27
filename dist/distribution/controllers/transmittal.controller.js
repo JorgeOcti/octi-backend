@@ -103,6 +103,9 @@ var TransmittalController = /** @class */ (function () {
                 path: 'transporter.carrier',
                 select: ['name']
             }, {
+                path: 'type',
+                select: ['name']
+            }, {
                 path: 'transporter.driver',
                 select: ['firstName', 'lastName']
             }, {
@@ -186,19 +189,20 @@ var TransmittalController = /** @class */ (function () {
     TransmittalController.prototype.apiCreate = function (req, res) {
         var _a;
         return __awaiter(this, void 0, void 0, function () {
-            var _b, name_1, items, files, transporter, observation, user, team, transmittal, _i, items_1, item, transmittalItem, e_2;
+            var _b, name_1, items, files, transporter, observation, type, user, team, transmittal, _i, items_1, item, transmittalItem, e_2;
             return __generator(this, function (_c) {
                 switch (_c.label) {
                     case 0:
                         _c.trys.push([0, 12, , 13]);
                         logger_service_1["default"].info("TransmittalController.apiCreate");
-                        _b = req.body, name_1 = _b.name, items = _b.items, files = _b.files, transporter = _b.transporter, observation = _b.observation;
+                        _b = req.body, name_1 = _b.name, items = _b.items, files = _b.files, transporter = _b.transporter, observation = _b.observation, type = _b.type;
                         user = req.user;
                         return [4 /*yield*/, team_model_1["default"].findOneAndUpdate({ _id: user.team._id }, { $inc: { transmittalNumber: 1 } }, { "new": true })];
                     case 1:
                         team = _c.sent();
                         return [4 /*yield*/, new transmittal_model_1["default"]({
                                 name: name_1,
+                                type: type,
                                 team: user.team,
                                 number: team.transmittalNumber,
                                 createdBy: user._id,
@@ -394,6 +398,9 @@ var TransmittalController = /** @class */ (function () {
                                     path: 'transporter.carrier',
                                     select: ['name']
                                 }, {
+                                    path: 'type',
+                                    select: ['name']
+                                }, {
                                     path: 'evidenceFullLoad',
                                     select: ['file', 'thumbnail']
                                 }, {
@@ -551,7 +558,7 @@ var TransmittalController = /** @class */ (function () {
                             pages: transmittals.pages,
                             hasPrevious: options.page && options.page > 1 && transmittals.pages && transmittals.pages >= options.page,
                             hasNext: options.page && transmittals.pages && transmittals.pages > options.page,
-                            data: transmittals.docs.map(function (transmittal) { return (__assign(__assign({}, transmittal.toObject()), { milestones: milestones_1 })); }),
+                            data: transmittals.docs.map(function (transmittal) { return (__assign(__assign({}, transmittal.toObject()), { milestones: milestones_1.filter(function (milestone) { return milestone.type.toString() === transmittal.type.toString(); }) })); }),
                             status: 200
                         });
                         _c.label = 9;
@@ -930,11 +937,12 @@ var TransmittalController = /** @class */ (function () {
                     case 0:
                         user = req.user;
                         _a = req.body, files = _a.files, transmittal = _a.transmittal;
-                        logger_service_1["default"].info("TransmittalController.uploadFile");
+                        logger_service_1["default"].info("TransmittalController.attachEvidence");
                         logger_service_1["default"].info("{user: {_id: " + req.user._id + ", email: " + req.user.email + "}}");
                         _b.label = 1;
                     case 1:
-                        _b.trys.push([1, 3, , 4]);
+                        _b.trys.push([1, 4, , 5]);
+                        if (!files) return [3 /*break*/, 3];
                         return [4 /*yield*/, transmittal_model_1["default"]
                                 .findOneAndUpdate({
                                 _id: transmittal,
@@ -945,13 +953,18 @@ var TransmittalController = /** @class */ (function () {
                             }, { "new": true })];
                     case 2:
                         transmittalData = _b.sent();
-                        //  TODO: need update socket from here
                         res.status(200).json({
                             data: transmittalData,
                             status: 201
                         });
-                        return [3 /*break*/, 4];
+                        _b.label = 3;
                     case 3:
+                        res.status(400).json({
+                            message: 'El archivo es requerido',
+                            status: 400
+                        });
+                        return [3 /*break*/, 5];
+                    case 4:
                         e_7 = _b.sent();
                         /* istanbul ignore next */
                         logger_service_1["default"].error("TransmittalController.uploadFile: Async Error.");
@@ -961,8 +974,8 @@ var TransmittalController = /** @class */ (function () {
                         logger_service_1["default"].error(e_7);
                         /* istanbul ignore next */
                         res.status(400).json(e_7);
-                        return [3 /*break*/, 4];
-                    case 4: return [2 /*return*/];
+                        return [3 /*break*/, 5];
+                    case 5: return [2 /*return*/];
                 }
             });
         });

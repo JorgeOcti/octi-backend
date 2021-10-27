@@ -256,7 +256,7 @@ export function createVenueAction() {
         dispatch(getVenuesAction(state.venues.pagination.page) as any);
         statusFooterButttonsModal(false);
         showModal(false);
-        swal(response.data.message, {
+        swal!(response.data.message, {
           icon: 'success'
         });
       })
@@ -298,7 +298,7 @@ export function updateVenueAction() {
         statusFooterButttonsModal(false);
         showModal(false);
         $venue.addClass('editing-item');
-        swal(response.data.message, {
+        swal!(response.data.message, {
           icon: 'success'
         });
         setTimeout(() => {
@@ -336,7 +336,7 @@ export function deleteVenueAction(id: string) {
     api.deleteVenue(id)
       .then((response: AxiosResponse): void => {
         // effect when removing user
-        swal(response.data.message, {
+        swal!(response.data.message, {
           icon: 'success'
         });
         $(`#venue-${id}`)

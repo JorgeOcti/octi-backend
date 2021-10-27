@@ -120,6 +120,31 @@ class Form extends React.Component<IPropsType, IStateType> {
               // validate={[inputStringRequired]}
             />
           </div>
+          <div className='col-md-6'>
+            <Field
+              name='type'
+              label='Tipo de transporte *'
+              component={BootstrapSelectField}
+              validate={[inputStringRequired]}
+              props={{
+                noneSelectedText: 'Selecciona un tipo',
+                displayItems: 2,
+                selectedText: 'tipo seleccionad0.',
+                autoClouse: true,
+                sm: true,
+                allOption: false,
+                search: true,
+                options: [
+                  ...transmittal.milestoneTypes.map((milestoneType) => ({
+                    value: milestoneType._id,
+                    text: milestoneType.name
+                  }))
+                ],
+                onClick: (value: string) => this.props.autofill('type', value)
+              }}
+            >
+            </Field>
+          </div>
           <div className="col-md-12">
             <div className="form-group">
               <label className="control-label label-left">Adjuntar Documentos</label>

@@ -6,6 +6,7 @@ var middlewares_1 = require("../middlewares/middlewares");
 var transmittal_controller_1 = require("./controllers/transmittal.controller");
 var transmittalItem_controller_1 = require("./controllers/transmittalItem.controller");
 var milestone_controller_1 = require("./controllers/milestone.controller");
+var milestoneType_controller_1 = require("./controllers/milestoneType.controller");
 var inputsSchema_1 = require("./inputsSchema");
 var isJWTAuthenticated = middlewares_1["default"].isJWTAuthenticated, isLoggedIn = middlewares_1["default"].isLoggedIn, validateBody = middlewares_1["default"].validateBody;
 var distributionRouter = express.Router();
@@ -32,6 +33,11 @@ distributionRouter.get('/api/v1/transmittals/item/:id/', isJWTAuthenticated, tra
 distributionRouter.patch('/api/v1/transmittals/item/:id/', isJWTAuthenticated, transmittalItem_controller_1["default"].apiUpdate);
 distributionRouter["delete"]('/api/v1/transmittals/item/:id/', isJWTAuthenticated, transmittalItem_controller_1["default"].apiDelete);
 distributionRouter.get('/transmittals/settings/milestone/', middlewares_1["default"].isLoggedIn, milestone_controller_1["default"].index);
+distributionRouter.get('/transmittals/settings/milestone-type/', middlewares_1["default"].isLoggedIn, milestone_controller_1["default"].index);
 distributionRouter.get('/api/v1/milestones/', isJWTAuthenticated, milestone_controller_1["default"].apiList);
 distributionRouter.patch('/api/v1/milestones/:id/', isJWTAuthenticated, milestone_controller_1["default"].apiUpdate);
+distributionRouter.get('/api/v1/milestone-types/', middlewares_1["default"].isJWTAuthenticated, milestoneType_controller_1["default"].apiList);
+distributionRouter.post('/api/v1/milestone-types/', middlewares_1["default"].isJWTAuthenticated, milestoneType_controller_1["default"].apiCreate);
+distributionRouter.patch('/api/v1/milestone-types/:id/', middlewares_1["default"].isJWTAuthenticated, milestoneType_controller_1["default"].apiUpdate);
+distributionRouter["delete"]('/api/v1/milestone-types/:id/', middlewares_1["default"].isJWTAuthenticated, milestoneType_controller_1["default"].apiDelete);
 //# sourceMappingURL=router.js.map

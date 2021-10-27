@@ -132,6 +132,11 @@ class RequestStatusListView extends TrackingBasePage<IPropsType, IStateType> {
                   Tipos de operación
                 </Link>
                 <ShowIf condition={window.user.isAdmin}>
+                  <Link to='/transmittals/settings/milestone-type/' className='list-group-item'>
+                    Tipos de hitos
+                  </Link>
+                </ShowIf>
+                <ShowIf condition={window.user.isAdmin}>
                   <Link to='/transmittals/settings/milestone/' className='list-group-item'>
                     Hitos
                   </Link>

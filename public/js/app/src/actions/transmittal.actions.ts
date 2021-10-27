@@ -10,7 +10,7 @@ import {
   ITransmittalActionTypes,
   ITransmittalState,
   LOAD_CARRIERS_TRANSMITTAL,
-  LOAD_DRIVERS_TRANSMITTAL,
+  LOAD_DRIVERS_TRANSMITTAL, LOAD_MILESTONE_TYPES_TRANSMITTAL,
   LOAD_REQUEST_ITEMS_TRANSMITTAL,
   LOAD_TRANSMITTAL,
   LOAD_VENUES_TRANSMITTAL,
@@ -19,7 +19,7 @@ import {
   TOOGLE_TAB_TRANSMITTAL,
   UPDATE_TRANSMITTAL_ITEM_TRANSMITTAL,
   UPDATE_TRANSMITTAL_TRANSMITTAL
-} from "./transmittal.types";
+} from './transmittal.types';
 import ApiService from "../utils/axios";
 import Axios, {AxiosError, AxiosResponse, CancelTokenSource} from "axios";
 import {ThunkDispatch} from "redux-thunk";
@@ -29,6 +29,7 @@ import {arrayPush, autofill, FormAction, submit} from "redux-form";
 import {IUserModel} from '../../../../../src/app/models/user.model';
 import {IRequestItem} from '../../../../../src/request/interfaces/requestItem.interface';
 import {ITransmittalItemModel} from '../../../../../src/distribution/models/transmittalItem.model';
+import { IMilestoneType } from '../../../../../src/distribution/interfaces/milestoneType.interface';
 
 export default class TransmittalActions {
   private api: ApiService;
@@ -95,6 +96,15 @@ export default class TransmittalActions {
       type: LOAD_DRIVERS_TRANSMITTAL,
       payload: {
         drivers,
+      }
+    });
+  }
+
+  public loadMilestoneTypes(milestoneTypes: IMilestoneType[]): void {
+    this.dispatch({
+      type: LOAD_MILESTONE_TYPES_TRANSMITTAL,
+      payload: {
+        milestoneTypes,
       }
     });
   }
@@ -212,12 +222,14 @@ export default class TransmittalActions {
         .all([
           this.api.getVenues({ page: 1, pageSize: 200, noPopulate: true }),
           this.api.getCarriers(1, 200),
-          this.api.getDrivers(1, 200)
+          this.api.getDrivers(1, 200),
+          this.api.getMilestoneTypes({ page: 1, pageSize: 200 })
         ])
-        .then(Axios.spread((venues, carriers, drivers) => {
+        .then(Axios.spread((venues, carriers, drivers,milestones) => {
           transmittalActions.loadVenues(venues.data.results);
           transmittalActions.loadCarriers(carriers.data.results);
           transmittalActions.loadDrivers(drivers.data.results);
+          transmittalActions.loadMilestoneTypes(milestones.data.results);
           transmittalActions.loadingAction(false);
         }))
         .catch((err: AxiosError): void => {
@@ -240,14 +252,17 @@ export default class TransmittalActions {
           this.api.getTransmittals({page, orderBy, orderType}),
           this.api.getVenues({ page: 1, pageSize: 200, noPopulate: true }),
           this.api.getCarriers(1, 200),
-          this.api.getDrivers(1, 200)
+          this.api.getDrivers(1, 200),
+          this.api.getMilestoneTypes({ page: 1, pageSize: 200 })
         ])
-        .then(Axios.spread((transmittals,venues, carriers, drivers) => {
+        .then(Axios.spread((transmittals,venues, carriers, drivers, milestones) => {
           const {data} = transmittals;
           transmittalActions.loadAction(data.results, data.count, data.pages, page);
           transmittalActions.loadVenues(venues.data.results);
           transmittalActions.loadCarriers(carriers.data.results);
           transmittalActions.loadDrivers(drivers.data.results);
+          transmittalActions.loadDrivers(drivers.data.results);
+          transmittalActions.loadMilestoneTypes(milestones.data.results);
           transmittalActions.loadingAction(false);
         }))
         .catch((err: AxiosError) => {

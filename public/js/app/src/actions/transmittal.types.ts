@@ -6,6 +6,7 @@ import {ITransmittalItemModel} from '../../../../../src/distribution/models/tran
 import {IUserModel} from '../../../../../src/app/models/user.model';
 import {IRequestItem} from '../../../../../src/request/interfaces/requestItem.interface';
 import { ITransmittalModel } from '../../../../../src/distribution/models/transmittal.model';
+import { IMilestoneType } from '../../../../../src/distribution/interfaces/milestoneType.interface';
 
 
 export const LOADING_TRANSMITTAL = '@transmittal/IS_LOADING';
@@ -13,6 +14,7 @@ export const LOAD_TRANSMITTAL = '@transmittal/LOAD';
 export const LOAD_VENUES_TRANSMITTAL = '@transmittal/LOAD_VENUES';
 export const LOAD_CARRIERS_TRANSMITTAL = '@transmittal/LOAD_CARRIERS';
 export const LOAD_DRIVERS_TRANSMITTAL = '@transmittal/LOAD_DRIVERS';
+export const LOAD_MILESTONE_TYPES_TRANSMITTAL = '@transmittal/LOAD_MILESTONE_TYPES';
 export const TOOGLE_TAB_TRANSMITTAL = '@transmittal/TOOGLE_TAB';
 export const CHANGE_ORDER_TRANSMITTAL = '@transmittal/CHANGE_ORDER';
 export const CANCEL_REQUEST_TRANSMITTAL = '@transmittal/CANCEL_REQUEST';
@@ -58,6 +60,7 @@ export interface ITransmittalState<T = ITransmittal> extends IListView<T> {
   venues: IVenueModel[];
   carriers: ICarrierModel[];
   drivers: IUserModel[];
+  milestoneTypes: IMilestoneType[];
   requestItems: IRequestItem[];
   requestItemsfilters: IRequestItemsFilters;
   requestItemsPagination: IPaginationListView;
@@ -114,6 +117,13 @@ interface ITransmittalLoadDriversAction {
   type: typeof LOAD_DRIVERS_TRANSMITTAL;
   payload: {
     drivers: IUserModel[];
+  }
+}
+
+interface ITransmittalLoadMilestoneTypesAction {
+  type: typeof LOAD_MILESTONE_TYPES_TRANSMITTAL;
+  payload: {
+    milestoneTypes: IMilestoneType[];
   }
 }
 
@@ -202,6 +212,7 @@ export type ITransmittalActionTypes =
   IUpdateTransmittalItemAction |
   IDeleteTransmittalAction |
   ITransmittalLoadDriversAction |
+  ITransmittalLoadMilestoneTypesAction |
   IChangeFilterRequestItemsTransmittalItemAction |
   ILoadRequestItemsTransmittalItemAction |
   ILoadingRequestItemsTransmittalItemAction |

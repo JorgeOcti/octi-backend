@@ -52,6 +52,9 @@ class TransmittalController {
     path: 'transporter.carrier',
     select: ['name']
   }, {
+    path: 'type',
+    select: ['name']
+  }, {
     path: 'transporter.driver',
     select: ['firstName', 'lastName']
   }, {
@@ -112,12 +115,13 @@ class TransmittalController {
   public async apiCreate(req: IRequest, res: Response) {
     try {
       logger.info(`TransmittalController.apiCreate`);
-      const { name, items, files, transporter, observation } = req.body;
+      const { name, items, files, transporter, observation, type } = req.body;
       const { user } = req;
       const team = await Team.findOneAndUpdate({ _id: user.team._id }, { $inc: { transmittalNumber: 1 } }, { new: true });
       // create new transmittal
       const transmittal = await new Transmittal({
         name,
+        type,
         team: user.team,
         number: team!.transmittalNumber,
         createdBy: user._id,
@@ -268,6 +272,9 @@ class TransmittalController {
         path: 'transporter.carrier',
         select: ['name']
       }, {
+        path: 'type',
+        select: ['name']
+      }, {
         path: 'evidenceFullLoad',
         select: ['file', 'thumbnail']
       }, {
@@ -392,10 +399,10 @@ class TransmittalController {
           team
         });
 
-        for (let i=0;i < milestones.length; i++){
+        for (let i = 0; i < milestones.length; i++) {
           let milestone = milestones[i].toObject();
           let form = await this.fillFormSections(milestone.form, req.user);
-          milestones[i] = {...milestone, ...form};
+          milestones[i] = { ...milestone, ...form };
         }
 
         res.json({
@@ -405,7 +412,7 @@ class TransmittalController {
           hasNext: options.page && transmittals.pages && transmittals.pages > options.page,
           data: transmittals.docs.map((transmittal)=>({
             ...transmittal.toObject(),
-            milestones
+            milestones: milestones.filter((milestone) => milestone.type.toString() === transmittal.type.toString())
           })),
           status: 200
         });
@@ -774,22 +781,28 @@ private getForm(filter: any): Promise<IFormModel> {
   public async attachEvidence(req: IRequest, res: Response) {
     const { user } = req;
     const { files, transmittal } = req.body;
-    logger.info(`TransmittalController.uploadFile`);
+    logger.info(`TransmittalController.attachEvidence`);
     logger.info(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
     try {
-      const transmittalData = await Transmittal
-        .findOneAndUpdate({
-          _id: transmittal,
-          team: user.team._id
-        }, {
-          $push: { evidenceFullLoad: files },
-          status: ChoicesStatusTransmittal.inTransit
-        }, { new: true });
-      //  TODO: need update socket from here
-      res.status(200).json({
-        data: transmittalData,
-        status: 201
+      if (files) {
+        const transmittalData = await Transmittal
+          .findOneAndUpdate({
+            _id: transmittal,
+            team: user.team._id
+          }, {
+            $push: { evidenceFullLoad: files },
+            status: ChoicesStatusTransmittal.inTransit
+          }, { new: true });
+        res.status(200).json({
+          data: transmittalData,
+          status: 201
+        });
+      }
+      res.status(400).json({
+        message: 'El archivo es requerido',
+        status: 400
       });
+      //  TODO: need update socket from here
     } catch (e) {
       /* istanbul ignore next */
       logger.error(`TransmittalController.uploadFile: Async Error.`);
