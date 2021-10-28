@@ -374,10 +374,10 @@ var RequestController = /** @class */ (function () {
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
-                        _a.trys.push([0, 8, , 9]);
+                        _a.trys.push([0, 9, , 10]);
                         team = req.user.team;
                         requests = req.body.requests;
-                        if (!(requests === null || requests === void 0 ? void 0 : requests.length)) return [3 /*break*/, 6];
+                        if (!(requests === null || requests === void 0 ? void 0 : requests.length)) return [3 /*break*/, 7];
                         requestsNumbers = requests.map(function (request) { return parseInt(request.number); });
                         return [4 /*yield*/, request_model_1["default"].find({ team: team, number: { $in: requestsNumbers } })];
                     case 1:
@@ -392,8 +392,15 @@ var RequestController = /** @class */ (function () {
                             message: "Solicitudes n\u00FAmero " + existsRequest.map(function (e) { return e.number; }).join(',') + " ya " + (existsRequest.length > 1 ? 'existen' : 'existe'),
                             status: 400
                         });
-                        return [3 /*break*/, 5];
+                        return [3 /*break*/, 6];
                     case 3:
+                        if (!(minRequest < updateTeam.requestNumber)) return [3 /*break*/, 4];
+                        res.status(400).json({
+                            message: "El n\u00FAmero de solicitud no puede ser menor que " + updateTeam.requestNumber,
+                            status: 400
+                        });
+                        return [3 /*break*/, 6];
+                    case 4:
                         requests.forEach(function (request) { return __awaiter(_this, void 0, void 0, function () {
                             return __generator(this, function (_a) {
                                 switch (_a.label) {
@@ -405,30 +412,30 @@ var RequestController = /** @class */ (function () {
                             });
                         }); });
                         return [4 /*yield*/, team_model_1["default"].findOneAndUpdate({ _id: team._id }, { $set: { requestNumber: maxRequest } })];
-                    case 4:
+                    case 5:
                         _a.sent();
                         res.status(200).json({
                             message: 'Actualización realizada satisfactoriamente',
                             status: 200
                         });
-                        _a.label = 5;
-                    case 5: return [3 /*break*/, 7];
-                    case 6:
+                        _a.label = 6;
+                    case 6: return [3 /*break*/, 8];
+                    case 7:
                         res.status(400).json({
                             message: 'Datos invalidos',
                             status: 400
                         });
-                        _a.label = 7;
-                    case 7: return [3 /*break*/, 9];
-                    case 8:
+                        _a.label = 8;
+                    case 8: return [3 /*break*/, 10];
+                    case 9:
                         e_3 = _a.sent();
                         /* istanbul ignore next */
                         if (e_3) {
                             console.log(e_3);
                             res.status(500).json(e_3);
                         }
-                        return [3 /*break*/, 9];
-                    case 9: return [2 /*return*/];
+                        return [3 /*break*/, 10];
+                    case 10: return [2 /*return*/];
                 }
             });
         });
