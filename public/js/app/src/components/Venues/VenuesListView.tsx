@@ -469,8 +469,8 @@ class VenuesListView extends TrackingBasePage<IPropsType, IStateType> {
     this.props.changeTempVenueAction({
       _id: venue._id,
       name: venue.name,
-      code: venue.code,
-      abbreviation: venue.abbreviation,
+      code: venue.code ?? '',
+      abbreviation: venue.abbreviation ?? '',
       lat: venue.lat,
       lng: venue.lng,
       company: venue.company,
