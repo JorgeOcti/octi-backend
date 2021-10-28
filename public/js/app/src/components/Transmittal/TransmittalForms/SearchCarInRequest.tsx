@@ -189,9 +189,9 @@ class SearchCarInRequests extends React.Component<IPropsType, IStateType> {
                           <th className='middle' style={{ width: '150px' }}>Solicitante</th>
                         </React.Fragment>
                         : <React.Fragment>
+                          <th className='middle' style={{ width: '150px' }}>Solicitante</th>
                           <th className='middle' style={{ width: '150px' }}>Origen</th>
                           <th className='middle' style={{ width: '150px' }}>Destino</th>
-                          <th className='middle' style={{ width: '150px' }}>Solicitante</th>
                           <th className='middle' style={{ width: '100px' }}>Fecha</th>
                         </React.Fragment>
                     }
