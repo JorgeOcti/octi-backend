@@ -272,7 +272,7 @@ class RequestController {
             message: `Solicitudes número ${existsRequest.map((e) => e.number).join(',')} ya ${existsRequest.length > 1 ? 'existen' : 'existe'}`,
             status: 400
           });
-        } else if (minRequest <= updateTeam!.requestNumber) {
+        } else if (minRequest < updateTeam!.requestNumber) {
           res.status(400).json({
             message: `El número de solicitud no puede ser menor que ${updateTeam!.requestNumber}`,
             status: 400
