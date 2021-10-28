@@ -49,7 +49,7 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
 exports.__esModule = true;
 var server_1 = require("../../server");
 var logger_service_1 = require("../../services/logger.service");
-var mIlestoneType_model_1 = require("../models/mIlestoneType.model");
+var milestoneType_model_1 = require("../models/milestoneType.model");
 var MilestoneTypeController = /** @class */ (function () {
     function MilestoneTypeController() {
         this.apiList = this.apiList.bind(this);
@@ -69,7 +69,7 @@ var MilestoneTypeController = /** @class */ (function () {
                         _a.label = 1;
                     case 1:
                         _a.trys.push([1, 3, , 4]);
-                        return [4 /*yield*/, new mIlestoneType_model_1["default"](__assign(__assign({}, object), { team: team })).save()];
+                        return [4 /*yield*/, new milestoneType_model_1["default"](__assign(__assign({}, object), { team: team })).save()];
                     case 2:
                         reason = _a.sent();
                         server_1.io.to("milestone-type-list-" + team._id).emit('REFRESH', {
@@ -102,7 +102,7 @@ var MilestoneTypeController = /** @class */ (function () {
                         _a.label = 1;
                     case 1:
                         _a.trys.push([1, 3, , 4]);
-                        return [4 /*yield*/, mIlestoneType_model_1["default"].findOneAndUpdate({ _id: id, team: team }, { $set: __assign({}, body) }, { "new": true })];
+                        return [4 /*yield*/, milestoneType_model_1["default"].findOneAndUpdate({ _id: id, team: team }, { $set: __assign({}, body) }, { "new": true })];
                     case 2:
                         milestoneType = _a.sent();
                         server_1.io.to("milestone-type-list-" + team._id).emit('REFRESH', {
@@ -134,7 +134,7 @@ var MilestoneTypeController = /** @class */ (function () {
                         _a.label = 1;
                     case 1:
                         _a.trys.push([1, 3, , 4]);
-                        return [4 /*yield*/, mIlestoneType_model_1["default"].findOneAndDelete({ _id: id, team: team })];
+                        return [4 /*yield*/, milestoneType_model_1["default"].findOneAndDelete({ _id: id, team: team })];
                     case 2:
                         milestoneType = _a.sent();
                         server_1.io.to("milestone-type-list-" + team._id).emit('REFRESH', {
@@ -213,7 +213,7 @@ var MilestoneTypeController = /** @class */ (function () {
     };
     MilestoneTypeController.prototype.getMilestoneTypes = function (filter, options) {
         return new Promise(function (resolve, reject) {
-            mIlestoneType_model_1["default"].paginate(filter, options, function (err, result) {
+            milestoneType_model_1["default"].paginate(filter, options, function (err, result) {
                 if (err) {
                     return reject(err);
                 }

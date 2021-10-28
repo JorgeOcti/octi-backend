@@ -5,7 +5,7 @@ import { IRequestItemStatus } from '../../request/interfaces/requestItemStatus.i
 import { IRequestItemStatusModel } from '../../request/models/requestItemStatus.model';
 import { IFormModel } from "../../form/models/form.model";
 import { IMilestoneType } from './milestoneType.interface';
-import { IMilestoneTypeModel } from '../models/mIlestoneType.model';
+import { IMilestoneTypeModel } from '../models/milestoneType.model';
 
 export interface IMilestone {
   _id: any;

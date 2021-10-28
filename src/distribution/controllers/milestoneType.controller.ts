@@ -3,7 +3,7 @@ import { PaginateOptions, PaginateResult } from 'mongoose';
 import { IRequest } from '../../interfaces/global.interface';
 import { io } from '../../server';
 import logger from '../../services/logger.service';
-import MilestoneType, { IMilestoneTypeModel } from '../models/mIlestoneType.model';
+import MilestoneType, { IMilestoneTypeModel } from '../models/milestoneType.model';
 
 class MilestoneTypeController {
 

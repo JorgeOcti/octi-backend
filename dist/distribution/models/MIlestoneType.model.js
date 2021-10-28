@@ -37,4 +37,4 @@ milestoneTypeSchema.plugin(mongoosePaginate);
 milestoneTypeSchema.plugin(mongooseAggregatePaginate);
 var MilestoneType = mongoose.model('MilestoneType', milestoneTypeSchema);
 exports["default"] = MilestoneType;
-//# sourceMappingURL=mIlestoneType.model.js.map
+//# sourceMappingURL=milestoneType.model.js.map

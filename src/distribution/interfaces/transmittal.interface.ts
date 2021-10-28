@@ -7,7 +7,7 @@ import {ITransmittalFile} from "./transmittalFile.interface";
 import {ITransmittalItemModel} from "../models/transmittalItem.model";
 import { IParticipant } from '../../form/interfaces/participant.interface';
 import { IMilestoneType } from './milestoneType.interface';
-import { IMilestoneTypeModel } from '../models/mIlestoneType.model';
+import { IMilestoneTypeModel } from '../models/milestoneType.model';
 
 
 export interface ITransmittal {
