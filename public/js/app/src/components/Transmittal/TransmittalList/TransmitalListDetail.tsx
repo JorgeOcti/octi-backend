@@ -7,12 +7,10 @@ import { ITransmittalActionTypes, ITransmittalState } from '../../../actions/tra
 import { ITransmittalModel } from '../../../../../../../src/distribution/models/transmittal.model';
 import TransmitalListItem from './TransmittalListItem';
 import ShowIf from '../../Utils/ShowIf';
-import BootstrapSelect from '../../Utils/BootstrapSelect';
 import { loadDataAction, ModalReduxAction } from '../../../actions/modal.actions';
-import SearchCarInRequests from '../TransmittalForms/SearchCarInRequest';
 import { IRequestItem } from '../../../../../../../src/request/interfaces/requestItem.interface';
 import ApiService from '../../../utils/axios';
-import { AxiosError, AxiosResponse } from 'axios';
+import { AxiosError } from 'axios';
 import { hasPermission } from '../../../utils/common';
 import { IWindow } from '../../../interfaces/window';
 import DateRangePicker from '../../Utils/DateRangePicker';
@@ -21,6 +19,7 @@ import { IParticipant } from '../../../../../../../src/form/interfaces/participa
 import UploadTransmittalFile from './UploadTransmittalFile';
 import AddItemsToTransmittal from '../TransmittalForms/AddItemsToTransmittal';
 import { ICar } from '../../../../../../../src/app/interfaces/car.interface';
+import { debounce } from 'throttle-debounce';
 
 interface IPropsType extends RouteComponentProps<{ ticket: string }> {
   dispatch: Dispatch<ITransmittalActionTypes>;
@@ -53,7 +52,12 @@ class TransmitalListDetail extends React.Component<IPropsType, IStateType> {
     this.pushItemCar = this.pushItemCar.bind(this);
     this.statusIcon = this.statusIcon.bind(this);
     this.downloadFiles = this.downloadFiles.bind(this);
+    this.debouncedUpdateTransmittalThunkAction = debounce(2000, this.debouncedUpdateTransmittalThunkAction.bind(this));
     this.api = new ApiService();
+  }
+
+  private debouncedUpdateTransmittalThunkAction(transmittal: any){
+    this.props.transmittalActions.updateTransmittalThunkAction(transmittal)
   }
 
   public render(): React.ReactElement<IPropsType> {
@@ -67,7 +71,24 @@ class TransmitalListDetail extends React.Component<IPropsType, IStateType> {
             <strong className='text-underline'>#{this.padNumber(transmittal.number)}</strong>&nbsp;
           </div>
           <div className='flex-45 col-sm-1 col-xs-1 col-md-1 col-lg-1'>
-            {transmittal.transporter?.patent}
+            {
+              hasPermission(window.user, 'changeTransmittal') ?
+                (
+                  <input
+                    className='form-control input-sm'
+                    defaultValue={transmittal.transporter?.patent}
+                    onChange={(e) => {
+                      this.debouncedUpdateTransmittalThunkAction({
+                        _id: transmittal._id,
+                        'transporter.patent': e.target.value
+                      });
+                    }}
+                  />
+                ) :
+                (
+                  `${transmittal.transporter?.patent}`
+                )
+            }
           </div>
           <div className='flex-45 col-sm-2 col-xs-2 col-md-2 col-lg-2' style={{ position: 'static' }}>
             {
