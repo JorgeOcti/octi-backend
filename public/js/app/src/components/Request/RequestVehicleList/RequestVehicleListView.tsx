@@ -229,7 +229,7 @@ class RequestVehicleListView extends TrackingBasePage<IPropsType, IStateType> {
             <div className='box-body no-padding'>
               <div style={{ padding: '10px 0' }}>
                 <div className='row' style={{ margin: 0 }}>
-                  <div className='col-md-8'>
+                  <div className='col-md-6'>
                     <div className='form-group'>
                       <label className='control-label'>
                         Vehículo
@@ -237,7 +237,7 @@ class RequestVehicleListView extends TrackingBasePage<IPropsType, IStateType> {
                       <input
                         type='text'
                         className='form-control input-sm'
-                        placeholder='Busca por VIN, marca, modelo, material o nº de solicitud.'
+                        placeholder='Busca por VIN, marca, modelo o material.'
                         defaultValue={filters.text}
                         onChange={(e) => {
                           this.changeFilterDebounced('text', e.target.value);
@@ -245,7 +245,23 @@ class RequestVehicleListView extends TrackingBasePage<IPropsType, IStateType> {
                       />
                     </div>
                   </div>
-                  <div className='col-md-4'>
+                  <div className='col-md-3'>
+                    <div className='form-group'>
+                      <label className='control-label'>
+                        Partida
+                      </label>
+                      <input
+                        type='text'
+                        className='form-control input-sm'
+                        placeholder='Nº de partida: S14795'
+                        defaultValue={filters.request}
+                        onChange={(e) => {
+                          this.changeFilterDebounced('entry', e.target.value);
+                        }}
+                      />
+                    </div>
+                  </div>
+                  <div className='col-md-3'>
                     <div className='form-group'>
                       <label className='control-label'>
                         Nº Solicitudes

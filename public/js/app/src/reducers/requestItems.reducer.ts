@@ -40,6 +40,7 @@ const initialState: IRequestItemsState = {
   },
   filters: {
     request: '',
+    entry: '',
     text: '',
     venues: [],
     properties: [],
