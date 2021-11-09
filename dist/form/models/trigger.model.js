@@ -9,7 +9,7 @@ var KindTrigger;
 })(KindTrigger = exports.KindTrigger || (exports.KindTrigger = {}));
 exports.kindTrigger = [
     KindTrigger.file,
-    KindTrigger.email,
+    KindTrigger.email
 ];
 exports.triggerConfigSchema = new mongoose.Schema({
     fullname: [mongoose.Schema.Types.Mixed],

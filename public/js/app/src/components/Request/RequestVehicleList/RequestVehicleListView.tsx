@@ -470,7 +470,7 @@ class RequestVehicleListView extends TrackingBasePage<IPropsType, IStateType> {
                       {/*</th>*/}
                       <th
                         className='middle pointer'
-                        style={{ minWidth: '100px', maxWidth: '80px' }}
+                        style={{ minWidth: '100px' }}
                         onClick={() => this.changeOrder('car.brand')}
                       >
                         Marca

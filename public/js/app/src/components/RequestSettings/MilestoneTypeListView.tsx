@@ -275,7 +275,7 @@ class MilestoneTypeListView extends TrackingBasePage<IPropsType, IStateType> {
     // ask if you are sure that you are going to delete the user?
     swal({
       title: '¿Estás seguro?',
-      text: `Vas a eliminar el tipo de Hitos ${milestoneType.name} `,
+      text: `Vas a eliminar el tipo de hito: ${milestoneType.name} `,
       icon: 'warning',
       dangerMode: true,
       buttons: {

@@ -3,6 +3,7 @@ import {IChoices, IScale} from '../interfaces/scale.interface';
 
 export interface IChoicesModel extends IChoices, mongoose.Types.Subdocument {}
 export const choiceBackgroundColors = ['red', 'green', 'yellow', 'blue'];
+
 const choiceSchema = new mongoose.Schema({
   choice: {type: String, required: true, trim: true},
   value: {type: Number, required: true},

@@ -29,10 +29,12 @@ import transmittalReducer from "./transmittal.reducer";
 import { operationTypeReducer } from './operationType.reducer';
 import { milestoneReducer } from './milestone.reducer';
 import { milestoneTypeReducer } from './milestoneType.reducer';
+import { formsReducer } from './form.reducer';
 
 export default (history: any) => combineReducers({
   users: usersReducer,
   cars: carsReducer,
+  forms: formsReducer,
   transmittal: transmittalReducer,
   modal: modalReducer,
   carriers: carriersReducer,

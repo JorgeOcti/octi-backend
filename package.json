@@ -4,7 +4,8 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "dev": "nodemon --inspect=0.0.0.0:9229 dist/server.js --max-old-space-size=4096",
+    "dev": "nodemon dist/server.js --max-old-space-size=4096",
+    "dev:inspect": "nodemon --inspect=0.0.0.0:9229 dist/server.js --max-old-space-size=4096",
     "dev:debug": "nodemon --config nodemon-ts-node.json src/server.ts",
     "dev:build": "nodemon --config nodemon-ts-node.json --inspect src/server.ts",
     "build": "tsc",

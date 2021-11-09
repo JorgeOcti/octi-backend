@@ -80,6 +80,10 @@ class CarController {
     this.createCar = this.createCar.bind(this);
   }
 
+  public async index(req: IRequest, res: Response) {
+    res.render('app/index', {token: await req.user.generateToken()});
+  }
+
   public async generalDashboard(req: IRequest, res: Response) {
     res.render('app/index', {token: await req.user.generateToken()});
   }
@@ -87,6 +91,7 @@ class CarController {
   public async vinDashboard(req: IRequest, res: Response) {
     res.render('app/index', {token: await req.user.generateToken()});
   }
+
 
   public async createCar(req: IRequest, res: Response) {
     try {
@@ -424,7 +429,7 @@ class CarController {
         createdAt: {
           $gte: moment().subtract(30, 'd').toDate()
         }
-      }
+      };
       if (only_controls == "1"){
         participantQuery.kind = {$ne: KindForm.transmittal}
       }

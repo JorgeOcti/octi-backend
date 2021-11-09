@@ -309,11 +309,6 @@ export default class ApiService {
     );
   }
 
-  public getForms(page: number, pageSize?: number): AxiosPromise {
-    return this.instance.get(
-      `/api/admin/forms/?page=${page}${pageSize ? `&pageSize=${pageSize}` : ''}`
-    );
-  }
 
   public getCars(page: number, search?: string): AxiosPromise {
     return this.instance.get(
@@ -845,6 +840,30 @@ export default class ApiService {
   }: { page: number, orderType?: string, orderBy?: string, pageSize?: number }): AxiosPromise {
     return this.instance.get(
       `/api/v1/milestone-types/?page=${page}${pageSize ? `&pageSize=${pageSize}` : ''}${orderBy ? `&orderBy=${orderBy}` : ''}${orderType ? `&orderType=${orderType}` : ''}`
+    );
+  }
+
+  public getForms(page: number, pageSize?: number): AxiosPromise {
+    return this.instance.get(
+      `/api/admin/forms/?page=${page}${pageSize ? `&pageSize=${pageSize}` : ''}`
+    );
+  }
+
+  public createForm(form: any): AxiosPromise {
+    return this.instance.post(
+      `/api/admin/forms/`, form
+    );
+  }
+
+  public updateForm(form: any): AxiosPromise {
+    return this.instance.post(
+      `/api/admin/forms/${form._id}/`, form
+    );
+  }
+
+  public deleteForm(form: any): AxiosPromise {
+    return this.instance.delete(
+      `/api/admin/forms/${form._id}/`
     );
   }
 }

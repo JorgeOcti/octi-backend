@@ -262,7 +262,7 @@ var AdminCarController = /** @class */ (function () {
                         return [4 /*yield*/, this.getCars({
                                 team: team,
                                 status: {
-                                    $eq: car_model_1.ChoicesStatusCar.active
+                                    $in: [car_model_1.ChoicesStatusCar.active, car_model_1.ChoicesStatusCar.inventory]
                                 }
                             }, options, search)];
                     case 2:

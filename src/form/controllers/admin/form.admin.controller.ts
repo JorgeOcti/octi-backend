@@ -21,7 +21,9 @@ class AdminFormsController {
     // paginate options
     const options: PaginateOptions = {
       select: {
-        name: true
+        name: true,
+        triggers: true,
+        active: true
       },
       sort: {
         firstName: 1

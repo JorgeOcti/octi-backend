@@ -71,7 +71,9 @@ var AdminFormsController = /** @class */ (function () {
                         team = req.user.team._id;
                         options = {
                             select: {
-                                name: true
+                                name: true,
+                                triggers: true,
+                                active: true
                             },
                             sort: {
                                 firstName: 1

@@ -50,6 +50,7 @@ import OperationTypeListView from './components/RequestSettings/OperationTypeLis
 import RequestImportView from './components/Request/RequestImportView';
 import MilestoneListView from './components/RequestSettings/MilestoneListView';
 import MilestoneTypeListView from './components/RequestSettings/MilestoneTypeListView';
+import FormsSettingsListView from './components/FormsSettings/FormListView';
 
 
 declare let window: IWindow;
@@ -74,6 +75,7 @@ const App = () => (
         <Route exact path='/dashboard/timing/' component={DashboardTimingView} />
         <Route exact path='/dashboard/derco/' component={DashboardDercoView} />
         <Route exact path='/dashboard/custom-dashboard/' component={CustomDashboardComponent} />
+        <Route exact path='/forms/settings/forms/' component={FormsSettingsListView} />
         <Route exact path='/stock/' component={StockView} />
         <Route exact path='/stock/import/' component={StockImportView} />
         <Route exact path='/cars/:id/' component={DashboardVinDetail} />

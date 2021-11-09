@@ -31,7 +31,7 @@ import * as bluebird from 'bluebird';
 import { IParticipant } from '../interfaces/participant.interface';
 import { IVenueDay } from '../../app/interfaces/venueDay.interface';
 import ActivityHistory, { ChoicesTypeActivity } from '../../billing/models/activityHistory.model';
-import TriggerHandler from '../commands/triggerHandler';
+import TriggerHandler from './triggers/triggerHandler';
 import TransmittalItem from '../../distribution/models/transmittalItem.model';
 import TransmittalController from '../../distribution/controllers/transmittal.controller';
 import RequestController from '../../request/controllers/request.controller';

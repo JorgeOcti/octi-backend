@@ -275,7 +275,7 @@ class OperationTypeListView extends TrackingBasePage<IPropsType, IStateType> {
     // ask if you are sure that you are going to delete the user?
     swal({
       title: '¿Estás seguro?',
-      text: `Vas a eliminar el tipo de operación ${operationType.name} `,
+      text: `Vas a eliminar el tipo de operación: ${operationType.name} `,
       icon: 'warning',
       dangerMode: true,
       buttons: {

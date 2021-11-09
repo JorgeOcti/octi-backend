@@ -283,7 +283,7 @@ class RequestReasonListView extends TrackingBasePage<IPropsType, IStateType> {
     // ask if you are sure that you are going to delete the user?
     swal({
       title: '¿Estás seguro?',
-      text: `Vas a eliminar el motivo ${reason.name} `,
+      text: `Vas a eliminar el motivo: ${reason.name} `,
       icon: 'warning',
       dangerMode: true,
       buttons: {

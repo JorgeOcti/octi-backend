@@ -271,7 +271,7 @@ class RequestChannelListView extends TrackingBasePage<IPropsType, IStateType> {
     // ask if you are sure that you are going to delete the user?
     swal({
       title: '¿Estás seguro?',
-      text: `Vas a eliminar el canal ${requestChannel.name} `,
+      text: `Vas a eliminar el canal: ${requestChannel.name} `,
       icon: 'warning',
       dangerMode: true,
       buttons: {

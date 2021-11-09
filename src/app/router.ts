@@ -32,6 +32,7 @@ appRouter.get('/dashboard/custom-dashboard/', Middlewares.isLoggedIn, CarControl
 
 // DashBoard Cars
 appRouter.get('/cars/', Middlewares.isLoggedIn, CarController.vinDashboard);
+appRouter.get('/forms/settings/forms/', Middlewares.isLoggedIn, CarController.index);
 appRouter.get('/cars/:id', Middlewares.isLoggedIn, CarController.vinDashboardDetail);
 appRouter.get('/revision-report/', Middlewares.isLoggedIn, CarController.vinDashboard);
 

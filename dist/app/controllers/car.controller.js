@@ -130,6 +130,24 @@ var CarController = /** @class */ (function () {
         this.listProperties = this.listProperties.bind(this);
         this.createCar = this.createCar.bind(this);
     }
+    CarController.prototype.index = function (req, res) {
+        return __awaiter(this, void 0, void 0, function () {
+            var _a, _b, _c;
+            var _d;
+            return __generator(this, function (_e) {
+                switch (_e.label) {
+                    case 0:
+                        _b = (_a = res).render;
+                        _c = ['app/index'];
+                        _d = {};
+                        return [4 /*yield*/, req.user.generateToken()];
+                    case 1:
+                        _b.apply(_a, _c.concat([(_d.token = _e.sent(), _d)]));
+                        return [2 /*return*/];
+                }
+            });
+        });
+    };
     CarController.prototype.generalDashboard = function (req, res) {
         return __awaiter(this, void 0, void 0, function () {
             var _a, _b, _c;
