@@ -3,11 +3,14 @@ import { IFormsState,
   FORM_CANCEL_STATUS,
   FORM_CHANGE_ORDER,
   FORM_IS_LOADING,
-  FORM_LOAD_STATUS
+  FORM_LOAD_STATUS,
+  FORM_LOAD_REQUEST_STATUS
 } from '../actions/form.types';
+import { MILESTONE_LOAD_REQUEST_STATUS } from '../actions/milestone.types';
 
 const initialState: IFormsState = {
   forms: [],
+  requestStatus: [],
   loading: true,
   source: null,
   options:{
@@ -40,6 +43,11 @@ export function formsReducer(state = initialState, action: FormReduxActions): IF
           orderBy: action.payload.orderBy,
           orderType: action.payload.orderType
         }
+      };
+    case FORM_LOAD_REQUEST_STATUS:
+      return {
+        ...state,
+        requestStatus: action.payload.requestStatus
       };
     case FORM_LOAD_STATUS:
       return {

@@ -856,7 +856,7 @@ export default class ApiService {
   }
 
   public updateForm(form: any): AxiosPromise {
-    return this.instance.post(
+    return this.instance.patch(
       `/api/admin/forms/${form._id}/`, form
     );
   }

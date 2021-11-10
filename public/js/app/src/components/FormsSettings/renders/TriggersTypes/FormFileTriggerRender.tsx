@@ -10,7 +10,7 @@ interface IPropsType {
 interface IStateType {
 }
 
-class FormFileRender extends React.Component<IPropsType, IStateType> {
+class FormFileTriggerRender extends React.Component<IPropsType, IStateType> {
   public render(): React.ReactElement<IPropsType> {
     const { item } = this.props;
     return (
@@ -18,7 +18,7 @@ class FormFileRender extends React.Component<IPropsType, IStateType> {
         <div className='col-md-10'>
           <Field
             name={`${item}.config.filename`}
-            label='Nombre de Archivo'
+            label='Nombre del archivo'
             placeholder='voucher.pdf'
             type='text'
             component={InputField}
@@ -28,11 +28,21 @@ class FormFileRender extends React.Component<IPropsType, IStateType> {
         <div className='col-md-10'>
           <Field
             name={`${item}.config.template`}
-            label='Template'
+            label='Template del archivo'
             placeholder='vouchers/client-sell.pug'
             type='text'
             component={InputField}
             validate={[inputStringRequired]}
+          />
+        </div>
+        <div className='col-md-10'>
+          <Field
+            name={`${item}.config.signature`}
+            label='ID Signature question (Si desea utilizarla en el template)'
+            placeholder='618ad37fdf7f091efa6c6633'
+            type='text'
+            component={InputField}
+            validate={[]}
           />
         </div>
       </div>
@@ -40,4 +50,4 @@ class FormFileRender extends React.Component<IPropsType, IStateType> {
   }
 }
 
-export default FormFileRender;
+export default FormFileTriggerRender;

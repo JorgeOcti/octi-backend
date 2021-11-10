@@ -92,25 +92,25 @@ var FileTriggerDelegate = /** @class */ (function (_super) {
     }
     FileTriggerDelegate.prototype.trigger = function (trigger, answers, payload) {
         return __awaiter(this, void 0, void 0, function () {
-            var data, filename, participant_1, participantCompany, _a, css, templatePath, html, pdfPath, url, e_1;
+            var context_1, filename, participant_1, participantCompany, _a, css, templatePath, html, pdfPath, url, e_1;
             return __generator(this, function (_b) {
                 switch (_b.label) {
                     case 0:
                         _b.trys.push([0, 4, , 5]);
                         logger_service_1["default"].info("Kind Trigger: " + trigger.kind + " performing");
-                        data = this.processTrigerConfig(trigger, answers);
-                        filename = moment().unix() + "_" + data.filename;
+                        context_1 = this.processTrigerConfig(trigger, answers);
+                        filename = moment().unix() + "_" + context_1.filename;
                         participant_1 = payload.participant;
                         participantCompany = participant_1.user.venue && participant_1.user.venue.company || {};
-                        _a = data;
-                        return [4 /*yield*/, participantFile_model_1["default"].find({ _id: { $in: data.signature } })];
+                        _a = context_1;
+                        return [4 /*yield*/, participantFile_model_1["default"].find({ _id: { $in: context_1.signature } })];
                     case 1:
                         _a.signature = (_b.sent()).map(function (f) { return f.file.url; })[0];
                         moment.locale('es');
                         moment.tz.setDefault('America/Santiago');
-                        css = fs.readFileSync(path.join(__dirname, '../../../views/') + 'form/carDetail/style.css', 'utf8');
-                        templatePath = path.join(__dirname, '../../../views/') + data.template;
-                        html = general_utils_1["default"].generateHtmlFromPugFile(templatePath, __assign(__assign(__assign(__assign({}, payload), answers), data), { css: css.replace(/(\r\n|\n|\r)/gm, ''), moment: moment, origin: function () {
+                        css = fs.readFileSync(path.join(__dirname, '../../../../../views/') + 'form/carDetail/style.css', 'utf8');
+                        templatePath = path.join(__dirname, '../../../../../views/') + context_1.template;
+                        html = general_utils_1["default"].generateHtmlFromPugFile(templatePath, __assign(__assign(__assign(__assign({}, payload), answers), context_1), { css: css.replace(/(\r\n|\n|\r)/gm, ''), moment: moment, origin: function () {
                                 if (participant_1.reception && participant_1.receiveFrom) {
                                     return participant_1.receiveFrom.name;
                                 }
@@ -162,15 +162,18 @@ var FileTriggerDelegate = /** @class */ (function (_super) {
                         return [4 /*yield*/, this.uploadFile(pdfPath, filename)];
                     case 3:
                         url = _b.sent();
-                        if (payload.hasOwnProperty('files')) {
+                        if (payload === null || payload === void 0 ? void 0 : payload.files) {
                             payload.files.push({ filename: filename, path: url });
                         }
                         else {
                             payload['files'] = [{ filename: filename, path: url }];
                         }
+                        logger_service_1["default"].info("Trigger: files " + JSON.stringify(payload['files']));
+                        logger_service_1["default"].info("Kind Trigger: " + trigger.kind + " executed");
                         return [2 /*return*/, payload];
                     case 4:
                         e_1 = _b.sent();
+                        console.error(e_1);
                         return [3 /*break*/, 5];
                     case 5: return [2 /*return*/];
                 }

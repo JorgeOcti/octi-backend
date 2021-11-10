@@ -1,5 +1,5 @@
 import { IForm } from '../../interfaces/form.interface';
-import { IParticipant } from '../../interfaces/participant.interface';
+import { IParticipant, IParticipantAnswer } from '../../interfaces/participant.interface';
 import ParticipantModel from '../../models/participant.model';
 import logger from '../../../services/logger.service';
 import { IFormTriggerModel, KindTrigger } from '../../models/trigger.model';
@@ -8,20 +8,58 @@ import { ITriggerDelegate } from '../../interfaces/trigger.interfaces';
 import NullTriggerDelegate from './delegates/nullTrigger.delegate';
 import EmailTriggerDelegate from './delegates/emailTrigger.delegate';
 import FileTriggerDelegate from './delegates/fileTrigger.delegate';
-
+import { IAnyObject } from '../../../interfaces/global.interface';
+import RequestDelegate from './delegates/requestTrigger.delegate';
+import IntegrationDelegate from './delegates/integrationTrigger.delegate';
 
 export default class TriggerHandler {
   private form: IForm;
   private participant: IParticipant | null;
   private readonly answers: any;
 
-  constructor(form: IForm, participant: IParticipant, answers?: any) {
+  constructor(form: IForm, participant: IParticipant, answers?: IParticipantAnswer[]) {
     this.form = form;
     this.participant = participant;
     this.answers = answers ? answers : this.getAnswers();
   }
 
-  async getParticipantFullData() {
+  public async execute(payload: IAnyObject = {}): Promise<any> {
+    await this.getParticipantFullData();
+    for (const trigger of this.form.triggers) {
+      if (!trigger.enabled) {
+        logger.info(`Trigger: ${trigger.name} deactivated`);
+        continue;
+      }
+      let triggerDelegate: ITriggerDelegate = this.getTrigger(trigger);
+      payload = await triggerDelegate.trigger(trigger, this.answers, {
+        ...payload,
+        participant: this.participant,
+        user: this.participant!.user
+      });
+    }
+  }
+
+  private getTrigger(trigger: IFormTriggerModel): ITriggerDelegate {
+    const delegates: any = {
+      [KindTrigger.email]: new EmailTriggerDelegate(),
+      [KindTrigger.file]: new FileTriggerDelegate(),
+      [KindTrigger.request]: new RequestDelegate(),
+      [KindTrigger.integration]: new IntegrationDelegate()
+    };
+    return delegates[trigger.kind] ?? new NullTriggerDelegate();
+  }
+
+  private getAnswers(): IAnyObject {
+    let answers: IAnyObject  = {};
+    this.participant!.sections.forEach((section) => {
+      section.answers.forEach((answer) => {
+        answers[answer._id.toString()] = answer.kind === KindQuestion.image ? answer.images : answer.comment;
+      });
+    });
+    return answers;
+  }
+
+  private async getParticipantFullData(): Promise<any> {
     this.participant = await ParticipantModel
       .findOne({
         _id: this.participant!._id
@@ -76,39 +114,5 @@ export default class TriggerHandler {
       }, {
         path: 'conciliationImages'
       }]).lean();
-  }
-
-  getAnswers(): any {
-    let answers: any = {};
-    this.participant!.sections.forEach((section) => {
-      section.answers.forEach((answer) => {
-        answers[answer._id.toString()] = answer.kind === KindQuestion.image ? answer.images : answer.comment;
-      });
-    });
-    return answers;
-  }
-
-  public async execute(payload: any = {}): Promise<any> {
-    await this.getParticipantFullData();
-    for (const trigger of this.form.triggers) {
-      if (!trigger.enabled) {
-        logger.info(`Trigger: ${trigger.name} deactivated`);
-        continue;
-      }
-      let triggerDelegate: ITriggerDelegate = this.getTrigger(trigger);
-      payload = await triggerDelegate.trigger(trigger, this.answers, {
-        ...payload,
-        participant: this.participant,
-        user: this.participant!.user
-      });
-    }
-  }
-
-  private getTrigger(trigger: IFormTriggerModel): ITriggerDelegate {
-    const delegates: any = {
-      [KindTrigger.email]: new EmailTriggerDelegate(),
-      [KindTrigger.file]: new FileTriggerDelegate()
-    };
-    return delegates[trigger.kind] ?? new NullTriggerDelegate();
   }
 }

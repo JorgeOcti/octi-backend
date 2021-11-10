@@ -14,7 +14,8 @@ import {
   createFormThunkAction,
   deleteFormItemThunkAction,
   getFormsThunkAction,
-  updateFormThunkAction
+  updateFormThunkAction,
+  updateFormWithoutThunkAction
 } from '../../actions/form.actions';
 import AppContainer from '../../container/AppContainer';
 import { IWindow } from '../../interfaces/window';
@@ -35,6 +36,8 @@ interface IPropsType extends RouteComponentProps<{ ticket: string }> {
   createFormThunkAction(form: IForm): FormReduxActions;
 
   updateFormThunkAction(form: IForm): FormReduxActions;
+
+  updateFormWithoutThunkAction(form: IForm): FormReduxActions;
 
   deleteFormThunkAction(form: IForm): FormReduxActions;
 
@@ -116,8 +119,8 @@ class FormListView extends TrackingBasePage<IPropsType, IStateType> {
 
   public render(): React.ReactElement<IPropsType> {
     const { loading, forms, pagination } = this.props.forms;
-    const canEdit = hasPermission(window.user, 'adminRequest');
-    const canDelete = hasPermission(window.user, 'adminRequest');
+    const canEdit = true;
+    const canDelete = true;
     return (
       <AppContainer title='' cMenu='1' cSubMenu='1.10' cAction='Formularios'>
         <section className='content'>
@@ -136,7 +139,7 @@ class FormListView extends TrackingBasePage<IPropsType, IStateType> {
                 <div className='box-header with-border'>
                   <h3 className='box-title'>Formularios <small>{pagination.count}</small></h3>
                   <div className='box-tools pull-right'>
-                    <ShowIf condition={hasPermission(window.user, 'addVenue')}>
+                    <ShowIf condition={(process.env.NODE_ENV === 'development')}>
                       <button
                         className='btn btn-sm btn-success'
                         onClick={this.createForm}
@@ -171,20 +174,22 @@ class FormListView extends TrackingBasePage<IPropsType, IStateType> {
                               <BootstrapSwitch
                                 checked={item.active}
                                 onChange={() => {
-                                  // this.props.changeLabelAction({
-                                  //   ...label,
-                                  //   active: !label.active
-                                  // });
+                                  this.props.updateFormWithoutThunkAction({
+                                    ...item,
+                                    active: !item.active
+                                  });
                                 }}
                               />
                             </td>
-                            <td className='middle-center'><strong>{item.triggers?.length}</strong></td>
+                            <td className='middle-center'>
+                              {item.triggers?.length ?? 0}
+                            </td>
                             <ShowIf condition={canEdit}>
                               <td
                                 className='middle text-blue pointer'
                                 onClick={() => this.updateForm(item)}
                               >
-                                <i className='fa fa-pencil' />
+                                <i className='fa fa-gears' />
                               </td>
                             </ShowIf>
                             <ShowIf condition={canDelete}>
@@ -304,6 +309,7 @@ const mapDispatchToProps = (dispatch: any) => {
     getFormThunkAction: (nextPage: number, hideLoading?: boolean) => dispatch(getFormsThunkAction(nextPage, hideLoading)),
     createFormThunkAction: (form: IForm) => dispatch(createFormThunkAction(form)),
     updateFormThunkAction: (form: IForm) => dispatch(updateFormThunkAction(form)),
+    updateFormWithoutThunkAction: (form: IForm) => dispatch(updateFormWithoutThunkAction(form)),
     deleteFormThunkAction: (form: IForm) => dispatch(deleteFormItemThunkAction(form)),
     loadDataAction: (title: string, body: JSX.Element, footer: JSX.Element) => dispatch(loadDataAction(title, body, footer))
   };

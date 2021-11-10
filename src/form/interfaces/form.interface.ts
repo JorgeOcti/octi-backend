@@ -5,6 +5,8 @@ import {IScaleModel} from '../models/scale.model';
 import {ICompany} from '../../app/interfaces/company.interface';
 import {ITeam} from '../../app/interfaces/team.interface';
 import {IFormTriggerModel} from "../models/trigger.model";
+import { IRequestItemStatus } from '../../request/interfaces/requestItemStatus.interface';
+import { IRequestItemStatusModel } from '../../request/models/requestItemStatus.model';
 
 export interface IFormItems {
   _id: any;
@@ -57,10 +59,20 @@ export interface IFormSection {
 export interface ITriggerConfig {
   fullname: any;
   email: any;
-  signature: any;
   subject: string;
+
+  signature: any;
   filename: string;
+
   template: string;
+
+  integrationType: string;
+  header: string;
+  url: string;
+  method: string;
+  body: string;
+
+  requestItemStatus: IRequestItemStatus | IRequestItemStatusModel;
 }
 
 export interface IFormTrigger {

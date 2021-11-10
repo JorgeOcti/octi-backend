@@ -29,7 +29,10 @@ router.get('/api/v1/forms/:id/', Middlewares.isJWTAuthenticated, FormController.
 router.post('/api/v1/forms/:id/', Middlewares.isJWTAuthenticated, FormController.complete);
 
 // admin forms
-router.get('/api/admin/forms/', Middlewares.isLoggedIn, AdminFormsController.apiListForms);
+router.get('/api/admin/forms/', Middlewares.isLoggedIn, AdminFormsController.apiList);
+router.post('/api/admin/forms/', Middlewares.isLoggedIn, AdminFormsController.apiCreate);
+router.patch('/api/admin/forms/:id', Middlewares.isLoggedIn, AdminFormsController.apiUpdate);
+router.delete('/api/admin/forms/:id', Middlewares.isLoggedIn, AdminFormsController.apiDelete);
 router.get('/api/admin/damages/', Middlewares.isLoggedIn, AdminDamagesController.apiListDamages);
 
 router.post('/api/v1/positions/', Middlewares.isJWTAuthenticated, FormController.createPosition);

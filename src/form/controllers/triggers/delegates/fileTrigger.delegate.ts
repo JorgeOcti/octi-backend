@@ -9,6 +9,7 @@ import * as HtmlPdf from 'html-pdf';
 import ParticipantFile from '../../../models/participantFile.model';
 import * as path from 'path';
 import GeneralUtils from '../../../../utils/general.utils';
+import { IAnyObject } from '../../../../interfaces/global.interface';
 
 export default class FileTriggerDelegate extends NullTriggerDelegate {
 
@@ -25,23 +26,23 @@ export default class FileTriggerDelegate extends NullTriggerDelegate {
     quality: '75'
   };
 
-  public async trigger(trigger: IFormTriggerModel, answers: any, payload: any): Promise<any> {
+  public async trigger(trigger: IFormTriggerModel, answers: IAnyObject, payload: IAnyObject): Promise<any> {
     try {
       logger.info(`Kind Trigger: ${trigger.kind} performing`);
-      let data = this.processTrigerConfig(trigger, answers);
-      let filename = `${moment().unix()}_${data.filename}`;
-      let participant = payload.participant;
+      let context = this.processTrigerConfig(trigger, answers);
+      let filename = `${moment().unix()}_${context.filename}`;
+      let { participant } = payload;
       const participantCompany = participant.user.venue && participant.user.venue.company || {};
 
-      data.signature = (await ParticipantFile.find({ _id: { $in: data.signature } })).map(f => f.file.url)[0];
+      context.signature = (await ParticipantFile.find({ _id: { $in: context.signature } })).map(f => f.file.url)[0];
       moment.locale('es');
       moment.tz.setDefault('America/Santiago');
-      const css = fs.readFileSync(path.join(__dirname, '../../../views/') + 'form/carDetail/style.css', 'utf8');
-      const templatePath: string = path.join(__dirname, '../../../views/') + data.template; // 'form/carDetail/index.pug';
+      const css = fs.readFileSync(path.join(__dirname, '../../../../../views/') + 'form/carDetail/style.css', 'utf8');
+      const templatePath: string = path.join(__dirname, '../../../../../views/') + context.template; // 'form/carDetail/index.pug';
       const html = GeneralUtils.generateHtmlFromPugFile(templatePath, {
         ...payload,
         ...answers,
-        ...data,
+        ...context,
         css: css.replace(/(\r\n|\n|\r)/gm, ''),
         moment,
         origin: () => {
@@ -102,14 +103,16 @@ export default class FileTriggerDelegate extends NullTriggerDelegate {
       const pdfPath = await this.createPDF(html, this.pdfConfig, filename);
       const url = await this.uploadFile(pdfPath, filename);
 
-      if (payload.hasOwnProperty('files')) {
+      if (payload?.files) {
         payload.files.push({ filename, path: url });
       } else {
         payload['files'] = [{ filename, path: url }];
       }
+      logger.info(`Trigger: files ${JSON.stringify(payload['files'])}`);
+      logger.info(`Kind Trigger: ${trigger.kind} executed`);
       return payload;
     } catch (e) {
-
+      console.error(e)
     }
   }
 

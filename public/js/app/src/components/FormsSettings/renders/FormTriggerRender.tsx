@@ -7,9 +7,12 @@ import { inputStringRequired } from '../../Utils/forms/validations';
 import CheckBoxField from '../../Utils/forms/CheckBoxField';
 import SelectField from '../../Utils/forms/SelectField';
 import { KindTrigger } from '../../../../../../../src/form/models/trigger.model';
-import FormFileRender from './TriggersTypes/FormFileRender';
-import FormEmailRender from './TriggersTypes/FormEmaiRender';
+import FormFileTriggerRender from './TriggersTypes/FormFileTriggerRender';
+import FormEmailTriggerRender from './TriggersTypes/FormEmaiTriggerRender';
+import FormRequestTriggerRender from './TriggersTypes/FormRequestTriggerRender';
 import ShowIf from '../../Utils/ShowIf';
+import FormIntegrationTriggerRender from './TriggersTypes/FormIntegrationTriggerRender';
+import * as uuid from 'uuid';
 
 
 export interface IFormTriggerRenderItemItemProps {
@@ -37,7 +40,7 @@ class FormTriggerRender extends React.Component<IPropsType, IStateType> {
   }
 
   public render(): React.ReactElement<IPropsType> {
-    const { fields, meta: { error, submitFailed } } = this.props;
+    const { fields, meta: { error, submitFailed }, forms } = this.props;
     const { openTabs } = this.state;
     return (
       <React.Fragment>
@@ -49,7 +52,12 @@ class FormTriggerRender extends React.Component<IPropsType, IStateType> {
                 className='text-center text-muted'
                 style={{ padding: '20px 0' }}
               >
-                No hay triggers para agregar uno <a href='javascript:void(0)' onClick={() => fields.push({})}>haz click aquí.</a>
+                No hay triggers para agregar uno <a href='javascript:void(0)'
+                                                    onClick={() => fields.push({
+                                                      tid: uuid.v4(),
+                                                      enabled: true,
+                                                      config: { method: 'post' }
+                                                    })}>haz click aquí.</a>
               </p>
             </div>
           </div>
@@ -80,6 +88,8 @@ class FormTriggerRender extends React.Component<IPropsType, IStateType> {
                     <option value={''} disabled={true}>Seleccione</option>
                     <option key={KindTrigger.file} value={KindTrigger.file}>Archivo</option>
                     <option key={KindTrigger.email} value={KindTrigger.email}>Correo</option>
+                    <option key={KindTrigger.request} value={KindTrigger.request}>Estado solicitudes</option>
+                    <option key={KindTrigger.integration} value={KindTrigger.integration}>Integraciones</option>
                   </Field>
                 </div>
                 <div className='col-md-2' style={{backgroundColor: '#fff', paddingBottom: '13px'}}>
@@ -114,12 +124,21 @@ class FormTriggerRender extends React.Component<IPropsType, IStateType> {
                   </ul>
                 </div>
                 <ShowIf condition={openTab}>
-                  <div className='col-md-12' style={{ backgroundColor: '#f4f4f4', paddingTop: '10px', paddingBottom: '10px' }}>
+                  <div
+                    className='col-md-12'
+                    style={{ backgroundColor: '#f4f4f4', paddingTop: '10px', paddingBottom: '10px' }}
+                  >
                     <ShowIf condition={KindTrigger.file === value.kind}>
-                      <FormFileRender item={item} />
+                      <FormFileTriggerRender item={item} />
                     </ShowIf>
                     <ShowIf condition={KindTrigger.email === value.kind}>
-                      <FormEmailRender item={item} />
+                      <FormEmailTriggerRender item={item} />
+                    </ShowIf>
+                    <ShowIf condition={KindTrigger.request === value.kind}>
+                      <FormRequestTriggerRender item={item} forms={forms} />
+                    </ShowIf>
+                    <ShowIf condition={KindTrigger.integration === value.kind}>
+                      <FormIntegrationTriggerRender item={item} />
                     </ShowIf>
                     <ShowIf condition={!value.kind}>
                       <span className={"text-muted"}>Seleccione un tipo</span>
@@ -134,7 +153,11 @@ class FormTriggerRender extends React.Component<IPropsType, IStateType> {
           <div className='col-md-12 text-right'>
             <button
               className='btn btn-sm btn-success'
-              onClick={() => fields.push({})}
+              onClick={() => fields.push({
+                tid: uuid.v4(),
+                enabled: true,
+                config: { method: 'post' } }
+              )}
             >
               <i className='fa fa-plus' /> Agregar trigger
             </button>

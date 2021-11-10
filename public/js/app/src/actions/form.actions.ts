@@ -18,8 +18,12 @@ import {
   IDeleteForm,
   IChangeOrderForm,
   IFormsState,
-  FormReduxActions
+  FormReduxActions, FORM_LOAD_REQUEST_STATUS, ILoadRequestStatusForm
 } from './form.types';
+import * as swal from 'sweetalert';
+import { loadRequestStatusMilestoneAction, loadTypesMilestoneAction } from './milestone.actions';
+import { ILoadRequestStatusMilestone, MILESTONE_LOAD_REQUEST_STATUS } from './milestone.types';
+import { IRequestStatus } from '../../../../../src/request/interfaces/requestStatus.interface';
 
 export function cancelFormAction(source: CancelTokenSource): ICancelForm {
   return {
@@ -90,6 +94,15 @@ export function changeOrderFormAction(orderBy: string, orderType: string): IChan
   };
 }
 
+export function loadRequestStatusFormAction(requestStatus: IRequestStatus[]): ILoadRequestStatusForm {
+  return {
+    type: FORM_LOAD_REQUEST_STATUS,
+    payload: {
+      requestStatus
+    }
+  };
+}
+
 export function getFormsThunkAction(nextPage: number, hideLoading?: boolean) {
   return (dispatch: Dispatch<FormReduxActions>, getState: () => { form: IFormsState }) => {
     const api: ApiService = new ApiService();
@@ -100,11 +113,13 @@ export function getFormsThunkAction(nextPage: number, hideLoading?: boolean) {
     dispatch(cancelFormAction(api.getSource()));
     Axios
       .all([
-        api.getForms(page)
+        api.getForms(page),
+        api.getRequestItemsStatus({ page:1, pageSize: 200 })
       ])
-      .then(Axios.spread((forms) => {
+      .then(Axios.spread((forms, requestStatus) => {
         const { data } = forms;
         dispatch(loadFormAction(data.results, data.count, data.pages, page));
+        dispatch(loadRequestStatusFormAction(requestStatus.data.results));
         dispatch(isLoadingFormAction(false));
       }))
       .catch((err: AxiosError) => {
@@ -120,7 +135,12 @@ export function createFormThunkAction(form: IForm) {
     const api: ApiService = new ApiService();
     api.createForm(form)
       .then((response: AxiosResponse) => {
-        // dispatch(updateFormItemAction(idForm, data));
+        swal!(response.data.message, {
+          icon: 'success'
+        });
+      })
+      .catch((err: AxiosError) => {
+        api.errorHandler(err);
       });
   };
 }
@@ -130,7 +150,24 @@ export function updateFormThunkAction(form: IForm) {
     const api: ApiService = new ApiService();
     api.updateForm(form)
       .then((response: AxiosResponse) => {
-        // dispatch(updateFormItemAction(idForm, data));
+        swal!(response.data.message, {
+          icon: 'success'
+        });
+      })
+      .catch((err: AxiosError) => {
+        api.errorHandler(err);
+      });
+  };
+}
+
+export function updateFormWithoutThunkAction(form: IForm) {
+  return (dispatch: Dispatch<FormReduxActions>) => {
+    const api: ApiService = new ApiService();
+    api.updateForm(form)
+      .then((response: AxiosResponse) => {
+      })
+      .catch((err: AxiosError) => {
+        api.errorHandler(err);
       });
   };
 }
@@ -140,7 +177,12 @@ export function deleteFormItemThunkAction(form: IForm) {
     const api: ApiService = new ApiService();
     api.deleteForm(form)
       .then((response: AxiosResponse) => {
-        // dispatch(updateFormItemAction(idForm, data));
+        swal!(response.data.message, {
+          icon: 'success'
+        });
+      })
+      .catch((err: AxiosError) => {
+        api.errorHandler(err);
       });
   };
 }

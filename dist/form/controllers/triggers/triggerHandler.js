@@ -54,12 +54,65 @@ var form_model_1 = require("../../models/form.model");
 var nullTrigger_delegate_1 = require("./delegates/nullTrigger.delegate");
 var emailTrigger_delegate_1 = require("./delegates/emailTrigger.delegate");
 var fileTrigger_delegate_1 = require("./delegates/fileTrigger.delegate");
+var requestTrigger_delegate_1 = require("./delegates/requestTrigger.delegate");
+var integrationTrigger_delegate_1 = require("./delegates/integrationTrigger.delegate");
 var TriggerHandler = /** @class */ (function () {
     function TriggerHandler(form, participant, answers) {
         this.form = form;
         this.participant = participant;
         this.answers = answers ? answers : this.getAnswers();
     }
+    TriggerHandler.prototype.execute = function (payload) {
+        if (payload === void 0) { payload = {}; }
+        return __awaiter(this, void 0, void 0, function () {
+            var _i, _a, trigger, triggerDelegate;
+            return __generator(this, function (_b) {
+                switch (_b.label) {
+                    case 0: return [4 /*yield*/, this.getParticipantFullData()];
+                    case 1:
+                        _b.sent();
+                        _i = 0, _a = this.form.triggers;
+                        _b.label = 2;
+                    case 2:
+                        if (!(_i < _a.length)) return [3 /*break*/, 5];
+                        trigger = _a[_i];
+                        if (!trigger.enabled) {
+                            logger_service_1["default"].info("Trigger: " + trigger.name + " deactivated");
+                            return [3 /*break*/, 4];
+                        }
+                        triggerDelegate = this.getTrigger(trigger);
+                        return [4 /*yield*/, triggerDelegate.trigger(trigger, this.answers, __assign(__assign({}, payload), { participant: this.participant, user: this.participant.user }))];
+                    case 3:
+                        payload = _b.sent();
+                        _b.label = 4;
+                    case 4:
+                        _i++;
+                        return [3 /*break*/, 2];
+                    case 5: return [2 /*return*/];
+                }
+            });
+        });
+    };
+    TriggerHandler.prototype.getTrigger = function (trigger) {
+        var _a;
+        var _b;
+        var delegates = (_a = {},
+            _a[trigger_model_1.KindTrigger.email] = new emailTrigger_delegate_1["default"](),
+            _a[trigger_model_1.KindTrigger.file] = new fileTrigger_delegate_1["default"](),
+            _a[trigger_model_1.KindTrigger.request] = new requestTrigger_delegate_1["default"](),
+            _a[trigger_model_1.KindTrigger.integration] = new integrationTrigger_delegate_1["default"](),
+            _a);
+        return (_b = delegates[trigger.kind]) !== null && _b !== void 0 ? _b : new nullTrigger_delegate_1["default"]();
+    };
+    TriggerHandler.prototype.getAnswers = function () {
+        var answers = {};
+        this.participant.sections.forEach(function (section) {
+            section.answers.forEach(function (answer) {
+                answers[answer._id.toString()] = answer.kind === form_model_1.KindQuestion.image ? answer.images : answer.comment;
+            });
+        });
+        return answers;
+    };
     TriggerHandler.prototype.getParticipantFullData = function () {
         return __awaiter(this, void 0, void 0, function () {
             var _a;
@@ -127,55 +180,6 @@ var TriggerHandler = /** @class */ (function () {
                 }
             });
         });
-    };
-    TriggerHandler.prototype.getAnswers = function () {
-        var answers = {};
-        this.participant.sections.forEach(function (section) {
-            section.answers.forEach(function (answer) {
-                answers[answer._id.toString()] = answer.kind === form_model_1.KindQuestion.image ? answer.images : answer.comment;
-            });
-        });
-        return answers;
-    };
-    TriggerHandler.prototype.execute = function (payload) {
-        if (payload === void 0) { payload = {}; }
-        return __awaiter(this, void 0, void 0, function () {
-            var _i, _a, trigger, triggerDelegate;
-            return __generator(this, function (_b) {
-                switch (_b.label) {
-                    case 0: return [4 /*yield*/, this.getParticipantFullData()];
-                    case 1:
-                        _b.sent();
-                        _i = 0, _a = this.form.triggers;
-                        _b.label = 2;
-                    case 2:
-                        if (!(_i < _a.length)) return [3 /*break*/, 5];
-                        trigger = _a[_i];
-                        if (!trigger.enabled) {
-                            logger_service_1["default"].info("Trigger: " + trigger.name + " deactivated");
-                            return [3 /*break*/, 4];
-                        }
-                        triggerDelegate = this.getTrigger(trigger);
-                        return [4 /*yield*/, triggerDelegate.trigger(trigger, this.answers, __assign(__assign({}, payload), { participant: this.participant, user: this.participant.user }))];
-                    case 3:
-                        payload = _b.sent();
-                        _b.label = 4;
-                    case 4:
-                        _i++;
-                        return [3 /*break*/, 2];
-                    case 5: return [2 /*return*/];
-                }
-            });
-        });
-    };
-    TriggerHandler.prototype.getTrigger = function (trigger) {
-        var _a;
-        var _b;
-        var delegates = (_a = {},
-            _a[trigger_model_1.KindTrigger.email] = new emailTrigger_delegate_1["default"](),
-            _a[trigger_model_1.KindTrigger.file] = new fileTrigger_delegate_1["default"](),
-            _a);
-        return (_b = delegates[trigger.kind]) !== null && _b !== void 0 ? _b : new nullTrigger_delegate_1["default"]();
     };
     return TriggerHandler;
 }());

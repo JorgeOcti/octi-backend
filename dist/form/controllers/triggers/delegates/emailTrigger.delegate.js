@@ -35,26 +35,27 @@ var EmailTriggerDelegate = /** @class */ (function (_super) {
         return _super !== null && _super.apply(this, arguments) || this;
     }
     EmailTriggerDelegate.prototype.validateEmail = function (email) {
-        var re = /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
-        return re.test(String(email).toLowerCase());
+        var re = /^\w+([\\.-]?\w+)*@\w+([\\.-]?\w+)*(\.\w{2,3})+$/;
+        return re.test(email.toLowerCase());
     };
     EmailTriggerDelegate.prototype.trigger = function (trigger, answers, payload) {
         logger_service_1["default"].info("Kind Trigger: " + trigger.kind + " performing");
-        var data = this.processTrigerConfig(trigger, __assign(__assign({}, answers), payload.user));
-        if (!this.validateEmail(data.email)) {
+        var context = this.processTrigerConfig(trigger, __assign(__assign({}, answers), payload.user));
+        logger_service_1["default"].info("Kind Trigger: context =>" + JSON.stringify(context));
+        if (!this.validateEmail(context.email)) {
             return payload;
         }
-        logger_service_1["default"].info("Kind Trigger: data =>" + JSON.stringify(data));
         app_1.queue.create('email', {
             from: '',
-            title: "\"" + data.subject + " | " + data.fullname,
-            to: "\"" + data.fullname + "\"<" + data.email + ">",
-            subject: "" + data.subject,
+            title: "\"" + context.subject + " | " + context.fullname,
+            to: "\"" + context.fullname + "\"<" + context.email + ">",
+            subject: "" + trigger.config.subject,
             text: "",
             attachments: payload.files || [],
             view: trigger.config.template,
-            context: __assign(__assign(__assign({}, payload), data), answers)
+            context: __assign(__assign(__assign({}, payload), context), answers)
         }).priority('high').attempts(5).save();
+        logger_service_1["default"].info("Kind Trigger: " + trigger.kind + " executed");
         return payload;
     };
     return EmailTriggerDelegate;
