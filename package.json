@@ -19,6 +19,7 @@
     "@pusher/push-notifications-server": "~1.2.0",
     "archiver": "~3.0.0",
     "aws-sdk": "~2.980.0",
+    "axios": "^0.24.0",
     "bcrypt": "~3.0.6",
     "bluebird": "~3.7.2",
     "body-parser": "~1.19.0",
