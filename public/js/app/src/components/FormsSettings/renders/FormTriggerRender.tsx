@@ -44,7 +44,7 @@ class FormTriggerRender extends React.Component<IPropsType, IStateType> {
     const { openTabs } = this.state;
     return (
       <React.Fragment>
-        <h3>Triggers</h3>
+        <h4>Triggers</h4>
         <ShowIf condition={!fields?.length}>
           <div className='row'>
             <div className='col-md-12'>
@@ -65,7 +65,7 @@ class FormTriggerRender extends React.Component<IPropsType, IStateType> {
         {
           fields.map((item, index) => {
             const value: any = fields.get(index);
-            const openTab = openTabs.includes(value._id);
+            const openTab = openTabs.includes(value._id ?? value.tid);
             return (
               <div className='row' key={index} style={{paddingTop: '10px'}}>
                 <div className='col-md-4' style={{backgroundColor: '#fff'}}>
@@ -116,7 +116,7 @@ class FormTriggerRender extends React.Component<IPropsType, IStateType> {
                     <li onClick={() => fields.remove(index)} style={{padding: '0 10px'}}>
                       <i className='fa fa-minus-circle text-red' />
                     </li>
-                    <li onClick={() => this.toogleTab(value._id)} style={{padding: '0 10px'}}>
+                    <li onClick={() => this.toogleTab(value._id ?? value.tid)} style={{padding: '0 10px'}}>
                       {
                         openTab ? <i className='fa fa-chevron-up' /> : <i className='fa fa-chevron-down' />
                       }

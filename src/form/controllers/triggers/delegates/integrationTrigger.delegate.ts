@@ -28,7 +28,7 @@ export default class IntegrationDelegate extends NullTriggerDelegate {
     }
   }
 
-  private parseHeader(header: string) {
+  private parseHeader(header: string): any {
     if (header?.length) {
       return {
         headers: header
