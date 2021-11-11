@@ -260,10 +260,11 @@ var AdminCarController = /** @class */ (function () {
                     case 1:
                         _b.trys.push([1, 3, , 4]);
                         return [4 /*yield*/, this.getCars({
-                                team: team,
-                                status: {
-                                    $in: [car_model_1.ChoicesStatusCar.active, car_model_1.ChoicesStatusCar.inventory]
-                                }
+                                vin: {
+                                    $exists: true,
+                                    $ne: ""
+                                },
+                                team: team
                             }, options, search)];
                     case 2:
                         cars = _b.sent();

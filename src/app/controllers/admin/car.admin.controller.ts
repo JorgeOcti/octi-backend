@@ -149,10 +149,14 @@ class AdminCarController {
     };
     try {
       const cars = await this.getCars({
+        vin: {
+          $exists: true,
+          $ne: ""
+        },
         team,
-        status: {
-          $in: [ChoicesStatusCar.active, ChoicesStatusCar.inventory]
-        }
+        // status: {
+        //   $in: [ChoicesStatusCar.active, ChoicesStatusCar.inventory]
+        // }
       }, options, search);
       // validate exist page
       /* istanbul ignore if  */
