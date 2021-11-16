@@ -2,7 +2,7 @@ import {AxiosError, AxiosResponse, CancelTokenSource} from 'axios';
 import {Dispatch} from 'redux';
 import * as swal from 'sweetalert';
 import {IAlert} from '../../../../../src/app/interfaces/alert.interface';
-import {IVersion} from '../../../../../src/app/models/version.interface';
+import {IVersion} from '../../../../../src/app/interfaces/version.interface';
 import {IUser} from '../../../../../src/app/interfaces/user.interface';
 import ApiService from '../utils/axios';
 import {showModal, statusFooterButttonsModal} from '../utils/common';

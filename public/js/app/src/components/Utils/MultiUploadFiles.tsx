@@ -4,14 +4,19 @@ import { ChangeEvent, DragEvent, ErrorInfo, RefObject } from 'react';
 import * as uuid from 'uuid';
 import { getExtension, getIconFromExtension } from '../../utils/common';
 import Raven = require('raven-js');
-import {arrayPush} from "redux-form";
+import ShowIf from './ShowIf';
+import ApiService from '../../utils/axios';
+import * as swal from 'sweetalert';
 
 
 interface IPropsType {
   onChange: (e: any) => void;
+  deleteCalback?: (e: any) => void;
   className?: string;
+  body?: any;
   files: any[];
   url: string;
+  listMode?: boolean;
 }
 
 interface IStateType {
@@ -28,6 +33,7 @@ export enum imageStatus {
 class MultiUploadFiles extends React.Component<IPropsType, IStateType> {
 
   readonly inputFile: RefObject<HTMLInputElement>;
+  readonly api: ApiService;
   readonly state = {
     error: null,
     canDrop: false
@@ -45,7 +51,28 @@ class MultiUploadFiles extends React.Component<IPropsType, IStateType> {
     this.uploadImages = this.uploadImages.bind(this);
     this.deleteFile = this.deleteFile.bind(this);
     this.getSizeText = this.getSizeText.bind(this);
+    this.downloadFile = this.downloadFile.bind(this);
     this.inputFile = React.createRef();
+    this.api = new ApiService();
+  }
+
+  public downloadFile(file: any) {
+    window.open(file.url, "_blank")
+    // this.api.getInstance()({
+    //   url: file.url,
+    //   method: 'GET',
+    //   responseType: 'blob'
+    // })
+    //   .then((response) => {
+    //     const url = window.URL
+    //       .createObjectURL(new Blob([response.data]));
+    //     const link = document.createElement('a');
+    //     link.href = url;
+    //     link.setAttribute('download', file.name);
+    //     document.body.appendChild(link);
+    //     link.click();
+    //     document.body.removeChild(link);
+    //   });
   }
 
   public componentDidCatch(error: Error, errorInfo: ErrorInfo): void {
@@ -60,76 +87,137 @@ class MultiUploadFiles extends React.Component<IPropsType, IStateType> {
   }
 
   public render() {
-    const { files } = this.props;
+    const { files, listMode } = this.props;
     return (
-      <div className="multi-upload">
-        {
-          files.map((file, index) => (
-            <div className="item-container" key={file.tmpID}>
-              <div
-                className="delete-button pointer"
-                onClick={() => this.deleteFile(file.tmpID)}
-              >
-                <i className="fa fa-minus-circle" />
-              </div>
-              {
-                file.isImage ?
-                  <img
-                    src={file.url}
-                    className="image-item"
-                    style={file.status !== imageStatus.complete ? { opacity: 0.5, filter: 'grayscale(100%)'  } : undefined}
-                  />:
-                  <div className="item">
-                    <div
-                      className={`icon-file ${getIconFromExtension(getExtension(file.name))}`}
+      <div className={`multi-upload ${listMode ? 'list-mode' : ''}`}>
+        <ShowIf condition={!listMode}>
+          {
+            files.map((file) => (
+              <div className='item-container' key={file?._id ||file.tmpID}>
+                <div
+                  className='delete-button pointer'
+                  onClick={() => this.deleteFile(file?._id ||file.tmpID)}
+                >
+                  <i className='fa fa-minus-circle' />
+                </div>
+                {
+                  file.isImage ?
+                    <img
+                      src={file.url}
+                      className='image-item'
                       style={file.status !== imageStatus.complete ? { opacity: 0.5, filter: 'grayscale(100%)' } : undefined}
-                    />
-                    <p
-                      className="text-description"
-                      data-toggle="tooltip"
-                      data-placement="top"
-                      title={file.name}
-                      style={{
-                        paddingBottom: 0
-                      }}
-                    >
-                      {file.name}
-                    </p>
-                    <p
-                      className="text-description"
-                      style={{
-                        color: '#9e9e9e',
-                        paddingTop: 0
-                      }}
-                    >{this.getSizeText(file.size)}</p>
+                    /> :
+                    <div className='item'>
+                      <div
+                        className={`icon-file ${getIconFromExtension(getExtension(file.name))}`}
+                        style={file.status !== imageStatus.complete ? { opacity: 0.5, filter: 'grayscale(100%)' } : undefined}
+                      />
+                      <p
+                        className='text-description'
+                        data-toggle='tooltip'
+                        data-placement='top'
+                        title={file.name}
+                        style={{
+                          paddingBottom: 0
+                        }}
+                      >
+                        {file.name}
+                      </p>
+                      <p
+                        className='text-description'
+                        style={{
+                          color: '#9e9e9e',
+                          paddingTop: 0
+                        }}
+                      >{this.getSizeText(file.size)}</p>
+                    </div>
+                }
+                {
+                  file.status === imageStatus.inProgress ?
+                    <div className='multi-upload-progress-bar'>
+                      <div className='multi-progress' style={{ width: `${file.progress}%` }} />
+                    </div> : null
+                }
+              </div>
+            ))
+          }
+        </ShowIf>
+        <ShowIf condition={!!listMode}>
+          <div className='border-bottom'>
+            {
+              files.map((file) => (
+                <React.Fragment key={file._id || file?._id ||file.tmpID}>
+                  <div className='row border' style={{margin: 0}}>
+                    {/*<div*/}
+                    {/*  className='delete-button pointer'*/}
+                    {/*  onClick={() => this.deleteFile(file.tmpID)}*/}
+                    {/*>*/}
+                    {/*  <i className='fa fa-minus-circle' />*/}
+                    {/*</div>*/}
+                    {
+                      file.isImage ?
+                        <div className='col-md-2'>
+                          <img
+                            src={file.url}
+                            className='image-item'
+                            style={file.status !== imageStatus.complete ? { opacity: 0.5, filter: 'grayscale(100%)' } : undefined}
+                          />
+                        </div> :
+                        <div className='col-md-2'>
+                          <div className='item'>
+                            <div
+                              className={`icon-file ${getIconFromExtension(getExtension(file.name))}`}
+                              style={file.status !== imageStatus.complete ? { opacity: 0.5, filter: 'grayscale(100%)' } : undefined}
+                            />
+                          </div>
+                        </div>
+                    }
+                    <div className='col-md-8' style={{ paddingTop: '20px' }}>
+                      {file.name} <br />
+                      <span className={'text-muted text-sm'}>{this.getSizeText(file.size)}</span>
+                    </div>
+                    <div
+                      className='col-md-1 text-right pointer'
+                      onClick={()=> this.downloadFile(file)}
+                      style={{paddingTop: "25px"}}>
+                      <i className='fa fa-download text-primary pointer' />
+                    </div>
+                    <div className='col-md-1 text-right pointer' style={{paddingTop: "25px"}}  onClick={() => this.deleteFile(file?._id ||file.tmpID)}>
+                      <i className='fa fa-minus-circle text-red' />
+                    </div>
+                    <div className='row'>
+                      <div className='col-md-12'>
+                        {
+                          file.status === imageStatus.inProgress ?
+                            <div className='multi-upload-progress-bar'>
+                              <div className='multi-progress' style={{ width: `${file.progress}%` }} />
+                            </div> : null
+                        }
+                      </div>
+                    </div>
                   </div>
-              }
-              {
-                file.status === imageStatus.inProgress ?
-                  <div className="multi-upload-progress-bar">
-                    <div className="multi-progress" style={{ width: `${file.progress}%` }} />
-                  </div> : null
-              }
-            </div>
-          ))
-        }
+                </React.Fragment>
+              ))
+            }
+          </div>
+        </ShowIf>
         <div
-          className="add-item pointer"
+          className='add-item pointer'
           onClick={this.clickUploadFile}
           onDrop={this.handleDrop}
           onDragOver={this.dragOverHandler}
           onDragEnd={this.dragEndHandler}
           onDragLeave={this.dragLeaveHandler}
         >
-          <i className="fa fa-2x fa-cloud-upload" /><br />
+          <i className='fa fa-2x fa-cloud-upload' /><br />
           AÑADIR ARCHIVOS
         </div>
         <input
-          type="file"
+          type='file'
           ref={this.inputFile}
           style={{ display: 'none' }}
           onChange={(e) => this.handleChangeInputFile(e)}
-          accept=".jpeg, .jpg, .png, .doc, .docx, .xls, .xlsx, .pdf"
+          accept='.jpeg, .jpg, .png, .doc, .docx, .xls, .xlsx, .pdf'
           multiple={true}
         />
       </div>
@@ -160,20 +248,37 @@ class MultiUploadFiles extends React.Component<IPropsType, IStateType> {
   }
 
   private deleteFile(id: string) {
-    const { onChange, files } = this.props;
-    onChange([...files].filter(file => file.tmpID !== id));
+    swal({
+      title: '¿Estás seguro?',
+      text: `Vas a eliminar el archivo.`,
+      icon: 'warning',
+      dangerMode: true,
+      buttons: {
+        cancel: 'Cancelar' as any,
+        confirm: {
+          text: 'Sí'
+        }
+      }
+    }).then((willDelete: any) => {
+      if (willDelete) {
+        const { onChange, files, deleteCalback } = this.props;
+        onChange([...files].filter(file => file.tmpID !== id && file._id !== id));
+        if (deleteCalback) {
+          deleteCalback(id);
+        }
+      }
+    });
   }
 
   private uploadImages() {
-    const { onChange, files, url } = this.props;
+    const { onChange, files, url, body} = this.props;
     const pendingImages: any[] = [];
     const inProcessImages: any[] = [];
     if (files.length) {
       files.forEach((file) => {
         if (file.status === imageStatus.pending) {
           pendingImages.push(file);
-        }
-        else if (file.status === imageStatus.inProgress) {
+        } else if (file.status === imageStatus.inProgress) {
           inProcessImages.push(file);
         }
       });
@@ -204,7 +309,6 @@ class MultiUploadFiles extends React.Component<IPropsType, IStateType> {
               }
               return file;
             }));
-            // dispatch(updateImage(imageToUpload.tempID, percentage, statusImages.inProcess, null, attempt, source));
           }
         }
       });
@@ -212,6 +316,11 @@ class MultiUploadFiles extends React.Component<IPropsType, IStateType> {
       const timeout = 1000;
       const data = new FormData();
       data.append('file', imageToUpload);
+      if (body) {
+        Object.keys(body).forEach(key => {
+          data.append(key, body[key]);
+        });
+      }
       instance
         .post(url, data)
         .then(response => {
@@ -219,6 +328,7 @@ class MultiUploadFiles extends React.Component<IPropsType, IStateType> {
             if (file.tmpID === imageToUpload.tmpID) {
               file._id = response.data.data._id;
               file.progress = 100;
+              file.url = response.data.data.file.url;
               file.status = imageStatus.complete;
             }
             return file;
@@ -262,7 +372,7 @@ class MultiUploadFiles extends React.Component<IPropsType, IStateType> {
       // tslint:disable-next-line: prefer-for-of
       for (let i = 0; i < files.length; i++) {
         // const file: File | null = dt.items[i].getAsFile();
-        const file: any= files[i];
+        const file: any = files[i];
         if (file) {
           const reader = new FileReader();
           reader.onload = async (e) => {

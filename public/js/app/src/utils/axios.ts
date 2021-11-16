@@ -866,4 +866,16 @@ export default class ApiService {
       `/api/admin/forms/${form._id}/`
     );
   }
+
+  public getInventoryCarFiles(inventoryCarId: string): AxiosPromise {
+    return this.instance.get(
+      `/api/inventory-car/files/${inventoryCarId}/`
+    );
+  }
+
+  public deleteInventoryCarFile(inventoryFileId: string): AxiosPromise {
+    return this.instance.delete(
+      `/api/inventory-car/files/${inventoryFileId}/`
+    );
+  }
 }

@@ -243,6 +243,7 @@ function processCars(cars: IInventoryCar[], selectedItems: { [key: string]: any 
         color: car.car.color,
         labelText: car.labelText,
         venue: car.venue ? car.venue.name : '-',
+        files: car.files && car.files.length ? car.files : [],
         images: car.images && car.images.length ? car.images : [],
         comments: car.comments && car.comments.length ? car.comments : [],
         countComments: car.comments && car.comments.length ? car.comments.length : 0,

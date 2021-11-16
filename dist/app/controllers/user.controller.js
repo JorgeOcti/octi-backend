@@ -39,9 +39,9 @@ exports.__esModule = true;
 var bcrypt = require("bcrypt");
 var logger_service_1 = require("../../services/logger.service");
 var user_model_1 = require("../models/user.model");
+var user_model_2 = require("../models/user.model");
 var venue_model_1 = require("../models/venue.model");
 var push_service_1 = require("../../services/push.service");
-var user_model_2 = require("../models/user.model");
 var UserController = /** @class */ (function () {
     function UserController() {
         this.apiChangePassword = this.apiChangePassword.bind(this);

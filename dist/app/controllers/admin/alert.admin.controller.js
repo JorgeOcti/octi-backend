@@ -131,15 +131,14 @@ var AdminAlertController = /** @class */ (function () {
                     case 1:
                         _e.trys.push([1, 6, , 7]);
                         if (!(name && users && users.length)) return [3 /*break*/, 4];
-                        return [4 /*yield*/, alert_model_1["default"]
-                                .create({
+                        return [4 /*yield*/, new alert_model_1["default"]({
                                 name: name,
                                 gte: gte,
                                 lte: lte,
                                 users: users,
                                 company: company,
                                 team: team
-                            })];
+                            }).save()];
                     case 2:
                         alert_1 = _e.sent();
                         _c = (_b = res.status(201)).json;

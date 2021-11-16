@@ -9,7 +9,7 @@ import { FormAction, submit } from 'redux-form';
 import * as swal from 'sweetalert';
 import { IForm } from '../../../../../../src/form/interfaces/form.interface';
 import { loadDataAction, ModalReduxAction } from '../../actions/modal.actions';
-import { IFormsState, FormReduxActions } from '../../actions/form.types';
+import { FormReduxActions, IFormsState } from '../../actions/form.types';
 import {
   createFormThunkAction,
   deleteFormItemThunkAction,
@@ -19,7 +19,7 @@ import {
 } from '../../actions/form.actions';
 import AppContainer from '../../container/AppContainer';
 import { IWindow } from '../../interfaces/window';
-import { hasPermission, showModal, statusFooterButttonsModal } from '../../utils/common';
+import { showModal, statusFooterButttonsModal } from '../../utils/common';
 import ModalView from '../Modal/ModalView';
 import Paginator from '../Utils/Paginator';
 import TrackingBasePage from '../Utils/TrackingBasePage';

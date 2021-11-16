@@ -1,8 +1,8 @@
 import * as mongoose from 'mongoose';
 import { PaginateModel } from 'mongoose';
 import * as mongoosePaginate from 'mongoose-paginate';
-import {IVenue} from '../interfaces/venue.interface';
-import {venueDaySchema} from "./venueDay.model";
+import { IVenue } from '../interfaces';
+import { venueDaySchema } from './venueDay.model';
 
 export interface IVenueModel extends IVenue, mongoose.Document {}
 

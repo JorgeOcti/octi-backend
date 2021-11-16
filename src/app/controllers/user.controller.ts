@@ -1,12 +1,12 @@
 import * as bcrypt from 'bcrypt';
-import {Response} from 'express';
-import {IRequest} from '../../interfaces/global.interface';
+import { Response } from 'express';
+import { IRequest } from '../../interfaces/global.interface';
 import logger from '../../services/logger.service';
-import UserModel, {IUserModel} from '../models/user.model';
+import UserModel from '../models/user.model';
+import User, { IUserModel } from '../models/user.model';
 import Venue from '../models/venue.model';
 import PushService from '../../services/push.service';
-import {PaginateOptions, PaginateResult} from "mongoose";
-import User from "../models/user.model";
+import { PaginateOptions, PaginateResult } from 'mongoose';
 
 class UserController {
 

@@ -51,6 +51,7 @@ import ImageLazyLoad from '../Utils/ImageLazyLoad';
 import Row from '../Utils/Row';
 import InventoryCarComments from './InventoryCarComments';
 import TrackingBasePage from '../Utils/TrackingBasePage';
+import InventoryFileManager from './InventoryFileManager';
 
 declare let window: IWindow;
 
@@ -62,7 +63,7 @@ interface IPropsType extends RouteComponentProps<{ id: string, tab?: string }> {
   dispatch: Dispatch<InventoryReduxAction>;
 
   inventoryDetailChangeSelected(item: string): InventoryReduxAction;
-  updateCommentsAction(inventoryCar: IInventoryCar): InventoryReduxAction;
+  updateInventoryCarAction(inventoryCar: IInventoryCar): InventoryReduxAction;
   inventoryDetailChangeFilter(filter: IFilterCar): InventoryReduxAction;
   inventoryDetailChangeFilterText(filter: IFilterCar): InventoryReduxAction;
   getInventoryDetailAction(id: string, update: boolean): InventoryReduxAction;
@@ -150,7 +151,6 @@ class InventoryDetailView extends TrackingBasePage<IPropsType, IStateType> {
     onPageChange: () => {
       setTimeout(() => {
         $('[data-toggle="tooltip"]').tooltip();
-
       }, 200);
     }
   };
@@ -184,6 +184,8 @@ class InventoryDetailView extends TrackingBasePage<IPropsType, IStateType> {
     this.optionsFormatter = this.optionsFormatter.bind(this);
     this.calculateDetails = this.calculateDetails.bind(this);
     this.imagesFormatter = this.imagesFormatter.bind(this);
+    this.filesFormatter = this.filesFormatter.bind(this);
+    this.openFileManager = this.openFileManager.bind(this);
     this.handleChangeSearchText = this.handleChangeSearchText.bind(this);
     this.clearFilter = this.clearFilter.bind(this);
     this.sendToDetailFilteredByState = this.sendToDetailFilteredByState.bind(this);
@@ -238,6 +240,33 @@ class InventoryDetailView extends TrackingBasePage<IPropsType, IStateType> {
         width: '15%'
       },
       sort: true
+    }, /* {
+      dataField: 'countComments',
+      text: 'Comentarios',
+      classes: 'middle hidden-xs text-ellipsis',
+      formatter: this.commentFormatter,
+      headerClasses: 'middle hidden-xs',
+      style: {
+        width: '15%'
+      },
+      headerStyle: {
+        verticalAlign: 'top'
+      }
+    } */ {
+      dataField: 'labelName',
+      text: 'Etiqueta',
+      sort: true,
+      classes: 'middle hidden-xs',
+      filterValue: (cell: any) => `${cell ? cell.name : ''}`,
+      formatter: this.labelFormatter,
+      headerClasses: 'middle hidden-xs',
+      style: {
+        width: '18%',
+        maxWidth: '18%'
+      },
+      headerStyle: {
+        verticalAlign: 'top'
+      }
     }, {
       dataField: 'images',
       text: 'Imágenes',
@@ -254,32 +283,21 @@ class InventoryDetailView extends TrackingBasePage<IPropsType, IStateType> {
         minWidth: '80px',
         width: '80px'
       }
-    }, /* {
-      dataField: 'countComments',
-      text: 'Comentarios',
-      classes: 'middle hidden-xs text-ellipsis',
-      formatter: this.commentFormatter,
-      headerClasses: 'middle hidden-xs',
-      style: {
-        width: '15%'
-      },
+    }, {
+      dataField: 'files',
+      text: 'Archivos',
+      classes: 'middle hidden-xs hidden-sm hidden-md',
+      headerClasses: 'middle hidden-xs hidden-sm hidden-md',
+      formatter: this.filesFormatter,
       headerStyle: {
-        verticalAlign: 'top'
-      }
-    } */{
-      dataField: 'labelName',
-      text: 'Etiqueta',
-      sort: true,
-      classes: 'middle hidden-xs',
-      filterValue: (cell: any) => `${cell ? cell.name : ''}`,
-      formatter: this.labelFormatter,
-      headerClasses: 'middle hidden-xs',
-      style: {
-        width: '18%',
-        maxWidth: '18%'
+        maxWidth: '80px',
+        minWidth: '80px',
+        width: '80px'
       },
-      headerStyle: {
-        verticalAlign: 'top'
+      style: {
+        maxWidth: '80px',
+        minWidth: '80px',
+        width: '80px'
       }
     }, {
       dataField: 'status',
@@ -348,7 +366,7 @@ class InventoryDetailView extends TrackingBasePage<IPropsType, IStateType> {
             leftover: 'warning',
             reported: 'grey'
           };
-          ($ as any).toast({
+          (($ as any).toast as any)({
             heading: data.title,
             text: data.text,
             position: 'top-right',
@@ -425,17 +443,17 @@ class InventoryDetailView extends TrackingBasePage<IPropsType, IStateType> {
   public imagesFormatter(cell: string, row: any) {
     if (row.images && row.images.length) {
       return (
-        <div className="row">{
+        <div className='row'>{
           row.images.map((image: any, index: number) => (
-            <div key={image._id} className={'col-md-12 images-25 text-center'} style={{display: index === 0 ? '' : 'none'}}>
+            <div key={image._id} className={'col-md-12 images-25 text-center'} style={{ display: index === 0 ? '' : 'none' }}>
               <a href={decodeURI(image.file.url)}
-                 data-toggle="lightbox"
+                 data-toggle='lightbox'
                  data-gallery={row._id}
                  data-title={`${row.vin} / ${row.brand} ${row.denomination} `}
-                 data-footer={`${row.venueFound ?  `En ${row.venueFound}` : `En ${row.venue}`} ${row.inventoriedBy ? ` por ${row.inventoriedBy}.` : ''}`}
+                 data-footer={`${row.venueFound ? `En ${row.venueFound}` : `En ${row.venue}`} ${row.inventoriedBy ? ` por ${row.inventoriedBy}.` : ''}`}
               >
-                <button className="btn btn-xs btn-default">
-                  <i className="fa fa-fw fa-image" /> {row.images.length}
+                <button className='btn btn-xs btn-default'>
+                  <i className='fa fa-fw fa-image' /> {row.images.length}
                 </button>
                 {/*<ImageLazyLoad url={decodeURI(image.file.url)} height={'10px'} maxHeight={'35px'} maxWidth={'35px'} small={true}/>*/}
               </a>
@@ -443,11 +461,35 @@ class InventoryDetailView extends TrackingBasePage<IPropsType, IStateType> {
           ))
         }</div>
       );
-    } else {
-      return (
-        '-'
-      );
     }
+    return null;
+  }
+
+  private openFileManager(car: any): void {
+    const {inventories} = this.props;
+    setTimeout(() => {
+      this.props.loadDataAction(
+        `Archivos de ${car.vin}`,
+        <InventoryFileManager
+          inventories={inventories}
+          inventoryCardId={car._id}
+          socket={this.socket}
+        />
+      );
+    }, 200);
+  }
+
+  public filesFormatter(cell: string, row: any) {
+    console.log('row', row);
+    return (
+      <div className='row'>
+        <div className={'col-md-12 images-25 text-center'}>
+          <button className='btn btn-xs btn-default' onClick={() => this.openFileManager(row)}>
+            <i className='fa fa-fw fa-cloud-upload' /> {row.files?.length }
+          </button>
+        </div>
+      </div>
+    );
   }
 
   public brandFormatter(cell: any, row: any) {
@@ -1023,7 +1065,7 @@ class InventoryDetailView extends TrackingBasePage<IPropsType, IStateType> {
                         onClick={this.clearFilter}
                         style={{paddingLeft: '5px'}}
                         disabled={
-                          filter.states.length || filter.text.length || filter.venues.length || filter.type.length || filter.property.length ? false : true}
+                          !(filter.states.length || filter.text.length || filter.venues.length || filter.type.length || filter.property.length)}
                       >
                         <i className="fa fa-fw fa-eraser"/> Limpiar
                       </button>
@@ -1213,7 +1255,7 @@ class InventoryDetailView extends TrackingBasePage<IPropsType, IStateType> {
               error: JSON.stringify(err),
               ...this.state.downloadImages
             }));
-            swal('Descargar imágenes', 'ha ocurrido un error descargando las imágenes.', 'error');
+            swal!('Descargar imágenes', 'ha ocurrido un error descargando las imágenes.', 'error');
           }
           this.setState({
             downloadImages: {
@@ -1226,9 +1268,9 @@ class InventoryDetailView extends TrackingBasePage<IPropsType, IStateType> {
         });
     } else {
       if (all) {
-        swal('Descargar imágenes', 'No hay imágenes para dercargar.', 'error');
+        swal!('Descargar imágenes', 'No hay imágenes para dercargar.', 'error');
       } else {
-        swal('Descargar imágenes', 'No has seleccionado vehículos que contengan imágenes.', 'error');
+        swal!('Descargar imágenes', 'No has seleccionado vehículos que contengan imágenes.', 'error');
       }
     }
   }
@@ -1381,7 +1423,7 @@ class InventoryDetailView extends TrackingBasePage<IPropsType, IStateType> {
 
   private carComments(inventoryCar: IInventoryCar): void {
     const { inventories} = this.props;
-    this.props.updateCommentsAction(inventoryCar);
+    this.props.updateInventoryCarAction(inventoryCar);
     setTimeout(() => {
       this.props.loadDataAction(
         `Comentarios`,
@@ -1841,7 +1883,7 @@ const mapDispatchToProps = (dispatch: any ) => {
   return {
     dispatch,
     loadDataAction: (title: string, body: JSX.Element, footer: JSX.Element) => dispatch(loadDataAction(title, body, footer)),
-    updateCommentsAction: (inventoryCar: IInventoryCar) => dispatch(updateInventoryCarAction(inventoryCar)),
+    updateInventoryCarAction: (inventoryCar: IInventoryCar) => dispatch(updateInventoryCarAction(inventoryCar)),
     inventoryDetailChangeSelected: (item: string) => dispatch(inventoryDetailChangeSelected(item)),
     getInventoryDetailAction: (id: string, update: boolean) => dispatch(getInventoryDetailAction(id, update)),
     inventoryDetailChangeFilter: (filter: IFilterCar) => dispatch(inventoryDetailChangeFilter(filter)),

@@ -84,6 +84,7 @@ var inventoryFile_model_1 = require("../models/inventoryFile.model");
 var inventoryLabel_model_1 = require("../models/inventoryLabel.model");
 var stock_model_1 = require("../models/stock.model");
 var stockCar_model_1 = require("../models/stockCar.model");
+var inventoryFile_model_2 = require("../models/inventoryFile.model");
 var InventoryController = /** @class */ (function () {
     function InventoryController() {
         this.index = this.index.bind(this);
@@ -109,6 +110,7 @@ var InventoryController = /** @class */ (function () {
         this.dashboard = this.dashboard.bind(this);
         this.currentStock = this.currentStock.bind(this);
         this.loadStock = this.loadStock.bind(this);
+        this.listInventoryCarFiles = this.listInventoryCarFiles.bind(this);
     }
     InventoryController.prototype.index = function (req, res) {
         return __awaiter(this, void 0, void 0, function () {
@@ -198,9 +200,41 @@ var InventoryController = /** @class */ (function () {
             });
         });
     };
+    InventoryController.prototype.listInventoryCarFiles = function (req, res) {
+        return __awaiter(this, void 0, void 0, function () {
+            var inventoryCarId, inventoryCar, e_4;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0:
+                        _a.trys.push([0, 2, , 3]);
+                        inventoryCarId = req.params.id;
+                        return [4 /*yield*/, inventoryCar_model_1["default"]
+                                .findOne({ _id: inventoryCarId })
+                                .populate({ path: 'files' })];
+                    case 1:
+                        inventoryCar = _a.sent();
+                        if (!inventoryCar) {
+                            res.status(404).json({ message: 'No encomtrado' });
+                        }
+                        else {
+                            res.json(inventoryCar);
+                        }
+                        return [3 /*break*/, 3];
+                    case 2:
+                        e_4 = _a.sent();
+                        /* istanbul ignore next */
+                        if (e_4) {
+                            res.status(500).send(e_4);
+                        }
+                        return [3 /*break*/, 3];
+                    case 3: return [2 /*return*/];
+                }
+            });
+        });
+    };
     InventoryController.prototype.create = function (req, res) {
         return __awaiter(this, void 0, void 0, function () {
-            var _a, company, team, _b, name, manualPhoto, reportPhoto, _c, carsByVenue, notification, inventoryCars, activityHistories, venuesIDs, _i, carsByVenue_1, venue, venueRegExp, currentVenue, _d, _e, car, currentCar, inventory_1, file, backup, usersIDs, currentTeam, e_4;
+            var _a, company, team, _b, name, manualPhoto, reportPhoto, _c, carsByVenue, notification, inventoryCars, activityHistories, venuesIDs, _i, carsByVenue_1, venue, venueRegExp, currentVenue, _d, _e, car, currentCar, inventory_1, file, backup, usersIDs, currentTeam, e_5;
             return __generator(this, function (_f) {
                 switch (_f.label) {
                     case 0:
@@ -404,16 +438,16 @@ var InventoryController = /** @class */ (function () {
                         });
                         return [3 /*break*/, 24];
                     case 23:
-                        e_4 = _f.sent();
+                        e_5 = _f.sent();
                         /* istanbul ignore next */
                         logger_service_1["default"].error("create: Async Error.");
                         /* istanbul ignore next */
                         logger_service_1["default"].error("{user: {_id: " + req.user._id + ", email: " + req.user.email + "}}");
                         /* istanbul ignore next */
-                        logger_service_1["default"].error(e_4);
+                        logger_service_1["default"].error(e_5);
                         /* istanbul ignore next */
                         res.status(500).json({
-                            message: e_4,
+                            message: e_5,
                             status: 500
                         });
                         return [3 /*break*/, 24];
@@ -424,7 +458,7 @@ var InventoryController = /** @class */ (function () {
     };
     InventoryController.prototype.list = function (req, res) {
         return __awaiter(this, void 0, void 0, function () {
-            var team, _a, page, pageSize, venuesPermissions, options, paginatedInventories, response, inventories, _i, inventories_1, inventory, defaultResults, teamSettings, e_5;
+            var team, _a, page, pageSize, venuesPermissions, options, paginatedInventories, response, inventories, _i, inventories_1, inventory, defaultResults, teamSettings, e_6;
             var _b;
             return __generator(this, function (_c) {
                 switch (_c.label) {
@@ -623,16 +657,16 @@ var InventoryController = /** @class */ (function () {
                         _c.label = 6;
                     case 6: return [3 /*break*/, 8];
                     case 7:
-                        e_5 = _c.sent();
+                        e_6 = _c.sent();
                         /* istanbul ignore next */
                         logger_service_1["default"].error("list: Async Error.");
                         /* istanbul ignore next */
                         logger_service_1["default"].error("{user: {_id: " + req.user._id + ", email: " + req.user.email + "}}");
                         /* istanbul ignore next */
-                        logger_service_1["default"].error(e_5);
+                        logger_service_1["default"].error(e_6);
                         /* istanbul ignore next */
                         res.status(500).json({
-                            message: e_5,
+                            message: e_6,
                             status: 500
                         });
                         return [3 /*break*/, 8];
@@ -643,7 +677,7 @@ var InventoryController = /** @class */ (function () {
     };
     InventoryController.prototype.apiDetail = function (req, res) {
         return __awaiter(this, void 0, void 0, function () {
-            var team, id, updatedUser, inventory, e_6;
+            var team, id, updatedUser, inventory, e_7;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
@@ -715,15 +749,15 @@ var InventoryController = /** @class */ (function () {
                         _a.label = 5;
                     case 5: return [3 /*break*/, 7];
                     case 6:
-                        e_6 = _a.sent();
+                        e_7 = _a.sent();
                         /* istanbul ignore next */
                         logger_service_1["default"].error("apiDetail: Async Error.");
                         /* istanbul ignore next */
                         logger_service_1["default"].error("{user: {_id: " + req.user._id + ", email: " + req.user.email + "}}");
                         /* istanbul ignore next */
-                        logger_service_1["default"].error(e_6);
+                        logger_service_1["default"].error(e_7);
                         /* istanbul ignore next */
-                        res.status(500).json(e_6);
+                        res.status(500).json(e_7);
                         return [3 /*break*/, 7];
                     case 7: return [2 /*return*/];
                 }
@@ -776,19 +810,20 @@ var InventoryController = /** @class */ (function () {
     };
     InventoryController.prototype.uploadFile = function (req, res) {
         return __awaiter(this, void 0, void 0, function () {
-            var id, _a, company, venue, team, file, inventoryFile, e_7;
+            var id, _a, company, venue, team, inventoryCardId, file, inventoryFile, inventoryCar, e_8;
             return __generator(this, function (_b) {
                 switch (_b.label) {
                     case 0:
                         id = req.params.id;
                         _a = req.user, company = _a.company, venue = _a.venue, team = _a.team;
+                        inventoryCardId = req.body.inventoryCardId;
                         logger_service_1["default"].info("uploadFile");
                         logger_service_1["default"].info("{user: {_id: " + req.user._id + ", email: " + req.user.email + "}, inventory: " + id + "}");
                         file = general_utils_1["default"].getFileFromRequest(req.files, 'file');
-                        if (!file) return [3 /*break*/, 10];
+                        if (!file) return [3 /*break*/, 15];
                         _b.label = 1;
                     case 1:
-                        _b.trys.push([1, 8, , 9]);
+                        _b.trys.push([1, 13, , 14]);
                         inventoryFile = new inventoryFile_model_1["default"]();
                         /*
                           {
@@ -819,15 +854,41 @@ var InventoryController = /** @class */ (function () {
                     case 3: return [4 /*yield*/, inventoryFile.attach('file', file)];
                     case 4:
                         _b.sent();
+                        if (!new RegExp('\\bimage\\b').test(file.mimetype)) return [3 /*break*/, 7];
                         return [4 /*yield*/, this.resizeImage(file.path)];
                     case 5:
                         _b.sent();
                         return [4 /*yield*/, inventoryFile.attach('thumbnail', file)];
                     case 6:
                         _b.sent();
-                        return [4 /*yield*/, inventoryFile.save()];
-                    case 7:
+                        _b.label = 7;
+                    case 7: return [4 /*yield*/, inventoryFile.save()];
+                    case 8:
                         _b.sent();
+                        if (!inventoryCardId) return [3 /*break*/, 12];
+                        return [4 /*yield*/, inventoryCar_model_1["default"].findById(inventoryCardId)];
+                    case 9:
+                        inventoryCar = _b.sent();
+                        if (!inventoryCar) return [3 /*break*/, 11];
+                        return [4 /*yield*/, inventoryCar_model_1["default"].updateOne({
+                                _id: inventoryCar._id,
+                                inventory: inventoryCar.inventory
+                            }, {
+                                $push: { files: inventoryFile._id }
+                            }, {
+                                upsert: true
+                            })];
+                    case 10:
+                        _b.sent();
+                        server_1.io.to("inventory-detail-" + inventoryCar.inventory).emit('REFRESH', {
+                            update: true,
+                            venue: inventoryCar.venue
+                        });
+                        _b.label = 11;
+                    case 11:
+                        console.log('**************', inventoryCardId);
+                        _b.label = 12;
+                    case 12:
                         res.status(201).json({
                             data: {
                                 _id: inventoryFile._id,
@@ -835,20 +896,20 @@ var InventoryController = /** @class */ (function () {
                             },
                             status: 201
                         });
-                        return [3 /*break*/, 9];
-                    case 8:
-                        e_7 = _b.sent();
+                        return [3 /*break*/, 14];
+                    case 13:
+                        e_8 = _b.sent();
                         /* istanbul ignore next */
                         logger_service_1["default"].error("uploadFile: Async Error.");
                         /* istanbul ignore next */
                         logger_service_1["default"].error("{user: {_id: " + req.user._id + ", email: " + req.user.email + "}}");
                         /* istanbul ignore next */
-                        logger_service_1["default"].error(e_7);
+                        logger_service_1["default"].error(e_8);
                         /* istanbul ignore next */
-                        res.status(400).json(e_7);
-                        return [3 /*break*/, 9];
-                    case 9: return [3 /*break*/, 11];
-                    case 10:
+                        res.status(400).json(e_8);
+                        return [3 /*break*/, 14];
+                    case 14: return [3 /*break*/, 16];
+                    case 15:
                         logger_service_1["default"].error("uploadFile: La imagen es obligatoria.");
                         logger_service_1["default"].error("{user: {_id: " + req.user._id + ", email: " + req.user.email + "}}");
                         /* istanbul ignore next */
@@ -856,15 +917,49 @@ var InventoryController = /** @class */ (function () {
                             message: 'La imagen es obligatoria.',
                             status: 400
                         });
-                        _b.label = 11;
-                    case 11: return [2 /*return*/];
+                        _b.label = 16;
+                    case 16: return [2 /*return*/];
+                }
+            });
+        });
+    };
+    InventoryController.prototype.removeInventoryCarFile = function (req, res) {
+        return __awaiter(this, void 0, void 0, function () {
+            var id, inventoryFile, e_9;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0:
+                        _a.trys.push([0, 2, , 3]);
+                        id = req.params.id;
+                        return [4 /*yield*/, inventoryFile_model_2["default"].findOneAndRemove({ _id: id })];
+                    case 1:
+                        inventoryFile = _a.sent();
+                        if (inventoryFile) {
+                            server_1.io.to("inventory-detail-" + inventoryFile.inventory).emit('REFRESH', {
+                                update: true,
+                                venue: req.user.venue._id
+                            });
+                        }
+                        res.json({});
+                        return [3 /*break*/, 3];
+                    case 2:
+                        e_9 = _a.sent();
+                        logger_service_1["default"].error("removeInventoryCarFile: La imagen es obligatoria.");
+                        logger_service_1["default"].error("{user: {_id: " + req.user._id + ", email: " + req.user.email + "}}");
+                        /* istanbul ignore next */
+                        res.status(400).json({
+                            message: 'La imagen es obligatoria.',
+                            status: 400
+                        });
+                        return [3 /*break*/, 3];
+                    case 3: return [2 /*return*/];
                 }
             });
         });
     };
     InventoryController.prototype.apiFoundCar = function (req, res) {
         return __awaiter(this, void 0, void 0, function () {
-            var team, id, _a, vin, images, updatedUser, teamSettings, venueId, inventory, car, inventoriedCar, inventoryCar, e_8;
+            var team, id, _a, vin, images, updatedUser, teamSettings, venueId, inventory, car, inventoriedCar, inventoryCar, e_10;
             return __generator(this, function (_b) {
                 switch (_b.label) {
                     case 0:
@@ -995,16 +1090,16 @@ var InventoryController = /** @class */ (function () {
                         _b.label = 15;
                     case 15: return [3 /*break*/, 17];
                     case 16:
-                        e_8 = _b.sent();
+                        e_10 = _b.sent();
                         /* istanbul ignore next */
                         logger_service_1["default"].error("apiFoundCar: Async Error.");
                         /* istanbul ignore next */
-                        logger_service_1["default"].error("{user: {_id: " + req.user._id + ", email: " + req.user.email + "}, error: " + e_8 + "}");
+                        logger_service_1["default"].error("{user: {_id: " + req.user._id + ", email: " + req.user.email + "}, error: " + e_10 + "}");
                         /* istanbul ignore next */
-                        logger_service_1["default"].error(e_8);
+                        logger_service_1["default"].error(e_10);
                         /* istanbul ignore next */
                         res.status(400).json({
-                            message: e_8,
+                            message: e_10,
                             status: 400
                         });
                         return [3 /*break*/, 17];
@@ -1015,7 +1110,7 @@ var InventoryController = /** @class */ (function () {
     };
     InventoryController.prototype.finishInventory = function (req, res) {
         return __awaiter(this, void 0, void 0, function () {
-            var team, id, inventory, e_9;
+            var team, id, inventory, e_11;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
@@ -1061,13 +1156,13 @@ var InventoryController = /** @class */ (function () {
                         _a.label = 5;
                     case 5: return [3 /*break*/, 7];
                     case 6:
-                        e_9 = _a.sent();
+                        e_11 = _a.sent();
                         /* istanbul ignore next */
                         logger_service_1["default"].error("finishInventory: Async Error.");
                         /* istanbul ignore next */
                         logger_service_1["default"].error("{user: {_id: " + req.user._id + ", email: " + req.user.email + "}}");
                         /* istanbul ignore next */
-                        logger_service_1["default"].error(e_9);
+                        logger_service_1["default"].error(e_11);
                         /* istanbul ignore next */
                         res.status(400).json({
                             message: 'Ha ocurrido un error',
@@ -1081,7 +1176,7 @@ var InventoryController = /** @class */ (function () {
     };
     InventoryController.prototype.deleteInventory = function (req, res) {
         return __awaiter(this, void 0, void 0, function () {
-            var team, id, inventory, e_10;
+            var team, id, inventory, e_12;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
@@ -1129,13 +1224,13 @@ var InventoryController = /** @class */ (function () {
                         _a.label = 6;
                     case 6: return [3 /*break*/, 8];
                     case 7:
-                        e_10 = _a.sent();
+                        e_12 = _a.sent();
                         /* istanbul ignore next */
                         logger_service_1["default"].error("deleteInventory: Async Error.");
                         /* istanbul ignore next */
                         logger_service_1["default"].error("{user: {_id: " + req.user._id + ", email: " + req.user.email + "}}");
                         /* istanbul ignore next */
-                        logger_service_1["default"].error(e_10);
+                        logger_service_1["default"].error(e_12);
                         /* istanbul ignore next */
                         res.status(400).json({
                             message: 'Ha ocurrido un error',
@@ -1149,7 +1244,7 @@ var InventoryController = /** @class */ (function () {
     };
     InventoryController.prototype.addComment = function (req, res) {
         return __awaiter(this, void 0, void 0, function () {
-            var inventory, _a, _id, comment, e_11;
+            var inventory, _a, _id, comment, e_13;
             return __generator(this, function (_b) {
                 switch (_b.label) {
                     case 0:
@@ -1192,13 +1287,13 @@ var InventoryController = /** @class */ (function () {
                         });
                         return [3 /*break*/, 4];
                     case 3:
-                        e_11 = _b.sent();
+                        e_13 = _b.sent();
                         /* istanbul ignore next */
                         logger_service_1["default"].error("addComment: Async Error.");
                         /* istanbul ignore next */
                         logger_service_1["default"].error("{user: {_id: " + req.user._id + ", email: " + req.user.email + "}}");
                         /* istanbul ignore next */
-                        logger_service_1["default"].error(e_11);
+                        logger_service_1["default"].error(e_13);
                         /* istanbul ignore next */
                         res.status(400).json({
                             message: 'Ha ocurrido un error',
@@ -1212,7 +1307,7 @@ var InventoryController = /** @class */ (function () {
     };
     InventoryController.prototype.downloadImages = function (req, res) {
         return __awaiter(this, void 0, void 0, function () {
-            var id, cars, team, inventory, inventoriesCars, archive_1, filename_1, imagesToDownload, imagesToCompress, _i, inventoriesCars_1, car, _loop_1, _a, _b, image, results, numb, _c, e_12;
+            var id, cars, team, inventory, inventoriesCars, archive_1, filename_1, imagesToDownload, imagesToCompress, _i, inventoriesCars_1, car, _loop_1, _a, _b, image, results, numb, _c, e_14;
             var _this = this;
             return __generator(this, function (_d) {
                 switch (_d.label) {
@@ -1380,16 +1475,16 @@ var InventoryController = /** @class */ (function () {
                         _d.label = 8;
                     case 8: return [3 /*break*/, 10];
                     case 9:
-                        e_12 = _d.sent();
+                        e_14 = _d.sent();
                         /* istanbul ignore next */
                         logger_service_1["default"].error("downloadImages: Async Error.");
                         /* istanbul ignore next */
                         logger_service_1["default"].error("{user: {_id: " + req.user._id + ", email: " + req.user.email + "}}");
                         /* istanbul ignore next */
-                        logger_service_1["default"].error(e_12);
+                        logger_service_1["default"].error(e_14);
                         /* istanbul ignore next */
                         res.status(400).json({
-                            message: e_12,
+                            message: e_14,
                             status: 400
                         });
                         return [3 /*break*/, 10];
@@ -1400,7 +1495,7 @@ var InventoryController = /** @class */ (function () {
     };
     InventoryController.prototype.reportCar = function (req, res) {
         return __awaiter(this, void 0, void 0, function () {
-            var _a, company, team, id, _b, vin, patent, denomination, brand, color, images, updatedUser, venueId, inventory, findCOnditions, isVinAvailable, car, inventoryCar, textNotification, e_13;
+            var _a, company, team, id, _b, vin, patent, denomination, brand, color, images, updatedUser, venueId, inventory, findCOnditions, isVinAvailable, car, inventoryCar, textNotification, e_15;
             return __generator(this, function (_c) {
                 switch (_c.label) {
                     case 0:
@@ -1493,16 +1588,16 @@ var InventoryController = /** @class */ (function () {
                         _c.label = 7;
                     case 7: return [3 /*break*/, 9];
                     case 8:
-                        e_13 = _c.sent();
+                        e_15 = _c.sent();
                         /* istanbul ignore next */
                         logger_service_1["default"].error("reportCar: Async Error.");
                         /* istanbul ignore next */
                         logger_service_1["default"].error("{user: {_id: " + req.user._id + ", email: " + req.user.email + "}}");
                         /* istanbul ignore next */
-                        logger_service_1["default"].error(e_13);
+                        logger_service_1["default"].error(e_15);
                         /* istanbul ignore next */
                         res.status(400).json({
-                            message: e_13,
+                            message: e_15,
                             status: 400
                         });
                         return [3 /*break*/, 9];
@@ -1513,7 +1608,7 @@ var InventoryController = /** @class */ (function () {
     };
     InventoryController.prototype.setLabel = function (req, res) {
         return __awaiter(this, void 0, void 0, function () {
-            var team, id, _a, car, label, custom, carID, inventoryCar, newLabel, inventoryCar, e_14;
+            var team, id, _a, car, label, custom, carID, inventoryCar, newLabel, inventoryCar, e_16;
             return __generator(this, function (_b) {
                 switch (_b.label) {
                     case 0:
@@ -1604,16 +1699,16 @@ var InventoryController = /** @class */ (function () {
                         _b.label = 11;
                     case 11: return [3 /*break*/, 13];
                     case 12:
-                        e_14 = _b.sent();
+                        e_16 = _b.sent();
                         /* istanbul ignore next */
                         logger_service_1["default"].error("setLabel: Async Error.");
                         /* istanbul ignore next */
                         logger_service_1["default"].error("{user: {_id: " + req.user._id + ", email: " + req.user.email + "}}");
                         /* istanbul ignore next */
-                        logger_service_1["default"].error(e_14);
+                        logger_service_1["default"].error(e_16);
                         /* istanbul ignore next */
                         res.status(500).json({
-                            message: e_14,
+                            message: e_16,
                             status: 500
                         });
                         return [3 /*break*/, 13];
@@ -1624,7 +1719,7 @@ var InventoryController = /** @class */ (function () {
     };
     InventoryController.prototype.apiList = function (req, res) {
         return __awaiter(this, void 0, void 0, function () {
-            var team, updatedUser, inventories, e_15;
+            var team, updatedUser, inventories, e_17;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
@@ -1665,16 +1760,16 @@ var InventoryController = /** @class */ (function () {
                         _a.label = 4;
                     case 4: return [3 /*break*/, 6];
                     case 5:
-                        e_15 = _a.sent();
+                        e_17 = _a.sent();
                         /* istanbul ignore next */
                         logger_service_1["default"].error("apiList: Async Error.");
                         /* istanbul ignore next */
                         logger_service_1["default"].error("{user: {_id: " + req.user._id + ", email: " + req.user.email + "}}");
                         /* istanbul ignore next */
-                        logger_service_1["default"].error(e_15);
+                        logger_service_1["default"].error(e_17);
                         /* istanbul ignore next */
                         res.status(400).json({
-                            message: e_15,
+                            message: e_17,
                             status: 400
                         });
                         return [3 /*break*/, 6];
@@ -1685,7 +1780,7 @@ var InventoryController = /** @class */ (function () {
     };
     InventoryController.prototype.detaill = function (req, res) {
         return __awaiter(this, void 0, void 0, function () {
-            var id, team, venuesPermissions, inventory, detailByVenues, detailByBrands, detailByBrand, detailByVenue, defaultResults, _i, detailByBrands_1, db, _a, detailByVenues_1, dv, currentInventory, response, detailInventory, teamSettings, labels, e_16;
+            var id, team, venuesPermissions, inventory, detailByVenues, detailByBrands, detailByBrand, detailByVenue, defaultResults, _i, detailByBrands_1, db, _a, detailByVenues_1, dv, currentInventory, response, detailInventory, teamSettings, labels, e_18;
             var _b;
             return __generator(this, function (_c) {
                 switch (_c.label) {
@@ -2043,6 +2138,8 @@ var InventoryController = /** @class */ (function () {
                                         }, {
                                             path: 'images'
                                         }, {
+                                            path: 'files'
+                                        }, {
                                             path: 'venueFound',
                                             select: ['name']
                                         }, {
@@ -2103,16 +2200,16 @@ var InventoryController = /** @class */ (function () {
                         _c.label = 8;
                     case 8: return [3 /*break*/, 10];
                     case 9:
-                        e_16 = _c.sent();
+                        e_18 = _c.sent();
                         /* istanbul ignore next */
                         logger_service_1["default"].error("detaill: Async Error.");
                         /* istanbul ignore next */
                         logger_service_1["default"].error("{user: {_id: " + req.user._id + ", email: " + req.user.email + "}}");
                         /* istanbul ignore next */
-                        logger_service_1["default"].error(e_16);
+                        logger_service_1["default"].error(e_18);
                         /* istanbul ignore next */
                         res.status(400).json({
-                            message: e_16,
+                            message: e_18,
                             status: 400
                         });
                         return [3 /*break*/, 10];
@@ -2123,7 +2220,7 @@ var InventoryController = /** @class */ (function () {
     };
     InventoryController.prototype.dashboard = function (req, res) {
         return __awaiter(this, void 0, void 0, function () {
-            var venuesPermissions, venues, team, total, inventory, data, defaultResults, i, month, _i, inventory_2, item, teamSettings, e_17;
+            var venuesPermissions, venues, team, total, inventory, data, defaultResults, i, month, _i, inventory_2, item, teamSettings, e_19;
             var _a;
             return __generator(this, function (_b) {
                 switch (_b.label) {
@@ -2205,17 +2302,17 @@ var InventoryController = /** @class */ (function () {
                         });
                         return [3 /*break*/, 5];
                     case 4:
-                        e_17 = _b.sent();
+                        e_19 = _b.sent();
                         /* istanbul ignore next */
                         logger_service_1["default"].error("inventory dashboard: Async Error.");
                         /* istanbul ignore next */
                         logger_service_1["default"].error("{user: {_id: " + req.user._id + ", email: " + req.user.email + "}}");
                         /* istanbul ignore next */
-                        logger_service_1["default"].error(e_17);
-                        Raven.captureException(e_17, { req: req });
+                        logger_service_1["default"].error(e_19);
+                        Raven.captureException(e_19, { req: req });
                         /* istanbul ignore next */
                         res.status(500).json({
-                            message: JSON.stringify(e_17),
+                            message: JSON.stringify(e_19),
                             status: 500
                         });
                         return [3 /*break*/, 5];
@@ -2226,7 +2323,7 @@ var InventoryController = /** @class */ (function () {
     };
     InventoryController.prototype.inventoryByCars = function (req, res) {
         return __awaiter(this, void 0, void 0, function () {
-            var team, workbook, worksheet, columns, venues, _i, venues_1, venue, cars, _a, cars_1, car, inventories, carData, _b, inventories_2, inventory, tempFilePath, e_18;
+            var team, workbook, worksheet, columns, venues, _i, venues_1, venue, cars, _a, cars_1, car, inventories, carData, _b, inventories_2, inventory, tempFilePath, e_20;
             return __generator(this, function (_c) {
                 switch (_c.label) {
                     case 0:
@@ -2371,8 +2468,8 @@ var InventoryController = /** @class */ (function () {
                         res.setHeader('Content-Disposition', 'attachment; filename=detalle-inventarios.xlsx');
                         return [2 /*return*/, res.sendFile(tempFilePath)];
                     case 5:
-                        e_18 = _c.sent();
-                        console.log(e_18);
+                        e_20 = _c.sent();
+                        console.log(e_20);
                         return [2 /*return*/, res.status(500).json({
                                 message: 'Ha ocurrido un error. Comunicate con soporte para que te ayudemos a solucionarlo.'
                             })];
@@ -2383,7 +2480,7 @@ var InventoryController = /** @class */ (function () {
     };
     InventoryController.prototype.loadStock = function (req, res) {
         return __awaiter(this, void 0, void 0, function () {
-            var company, team, carsByVenue, stockCars, _i, carsByVenue_2, venue, venueRegExp, currentVenue, _a, _b, car, currentCar, stock_1, e_19;
+            var company, team, carsByVenue, stockCars, _i, carsByVenue_2, venue, venueRegExp, currentVenue, _a, _b, car, currentCar, stock_1, e_21;
             return __generator(this, function (_c) {
                 switch (_c.label) {
                     case 0:
@@ -2496,16 +2593,16 @@ var InventoryController = /** @class */ (function () {
                         });
                         return [3 /*break*/, 16];
                     case 15:
-                        e_19 = _c.sent();
+                        e_21 = _c.sent();
                         /* istanbul ignore next */
                         logger_service_1["default"].error("loadStock: Async Error.");
                         /* istanbul ignore next */
                         logger_service_1["default"].error("{user: {_id: " + req.user._id + ", email: " + req.user.email + "}}");
                         /* istanbul ignore next */
-                        logger_service_1["default"].error(e_19);
+                        logger_service_1["default"].error(e_21);
                         /* istanbul ignore next */
                         res.status(500).json({
-                            message: e_19,
+                            message: e_21,
                             status: 500
                         });
                         return [3 /*break*/, 16];
@@ -2516,7 +2613,7 @@ var InventoryController = /** @class */ (function () {
     };
     InventoryController.prototype.currentStock = function (req, res) {
         return __awaiter(this, void 0, void 0, function () {
-            var _a, company, venue, lastInventory, lastStock, showInventory, showStock, inventory, stock, e_20;
+            var _a, company, venue, lastInventory, lastStock, showInventory, showStock, inventory, stock, e_22;
             return __generator(this, function (_b) {
                 switch (_b.label) {
                     case 0:
@@ -2684,17 +2781,17 @@ var InventoryController = /** @class */ (function () {
                         _b.label = 10;
                     case 10: return [3 /*break*/, 12];
                     case 11:
-                        e_20 = _b.sent();
+                        e_22 = _b.sent();
                         /* istanbul ignore next */
                         logger_service_1["default"].error("inventory currentStock: Async Error.");
                         /* istanbul ignore next */
                         logger_service_1["default"].error("{user: {_id: " + req.user._id + ", email: " + req.user.email + "}}");
                         /* istanbul ignore next */
-                        logger_service_1["default"].error(e_20);
-                        Raven.captureException(e_20, { req: req });
+                        logger_service_1["default"].error(e_22);
+                        Raven.captureException(e_22, { req: req });
                         /* istanbul ignore next */
                         res.status(500).json({
-                            message: JSON.stringify(e_20),
+                            message: JSON.stringify(e_22),
                             status: 500
                         });
                         return [3 /*break*/, 12];

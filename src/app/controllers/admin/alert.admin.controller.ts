@@ -60,15 +60,14 @@ class AdminAlertController {
     const team = req.user.team._id;
     try {
       if (name && users && users.length) {
-        const alert = await Alert
-          .create({
+        const alert = await new Alert({
             name,
             gte,
             lte,
             users,
             company,
             team
-          });
+          }).save();
         res.status(201).json({
           message: 'Alerta agregada satisfactoriamente',
           alert: await Alert

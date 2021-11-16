@@ -3,26 +3,26 @@ import { Dispatch } from 'redux';
 import { IForm } from '../../../../../src/form/interfaces/form.interface';
 import ApiService from '../utils/axios';
 import {
-  FORM_IS_LOADING,
-  FORM_CHANGE_ORDER,
   FORM_CANCEL_STATUS,
-  FORM_LOAD_STATUS,
+  FORM_CHANGE_ORDER,
   FORM_CREATE_STATUS,
-  FORM_UDPATE_STATUS,
   FORM_DELETE_STATUS,
-  ICreateForm,
+  FORM_IS_LOADING,
+  FORM_LOAD_REQUEST_STATUS,
+  FORM_LOAD_STATUS,
+  FORM_UDPATE_STATUS,
+  FormReduxActions,
   ICancelForm,
+  IChangeOrderForm,
+  ICreateForm,
+  IDeleteForm,
+  IFormsState,
   IIsLoadingForm,
   ILoadForm,
-  IUpdateForm,
-  IDeleteForm,
-  IChangeOrderForm,
-  IFormsState,
-  FormReduxActions, FORM_LOAD_REQUEST_STATUS, ILoadRequestStatusForm
+  ILoadRequestStatusForm,
+  IUpdateForm
 } from './form.types';
 import * as swal from 'sweetalert';
-import { loadRequestStatusMilestoneAction, loadTypesMilestoneAction } from './milestone.actions';
-import { ILoadRequestStatusMilestone, MILESTONE_LOAD_REQUEST_STATUS } from './milestone.types';
 import { IRequestStatus } from '../../../../../src/request/interfaces/requestStatus.interface';
 
 export function cancelFormAction(source: CancelTokenSource): ICancelForm {
@@ -164,8 +164,7 @@ export function updateFormWithoutThunkAction(form: IForm) {
   return (dispatch: Dispatch<FormReduxActions>) => {
     const api: ApiService = new ApiService();
     api.updateForm(form)
-      .then((response: AxiosResponse) => {
-      })
+      .then()
       .catch((err: AxiosError) => {
         api.errorHandler(err);
       });
