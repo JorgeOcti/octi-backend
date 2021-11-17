@@ -480,7 +480,6 @@ class InventoryDetailView extends TrackingBasePage<IPropsType, IStateType> {
   }
 
   public filesFormatter(cell: string, row: any) {
-    console.log('row', row);
     return (
       <div className='row'>
         <div className={'col-md-12 images-25 text-center'}>
