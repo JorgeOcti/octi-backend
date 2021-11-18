@@ -254,7 +254,7 @@ class RequestVehicleListView extends TrackingBasePage<IPropsType, IStateType> {
                         type='text'
                         className='form-control input-sm'
                         placeholder='Nº de partida: S14795'
-                        defaultValue={filters.request}
+                        defaultValue={filters.entry}
                         onChange={(e) => {
                           this.changeFilterDebounced('entry', e.target.value);
                         }}
