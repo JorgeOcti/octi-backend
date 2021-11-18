@@ -23,6 +23,7 @@ import RequestItemStatus from '../models/requestItemStatus.model';
 import ActivityHistory, { ChoicesTypeActivity } from '../../billing/models/activityHistory.model';
 import { Column } from 'exceljs';
 import Reason from '../models/reason.model';
+import { createRequestSalfaParams } from '../inputsSchema';
 
 class RequestController {
 
@@ -86,6 +87,7 @@ class RequestController {
 
   constructor() {
     this.index = this.index.bind(this);
+    this.integration = this.integration.bind(this);
     this.apiList = this.apiList.bind(this);
     this.apiListItems = this.apiListItems.bind(this);
     this.apiDetail = this.apiDetail.bind(this);
@@ -104,6 +106,25 @@ class RequestController {
     this.apiUpdateMassive = this.apiUpdateMassive.bind(this);
     this.apiImport = this.apiImport.bind(this);
     this.createRequest = this.createRequest.bind(this);
+  }
+
+  public async integration(req: IRequest, res: Response) {
+    const { query } = req;
+    if (Object.keys(query).length) {
+      try {
+        const params = await createRequestSalfaParams.validate(query, {
+          stripUnknown: true
+        });
+        res.json(params);
+      } catch (e) {
+        res.status(400).json({ error: e.errors.join(', ') });
+      }
+    }
+    res.json({
+      name: "Osa-Salfa integration test",
+      detail: "Params required are brand, denomination, material, 5bf2de35caf8ef7096105c21, 5bf2de35caf8ef7096105c22, 60b9232164adc90013a79b45, sellerText and 6154722a94bba10012230aae.",
+      example: "?brand=Chevrolet&denomination=Sail&material=1213&5bf2de35caf8ef7096105c21=Roberto%20Castro&5bf2de35caf8ef7096105c22=76897564-1&60b9232164adc90013a79b45=example@example.com&sellerText=Juan%20P%C3%A9rez&6154722a94bba10012230aae=33"
+    })
   }
 
   public async index(req: IRequest, res: Response) {

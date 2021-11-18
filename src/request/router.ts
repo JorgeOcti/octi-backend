@@ -16,8 +16,10 @@ requestRouter.get('/requests/settings/status/', Middlewares.isLoggedIn, RequestC
 requestRouter.get('/requests/settings/operations-type/', Middlewares.isLoggedIn, RequestController.index);
 requestRouter.get('/requests/export/', Middlewares.isLoggedIn, RequestController.exportExcel);
 requestRouter.get('/requests/import/', Middlewares.isLoggedIn, RequestController.index);
-requestRouter.get('/requests/vehicles/:id/', Middlewares.isLoggedIn, RequestController.index);
+requestRouter.get('/requests/vehicles/external/create/', Middlewares.isLoggedIn, RequestController.integration);
+requestRouter.get('/requests/vehicles/create/', Middlewares.isLoggedIn, RequestController.index);
 requestRouter.get('/requests/vehicles/', Middlewares.isLoggedIn, RequestController.index);
+requestRouter.get('/requests/vehicles/:id/', Middlewares.isLoggedIn, RequestController.index);
 requestRouter.get('/requests/:id/', Middlewares.isLoggedIn, RequestController.index);
 requestRouter.get('/requests/create/', Middlewares.isLoggedIn, RequestController.index);
 
