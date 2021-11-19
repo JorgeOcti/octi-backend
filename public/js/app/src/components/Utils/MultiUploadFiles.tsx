@@ -328,7 +328,7 @@ class MultiUploadFiles extends React.Component<IPropsType, IStateType> {
             if (file.tmpID === imageToUpload.tmpID) {
               file._id = response.data.data._id;
               file.progress = 100;
-              file.url = response.data.data.file.url;
+              file.url = decodeURIComponent(response.data.data.file.url);
               file.status = imageStatus.complete;
             }
             return file;
