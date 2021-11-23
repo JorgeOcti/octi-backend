@@ -40,27 +40,14 @@ var bluebird = require("bluebird");
 var dotenv = require("dotenv");
 var mongoose = require("mongoose");
 var path = require("path");
-var team_model_1 = require("../models/team.model");
-var teamSetting_model_1 = require("../models/teamSetting.model");
-function createTeamSettings() {
+var car_model_1 = require("../models/car.model");
+function fixAccesories() {
+    var _a, _b;
     return __awaiter(this, void 0, void 0, function () {
-        var MONGODB_URI, teams, _i, teams_1, team, e_1;
-        return __generator(this, function (_a) {
-            switch (_a.label) {
+        var MONGODB_URI, cars, _i, cars_1, car;
+        return __generator(this, function (_c) {
+            switch (_c.label) {
                 case 0:
-                    /*
-                    * Generate teams and associate if necessary.
-                    * - Create Team
-                    * - Assing cars to team
-                    * - Assing forms to team
-                    * - Assing participant to team
-                    * - Assing scalas to team
-                    * - Assign users to team
-                    * - Assign venes to team+
-                    * - Assing company to team
-                    *
-                    * fixed does not change field updatedAt in collections
-                    * */
                     dotenv.config({
                         path: path.join(__dirname, '../../../.env')
                     });
@@ -68,62 +55,32 @@ function createTeamSettings() {
                     mongoose.Promise = bluebird;
                     return [4 /*yield*/, mongoose.connect(MONGODB_URI, { useNewUrlParser: true, useUnifiedTopology: true })];
                 case 1:
-                    _a.sent();
+                    _c.sent();
                     mongoose.set('debug', true);
-                    _a.label = 2;
+                    return [4 /*yield*/, car_model_1["default"].find({ vin2: { $exists: false } })];
                 case 2:
-                    _a.trys.push([2, 8, , 9]);
-                    return [4 /*yield*/, team_model_1["default"].find().populate([{
-                                path: 'settings'
-                            }])];
+                    cars = _c.sent();
+                    _i = 0, cars_1 = cars;
+                    _c.label = 3;
                 case 3:
-                    teams = _a.sent();
-                    _i = 0, teams_1 = teams;
-                    _a.label = 4;
+                    if (!(_i < cars_1.length)) return [3 /*break*/, 6];
+                    car = cars_1[_i];
+                    if (!(((_a = car.vin) === null || _a === void 0 ? void 0 : _a.length) && !((_b = car.vin2) === null || _b === void 0 ? void 0 : _b.length))) return [3 /*break*/, 5];
+                    console.log('car.vin');
+                    car.vin2 = car.vin.substr(car.vin.length - 6);
+                    return [4 /*yield*/, car.save()];
                 case 4:
-                    if (!(_i < teams_1.length)) return [3 /*break*/, 7];
-                    team = teams_1[_i];
-                    if (!(team.settings === null)) return [3 /*break*/, 6];
-                    console.log(team.name);
-                    return [4 /*yield*/, new teamSetting_model_1["default"]({
-                            team: team,
-                            inventory: {
-                                pending: "Pendientes",
-                                pendingClass: "aqua",
-                                pendingColor: "#00c2f4",
-                                found: "Encontrados",
-                                foundClass: "green",
-                                foundColor: "#00aa51",
-                                missing: "Faltantes",
-                                missingClass: "red",
-                                missingColor: "#f1392c",
-                                leftover: "Sobrantes",
-                                leftoverClass: "yellow",
-                                leftoverColor: "#ff9600",
-                                leftoverDifferentVenue: false,
-                                reported: "Reportados",
-                                reportedClass: "gray-dark",
-                                reportedColor: "#96a4b3"
-                            }
-                        }).save()];
+                    _c.sent();
+                    _c.label = 5;
                 case 5:
-                    _a.sent();
-                    _a.label = 6;
-                case 6:
                     _i++;
-                    return [3 /*break*/, 4];
-                case 7: return [3 /*break*/, 9];
-                case 8:
-                    e_1 = _a.sent();
-                    console.log('Ha ocurrido un error en createTeamSettings');
-                    console.log('error:', e_1);
-                    return [3 /*break*/, 9];
-                case 9:
+                    return [3 /*break*/, 3];
+                case 6:
                     process.exit(1);
                     return [2 /*return*/];
             }
         });
     });
 }
-createTeamSettings();
-//# sourceMappingURL=createTeamSetting.js.map
+fixAccesories();
+//# sourceMappingURL=fixVin2.js.map

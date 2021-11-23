@@ -14,7 +14,7 @@ async function createTeamSettings() {
   * - Assing participant to team
   * - Assing scalas to team
   * - Assign users to team
-  * - Assign venes to team
+  * - Assign venes to team+
   * - Assing company to team
   *
   * fixed does not change field updatedAt in collections
@@ -33,7 +33,7 @@ async function createTeamSettings() {
     for (const team of teams) {
       if(team.settings === null){
         console.log(team.name);
-        await TeamSetting.create({
+        await new TeamSetting({
           team,
           inventory:{
             pending: "Pendientes",
@@ -53,7 +53,7 @@ async function createTeamSettings() {
             reportedClass: "gray-dark",
             reportedColor: "#96a4b3",
           }
-        })
+        }).save();
       }
     }
   } catch (e) {
