@@ -58,22 +58,6 @@ class JWTController {
           active: true,
           isDriver: true
         })
-        .populate([{
-          path: 'venue',
-          select: ['name', 'lat', 'lng']
-        }, {
-          path: 'team',
-          select: ['name'],
-        }, {
-          path: 'company',
-          select: ['name']
-        }, {
-          path: 'userPermissions',
-          select: ['codeName']
-        }, {
-          path: 'userForms',
-          select: ['name']
-        }])
         .exec((err, user: IUserModel) => {
           if (err) {
             /* istanbul ignore next */
@@ -108,40 +92,13 @@ class JWTController {
                   }
                 }, async (err, count) => {
                   user = user.toObject();
-                  const teamSettings = await TeamSetting.findOne({ team: user.team });
                   const userInfo = {
                     _id: user._id,
                     firstName: user.firstName,
                     lastName: user.lastName,
                     email: user.email,
                     preferred: user.preferred,
-                    userPermissions: user.userPermissions,
-                    userForms: user.userForms,
                     isDriver: user.isDriver || false,
-                    venue: {
-                      _id: GeneralUtils.getObjectProperty(user.venue, '_id', null),
-                      name: GeneralUtils.getObjectProperty(user.venue, 'name', null),
-                      lat: GeneralUtils.getObjectProperty(user.venue, 'lat', 0),
-                      lng: GeneralUtils.getObjectProperty(user.venue, 'lng', 0)
-                    },
-                    company: {
-                      _id: GeneralUtils.getObjectProperty(user.company, '_id', null),
-                      name: GeneralUtils.getObjectProperty(user.company, 'name', null)
-                    },
-                    team: {
-                      _id: GeneralUtils.getObjectProperty(user.team, '_id', null),
-                      name: GeneralUtils.getObjectProperty(user.team, 'name', null),
-                      settings: {
-                        form: GeneralUtils.getObjectProperty(teamSettings!.toJSON(), 'form', {
-                          vinMinCharacters: 17,
-                          vinMaxCharacters: 17
-                        }),
-                        helpNumber: GeneralUtils.getObjectProperty(teamSettings!.toJSON(), 'helpPhones', {
-                          transmittal: ""
-                        })
-                      }
-                      // settings: GeneralUtils.getObjectProperty(user.team, 'settings', {})
-                    },
                     count
                   };
                   res.json({

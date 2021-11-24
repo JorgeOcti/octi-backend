@@ -41,7 +41,7 @@ var dotenv = require("dotenv");
 var mongoose = require("mongoose");
 var path = require("path");
 var car_model_1 = require("../models/car.model");
-function fixAccesories() {
+function fixVin2() {
     var _a, _b;
     return __awaiter(this, void 0, void 0, function () {
         var MONGODB_URI, cars, _i, cars_1, car;
@@ -82,5 +82,5 @@ function fixAccesories() {
         });
     });
 }
-fixAccesories();
+fixVin2();
 //# sourceMappingURL=fixVin2.js.map

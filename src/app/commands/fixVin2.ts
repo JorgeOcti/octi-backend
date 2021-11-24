@@ -4,7 +4,7 @@ import * as mongoose from 'mongoose';
 import * as path from 'path';
 import Car from '../models/car.model';
 
-async function fixAccesories() {
+async function fixVin2() {
   dotenv.config({
     path: path.join(__dirname, '../../../.env')
   });
@@ -24,4 +24,4 @@ async function fixAccesories() {
   process.exit(1);
 }
 
-fixAccesories();
+fixVin2();
