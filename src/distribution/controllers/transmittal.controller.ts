@@ -418,6 +418,7 @@ class TransmittalController {
         });
       }
     } catch (e) {
+      console.error(e);
       /* istanbul ignore next */
       logger.error(`TransmittalController.apiOnlyMe:`, e.toString());
       /* istanbul ignore next */

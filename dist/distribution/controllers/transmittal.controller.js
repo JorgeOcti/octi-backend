@@ -565,6 +565,7 @@ var TransmittalController = /** @class */ (function () {
                     case 9: return [3 /*break*/, 11];
                     case 10:
                         e_5 = _c.sent();
+                        console.error(e_5);
                         /* istanbul ignore next */
                         logger_service_1["default"].error("TransmittalController.apiOnlyMe:", e_5.toString());
                         /* istanbul ignore next */
