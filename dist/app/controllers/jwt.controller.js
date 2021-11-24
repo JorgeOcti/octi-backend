@@ -42,7 +42,6 @@ var uuid = require("uuid");
 var app_1 = require("../../app");
 var participant_model_1 = require("../../form/models/participant.model");
 var logger_service_1 = require("../../services/logger.service");
-var general_utils_1 = require("../../utils/general.utils");
 var user_model_1 = require("../models/user.model");
 var user_model_2 = require("../models/user.model");
 var version_model_1 = require("../models/version.model");
@@ -209,22 +208,6 @@ var JWTController = /** @class */ (function () {
                         active: true,
                         isDriver: true
                     })
-                        .populate([{
-                            path: 'venue',
-                            select: ['name']
-                        }, {
-                            path: 'company',
-                            select: ['name']
-                        }, {
-                            path: 'team',
-                            select: ['name']
-                        }, {
-                            path: 'userPermissions',
-                            select: ['codeName']
-                        }, {
-                            path: 'userForms',
-                            select: ['name']
-                        }])
                         .exec(function (err, user) {
                         if (err) {
                             /* istanbul ignore next */
@@ -277,31 +260,7 @@ var JWTController = /** @class */ (function () {
                                                         lastName: user.lastName,
                                                         email: user.email,
                                                         preferred: user.preferred,
-                                                        userPermissions: user.userPermissions,
-                                                        userForms: user.userForms,
                                                         isDriver: user.isDriver || false,
-                                                        venue: {
-                                                            _id: general_utils_1["default"].getObjectProperty(user.venue, '_id', null),
-                                                            name: general_utils_1["default"].getObjectProperty(user.venue, 'name', null)
-                                                        },
-                                                        company: {
-                                                            _id: general_utils_1["default"].getObjectProperty(user.company, '_id', null),
-                                                            name: general_utils_1["default"].getObjectProperty(user.company, 'name', null)
-                                                        },
-                                                        team: {
-                                                            _id: general_utils_1["default"].getObjectProperty(user.team, '_id', null),
-                                                            name: general_utils_1["default"].getObjectProperty(user.team, 'name', null),
-                                                            settings: {
-                                                                form: general_utils_1["default"].getObjectProperty(teamSettings.toJSON(), 'form', {
-                                                                    vinMinCharacters: 17,
-                                                                    vinMaxCharacters: 17
-                                                                }),
-                                                                helpNumber: general_utils_1["default"].getObjectProperty(teamSettings.toJSON(), 'helpPhones', {
-                                                                    transmittal: ""
-                                                                })
-                                                            }
-                                                            // settings: GeneralUtils.getObjectProperty(user.team, 'settings', {})
-                                                        },
                                                         count: count
                                                     };
                                                     res.json({
