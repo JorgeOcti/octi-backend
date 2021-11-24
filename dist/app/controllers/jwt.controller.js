@@ -42,6 +42,7 @@ var uuid = require("uuid");
 var app_1 = require("../../app");
 var participant_model_1 = require("../../form/models/participant.model");
 var logger_service_1 = require("../../services/logger.service");
+var general_utils_1 = require("../../utils/general.utils");
 var user_model_1 = require("../models/user.model");
 var user_model_2 = require("../models/user.model");
 var version_model_1 = require("../models/version.model");
@@ -92,6 +93,22 @@ var JWTController = /** @class */ (function () {
                             active: true,
                             isDriver: true
                         })
+                            .populate([{
+                                path: 'venue',
+                                select: ['name', 'lat', 'lng']
+                            }, {
+                                path: 'team',
+                                select: ['name']
+                            }, {
+                                path: 'company',
+                                select: ['name']
+                            }, {
+                                path: 'userPermissions',
+                                select: ['codeName']
+                            }, {
+                                path: 'userForms',
+                                select: ['name']
+                            }])
                             .exec(function (err, user) {
                             if (err) {
                                 /* istanbul ignore next */
@@ -128,36 +145,68 @@ var JWTController = /** @class */ (function () {
                                                 $lt: tomorrow.toDate()
                                             }
                                         }, function (err, count) { return __awaiter(_this, void 0, void 0, function () {
-                                            var userInfo;
+                                            var teamSettings, userInfo;
                                             return __generator(this, function (_a) {
-                                                user = user.toObject();
-                                                userInfo = {
-                                                    _id: user._id,
-                                                    firstName: user.firstName,
-                                                    lastName: user.lastName,
-                                                    email: user.email,
-                                                    preferred: user.preferred,
-                                                    isDriver: user.isDriver || false,
-                                                    count: count
-                                                };
-                                                res.json({
-                                                    data: {
-                                                        token: jwt.sign(userInfo, req.app.locals.secretKey, {
-                                                            expiresIn: '7 days'
-                                                        }),
-                                                        // token: jwt.sign(userInfo, req.app.locals.secretKey, {
-                                                        //   expiresIn: '60 seconds'
-                                                        // }),
-                                                        refreshToken: jwt.sign(userInfo, req.app.locals.secretKey, {
-                                                            expiresIn: '30 days'
-                                                        }),
-                                                        iosVersion: version_1.ios,
-                                                        androidVersion: version_1.android,
-                                                        user: userInfo
-                                                    },
-                                                    status: 200
-                                                });
-                                                return [2 /*return*/];
+                                                switch (_a.label) {
+                                                    case 0:
+                                                        user = user.toObject();
+                                                        return [4 /*yield*/, teamSetting_model_1["default"].findOne({ team: user.team })];
+                                                    case 1:
+                                                        teamSettings = _a.sent();
+                                                        userInfo = {
+                                                            _id: user._id,
+                                                            firstName: user.firstName,
+                                                            lastName: user.lastName,
+                                                            email: user.email,
+                                                            preferred: user.preferred,
+                                                            userPermissions: user.userPermissions,
+                                                            userForms: user.userForms,
+                                                            isDriver: user.isDriver || false,
+                                                            venue: {
+                                                                _id: general_utils_1["default"].getObjectProperty(user.venue, '_id', null),
+                                                                name: general_utils_1["default"].getObjectProperty(user.venue, 'name', null),
+                                                                lat: general_utils_1["default"].getObjectProperty(user.venue, 'lat', 0),
+                                                                lng: general_utils_1["default"].getObjectProperty(user.venue, 'lng', 0)
+                                                            },
+                                                            company: {
+                                                                _id: general_utils_1["default"].getObjectProperty(user.company, '_id', null),
+                                                                name: general_utils_1["default"].getObjectProperty(user.company, 'name', null)
+                                                            },
+                                                            team: {
+                                                                _id: general_utils_1["default"].getObjectProperty(user.team, '_id', null),
+                                                                name: general_utils_1["default"].getObjectProperty(user.team, 'name', null),
+                                                                settings: {
+                                                                    form: general_utils_1["default"].getObjectProperty(teamSettings.toJSON(), 'form', {
+                                                                        vinMinCharacters: 17,
+                                                                        vinMaxCharacters: 17
+                                                                    }),
+                                                                    helpNumber: general_utils_1["default"].getObjectProperty(teamSettings.toJSON(), 'helpPhones', {
+                                                                        transmittal: ""
+                                                                    })
+                                                                }
+                                                                // settings: GeneralUtils.getObjectProperty(user.team, 'settings', {})
+                                                            },
+                                                            count: count
+                                                        };
+                                                        res.json({
+                                                            data: {
+                                                                token: jwt.sign({ _id: userInfo._id }, req.app.locals.secretKey, {
+                                                                    expiresIn: '7 days'
+                                                                }),
+                                                                // token: jwt.sign(userInfo, req.app.locals.secretKey, {
+                                                                //   expiresIn: '60 seconds'
+                                                                // }),
+                                                                refreshToken: jwt.sign({ _id: userInfo._id }, req.app.locals.secretKey, {
+                                                                    expiresIn: '30 days'
+                                                                }),
+                                                                iosVersion: version_1.ios,
+                                                                androidVersion: version_1.android,
+                                                                user: userInfo
+                                                            },
+                                                            status: 200
+                                                        });
+                                                        return [2 /*return*/];
+                                                }
                                             });
                                         }); });
                                     }
@@ -208,6 +257,22 @@ var JWTController = /** @class */ (function () {
                         active: true,
                         isDriver: true
                     })
+                        .populate([{
+                            path: 'venue',
+                            select: ['name']
+                        }, {
+                            path: 'company',
+                            select: ['name']
+                        }, {
+                            path: 'team',
+                            select: ['name']
+                        }, {
+                            path: 'userPermissions',
+                            select: ['codeName']
+                        }, {
+                            path: 'userForms',
+                            select: ['name']
+                        }])
                         .exec(function (err, user) {
                         if (err) {
                             /* istanbul ignore next */
@@ -260,15 +325,39 @@ var JWTController = /** @class */ (function () {
                                                         lastName: user.lastName,
                                                         email: user.email,
                                                         preferred: user.preferred,
+                                                        userPermissions: user.userPermissions,
+                                                        userForms: user.userForms,
                                                         isDriver: user.isDriver || false,
+                                                        venue: {
+                                                            _id: general_utils_1["default"].getObjectProperty(user.venue, '_id', null),
+                                                            name: general_utils_1["default"].getObjectProperty(user.venue, 'name', null)
+                                                        },
+                                                        company: {
+                                                            _id: general_utils_1["default"].getObjectProperty(user.company, '_id', null),
+                                                            name: general_utils_1["default"].getObjectProperty(user.company, 'name', null)
+                                                        },
+                                                        team: {
+                                                            _id: general_utils_1["default"].getObjectProperty(user.team, '_id', null),
+                                                            name: general_utils_1["default"].getObjectProperty(user.team, 'name', null),
+                                                            settings: {
+                                                                form: general_utils_1["default"].getObjectProperty(teamSettings.toJSON(), 'form', {
+                                                                    vinMinCharacters: 17,
+                                                                    vinMaxCharacters: 17
+                                                                }),
+                                                                helpNumber: general_utils_1["default"].getObjectProperty(teamSettings.toJSON(), 'helpPhones', {
+                                                                    transmittal: ""
+                                                                })
+                                                            }
+                                                            // settings: GeneralUtils.getObjectProperty(user.team, 'settings', {})
+                                                        },
                                                         count: count
                                                     };
                                                     res.json({
                                                         data: {
-                                                            token: jwt.sign(userInfo, req.app.locals.secretKey, {
+                                                            token: jwt.sign({ _id: userInfo._id }, req.app.locals.secretKey, {
                                                                 expiresIn: '7 days'
                                                             }),
-                                                            refreshToken: jwt.sign(userInfo, req.app.locals.secretKey, {
+                                                            refreshToken: jwt.sign({ _id: userInfo._id }, req.app.locals.secretKey, {
                                                                 expiresIn: '30 days'
                                                             }),
                                                             iosVersion: this.iosVersion,

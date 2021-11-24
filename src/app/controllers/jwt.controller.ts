@@ -6,6 +6,7 @@ import app, {queue} from '../../app';
 import ParticipantModel from '../../form/models/participant.model';
 import {IRequest} from '../../interfaces/global.interface';
 import logger from '../../services/logger.service';
+import GeneralUtils from '../../utils/general.utils';
 import User from '../models/user.model';
 import UserModel, {IUserModel} from '../models/user.model';
 import Version from "../models/version.model";
@@ -57,6 +58,22 @@ class JWTController {
           active: true,
           isDriver: true
         })
+        .populate([{
+          path: 'venue',
+          select: ['name', 'lat', 'lng']
+        }, {
+          path: 'team',
+          select: ['name'],
+        }, {
+          path: 'company',
+          select: ['name']
+        }, {
+          path: 'userPermissions',
+          select: ['codeName']
+        }, {
+          path: 'userForms',
+          select: ['name']
+        }])
         .exec((err, user: IUserModel) => {
           if (err) {
             /* istanbul ignore next */
@@ -91,24 +108,51 @@ class JWTController {
                   }
                 }, async (err, count) => {
                   user = user.toObject();
+                  const teamSettings = await TeamSetting.findOne({ team: user.team });
                   const userInfo = {
                     _id: user._id,
                     firstName: user.firstName,
                     lastName: user.lastName,
                     email: user.email,
                     preferred: user.preferred,
+                    userPermissions: user.userPermissions,
+                    userForms: user.userForms,
                     isDriver: user.isDriver || false,
+                    venue: {
+                      _id: GeneralUtils.getObjectProperty(user.venue, '_id', null),
+                      name: GeneralUtils.getObjectProperty(user.venue, 'name', null),
+                      lat: GeneralUtils.getObjectProperty(user.venue, 'lat', 0),
+                      lng: GeneralUtils.getObjectProperty(user.venue, 'lng', 0)
+                    },
+                    company: {
+                      _id: GeneralUtils.getObjectProperty(user.company, '_id', null),
+                      name: GeneralUtils.getObjectProperty(user.company, 'name', null)
+                    },
+                    team: {
+                      _id: GeneralUtils.getObjectProperty(user.team, '_id', null),
+                      name: GeneralUtils.getObjectProperty(user.team, 'name', null),
+                      settings: {
+                        form: GeneralUtils.getObjectProperty(teamSettings!.toJSON(), 'form', {
+                          vinMinCharacters: 17,
+                          vinMaxCharacters: 17
+                        }),
+                        helpNumber: GeneralUtils.getObjectProperty(teamSettings!.toJSON(), 'helpPhones', {
+                          transmittal: ""
+                        })
+                      }
+                      // settings: GeneralUtils.getObjectProperty(user.team, 'settings', {})
+                    },
                     count
                   };
                   res.json({
                     data: {
-                      token: jwt.sign(userInfo, req.app.locals.secretKey, {
+                      token: jwt.sign({ _id: userInfo._id }, req.app.locals.secretKey, {
                         expiresIn: '7 days',
                       }),
                       // token: jwt.sign(userInfo, req.app.locals.secretKey, {
                       //   expiresIn: '60 seconds'
                       // }),
-                      refreshToken: jwt.sign(userInfo, req.app.locals.secretKey, {
+                      refreshToken: jwt.sign({ _id: userInfo._id }, req.app.locals.secretKey, {
                         expiresIn: '30 days',
                       }),
                       iosVersion: version!.ios,
@@ -160,6 +204,22 @@ class JWTController {
               active: true,
               isDriver: true,
             })
+            .populate([{
+              path: 'venue',
+              select: ['name']
+            }, {
+              path: 'company',
+              select: ['name']
+            }, {
+              path: 'team',
+              select: ['name']
+            }, {
+              path: 'userPermissions',
+              select: ['codeName']
+            }, {
+              path: 'userForms',
+              select: ['name']
+            }])
             .exec((err, user: IUserModel) => {
               if (err) {
                 /* istanbul ignore next */
@@ -202,15 +262,39 @@ class JWTController {
                         lastName: user.lastName,
                         email: user.email,
                         preferred: user.preferred,
+                        userPermissions: user.userPermissions,
+                        userForms: user.userForms,
                         isDriver: user.isDriver || false,
+                        venue: {
+                          _id: GeneralUtils.getObjectProperty(user.venue, '_id', null),
+                          name: GeneralUtils.getObjectProperty(user.venue, 'name', null)
+                        },
+                        company: {
+                          _id: GeneralUtils.getObjectProperty(user.company, '_id', null),
+                          name: GeneralUtils.getObjectProperty(user.company, 'name', null)
+                        },
+                        team: {
+                          _id: GeneralUtils.getObjectProperty(user.team, '_id', null),
+                          name: GeneralUtils.getObjectProperty(user.team, 'name', null),
+                          settings: {
+                            form: GeneralUtils.getObjectProperty(teamSettings!.toJSON(), 'form', {
+                              vinMinCharacters: 17,
+                              vinMaxCharacters: 17
+                            }),
+                            helpNumber: GeneralUtils.getObjectProperty(teamSettings!.toJSON(), 'helpPhones', {
+                              transmittal: ""
+                            })
+                          }
+                          // settings: GeneralUtils.getObjectProperty(user.team, 'settings', {})
+                        },
                         count
                       };
                       res.json({
                         data: {
-                          token: jwt.sign(userInfo, req.app.locals.secretKey, {
+                          token: jwt.sign({ _id: userInfo._id }, req.app.locals.secretKey, {
                             expiresIn: '7 days',
                           }),
-                          refreshToken: jwt.sign(userInfo, req.app.locals.secretKey, {
+                          refreshToken: jwt.sign({ _id: userInfo._id }, req.app.locals.secretKey, {
                             expiresIn: '30 days',
                           }),
                           iosVersion: this.iosVersion,
