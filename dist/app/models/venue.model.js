@@ -18,6 +18,9 @@ var venueSchema = new mongoose.Schema({
         type: String,
         required: true
     },
+    code: {
+        type: String
+    },
     abbreviation: {
         type: String
     },

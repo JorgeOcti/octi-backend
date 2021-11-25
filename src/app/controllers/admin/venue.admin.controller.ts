@@ -146,6 +146,7 @@ class AdminVenueController {
       options['select'] = {
         _id: true,
         name: true,
+        code: true,
         abbreviation: true,
         updatedAt: true,
         createdAt: true
@@ -154,6 +155,7 @@ class AdminVenueController {
       options['select'] = {
         _id: true,
         name: true,
+        code: true,
         abbreviation: true,
         lat: true,
         lng: true,
@@ -330,7 +332,7 @@ class AdminVenueController {
     const { id } = req.params;
     const team = req.user.team._id;
     const {
-      name, abbreviation, lat, lng, type, company, sendToDays, receiveFrom,
+      name, code, abbreviation, lat, lng, type, company, sendToDays, receiveFrom,
       receptionCarriers, shippingCarriers, region, shippingMaxDays
     } = req.body;
     const sendTo = sendToDays.map((venueDay: IVenueDay) => venueDay.venue._id);
@@ -346,6 +348,7 @@ class AdminVenueController {
         team
       }, {
         name,
+        code,
         abbreviation,
         lat,
         lng,

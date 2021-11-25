@@ -35,6 +35,7 @@ import InventoryFileModel from '../models/inventoryFile.model';
 import InventoryLabel from '../models/inventoryLabel.model';
 import Stock from '../models/stock.model';
 import StockCar from '../models/stockCar.model';
+import InventoryFile from '../models/inventoryFile.model';
 
 class InventoryController {
 
@@ -62,6 +63,7 @@ class InventoryController {
     this.dashboard = this.dashboard.bind(this);
     this.currentStock = this.currentStock.bind(this);
     this.loadStock = this.loadStock.bind(this);
+    this.listInventoryCarFiles = this.listInventoryCarFiles.bind(this);
   }
 
   public async index(req: IRequest, res: Response) {
@@ -102,6 +104,25 @@ class InventoryController {
     }
   }
 
+  public async listInventoryCarFiles(req: IRequest, res: Response) {
+    try {
+      const { id: inventoryCarId } = req.params;
+      const inventoryCar = await InventoryCar
+        .findOne({ _id: inventoryCarId })
+        .populate({ path: 'files' });
+      if (!inventoryCar) {
+        res.status(404).json({ message: 'No encomtrado' });
+      } else {
+        res.json(inventoryCar);
+      }
+    } catch (e) {
+      /* istanbul ignore next */
+      if (e) {
+        res.status(500).send(e);
+      }
+    }
+  }
+
   public async create(req: IRequest, res: Response) {
     const { company, team } = req.user;
     const {name, manualPhoto, reportPhoto} = req.body;
@@ -109,7 +130,7 @@ class InventoryController {
     carsByVenue = JSON.parse(carsByVenue);
     notification = notification === 'true';
     try {
-      const inventoryCars: IInventoryCar[] = [];
+      const inventoryCars: Partial<IInventoryCar>[] = [];
       const activityHistories: IActivityHistoryInterface[] = [];
       const venuesIDs: string[] = [];
       for (const venue of carsByVenue) {
@@ -612,6 +633,7 @@ class InventoryController {
   public async uploadFile(req: IRequest, res: Response) {
     const {id} = req.params;
     const { company, venue, team } = req.user;
+    const { inventoryCardId } = req.body;
     logger.info(`uploadFile`);
     logger.info(`{user: {_id: ${req.user._id}, email: ${req.user.email}}, inventory: ${id}}`);
     const file: any = GeneralUtils.getFileFromRequest(req.files, 'file');
@@ -644,9 +666,29 @@ class InventoryController {
           await this.autoRotate(file.path);
         }
         await inventoryFile.attach('file', file);
-        await this.resizeImage(file.path);
-        await inventoryFile.attach('thumbnail', file);
+        if (new RegExp('\\bimage\\b').test(file.mimetype)) {
+          await this.resizeImage(file.path);
+          await inventoryFile.attach('thumbnail', file);
+        }
         await inventoryFile.save();
+        if (inventoryCardId) {
+          const inventoryCar = await InventoryCar.findById(inventoryCardId);
+          if (inventoryCar) {
+            await InventoryCar.updateOne({
+              _id: inventoryCar._id,
+              inventory: inventoryCar.inventory
+            }, {
+              $push: { files: inventoryFile._id }
+            }, {
+              upsert: true
+            });
+            io.to(`inventory-detail-${inventoryCar.inventory}`).emit('REFRESH', {
+              update: true,
+              venue: inventoryCar.venue
+            });
+          }
+          console.log('**************', inventoryCardId);
+        }
         res.status(201).json({
           data: {
             _id: inventoryFile._id,
@@ -666,6 +708,28 @@ class InventoryController {
       }
     } else {
       logger.error(`uploadFile: La imagen es obligatoria.`);
+      logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
+      /* istanbul ignore next */
+      res.status(400).json({
+        message: 'La imagen es obligatoria.',
+        status: 400
+      });
+    }
+  }
+
+  public async removeInventoryCarFile(req: IRequest, res: Response): Promise<any> {
+    try{
+      const { id } = req.params;
+      const inventoryFile = await InventoryFile.findOneAndRemove({ _id: id });
+      if(inventoryFile){
+         io.to(`inventory-detail-${inventoryFile.inventory}`).emit('REFRESH', {
+           update: true,
+           venue: req.user.venue._id
+         });
+      }
+      res.json({});
+    } catch (e) {
+      logger.error(`removeInventoryCarFile: La imagen es obligatoria.`);
       logger.error(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
       /* istanbul ignore next */
       res.status(400).json({
@@ -1699,6 +1763,8 @@ class InventoryController {
             select: ['name']
           }, {
             path: 'images'
+          }, {
+            path: 'files'
           }, {
             path: 'venueFound',
             select: ['name']

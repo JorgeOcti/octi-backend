@@ -64,6 +64,10 @@ const inventoryCarSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: 'InventoryFile'
   }],
+  files: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'InventoryFile'
+  }],
   comments: [invetoryCommentCars],
   label: {
     type: mongoose.Schema.Types.ObjectId,

@@ -40,6 +40,10 @@ const transmittalSchema = new mongoose.Schema<ITransmittal>({
   name: {
     type: String
   },
+  type: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'MilestoneType'
+  },
   number: {
     type: Number
   },

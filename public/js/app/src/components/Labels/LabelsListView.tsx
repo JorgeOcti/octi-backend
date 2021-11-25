@@ -288,13 +288,13 @@ class LabelsListView extends TrackingBasePage<IPropsType, IStateType> {
 
   private validateLabel(label: IInventoryLabel, action: string): boolean {
     if (!label.name || !label.name.trim().length) {
-      swal(action, 'El nombres es requerido', 'error');
+      swal!(action, 'El nombres es requerido', 'error');
       return false;
     } else if (!label.affected || !label.affected.length) {
-      swal(action, '"Agregar opción en" debe tener al menos 1 seleccionado.', 'error');
+      swal!(action, '"Agregar opción en" debe tener al menos 1 seleccionado.', 'error');
       return false;
     } else if (!label.sendTo || !label.sendTo.trim().length) {
-      swal(action, 'Debe seleccionar donde se enviara', 'error');
+      swal!(action, 'Debe seleccionar donde se enviara', 'error');
       return false;
     }
     return true;

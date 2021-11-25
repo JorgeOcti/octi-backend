@@ -21,6 +21,7 @@ export interface IInventoryCar {
   labelBy?: IUserModel;
   inventoriedBy?: IUserModel;
   images: IInventoryFile[];
+  files: IInventoryFile[];
   status?: string;
   updatedAt?: Date;
   createdAt?: Date;

@@ -68,12 +68,12 @@ var MilestoneController = /** @class */ (function () {
     };
     MilestoneController.prototype.apiList = function (req, res) {
         return __awaiter(this, void 0, void 0, function () {
-            var team, _a, page, pageSize, options, filter, milestones, e_1;
+            var team, _a, milestoneType, page, pageSize, options, filter, milestones, e_1;
             return __generator(this, function (_b) {
                 switch (_b.label) {
                     case 0:
                         team = req.user.team;
-                        _a = req.query, page = _a.page, pageSize = _a.pageSize;
+                        _a = req.query, milestoneType = _a.milestoneType, page = _a.page, pageSize = _a.pageSize;
                         options = {
                             populate: [{
                                     path: 'form',
@@ -90,14 +90,21 @@ var MilestoneController = /** @class */ (function () {
                         };
                         _b.label = 1;
                     case 1:
-                        _b.trys.push([1, 6, , 7]);
+                        _b.trys.push([1, 7, , 8]);
+                        filter = {
+                            team: team._id
+                        };
+                        if (!(milestoneType === null || milestoneType === void 0 ? void 0 : milestoneType.length)) return [3 /*break*/, 5];
+                        filter.type = milestoneType;
                         /* create default milestones */
                         return [4 /*yield*/, milestone_model_1["default"].findOneOrCreate({
                                 step: milestone_model_1.ChoicesStepMilestone.checkItem,
-                                team: team
+                                team: team,
+                                type: milestoneType
                             }, {
                                 name: 'Checkear carga',
                                 team: team,
+                                type: milestoneType,
                                 step: milestone_model_1.ChoicesStepMilestone.checkItem,
                                 kind: milestone_model_1.ChoicesKindMilestone.form,
                                 order: 1
@@ -107,10 +114,12 @@ var MilestoneController = /** @class */ (function () {
                         _b.sent();
                         return [4 /*yield*/, milestone_model_1["default"].findOneOrCreate({
                                 step: milestone_model_1.ChoicesStepMilestone.loadEvidence,
-                                team: team
+                                team: team,
+                                type: milestoneType
                             }, {
                                 name: 'Evidencia de carga',
                                 team: team,
+                                type: milestoneType,
                                 step: milestone_model_1.ChoicesStepMilestone.loadEvidence,
                                 kind: milestone_model_1.ChoicesKindMilestone.file,
                                 order: 2
@@ -119,21 +128,21 @@ var MilestoneController = /** @class */ (function () {
                         _b.sent();
                         return [4 /*yield*/, milestone_model_1["default"].findOneOrCreate({
                                 step: milestone_model_1.ChoicesStepMilestone.finishTransmittal,
-                                team: team
+                                team: team,
+                                type: milestoneType
                             }, {
                                 name: 'Subir Documentos',
                                 team: team,
+                                type: milestoneType,
                                 step: milestone_model_1.ChoicesStepMilestone.finishTransmittal,
                                 kind: milestone_model_1.ChoicesKindMilestone.form,
                                 order: 3
                             })];
                     case 4:
                         _b.sent();
-                        filter = {
-                            team: team._id
-                        };
-                        return [4 /*yield*/, this.getMilestone(filter, options)];
-                    case 5:
+                        _b.label = 5;
+                    case 5: return [4 /*yield*/, this.getMilestone(filter, options)];
+                    case 6:
                         milestones = _b.sent();
                         /* istanbul ignore if  */
                         if (options.page && milestones.pages && milestones.pages < options.page) {
@@ -152,16 +161,16 @@ var MilestoneController = /** @class */ (function () {
                                 status: 200
                             });
                         }
-                        return [3 /*break*/, 7];
-                    case 6:
+                        return [3 /*break*/, 8];
+                    case 7:
                         e_1 = _b.sent();
                         /* istanbul ignore next */
                         logger_service_1["default"].error("TransmittalController.apiList: Async Error.");
                         /* istanbul ignore next */
                         logger_service_1["default"].error("{user: {_id: " + req.user._id + ", email: " + req.user.email + "}}");
                         res.status(500).json(e_1);
-                        return [3 /*break*/, 7];
-                    case 7: return [2 /*return*/];
+                        return [3 /*break*/, 8];
+                    case 8: return [2 /*return*/];
                 }
             });
         });

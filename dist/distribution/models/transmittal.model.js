@@ -36,6 +36,10 @@ var transmittalSchema = new mongoose.Schema({
     name: {
         type: String
     },
+    type: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'MilestoneType'
+    },
     number: {
         type: Number
     },

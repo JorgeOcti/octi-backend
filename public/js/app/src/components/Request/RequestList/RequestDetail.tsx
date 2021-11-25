@@ -106,9 +106,9 @@ class RequestListDetail extends React.Component<IPropsType, IStateType> {
                 <th className="middle" style={{ width: '100px' }} >Progreso</th>
                 <th className="middle" style={{ width: '160px' }}>Estado</th>
                 <th className="middle" style={{ width: '250px' }}>Modelo</th>
-                <th className="middle" style={{ width: '100px' }}>Color</th>
+                <th className="middle" style={{ width: '250px' }}>Color</th>
                 <th className="middle-center">VIN</th>
-                <th className="middle-center">CDO</th>
+                <th className="middle-center">Partida</th>
                 <th className="middle-center" style={{ width: '20px' }}>Adj</th>
                 <th className="middle">Obs</th>
                 {/* <th className="middle-center">Equip. / Carroc. / Preentrega</th> */}
@@ -163,18 +163,14 @@ class RequestListDetail extends React.Component<IPropsType, IStateType> {
                     <td className="middle">
                       {item.car.color}
                     </td>
-                    <td className="middle-center">
+                    <td className='middle-center'>
                       {
-                        item.car.vin && item.car.vin.length ?
-                          <i className="fa fa-check-circle text-olive" />
-                          : null
+                        item.car.vin && item.car.vin.length ? item.car.vin : null
                       }
                     </td>
-                    <td className="middle-center">
+                    <td className='middle-center'>
                       {
-                        item.car.internalNumber && item.car.internalNumber.length ?
-                          <i className="fa fa-check-circle text-olive" />
-                          : null
+                        item.car.entry && item.car.entry.length ? item.car.entry : null
                       }
                     </td>
                     <td

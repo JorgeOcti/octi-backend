@@ -1,0 +1,1 @@
+{"version":3,"file":"version.interface.js","sourceRoot":"","sources":["../../../src/app/interfaces/version.interface.ts"],"names":[],"mappings":"","sourcesContent":["export interface IVersion {\n  _id: any;\n  description: string;\n  android: string,\n  ios: string,\n  updatedAt: Date;\n  createdAt: Date;\n}\n"]}

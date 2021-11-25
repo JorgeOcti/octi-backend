@@ -33,6 +33,10 @@ const milestoneSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Team'
   },
+  type: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'MilestoneType'
+  },
   name: {
     type: String
   },

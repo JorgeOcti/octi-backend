@@ -1,9 +1,8 @@
-import {Response} from 'express';
-import {PaginateOptions, PaginateResult} from 'mongoose';
-import {Types} from 'mongoose';
-import {IRequest} from '../../../interfaces/global.interface';
-import {io} from '../../../server';
-import Car, {ChoicesStatusCar, ICarModel} from '../../models/car.model';
+import { Response } from 'express';
+import { PaginateOptions, PaginateResult, Types } from 'mongoose';
+import { IRequest } from '../../../interfaces/global.interface';
+import { io } from '../../../server';
+import Car, { ChoicesStatusCar, ICarModel } from '../../models/car.model';
 
 class AdminCarController {
 
@@ -150,10 +149,14 @@ class AdminCarController {
     };
     try {
       const cars = await this.getCars({
+        vin: {
+          $exists: true,
+          $ne: ""
+        },
         team,
-        status: {
-          $eq: ChoicesStatusCar.active
-        }
+        // status: {
+        //   $in: [ChoicesStatusCar.active, ChoicesStatusCar.inventory]
+        // }
       }, options, search);
       // validate exist page
       /* istanbul ignore if  */

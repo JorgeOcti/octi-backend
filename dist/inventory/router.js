@@ -26,6 +26,8 @@ inventoryRouter.post('/api/inventory/:id/finish/', middlewares_1["default"].isLo
 inventoryRouter.post('/api/inventory/:id/set-label/', middlewares_1["default"].isLoggedIn, inventory_controller_1["default"].setLabel);
 inventoryRouter.get('/api/inventory/:id/', middlewares_1["default"].isLoggedIn, inventory_controller_1["default"].detaill);
 inventoryRouter["delete"]('/api/inventory/:id/', middlewares_1["default"].isLoggedIn, inventory_controller_1["default"].deleteInventory);
+inventoryRouter.get('/api/inventory-car/files/:id/', middlewares_1["default"].isLoggedIn, inventory_controller_1["default"].listInventoryCarFiles);
+inventoryRouter["delete"]('/api/inventory-car/files/:id/', middlewares_1["default"].isLoggedIn, inventory_controller_1["default"].removeInventoryCarFile);
 // Labels API Web
 inventoryRouter.get('/api/admin/labels/', middlewares_1["default"].isLoggedIn, label_controller_1["default"].apiList);
 inventoryRouter.post('/api/admin/labels/', middlewares_1["default"].isLoggedIn, label_controller_1["default"].apiCreateLabel);

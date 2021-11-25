@@ -12,6 +12,7 @@ class OperationTypeController {
     this.apiCreate = this.apiCreate.bind(this);
     this.apiUpdate = this.apiUpdate.bind(this);
     this.apiDelete = this.apiDelete.bind(this);
+    this.getOperationTypes = this.getOperationTypes.bind(this);
   }
 
   public async apiCreate(req: IRequest, res: Response) {
@@ -42,13 +43,11 @@ class OperationTypeController {
       if (update.default) {
         await OperationType.updateMany({ team }, { $set: { default: false } });
       }
-      const reason = await OperationType.findOneAndUpdate({ _id: id, team }, { $set: { ...update } });
+      const reason = await OperationType.findOneAndUpdate({ _id: id, team }, { $set: { ...update } }, {new: true});
       io.to(`operation-type-list-${team._id}`).emit('REFRESH', {
         update: true
       });
-      res.status(200).json({
-        ...reason
-      });
+      res.status(200).json(reason);
     } catch (e) {
       /* istanbul ignore next */
       logger.error(`OperationTypeController.apiUpdate: Async Error.`);
@@ -90,7 +89,7 @@ class OperationTypeController {
     };
     try {
       const filter = { team };
-      const operationType = await this.getRequetsItemStatus(filter, options);
+      const operationType = await this.getOperationTypes(filter, options);
       /* istanbul ignore if  */
       if (options.page && operationType.pages && operationType.pages < options.page) {
         res.status(400).json({
@@ -117,7 +116,7 @@ class OperationTypeController {
     }
   }
 
-  private getRequetsItemStatus(filter: any, options: PaginateOptions): Promise<PaginateResult<IOperationTypeModel>> {
+  private getOperationTypes(filter: any, options: PaginateOptions): Promise<PaginateResult<IOperationTypeModel>> {
     return new Promise((resolve, reject) => {
       OperationType.paginate!(filter, options, (err, result) => {
         if (err) {

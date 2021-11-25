@@ -84,6 +84,7 @@ class RequestUpdaterView extends TrackingBasePage<IPropsType, IStateType> {
     this.parseRequestItem = this.parseRequestItem.bind(this);
     this.processSettings = this.processSettings.bind(this);
     this.sendCreate = this.sendCreate.bind(this);
+    this.checkSameVenue = this.checkSameVenue.bind(this);
     this.api = new ApiService();
   }
 
@@ -364,10 +365,12 @@ class RequestUpdaterView extends TrackingBasePage<IPropsType, IStateType> {
       ['entry']: requestItem['Partida'],
       ['invoice']: requestItem['Factura'],
       ['origin']: venues.find((venue) => {
-        return venue.name?.trim().toLowerCase() === requestItem['Origen']?.trim().toLowerCase();
+        return this.checkSameVenue(venue, requestItem['Origen']);
+        // return venue.name?.trim().toLowerCase() === requestItem['Origen']?.trim().toLowerCase();
       })?._id,
       ['destination']: venues.find((venue) => {
-        return venue.name?.trim().toLowerCase() === requestItem['Destino']?.trim().toLowerCase();
+        return this.checkSameVenue(venue, requestItem['Destino']);
+        // return venue.name?.trim().toLowerCase() === requestItem['Destino']?.trim().toLowerCase();
       })?._id,
       ['bl']: requestItem['BL'],
       ['engineSize']: requestItem['Cilindrada'],
@@ -382,6 +385,12 @@ class RequestUpdaterView extends TrackingBasePage<IPropsType, IStateType> {
       ['countryOrigin']: requestItem['Pais Origen'],
       ['observation']: requestItem['Observacion']
     };
+  }
+
+  private checkSameVenue(venueA: any, venueB: any){
+    const sameName = venueA.name?.trim().toLowerCase() === venueB?.trim().toLowerCase();
+    const foundCode = venueB?.length && (venueA.code?.trim().toLowerCase() === venueB?.trim().toLowerCase());
+    return sameName || foundCode
   }
 
   private processSettings(file: File): void {

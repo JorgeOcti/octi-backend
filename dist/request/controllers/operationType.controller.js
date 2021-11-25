@@ -56,6 +56,7 @@ var OperationTypeController = /** @class */ (function () {
         this.apiCreate = this.apiCreate.bind(this);
         this.apiUpdate = this.apiUpdate.bind(this);
         this.apiDelete = this.apiDelete.bind(this);
+        this.getOperationTypes = this.getOperationTypes.bind(this);
     }
     OperationTypeController.prototype.apiCreate = function (req, res) {
         return __awaiter(this, void 0, void 0, function () {
@@ -106,13 +107,13 @@ var OperationTypeController = /** @class */ (function () {
                     case 2:
                         _a.sent();
                         _a.label = 3;
-                    case 3: return [4 /*yield*/, operationType_model_1["default"].findOneAndUpdate({ _id: id, team: team }, { $set: __assign({}, update) })];
+                    case 3: return [4 /*yield*/, operationType_model_1["default"].findOneAndUpdate({ _id: id, team: team }, { $set: __assign({}, update) }, { "new": true })];
                     case 4:
                         reason = _a.sent();
                         server_1.io.to("operation-type-list-" + team._id).emit('REFRESH', {
                             update: true
                         });
-                        res.status(200).json(__assign({}, reason));
+                        res.status(200).json(reason);
                         return [3 /*break*/, 6];
                     case 5:
                         e_2 = _a.sent();
@@ -178,7 +179,7 @@ var OperationTypeController = /** @class */ (function () {
                     case 1:
                         _b.trys.push([1, 3, , 4]);
                         filter = { team: team };
-                        return [4 /*yield*/, this.getRequetsItemStatus(filter, options)];
+                        return [4 /*yield*/, this.getOperationTypes(filter, options)];
                     case 2:
                         operationType = _b.sent();
                         /* istanbul ignore if  */
@@ -213,7 +214,7 @@ var OperationTypeController = /** @class */ (function () {
             });
         });
     };
-    OperationTypeController.prototype.getRequetsItemStatus = function (filter, options) {
+    OperationTypeController.prototype.getOperationTypes = function (filter, options) {
         return new Promise(function (resolve, reject) {
             operationType_model_1["default"].paginate(filter, options, function (err, result) {
                 if (err) {

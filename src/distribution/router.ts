@@ -3,6 +3,7 @@ import Middlewares from '../middlewares/middlewares';
 import TransmittalController from './controllers/transmittal.controller';
 import TransmittalItemController from './controllers/transmittalItem.controller';
 import MilestoneController from './controllers/milestone.controller';
+import MilestoneTypeController from './controllers/milestoneType.controller';
 import { createTransmittalSchema } from './inputsSchema';
 
 const {isJWTAuthenticated, isLoggedIn, validateBody} = Middlewares;
@@ -15,6 +16,7 @@ distributionRouter.get('/transmittals/export-xls/', isJWTAuthenticated, Transmit
 distributionRouter.get('/transmittals/create/', isLoggedIn, TransmittalController.index);
 distributionRouter.get('/transmittals/:id/', isLoggedIn, TransmittalController.index);
 distributionRouter.get('/transmittals/:id/download-files/', isLoggedIn, TransmittalController.downloadTransmittalFiles);
+
 
 // apis
 distributionRouter.get('/api/v1/transmittals/', isJWTAuthenticated, TransmittalController.apiList);
@@ -34,8 +36,15 @@ distributionRouter.patch('/api/v1/transmittals/item/:id/', isJWTAuthenticated, T
 distributionRouter.delete('/api/v1/transmittals/item/:id/', isJWTAuthenticated, TransmittalItemController.apiDelete);
 
 distributionRouter.get('/transmittals/settings/milestone/', Middlewares.isLoggedIn, MilestoneController.index);
+distributionRouter.get('/transmittals/settings/milestone-type/', Middlewares.isLoggedIn, MilestoneController.index);
+
 distributionRouter.get('/api/v1/milestones/', isJWTAuthenticated, MilestoneController.apiList);
 distributionRouter.patch('/api/v1/milestones/:id/', isJWTAuthenticated, MilestoneController.apiUpdate);
+
+distributionRouter.get('/api/v1/milestone-types/', Middlewares.isJWTAuthenticated, MilestoneTypeController.apiList);
+distributionRouter.post('/api/v1/milestone-types/', Middlewares.isJWTAuthenticated, MilestoneTypeController.apiCreate);
+distributionRouter.patch('/api/v1/milestone-types/:id/', Middlewares.isJWTAuthenticated, MilestoneTypeController.apiUpdate);
+distributionRouter.delete('/api/v1/milestone-types/:id/', Middlewares.isJWTAuthenticated, MilestoneTypeController.apiDelete);
 
 export {
   distributionRouter

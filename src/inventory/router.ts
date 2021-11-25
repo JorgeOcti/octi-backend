@@ -25,6 +25,8 @@ inventoryRouter.post('/api/inventory/:id/finish/', Middlewares.isLoggedIn, Inven
 inventoryRouter.post('/api/inventory/:id/set-label/', Middlewares.isLoggedIn, InventoryController.setLabel);
 inventoryRouter.get('/api/inventory/:id/', Middlewares.isLoggedIn, InventoryController.detaill);
 inventoryRouter.delete('/api/inventory/:id/', Middlewares.isLoggedIn, InventoryController.deleteInventory);
+inventoryRouter.get('/api/inventory-car/files/:id/', Middlewares.isLoggedIn, InventoryController.listInventoryCarFiles);
+inventoryRouter.delete('/api/inventory-car/files/:id/', Middlewares.isLoggedIn, InventoryController.removeInventoryCarFile);
 
 // Labels API Web
 inventoryRouter.get('/api/admin/labels/', Middlewares.isLoggedIn, LabelController.apiList);

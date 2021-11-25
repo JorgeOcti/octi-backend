@@ -5,7 +5,7 @@ import * as MongooseCrateS3 from 'mongoose-crate-s3';
 import * as mongoosePaginate from 'mongoose-paginate';
 import * as uuid from 'uuid';
 import * as s3Config from '../../../s3-config.json';
-import { ICompany } from '../interfaces/company.interface';
+import { ICompany } from '../interfaces';
 
 export interface ICompanyModel extends ICompany, mongoose.Document {
   attach(fieldName: string, file: any, error?: (err: any) => void): void;

@@ -1,23 +1,71 @@
 "use strict";
 exports.__esModule = true;
-exports.formTriggerSchema = exports.triggerConfigSchema = exports.kindTrigger = exports.KindTrigger = void 0;
+exports.formTriggerSchema = exports.triggerConfigSchema = exports.integrationTypes = exports.IntegrationType = exports.kindsTrigger = exports.KindTrigger = void 0;
 var mongoose = require("mongoose");
 var KindTrigger;
 (function (KindTrigger) {
     KindTrigger["file"] = "file";
     KindTrigger["email"] = "email";
+    KindTrigger["request"] = "request";
+    KindTrigger["integration"] = "integration";
 })(KindTrigger = exports.KindTrigger || (exports.KindTrigger = {}));
-exports.kindTrigger = [
+exports.kindsTrigger = [
     KindTrigger.file,
     KindTrigger.email,
+    KindTrigger.request,
+    KindTrigger.integration
+];
+var IntegrationType;
+(function (IntegrationType) {
+    IntegrationType["http"] = "http";
+    IntegrationType["sap"] = "sap";
+    IntegrationType["conecta"] = "conecta";
+    IntegrationType["integration"] = "integration";
+})(IntegrationType = exports.IntegrationType || (exports.IntegrationType = {}));
+exports.integrationTypes = [
+    IntegrationType.http,
+    IntegrationType.sap,
+    IntegrationType.conecta
 ];
 exports.triggerConfigSchema = new mongoose.Schema({
-    fullname: [mongoose.Schema.Types.Mixed],
-    email: [mongoose.Schema.Types.Mixed],
-    signature: mongoose.Schema.Types.ObjectId,
-    subject: String,
-    filename: String,
-    template: String
+    fullname: {
+        type: mongoose.Schema.Types.Mixed
+    },
+    email: {
+        type: mongoose.Schema.Types.Mixed
+    },
+    signature: {
+        type: mongoose.Schema.Types.ObjectId
+    },
+    subject: {
+        type: String
+    },
+    filename: {
+        type: String
+    },
+    template: {
+        type: String
+    },
+    integrationType: {
+        type: String,
+        "enum": exports.integrationTypes
+    },
+    header: {
+        type: String
+    },
+    url: {
+        type: String
+    },
+    method: {
+        type: String
+    },
+    body: {
+        type: String
+    },
+    requestItemStatus: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'RequestItemStatus'
+    }
 });
 exports.formTriggerSchema = new mongoose.Schema({
     name: {
@@ -31,7 +79,7 @@ exports.formTriggerSchema = new mongoose.Schema({
     },
     kind: {
         type: String,
-        "enum": exports.kindTrigger
+        "enum": exports.kindsTrigger
     },
     enabled: {
         type: Boolean,

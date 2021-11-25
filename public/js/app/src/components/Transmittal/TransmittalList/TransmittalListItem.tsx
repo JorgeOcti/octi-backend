@@ -62,7 +62,7 @@ class TransmitalListItem extends React.Component<IPropsType, IStateType> {
         <td className={'middle'}>
           <strong>
             <ShowIf condition={!!transmittalItem?.request?.number}>
-              #{this.padNumber(transmittalItem.request?.number)}
+              #{transmittalItem.request?.number}
             </ShowIf>
           </strong>
         </td>

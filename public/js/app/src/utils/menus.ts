@@ -61,6 +61,15 @@ if (hasPermission(window.user, 'viewCustomDashboard')) {
   });
 }
 
+if (window.user.isAdmin) {
+  dashboardItems.push({
+    id: '1.10',
+    icon: 'fa-circle-o',
+    text: 'Ajustes',
+    url: '/forms/settings/forms/'
+  });
+}
+
 if (dashboardItems.length) {
   menus.push({
     id: '1',

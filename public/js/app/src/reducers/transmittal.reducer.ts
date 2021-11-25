@@ -6,7 +6,7 @@ import {
   ITransmittalActionTypes,
   ITransmittalState,
   LOAD_CARRIERS_TRANSMITTAL,
-  LOAD_DRIVERS_TRANSMITTAL,
+  LOAD_DRIVERS_TRANSMITTAL, LOAD_MILESTONE_TYPES_TRANSMITTAL,
   LOAD_REQUEST_ITEMS_TRANSMITTAL,
   LOAD_TRANSMITTAL,
   LOAD_VENUES_TRANSMITTAL,
@@ -15,7 +15,7 @@ import {
   TOOGLE_TAB_TRANSMITTAL,
   UPDATE_TRANSMITTAL_ITEM_TRANSMITTAL,
   UPDATE_TRANSMITTAL_TRANSMITTAL
-} from "../actions/transmittal.types";
+} from '../actions/transmittal.types';
 import {ITransmittal} from "../../../../../src/distribution/interfaces/transmittal.interface";
 
 const initialState: ITransmittalState<ITransmittal> = {
@@ -25,6 +25,7 @@ const initialState: ITransmittalState<ITransmittal> = {
   carriers: [],
   venues: [],
   drivers: [],
+  milestoneTypes: [],
   transmittalOpen: [],
   source: null,
   requestItems: [],
@@ -151,6 +152,11 @@ export default function transmittalReducer(state= initialState, action: ITransmi
       return {
         ...state,
         drivers: action.payload.drivers,
+      };
+    case LOAD_MILESTONE_TYPES_TRANSMITTAL:
+      return {
+        ...state,
+        milestoneTypes: action.payload.milestoneTypes,
       };
     case LOAD_VENUES_TRANSMITTAL:
       return {

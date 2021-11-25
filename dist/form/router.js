@@ -23,7 +23,10 @@ router.get('/api/v1/forms/:id/', middlewares_1["default"].isJWTAuthenticated, fo
 // answer form
 router.post('/api/v1/forms/:id/', middlewares_1["default"].isJWTAuthenticated, form_controller_1["default"].complete);
 // admin forms
-router.get('/api/admin/forms/', middlewares_1["default"].isLoggedIn, form_admin_controller_1["default"].apiListForms);
+router.get('/api/admin/forms/', middlewares_1["default"].isLoggedIn, form_admin_controller_1["default"].apiList);
+router.post('/api/admin/forms/', middlewares_1["default"].isLoggedIn, form_admin_controller_1["default"].apiCreate);
+router.patch('/api/admin/forms/:id', middlewares_1["default"].isLoggedIn, form_admin_controller_1["default"].apiUpdate);
+router["delete"]('/api/admin/forms/:id', middlewares_1["default"].isLoggedIn, form_admin_controller_1["default"].apiDelete);
 router.get('/api/admin/damages/', middlewares_1["default"].isLoggedIn, damages_admin_controller_1["default"].apiListDamages);
 router.post('/api/v1/positions/', middlewares_1["default"].isJWTAuthenticated, form_controller_1["default"].createPosition);
 exports["default"] = router;

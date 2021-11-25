@@ -32,6 +32,7 @@ appRouter.get('/dashboard/derco/', middlewares_1["default"].isLoggedIn, car_cont
 appRouter.get('/dashboard/custom-dashboard/', middlewares_1["default"].isLoggedIn, car_controller_1["default"].generalDashboard);
 // DashBoard Cars
 appRouter.get('/cars/', middlewares_1["default"].isLoggedIn, car_controller_1["default"].vinDashboard);
+appRouter.get('/forms/settings/forms/', middlewares_1["default"].isLoggedIn, car_controller_1["default"].index);
 appRouter.get('/cars/:id', middlewares_1["default"].isLoggedIn, car_controller_1["default"].vinDashboardDetail);
 appRouter.get('/revision-report/', middlewares_1["default"].isLoggedIn, car_controller_1["default"].vinDashboard);
 // api cars

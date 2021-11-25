@@ -1,4 +1,15 @@
 "use strict";
+var __assign = (this && this.__assign) || function () {
+    __assign = Object.assign || function(t) {
+        for (var s, i = 1, n = arguments.length; i < n; i++) {
+            s = arguments[i];
+            for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p))
+                t[p] = s[p];
+        }
+        return t;
+    };
+    return __assign.apply(this, arguments);
+};
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
@@ -37,10 +48,15 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
 };
 exports.__esModule = true;
 var form_model_1 = require("../../models/form.model");
+var logger_service_1 = require("../../../services/logger.service");
+var server_1 = require("../../../server");
 var AdminFormsController = /** @class */ (function () {
     function AdminFormsController() {
         this.index = this.index.bind(this);
-        this.apiListForms = this.apiListForms.bind(this);
+        this.apiList = this.apiList.bind(this);
+        this.apiCreate = this.apiCreate.bind(this);
+        this.apiUpdate = this.apiUpdate.bind(this);
+        this.apiDelete = this.apiDelete.bind(this);
     }
     /* istanbul ignore next */
     AdminFormsController.prototype.index = function (req, res) {
@@ -61,9 +77,115 @@ var AdminFormsController = /** @class */ (function () {
             });
         });
     };
-    AdminFormsController.prototype.apiListForms = function (req, res) {
+    AdminFormsController.prototype.apiCreate = function (req, res) {
         return __awaiter(this, void 0, void 0, function () {
-            var _a, page, pageSize, team, options, forms, e_1;
+            var team, body, form, e_1;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0:
+                        team = req.user.team;
+                        body = req.body;
+                        _a.label = 1;
+                    case 1:
+                        _a.trys.push([1, 3, , 4]);
+                        return [4 /*yield*/, new form_model_1["default"](__assign(__assign({}, body), { team: team })).save()];
+                    case 2:
+                        form = _a.sent();
+                        server_1.io.to("forms-list-" + team._id).emit('REFRESH', {
+                            update: true
+                        });
+                        res.status(200).json({
+                            message: 'Formulario creado satisfactoriamente.',
+                            form: form
+                        });
+                        return [3 /*break*/, 4];
+                    case 3:
+                        e_1 = _a.sent();
+                        /* istanbul ignore next */
+                        logger_service_1["default"].error("AdminFormsController.apiCreate: Async Error.");
+                        /* istanbul ignore next */
+                        logger_service_1["default"].error("{user: {_id: " + req.user._id + ", email: " + req.user.email + "}}");
+                        console.error(e_1);
+                        res.status(500).json(e_1);
+                        return [3 /*break*/, 4];
+                    case 4: return [2 /*return*/];
+                }
+            });
+        });
+    };
+    AdminFormsController.prototype.apiUpdate = function (req, res) {
+        return __awaiter(this, void 0, void 0, function () {
+            var id, team, body, form, e_2;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0:
+                        _a.trys.push([0, 2, , 3]);
+                        id = req.params.id;
+                        team = req.user.team._id;
+                        body = req.body;
+                        return [4 /*yield*/, form_model_1["default"].findOneAndUpdate({ _id: id, team: team }, { $set: __assign({}, body) })];
+                    case 1:
+                        form = _a.sent();
+                        server_1.io.to("forms-list-" + team._id).emit('REFRESH', {
+                            update: true
+                        });
+                        res.status(200).json({
+                            message: 'Formulario editado satisfactoriamente.',
+                            form: form
+                        });
+                        return [3 /*break*/, 3];
+                    case 2:
+                        e_2 = _a.sent();
+                        //* istanbul ignore next */
+                        logger_service_1["default"].error("AdminFormsController.apiUpdate: Async Error.");
+                        /* istanbul ignore next */
+                        logger_service_1["default"].error("{user: {_id: " + req.user._id + ", email: " + req.user.email + "}}");
+                        console.error(e_2);
+                        res.status(500).json(e_2);
+                        return [3 /*break*/, 3];
+                    case 3: return [2 /*return*/];
+                }
+            });
+        });
+    };
+    AdminFormsController.prototype.apiDelete = function (req, res) {
+        return __awaiter(this, void 0, void 0, function () {
+            var team, id, form, e_3;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0:
+                        team = req.user.team;
+                        id = req.params.id;
+                        _a.label = 1;
+                    case 1:
+                        _a.trys.push([1, 3, , 4]);
+                        return [4 /*yield*/, form_model_1["default"].findOneAndDelete({ _id: id, team: team })];
+                    case 2:
+                        form = _a.sent();
+                        server_1.io.to("forms-list-" + team._id).emit('REFRESH', {
+                            update: true
+                        });
+                        res.status(200).json({
+                            message: 'Formulario eliminadp satisfactoriamente.',
+                            form: form
+                        });
+                        return [3 /*break*/, 4];
+                    case 3:
+                        e_3 = _a.sent();
+                        /* istanbul ignore next */
+                        logger_service_1["default"].error("AdminFormsController.apiDelete: Async Error.");
+                        /* istanbul ignore next */
+                        logger_service_1["default"].error("{user: {_id: " + req.user._id + ", email: " + req.user.email + "}}");
+                        res.status(500).json(e_3);
+                        return [3 /*break*/, 4];
+                    case 4: return [2 /*return*/];
+                }
+            });
+        });
+    };
+    AdminFormsController.prototype.apiList = function (req, res) {
+        return __awaiter(this, void 0, void 0, function () {
+            var _a, page, pageSize, team, options, forms, e_4;
             return __generator(this, function (_b) {
                 switch (_b.label) {
                     case 0:
@@ -71,7 +193,9 @@ var AdminFormsController = /** @class */ (function () {
                         team = req.user.team._id;
                         options = {
                             select: {
-                                name: true
+                                name: true,
+                                triggers: true,
+                                active: true
                             },
                             sort: {
                                 firstName: 1
@@ -107,10 +231,10 @@ var AdminFormsController = /** @class */ (function () {
                         }
                         return [3 /*break*/, 4];
                     case 3:
-                        e_1 = _b.sent();
+                        e_4 = _b.sent();
                         /* istanbul ignore next */
-                        if (e_1) {
-                            res.status(500).json(e_1);
+                        if (e_4) {
+                            res.status(500).json(e_4);
                         }
                         return [3 /*break*/, 4];
                     case 4: return [2 /*return*/];

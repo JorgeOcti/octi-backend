@@ -190,13 +190,13 @@ var JWTController = /** @class */ (function () {
                                                         };
                                                         res.json({
                                                             data: {
-                                                                token: jwt.sign(userInfo, req.app.locals.secretKey, {
+                                                                token: jwt.sign({ _id: userInfo._id }, req.app.locals.secretKey, {
                                                                     expiresIn: '7 days'
                                                                 }),
                                                                 // token: jwt.sign(userInfo, req.app.locals.secretKey, {
                                                                 //   expiresIn: '60 seconds'
                                                                 // }),
-                                                                refreshToken: jwt.sign(userInfo, req.app.locals.secretKey, {
+                                                                refreshToken: jwt.sign({ _id: userInfo._id }, req.app.locals.secretKey, {
                                                                     expiresIn: '30 days'
                                                                 }),
                                                                 iosVersion: version_1.ios,
@@ -354,10 +354,10 @@ var JWTController = /** @class */ (function () {
                                                     };
                                                     res.json({
                                                         data: {
-                                                            token: jwt.sign(userInfo, req.app.locals.secretKey, {
+                                                            token: jwt.sign({ _id: userInfo._id }, req.app.locals.secretKey, {
                                                                 expiresIn: '7 days'
                                                             }),
-                                                            refreshToken: jwt.sign(userInfo, req.app.locals.secretKey, {
+                                                            refreshToken: jwt.sign({ _id: userInfo._id }, req.app.locals.secretKey, {
                                                                 expiresIn: '30 days'
                                                             }),
                                                             iosVersion: this.iosVersion,

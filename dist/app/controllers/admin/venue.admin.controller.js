@@ -203,6 +203,7 @@ var AdminVenueController = /** @class */ (function () {
                             options['select'] = {
                                 _id: true,
                                 name: true,
+                                code: true,
                                 abbreviation: true,
                                 updatedAt: true,
                                 createdAt: true
@@ -212,6 +213,7 @@ var AdminVenueController = /** @class */ (function () {
                             options['select'] = {
                                 _id: true,
                                 name: true,
+                                code: true,
                                 abbreviation: true,
                                 lat: true,
                                 lng: true,
@@ -409,7 +411,7 @@ var AdminVenueController = /** @class */ (function () {
     };
     AdminVenueController.prototype.apiUpdateVenue = function (req, res) {
         return __awaiter(this, void 0, void 0, function () {
-            var id, team, _a, name, abbreviation, lat, lng, type, company, sendToDays, receiveFrom, receptionCarriers, shippingCarriers, region, shippingMaxDays, sendTo, venue, response, response, e_3;
+            var id, team, _a, name, code, abbreviation, lat, lng, type, company, sendToDays, receiveFrom, receptionCarriers, shippingCarriers, region, shippingMaxDays, sendTo, venue, response, response, e_3;
             return __generator(this, function (_b) {
                 switch (_b.label) {
                     case 0:
@@ -421,7 +423,7 @@ var AdminVenueController = /** @class */ (function () {
                         }
                         id = req.params.id;
                         team = req.user.team._id;
-                        _a = req.body, name = _a.name, abbreviation = _a.abbreviation, lat = _a.lat, lng = _a.lng, type = _a.type, company = _a.company, sendToDays = _a.sendToDays, receiveFrom = _a.receiveFrom, receptionCarriers = _a.receptionCarriers, shippingCarriers = _a.shippingCarriers, region = _a.region, shippingMaxDays = _a.shippingMaxDays;
+                        _a = req.body, name = _a.name, code = _a.code, abbreviation = _a.abbreviation, lat = _a.lat, lng = _a.lng, type = _a.type, company = _a.company, sendToDays = _a.sendToDays, receiveFrom = _a.receiveFrom, receptionCarriers = _a.receptionCarriers, shippingCarriers = _a.shippingCarriers, region = _a.region, shippingMaxDays = _a.shippingMaxDays;
                         sendTo = sendToDays.map(function (venueDay) { return venueDay.venue._id; });
                         if (!name || !name.length) {
                             res.status(400).json({
@@ -437,6 +439,7 @@ var AdminVenueController = /** @class */ (function () {
                                 team: team
                             }, {
                                 name: name,
+                                code: code,
                                 abbreviation: abbreviation,
                                 lat: lat,
                                 lng: lng,

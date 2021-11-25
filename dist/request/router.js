@@ -18,8 +18,10 @@ requestRouter.get('/requests/settings/status/', middlewares_1["default"].isLogge
 requestRouter.get('/requests/settings/operations-type/', middlewares_1["default"].isLoggedIn, request_controller_1["default"].index);
 requestRouter.get('/requests/export/', middlewares_1["default"].isLoggedIn, request_controller_1["default"].exportExcel);
 requestRouter.get('/requests/import/', middlewares_1["default"].isLoggedIn, request_controller_1["default"].index);
-requestRouter.get('/requests/vehicles/:id/', middlewares_1["default"].isLoggedIn, request_controller_1["default"].index);
+requestRouter.get('/requests/vehicles/external/create/', middlewares_1["default"].isLoggedIn, request_controller_1["default"].integration);
+requestRouter.get('/requests/vehicles/create/', middlewares_1["default"].isLoggedIn, request_controller_1["default"].index);
 requestRouter.get('/requests/vehicles/', middlewares_1["default"].isLoggedIn, request_controller_1["default"].index);
+requestRouter.get('/requests/vehicles/:id/', middlewares_1["default"].isLoggedIn, request_controller_1["default"].index);
 requestRouter.get('/requests/:id/', middlewares_1["default"].isLoggedIn, request_controller_1["default"].index);
 requestRouter.get('/requests/create/', middlewares_1["default"].isLoggedIn, request_controller_1["default"].index);
 // apis

@@ -7,12 +7,10 @@ import { ITransmittalActionTypes, ITransmittalState } from '../../../actions/tra
 import { ITransmittalModel } from '../../../../../../../src/distribution/models/transmittal.model';
 import TransmitalListItem from './TransmittalListItem';
 import ShowIf from '../../Utils/ShowIf';
-import BootstrapSelect from '../../Utils/BootstrapSelect';
 import { loadDataAction, ModalReduxAction } from '../../../actions/modal.actions';
-import SearchCarInRequests from '../TransmittalForms/SearchCarInRequest';
 import { IRequestItem } from '../../../../../../../src/request/interfaces/requestItem.interface';
 import ApiService from '../../../utils/axios';
-import { AxiosError, AxiosResponse } from 'axios';
+import { AxiosError } from 'axios';
 import { hasPermission } from '../../../utils/common';
 import { IWindow } from '../../../interfaces/window';
 import DateRangePicker from '../../Utils/DateRangePicker';
@@ -21,6 +19,7 @@ import { IParticipant } from '../../../../../../../src/form/interfaces/participa
 import UploadTransmittalFile from './UploadTransmittalFile';
 import AddItemsToTransmittal from '../TransmittalForms/AddItemsToTransmittal';
 import { ICar } from '../../../../../../../src/app/interfaces/car.interface';
+import { debounce } from 'throttle-debounce';
 
 interface IPropsType extends RouteComponentProps<{ ticket: string }> {
   dispatch: Dispatch<ITransmittalActionTypes>;
@@ -53,12 +52,17 @@ class TransmitalListDetail extends React.Component<IPropsType, IStateType> {
     this.pushItemCar = this.pushItemCar.bind(this);
     this.statusIcon = this.statusIcon.bind(this);
     this.downloadFiles = this.downloadFiles.bind(this);
+    this.debouncedUpdateTransmittalThunkAction = debounce(2000, this.debouncedUpdateTransmittalThunkAction.bind(this));
     this.api = new ApiService();
+  }
+
+  private debouncedUpdateTransmittalThunkAction(transmittal: any){
+    this.props.transmittalActions.updateTransmittalThunkAction(transmittal)
   }
 
   public render(): React.ReactElement<IPropsType> {
     const { item: transmittal, transmittalActions } = this.props;
-    const { carriers, drivers } = this.props.transmittal;
+    const { carriers, drivers, milestoneTypes } = this.props.transmittal;
     const open = this.props.transmittal.transmittalOpen.includes(transmittal._id);
     return (
       <React.Fragment>
@@ -67,7 +71,24 @@ class TransmitalListDetail extends React.Component<IPropsType, IStateType> {
             <strong className='text-underline'>#{this.padNumber(transmittal.number)}</strong>&nbsp;
           </div>
           <div className='flex-45 col-sm-1 col-xs-1 col-md-1 col-lg-1'>
-            {transmittal.transporter?.patent}
+            {
+              hasPermission(window.user, 'changeTransmittal') ?
+                (
+                  <input
+                    className='form-control input-sm'
+                    defaultValue={transmittal.transporter?.patent}
+                    onChange={(e) => {
+                      this.debouncedUpdateTransmittalThunkAction({
+                        _id: transmittal._id,
+                        'transporter.patent': e.target.value
+                      });
+                    }}
+                  />
+                ) :
+                (
+                  `${transmittal.transporter?.patent}`
+                )
+            }
           </div>
           <div className='flex-45 col-sm-2 col-xs-2 col-md-2 col-lg-2' style={{ position: 'static' }}>
             {
@@ -161,12 +182,58 @@ class TransmitalListDetail extends React.Component<IPropsType, IStateType> {
                   `${transmittal.transporter.carrier.name}`
                 )
             }
-
           </div>
           <div className='flex-45 col-sm-1 col-xs-1 col-md-1 col-lg-1'>
             {transmittal.items.length} vehículos.
           </div>
-          <div className='flex-45 col-sm-2 col-xs-2 col-md-2 col-lg-2'>
+          <div className='flex-45 col-sm-1 col-xs-1 col-md-1 col-lg-1' style={{ position: 'static' }}>
+            {
+              hasPermission(window.user, 'changeTransmittal') ?
+                (
+                  <select
+                    className='form-control select-sm font-12' value={transmittal.type?._id ?? ''}
+                    onChange={(e: React.ChangeEvent<HTMLSelectElement>) => {
+                      this.props.transmittalActions.updateTransmittalThunkAction({
+                        _id: transmittal._id,
+                        'type': e.target.value
+                      });
+                    }}
+                  >
+                    <option value='' disabled={true}>-</option>
+                    {
+                      milestoneTypes.map((milestoneType) => (
+                        <option key={milestoneType._id} value={milestoneType._id}>{`${milestoneType.name}`}</option>
+                      ))
+                    }
+                  </select>
+                  /*<BootstrapSelect
+                    noneSelectedText='Selecciona un transportista'
+                    displayItems={2}
+                    sm={true}
+                    selectedText='transportistas seleccionadas.'
+                    selected={transmittal.transporter.carrier ? [transmittal.transporter.carrier._id] : []}
+                    autoClouse={true}
+                    allOption={false}
+                    search={true}
+                    options={carriers.map((carrier: any) => ({
+                      value: carrier._id,
+                      text: carrier.name
+                    }))}
+                    onClick={(e: string) => {
+                      this.props.transmittalActions.updateTransmittalThunkAction({
+                        _id: transmittal._id,
+                        'transporter.carrier': e
+                      });
+                    }}
+                  />*/
+                ) :
+                (
+                  `${transmittal.type?.name}`
+                )
+            }
+
+          </div>
+          <div className='flex-45 col-sm-1 col-xs-1 col-md-1 col-lg-1'>
            <UploadTransmittalFile transmittal={transmittal} />
             <ShowIf condition={transmittal.files.length >= 1}>
               <button

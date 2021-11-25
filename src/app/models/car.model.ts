@@ -1,7 +1,7 @@
 import * as mongoose from 'mongoose';
 import { PaginateModel } from 'mongoose';
 import * as mongoosePaginate from 'mongoose-paginate';
-import { ICar } from '../interfaces/car.interface';
+import { ICar } from '../interfaces';
 
 export enum ChoicesStatusCar {
   active = 'active',

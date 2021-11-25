@@ -132,6 +132,11 @@ class RequestChannelListView extends TrackingBasePage<IPropsType, IStateType> {
                   Tipos de operación
                 </Link>
                 <ShowIf condition={window.user.isAdmin}>
+                  <Link to='/transmittals/settings/milestone-type/' className='list-group-item'>
+                    Tipos de hitos
+                  </Link>
+                </ShowIf>
+                <ShowIf condition={window.user.isAdmin}>
                   <Link to='/transmittals/settings/milestone/' className='list-group-item'>
                     Hitos
                   </Link>
@@ -141,7 +146,7 @@ class RequestChannelListView extends TrackingBasePage<IPropsType, IStateType> {
             <div className="col-md-9">
               <div className="box">
                 <div className="box-header with-border">
-                  <h3 className="box-title">Estados <small>{pagination.count}</small></h3>
+                  <h3 className="box-title">Canales <small>{pagination.count}</small></h3>
                   <div className="box-tools pull-right">
                     {
                       hasPermission(window.user, 'addVenue') ?
@@ -266,7 +271,7 @@ class RequestChannelListView extends TrackingBasePage<IPropsType, IStateType> {
     // ask if you are sure that you are going to delete the user?
     swal({
       title: '¿Estás seguro?',
-      text: `Vas a eliminar el canal ${requestChannel.name} `,
+      text: `Vas a eliminar el canal: ${requestChannel.name} `,
       icon: 'warning',
       dangerMode: true,
       buttons: {

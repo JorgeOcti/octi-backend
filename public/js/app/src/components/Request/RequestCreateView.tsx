@@ -313,8 +313,12 @@ class RequestCreateView extends TrackingBasePage<IPropsType, IStateType> {
                           const currentAnswer: any = newCar.answers.find((answer: any) => (answer.questionId === question._id));
                           return (
                             <div className='form-group' key={(question)._id}>
-                              <label htmlFor='color'
-                                     className='col-sm-3 control-label label-left'>{question.name} {question.required ? '*' : ''}</label>
+                              <label
+                                htmlFor='color'
+                                className='col-sm-3 control-label label-left'
+                              >
+                                {question.name} {question.required ? '*' : ''}
+                              </label>
                               <div className='col-sm-9'>
                                 <input
                                   type='text'

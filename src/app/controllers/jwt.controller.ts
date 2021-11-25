@@ -147,13 +147,13 @@ class JWTController {
                   };
                   res.json({
                     data: {
-                      token: jwt.sign(userInfo, req.app.locals.secretKey, {
+                      token: jwt.sign({ _id: userInfo._id }, req.app.locals.secretKey, {
                         expiresIn: '7 days',
                       }),
                       // token: jwt.sign(userInfo, req.app.locals.secretKey, {
                       //   expiresIn: '60 seconds'
                       // }),
-                      refreshToken: jwt.sign(userInfo, req.app.locals.secretKey, {
+                      refreshToken: jwt.sign({ _id: userInfo._id }, req.app.locals.secretKey, {
                         expiresIn: '30 days',
                       }),
                       iosVersion: version!.ios,
@@ -256,7 +256,7 @@ class JWTController {
                     }, async (err, count) => {
                       user = user.toObject();
                       const teamSettings = await TeamSetting.findOne({ team: user.team });
-                      logger.debug(JSON.stringify(teamSettings))
+                      logger.debug(JSON.stringify(teamSettings));
                       const userInfo = {
                         _id: user._id,
                         firstName: user.firstName,
@@ -292,10 +292,10 @@ class JWTController {
                       };
                       res.json({
                         data: {
-                          token: jwt.sign(userInfo, req.app.locals.secretKey, {
+                          token: jwt.sign({ _id: userInfo._id }, req.app.locals.secretKey, {
                             expiresIn: '7 days',
                           }),
-                          refreshToken: jwt.sign(userInfo, req.app.locals.secretKey, {
+                          refreshToken: jwt.sign({ _id: userInfo._id }, req.app.locals.secretKey, {
                             expiresIn: '30 days',
                           }),
                           iosVersion: this.iosVersion,

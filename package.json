@@ -4,7 +4,8 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "dev": "nodemon --inspect=0.0.0.0:9229 dist/server.js --max-old-space-size=4096",
+    "dev": "nodemon dist/server.js --max-old-space-size=4096",
+    "dev:inspect": "nodemon --inspect=0.0.0.0:9229 dist/server.js --max-old-space-size=4096",
     "dev:debug": "nodemon --config nodemon-ts-node.json src/server.ts",
     "dev:build": "nodemon --config nodemon-ts-node.json --inspect src/server.ts",
     "build": "tsc",
@@ -18,6 +19,7 @@
     "@pusher/push-notifications-server": "~1.2.0",
     "archiver": "~3.0.0",
     "aws-sdk": "~2.980.0",
+    "axios": "^0.24.0",
     "bcrypt": "~3.0.6",
     "bluebird": "~3.7.2",
     "body-parser": "~1.19.0",

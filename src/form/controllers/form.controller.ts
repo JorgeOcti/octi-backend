@@ -31,7 +31,7 @@ import * as bluebird from 'bluebird';
 import { IParticipant } from '../interfaces/participant.interface';
 import { IVenueDay } from '../../app/interfaces/venueDay.interface';
 import ActivityHistory, { ChoicesTypeActivity } from '../../billing/models/activityHistory.model';
-import TriggerHandler from '../commands/triggerHandler';
+import TriggerHandler from './triggers/triggerHandler';
 import TransmittalItem from '../../distribution/models/transmittalItem.model';
 import TransmittalController from '../../distribution/controllers/transmittal.controller';
 import RequestController from '../../request/controllers/request.controller';
@@ -936,7 +936,7 @@ class FormController {
               });
 
               // send refresh with websocket to dashboard detail
-              io.to(`dashboard-vin-detail-${car._id}`).emit(`ADD_PARTICIPANT`, await ParticipantModel
+              io.to(`dashboard-vin-detail-${team._id}-${car._id}`).emit(`ADD_PARTICIPANT`, await ParticipantModel
                 .findById(newParticipant._id, { number: 1, name: 1, user: 1, venue: 1, createdAt: 1, qualification: 1 })
                 .populate([{
                   path: 'user',

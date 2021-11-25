@@ -310,7 +310,8 @@ class VenuesListView extends TrackingBasePage<IPropsType, IStateType> {
                       <table className='table table-andes table-striped'>
                         <thead>
                         <tr>
-                          <th style={{width: '50%'}} className="middle">Nombre</th>
+                          <th style={{width: '40%'}} className="middle">Nombre</th>
+                          <th style={{width: '10%'}} className="middle">Código</th>
                           <th style={{width: '10%'}} className="middle-center hidden-xs">Ubicación</th>
                           <th style={{width: '10%'}} className="middle-center hidden-xs">Distribuidor</th>
                           <th style={{width: '10%'}} className="middle">Asignaciones</th>
@@ -340,6 +341,7 @@ class VenuesListView extends TrackingBasePage<IPropsType, IStateType> {
                                     venue.company ? <span className={'text-sm text-muted'}>{venue.company.name}</span> : null
                                   }
                                 </td>
+                                <td className="middle-center">{venue.code}</td>
                                 <td className="middle-center">{venue.lat}, {venue.lng}</td>
                                 <td className="middle-center  hidden-xs">
                                   {
@@ -432,6 +434,7 @@ class VenuesListView extends TrackingBasePage<IPropsType, IStateType> {
       lat: 0,
       lng: 0,
       name: '',
+      code: '',
       abbreviation: '',
       type: 'receiver',
       sendTo: [],
@@ -466,7 +469,8 @@ class VenuesListView extends TrackingBasePage<IPropsType, IStateType> {
     this.props.changeTempVenueAction({
       _id: venue._id,
       name: venue.name,
-      abbreviation: venue.abbreviation,
+      code: venue.code ?? '',
+      abbreviation: venue.abbreviation ?? '',
       lat: venue.lat,
       lng: venue.lng,
       company: venue.company,
@@ -493,8 +497,6 @@ class VenuesListView extends TrackingBasePage<IPropsType, IStateType> {
     const {tempVenue} = this.props.venues;
     if (!tempVenue.name || !tempVenue.name.trim()) {
       swal!('Editar sucursal', 'El nombres es requerido', 'error');
-    } else if (!tempVenue.abbreviation || !tempVenue.abbreviation.trim()) {
-      swal!('Editar sucursal', 'Una abreviación/sigla del nombre es requerida', 'error');
     } else if (!tempVenue.company || !tempVenue.company._id) {
       swal!('Editar sucursal', 'La empresa es requerida', 'error');
     } else {

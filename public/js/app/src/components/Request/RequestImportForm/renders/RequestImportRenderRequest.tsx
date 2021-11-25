@@ -52,6 +52,7 @@ class RequestImportRenderRequest extends React.Component<IPropsType, IStateType>
                     label='Número de Solicitud'
                     type='text'
                     component={InputField}
+                    validate={[inputStringRequired]}
                   />
                 </div>
                 <div className='col-md-3'>

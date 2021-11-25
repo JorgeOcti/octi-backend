@@ -86,7 +86,6 @@ class RequestReasonListView extends TrackingBasePage<IPropsType, IStateType> {
     });
   }
 
-
   public componentDidUpdate(prevProps: Readonly<IPropsType>, prevState: Readonly<IStateType>, snapshot?: any): void {
     if (this.props.reasons.pagination !== prevProps.reasons.pagination) {
       window.scrollTo(0, 0);
@@ -132,6 +131,11 @@ class RequestReasonListView extends TrackingBasePage<IPropsType, IStateType> {
                   Tipos de operación
                 </Link>
                 <ShowIf condition={window.user.isAdmin}>
+                  <Link to='/transmittals/settings/milestone-type/' className='list-group-item'>
+                    Tipos de hitos
+                  </Link>
+                </ShowIf>
+                <ShowIf condition={window.user.isAdmin}>
                   <Link to='/transmittals/settings/milestone/' className='list-group-item'>
                     Hitos
                   </Link>
@@ -147,7 +151,7 @@ class RequestReasonListView extends TrackingBasePage<IPropsType, IStateType> {
                       hasPermission(window.user, 'addVenue') ?
                         <button className="btn btn-sm btn-success"
                         onClick={this.createReason}
-                        ><i className="fa fa-plus" />  Agregar</button>
+                        ><i className="fa fa-plus" /> Agregar</button>
                         : null
                     }
                   </div>
@@ -279,7 +283,7 @@ class RequestReasonListView extends TrackingBasePage<IPropsType, IStateType> {
     // ask if you are sure that you are going to delete the user?
     swal({
       title: '¿Estás seguro?',
-      text: `Vas a eliminar el motivo ${reason.name} `,
+      text: `Vas a eliminar el motivo: ${reason.name} `,
       icon: 'warning',
       dangerMode: true,
       buttons: {

@@ -25,6 +25,7 @@ import TrackingBasePage from '../Utils/TrackingBasePage';
 import DateRangeInput from '../Utils/DateRangeInput';
 import BootstrapSelect from "../Utils/BootstrapSelect";
 import {IForm} from "../../../../../../src/form/interfaces/form.interface";
+import ShowIf from '../Utils/ShowIf';
 
 declare let window: IWindow;
 
@@ -291,47 +292,52 @@ class DashboardVinView extends TrackingBasePage<IPropsType, IStateType> {
                     endDate={to} />
                 </div>
                 <div className="col-md-3">
-                  <div className="input-group input-group-sm"
-                       style={{padding: '10px'}}
+                  <div
+                    className='input-group input-group-sm'
+                    style={{ padding: '10px' }}
                   >
                     <input
                       type="text"
                       className="form-control pull-right"
                       onChange={this.onChangeSearch}
                       value={searchText}
-                      placeholder="Buscar"/>
+                      placeholder="Buscar VIN, marca, supervisor o sucursal"/>
                     <div className="input-group-btn">
                       <button className="btn btn-default"><i className="fa fa-search"/></button>
                     </div>
                   </div>
                 </div>
-                <div className="col-md-3" style={{marginTop: "6px", paddingRight: "28px"}}>
-                  <BootstrapSelect
-                    noneSelectedText="Filtrar por checklist"
-                    displayItems={2}
-                    selectedText="Formularios seleccionadas."
-                    selected={selectedForms}
-                    allOption={true}
-                    selectAll={this.filterAllForms}
-                    options={forms.map((form: IForm) => ({
-                      value: form._id,
-                      text: form.name,
-                      className: "label label-aqua"
-                    }))}
-                    onClick={this.filterForms}
-                    displayHandler={this.showSelect}
-                    notHideOnClickOutside={true}
-                  />
+                {/*<div className='col-md-3' style={{ paddingTop: '10px', paddingRight: '28px' }}>*/}
+                <div className='col-md-3'>
+                  <div style={{padding: "10px"}}>
+                    <BootstrapSelect
+                      noneSelectedText="Filtrar por checklist"
+                      displayItems={2}
+                      sm={true}
+                      selectedText="Formularios seleccionadas."
+                      selected={selectedForms}
+                      allOption={true}
+                      selectAll={this.filterAllForms}
+                      options={forms.map((form: IForm) => ({
+                        value: form._id,
+                        text: form.name
+                      }))}
+                      onClick={this.filterForms}
+                      displayHandler={this.showSelect}
+                      notHideOnClickOutside={true}
+                    />
+                  </div>
                 </div>
               </div>
               {
                 participants.length ?
-                  <table className="table table-andes table-striped">
+                  <div className='table-responsive'>
+                    <table className="table table-andes table-striped">
                     <thead>
                       <tr>
                         <th style={{width: '5%'}} className="middle hidden-xs">Nº</th>
                         <th style={{width: '12%'}} className="middle">VIN</th>
-                        <th style={{width: '8%'}} className="middle">Patente</th>
+                        <th style={{width: '8%'}} className="middle hidden-xs">Patente</th>
                         <th style={{width: '9%'}} className="middle hidden-xs">Marca</th>
                         <th style={{width: '13%'}} className="middle hidden-xs">Supervisor</th>
                         <th style={{width: '13%'}} className="middle">Sucursal</th>
@@ -351,8 +357,15 @@ class DashboardVinView extends TrackingBasePage<IPropsType, IStateType> {
                               className={highlight.length && highlight.includes(participant._id as never) ? 'highlight-info' : ''}
                             >
                               <td className="middle hidden-xs">{participant.number}</td>
-                              <td className="middle">{participant.car.vin}</td>
-                              <td className="middle">{participant.car.patent && participant.car.patent.length ? participant.car.patent : '-'}</td>
+                              <td className="middle">
+                                {participant.car.vin}
+                                <div className='visible-xs-*'>
+                                  <ShowIf condition={!!participant.car.patent?.length}>
+                                    <br />{participant.car.patent}
+                                  </ShowIf>
+                                </div>
+                              </td>
+                              <td className="middle hidden-xs">{participant.car.patent && participant.car.patent.length ? participant.car.patent : '-'}</td>
                               <td className="middle hidden-xs">{participant.car.brand}</td>
                               <td className="middle hidden-xs">
                                 {`${participant.user ? `${participant.user.firstName} ${participant.user.lastName}` : ''}`}
@@ -408,6 +421,7 @@ class DashboardVinView extends TrackingBasePage<IPropsType, IStateType> {
                       }
                     </tbody>
                   </table>
+                  </div>
                   : !loading ? <p style={{padding: '10px'}}><strong>No se han encontrado revisiones.</strong></p> : null
               }
             </div>

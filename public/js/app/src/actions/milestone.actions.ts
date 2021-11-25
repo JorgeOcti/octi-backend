@@ -22,10 +22,11 @@ import {
   MILESTONE_LOAD_FORMS,
   MILESTONE_LOAD_REQUEST_STATUS,
   ILoadRequestStatusMilestone,
-  ILoadFormsMilestone
+  ILoadFormsMilestone, ILoadTypesMilestone, MILESTONE_LOAD_TYPES
 } from './milestone.types';
 import { IForm } from '../../../../../src/form/interfaces/form.interface';
 import { IRequestStatus } from '../../../../../src/request/interfaces/requestStatus.interface';
+import { IMilestoneType } from '../../../../../src/distribution/interfaces/milestoneType.interface';
 
 export function cancelMilestoneAction(source: CancelTokenSource): ICancelMilestone {
   return {
@@ -63,6 +64,15 @@ export function loadFormsMilestoneAction(forms: IForm[]): ILoadFormsMilestone {
     type: MILESTONE_LOAD_FORMS,
     payload: {
       forms
+    }
+  };
+}
+
+export function loadTypesMilestoneAction(milestoneTypes: IMilestoneType[]): ILoadTypesMilestone {
+  return {
+    type: MILESTONE_LOAD_TYPES,
+    payload: {
+      milestoneTypes
     }
   };
 }
@@ -115,7 +125,7 @@ export function changeOrderMilestoneAction(orderBy: string, orderType: string): 
   };
 }
 
-export function getMilestonesThunkAction(nextPage: number, orderBy: string, orderType: string, hideLoading?: boolean) {
+export function getMilestonesThunkAction(milestoneType: string, nextPage: number, orderBy: string, orderType: string, hideLoading?: boolean) {
   return (dispatch: Dispatch<MilestoneReduxActions>, getState: () => { milestone: IMilestoneState }) => {
     const api: ApiService = new ApiService();
     const state = getState();
@@ -125,13 +135,15 @@ export function getMilestonesThunkAction(nextPage: number, orderBy: string, orde
     dispatch(cancelMilestoneAction(api.getSource()));
     Axios
       .all([
-        api.getMilestones({ page, orderBy, orderType }),
+        api.getMilestones({ milestoneType, page, orderBy, orderType }),
+        api.getMilestoneTypes({ page: 1, pageSize: 200 }),
         api.getForms(1, 200),
-        api.getRequestItemsStatus({ page:1,pageSize: 200 })
+        api.getRequestItemsStatus({ page:1, pageSize: 200 })
       ])
-      .then(Axios.spread((milestones, forms, requestStatus) => {
+      .then(Axios.spread((milestones, types, forms, requestStatus) => {
         const { data } = milestones;
         dispatch(loadMilestoneAction(data.results, data.count, data.pages, page));
+        dispatch(loadTypesMilestoneAction(types.data.results));
         dispatch(loadFormsMilestoneAction(forms.data.results));
         dispatch(loadRequestStatusMilestoneAction(requestStatus.data.results));
         dispatch(isLoadingMilestoneAction(false));

@@ -3,6 +3,7 @@ import * as yup from 'yup';
 const createTransmittalSchema = yup.object().shape({
   name: yup.string(),
   files: yup.array().of(yup.string()),
+  type: yup.string().required(),
   transporter: yup.object({
     carrier: yup.string().required(),
     driver: yup.string().required(),

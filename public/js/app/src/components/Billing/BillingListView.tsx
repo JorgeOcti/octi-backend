@@ -123,7 +123,7 @@ class BillingListView extends TrackingBasePage<IPropsType, IStateType> {
                             <td>
                               <button
                                 className="btn btn-xs btn-primary hidden-xs"
-                                onClick={()=> window.open(`/settings/billing/pdf/${invoice._id}`,'_blank')}
+                                onClick={()=>window.open(`/settings/billing/pdf/${invoice._id}`,'_blank')}
                               >
                                 <i className="fa fa-fw fa-download" /> Billing
                               </button>

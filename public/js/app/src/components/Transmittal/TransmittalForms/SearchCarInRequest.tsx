@@ -190,6 +190,8 @@ class SearchCarInRequests extends React.Component<IPropsType, IStateType> {
                         </React.Fragment>
                         : <React.Fragment>
                           <th className='middle' style={{ width: '150px' }}>Solicitante</th>
+                          <th className='middle' style={{ width: '150px' }}>Origen</th>
+                          <th className='middle' style={{ width: '150px' }}>Destino</th>
                           <th className='middle' style={{ width: '100px' }}>Fecha</th>
                         </React.Fragment>
                     }
@@ -247,6 +249,12 @@ class SearchCarInRequests extends React.Component<IPropsType, IStateType> {
                                 <React.Fragment>
                                   <td className={`middle`}>
                                     {this.createdBy(item.request?.createdBy) ?? '-'}
+                                  </td>
+                                  <td className={`middle`}>
+                                    {item.origin?.name ?? '-'}
+                                  </td>
+                                  <td className={`middle`}>
+                                    {item.destination?.name ?? '-'}
                                   </td>
                                   <td className={`middle`}>
                                     {moment(item.request?.createdAt).format('DD/MM/YY') ?? '-'}

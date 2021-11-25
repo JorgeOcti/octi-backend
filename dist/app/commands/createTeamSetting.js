@@ -56,7 +56,7 @@ function createTeamSettings() {
                     * - Assing participant to team
                     * - Assing scalas to team
                     * - Assign users to team
-                    * - Assign venes to team
+                    * - Assign venes to team+
                     * - Assing company to team
                     *
                     * fixed does not change field updatedAt in collections
@@ -85,7 +85,7 @@ function createTeamSettings() {
                     team = teams_1[_i];
                     if (!(team.settings === null)) return [3 /*break*/, 6];
                     console.log(team.name);
-                    return [4 /*yield*/, teamSetting_model_1["default"].create({
+                    return [4 /*yield*/, new teamSetting_model_1["default"]({
                             team: team,
                             inventory: {
                                 pending: "Pendientes",
@@ -105,7 +105,7 @@ function createTeamSettings() {
                                 reportedClass: "gray-dark",
                                 reportedColor: "#96a4b3"
                             }
-                        })];
+                        }).save()];
                 case 5:
                     _a.sent();
                     _a.label = 6;

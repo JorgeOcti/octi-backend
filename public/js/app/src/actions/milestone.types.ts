@@ -2,11 +2,13 @@ import { CancelTokenSource } from 'axios';
 import { IMilestone } from '../../../../../src/distribution/interfaces/milestone.interface';
 import { IRequestStatus } from '../../../../../src/request/interfaces/requestStatus.interface';
 import { IForm } from '../../../../../src/form/interfaces/form.interface';
+import { IMilestoneType } from '../../../../../src/distribution/interfaces/milestoneType.interface';
 
 export const MILESTONE_CANCEL_STATUS = '/MILESTONE/CANCEL_STATUS';
 export const MILESTONE_IS_LOADING = '/MILESTONE/IS_LOADING';
 export const MILESTONE_LOAD_STATUS = '/MILESTONE/LOAD_STATUS';
 export const MILESTONE_LOAD_FORMS = '/MILESTONE/LOAD_FORMS';
+export const MILESTONE_LOAD_TYPES = '/MILESTONE/LOAD_TYPES';
 export const MILESTONE_LOAD_REQUEST_STATUS = '/MILESTONE/LOAD_REQUEST_STATUS';
 export const MILESTONE_CREATE_STATUS = '/MILESTONE/CREATE_STATUS';
 export const MILESTONE_UDPATE_STATUS = '/MILESTONE/UDPATE_STATUS';
@@ -15,6 +17,7 @@ export const MILESTONE_CHANGE_ORDER = '/MILESTONE/CHANGE_ORDER';
 
 export interface IMilestoneState {
   milestones: IMilestone[];
+  milestoneTypes: IMilestoneType[];
   requestStatus: IRequestStatus[];
   forms: IForm[];
   loading: boolean;
@@ -48,6 +51,13 @@ export interface ILoadFormsMilestone {
   type: typeof MILESTONE_LOAD_FORMS;
   payload: {
     forms: IForm[];
+  };
+}
+
+export interface ILoadTypesMilestone {
+  type: typeof MILESTONE_LOAD_TYPES;
+  payload: {
+    milestoneTypes: IMilestoneType[];
   };
 }
 
@@ -101,6 +111,7 @@ export type MilestoneReduxActions =
   ICancelMilestone |
   IIsLoadingMilestone |
   ILoadFormsMilestone |
+  ILoadTypesMilestone |
   ILoadRequestStatusMilestone |
   ICreateMilestone |
   IUpdateMilestone |

@@ -1,10 +1,9 @@
 import Axios, { AxiosError, AxiosResponse, CancelTokenSource } from 'axios';
 import { Dispatch } from 'redux';
 import * as Rx from 'rxjs';
-import { debounce } from 'throttle-debounce'
-import { ajax } from 'rxjs/ajax';
 import { of } from 'rxjs';
-import { switchMap, debounceTime } from 'rxjs/operators';
+import { ajax } from 'rxjs/ajax';
+import { debounceTime, switchMap } from 'rxjs/operators';
 import { ICarrier } from '../../../../../src/app/interfaces/carrier.interface';
 import { IReason } from '../../../../../src/request/interfaces/reason.interface';
 import { IRequestItem } from '../../../../../src/request/interfaces/requestItem.interface';
@@ -23,11 +22,11 @@ import {
   ILoadReasonsRequestItems,
   ILoadRequestItems,
   ILoadRequestItemStatus,
+  ILoadSettingsRequestItems,
   ILoadVenuesRequestItems,
   IRequestItemsFilters,
   IRequestItemsState,
   IUpdateRequestItems,
-  RequestItemsReduxActions,
   REQUEST_ITEMS_CANCEL_REQUEST,
   REQUEST_ITEMS_CHANGE_FILTER,
   REQUEST_ITEMS_CHANGE_ORDER,
@@ -39,8 +38,10 @@ import {
   REQUEST_ITEMS_LOAD_PROPERTIES,
   REQUEST_ITEMS_LOAD_REASONS,
   REQUEST_ITEMS_LOAD_REQUESTS_ITEMS,
+  REQUEST_ITEMS_LOAD_SETTINGS,
   REQUEST_ITEMS_LOAD_VENUES,
-  REQUEST_ITEMS_UPDATE_ITEM, REQUEST_ITEMS_LOAD_SETTINGS, ILoadSettingsRequestItems
+  REQUEST_ITEMS_UPDATE_ITEM,
+  RequestItemsReduxActions
 } from './requestItems.types';
 import { IRequestSettting } from '../../../../../src/app/interfaces/teamSetting.interface';
 
