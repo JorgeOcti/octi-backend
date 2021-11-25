@@ -7,6 +7,7 @@ export interface IFormSettting {
 }
 
 export interface IInventorySettting {
+  report: IReportSetting;
   pending: string;
   pendingClass: string;
   pendingColor: string;
@@ -38,7 +39,28 @@ export interface IRequestSettting {
 }
 
 export interface IHelpPhonesSettingSchema {
-  transmittal: string
+  transmittal: string;
+}
+
+export interface IChecklistSetting {
+  report: IReportSetting;
+}
+
+export interface IUnitVocabReference {
+  singular: string;
+  plurals: string;
+}
+
+export interface IVocabularySettings {
+  primary: string;
+  secondary: string;
+  unitReference: IUnitVocabReference
+}
+
+export interface IReportSetting {
+  atLeastOne: boolean;
+  vinRequired: boolean;
+  plateRequired: boolean;
 }
 
 export interface ITeamSetting {

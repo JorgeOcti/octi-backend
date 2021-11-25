@@ -109,6 +109,7 @@ class JWTController {
                 }, async (err, count) => {
                   user = user.toObject();
                   const teamSettings = await TeamSetting.findOne({ team: user.team });
+                  logger.debug(JSON.stringify(teamSettings))
                   const userInfo = {
                     _id: user._id,
                     firstName: user.firstName,
