@@ -18,7 +18,8 @@ import {
   LOADING_TRANSMITTAL,
   TOOGLE_TAB_TRANSMITTAL,
   UPDATE_TRANSMITTAL_ITEM_TRANSMITTAL,
-  UPDATE_TRANSMITTAL_TRANSMITTAL
+  UPDATE_TRANSMITTAL_TRANSMITTAL,
+  TRANSPORT_MILESTONE_LOAD_STATUS,
 } from './transmittal.types';
 import ApiService from "../utils/axios";
 import Axios, {AxiosError, AxiosResponse, CancelTokenSource} from "axios";
@@ -30,6 +31,7 @@ import {IUserModel} from '../../../../../src/app/models/user.model';
 import {IRequestItem} from '../../../../../src/request/interfaces/requestItem.interface';
 import {ITransmittalItemModel} from '../../../../../src/distribution/models/transmittalItem.model';
 import { IMilestoneType } from '../../../../../src/distribution/interfaces/milestoneType.interface';
+import {IMilestone} from "../../../../../src/distribution/interfaces";
 
 export default class TransmittalActions {
   private api: ApiService;
@@ -201,6 +203,15 @@ export default class TransmittalActions {
     })
   }
 
+  public loadMilestoneAction(milestones: IMilestone[]): void {
+    this.dispatch( {
+      type: TRANSPORT_MILESTONE_LOAD_STATUS,
+      payload: {
+        milestones
+      }
+    });
+  }
+
   public updateTransmittalItemThunkAction(transmitallItem: any) {
     this.dispatch((dispatch) => {
       const transmittalActions = new TransmittalActions(dispatch);
@@ -253,16 +264,18 @@ export default class TransmittalActions {
           this.api.getVenues({ page: 1, pageSize: 200, noPopulate: true }),
           this.api.getCarriers(1, 200),
           this.api.getDrivers(1, 200),
-          this.api.getMilestoneTypes({ page: 1, pageSize: 200 })
+          this.api.getMilestoneTypes({ page: 1, pageSize: 200 }),
+          this.api.getMilestones({ page: 1, pageSize: 200 })
         ])
-        .then(Axios.spread((transmittals,venues, carriers, drivers, milestones) => {
+        .then(Axios.spread((transmittals,venues, carriers, drivers, milestoneTypes, milestones) => {
           const {data} = transmittals;
           transmittalActions.loadAction(data.results, data.count, data.pages, page);
           transmittalActions.loadVenues(venues.data.results);
           transmittalActions.loadCarriers(carriers.data.results);
           transmittalActions.loadDrivers(drivers.data.results);
           transmittalActions.loadDrivers(drivers.data.results);
-          transmittalActions.loadMilestoneTypes(milestones.data.results);
+          transmittalActions.loadMilestoneTypes(milestoneTypes.data.results);
+          transmittalActions.loadMilestoneAction(milestones.data.results)
           transmittalActions.loadingAction(false);
         }))
         .catch((err: AxiosError) => {
