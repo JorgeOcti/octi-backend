@@ -346,6 +346,9 @@ class TransmittalController {
         path: 'transporter.carrier',
         select: ['name']
       }, {
+        path: 'evidenceFullLoad',
+        select: ['_id', 'milestone']
+      }, {
         path: 'transporter.driver',
         select: ['firstName', 'lastName']
       }, {
@@ -412,6 +415,8 @@ class TransmittalController {
           hasNext: options.page && transmittals.pages && transmittals.pages > options.page,
           data: transmittals.docs.map((transmittal)=>({
             ...transmittal.toObject(),
+            detailedEvidence: transmittal.evidenceFullLoad,
+            evidenceFullLoad: transmittal.evidenceFullLoad.map(e => e._id),
             milestones: milestones.filter((milestone) => milestone.type.toString() === transmittal.type.toString())
           })),
           status: 200
@@ -938,12 +943,16 @@ private getForm(filter: any): Promise<IFormModel> {
 
   public async uploadFile(req: IRequest, res: Response) {
     const { user } = req;
-    const { transmittal } = req.body;
+    let { transmittal, milestone } = req.body;
     logger.info(`TransmittalController.uploadFile`);
     logger.info(`{user: {_id: ${req.user._id}, email: ${req.user.email}}}`);
     const file: any = GeneralUtils.getFileFromRequest(req.files, 'file');
     if (file) {
       try {
+
+        transmittal = transmittal.replace(/["']/g, "")
+        milestone = milestone.replace(/["']/g, "")
+
         const transmittaltFile = new TransmittalFile();
         /*
           {
@@ -963,6 +972,9 @@ private getForm(filter: any): Promise<IFormModel> {
         file.team = user.team._id;
         transmittaltFile.user = user._id;
         transmittaltFile.team = user.team._id;
+        transmittaltFile.milestone = milestone;
+        transmittaltFile.transmittal = transmittal;
+
         // fix exif
         if (new RegExp('\\bimage\\b').test(file.mimetype)) {
           try {

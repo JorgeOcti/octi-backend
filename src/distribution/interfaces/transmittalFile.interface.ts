@@ -5,6 +5,8 @@ import {IUser} from "../../app/interfaces/user.interface";
 import {IUserModel} from "../../app/models/user.model";
 import {ITeam} from "../../app/interfaces/team.interface";
 import {ITeamModel} from "../../app/models/team.model";
+import {IMilestoneModel} from "../models/milestone.model";
+import {IMilestone} from "./milestone.interface";
 
 export interface ITransmittalFile {
   _id: any;
@@ -13,4 +15,5 @@ export interface ITransmittalFile {
   team: ITeam | ITeamModel;
   file: IIFile;
   thumbnail: IIFile;
+  milestone?: IMilestone | IMilestoneModel
 }
