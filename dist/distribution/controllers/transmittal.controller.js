@@ -46,14 +46,10 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
         if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
     }
 };
-var __spreadArray = (this && this.__spreadArray) || function (to, from, pack) {
-    if (pack || arguments.length === 2) for (var i = 0, l = from.length, ar; i < l; i++) {
-        if (ar || !(i in from)) {
-            if (!ar) ar = Array.prototype.slice.call(from, 0, i);
-            ar[i] = from[i];
-        }
-    }
-    return to.concat(ar || Array.prototype.slice.call(from));
+var __spreadArray = (this && this.__spreadArray) || function (to, from) {
+    for (var i = 0, il = from.length, j = to.length; i < il; i++, j++)
+        to[j] = from[i];
+    return to;
 };
 exports.__esModule = true;
 var transmittal_model_1 = require("../models/transmittal.model");
@@ -482,6 +478,9 @@ var TransmittalController = /** @class */ (function () {
                                     path: 'transporter.carrier',
                                     select: ['name']
                                 }, {
+                                    path: 'evidenceFullLoad',
+                                    select: ['_id', 'milestone']
+                                }, {
                                     path: 'transporter.driver',
                                     select: ['firstName', 'lastName']
                                 }, {
@@ -558,7 +557,7 @@ var TransmittalController = /** @class */ (function () {
                             pages: transmittals.pages,
                             hasPrevious: options.page && options.page > 1 && transmittals.pages && transmittals.pages >= options.page,
                             hasNext: options.page && transmittals.pages && transmittals.pages > options.page,
-                            data: transmittals.docs.map(function (transmittal) { return (__assign(__assign({}, transmittal.toObject()), { milestones: milestones_1.filter(function (milestone) { return milestone.type.toString() === transmittal.type.toString(); }) })); }),
+                            data: transmittals.docs.map(function (transmittal) { return (__assign(__assign({}, transmittal.toObject()), { detailedEvidence: transmittal.evidenceFullLoad, evidenceFullLoad: transmittal.evidenceFullLoad.map(function (e) { return e._id; }), milestones: milestones_1.filter(function (milestone) { return milestone.type.toString() === transmittal.type.toString(); }) })); }),
                             status: 200
                         });
                         _c.label = 9;
@@ -844,9 +843,9 @@ var TransmittalController = /** @class */ (function () {
                             })];
                     case 2:
                         scales = _a.sent();
-                        scales = __spreadArray(__spreadArray([], scales, true), extraScales, true);
+                        scales = __spreadArray(__spreadArray([], scales), extraScales);
                         if (extraSection.questions.length) {
-                            form.sections = __spreadArray(__spreadArray([], form.sections, true), [extraSection], false);
+                            form.sections = __spreadArray(__spreadArray([], form.sections), [extraSection]);
                         }
                         baseQuestion_1 = {
                             _id: '',
@@ -1131,19 +1130,19 @@ var TransmittalController = /** @class */ (function () {
     };
     TransmittalController.prototype.uploadFile = function (req, res) {
         return __awaiter(this, void 0, void 0, function () {
-            var user, transmittal, file, transmittaltFile, e_9, e_10, newTransmittal, e_11;
-            return __generator(this, function (_a) {
-                switch (_a.label) {
+            var user, _a, transmittal, milestone, file, transmittaltFile, e_9, e_10, newTransmittal, e_11;
+            return __generator(this, function (_b) {
+                switch (_b.label) {
                     case 0:
                         user = req.user;
-                        transmittal = req.body.transmittal;
+                        _a = req.body, transmittal = _a.transmittal, milestone = _a.milestone;
                         logger_service_1["default"].info("TransmittalController.uploadFile");
                         logger_service_1["default"].info("{user: {_id: " + req.user._id + ", email: " + req.user.email + "}}");
                         file = general_utils_1["default"].getFileFromRequest(req.files, 'file');
                         if (!file) return [3 /*break*/, 17];
-                        _a.label = 1;
+                        _b.label = 1;
                     case 1:
-                        _a.trys.push([1, 15, , 16]);
+                        _b.trys.push([1, 15, , 16]);
                         transmittaltFile = new transmittalFile_model_1["default"]();
                         /*
                           {
@@ -1163,49 +1162,55 @@ var TransmittalController = /** @class */ (function () {
                         file.team = user.team._id;
                         transmittaltFile.user = user._id;
                         transmittaltFile.team = user.team._id;
+                        if ((transmittal === null || transmittal === void 0 ? void 0 : transmittal.length) && (milestone === null || milestone === void 0 ? void 0 : milestone.length)) {
+                            transmittal = transmittal.replace(/["']/g, "");
+                            milestone = milestone.replace(/["']/g, "");
+                            transmittaltFile.milestone = milestone;
+                            transmittaltFile.transmittal = transmittal;
+                        }
                         if (!new RegExp('\\bimage\\b').test(file.mimetype)) return [3 /*break*/, 5];
-                        _a.label = 2;
+                        _b.label = 2;
                     case 2:
-                        _a.trys.push([2, 4, , 5]);
+                        _b.trys.push([2, 4, , 5]);
                         return [4 /*yield*/, this.autoRotate(file.path)];
                     case 3:
-                        _a.sent();
+                        _b.sent();
                         return [3 /*break*/, 5];
                     case 4:
-                        e_9 = _a.sent();
+                        e_9 = _b.sent();
                         logger_service_1["default"].error('TransmittalController.uploadFile: Error making autoRotate');
                         return [3 /*break*/, 5];
                     case 5: return [4 /*yield*/, transmittaltFile.attach('file', file)];
                     case 6:
-                        _a.sent();
+                        _b.sent();
                         if (!new RegExp('\\bimage\\b').test(file.mimetype)) return [3 /*break*/, 11];
-                        _a.label = 7;
+                        _b.label = 7;
                     case 7:
-                        _a.trys.push([7, 10, , 11]);
+                        _b.trys.push([7, 10, , 11]);
                         return [4 /*yield*/, this.resizeImage(file.path)];
                     case 8:
-                        _a.sent();
+                        _b.sent();
                         return [4 /*yield*/, transmittaltFile.attach('thumbnail', file)];
                     case 9:
-                        _a.sent();
+                        _b.sent();
                         return [3 /*break*/, 11];
                     case 10:
-                        e_10 = _a.sent();
+                        e_10 = _b.sent();
                         logger_service_1["default"].error('TransmittalController.uploadFile: Error making thumbnail');
                         return [3 /*break*/, 11];
                     case 11: return [4 /*yield*/, transmittaltFile.save()];
                     case 12:
-                        _a.sent();
+                        _b.sent();
                         if (!(transmittal === null || transmittal === void 0 ? void 0 : transmittal.length)) return [3 /*break*/, 14];
                         return [4 /*yield*/, transmittal_model_1["default"]
                                 .findOneAndUpdate({ _id: transmittal }, { $push: { files: transmittaltFile } }, { "new": true })
                                 .populate(this.populate)];
                     case 13:
-                        newTransmittal = _a.sent();
+                        newTransmittal = _b.sent();
                         server_1.io.to("transmittal-list-" + user.team._id).emit('UPDATE_TRANSMITTAL', {
                             transmittal: newTransmittal
                         });
-                        _a.label = 14;
+                        _b.label = 14;
                     case 14:
                         res.status(201).json({
                             data: {
@@ -1216,7 +1221,7 @@ var TransmittalController = /** @class */ (function () {
                         });
                         return [3 /*break*/, 16];
                     case 15:
-                        e_11 = _a.sent();
+                        e_11 = _b.sent();
                         /* istanbul ignore next */
                         logger_service_1["default"].error("TransmittalController.uploadFile: Async Error.");
                         /* istanbul ignore next */
@@ -1235,7 +1240,7 @@ var TransmittalController = /** @class */ (function () {
                             message: 'La imagen es obligatoria.',
                             status: 400
                         });
-                        _a.label = 18;
+                        _b.label = 18;
                     case 18: return [2 /*return*/];
                 }
             });
@@ -1299,10 +1304,10 @@ var TransmittalController = /** @class */ (function () {
                     case 3:
                         if (!filesToDownload.length) return [3 /*break*/, 5];
                         console.log('promise', numb);
-                        _b = [__spreadArray([], results, true)];
+                        _b = [__spreadArray([], results)];
                         return [4 /*yield*/, bluebird.all(filesToDownload.splice(0, 20).map(function (promise) { return promise(); }))];
                     case 4:
-                        results = __spreadArray.apply(void 0, _b.concat([_c.sent(), true]));
+                        results = __spreadArray.apply(void 0, _b.concat([_c.sent()]));
                         numb++;
                         return [3 /*break*/, 3];
                     case 5:

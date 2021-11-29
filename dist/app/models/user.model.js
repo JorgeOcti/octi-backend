@@ -1,12 +1,8 @@
 "use strict";
-var __spreadArray = (this && this.__spreadArray) || function (to, from, pack) {
-    if (pack || arguments.length === 2) for (var i = 0, l = from.length, ar; i < l; i++) {
-        if (ar || !(i in from)) {
-            if (!ar) ar = Array.prototype.slice.call(from, 0, i);
-            ar[i] = from[i];
-        }
-    }
-    return to.concat(ar || Array.prototype.slice.call(from));
+var __spreadArray = (this && this.__spreadArray) || function (to, from) {
+    for (var i = 0, il = from.length, j = to.length; i < il; i++, j++)
+        to[j] = from[i];
+    return to;
 };
 exports.__esModule = true;
 var bcrypt = require("bcrypt");
@@ -136,7 +132,7 @@ userSchema.methods.venuesPermissions = function (inString) {
         venuesPermissions.push(currentVenue);
     }
     if (this.venuesAccess && this.venuesAccess.length) {
-        venuesPermissions = Array.from(new Set(__spreadArray(__spreadArray([], venuesPermissions, true), this.venuesAccess.map(function (venue) { return (venue && venue._id ? venue._id : venue); }), true)));
+        venuesPermissions = Array.from(new Set(__spreadArray(__spreadArray([], venuesPermissions), this.venuesAccess.map(function (venue) { return (venue && venue._id ? venue._id : venue); }))));
     }
     venuesPermissions = venuesPermissions
         .map(function (id) { return id.toString(); })
