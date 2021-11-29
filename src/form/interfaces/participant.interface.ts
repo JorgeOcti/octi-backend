@@ -20,6 +20,8 @@ import {ITransmittalItem} from "../../distribution/interfaces/transmittalItem.in
 import {ITransmittalModel} from "../../distribution/models/transmittal.model";
 import { ITransmittal } from '../../distribution/interfaces/transmittal.interface';
 import { ITransmittalItemModel } from '../../distribution/models/transmittalItem.model';
+import {IMilestone} from "../../distribution/interfaces";
+import {IMilestoneModel} from "../../distribution/models/milestone.model";
 
 export interface IParticipantChoices {
   choice: string;
@@ -144,6 +146,7 @@ export interface IParticipant {
   transmittalItem?: ITransmittalItem | ITransmittalItemModel;
 
   transmittal?: ITransmittal | ITransmittalModel;
+  milestone?: IMilestone | IMilestoneModel;
 
   active: boolean;
   updatedAt: Date;
