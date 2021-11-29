@@ -15,7 +15,7 @@ import BootstrapSelect from '../Utils/BootstrapSelect';
 import MultiUploadFiles, { imageStatus } from '../Utils/MultiUploadFiles';
 import ShowIf from '../Utils/ShowIf';
 import TrackingBasePage from '../Utils/TrackingBasePage';
-import { IRequestSettting } from '../../../../../../src/app/interfaces/teamSetting.interface';
+import { IRequestSetting } from '../../../../../../src/app/interfaces/teamSetting.interface';
 import { IOperationType } from '../../../../../../src/request/interfaces/operationType.interface';
 
 
@@ -54,7 +54,7 @@ interface IStateType {
   fleet: boolean;
   loading: boolean;
   error: Error | null;
-  requestSettings: IRequestSettting;
+  requestSettings: IRequestSetting;
 }
 
 const initialNewCar = {

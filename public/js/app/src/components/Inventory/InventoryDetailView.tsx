@@ -18,7 +18,7 @@ import * as swal from 'sweetalert';
 import * as XLSX from 'xlsx';
 import {IInventoryCar} from '../../../../../../src/inventory/interfaces/inventory.interface';
 import {IInventoryLabel} from '../../../../../../src/inventory/interfaces/inventoryLabel.interface';
-import {IInventorySettting} from '../../../../../../src/app/interfaces/teamSetting.interface';
+import {IInventorySetting} from '../../../../../../src/app/interfaces/teamSetting.interface';
 import {
   actionSetLabel,
   addCommentAction,
@@ -55,7 +55,7 @@ import InventoryFileManager from './InventoryFileManager';
 
 declare let window: IWindow;
 
-export type CarStatusType = Extract<keyof IInventorySettting, string>;
+export type CarStatusType = Extract<keyof IInventorySetting, string>;
 
 interface IPropsType extends RouteComponentProps<{ id: string, tab?: string }> {
   inventories: IInventoryState;

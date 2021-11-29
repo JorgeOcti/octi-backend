@@ -4,7 +4,7 @@ import { IReason } from '../../../../../src/request/interfaces/reason.interface'
 import { IRequestItem } from '../../../../../src/request/interfaces/requestItem.interface';
 import { IRequestItemStatus } from '../../../../../src/request/interfaces/requestItemStatus.interface';
 import { IVenue } from '../../../../../src/app/interfaces/venue.interface';
-import { IRequestSettting } from '../../../../../src/app/interfaces/teamSetting.interface';
+import { IRequestSetting } from '../../../../../src/app/interfaces/teamSetting.interface';
 
 export const REQUEST_ITEMS_CANCEL_REQUEST = '/REQUESTS_ITEMS/CANCEL_REQUEST';
 export const REQUEST_ITEMS_IS_LOADING = '/REQUESTS_ITEMS/IS_LOADING';
@@ -39,7 +39,7 @@ export interface IRequestItemsState {
   properties: ICarrier[];
   venues: IVenue[];
   requestItemStatus: IRequestItemStatus[];
-  requestSettings: IRequestSettting;
+  requestSettings: IRequestSetting;
   requestItemStatusMin: number;
   requestItemStatusMax: number;
   loading: boolean;
@@ -112,8 +112,8 @@ export interface ILoadRequestItems {
   payload: {
     requestItems: IRequestItem[];
     count: number;
-    pages: number
-    page: number
+    pages: number;
+    page: number;
   };
 }
 
@@ -157,7 +157,7 @@ export interface IDeleteRequestItems {
 export interface ILoadSettingsRequestItems {
   type: typeof REQUEST_ITEMS_LOAD_SETTINGS;
   payload: {
-    requestSettings: IRequestSettting;
+    requestSettings: IRequestSetting;
   };
 }
 

@@ -7,6 +7,7 @@ import {IInventoryState, InventoryReduxAction} from '../actions/inventory.action
 const initialState: IInventoryState = {
   inventories: [],
   inventorySettings: {
+    report: null,
     leftoverDifferentVenue: false,
     pending: "",
     pendingClass: "aqua",
