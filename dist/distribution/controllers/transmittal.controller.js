@@ -398,7 +398,7 @@ var TransmittalController = /** @class */ (function () {
                                     select: ['name']
                                 }, {
                                     path: 'evidenceFullLoad',
-                                    select: ['file', 'thumbnail']
+                                    select: ['file', 'thumbnail', 'milestone']
                                 }, {
                                     path: 'transporter.driver',
                                     select: ['firstName', 'lastName']
