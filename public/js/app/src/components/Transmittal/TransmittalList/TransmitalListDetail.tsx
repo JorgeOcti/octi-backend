@@ -20,11 +20,13 @@ import UploadTransmittalFile from './UploadTransmittalFile';
 import AddItemsToTransmittal from '../TransmittalForms/AddItemsToTransmittal';
 import { ICar } from '../../../../../../../src/app/interfaces/car.interface';
 import { debounce } from 'throttle-debounce';
+import {IMilestone} from "../../../../../../../src/distribution/interfaces";
 
 interface IPropsType extends RouteComponentProps<{ ticket: string }> {
   dispatch: Dispatch<ITransmittalActionTypes>;
   transmittal: ITransmittalState;
   item: ITransmittalModel;
+  evidenceMilestones: IMilestone[];
   transmittalActions: TransmittalActions;
   getParticipant(id: string): void;
 
@@ -61,7 +63,7 @@ class TransmitalListDetail extends React.Component<IPropsType, IStateType> {
   }
 
   public render(): React.ReactElement<IPropsType> {
-    const { item: transmittal, transmittalActions } = this.props;
+    const { item: transmittal, transmittalActions, evidenceMilestones } = this.props;
     const { carriers, drivers, milestoneTypes } = this.props.transmittal;
     const open = this.props.transmittal.transmittalOpen.includes(transmittal._id);
     return (
@@ -137,7 +139,7 @@ class TransmitalListDetail extends React.Component<IPropsType, IStateType> {
             }
             {/*{transmittal.transporter.driver._id}*/}
           </div>
-          <div className='flex-45 col-sm-2 col-xs-2 col-md-2 col-lg-2' style={{ position: 'static' }}>
+          <div className='flex-45 col-sm-1 col-xs-1 col-md-1 col-lg-1' style={{ position: 'static' }}>
             {
               hasPermission(window.user, 'changeTransmittal') ?
                 (
@@ -249,24 +251,33 @@ class TransmitalListDetail extends React.Component<IPropsType, IStateType> {
               </button>
             </ShowIf>
           </div>
-          <div className='flex-45 col-sm-1 col-xs-1 col-md-1 col-lg-1'>
+
             {
-              transmittal.evidenceFullLoad.map((image: any, index: number) => (
-                <div key={image._id} className={'text-center'} style={{ display: index === 0 ? '' : 'none' }}>
-                  <a href={decodeURI(image.file.url)}
-                     data-toggle='lightbox'
-                     data-gallery={transmittal._id}
-                     data-title={`#${this.padNumber(transmittal.number)}`}
-                     data-footer={`Conductor ${transmittal.transporter.driver ? `${transmittal.transporter.driver.firstName} ${transmittal.transporter.driver.lastName}` : ''} (${transmittal.transporter?.patent})`}
-                  >
-                    <button className='btn btn-xs btn-default'>
-                      <i className='fa fa-fw fa-image' /> {transmittal.evidenceFullLoad.length}
-                    </button>
-                  </a>
-                </div>
-              ))
+              evidenceMilestones.map((milestone: IMilestone, index: number) => {
+                let tmp = transmittal.evidenceFullLoad.filter(e => {
+                  if(e.milestone != undefined){
+                    return e.milestone == milestone._id
+                  } else
+                    return index == 0
+                })
+                return (<div className='flex-45 col-sm-1 col-xs-1 col-md-1 col-lg-1' key={`${transmittal._id}-${milestone._id}`}>
+                  {tmp.map((image: any, index: number) => (
+                    <div key={image._id} className={'text-center'} style={{ display: index === 0 ? '' : 'none' }}>
+                      <a href={decodeURI(image.file.url)}
+                         data-toggle='lightbox'
+                         data-gallery={`${transmittal._id}-${milestone._id}`}
+                         data-title={`#${this.padNumber(transmittal.number)}`}
+                         data-footer={`Conductor ${transmittal.transporter.driver ? `${transmittal.transporter.driver.firstName} ${transmittal.transporter.driver.lastName}` : ''} (${transmittal.transporter?.patent})`}
+                      >
+                        <button className='btn btn-xs btn-default'>
+                          <i className='fa fa-fw fa-image' /> {tmp.length}
+                        </button>
+                      </a>
+                    </div>
+                  ))}
+                    </div>)
+            })
             }
-          </div>
           <div className='flex-45 col-sm-1 col-xs-1 col-md-1 col-lg-1'>
             {
               transmittal?.revision ?
