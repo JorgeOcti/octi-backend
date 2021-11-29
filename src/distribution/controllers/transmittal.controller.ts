@@ -950,8 +950,7 @@ private getForm(filter: any): Promise<IFormModel> {
     if (file) {
       try {
 
-        transmittal = transmittal.replace(/["']/g, "")
-        milestone = milestone.replace(/["']/g, "")
+
 
         const transmittaltFile = new TransmittalFile();
         /*
@@ -972,8 +971,14 @@ private getForm(filter: any): Promise<IFormModel> {
         file.team = user.team._id;
         transmittaltFile.user = user._id;
         transmittaltFile.team = user.team._id;
-        transmittaltFile.milestone = milestone;
-        transmittaltFile.transmittal = transmittal;
+
+        if (transmittal?.length && milestone?.length){
+          transmittal = transmittal.replace(/["']/g, "")
+          milestone = milestone.replace(/["']/g, "")
+
+          transmittaltFile.milestone = milestone;
+          transmittaltFile.transmittal = transmittal;
+        }
 
         // fix exif
         if (new RegExp('\\bimage\\b').test(file.mimetype)) {
