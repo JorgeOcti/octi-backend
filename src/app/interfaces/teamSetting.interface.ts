@@ -7,8 +7,8 @@ export interface IFormSettting {
   vinMaxCharacters: number;
 }
 
-export interface IInventorySettting {
-  report: IReportSetting;
+export interface IInventorySetting {
+  report: IReportSetting | null;
   pending: string;
   pendingClass: string;
   pendingColor: string;
@@ -62,7 +62,7 @@ export interface IReportSetting {
 
 export interface ITeamSetting {
   _id: any;
-  inventory: IInventorySettting;
+  inventory: IInventorySetting;
   request: IRequestSetting;
   form: IFormSettting;
   helpPhones: IHelpPhonesSettingSchema
