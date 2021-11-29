@@ -42,11 +42,11 @@ const reportSettingSchema = new mongoose.Schema({
     type: Boolean,
     default: true
   },
-  vinRequired: {
+  primaryRequired: {
     type: Boolean,
     default: true
   },
-  plateRequired: {
+  secondaryRequired: {  //commonly know as Patente for the most
     type: Boolean,
     default: true
   }
@@ -176,6 +176,39 @@ const teamSettingSchema = new mongoose.Schema({
 // db.teamsettings.updateMany({}, {$set:{request:{denomination: true, denominationRequired: true, material: true, materialRequired: true, internalNumber: true, internalNumberRequired: false, internalNumberText:  "Número interno", color: true, colorRequired: true}}},{many: true});
 
 // db.teamsettings.updateMany({}, { $set: { form: { vinMinCharacters: 17, vinMaxCharacters: 17 } } }, { many: true });
+
+/*
+db.teamsettings.updateMany({}, {
+    $set: {vocabulary: {
+            primary: "VIN",
+            secondary: "Patente",
+            unitReference: {
+                singular: "Unidad",
+                plural: "Unidades"
+            }
+        }
+    }
+})
+
+
+db.teamsettings.updateMany({}, {
+    $set: {"form.report": {
+            atLeastOne: true,
+            primaryRequired: false,
+            secondaryRequired: false
+        }
+    }
+})
+
+db.teamsettings.updateMany({}, {
+    $set: {"inventory.report": {
+            atLeastOne: true,
+            primaryRequired: false,
+            secondaryRequired: false
+        }
+    }
+})
+ */
 
 
 teamSettingSchema.statics.findOneOrCreate = function(condition: any, create: any): Promise<ICarModel> {

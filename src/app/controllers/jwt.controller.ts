@@ -139,7 +139,9 @@ class JWTController {
                         }),
                         helpNumber: GeneralUtils.getObjectProperty(teamSettings!.toJSON(), 'helpPhones', {
                           transmittal: ""
-                        })
+                        }),
+                        inventory: GeneralUtils.getObjectProperty(teamSettings!.toJSON(), 'inventory', {}),
+                        vocabulary: GeneralUtils.getObjectProperty(teamSettings!.toJSON(), 'vocabulary', {})
                       }
                       // settings: GeneralUtils.getObjectProperty(user.team, 'settings', {})
                     },
@@ -284,7 +286,9 @@ class JWTController {
                             }),
                             helpNumber: GeneralUtils.getObjectProperty(teamSettings!.toJSON(), 'helpPhones', {
                               transmittal: ""
-                            })
+                            }),
+                            inventory: GeneralUtils.getObjectProperty(teamSettings!.toJSON(), 'inventory', {}),
+                            vocabulary: GeneralUtils.getObjectProperty(teamSettings!.toJSON(), 'vocabulary', {})
                           }
                           // settings: GeneralUtils.getObjectProperty(user.team, 'settings', {})
                         },
