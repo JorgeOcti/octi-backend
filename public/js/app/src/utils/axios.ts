@@ -808,7 +808,7 @@ export default class ApiService {
     pageSize,
     orderBy,
     orderType
-  }: { milestoneType: string, page: number, orderType?: string, orderBy?: string, pageSize?: number }): AxiosPromise {
+  }: { page: number, milestoneType?: string, orderType?: string, orderBy?: string, pageSize?: number }): AxiosPromise {
     return this.instance.get(
       `/api/v1/milestones/?page=${page}${pageSize ? `&pageSize=${pageSize}` : ''}${milestoneType ? `&milestoneType=${milestoneType}` : ''}${orderBy ? `&orderBy=${orderBy}` : ''}${orderType ? `&orderType=${orderType}` : ''}`
     );
