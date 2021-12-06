@@ -324,7 +324,7 @@ class DashboardVinView extends TrackingBasePage<IPropsType, IStateType> {
                       }))}
                       onClick={this.filterForms}
                       displayHandler={this.showSelect}
-                      notHideOnClickOutside={true}
+                      notHideOnClickOutside={false}
                     />
                   </div>
                 </div>
