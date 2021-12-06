@@ -245,7 +245,7 @@ class TransmittalListView extends TrackingBasePage<IPropsType, IStateType> {
                       </div>))
                   }
                   <div className='flex-45 col-sm-1 col-xs-1 col-md-1 col-lg-1'>
-                    <strong>Llegó</strong>
+                    <strong>Evidencia descarga</strong>
                   </div>
                   <div className='flex-45 col-sm-1 col-xs-1 col-md-1 col-lg-1' />
                 </div>
