@@ -12,6 +12,8 @@ export interface IMilestone {
   team: ITeam | ITeamModel;
   type: IMilestoneType | IMilestoneTypeModel;
   name: string;
+  description?: string;
+  hint?: string;
   kind: string;
   step: string;
   order: number;

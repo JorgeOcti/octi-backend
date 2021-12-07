@@ -36,6 +36,12 @@ var milestoneSchema = new mongoose.Schema({
     name: {
         type: String
     },
+    description: {
+        type: String
+    },
+    hint: {
+        type: String
+    },
     kind: {
         type: String,
         "enum": exports.choicesKindMilestone,
