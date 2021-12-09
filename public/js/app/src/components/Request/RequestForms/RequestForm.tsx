@@ -39,6 +39,7 @@ interface IStateType {
   operationTypes: IOperationType[];
   requestSettings: IRequestSetting;
   loading: boolean;
+  exist: boolean;
 }
 
 class Form extends React.Component<IPropsType, IStateType> {
@@ -62,7 +63,8 @@ class Form extends React.Component<IPropsType, IStateType> {
       material: false,
       materialRequired: false
     },
-    loading: false
+    loading: false,
+    exist: false,
   };
 
   constructor(props: IPropsType) {
@@ -86,7 +88,7 @@ class Form extends React.Component<IPropsType, IStateType> {
 
   public render(): React.ReactElement<IPropsType> {
     const { handleSubmit, valid, submitFailed, query, syncErrors, formValues, created, submitting } = this.props;
-    const { venues, channels, reasons, loading } = this.state;
+    const { venues, channels, reasons, loading, exist } = this.state;
     return (
       <React.Fragment>
         <div className='container-fluid' style={{ position: 'relative', minHeight: '100vh', paddingBottom: '150px' }}>
@@ -383,6 +385,21 @@ class Form extends React.Component<IPropsType, IStateType> {
           }}>
           </div>
         </ShowIf>
+        <ShowIf condition={exist}>
+          <div style={{
+            position: 'absolute',
+            top: '0',
+            height: '100%',
+            width: '100vw',
+            backgroundColor: 'rgba(246,246,246,0.4)',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            paddingTop: '400px'
+            // justifyContent: 'center'
+          }}>
+          </div>
+        </ShowIf>
       </React.Fragment>
     );
   }
@@ -418,6 +435,8 @@ class Form extends React.Component<IPropsType, IStateType> {
   }
 
   private loadBaseData() {
+    const {  query } = this.props;
+    const conectaID = query['6154722a94bba10012230aae'] || query['conectaID'];
     this.setState({ loading: true });
     Axios
       .all([
@@ -425,9 +444,19 @@ class Form extends React.Component<IPropsType, IStateType> {
         this.api.getReasons({ page: 1, pageSize: 200 }),
         this.api.getSalesChannel({ page: 1, pageSize: 200 }),
         this.api.getTeamSettings(),
-        this.api.getOperationTypes({ page: 1, pageSize: 200 })
+        this.api.getOperationTypes({ page: 1, pageSize: 200 }),
+        this.api.validateContectaID(conectaID)
       ])
-      .then(Axios.spread((venues, reasons, channels, teamSettings, operationTypes) => {
+      .then(Axios.spread((venues, reasons, channels, teamSettings, operationTypes, validateContecta) => {
+        console.log('validateContecta', validateContecta);
+        if(validateContecta.data?.error){
+          this.setState({ exist: true });
+          swal!('Solicitud ya creada para esta cotización', `ID de cotización conecta ${conectaID} ya se encuentra asociado a la solicitud ${validateContecta.data.number}.`, 'error', {
+            button: false,
+            closeOnClickOutside: false,
+            closeOnEsc: false
+          });
+        }
         this.setState({
           venues: venues.data.results,
           reasons: reasons.data.results,

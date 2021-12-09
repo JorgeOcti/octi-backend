@@ -46,10 +46,14 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
         if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
     }
 };
-var __spreadArray = (this && this.__spreadArray) || function (to, from) {
-    for (var i = 0, il = from.length, j = to.length; i < il; i++, j++)
-        to[j] = from[i];
-    return to;
+var __spreadArray = (this && this.__spreadArray) || function (to, from, pack) {
+    if (pack || arguments.length === 2) for (var i = 0, l = from.length, ar; i < l; i++) {
+        if (ar || !(i in from)) {
+            if (!ar) ar = Array.prototype.slice.call(from, 0, i);
+            ar[i] = from[i];
+        }
+    }
+    return to.concat(ar || Array.prototype.slice.call(from));
 };
 exports.__esModule = true;
 var archiver = require("archiver");
@@ -154,45 +158,74 @@ var RequestController = /** @class */ (function () {
     }
     RequestController.prototype.integration = function (req, res) {
         return __awaiter(this, void 0, void 0, function () {
-            var query, team, params, conectaID, existConectId, _a, _b, _c, e_1;
+            var query, params, _a, _b, _c, e_1;
             var _d;
             return __generator(this, function (_e) {
                 switch (_e.label) {
                     case 0:
                         query = req.query;
-                        team = req.user.team;
                         query['conectaID'] = query['6154722a94bba10012230aae'] || query['conectaID'];
                         _e.label = 1;
                     case 1:
-                        _e.trys.push([1, 6, , 7]);
+                        _e.trys.push([1, 4, , 5]);
                         return [4 /*yield*/, inputsSchema_1.createRequestSalfaParams.validate(query, {
                                 stripUnknown: true
                             })];
                     case 2:
                         params = _e.sent();
-                        conectaID = query['6154722a94bba10012230aae'] || query['conectaID'];
-                        if (!(conectaID === null || conectaID === void 0 ? void 0 : conectaID.length)) return [3 /*break*/, 4];
-                        return [4 /*yield*/, request_model_1["default"].findOne({ team: team, conectaID: conectaID })];
-                    case 3:
-                        existConectId = _e.sent();
-                        if (existConectId) {
-                            res.status(400).json({ error: "connectID used in another request " + existConectId.number });
-                        }
-                        _e.label = 4;
-                    case 4:
                         _b = (_a = res).render;
                         _c = ['app/index'];
                         _d = {};
                         return [4 /*yield*/, req.user.generateToken()];
-                    case 5:
+                    case 3:
                         _b.apply(_a, _c.concat([(_d.token = _e.sent(), _d)]));
                         res.json(params);
-                        return [3 /*break*/, 7];
-                    case 6:
+                        return [3 /*break*/, 5];
+                    case 4:
                         e_1 = _e.sent();
                         res.status(400).json({ error: e_1.errors.join(', ') });
-                        return [3 /*break*/, 7];
-                    case 7: return [2 /*return*/];
+                        return [3 /*break*/, 5];
+                    case 5: return [2 /*return*/];
+                }
+            });
+        });
+    };
+    RequestController.prototype.validateContectaID = function (req, res) {
+        return __awaiter(this, void 0, void 0, function () {
+            var conectaID, team, existConectId, e_2;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0:
+                        _a.trys.push([0, 4, , 5]);
+                        conectaID = req.body.conectaID;
+                        team = req.user.team;
+                        if (!(conectaID === null || conectaID === void 0 ? void 0 : conectaID.length)) return [3 /*break*/, 2];
+                        return [4 /*yield*/, request_model_1["default"].findOne({ team: team, conectaID: conectaID })];
+                    case 1:
+                        existConectId = _a.sent();
+                        if (existConectId) {
+                            res.json({
+                                error: "connectID used in another request " + existConectId.number,
+                                number: existConectId.number
+                            });
+                        }
+                        else {
+                            res.json({});
+                        }
+                        return [3 /*break*/, 3];
+                    case 2:
+                        res.json({});
+                        _a.label = 3;
+                    case 3: return [3 /*break*/, 5];
+                    case 4:
+                        e_2 = _a.sent();
+                        /* istanbul ignore next */
+                        if (e_2) {
+                            console.log(e_2);
+                            res.status(500).json(e_2);
+                        }
+                        return [3 /*break*/, 5];
+                    case 5: return [2 /*return*/];
                 }
             });
         });
@@ -217,7 +250,7 @@ var RequestController = /** @class */ (function () {
     };
     RequestController.prototype.apiUpdateMassive = function (req, res) {
         return __awaiter(this, void 0, void 0, function () {
-            var properties, team, _i, properties_1, property, find, update, e_2;
+            var properties, team, _i, properties_1, property, find, update, e_3;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
@@ -257,11 +290,11 @@ var RequestController = /** @class */ (function () {
                         });
                         return [3 /*break*/, 7];
                     case 6:
-                        e_2 = _a.sent();
+                        e_3 = _a.sent();
                         /* istanbul ignore next */
-                        if (e_2) {
-                            console.log(e_2);
-                            res.status(500).json(e_2);
+                        if (e_3) {
+                            console.log(e_3);
+                            res.status(500).json(e_3);
                         }
                         return [3 /*break*/, 7];
                     case 7: return [2 /*return*/];
@@ -272,7 +305,7 @@ var RequestController = /** @class */ (function () {
     RequestController.prototype.createRequest = function (user, request) {
         var _this = this;
         return new Promise(function (resolve, reject) { return __awaiter(_this, void 0, void 0, function () {
-            var company, team, cars, number, channel, sellerText, operationType, defaultItemStatus, newRequest, _i, cars_1, car, currentCar, updatedRequest, e_3;
+            var company, team, cars, number, channel, sellerText, operationType, defaultItemStatus, newRequest, _i, cars_1, car, currentCar, updatedRequest, e_4;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
@@ -397,13 +430,13 @@ var RequestController = /** @class */ (function () {
                         });
                         return [3 /*break*/, 13];
                     case 12:
-                        e_3 = _a.sent();
+                        e_4 = _a.sent();
                         /* istanbul ignore next */
                         logger_service_1["default"].error("RequestController.createRequest: Async Error.");
                         /* istanbul ignore next */
                         logger_service_1["default"].error("{user: {_id: " + user._id + ", email: " + user.email + "}, user: " + JSON.stringify(user));
-                        logger_service_1["default"].error(e_3);
-                        reject(e_3);
+                        logger_service_1["default"].error(e_4);
+                        reject(e_4);
                         return [3 /*break*/, 13];
                     case 13: return [2 /*return*/];
                 }
@@ -412,7 +445,7 @@ var RequestController = /** @class */ (function () {
     };
     RequestController.prototype.apiImport = function (req, res) {
         return __awaiter(this, void 0, void 0, function () {
-            var team, requests, requestsNumbers, existsRequest, updateTeam, maxRequest, minRequest, e_4;
+            var team, requests, requestsNumbers, existsRequest, updateTeam, maxRequest, minRequest, e_5;
             var _this = this;
             return __generator(this, function (_a) {
                 switch (_a.label) {
@@ -471,11 +504,11 @@ var RequestController = /** @class */ (function () {
                         _a.label = 8;
                     case 8: return [3 /*break*/, 10];
                     case 9:
-                        e_4 = _a.sent();
+                        e_5 = _a.sent();
                         /* istanbul ignore next */
-                        if (e_4) {
-                            console.log(e_4);
-                            res.status(500).json(e_4);
+                        if (e_5) {
+                            console.log(e_5);
+                            res.status(500).json(e_5);
                         }
                         return [3 /*break*/, 10];
                     case 10: return [2 /*return*/];
@@ -485,7 +518,7 @@ var RequestController = /** @class */ (function () {
     };
     RequestController.prototype.apiCreate = function (req, res) {
         return __awaiter(this, void 0, void 0, function () {
-            var _a, company, team, _b, cars, venue, channel, sellerText, operationType, deliveryVenue, deliveryAddress, deliveryDate, conectaID, defaultItemStatus, updateTeam, request, _i, cars_2, car, newCar, newRequest, e_5;
+            var _a, company, team, _b, cars, venue, channel, sellerText, operationType, deliveryVenue, deliveryAddress, deliveryDate, conectaID, defaultItemStatus, updateTeam, request, _i, cars_2, car, newCar, newRequest, e_6;
             return __generator(this, function (_c) {
                 switch (_c.label) {
                     case 0:
@@ -581,13 +614,13 @@ var RequestController = /** @class */ (function () {
                         });
                         return [3 /*break*/, 12];
                     case 11:
-                        e_5 = _c.sent();
+                        e_6 = _c.sent();
                         /* istanbul ignore next */
                         logger_service_1["default"].error("RequestController.apiCreate: Async Error.");
                         /* istanbul ignore next */
                         logger_service_1["default"].error("{user: {_id: " + req.user._id + ", email: " + req.user.email + "}, body: " + JSON.stringify(req.body));
-                        logger_service_1["default"].error(e_5);
-                        res.status(500).json(e_5);
+                        logger_service_1["default"].error(e_6);
+                        res.status(500).json(e_6);
                         return [3 /*break*/, 12];
                     case 12: return [2 /*return*/];
                 }
@@ -597,7 +630,7 @@ var RequestController = /** @class */ (function () {
     RequestController.prototype.apiListItems = function (req, res) {
         var _a;
         return __awaiter(this, void 0, void 0, function () {
-            var team, _b, page, pageSize, orderBy, orderType, filters, venuesIds, extraQuery, extraMatch, requestNumbers, baseAggregate, aggregatePopulate, aggregate, requestsAggregate, options, requests, options, query, request, e_6;
+            var team, _b, page, pageSize, orderBy, orderType, filters, venuesIds, extraQuery, extraMatch, requestNumbers, baseAggregate, aggregatePopulate, aggregate, requestsAggregate, options, requests, options, query, request, e_7;
             var _c;
             return __generator(this, function (_d) {
                 switch (_d.label) {
@@ -772,11 +805,11 @@ var RequestController = /** @class */ (function () {
                                             }
                                         }] }, extraMatch)
                             }];
-                        aggregate = __spreadArray(__spreadArray(__spreadArray([], baseAggregate), aggregatePopulate), [
+                        aggregate = __spreadArray(__spreadArray(__spreadArray([], baseAggregate, true), aggregatePopulate, true), [
                             {
                                 $sort: (_c = {}, _c[orderBy] = orderType === 'ascending' ? 1 : -1, _c)
                             }
-                        ]);
+                        ], false);
                         requestsAggregate = requestItem_model_1["default"].aggregate(aggregate);
                         options = {
                             page: parseInt(page ? page : '1', 10),
@@ -869,13 +902,13 @@ var RequestController = /** @class */ (function () {
                         _d.label = 5;
                     case 5: return [3 /*break*/, 7];
                     case 6:
-                        e_6 = _d.sent();
+                        e_7 = _d.sent();
                         /* istanbul ignore next */
                         logger_service_1["default"].error("RequestController.apiListItems: Async Error.");
                         /* istanbul ignore next */
                         logger_service_1["default"].error("{user: {_id: " + req.user._id + ", email: " + req.user.email + "}, body: " + JSON.stringify(req.body) + ", params: " + JSON.stringify(req.params));
-                        logger_service_1["default"].error(e_6);
-                        res.status(500).json(e_6);
+                        logger_service_1["default"].error(e_7);
+                        res.status(500).json(e_7);
                         return [3 /*break*/, 7];
                     case 7: return [2 /*return*/];
                 }
@@ -884,7 +917,7 @@ var RequestController = /** @class */ (function () {
     };
     RequestController.prototype.exportExcel = function (req, res) {
         return __awaiter(this, void 0, void 0, function () {
-            var team, cursor_1, options, workbook_1, worksheet_1, questionColumns, _i, _a, reason, _b, _c, question, e_7;
+            var team, cursor_1, options, workbook_1, worksheet_1, questionColumns, _i, _a, reason, _b, _c, question, e_8;
             var _this = this;
             return __generator(this, function (_d) {
                 switch (_d.label) {
@@ -1061,7 +1094,7 @@ var RequestController = /** @class */ (function () {
                                 header: 'FECHA ACTUALIZACION', key: 'updated', width: 21, style: { numFmt: 'dd/mm/yyyy hh:mm' }
                             }, {
                                 header: 'OBSERVACIÓN', key: 'observation', width: 21
-                            }], questionColumns);
+                            }], questionColumns, true);
                         // for (const item of requestItems) {
                         cursor_1.on('data', function (item) { return __awaiter(_this, void 0, void 0, function () {
                             var extraAnswers, _i, _a, answer;
@@ -1101,15 +1134,15 @@ var RequestController = /** @class */ (function () {
                         }); });
                         return [3 /*break*/, 7];
                     case 6:
-                        e_7 = _d.sent();
+                        e_8 = _d.sent();
                         /* istanbul ignore next */
-                        logger_service_1["default"].error(e_7);
+                        logger_service_1["default"].error(e_8);
                         /* istanbul ignore next */
                         logger_service_1["default"].error("RequestController.exportExcel: Async Error.");
                         /* istanbul ignore next */
                         logger_service_1["default"].error("{user: {_id: " + req.user._id + ", email: " + req.user.email + "}, body: " + JSON.stringify(req.body) + ", params: " + JSON.stringify(req.params));
-                        logger_service_1["default"].error(e_7);
-                        res.status(500).json(e_7);
+                        logger_service_1["default"].error(e_8);
+                        res.status(500).json(e_8);
                         return [3 /*break*/, 7];
                     case 7: return [2 /*return*/];
                 }
@@ -1118,7 +1151,7 @@ var RequestController = /** @class */ (function () {
     };
     RequestController.prototype.apiList = function (req, res) {
         return __awaiter(this, void 0, void 0, function () {
-            var team, _a, page, pageSize, search, orderBy, orderType, options, filter, requests, e_8;
+            var team, _a, page, pageSize, search, orderBy, orderType, options, filter, requests, e_9;
             var _b;
             return __generator(this, function (_c) {
                 switch (_c.label) {
@@ -1170,12 +1203,12 @@ var RequestController = /** @class */ (function () {
                         }
                         return [3 /*break*/, 4];
                     case 3:
-                        e_8 = _c.sent();
+                        e_9 = _c.sent();
                         /* istanbul ignore next */
                         logger_service_1["default"].error("RequestController.apiList: Async Error.");
                         /* istanbul ignore next */
                         logger_service_1["default"].error("{user: {_id: " + req.user._id + ", email: " + req.user.email + "}}");
-                        res.status(500).json(e_8);
+                        res.status(500).json(e_9);
                         return [3 /*break*/, 4];
                     case 4: return [2 /*return*/];
                 }
@@ -1184,7 +1217,7 @@ var RequestController = /** @class */ (function () {
     };
     RequestController.prototype.apiDetail = function (req, res) {
         return __awaiter(this, void 0, void 0, function () {
-            var team, id, request, e_9;
+            var team, id, request, e_10;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
@@ -1214,13 +1247,13 @@ var RequestController = /** @class */ (function () {
                         }
                         return [3 /*break*/, 4];
                     case 3:
-                        e_9 = _a.sent();
+                        e_10 = _a.sent();
                         /* istanbul ignore next */
                         logger_service_1["default"].error("RequestController.apiDetail: Async Error.");
                         /* istanbul ignore next */
                         logger_service_1["default"].error("{user: {_id: " + req.user._id + ", email: " + req.user.email + "}, body: " + JSON.stringify(req.body) + ", params: " + JSON.stringify(req.params));
-                        logger_service_1["default"].error(e_9);
-                        res.status(500).json(e_9);
+                        logger_service_1["default"].error(e_10);
+                        res.status(500).json(e_10);
                         return [3 /*break*/, 4];
                     case 4: return [2 /*return*/];
                 }
@@ -1229,7 +1262,7 @@ var RequestController = /** @class */ (function () {
     };
     RequestController.prototype.apiDeleteRequest = function (req, res) {
         return __awaiter(this, void 0, void 0, function () {
-            var team, id, request, e_10;
+            var team, id, request, e_11;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
@@ -1272,13 +1305,13 @@ var RequestController = /** @class */ (function () {
                         _a.label = 6;
                     case 6: return [3 /*break*/, 8];
                     case 7:
-                        e_10 = _a.sent();
+                        e_11 = _a.sent();
                         /* istanbul ignore next */
                         logger_service_1["default"].error("RequestController.apiDeleteRequest: Async Error.");
                         /* istanbul ignore next */
                         logger_service_1["default"].error("{user: {_id: " + req.user._id + ", email: " + req.user.email + "}, body: " + JSON.stringify(req.body) + ", params: " + JSON.stringify(req.params));
-                        logger_service_1["default"].error(e_10);
-                        res.status(500).json(e_10);
+                        logger_service_1["default"].error(e_11);
+                        res.status(500).json(e_11);
                         return [3 /*break*/, 8];
                     case 8: return [2 /*return*/];
                 }
@@ -1287,7 +1320,7 @@ var RequestController = /** @class */ (function () {
     };
     RequestController.prototype.apiDeleteRequestItem = function (req, res) {
         return __awaiter(this, void 0, void 0, function () {
-            var team, id, item, e_11;
+            var team, id, item, e_12;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
@@ -1333,13 +1366,13 @@ var RequestController = /** @class */ (function () {
                         _a.label = 6;
                     case 6: return [3 /*break*/, 8];
                     case 7:
-                        e_11 = _a.sent();
+                        e_12 = _a.sent();
                         /* istanbul ignore next */
                         logger_service_1["default"].error("RequestController.apiDeleteRequestItem: Async Error.");
                         /* istanbul ignore next */
                         logger_service_1["default"].error("{user: {_id: " + req.user._id + ", email: " + req.user.email + "}, body: " + JSON.stringify(req.body) + ", params: " + JSON.stringify(req.params));
-                        logger_service_1["default"].error(e_11);
-                        res.status(500).json(e_11);
+                        logger_service_1["default"].error(e_12);
+                        res.status(500).json(e_12);
                         return [3 /*break*/, 8];
                     case 8: return [2 /*return*/];
                 }
@@ -1348,7 +1381,7 @@ var RequestController = /** @class */ (function () {
     };
     RequestController.prototype.searhCar = function (req, res) {
         return __awaiter(this, void 0, void 0, function () {
-            var team, search, cars, e_12;
+            var team, search, cars, e_13;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
@@ -1413,13 +1446,13 @@ var RequestController = /** @class */ (function () {
                         });
                         return [3 /*break*/, 4];
                     case 3:
-                        e_12 = _a.sent();
+                        e_13 = _a.sent();
                         /* istanbul ignore next */
                         logger_service_1["default"].error("RequestController.searhCar: Async Error.");
                         /* istanbul ignore next */
                         logger_service_1["default"].error("{user: {_id: " + req.user._id + ", email: " + req.user.email + "}}");
-                        logger_service_1["default"].error(e_12);
-                        res.status(500).json(e_12);
+                        logger_service_1["default"].error(e_13);
+                        res.status(500).json(e_13);
                         return [3 /*break*/, 4];
                     case 4: return [2 /*return*/];
                 }
@@ -1428,7 +1461,7 @@ var RequestController = /** @class */ (function () {
     };
     RequestController.prototype.apiCreateItem = function (req, res) {
         return __awaiter(this, void 0, void 0, function () {
-            var company, team, _a, car, idRequest, request, defaultItemStatus, newCar, newItem, item, e_13;
+            var company, team, _a, car, idRequest, request, defaultItemStatus, newCar, newItem, item, e_14;
             return __generator(this, function (_b) {
                 switch (_b.label) {
                     case 0:
@@ -1496,13 +1529,13 @@ var RequestController = /** @class */ (function () {
                         _b.label = 8;
                     case 8: return [3 /*break*/, 10];
                     case 9:
-                        e_13 = _b.sent();
+                        e_14 = _b.sent();
                         /* istanbul ignore next */
-                        console.log(e_13);
+                        console.log(e_14);
                         logger_service_1["default"].error("RequestController.apiCreateItem: Async Error.");
                         /* istanbul ignore next */
                         logger_service_1["default"].error("{user: {_id: " + req.user._id + ", email: " + req.user.email + "}}");
-                        res.status(500).json(e_13);
+                        res.status(500).json(e_14);
                         return [3 /*break*/, 10];
                     case 10: return [2 /*return*/];
                 }
@@ -1512,7 +1545,7 @@ var RequestController = /** @class */ (function () {
     RequestController.prototype.apiPatchItem = function (req, res) {
         var _a;
         return __awaiter(this, void 0, void 0, function () {
-            var _b, team, company, updateObject, id, cancelRequest_1, requestItem, existCar, _c, existActivity, inventories, participants, requests, newCar, item, e_14;
+            var _b, team, company, updateObject, id, cancelRequest_1, requestItem, existCar, _c, existActivity, inventories, participants, requests, newCar, item, e_15;
             return __generator(this, function (_d) {
                 switch (_d.label) {
                     case 0:
@@ -1628,14 +1661,14 @@ var RequestController = /** @class */ (function () {
                         res.status(200).json(__assign({}, item));
                         return [3 /*break*/, 25];
                     case 24:
-                        e_14 = _d.sent();
+                        e_15 = _d.sent();
                         /* istanbul ignore next */
-                        logger_service_1["default"].error(e_14);
+                        logger_service_1["default"].error(e_15);
                         /* istanbul ignore next */
                         logger_service_1["default"].error("RequestController.apiPatchItem: Async Error.");
                         /* istanbul ignore next */
                         logger_service_1["default"].error("{user: {_id: " + req.user._id + ", email: " + req.user.email + "}}");
-                        res.status(500).json(e_14);
+                        res.status(500).json(e_15);
                         return [3 /*break*/, 25];
                     case 25: return [2 /*return*/];
                 }
@@ -1654,7 +1687,7 @@ var RequestController = /** @class */ (function () {
     };
     RequestController.prototype.downloadItemFiles = function (req, res) {
         return __awaiter(this, void 0, void 0, function () {
-            var id, team, requestItems, archive_1, filename_1, filesToDownload, filesToCompress, _loop_1, _i, _a, file, results, numb, _b, e_15;
+            var id, team, requestItems, archive_1, filename_1, filesToDownload, filesToCompress, _loop_1, _i, _a, file, results, numb, _b, e_16;
             var _this = this;
             return __generator(this, function (_c) {
                 switch (_c.label) {
@@ -1707,10 +1740,10 @@ var RequestController = /** @class */ (function () {
                     case 3:
                         if (!filesToDownload.length) return [3 /*break*/, 5];
                         console.log('promise', numb);
-                        _b = [__spreadArray([], results)];
+                        _b = [__spreadArray([], results, true)];
                         return [4 /*yield*/, bluebird.all(filesToDownload.splice(0, 20).map(function (promise) { return promise(); }))];
                     case 4:
-                        results = __spreadArray.apply(void 0, _b.concat([_c.sent()]));
+                        results = __spreadArray.apply(void 0, _b.concat([_c.sent(), true]));
                         numb++;
                         return [3 /*break*/, 3];
                     case 5:
@@ -1741,14 +1774,14 @@ var RequestController = /** @class */ (function () {
                         _c.label = 7;
                     case 7: return [3 /*break*/, 9];
                     case 8:
-                        e_15 = _c.sent();
+                        e_16 = _c.sent();
                         /* istanbul ignore next */
-                        logger_service_1["default"].error(e_15);
+                        logger_service_1["default"].error(e_16);
                         /* istanbul ignore next */
                         logger_service_1["default"].error("RequestController.downloadItemFiles: Async Error.");
                         /* istanbul ignore next */
                         logger_service_1["default"].error("{user: {_id: " + req.user._id + ", email: " + req.user.email + "}}");
-                        res.status(500).json(e_15);
+                        res.status(500).json(e_16);
                         return [3 /*break*/, 9];
                     case 9: return [2 /*return*/];
                 }
@@ -1801,7 +1834,7 @@ var RequestController = /** @class */ (function () {
     };
     RequestController.prototype.uploadFile = function (req, res) {
         return __awaiter(this, void 0, void 0, function () {
-            var company, team, file, requestFile, e_16, e_17, e_18;
+            var company, team, file, requestFile, e_17, e_18, e_19;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
@@ -1842,7 +1875,7 @@ var RequestController = /** @class */ (function () {
                         _a.sent();
                         return [3 /*break*/, 5];
                     case 4:
-                        e_16 = _a.sent();
+                        e_17 = _a.sent();
                         logger_service_1["default"].error('RequestController.uploadFile: Error making autoRotate');
                         return [3 /*break*/, 5];
                     case 5: return [4 /*yield*/, requestFile.attach('file', file)];
@@ -1860,7 +1893,7 @@ var RequestController = /** @class */ (function () {
                         _a.sent();
                         return [3 /*break*/, 11];
                     case 10:
-                        e_17 = _a.sent();
+                        e_18 = _a.sent();
                         logger_service_1["default"].error('RequestController.uploadFile: Error making thumbnail');
                         return [3 /*break*/, 11];
                     case 11: return [4 /*yield*/, requestFile.save()];
@@ -1875,15 +1908,15 @@ var RequestController = /** @class */ (function () {
                         });
                         return [3 /*break*/, 14];
                     case 13:
-                        e_18 = _a.sent();
+                        e_19 = _a.sent();
                         /* istanbul ignore next */
                         logger_service_1["default"].error("RequestController.uploadFile: Async Error.");
                         /* istanbul ignore next */
                         logger_service_1["default"].error("{user: {_id: " + req.user._id + ", email: " + req.user.email + "}}");
                         /* istanbul ignore next */
-                        logger_service_1["default"].error(e_18);
+                        logger_service_1["default"].error(e_19);
                         /* istanbul ignore next */
-                        res.status(400).json(e_18);
+                        res.status(400).json(e_19);
                         return [3 /*break*/, 14];
                     case 14: return [3 /*break*/, 16];
                     case 15:

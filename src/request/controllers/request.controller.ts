@@ -110,19 +110,11 @@ class RequestController {
 
   public async integration(req: IRequest, res: Response) {
     let { query } = req;
-    const { team } = req.user;
     query['conectaID'] = query['6154722a94bba10012230aae'] || query['conectaID'];
     try {
       const params = await createRequestSalfaParams.validate(query, {
         stripUnknown: true
       });
-      const conectaID = query['6154722a94bba10012230aae'] || query['conectaID'];
-      if(conectaID?.length){
-        const existConectId = await Request.findOne({team,conectaID });
-        if(existConectId){
-          res.status(400).json({ error: `connectID used in another request ${existConectId.number}` });
-        }
-      }
       res.render('app/index', { token: await req.user.generateToken() });
       res.json(params);
     } catch (e) {
@@ -149,6 +141,32 @@ class RequestController {
     //     example: '?brand=Chevrolet&denomination=Sail&material=1213&5bf2de35caf8ef7096105c21=Roberto%20Castro&5bf2de35caf8ef7096105c22=76897564-1&60b9232164adc90013a79b45=example@example.com&sellerText=Juan%20P%C3%A9rez&6154722a94bba10012230aae=33'
     //   });
     // }
+  }
+
+  public async validateContectaID(req: IRequest, res: Response) {
+    try {
+      let { body: { conectaID } } = req;
+      const { team } = req.user;
+      if (conectaID?.length) {
+        const existConectId = await Request.findOne({ team, conectaID });
+        if (existConectId) {
+          res.json({
+            error: `connectID used in another request ${existConectId.number}`,
+            number: existConectId.number
+          });
+        } else {
+          res.json({});
+        }
+      } else {
+        res.json({});
+      }
+    } catch (e) {
+      /* istanbul ignore next */
+      if (e) {
+        console.log(e);
+        res.status(500).json(e);
+      }
+    }
   }
 
   public async index(req: IRequest, res: Response) {
