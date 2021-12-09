@@ -14,7 +14,7 @@ import ModalView from '../Modal/ModalView';
 import TrackingBasePage from '../Utils/TrackingBasePage';
 import ShowIf from '../Utils/ShowIf';
 import Axios, { AxiosError } from 'axios';
-import { IRequestSettting } from '../../../../../../src/app/interfaces/teamSetting.interface';
+import { IRequestSetting } from '../../../../../../src/app/interfaces/teamSetting.interface';
 import { ISalesChannel } from '../../../../../../src/request/interfaces/salesChannel.interface';
 import { IOperationType } from '../../../../../../src/request/interfaces/operationType.interface';
 import { IReason } from '../../../../../../src/request/interfaces/reason.interface';
@@ -37,7 +37,7 @@ interface IStateType {
   reasons: IReason[];
   channels: ISalesChannel[];
   operationTypes: IOperationType[];
-  requestSettings: IRequestSettting;
+  requestSettings: IRequestSetting;
 }
 
 declare let window: IWindow;

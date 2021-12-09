@@ -14,9 +14,10 @@ import {
   LOADING_TRANSMITTAL,
   TOOGLE_TAB_TRANSMITTAL,
   UPDATE_TRANSMITTAL_ITEM_TRANSMITTAL,
-  UPDATE_TRANSMITTAL_TRANSMITTAL
+  UPDATE_TRANSMITTAL_TRANSMITTAL,
+  TRANSPORT_MILESTONE_LOAD_STATUS
 } from '../actions/transmittal.types';
-import {ITransmittal} from "../../../../../src/distribution/interfaces/transmittal.interface";
+import {ITransmittal} from '../../../../../src/distribution/interfaces/transmittal.interface';
 
 const initialState: ITransmittalState<ITransmittal> = {
   loading: true,
@@ -26,6 +27,7 @@ const initialState: ITransmittalState<ITransmittal> = {
   venues: [],
   drivers: [],
   milestoneTypes: [],
+  milestones: [],
   transmittalOpen: [],
   source: null,
   requestItems: [],
@@ -81,9 +83,9 @@ export default function transmittalReducer(state= initialState, action: ITransmi
             return {
               ...transmittal,
               items: transmittal.items.filter((item: any) => {
-                return item._id !== action.payload.transmittalItem._id
+                return item._id !== action.payload.transmittalItem._id;
               })
-            }
+            };
           }
           return transmittal;
         })
@@ -92,7 +94,7 @@ export default function transmittalReducer(state= initialState, action: ITransmi
       return {
         ...state,
         data: state.data.filter((transmittal: any) => {
-          return transmittal._id !== action.payload.transmittal._id
+          return transmittal._id !== action.payload.transmittal._id;
         })
       };
     case UPDATE_TRANSMITTAL_TRANSMITTAL:
@@ -103,7 +105,7 @@ export default function transmittalReducer(state= initialState, action: ITransmi
             return {
               ...transmittal,
               ...action.payload.transmittal
-            }
+            };
           } else {
             return transmittal;
           }
@@ -117,7 +119,7 @@ export default function transmittalReducer(state= initialState, action: ITransmi
             return {
               ...transmittal,
               items: [...transmittal.items, action.payload.transmittalItem]
-            }
+            };
           }
           return transmittal;
         })
@@ -134,11 +136,11 @@ export default function transmittalReducer(state= initialState, action: ITransmi
                   return {
                     ...item,
                     ...action.payload.transmittalItem
-                  }
+                  };
                 }
                 return item;
               })
-            }
+            };
           }
           return transmittal;
         })
@@ -184,7 +186,7 @@ export default function transmittalReducer(state= initialState, action: ITransmi
         source: action.payload.source
       };
     case LOADING_REQUEST_ITEMS_TRANSMITTAL:
-       return {
+      return {
         ...state,
         requestItemsLoading: action.payload.requestItemsLoading
       };
@@ -206,6 +208,11 @@ export default function transmittalReducer(state= initialState, action: ITransmi
           page: action.payload.page,
           count: action.payload.count
         }
+      };
+    case TRANSPORT_MILESTONE_LOAD_STATUS:
+      return {
+        ...state,
+        milestones: action.payload.milestones
       };
     default:
       return state;

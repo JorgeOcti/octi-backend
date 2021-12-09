@@ -12,6 +12,7 @@ const initialState: IInventoryDashboardState = {
     states: []
   },
   inventorySettings: {
+    report: null,
     leftoverDifferentVenue: false,
     pending: "",
     pendingClass: "aqua",

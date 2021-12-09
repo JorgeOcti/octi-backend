@@ -368,6 +368,10 @@ var participantSchema = new mongoose.Schema({
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Transmittal'
     },
+    milestone: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Milestone'
+    },
     active: {
         type: Boolean,
         "default": true

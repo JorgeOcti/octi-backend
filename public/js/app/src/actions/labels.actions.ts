@@ -4,13 +4,13 @@ import * as swal from 'sweetalert';
 import {
   IInventoryLabel
 } from '../../../../../src/inventory/interfaces/inventoryLabel.interface';
-import {IInventorySettting} from '../../../../../src/app/interfaces/teamSetting.interface';
+import {IInventorySetting} from '../../../../../src/app/interfaces/teamSetting.interface';
 import ApiService from '../utils/axios';
 import {showModal, statusFooterButttonsModal} from '../utils/common';
 
 export interface ILabelsState {
   labels: IInventoryLabel[];
-  inventorySettings: IInventorySettting;
+  inventorySettings: IInventorySetting;
   loading: boolean;
   tempLabel: IInventoryLabel;
   source: CancelTokenSource | null;
@@ -145,13 +145,13 @@ interface ILoadLabels {
   type: '/LABELS/LOAD_LABELS';
   payload: {
     labels: any;
-    inventorySettings: IInventorySettting;
+    inventorySettings: IInventorySetting;
     count: number;
     pages: number
   };
 }
 
-export function loadLabelsAction(labels: any, inventorySettings: IInventorySettting, count: number, pages: number): ILoadLabels {
+export function loadLabelsAction(labels: any, inventorySettings: IInventorySetting, count: number, pages: number): ILoadLabels {
   return {
     type: '/LABELS/LOAD_LABELS',
     payload: {

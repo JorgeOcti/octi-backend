@@ -43,7 +43,7 @@ import {
   REQUEST_ITEMS_UPDATE_ITEM,
   RequestItemsReduxActions
 } from './requestItems.types';
-import { IRequestSettting } from '../../../../../src/app/interfaces/teamSetting.interface';
+import { IRequestSetting } from '../../../../../src/app/interfaces/teamSetting.interface';
 
 export function cancelRequestItemsAction(source: CancelTokenSource): ICancelRequestItems {
   return {
@@ -169,7 +169,7 @@ export function deleteRequestItemAction(item: IRequestItem): IDeleteRequestItems
   };
 }
 
-export function loadRequestSettingsAction(requestSettings: IRequestSettting): ILoadSettingsRequestItems {
+export function loadRequestSettingsAction(requestSettings: IRequestSetting): ILoadSettingsRequestItems {
   return {
     type: REQUEST_ITEMS_LOAD_SETTINGS,
     payload: {

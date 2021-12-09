@@ -299,13 +299,13 @@ app.use('/api/v1', router_1.jwtRouter);
 exports.queue = kue.createQueue({
     redis: {
         createClientFactory: function () {
-            return (0, redis_service_1.createRedisClient)();
+            return redis_service_1.createRedisClient();
         }
     }
 });
 var billingQueue = new Bull('billing', {
     createClient: function () {
-        return (0, redis_service_1.createRedisClient)();
+        return redis_service_1.createRedisClient();
     },
     prefix: '{andes}'
 });

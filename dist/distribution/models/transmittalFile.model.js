@@ -36,7 +36,11 @@ exports.transmittalFileSchema = new mongoose.Schema({
         ref: 'User'
     },
     file: fileSchema,
-    thumbnail: fileSchema
+    thumbnail: fileSchema,
+    milestone: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Milestone'
+    }
 }, {
     timestamps: true
 });

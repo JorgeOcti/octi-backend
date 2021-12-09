@@ -7,6 +7,7 @@ import {IUserModel} from '../../../../../src/app/models/user.model';
 import {IRequestItem} from '../../../../../src/request/interfaces/requestItem.interface';
 import { ITransmittalModel } from '../../../../../src/distribution/models/transmittal.model';
 import { IMilestoneType } from '../../../../../src/distribution/interfaces/milestoneType.interface';
+import {IMilestone} from "../../../../../src/distribution/interfaces";
 
 
 export const LOADING_TRANSMITTAL = '@transmittal/IS_LOADING';
@@ -23,6 +24,7 @@ export const UPDATE_TRANSMITTAL_ITEM_TRANSMITTAL = '@transmittal/UPDATE_TRANSMIT
 export const DELETE_TRANSMITTAL_ITEM_TRANSMITTAL = '@transmittal/DELETE_TRANSMITTAL_ITEM';
 export const UPDATE_TRANSMITTAL_TRANSMITTAL = '@transmittal/UPDATE_TRANSMITTAL';
 export const DELETE_TRANSMITTAL_TRANSMITTAL = '@transmittal/DELETE_TRANSMITTAL';
+export const TRANSPORT_MILESTONE_LOAD_STATUS = '@transmittal/LOAD_MILESTONES';
 
 
 export interface IPaginationListView {
@@ -61,6 +63,7 @@ export interface ITransmittalState<T = ITransmittal> extends IListView<T> {
   carriers: ICarrierModel[];
   drivers: IUserModel[];
   milestoneTypes: IMilestoneType[];
+  milestones: IMilestone[];
   requestItems: IRequestItem[];
   requestItemsfilters: IRequestItemsFilters;
   requestItemsPagination: IPaginationListView;
@@ -86,6 +89,13 @@ interface ITransmittalCancerlRequestAction {
   type: typeof CANCEL_REQUEST_TRANSMITTAL;
   payload: {
     source: CancelTokenSource;
+  }
+}
+
+interface ITransmittalLoadMilestones {
+  type: typeof TRANSPORT_MILESTONE_LOAD_STATUS;
+  payload: {
+    milestones: IMilestone[];
   }
 }
 
@@ -216,5 +226,6 @@ export type ITransmittalActionTypes =
   IChangeFilterRequestItemsTransmittalItemAction |
   ILoadRequestItemsTransmittalItemAction |
   ILoadingRequestItemsTransmittalItemAction |
-  ITransmittalLoadingAction;
+  ITransmittalLoadingAction |
+  ITransmittalLoadMilestones;
 

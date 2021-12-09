@@ -6,6 +6,52 @@ import { ICarModel } from './car.model';
 export interface ITeamSettingModel extends ITeamSetting, mongoose.Document {
 }
 
+const helpPhonesSettingSchema = new mongoose.Schema({
+  transmittal: {
+    type: String,
+  }
+});
+
+const UnitVocabReferenceSchema = new mongoose.Schema({
+  singular: {
+    type: String,
+    default: "Unidad"
+  },
+  plural: {
+    type: String,
+    default: "Unidades"
+  }
+});
+
+const vocabularySettingsSchema = new mongoose.Schema({
+  primary: {
+    type: String,
+    default: "VIN"
+  },
+  secondary: {
+    type: String,
+    default: "Patente"
+  },
+  unitReference: {
+    type: UnitVocabReferenceSchema
+  }
+});
+
+const reportSettingSchema = new mongoose.Schema({
+  atLeastOne: {
+    type: Boolean,
+    default: true
+  },
+  primaryRequired: {
+    type: Boolean,
+    default: true
+  },
+  secondaryRequired: {  //commonly know as Patente for the most
+    type: Boolean,
+    default: true
+  }
+});
+
 const formSettingSchema = new mongoose.Schema({
   vinMinCharacters: {
     type: Number,
@@ -15,16 +61,15 @@ const formSettingSchema = new mongoose.Schema({
     type: Number,
     default: 17
   },
-
-});
-
-const helpPhonesSettingSchema = new mongoose.Schema({
-  transmittal: {
-    type: String,
+  report: {
+    type: reportSettingSchema
   }
 });
 
 const inventorySettingSchema = new mongoose.Schema({
+  report: {
+    type: reportSettingSchema
+  },
   pending: {
     type: String
   },
@@ -123,13 +168,47 @@ const teamSettingSchema = new mongoose.Schema({
   inventory: inventorySettingSchema,
   request: requestSettingSchema,
   helpPhones: helpPhonesSettingSchema,
-  form: formSettingSchema
+  form: formSettingSchema,
+  vocabulary: vocabularySettingsSchema,
 }, {
-  timestamps: true
+  timestamps: true,
 });
 // db.teamsettings.updateMany({}, {$set:{request:{denomination: true, denominationRequired: true, material: true, materialRequired: true, internalNumber: true, internalNumberRequired: false, internalNumberText:  "Número interno", color: true, colorRequired: true}}},{many: true});
 
 // db.teamsettings.updateMany({}, { $set: { form: { vinMinCharacters: 17, vinMaxCharacters: 17 } } }, { many: true });
+
+/*
+db.teamsettings.updateMany({}, {
+    $set: {vocabulary: {
+            primary: "VIN",
+            secondary: "Patente",
+            unitReference: {
+                singular: "Unidad",
+                plural: "Unidades"
+            }
+        }
+    }
+})
+
+
+db.teamsettings.updateMany({}, {
+    $set: {"form.report": {
+            atLeastOne: true,
+            primaryRequired: false,
+            secondaryRequired: false
+        }
+    }
+})
+
+db.teamsettings.updateMany({}, {
+    $set: {"inventory.report": {
+            atLeastOne: true,
+            primaryRequired: false,
+            secondaryRequired: false
+        }
+    }
+})
+ */
 
 
 teamSettingSchema.statics.findOneOrCreate = function(condition: any, create: any): Promise<ICarModel> {

@@ -2,12 +2,12 @@ import { AxiosError, default as Axios } from 'axios';
 import {Dispatch} from 'redux';
 import {IFilterCar} from '../reducers/inventory.reducer';
 import ApiService from '../utils/axios';
-import {IInventorySettting} from '../../../../../src/app/interfaces/teamSetting.interface';
+import {IInventorySetting} from '../../../../../src/app/interfaces/teamSetting.interface';
 
 export interface IInventoryDashboardState {
   venues: any[];
   monthlyReport: any[];
-  inventorySettings: IInventorySettting;
+  inventorySettings: IInventorySetting;
   filter: IFilterCar;
   loading: boolean;
 }
@@ -88,9 +88,9 @@ export function getInventoryDashboardFiltered(filter: IFilterCar) {
     api.getInventoryDashboard(filter)
       .then((dashboard) => {
         dispatch(loadInventoriesDashboardFilteredAction(filter, dashboard.data.data, dashboard.data.inventorySettings));
-    }).catch((err: AxiosError): void => {
-      api.errorHandler(err);
-    });
+      }).catch((err: AxiosError): void => {
+        api.errorHandler(err);
+      });
   };
 }
 

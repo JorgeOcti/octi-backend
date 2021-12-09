@@ -153,6 +153,7 @@ var JWTController = /** @class */ (function () {
                                                         return [4 /*yield*/, teamSetting_model_1["default"].findOne({ team: user.team })];
                                                     case 1:
                                                         teamSettings = _a.sent();
+                                                        logger_service_1["default"].debug(JSON.stringify(teamSettings));
                                                         userInfo = {
                                                             _id: user._id,
                                                             firstName: user.firstName,
@@ -182,7 +183,9 @@ var JWTController = /** @class */ (function () {
                                                                     }),
                                                                     helpNumber: general_utils_1["default"].getObjectProperty(teamSettings.toJSON(), 'helpPhones', {
                                                                         transmittal: ""
-                                                                    })
+                                                                    }),
+                                                                    inventory: general_utils_1["default"].getObjectProperty(teamSettings.toJSON(), 'inventory', {}),
+                                                                    vocabulary: general_utils_1["default"].getObjectProperty(teamSettings.toJSON(), 'vocabulary', {})
                                                                 }
                                                                 // settings: GeneralUtils.getObjectProperty(user.team, 'settings', {})
                                                             },
@@ -346,7 +349,9 @@ var JWTController = /** @class */ (function () {
                                                                 }),
                                                                 helpNumber: general_utils_1["default"].getObjectProperty(teamSettings.toJSON(), 'helpPhones', {
                                                                     transmittal: ""
-                                                                })
+                                                                }),
+                                                                inventory: general_utils_1["default"].getObjectProperty(teamSettings.toJSON(), 'inventory', {}),
+                                                                vocabulary: general_utils_1["default"].getObjectProperty(teamSettings.toJSON(), 'vocabulary', {})
                                                             }
                                                             // settings: GeneralUtils.getObjectProperty(user.team, 'settings', {})
                                                         },

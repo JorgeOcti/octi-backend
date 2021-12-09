@@ -8,7 +8,6 @@ import * as moment from 'moment';
 import { IReason } from '../../../../../../../src/request/interfaces/reason.interface';
 import { ISalesChannel } from '../../../../../../../src/request/interfaces/salesChannel.interface';
 import { IOperationType } from '../../../../../../../src/request/interfaces/operationType.interface';
-import { IRequestSettting } from '../../../../../../../src/app/interfaces/teamSetting.interface';
 import ApiService from '../../../utils/axios';
 import BootstrapSelectField from '../../Utils/forms/BootstrapSelectField';
 import { inputStringRequired } from '../../Utils/forms/validations';
@@ -20,6 +19,7 @@ import DateRangePickerField from '../../Utils/forms/DateRangePickerField';
 import { DecoratedFormProps } from 'redux-form/lib/reduxForm';
 import InputHiddenField from '../../Utils/forms/InputHiddenField';
 import ShowIf from '../../Utils/ShowIf';
+import { IRequestSetting } from '../../../../../../../src/app/interfaces';
 
 interface IPropsType extends InjectedFormProps {
   formValues: any;
@@ -36,7 +36,7 @@ interface IStateType {
   reasons: IReason[];
   channels: ISalesChannel[];
   operationTypes: IOperationType[];
-  requestSettings: IRequestSettting;
+  requestSettings: IRequestSetting;
   loading: boolean;
 }
 

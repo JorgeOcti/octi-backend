@@ -20,6 +20,7 @@ import ApiService from '../../../utils/axios';
 import * as moment from 'moment';
 import Axios from 'axios';
 import * as swal from 'sweetalert';
+import {IMilestone} from "../../../../../../../src/distribution/interfaces";
 
 interface IPropsType extends RouteComponentProps<{ ticket: string }> {
   dispatch: Dispatch<ITransmittalActionTypes>;
@@ -167,8 +168,18 @@ class TransmittalListView extends TrackingBasePage<IPropsType, IStateType> {
 
   public render(): React.ReactElement<IPropsType> {
     const {
-      pagination, loading, data, options: { orderBy, orderType }
+      pagination, loading, data, options: { orderBy, orderType }, milestones, milestoneTypes
     } = this.props.transmittal;
+
+    let longestMilestones : IMilestone[] = []
+
+    for(let mType of milestoneTypes){
+      let tmp = milestones
+        .filter(m => m.type == mType._id && m.step == "loadEvidence");
+      if (tmp.length > longestMilestones.length)
+        longestMilestones = tmp.sort((a,b) => a.order - b.order);
+    }
+
     const { exporing } = this.state;
     return (
       <AppContainer title='' cMenu='3' cSubMenu='3.4'>
@@ -212,10 +223,10 @@ class TransmittalListView extends TrackingBasePage<IPropsType, IStateType> {
                   <div className='flex-45 col-sm-1 col-xs-1 col-md-1 col-lg-1'>
                     <strong>Placa</strong>
                   </div>
-                  <div className='flex-45 col-sm-2 col-xs-2 col-md-2 col-lg-2'>
+                  <div className='flex-45 col-sm-1 col-xs-1 col-md-1 col-lg-1'>
                     <strong>Chofer</strong>
                   </div>
-                  <div className='flex-45 col-sm-2 col-xs-2 col-md-2 col-lg-2'>
+                  <div className='flex-45 col-sm-2 col-xs-2 col-md-1 col-lg-1'>
                     <strong>Transportista</strong>
                   </div>
                   <div className='flex-45 col-sm-1 col-xs-1 col-md-1 col-lg-1'>
@@ -227,11 +238,14 @@ class TransmittalListView extends TrackingBasePage<IPropsType, IStateType> {
                   <div className='flex-45 col-sm-1 col-xs-1 col-md-1 col-lg-1'>
                     <strong>Documentos</strong>
                   </div>
+                  {
+                    longestMilestones.map((milestone: IMilestone) =>
+                      (<div className='flex-45 col-sm-1 col-xs-1 col-md-1 col-lg-1' key={milestone._id}>
+                        <strong>{milestone.name}</strong>
+                      </div>))
+                  }
                   <div className='flex-45 col-sm-1 col-xs-1 col-md-1 col-lg-1'>
-                    <strong>Carga</strong>
-                  </div>
-                  <div className='flex-45 col-sm-1 col-xs-1 col-md-1 col-lg-1'>
-                    <strong>Llegó</strong>
+                    <strong>Evidencia descarga</strong>
                   </div>
                   <div className='flex-45 col-sm-1 col-xs-1 col-md-1 col-lg-1' />
                 </div>
@@ -239,6 +253,7 @@ class TransmittalListView extends TrackingBasePage<IPropsType, IStateType> {
                   data.map((item: any) => (
                     <TransmitalListDetail
                       item={item}
+                      evidenceMilestones={longestMilestones}
                       key={item._id}
                     />
                   ))

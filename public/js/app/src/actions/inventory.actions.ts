@@ -2,7 +2,7 @@ import {AxiosError, AxiosResponse, CancelTokenSource, default as Axios} from 'ax
 import {Dispatch} from 'redux';
 import * as swal from 'sweetalert';
 import {IInventoryCar} from '../../../../../src/inventory/interfaces/inventory.interface';
-import {IInventorySettting} from '../../../../../src/app/interfaces/teamSetting.interface';
+import {IInventorySetting} from '../../../../../src/app/interfaces/teamSetting.interface';
 import {IInventoryComment} from '../../../../../src/inventory/interfaces/inventoryComment.interface';
 import {IInventoryLabel} from '../../../../../src/inventory/interfaces/inventoryLabel.interface';
 import {IFilterCar} from '../reducers/inventory.reducer';
@@ -55,7 +55,7 @@ export interface IDetailByBrand {
 
 export interface IInventoryState {
   inventories: any[];
-  inventorySettings: IInventorySettting;
+  inventorySettings: IInventorySetting;
   loading: boolean;
   inventoryCar: IInventoryCar | null;
   source: CancelTokenSource | null;
@@ -149,7 +149,7 @@ interface ILoadInventories {
     inventories: any[];
     inventorySettings: any;
     count: number;
-    pages: number
+    pages: number;
     page: number
   };
 }
