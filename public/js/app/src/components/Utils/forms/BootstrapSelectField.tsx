@@ -107,7 +107,7 @@ class BootstrapSelectField extends React.Component<IPropsType, IStateType> {
                 </div>
               </div>
             </div>
-            <span className="bs-caret">
+            <span className="bs-caret" style={{color: touched && error ? "#dd4b39" : undefined}}>
             <span className="caret"/>
           </span>
           </button>
