@@ -313,7 +313,7 @@ class Form extends React.Component<IPropsType, IStateType> {
                     <button
                       type={'button'}
                       disabled={submitting}
-                      onClick={submitting ? undefined : () => {
+                      onClick={submitting || !valid ? ()=> this.props.dispatch(submit('requestForm')) : () => {
                         swal({
                           title: '¿Estás seguro?',
                           text: `Vas a crear esta solicitud.`,
