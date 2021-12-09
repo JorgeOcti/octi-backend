@@ -20,6 +20,7 @@ import { DecoratedFormProps } from 'redux-form/lib/reduxForm';
 import InputHiddenField from '../../Utils/forms/InputHiddenField';
 import ShowIf from '../../Utils/ShowIf';
 import { IRequestSetting } from '../../../../../../../src/app/interfaces';
+import * as  swal from 'sweetalert';
 
 interface IPropsType extends InjectedFormProps {
   formValues: any;
@@ -67,6 +68,7 @@ class Form extends React.Component<IPropsType, IStateType> {
   constructor(props: IPropsType) {
     super(props);
     this.loadBaseData = this.loadBaseData.bind(this);
+    this.addCarToForm = this.addCarToForm.bind(this);
     this.api = new ApiService();
   }
 
@@ -83,7 +85,7 @@ class Form extends React.Component<IPropsType, IStateType> {
   }
 
   public render(): React.ReactElement<IPropsType> {
-    const { handleSubmit, valid, submitFailed, query, syncErrors, formValues, created, submitting} = this.props;
+    const { handleSubmit, valid, submitFailed, query, syncErrors, formValues, created, submitting } = this.props;
     const { venues, channels, reasons, loading } = this.state;
     return (
       <React.Fragment>
@@ -288,34 +290,7 @@ class Form extends React.Component<IPropsType, IStateType> {
                             <button
                               className='btn btn-success btn-sm'
                               type='button'
-                              onClick={() => {
-                                let data: any = {
-                                  key: uuid.v4(),
-                                  reason: '5fe0930aa9683b0f8a6e0e42',
-                                  brand: query.brand,
-                                  denomination: query.denomination,
-                                  material: query.material,
-                                  answersbkp: [],
-                                  answers: []
-                                };
-                                const salfaReason = reasons
-                                  .find((reason) => reason._id === '5fe0930aa9683b0f8a6e0e42');
-                                if (salfaReason) {
-                                  salfaReason.questions
-                                    .forEach((question, index) => {
-                                      data.answersbkp.push(query[question._id]);
-                                      if (query[question._id]) {
-                                        data.answers.push({
-                                          questionId: question._id,
-                                          question: question.name,
-                                          answer: query[question._id]
-                                        });
-                                      }
-                                    });
-                                }
-                                this.props.dispatch(arrayPush('requestForm', 'cars', data));
-                              }
-                              }
+                              onClick={this.addCarToForm}
                             >
                               <i className='fa fa-plus' /> Agregar vehículo
                             </button>
@@ -338,7 +313,24 @@ class Form extends React.Component<IPropsType, IStateType> {
                     <button
                       type={'button'}
                       disabled={submitting}
-                      onClick={submitting ? undefined : () => this.props.dispatch(submit('requestForm'))}
+                      onClick={submitting ? undefined : () => {
+                        swal({
+                          title: '¿Estás seguro?',
+                          text: `Vas a crear esta solicitud.`,
+                          icon: 'warning',
+                          dangerMode: true,
+                          buttons: {
+                            cancel: 'Cancelar' as any,
+                            confirm: {
+                              text: 'Sí'
+                            }
+                          }
+                        }).then((willCReate: any) => {
+                          if (willCReate) {
+                            this.props.dispatch(submit('requestForm'));
+                          }
+                        });
+                      }}
                       className='btn btn-primary btn-sm'
                     >
                       Crear solicitud
@@ -359,7 +351,7 @@ class Form extends React.Component<IPropsType, IStateType> {
           </div>
         </div>
         <ShowIf condition={loading}>
-        {/*<ShowIf condition={true}>*/}
+          {/*<ShowIf condition={true}>*/}
           <div style={{
             position: 'absolute',
             top: '0',
@@ -369,7 +361,7 @@ class Form extends React.Component<IPropsType, IStateType> {
             display: 'flex',
             flexDirection: 'column',
             alignItems: 'center',
-            paddingTop: '400px',
+            paddingTop: '400px'
             // justifyContent: 'center'
           }}>
             <p><i className='fa fa-3x fa-circle-o-notch text-primary fa-spin' /></p>
@@ -386,7 +378,7 @@ class Form extends React.Component<IPropsType, IStateType> {
             display: 'flex',
             flexDirection: 'column',
             alignItems: 'center',
-            paddingTop: '400px',
+            paddingTop: '400px'
             // justifyContent: 'center'
           }}>
           </div>
@@ -394,6 +386,37 @@ class Form extends React.Component<IPropsType, IStateType> {
       </React.Fragment>
     );
   }
+
+  private addCarToForm() {
+    const { query } = this.props;
+    const { reasons } = this.state;
+    let data: any = {
+      key: uuid.v4(),
+      reason: '5fe0930aa9683b0f8a6e0e42',
+      brand: query.brand,
+      denomination: query.denomination,
+      material: query.material,
+      answersbkp: [],
+      answers: []
+    };
+    const salfaReason = reasons
+      .find((reason) => reason._id === '5fe0930aa9683b0f8a6e0e42');
+    if (salfaReason) {
+      salfaReason.questions
+        .forEach((question) => {
+          data.answersbkp.push(query[question._id]);
+          if (query[question._id]) {
+            data.answers.push({
+              questionId: question._id,
+              question: question.name,
+              answer: query[question._id]
+            });
+          }
+        });
+    }
+    this.props.dispatch(arrayPush('requestForm', 'cars', data));
+  }
+
   private loadBaseData() {
     this.setState({ loading: true });
     Axios
@@ -413,6 +436,7 @@ class Form extends React.Component<IPropsType, IStateType> {
           operationTypes: operationTypes.data.results,
           loading: false
         });
+        this.addCarToForm();
       }))
       .catch((err: AxiosError): void => {
         this.api.errorHandler(err);

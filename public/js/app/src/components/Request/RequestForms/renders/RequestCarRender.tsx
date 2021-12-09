@@ -197,7 +197,6 @@ class RequestCarRender extends React.Component<IPropsType, IStateType> {
                                     fields.remove(index);
                                   }
                                 });
-
                               }}
                             >
                               <i className='fa fa-trash' />
