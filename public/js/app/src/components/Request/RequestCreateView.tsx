@@ -48,13 +48,13 @@ interface IStateType {
   venues: any[];
   reasons: IReason[];
   channels: ISalesChannel[];
-  channel: string;
   operationTypes: IOperationType[];
+  requestSettings: IRequestSettting;
+  channel: string;
   operationType: string;
   fleet: boolean;
   loading: boolean;
   error: Error | null;
-  requestSettings: IRequestSettting;
 }
 
 const initialNewCar = {
@@ -88,12 +88,6 @@ class RequestCreateView extends TrackingBasePage<IPropsType, IStateType> {
     venues: [],
     reasons: [],
     channels: [],
-    operationTypes: [],
-    operationType: '',
-    loading: false,
-    fleet: false,
-    channel: '',
-    error: null,
     requestSettings: {
       color: false,
       colorRequired: false,
@@ -104,7 +98,13 @@ class RequestCreateView extends TrackingBasePage<IPropsType, IStateType> {
       internalNumberText: 'Número interno',
       material: false,
       materialRequired: false
-    }
+    },
+    operationTypes: [],
+    operationType: '',
+    loading: false,
+    fleet: false,
+    channel: '',
+    error: null,
   };
 
   constructor(props: IPropsType) {

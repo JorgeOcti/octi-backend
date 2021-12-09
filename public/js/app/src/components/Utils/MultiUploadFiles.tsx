@@ -250,7 +250,7 @@ class MultiUploadFiles extends React.Component<IPropsType, IStateType> {
   private deleteFile(id: string) {
     swal({
       title: '¿Estás seguro?',
-      text: `Vas a eliminar el archivo.`,
+      text: `Vas a eliminar el archivo adjunto.`,
       icon: 'warning',
       dangerMode: true,
       buttons: {

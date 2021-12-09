@@ -158,33 +158,45 @@ var RequestController = /** @class */ (function () {
     }
     RequestController.prototype.integration = function (req, res) {
         return __awaiter(this, void 0, void 0, function () {
-            var query, params, e_1;
-            return __generator(this, function (_a) {
-                switch (_a.label) {
+            var query, team, params, conectaID, existConectId, _a, _b, _c, e_1;
+            var _d;
+            return __generator(this, function (_e) {
+                switch (_e.label) {
                     case 0:
                         query = req.query;
-                        if (!Object.keys(query).length) return [3 /*break*/, 4];
-                        _a.label = 1;
+                        team = req.user.team;
+                        query['conectaID'] = query['6154722a94bba10012230aae'] || query['conectaID'];
+                        _e.label = 1;
                     case 1:
-                        _a.trys.push([1, 3, , 4]);
+                        _e.trys.push([1, 6, , 7]);
                         return [4 /*yield*/, inputsSchema_1.createRequestSalfaParams.validate(query, {
                                 stripUnknown: true
                             })];
                     case 2:
-                        params = _a.sent();
-                        res.json(params);
-                        return [3 /*break*/, 4];
+                        params = _e.sent();
+                        conectaID = query['6154722a94bba10012230aae'] || query['conectaID'];
+                        if (!(conectaID === null || conectaID === void 0 ? void 0 : conectaID.length)) return [3 /*break*/, 4];
+                        return [4 /*yield*/, request_model_1["default"].findOne({ team: team, conectaID: conectaID })];
                     case 3:
-                        e_1 = _a.sent();
-                        res.status(400).json({ error: e_1.errors.join(', ') });
-                        return [3 /*break*/, 4];
+                        existConectId = _e.sent();
+                        if (existConectId) {
+                            res.status(400).json({ error: "connectID used in another request " + existConectId.number });
+                        }
+                        _e.label = 4;
                     case 4:
-                        res.json({
-                            name: "Osa-Salfa integration test",
-                            detail: "Params required are brand, denomination, material, 5bf2de35caf8ef7096105c21, 5bf2de35caf8ef7096105c22, 60b9232164adc90013a79b45, sellerText and 6154722a94bba10012230aae.",
-                            example: "?brand=Chevrolet&denomination=Sail&material=1213&5bf2de35caf8ef7096105c21=Roberto%20Castro&5bf2de35caf8ef7096105c22=76897564-1&60b9232164adc90013a79b45=example@example.com&sellerText=Juan%20P%C3%A9rez&6154722a94bba10012230aae=33"
-                        });
-                        return [2 /*return*/];
+                        _b = (_a = res).render;
+                        _c = ['app/index'];
+                        _d = {};
+                        return [4 /*yield*/, req.user.generateToken()];
+                    case 5:
+                        _b.apply(_a, _c.concat([(_d.token = _e.sent(), _d)]));
+                        res.json(params);
+                        return [3 /*break*/, 7];
+                    case 6:
+                        e_1 = _e.sent();
+                        res.status(400).json({ error: e_1.errors.join(', ') });
+                        return [3 /*break*/, 7];
+                    case 7: return [2 /*return*/];
                 }
             });
         });
@@ -477,14 +489,14 @@ var RequestController = /** @class */ (function () {
     };
     RequestController.prototype.apiCreate = function (req, res) {
         return __awaiter(this, void 0, void 0, function () {
-            var _a, company, team, _b, cars, venue, channel, sellerText, operationType, defaultItemStatus, updateTeam, request, _i, cars_2, car, newCar, newRequest, e_5;
+            var _a, company, team, _b, cars, venue, channel, sellerText, operationType, deliveryVenue, deliveryAddress, deliveryDate, conectaID, defaultItemStatus, updateTeam, request, _i, cars_2, car, newCar, newRequest, e_5;
             return __generator(this, function (_c) {
                 switch (_c.label) {
                     case 0:
                         logger_service_1["default"].info("RequestController.apiCreate");
                         logger_service_1["default"].info("{user: {_id: " + req.user._id + ", email: " + req.user.email + "}, body: " + JSON.stringify(req.body) + " }");
                         _a = req.user, company = _a.company, team = _a.team;
-                        _b = req.body, cars = _b.cars, venue = _b.venue, channel = _b.channel, sellerText = _b.sellerText, operationType = _b.operationType;
+                        _b = req.body, cars = _b.cars, venue = _b.venue, channel = _b.channel, sellerText = _b.sellerText, operationType = _b.operationType, deliveryVenue = _b.deliveryVenue, deliveryAddress = _b.deliveryAddress, deliveryDate = _b.deliveryDate, conectaID = _b.conectaID;
                         _c.label = 1;
                     case 1:
                         _c.trys.push([1, 11, , 12]);
@@ -508,6 +520,10 @@ var RequestController = /** @class */ (function () {
                                 number: updateTeam.requestNumber,
                                 origin: venue,
                                 destination: venue,
+                                deliveryVenue: deliveryVenue,
+                                deliveryAddress: deliveryAddress,
+                                deliveryDate: deliveryDate,
+                                conectaID: conectaID,
                                 operationType: (operationType === null || operationType === void 0 ? void 0 : operationType.length) ? operationType : null,
                                 // status,
                                 channel: channel,
@@ -564,6 +580,7 @@ var RequestController = /** @class */ (function () {
                             request: newRequest
                         });
                         res.json({
+                            data: newRequest,
                             status: 200
                         });
                         return [3 /*break*/, 12];

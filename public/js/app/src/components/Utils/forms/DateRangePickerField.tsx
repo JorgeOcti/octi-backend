@@ -1,9 +1,20 @@
 import * as moment from 'moment-timezone';
 import * as React from 'react';
-import { CSSProperties, RefObject } from 'react';
+import { CSSProperties, InputHTMLAttributes, RefObject } from 'react';
 
 interface IPropsType {
   onChange?: (e: moment.Moment | null) => void;
+  input: InputHTMLAttributes<any>
+  label: string;
+  labelOff?:boolean;
+  type: string
+  help: string
+  placeholder: string;
+  meta: {
+    touched: boolean;
+    error: string;
+    warning: string;
+  }
   className?: string;
   format?: string;
   style?: CSSProperties;
@@ -16,7 +27,7 @@ interface IStateType {
   error: Error | null;
 }
 
-class DateRangePicker extends React.Component<IPropsType, IStateType> {
+class DateRangePickerField extends React.Component<IPropsType, IStateType> {
 
   readonly input: RefObject<HTMLInputElement>;
   readonly inputGroup: RefObject<HTMLInputElement>;
@@ -67,24 +78,41 @@ class DateRangePicker extends React.Component<IPropsType, IStateType> {
   }
 
   public render(): React.ReactElement<IPropsType> {
-    const { format, value } = this.props;
+    const {
+      format, input,
+      label,
+      labelOff,
+      placeholder,
+      type,
+      help,
+      meta: { touched, error, warning }
+    } = this.props;
     return (
-      <div className='input-group'>
-        <input
-          ref={this.input}
-          type="text"
-          value={value?.toString().length ? moment(value).format(format ?? 'DD-MM-YY') : ''}
-          className={`form-control ${this.props.className ?? ''}`}
-          onChange={() => {
-          }}
-          style={{ ...this.props.style }}
-        />
-        <span className='input-group-addon pointer' onClick={this.clickCalendar}>
+      <div className={`form-group ${touched && error ? 'has-error' : warning ? 'has-warning' : ''}`}>
+        {!labelOff ? <label className='control-label'>{label}</label> : null}
+        <div className='input-group'>
+          <input
+            ref={this.input}
+            type='text'
+            value={input.value?.toString().length ? moment(input.value as string).format(format ?? 'DD-MM-YY') : ''}
+            className={`form-control ${this.props.className ?? ''}`}
+            onClick={this.clickCalendar}
+            onChange={() => {
+            }}
+            style={{ ...this.props.style }}
+          />
+          <span className='input-group-addon pointer' onClick={this.clickCalendar}>
           <i className='fa fa-calendar' />
         </span>
+        </div>
+        {
+          touched &&
+          ((error && <span className='help-block'>{error}</span>) ||
+            (warning && <span className='help-block'>{warning}</span>)) || <span className='help-block'>&nbsp;</span>
+        }
       </div>
     );
   }
 }
 
-export default DateRangePicker;
+export default DateRangePickerField;

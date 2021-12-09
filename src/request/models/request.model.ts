@@ -46,6 +46,20 @@ const requestSchema = new mongoose.Schema({
   //   type: mongoose.Schema.Types.ObjectId,
   //   ref: 'RequestStatus'
   // },
+  deliveryVenue: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Venue'
+  },
+  deliveryAddress: {
+    type: String
+  },
+  deliveryDate: {
+    type: Date
+  },
+  conectaID: {
+    type: String
+  },
+
   createdBy: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',

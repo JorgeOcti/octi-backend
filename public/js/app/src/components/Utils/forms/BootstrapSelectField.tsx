@@ -76,13 +76,13 @@ class BootstrapSelectField extends React.Component<IPropsType, IStateType> {
       <div className={`form-group ${touched && error ? "has-error" : ""} ${touched && warning ? "has-warning" : ""}`}>
         {!labelOff?<label className="control-label">{label}</label>: null}
         <div
-          className={`dropdown bootstrap-select form-control show-tick ${autoClouse ? '' : 'keep-inside-clicks-open'} ${sm ? 'bootstrap-select-sm' : ''}`}>
+          className={`dropdown bootstrap-select form-control show-tick ${autoClouse ? '' : 'keep-inside-clicks-open'} ${sm ? 'bootstrap-select-sm' : ''}`} >
           <button
             type="button"
             className={`btn dropdown-toggle bs-placeholder btn-filter btn-default`}
             data-toggle="dropdown"
             disabled={disabled}
-            style={{borderRadius: '0px'}}
+            style={{borderRadius: '0px', borderColor: touched && error ? '#dd4b39' : ''}}
             onClick={this.handlerOpen}
           >
             <div className="filter-option">
@@ -102,7 +102,7 @@ class BootstrapSelectField extends React.Component<IPropsType, IStateType> {
                             </React.Fragment>
                           ))
                       : noneSelectedText ?
-                      <span style={{color: '#999'}}> {noneSelectedText}</span> : <span style={{color: '#999'}}> Todos </span>
+                      <span style={{color: touched && error ? "#dd4b39" : '#999'}}> {noneSelectedText}</span> : <span style={{color: '#999'}}> Todos </span>
                   }
                 </div>
               </div>
@@ -176,7 +176,7 @@ class BootstrapSelectField extends React.Component<IPropsType, IStateType> {
         {
           touched &&
           ((error && <span className="help-block">{error}</span>) ||
-            (warning && <span className="help-block">{warning}</span>))
+            (warning && <span className="help-block">{warning}</span>)) || <span className="help-block">&nbsp;</span>
         }
       </div>
     );
