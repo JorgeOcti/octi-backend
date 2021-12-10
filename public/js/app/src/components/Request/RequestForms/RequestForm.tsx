@@ -107,7 +107,7 @@ class Form extends React.Component<IPropsType, IStateType> {
                       <div className='box-body create-request' style={{ paddingBottom: '0' }}>
                         <div className='row'>
                           <div className='col-md-12'>
-                            <table className='table-sm form-group-no-margin' style={{ width: '100%' }}>
+                            <table className='table-sm' style={{ width: '100%' }}>
                               <tbody>
                               <tr>
                                 <td className={'middle'} style={{ width: '30%' }}>
@@ -122,7 +122,7 @@ class Form extends React.Component<IPropsType, IStateType> {
                                     validate={[inputStringRequired]}
                                   />
                                 </td>
-                                <td className={'middle'} style={{ width: '25%' }}>
+                                <td className={'middle'} style={{ width: '25%', maxWidth: '25%' }}>
                                   <Field
                                     name='venue'
                                     label='Sucursal *'
@@ -148,7 +148,7 @@ class Form extends React.Component<IPropsType, IStateType> {
                                   >
                                   </Field>
                                 </td>
-                                <td className={'middle'} style={{ width: '25%' }}>
+                                <td className={'middle'} style={{ width: '25%', maxWidth: '25%' }}>
                                   <Field
                                     name='channel'
                                     label='Canal'
@@ -203,7 +203,7 @@ class Form extends React.Component<IPropsType, IStateType> {
                       <div className='box-body create-request' style={{ paddingBottom: '0' }}>
                         <div className='row'>
                           <div className='col-md-12'>
-                            <table className='table-xs form-group-no-margin' style={{ width: '100%' }}>
+                            <table className='table-xs' style={{ width: '100%' }}>
                               <tbody>
                               <tr>
                                 <td className={'middle'} style={{ width: '25%' }}>

@@ -205,7 +205,7 @@ class RequestCarRender extends React.Component<IPropsType, IStateType> {
                       </table>
                       <ShowIf condition={!!hasErrors}>
                         <div style={{ padding: '5px 10px ' }} className={submitFailed && !valid?'text-sm bg-red text-primary':'text-sm bg-warning text-warning'}>
-                          Tienes {hasErrors} datos adicionales obligatorios sin completar..
+                          <i className='fa fa-info-circle' /> {hasErrors} datos adicionales obligatorios sin completar..
                         </div>
                       </ShowIf>
                       <div
@@ -218,11 +218,11 @@ class RequestCarRender extends React.Component<IPropsType, IStateType> {
                                 <div className='form-group' key={question._id}>
                                   <label
                                     htmlFor='color'
-                                    className='col-sm-2 control-label label-left'
+                                    className='col-sm-3 col-lg-2 control-label label-left text-ellipsis'
                                   >
                                     {question.name} {question.required ? '*' : ''}
                                   </label>
-                                  <div className='col-sm-7 form-group-no-margin'>
+                                  <div className='col-sm-8 col-lg-8 form-group-no-margin'>
                                     <Field
                                       name={`${item}.answersbkp[${index}]`}
                                       type='text'
@@ -242,7 +242,7 @@ class RequestCarRender extends React.Component<IPropsType, IStateType> {
                                       validate={question.required ? [inputStringRequired] : []}
                                     />
                                   </div>
-                                  <div className='col-md-3' />
+                                  <div className='col-md-1 col-lg-2' />
                                 </div>
                               );
                             })
@@ -250,8 +250,8 @@ class RequestCarRender extends React.Component<IPropsType, IStateType> {
                         </ShowIf>
                         <ShowIf condition={!!(reasonSelected && reasonSelected.file.active)}>
                           <div className='form-group'>
-                            <label className='col-sm-2 control-label label-left'>Archivos *</label>
-                            <div className={'col-sm-7'}>
+                            <label className='col-sm-3 col-lg-2 control-label label-left'>Archivos *</label>
+                            <div className={'col-sm-8 col-lg-8'}>
                               <Field
                                 name={`${item}.files`}
                                 type='hidden'
@@ -281,7 +281,7 @@ class RequestCarRender extends React.Component<IPropsType, IStateType> {
                                 <span className="help-block text-red">Este campo es requerido</span>
                               </ShowIf>
                             </div>
-                            <div className='col-md-3' />
+                            <div className='col-md-1 col-lg-2' />
                           </div>
                         </ShowIf>
                       </div>

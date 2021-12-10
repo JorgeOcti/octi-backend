@@ -82,12 +82,12 @@ class BootstrapSelectField extends React.Component<IPropsType, IStateType> {
             className={`btn dropdown-toggle bs-placeholder btn-filter btn-default`}
             data-toggle="dropdown"
             disabled={disabled}
-            style={{borderRadius: '0px', borderColor: touched && error ? '#dd4b39' : ''}}
+            style={{borderRadius: '0px', borderColor: touched && error ? '#dd4b39' : '', padding: '6px 12px 5px 5px'}}
             onClick={this.handlerOpen}
           >
             <div className="filter-option">
               <div className="filter-option-inner">
-                <div className="filter-option-inner-inner">
+                <div className="filter-option-inner-inner text-ellipsis">
                   {
                     selectedItems.length ?
                       displayItems && selectedItems.length > displayItems ?
@@ -175,8 +175,8 @@ class BootstrapSelectField extends React.Component<IPropsType, IStateType> {
         </div>
         {
           touched &&
-          ((error && <span className="help-block">{error}</span>) ||
-            (warning && <span className="help-block">{warning}</span>)) || <span className="help-block">&nbsp;</span>
+          ((error && <span className="help-block text-ellipsis">{error}</span>) ||
+            (warning && <span className="help-block text-ellipsis">{warning}</span>)) || <span className="help-block">&nbsp;</span>
         }
       </div>
     );
