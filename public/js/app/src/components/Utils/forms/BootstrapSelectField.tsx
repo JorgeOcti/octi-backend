@@ -183,9 +183,9 @@ class BootstrapSelectField extends React.Component<IPropsType, IStateType> {
   }
 
   private handlerOpen() {
-    if (this.input.current) {
-      this.input.current.focus()
-    }
+    // if (this.input.current) {
+    //   this.input.current.focus()
+    // }
     this.setState({
         open: !this.state.open
       }, () => {

@@ -22,7 +22,7 @@ interface IPropsType extends WrappedFieldArrayProps<{}>, IRenderItemProps {
   query: any;
   submitFailed: any;
   valid: any;
-
+  loading: boolean;
   autofill(field: string, value: any): void;
 }
 
@@ -50,20 +50,22 @@ class RequestCarRender extends React.Component<IPropsType, IStateType> {
 
 
   public render(): React.ReactElement<IPropsType> {
-    const { fields, submitFailed, valid, reasons, syncErrors, query, formValues } = this.props;
+    const { fields, submitFailed, valid, reasons, syncErrors, query, formValues, loading } = this.props;
     const { openTabs, reasonSelectedState, files } = this.state;
     return (
       <React.Fragment>
         {
           fields.length === 0 ?
-            <div className='col-md-12'>
-              <p
-                className={submitFailed && !valid && !formValues.cars.length?'text-red text-center':' text-muted text-center'}
-                style={{ padding: '60px 0px  30px 0px', margin: '0' }}
-              >
-                {submitFailed && !valid && !formValues.cars.length ? 'Debes agregar al menos un vehículo.' : 'No se han agregado vehículos aún.'}
-              </p>
-            </div> :
+            <ShowIf condition={!loading}>
+              <div className='col-md-12'>
+                <p
+                  className={submitFailed && !valid && !formValues.cars.length ? 'text-red text-center' : ' text-muted text-center'}
+                  style={{ padding: '60px 0px  30px 0px', margin: '0' }}
+                >
+                  {submitFailed && !valid && !formValues.cars.length ? 'Debes agregar al menos un vehículo.' : 'No se han agregado vehículos aún.'}
+                </p>
+              </div>
+            </ShowIf> :
             <div className='col-md-12'>
               {
                 fields.map((item, index) => {
@@ -176,27 +178,12 @@ class RequestCarRender extends React.Component<IPropsType, IStateType> {
                             >
                             </Field>
                           </td>
-                          <td className={`middle-center`} style={{ width: '70px', paddingTop: '11px' }}>
+                          <td className={`middle-center`} style={{ width: '50px', paddingTop: '19px' }}>
                             <button
                               type='button'
                               className='btn btn-sm btn-danger'
                               onClick={() => {
-                                swal({
-                                  title: '¿Estás seguro?',
-                                  text: `Vas a eliminar un vehículo de esta solicitud.`,
-                                  icon: 'warning',
-                                  dangerMode: true,
-                                  buttons: {
-                                    cancel: 'Cancelar' as any,
-                                    confirm: {
-                                      text: 'Sí'
-                                    }
-                                  }
-                                }).then((willDelete: any) => {
-                                  if (willDelete) {
-                                    fields.remove(index);
-                                  }
-                                });
+                                fields.remove(index);
                               }}
                             >
                               <i className='fa fa-trash' />
@@ -205,7 +192,7 @@ class RequestCarRender extends React.Component<IPropsType, IStateType> {
                           <ShowIf condition={!!(reasonSelected && reasonSelected.questions.length)}>
                             <td
                               className={`middle-center pointer`}
-                              style={{ width: '40px', padding: '7px 10px 7px 3px' }}
+                              style={{ width: '40px', padding: '10px 20px 7px 3px' }}
                               onClick={() => this.toogleTab(value.key)}
                             >
                               {

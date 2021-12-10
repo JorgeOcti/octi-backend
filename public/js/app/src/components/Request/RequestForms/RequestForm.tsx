@@ -91,7 +91,7 @@ class Form extends React.Component<IPropsType, IStateType> {
     const { venues, channels, reasons, loading, exist } = this.state;
     return (
       <React.Fragment>
-        <div className='container-fluid' style={{ position: 'relative', minHeight: '100vh', paddingBottom: '150px', padding: 0 }}>
+        <div className='container-fluid' style={{ position: 'relative', minHeight: '100vh', padding: '0 0 150px 0' }}>
           <form onSubmit={handleSubmit}>
             <div className='row' style={{ padding: '0 20px' }}>
               <div className='col-md-12'>
@@ -107,7 +107,7 @@ class Form extends React.Component<IPropsType, IStateType> {
                       <div className='box-body create-request' style={{ paddingBottom: '0' }}>
                         <div className='row'>
                           <div className='col-md-12'>
-                            <table className='table-sm' style={{ width: '100%' }}>
+                            <table className='table-sm form-group-no-margin' style={{ width: '100%' }}>
                               <tbody>
                               <tr>
                                 <td className={'middle'} style={{ width: '30%' }}>
@@ -203,10 +203,10 @@ class Form extends React.Component<IPropsType, IStateType> {
                       <div className='box-body create-request' style={{ paddingBottom: '0' }}>
                         <div className='row'>
                           <div className='col-md-12'>
-                            <table className='table-xs' style={{ width: '100%' }}>
+                            <table className='table-xs form-group-no-margin' style={{ width: '100%' }}>
                               <tbody>
                               <tr>
-                                <td className={'middle'} style={{ width: '22%' }}>
+                                <td className={'middle'} style={{ width: '25%' }}>
                                   <Field
                                     name='deliveryVenue'
                                     label='Sucursal'
@@ -234,7 +234,7 @@ class Form extends React.Component<IPropsType, IStateType> {
                                   >
                                   </Field>
                                 </td>
-                                <td className={'middle'} style={{ width: '60%' }}>
+                                <td className={'middle'} style={{ width: '50%' }}>
                                   <Field
                                     name='deliveryAddress'
                                     // labelOff={true}
@@ -244,7 +244,7 @@ class Form extends React.Component<IPropsType, IStateType> {
                                     // validate={[inputStringRequired]}
                                   />
                                 </td>
-                                <td className={'middle'} style={{ width: '60%' }}>
+                                <td className={'middle'} style={{ width: '25%' }}>
                                   <Field
                                     name='deliveryDate'
                                     // labelOff={true}
@@ -281,6 +281,7 @@ class Form extends React.Component<IPropsType, IStateType> {
                             component={RequestCarRender}
                             props={{
                               reasons,
+                              loading,
                               syncErrors,
                               submitFailed,
                               valid,
