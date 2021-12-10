@@ -91,7 +91,7 @@ class Form extends React.Component<IPropsType, IStateType> {
     const { venues, channels, reasons, loading, exist } = this.state;
     return (
       <React.Fragment>
-        <div className='container-fluid' style={{ position: 'relative', minHeight: '100vh', paddingBottom: '150px' }}>
+        <div className='container-fluid' style={{ position: 'relative', minHeight: '100vh', paddingBottom: '150px', padding: 0 }}>
           <form onSubmit={handleSubmit}>
             <div className='row' style={{ padding: '0 20px' }}>
               <div className='col-md-12'>
@@ -113,7 +113,7 @@ class Form extends React.Component<IPropsType, IStateType> {
                                 <td className={'middle'} style={{ width: '30%' }}>
                                   <Field
                                     name='sellerText'
-                                    label='Nombre del vendedor *'
+                                    label='Vendedor *'
                                     type='text'
                                     props={{
                                       readOnly: true
@@ -206,10 +206,10 @@ class Form extends React.Component<IPropsType, IStateType> {
                             <table className='table-xs' style={{ width: '100%' }}>
                               <tbody>
                               <tr>
-                                <td className={'middle'} style={{ width: '25%' }}>
+                                <td className={'middle'} style={{ width: '22%' }}>
                                   <Field
                                     name='deliveryVenue'
-                                    label='Sucursal de entrega'
+                                    label='Sucursal'
                                     // labelOff={true}
                                     component={BootstrapSelectField}
                                     // validate={[inputStringRequired]}
@@ -234,21 +234,21 @@ class Form extends React.Component<IPropsType, IStateType> {
                                   >
                                   </Field>
                                 </td>
-                                <td className={'middle'} style={{ width: '55%' }}>
+                                <td className={'middle'} style={{ width: '60%' }}>
                                   <Field
                                     name='deliveryAddress'
                                     // labelOff={true}
-                                    label='Dirección de entrega'
+                                    label='Dirección'
                                     type='text'
                                     component={InputField}
                                     // validate={[inputStringRequired]}
                                   />
                                 </td>
-                                <td className={'middle'} style={{ maxWidth: '200px' }}>
+                                <td className={'middle'} style={{ width: '60%' }}>
                                   <Field
                                     name='deliveryDate'
                                     // labelOff={true}
-                                    label='Fecha de entrega'
+                                    label='Fecha'
                                     type='text'
                                     component={DateRangePickerField}
                                     props={{
@@ -348,7 +348,7 @@ class Form extends React.Component<IPropsType, IStateType> {
               </div>
             </div>
           </form>
-          <div className='text-muted text-center' style={{ position: 'absolute', bottom: '0', height: '60px', width: '100%' }}>
+          <div className='text-muted text-center' style={{ position: 'absolute', bottom: '0', height: '30px', width: '100%' }}>
             Copyright (c) {moment().format('YYYY')} <a href='http://www.osacontrol.com' target='_blank'>OSA SPA</a>. All rights reserved.
           </div>
         </div>

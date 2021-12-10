@@ -222,8 +222,8 @@ class RequestCarRender extends React.Component<IPropsType, IStateType> {
                         </div>
                       </ShowIf>
                       <div
-                        className='form-horizontal table-sm'
-                        style={{ backgroundColor: 'rgba(251, 251, 251, 1)', padding: '20px 40px', display: openTab ? '' : 'none' }}>
+                        className='form-horizontal form-group-no-margin table-sm'
+                        style={{ backgroundColor: 'rgba(251, 251, 251, 1)', padding: '30px 20px', display: openTab ? '' : 'none' }}>
                         <ShowIf condition={!!(reasonSelected && reasonSelected.questions.length)}>
                           {
                             reasonSelected?.questions.map((question, index) => {

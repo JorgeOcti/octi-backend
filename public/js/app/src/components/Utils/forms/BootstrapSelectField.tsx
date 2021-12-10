@@ -74,7 +74,7 @@ class BootstrapSelectField extends React.Component<IPropsType, IStateType> {
     // console.log('onClick', onClick)
     return (
       <div className={`form-group ${touched && error ? "has-error" : ""} ${touched && warning ? "has-warning" : ""}`}>
-        {!labelOff?<label className="control-label">{label}</label>: null}
+        {!labelOff?<label className="control-label text-ellipsis">{label}</label>: null}
         <div
           className={`dropdown bootstrap-select form-control show-tick ${autoClouse ? '' : 'keep-inside-clicks-open'} ${sm ? 'bootstrap-select-sm' : ''}`} >
           <button

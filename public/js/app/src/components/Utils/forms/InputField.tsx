@@ -29,7 +29,7 @@ const InputField: React.FunctionComponent<IPropsType> = ({
    meta: { touched, error, warning }
   }: IPropsType) => (
   <div className={`form-group ${touched && error ? 'has-error' : warning ? 'has-warning' : ''}`}>
-    {!labelOff ? <label className='control-label'>{label}</label> : null}
+    {!labelOff ? <label className='control-label text-ellipsis'>{label}</label> : null}
     <input
       {...input}
       readOnly={readOnly}

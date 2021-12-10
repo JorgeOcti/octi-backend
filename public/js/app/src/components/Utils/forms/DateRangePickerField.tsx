@@ -89,7 +89,7 @@ class DateRangePickerField extends React.Component<IPropsType, IStateType> {
     } = this.props;
     return (
       <div className={`form-group ${touched && error ? 'has-error' : warning ? 'has-warning' : ''}`}>
-        {!labelOff ? <label className='control-label'>{label}</label> : null}
+        {!labelOff ? <label className='control-label  text-ellipsis'>{label}</label> : null}
         <div className='input-group'>
           <input
             ref={this.input}
