@@ -19,6 +19,8 @@ interface IPropsType extends WrappedFieldArrayProps<{}>, IRenderItemProps {
   reasons: any[],
   syncErrors: any;
   formValues: any;
+  updateFileCache: any;
+  filesCache: Dictionary<any>
   query: any;
   submitFailed: any;
   valid: any;
@@ -31,7 +33,6 @@ interface IStateType {
   error: Error | null;
   openTabs: string[];
   reasonSelectedState: Dictionary<string>;
-  files: Dictionary<any[]>;
 }
 
 class RequestCarRender extends React.Component<IPropsType, IStateType> {
@@ -39,8 +40,7 @@ class RequestCarRender extends React.Component<IPropsType, IStateType> {
   readonly state: IStateType = {
     error: null,
     openTabs: [],
-    reasonSelectedState: {},
-    files: {}
+    reasonSelectedState: {}
   };
 
   constructor(props: IPropsType) {
@@ -50,8 +50,8 @@ class RequestCarRender extends React.Component<IPropsType, IStateType> {
 
 
   public render(): React.ReactElement<IPropsType> {
-    const { fields, submitFailed, valid, reasons, syncErrors, query, formValues, loading } = this.props;
-    const { openTabs, reasonSelectedState, files } = this.state;
+    const { fields, submitFailed, valid, reasons, syncErrors, query, formValues, loading, filesCache } = this.props;
+    const { openTabs, reasonSelectedState } = this.state;
     return (
       <React.Fragment>
         {
@@ -74,9 +74,9 @@ class RequestCarRender extends React.Component<IPropsType, IStateType> {
                   const reasonSelected: IReason | undefined = reasons.find((reason: IReason) => reason._id === reasonSelectedState[index] || reason._id === value.reason);
                   let uploadingFiles = 0;
                   let archivos = 0;
-                  if (files.hasOwnProperty(index)) {
-                    uploadingFiles = files[index].filter((file: any) => file.status !== imageStatus.complete).length;
-                    archivos = files[index].length;
+                  if (filesCache.hasOwnProperty(index)) {
+                    uploadingFiles = filesCache[index].filter((file: any) => file.status !== imageStatus.complete).length;
+                    archivos = filesCache[index].length;
                   }
                   let hasErrors = 0;
                   let hasFileErrors = 0;
@@ -205,7 +205,7 @@ class RequestCarRender extends React.Component<IPropsType, IStateType> {
                       </table>
                       <ShowIf condition={!!hasErrors}>
                         <div style={{ padding: '5px 10px ' }} className={submitFailed && !valid?'text-sm bg-red text-primary':'text-sm bg-warning text-warning'}>
-                          <i className='fa fa-info-circle' /> {hasErrors} datos adicionales obligatorios sin completar..
+                          <i className='fa fa-fw fa-info-circle'/> Quedan {hasErrors} datos adicionales obligatorios sin completar.
                         </div>
                       </ShowIf>
                       <div
@@ -251,7 +251,7 @@ class RequestCarRender extends React.Component<IPropsType, IStateType> {
                         <ShowIf condition={!!(reasonSelected && reasonSelected.file.active)}>
                           <div className='form-group'>
                             <label className='col-sm-3 col-lg-2 control-label label-left'>Archivos *</label>
-                            <div className={'col-sm-8 col-lg-8'}>
+                            <div className={`col-sm-8 col-lg-8 ${submitFailed && !valid && !!hasFileErrors ? 'has-errors' : ''}`}>
                               <Field
                                 name={`${item}.files`}
                                 type='hidden'
@@ -261,21 +261,21 @@ class RequestCarRender extends React.Component<IPropsType, IStateType> {
                               />
                               <MultiUploadFiles
                                 url={'/api/v1/requests/upload-file/'}
-                                onChange={(files) => {
-                                  this.setState({
-                                    files: {
-                                      ...this.state.files,
-                                      [index]: files
-                                    }
+                                onChange={(filesStorage) => {
+                                  // console.log('filesStorage.onChange', filesStorage)
+                                  this.props.updateFileCache({
+                                    ...filesCache,
+                                    [index]: filesStorage
                                   });
-                                  this.props.autofill(`${item}.files`, []);
-                                  files
-                                    .filter((file: any) => file.status === imageStatus.complete)
-                                    .forEach((file: any, index: number) => {
-                                      this.props.autofill(`${item}.files[${index}]`, file);
-                                    });
+                                  // this.setState({
+                                  //   files: {
+                                  //     ...this.state.files,
+                                  //     [index]: filesStorage
+                                  //   }
+                                  // });
+                                  this.props.autofill(`${item}.files`, filesStorage);
                                 }}
-                                files={this.state.files[index] ?? []}
+                                files={filesCache[index] ?? []}
                               />
                               <ShowIf condition={submitFailed && !valid && !!hasFileErrors}>
                                 <span className="help-block text-red">Este campo es requerido</span>
@@ -287,7 +287,7 @@ class RequestCarRender extends React.Component<IPropsType, IStateType> {
                       </div>
                       <ShowIf condition={!!uploadingFiles}>
                         <div style={{ padding: '5px 10px ' }} className='text-sm bg-primary text-primary '>
-                          Subiendo {uploadingFiles} archivos de {archivos}...
+                          <i className='fa fa-fw fa-spinner fa-spin' /> Subiendo {uploadingFiles} archivos de {archivos}
                         </div>
                       </ShowIf>
                       {/*<ShowIf condition={!!hasErrors && !openTab}>*/}
@@ -322,7 +322,7 @@ class RequestCarRender extends React.Component<IPropsType, IStateType> {
 
 const mapStateToProps = (state: any) => {
   return {
-    formValues: getFormValues('requestForm')(state),
+    // formValues: getFormValues('requestForm')(state),
     syncErrors: getFormSyncErrors('requestForm')(state),
     meta: getFormMeta('requestForm')(state)
   };

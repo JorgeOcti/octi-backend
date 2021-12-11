@@ -7,6 +7,7 @@ import TrackingBasePage from '../Utils/TrackingBasePage';
 import RequestForm from './RequestForms/RequestForm';
 import { AxiosError } from 'axios';
 import * as swal from 'sweetalert';
+import { getFormValues } from 'redux-form';
 
 
 interface IPropsType extends RouteComponentProps<{}> {
@@ -42,7 +43,7 @@ class RequestCreateIntegration extends TrackingBasePage<IPropsType, IStateType> 
       .css({ 'background-color':'#ecf0f5' });
   }
   public render(): React.ReactElement<IPropsType> {
-    const {location: {query}} = this.props.router;
+    const {location: {query}, formValues} = this.props.router;
     const {created} = this.state;
     return (
       <RequestForm
@@ -92,7 +93,7 @@ class RequestCreateIntegration extends TrackingBasePage<IPropsType, IStateType> 
 const mapStateToProps = (state: { inventories: IInventoryState, router: any }) => {
   return {
     inventories: state.inventories,
-    router: state.router,
+    router: state.router
   };
 };
 

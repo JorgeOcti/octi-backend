@@ -21,6 +21,7 @@ import InputHiddenField from '../../Utils/forms/InputHiddenField';
 import ShowIf from '../../Utils/ShowIf';
 import { IRequestSetting } from '../../../../../../../src/app/interfaces';
 import * as  swal from 'sweetalert';
+import { imageStatus } from '../../Utils/MultiUploadFiles';
 
 interface IPropsType extends InjectedFormProps {
   formValues: any;
@@ -31,7 +32,7 @@ interface IPropsType extends InjectedFormProps {
 }
 
 interface IStateType {
-  filesCache: any[];
+  filesCache: Dictionary<any>;
   error: Error | null;
   venues: any[];
   reasons: IReason[];
@@ -46,7 +47,7 @@ class Form extends React.Component<IPropsType, IStateType> {
 
   readonly api: ApiService;
   readonly state: IStateType = {
-    filesCache: [],
+    filesCache: {},
     error: null,
     venues: [],
     reasons: [],
@@ -71,7 +72,12 @@ class Form extends React.Component<IPropsType, IStateType> {
     super(props);
     this.loadBaseData = this.loadBaseData.bind(this);
     this.addCarToForm = this.addCarToForm.bind(this);
+    this.updateFileCache = this.updateFileCache.bind(this);
     this.api = new ApiService();
+  }
+
+  private updateFileCache(filesCache: Dictionary<any>){
+    this.setState({filesCache})
   }
 
   public componentWillMount(): void {
@@ -88,7 +94,11 @@ class Form extends React.Component<IPropsType, IStateType> {
 
   public render(): React.ReactElement<IPropsType> {
     const { handleSubmit, valid, submitFailed, query, syncErrors, formValues, created, submitting } = this.props;
-    const { venues, channels, reasons, loading, exist } = this.state;
+    const { venues, channels, reasons, loading, exist, filesCache } = this.state;
+    // console.log('formValues', formValues);
+    const uploadingFiles = !!Object.values(filesCache).filter((files: any) => {
+      return !!files.filter((file:any)=>file.status !== imageStatus.complete).length;
+    }).length;
     return (
       <React.Fragment>
         <div className='container-fluid' style={{ position: 'relative', minHeight: '100vh', padding: '0 0 150px 0' }}>
@@ -143,7 +153,13 @@ class Form extends React.Component<IPropsType, IStateType> {
                                           text: venue.name
                                         }))
                                       ],
-                                      onClick: (value: string) => this.props.autofill('venue', value)
+                                      onClick: (value: string) => {
+                                        if(formValues.venue === value){
+                                          this.props.autofill('venue', "");
+                                        } else{
+                                          this.props.autofill('venue', value);
+                                        }
+                                      }
                                     }}
                                   >
                                   </Field>
@@ -169,7 +185,13 @@ class Form extends React.Component<IPropsType, IStateType> {
                                           text: channel.name
                                         }))
                                       ],
-                                      onClick: (value: string) => this.props.autofill('channel', value)
+                                      onClick: (value: string) => {
+                                        if (formValues.channel === value) {
+                                          this.props.autofill('channel', '');
+                                        } else {
+                                          this.props.autofill('channel', value);
+                                        }
+                                      }
                                     }}
                                   >
                                   </Field>
@@ -228,7 +250,11 @@ class Form extends React.Component<IPropsType, IStateType> {
                                         }))
                                       ],
                                       onClick: (value: string) => {
-                                        this.props.autofill('deliveryVenue', value);
+                                        if(formValues.deliveryVenue === value){
+                                          this.props.autofill('deliveryVenue', "");
+                                        } else{
+                                          this.props.autofill('deliveryVenue', value);
+                                        }
                                       }
                                     }}
                                   >
@@ -281,9 +307,12 @@ class Form extends React.Component<IPropsType, IStateType> {
                             component={RequestCarRender}
                             props={{
                               reasons,
+                              updateFileCache: this.updateFileCache,
+                              filesCache,
                               loading,
                               syncErrors,
                               submitFailed,
+                              formValues,
                               valid,
                               query,
                               autofill: this.props.autofill
@@ -313,10 +342,13 @@ class Form extends React.Component<IPropsType, IStateType> {
                     </div>
                   }*/}
                   <div className='col-md-12 text-right'>
+                    <ShowIf condition={uploadingFiles}>
+                      <p className={"text-muted text-left"}>Espere a que se terminen de subir las imágenes para crear la solicitud.</p>
+                    </ShowIf>
                     <button
                       type={'button'}
-                      disabled={submitting}
-                      onClick={submitting || !valid ? ()=> this.props.dispatch(submit('requestForm')) : () => {
+                      disabled={submitting || uploadingFiles}
+                      onClick={submitting || !valid || uploadingFiles ? () => this.props.dispatch(submit('requestForm')) : () => {
                         swal({
                           title: '¿Estás seguro?',
                           text: `Vas a crear esta solicitud.`,
@@ -336,7 +368,7 @@ class Form extends React.Component<IPropsType, IStateType> {
                       }}
                       className='btn btn-primary btn-sm'
                     >
-                      Crear solicitud
+                      {submitting && <i className='fa fa-fw fa-spinner fa-spin' />} Crear solicitud
                     </button>
                   </div>
                   <Field
@@ -415,7 +447,8 @@ class Form extends React.Component<IPropsType, IStateType> {
       denomination: query.denomination,
       material: query.material,
       answersbkp: [],
-      answers: []
+      answers: [],
+      files: []
     };
     const salfaReason = reasons
       .find((reason) => reason._id === '5fe0930aa9683b0f8a6e0e42');
@@ -449,10 +482,9 @@ class Form extends React.Component<IPropsType, IStateType> {
         this.api.validateContectaID(conectaID)
       ])
       .then(Axios.spread((venues, reasons, channels, teamSettings, operationTypes, validateContecta) => {
-        console.log('validateContecta', validateContecta);
         if(validateContecta.data?.error){
           this.setState({ exist: true });
-          swal!('Solicitud ya creada para esta cotización', `ID de cotización conecta ${conectaID} ya se encuentra asociado a la solicitud ${validateContecta.data.number}.`, 'error', {
+          swal!('Solicitud ya creada para esta cotización', `ID de cotización conecta ${conectaID} ya se encuentra asociado en la solicitud ${validateContecta.data.number}.`, 'warning', {
             button: false,
             closeOnClickOutside: false,
             closeOnEsc: false
