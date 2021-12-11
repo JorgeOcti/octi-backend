@@ -87,9 +87,9 @@ class MultiUploadFiles extends React.Component<IPropsType, IStateType> {
   }
 
   public render() {
-    const { files, listMode } = this.props;
+    const { files, listMode, className } = this.props;
     return (
-      <div className={`multi-upload  ${listMode ? 'list-mode' : ''}`}>
+      <div className={`multi-upload ${listMode ? 'list-mode' : ''} ${className}`}>
         <ShowIf condition={!listMode}>
           {
             files.map((file) => (

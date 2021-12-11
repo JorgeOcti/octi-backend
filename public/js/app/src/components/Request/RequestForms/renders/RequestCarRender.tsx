@@ -251,7 +251,7 @@ class RequestCarRender extends React.Component<IPropsType, IStateType> {
                         <ShowIf condition={!!(reasonSelected && reasonSelected.file.active)}>
                           <div className='form-group'>
                             <label className='col-sm-3 col-lg-2 control-label label-left'>Archivos *</label>
-                            <div className={`col-sm-8 col-lg-8 ${submitFailed && !valid && !!hasFileErrors ? 'has-errors' : ''}`}>
+                            <div className={`col-sm-8 col-lg-8`}>
                               <Field
                                 name={`${item}.files`}
                                 type='hidden'
@@ -261,6 +261,7 @@ class RequestCarRender extends React.Component<IPropsType, IStateType> {
                               />
                               <MultiUploadFiles
                                 url={'/api/v1/requests/upload-file/'}
+                                className={submitFailed && !valid && !!hasFileErrors ? 'multi-upload-errors' : ''}
                                 onChange={(filesStorage) => {
                                   // console.log('filesStorage.onChange', filesStorage)
                                   this.props.updateFileCache({
