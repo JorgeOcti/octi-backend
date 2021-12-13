@@ -51,6 +51,7 @@ import RequestImportView from './components/Request/RequestImportView';
 import MilestoneListView from './components/RequestSettings/MilestoneListView';
 import MilestoneTypeListView from './components/RequestSettings/MilestoneTypeListView';
 import FormsSettingsListView from './components/FormsSettings/FormListView';
+import RequestCreateIntegration from './components/Request/RequestCreateIntegration';
 
 
 declare let window: IWindow;
@@ -109,6 +110,7 @@ const App = () => (
         <Route exact path='/transmittals/settings/milestone-type/' component={MilestoneTypeListView} />
         <Route exact path='/requests/import/' component={RequestImportView} />
         <Route exact path='/requests/update/' component={RequestUpdaterView} />
+        <Route exact path='/requests/vehicles/external/create/' component={RequestCreateIntegration} />
         <Route exact path='/requests/vehicles/create' component={RequestCreateView} />
         <Route exact path='/requests/vehicles/:id/' component={RequestDetailView} />
         <Route exact path='/requests/vehicles/' component={RequestVehicleListView} />

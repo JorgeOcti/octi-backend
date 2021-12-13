@@ -878,4 +878,10 @@ export default class ApiService {
       `/api/inventory-car/files/${inventoryFileId}/`
     );
   }
+
+  public validateContectaID(conectaID: string): AxiosPromise {
+    return this.instance.post(
+      `/requests/vehicles/validate-conecta/`, { conectaID }
+    );
+  }
 }

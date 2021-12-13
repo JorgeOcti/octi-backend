@@ -17,6 +17,7 @@ requestRouter.get('/requests/settings/operations-type/', Middlewares.isLoggedIn,
 requestRouter.get('/requests/export/', Middlewares.isLoggedIn, RequestController.exportExcel);
 requestRouter.get('/requests/import/', Middlewares.isLoggedIn, RequestController.index);
 requestRouter.get('/requests/vehicles/external/create/', Middlewares.isLoggedIn, RequestController.integration);
+requestRouter.post('/requests/vehicles/validate-conecta/', Middlewares.isLoggedIn, RequestController.validateContectaID);
 requestRouter.get('/requests/vehicles/create/', Middlewares.isLoggedIn, RequestController.index);
 requestRouter.get('/requests/vehicles/', Middlewares.isLoggedIn, RequestController.index);
 requestRouter.get('/requests/vehicles/:id/', Middlewares.isLoggedIn, RequestController.index);

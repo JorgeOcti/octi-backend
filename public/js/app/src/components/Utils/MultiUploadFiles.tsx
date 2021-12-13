@@ -87,13 +87,13 @@ class MultiUploadFiles extends React.Component<IPropsType, IStateType> {
   }
 
   public render() {
-    const { files, listMode } = this.props;
+    const { files, listMode, className } = this.props;
     return (
-      <div className={`multi-upload ${listMode ? 'list-mode' : ''}`}>
+      <div className={`multi-upload ${listMode ? 'list-mode' : ''} ${className}`}>
         <ShowIf condition={!listMode}>
           {
             files.map((file) => (
-              <div className='item-container' key={file?._id ||file.tmpID}>
+              <div className='item-container multi-upload-item' key={file?._id ||file.tmpID}>
                 <div
                   className='delete-button pointer'
                   onClick={() => this.deleteFile(file?._id ||file.tmpID)}
@@ -202,7 +202,7 @@ class MultiUploadFiles extends React.Component<IPropsType, IStateType> {
           </div>
         </ShowIf>
         <div
-          className='add-item pointer'
+          className='add-item pointer multi-upload-item'
           onClick={this.clickUploadFile}
           onDrop={this.handleDrop}
           onDragOver={this.dragOverHandler}
@@ -250,7 +250,7 @@ class MultiUploadFiles extends React.Component<IPropsType, IStateType> {
   private deleteFile(id: string) {
     swal({
       title: '¿Estás seguro?',
-      text: `Vas a eliminar el archivo.`,
+      text: `Vas a eliminar el archivo adjunto.`,
       icon: 'warning',
       dangerMode: true,
       buttons: {

@@ -109,22 +109,64 @@ class RequestController {
   }
 
   public async integration(req: IRequest, res: Response) {
-    const { query } = req;
-    if (Object.keys(query).length) {
-      try {
-        const params = await createRequestSalfaParams.validate(query, {
-          stripUnknown: true
-        });
-        res.json(params);
-      } catch (e) {
-        res.status(400).json({ error: e.errors.join(', ') });
+    let { query } = req;
+    query['conectaID'] = query['6154722a94bba10012230aae'] || query['conectaID'];
+    try {
+      const params = await createRequestSalfaParams.validate(query, {
+        stripUnknown: true
+      });
+      res.render('app/index', { token: await req.user.generateToken() });
+      res.json(params);
+    } catch (e) {
+      res.status(400).json({ error: e.errors.join(', ') });
+    }
+    // const debug = true;
+    // if (debug) {
+    //   res.render('app/index', { token: await req.user.generateToken() });
+    // }
+    //  else {
+    //    if (Object.keys(query).length) {
+    //     try {
+    //       const params = await createRequestSalfaParams.validate(query, {
+    //         stripUnknown: true
+    //       });
+    //       res.json(params);
+    //     } catch (e) {
+    //       res.status(400).json({ error: e.errors.join(', ') });
+    //     }
+    //   }
+    //   res.json({
+    //     name: 'Osa-Salfa integration test',
+    //     detail: 'Params required are brand, denomination, material, 5bf2de35caf8ef7096105c21, 5bf2de35caf8ef7096105c22, 60b9232164adc90013a79b45, sellerText and 6154722a94bba10012230aae.',
+    //     example: '?brand=Chevrolet&denomination=Sail&material=1213&5bf2de35caf8ef7096105c21=Roberto%20Castro&5bf2de35caf8ef7096105c22=76897564-1&60b9232164adc90013a79b45=example@example.com&sellerText=Juan%20P%C3%A9rez&6154722a94bba10012230aae=33'
+    //   });
+    // }
+  }
+
+  public async validateContectaID(req: IRequest, res: Response) {
+    try {
+      let { body: { conectaID } } = req;
+      const { team } = req.user;
+      if (conectaID?.length) {
+        const existConectId = await Request.findOne({ team, conectaID });
+        if (existConectId) {
+          res.json({
+            error: `connectID used in another request ${existConectId.number}`,
+            number: existConectId.number
+          });
+        } else {
+          res.json({});
+        }
+      } else {
+        res.json({});
+      }
+    } catch (e) {
+      /* istanbul ignore next */
+      if (e) {
+        console.log(e);
+        res.status(500).json(e);
       }
     }
-    res.json({
-      name: "Osa-Salfa integration test",
-      detail: "Params required are brand, denomination, material, 5bf2de35caf8ef7096105c21, 5bf2de35caf8ef7096105c22, 60b9232164adc90013a79b45, sellerText and 6154722a94bba10012230aae.",
-      example: "?brand=Chevrolet&denomination=Sail&material=1213&5bf2de35caf8ef7096105c21=Roberto%20Castro&5bf2de35caf8ef7096105c22=76897564-1&60b9232164adc90013a79b45=example@example.com&sellerText=Juan%20P%C3%A9rez&6154722a94bba10012230aae=33"
-    })
   }
 
   public async index(req: IRequest, res: Response) {
@@ -328,7 +370,7 @@ class RequestController {
     logger.info(`RequestController.apiCreate`);
     logger.info(`{user: {_id: ${req.user._id}, email: ${req.user.email}}, body: ${JSON.stringify(req.body)} }`);
     const { company, team } = req.user;
-    const { cars, venue, channel, sellerText, operationType } = req.body;
+    const { cars, venue, channel, sellerText, operationType, deliveryVenue, deliveryAddress, deliveryDate, conectaID } = req.body;
 
     try {
       const defaultItemStatus = await RequestItemStatus.findOneOrCreate({
@@ -347,6 +389,10 @@ class RequestController {
         number: updateTeam!.requestNumber,
         origin: venue,
         destination: venue,
+        deliveryVenue,
+        deliveryAddress,
+        deliveryDate,
+        conectaID,
         operationType: operationType?.length ? operationType : null,
         // status,
         channel,
@@ -388,6 +434,7 @@ class RequestController {
         request: newRequest
       });
       res.json({
+        data:newRequest,
         status: 200
       });
     } catch (e) {

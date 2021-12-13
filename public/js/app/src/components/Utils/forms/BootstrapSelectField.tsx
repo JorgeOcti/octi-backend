@@ -74,20 +74,20 @@ class BootstrapSelectField extends React.Component<IPropsType, IStateType> {
     // console.log('onClick', onClick)
     return (
       <div className={`form-group ${touched && error ? "has-error" : ""} ${touched && warning ? "has-warning" : ""}`}>
-        {!labelOff?<label className="control-label">{label}</label>: null}
+        {!labelOff?<label className="control-label text-ellipsis">{label}</label>: null}
         <div
-          className={`dropdown bootstrap-select form-control show-tick ${autoClouse ? '' : 'keep-inside-clicks-open'} ${sm ? 'bootstrap-select-sm' : ''}`}>
+          className={`dropdown bootstrap-select form-control show-tick ${autoClouse ? '' : 'keep-inside-clicks-open'} ${sm ? 'bootstrap-select-sm' : ''}`} >
           <button
             type="button"
             className={`btn dropdown-toggle bs-placeholder btn-filter btn-default`}
             data-toggle="dropdown"
             disabled={disabled}
-            style={{borderRadius: '0px'}}
+            style={{borderRadius: '0px', borderColor: touched && error ? '#dd4b39' : '', padding: '6px 12px 5px 5px'}}
             onClick={this.handlerOpen}
           >
             <div className="filter-option">
               <div className="filter-option-inner">
-                <div className="filter-option-inner-inner">
+                <div className="filter-option-inner-inner text-ellipsis">
                   {
                     selectedItems.length ?
                       displayItems && selectedItems.length > displayItems ?
@@ -102,12 +102,12 @@ class BootstrapSelectField extends React.Component<IPropsType, IStateType> {
                             </React.Fragment>
                           ))
                       : noneSelectedText ?
-                      <span style={{color: '#999'}}> {noneSelectedText}</span> : <span style={{color: '#999'}}> Todos </span>
+                      <span style={{color: touched && error ? "#dd4b39" : '#999'}}> {noneSelectedText}</span> : <span style={{color: '#999'}}> Todos </span>
                   }
                 </div>
               </div>
             </div>
-            <span className="bs-caret">
+            <span className="bs-caret" style={{color: touched && error ? "#dd4b39" : undefined}}>
             <span className="caret"/>
           </span>
           </button>
@@ -175,17 +175,17 @@ class BootstrapSelectField extends React.Component<IPropsType, IStateType> {
         </div>
         {
           touched &&
-          ((error && <span className="help-block">{error}</span>) ||
-            (warning && <span className="help-block">{warning}</span>))
+          ((error && <span className="help-block text-ellipsis">{error}</span>) ||
+            (warning && <span className="help-block text-ellipsis">{warning}</span>)) || <span className="help-block">&nbsp;</span>
         }
       </div>
     );
   }
 
   private handlerOpen() {
-    if (this.input.current) {
-      this.input.current.focus()
-    }
+    // if (this.input.current) {
+    //   this.input.current.focus()
+    // }
     this.setState({
         open: !this.state.open
       }, () => {

@@ -36,7 +36,7 @@ const SelectField: React.FunctionComponent<IPropsType> = ({
       {
         touched &&
         ((error && <span className='help-block'>{error}</span>) ||
-          (warning && <span className='help-block'>{warning}</span>))
+          (warning && <span className='help-block'>{warning}</span>)) || <span className="help-block">&nbsp;</span>
       }
     </div>
   );
