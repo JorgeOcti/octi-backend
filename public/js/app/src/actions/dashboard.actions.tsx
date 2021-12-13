@@ -654,6 +654,16 @@ export function getParticipant(id: string) {
                                   </div>
                                 : null
                               }
+
+                              {
+                                (answer.kind === 'numeric-scale') && answer.score != -1  ?
+                                  <div className="row" style={{marginTop: '10px'}}>
+                                    <div className="col-md-12">
+                                      <p><strong>Evaluación</strong>: <span className="text-muted">{answer.score} (Del {answer.minValue} al {answer.maxValue})</span></p>
+                                    </div>
+                                  </div>
+                                  : null
+                              }
                             </div>
                           );
                         })

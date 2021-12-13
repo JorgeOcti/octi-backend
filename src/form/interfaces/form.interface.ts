@@ -43,6 +43,10 @@ export interface IFormQuestion {
   hint: string;
   keyboardType: string;
   imageType: string;
+
+  minValue: number;
+  maxValue: number;
+  colors: string[];
 }
 
 export interface IFormSection {
