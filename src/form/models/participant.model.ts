@@ -230,6 +230,11 @@ const participantAnswersSchema = new mongoose.Schema({
     trim: true
   },
 
+  minValue: Number,
+  maxValue: Number,
+  colors: [String],
+  score: Number,
+
 });
 
 export interface IParticipantSectionModel extends IParticipantSection, mongoose.Types.Subdocument {}

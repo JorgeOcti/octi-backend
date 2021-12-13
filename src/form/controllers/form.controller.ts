@@ -794,7 +794,10 @@ class FormController {
                 kind: question.kind,
                 order: question.order,
                 hint: question.hint,
-                optional: question.optional
+                optional: question.optional,
+                minValue: question.minValue,
+                maxValue: question.maxValue,
+                score: answer && answer.score ? answer.score : -1
               });
             }
             // calculate section qualification
@@ -1058,6 +1061,7 @@ class FormController {
       Raven.captureException(e, { req });
       /* istanbul ignore next */
       console.log(e);
+      console.log(e.stack);
       /* istanbul ignore next */
       return res.status(400).json({
         message: e,
