@@ -202,7 +202,11 @@ var participantAnswersSchema = new mongoose.Schema({
     hint: {
         type: String,
         trim: true
-    }
+    },
+    minValue: Number,
+    maxValue: Number,
+    colors: [String],
+    score: Number
 });
 var participantSectionsSchema = new mongoose.Schema({
     section_id: {

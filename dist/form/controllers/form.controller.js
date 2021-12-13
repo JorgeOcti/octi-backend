@@ -908,6 +908,9 @@ var FormController = /** @class */ (function () {
                                                 _p.order = question.order,
                                                 _p.hint = question.hint,
                                                 _p.optional = question.optional,
+                                                _p.minValue = question.minValue,
+                                                _p.maxValue = question.maxValue,
+                                                _p.score = answer && answer.score ? answer.score : -1,
                                                 _p)]);
                                         return [2 /*return*/];
                                 }
@@ -1202,6 +1205,7 @@ var FormController = /** @class */ (function () {
                         Raven.captureException(e_5, { req: req });
                         /* istanbul ignore next */
                         console.log(e_5);
+                        console.log(e_5.stack);
                         /* istanbul ignore next */
                         return [2 /*return*/, res.status(400).json({
                                 message: e_5,

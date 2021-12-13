@@ -26,6 +26,7 @@ var accessorySchema = new mongoose.Schema({
 var KindQuestion;
 (function (KindQuestion) {
     KindQuestion["scale"] = "scale";
+    KindQuestion["numericScale"] = "numeric-scale";
     KindQuestion["accessory"] = "accessory";
     KindQuestion["text"] = "text";
     KindQuestion["venue"] = "venue";
@@ -34,6 +35,7 @@ var KindQuestion;
     KindQuestion["image"] = "image";
 })(KindQuestion = exports.KindQuestion || (exports.KindQuestion = {}));
 exports.kindQuestion = [
+    KindQuestion.numericScale,
     KindQuestion.scale,
     KindQuestion.text,
     KindQuestion.accessory,
@@ -128,7 +130,10 @@ var formQuestionsSchema = new mongoose.Schema({
         type: String,
         "enum": exports.kindQuestionImage,
         "default": KindQuestionImage.picture
-    }
+    },
+    minValue: Number,
+    maxValue: Number,
+    colors: [String]
 });
 var formSectionsSchema = new mongoose.Schema({
     name: {
