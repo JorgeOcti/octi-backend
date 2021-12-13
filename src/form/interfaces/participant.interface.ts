@@ -84,6 +84,11 @@ export interface IParticipantAnswer {
 
   hint: string;
   optional: boolean;
+
+  minValue: number;
+  maxValue: number;
+  colors: string[];
+  score: number;
 }
 
 export interface IParticipantSection {

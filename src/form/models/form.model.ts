@@ -30,6 +30,7 @@ const accessorySchema = new mongoose.Schema({
 
 export enum KindQuestion {
   scale = 'scale',
+  numericScale = 'numeric-scale',
   accessory = 'accessory',
   text = 'text',
   venue = 'venue',
@@ -39,6 +40,7 @@ export enum KindQuestion {
 }
 
 export const kindQuestion = [
+  KindQuestion.numericScale,
   KindQuestion.scale,
   KindQuestion.text,
   KindQuestion.accessory,
@@ -147,7 +149,11 @@ const formQuestionsSchema = new mongoose.Schema({
     type: String,
     enum: kindQuestionImage,
     default: KindQuestionImage.picture
-  }
+  },
+
+  minValue: Number,
+  maxValue: Number,
+  colors: [String],
 });
 
 
