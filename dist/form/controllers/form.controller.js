@@ -46,10 +46,14 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
         if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
     }
 };
-var __spreadArray = (this && this.__spreadArray) || function (to, from) {
-    for (var i = 0, il = from.length, j = to.length; i < il; i++, j++)
-        to[j] = from[i];
-    return to;
+var __spreadArray = (this && this.__spreadArray) || function (to, from, pack) {
+    if (pack || arguments.length === 2) for (var i = 0, l = from.length, ar; i < l; i++) {
+        if (ar || !(i in from)) {
+            if (!ar) ar = Array.prototype.slice.call(from, 0, i);
+            ar[i] = from[i];
+        }
+    }
+    return to.concat(ar || Array.prototype.slice.call(from));
 };
 exports.__esModule = true;
 var excel = require("exceljs");
@@ -626,9 +630,9 @@ var FormController = /** @class */ (function () {
                             })];
                     case 5:
                         scales = _a.sent();
-                        scales = __spreadArray(__spreadArray([], scales), extraScales);
+                        scales = __spreadArray(__spreadArray([], scales, true), extraScales, true);
                         if (extraSection.questions.length) {
-                            form.sections = __spreadArray(__spreadArray([], form.sections), [extraSection]);
+                            form.sections = __spreadArray(__spreadArray([], form.sections, true), [extraSection], false);
                         }
                         baseQuestion_1 = {
                             _id: '',
@@ -848,7 +852,7 @@ var FormController = /** @class */ (function () {
                                         }
                                         // concat allImages
                                         if (choice && choice.requireImage && answer && answer.images && answer.images.length) {
-                                            allImages = __spreadArray(__spreadArray([], answer.images), allImages);
+                                            allImages = __spreadArray(__spreadArray([], answer.images, true), allImages, true);
                                         }
                                         // delete images no used
                                         if (choice && !choice.requireImage && answer && answer.images && answer.images.length) {
@@ -1528,10 +1532,10 @@ var FormController = /** @class */ (function () {
                         _c.label = 2;
                     case 2:
                         if (!promises.length) return [3 /*break*/, 4];
-                        _a = [__spreadArray([], participantsWithDamages)];
+                        _a = [__spreadArray([], participantsWithDamages, true)];
                         return [4 /*yield*/, bluebird.all(promises.splice(0, 500))];
                     case 3:
-                        participantsWithDamages = __spreadArray.apply(void 0, _a.concat([_c.sent()]));
+                        participantsWithDamages = __spreadArray.apply(void 0, _a.concat([_c.sent(), true]));
                         return [3 /*break*/, 2];
                     case 4:
                         for (_b = 0, participantsWithDamages_1 = participantsWithDamages; _b < participantsWithDamages_1.length; _b++) {
@@ -2110,24 +2114,24 @@ var FormController = /** @class */ (function () {
                                                 var choice0Gas = null;
                                                 var choice1Gas = null;
                                                 if (p0) {
-                                                    var answer0Gas_1 = p0.sections.map(function (s) { return s.answers; }).reduce(function (x, y) { return __spreadArray(__spreadArray([], x), y); }, []).find(function (a) { return a._id.toString() == gasQuestion; });
+                                                    var answer0Gas_1 = p0.sections.map(function (s) { return s.answers; }).reduce(function (x, y) { return __spreadArray(__spreadArray([], x, true), y, true); }, []).find(function (a) { return a._id.toString() == gasQuestion; });
                                                     if (answer0Gas_1)
                                                         choice0Gas = answer0Gas_1.scale.choices.find(function (c) { return c._id.toString() == answer0Gas_1.answer.toString(); });
                                                 }
                                                 if (p1) {
-                                                    var answer1Gas_1 = p1.sections.map(function (s) { return s.answers; }).reduce(function (x, y) { return __spreadArray(__spreadArray([], x), y); }, []).find(function (a) { return a._id.toString() == gasQuestion; });
+                                                    var answer1Gas_1 = p1.sections.map(function (s) { return s.answers; }).reduce(function (x, y) { return __spreadArray(__spreadArray([], x, true), y, true); }, []).find(function (a) { return a._id.toString() == gasQuestion; });
                                                     if (answer1Gas_1)
                                                         choice1Gas = answer1Gas_1.scale.choices.find(function (c) { return c._id.toString() == answer1Gas_1.answer.toString(); });
                                                 }
                                                 var choice0Paint = null;
                                                 var choice1Paint = null;
                                                 if (p0) {
-                                                    var answer0Paint_1 = p0.sections.map(function (s) { return s.answers; }).reduce(function (x, y) { return __spreadArray(__spreadArray([], x), y); }, []).find(function (a) { return a._id.toString() == paintQuestion; });
+                                                    var answer0Paint_1 = p0.sections.map(function (s) { return s.answers; }).reduce(function (x, y) { return __spreadArray(__spreadArray([], x, true), y, true); }, []).find(function (a) { return a._id.toString() == paintQuestion; });
                                                     if (answer0Paint_1)
                                                         choice0Paint = answer0Paint_1.scale.choices.find(function (c) { return c._id.toString() == answer0Paint_1.answer.toString(); });
                                                 }
                                                 if (p1) {
-                                                    var answer1Paint_1 = p1.sections.map(function (s) { return s.answers; }).reduce(function (x, y) { return __spreadArray(__spreadArray([], x), y); }, []).find(function (a) { return a._id.toString() == paintQuestion; });
+                                                    var answer1Paint_1 = p1.sections.map(function (s) { return s.answers; }).reduce(function (x, y) { return __spreadArray(__spreadArray([], x, true), y, true); }, []).find(function (a) { return a._id.toString() == paintQuestion; });
                                                     if (answer1Paint_1)
                                                         choice1Paint = answer1Paint_1.scale.choices.find(function (c) { return c._id.toString() == answer1Paint_1.answer.toString(); });
                                                 }
@@ -2135,12 +2139,12 @@ var FormController = /** @class */ (function () {
                                                 var choice0SheetMetal = null;
                                                 var choice1SheetMetal = null;
                                                 if (p0) {
-                                                    var answer0SheetMetal_1 = p0.sections.map(function (s) { return s.answers; }).reduce(function (x, y) { return __spreadArray(__spreadArray([], x), y); }, []).find(function (a) { return a._id.toString() == sheetMetalQuestion; });
+                                                    var answer0SheetMetal_1 = p0.sections.map(function (s) { return s.answers; }).reduce(function (x, y) { return __spreadArray(__spreadArray([], x, true), y, true); }, []).find(function (a) { return a._id.toString() == sheetMetalQuestion; });
                                                     if (answer0SheetMetal_1)
                                                         choice0SheetMetal = answer0SheetMetal_1.scale.choices.find(function (c) { return c._id.toString() == answer0SheetMetal_1.answer.toString(); });
                                                 }
                                                 if (p1) {
-                                                    var answer1SheetMetal_1 = p1.sections.map(function (s) { return s.answers; }).reduce(function (x, y) { return __spreadArray(__spreadArray([], x), y); }, []).find(function (a) { return a._id.toString() == sheetMetalQuestion; });
+                                                    var answer1SheetMetal_1 = p1.sections.map(function (s) { return s.answers; }).reduce(function (x, y) { return __spreadArray(__spreadArray([], x, true), y, true); }, []).find(function (a) { return a._id.toString() == sheetMetalQuestion; });
                                                     if (answer1SheetMetal_1)
                                                         choice1SheetMetal = answer1SheetMetal_1.scale.choices.find(function (c) { return c._id.toString() == answer1SheetMetal_1.answer.toString(); });
                                                 }

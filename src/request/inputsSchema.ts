@@ -7,7 +7,7 @@ const createRequestSalfaParams = yup.object().shape({
   sellerText: yup.string().required(),
   ['5bf2de35caf8ef7096105c21']: yup.string().required(),
   ['5bf2de35caf8ef7096105c22']: yup.string().required(),
-  ['60b9232164adc90013a79b45']: yup.string().required(),
+  ['60b9232164adc90013a79b45']: yup.string(),
   ['conectaID']: yup.string().required()
 });
 

@@ -19,6 +19,7 @@ import TrackingBasePage from '../Utils/TrackingBasePage';
 import ShowIf from '../Utils/ShowIf';
 import { IForm } from '../../../../../../src/form/interfaces/form.interface';
 import { IRequestItemStatus } from '../../../../../../src/request/interfaces/requestItemStatus.interface';
+import Checkbox from '../Utils/CheckBox';
 
 interface IPropsType extends RouteComponentProps<{ ticket: string }> {
   dispatch: Dispatch<MilestoneReduxActions | FormAction>;
@@ -63,7 +64,7 @@ class MilestoneListView extends TrackingBasePage<IPropsType, IStateType> {
   public componentWillMount(): void {
     const { pagination } = this.props.milestone;
     const { orderBy, orderType } = this.props.milestone.options;
-    const {milestoneType} = this.state;
+    const { milestoneType } = this.state;
     this.props.getMilestoneThunkAction(milestoneType, pagination.page, orderBy, orderType);
 
     // socket
@@ -80,12 +81,11 @@ class MilestoneListView extends TrackingBasePage<IPropsType, IStateType> {
       if (data.update) {
         const { pagination } = this.props.milestone;
         const { orderBy, orderType } = this.props.milestone.options;
-        const {milestoneType} = this.state;
+        const { milestoneType } = this.state;
         this.props.getMilestoneThunkAction(milestoneType, pagination.page, orderBy, orderType, true);
       }
     });
   }
-
 
   public componentDidUpdate(prevProps: Readonly<IPropsType>, prevState: Readonly<IStateType>, snapshot?: any): void {
     if (this.props.milestone.pagination !== prevProps.milestone.pagination) {
@@ -199,6 +199,7 @@ class MilestoneListView extends TrackingBasePage<IPropsType, IStateType> {
                         <th className='middle'>Tipo</th>
                         <th className='middle'>Formulario</th>
                         <th className='middle'>Estado solicitudes</th>
+                        <th className='middle'>F. Arribo</th>
                       </tr>
                       </thead>
                       <tbody>
@@ -259,6 +260,16 @@ class MilestoneListView extends TrackingBasePage<IPropsType, IStateType> {
                                     ))
                                   }
                                 </select>
+                              </td>
+                              <td className='middle'>
+                                <Checkbox
+                                  active={false}
+                                  action={()=>{
+                                    // call function
+                                  }}
+                                  classes='icheck-in-checkbox'
+                                  style={{ marginTop: '-4px', marginRight: '5px' }}
+                                />
                               </td>
                             </tr>
                           );

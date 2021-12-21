@@ -28,6 +28,14 @@ export const choicesStepMilestone = [
   ChoicesStepMilestone.finishTransmittal
 ];
 
+const updateItemsSchema = new mongoose.Schema({
+  arrivalDate: {
+    type: Boolean
+  }
+},{
+  _id: false,
+});
+
 const milestoneSchema = new mongoose.Schema({
   team: {
     type: mongoose.Schema.Types.ObjectId,
@@ -63,6 +71,10 @@ const milestoneSchema = new mongoose.Schema({
   requestItemStatus: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'RequestItemStatus'
+  },
+  updateItems:{
+    type: updateItemsSchema,
+    default: {}
   },
   order: {
     type: Number
