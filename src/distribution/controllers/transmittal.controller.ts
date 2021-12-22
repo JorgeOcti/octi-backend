@@ -63,7 +63,8 @@ class TransmittalController {
     populate: this.itemPopulate
   }, {
     path: 'files',
-    select: ['file', 'thumbnail']
+    select: ['file', 'thumbnail'],
+    match: { milestone: { $exists: false } }
   }, {
     path: 'evidenceFullLoad',
     select: ['file', 'thumbnail']
@@ -974,8 +975,8 @@ private getForm(filter: any): Promise<IFormModel> {
         transmittaltFile.team = user.team._id;
 
         if (transmittal?.length && milestone?.length){
-          transmittal = transmittal.replace(/["']/g, "")
-          milestone = milestone.replace(/["']/g, "")
+          transmittal = transmittal.replace(/["']/g, "");
+          milestone = milestone.replace(/["']/g, "");
 
           transmittaltFile.milestone = milestone;
           transmittaltFile.transmittal = transmittal;
