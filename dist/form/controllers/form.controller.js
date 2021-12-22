@@ -696,15 +696,16 @@ var FormController = /** @class */ (function () {
         });
     };
     FormController.prototype.complete = function (req, res) {
+        var _a;
         return __awaiter(this, void 0, void 0, function () {
-            var id, _a, vin, answers, transmittalItem, transmittal, _b, company, venue, team, updatedUser, car_1, form, participantObject, reception, receptionVenue, shipping, shippingVenue, carrier, conciliation, newParticipant, sumSectionWeigths, sumSectionQualifications, allImages, _i, _c, section, sumWeigths, sumQualifications, newAnswers, _loop_1, this_1, _d, _e, question, sectionQualification, formQualification_1, updateTeam, transmittalItemData, milestone, requestItem, newTransmittal, milestone, requestItems, _f, requestItems_1, requestItem, _g, _h, _j, today, tomorrow, count, triggersHandler, alerts, e_4, e_5;
+            var id, _b, vin, answers, transmittalItem, transmittal, _c, company, venue, team, updatedUser, car_1, form, participantObject, reception, receptionVenue, shipping, shippingVenue, carrier, conciliation, newParticipant, sumSectionWeigths, sumSectionQualifications, allImages, _i, _d, section, sumWeigths, sumQualifications, newAnswers, _loop_1, this_1, _e, _f, question, sectionQualification, formQualification_1, updateTeam, transmittalItemData, milestone, requestItem, newTransmittal, milestone, requestItems, _g, requestItems_1, requestItem, _h, _j, _k, today, tomorrow, count, triggersHandler, alerts, e_4, e_5;
             var _this = this;
-            return __generator(this, function (_k) {
-                switch (_k.label) {
+            return __generator(this, function (_l) {
+                switch (_l.label) {
                     case 0:
                         id = req.params.id;
-                        _a = req.body, vin = _a.vin, answers = _a.answers, transmittalItem = _a.transmittalItem, transmittal = _a.transmittal;
-                        _b = req.user, company = _b.company, venue = _b.venue, team = _b.team;
+                        _b = req.body, vin = _b.vin, answers = _b.answers, transmittalItem = _b.transmittalItem, transmittal = _b.transmittal;
+                        _c = req.user, company = _c.company, venue = _c.venue, team = _c.team;
                         logger_service_1["default"].info("complete");
                         logger_service_1["default"].info("{user: {_id: " + req.user._id + ", email: " + req.user.email + "}, body: " + JSON.stringify(req.body) + "}");
                         // validate answers in body
@@ -723,16 +724,16 @@ var FormController = /** @class */ (function () {
                         }
                         return [4 /*yield*/, user_model_1["default"].findById(req.user._id).populate([{ path: 'venue' }])];
                     case 1:
-                        updatedUser = _k.sent();
+                        updatedUser = _l.sent();
                         if (!updatedUser) {
                             return [2 /*return*/, res.status(404).json({
                                     message: 'No se ha encontrado el formulario solicitado.',
                                     status: 404
                                 })];
                         }
-                        _k.label = 2;
+                        _l.label = 2;
                     case 2:
-                        _k.trys.push([2, 44, , 45]);
+                        _l.trys.push([2, 46, , 47]);
                         car_1 = null;
                         if (!vin) return [3 /*break*/, 4];
                         vin = vin.replace(/[\W_]+/g, '');
@@ -741,17 +742,17 @@ var FormController = /** @class */ (function () {
                                 team: team
                             })];
                     case 3:
-                        car_1 = _k.sent();
-                        _k.label = 4;
+                        car_1 = _l.sent();
+                        _l.label = 4;
                     case 4:
-                        if (!(car_1 || transmittal)) return [3 /*break*/, 42];
+                        if (!(car_1 || transmittal)) return [3 /*break*/, 44];
                         return [4 /*yield*/, this.getFormWithScale({
                                 _id: id,
                                 team: team
                             })];
                     case 5:
-                        form = _k.sent();
-                        if (!form) return [3 /*break*/, 40];
+                        form = _l.sent();
+                        if (!form) return [3 /*break*/, 42];
                         participantObject = {
                             name: form.name,
                             team: team,
@@ -819,19 +820,19 @@ var FormController = /** @class */ (function () {
                         sumSectionWeigths = 0;
                         sumSectionQualifications = 0;
                         allImages = [];
-                        _i = 0, _c = form.sections;
-                        _k.label = 6;
+                        _i = 0, _d = form.sections;
+                        _l.label = 6;
                     case 6:
-                        if (!(_i < _c.length)) return [3 /*break*/, 12];
-                        section = _c[_i];
+                        if (!(_i < _d.length)) return [3 /*break*/, 12];
+                        section = _d[_i];
                         sumWeigths = 0;
                         sumQualifications = 0;
                         newAnswers = [];
                         _loop_1 = function (question) {
-                            var questionID, answer, choice, qualification, na, _l, _m, _o;
-                            var _p;
-                            return __generator(this, function (_q) {
-                                switch (_q.label) {
+                            var questionID, answer, choice, qualification, na, _m, _o, _p;
+                            var _q;
+                            return __generator(this, function (_r) {
+                                switch (_r.label) {
                                     case 0:
                                         questionID = question._id.toString();
                                         answer = general_utils_1["default"].getObjectProperty(answers, questionID, null);
@@ -874,8 +875,8 @@ var FormController = /** @class */ (function () {
                                             }); });
                                         }
                                         // generate answer
-                                        _m = (_l = newAnswers).push;
-                                        _p = {
+                                        _o = (_m = newAnswers).push;
+                                        _q = {
                                             _id: question._id,
                                             question: question.question,
                                             shortName: question.shortName,
@@ -888,50 +889,50 @@ var FormController = /** @class */ (function () {
                                         if (!((question.kind === form_model_1.KindQuestion.accessory || choice && choice.requireAccesories) && answer && answer.accesories)) return [3 /*break*/, 2];
                                         return [4 /*yield*/, this_1.processAccesoryItems(answer.accesories)];
                                     case 1:
-                                        _o = _q.sent();
+                                        _p = _r.sent();
                                         return [3 /*break*/, 3];
                                     case 2:
-                                        _o = [];
-                                        _q.label = 3;
+                                        _p = [];
+                                        _r.label = 3;
                                     case 3:
                                         // generate answer
-                                        _m.apply(_l, [(_p.accesoriesAnswered = _o,
-                                                _p.risk = question.risk,
-                                                _p.comment = (question.kind === form_model_1.KindQuestion.text || choice && choice.requireComment) && answer && answer.comment ?
+                                        _o.apply(_m, [(_q.accesoriesAnswered = _p,
+                                                _q.risk = question.risk,
+                                                _q.comment = (question.kind === form_model_1.KindQuestion.text || choice && choice.requireComment) && answer && answer.comment ?
                                                     answer.comment
                                                     : '',
-                                                _p.observe = question.observe,
-                                                _p.answer = answer ? new bson_1.ObjectID(answer.value) : null,
-                                                _p.images = answer && answer.images && answer.images.length ?
+                                                _q.observe = question.observe,
+                                                _q.answer = answer ? new bson_1.ObjectID(answer.value) : null,
+                                                _q.images = answer && answer.images && answer.images.length ?
                                                     answer.images.map(function (image) { return (new bson_1.ObjectID(image)); })
                                                     : [],
-                                                _p.qualification = qualification,
-                                                _p.na = na,
-                                                _p.weight = question.weight,
-                                                _p.kind = question.kind,
-                                                _p.order = question.order,
-                                                _p.hint = question.hint,
-                                                _p.optional = question.optional,
-                                                _p.minValue = question.minValue,
-                                                _p.maxValue = question.maxValue,
-                                                _p.score = answer && answer.score ? answer.score : -1,
-                                                _p)]);
+                                                _q.qualification = qualification,
+                                                _q.na = na,
+                                                _q.weight = question.weight,
+                                                _q.kind = question.kind,
+                                                _q.order = question.order,
+                                                _q.hint = question.hint,
+                                                _q.optional = question.optional,
+                                                _q.minValue = question.minValue,
+                                                _q.maxValue = question.maxValue,
+                                                _q.score = answer && answer.score ? answer.score : -1,
+                                                _q)]);
                                         return [2 /*return*/];
                                 }
                             });
                         };
                         this_1 = this;
-                        _d = 0, _e = section.questions;
-                        _k.label = 7;
+                        _e = 0, _f = section.questions;
+                        _l.label = 7;
                     case 7:
-                        if (!(_d < _e.length)) return [3 /*break*/, 10];
-                        question = _e[_d];
+                        if (!(_e < _f.length)) return [3 /*break*/, 10];
+                        question = _f[_e];
                         return [5 /*yield**/, _loop_1(question)];
                     case 8:
-                        _k.sent();
-                        _k.label = 9;
+                        _l.sent();
+                        _l.label = 9;
                     case 9:
-                        _d++;
+                        _e++;
                         return [3 /*break*/, 7];
                     case 10:
                         sectionQualification = sumQualifications ? sumQualifications / sumWeigths : 0;
@@ -947,7 +948,7 @@ var FormController = /** @class */ (function () {
                             weight: section.weight,
                             order: section.order
                         });
-                        _k.label = 11;
+                        _l.label = 11;
                     case 11:
                         _i++;
                         return [3 /*break*/, 6];
@@ -959,12 +960,12 @@ var FormController = /** @class */ (function () {
                                 return answer.damagesSelected.length > 0;
                             });
                         });
-                        _k.label = 13;
+                        _l.label = 13;
                     case 13:
-                        _k.trys.push([13, 38, , 39]);
+                        _l.trys.push([13, 40, , 41]);
                         return [4 /*yield*/, team_model_1["default"].findOneAndUpdate({ _id: team._id }, { $inc: { formsNumber: 1 } }, { "new": true })];
                     case 14:
-                        updateTeam = _k.sent();
+                        updateTeam = _l.sent();
                         if (updateTeam) {
                             newParticipant.number = updateTeam.formsNumber;
                         }
@@ -972,29 +973,37 @@ var FormController = /** @class */ (function () {
                         return [4 /*yield*/, newParticipant.save()];
                     case 15:
                         // save the participant
-                        _k.sent();
-                        if (!(transmittalItem === null || transmittalItem === void 0 ? void 0 : transmittalItem.length)) return [3 /*break*/, 21];
+                        _l.sent();
+                        if (!(transmittalItem === null || transmittalItem === void 0 ? void 0 : transmittalItem.length)) return [3 /*break*/, 23];
                         newParticipant.transmittalItem = transmittalItem;
                         return [4 /*yield*/, newParticipant.save()];
                     case 16:
-                        _k.sent();
+                        _l.sent();
                         return [4 /*yield*/, transmittalItem_model_1["default"]
                                 .findOneAndUpdate({ _id: transmittalItem }, { $push: { revisions: newParticipant._id } }, { "new": true })
                                 .populate(transmittal_controller_1["default"].itemPopulate)];
                     case 17:
-                        transmittalItemData = _k.sent();
+                        transmittalItemData = _l.sent();
                         return [4 /*yield*/, milestone_model_1["default"].findOne({
                                 step: milestone_model_1.ChoicesStepMilestone.checkItem,
                                 team: team
                             })];
                     case 18:
-                        milestone = _k.sent();
-                        if (!(milestone && (milestone === null || milestone === void 0 ? void 0 : milestone.requestItemStatus))) return [3 /*break*/, 20];
+                        milestone = _l.sent();
+                        if (!((_a = milestone === null || milestone === void 0 ? void 0 : milestone.updateItems) === null || _a === void 0 ? void 0 : _a.arrivalDate)) return [3 /*break*/, 20];
+                        return [4 /*yield*/, transmittalItem_model_1["default"]
+                                .findOneAndUpdate({ _id: transmittalItem }, { $set: { arrivalDate: moment().toDate() } }, { "new": true })
+                                .populate(transmittal_controller_1["default"].itemPopulate)];
+                    case 19:
+                        transmittalItemData = _l.sent();
+                        _l.label = 20;
+                    case 20:
+                        if (!(milestone === null || milestone === void 0 ? void 0 : milestone.requestItemStatus)) return [3 /*break*/, 22];
                         return [4 /*yield*/, requestItem_model_1["default"]
                                 .findOneAndUpdate({ transmittalItem: transmittalItem }, { $set: { status: milestone.requestItemStatus } }, { "new": true })
                                 .populate(request_controller_1["default"].itemPopulate)];
-                    case 19:
-                        requestItem = _k.sent();
+                    case 21:
+                        requestItem = _l.sent();
                         if (requestItem) {
                             server_1.io.to("request-list-" + team._id).emit('UPDATE_REQUEST_ITEM', {
                                 idRequest: requestItem.request._id,
@@ -1005,15 +1014,15 @@ var FormController = /** @class */ (function () {
                                 item: requestItem
                             });
                         }
-                        _k.label = 20;
-                    case 20:
+                        _l.label = 22;
+                    case 22:
                         // end update request when check item
                         server_1.io.to("transmittal-list-" + team._id).emit('UPDATE_TRANSMITTAL_ITEM', {
                             transmittalItem: transmittalItemData
                         });
-                        _k.label = 21;
-                    case 21:
-                        if (!(transmittal && (transmittal === null || transmittal === void 0 ? void 0 : transmittal.length))) return [3 /*break*/, 27];
+                        _l.label = 23;
+                    case 23:
+                        if (!(transmittal && (transmittal === null || transmittal === void 0 ? void 0 : transmittal.length))) return [3 /*break*/, 29];
                         return [4 /*yield*/, transmittal_model_1["default"]
                                 .findOneAndUpdate({
                                 _id: transmittal
@@ -1025,26 +1034,26 @@ var FormController = /** @class */ (function () {
                                 "new": true
                             })
                                 .populate(transmittal_controller_1["default"].populate)];
-                    case 22:
-                        newTransmittal = _k.sent();
+                    case 24:
+                        newTransmittal = _l.sent();
                         return [4 /*yield*/, milestone_model_1["default"].findOne({
                                 step: milestone_model_1.ChoicesStepMilestone.finishTransmittal,
                                 team: team
                             })];
-                    case 23:
-                        milestone = _k.sent();
-                        if (!(milestone && (milestone === null || milestone === void 0 ? void 0 : milestone.requestItemStatus))) return [3 /*break*/, 26];
+                    case 25:
+                        milestone = _l.sent();
+                        if (!(milestone && (milestone === null || milestone === void 0 ? void 0 : milestone.requestItemStatus))) return [3 /*break*/, 28];
                         return [4 /*yield*/, requestItem_model_1["default"].updateMany({ transmittal: transmittal }, { $set: { status: milestone.requestItemStatus } })];
-                    case 24:
-                        _k.sent();
+                    case 26:
+                        _l.sent();
                         return [4 /*yield*/, requestItem_model_1["default"]
                                 .find({ transmittal: transmittal, team: team })
                                 .populate(request_controller_1["default"].itemPopulate)
                                 .lean()];
-                    case 25:
-                        requestItems = _k.sent();
-                        for (_f = 0, requestItems_1 = requestItems; _f < requestItems_1.length; _f++) {
-                            requestItem = requestItems_1[_f];
+                    case 27:
+                        requestItems = _l.sent();
+                        for (_g = 0, requestItems_1 = requestItems; _g < requestItems_1.length; _g++) {
+                            requestItem = requestItems_1[_g];
                             server_1.io.to("request-list-" + team._id).emit('UPDATE_REQUEST_ITEM', {
                                 idRequest: requestItem.request._id,
                                 item: requestItem
@@ -1054,15 +1063,15 @@ var FormController = /** @class */ (function () {
                                 item: requestItem
                             });
                         }
-                        _k.label = 26;
-                    case 26:
+                        _l.label = 28;
+                    case 28:
                         // end update request when finish transmittal
                         server_1.io.to("transmittal-list-" + team._id).emit('UPDATE_TRANSMITTAL', {
                             transmittal: newTransmittal
                         });
-                        _k.label = 27;
-                    case 27:
-                        if (!allImages.length) return [3 /*break*/, 29];
+                        _l.label = 29;
+                    case 29:
+                        if (!allImages.length) return [3 /*break*/, 31];
                         return [4 /*yield*/, participantFile_model_1["default"].update({
                                 _id: { $in: allImages }
                             }, {
@@ -1070,15 +1079,15 @@ var FormController = /** @class */ (function () {
                             }, {
                                 multi: true
                             })];
-                    case 28:
-                        _k.sent();
-                        _k.label = 29;
-                    case 29:
-                        if (!car_1) return [3 /*break*/, 33];
+                    case 30:
+                        _l.sent();
+                        _l.label = 31;
+                    case 31:
+                        if (!car_1) return [3 /*break*/, 35];
                         car_1.lastForm = newParticipant;
                         return [4 /*yield*/, car_1.save()];
-                    case 30:
-                        _k.sent();
+                    case 32:
+                        _l.sent();
                         // send refresh with websocket to dashboard list
                         server_1.io.to("dashboard-vin-view-" + team._id).emit('REFRESH', {
                             update: true,
@@ -1089,8 +1098,8 @@ var FormController = /** @class */ (function () {
                             }
                         });
                         // send refresh with websocket to dashboard detail
-                        _h = (_g = server_1.io.to("dashboard-vin-detail-" + team._id + "-" + car_1._id)).emit;
-                        _j = ["ADD_PARTICIPANT"];
+                        _j = (_h = server_1.io.to("dashboard-vin-detail-" + team._id + "-" + car_1._id)).emit;
+                        _k = ["ADD_PARTICIPANT"];
                         return [4 /*yield*/, participant_model_1["default"]
                                 .findById(newParticipant._id, { number: 1, name: 1, user: 1, venue: 1, createdAt: 1, qualification: 1 })
                                 .populate([{
@@ -1100,9 +1109,9 @@ var FormController = /** @class */ (function () {
                                     path: 'venue',
                                     select: ['name']
                                 }])];
-                    case 31:
+                    case 33:
                         // send refresh with websocket to dashboard detail
-                        _h.apply(_g, _j.concat([_k.sent()]));
+                        _j.apply(_h, _k.concat([_l.sent()]));
                         return [4 /*yield*/, new activityHistory_model_1["default"]({
                                 team: team,
                                 company: company,
@@ -1113,10 +1122,10 @@ var FormController = /** @class */ (function () {
                                     vin: car_1.vin
                                 }
                             }).save()];
-                    case 32:
-                        _k.sent();
-                        _k.label = 33;
-                    case 33:
+                    case 34:
+                        _l.sent();
+                        _l.label = 35;
+                    case 35:
                         today = moment().startOf('day');
                         tomorrow = moment(today).add(1, 'days');
                         return [4 /*yield*/, participant_model_1["default"].count({
@@ -1126,15 +1135,15 @@ var FormController = /** @class */ (function () {
                                     $lt: tomorrow.toDate()
                                 }
                             })];
-                    case 34:
-                        count = _k.sent();
-                        if (!(form.triggers && form.triggers.length)) return [3 /*break*/, 36];
+                    case 36:
+                        count = _l.sent();
+                        if (!(form.triggers && form.triggers.length)) return [3 /*break*/, 38];
                         triggersHandler = new triggerHandler_1["default"](form, newParticipant);
                         return [4 /*yield*/, triggersHandler.execute({})];
-                    case 35:
-                        _k.sent();
-                        _k.label = 36;
-                    case 36: return [4 /*yield*/, alert_model_1["default"]
+                    case 37:
+                        _l.sent();
+                        _l.label = 38;
+                    case 38: return [4 /*yield*/, alert_model_1["default"]
                             .find({
                             team: team,
                             $or: [
@@ -1145,8 +1154,8 @@ var FormController = /** @class */ (function () {
                                 path: 'users',
                                 select: ['firstName', 'lastName', 'email', 'venue', 'venuesAccess']
                             }])];
-                    case 37:
-                        alerts = _k.sent();
+                    case 39:
+                        alerts = _l.sent();
                         /* Send alerts if exist */
                         if (alerts.length && car_1) {
                             alerts.forEach(function (alert) {
@@ -1181,8 +1190,8 @@ var FormController = /** @class */ (function () {
                                 },
                                 status: 200
                             })];
-                    case 38:
-                        e_4 = _k.sent();
+                    case 40:
+                        e_4 = _l.sent();
                         /* istanbul ignore next */
                         console.log(e_4);
                         // return error, if the form could not be recorded
@@ -1191,21 +1200,21 @@ var FormController = /** @class */ (function () {
                                 message: e_4,
                                 status: 400
                             })];
-                    case 39: return [3 /*break*/, 41];
-                    case 40: 
+                    case 41: return [3 /*break*/, 43];
+                    case 42: 
                     // return error, if the form could not find
                     return [2 /*return*/, res.status(400).json({
                             message: 'No se ha encontrado el formularío',
                             status: 400
                         })];
-                    case 41: return [3 /*break*/, 43];
-                    case 42: return [2 /*return*/, res.status(400).json({
+                    case 43: return [3 /*break*/, 45];
+                    case 44: return [2 /*return*/, res.status(400).json({
                             message: 'VIN no encontrado.',
                             status: 400
                         })];
-                    case 43: return [3 /*break*/, 45];
-                    case 44:
-                        e_5 = _k.sent();
+                    case 45: return [3 /*break*/, 47];
+                    case 46:
+                        e_5 = _l.sent();
                         Raven.captureException(e_5, { req: req });
                         /* istanbul ignore next */
                         console.log(e_5);
@@ -1215,7 +1224,7 @@ var FormController = /** @class */ (function () {
                                 message: e_5,
                                 status: 400
                             })];
-                    case 45: return [2 /*return*/];
+                    case 47: return [2 /*return*/];
                 }
             });
         });

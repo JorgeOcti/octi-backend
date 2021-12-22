@@ -227,7 +227,7 @@ var TransmittalController = /** @class */ (function () {
                     case 4:
                         // update cars params
                         _c.sent();
-                        return [4 /*yield*/, new transmittalItem_model_1["default"](__assign(__assign({}, item), { team: team, transmittal: transmittal })).save()];
+                        return [4 /*yield*/, new transmittalItem_model_1["default"](__assign(__assign({}, item), { team: team, transmittal: transmittal, loadingDate: moment().toDate() })).save()];
                     case 5:
                         transmittalItem = _c.sent();
                         if (!((_a = item.requestItem) === null || _a === void 0 ? void 0 : _a.length)) return [3 /*break*/, 7];

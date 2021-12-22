@@ -244,32 +244,41 @@ class MilestoneListView extends TrackingBasePage<IPropsType, IStateType> {
                                 </ShowIf>
                               </td>
                               <td className='middle'>
-                                <select
-                                  className='form-control select-sm font-12' value={item.requestItemStatus?._id ?? ''}
-                                  onChange={(e: React.ChangeEvent<HTMLSelectElement>) => {
-                                    this.props.updateMilestoneThunkAction({
-                                      ...item,
-                                      requestItemStatus: e.target.value as unknown as IRequestItemStatus
-                                    });
-                                  }}
-                                >
-                                  <option value={''}>Seleccione</option>
-                                  {
-                                    requestStatus.map((status) => (
-                                      <option key={status._id} value={status._id}>{`${status.name}`}</option>
-                                    ))
-                                  }
-                                </select>
+                                <ShowIf condition={item.kind === 'form'}>
+                                  <select
+                                    className='form-control select-sm font-12' value={item.requestItemStatus?._id ?? ''}
+                                    onChange={(e: React.ChangeEvent<HTMLSelectElement>) => {
+                                      this.props.updateMilestoneThunkAction({
+                                        ...item,
+                                        requestItemStatus: e.target.value as unknown as IRequestItemStatus
+                                      });
+                                    }}
+                                  >
+                                    <option value={''}>Seleccione</option>
+                                    {
+                                      requestStatus.map((status) => (
+                                        <option key={status._id} value={status._id}>{`${status.name}`}</option>
+                                      ))
+                                    }
+                                  </select>
+                                </ShowIf>
                               </td>
                               <td className='middle'>
-                                <Checkbox
-                                  active={false}
-                                  action={()=>{
-                                    // call function
-                                  }}
-                                  classes='icheck-in-checkbox'
-                                  style={{ marginTop: '-4px', marginRight: '5px' }}
-                                />
+                                <ShowIf condition={item.kind === 'form'}>
+                                  <Checkbox
+                                    active={item.updateItems.arrivalDate}
+                                    action={() => {
+                                      this.props.updateMilestoneThunkAction({
+                                        ...item,
+                                        updateItems: {
+                                          arrivalDate: !item.updateItems.arrivalDate
+                                        }
+                                      });
+                                    }}
+                                    classes='icheck-in-checkbox'
+                                    style={{ marginTop: '-4px', marginRight: '5px' }}
+                                  />
+                                </ShowIf>
                               </td>
                             </tr>
                           );

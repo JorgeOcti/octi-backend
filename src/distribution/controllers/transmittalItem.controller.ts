@@ -7,6 +7,7 @@ import { io } from '../../server';
 import Transmittal from '../models/transmittal.model';
 import RequestItem from '../../request/models/requestItem.model';
 import Car from '../../app/models/car.model';
+import * as moment from '../../../public/theme/bower_components/moment/moment';
 
 class TransmittalItemController {
 
@@ -71,7 +72,8 @@ class TransmittalItemController {
     try {
       const transmittalItem = await new TransmittalItem({
         team,
-        ...item
+        ...item,
+        loadingDate: moment().toDate()
       }).save();
       const transmittalItemData = await TransmittalItem
         .findById(transmittalItem._id)

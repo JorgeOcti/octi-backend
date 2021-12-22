@@ -54,6 +54,7 @@ var server_1 = require("../../server");
 var transmittal_model_1 = require("../models/transmittal.model");
 var requestItem_model_1 = require("../../request/models/requestItem.model");
 var car_model_1 = require("../../app/models/car.model");
+var moment = require("../../../public/theme/bower_components/moment/moment");
 var TransmittalItemController = /** @class */ (function () {
     function TransmittalItemController() {
         this.index = this.index.bind(this);
@@ -156,7 +157,7 @@ var TransmittalItemController = /** @class */ (function () {
                         _a.label = 1;
                     case 1:
                         _a.trys.push([1, 5, , 6]);
-                        return [4 /*yield*/, new transmittalItem_model_1["default"](__assign({ team: team }, item)).save()];
+                        return [4 /*yield*/, new transmittalItem_model_1["default"](__assign(__assign({ team: team }, item), { loadingDate: moment().toDate() })).save()];
                     case 2:
                         transmittalItem = _a.sent();
                         return [4 /*yield*/, transmittalItem_model_1["default"]

@@ -142,7 +142,8 @@ class TransmittalController {
         const transmittalItem = await new TransmittalItem({
           ...item,
           team,
-          transmittal
+          transmittal,
+          loadingDate: moment().toDate()
         }).save();
         // associate request item with transmittal and transmittal item
         if(item.requestItem?.length) {

@@ -839,7 +839,7 @@ class FormController {
               newParticipant.transmittalItem = transmittalItem;
               await newParticipant.save();
 
-              const transmittalItemData = await TransmittalItem
+              let transmittalItemData = await TransmittalItem
                 .findOneAndUpdate({ _id: transmittalItem }, { $push: { revisions: newParticipant._id } }, { new: true })
                 .populate(TransmittalController.itemPopulate);
 
@@ -848,7 +848,12 @@ class FormController {
                 step: ChoicesStepMilestone.checkItem,
                 team
               });
-              if (milestone && milestone?.requestItemStatus) {
+              if (milestone?.updateItems?.arrivalDate) {
+                transmittalItemData = await TransmittalItem
+                  .findOneAndUpdate({ _id: transmittalItem }, { $set: { arrivalDate: moment().toDate() } }, { new: true })
+                  .populate(TransmittalController.itemPopulate);
+              }
+              if (milestone?.requestItemStatus) {
                 const requestItem = await RequestItem
                   .findOneAndUpdate({ transmittalItem }, { $set: { status: milestone.requestItemStatus } }, { new: true })
                   .populate(RequestController.itemPopulate);
