@@ -64,7 +64,7 @@ class TransmittalController {
   }, {
     path: 'files',
     select: ['file', 'thumbnail'],
-    match: { milestone: { $exists: false } }
+    // match: { milestone: { $exists: false } }
   }, {
     path: 'evidenceFullLoad',
     select: ['file', 'thumbnail']

@@ -114,8 +114,7 @@ var TransmittalController = /** @class */ (function () {
                 populate: this.itemPopulate
             }, {
                 path: 'files',
-                select: ['file', 'thumbnail'],
-                match: { milestone: { $exists: false } }
+                select: ['file', 'thumbnail']
             }, {
                 path: 'evidenceFullLoad',
                 select: ['file', 'thumbnail']
